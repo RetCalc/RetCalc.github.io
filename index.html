@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c1114">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Investment">
+<title>Investment Calculator</title>
+<style>
+:root{
+  --bg:#0c1114;
+  --panel:#131b20;
+  --panel-2:#182229;
+  --field:#0e1519;
+  --line:#22303a;
+  --line-soft:#1a242b;
+  --text:#e9f0f3;
+  --dim:#8ba0ac;
+  --dimmer:#5f7583;
+  --gold:#e9b872;
+  --jade:#4fbf95;
+  --steel:#7d9fd6;
+  --coral:#e2795f;
+  --sans:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text",
+    "Segoe UI",system-ui,Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono","Roboto Mono",Menlo,
+    Consolas,monospace;
+}
+*{box-sizing:border-box}
+/* .stack sets display:flex, which outranks the browser's [hidden] rule and left
+   the inactive tab pane laid out under the sticky sidebar. */
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--sans);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  letter-spacing:-.008em;
+}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+::selection{background:rgba(233,184,114,.28)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#26333c;border-radius:6px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#31424d}
+
+/* ---------- masthead ---------- */
+header{
+  background:linear-gradient(180deg,#111a20 0%,#0d1418 100%);
+  border-bottom:1px solid var(--line);
+}
+.masthead{max-width:1220px;margin:0 auto;padding:22px 26px 24px;
+  display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px}
+.mark{width:32px;height:32px;flex:none;border-radius:8px;
+  background:linear-gradient(145deg,var(--jade),#2f8f6d);
+  display:grid;place-items:center;
+  box-shadow:0 0 0 1px rgba(79,191,149,.25),0 6px 18px -6px rgba(79,191,149,.5)}
+.mark svg{width:17px;height:17px;display:block}
+h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.02em}
+.scenariobar{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.scenariobar select{min-width:180px}
+
+/* ---------- layout ---------- */
+main{max-width:1220px;margin:0 auto;padding:22px 26px 70px;
+  display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.panel > h2{
+  font-size:13px;font-weight:600;margin:0;letter-spacing:.01em;
+  padding:14px 18px;border-bottom:1px solid var(--line-soft);color:var(--text);
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.panel > h2 .h2note{font-weight:400;font-size:12px;color:var(--dimmer);margin-left:0}
+.h2ctrl{margin-left:auto;display:flex;align-items:center;gap:8px;font-weight:400;flex-wrap:wrap}
+.h2ctrl label{font-size:11.5px;color:var(--dim);margin:0}
+.h2ctrl .inputwrap{width:96px}
+.h2ctrl input{padding:5px 0;font-size:13px;text-align:center}
+.h2ctrl .affix{padding:0 7px}
+.panel .body{padding:16px 18px}
+aside{position:sticky;top:16px}
+
+/* ---------- fields ---------- */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;
+  letter-spacing:.005em}
+.inputwrap{display:flex;align-items:center;background:var(--field);
+  border:1px solid var(--line);border-radius:7px;transition:border-color .12s,box-shadow .12s}
+.inputwrap:focus-within{border-color:var(--jade);box-shadow:0 0 0 3px rgba(79,191,149,.13)}
+.inputwrap .affix{padding:0 10px;color:var(--dimmer);font-size:12.5px;flex:none}
+.inputwrap input{
+  width:100%;min-width:0;border:0;background:transparent;padding:9px 10px;
+  font-family:var(--mono);font-size:13.5px;color:var(--text);
+  text-align:right;font-variant-numeric:tabular-nums}
+.inputwrap .affix + input{padding-left:0}
+.inputwrap input:focus{outline:none}
+.inputwrap input::placeholder{color:#4d626e;font-family:var(--sans);font-size:12.5px}
+/* Native spinners overlap the value in these narrow, text-aligned boxes.
+   Hidden here; arrow keys still step the value. */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+select,.btn{font-family:var(--sans);font-size:13px;border-radius:7px;padding:8px 12px;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--text);cursor:pointer;
+  transition:border-color .12s,background .12s}
+select{width:100%;background:var(--field);
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.7l3 3 3-3' fill='none' stroke='%238ba0ac' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;padding-right:28px}
+select:hover,.btn:hover{border-color:#33454f}
+.btn.primary{background:linear-gradient(180deg,#4fbf95,#37a37b);border-color:#2f8f6d;
+  color:#06231a;font-weight:600}
+.btn.primary:hover{background:linear-gradient(180deg,#5fcda3,#3fb187)}
+.btn:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:11.5px;color:var(--dimmer);margin-top:5px;line-height:1.45}
+
+.derived{border-top:1px solid var(--line-soft);margin-top:8px;padding-top:12px;
+  font-size:12px;color:var(--dim)}
+.derived div{display:flex;justify-content:space-between;padding:3px 0}
+.derived .num{color:var(--text);font-size:12px}
+
+/* ---------- headline ---------- */
+.headline{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line-soft)}
+.headline > div{padding:19px 20px;position:relative}
+.headline > div + div{border-left:1px solid var(--line-soft)}
+.headline .k{font-size:11.5px;color:var(--dim);margin-bottom:7px;letter-spacing:.01em}
+.headline .v{font-family:var(--mono);font-size:29px;line-height:1.05;
+  font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:500;
+  white-space:nowrap;overflow:hidden}
+.headline .v.gold{color:var(--gold);text-shadow:0 0 26px rgba(233,184,114,.28)}
+.headline .v.jade{color:var(--jade)}
+.headline .note{font-size:11px;color:var(--dimmer);margin-top:7px;line-height:1.4}
+.headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft)}
+
+/* ---------- tabs ---------- */
+nav[role=tablist]{max-width:1220px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
+nav[role=tablist] button{
+  font-family:var(--sans);font-size:13.5px;background:transparent;color:var(--dim);
+  border:0;border-bottom:2px solid transparent;padding:0 4px 12px;margin-right:18px;
+  cursor:pointer;transition:color .12s,border-color .12s}
+nav[role=tablist] button:hover{color:var(--text)}
+nav[role=tablist] button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--jade)}
+nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- stage cards ---------- */
+.stagecard{border:1px solid var(--line);border-radius:9px;padding:14px;margin-bottom:12px;
+  background:var(--field)}
+.stagecard:last-child{margin-bottom:0}
+.stagehead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.stagenum{font-size:13px;font-weight:600}
+.stagespan{font-family:var(--mono);font-size:11.5px;color:var(--dimmer);
+  font-variant-numeric:tabular-nums}
+.stagehead .btn{margin-left:auto}
+.stagegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
+.stagegrid .field{margin-bottom:0}
+.stagecard .inputwrap{background:var(--panel)}
+.stagecard select{background:var(--panel)}
+
+/* ---------- data ---------- */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:right;padding:8px 10px;font-size:13px;border-bottom:1px solid var(--line-soft)}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+th{font-size:11.5px;color:var(--dim);font-weight:500;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--panel);letter-spacing:.01em}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--panel-2)}
+.scroll{max-height:340px;overflow:auto}
+.kv{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
+  border-bottom:1px solid var(--line-soft);font-size:13.5px;align-items:baseline}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--dim);flex:1 1 auto;min-width:0}
+.kv .v{font-family:var(--mono);font-variant-numeric:tabular-nums;flex:0 0 auto;
+  white-space:nowrap;font-size:13px}
+.kv.total{font-weight:600;border-top:1px solid var(--line);border-bottom:0;padding-top:12px}
+.kv.total .k{color:var(--text)}
+.pos{color:var(--jade)}.neg{color:var(--coral)}
+.swipehint{display:none;font-size:11.5px;color:var(--dimmer);padding:0 14px 12px}
+
+/* two ways to hit the same target, side by side */
+.solveopts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line-soft)}
+.solveopt{padding:18px 20px;display:flex;flex-direction:column}
+.solveopt + .solveopt{border-left:1px solid var(--line-soft)}
+.optlabel{font-size:11.5px;color:var(--dim);margin-bottom:8px;letter-spacing:.01em}
+.solveopt > .v{font-family:var(--mono);font-size:29px;line-height:1.05;font-weight:500;
+  font-variant-numeric:tabular-nums;letter-spacing:-.03em;white-space:nowrap;overflow:hidden}
+.solveopt > .v.gold{color:var(--gold);text-shadow:0 0 26px rgba(233,184,114,.28)}
+.solveopt > .note{font-size:11px;color:var(--dimmer);margin-top:7px;margin-bottom:6px;line-height:1.4}
+.solveopt .kv{font-size:13px;padding:8px 0}
+.solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0;text-shadow:none}
+.solveopt .btn{margin-top:14px;align-self:flex-start}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* converter rows, each applyable */
+.convrow{display:flex;align-items:center;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--line-soft);font-size:13.5px}
+.convrow:last-child{border-bottom:0}
+.convrow .k{color:var(--dim);flex:1 1 auto;min-width:0}
+.convrow .k em{font-style:normal;color:var(--dimmer);font-size:11px}
+.convrow .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;
+  white-space:nowrap;flex:0 0 auto}
+.convrow.total{border-top:1px solid var(--line);border-bottom:0;padding-top:12px;font-weight:600}
+.convrow.total .k{color:var(--text)}
+.convrow .spacer{width:50px;flex:none}
+.btn.mini{padding:5px 11px;font-size:12px;flex:none;text-align:center;white-space:nowrap}
+
+/* segmented mode switch on the chart panels */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:none}
+.seg button{font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
+  color:var(--dim);border:0;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:var(--panel-2);color:var(--text)}
+.seg button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.modeopt{display:flex;align-items:center;gap:8px}
+.mcnote{padding:0 18px 15px;font-size:12.5px;color:var(--dim);line-height:1.5}
+.mcnote b{color:var(--gold);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.mcnote b.warn{color:var(--coral)}
+.convrow .btn.mini{width:50px;padding:5px 0}
+
+/* ---------- chart ---------- */
+.chartwrap{padding:16px 18px 6px;position:relative}
+svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:18px;font-size:11.5px;color:var(--dim);padding:0 18px 15px;
+  flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;
+  vertical-align:0}
+.tip{position:absolute;pointer-events:none;background:#0a1013;color:var(--text);
+  border:1px solid var(--line);padding:9px 11px;border-radius:8px;font-size:11.5px;
+  line-height:1.65;white-space:nowrap;opacity:0;transition:opacity .1s;
+  box-shadow:0 10px 30px -8px rgba(0,0,0,.8);z-index:5}
+.tip b{font-size:12px;letter-spacing:.01em}
+.tip .n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.note-list{font-size:12px;color:var(--dim);line-height:1.7;margin:0;padding-left:17px}
+.note-list li{margin-bottom:6px}
+.note-list li::marker{color:var(--dimmer)}
+.stack{display:flex;flex-direction:column;gap:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+  background:#0a1013;color:var(--text);border:1px solid var(--line);
+  padding:11px 18px;border-radius:9px;font-size:13px;
+  box-shadow:0 14px 40px -10px rgba(0,0,0,.9);
+  opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+/* Tablet and below: the sidebar moves above the results. */
+@media (max-width:900px){
+  main{grid-template-columns:minmax(0,1fr);padding:18px 20px 60px}
+  nav[role=tablist]{padding:0 20px}
+  aside{position:static}
+  .masthead{padding:18px 20px 20px}
+}
+/* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
+   smaller than that, and the zoom never fully reverses. */
+@media (max-width:640px){
+  main{padding:14px 14px 56px;gap:14px}
+  .stack{gap:14px}
+  .masthead{padding:16px 14px 16px;gap:14px}
+  h1{font-size:17px}
+  .panel{border-radius:9px}
+  .panel > h2{padding:13px 14px}
+  .panel .body{padding:14px}
+
+  .headline{grid-template-columns:1fr}
+  .headline > div{padding:16px 14px}
+  .headline > div + div{border-left:0;border-top:1px solid var(--line-soft)}
+  .grid2{grid-template-columns:1fr;gap:16px}
+
+  nav[role=tablist]{padding:0 14px;overflow-x:auto}
+  nav[role=tablist] button{margin-right:14px;font-size:14px;white-space:nowrap}
+  .stagegrid{grid-template-columns:1fr 1fr}
+  .stagecard{padding:12px}
+  #stageTable{min-width:640px}
+  #xYearTable{min-width:660px}
+
+  .solveopts{grid-template-columns:1fr}
+  .solveopt{padding:16px 14px}
+  .solveopt + .solveopt{border-left:0;border-top:1px solid var(--line-soft)}
+  .solveopt .btn{align-self:stretch;text-align:center}
+
+  .inputwrap input,select,.btn,.h2ctrl input{font-size:16px}
+  .btn.mini{font-size:13px;padding:9px 12px}
+  .convrow .btn.mini{width:56px;padding:9px 0}
+  .convrow .spacer{width:56px}
+  .inputwrap input{padding:11px 10px}
+  select{padding:11px 12px}
+  .btn{padding:11px 12px}
+  .field label{font-size:12.5px}
+
+  .scenariobar{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .scenariobar select{grid-column:1 / -1}
+
+  .h2ctrl{margin-left:0;width:100%;justify-content:space-between;gap:10px}
+  .h2ctrl .inputwrap{width:110px}
+
+  .chartwrap{padding:12px 12px 4px}
+  .legend{padding:0 14px 14px;gap:12px;font-size:12px}
+  .mcnote{padding:0 14px 14px}
+
+  /* six money columns can't fit a phone; scroll them sideways instead of
+     letting the text wrap into an unreadable stack */
+  .scroll{overflow:auto;-webkit-overflow-scrolling:touch}
+  #yearTable{min-width:580px}
+  th,td{padding:8px 9px;font-size:12.5px}
+  .swipehint{display:block}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<noscript>
+  <div style="margin:0;padding:16px 18px;background:#3a2a18;color:#ffe6c7;
+    border-bottom:1px solid #6b4a26;font:14px/1.6 system-ui,-apple-system,sans-serif">
+    <b>This preview can't run the calculator.</b>
+    You're viewing the file in a previewer that blocks JavaScript, so the inputs
+    below won't do anything. Save the file, then open it in a real browser
+    (Safari, Chrome, Edge, or Firefox) and it will work.
+  </div>
+</noscript>
+
+<div id="fatal" style="display:none;margin:0;padding:14px 18px;background:#3a1d18;
+  color:#ffd9cd;border-bottom:1px solid #6b3226;font:14px/1.5 system-ui,-apple-system,sans-serif">
+  <b>This page didn't load correctly.</b>
+  <span id="fatalMsg"></span>
+  <span style="display:block;margin-top:6px;color:#e0a595;font-size:12.5px">
+    Try opening the file in Safari or Chrome directly rather than inside a mail or messaging app.
+  </span>
+</div>
+
+<script>
+/* ES5 only, and first on the page, so it still runs if a later block fails to
+   parse. A syntax error in a classic script fires window.onerror. */
+window.onerror = function(msg){
+  var box = document.getElementById("fatal");
+  var out = document.getElementById("fatalMsg");
+  if (box && out){ out.textContent = " " + msg; box.style.display = "block"; }
+  return false;
+};
+</script>
+
+<header>
+  <div class="masthead">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M2 15.5L7 9.5l3.5 3L18 4" stroke="#06231a" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1>Investment Calculator</h1>
+    </div>
+    <div class="scenariobar">
+      <select id="scenarioPick" aria-label="Saved scenarios"></select>
+      <button class="btn" id="btnSave">Save as…</button>
+      <button class="btn" id="btnDelete">Delete</button>
+      <button class="btn" id="btnExport">Export</button>
+      <button class="btn" id="btnImport">Import</button>
+      <button class="btn" id="btnReset">Reset</button>
+      <input type="file" id="fileImport" accept="application/json" hidden>
+    </div>
+  </div>
+  <nav role="tablist" aria-label="Calculator mode">
+    <button role="tab" data-tab="single" aria-selected="true">Single Run</button>
+    <button role="tab" data-tab="series" aria-selected="false">Staged Run</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ========== INPUTS ========== -->
+  <aside id="asideSingle">
+    <div class="panel">
+      <h2>Inputs</h2>
+      <div class="body">
+        <div class="field">
+          <label for="initial">Initial investment</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="initial" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="contrib">Contribution each period</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="contrib" type="text" inputmode="decimal" data-money></div>
+        </div>
+        <div class="field">
+          <label for="period">Contribution period</label>
+          <select id="period">
+            <option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option>
+            <option>Quarterly</option><option>Annually</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="growth">Contribution growth</label>
+            <div class="inputwrap"><input id="growth" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="years">Time period</label>
+            <div class="inputwrap"><input id="years" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">yrs</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="nominal">Rate of return</label>
+            <div class="inputwrap"><input id="nominal" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="inflation">Inflation</label>
+            <div class="inputwrap"><input id="inflation" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="volatility">Volatility</label>
+          <div class="inputwrap"><input id="volatility" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          <div class="hint">Year-to-year swing in returns, used only by Monte Carlo.
+            Broad stock funds have run near 15&ndash;18%, balanced portfolios nearer 8&ndash;12%.</div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="withdrawal">Withdrawal rate</label>
+            <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="taxrate">Effective Tax Rate</label>
+            <div class="inputwrap"><input id="taxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="derived">
+          <div><span>Real rate of return</span><span class="num" id="dRealRate"></span></div>
+          <div><span>Periods per year</span><span class="num" id="dPPY"></span></div>
+          <div><span>Periodic rate</span><span class="num" id="dPeriodic"></span></div>
+          <div><span>Periods modelled</span><span class="num" id="dPeriods"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== SERIES GLOBALS ========== -->
+  <aside id="asideSeries" hidden>
+    <div class="panel">
+      <h2>Applies to the whole run</h2>
+      <div class="body">
+        <div class="field">
+          <label for="gInitial">Initial investment</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="gInitial" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="gInflation">Inflation</label>
+            <div class="inputwrap"><input id="gInflation" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="gWithdrawal">Withdrawal rate</label>
+            <div class="inputwrap"><input id="gWithdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="gTaxrate">Effective Tax Rate</label>
+          <div class="inputwrap"><input id="gTaxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+        </div>
+        <div class="field">
+          <label for="gTarget">Target, inflation adjusted</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="gTarget" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="hint">The portfolio you're aiming for, in today's money.
+            Used for the Monte Carlo success rate.</div>
+        </div>
+        <div class="derived">
+          <div><span>Stages</span><span class="num" id="gStages"></span></div>
+          <div><span>Total horizon</span><span class="num" id="gTotalYears"></span></div>
+          <div><span>Total contributed</span><span class="num" id="gTotalContrib"></span></div>
+        </div>
+        <div class="hint" style="margin-top:10px">Contribution, schedule, growth and
+          rate of return are set per stage. Each stage picks up where the last one ended.</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== RESULTS ========== -->
+  <div class="stack" id="tab-single">
+
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Future value</div>
+          <div class="v" id="rFV">—</div>
+          <div class="note" id="rFVnote"></div>
+        </div>
+        <div>
+          <div class="k">Inflation adjusted</div>
+          <div class="v" id="rFVreal">—</div>
+          <div class="note" id="rFVrealnote"></div>
+        </div>
+        <div>
+          <div class="k">After-tax income, per month</div>
+          <div class="v gold" id="rMonthly">—</div>
+          <div class="note">Inflation adjusted, first year of retirement</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Amount invested</span><span class="v" id="rInvested"></span></div>
+            <div class="kv"><span class="k">Growth</span><span class="v pos" id="rGrowth"></span></div>
+            <div class="kv"><span class="k">Total contributions</span><span class="v" id="rContribs"></span></div>
+            <div class="kv"><span class="k">Final contribution</span><span class="v" id="rLastContrib"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="rWd"></span></div>
+            <div class="kv"><span class="k">Annual withdrawal, inflation adjusted</span><span class="v" id="rWdReal"></span></div>
+            <div class="kv"><span class="k">After tax, per year</span><span class="v" id="rAfterTax"></span></div>
+            <div class="kv"><span class="k">After tax, per month</span><span class="v" id="rAfterTaxMo"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== GOAL SOLVE ========== -->
+    <div class="panel">
+      <h2>Work backwards from a target</h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="field">
+              <label for="solveFor">Solve for</label>
+              <select id="solveFor">
+                <option>After-Tax Withdrawal</option>
+                <option>Portfolio Value</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="target">Target, inflation adjusted</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="target" type="text" inputmode="decimal" data-money></div>
+              <div class="hint" id="targetHint"></div>
+            </div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Portfolio needed, inflation adjusted</span><span class="v" id="sPortToday"></span></div>
+            <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="sPays"></span></div>
+            <div class="kv"><span class="k">Portfolio needed at retirement</span><span class="v" id="sPortFuture"></span></div>
+            <div class="kv"><span class="k">Your initial investment grows to</span><span class="v" id="sInitGrows"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="solveopts">
+        <div class="solveopt">
+          <div class="optlabel">Option 1 &middot; Change your contribution</div>
+          <div class="v gold" id="sPerPeriod">—</div>
+          <div class="note" id="sPerPeriodNote"></div>
+          <div class="kv"><span class="k">Per year</span><span class="v" id="sPerYear"></span></div>
+          <div class="kv"><span class="k">Change from current</span><span class="v" id="sChange"></span></div>
+          <button class="btn primary" id="btnApply">Use this contribution</button>
+        </div>
+        <div class="solveopt">
+          <div class="optlabel">Option 2 &middot; Change your timeline</div>
+          <div class="v gold" id="sYears">—</div>
+          <div class="note" id="sYearsNote"></div>
+          <div class="kv"><span class="k">Your plan now</span><span class="v" id="sYearsNow"></span></div>
+          <div class="kv"><span class="k">Difference</span><span class="v" id="sYearsDiff"></span></div>
+          <button class="btn primary" id="btnApplyYears">Use this timeline</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CHART ========== -->
+    <div class="panel">
+      <h2>Balance over time, inflation adjusted
+        <span class="h2ctrl">
+          <span class="seg" id="segSingle">
+            <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="mc">Monte Carlo</button>
+          </span>
+          <span class="modeopt" id="optBand">
+            <span class="inputwrap" style="width:96px"><span class="affix">±</span><input id="band" type="text" inputmode="decimal" data-num data-step="0.5" min="0" value="2" data-nonneg aria-label="Return comparison band, percent"><span class="affix">%</span></span>
+          </span>
+          <span class="modeopt" id="optMC" hidden>
+            <span class="inputwrap" style="width:104px"><input id="trials" type="text" inputmode="decimal" data-num data-step="500" min="0" value="1000" data-nonneg aria-label="Number of trials"><span class="affix">runs</span></span>
+            <button class="btn mini" type="button" id="btnReroll">Re-roll</button>
+          </span>
+        </span>
+      </h2>
+      <div class="chartwrap" id="chartWrap">
+        <svg id="chart" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected inflation-adjusted balance at three rates of return"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="mcnote" id="mcNote" hidden></div>
+    </div>
+
+    <!-- ========== YEAR TABLE ========== -->
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="yearTable">
+          <thead><tr>
+            <th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th>
+            <th>End balance</th><th>Inflation adj.</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========== CONTRIBUTION CONVERTER ========== -->
+    <div class="panel">
+      <h2>Contribution Converter</h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="field">
+              <label for="convAmt">Amount</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="convAmt" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="convPeriod">Paid</label>
+              <select id="convPeriod">
+                <option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option>
+                <option>Quarterly</option><option>Annually</option>
+              </select>
+            </div>
+            <div class="hint">Tap Use on any row to send that amount and frequency
+              to the inputs on the left.</div>
+          </div>
+          <div>
+            <div id="convOut"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== INFLATION HELPER ========== -->
+    <div class="panel">
+      <h2>What inflation does to a number<span class="h2note" id="inflNote"></span></h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="field"><label for="tPV">Amount today</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="tPV" type="text" inputmode="decimal" data-money value="1000"></div></div>
+            <div class="field"><label for="tPVYears">Years from now</label>
+              <div class="inputwrap"><input id="tPVYears" type="text" inputmode="decimal" data-num data-step="1" value="8"><span class="affix">yrs</span></div></div>
+            <div class="kv total"><span class="k">Costs then</span><span class="v" id="tFVout"></span></div>
+          </div>
+          <div>
+            <div class="field"><label for="tFV">Amount in the future</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="tFV" type="text" inputmode="decimal" data-money value="1000"></div></div>
+            <div class="field"><label for="tFVYears">Years from now</label>
+              <div class="inputwrap"><input id="tFVYears" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">yrs</span></div></div>
+            <div class="kv total"><span class="k">Worth today</span><span class="v" id="tPVout"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== NOTES ========== -->
+    <div class="panel">
+      <h2>How this is calculated</h2>
+      <div class="body">
+        <ul class="note-list">
+          <li>Contributions land at the end of each period.</li>
+          <li>The annual rate of return is converted to an equivalent periodic rate, so money added during the year earns a partial year of growth.</li>
+          <li>Contribution growth is applied once per year, on the anniversary.</li>
+          <li>Inflation-adjusted figures state what the money would be worth in today's spending power.</li>
+          <li>The withdrawal shown is the first year of retirement.</li>
+          <li>A partial final period is dropped rather than counted whole.</li>
+          <li>The target solve uses a closed-form annuity, so its answer can sit a fraction of a percent off the period-by-period projection above.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== SERIES PANE ========== -->
+  <div class="stack" id="tab-series" hidden>
+
+    <div class="panel">
+      <h2>Stages
+        <span class="h2ctrl">
+          <button class="btn" id="btnAddStage" type="button">Add stage</button>
+        </span>
+      </h2>
+      <div class="body">
+        <div id="stageList"></div>
+        <div class="hint" id="stageEmpty" style="display:none">
+          No stages yet. Add one to start building a run.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Future value</div>
+          <div class="v" id="xFV">—</div>
+          <div class="note" id="xFVnote"></div>
+        </div>
+        <div>
+          <div class="k">Inflation adjusted</div>
+          <div class="v" id="xFVreal">—</div>
+          <div class="note" id="xFVrealnote"></div>
+        </div>
+        <div>
+          <div class="k">After-tax income, per month</div>
+          <div class="v gold" id="xMonthly">—</div>
+          <div class="note">Inflation adjusted, first year of retirement</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Amount invested</span><span class="v" id="xInvested"></span></div>
+            <div class="kv"><span class="k">Growth</span><span class="v pos" id="xGrowth"></span></div>
+            <div class="kv"><span class="k">Total contributions</span><span class="v" id="xContribs"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="xWd"></span></div>
+            <div class="kv"><span class="k">Annual withdrawal, inflation adjusted</span><span class="v" id="xWdReal"></span></div>
+            <div class="kv"><span class="k">After tax, per year</span><span class="v" id="xAfterTax"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Balance over time, inflation adjusted
+        <span class="h2ctrl">
+          <span class="seg" id="segSeries">
+            <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="mc">Monte Carlo</button>
+          </span>
+          <span class="modeopt" id="optBandS">
+            <span class="inputwrap" style="width:96px"><span class="affix">±</span><input id="bandS" type="text" inputmode="decimal" data-num data-step="0.5" min="0" value="2" data-nonneg aria-label="Return comparison band, percent"><span class="affix">%</span></span>
+          </span>
+          <span class="modeopt" id="optMCS" hidden>
+            <span class="inputwrap" style="width:104px"><input id="trialsS" type="text" inputmode="decimal" data-num data-step="500" min="0" value="1000" data-nonneg aria-label="Number of trials"><span class="affix">runs</span></span>
+            <button class="btn mini" type="button" id="btnRerollS">Re-roll</button>
+          </span>
+        </span>
+      </h2>
+      <div class="chartwrap" id="chartWrapS">
+        <svg id="chartS" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected inflation-adjusted balance across stages"></svg>
+        <div class="tip" id="tipS"></div>
+      </div>
+      <div class="legend" id="legendS"></div>
+      <div class="mcnote" id="mcNoteS" hidden></div>
+    </div>
+
+    <div class="panel">
+      <h2>Stage by stage</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="stageTable">
+          <thead><tr>
+            <th>Stage</th><th>Years</th><th>Return</th><th>Start balance</th>
+            <th>Contributions</th><th>Growth</th><th>End balance</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="xYearTable">
+          <thead><tr>
+            <th>Year</th><th>Stage</th><th>Start balance</th><th>Contributions</th>
+            <th>Growth</th><th>End balance</th><th>Inflation adj.</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===MATH START===
+const PPY = {"Weekly":52,"Bi-Weekly":26,"Monthly":12,"Quarterly":4,"Annually":1};
+
+// Period-by-period engine. Contributions post at the end of each period; the
+// contribution amount steps up once per year. A partial final period is dropped.
+function project(p){
+  const ppy = PPY[p.period];
+  const n = Math.floor(p.years * ppy);
+  const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
+  let bal = p.initial, contribTotal = 0, lastContrib = 0;
+  const years = [];
+  let yearStart = p.initial, yearContrib = 0, curYear = 1;
+  for (let i = 1; i <= n; i++){
+    const yearNo = Math.ceil(i / ppy);
+    if (yearNo !== curYear){
+      years.push({year:curYear, start:yearStart, contrib:yearContrib,
+                  growth:bal - yearStart - yearContrib, end:bal});
+      yearStart = bal; yearContrib = 0; curYear = yearNo;
+    }
+    const c = p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+    bal = bal * (1 + r) + c;
+    contribTotal += c; yearContrib += c; lastContrib = c;
+  }
+  if (n > 0) years.push({year:curYear, start:yearStart, contrib:yearContrib,
+                         growth:bal - yearStart - yearContrib, end:bal});
+
+  const fv = bal;
+  const invested = p.initial + contribTotal;
+  const inflYears = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
+                    ? p.years : p.inflYears;
+  const deflator = Math.pow(1 + p.inflation, inflYears);
+  const fvReal = fv / deflator;
+  const wd = fv * p.withdrawal;
+  const wdReal = fvReal * p.withdrawal;
+  const afterTax = wdReal * (1 - p.taxRate);
+  return {
+    ppy, periods:n, periodicRate:r, years,
+    fv, invested, growth: fv - invested, contribTotal, lastContrib,
+    inflYears, fvReal, wd, wdReal, afterTax, afterTaxMo: afterTax / 12,
+    realReturn: (1 + p.nominal) / (1 + p.inflation) - 1
+  };
+}
+
+// Closed-form solve: what contribution per period reaches the target?
+function goalSolve(p, solveFor, target){
+  const ppy = PPY[p.period];
+  const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
+  const portToday = solveFor === "After-Tax Withdrawal"
+      ? target / (p.withdrawal * (1 - p.taxRate))
+      : target;
+  const pays = portToday * p.withdrawal * (1 - p.taxRate);
+  const inflYears = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
+                    ? p.years : p.inflYears;
+  const portFuture = portToday * Math.pow(1 + p.inflation, inflYears);
+  const initFactor = Math.pow(1 + p.nominal, p.years);
+  const initGrows = p.initial * initFactor;
+  const growthSum = (p.nominal === p.growth)
+      ? p.years * Math.pow(1 + p.nominal, p.years - 1)
+      : (Math.pow(1 + p.nominal, p.years) - Math.pow(1 + p.growth, p.years)) / (p.nominal - p.growth);
+  const annuity = (p.nominal === 0)
+      ? ppy * (p.growth === 0 ? p.years : (Math.pow(1 + p.growth, p.years) - 1) / p.growth)
+      : (p.nominal / r) * growthSum;
+  const perPeriod = portFuture <= initGrows ? 0 : (portFuture - initGrows) / annuity;
+  return {ppy, periodicRate:r, portToday, pays, portFuture, initFactor, initGrows,
+          annuity, perPeriod, perYear: perPeriod * ppy, change: perPeriod - p.contrib};
+}
+// How long until the plan reaches the target? Walks period by period using the
+// same engine as the projection, so the answer agrees with it rather than
+// coming from a separate closed form. When the inflation window is left blank
+// the target itself recedes as the timeline stretches, which this accounts for.
+function solveYears(p, portToday, capYears){
+  const ppy = PPY[p.period];
+  const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
+  const cap = Math.round((capYears || 100) * ppy);
+  const fixed = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
+                ? null : p.inflYears;
+  const defl = yrs => Math.pow(1 + p.inflation, fixed === null ? yrs : fixed);
+
+  let bal = p.initial;
+  if (bal / defl(0) >= portToday) return {reached:true, years:0, periods:0, real:bal};
+  for (let i = 1; i <= cap; i++){
+    const yearNo = Math.ceil(i / ppy);
+    bal = bal * (1 + r) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+    const real = bal / defl(i / ppy);
+    if (real >= portToday){
+      // Round up to the displayed precision so re-running at this value still
+      // clears the target instead of landing one period short.
+      const exact = i / ppy;
+      return {reached:true, years: Math.ceil(exact * 100) / 100, exact:exact,
+              periods:i, real:real};
+    }
+  }
+  return {reached:false, years:cap / ppy, periods:cap, real: bal / defl(cap / ppy)};
+}
+// A run of consecutive stages. Each stage keeps its own contribution, schedule,
+// growth and rate of return; the closing balance of one becomes the opening
+// balance of the next. Contribution growth restarts each stage, since each
+// stage states its own starting contribution.
+function projectSeries(g, stages){
+  let bal = g.initial, contribTotal = 0, elapsed = 0;
+  const rows = [], summary = [];
+  for (let si = 0; si < stages.length; si++){
+    const st = stages[si];
+    const ppy = PPY[st.period];
+    const n = Math.floor(st.years * ppy);
+    const r = Math.pow(1 + st.nominal, 1 / ppy) - 1;
+    const stageStart = bal;
+    let stageContrib = 0, yearStart = bal, yearContrib = 0, curYear = 1;
+    for (let i = 1; i <= n; i++){
+      const yearNo = Math.ceil(i / ppy);
+      if (yearNo !== curYear){
+        rows.push({stage:si + 1, endYear: elapsed + curYear, start:yearStart,
+                   contrib:yearContrib, growth: bal - yearStart - yearContrib, end:bal});
+        yearStart = bal; yearContrib = 0; curYear = yearNo;
+      }
+      const c = st.contrib * Math.pow(1 + st.growth, yearNo - 1);
+      bal = bal * (1 + r) + c;
+      contribTotal += c; stageContrib += c; yearContrib += c;
+    }
+    if (n > 0){
+      // a fractional stage ends partway through its final year
+      rows.push({stage:si + 1, endYear: elapsed + Math.min(curYear, st.years),
+                 start:yearStart, contrib:yearContrib,
+                 growth: bal - yearStart - yearContrib, end:bal});
+    }
+    elapsed += st.years;
+    summary.push({stage:si + 1, years:st.years, endYear:elapsed, start:stageStart,
+                  contrib:stageContrib, growth: bal - stageStart - stageContrib,
+                  end:bal, nominal:st.nominal, periods:n});
+  }
+
+  const totalYears = elapsed;
+  const inflY = (g.inflYears === null || g.inflYears === undefined || g.inflYears === "")
+                ? totalYears : g.inflYears;
+  const fvReal = bal / Math.pow(1 + g.inflation, inflY);
+  const wdReal = fvReal * g.withdrawal;
+  const afterTax = wdReal * (1 - g.taxRate);
+  return {
+    rows, summary, totalYears, inflYears:inflY,
+    fv:bal, invested: g.initial + contribTotal, contribTotal,
+    growth: bal - g.initial - contribTotal,
+    fvReal, wd: bal * g.withdrawal, wdReal, afterTax, afterTaxMo: afterTax / 12
+  };
+}
+/* ---------- Monte Carlo ---------- */
+
+// Seeded so a chart stays put while you talk about it. Re-roll changes the seed.
+function mulberry32(a){
+  return function(){
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gaussFrom(rng){
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+/* Returns are drawn lognormally, so a draw can never lose more than the whole
+   balance and compounding stays well behaved. Parameters are chosen so the
+   expected annual return equals the rate entered, which means volatility 0
+   reproduces the deterministic projection exactly. */
+function lognormalParams(mu, sigma, ppy){
+  const s2 = Math.log(1 + (sigma * sigma) / Math.pow(1 + mu, 2));
+  return {m: (Math.log(1 + mu) - s2 / 2) / ppy, s: Math.sqrt(s2 / ppy)};
+}
+function pctl(sorted, q){
+  const n = sorted.length;
+  if (!n) return 0;
+  const idx = (n - 1) * q, lo = Math.floor(idx), hi = Math.ceil(idx);
+  return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+/* Same stage chain as projectSeries, but each period's growth is drawn at
+   random. Samples at exactly the year boundaries projectSeries reports, so the
+   percentile fan lines up with the deterministic curve. */
+function monteCarlo(g, stages, trials, seed){
+  const meta = stages.map(st => {
+    const ppy = PPY[st.period];
+    const lp = lognormalParams(st.nominal, st.vol || 0, ppy);
+    return {ppy, n: Math.floor(st.years * ppy), m: lp.m, s: lp.s, st};
+  });
+  const marks = [];
+  let elapsed = 0;
+  meta.forEach(mt => {
+    let curYear = 1;
+    for (let i = 1; i <= mt.n; i++){
+      const y = Math.ceil(i / mt.ppy);
+      if (y !== curYear){ marks.push(elapsed + curYear); curYear = y; }
+    }
+    if (mt.n > 0) marks.push(elapsed + Math.min(curYear, mt.st.years));
+    elapsed += mt.st.years;
+  });
+  const totalYears = elapsed, M = marks.length;
+  if (!M) return {marks:[], bands:[], finals:[], totalYears:0, trials:0, median:0};
+
+  const paths = [];
+  for (let k = 0; k < M; k++) paths.push(new Float64Array(trials));
+  const finals = new Float64Array(trials);
+  const rng = mulberry32(seed >>> 0);
+
+  for (let t = 0; t < trials; t++){
+    let bal = g.initial, mi = 0;
+    for (let si = 0; si < meta.length; si++){
+      const mt = meta[si], st = mt.st;
+      let curYear = 1;
+      for (let i = 1; i <= mt.n; i++){
+        const y = Math.ceil(i / mt.ppy);
+        if (y !== curYear){ paths[mi++][t] = bal; curYear = y; }
+        bal = bal * Math.exp(mt.m + mt.s * gaussFrom(rng))
+            + st.contrib * Math.pow(1 + st.growth, y - 1);
+      }
+      if (mt.n > 0) paths[mi++][t] = bal;
+    }
+    finals[t] = bal;
+  }
+
+  const bands = [];
+  for (let k = 0; k < M; k++){
+    const sorted = paths[k].slice().sort();
+    const d = Math.pow(1 + g.inflation, marks[k]);
+    bands.push({year: marks[k],
+      p10: pctl(sorted, .10) / d, p25: pctl(sorted, .25) / d,
+      p50: pctl(sorted, .50) / d, p75: pctl(sorted, .75) / d,
+      p90: pctl(sorted, .90) / d});
+  }
+  const fd = Math.pow(1 + g.inflation, totalYears);
+  const finalsReal = finals.slice().sort();
+  for (let i = 0; i < finalsReal.length; i++) finalsReal[i] /= fd;
+  return {marks, bands, finals:finalsReal, totalYears, trials,
+          median: pctl(finalsReal, .5)};
+}
+// ===MATH END===
+
+if (typeof module !== "undefined")
+  module.exports = {PPY, project, goalSolve, solveYears, projectSeries,
+                    monteCarlo, lognormalParams, mulberry32};
+</script>
+
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const money = function(v, d){
+  const dp = (d === undefined || d === null) ? 0 : d;
+  return (v < 0 ? "-" : "") + "$" + Math.abs(v).toLocaleString("en-US",
+    {minimumFractionDigits: dp, maximumFractionDigits: dp});
+};
+const pctStr = function(v, d){
+  return (v * 100).toFixed((d === undefined || d === null) ? 2 : d) + "%";
+};
+
+/* Headline figures share a fixed-width column, so a long result overruns it at
+   the base size. Step the type down as the string gets longer. */
+function setBig(id, text){
+  const el = $(id);
+  el.textContent = text;
+  const n = text.length;
+  const size = n <= 11 ? 29
+             : n <= 13 ? 26
+             : n <= 15 ? 23
+             : n <= 17 ? 20
+             : n <= 20 ? 17 : 15;
+  el.style.fontSize = size + "px";
+}
+
+// Starting point when nothing is saved.
+const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.075,
+  inflation:.025, years:30, withdrawal:.04, taxRate:.10, vol:.15};
+
+// v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
+const KEY = "investment-calculator.v2";
+let memory = null;
+const store = {
+  read(){
+    try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); }
+    catch(e){}
+    return memory;
+  },
+  write(v){
+    memory = v;
+    try { localStorage.setItem(KEY, JSON.stringify(v)); } catch(e){}
+  }
+};
+let scenarios = store.read() || [];
+
+let toastTimer;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/* ---------- input plumbing ---------- */
+const parseNum = s => { const v = parseFloat(String(s).replace(/,/g, "")); return isNaN(v) ? 0 : v; };
+const num = id => parseNum($(id).value);
+const rate = id => num(id) / 100;
+const blankOrNum = id => $(id).value.trim() === "" ? "" : parseNum($(id).value);
+
+/* Group the integer part with commas, leave a trailing "." or decimals alone
+   so typing "1250.5" isn't fought mid-keystroke. */
+function groupDigits(raw, noNeg){
+  let s = String(raw).replace(/[^0-9.\-]/g, "");
+  const neg = !noNeg && s.startsWith("-");
+  s = s.replace(/-/g, "");
+  const dot = s.indexOf(".");
+  let int = dot === -1 ? s : s.slice(0, dot);
+  let dec = dot === -1 ? "" : "." + s.slice(dot + 1).replace(/\./g, "");
+  int = int.replace(/^0+(?=\d)/, "");
+  if (int) int = int.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return (neg ? "-" : "") + int + dec;
+}
+/* Keeps a partial entry usable while typing: a lone "-", a trailing ".", or an
+   empty field all pass through untouched. */
+function sanitizeNumeric(v, noNeg){
+  let s = String(v).replace(/[^0-9.\-]/g, "");
+  const neg = !noNeg && s.indexOf("-") === 0;
+  s = s.replace(/-/g, "");
+  const i = s.indexOf(".");
+  if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, "");
+  return (neg ? "-" : "") + s;
+}
+function formatMoneyField(el){
+  const before = el.value;
+  const caret = el.selectionStart;
+  const digitsBefore = before.slice(0, caret).replace(/[^0-9.\-]/g, "").length;
+  const after = groupDigits(before, el.hasAttribute("data-nonneg"));
+  if (after === before) return;
+  el.value = after;
+  let seen = 0, pos = after.length;
+  for (let i = 0; i < after.length; i++){
+    if (/[0-9.\-]/.test(after[i])) seen++;
+    if (seen === digitsBefore){ pos = i + 1; break; }
+  }
+  if (digitsBefore === 0) pos = 0;
+  el.setSelectionRange(pos, pos);
+}
+/* Runs over a subtree so stage cards added later get the same behaviour. The
+   flags stop a second pass from double-binding fields that already have it. */
+function initFields(root){
+  root.querySelectorAll("[data-money]").forEach(el => {
+    if (!el._moneyBound){
+      el._moneyBound = true;
+      el.addEventListener("input", () => formatMoneyField(el));
+      el.addEventListener("blur", () => {
+        el.value = groupDigits(el.value, el.hasAttribute("data-nonneg"));
+      });
+    }
+    el.value = groupDigits(el.value, el.hasAttribute("data-nonneg"));
+  });
+
+  /* Fields where a negative is meaningless. Block the key, and strip it on
+     paste or drop. Bound before the render handlers so the value is already
+     clean by the time anything reads it. */
+  root.querySelectorAll("[data-nonneg]").forEach(el => {
+    if (el._negBound) return;
+    el._negBound = true;
+    el.addEventListener("keydown", e => {
+      if (e.key === "-" || e.key === "Subtract") e.preventDefault();
+    });
+    el.addEventListener("input", () => {
+      if (el.value.indexOf("-") !== -1){
+        let caret = null;
+        try { caret = el.selectionStart; } catch(err){}
+        el.value = el.value.replace(/-/g, "");
+        if (caret !== null){
+          try { el.setSelectionRange(Math.max(0, caret - 1), Math.max(0, caret - 1)); } catch(err){}
+        }
+      }
+    });
+  });
+  /* Plain numeric fields. They're text inputs with inputmode="decimal" so phones
+     raise the full keypad instead of the punctuation keyboard, which means the
+     filtering and arrow-key stepping that type=number gave us are done here. */
+  root.querySelectorAll("[data-num]").forEach(el => {
+    if (el._numBound) return;
+    el._numBound = true;
+    const noNeg = el.hasAttribute("data-nonneg");
+    el.addEventListener("input", () => {
+      const clean = sanitizeNumeric(el.value, noNeg);
+      if (clean !== el.value){
+        let caret = null;
+        try { caret = el.selectionStart; } catch(err){}
+        el.value = clean;
+        if (caret !== null){
+          const p = Math.max(0, caret - 1);
+          try { el.setSelectionRange(p, p); } catch(err){}
+        }
+      }
+    });
+    el.addEventListener("keydown", e => {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault();
+      const step = parseFloat(el.getAttribute("data-step")) || 1;
+      let v = parseNum(el.value) + (e.key === "ArrowUp" ? step : -step);
+      if (noNeg) v = Math.max(0, v);
+      el.value = String(Math.round(v * 1e6) / 1e6);
+      el.dispatchEvent(new Event("input", {bubbles:true}));
+    });
+  });
+
+  /* Focusing a field selects what's there, so typing replaces it. Saves a lot of
+     fumbling on a phone. The mouseup guard stops the click that gave focus from
+     immediately collapsing that selection back to a caret. */
+  root.querySelectorAll("[data-money],[data-num]").forEach(el => {
+    if (el._selBound) return;
+    el._selBound = true;
+    let armed = false;
+    el.addEventListener("focus", () => {
+      armed = true;
+      setTimeout(() => {
+        if (document.activeElement === el){ try { el.select(); } catch(err){} }
+      }, 0);
+    });
+    el.addEventListener("mouseup", e => { if (armed){ e.preventDefault(); armed = false; } });
+    el.addEventListener("blur", () => { armed = false; });
+  });
+}
+initFields(document);
+
+function readInputs(){
+  return {
+    initial: num("initial"), contrib: num("contrib"), period: $("period").value,
+    growth: rate("growth"), nominal: rate("nominal"), inflation: rate("inflation"),
+    years: num("years"),
+    withdrawal: rate("withdrawal"), taxRate: rate("taxrate"), vol: rate("volatility")
+  };
+}
+function writeInputs(s){
+  $("initial").value = groupDigits(s.initial, true); $("contrib").value = groupDigits(s.contrib);
+  $("period").value = s.period; $("growth").value = +(s.growth * 100).toFixed(6);
+  $("nominal").value = +(s.nominal * 100).toFixed(6);
+  $("inflation").value = +(s.inflation * 100).toFixed(6);
+  $("years").value = s.years;
+  $("withdrawal").value = +(s.withdrawal * 100).toFixed(6);
+  $("taxrate").value = +(s.taxRate * 100).toFixed(6);
+  $("volatility").value = +((s.vol == null ? .15 : s.vol) * 100).toFixed(6);
+  // a hand-edited or imported file could carry a negative into one of these
+  document.querySelectorAll("[data-nonneg]").forEach(el => {
+    if (String(el.value).indexOf("-") !== -1) el.value = el.value.replace(/-/g, "");
+  });
+}
+
+/* ---------- render ---------- */
+let lastRun = null;
+function renderProjection(){
+  const p = readInputs();
+  const R = project(p);
+  lastRun = R;
+
+  $("dRealRate").textContent = pctStr(R.realReturn);
+  $("dPPY").textContent = R.ppy;
+  $("dPeriodic").textContent = pctStr(R.periodicRate, 4);
+  $("dPeriods").textContent = R.periods.toLocaleString();
+
+  setBig("rFV", money(R.fv));
+  $("rFVnote").textContent = "After " + p.years + " years at " + pctStr(p.nominal, 2);
+  setBig("rFVreal", money(R.fvReal));
+  $("rFVrealnote").textContent = "Inflation of " + pctStr(p.inflation, 2) + " over "
+    + R.inflYears + " years";
+  setBig("rMonthly", money(R.afterTaxMo));
+
+  $("rInvested").textContent = money(R.invested);
+  $("rGrowth").textContent = money(R.growth);
+  $("rContribs").textContent = money(R.contribTotal);
+  $("rLastContrib").textContent = money(R.lastContrib, 2) + " per period";
+  $("rWd").textContent = money(R.wd);
+  $("rWdReal").textContent = money(R.wdReal);
+  $("rAfterTax").textContent = money(R.afterTax);
+  $("rAfterTaxMo").textContent = money(R.afterTaxMo);
+
+  const tb = $("yearTable").querySelector("tbody");
+  tb.innerHTML = R.years.map(y =>
+    "<tr><td>" + y.year + "</td><td>" + money(y.start) + "</td><td>" + money(y.contrib) +
+    "</td><td class='pos'>" + money(y.growth) + "</td><td>" + money(y.end) +
+    "</td><td>" + money(y.end / Math.pow(1 + p.inflation, y.year)) + "</td></tr>").join("");
+
+  drawChart(R, p);
+  renderSolve();
+}
+
+/* ---------- charts ---------- */
+let chartPoints = [];
+let mcSeed = 20260902;
+const chartMode = {single:"band", series:"band"};
+
+const NS = "http://www.w3.org/2000/svg";
+const svgEl = (n, at) => { const e = document.createElementNS(NS, n);
+  for (const k in at) e.setAttribute(k, at[k]); return e; };
+const swatch = (c, t) => "<span><i style='background:" + c + "'></i>" + t + "</span>";
+
+/* Shared painter. Both tabs hand it the same shape of data, so the rate band
+   and the Monte Carlo fan render through one code path. */
+function paintChart(svgId, pts, maxX, mode, stageMarks){
+  const svg = $(svgId);
+  const narrow = window.innerWidth < 640;
+  const W = narrow ? 470 : 900, H = narrow ? 400 : 340;
+  const L = narrow ? 60 : 78, Rp = narrow ? 12 : 14;
+  const T = narrow ? 12 : 14, B = narrow ? 34 : 30;
+  const fs = narrow ? 15 : 11, sw = narrow ? 1.7 : 1;
+  const pw = W - L - Rp, ph = H - T - B;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.innerHTML = "";
+  if (!pts || !pts.length) return null;
+
+  const vals = [];
+  pts.forEach(a => {
+    vals.push(a.base);
+    if (a.hi != null) vals.push(a.hi);
+    if (a.lo != null) vals.push(a.lo);
+    if (a.det != null) vals.push(a.det);
+  });
+  const maxY = Math.max.apply(null, vals) * 1.06 || 1;
+  const minY = Math.min(0, Math.min.apply(null, vals));
+  const span = (maxY - minY) || 1;
+  const X = y => L + (y / (maxX || 1)) * pw;
+  const Y = v => T + ph - ((v - minY) / span) * ph;
+
+  const defs = svgEl("defs", {});
+  [["fanOuter", "#4fbf95", .16, .02], ["fanInner", "#4fbf95", .30, .06],
+   ["bandFill", "#4fbf95", .20, .05]].forEach(g => {
+    const grad = svgEl("linearGradient", {id:g[0] + svgId, x1:0, y1:0, x2:0, y2:1});
+    grad.appendChild(svgEl("stop", {offset:"0%", "stop-color":g[1], "stop-opacity":g[2]}));
+    grad.appendChild(svgEl("stop", {offset:"100%", "stop-color":g[1], "stop-opacity":g[3]}));
+    defs.appendChild(grad);
+  });
+  svg.appendChild(defs);
+
+  const fmtAxis = v => {
+    const a = Math.abs(v);
+    return (v < 0 ? "-$" : "$") + (a >= 1e6 ? (a/1e6).toFixed(1) + "M"
+         : a >= 1e3 ? Math.round(a/1000) + "k" : Math.round(a));
+  };
+  for (let i = 0; i <= 4; i++){
+    const v = minY + span * i / 4, y = Y(v);
+    svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:y, y2:y, stroke:"#1c272e",
+      "stroke-width":1 * sw}));
+    const t = svgEl("text", {x:L - 8, y:y + fs/3, "text-anchor":"end", "font-size":fs,
+      fill:"#5f7583", "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    t.textContent = fmtAxis(v); svg.appendChild(t);
+  }
+  const step = Math.max(1, Math.ceil(maxX / (narrow ? 6 : 12)));
+  for (let y = 0; y <= maxX; y += step){
+    const t = svgEl("text", {x:X(y), y:H - 10, "text-anchor":"middle", "font-size":fs,
+      fill:"#5f7583", "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    t.textContent = y; svg.appendChild(t);
+  }
+
+  const line = f => pts.map((a, i) => (i ? "L" : "M") + X(a.year) + " " + Y(f(a))).join(" ");
+  const ribbon = (top, bot) =>
+    pts.map((a, i) => (i ? "L" : "M") + X(a.year) + " " + Y(top(a))).join(" ") + " " +
+    pts.slice().reverse().map(a => "L" + X(a.year) + " " + Y(bot(a))).join(" ") + " Z";
+
+  if (mode === "mc"){
+    svg.appendChild(svgEl("path", {d:ribbon(a => a.hi, a => a.lo), fill:"url(#fanOuter" + svgId + ")"}));
+    svg.appendChild(svgEl("path", {d:ribbon(a => a.p75, a => a.p25), fill:"url(#fanInner" + svgId + ")"}));
+  } else {
+    svg.appendChild(svgEl("path", {d:ribbon(a => a.hi, a => a.lo), fill:"url(#bandFill" + svgId + ")"}));
+  }
+
+  (stageMarks || []).forEach(m => {
+    const sx = X(m.year);
+    svg.appendChild(svgEl("line", {x1:sx, x2:sx, y1:T, y2:T + ph, stroke:"#4a5f6b",
+      "stroke-width":1 * sw, "stroke-dasharray":"4 4"}));
+    const lab = svgEl("text", {x:sx + 4, y:T + fs, "font-size":fs * .92, fill:"#5f7583",
+      "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    lab.textContent = m.label; svg.appendChild(lab);
+  });
+
+  if (mode === "mc"){
+    if (pts[0].det != null)
+      svg.appendChild(svgEl("path", {d:line(a => a.det), fill:"none", stroke:"#7d9fd6",
+        "stroke-width":1.6 * sw, "stroke-dasharray":"5 4"}));
+    svg.appendChild(svgEl("path", {d:line(a => a.base), fill:"none", stroke:"#e9b872",
+      "stroke-width":2.6 * sw, "stroke-linejoin":"round"}));
+  } else {
+    svg.appendChild(svgEl("path", {d:line(a => a.hi), fill:"none", stroke:"#4fbf95",
+      "stroke-width":1.8 * sw, "stroke-linejoin":"round", opacity:.9}));
+    svg.appendChild(svgEl("path", {d:line(a => a.lo), fill:"none", stroke:"#e2795f",
+      "stroke-width":1.8 * sw, "stroke-linejoin":"round", opacity:.9}));
+    svg.appendChild(svgEl("path", {d:line(a => a.base), fill:"none", stroke:"#e9b872",
+      "stroke-width":2.6 * sw, "stroke-linejoin":"round"}));
+  }
+
+  const hover = svgEl("line", {x1:0, x2:0, y1:T, y2:T + ph, stroke:"#e9b872",
+    "stroke-width":1 * sw, opacity:0}); svg.appendChild(hover);
+  const dot = svgEl("circle", {r:4.5 * sw, fill:"#e9b872", stroke:"#0c1114",
+    "stroke-width":2.5 * sw, opacity:0}); svg.appendChild(dot);
+  return {pts, X, Y, hover, dot, maxX, W};
+}
+
+function mcLegend(elId, extra){
+  const parts = [swatch("#4fbf95", "10th\u201390th percentile"),
+                 swatch("#3f9a78", "25th\u201375th"),
+                 swatch("#e9b872", "Median"),
+                 swatch("#7d9fd6", "Without volatility")];
+  if (extra) parts.push(swatch("#4a5f6b", extra));
+  $(elId).innerHTML = parts.join("");
+}
+function mcSummary(noteId, mc, target, label){
+  if (!mc || !mc.finals.length || !(target > 0)){ $(noteId).hidden = true; return; }
+  let hit = 0;
+  for (let i = 0; i < mc.finals.length; i++) if (mc.finals[i] >= target) hit++;
+  const pct = hit / mc.finals.length * 100;
+  $(noteId).hidden = false;
+  $(noteId).innerHTML = "<b" + (pct >= 75 ? "" : " class='warn'") + ">" + pct.toFixed(0) +
+    "%</b> of " + mc.trials.toLocaleString() + " runs reach " + money(target) + " " + label +
+    ". Median outcome <b>" + money(mc.median) + "</b>.";
+}
+function readTrials(id){
+  return Math.max(50, Math.min(20000, Math.round(num(id)) || 1000));
+}
+/* Simulation is the one genuinely expensive step, so keep it off the keystroke path. */
+let mcTimer = null;
+function scheduleMC(fn){ clearTimeout(mcTimer); mcTimer = setTimeout(fn, 160); }
+
+function drawChart(R, p){
+  if (!R || !R.years.length){ chartPoints = paintChart("chart", [], 1, "band", []); return; }
+  const real = (v, yr) => v / Math.pow(1 + p.inflation, yr);
+
+  if (chartMode.single === "mc"){
+    const mc = monteCarlo({initial:p.initial, inflation:p.inflation},
+      [{years:p.years, contrib:p.contrib, period:p.period, growth:p.growth,
+        nominal:p.nominal, vol:p.vol}], readTrials("trials"), mcSeed);
+    const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial,
+                  p25:p.initial, p75:p.initial, det:p.initial}];
+    mc.bands.forEach((b, i) => pts.push({year:b.year, base:b.p50, hi:b.p90, lo:b.p10,
+      p25:b.p25, p75:b.p75,
+      det: R.years[i] ? real(R.years[i].end, R.years[i].year) : b.p50}));
+    chartPoints = paintChart("chart", pts, p.years, "mc", []);
+    mcLegend("legend");
+    const S = goalSolve(p, $("solveFor").value, num("target"));
+    mcSummary("mcNote", mc, S.portToday, "(the portfolio behind your target above)");
+  } else {
+    const band = Math.max(0, num("band")) / 100;
+    const hiR = project(Object.assign({}, p, {nominal: p.nominal + band}));
+    const loR = project(Object.assign({}, p, {nominal: Math.max(-0.99, p.nominal - band)}));
+    const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial}];
+    R.years.forEach((y, i) => pts.push({year:y.year, base: real(y.end, y.year),
+      hi: real(hiR.years[i] ? hiR.years[i].end : y.end, y.year),
+      lo: real(loR.years[i] ? loR.years[i].end : y.end, y.year)}));
+    chartPoints = paintChart("chart", pts, p.years, "band", []);
+    const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
+    $("legend").innerHTML =
+      swatch("#4fbf95", band > 0 ? "At " + pctStr(p.nominal + band, 2) + " (+" + lbl + ")" : "Higher") +
+      swatch("#e9b872", "At " + pctStr(p.nominal, 2) + " (your rate)") +
+      swatch("#e2795f", band > 0 ? "At " + pctStr(Math.max(-0.99, p.nominal - band), 2) + " (\u2212" + lbl + ")" : "Lower");
+    $("mcNote").hidden = true;
+  }
+}
+
+/* One probe routine, reused by both charts. Touch matters here: without it a
+   chart is inert on a phone, since there is no hover. */
+function attachChart(wrapId, svgId, tipId, getState, tipHtml){
+  const wrap = $(wrapId);
+  function probe(clientX, clientY){
+    const st = getState();
+    if (!st || !st.pts) return;
+    const box = $(svgId).getBoundingClientRect();
+    if (!box.width) return;
+    const vx = (clientX - box.left) / box.width * st.W;
+    let best = st.pts[0];
+    for (const a of st.pts)
+      if (Math.abs(st.X(a.year) - vx) < Math.abs(st.X(best.year) - vx)) best = a;
+    st.hover.setAttribute("x1", st.X(best.year));
+    st.hover.setAttribute("x2", st.X(best.year));
+    st.hover.setAttribute("opacity", .4);
+    st.dot.setAttribute("cx", st.X(best.year));
+    st.dot.setAttribute("cy", st.Y(best.base));
+    st.dot.setAttribute("opacity", 1);
+    const tip = $(tipId);
+    tip.innerHTML = tipHtml(best);
+    tip.style.opacity = 1;
+    const wb = wrap.getBoundingClientRect();
+    const tw = tip.offsetWidth || 190, th = tip.offsetHeight || 84;
+    let left = clientX - wb.left + 16;
+    if (left + tw > wb.width - 4) left = clientX - wb.left - tw - 16;
+    left = Math.max(4, Math.min(left, wb.width - tw - 4));
+    let top = clientY - wb.top - th - 14;
+    if (top < 4) top = clientY - wb.top + 18;
+    top = Math.max(4, Math.min(top, wb.height - th - 4));
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  }
+  function clear(){
+    $(tipId).style.opacity = 0;
+    const st = getState();
+    if (st && st.hover){ st.hover.setAttribute("opacity", 0);
+      st.dot.setAttribute("opacity", 0); }
+  }
+  wrap.addEventListener("mousemove", e => probe(e.clientX, e.clientY));
+  wrap.addEventListener("mouseleave", clear);
+  wrap.addEventListener("touchstart", e => {
+    const t = e.touches[0]; if (t) probe(t.clientX, t.clientY);
+  }, {passive:true});
+  wrap.addEventListener("touchmove", e => {
+    const t = e.touches[0]; if (!t) return;
+    // scrubbing along the chart shouldn't scroll the page underneath it
+    e.preventDefault();
+    probe(t.clientX, t.clientY);
+  }, {passive:false});
+  wrap.addEventListener("touchend", () => setTimeout(clear, 2500), {passive:true});
+}
+
+function tipRows(best, mode){
+  const nm = mode === "mc" ? ["90th","Median","10th"] : ["Higher","Your rate","Lower"];
+  return "<br><span style='color:#4fbf95'>" + nm[0] + "</span> <span class='n'>" + money(best.hi) +
+    "</span><br><span style='color:#e9b872'>" + nm[1] + "</span> <span class='n'>" + money(best.base) +
+    "</span><br><span style='color:#e2795f'>" + nm[2] + "</span> <span class='n'>" + money(best.lo) + "</span>";
+}
+attachChart("chartWrap", "chart", "tip", () => chartPoints,
+  best => "<b>Year " + fmtNum(best.year) + "</b>" + tipRows(best, chartMode.single));
+attachChart("chartWrapS", "chartS", "tipS", () => seriesPoints,
+  best => "<b>Year " + fmtNum(best.year) + "</b> <span style='color:#8ba0ac'>&middot; stage " +
+          best.stage + "</span>" + tipRows(best, chartMode.series));
+
+/* ---------- goal solve ---------- */
+function fmtYears(y){
+  const r = Math.round(y * 100) / 100;
+  const txt = (r === Math.floor(r)) ? String(r) : r.toFixed(2);
+  return txt + (r === 1 ? " year" : " years");
+}
+
+function renderSolve(){
+  const p = readInputs();
+  const solveFor = $("solveFor").value;
+  const S = goalSolve(p, solveFor, num("target"));
+  $("targetHint").textContent = solveFor === "After-Tax Withdrawal"
+    ? "The after-tax income you want each year, in today's spending power."
+    : "The portfolio balance you want, in today's spending power.";
+  $("sPortToday").textContent = money(S.portToday);
+  $("sPays").textContent = money(S.pays) + " per year";
+  $("sPortFuture").textContent = money(S.portFuture);
+  $("sInitGrows").textContent = money(S.initGrows);
+
+  // Option 1 — hold the timeline, change what you put in
+  setBig("sPerPeriod", money(S.perPeriod, 2));
+  $("sPerPeriodNote").textContent = "Paid " + p.period.toLowerCase() + " for "
+    + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year";
+  $("sPerYear").textContent = money(S.perYear);
+  const ch = $("sChange");
+  ch.textContent = (S.change >= 0 ? "+" : "") + money(S.change, 2);
+  ch.className = "v " + (S.change > 0 ? "neg" : "pos");
+
+  // Option 2 — hold the contribution, change how long you run it
+  const Y = solveYears(p, S.portToday);
+  const diffEl = $("sYearsDiff");
+  if (!Y.reached){
+    setBig("sYears", "Out of reach");
+    $("sYearsNote").textContent = "Not reached within 100 years at "
+      + money(p.contrib, 2) + " " + p.period.toLowerCase() + ".";
+    $("sYearsNow").textContent = fmtYears(p.years);
+    diffEl.textContent = "—";
+    diffEl.className = "v";
+    $("btnApplyYears").disabled = true;
+  } else {
+    setBig("sYears", fmtYears(Y.years));
+    $("sYearsNote").textContent = "Keeping " + money(p.contrib, 2) + " "
+      + p.period.toLowerCase() + ", growing " + pctStr(p.growth, 1) + " a year";
+    $("sYearsNow").textContent = fmtYears(p.years);
+    const d = Y.years - p.years;
+    diffEl.textContent = Math.abs(d) < 0.005 ? "on track"
+      : (d > 0 ? "+" : "\u2212") + fmtYears(Math.abs(d));
+    diffEl.className = "v " + (d > 0.005 ? "neg" : d < -0.005 ? "pos" : "");
+    $("btnApplyYears").disabled = false;
+  }
+}
+
+$("btnApply").addEventListener("click", () => {
+  const p = readInputs();
+  const S = goalSolve(p, $("solveFor").value, num("target"));
+  $("contrib").value = groupDigits(S.perPeriod.toFixed(2));
+  renderAll();
+  toast("Contribution set to " + money(S.perPeriod, 2) + " per period");
+});
+
+$("btnApplyYears").addEventListener("click", () => {
+  const p = readInputs();
+  const S = goalSolve(p, $("solveFor").value, num("target"));
+  const Y = solveYears(p, S.portToday);
+  if (!Y.reached){ toast("That target isn't reachable within 100 years"); return; }
+  $("years").value = Y.years;
+  renderAll();
+  toast("Timeline set to " + fmtYears(Y.years));
+});
+
+/* ---------- converter and inflation helper ---------- */
+function renderConverter(){
+  const from = $("convPeriod").value;
+  const amt = num("convAmt");
+  const annual = amt * PPY[from];
+  const names = Object.keys(PPY);
+  $("convOut").innerHTML = names.map(to => {
+    const v = annual / PPY[to];
+    return "<div class='convrow'><span class='k'>" + to +
+      (to === from ? " <em>&middot; as typed</em>" : "") + "</span>" +
+      "<span class='v'>" + money(v, 2) + "</span>" +
+      "<button class='btn mini' type='button' data-period='" + to +
+      "' data-amt='" + v.toFixed(2) + "'>Use</button></div>";
+  }).join("") +
+  "<div class='convrow total'><span class='k'>Annual total</span><span class='v'>" +
+  money(annual, 2) + "</span><span class='spacer'></span></div>";
+}
+
+// delegated, because the rows are rebuilt on every keystroke
+$("convOut").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-period]") : null;
+  if (!b) return;
+  const per = b.getAttribute("data-period");
+  const amt = b.getAttribute("data-amt");
+  $("contrib").value = groupDigits(amt);
+  $("period").value = per;
+  renderAll();
+  toast("Contribution set to " + money(parseFloat(amt), 2) + " " + per.toLowerCase());
+});
+
+function renderTools(){
+  const infl = rate("inflation");
+  $("inflNote").textContent = "at " + pctStr(infl, 2) + " inflation";
+  $("tFVout").textContent = money(num("tPV") * Math.pow(1 + infl, num("tPVYears")), 2);
+  $("tPVout").textContent = money(num("tFV") / Math.pow(1 + infl, num("tFVYears")), 2);
+}
+
+function renderAll(){ renderProjection(); renderTools(); }
+
+/* ---------- series of stages ---------- */
+let seriesPoints = [], seriesRun = null;
+
+const SERIES_GLOBALS = {initial:10000, inflation:.025, withdrawal:.04, taxRate:.10,
+  target:1000000};
+const SERIES_STAGES = [
+  {years:10, contrib:500,  period:"Bi-Weekly", growth:.04, nominal:.085, vol:.17},
+  {years:20, contrib:1200, period:"Monthly",   growth:.03, nominal:.060, vol:.09}
+];
+let stages = SERIES_STAGES.map(x => Object.assign({}, x));
+
+function fmtNum(v){
+  const r = Math.round(v * 100) / 100;
+  return r === Math.floor(r) ? String(r) : r.toFixed(2);
+}
+function readGlobals(){
+  return {initial: num("gInitial"), inflation: rate("gInflation"),
+          withdrawal: rate("gWithdrawal"), taxRate: rate("gTaxrate"),
+          target: num("gTarget"), inflYears: ""};
+}
+function writeGlobals(o){
+  $("gInitial").value = groupDigits(o.initial, true);
+  $("gInflation").value = +(o.inflation * 100).toFixed(6);
+  $("gWithdrawal").value = +(o.withdrawal * 100).toFixed(6);
+  $("gTaxrate").value = +(o.taxRate * 100).toFixed(6);
+  $("gTarget").value = groupDigits(o.target == null ? 1000000 : o.target, true);
+}
+
+const PERIOD_NAMES = ["Weekly","Bi-Weekly","Monthly","Quarterly","Annually"];
+
+/* Cards are rebuilt only when a stage is added, removed or loaded. Editing a
+   field updates the model in place, so typing never loses focus. */
+function buildStages(){
+  const list = $("stageList");
+  list.innerHTML = stages.map((st, i) => {
+    const opts = PERIOD_NAMES.map(n =>
+      "<option" + (n === st.period ? " selected" : "") + ">" + n + "</option>").join("");
+    return "<div class='stagecard'>" +
+      "<div class='stagehead'><span class='stagenum'>Stage " + (i + 1) + "</span>" +
+      "<span class='stagespan' data-span='" + i + "'></span>" +
+      "<button class='btn mini' type='button' data-del='" + i + "'>Remove</button></div>" +
+      "<div class='stagegrid'>" +
+        "<div class='field'><label>Years</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-f='years' data-i='" + i +
+          "' value='" + st.years + "' data-nonneg aria-label='Stage " + (i+1) + " years'>" +
+          "<span class='affix'>yrs</span></div></div>" +
+        "<div class='field'><label>Contribution</label><div class='inputwrap'>" +
+          "<span class='affix'>$</span><input type='text' inputmode='decimal' data-f='contrib' data-i='" + i +
+          "' value='" + groupDigits(st.contrib, true) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " contribution'>" +
+          "</div></div>" +
+        "<div class='field'><label>Frequency</label>" +
+          "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select></div>" +
+        "<div class='field'><label>Contribution growth</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
+          "' value='" + (+(st.growth * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " contribution growth'>" +
+          "<span class='affix'>%/yr</span></div></div>" +
+        "<div class='field'><label>Volatility</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-nonneg data-f='vol' data-i='" + i +
+          "' value='" + (+((st.vol || 0) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " volatility'>" +
+          "<span class='affix'>%/yr</span></div></div>" +
+        "<div class='field'><label>Rate of return</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='nominal' data-i='" + i +
+          "' value='" + (+(st.nominal * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " rate of return'>" +
+          "<span class='affix'>%</span></div></div>" +
+      "</div></div>";
+  }).join("");
+  $("stageEmpty").style.display = stages.length ? "none" : "block";
+  initFields(list);
+}
+
+$("stageList").addEventListener("input", e => {
+  const el = e.target, f = el.getAttribute && el.getAttribute("data-f");
+  if (!f || f === "period") return;
+  const i = parseInt(el.getAttribute("data-i"), 10);
+  if (!stages[i]) return;
+  if (f === "contrib" || f === "years") stages[i][f] = parseNum(el.value);
+  else stages[i][f] = parseNum(el.value) / 100;
+  renderSeries();
+});
+$("stageList").addEventListener("change", e => {
+  const el = e.target;
+  if (el.getAttribute && el.getAttribute("data-f") === "period"){
+    const i = parseInt(el.getAttribute("data-i"), 10);
+    if (stages[i]){ stages[i].period = el.value; renderSeries(); }
+  }
+});
+$("stageList").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-del]") : null;
+  if (!b) return;
+  stages.splice(parseInt(b.getAttribute("data-del"), 10), 1);
+  buildStages(); renderSeries();
+  toast("Stage removed");
+});
+$("btnAddStage").addEventListener("click", () => {
+  const last = stages[stages.length - 1];
+  stages.push(last ? Object.assign({}, last, {years:10})
+                   : {years:10, contrib:500, period:"Monthly", growth:.03, nominal:.07});
+  buildStages(); renderSeries();
+});
+
+function renderSeries(){
+  const g = readGlobals();
+  const R = projectSeries(g, stages);
+  seriesRun = R;
+
+  let acc = 0;
+  stages.forEach((st, i) => {
+    const el = $("stageList").querySelector("[data-span='" + i + "']");
+    if (el) el.textContent = "Year " + fmtNum(acc) + " \u2013 " + fmtNum(acc + st.years);
+    acc += st.years;
+  });
+
+  $("gStages").textContent = stages.length;
+  $("gTotalYears").textContent = fmtNum(R.totalYears) + (R.totalYears === 1 ? " yr" : " yrs");
+  $("gTotalContrib").textContent = money(R.contribTotal);
+
+  setBig("xFV", money(R.fv));
+  $("xFVnote").textContent = stages.length
+    ? "Across " + stages.length + (stages.length === 1 ? " stage, " : " stages, ")
+      + fmtNum(R.totalYears) + " years"
+    : "Add a stage to begin";
+  setBig("xFVreal", money(R.fvReal));
+  $("xFVrealnote").textContent = "Inflation of " + pctStr(g.inflation, 2) + " over "
+    + fmtNum(R.inflYears) + " years";
+  setBig("xMonthly", money(R.afterTaxMo));
+  $("xInvested").textContent = money(R.invested);
+  $("xGrowth").textContent = money(R.growth);
+  $("xContribs").textContent = money(R.contribTotal);
+  $("xWd").textContent = money(R.wd);
+  $("xWdReal").textContent = money(R.wdReal);
+  $("xAfterTax").textContent = money(R.afterTax);
+
+  $("stageTable").querySelector("tbody").innerHTML = R.summary.map(x =>
+    "<tr><td>" + x.stage + "</td><td>" + fmtNum(x.years) + "</td><td>" + pctStr(x.nominal, 2) +
+    "</td><td>" + money(x.start) + "</td><td>" + money(x.contrib) +
+    "</td><td class='pos'>" + money(x.growth) + "</td><td>" + money(x.end) + "</td></tr>").join("");
+
+  $("xYearTable").querySelector("tbody").innerHTML = R.rows.map(r =>
+    "<tr><td>" + fmtNum(r.endYear) + "</td><td>" + r.stage + "</td><td>" + money(r.start) +
+    "</td><td>" + money(r.contrib) + "</td><td class='pos'>" + money(r.growth) +
+    "</td><td>" + money(r.end) + "</td><td>" +
+    money(r.end / Math.pow(1 + g.inflation, r.endYear)) + "</td></tr>").join("");
+
+  drawSeriesChart(g, R);
+}
+
+function drawSeriesChart(g, R){
+  if (!R || !R.rows.length){ seriesPoints = paintChart("chartS", [], 1, "band", []); return; }
+  const defl = yr => Math.pow(1 + g.inflation, yr);
+  const marks = R.summary.slice(0, -1).map(x => ({year:x.endYear, label:String(x.stage + 1)}));
+
+  if (chartMode.series === "mc"){
+    const mc = monteCarlo(g, stages, readTrials("trialsS"), mcSeed);
+    const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial,
+                  p25:g.initial, p75:g.initial, det:g.initial}];
+    mc.bands.forEach((b, i) => pts.push({year:b.year,
+      stage: R.rows[i] ? R.rows[i].stage : 1,
+      base:b.p50, hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75,
+      det: R.rows[i] ? R.rows[i].end / defl(R.rows[i].endYear) : b.p50}));
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks);
+    mcLegend("legendS", "Stage boundary");
+    mcSummary("mcNoteS", mc, g.target || 0, "(your target)");
+  } else {
+    const band = Math.max(0, num("bandS")) / 100;
+    const shift = d => stages.map(st =>
+      Object.assign({}, st, {nominal: Math.max(-0.99, st.nominal + d)}));
+    const hiR = projectSeries(g, shift(band));
+    const loR = projectSeries(g, shift(-band));
+    const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial}];
+    R.rows.forEach((r, i) => pts.push({year:r.endYear, stage:r.stage,
+      base: r.end / defl(r.endYear),
+      hi: (hiR.rows[i] ? hiR.rows[i].end : r.end) / defl(r.endYear),
+      lo: (loR.rows[i] ? loR.rows[i].end : r.end) / defl(r.endYear)}));
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "band", marks);
+    const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
+    $("legendS").innerHTML =
+      swatch("#4fbf95", band > 0 ? "Every stage +" + lbl + "%" : "Higher") +
+      swatch("#e9b872", "As entered") +
+      swatch("#e2795f", band > 0 ? "Every stage \u2212" + lbl + "%" : "Lower") +
+      swatch("#4a5f6b", "Stage boundary");
+    $("mcNoteS").hidden = true;
+  }
+}
+
+["gInitial","gInflation","gWithdrawal","gTaxrate","gTarget"]
+  .forEach(id => $(id).addEventListener("input", renderSeries));
+$("bandS").addEventListener("input", () => {
+  if (chartMode.series === "band" && seriesRun) renderSeries();
+});
+
+/* ---------- tabs ---------- */
+/* ---------- chart mode switches ---------- */
+function wireMode(segId, which, bandOptId, mcOptId, redraw){
+  $(segId).addEventListener("click", e => {
+    const b = e.target.closest ? e.target.closest("button[data-mode]") : null;
+    if (!b) return;
+    const m = b.getAttribute("data-mode");
+    if (chartMode[which] === m) return;
+    chartMode[which] = m;
+    $(segId).querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-mode") === m));
+    $(bandOptId).hidden = (m !== "band");
+    $(mcOptId).hidden = (m !== "mc");
+    redraw();
+  });
+}
+const redrawSingle = () => { if (lastRun) drawChart(lastRun, readInputs()); };
+wireMode("segSingle", "single", "optBand", "optMC", redrawSingle);
+wireMode("segSeries", "series", "optBandS", "optMCS", () => renderSeries());
+
+function reroll(){ mcSeed = (mcSeed * 1664525 + 1013904223) >>> 0; }
+$("btnReroll").addEventListener("click", () => {
+  reroll(); redrawSingle(); toast("New set of runs");
+});
+$("btnRerollS").addEventListener("click", () => {
+  reroll(); renderSeries(); toast("New set of runs");
+});
+$("trials").addEventListener("input", () => {
+  if (chartMode.single === "mc") scheduleMC(redrawSingle);
+});
+$("trialsS").addEventListener("input", () => {
+  if (chartMode.series === "mc") scheduleMC(() => renderSeries());
+});
+
+document.querySelectorAll("nav[role=tablist] button").forEach(b => {
+  b.addEventListener("click", () => {
+    const t = b.getAttribute("data-tab");
+    document.querySelectorAll("nav[role=tablist] button").forEach(x =>
+      x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === t)));
+    $("tab-single").hidden = (t !== "single");
+    $("tab-series").hidden = (t !== "series");
+    $("asideSingle").hidden = (t !== "single");
+    $("asideSeries").hidden = (t !== "series");
+    // charts need real layout to measure, so redraw once the pane is visible
+    if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); }
+    else renderSeries();
+  });
+});
+
+/* ---------- scenarios ---------- */
+function refreshScenarioList(selected){
+  const sel = $("scenarioPick");
+  if (!scenarios.length){
+    sel.innerHTML = "<option value=''>No saved scenarios</option>";
+    return;
+  }
+  sel.innerHTML = "<option value=''>Unsaved</option>" +
+    scenarios.map(s => "<option>" + s.name + "</option>").join("");
+  sel.value = selected || "";
+}
+function applySeriesFrom(s){
+  if (!s || !s.series) return;
+  if (s.series.globals) writeGlobals(s.series.globals);
+  if (Array.isArray(s.series.stages))
+    stages = s.series.stages.map(x => Object.assign({}, x));
+  buildStages(); renderSeries();
+}
+$("scenarioPick").addEventListener("change", e => {
+  const s = scenarios.find(x => x.name === e.target.value);
+  if (s){ writeInputs(s); renderAll(); applySeriesFrom(s); }
+});
+$("btnSave").addEventListener("click", () => {
+  const name = prompt("Name this scenario:", $("scenarioPick").value || "");
+  if (!name) return;
+  const data = Object.assign({name: name.trim()}, readInputs(), {
+    series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))}
+  });
+  if (!data.name) return;
+  const i = scenarios.findIndex(s => s.name === data.name);
+  if (i >= 0) scenarios[i] = data; else scenarios.push(data);
+  store.write(scenarios); refreshScenarioList(data.name);
+  toast("Saved " + data.name);
+});
+$("btnDelete").addEventListener("click", () => {
+  const name = $("scenarioPick").value;
+  if (!name){ toast("Pick a saved scenario first"); return; }
+  if (!confirm("Delete the scenario " + name + "?")) return;
+  scenarios = scenarios.filter(s => s.name !== name);
+  store.write(scenarios); refreshScenarioList("");
+  toast("Deleted " + name);
+});
+$("btnExport").addEventListener("click", () => {
+  if (!scenarios.length){ toast("Nothing saved to export yet"); return; }
+  const blob = new Blob([JSON.stringify(scenarios, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "investment-scenarios.json";
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Exported " + scenarios.length + " scenarios");
+});
+$("btnImport").addEventListener("click", () => $("fileImport").click());
+$("fileImport").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const data = JSON.parse(fr.result);
+      if (!Array.isArray(data) || !data.length) throw 0;
+      scenarios = data; store.write(scenarios);
+      refreshScenarioList(scenarios[0].name); writeInputs(scenarios[0]); renderAll();
+      applySeriesFrom(scenarios[0]);
+      toast("Imported " + data.length + " scenarios");
+    } catch(err){ toast("That file isn't a scenario export"); }
+  };
+  fr.readAsText(f); e.target.value = "";
+});
+$("btnReset").addEventListener("click", () => {
+  writeInputs(DEFAULTS);
+  writeGlobals(SERIES_GLOBALS);
+  stages = SERIES_STAGES.map(x => Object.assign({}, x));
+  buildStages();
+  $("scenarioPick").value = "";
+  renderAll(); renderSeries();
+  toast("Inputs reset");
+});
+
+/* ---------- wire up ---------- */
+["initial","contrib","growth","nominal","inflation","years","withdrawal","taxrate","volatility"]
+  .forEach(id => $(id).addEventListener("input", renderAll));
+$("period").addEventListener("change", renderAll);
+$("target").addEventListener("input", renderSolve);
+$("solveFor").addEventListener("change", renderSolve);
+["tPV","tPVYears","tFV","tFVYears"].forEach(id => $(id).addEventListener("input", renderTools));
+$("band").addEventListener("input", () => {
+  if (chartMode.single === "band" && lastRun) drawChart(lastRun, readInputs());
+});
+$("convAmt").addEventListener("input", renderConverter);
+$("convPeriod").addEventListener("change", renderConverter);
+/* Mobile browsers fire resize when the URL bar hides during scroll. Redraw only
+   when the width really changed, and debounce it. */
+let lastW = window.innerWidth, resizeTimer;
+window.addEventListener("resize", () => {
+  if (window.innerWidth === lastW) return;
+  lastW = window.innerWidth;
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (!$("tab-single").hidden && lastRun) drawChart(lastRun, readInputs());
+    if (!$("tab-series").hidden) renderSeries();
+  }, 120);
+});
+
+writeInputs(DEFAULTS);
+refreshScenarioList("");
+$("target").value = groupDigits(100000);
+$("tFVYears").value = DEFAULTS.years;
+$("convAmt").value = groupDigits(DEFAULTS.contrib, true);
+$("convPeriod").value = DEFAULTS.period;
+renderConverter();
+renderAll();
+
+writeGlobals(SERIES_GLOBALS);
+buildStages();
+renderSeries();
+})();
+</script>
+</body>
+</html>
