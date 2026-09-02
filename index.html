@@ -382,7 +382,7 @@ svg{display:block;width:100%;height:auto}
 /* iOS zooms the page when a focused field is under 16px. Keyed to touch
    devices rather than width, so landscape phones are covered too. */
 @media (hover:none) and (pointer:coarse){
-  .inputwrap input,select,.btn,.h2ctrl input,textarea{font-size:16px}
+  input,select,textarea{font-size:16px !important}
   .btn.mini{font-size:14px}
   .seg button{font-size:14px}
 }
@@ -1536,6 +1536,34 @@ function writeInputs(s){
     if (String(el.value).indexOf("-") !== -1) el.value = el.value.replace(/-/g, "");
   });
 }
+
+/* iOS zooms toward a focused field even when the font is large enough. Pinning
+   maximum-scale for the duration of the focus stops that; the original viewport
+   is restored on blur so pinch-zoom still works everywhere else. */
+(function(){
+  const vp = document.querySelector('meta[name="viewport"]');
+  if (!vp) return;
+  const BASE = vp.getAttribute("content");
+  const LOCKED = BASE + ", maximum-scale=1";
+  let restore = null;
+  function lock(){
+    clearTimeout(restore);
+    if (vp.getAttribute("content") !== LOCKED) vp.setAttribute("content", LOCKED);
+  }
+  function unlock(){
+    clearTimeout(restore);
+    // brief delay so tabbing between fields doesn't flicker the viewport
+    restore = setTimeout(() => vp.setAttribute("content", BASE), 250);
+  }
+  document.addEventListener("focusin", e => {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) lock();
+  });
+  document.addEventListener("focusout", e => {
+    const t = e.target;
+    if (t && (t.tagName === "INPUT" || t.tagName === "SELECT" || t.tagName === "TEXTAREA")) unlock();
+  });
+})();
 
 /* ---------- render ---------- */
 let lastRun = null;
