@@ -284,10 +284,20 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   padding:0 8px;cursor:pointer;flex:none;line-height:1}
 .signflip:hover{color:var(--gold)}
 .signflip.on{color:var(--coral)}
-.adjrow{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11.5px;
-  color:var(--dim);cursor:pointer;flex-wrap:wrap}
-.adjrow input{accent-color:var(--jade);width:14px;height:14px;margin:0;flex:none}
-.adjnote{font-family:var(--mono);color:var(--gold);font-size:11px;width:100%}
+.adjrow{display:flex;align-items:center;margin-top:8px;font-size:11.5px;
+  color:var(--dim);cursor:pointer;
+  background:rgba(79,191,149,.05);border:1px solid #22343a;border-radius:6px;
+  padding:8px 10px;transition:border-color .12s,background .12s}
+.adjrow:hover{border-color:#2f4a4a;background:rgba(79,191,149,.08)}
+.adjrow input{accent-color:var(--jade);width:15px;height:15px;flex:none;
+  margin:0 10px 0 0;cursor:pointer}
+.adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap}
+.adjnote{font-family:var(--mono);color:var(--gold);font-size:11px;flex:none;
+  margin-left:12px;letter-spacing:-.01em}
+.coastrow .k{color:var(--text)}
+.coastrow .v{font-weight:600}
+#sCoastAction{margin-top:10px}
+#sCoastAction .btn{width:100%}
 .opt{color:var(--dimmer);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
   border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:5px}
 #msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
@@ -548,12 +558,6 @@ window.onerror = function(msg){
           <div class="inputwrap"><input id="gFees" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
           <div class="hint">Subtracted from every stage's rate of return.</div>
         </div>
-        <div class="field">
-          <label for="gTarget">Target, inflation adjusted</label>
-          <div class="inputwrap"><span class="affix">$</span><input id="gTarget" type="text" inputmode="decimal" data-money data-nonneg></div>
-          <div class="hint">The portfolio you're aiming for, in today's money.
-            Used for the Monte Carlo success rate.</div>
-        </div>
         <div class="derived">
           <div><span>Stages</span><span class="num" id="gStages"></span></div>
           <div><span>Fees</span><span class="num" id="gFeeNote"></span></div>
@@ -629,6 +633,8 @@ window.onerror = function(msg){
             <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="sPays"></span></div>
             <div class="kv"><span class="k">Portfolio needed at retirement</span><span class="v" id="sPortFuture"></span></div>
             <div class="kv"><span class="k">Your starting value grows to</span><span class="v" id="sInitGrows"></span></div>
+            <div class="kv coastrow"><span class="k">Coast FIRE<span class="mssub" id="sCoastNote"></span></span><span class="v" id="sCoast"></span></div>
+            <div id="sCoastAction"></div>
           </div>
         </div>
       </div>
@@ -671,16 +677,8 @@ window.onerror = function(msg){
           <label for="volatility">Volatility</label>
           <div class="inputwrap"><input id="volatility" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%/yr</span></div>
         </div>
-        <div class="field">
-          <label for="trials">Runs</label>
-          <select id="trials">
-            <option value="250">250</option>
-            <option value="1000" selected>1,000</option>
-            <option value="5000">5,000</option>
-            <option value="10000">10,000</option>
-          </select>
-        </div>
         <button class="btn" type="button" id="btnReroll">Re-roll</button>
+        <div class="hint" style="margin:0">Each redraw runs 5,000 simulations.</div>
       </div>
       <div class="chartwrap" id="chartWrap">
         <svg id="chart" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected inflation-adjusted balance at three rates of return"></svg>
@@ -707,7 +705,7 @@ window.onerror = function(msg){
 
     <!-- ========== CONTRIBUTION CONVERTER ========== -->
     <div class="panel">
-      <h2>Contribution Converter</h2>
+      <h2>Contribution Calculator</h2>
       <div class="body">
         <div class="grid2">
           <div>
@@ -813,6 +811,53 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
+      <h2>Work backwards from a target<span class="h2note">changes the final stage only</span></h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="field">
+              <label for="solveForS">Solve for</label>
+              <select id="solveForS">
+                <option>After-Tax Withdrawal</option>
+                <option>Portfolio Value</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="targetS">Target, inflation adjusted</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="targetS" type="text" inputmode="decimal" data-money data-nonneg></div>
+              <div class="hint" id="targetHintS"></div>
+            </div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Portfolio needed, inflation adjusted</span><span class="v" id="tPortToday"></span></div>
+            <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="tPays"></span></div>
+            <div class="kv"><span class="k">Portfolio needed at the end</span><span class="v" id="tPortFuture"></span></div>
+            <div class="kv"><span class="k">Balance entering the final stage</span><span class="v" id="tStartBal"></span></div>
+            <div class="kv"><span class="k">That alone grows to</span><span class="v" id="tGrown"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="solveopts">
+        <div class="solveopt">
+          <div class="optlabel">Option 1 &middot; Final stage contribution</div>
+          <div class="v gold" id="tPerPeriod">—</div>
+          <div class="note" id="tPerPeriodNote"></div>
+          <div class="kv"><span class="k">Per year</span><span class="v" id="tPerYear"></span></div>
+          <div class="kv"><span class="k">Change from current</span><span class="v" id="tChange"></span></div>
+          <button class="btn primary" id="btnApplyS">Use this contribution</button>
+        </div>
+        <div class="solveopt">
+          <div class="optlabel">Option 2 &middot; Final stage length</div>
+          <div class="v gold" id="tYears">—</div>
+          <div class="note" id="tYearsNote"></div>
+          <div class="kv"><span class="k">Final stage now</span><span class="v" id="tYearsNow"></span></div>
+          <div class="kv"><span class="k">Whole run becomes</span><span class="v" id="tYearsTotal"></span></div>
+          <button class="btn primary" id="btnApplyYearsS">Use this length</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
       <h2>Balance over time, inflation adjusted
         <span class="h2ctrl">
           <span class="seg" id="segSeries">
@@ -826,17 +871,9 @@ window.onerror = function(msg){
         </span>
       </h2>
       <div class="mcbar" id="mcBarS" hidden>
-        <div class="field">
-          <label for="trialsS">Runs</label>
-          <select id="trialsS">
-            <option value="250">250</option>
-            <option value="1000" selected>1,000</option>
-            <option value="5000">5,000</option>
-            <option value="10000">10,000</option>
-          </select>
-        </div>
         <button class="btn" type="button" id="btnRerollS">Re-roll</button>
-        <div class="hint" style="margin:0">Volatility is set per stage, in the cards above.</div>
+        <div class="hint" style="margin:0">5,000 simulations per redraw. Volatility is
+          set per stage, in the cards above.</div>
       </div>
       <div class="chartwrap" id="chartWrapS">
         <svg id="chartS" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected inflation-adjusted balance across stages"></svg>
@@ -861,11 +898,6 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
-      <h2>Milestones</h2>
-      <div class="body" id="msBodyS"></div>
-    </div>
-
-    <div class="panel">
       <h2>Year by year</h2>
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
@@ -877,6 +909,11 @@ window.onerror = function(msg){
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <div class="panel">
+      <h2>Milestones</h2>
+      <div class="body" id="msBodyS"></div>
     </div>
 
   </div>
@@ -943,6 +980,67 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>Coast FIRE</h2>
+      <div class="body">
+        <p><b>FIRE</b> stands for Financial Independence, Retire Early. <b>Coast FIRE</b>
+        is a gentler milestone along the way, and often a more useful one.</p>
+        <p>You hit Coast FIRE the moment your balance is large enough that, if you
+        never contributed another dollar, ordinary compounding alone would carry it
+        to your target by your target date. You still need income to live on, so it
+        isn't retirement — but the saving is done. Everything after that is optional.</p>
+        <p>It matters because it reframes the question. Instead of "can I retire?",
+        which is decades away for most people, it asks "when can I stop pushing?"
+        That milestone usually arrives far earlier and is a realistic thing to aim at.</p>
+        <p>The Single Run's target panel shows how many years you are from it. Because
+        it depends entirely on your target, changing the target moves it. If the plan
+        never reaches the target at all, there is nothing to coast on and it says so.</p>
+        <p><b>Model this as a staged run</b> rebuilds the plan on the Staged Run tab as
+        two stages: contributing as normal up to the coast year, then the remaining
+        years with contributions set to zero. Same assumptions throughout, so you can
+        see the whole glide path — including what Monte Carlo makes of it, which is
+        where coasting gets interesting. Coasting leans entirely on returns showing up,
+        with no further contributions cushioning a bad stretch.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Scenarios, sharing and the summary</h2>
+      <div class="body">
+        <dl class="gloss">
+          <dt>Save</dt>
+          <dd>Names the current setup and adds it to the dropdown. Saving under an
+          existing name overwrites it. Scenarios are stored in your browser, on the
+          device you're using — they don't sync between your phone and computer, and
+          clearing site data removes them.</dd>
+
+          <dt>The dropdown</dt>
+          <dd>Switching to a saved scenario loads its inputs for both tabs at once, so
+          a scenario captures your single run and your staged run together. "Unsaved"
+          means the current numbers don't match anything saved.</dd>
+
+          <dt>Delete</dt>
+          <dd>Removes the selected scenario. It doesn't change the numbers on screen,
+          only the saved copy.</dd>
+
+          <dt>Reset</dt>
+          <dd>Returns every input on both tabs to the starting defaults. Saved
+          scenarios are untouched.</dd>
+
+          <dt>Share</dt>
+          <dd>Copies a link with every input encoded in the address itself — both tabs
+          and all stages. Anyone opening it sees exactly your numbers. Nothing is
+          uploaded; the whole scenario travels inside the URL. This is also the most
+          reliable way to move a setup between your own devices.</dd>
+
+          <dt>Summary</dt>
+          <dd>Builds a clean one-page version and opens your print dialog, where you
+          can choose Save as PDF. On iPhone, use Share then Print. It deliberately
+          carries no name or personal detail, only the numbers and the chart.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Inputs, and what to put in them</h2>
       <div class="body">
         <dl class="gloss">
@@ -1001,11 +1099,15 @@ window.onerror = function(msg){
           capital-gains rates. Many retirees land somewhere in the 10&ndash;20% range,
           but this varies enormously. Use 0 for an all-Roth plan.</dd>
 
-          <dt>Target <span class="opt">staged run</span></dt>
-          <dd>The portfolio you're aiming for, in today's money. Used for the Monte
-          Carlo success rate.</dd>
+          <dt>Target</dt>
+          <dd>What you're aiming for, in today's dollars — either an after-tax income
+          or a portfolio balance, your choice. It drives the two solve routes, the
+          Coast FIRE figure, and the Monte Carlo success rate. On the Staged Run the
+          solve changes <i>the final stage only</i>: everything before it is treated as
+          settled, which is what makes the answer meaningful when several stages have
+          different assumptions.</dd>
 
-          <dt>In today's dollars <span class="opt">staged run</span></dt>
+          <dt>Inflation adjusted <span class="opt">staged run</span></dt>
           <dd>On any stage after the first, this restates the contribution you typed
           into that stage's future dollars. Type $3,000 for a stage starting in year 5
           at 2.5% inflation and it's modelled as $3,394 — the amount that <i>feels
@@ -1036,7 +1138,11 @@ window.onerror = function(msg){
           After it, the account is doing more of the work than you are.</dd>
           <dt>Work backwards from a target</dt>
           <dd>Two routes to the same goal: raise the contribution, or extend the
-          timeline. Either button applies its change to your inputs.</dd>
+          timeline. Either button applies its change to your inputs. On the Staged Run
+          both routes act on the final stage.</dd>
+          <dt>Coast FIRE</dt>
+          <dd>How far you are from the point where contributions could stop entirely
+          and growth alone would still reach your target on schedule.</dd>
         </dl>
       </div>
     </div>
@@ -1323,11 +1429,86 @@ function monteCarlo(g, stages, trials, seed){
   return {marks, bands, finals:finalsReal, totalYears, trials,
           median: pctl(finalsReal, .5)};
 }
+/* ---------- Coast FIRE ---------- */
+/* The first moment you could stop contributing entirely and still drift to the
+   target by the date already set. Walks the real contribution schedule, and at
+   each period asks whether the balance alone, compounded for the years that
+   remain, would clear the goal. */
+function coastFire(p, targetFuture){
+  const ppy = PPY[p.period];
+  const n = Math.floor(p.years * ppy);
+  const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
+  const round2 = v => Math.ceil(v * 100) / 100;
+
+  /* Coasting is checked with the same period-by-period arithmetic the staged
+     run uses, including its dropped partial period. Testing against smooth
+     annual compounding instead would report a year that then falls just short
+     once the two-stage version is actually built. */
+  const coastsFrom = (bal, stopYears) => {
+    const left = Math.floor((p.years - stopYears) * ppy);
+    return bal * Math.pow(1 + r, left) >= targetFuture;
+  };
+
+  if (coastsFrom(p.initial, 0)) return {state:"already", years:0, balance:p.initial};
+
+  let bal = p.initial;
+  for (let i = 1; i <= n; i++){
+    const yearNo = Math.ceil(i / ppy);
+    bal = bal * (1 + r) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+    const stop = round2(i / ppy);
+    if (stop < p.years && coastsFrom(bal, stop))
+      return {state:"reachable", years:stop, periods:i, balance:bal};
+  }
+  return {state:"never", years:p.years, balance:bal};
+}
+
+/* ---------- staged target solving (final stage only) ---------- */
+/* Everything before the last stage is fixed, so the run is collapsed to the
+   balance at the final stage's start and the last stage is solved on its own. */
+function balanceBeforeLast(g, stages){
+  if (stages.length < 2) return g.initial;
+  const head = stages.slice(0, -1);
+  return projectSeries(g, head).fv;
+}
+function finalStageSolve(g, stages, portToday){
+  if (!stages.length) return null;
+  const last = stages[stages.length - 1];
+  const startBal = balanceBeforeLast(g, stages);
+  const priorYears = stages.slice(0, -1).reduce((a, x) => a + x.years, 0);
+  const totalYears = priorYears + last.years;
+  const targetFuture = portToday * Math.pow(1 + g.inflation, totalYears);
+
+  // route 1: hold the timeline, change the final stage's contribution
+  const ppy = PPY[last.period];
+  const r = Math.pow(1 + last.nominal, 1 / ppy) - 1;
+  const grown = startBal * Math.pow(1 + last.nominal, last.years);
+  const growthSum = (last.nominal === last.growth)
+    ? last.years * Math.pow(1 + last.nominal, last.years - 1)
+    : (Math.pow(1 + last.nominal, last.years) - Math.pow(1 + last.growth, last.years))
+      / (last.nominal - last.growth);
+  const annuity = (last.nominal === 0)
+    ? ppy * (last.growth === 0 ? last.years
+             : (Math.pow(1 + last.growth, last.years) - 1) / last.growth)
+    : (last.nominal / r) * growthSum;
+  const perPeriod = targetFuture <= grown ? 0 : (targetFuture - grown) / annuity;
+
+  // route 2: hold the contribution, stretch the final stage
+  const yrs = solveYears({initial:startBal, contrib:last.contrib, period:last.period,
+    growth:last.growth, nominal:last.nominal, inflation:g.inflation,
+    inflYears:"", years:0}, portToday * Math.pow(1 + g.inflation, priorYears), 100);
+
+  return {startBal, priorYears, totalYears, targetFuture, grown,
+          perPeriod, perYear: perPeriod * ppy, change: perPeriod - last.contrib,
+          stageYears: yrs.reached ? yrs.years : null,
+          totalIfStretched: yrs.reached ? priorYears + yrs.years : null,
+          reached: yrs.reached, ppy};
+}
 // ===MATH END===
 
 if (typeof module !== "undefined")
   module.exports = {PPY, project, goalSolve, solveYears, projectSeries,
-                    monteCarlo, lognormalParams, mulberry32};
+                    monteCarlo, lognormalParams, mulberry32, coastFire,
+                    finalStageSolve, balanceBeforeLast};
 </script>
 
 <script>
@@ -1597,7 +1778,7 @@ function renderMilestones(elId, rows, infl, feeCost, horizon){
     const hit = rows.find(r => r.end >= v);
     out.push("<div class='kv'><span class='k'>" + money(v) +
       "<span class='mssub'>" + money(v / Math.pow(1 + infl, hit ? hit.year : 0)) +
-      " in today's money</span></span><span class='v'>Year " +
+      " in today's dollars</span></span><span class='v'>Year " +
       (hit ? fmtNum(hit.year) : "\u2014") + "</span></div>");
   });
 
@@ -1631,7 +1812,7 @@ function renderProjection(){
   $("rInvested").textContent = money(R.invested);
   $("rGrowth").textContent = money(R.growth);
   $("rContribs").textContent = money(R.contribTotal);
-  $("rLastContrib").textContent = money(R.lastContrib, 2) + " per period";
+  $("rLastContrib").textContent = money(R.lastContrib, 2) + " " + PERIOD_ADV[p.period];
   $("rWd").textContent = money(R.wd);
   $("rWdReal").textContent = money(R.wdReal);
   $("rAfterTax").textContent = money(R.afterTax);
@@ -1781,9 +1962,8 @@ function mcSummary(noteId, mc, target, label){
     "%</b> of " + mc.trials.toLocaleString() + " runs reach " + money(target) + " " + label +
     ". Median outcome <b>" + money(mc.median) + "</b>.";
 }
-function readTrials(id){
-  return Math.max(50, Math.min(20000, parseInt($(id).value, 10) || 1000));
-}
+const MC_RUNS = 5000;
+function readTrials(){ return MC_RUNS; }
 /* Simulation is the one genuinely expensive step, so keep it off the keystroke path. */
 let mcTimer = null;
 function scheduleMC(fn){ clearTimeout(mcTimer); mcTimer = setTimeout(fn, 160); }
@@ -1795,7 +1975,7 @@ function drawChart(R, p){
   if (chartMode.single === "mc"){
     const mc = monteCarlo({initial:p.initial, inflation:p.inflation},
       [{years:p.years, contrib:p.contrib, period:p.period, growth:p.growth,
-        nominal:p.nominal, vol:p.vol}], readTrials("trials"), mcSeed);
+        nominal:p.nominal, vol:p.vol}], readTrials(), mcSeed);
     const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial,
                   p25:p.initial, p75:p.initial, det:p.initial}];
     mc.bands.forEach((b, i) => pts.push({year:b.year, base:b.p50, hi:b.p90, lo:b.p10,
@@ -1917,6 +2097,31 @@ function renderSolve(){
   ch.className = "v " + (S.change > 0 ? "neg" : "pos");
 
   // Option 2 — hold the contribution, change how long you run it
+  // Coast FIRE: when contributions could stop and growth alone still gets there
+  const C = coastFire(p, S.portFuture);
+  const coastEl = $("sCoast"), coastNote = $("sCoastNote");
+  if (C.state === "already"){
+    coastEl.textContent = "Already there";
+    coastEl.className = "v pos";
+    coastNote.textContent = "Your starting value alone reaches the target by year "
+      + fmtNum(p.years) + ".";
+    $("sCoastAction").innerHTML = "";
+  } else if (C.state === "reachable"){
+    coastEl.textContent = fmtYears(C.years);
+    coastEl.className = "v pos";
+    coastNote.textContent = "Stop contributing then and growth alone still reaches "
+      + money(S.portToday) + " by year " + fmtNum(p.years) + ".";
+    $("sCoastAction").innerHTML =
+      "<button class='btn' type='button' id='btnCoast'>Model this as a staged run</button>";
+    $("btnCoast").addEventListener("click", () => applyCoast(p, C));
+  } else {
+    coastEl.textContent = "Not on track";
+    coastEl.className = "v";
+    coastNote.textContent = "This plan doesn't reach the target by year "
+      + fmtNum(p.years) + ", so there's nothing to coast on yet.";
+    $("sCoastAction").innerHTML = "";
+  }
+
   const Y = solveYears(p, S.portToday);
   const diffEl = $("sYearsDiff");
   if (!Y.reached){
@@ -1945,7 +2150,7 @@ $("btnApply").addEventListener("click", () => {
   const S = goalSolve(p, $("solveFor").value, num("target"));
   $("contrib").value = groupDigits(S.perPeriod.toFixed(2));
   renderAll();
-  toast("Contribution set to " + money(S.perPeriod, 2) + " per period");
+  toast("Contribution set to " + money(S.perPeriod, 2) + " " + PERIOD_ADV[p.period]);
 });
 
 $("btnApplyYears").addEventListener("click", () => {
@@ -1958,6 +2163,37 @@ $("btnApplyYears").addEventListener("click", () => {
   toast("Timeline set to " + fmtYears(Y.years));
 });
 
+/* Rebuilds the plan as two stages: contribute until the coast year, then let it
+   ride with nothing added. Same assumptions throughout, so the staged result
+   lands on the same number the single run predicted. */
+function stagesLookEdited(){
+  if (stages.length !== SERIES_STAGES.length) return true;
+  return stages.some((st, i) => {
+    const d = SERIES_STAGES[i];
+    return st.years !== d.years || st.contrib !== d.contrib || st.period !== d.period ||
+           st.growth !== d.growth || st.nominal !== d.nominal;
+  });
+}
+function applyCoast(p, C){
+  if (stagesLookEdited() &&
+      !confirm("Replace the stages currently in the Staged Run with this Coast FIRE plan?"))
+    return;
+  writeGlobals({initial:p.initial, inflation:p.inflation, withdrawal:p.withdrawal,
+                taxRate:p.taxRate, fees:p.fees});
+  stages = [
+    {years:C.years, contrib:p.contrib, period:p.period, growth:p.growth,
+     nominal:p.gross, vol:p.vol, adj:false},
+    {years:Math.round((p.years - C.years) * 100) / 100, contrib:0, period:p.period,
+     growth:0, nominal:p.gross, vol:p.vol, adj:false}
+  ];
+  buildStages();
+  $("targetS").value = groupDigits(num("target"), true);
+  $("solveForS").value = $("solveFor").value;
+  showTab("series");
+  renderSeries();
+  toast("Coast FIRE plan loaded into the Staged Run");
+}
+
 /* ---------- converter and inflation helper ---------- */
 function renderConverter(){
   const from = $("convPeriod").value;
@@ -1966,14 +2202,11 @@ function renderConverter(){
   const names = Object.keys(PPY);
   $("convOut").innerHTML = names.map(to => {
     const v = annual / PPY[to];
-    return "<div class='convrow'><span class='k'>" + to +
-      (to === from ? " <em>&middot; as typed</em>" : "") + "</span>" +
+    return "<div class='convrow'><span class='k'>" + to + "</span>" +
       "<span class='v'>" + money(v, 2) + "</span>" +
       "<button class='btn mini' type='button' data-period='" + to +
       "' data-amt='" + v.toFixed(2) + "'>Use</button></div>";
-  }).join("") +
-  "<div class='convrow total'><span class='k'>Annual total</span><span class='v'>" +
-  money(annual, 2) + "</span><span class='spacer'></span></div>";
+  }).join("");
 }
 
 // delegated, because the rows are rebuilt on every keystroke
@@ -2014,7 +2247,7 @@ $("segInfl").addEventListener("click", e => {
 function renderAll(){ renderProjection(); renderTools(); }
 
 /* ---------- series of stages ---------- */
-let seriesPoints = [], seriesRun = null;
+let seriesPoints = [], seriesRun = null, seriesTarget = 0;
 
 const SERIES_GLOBALS = {initial:10000, inflation:.025, withdrawal:.04, taxRate:.10,
   target:1000000, fees:0};
@@ -2053,18 +2286,19 @@ function stageStartYear(i){
 function readGlobals(){
   return {initial: num("gInitial"), inflation: rate("gInflation"),
           withdrawal: rate("gWithdrawal"), taxRate: rate("gTaxrate"),
-          target: num("gTarget"), fees: rate("gFees"), inflYears: ""};
+          target: num("targetS"), fees: rate("gFees"), inflYears: ""};
 }
 function writeGlobals(o){
   $("gInitial").value = groupDigits(o.initial, true);
   $("gInflation").value = +(o.inflation * 100).toFixed(6);
   $("gWithdrawal").value = +(o.withdrawal * 100).toFixed(6);
   $("gTaxrate").value = +(o.taxRate * 100).toFixed(6);
-  $("gTarget").value = groupDigits(o.target == null ? 1000000 : o.target, true);
   $("gFees").value = +((o.fees == null ? 0 : o.fees) * 100).toFixed(6);
 }
 
 const PERIOD_NAMES = ["Weekly","Bi-Weekly","Monthly","Quarterly","Annually"];
+const PERIOD_ADV = {"Weekly":"weekly", "Bi-Weekly":"bi-weekly", "Monthly":"monthly",
+                    "Quarterly":"quarterly", "Annually":"annually"};
 
 /* Cards are rebuilt only when a stage is added, removed or loaded. Editing a
    field updates the model in place, so typing never loses focus. */
@@ -2087,7 +2321,7 @@ function buildStages(){
           "' value='" + groupDigits(st.contrib, true) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " contribution'>" +
           "</div>" + (i > 0 ?
             "<label class='adjrow'><input type='checkbox' data-f='adj' data-i='" + i + "'" +
-            (st.adj ? " checked" : "") + "> in today's dollars" +
+            (st.adj ? " checked" : "") + "><span class='adjtxt'>Inflation adjusted</span>" +
             "<span class='adjnote' data-adj='" + i + "'></span></label>" : "") +
           "</div>" +
         "<div class='field'><label>Frequency</label>" +
@@ -2144,6 +2378,78 @@ $("btnAddStage").addEventListener("click", () => {
   buildStages(); renderSeries();
 });
 
+function renderStagedSolve(g, R){
+  const last = stages[stages.length - 1];
+  if (!last){ $("tPerPeriod").textContent = "\u2014"; return; }
+  const solveFor = $("solveForS").value;
+  const target = num("targetS");
+  const portToday = solveFor === "After-Tax Withdrawal"
+    ? target / (g.withdrawal * (1 - g.taxRate)) : target;
+  const eff = effectiveStages(g);
+  const F = finalStageSolve(g, eff, portToday);
+
+  $("targetHintS").textContent = solveFor === "After-Tax Withdrawal"
+    ? "The after-tax income you want each year, in today's spending power."
+    : "The portfolio balance you want, in today's spending power.";
+  $("tPortToday").textContent = money(portToday);
+  $("tPays").textContent = money(portToday * g.withdrawal * (1 - g.taxRate)) + " per year";
+  $("tPortFuture").textContent = money(F.targetFuture);
+  $("tStartBal").textContent = money(F.startBal);
+  $("tGrown").textContent = money(F.grown);
+
+  setBig("tPerPeriod", money(F.perPeriod, 2));
+  $("tPerPeriodNote").textContent = "Stage " + stages.length + ", paid "
+    + PERIOD_ADV[last.period] + " for " + fmtYears(last.years);
+  $("tPerYear").textContent = money(F.perYear);
+  const ch = $("tChange");
+  const delta = F.perPeriod - eff[eff.length - 1].contrib;
+  ch.textContent = (delta >= 0 ? "+" : "") + money(delta, 2);
+  ch.className = "v " + (delta > 0 ? "neg" : "pos");
+
+  if (F.reached){
+    setBig("tYears", fmtYears(F.stageYears));
+    $("tYearsNote").textContent = "Keeping " + money(eff[eff.length - 1].contrib, 2)
+      + " " + PERIOD_ADV[last.period];
+    $("tYearsNow").textContent = fmtYears(last.years);
+    $("tYearsTotal").textContent = fmtYears(F.totalIfStretched);
+    $("btnApplyYearsS").disabled = false;
+  } else {
+    setBig("tYears", "Out of reach");
+    $("tYearsNote").textContent = "Not reached within 100 years at this contribution.";
+    $("tYearsNow").textContent = fmtYears(last.years);
+    $("tYearsTotal").textContent = "\u2014";
+    $("btnApplyYearsS").disabled = true;
+  }
+  return {portToday};
+}
+
+$("btnApplyS").addEventListener("click", () => {
+  const g = readGlobals();
+  const solveFor = $("solveForS").value, target = num("targetS");
+  const portToday = solveFor === "After-Tax Withdrawal"
+    ? target / (g.withdrawal * (1 - g.taxRate)) : target;
+  const F = finalStageSolve(g, effectiveStages(g), portToday);
+  const i = stages.length - 1;
+  // the solve works on the fee- and inflation-adjusted stage, so undo the
+  // contribution adjustment before writing the number back into the card
+  const infl = g.inflation || 0;
+  const factor = (stages[i].adj && i > 0) ? Math.pow(1 + infl, stageStartYear(i)) : 1;
+  stages[i].contrib = F.perPeriod / factor;
+  buildStages(); renderSeries();
+  toast("Final stage contribution set to " + money(stages[i].contrib, 2));
+});
+$("btnApplyYearsS").addEventListener("click", () => {
+  const g = readGlobals();
+  const solveFor = $("solveForS").value, target = num("targetS");
+  const portToday = solveFor === "After-Tax Withdrawal"
+    ? target / (g.withdrawal * (1 - g.taxRate)) : target;
+  const F = finalStageSolve(g, effectiveStages(g), portToday);
+  if (!F.reached){ toast("That target isn't reachable within 100 years"); return; }
+  stages[stages.length - 1].years = F.stageYears;
+  buildStages(); renderSeries();
+  toast("Final stage set to " + fmtYears(F.stageYears));
+});
+
 function renderSeries(){
   const g = readGlobals();
   const R = projectSeries(g, effectiveStages(g));
@@ -2156,7 +2462,7 @@ function renderSeries(){
     if (el) el.textContent = "Year " + fmtNum(acc) + " \u2013 " + fmtNum(acc + st.years);
     const note = $("stageList").querySelector("[data-adj='" + i + "']");
     if (note) note.textContent = (st.adj && i > 0)
-      ? "modelled as " + money(eff[i].contrib, 2) : "";
+      ? "\u2192 " + money(eff[i].contrib, 2) : "";
     acc += st.years;
   });
   $("stageList").querySelectorAll(".stagevol").forEach(el => {
@@ -2201,6 +2507,9 @@ function renderSeries(){
     R.rows.map(r => ({year:r.endYear, end:r.end, growth:r.growth, contrib:r.contrib})),
     g.inflation, feeCost, R.totalYears);
 
+  const solved = renderStagedSolve(g, R);
+  seriesTarget = solved ? solved.portToday : 0;
+
   drawSeriesChart(g, R);
 }
 
@@ -2210,7 +2519,7 @@ function drawSeriesChart(g, R){
   const marks = R.summary.slice(0, -1).map(x => ({year:x.endYear, label:String(x.stage + 1)}));
 
   if (chartMode.series === "mc"){
-    const mc = monteCarlo(g, effectiveStages(g), readTrials("trialsS"), mcSeed);
+    const mc = monteCarlo(g, effectiveStages(g), readTrials(), mcSeed);
     const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial,
                   p25:g.initial, p75:g.initial, det:g.initial}];
     mc.bands.forEach((b, i) => pts.push({year:b.year,
@@ -2219,7 +2528,7 @@ function drawSeriesChart(g, R){
       det: R.rows[i] ? R.rows[i].end / defl(R.rows[i].endYear) : b.p50}));
     seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks);
     mcLegend("legendS", "Stage boundary");
-    mcSummary("mcNoteS", mc, g.target || 0, "(your target)");
+    mcSummary("mcNoteS", mc, seriesTarget || 0, "(your target above)");
   } else {
     const band = Math.max(0, num("bandS")) / 100;
     const shift = d => effectiveStages(g).map(st =>
@@ -2242,7 +2551,7 @@ function drawSeriesChart(g, R){
   }
 }
 
-["gInitial","gInflation","gWithdrawal","gTaxrate","gTarget","gFees"]
+["gInitial","gInflation","gWithdrawal","gTaxrate","gFees"]
   .forEach(id => $(id).addEventListener("input", renderSeries));
 $("bandS").addEventListener("input", () => {
   if (chartMode.series === "band" && seriesRun) renderSeries();
@@ -2276,8 +2585,6 @@ $("btnReroll").addEventListener("click", () => {
 $("btnRerollS").addEventListener("click", () => {
   reroll(); renderSeries(); toast("New set of runs");
 });
-$("trials").addEventListener("change", redrawSingle);
-$("trialsS").addEventListener("change", () => renderSeries());
 $("volatility").addEventListener("input", () => {
   if (chartMode.single === "mc") scheduleMC(redrawSingle);
 });
@@ -2424,8 +2731,8 @@ function currentState(){
   const p = readInputs(), g = readGlobals();
   return {v:1, t:(($("tab-series").hidden) ? "s" : "x"),
     a:[p.initial, p.contrib, p.period, p.growth, p.gross, p.inflation, p.years,
-       p.withdrawal, p.taxRate, p.vol, p.fees],
-    b:[g.initial, g.inflation, g.withdrawal, g.taxRate, g.target, g.fees],
+       p.withdrawal, p.taxRate, p.vol, p.fees, num("target")],
+    b:[g.initial, g.inflation, g.withdrawal, g.taxRate, num("targetS"), g.fees],
     c:stages.map(st => [st.years, st.contrib, st.period, st.growth, st.nominal,
                         st.vol || 0, st.adj ? 1 : 0])};
 }
@@ -2436,11 +2743,13 @@ function applyState(o){
     writeInputs({initial:a[0], contrib:a[1], period:a[2], growth:a[3], gross:a[4],
       nominal:a[4], inflation:a[5], years:a[6], withdrawal:a[7], taxRate:a[8],
       vol:a[9], fees:a[10]});
+    if (a[11] != null) $("target").value = groupDigits(a[11], true);
   }
   if (o.b){
     const b = o.b;
     writeGlobals({initial:b[0], inflation:b[1], withdrawal:b[2], taxRate:b[3],
-                  target:b[4], fees:b[5]});
+                  fees:b[5]});
+    if (b[4] != null) $("targetS").value = groupDigits(b[4], true);
   }
   if (Array.isArray(o.c) && o.c.length){
     stages = o.c.map(c => ({years:c[0], contrib:c[1], period:c[2], growth:c[3],
@@ -2519,6 +2828,7 @@ $("btnDelete").addEventListener("click", () => {
 $("btnReset").addEventListener("click", () => {
   writeInputs(DEFAULTS);
   writeGlobals(SERIES_GLOBALS);
+  $("targetS").value = groupDigits(1000000);
   stages = SERIES_STAGES.map(x => Object.assign({}, x));
   buildStages();
   $("scenarioPick").value = "";
@@ -2532,6 +2842,8 @@ $("btnReset").addEventListener("click", () => {
 $("period").addEventListener("change", renderAll);
 $("target").addEventListener("input", renderSolve);
 $("solveFor").addEventListener("change", renderSolve);
+$("targetS").addEventListener("input", () => renderSeries());
+$("solveForS").addEventListener("change", () => renderSeries());
 ["inflAmt","inflYrs"].forEach(id => $(id).addEventListener("input", renderTools));
 $("band").addEventListener("input", () => {
   if (chartMode.single === "band" && lastRun) drawChart(lastRun, readInputs());
@@ -2557,6 +2869,7 @@ writeGlobals(SERIES_GLOBALS);
 buildStages();
 refreshScenarioList("");
 $("target").value = groupDigits(100000);
+$("targetS").value = groupDigits(1000000);
 $("inflYrs").value = DEFAULTS.years;
 $("convAmt").value = groupDigits(DEFAULTS.contrib, true);
 $("convPeriod").value = DEFAULTS.period;
