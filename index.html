@@ -456,15 +456,57 @@ window.onerror = function(msg){
     </div>
   </div>
   <nav role="tablist" aria-label="Calculator mode">
-    <button role="tab" data-tab="single" aria-selected="true">Single Run</button>
-    <button role="tab" data-tab="series" aria-selected="false">Staged Run</button>
+    <button role="tab" data-tab="simple" aria-selected="true">Basic</button>
+    <button role="tab" data-tab="single" aria-selected="false">Advanced</button>
+    <button role="tab" data-tab="series" aria-selected="false">Stages</button>
     <button role="tab" data-tab="about" aria-selected="false">About</button>
   </nav>
 </header>
 
 <main id="main">
   <!-- ========== INPUTS ========== -->
-  <aside id="asideSingle">
+  <!-- ========== SIMPLE INPUTS ========== -->
+  <aside id="asideSimple">
+    <div class="panel inputs">
+      <h2>A few questions</h2>
+      <div class="body">
+        <div class="field">
+          <label for="qAge">How old are you?</label>
+          <div class="inputwrap"><input id="qAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">yrs</span></div>
+        </div>
+        <div class="field">
+          <label for="qRetire">When do you plan to retire?</label>
+          <div class="inputwrap"><input id="qRetire" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="qSaved">How much have you saved so far?</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="qSaved" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="qContrib">How much do you save for retirement?</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="qContrib" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="qPeriod">How often?</label>
+          <select id="qPeriod">
+            <option>Weekly</option><option>Bi-Weekly</option><option selected>Monthly</option>
+            <option>Quarterly</option><option>Annually</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="qRisk">How is it invested?</label>
+          <select id="qRisk"></select>
+          <div class="hint" id="qRiskNote"></div>
+        </div>
+        <div class="derived">
+          <div><span>Years until retirement</span><span class="num" id="qYears"></span></div>
+          <div><span>Growth after inflation</span><span class="num" id="qReal"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <aside id="asideSingle" hidden>
     <div class="panel inputs">
       <h2>Your inputs</h2>
       <div class="body">
@@ -571,7 +613,88 @@ window.onerror = function(msg){
   </aside>
 
   <!-- ========== RESULTS ========== -->
-  <div class="stack" id="tab-single">
+  <!-- ========== SIMPLE PANE ========== -->
+  <div class="stack" id="tab-simple">
+
+    <div class="panel" id="qWarn" hidden>
+      <div class="body"><div class="hint" id="qWarnText"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Value at retirement</div>
+          <div class="v gold" id="qFV">—</div>
+          <div class="note" id="qFVnote"></div>
+        </div>
+        <div>
+          <div class="k">Income, per year</div>
+          <div class="v" id="qYear">—</div>
+          <div class="note">Taking 4% a year</div>
+        </div>
+        <div>
+          <div class="k">Income, per month</div>
+          <div class="v" id="qMonth">—</div>
+          <div class="note">The same, spread monthly</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">You put in</span><span class="v" id="qIn"></span></div>
+            <div class="kv"><span class="k">Growth adds</span><span class="v pos" id="qGrowth"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Starting from</span><span class="v" id="qStart"></span></div>
+            <div class="kv"><span class="k">Saving for</span><span class="v" id="qSpan"></span></div>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:14px">Every figure here is in today's dollars,
+          so you can compare it to what money is worth now. It assumes you nudge your
+          contribution up a little each year to keep pace with inflation.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Balance over time<span class="h2note">in today's dollars</span></h2>
+      <div class="chartwrap" id="chartWrapQ">
+        <svg id="chartQ" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected balance in today's dollars"></svg>
+        <div class="tip" id="tipQ"></div>
+      </div>
+      <div class="legend" id="legendQ"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="qYearTable">
+          <thead><tr>
+            <th>Age</th><th>Year</th><th>Start</th><th>You added</th><th>Growth</th><th>Balance</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Milestones</h2>
+      <div class="body" id="msBodyQ"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Want more detail?</h2>
+      <div class="body">
+        <p class="hint" style="margin-top:0">The Advanced tab does everything this does
+          plus taxes, fees, contribution growth, and a simulation of good and bad market
+          runs. This will carry your answers over so you don't have to retype them.</p>
+        <button class="btn primary" type="button" id="btnUpgrade">Open these numbers in Advanced</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stack" id="tab-single" hidden>
 
     <div class="panel">
       <div class="headline">
@@ -926,10 +1049,11 @@ window.onerror = function(msg){
         <p>A compounding calculator. You describe what you put in and what you expect
         to earn, and it projects what you end up with, then translates that into
         retirement income. Everything runs in your browser; nothing is sent anywhere.</p>
-        <p>Two modes. <b>Single Run</b> holds one set of assumptions for the whole
-        period. <b>Staged Run</b> chains several periods together, so you can model
-        earning more later, or shifting to safer investments as you approach
-        retirement.</p>
+        <p>Three modes. <b>Basic</b> asks five plain questions and works entirely in
+        today's dollars. <b>Advanced</b> adds inflation, tax, fees, volatility and
+        target solving, holding one set of assumptions for the whole period.
+        <b>Stages</b> chains several periods together, so you can model earning more
+        later, or shifting to safer investments as you approach retirement.</p>
       </div>
     </div>
 
@@ -980,6 +1104,47 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>Basic</h2>
+      <div class="body">
+        <p>The Basic tab answers five questions and nothing more: your age, when you
+        want to stop working, what you've saved, what you add, and roughly how it's
+        invested. It's the right starting point if retirement planning is new to you.</p>
+        <p>What makes it simple is that it works in <b>real</b> terms. The investment
+        choices are stated as growth <i>after</i> inflation, so every number you see is
+        already in today's dollars — no separate inflation setting, and no mental
+        translation of what $2 million means in forty years.</p>
+        <p>Two things that buys simplicity at a cost. It assumes you nudge your
+        contribution up a little each year to keep pace with inflation; if you set
+        $500 a month and never change it, real progress will be slower than shown. And
+        it ignores tax and fees entirely, so the income figure is before both.</p>
+        <p>The investment choices map to these rates of growth after inflation:</p>
+        <dl class="gloss">
+          <dt>Very conservative &middot; 2.0%</dt>
+          <dd>Mostly cash and bonds. Steady, and barely ahead of rising prices.</dd>
+          <dt>Conservative &middot; 3.0%</dt>
+          <dd>Bond heavy, with a slice of stocks.</dd>
+          <dt>Balanced &middot; 4.5%</dt>
+          <dd>A mix of stocks and bonds. A common middle-of-the-road choice.</dd>
+          <dt>Growth &middot; 5.75%</dt>
+          <dd>Mostly stocks. Bigger swings, more expected over long periods.</dd>
+          <dt>Aggressive &middot; 7.0%</dt>
+          <dd>Nearly all stocks. Roughly what US stocks have returned after inflation
+          over the very long run — an optimistic ceiling, not a floor.</dd>
+        </dl>
+        <p>The shaded band on the chart shows the same plan running 1.5 points better
+        or worse, because no one earns an identical return every year. When you want
+        tax, fees, volatility or changing assumptions, <b>Open this in the full
+        calculator</b> carries your answers to the Advanced tab, splitting the real
+        rate back into a return and 2.5% inflation, with contributions set to rise
+        alongside it. Expect the inflation-adjusted total to land within about a
+        percent of the Basic figure rather than exactly on it: Basic keeps the
+        contribution level in real terms continuously, while Advanced steps it up
+        once a year. Advanced also applies a 10% tax rate that Basic ignores, so the
+        income figure will drop.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Coast FIRE</h2>
       <div class="body">
         <p><b>FIRE</b> stands for Financial Independence, Retire Early. <b>Coast FIRE</b>
@@ -991,10 +1156,10 @@ window.onerror = function(msg){
         <p>It matters because it reframes the question. Instead of "can I retire?",
         which is decades away for most people, it asks "when can I stop pushing?"
         That milestone usually arrives far earlier and is a realistic thing to aim at.</p>
-        <p>The Single Run's target panel shows how many years you are from it. Because
+        <p>The Advanced tab's target panel shows how many years you are from it. Because
         it depends entirely on your target, changing the target moves it. If the plan
         never reaches the target at all, there is nothing to coast on and it says so.</p>
-        <p><b>Model this as a staged run</b> rebuilds the plan on the Staged Run tab as
+        <p><b>Model this as a staged plan</b> rebuilds the plan on the Stages tab as
         two stages: contributing as normal up to the coast year, then the remaining
         years with contributions set to zero. Same assumptions throughout, so you can
         see the whole glide path — including what Monte Carlo makes of it, which is
@@ -1015,7 +1180,7 @@ window.onerror = function(msg){
 
           <dt>The dropdown</dt>
           <dd>Switching to a saved scenario loads its inputs for both tabs at once, so
-          a scenario captures your single run and your staged run together. "Unsaved"
+          a scenario captures all three tabs together. "Unsaved"
           means the current numbers don't match anything saved.</dd>
 
           <dt>Delete</dt>
@@ -1102,12 +1267,12 @@ window.onerror = function(msg){
           <dt>Target</dt>
           <dd>What you're aiming for, in today's dollars — either an after-tax income
           or a portfolio balance, your choice. It drives the two solve routes, the
-          Coast FIRE figure, and the Monte Carlo success rate. On the Staged Run the
+          Coast FIRE figure, and the Monte Carlo success rate. On the Stages tab the
           solve changes <i>the final stage only</i>: everything before it is treated as
           settled, which is what makes the answer meaningful when several stages have
           different assumptions.</dd>
 
-          <dt>Inflation adjusted <span class="opt">staged run</span></dt>
+          <dt>Inflation adjusted <span class="opt">Stages tab</span></dt>
           <dd>On any stage after the first, this restates the contribution you typed
           into that stage's future dollars. Type $3,000 for a stage starting in year 5
           at 2.5% inflation and it's modelled as $3,394 — the amount that <i>feels
@@ -1138,7 +1303,7 @@ window.onerror = function(msg){
           After it, the account is doing more of the work than you are.</dd>
           <dt>Work backwards from a target</dt>
           <dd>Two routes to the same goal: raise the contribution, or extend the
-          timeline. Either button applies its change to your inputs. On the Staged Run
+          timeline. Either button applies its change to your inputs. On the Stages tab
           both routes act on the final stage.</dd>
           <dt>Coast FIRE</dt>
           <dd>How far you are from the point where contributions could stop entirely
@@ -1752,7 +1917,7 @@ let lastRun = null;
 const MS_LADDER = [50e3, 100e3, 250e3, 500e3, 1e6, 2e6, 3e6, 5e6, 10e6, 25e6, 50e6, 100e6];
 
 /* rows: [{year, end, growth, contrib}] in chronological order */
-function renderMilestones(elId, rows, infl, feeCost, horizon){
+function renderMilestones(elId, rows, infl, feeCost, horizon, alreadyReal){
   const box = $(elId);
   if (!rows || !rows.length){
     box.innerHTML = "<div class='hint'>Add some years to see milestones.</div>";
@@ -1777,9 +1942,9 @@ function renderMilestones(elId, rows, infl, feeCost, horizon){
   rungs.forEach(v => {
     const hit = rows.find(r => r.end >= v);
     out.push("<div class='kv'><span class='k'>" + money(v) +
-      "<span class='mssub'>" + money(v / Math.pow(1 + infl, hit ? hit.year : 0)) +
-      " in today's dollars</span></span><span class='v'>Year " +
-      (hit ? fmtNum(hit.year) : "\u2014") + "</span></div>");
+      (alreadyReal ? "" : "<span class='mssub'>" +
+        money(v / Math.pow(1 + infl, hit ? hit.year : 0)) + " in today's dollars</span>") +
+      "</span><span class='v'>Year " + (hit ? fmtNum(hit.year) : "\u2014") + "</span></div>");
   });
 
   if (feeCost > 0){
@@ -2112,7 +2277,7 @@ function renderSolve(){
     coastNote.textContent = "Stop contributing then and growth alone still reaches "
       + money(S.portToday) + " by year " + fmtNum(p.years) + ".";
     $("sCoastAction").innerHTML =
-      "<button class='btn' type='button' id='btnCoast'>Model this as a staged run</button>";
+      "<button class='btn' type='button' id='btnCoast'>Model this as a staged plan</button>";
     $("btnCoast").addEventListener("click", () => applyCoast(p, C));
   } else {
     coastEl.textContent = "Not on track";
@@ -2176,7 +2341,7 @@ function stagesLookEdited(){
 }
 function applyCoast(p, C){
   if (stagesLookEdited() &&
-      !confirm("Replace the stages currently in the Staged Run with this Coast FIRE plan?"))
+      !confirm("Replace the stages currently on the Stages tab with this Coast FIRE plan?"))
     return;
   writeGlobals({initial:p.initial, inflation:p.inflation, withdrawal:p.withdrawal,
                 taxRate:p.taxRate, fees:p.fees});
@@ -2191,7 +2356,7 @@ function applyCoast(p, C){
   $("solveForS").value = $("solveFor").value;
   showTab("series");
   renderSeries();
-  toast("Coast FIRE plan loaded into the Staged Run");
+  toast("Coast FIRE plan loaded into the Stages tab");
 }
 
 /* ---------- converter and inflation helper ---------- */
@@ -2606,14 +2771,17 @@ function showTab(t){
   chartMode.tab = t;
   document.querySelectorAll("nav[role=tablist] button").forEach(x =>
     x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === t)));
+  $("tab-simple").hidden = (t !== "simple");
   $("tab-single").hidden = (t !== "single");
   $("tab-series").hidden = (t !== "series");
   $("tab-about").hidden = (t !== "about");
+  $("asideSimple").hidden = (t !== "simple");
   $("asideSingle").hidden = (t !== "single");
   $("asideSeries").hidden = (t !== "series");
   $("main").classList.toggle("solo", t === "about");
   // charts need real layout to measure, so redraw once the pane is visible
-  if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
+  if (t === "simple") renderBasic();
+  else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
 }
 document.querySelectorAll("nav[role=tablist] button").forEach(b => {
@@ -2636,6 +2804,7 @@ function lighten(node){
 function row(k, v){ return "<div class='sh-r'><span>" + k + "</span><b>" + v + "</b></div>"; }
 
 function buildSheet(){
+  if (!$("tab-simple").hidden) return buildBasicSheet();
   const series = !$("tab-series").hidden;
   const g = readGlobals(), p = readInputs();
   const R = series ? projectSeries(g, effectiveStages(g)) : project(p);
@@ -2699,7 +2868,7 @@ function buildSheet(){
 
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>Investment Projection</h1>" +
-      "<span>" + (series ? "Staged run" : "Single run") + " &middot; " +
+      "<span>" + (series ? "Stages" : "Single run") + " &middot; " +
       fmtNum(years) + " years &middot; " + mode + "</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Future value</div><div class='v'>" + money(R.fv) + "</div>" +
@@ -2719,17 +2888,200 @@ function buildSheet(){
     "above, not predictions. Past performance does not predict future returns. " +
     "This is not financial advice.</div>";
 }
+function buildBasicSheet(){
+  const p = readBasic();
+  if (!(p.years > 0)){ $("sheet").innerHTML = ""; return; }
+  const R = project(p);
+  const rows = R.years.map(y => ({year:y.year, end:y.end, growth:y.growth,
+                                  contrib:y.contrib}));
+  const cross = rows.find(r => r.growth > r.contrib && r.contrib > 0);
+  let ms = row("Crossover year", cross ? "Age " + fmtNum(p.age + cross.year) : "\u2014");
+  MS_LADDER.filter(v => v <= R.fv).slice(-4).forEach(v => {
+    const hit = rows.find(r => r.end >= v);
+    ms += row("Reaches " + money(v), hit ? "Age " + fmtNum(p.age + hit.year) : "\u2014");
+  });
+  const level = RISK_LEVELS.find(r => Math.abs(r.real - p.real) < 1e-9);
+  let inputs = row("Age today", fmtNum(p.age));
+  inputs += row("Retiring at", fmtNum(p.retire));
+  inputs += row("Saved so far", money(p.initial));
+  inputs += row("Contributing", money(p.contrib, 2) + " " + PERIOD_ADV[p.period]);
+  inputs += row("Invested as", level ? level.label : pctStr(p.real, 2));
+  inputs += row("Growth after inflation", pctStr(p.real, 2));
+  let out = row("You put in", money(R.contribTotal));
+  out += row("Growth added", money(R.growth));
+  out += row("Value at retirement", money(R.fv));
+  out += row("Income per year", money(R.fv * .04));
+  out += row("Income per month", money(R.fv * .04 / 12));
+
+  const src = $("chartQ");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Retirement Projection</h1><span>" +
+      fmtYears(p.years) + " of saving &middot; every figure in today's dollars</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Value at retirement</div><div class='v'>" + money(R.fv) +
+        "</div><div class='n'>at age " + fmtNum(p.retire) + "</div></div>" +
+      "<div><div class='k'>Income per year</div><div class='v'>" + money(R.fv * .04) +
+        "</div><div class='n'>taking 4% a year</div></div>" +
+      "<div><div class='k'>Income per month</div><div class='v'>" + money(R.fv * .04 / 12) +
+        "</div><div class='n'>before any tax</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Your answers</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+      "<section><div class='sh-t'>Milestones</div>" + ms + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>All figures are in today's dollars and assume a steady " +
+    "return after inflation, no tax and no fees. Real returns vary year to year. " +
+    "Projections are not predictions, and this is not financial advice.</div>";
+}
 $("btnSummary").addEventListener("click", () => {
   buildSheet();
   setTimeout(() => window.print(), 60);
 });
 
+/* ---------- Basic tab ---------- */
+/* Everything here is modelled in real terms: the rate of return already has
+   inflation taken out, so every figure shown is in today's dollars and no
+   separate inflation input is needed. The trade-off is that it assumes the
+   contribution rises with inflation each year, which is why growth is zero. */
+const RISK_LEVELS = [
+  {label:"Very conservative", sub:"mostly cash and bonds",      real:.020},
+  {label:"Conservative",      sub:"bond heavy",                 real:.030},
+  {label:"Balanced",          sub:"a mix of stocks and bonds",  real:.045},
+  {label:"Growth",            sub:"mostly stocks",              real:.0575},
+  {label:"Aggressive",        sub:"nearly all stocks",          real:.070}
+];
+const BASIC_BAND = .015;
+let simplePoints = [], simpleRun = null;
+
+$("qRisk").innerHTML = RISK_LEVELS.map((r, i) =>
+  "<option value='" + r.real + "'" + (i === 2 ? " selected" : "") + ">" +
+  r.label + " \u00b7 " + r.sub + "</option>").join("");
+
+function readBasic(){
+  const age = num("qAge"), retire = num("qRetire");
+  const real = parseFloat($("qRisk").value) || 0;
+  return {age, retire, years: retire - age, real,
+    initial: num("qSaved"), contrib: num("qContrib"), period: $("qPeriod").value,
+    // real terms: no inflation, no contribution growth, no tax, no fees
+    growth:0, nominal: real, inflation:0, withdrawal:.04, taxRate:0, vol:.15,
+    fees:0, gross: real};
+}
+
+function renderBasic(){
+  const p = readBasic();
+  const level = RISK_LEVELS.find(r => Math.abs(r.real - p.real) < 1e-9);
+  $("qReal").textContent = pctStr(p.real, 2) + " a year";
+  $("qRiskNote").textContent = level
+    ? "Assumes about " + pctStr(p.real, 2) + " growth a year after inflation."
+    : "";
+
+  if (!(p.years > 0)){
+    $("qYears").textContent = "\u2014";
+    $("qWarn").hidden = false;
+    $("qWarnText").textContent = p.retire && p.age
+      ? "Your retirement age needs to be higher than your age today."
+      : "Fill in your age and the age you plan to retire to see a projection.";
+    ["qFV","qYear","qMonth"].forEach(id => { $(id).textContent = "\u2014";
+      $(id).style.fontSize = ""; });
+    ["qIn","qGrowth","qStart","qSpan"].forEach(id => $(id).textContent = "\u2014");
+    $("qYearTable").querySelector("tbody").innerHTML = "";
+    $("msBodyQ").innerHTML = "";
+    simplePoints = paintChart("chartQ", [], 1, "band", []);
+    $("legendQ").innerHTML = "";
+    $("qBandNote") && ($("qBandNote").textContent = "");
+    return;
+  }
+  $("qWarn").hidden = true;
+  $("qYears").textContent = fmtYears(p.years);
+
+  const R = project(p);
+  simpleRun = R;
+  setBig("qFV", money(R.fv));
+  $("qFVnote").textContent = "At age " + fmtNum(p.retire) + ", in today's dollars";
+  setBig("qYear", money(R.fv * .04));
+  setBig("qMonth", money(R.fv * .04 / 12));
+  $("qIn").textContent = money(R.contribTotal);
+  $("qGrowth").textContent = money(R.growth);
+  $("qStart").textContent = money(p.initial);
+  $("qSpan").textContent = money(p.contrib, 2) + " " + PERIOD_ADV[p.period];
+
+  $("qYearTable").querySelector("tbody").innerHTML = R.years.map(y =>
+    "<tr><td>" + fmtNum(p.age + y.year) + "</td><td>" + y.year + "</td><td>" +
+    money(y.start) + "</td><td>" + money(y.contrib) + "</td><td class='pos'>" +
+    money(y.growth) + "</td><td>" + money(y.end) + "</td></tr>").join("");
+
+  renderMilestones("msBodyQ",
+    R.years.map(y => ({year:y.year, end:y.end, growth:y.growth, contrib:y.contrib})),
+    0, 0, p.years, true);
+
+  drawBasicChart(R, p);
+}
+
+/* Fixed comparison band, no control: beginners get the range without another
+   dial to understand. */
+function drawBasicChart(R, p){
+  if (!R.years.length){ simplePoints = paintChart("chartQ", [], 1, "band", []); return; }
+  const hiR = project(Object.assign({}, p, {nominal: p.real + BASIC_BAND}));
+  const loR = project(Object.assign({}, p, {nominal: Math.max(-0.99, p.real - BASIC_BAND)}));
+  const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial}];
+  R.years.forEach((y, i) => pts.push({year:y.year, base:y.end,
+    hi: hiR.years[i] ? hiR.years[i].end : y.end,
+    lo: loR.years[i] ? loR.years[i].end : y.end}));
+  simplePoints = paintChart("chartQ", pts, p.years, "band", []);
+  $("legendQ").innerHTML =
+    swatch("#4fbf95", "If returns run better (" + pctStr(p.real + BASIC_BAND, 2) + ")") +
+    swatch("#e9b872", "Your setting (" + pctStr(p.real, 2) + ")") +
+    swatch("#e2795f", "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")");
+  const note = $("qBandNote");
+  if (note) note.innerHTML = "The shaded range shows the same plan with returns "
+    + "1.5 points better or worse. Nobody earns the same return every year, so treat "
+    + "the middle line as a midpoint rather than a promise.";
+}
+
+attachChart("chartWrapQ", "chartQ", "tipQ", () => simplePoints,
+  best => "<b>Year " + fmtNum(best.year) + "</b>" +
+    "<br><span style='color:#4fbf95'>Better</span> <span class='n'>" + money(best.hi) +
+    "</span><br><span style='color:#e9b872'>Expected</span> <span class='n'>" + money(best.base) +
+    "</span><br><span style='color:#e2795f'>Worse</span> <span class='n'>" + money(best.lo) + "</span>");
+
+["qAge","qRetire","qSaved","qContrib"].forEach(id =>
+  $(id).addEventListener("input", renderBasic));
+$("qPeriod").addEventListener("change", renderBasic);
+$("qRisk").addEventListener("change", renderBasic);
+
+/* Carries the basic answers into Advanced. Real return is split back into a
+   nominal rate and inflation so the two tabs agree. */
+$("btnUpgrade").addEventListener("click", () => {
+  const p = readBasic();
+  const infl = .025;
+  /* Basic holds the contribution steady in real terms, so the equivalent on
+     Advanced is a contribution that grows with inflation each year. Without
+     that the same plan would look roughly a quarter smaller. */
+  writeInputs({initial:p.initial, contrib:p.contrib, period:p.period, growth:infl,
+    gross:(1 + p.real) * (1 + infl) - 1, nominal:(1 + p.real) * (1 + infl) - 1,
+    inflation:infl, years:Math.max(1, p.years), withdrawal:.04, taxRate:.10,
+    vol:.15, fees:0});
+  showTab("single");
+  renderAll();
+  toast("Copied across, with 2.5% inflation and a 10% tax rate added");
+});
+
 /* ---------- share links ---------- */
 /* Everything needed to rebuild both tabs, packed into the URL hash. Short keys
    keep the link manageable; base64 keeps it from looking alarming. */
+let linkTab = "simple";
 function currentState(){
   const p = readInputs(), g = readGlobals();
-  return {v:1, t:(($("tab-series").hidden) ? "s" : "x"),
+  return {v:1, t:chartMode.tab || "simple",
+    q:[num("qAge"), num("qRetire"), num("qSaved"), num("qContrib"),
+       $("qPeriod").value, $("qRisk").value],
     a:[p.initial, p.contrib, p.period, p.growth, p.gross, p.inflation, p.years,
        p.withdrawal, p.taxRate, p.vol, p.fees, num("target")],
     b:[g.initial, g.inflation, g.withdrawal, g.taxRate, num("targetS"), g.fees],
@@ -2756,7 +3108,16 @@ function applyState(o){
       nominal:c[4], vol:c[5], adj:!!c[6]}));
     buildStages();
   }
-  if (o.t === "x") showTab("series");
+  if (o.q){
+    const q = o.q;
+    $("qAge").value = q[0]; $("qRetire").value = q[1];
+    $("qSaved").value = groupDigits(q[2], true);
+    $("qContrib").value = groupDigits(q[3], true);
+    $("qPeriod").value = q[4];
+    if (q[5]) $("qRisk").value = q[5];
+  }
+  linkTab = (o.t === "single" || o.t === "series" || o.t === "about" ||
+             o.t === "simple") ? o.t : "simple";
   return true;
 }
 function encodeState(o){
@@ -2868,6 +3229,11 @@ writeInputs(DEFAULTS);
 writeGlobals(SERIES_GLOBALS);
 buildStages();
 refreshScenarioList("");
+$("qAge").value = "30";
+$("qRetire").value = "65";
+$("qSaved").value = groupDigits(10000, true);
+$("qContrib").value = groupDigits(500, true);
+$("qPeriod").value = "Monthly";
 $("target").value = groupDigits(100000);
 $("targetS").value = groupDigits(1000000);
 $("inflYrs").value = DEFAULTS.years;
@@ -2879,10 +3245,11 @@ if (location.hash && location.hash.indexOf("#p=") === 0){
   const st = decodeState(location.hash.slice(3));
   fromLink = !!(st && applyState(st));
 }
-showTab(fromLink && !$("tab-series").hidden ? "series" : "single");
+showTab(fromLink ? linkTab : "simple");
 renderConverter();
 renderAll();
 renderSeries();
+renderBasic();
 if (fromLink) toast("Loaded from a shared link");
 })();
 </script>
