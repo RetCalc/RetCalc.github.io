@@ -26,11 +26,57 @@
   --jade:#4fbf95;
   --steel:#7d9fd6;
   --coral:#e2795f;
+  --grid:#1c272e;
+  --axis:#5f7583;
+  --stageline:#4a5f6b;
+  --dotstroke:#0c1114;
+  --shadow:rgba(0,0,0,.8);
   --sans:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text",
     "Segoe UI",system-ui,Roboto,sans-serif;
   --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono","Roboto Mono",Menlo,
     Consolas,monospace;
 }
+
+/* light theme: same accents, inverted surfaces */
+html[data-theme="light"]{
+  --bg:#f4f6f5;
+  --panel:#ffffff;
+  --panel-2:#eef1f0;
+  --field:#f0f3f2;
+  --line:#d3dcd9;
+  --line-soft:#e4eae7;
+  --text:#16242c;
+  --dim:#4f6470;
+  --dimmer:#7c8f99;
+  --gold:#b07d1e;
+  --jade:#1f9268;
+  --steel:#3f6bb0;
+  --coral:#c0492e;
+  --grid:#e2e7e5;
+  --axis:#7c8f99;
+  --stageline:#9aa9b0;
+  --dotstroke:#ffffff;
+  --shadow:rgba(30,45,55,.18);
+}
+/* elements that hardcode dark surfaces get light equivalents */
+html[data-theme="light"] .panel.inputs{
+  background:linear-gradient(180deg,#f2f7f4 0%,#ffffff 100%);
+  border-color:#bcd8cd;
+  box-shadow:0 0 0 1px rgba(31,146,104,.05),0 10px 30px -18px var(--shadow)}
+html[data-theme="light"] .panel.inputs > h2{border-bottom-color:#d8e6e0}
+html[data-theme="light"] .panel.inputs .inputwrap,
+html[data-theme="light"] .panel.inputs select{background:#f6faf8;border-color:#cfe0d8}
+html[data-theme="light"] .stagecard{border-left-color:#8fc7b4}
+html[data-theme="light"] .adjrow{border-color:#cfe0d8}
+html[data-theme="light"] .adjrow:hover{border-color:#a9d3c4}
+html[data-theme="light"] .stagecard .inputwrap,
+html[data-theme="light"] .stagecard select{background:#ffffff}
+html[data-theme="light"] .inputwrap input::placeholder{color:#9aabae}
+html[data-theme="light"] .about.disclaimer{
+  border-color:#e6d3a8;background:linear-gradient(180deg,#fbf5e6,#ffffff)}
+html[data-theme="light"] ::-webkit-scrollbar-track{background:var(--bg)}
+html[data-theme="light"] ::-webkit-scrollbar-thumb{
+  background:#c3cfca;border:3px solid var(--bg)}
 *{box-sizing:border-box}
 /* .stack sets display:flex, which outranks the browser's [hidden] rule and left
    the inactive tab pane laid out under the sticky sidebar. */
@@ -276,6 +322,8 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .gloss dd{margin:5px 0 0;font-size:13px;line-height:1.65;color:var(--dim)}
 .about.disclaimer{border-color:#4a3a24;background:linear-gradient(180deg,#1d1811,#141b20)}
 .about.disclaimer > h2{color:var(--gold)}
+.themerow{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.themerow > span:first-child{font-size:13.5px;color:var(--dim)}
 .mcbar{display:flex;align-items:flex-end;gap:12px;padding:14px 18px 0;flex-wrap:wrap}
 .mcbar .field{margin-bottom:0}
 .mcbar .inputwrap,.mcbar select{width:104px}
@@ -313,7 +361,7 @@ svg{display:block;width:100%;height:auto}
 .tip{position:absolute;pointer-events:none;background:#0a1013;color:var(--text);
   border:1px solid var(--line);padding:9px 11px;border-radius:8px;font-size:11.5px;
   line-height:1.65;white-space:nowrap;opacity:0;transition:opacity .1s;
-  box-shadow:0 10px 30px -8px rgba(0,0,0,.8);z-index:5}
+  box-shadow:0 10px 30px -8px var(--shadow);z-index:5}
 .tip b{font-size:12px;letter-spacing:.01em}
 .tip .n{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
@@ -325,7 +373,7 @@ svg{display:block;width:100%;height:auto}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
   background:#0a1013;color:var(--text);border:1px solid var(--line);
   padding:11px 18px;border-radius:9px;font-size:13px;
-  box-shadow:0 14px 40px -10px rgba(0,0,0,.9);
+  box-shadow:0 14px 40px -10px var(--shadow);
   opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
 .toast.show{opacity:1}
 /* Tablet and below: the sidebar moves above the results. */
@@ -1043,6 +1091,19 @@ window.onerror = function(msg){
 
   <!-- ========== ABOUT ========== -->
   <div class="stack" id="tab-about" hidden>
+    <div class="panel about">
+      <h2>Appearance</h2>
+      <div class="body">
+        <div class="themerow">
+          <span>Theme</span>
+          <span class="seg" id="segTheme">
+            <button type="button" data-theme="dark" class="on">Dark</button>
+            <button type="button" data-theme="light">Light</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <div class="panel about">
       <h2>What this is</h2>
       <div class="body">
@@ -2005,6 +2066,9 @@ let mcSeed = 20260902;
 const chartMode = {single:"band", series:"band"};
 
 const NS = "http://www.w3.org/2000/svg";
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888";
+}
 const svgEl = (n, at) => { const e = document.createElementNS(NS, n);
   for (const k in at) e.setAttribute(k, at[k]); return e; };
 const swatch = (c, t) => "<span><i style='background:" + c + "'></i>" + t + "</span>";
@@ -2053,16 +2117,16 @@ function paintChart(svgId, pts, maxX, mode, stageMarks){
   };
   for (let i = 0; i <= 4; i++){
     const v = minY + span * i / 4, y = Y(v);
-    svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:y, y2:y, stroke:"#1c272e",
+    svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:y, y2:y, stroke:cssVar("--grid"),
       "stroke-width":1 * sw}));
     const t = svgEl("text", {x:L - 8, y:y + fs/3, "text-anchor":"end", "font-size":fs,
-      fill:"#5f7583", "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+      fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
     t.textContent = fmtAxis(v); svg.appendChild(t);
   }
   const step = Math.max(1, Math.ceil(maxX / (narrow ? 6 : 12)));
   for (let y = 0; y <= maxX; y += step){
     const t = svgEl("text", {x:X(y), y:H - 10, "text-anchor":"middle", "font-size":fs,
-      fill:"#5f7583", "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+      fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
     t.textContent = y; svg.appendChild(t);
   }
 
@@ -2080,7 +2144,7 @@ function paintChart(svgId, pts, maxX, mode, stageMarks){
 
   (stageMarks || []).forEach(m => {
     const sx = X(m.year);
-    svg.appendChild(svgEl("line", {x1:sx, x2:sx, y1:T, y2:T + ph, stroke:"#4a5f6b",
+    svg.appendChild(svgEl("line", {x1:sx, x2:sx, y1:T, y2:T + ph, stroke:cssVar("--stageline"),
       "stroke-width":1 * sw, "stroke-dasharray":"4 4"}));
     const lab = svgEl("text", {x:sx + 4, y:T + fs, "font-size":fs * .92, fill:"#5f7583",
       "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
@@ -2104,7 +2168,7 @@ function paintChart(svgId, pts, maxX, mode, stageMarks){
 
   const hover = svgEl("line", {x1:0, x2:0, y1:T, y2:T + ph, stroke:"#e9b872",
     "stroke-width":1 * sw, opacity:0}); svg.appendChild(hover);
-  const dot = svgEl("circle", {r:4.5 * sw, fill:"#e9b872", stroke:"#0c1114",
+  const dot = svgEl("circle", {r:4.5 * sw, fill:"#e9b872", stroke:cssVar("--dotstroke"),
     "stroke-width":2.5 * sw, opacity:0}); svg.appendChild(dot);
   return {pts, X, Y, hover, dot, maxX, W};
 }
@@ -2114,7 +2178,7 @@ function mcLegend(elId, extra){
                  swatch("#3f9a78", "25th\u201375th"),
                  swatch("#e9b872", "Median"),
                  swatch("#7d9fd6", "Without volatility")];
-  if (extra) parts.push(swatch("#4a5f6b", extra));
+  if (extra) parts.push(swatch(cssVar("--stageline"), extra));
   $(elId).innerHTML = parts.join("");
 }
 function mcSummary(noteId, mc, target, label){
@@ -2711,7 +2775,7 @@ function drawSeriesChart(g, R){
       swatch("#4fbf95", band > 0 ? "Every stage +" + lbl + "%" : "Higher") +
       swatch("#e9b872", "As entered") +
       swatch("#e2795f", band > 0 ? "Every stage \u2212" + lbl + "%" : "Lower") +
-      swatch("#4a5f6b", "Stage boundary");
+      swatch(cssVar("--stageline"), "Stage boundary");
     $("mcNoteS").hidden = true;
   }
 }
@@ -2794,14 +2858,24 @@ document.querySelectorAll("nav[role=tablist] button").forEach(b => {
 /* Built on demand into a light-themed sheet that only the print stylesheet
    shows, so the browser's own "Save as PDF" does the export. No dependencies,
    and it works on iOS through Share > Print. */
-const PRINT_SWAP = {"#1c272e":"#e2e5e3", "#5f7583":"#666e73", "#0c1114":"#ffffff",
-                    "#4a5f6b":"#9aa5ab"};
+/* The chart emits structural colors from the active theme, so the print swap is
+   built at call time from the current variable values mapped to a fixed light
+   palette. This keeps the sheet readable whichever theme is on screen. */
 function lighten(node){
-  ["stroke","fill"].forEach(a => {
-    const v = node.getAttribute && node.getAttribute(a);
-    if (v && PRINT_SWAP[v.toLowerCase()]) node.setAttribute(a, PRINT_SWAP[v.toLowerCase()]);
-  });
-  for (let i = 0; i < node.childNodes.length; i++) lighten(node.childNodes[i]);
+  const swap = {};
+  swap[cssVar("--grid").toLowerCase()] = "#e2e5e3";
+  swap[cssVar("--axis").toLowerCase()] = "#666e73";
+  swap[cssVar("--stageline").toLowerCase()] = "#9aa5ab";
+  swap[cssVar("--dotstroke").toLowerCase()] = "#ffffff";
+  swap[cssVar("--bg").toLowerCase()] = "#ffffff";
+  const walk = nd => {
+    ["stroke","fill"].forEach(a => {
+      const v = nd.getAttribute && nd.getAttribute(a);
+      if (v && swap[v.toLowerCase()]) nd.setAttribute(a, swap[v.toLowerCase()]);
+    });
+    for (let i = 0; i < nd.childNodes.length; i++) walk(nd.childNodes[i]);
+  };
+  walk(node);
 }
 function row(k, v){ return "<div class='sh-r'><span>" + k + "</span><b>" + v + "</b></div>"; }
 
@@ -2945,6 +3019,34 @@ function buildBasicSheet(){
 $("btnSummary").addEventListener("click", () => {
   buildSheet();
   setTimeout(() => window.print(), 60);
+});
+
+/* ---------- theme ---------- */
+const THEME_KEY = "retcalc-theme";
+const THEME_META = {dark:"#0c1114", light:"#f4f6f5"};
+function applyTheme(mode){
+  document.documentElement.setAttribute("data-theme", mode);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", THEME_META[mode] || THEME_META.dark);
+  document.querySelectorAll("#segTheme button").forEach(b =>
+    b.classList.toggle("on", b.getAttribute("data-theme") === mode));
+  // charts bake in theme colors at draw time, so repaint the visible one
+  if (!$("tab-simple").hidden) renderBasic();
+  else if (!$("tab-single").hidden){ if (lastRun) drawChart(lastRun, readInputs()); }
+  else if (!$("tab-series").hidden) renderSeries();
+}
+function initTheme(){
+  let mode = "dark";
+  try { const v = localStorage.getItem(THEME_KEY); if (v === "light" || v === "dark") mode = v; }
+  catch(e){}
+  applyTheme(mode);
+}
+$("segTheme").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-theme]") : null;
+  if (!b) return;
+  const mode = b.getAttribute("data-theme");
+  applyTheme(mode);
+  try { localStorage.setItem(THEME_KEY, mode); } catch(e){}
 });
 
 /* ---------- Basic tab ---------- */
@@ -3264,6 +3366,7 @@ renderConverter();
 renderAll();
 renderSeries();
 renderBasic();
+initTheme();
 if (fromLink) toast("Loaded from a shared link");
 })();
 </script>
