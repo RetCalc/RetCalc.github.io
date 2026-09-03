@@ -3164,15 +3164,27 @@ function applySeriesFrom(s){
     stages = s.series.stages.map(x => Object.assign({}, x));
   buildStages(); renderSeries();
 }
+function applyTargetsFrom(s){
+  if (!s || !s.targets) return;
+  const t = s.targets;
+  if (t.solveFor) $("solveFor").value = t.solveFor;
+  if (t.target != null) $("target").value = groupDigits(t.target, true);
+  if (t.solveForS) $("solveForS").value = t.solveForS;
+  if (t.targetS != null) $("targetS").value = groupDigits(t.targetS, true);
+}
 $("scenarioPick").addEventListener("change", e => {
   const s = scenarios.find(x => x.name === e.target.value);
-  if (s){ writeInputs(s); renderAll(); applySeriesFrom(s); }
+  if (s){ writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s); }
 });
 $("btnSave").addEventListener("click", () => {
   const name = prompt("Name this scenario:", $("scenarioPick").value || "");
   if (!name) return;
   const data = Object.assign({name: name.trim()}, readInputs(), {
-    series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))}
+    series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))},
+    targets: {
+      solveFor: $("solveFor").value, target: num("target"),
+      solveForS: $("solveForS").value, targetS: num("targetS")
+    }
   });
   if (!data.name) return;
   const i = scenarios.findIndex(s => s.name === data.name);
