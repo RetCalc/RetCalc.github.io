@@ -472,7 +472,7 @@ window.onerror = function(msg){
       <div class="body">
         <div class="field">
           <label for="qAge">How old are you?</label>
-          <div class="inputwrap"><input id="qAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">yrs</span></div>
+          <div class="inputwrap"><input id="qAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
         </div>
         <div class="field">
           <label for="qRetire">When do you plan to retire?</label>
@@ -2783,6 +2783,8 @@ function showTab(t){
   if (t === "simple") renderBasic();
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
+  // land at the top of the newly shown tab rather than wherever the last one was
+  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
 }
 document.querySelectorAll("nav[role=tablist] button").forEach(b => {
   b.addEventListener("click", () => showTab(b.getAttribute("data-tab")));
