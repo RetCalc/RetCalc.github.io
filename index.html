@@ -189,6 +189,9 @@ select:hover,.btn:hover{border-color:#33454f}
 
 /* ---------- tabs ---------- */
 nav[role=tablist]{max-width:1220px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
+.subnav{padding-top:2px;padding-bottom:2px}
+.subnav button{font-size:12.5px;padding-bottom:10px}
+.subnav button[aria-selected="true"]{border-bottom-color:var(--gold)}
 nav[role=tablist] button{
   font-family:var(--sans);font-size:13.5px;background:transparent;color:var(--dim);
   border:0;border-bottom:2px solid transparent;padding:0 4px 12px;margin-right:18px;
@@ -326,6 +329,13 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .gloss dd{margin:5px 0 0;font-size:13px;line-height:1.65;color:var(--dim)}
 .about.disclaimer{border-color:#4a3a24;background:linear-gradient(180deg,#1d1811,#141b20)}
 .about.disclaimer > h2{color:var(--gold)}
+.piewrap{display:flex;align-items:center;justify-content:center;padding:4px}
+.piewrap svg{max-width:220px;width:100%;height:auto}
+.bar{margin-bottom:11px}
+.bar .lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:10px}
+.bar .lbl b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.bar .track{height:9px;border-radius:5px;background:var(--field);overflow:hidden}
+.bar .fill{height:100%;border-radius:5px}
 .themerow{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .themerow > span:first-child{font-size:13.5px;color:var(--dim)}
 .mcbar{display:flex;align-items:flex-end;gap:12px;padding:14px 18px 0;flex-wrap:wrap}
@@ -511,7 +521,12 @@ window.onerror = function(msg){
     <button role="tab" data-tab="simple" aria-selected="true">Basic</button>
     <button role="tab" data-tab="single" aria-selected="false">Advanced</button>
     <button role="tab" data-tab="series" aria-selected="false">Stages</button>
+    <button role="tab" data-tab="tools" aria-selected="false">Tools</button>
     <button role="tab" data-tab="about" aria-selected="false">About</button>
+  </nav>
+  <nav role="tablist" aria-label="Which tool" class="subnav" id="subTools" hidden>
+    <button role="tab" data-sub="tax" aria-selected="true">Income Tax</button>
+    <button role="tab" data-sub="mortgage" aria-selected="false">Mortgage</button>
   </nav>
 </header>
 
@@ -1114,7 +1129,9 @@ window.onerror = function(msg){
         <p>A compounding calculator. You describe what you put in and what you expect
         to earn, and it projects what you end up with, then translates that into
         retirement income. Everything runs in your browser; nothing is sent anywhere.</p>
-        <p>Three modes. <b>Basic</b> asks five plain questions and works entirely in
+        <p>There are three tools here: <b>Retirement</b> projections, an
+        <b>Income Tax</b> estimator, and a <b>Mortgage</b> calculator. The retirement
+        tool has three modes. <b>Basic</b> asks five plain questions and works entirely in
         today's dollars. <b>Advanced</b> adds inflation, tax, fees, volatility and
         target solving, holding one set of assumptions for the whole period.
         <b>Stages</b> chains several periods together, so you can model earning more
@@ -1398,9 +1415,86 @@ window.onerror = function(msg){
       </div>
     </div>
 
+    <div class="panel about">
+      <h2>Income Tax</h2>
+      <div class="body">
+        <p>Estimates what you keep from a salary after federal income tax, state
+        income tax and FICA. It's built for the common case &mdash; wage income, one
+        state, standard or itemized deduction &mdash; not for every situation.</p>
+        <p><b>The numbers are tax year 2026.</b> Federal brackets, the standard
+        deduction and FICA limits come from the IRS inflation adjustments
+        (Rev. Proc. 2025-32). State brackets, standard deductions and personal
+        exemptions are as of 1 January 2026. Standard deduction is $16,100 single and
+        $32,200 married filing jointly. Social Security is 6.2% on the first $184,500,
+        Medicare 1.45% on everything, plus a 0.9% surtax above $200,000 single or
+        $250,000 joint.</p>
+        <dl class="gloss">
+          <dt>Gross income</dt>
+          <dd>Salary before anything is taken out.</dd>
+          <dt>Pre-tax deductions</dt>
+          <dd>Traditional 401(k), HSA, and health premiums. These reduce income tax
+          but <i>not</i> Social Security and Medicare, which is why FICA barely moves
+          when you raise them.</dd>
+          <dt>Standard vs itemized</dt>
+          <dd>You take whichever is larger. Most people take the standard deduction;
+          itemizing wins mainly with a big mortgage, large charitable giving, or high
+          state and local taxes.</dd>
+          <dt>Effective vs marginal rate</dt>
+          <dd>Marginal is the rate on your <i>next</i> dollar. Effective is what you
+          actually paid across all your income, and it's always lower. A single filer
+          on $100,000 sits in the 22% bracket but pays about 13% of income in federal
+          tax.</dd>
+        </dl>
+        <p><b>What it leaves out:</b> tax credits (child tax credit, earned income
+        credit), local and city income taxes, the Alternative Minimum Tax, capital
+        gains and investment income, self-employment tax, head-of-household and
+        married-filing-separately status, state credits and phase-outs, and the extra
+        deductions available at 65 and over. Several states phase out deductions at
+        higher incomes in ways this doesn't model. Treat the result as a solid
+        estimate, not a tax return.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Mortgage</h2>
+      <div class="body">
+        <p>Works out the full monthly cost of owning, not just the loan payment, and
+        shows how the balance falls over time.</p>
+        <p>Principal and interest use the standard amortization formula. Every payment
+        is the same size, but the split shifts: early on almost all of it is interest,
+        and only near the end does most of it go to principal. The chart makes that
+        crossover visible, and it's usually later than people expect.</p>
+        <dl class="gloss">
+          <dt>Down payment</dt>
+          <dd>Enter a percentage or a dollar amount &mdash; the other updates itself.</dd>
+          <dt>Interest rate</dt>
+          <dd>Pre-filled with 6.71%, the Freddie Mac national average for a 30-year
+          fixed loan as of 3 September 2026. Rates move weekly, and your own depends on
+          credit score, term, points and lender, so replace it with a current quote.</dd>
+          <dt>PMI</dt>
+          <dd>Private mortgage insurance, charged when you put down less than 20%.
+          Typically 0.3&ndash;1.5% of the loan a year. It drops off automatically here
+          once the balance falls to 80% of the purchase price.</dd>
+          <dt>Property tax and insurance</dt>
+          <dd>Pre-filled with rough national averages. Both vary enormously by
+          location &mdash; property tax alone ranges from well under 0.5% to over 2%
+          of value &mdash; so replace them with local figures if you have them.</dd>
+        </dl>
+        <p><b>What it leaves out:</b> closing costs, PMI cancellation rules that
+        depend on appraised value rather than purchase price, adjustable rates, extra
+        payments, refinancing, the mortgage interest deduction, and maintenance. A
+        common rule of thumb is to budget roughly 1% of the home's value a year for
+        upkeep, which this doesn't include.</p>
+      </div>
+    </div>
+
     <div class="panel about disclaimer">
       <h2>Disclaimer</h2>
       <div class="body">
+        <p><b>Tax figures are estimates.</b> The income tax tool uses published 2026
+        rates but omits credits, local taxes and many special cases, and tax law
+        changes. It is not tax advice and should not be used to file or to decide
+        withholding. For anything that matters, talk to a tax professional.</p>
         <p><b>This is an educational tool, not financial advice.</b> It doesn't know
         your circumstances, goals, debts, taxes or risk tolerance, and nothing it
         produces is a recommendation to buy, sell or hold anything.</p>
@@ -1412,6 +1506,190 @@ window.onerror = function(msg){
         predictions, and the true range of outcomes is wider than any model shows.
         For decisions that matter, talk to a qualified financial professional or tax
         adviser who can look at your whole situation.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== INCOME TAX ========== -->
+  <aside id="asideTax" hidden>
+    <div class="panel inputs">
+      <h2>Your situation</h2>
+      <div class="body">
+        <div class="field">
+          <label for="txGross">Gross income</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="txGross" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="txStatus">Filing status</label>
+          <select id="txStatus">
+            <option value="s">Single</option>
+            <option value="m">Married filing jointly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="txState">State</label>
+          <select id="txState"></select>
+        </div>
+        <div class="field">
+          <label for="txPre">Pre-tax deductions</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="txPre" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="hint">401(k), HSA, traditional IRA, health premiums. Comes off before income tax.</div>
+        </div>
+        <div class="field">
+          <label for="txDedType">Deduction</label>
+          <select id="txDedType">
+            <option value="std">Standard deduction</option>
+            <option value="item">Itemized</option>
+          </select>
+        </div>
+        <div class="field" id="txItemWrap" hidden>
+          <label for="txItem">Itemized total</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="txItem" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
+        </div>
+        <div class="derived">
+          <div><span>Standard deduction</span><span class="num" id="txStdShow"></span></div>
+          <div><span>Taxable income</span><span class="num" id="txTaxable"></span></div>
+          <div><span>Marginal federal rate</span><span class="num" id="txMarginal"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-tax" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div><div class="k">Take-home pay</div><div class="v gold" id="txNet">—</div>
+          <div class="note" id="txNetNote"></div></div>
+        <div><div class="k">Per month</div><div class="v" id="txMonth">—</div>
+          <div class="note">After all taxes below</div></div>
+        <div><div class="k">Every two weeks</div><div class="v" id="txBiweek">—</div>
+          <div class="note">26 paychecks a year</div></div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div id="txBars"></div>
+          <div class="piewrap"><svg id="txPie" viewBox="0 0 220 220" role="img" aria-label="Share of income by tax and take-home"></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Where it goes</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="txTable">
+          <thead><tr><th>Item</th><th>Amount</th><th>Effective rate</th><th>Share of income</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Federal brackets, and what you pay in each</h2>
+      <div class="scroll">
+        <table id="txBrackets">
+          <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MORTGAGE ========== -->
+  <aside id="asideMort" hidden>
+    <div class="panel inputs">
+      <h2>The home and loan</h2>
+      <div class="body">
+        <div class="field">
+          <label for="moPrice">Home price</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="moPrice" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moDownPct">Down payment</label>
+            <div class="inputwrap"><input id="moDownPct" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="moDownAmt">or amount</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moDownAmt" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moRate">Interest rate</label>
+            <div class="inputwrap"><input id="moRate" type="text" inputmode="decimal" data-num data-step="0.125" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="moTerm">Length</label>
+            <select id="moTerm">
+              <option value="30" selected>30 years</option>
+              <option value="20">20 years</option>
+              <option value="15">15 years</option>
+              <option value="10">10 years</option>
+            </select>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moTax">Property tax</label>
+            <div class="inputwrap"><input id="moTax" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="moIns">Insurance</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moIns" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moPmi">PMI</label>
+            <div class="inputwrap"><input id="moPmi" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="moHoa">HOA</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moHoa" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+          </div>
+        </div>
+        <div class="hint" id="moPmiNote"></div>
+        <div class="derived">
+          <div><span>Loan amount</span><span class="num" id="moLoan"></span></div>
+          <div><span>Down payment</span><span class="num" id="moDownShow"></span></div>
+          <div><span>Total interest paid</span><span class="num" id="moTotInt"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-mortgage" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div><div class="k">Monthly payment</div><div class="v gold" id="moTotal">—</div>
+          <div class="note">Everything included</div></div>
+        <div><div class="k">Principal &amp; interest</div><div class="v" id="moPI">—</div>
+          <div class="note">The loan itself</div></div>
+        <div><div class="k">Everything else</div><div class="v" id="moEsc">—</div>
+          <div class="note">Tax, insurance, PMI, HOA</div></div>
+      </div>
+      <div class="body"><div id="moBars"></div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Loan balance and what you've paid</h2>
+      <div class="chartwrap" id="chartWrapMo">
+        <svg id="chartMo" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Mortgage balance over time"></svg>
+        <div class="tip" id="tipMo"></div>
+      </div>
+      <div class="legend" id="legendMo"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Amortization by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="moTable">
+          <thead><tr><th>Year</th><th>Interest</th><th>Principal</th><th>Total paid</th><th>Balance</th></tr></thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -1733,11 +2011,180 @@ function finalStageSolve(g, stages, portToday){
           totalIfStretched: yrs.reached ? priorYears + yrs.years : null,
           reached: yrs.reached, ppy};
 }
+
+/* ---------- 2026 tax data ----------
+   Federal brackets, standard deduction and FICA limits are tax year 2026
+   (IRS Rev. Proc. 2025-32). State brackets, standard deductions and personal
+   exemptions are as of January 1, 2026 per the Tax Foundation's annual survey.
+   Brackets are [threshold, rate] pairs; the rate applies to income above the
+   threshold. Local income taxes are not included. */
+const FED_2026 = {
+  s: [[0,.10],[12400,.12],[50400,.22],[105700,.24],[201775,.32],[256225,.35],[640600,.37]],
+  m: [[0,.10],[24800,.12],[100800,.22],[211400,.24],[403550,.32],[512450,.35],[768700,.37]]
+};
+const FED_STD = {s:16100, m:32200};
+const FICA = {ssRate:.062, ssCap:184500, medRate:.0145, addlRate:.009,
+              addlThreshold:{s:200000, m:250000}};
+const MORT_RATE_ASOF = "Freddie Mac weekly average, 3 September 2026";
+const MORT_RATE_30 = 6.71;
+
+/* sd/pe: [single, married]. pec = exemption delivered as a credit instead.
+   sdc = standard deduction delivered as a credit. */
+const STATES = {
+  AL:{n:"Alabama",sd:[3000,8500],pe:[1500,3000],b:{s:[[0,.02],[500,.04],[3000,.05]],m:[[0,.02],[1000,.04],[6000,.05]]}},
+  AK:{n:"Alaska",none:1},
+  AZ:{n:"Arizona",sd:[8350,16700],b:{s:[[0,.025]],m:[[0,.025]]}},
+  AR:{n:"Arkansas",sd:[2470,4940],pec:[29,58],b:{s:[[0,.02],[4600,.039]],m:[[0,.02],[4600,.039]]}},
+  CA:{n:"California",sd:[5540,11080],pec:[153,306],b:{s:[[0,.01],[11079,.02],[26264,.04],[41452,.06],[57542,.08],[72724,.093],[371479,.103],[445771,.113],[742953,.123],[1000000,.133]],m:[[0,.01],[22158,.02],[52528,.04],[82904,.06],[115084,.08],[145448,.093],[742958,.103],[891542,.113],[1000000,.123],[1485906,.133]]}},
+  CO:{n:"Colorado",sd:[16100,32200],b:{s:[[0,.044]],m:[[0,.044]]}},
+  CT:{n:"Connecticut",pe:[15000,24000],b:{s:[[0,.02],[10000,.045],[50000,.055],[100000,.06],[200000,.065],[250000,.069],[500000,.0699]],m:[[0,.02],[20000,.045],[100000,.055],[200000,.06],[400000,.065],[500000,.069],[1000000,.0699]]}},
+  DE:{n:"Delaware",sd:[3250,6500],pec:[110,220],b:{s:[[0,0],[2000,.022],[5000,.039],[10000,.048],[20000,.052],[25000,.0555],[60000,.066]],m:[[0,0],[2000,.022],[5000,.039],[10000,.048],[20000,.052],[25000,.0555],[60000,.066]]}},
+  FL:{n:"Florida",none:1},
+  GA:{n:"Georgia",sd:[12000,24000],b:{s:[[0,.0519]],m:[[0,.0519]]}},
+  HI:{n:"Hawaii",sd:[4400,8800],pe:[1144,2288],b:{s:[[0,.014],[9600,.032],[14400,.055],[19200,.064],[24000,.068],[36000,.072],[48000,.076],[125000,.079],[175000,.0825],[225000,.09],[275000,.10],[325000,.11]],m:[[0,.014],[19200,.032],[28800,.055],[38400,.064],[48000,.068],[72000,.072],[96000,.076],[250000,.079],[350000,.0825],[450000,.09],[550000,.10],[650000,.11]]}},
+  ID:{n:"Idaho",sd:[16100,32200],b:{s:[[0,0],[4811,.053]],m:[[0,0],[9622,.053]]}},
+  IL:{n:"Illinois",pe:[2925,5850],b:{s:[[0,.0495]],m:[[0,.0495]]}},
+  IN:{n:"Indiana",pe:[1000,2000],b:{s:[[0,.0295]],m:[[0,.0295]]}},
+  IA:{n:"Iowa",sd:[16100,32200],pec:[40,80],b:{s:[[0,.038]],m:[[0,.038]]}},
+  KS:{n:"Kansas",sd:[3605,8240],pe:[9160,18320],b:{s:[[0,.052],[23000,.0558]],m:[[0,.052],[46000,.0558]]}},
+  KY:{n:"Kentucky",sd:[3360,3360],b:{s:[[0,.035]],m:[[0,.035]]}},
+  LA:{n:"Louisiana",sd:[12875,25750],b:{s:[[0,.03]],m:[[0,.03]]}},
+  ME:{n:"Maine",sd:[8350,16700],pe:[5300,10600],b:{s:[[0,.058],[27399,.0675],[64849,.0715]],m:[[0,.058],[54849,.0675],[129749,.0715]]}},
+  MD:{n:"Maryland",sd:[3350,6700],pe:[3200,6400],b:{s:[[0,.02],[1000,.03],[2000,.04],[3000,.0475],[100000,.05],[125000,.0525],[150000,.055],[250000,.0575],[500000,.0625],[1000000,.065]],m:[[0,.02],[1000,.03],[2000,.04],[3000,.0475],[150000,.05],[175000,.0525],[225000,.055],[300000,.0575],[600000,.0625],[1200000,.065]]}},
+  MA:{n:"Massachusetts",pe:[4400,8800],b:{s:[[0,.05],[1083150,.09]],m:[[0,.05],[1083150,.09]]}},
+  MI:{n:"Michigan",pe:[5900,11800],b:{s:[[0,.0425]],m:[[0,.0425]]}},
+  MN:{n:"Minnesota",sd:[15300,30600],b:{s:[[0,.0535],[33310,.068],[109430,.0785],[203150,.0985]],m:[[0,.0535],[48700,.068],[193480,.0785],[337930,.0985]]}},
+  MS:{n:"Mississippi",sd:[2300,4600],pe:[6000,12000],b:{s:[[0,0],[10000,.04]],m:[[0,0],[10000,.04]]}},
+  MO:{n:"Missouri",sd:[16100,32200],b:{s:[[0,0],[1348,.02],[2696,.025],[4044,.03],[5392,.035],[6740,.04],[8088,.045],[9436,.047]],m:[[0,0],[1348,.02],[2696,.025],[4044,.03],[5392,.035],[6740,.04],[8088,.045],[9436,.047]]}},
+  MT:{n:"Montana",sd:[16100,32200],b:{s:[[0,.047],[47500,.0565]],m:[[0,.047],[95000,.0565]]}},
+  NE:{n:"Nebraska",sd:[8850,17700],pec:[176,352],b:{s:[[0,.0246],[4130,.0351],[24760,.0455]],m:[[0,.0246],[8250,.0351],[49530,.0455]]}},
+  NV:{n:"Nevada",none:1},
+  NH:{n:"New Hampshire",none:1},
+  NJ:{n:"New Jersey",pe:[1000,2000],b:{s:[[0,.014],[20000,.0175],[35000,.035],[40000,.0553],[75000,.0637],[500000,.0897],[1000000,.1075]],m:[[0,.014],[20000,.0175],[50000,.0245],[70000,.035],[80000,.0553],[150000,.0637],[500000,.0897],[1000000,.1075]]}},
+  NM:{n:"New Mexico",sd:[16100,32200],b:{s:[[0,.015],[5500,.032],[16500,.043],[33500,.047],[66500,.049],[210000,.059]],m:[[0,.015],[8000,.032],[25000,.043],[50000,.047],[100000,.049],[315000,.059]]}},
+  NY:{n:"New York",sd:[8000,16050],b:{s:[[0,.039],[8500,.044],[11700,.0515],[13900,.054],[80650,.059],[215400,.0685],[1077550,.0965],[5000000,.103],[25000000,.109]],m:[[0,.039],[17150,.044],[23600,.0515],[27900,.054],[161550,.059],[323200,.0685],[2155350,.0965],[5000000,.103],[25000000,.109]]}},
+  NC:{n:"North Carolina",sd:[12750,25500],b:{s:[[0,.0399]],m:[[0,.0399]]}},
+  ND:{n:"North Dakota",sd:[16100,32200],b:{s:[[0,0],[48475,.0195],[244825,.025]],m:[[0,0],[80975,.0195],[298075,.025]]}},
+  OH:{n:"Ohio",pe:[2400,4800],b:{s:[[0,0],[26050,.0275]],m:[[0,0],[26050,.0275]]}},
+  OK:{n:"Oklahoma",sd:[6350,12700],pe:[1000,2000],b:{s:[[0,0],[3750,.025],[4900,.035],[7200,.045]],m:[[0,0],[7500,.025],[9800,.035],[14400,.045]]}},
+  OR:{n:"Oregon",sd:[2910,5820],pec:[256,512],b:{s:[[0,.0475],[4550,.0675],[11400,.0875],[125000,.099]],m:[[0,.0475],[9100,.0675],[22800,.0875],[250000,.099]]}},
+  PA:{n:"Pennsylvania",b:{s:[[0,.0307]],m:[[0,.0307]]}},
+  RI:{n:"Rhode Island",sd:[11200,22400],pe:[5250,10500],b:{s:[[0,.0375],[82050,.0475],[186450,.0599]],m:[[0,.0375],[82050,.0475],[186450,.0599]]}},
+  SC:{n:"South Carolina",sd:[8350,16700],b:{s:[[0,0],[3640,.03],[18230,.06]],m:[[0,0],[3640,.03],[18230,.06]]}},
+  SD:{n:"South Dakota",none:1},
+  TN:{n:"Tennessee",none:1},
+  TX:{n:"Texas",none:1},
+  UT:{n:"Utah",sdc:[966,1932],b:{s:[[0,.045]],m:[[0,.045]]}},
+  VT:{n:"Vermont",sd:[7650,15300],pe:[5300,10600],b:{s:[[0,.0335],[49400,.066],[119700,.076],[249700,.0875]],m:[[0,.0335],[82500,.066],[199450,.076],[304000,.0875]]}},
+  VA:{n:"Virginia",sd:[8750,17500],pe:[930,1860],b:{s:[[0,.02],[3000,.03],[5000,.05],[17000,.0575]],m:[[0,.02],[3000,.03],[5000,.05],[17000,.0575]]}},
+  WA:{n:"Washington",none:1},
+  WV:{n:"West Virginia",pe:[2000,4000],b:{s:[[0,.0222],[10000,.0296],[25000,.0333],[40000,.0444],[60000,.0482]],m:[[0,.0222],[10000,.0296],[25000,.0333],[40000,.0444],[60000,.0482]]}},
+  WI:{n:"Wisconsin",sd:[13960,25840],pe:[700,1400],b:{s:[[0,.035],[15110,.044],[51950,.053],[332720,.0765]],m:[[0,.035],[20150,.044],[69260,.053],[443630,.0765]]}},
+  WY:{n:"Wyoming",none:1},
+  DC:{n:"Washington DC",sd:[16100,32200],b:{s:[[0,.04],[10000,.06],[40000,.065],[60000,.085],[250000,.0925],[500000,.0975],[1000000,.1075]],m:[[0,.04],[10000,.06],[40000,.065],[60000,.085],[250000,.0925],[500000,.0975],[1000000,.1075]]}}
+};
+
+/* Progressive tax over [threshold, rate] pairs, plus the band-by-band detail. */
+function bracketTax(income, brackets){
+  let tax = 0; const bands = [];
+  for (let i = 0; i < brackets.length; i++){
+    const lo = brackets[i][0], rate = brackets[i][1];
+    const hi = (i + 1 < brackets.length) ? brackets[i + 1][0] : Infinity;
+    const inBand = Math.max(0, Math.min(income, hi) - lo);
+    if (inBand > 0){ tax += inBand * rate; }
+    bands.push({lo, hi, rate, amount:inBand, tax:inBand * rate});
+  }
+  return {tax, bands};
+}
+function marginalRate(income, brackets){
+  let r = brackets[0][1];
+  for (let i = 0; i < brackets.length; i++) if (income > brackets[i][0]) r = brackets[i][1];
+  return r;
+}
+
+function computeTax(inp){
+  const st = inp.status, idx = st === "m" ? 1 : 0;
+  const gross = Math.max(0, inp.gross);
+  const pre = Math.min(Math.max(0, inp.pre), gross);
+  const afterPre = gross - pre;
+
+  // federal
+  const fedDed = inp.dedType === "item" ? Math.max(0, inp.item) : FED_STD[st];
+  const fedTaxable = Math.max(0, afterPre - fedDed);
+  const fedCalc = bracketTax(fedTaxable, FED_2026[st]);
+  const federal = fedCalc.tax;
+
+  // state
+  const S = STATES[inp.state] || {none:1};
+  let state = 0, stateTaxable = 0;
+  if (!S.none && S.b){
+    let ded = 0;
+    if (inp.dedType === "item" && S.sd) ded = Math.max(inp.item, 0);
+    else if (S.sd) ded = S.sd[idx];
+    if (S.pe) ded += S.pe[idx];
+    stateTaxable = Math.max(0, afterPre - ded);
+    state = bracketTax(stateTaxable, S.b[st]).tax;
+    if (S.pec) state = Math.max(0, state - S.pec[idx]);
+    if (S.sdc) state = Math.max(0, state - S.sdc[idx]);
+  }
+
+  // FICA is on gross wages; most pre-tax retirement deferrals do not reduce it
+  const ss = Math.min(gross, FICA.ssCap) * FICA.ssRate;
+  const med = gross * FICA.medRate;
+  const addl = Math.max(0, gross - FICA.addlThreshold[st]) * FICA.addlRate;
+  const fica = ss + med + addl;
+
+  const total = federal + state + fica;
+  const net = gross - total - pre;
+  const rate = v => gross > 0 ? v / gross : 0;
+  return {gross, pre, afterPre, fedDed, fedTaxable, federal, state, stateTaxable,
+          fica, ss, med, addl, total, net, takeHome: net,
+          effFed:rate(federal), effState:rate(state), effFica:rate(fica),
+          effTotal:rate(total), effNet:rate(net),
+          marginal: marginalRate(fedTaxable, FED_2026[st]),
+          bands: fedCalc.bands, stateName: S.n || "", stateNone: !!S.none};
+}
+
+/* ---------- mortgage ---------- */
+function mortgage(m){
+  const loan = Math.max(0, m.price - m.down);
+  const r = m.rate / 12, n = Math.round(m.term * 12);
+  const pi = (r === 0) ? (n ? loan / n : 0) : loan * r / (1 - Math.pow(1 + r, -n));
+  const tax = m.price * m.taxPct / 12;
+  const ins = m.ins / 12;
+  const ltv = m.price > 0 ? loan / m.price : 0;
+  const pmiMonthly = (ltv > .80) ? loan * m.pmiPct / 12 : 0;
+  const hoa = m.hoa;
+  const total = pi + tax + ins + pmiMonthly + hoa;
+
+  // year-by-year amortization, dropping PMI once the balance reaches 80% LTV
+  let bal = loan, totalInterest = 0, pmiPaid = 0;
+  const years = [];
+  for (let y = 1; y <= Math.ceil(m.term); y++){
+    let yi = 0, yp = 0, ypmi = 0;
+    for (let k = 0; k < 12 && bal > 0; k++){
+      const interest = bal * r;
+      let principal = pi - interest;
+      if (principal > bal) principal = bal;
+      bal = Math.max(0, bal - principal);
+      yi += interest; yp += principal;
+      if (m.price > 0 && bal / m.price > .80) ypmi += loan * m.pmiPct / 12;
+    }
+    totalInterest += yi; pmiPaid += ypmi;
+    years.push({year:y, interest:yi, principal:yp, paid:yi + yp, balance:bal,
+                pmi:ypmi});
+    if (bal <= 0) break;
+  }
+  return {loan, pi, tax, ins, pmi:pmiMonthly, hoa, total, years, totalInterest,
+          pmiPaid, ltv, n};
+}
+
 // ===MATH END===
 
 if (typeof module !== "undefined")
   module.exports = {PPY, project, goalSolve, solveYears, projectSeries,
-                    monteCarlo, lognormalParams, mulberry32, coastFire,
+                    monteCarlo, lognormalParams, mulberry32, coastFire, computeTax,
+                    mortgage, STATES, FED_2026, FED_STD, FICA,
                     finalStageSolve, balanceBeforeLast};
 </script>
 
@@ -2835,27 +3282,45 @@ document.addEventListener("click", e => {
   el.dispatchEvent(new Event("change", {bubbles:true}));
 });
 
+/* Tools is a container tab: picking it reveals a second row for choosing which
+   tool, so more can be added later without crowding the main nav. */
+let toolSub = "tax";
 function showTab(t){
   chartMode.tab = t;
-  document.querySelectorAll("nav[role=tablist] button").forEach(x =>
+  const onTools = (t === "tools");
+  document.querySelectorAll("nav[role=tablist]:not(.subnav) button").forEach(x =>
     x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === t)));
+  $("subTools").hidden = !onTools;
   $("tab-simple").hidden = (t !== "simple");
   $("tab-single").hidden = (t !== "single");
   $("tab-series").hidden = (t !== "series");
   $("tab-about").hidden = (t !== "about");
+  $("tab-tax").hidden = !(onTools && toolSub === "tax");
+  $("tab-mortgage").hidden = !(onTools && toolSub === "mortgage");
   $("asideSimple").hidden = (t !== "simple");
   $("asideSingle").hidden = (t !== "single");
   $("asideSeries").hidden = (t !== "series");
+  $("asideTax").hidden = !(onTools && toolSub === "tax");
+  $("asideMort").hidden = !(onTools && toolSub === "mortgage");
   $("main").classList.toggle("solo", t === "about");
   // charts need real layout to measure, so redraw once the pane is visible
   if (t === "simple") renderBasic();
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
+  else if (t === "tools"){ if (toolSub === "tax") renderTax(); else renderMort(); }
   // land at the top of the newly shown tab rather than wherever the last one was
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
 }
-document.querySelectorAll("nav[role=tablist] button").forEach(b => {
+document.querySelectorAll("nav[role=tablist]:not(.subnav) button").forEach(b => {
   b.addEventListener("click", () => showTab(b.getAttribute("data-tab")));
+});
+$("subTools").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-sub]") : null;
+  if (!b) return;
+  toolSub = b.getAttribute("data-sub");
+  $("subTools").querySelectorAll("button").forEach(x =>
+    x.setAttribute("aria-selected", String(x.getAttribute("data-sub") === toolSub)));
+  showTab("tools");
 });
 
 /* ---------- one-page summary ---------- */
@@ -3024,6 +3489,161 @@ $("btnSummary").addEventListener("click", () => {
   buildSheet();
   setTimeout(() => window.print(), 60);
 });
+
+/* ---------- income tax tool ---------- */
+const TAX_COLORS = {fed:"#e2795f", state:"#e9b872", fica:"#7d9fd6", net:"#4fbf95"};
+$("txState").innerHTML = Object.keys(STATES)
+  .sort((a,b) => STATES[a].n.localeCompare(STATES[b].n))
+  .map(k => "<option value='" + k + "'>" + STATES[k].n + "</option>").join("");
+
+function readTax(){
+  return {gross:num("txGross"), status:$("txStatus").value, state:$("txState").value,
+          pre:num("txPre"), dedType:$("txDedType").value, item:num("txItem")};
+}
+function bar(label, value, share, color){
+  return "<div class='bar'><div class='lbl'><span>" + label + "</span><b>" +
+    money(value) + "</b></div><div class='track'><div class='fill' style='width:" +
+    (Math.max(0, Math.min(1, share)) * 100).toFixed(1) + "%;background:" + color +
+    "'></div></div></div>";
+}
+function donut(parts){
+  const R = 100, C = 110, sw = 30, circ = 2 * Math.PI * (R - sw / 2);
+  const tot = parts.reduce((a, x) => a + x.v, 0) || 1;
+  let off = 0, out = "";
+  parts.forEach(pt => {
+    const frac = pt.v / tot;
+    if (frac <= 0) return;
+    out += "<circle cx='" + C + "' cy='" + C + "' r='" + (R - sw / 2) +
+      "' fill='none' stroke='" + pt.c + "' stroke-width='" + sw +
+      "' stroke-dasharray='" + (frac * circ).toFixed(2) + " " + circ.toFixed(2) +
+      "' stroke-dashoffset='" + (-off * circ).toFixed(2) +
+      "' transform='rotate(-90 " + C + " " + C + ")'></circle>";
+    off += frac;
+  });
+  return out;
+}
+function renderTax(){
+  const inp = readTax();
+  $("txItemWrap").hidden = inp.dedType !== "item";
+  const R = computeTax(inp);
+  $("txStdShow").textContent = money(FED_STD[inp.status]);
+  $("txTaxable").textContent = money(R.fedTaxable);
+  $("txMarginal").textContent = pctStr(R.marginal, 0);
+
+  setBig("txNet", money(R.net));
+  $("txNetNote").textContent = R.gross > 0
+    ? pctStr(R.effNet, 1) + " of gross" + (R.pre > 0 ? ", after pre-tax savings" : "")
+    : "Enter your income to begin";
+  setBig("txMonth", money(R.net / 12));
+  setBig("txBiweek", money(R.net / 26));
+
+  $("txBars").innerHTML =
+    bar("Take-home pay", R.net, R.effNet, TAX_COLORS.net) +
+    bar("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed) +
+    bar("State income tax" + (R.stateNone ? " (none)" : ""), R.state, R.effState, TAX_COLORS.state) +
+    bar("FICA (Social Security + Medicare)", R.fica, R.effFica, TAX_COLORS.fica) +
+    (R.pre > 0 ? bar("Pre-tax savings", R.pre, R.gross ? R.pre / R.gross : 0, "#8ba0ac") : "");
+
+  const parts = [{v:R.net, c:TAX_COLORS.net}, {v:R.federal, c:TAX_COLORS.fed},
+                 {v:R.state, c:TAX_COLORS.state}, {v:R.fica, c:TAX_COLORS.fica}];
+  if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac"});
+  $("txPie").innerHTML = donut(parts) +
+    "<text x='110' y='104' text-anchor='middle' font-size='13' fill='" + cssVar("--dim") +
+    "' font-family='" + cssVar("--sans") + "'>All taxes</text>" +
+    "<text x='110' y='128' text-anchor='middle' font-size='22' font-weight='600' fill='" +
+    cssVar("--text") + "' font-family='" + cssVar("--mono") + "'>" +
+    pctStr(R.effTotal, 1) + "</text>";
+
+  const row2 = (k, v, eff, cls) => "<tr><td>" + k + "</td><td>" + money(v) +
+    "</td><td>" + pctStr(eff, 2) + "</td><td>" +
+    "<span style='color:" + cls + "'>\u25a0</span> " + pctStr(eff, 1) + "</td></tr>";
+  $("txTable").querySelector("tbody").innerHTML =
+    row2("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed) +
+    row2("State income tax" + (R.stateName ? " \u00b7 " + R.stateName : ""), R.state, R.effState, TAX_COLORS.state) +
+    row2("Social Security", R.ss, R.gross ? R.ss / R.gross : 0, TAX_COLORS.fica) +
+    row2("Medicare" + (R.addl > 0 ? " (incl. surtax)" : ""), R.med + R.addl,
+         R.gross ? (R.med + R.addl) / R.gross : 0, TAX_COLORS.fica) +
+    "<tr style='font-weight:600'><td>All taxes</td><td>" + money(R.total) + "</td><td>" +
+      pctStr(R.effTotal, 2) + "</td><td></td></tr>" +
+    "<tr style='font-weight:600'><td>Take-home pay</td><td>" + money(R.net) + "</td><td>" +
+      pctStr(R.effNet, 2) + "</td><td></td></tr>";
+
+  $("txBrackets").querySelector("tbody").innerHTML = R.bands.map(b =>
+    "<tr" + (b.amount > 0 ? "" : " style='opacity:.4'") + "><td>" + pctStr(b.rate, 0) +
+    "</td><td>" + money(b.lo) + (b.hi === Infinity ? " and up" : " \u2013 " + money(b.hi)) +
+    "</td><td>" + money(b.amount) + "</td><td>" + money(b.tax) + "</td></tr>").join("");
+}
+["txGross","txPre","txItem"].forEach(id => $(id).addEventListener("input", renderTax));
+["txStatus","txState","txDedType"].forEach(id => $(id).addEventListener("change", renderTax));
+
+/* ---------- mortgage tool ---------- */
+let mortPoints = [];
+function readMort(){
+  return {price:num("moPrice"), down:num("moDownAmt"), rate:rate("moRate"),
+          term:parseFloat($("moTerm").value), taxPct:rate("moTax"), ins:num("moIns"),
+          pmiPct:rate("moPmi"), hoa:num("moHoa")};
+}
+/* the two down-payment fields mirror each other; whichever was typed in wins */
+let downLock = false;
+function syncDown(from){
+  if (downLock) return;
+  downLock = true;
+  const price = num("moPrice");
+  if (from === "pct"){
+    $("moDownAmt").value = groupDigits((price * rate("moDownPct")).toFixed(0), true);
+  } else {
+    $("moDownPct").value = price > 0
+      ? String(Math.round(num("moDownAmt") / price * 10000) / 100) : "0";
+  }
+  downLock = false;
+}
+function renderMort(){
+  const m = readMort();
+  const R = mortgage(m);
+  $("moLoan").textContent = money(R.loan);
+  $("moDownShow").textContent = money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 1) + ")";
+  $("moTotInt").textContent = money(R.totalInterest);
+  $("moPmiNote").textContent = R.ltv > .80
+    ? "PMI applies below 20% down and drops off automatically once you reach 20% equity."
+    : "No PMI \u2014 you're at or above 20% down.";
+
+  setBig("moTotal", money(R.total));
+  setBig("moPI", money(R.pi));
+  setBig("moEsc", money(R.total - R.pi));
+
+  const t = R.total || 1;
+  $("moBars").innerHTML =
+    bar("Principal & interest", R.pi, R.pi / t, "#4fbf95") +
+    bar("Property tax", R.tax, R.tax / t, "#e9b872") +
+    bar("Homeowners insurance", R.ins, R.ins / t, "#7d9fd6") +
+    (R.pmi > 0 ? bar("Mortgage insurance (PMI)", R.pmi, R.pmi / t, "#e2795f") : "") +
+    (R.hoa > 0 ? bar("HOA dues", R.hoa, R.hoa / t, "#8ba0ac") : "");
+
+  $("moTable").querySelector("tbody").innerHTML = R.years.map(y =>
+    "<tr><td>" + y.year + "</td><td>" + money(y.interest) + "</td><td class='pos'>" +
+    money(y.principal) + "</td><td>" + money(y.paid) + "</td><td>" +
+    money(y.balance) + "</td></tr>").join("");
+
+  // balance falling against cumulative interest and principal paid
+  let ci = 0, cp = 0;
+  const pts = [{year:0, base:R.loan, hi:0, lo:0}];
+  R.years.forEach(y => { ci += y.interest; cp += y.principal;
+    pts.push({year:y.year, base:y.balance, hi:cp, lo:ci}); });
+  mortPoints = paintChart("chartMo", pts, R.years.length || 1, "band", []);
+  $("legendMo").innerHTML = swatch("#e9b872", "Balance remaining") +
+    swatch("#4fbf95", "Principal paid") + swatch("#e2795f", "Interest paid");
+}
+attachChart("chartWrapMo", "chartMo", "tipMo", () => mortPoints,
+  best => "<b>Year " + fmtNum(best.year) + "</b>" +
+    "<br><span style='color:#e9b872'>Balance</span> <span class='n'>" + money(best.base) +
+    "</span><br><span style='color:#4fbf95'>Principal paid</span> <span class='n'>" + money(best.hi) +
+    "</span><br><span style='color:#e2795f'>Interest paid</span> <span class='n'>" + money(best.lo) + "</span>");
+
+["moPrice","moRate","moTax","moIns","moPmi","moHoa"].forEach(id =>
+  $(id).addEventListener("input", () => { syncDown("pct"); renderMort(); }));
+$("moDownPct").addEventListener("input", () => { syncDown("pct"); renderMort(); });
+$("moDownAmt").addEventListener("input", () => { syncDown("amt"); renderMort(); });
+$("moTerm").addEventListener("change", renderMort);
 
 /* ---------- theme ---------- */
 const THEME_KEY = "retcalc-theme";
@@ -3225,7 +3845,7 @@ function applyState(o){
     if (q[5]) $("qRisk").value = q[5];
   }
   linkTab = (o.t === "single" || o.t === "series" || o.t === "about" ||
-             o.t === "simple") ? o.t : "simple";
+             o.t === "tools" || o.t === "simple") ? o.t : "simple";
   return true;
 }
 function encodeState(o){
@@ -3349,6 +3969,18 @@ writeInputs(DEFAULTS);
 writeGlobals(SERIES_GLOBALS);
 buildStages();
 refreshScenarioList("");
+$("txGross").value = groupDigits(100000, true);
+$("txPre").value = groupDigits(0, true);
+$("txItem").value = groupDigits(0, true);
+$("txState").value = "TX";
+$("moPrice").value = groupDigits(450000, true);
+$("moDownPct").value = "20";
+$("moDownAmt").value = groupDigits(90000, true);
+$("moRate").value = String(MORT_RATE_30);
+$("moTax").value = "1.1";
+$("moIns").value = groupDigits(1800, true);
+$("moPmi").value = "0.6";
+$("moHoa").value = groupDigits(0, true);
 $("qAge").value = "30";
 $("qRetire").value = "65";
 $("qSaved").value = groupDigits(10000, true);
@@ -3370,6 +4002,8 @@ renderConverter();
 renderAll();
 renderSeries();
 renderBasic();
+renderTax();
+renderMort();
 initTheme();
 if (fromLink) toast("Loaded from a shared link");
 })();
