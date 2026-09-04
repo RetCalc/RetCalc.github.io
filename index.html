@@ -323,12 +323,19 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .about ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.65;color:var(--dim)}
 .about ul li{margin-bottom:9px}
 .about ul li::marker{color:var(--jade)}
+.about ul + p{margin-top:14px}
 .gloss{margin:0}
 .gloss dt{font-size:13px;font-weight:600;color:var(--text);margin-top:16px}
 .gloss dt:first-child{margin-top:0}
 .gloss dd{margin:5px 0 0;font-size:13px;line-height:1.65;color:var(--dim)}
 .about.disclaimer{border-color:#4a3a24;background:linear-gradient(180deg,#1d1811,#141b20)}
 .about.disclaimer > h2{color:var(--gold)}
+.txhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 18px 0;flex-wrap:wrap}
+.txbadge{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);
+  border:1px solid var(--line);border-radius:5px;padding:3px 8px}
+#txTable td:first-child,#moTable td:first-child{font-family:var(--sans);
+  font-variant-numeric:normal}
 .piewrap{display:flex;align-items:center;justify-content:center;padding:4px}
 .piewrap svg{max-width:220px;width:100%;height:auto}
 .bar{margin-bottom:11px}
@@ -1558,11 +1565,18 @@ window.onerror = function(msg){
 
   <div class="stack" id="tab-tax" hidden>
     <div class="panel">
+      <div class="txhead">
+        <span class="seg" id="segTxView">
+          <button type="button" data-view="net" class="on">Net Pay</button>
+          <button type="button" data-view="take">Take-Home Pay</button>
+        </span>
+        <span class="txbadge">2026 rates</span>
+      </div>
       <div class="headline">
-        <div><div class="k">Take-home pay</div><div class="v gold" id="txNet">—</div>
+        <div><div class="k" id="txNetLabel">Net pay</div><div class="v gold" id="txNet">—</div>
           <div class="note" id="txNetNote"></div></div>
         <div><div class="k">Per month</div><div class="v" id="txMonth">—</div>
-          <div class="note">After all taxes below</div></div>
+          <div class="note" id="txMonthNote">After all taxes</div></div>
         <div><div class="k">Every two weeks</div><div class="v" id="txBiweek">—</div>
           <div class="note">26 paychecks a year</div></div>
       </div>
@@ -1575,8 +1589,7 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
-      <h2>Where it goes</h2>
-      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <h2>Tax Breakdown</h2>
       <div class="scroll">
         <table id="txTable">
           <thead><tr><th>Item</th><th>Amount</th><th>Effective rate</th><th>Share of income</th></tr></thead>
@@ -1648,6 +1661,16 @@ window.onerror = function(msg){
           <div class="field">
             <label for="moHoa">HOA</label>
             <div class="inputwrap"><span class="affix">$</span><input id="moHoa" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moMaint">Maintenance <span class="opt">optional</span></label>
+            <div class="inputwrap"><input id="moMaint" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="moUtil">Utilities <span class="opt">optional</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moUtil" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
           </div>
         </div>
         <div class="hint" id="moPmiNote"></div>
@@ -2155,7 +2178,9 @@ function mortgage(m){
   const ltv = m.price > 0 ? loan / m.price : 0;
   const pmiMonthly = (ltv > .80) ? loan * m.pmiPct / 12 : 0;
   const hoa = m.hoa;
-  const total = pi + tax + ins + pmiMonthly + hoa;
+  const maint = m.price * (m.maintPct || 0) / 12;
+  const util = m.util || 0;
+  const total = pi + tax + ins + pmiMonthly + hoa + maint + util;
 
   // year-by-year amortization, dropping PMI once the balance reaches 80% LTV
   let bal = loan, totalInterest = 0, pmiPaid = 0;
@@ -2175,8 +2200,8 @@ function mortgage(m){
                 pmi:ypmi});
     if (bal <= 0) break;
   }
-  return {loan, pi, tax, ins, pmi:pmiMonthly, hoa, total, years, totalInterest,
-          pmiPaid, ltv, n};
+  return {loan, pi, tax, ins, pmi:pmiMonthly, hoa, maint, util, total, years,
+          totalInterest, pmiPaid, ltv, n};
 }
 
 // ===MATH END===
@@ -2220,20 +2245,28 @@ const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, no
   inflation:.025, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
 
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
-const KEY = "investment-calculator.v2";
-let memory = null;
-const store = {
-  read(){
-    try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); }
-    catch(e){}
-    return memory;
-  },
-  write(v){
-    memory = v;
-    try { localStorage.setItem(KEY, JSON.stringify(v)); } catch(e){}
-  }
-};
-let scenarios = store.read() || [];
+const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
+              mortgage:"finance-tools.mortgage.v1"};
+const memory = {};
+function storeRead(which){
+  try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
+  catch(e){}
+  return memory[which] || null;
+}
+function storeWrite(which, v){
+  memory[which] = v;
+  try { localStorage.setItem(KEYS[which], JSON.stringify(v)); } catch(e){}
+}
+/* one saved-scenario list per tool */
+const SC = {retire: storeRead("retire") || [], tax: storeRead("tax") || [],
+            mortgage: storeRead("mortgage") || []};
+/* which tool the top-bar buttons act on, driven by the visible tab */
+function activeTool(){
+  const t = chartMode.tab;
+  if (t === "tools") return toolSub;      // "tax" or "mortgage"
+  if (t === "about") return "retire";
+  return "retire";
+}
 
 let toastTimer;
 function toast(msg){
@@ -3303,6 +3336,7 @@ function showTab(t){
   $("asideTax").hidden = !(onTools && toolSub === "tax");
   $("asideMort").hidden = !(onTools && toolSub === "mortgage");
   $("main").classList.toggle("solo", t === "about");
+  refreshScenarioList("");
   // charts need real layout to measure, so redraw once the pane is visible
   if (t === "simple") renderBasic();
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
@@ -3349,6 +3383,10 @@ function lighten(node){
 function row(k, v){ return "<div class='sh-r'><span>" + k + "</span><b>" + v + "</b></div>"; }
 
 function buildSheet(){
+  if (!$("tab-tax").hidden || !$("tab-mortgage").hidden){
+    toast("Summary isn't available for this tool yet");
+    return false;
+  }
   if (!$("tab-simple").hidden) return buildBasicSheet();
   const series = !$("tab-series").hidden;
   const g = readGlobals(), p = readInputs();
@@ -3486,7 +3524,7 @@ function buildBasicSheet(){
     "Projections are not predictions, and this is not financial advice.</div>";
 }
 $("btnSummary").addEventListener("click", () => {
-  buildSheet();
+  if (buildSheet() === false) return;
   setTimeout(() => window.print(), 60);
 });
 
@@ -3530,12 +3568,21 @@ function renderTax(){
   $("txTaxable").textContent = money(R.fedTaxable);
   $("txMarginal").textContent = pctStr(R.marginal, 0);
 
-  setBig("txNet", money(R.net));
+  // Net pay = gross minus taxes; take-home also subtracts pre-tax savings, which
+  // is money you keep but never see in the paycheck.
+  const netPay = R.gross - R.total;
+  const shown = txView === "take" ? R.net : netPay;
+  $("txNetLabel").textContent = txView === "take" ? "Take-home pay" : "Net pay";
   $("txNetNote").textContent = R.gross > 0
-    ? pctStr(R.effNet, 1) + " of gross" + (R.pre > 0 ? ", after pre-tax savings" : "")
+    ? (txView === "take"
+        ? pctStr(R.gross ? R.net / R.gross : 0, 1) + " of gross, after pre-tax savings"
+        : pctStr(R.gross ? netPay / R.gross : 0, 1) + " of gross, after taxes")
     : "Enter your income to begin";
-  setBig("txMonth", money(R.net / 12));
-  setBig("txBiweek", money(R.net / 26));
+  $("txMonthNote").textContent = txView === "take"
+    ? "In your paycheck, after pre-tax savings" : "After all taxes";
+  setBig("txNet", money(shown));
+  setBig("txMonth", money(shown / 12));
+  setBig("txBiweek", money(shown / 26));
 
   $("txBars").innerHTML =
     bar("Take-home pay", R.net, R.effNet, TAX_COLORS.net) +
@@ -3565,14 +3612,27 @@ function renderTax(){
          R.gross ? (R.med + R.addl) / R.gross : 0, TAX_COLORS.fica) +
     "<tr style='font-weight:600'><td>All taxes</td><td>" + money(R.total) + "</td><td>" +
       pctStr(R.effTotal, 2) + "</td><td></td></tr>" +
-    "<tr style='font-weight:600'><td>Take-home pay</td><td>" + money(R.net) + "</td><td>" +
-      pctStr(R.effNet, 2) + "</td><td></td></tr>";
+    "<tr><td>Take-home pay</td><td>" + money(R.net) + "</td><td>" +
+      pctStr(R.effNet, 2) + "</td><td></td></tr>" +
+    (R.pre > 0 ? "<tr><td>Pre-tax deductions</td><td>" + money(R.pre) + "</td><td>" +
+      pctStr(R.gross ? R.pre / R.gross : 0, 2) + "</td><td></td></tr>" : "") +
+    "<tr style='font-weight:600;border-top:2px solid var(--line)'><td>Gross pay</td><td>" +
+      money(R.gross) + "</td><td>100.00%</td><td></td></tr>";
 
   $("txBrackets").querySelector("tbody").innerHTML = R.bands.map(b =>
     "<tr" + (b.amount > 0 ? "" : " style='opacity:.4'") + "><td>" + pctStr(b.rate, 0) +
     "</td><td>" + money(b.lo) + (b.hi === Infinity ? " and up" : " \u2013 " + money(b.hi)) +
     "</td><td>" + money(b.amount) + "</td><td>" + money(b.tax) + "</td></tr>").join("");
 }
+let txView = "net";
+$("segTxView").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-view]") : null;
+  if (!b) return;
+  txView = b.getAttribute("data-view");
+  $("segTxView").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x.getAttribute("data-view") === txView));
+  renderTax();
+});
 ["txGross","txPre","txItem"].forEach(id => $(id).addEventListener("input", renderTax));
 ["txStatus","txState","txDedType"].forEach(id => $(id).addEventListener("change", renderTax));
 
@@ -3581,7 +3641,23 @@ let mortPoints = [];
 function readMort(){
   return {price:num("moPrice"), down:num("moDownAmt"), rate:rate("moRate"),
           term:parseFloat($("moTerm").value), taxPct:rate("moTax"), ins:num("moIns"),
-          pmiPct:rate("moPmi"), hoa:num("moHoa")};
+          pmiPct:rate("moPmi"), hoa:num("moHoa"),
+          maintPct:rate("moMaint"), util:num("moUtil")};
+}
+/* PMI only exists below 20% down, so the field mirrors that: it fills in a
+   default when PMI applies and blanks to 0 when it doesn't, rather than showing
+   a rate that isn't used. */
+const PMI_DEFAULT = 0.6;
+let pmiAuto = false;
+function syncPmi(){
+  if (pmiAuto) return;
+  pmiAuto = true;
+  const price = num("moPrice"), down = num("moDownAmt");
+  const ltv = price > 0 ? (price - down) / price : 0;
+  const cur = num("moPmi");
+  if (ltv > .80 && cur === 0) $("moPmi").value = String(PMI_DEFAULT);
+  else if (ltv <= .80 && cur !== 0) $("moPmi").value = "0";
+  pmiAuto = false;
 }
 /* the two down-payment fields mirror each other; whichever was typed in wins */
 let downLock = false;
@@ -3617,7 +3693,9 @@ function renderMort(){
     bar("Property tax", R.tax, R.tax / t, "#e9b872") +
     bar("Homeowners insurance", R.ins, R.ins / t, "#7d9fd6") +
     (R.pmi > 0 ? bar("Mortgage insurance (PMI)", R.pmi, R.pmi / t, "#e2795f") : "") +
-    (R.hoa > 0 ? bar("HOA dues", R.hoa, R.hoa / t, "#8ba0ac") : "");
+    (R.hoa > 0 ? bar("HOA dues", R.hoa, R.hoa / t, "#8ba0ac") : "") +
+    (R.maint > 0 ? bar("Maintenance", R.maint, R.maint / t, "#b48ec4") : "") +
+    (R.util > 0 ? bar("Utilities", R.util, R.util / t, "#6fb0a6") : "");
 
   $("moTable").querySelector("tbody").innerHTML = R.years.map(y =>
     "<tr><td>" + y.year + "</td><td>" + money(y.interest) + "</td><td class='pos'>" +
@@ -3639,10 +3717,11 @@ attachChart("chartWrapMo", "chartMo", "tipMo", () => mortPoints,
     "</span><br><span style='color:#4fbf95'>Principal paid</span> <span class='n'>" + money(best.hi) +
     "</span><br><span style='color:#e2795f'>Interest paid</span> <span class='n'>" + money(best.lo) + "</span>");
 
-["moPrice","moRate","moTax","moIns","moPmi","moHoa"].forEach(id =>
-  $(id).addEventListener("input", () => { syncDown("pct"); renderMort(); }));
-$("moDownPct").addEventListener("input", () => { syncDown("pct"); renderMort(); });
-$("moDownAmt").addEventListener("input", () => { syncDown("amt"); renderMort(); });
+["moRate","moTax","moIns","moPmi","moHoa","moMaint","moUtil"].forEach(id =>
+  $(id).addEventListener("input", renderMort));
+$("moPrice").addEventListener("input", () => { syncDown("pct"); syncPmi(); renderMort(); });
+$("moDownPct").addEventListener("input", () => { syncDown("pct"); syncPmi(); renderMort(); });
+$("moDownAmt").addEventListener("input", () => { syncDown("amt"); syncPmi(); renderMort(); });
 $("moTerm").addEventListener("change", renderMort);
 
 /* ---------- theme ---------- */
@@ -3814,7 +3893,8 @@ function currentState(){
        p.withdrawal, p.taxRate, p.vol, p.fees, num("target")],
     b:[g.initial, g.inflation, g.withdrawal, g.taxRate, num("targetS"), g.fees],
     c:stages.map(st => [st.years, st.contrib, st.period, st.growth, st.nominal,
-                        st.vol || 0, st.adj ? 1 : 0])};
+                        st.vol || 0, st.adj ? 1 : 0]),
+    sub:toolSub, tx:readTaxState(), mo:readMortState()};
 }
 function applyState(o){
   if (!o || o.v !== 1) return false;
@@ -3844,6 +3924,9 @@ function applyState(o){
     $("qPeriod").value = q[4];
     if (q[5]) $("qRisk").value = q[5];
   }
+  if (o.tx) writeTaxState(o.tx);
+  if (o.mo) writeMortState(o.mo);
+  if (o.sub === "tax" || o.sub === "mortgage") toolSub = o.sub;
   linkTab = (o.t === "single" || o.t === "series" || o.t === "about" ||
              o.t === "tools" || o.t === "simple") ? o.t : "simple";
   return true;
@@ -3873,14 +3956,47 @@ $("btnShare").addEventListener("click", () => {
 });
 
 /* ---------- scenarios ---------- */
+function readTaxState(){
+  return {gross:num("txGross"), status:$("txStatus").value, state:$("txState").value,
+          pre:num("txPre"), dedType:$("txDedType").value, item:num("txItem")};
+}
+function writeTaxState(d){
+  if (d.gross != null) $("txGross").value = groupDigits(d.gross, true);
+  if (d.status) $("txStatus").value = d.status;
+  if (d.state) $("txState").value = d.state;
+  if (d.pre != null) $("txPre").value = groupDigits(d.pre, true);
+  if (d.dedType) $("txDedType").value = d.dedType;
+  if (d.item != null) $("txItem").value = groupDigits(d.item, true);
+}
+function readMortState(){
+  return {price:num("moPrice"), downPct:num("moDownPct"), downAmt:num("moDownAmt"),
+          rate:num("moRate"), term:$("moTerm").value, tax:num("moTax"), ins:num("moIns"),
+          pmi:num("moPmi"), hoa:num("moHoa"), maint:num("moMaint"), util:num("moUtil")};
+}
+function writeMortState(d){
+  if (d.price != null) $("moPrice").value = groupDigits(d.price, true);
+  if (d.downPct != null) $("moDownPct").value = String(d.downPct);
+  if (d.downAmt != null) $("moDownAmt").value = groupDigits(d.downAmt, true);
+  if (d.rate != null) $("moRate").value = String(d.rate);
+  if (d.term) $("moTerm").value = d.term;
+  if (d.tax != null) $("moTax").value = String(d.tax);
+  if (d.ins != null) $("moIns").value = groupDigits(d.ins, true);
+  if (d.pmi != null) $("moPmi").value = String(d.pmi);
+  if (d.hoa != null) $("moHoa").value = groupDigits(d.hoa, true);
+  if (d.maint != null) $("moMaint").value = String(d.maint);
+  if (d.util != null) $("moUtil").value = groupDigits(d.util, true);
+}
+
+const TOOL_LABEL = {retire:"scenario", tax:"tax scenario", mortgage:"mortgage scenario"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
-  if (!scenarios.length){
+  const list = SC[activeTool()];
+  if (!list.length){
     sel.innerHTML = "<option value=''>No saved scenarios</option>";
     return;
   }
   sel.innerHTML = "<option value=''>Unsaved</option>" +
-    scenarios.map(s => "<option>" + s.name + "</option>").join("");
+    list.map(s => "<option>" + s.name + "</option>").join("");
   sel.value = selected || "";
 }
 function applySeriesFrom(s){
@@ -3899,42 +4015,86 @@ function applyTargetsFrom(s){
   if (t.targetS != null) $("targetS").value = groupDigits(t.targetS, true);
 }
 $("scenarioPick").addEventListener("change", e => {
-  const s = scenarios.find(x => x.name === e.target.value);
-  if (s){ writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s); }
+  const tool = activeTool();
+  const s = SC[tool].find(x => x.name === e.target.value);
+  if (!s) return;
+  if (tool === "retire"){ writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s); }
+  else if (tool === "tax"){ writeTaxState(s.data); renderTax(); }
+  else if (tool === "mortgage"){ writeMortState(s.data); syncPmi(); renderMort(); }
 });
 $("btnSave").addEventListener("click", () => {
-  const name = prompt("Name this scenario:", $("scenarioPick").value || "");
-  if (!name) return;
-  const data = Object.assign({name: name.trim()}, readInputs(), {
-    series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))},
-    targets: {
-      solveFor: $("solveFor").value, target: num("target"),
-      solveForS: $("solveForS").value, targetS: num("targetS")
-    }
-  });
-  if (!data.name) return;
-  const i = scenarios.findIndex(s => s.name === data.name);
-  if (i >= 0) scenarios[i] = data; else scenarios.push(data);
-  store.write(scenarios); refreshScenarioList(data.name);
+  const tool = activeTool();
+  const name = prompt("Name this " + TOOL_LABEL[tool] + ":", $("scenarioPick").value || "");
+  if (!name || !name.trim()) return;
+  let data;
+  if (tool === "retire"){
+    data = Object.assign({name:name.trim()}, readInputs(), {
+      series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))},
+      targets: {solveFor:$("solveFor").value, target:num("target"),
+                solveForS:$("solveForS").value, targetS:num("targetS")}});
+  } else if (tool === "tax"){
+    data = {name:name.trim(), data:readTaxState()};
+  } else {
+    data = {name:name.trim(), data:readMortState()};
+  }
+  const list = SC[tool];
+  const i = list.findIndex(s => s.name === data.name);
+  if (i >= 0) list[i] = data; else list.push(data);
+  storeWrite(tool, list); refreshScenarioList(data.name);
   toast("Saved " + data.name);
 });
 $("btnDelete").addEventListener("click", () => {
+  const tool = activeTool();
   const name = $("scenarioPick").value;
-  if (!name){ toast("Pick a saved scenario first"); return; }
-  if (!confirm("Delete the scenario " + name + "?")) return;
-  scenarios = scenarios.filter(s => s.name !== name);
-  store.write(scenarios); refreshScenarioList("");
+  if (!name){ toast("Pick a saved " + TOOL_LABEL[tool] + " first"); return; }
+  if (!confirm("Delete " + name + "?")) return;
+  SC[tool] = SC[tool].filter(s => s.name !== name);
+  storeWrite(tool, SC[tool]); refreshScenarioList("");
   toast("Deleted " + name);
 });
+/* Reset only the tool you're viewing, and ask first if anything differs from
+   defaults — the button sits close to the tabs on mobile. */
+const TAX_DEFAULTS = {gross:100000, status:"s", state:"IL", pre:0, dedType:"std", item:0};
+const MORT_DEFAULTS = {price:450000, downPct:20, downAmt:90000, rate:MORT_RATE_30,
+  term:"30", tax:1.1, ins:1800, pmi:0, hoa:0, maint:1, util:300};
+function sameShallow(a, b){
+  for (const k in b) if (String(a[k]) !== String(b[k])) return false;
+  return true;
+}
+function toolIsDirty(tool){
+  if (tool === "tax") return !sameShallow(readTaxState(), TAX_DEFAULTS);
+  if (tool === "mortgage") return !sameShallow(readMortState(), MORT_DEFAULTS);
+  const d = readInputs();
+  return d.initial !== DEFAULTS.initial || d.contrib !== DEFAULTS.contrib ||
+    d.period !== DEFAULTS.period || d.years !== DEFAULTS.years ||
+    Math.abs(d.growth - DEFAULTS.growth) > 1e-9 ||
+    Math.abs(d.nominal - DEFAULTS.nominal) > 1e-9 ||
+    Math.abs(d.inflation - DEFAULTS.inflation) > 1e-9 ||
+    Math.abs(d.withdrawal - DEFAULTS.withdrawal) > 1e-9 ||
+    Math.abs(d.taxRate - DEFAULTS.taxRate) > 1e-9 || (d.fees||0) !== 0 ||
+    stages.length !== SERIES_STAGES.length;
+}
 $("btnReset").addEventListener("click", () => {
-  writeInputs(DEFAULTS);
-  writeGlobals(SERIES_GLOBALS);
-  $("targetS").value = groupDigits(1000000);
-  stages = SERIES_STAGES.map(x => Object.assign({}, x));
-  buildStages();
+  const tool = activeTool();
+  if (toolIsDirty(tool) &&
+      !confirm("Reset the " + (tool === "retire" ? "retirement" : tool) +
+               " inputs to their defaults? Your saved " + TOOL_LABEL[tool] +
+               "s won't be affected.")) return;
+  if (tool === "tax"){
+    writeTaxState(TAX_DEFAULTS); renderTax();
+  } else if (tool === "mortgage"){
+    writeMortState(MORT_DEFAULTS); syncPmi(); renderMort();
+  } else {
+    writeInputs(DEFAULTS);
+    writeGlobals(SERIES_GLOBALS);
+    $("targetS").value = groupDigits(1000000);
+    stages = SERIES_STAGES.map(x => Object.assign({}, x));
+    buildStages();
+    renderAll(); renderSeries();
+  }
   $("scenarioPick").value = "";
-  renderAll(); renderSeries();
-  toast("Inputs reset");
+  toast((tool === "retire" ? "Retirement" :
+         tool === "tax" ? "Tax" : "Mortgage") + " inputs reset");
 });
 
 /* ---------- wire up ---------- */
@@ -3972,15 +4132,17 @@ refreshScenarioList("");
 $("txGross").value = groupDigits(100000, true);
 $("txPre").value = groupDigits(0, true);
 $("txItem").value = groupDigits(0, true);
-$("txState").value = "TX";
+$("txState").value = "IL";
 $("moPrice").value = groupDigits(450000, true);
 $("moDownPct").value = "20";
 $("moDownAmt").value = groupDigits(90000, true);
 $("moRate").value = String(MORT_RATE_30);
 $("moTax").value = "1.1";
 $("moIns").value = groupDigits(1800, true);
-$("moPmi").value = "0.6";
+$("moPmi").value = "0";
 $("moHoa").value = groupDigits(0, true);
+$("moMaint").value = "1";
+$("moUtil").value = groupDigits(300, true);
 $("qAge").value = "30";
 $("qRetire").value = "65";
 $("qSaved").value = groupDigits(10000, true);
