@@ -190,7 +190,7 @@ select:hover,.btn:hover{border-color:#33454f}
 /* ---------- tabs ---------- */
 nav[role=tablist]{max-width:1220px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
 .subnav{padding-top:2px;padding-bottom:2px}
-.subnav button{font-size:12.5px;padding-bottom:10px}
+.subnav button{font-size:12.5px;padding:8px 12px 10px}
 .subnav button[aria-selected="true"]{border-bottom-color:var(--gold)}
 nav[role=tablist] button{
   font-family:var(--sans);font-size:13.5px;background:transparent;color:var(--dim);
@@ -323,13 +323,51 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .about ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.65;color:var(--dim)}
 .about ul li{margin-bottom:9px}
 .about ul li::marker{color:var(--jade)}
-.about ul + p{margin-top:14px}
+.about ul + p,.about dl + p{margin-top:14px}
 .gloss{margin:0}
 .gloss dt{font-size:13px;font-weight:600;color:var(--text);margin-top:16px}
 .gloss dt:first-child{margin-top:0}
 .gloss dd{margin:5px 0 0;font-size:13px;line-height:1.65;color:var(--dim)}
 .about.disclaimer{border-color:#4a3a24;background:linear-gradient(180deg,#1d1811,#141b20)}
 .about.disclaimer > h2{color:var(--gold)}
+.bgincome{max-width:520px}
+.bgincome label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bgincome-row .inputwrap{flex:1 1 140px}
+.bgseg{display:inline-flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;flex:none}
+.bgseg button{font-family:var(--mono);font-size:11px;padding:5px 8px;background:transparent;
+  color:var(--dim);border:0;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s;
+  line-height:1}
+.bgseg button + button{border-left:1px solid var(--line)}
+.bgseg button.on{background:var(--panel-2);color:var(--text)}
+.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;
+  align-items:center;justify-content:center;padding:20px}
+.popup{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:22px 24px 18px;max-width:340px;width:100%;box-shadow:0 20px 60px -20px var(--shadow)}
+.popup h3{margin:0 0 14px;font-size:15px;color:var(--text);font-weight:600}
+.popup .popbtn{display:block;width:100%;text-align:left;background:var(--field);
+  border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;
+  color:var(--text);font-family:var(--sans);font-size:13.5px;cursor:pointer;
+  transition:border-color .12s,background .12s}
+.popup .popbtn:hover{border-color:var(--jade);background:var(--panel-2)}
+.popup .popbtn .subdesc{display:block;font-size:11.5px;color:var(--dim);margin-top:3px}
+.popup .cancel{display:block;width:100%;text-align:center;background:transparent;border:0;
+  color:var(--dimmer);font-size:12.5px;padding:8px 0 2px;cursor:pointer;font-family:var(--sans)}
+.popup .cancel:hover{color:var(--text)}
+.freqsel{width:auto;min-width:104px;flex:none}
+.bggroup{margin-bottom:6px}
+.bggroup-h{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--dimmer);
+  padding:12px 0 6px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}
+.bgrow{display:flex;gap:8px;align-items:center;padding:5px 0}
+.bgrow .desc{flex:1 1 auto;min-width:0;font-size:13.5px;color:var(--text)}
+.bgrow input.desc{background:var(--field);border:1px solid var(--line);border-radius:7px;
+  padding:8px 10px;font-family:var(--sans);color:var(--text)}
+.bgrow .inputwrap{flex:0 0 130px;width:130px}
+
+.bgrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
+  font-size:18px;line-height:1;padding:0 6px;flex:none}
+.bgrow .del:hover{color:var(--coral)}
+.bgrow .delspace{width:26px;flex:none}
 .txhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:14px 18px 0;flex-wrap:wrap}
 .txbadge{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);
@@ -441,8 +479,9 @@ svg{display:block;width:100%;height:auto}
   .btn{padding:11px 12px}
   .field label{font-size:12.5px}
 
-  .scenariobar{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .scenariobar{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
   .scenariobar select{grid-column:1 / -1}
+  .scenariobar .btn{font-size:12px;padding:8px 0}
 
   .h2ctrl{margin-left:0;width:100%;justify-content:space-between;gap:10px}
   .h2ctrl .inputwrap{width:110px}
@@ -517,10 +556,8 @@ window.onerror = function(msg){
     </div>
     <div class="scenariobar">
       <select id="scenarioPick" aria-label="Saved scenarios"></select>
-      <button class="btn" id="btnSave">Save</button>
-      <button class="btn" id="btnShare">Share</button>
-      <button class="btn" id="btnDelete">Delete</button>
-      <button class="btn" id="btnSummary">Summary</button>
+      <button class="btn" id="btnScenario">Scenario</button>
+      <button class="btn" id="btnShareMenu">Share</button>
       <button class="btn" id="btnReset">Reset</button>
     </div>
   </div>
@@ -534,6 +571,7 @@ window.onerror = function(msg){
   <nav role="tablist" aria-label="Which tool" class="subnav" id="subTools" hidden>
     <button role="tab" data-sub="tax" aria-selected="true">Income Tax</button>
     <button role="tab" data-sub="mortgage" aria-selected="false">Mortgage</button>
+    <button role="tab" data-sub="budget" aria-selected="false">Budget</button>
   </nav>
 </header>
 
@@ -1136,8 +1174,9 @@ window.onerror = function(msg){
         <p>A compounding calculator. You describe what you put in and what you expect
         to earn, and it projects what you end up with, then translates that into
         retirement income. Everything runs in your browser; nothing is sent anywhere.</p>
-        <p>There are three tools here: <b>Retirement</b> projections, an
-        <b>Income Tax</b> estimator, and a <b>Mortgage</b> calculator. The retirement
+        <p>The <b>Tools</b> tab holds an <b>Income Tax</b> estimator, a <b>Mortgage</b>
+        calculator and a <b>Budget</b> worksheet, alongside the main <b>Retirement</b>
+        projections. The retirement
         tool has three modes. <b>Basic</b> asks five plain questions and works entirely in
         today's dollars. <b>Advanced</b> adds inflation, tax, fees, volatility and
         target solving, holding one set of assumptions for the whole period.
@@ -1268,9 +1307,11 @@ window.onerror = function(msg){
           clearing site data removes them.</dd>
 
           <dt>The dropdown</dt>
-          <dd>Switching to a saved scenario loads its inputs for both tabs at once, so
-          a scenario captures all three tabs together. "Unsaved"
-          means the current numbers don't match anything saved.</dd>
+          <dd>Each tool keeps its own saved list &mdash; retirement scenarios, tax
+          scenarios, mortgages and budgets are stored separately, and the dropdown
+          shows whichever belongs to the tool you're on. A retirement scenario still
+          captures all three retirement modes together. "Unsaved" means the current
+          numbers don't match anything saved.</dd>
 
           <dt>Delete</dt>
           <dd>Removes the selected scenario. It doesn't change the numbers on screen,
@@ -1495,6 +1536,35 @@ window.onerror = function(msg){
       </div>
     </div>
 
+    <div class="panel about">
+      <h2>Budget</h2>
+      <div class="body">
+        <p>A simple worksheet for laying out where your money goes and seeing what's
+        left. It starts with your income after taxes, lists the usual expenses grouped
+        by category, and totals everything into a yearly and monthly figure.</p>
+        <p>Each line has its own amount and a per-month or per-year switch, because
+        some costs are naturally one and some the other &mdash; rent is monthly, travel
+        and car repairs are easier to think of as a yearly lump. Everything is
+        converted to a common basis before totalling, so mixing the two is fine.</p>
+        <dl class="gloss">
+          <dt>Income after taxes</dt>
+          <dd>Type it in, or use <b>Copy from Income Tax</b> to pull your net pay
+          (gross minus taxes) straight from that tool.</dd>
+          <dt>The preset rows</dt>
+          <dd>A starting point, not a rulebook. Leave anything at zero to ignore it.</dd>
+          <dt>Add custom item</dt>
+          <dd>Adds a blank row you can name yourself, for anything the presets miss.</dd>
+          <dt>Left over</dt>
+          <dd>Income minus everything budgeted, shown per year and per month, green
+          when positive and red when you've allocated more than you make. The
+          percentage is how much of your income is left &mdash; or how far over you
+          are.</dd>
+        </dl>
+        <p>Like the other tools, a budget can be saved, and Save/Delete act on the
+        budget while you're on it. It keeps its own separate list.</p>
+      </div>
+    </div>
+
     <div class="panel about disclaimer">
       <h2>Disclaimer</h2>
       <div class="body">
@@ -1665,11 +1735,11 @@ window.onerror = function(msg){
         </div>
         <div class="two">
           <div class="field">
-            <label for="moMaint">Maintenance <span class="opt">optional</span></label>
+            <label for="moMaint">Maintenance</label>
             <div class="inputwrap"><input id="moMaint" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
           </div>
           <div class="field">
-            <label for="moUtil">Utilities <span class="opt">optional</span></label>
+            <label for="moUtil">Utilities</label>
             <div class="inputwrap"><span class="affix">$</span><input id="moUtil" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
           </div>
         </div>
@@ -1682,6 +1752,49 @@ window.onerror = function(msg){
       </div>
     </div>
   </aside>
+
+  <div class="stack" id="tab-budget" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div><div class="k">Income, after taxes</div><div class="v" id="bgIncome">—</div>
+          <div class="note" id="bgIncomeNote">Per year</div></div>
+        <div><div class="k">Total budgeted</div><div class="v" id="bgSpent">—</div>
+          <div class="note" id="bgSpentNote">Per year</div></div>
+        <div><div class="k">Left over</div><div class="v" id="bgLeft">—</div>
+          <div class="note" id="bgLeftNote"></div></div>
+      </div>
+      <div class="body">
+        <div class="bgincome">
+          <label for="bgIncomeIn">Income after taxes</label>
+          <div class="bgincome-row">
+            <div class="inputwrap"><span class="affix">$</span><input id="bgIncomeIn" type="text" inputmode="decimal" data-money data-nonneg></div>
+            <span class="seg bgseg" id="bgIncomeFreq">
+              <button type="button" data-freq="1" class="on">/yr</button>
+              <button type="button" data-freq="12">/mo</button>
+            </span>
+            <button class="btn" type="button" id="bgCopyTax">Copy from Income Tax</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Your budget</h2>
+      <div class="body">
+        <div id="bgList"></div>
+        <button class="btn" type="button" id="bgAdd" style="margin-top:6px">Add custom item</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="body">
+        <div class="kv total" style="font-size:15px"><span class="k">Total spending, per year</span><span class="v" id="bgTotYr"></span></div>
+        <div class="kv total" style="font-size:15px"><span class="k">Total spending, per month</span><span class="v" id="bgTotMo"></span></div>
+        <div class="kv total" style="font-size:16px"><span class="k">Left over, per year</span><span class="v" id="bgLeftYr"></span></div>
+        <div class="kv total" style="font-size:16px"><span class="k">Left over, per month</span><span class="v" id="bgLeftMo"></span></div>
+      </div>
+    </div>
+  </div>
 
   <div class="stack" id="tab-mortgage" hidden>
     <div class="panel">
@@ -2246,7 +2359,7 @@ const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, no
 
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
 const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
-              mortgage:"finance-tools.mortgage.v1"};
+              mortgage:"finance-tools.mortgage.v1", budget:"finance-tools.budget.v1"};
 const memory = {};
 function storeRead(which){
   try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
@@ -2259,11 +2372,11 @@ function storeWrite(which, v){
 }
 /* one saved-scenario list per tool */
 const SC = {retire: storeRead("retire") || [], tax: storeRead("tax") || [],
-            mortgage: storeRead("mortgage") || []};
+            mortgage: storeRead("mortgage") || [], budget: storeRead("budget") || []};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
-  if (t === "tools") return toolSub;      // "tax" or "mortgage"
+  if (t === "tools") return toolSub;      // "tax", "mortgage" or "budget"
   if (t === "about") return "retire";
   return "retire";
 }
@@ -2276,6 +2389,7 @@ function toast(msg){
 
 /* ---------- input plumbing ---------- */
 const parseNum = s => { const v = parseFloat(String(s).replace(/,/g, "")); return isNaN(v) ? 0 : v; };
+const num2 = parseNum;
 const num = id => parseNum($(id).value);
 const rate = id => num(id) / 100;
 const blankOrNum = id => $(id).value.trim() === "" ? "" : parseNum($(id).value);
@@ -3330,18 +3444,23 @@ function showTab(t){
   $("tab-about").hidden = (t !== "about");
   $("tab-tax").hidden = !(onTools && toolSub === "tax");
   $("tab-mortgage").hidden = !(onTools && toolSub === "mortgage");
+  $("tab-budget").hidden = !(onTools && toolSub === "budget");
   $("asideSimple").hidden = (t !== "simple");
   $("asideSingle").hidden = (t !== "single");
   $("asideSeries").hidden = (t !== "series");
   $("asideTax").hidden = !(onTools && toolSub === "tax");
   $("asideMort").hidden = !(onTools && toolSub === "mortgage");
-  $("main").classList.toggle("solo", t === "about");
+  $("main").classList.toggle("solo", t === "about" || (onTools && toolSub === "budget"));
   refreshScenarioList("");
   // charts need real layout to measure, so redraw once the pane is visible
   if (t === "simple") renderBasic();
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
-  else if (t === "tools"){ if (toolSub === "tax") renderTax(); else renderMort(); }
+  else if (t === "tools"){
+    if (toolSub === "tax") renderTax();
+    else if (toolSub === "mortgage") renderMort();
+    else renderBudget();
+  }
   // land at the top of the newly shown tab rather than wherever the last one was
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
 }
@@ -3383,7 +3502,7 @@ function lighten(node){
 function row(k, v){ return "<div class='sh-r'><span>" + k + "</span><b>" + v + "</b></div>"; }
 
 function buildSheet(){
-  if (!$("tab-tax").hidden || !$("tab-mortgage").hidden){
+  if (!$("tab-tax").hidden || !$("tab-mortgage").hidden || !$("tab-budget").hidden){
     toast("Summary isn't available for this tool yet");
     return false;
   }
@@ -3523,10 +3642,10 @@ function buildBasicSheet(){
     "return after inflation, no tax and no fees. Real returns vary year to year. " +
     "Projections are not predictions, and this is not financial advice.</div>";
 }
-$("btnSummary").addEventListener("click", () => {
+function doSummary(){
   if (buildSheet() === false) return;
   setTimeout(() => window.print(), 60);
-});
+}
 
 /* ---------- income tax tool ---------- */
 const TAX_COLORS = {fed:"#e2795f", state:"#e9b872", fica:"#7d9fd6", net:"#4fbf95"};
@@ -3724,6 +3843,148 @@ $("moDownPct").addEventListener("input", () => { syncDown("pct"); syncPmi(); ren
 $("moDownAmt").addEventListener("input", () => { syncDown("amt"); syncPmi(); renderMort(); });
 $("moTerm").addEventListener("change", renderMort);
 
+/* ---------- budget tool ---------- */
+/* Grouped presets. freq is the default frequency for that row: 12 = a monthly
+   figure, 1 = an annual figure. Rows carry their own amount and freq once the
+   user edits them; travel and gifts default to annual since that's how people
+   usually think of them. */
+const BUDGET_PRESETS = [
+  {group:"Housing", items:[
+    {desc:"Rent / Mortgage", freq:12}, {desc:"Property tax", freq:12},
+    {desc:"Utilities", freq:12}, {desc:"Internet & phone", freq:12},
+    {desc:"Home / Renters insurance", freq:12}]},
+  {group:"Transportation", items:[
+    {desc:"Car payment", freq:12}, {desc:"Car insurance", freq:12},
+    {desc:"Gas", freq:12}, {desc:"Maintenance & repairs", freq:1}]},
+  {group:"Health", items:[
+    {desc:"Health insurance", freq:12}, {desc:"Out-of-pocket medical", freq:1}]},
+  {group:"Food", items:[
+    {desc:"Groceries", freq:12}, {desc:"Eating out", freq:12}]},
+  {group:"Lifestyle", items:[
+    {desc:"Activities & hobbies", freq:12}, {desc:"Subscriptions", freq:12},
+    {desc:"Travel", freq:1}, {desc:"Gifts", freq:1}]},
+  {group:"Saving & debt", items:[
+    {desc:"Savings & investments", freq:12}, {desc:"Other debt payments", freq:12}]}
+];
+function defaultBudget(){
+  const rows = [];
+  BUDGET_PRESETS.forEach(g => g.items.forEach(it =>
+    rows.push({group:g.group, desc:it.desc, amount:0, freq:it.freq, custom:false})));
+  return rows;
+}
+let budget = defaultBudget();
+
+function annualize(r){ return r.amount * r.freq; }
+
+/* Rebuilt only on structural change (add/remove/load); typing updates the model
+   in place and recomputes totals, so focus is never lost. */
+function buildBudget(){
+  const groups = [];
+  budget.forEach((r, i) => {
+    let g = groups.find(x => x.name === r.group);
+    if (!g){ g = {name:r.group, rows:[]}; groups.push(g); }
+    g.rows.push({r, i});
+  });
+  $("bgList").innerHTML = groups.map(g =>
+    "<div class='bggroup'><div class='bggroup-h'>" + (g.name || "Custom") + "</div>" +
+    g.rows.map(({r, i}) => {
+      const descCell = r.custom
+        ? "<input class='desc' data-f='desc' data-i='" + i + "' value='" +
+          String(r.desc).replace(/'/g, "&#39;") + "' placeholder='Description' aria-label='Item name'>"
+        : "<span class='desc'>" + r.desc + "</span>";
+      const del = r.custom
+        ? "<button class='del' type='button' data-del='" + i + "' title='Remove' aria-label='Remove'>\u00d7</button>"
+        : "<span class='delspace'></span>";
+      return "<div class='bgrow'>" + descCell +
+        "<div class='inputwrap'><span class='affix'>$</span><input type='text' inputmode='decimal' " +
+          "data-money data-nonneg data-f='amount' data-i='" + i + "' value='" +
+          groupDigits(r.amount, true) + "' aria-label='" + r.desc + " amount'></div>" +
+        "<span class='seg bgseg' data-f='freqseg' data-i='" + i + "'>" +
+          "<button type='button' data-fv='12'" + (r.freq === 12 ? " class='on'" : "") + ">/mo</button>" +
+          "<button type='button' data-fv='1'" + (r.freq === 1 ? " class='on'" : "") + ">/yr</button>" +
+        "</span>" + del + "</div>";
+    }).join("") + "</div>").join("");
+  initFields($("bgList"));
+}
+
+function renderBudget(){
+  const incFreq = bgIncomeFreq;
+  const incomeYr = num("bgIncomeIn") * incFreq;
+  const spentYr = budget.reduce((a, r) => a + annualize(r), 0);
+  const leftYr = incomeYr - spentYr;
+  const pct = incomeYr > 0 ? leftYr / incomeYr : 0;
+
+  setBig("bgIncome", money(incomeYr));
+  setBig("bgSpent", money(spentYr));
+  setBig("bgLeft", money(leftYr));
+  $("bgLeft").className = "v " + (leftYr < 0 ? "neg" : "pos");
+  $("bgLeftNote").textContent = incomeYr > 0
+    ? (leftYr < 0 ? "Over budget by " : "") + pctStr(Math.abs(pct), 1) +
+      (leftYr < 0 ? " of income" : " of income left")
+    : "Enter your income to begin";
+
+  $("bgTotYr").textContent = money(spentYr);
+  $("bgTotMo").textContent = money(spentYr / 12);
+  const ly = $("bgLeftYr"), lm = $("bgLeftMo");
+  ly.textContent = money(leftYr); lm.textContent = money(leftYr / 12);
+  ly.className = "v " + (leftYr < 0 ? "neg" : "pos");
+  lm.className = "v " + (leftYr < 0 ? "neg" : "pos");
+}
+
+$("bgList").addEventListener("input", e => {
+  const el = e.target, f = el.getAttribute && el.getAttribute("data-f");
+  if (!f || f === "freq") return;
+  const i = parseInt(el.getAttribute("data-i"), 10);
+  if (!budget[i]) return;
+  if (f === "amount") budget[i].amount = num2(el.value);
+  else if (f === "desc") budget[i].desc = el.value;
+  renderBudget();
+});
+$("bgList").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-fv]") : null;
+  if (!b) return;
+  const seg = b.parentNode;
+  const i = parseInt(seg.getAttribute("data-i"), 10);
+  if (!budget[i]) return;
+  budget[i].freq = parseInt(b.getAttribute("data-fv"), 10);
+  seg.querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x.getAttribute("data-fv") === String(budget[i].freq)));
+  renderBudget();
+});
+$("bgList").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-del]") : null;
+  if (!b) return;
+  budget.splice(parseInt(b.getAttribute("data-del"), 10), 1);
+  buildBudget(); renderBudget();
+});
+$("bgAdd").addEventListener("click", () => {
+  budget.push({group:"Custom", desc:"", amount:0, freq:12, custom:true});
+  buildBudget(); renderBudget();
+  // focus the new description field
+  const inputs = $("bgList").querySelectorAll("input.desc");
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+["bgIncomeIn"].forEach(id => $(id).addEventListener("input", renderBudget));
+let bgIncomeFreq = 1;   // 1 = typed as annual, 12 = typed as monthly
+$("bgIncomeFreq").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-freq]") : null;
+  if (!b) return;
+  bgIncomeFreq = parseInt(b.getAttribute("data-freq"), 10);
+  $("bgIncomeFreq").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x.getAttribute("data-freq") === String(bgIncomeFreq)));
+  renderBudget();
+});
+$("bgCopyTax").addEventListener("click", () => {
+  const R = computeTax(readTax());
+  const netPay = R.gross - R.total;   // net pay = gross minus taxes
+  $("bgIncomeIn").value = groupDigits(netPay.toFixed(0), true);
+  bgIncomeFreq = 1;   // annual figure
+  $("bgIncomeFreq").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x.getAttribute("data-freq") === "1"));
+  renderBudget();
+  toast("Copied net pay of " + money(netPay) + " from the tax tool");
+});
+
 /* ---------- theme ---------- */
 const THEME_KEY = "retcalc-theme";
 const THEME_META = {dark:"#0c1114", light:"#f4f6f5"};
@@ -3894,7 +4155,7 @@ function currentState(){
     b:[g.initial, g.inflation, g.withdrawal, g.taxRate, num("targetS"), g.fees],
     c:stages.map(st => [st.years, st.contrib, st.period, st.growth, st.nominal,
                         st.vol || 0, st.adj ? 1 : 0]),
-    sub:toolSub, tx:readTaxState(), mo:readMortState()};
+    sub:toolSub, tx:readTaxState(), mo:readMortState(), bg:readBudgetState()};
 }
 function applyState(o){
   if (!o || o.v !== 1) return false;
@@ -3926,7 +4187,8 @@ function applyState(o){
   }
   if (o.tx) writeTaxState(o.tx);
   if (o.mo) writeMortState(o.mo);
-  if (o.sub === "tax" || o.sub === "mortgage") toolSub = o.sub;
+  if (o.bg) writeBudgetState(o.bg);
+  if (o.sub === "tax" || o.sub === "mortgage" || o.sub === "budget") toolSub = o.sub;
   linkTab = (o.t === "single" || o.t === "series" || o.t === "about" ||
              o.t === "tools" || o.t === "simple") ? o.t : "simple";
   return true;
@@ -3948,12 +4210,12 @@ function copyText(txt){
   document.body.removeChild(ta);
   return Promise.resolve();
 }
-$("btnShare").addEventListener("click", () => {
+function doShare(){
   const url = location.origin + location.pathname + "#p=" + encodeState(currentState());
   history.replaceState(null, "", "#p=" + encodeState(currentState()));
   copyText(url).then(() => toast("Link copied \u2014 it opens with these exact numbers"))
                .catch(() => toast("Couldn't copy. The link is in your address bar."));
-});
+}
 
 /* ---------- scenarios ---------- */
 function readTaxState(){
@@ -3987,7 +4249,24 @@ function writeMortState(d){
   if (d.util != null) $("moUtil").value = groupDigits(d.util, true);
 }
 
-const TOOL_LABEL = {retire:"scenario", tax:"tax scenario", mortgage:"mortgage scenario"};
+function readBudgetState(){
+  return {income:num("bgIncomeIn"), incomeFreq:bgIncomeFreq,
+          rows:budget.map(r => ({group:r.group, desc:r.desc, amount:r.amount,
+                                 freq:r.freq, custom:!!r.custom}))};
+}
+function writeBudgetState(d){
+  if (d.income != null) $("bgIncomeIn").value = groupDigits(d.income, true);
+  if (d.incomeFreq != null){
+    bgIncomeFreq = parseInt(d.incomeFreq, 10) || 1;
+    $("bgIncomeFreq").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-freq") === String(bgIncomeFreq)));
+  }
+  if (Array.isArray(d.rows) && d.rows.length)
+    budget = d.rows.map(r => Object.assign({}, r));
+  buildBudget();
+}
+const TOOL_LABEL = {retire:"scenario", tax:"tax scenario",
+                    mortgage:"mortgage scenario", budget:"budget"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
   const list = SC[activeTool()];
@@ -4021,8 +4300,46 @@ $("scenarioPick").addEventListener("change", e => {
   if (tool === "retire"){ writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s); }
   else if (tool === "tax"){ writeTaxState(s.data); renderTax(); }
   else if (tool === "mortgage"){ writeMortState(s.data); syncPmi(); renderMort(); }
+  else if (tool === "budget"){ writeBudgetState(s.data); renderBudget(); }
 });
-$("btnSave").addEventListener("click", () => {
+function showPopup(title, options){
+  return new Promise(resolve => {
+    const ov = document.createElement("div");
+    ov.className = "popup-overlay";
+    ov.innerHTML = "<div class='popup'><h3>" + title + "</h3>" +
+      options.map((o, i) => "<button class='popbtn' data-pop='" + i + "'>" +
+        o.label + (o.desc ? "<span class='subdesc'>" + o.desc + "</span>" : "") +
+        "</button>").join("") +
+      "<button class='cancel'>Cancel</button></div>";
+    ov.addEventListener("click", e => {
+      const b = e.target.closest ? e.target.closest("[data-pop]") : null;
+      if (b){ ov.remove(); resolve(parseInt(b.getAttribute("data-pop"), 10)); return; }
+      if (e.target.classList.contains("cancel") || e.target === ov){
+        ov.remove(); resolve(-1); }
+    });
+    document.body.appendChild(ov);
+  });
+}
+
+$("btnScenario").addEventListener("click", async () => {
+  const choice = await showPopup("Scenario", [
+    {label:"Save", desc:"Save the current inputs under a name"},
+    {label:"Delete", desc:"Remove the selected saved scenario"}
+  ]);
+  if (choice === 0) doSave();
+  else if (choice === 1) doDelete();
+});
+$("btnShareMenu").addEventListener("click", async () => {
+  const choice = await showPopup("Share", [
+    {label:"Copy link", desc:"Copy a shareable URL with all your inputs"},
+    {label:"Summary", desc:"One-page printable overview (Save as PDF)"}
+  ]);
+  if (choice === 0) doShare();
+  else if (choice === 1) doSummary();
+});
+
+function doSave(){
+  /* was: $("btnSave").addEventListener("click", () => { */
   const tool = activeTool();
   const name = prompt("Name this " + TOOL_LABEL[tool] + ":", $("scenarioPick").value || "");
   if (!name || !name.trim()) return;
@@ -4034,16 +4351,18 @@ $("btnSave").addEventListener("click", () => {
                 solveForS:$("solveForS").value, targetS:num("targetS")}});
   } else if (tool === "tax"){
     data = {name:name.trim(), data:readTaxState()};
-  } else {
+  } else if (tool === "mortgage"){
     data = {name:name.trim(), data:readMortState()};
+  } else {
+    data = {name:name.trim(), data:readBudgetState()};
   }
   const list = SC[tool];
   const i = list.findIndex(s => s.name === data.name);
   if (i >= 0) list[i] = data; else list.push(data);
   storeWrite(tool, list); refreshScenarioList(data.name);
   toast("Saved " + data.name);
-});
-$("btnDelete").addEventListener("click", () => {
+}
+function doDelete(){
   const tool = activeTool();
   const name = $("scenarioPick").value;
   if (!name){ toast("Pick a saved " + TOOL_LABEL[tool] + " first"); return; }
@@ -4051,7 +4370,7 @@ $("btnDelete").addEventListener("click", () => {
   SC[tool] = SC[tool].filter(s => s.name !== name);
   storeWrite(tool, SC[tool]); refreshScenarioList("");
   toast("Deleted " + name);
-});
+}
 /* Reset only the tool you're viewing, and ask first if anything differs from
    defaults — the button sits close to the tabs on mobile. */
 const TAX_DEFAULTS = {gross:100000, status:"s", state:"IL", pre:0, dedType:"std", item:0};
@@ -4064,6 +4383,8 @@ function sameShallow(a, b){
 function toolIsDirty(tool){
   if (tool === "tax") return !sameShallow(readTaxState(), TAX_DEFAULTS);
   if (tool === "mortgage") return !sameShallow(readMortState(), MORT_DEFAULTS);
+  if (tool === "budget") return num("bgIncomeIn") > 0 ||
+    budget.some(r => r.amount > 0 || r.custom);
   const d = readInputs();
   return d.initial !== DEFAULTS.initial || d.contrib !== DEFAULTS.contrib ||
     d.period !== DEFAULTS.period || d.years !== DEFAULTS.years ||
@@ -4079,11 +4400,17 @@ $("btnReset").addEventListener("click", () => {
   if (toolIsDirty(tool) &&
       !confirm("Reset the " + (tool === "retire" ? "retirement" : tool) +
                " inputs to their defaults? Your saved " + TOOL_LABEL[tool] +
-               "s won't be affected.")) return;
+               (tool === "budget" ? "s" : "s") + " won't be affected.")) return;
   if (tool === "tax"){
     writeTaxState(TAX_DEFAULTS); renderTax();
   } else if (tool === "mortgage"){
     writeMortState(MORT_DEFAULTS); syncPmi(); renderMort();
+  } else if (tool === "budget"){
+    budget = defaultBudget(); $("bgIncomeIn").value = groupDigits(0, true);
+    bgIncomeFreq = 1;
+    $("bgIncomeFreq").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-freq") === "1"));
+    buildBudget(); renderBudget();
   } else {
     writeInputs(DEFAULTS);
     writeGlobals(SERIES_GLOBALS);
@@ -4093,8 +4420,8 @@ $("btnReset").addEventListener("click", () => {
     renderAll(); renderSeries();
   }
   $("scenarioPick").value = "";
-  toast((tool === "retire" ? "Retirement" :
-         tool === "tax" ? "Tax" : "Mortgage") + " inputs reset");
+  toast((tool === "retire" ? "Retirement" : tool === "tax" ? "Tax" :
+         tool === "mortgage" ? "Mortgage" : "Budget") + " inputs reset");
 });
 
 /* ---------- wire up ---------- */
@@ -4166,6 +4493,8 @@ renderSeries();
 renderBasic();
 renderTax();
 renderMort();
+buildBudget();
+renderBudget();
 initTheme();
 if (fromLink) toast("Loaded from a shared link");
 })();
