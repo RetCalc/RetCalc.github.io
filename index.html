@@ -1354,7 +1354,8 @@ window.onerror = function(msg){
         <div class="themerow">
           <span>Theme</span>
           <span class="seg" id="segTheme">
-            <button type="button" data-theme="dark" class="on">Dark</button>
+            <button type="button" data-theme="system" class="on">System</button>
+            <button type="button" data-theme="dark">Dark</button>
             <button type="button" data-theme="light">Light</button>
           </span>
         </div>
@@ -4621,30 +4622,43 @@ function rentBuyCalc(inp) {
 /* ---------- theme ---------- */
 const THEME_KEY = "retcalc-theme";
 const THEME_META = {dark:"#0c1114", light:"#f4f6f5"};
-function applyTheme(mode){
-  document.documentElement.setAttribute("data-theme", mode);
+function resolvedTheme(stored){
+  if (stored !== "system") return stored;
+  return (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches)
+    ? "light" : "dark";
+}
+function applyTheme(stored){
+  const eff = resolvedTheme(stored);
+  document.documentElement.setAttribute("data-theme", eff);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", THEME_META[mode] || THEME_META.dark);
+  if (meta) meta.setAttribute("content", THEME_META[eff] || THEME_META.dark);
   document.querySelectorAll("#segTheme button").forEach(b =>
-    b.classList.toggle("on", b.getAttribute("data-theme") === mode));
-  // charts bake in theme colors at draw time, so repaint the visible one
+    b.classList.toggle("on", b.getAttribute("data-theme") === stored));
   if (!$("tab-simple").hidden) renderBasic();
   else if (!$("tab-single").hidden){ if (lastRun) drawChart(lastRun, readInputs()); }
   else if (!$("tab-series").hidden) renderSeries();
 }
 function initTheme(){
-  let mode = "dark";
-  try { const v = localStorage.getItem(THEME_KEY); if (v === "light" || v === "dark") mode = v; }
+  let stored = "system";
+  try { const v = localStorage.getItem(THEME_KEY);
+    if (v === "light" || v === "dark" || v === "system") stored = v; }
   catch(e){}
-  applyTheme(mode);
+  applyTheme(stored);
 }
 $("segTheme").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-theme]") : null;
   if (!b) return;
-  const mode = b.getAttribute("data-theme");
-  applyTheme(mode);
-  try { localStorage.setItem(THEME_KEY, mode); } catch(e){}
+  const stored = b.getAttribute("data-theme");
+  applyTheme(stored);
+  try { localStorage.setItem(THEME_KEY, stored); } catch(e){}
 });
+if (window.matchMedia){
+  window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){
+    let stored = "system";
+    try { const v = localStorage.getItem(THEME_KEY); if (v) stored = v; } catch(e){}
+    if (stored === "system") applyTheme("system");
+  });
+}
 
 /* ---------- Basic tab ---------- */
 /* Everything here is modelled in real terms: the rate of return already has
