@@ -401,6 +401,9 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .ddrow.sel{background:rgba(79,191,149,.10)}
 .ddrow.sel td:first-child{color:var(--jade);font-weight:600}
 .ddrow:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.tipdot:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.toolcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.popbtn:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .efrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .efrow>span{font-size:13.5px;color:var(--dim)}
 .txhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -502,6 +505,14 @@ svg{display:block;width:100%;height:auto}
   .stagecard{padding:12px}
   #stageTable{min-width:640px}
   #xYearTable{min-width:660px}
+  #qYearTable{min-width:560px}
+  #clTable{min-width:560px}
+  #rbTable{min-width:640px}
+  #ddStartTable{min-width:520px}
+  #ddTable{min-width:760px}
+  #txTable{min-width:520px}
+  #txBrackets{min-width:520px}
+  #moTable{min-width:560px}
 
   .solveopts{grid-template-columns:1fr}
   .solveopt{padding:16px 14px}
@@ -535,12 +546,23 @@ svg{display:block;width:100%;height:auto}
   th,td{padding:8px 9px;font-size:12.5px}
   .swipehint{display:block}
 }
+/* Small phones (SE, mini) leave each half of a two-column field row under
+   170px, cramped for anything longer than a short label. Below this width,
+   stack them instead \u2014 normal phones keep the two-column layout above. */
+@media (max-width:400px){
+  .two{grid-template-columns:1fr}
+}
 /* iOS zooms the page when a focused field is under 16px. Keyed to touch
    devices rather than width, so landscape phones are covered too. */
 @media (hover:none) and (pointer:coarse){
   input,select,textarea{font-size:16px !important}
   .btn.mini{font-size:14px}
   .seg button{font-size:14px}
+  /* Tooltip dots stay visually small but get a much bigger invisible tap
+     area on touch, since 15px is well under a comfortable touch target. */
+  .tipdot{position:relative;width:16px;height:16px}
+  .tipdot::after{content:"";position:absolute;top:50%;left:50%;
+    width:40px;height:40px;transform:translate(-50%,-50%)}
 }
 /* Home-screen web app runs under the clock and battery, so reserve that space. */
 header{padding-top:env(safe-area-inset-top,0px)}
@@ -902,7 +924,7 @@ window.onerror = function(msg){
             <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="sPays"></span></div>
             <div class="kv"><span class="k">Portfolio needed at retirement</span><span class="v" id="sPortFuture"></span></div>
             <div class="kv"><span class="k">Your starting value grows to</span><span class="v" id="sInitGrows"></span></div>
-            <div class="kv coastrow"><span class="k">Coast FIRE<span class="mssub" id="sCoastNote"></span></span><span class="v" id="sCoast"></span></div>
+            <div class="kv coastrow"><span class="k">Coast FIRE<span class="tipdot" data-tip="coast" role="button" tabindex="0" aria-label="What is this?">?</span><span class="mssub" id="sCoastNote"></span></span><span class="v" id="sCoast"></span></div>
             <div id="sCoastAction"></div>
           </div>
         </div>
@@ -1227,7 +1249,7 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="clReturn" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="6"><span class="affix">%/yr</span></div>
           </div>
           <div class="field">
-            <label for="clInfl">Tuition inflation</label>
+            <label for="clInfl">Tuition inflation<span class="tipdot" data-tip="tuitioninfl" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="clInfl" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="4"><span class="affix">%/yr</span></div>
           </div>
         </div>
@@ -1255,6 +1277,7 @@ window.onerror = function(msg){
     </div>
     <div class="panel">
       <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll"><table id="clTable"><thead><tr><th>Year</th><th>Balance</th><th>You added</th><th>Growth</th><th>Projected cost</th></tr></thead><tbody></tbody></table></div>
     </div>
   </div>
@@ -1268,6 +1291,7 @@ window.onerror = function(msg){
         <div class="field">
           <label for="rbPrice">Home price</label>
           <div class="inputwrap"><span class="affix">$</span><input id="rbPrice" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <button class="btn mini" type="button" id="rbCopyMort" style="margin-top:6px">Copy from mortgage calc</button>
         </div>
         <div class="two">
           <div class="field">
@@ -1301,11 +1325,11 @@ window.onerror = function(msg){
         </div>
         <div class="two">
           <div class="field">
-            <label for="rbClose">Closing costs</label>
+            <label for="rbClose">Closing costs<span class="tipdot" data-tip="closingcost" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="rbClose" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%</span></div>
           </div>
           <div class="field">
-            <label for="rbSell">Selling costs</label>
+            <label for="rbSell">Selling costs<span class="tipdot" data-tip="sellingcost" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="rbSell" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%</span></div>
           </div>
         </div>
@@ -1323,7 +1347,7 @@ window.onerror = function(msg){
         <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Assumptions</div></div>
         <div class="two">
           <div class="field">
-            <label for="rbAppr">Home appreciation</label>
+            <label for="rbAppr">Home appreciation<span class="tipdot" data-tip="appreciation" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="rbAppr" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg><span class="affix">%/yr</span></div>
           </div>
           <div class="field">
@@ -1362,6 +1386,7 @@ window.onerror = function(msg){
     </div>
     <div class="panel">
       <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll"><table id="rbTable"><thead><tr><th>Year</th><th>Buyer NW</th><th>Renter NW</th><th>Difference</th><th>Home value</th><th>Balance</th></tr></thead><tbody></tbody></table></div>
     </div>
   </div>
@@ -1420,16 +1445,16 @@ window.onerror = function(msg){
         <div class="hint" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>
         <div class="two" id="ddFloorWrap" hidden>
           <div class="field">
-            <label for="ddFloor">Max cut</label>
+            <label for="ddFloor">Max cut<span class="tipdot" data-tip="maxcut" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddFloor" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
           </div>
           <div class="field">
-            <label for="ddCeil">Max raise</label>
+            <label for="ddCeil">Max raise<span class="tipdot" data-tip="maxraise" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddCeil" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
           </div>
         </div>
         <div class="field" id="ddSpendFloorWrap" hidden>
-          <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span></label>
+          <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
           <div class="hint">In today's dollars, per year. Spending never drops below this, even in years the strategy above would otherwise call for less. Leave at 0 for no floor.</div>
         </div>
@@ -1462,7 +1487,7 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="field" id="ddSSDelayWrap" hidden>
-          <label for="ddSSDelay">Starts after</label>
+          <label for="ddSSDelay">Starts after<span class="tipdot" data-tip="ssdelay" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix">yrs</span></div>
           <div class="hint">Years into retirement before benefits begin. Use 0 if they start right away.</div>
         </div>
@@ -1477,6 +1502,24 @@ window.onerror = function(msg){
   </aside>
 
   <div class="stack" id="tab-drawdown" hidden>
+    <div class="panel" id="ddIntro" hidden>
+      <div class="body" style="display:flex;gap:14px;align-items:flex-start">
+        <div style="flex:1 1 auto;min-width:0">
+          <div style="font-weight:600;color:var(--text);margin-bottom:6px">
+            New here? Here's the idea.
+          </div>
+          <div class="hint" style="margin:0">
+            Every other tool answers "how much will I have?" This one answers the
+            harder question: once you start spending it, <b>will it last?</b> Set a
+            portfolio value and a withdrawal strategy, then test it against every
+            real retirement since 1928 &mdash; not a guess, actual market history.
+            Click any row in the table below to see exactly what that year looked
+            like, year by year.
+          </div>
+        </div>
+        <button class="btn mini" type="button" id="ddIntroClose" aria-label="Dismiss">&times;</button>
+      </div>
+    </div>
     <div class="panel">
       <div class="txhead">
         <span class="seg" id="segDD">
@@ -1508,6 +1551,7 @@ window.onerror = function(msg){
 
     <div class="panel" id="ddYearsPanel">
       <h2>How each starting year fared</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="ddStartTable">
           <thead><tr><th>Retired in</th><th>Outcome</th><th>Ending balance</th><th>Lowest year's spending</th></tr></thead>
@@ -1548,6 +1592,7 @@ window.onerror = function(msg){
     <div class="panel">
       <h2 id="ddDetailTitle">Year by year</h2>
       <div class="hint" style="padding:0 18px" id="ddDetailNote"></div>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="ddTable">
           <thead><tr><th>Year</th><th>Start, today's $</th><th>Social Security</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
@@ -1579,9 +1624,11 @@ window.onerror = function(msg){
         <p>A compounding calculator. You describe what you put in and what you expect
         to earn, and it projects what you end up with, then translates that into
         retirement income. Everything runs in your browser; nothing is sent anywhere.</p>
-        <p>The <b>Tools</b> tab holds an <b>Income Tax</b> estimator, a <b>Mortgage</b>
-        calculator and a <b>Budget</b> worksheet, alongside the main <b>Retirement</b>
-        projections. The retirement
+        <p>The <b>Tools</b> tab holds six calculators: a <b>Drawdown Simulator</b> for
+        whether your savings will actually last, an <b>Income Tax</b> estimator, a
+        <b>Mortgage</b> calculator, a <b>College Savings</b> planner, a
+        <b>Rent vs. Buy</b> comparison, and a <b>Budget</b> worksheet &mdash; alongside
+        the main <b>Retirement</b> projections. The retirement
         tool has three modes. <b>Basic</b> asks five plain questions and works entirely in
         today's dollars. <b>Advanced</b> adds inflation, tax, fees, volatility and
         target solving, holding one set of assumptions for the whole period.
@@ -1702,6 +1749,85 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>Drawdown Simulator</h2>
+      <div class="body">
+        <p>Every other tool in this app answers "how much will I have?" This one
+        answers the harder question: once you stop contributing and start spending,
+        <b>will it last?</b> It takes a portfolio balance, a withdrawal strategy, and
+        tests it against real market history and randomized simulation to produce a
+        success rate &mdash; the share of tested retirements where the money didn't
+        run out.</p>
+
+        <p><b>Historical mode</b> runs your plan starting from every single year since
+        1928: retire in 1929 right before the Depression, retire in 1966 into a lost
+        decade, retire in 2000 before two crashes in one decade. Each is a genuine
+        sequence of stock returns, bond returns, and inflation that actually happened,
+        not a statistical approximation of one. This matters because <i>the order</i>
+        returns arrive in changes everything &mdash; a bad decade in your first few years
+        of retirement does far more damage than the same bad decade arriving later,
+        even though the average return over the full period is identical. This is
+        called sequence-of-returns risk, and it's the single biggest reason a plan
+        that looks safe on a spreadsheet can fail in reality.</p>
+
+        <p><b>Monte Carlo mode</b> draws years at random from that same 98-year
+        record, thousands of times, to show the range of outcomes a purely random
+        ordering could produce. It's a useful complement, but it misses the way real
+        bad years cluster together &mdash; the historical mode is the more honest test
+        of a specific plan.</p>
+
+        <p>Click any row in <b>"How each starting year fared"</b> to drill into that
+        exact period: what was withdrawn each year, how the balance moved, and how
+        much of that came from Social Security versus the portfolio itself.</p>
+
+        <dl class="gloss">
+          <dt>Withdrawal strategy</dt>
+          <dd>The rule for how much to take out each year. <b>Fixed amount</b> sets a
+          dollar figure and raises it with inflation every year, no matter what
+          markets do &mdash; the classic 4% rule. <b>Percentage of portfolio</b> takes
+          the same share of whatever the account is worth, so it can never run dry but
+          income swings with the market. <b>Guardrails</b> follows inflation but cuts
+          or raises spending if the withdrawal rate drifts too far from target.
+          <b>Floor &amp; ceiling</b> aims at a percentage of the balance but limits how
+          much spending can change from one year to the next.</dd>
+
+          <dt>Minimum spending</dt>
+          <dd>An optional hard floor, in today's dollars, that spending never falls
+          below &mdash; even in a year the strategy above would otherwise call for
+          less. Available on every strategy except fixed amount, which by design
+          never drops in real terms anyway.</dd>
+
+          <dt>Stock / bond mix</dt>
+          <dd>How the portfolio is split during retirement. A higher stock allocation
+          has historically grown faster but swings harder in a downturn, which matters
+          more once you're withdrawing from it.</dd>
+
+          <dt>Social Security</dt>
+          <dd>Optional income that offsets what the portfolio needs to provide. Enter
+          your income for a rough estimate using the real Social Security benefit
+          formula, or paste your own number from a statement at ssa.gov, which is
+          always more accurate since it reflects your actual earnings history rather
+          than an assumed steady career.</dd>
+
+          <dt>Success rate</dt>
+          <dd>The share of tested periods &mdash; historical years or Monte Carlo runs
+          &mdash; where the portfolio lasted the full length of retirement without
+          hitting zero. Higher isn't automatically better on its own: a 100% success
+          rate paired with very low spending might mean money is being left behind
+          that could have funded a better retirement.</dd>
+        </dl>
+
+        <p><b>What it leaves out:</b> the 1928&ndash;2025 record is US markets only, so
+        it says nothing about how other countries' markets have behaved, and the
+        historical test necessarily has just 98 starting points, not an infinite set
+        of possible futures. Required minimum distributions, taxes on withdrawals,
+        one-time expenses, and changing your mix over time aren't modelled. Above all:
+        a strategy surviving every year since 1928 is strong evidence, not a
+        guarantee &mdash; markets have never been obligated to repeat their history,
+        and the next 30 years don't have to look like any of the last 98.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Scenarios, sharing and the summary</h2>
       <div class="body">
         <dl class="gloss">
@@ -1712,11 +1838,11 @@ window.onerror = function(msg){
           clearing site data removes them.</dd>
 
           <dt>The dropdown</dt>
-          <dd>Each tool keeps its own saved list &mdash; retirement scenarios, tax
-          scenarios, mortgages and budgets are stored separately, and the dropdown
-          shows whichever belongs to the tool you're on. A retirement scenario still
-          captures all three retirement modes together. "Unsaved" means the current
-          numbers don't match anything saved.</dd>
+          <dd>Each tool keeps its own saved list &mdash; retirement, tax, mortgage,
+          budget, college savings, and rent-vs-buy scenarios are all stored
+          separately, and the dropdown shows whichever belongs to the tool you're on.
+          A retirement scenario still captures all three retirement modes together.
+          "Unsaved" means the current numbers don't match anything saved.</dd>
 
           <dt>Delete</dt>
           <dd>Removes the selected scenario. It doesn't change the numbers on screen,
@@ -1727,15 +1853,15 @@ window.onerror = function(msg){
           scenarios are untouched.</dd>
 
           <dt>Share</dt>
-          <dd>Copies a link with every input encoded in the address itself — both tabs
-          and all stages. Anyone opening it sees exactly your numbers. Nothing is
-          uploaded; the whole scenario travels inside the URL. This is also the most
-          reliable way to move a setup between your own devices.</dd>
-
-          <dt>Summary</dt>
-          <dd>Builds a clean one-page version and opens your print dialog, where you
-          can choose Save as PDF. On iPhone, use Share then Print. It deliberately
-          carries no name or personal detail, only the numbers and the chart.</dd>
+          <dd>One button, four options. <b>Copy link</b> encodes every input into the
+          address itself, so anyone opening it sees exactly your numbers &mdash;
+          nothing is uploaded, the whole scenario travels inside the URL, and it's
+          also the most reliable way to move a setup between your own devices.
+          <b>Summary</b> builds a clean one-page version and opens your print dialog,
+          where you can choose Save as PDF; on iPhone use Share then Print. <b>Save
+          image card</b> and <b>Copy image card</b> generate a shareable square image
+          with your headline numbers, ready to post or send &mdash; built entirely in
+          your browser, nothing leaves your device to create it.</dd>
         </dl>
       </div>
     </div>
@@ -1851,16 +1977,21 @@ window.onerror = function(msg){
       <h2>Limitations worth knowing</h2>
       <div class="body">
         <ul>
-          <li>The model stops at retirement. It doesn't simulate spending the money
-          down, so "success" means reaching a number, not that the money lasts.</li>
-          <li>Tax is a single flat rate. Real tax is bracketed, changes with law, and
-          differs by account type.</li>
+          <li>The retirement projections stop at retirement itself &mdash;
+          "success" there means reaching a number, not that it lasts. The Drawdown
+          Simulator is the tool that answers whether the money actually holds up once
+          you start spending it.</li>
+          <li>Retirement-tool tax is a single flat rate. Real tax is bracketed,
+          changes with law, and differs by account type &mdash; the Income Tax tool
+          models that properly, but the two aren't currently connected.</li>
           <li>Contributions are assumed to continue uninterrupted. Job loss, career
           breaks and emergencies aren't modelled.</li>
-          <li>No contribution limits, employer matching, required minimum
-          distributions, Social Security or pension income.</li>
+          <li>No contribution limits, employer matching, or pension income. Social
+          Security is modelled in the Drawdown Simulator but not elsewhere.</li>
           <li>Monte Carlo draws each period independently. Real markets show
-          streaks and mean reversion that this doesn't capture.</li>
+          streaks and mean reversion that random draws don't capture &mdash; the
+          Drawdown Simulator's historical mode exists specifically to get around
+          this limitation for retirement spending.</li>
           <li>Every output is only as good as the assumptions typed in. Small changes
           to the return compound into very large differences over decades — which is
           exactly why the comparison band and Monte Carlo modes exist.</li>
@@ -1942,6 +2073,63 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>College Savings</h2>
+      <div class="body">
+        <p>Works backward from a target: pick a school type or type in your own
+        annual cost, and it solves for the monthly savings needed to cover it,
+        accounting for tuition rising faster than general prices.</p>
+        <dl class="gloss">
+          <dt>School type presets</dt>
+          <dd>Rough all-in figures &mdash; tuition, room and board, and fees &mdash;
+          for a public in-state school, a private non-profit, and an elite or Ivy
+          League school. Overwrite the cost field with your own number if you have a
+          specific school in mind.</dd>
+          <dt>Tuition inflation</dt>
+          <dd>College costs have historically risen faster than the inflation used
+          elsewhere in this app &mdash; often 3&ndash;5% a year versus the 2&ndash;3%
+          typical of general prices. The default reflects that gap.</dd>
+        </dl>
+        <p><b>What it leaves out:</b> financial aid, scholarships, 529 plan tax
+        advantages, and the possibility of a shorter or longer program than four
+        years unless you change that input yourself.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Rent vs. Buy</h2>
+      <div class="body">
+        <p>The question isn't just "which payment is bigger" &mdash; it's which path
+        leaves you with more net worth after some number of years. This tool runs
+        both scenarios month by month: the buyer builds equity as the mortgage is
+        paid down and the home appreciates; the renter invests whatever they didn't
+        spend, starting with the down payment and closing costs they never paid, and
+        continuing every month renting is cheaper than owning.</p>
+        <dl class="gloss">
+          <dt>Break-even point</dt>
+          <dd>The year buying's net worth first overtakes renting's. Before that
+          point, renting and investing the difference wins; after it, owning does.
+          This shifts a lot with the interest rate, how long you stay, and how fast
+          rent rises where you live.</dd>
+          <dt>Renter invests</dt>
+          <dd>The amount the renter has invested from day one &mdash; the down
+          payment and closing costs they didn't spend &mdash; which then compounds
+          for the entire comparison. This opportunity cost is often the most
+          underrated part of the rent-versus-buy decision.</dd>
+          <dt>Home appreciation &amp; investment return</dt>
+          <dd>Two separate assumptions that drive most of the result. Home
+          appreciation has historically run below broad stock market returns over
+          long periods, which is part of why the comparison isn't as one-sided as it
+          might first appear.</dd>
+        </dl>
+        <p><b>What it leaves out:</b> the mortgage interest deduction, moving costs
+        beyond a percentage-based selling cost, rent control, and the non-financial
+        value of owning &mdash; stability, the ability to renovate, not having a
+        landlord &mdash; which matters to a lot of people and isn't something a
+        spreadsheet can price in.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Budget</h2>
       <div class="body">
         <p>A simple worksheet for laying out where your money goes and seeing what's
@@ -1983,7 +2171,10 @@ window.onerror = function(msg){
         <p><b>Past performance does not predict future returns.</b> Historical averages
         are context, not forecasts. Markets can and do deliver long stretches well
         below their historical average, and the figures suggested above may not hold
-        in future.</p>
+        in future. The Drawdown Simulator's historical backtest uses 98 years of US
+        market data, which is a real record, not a hypothesis &mdash; but it is one
+        record of one country, and surviving every year in it is evidence a plan is
+        reasonable, not proof it's safe.</p>
         <p>Projections are arithmetic applied to assumptions you chose. They are not
         predictions, and the true range of outcomes is wider than any model shows.
         For decisions that matter, talk to a qualified financial professional or tax
@@ -2018,7 +2209,7 @@ window.onerror = function(msg){
           <div class="hint">401(k), HSA, traditional IRA, health premiums. Comes off before income tax.</div>
         </div>
         <div class="field">
-          <label for="txDedType">Deduction</label>
+          <label for="txDedType">Deduction<span class="tipdot" data-tip="deduction" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="txDedType">
             <option value="std">Standard deduction</option>
             <option value="item">Itemized</option>
@@ -2041,12 +2232,12 @@ window.onerror = function(msg){
   <!-- ========== TOOL PICKER ========== -->
   <div class="stack solo" id="tab-toolpicker" hidden>
     <div class="toolcards">
-      <div class="toolcard" data-pick="drawdown">
+      <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="18" r="2" fill="currentColor"/><circle cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
         <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1928.</div></div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
-      <div class="toolcard" data-pick="tax">
+      <div class="toolcard" role="button" tabindex="0" data-pick="tax">
         <div class="toolcard-icon">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="6" y="4" width="22" height="32" rx="3" stroke="currentColor" stroke-width="2"/>
@@ -2064,7 +2255,7 @@ window.onerror = function(msg){
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
-      <div class="toolcard" data-pick="mortgage">
+      <div class="toolcard" role="button" tabindex="0" data-pick="mortgage">
         <div class="toolcard-icon">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 20 L20 8 L34 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2078,12 +2269,12 @@ window.onerror = function(msg){
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
-      <div class="toolcard" data-pick="college">
+      <div class="toolcard" role="button" tabindex="0" data-pick="college">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="20,8 38,17 20,26 2,17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 21v8c0 3.3 5.4 6 12 6s12-2.7 12-6v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="38" y1="17" x2="38" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
         <div class="toolcard-body"><div class="toolcard-name">College Savings</div><div class="toolcard-desc">How much to save each month to cover tuition, with presets for state school, private, and elite colleges.</div></div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
-      <div class="toolcard" data-pick="rentbuy">
+      <div class="toolcard" role="button" tabindex="0" data-pick="rentbuy">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <line x1="20" y1="6" x2="20" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <line x1="8" y1="12" x2="32" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -2095,7 +2286,7 @@ window.onerror = function(msg){
         <div class="toolcard-body"><div class="toolcard-name">Rent vs. Buy</div><div class="toolcard-desc">Full model comparing buyer and renter net worth over any horizon, including opportunity cost and appreciation.</div></div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
-      <div class="toolcard" data-pick="budget">
+      <div class="toolcard" role="button" tabindex="0" data-pick="budget">
         <div class="toolcard-icon">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect x="4" y="10" width="32" height="22" rx="3" stroke="currentColor" stroke-width="2"/>
@@ -2142,9 +2333,10 @@ window.onerror = function(msg){
 
     <div class="panel">
       <h2>Tax Breakdown</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="txTable">
-          <thead><tr><th>Item</th><th>Amount</th><th>Effective rate</th><th>Share of income</th></tr></thead>
+          <thead><tr><th>Item</th><th>Amount</th><th>Effective rate<span class="tipdot" data-tip="effrate" role="button" tabindex="0" aria-label="What is this?">?</span></th><th>Share of income</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -2152,6 +2344,7 @@ window.onerror = function(msg){
 
     <div class="panel">
       <h2>Federal brackets, and what you pay in each</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="txBrackets">
           <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
@@ -2265,6 +2458,11 @@ window.onerror = function(msg){
       <div class="body">
         <div id="bgList"></div>
         <button class="btn" type="button" id="bgAdd" style="margin-top:6px">Add custom item</button>
+        <div class="hint" style="margin-top:10px">Pull a number in from another tool:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <button class="btn mini" type="button" id="bgCopyRetire">+ Retirement contribution</button>
+          <button class="btn mini" type="button" id="bgCopyCollege">+ College savings</button>
+        </div>
       </div>
     </div>
 
@@ -4207,9 +4405,23 @@ function showTool(sub){
   else if (sub === "budget") renderBudget();
   else if (sub === "college") renderCollege();
   else if (sub === "rentbuy") renderRentBuy();
-  else if (sub === "drawdown") renderDrawdown();
+  else if (sub === "drawdown"){ renderDrawdown(); showDDIntro(); }
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
 }
+/* Drawdown packs in more than any other tool, so first-time visitors get a
+   one-line orientation. Dismissing it is remembered, same pattern as the
+   theme preference. */
+const DD_INTRO_KEY = "retcalc-dd-intro-seen";
+function showDDIntro(){
+  let seen = false;
+  try { seen = localStorage.getItem(DD_INTRO_KEY) === "1"; } catch(e){}
+  $("ddIntro").hidden = seen;
+}
+function dismissDDIntro(){
+  $("ddIntro").hidden = true;
+  try { localStorage.setItem(DD_INTRO_KEY, "1"); } catch(e){}
+}
+$("ddIntroClose").addEventListener("click", dismissDDIntro);
 function showTab(t){
   chartMode.tab = t;
   document.querySelectorAll("nav[role=tablist] button").forEach(x =>
@@ -4257,9 +4469,13 @@ document.querySelectorAll("nav[role=tablist] button").forEach(b => {
   });
 });
 document.querySelectorAll(".toolcard[data-pick]").forEach(card => {
-  card.addEventListener("click", () => {
+  const activate = () => {
     if (chartMode.tab !== "tools") showTab("tools");
     showTool(card.getAttribute("data-pick"));
+  };
+  card.addEventListener("click", activate);
+  card.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " "){ e.preventDefault(); activate(); }
   });
 });
 
@@ -4291,10 +4507,12 @@ function lighten(node){
 function row(k, v){ return "<div class='sh-r'><span>" + k + "</span><b>" + v + "</b></div>"; }
 
 function buildSheet(){
-  if (!$("tab-tax").hidden || !$("tab-mortgage").hidden || !$("tab-budget").hidden){
-    toast("Summary isn't available for this tool yet");
-    return false;
-  }
+  if (!$("tab-tax").hidden) return buildTaxSheet();
+  if (!$("tab-mortgage").hidden) return buildMortSheet();
+  if (!$("tab-budget").hidden) return buildBudgetSheet();
+  if (!$("tab-college").hidden) return buildCollegeSheet();
+  if (!$("tab-rentbuy").hidden) return buildRentBuySheet();
+  if (!$("tab-drawdown").hidden) return buildDrawdownSheet();
   if (!$("tab-simple").hidden) return buildBasicSheet();
   const series = !$("tab-series").hidden;
   const g = readGlobals(), p = readInputs();
@@ -4379,6 +4597,260 @@ function buildSheet(){
     "above, not predictions. Past performance does not predict future returns. " +
     "This is not financial advice.</div>";
 }
+function buildTaxSheet(){
+  const inp = readTax();
+  if (!(inp.gross > 0)){ $("sheet").innerHTML = ""; toast("Enter your income first"); return false; }
+  const R = computeTax(inp);
+  let inputs = row("Gross income", money(inp.gross));
+  inputs += row("Filing status", inp.status === "m" ? "Married filing jointly" : "Single");
+  inputs += row("State", R.stateName || "None");
+  if (inp.pre > 0) inputs += row("Pre-tax deductions", money(inp.pre));
+  inputs += row("Deduction", inp.dedType === "item" ? "Itemized" : "Standard");
+
+  let out = row("Federal tax", money(R.federal));
+  out += row("State tax", money(R.state));
+  out += row("FICA", money(R.fica));
+  out += row("Total tax", money(R.total));
+  out += row("Take-home pay", money(R.net));
+  out += row("Effective rate", pctStr(R.effTotal, 1));
+  out += row("Marginal rate", pctStr(R.marginal, 0));
+
+  const src = $("txPie");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart' style='max-width:260px;margin:0 auto 12px'>" + clone.outerHTML + "</div>";
+  }
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Income Tax Summary</h1><span>Tax year 2026</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Take-home pay</div><div class='v'>" + money(R.net) +
+        "</div><div class='n'>per year</div></div>" +
+      "<div><div class='k'>Total tax</div><div class='v'>" + money(R.total) +
+        "</div><div class='n'>" + pctStr(R.effTotal, 1) + " effective</div></div>" +
+      "<div><div class='k'>Per month</div><div class='v'>" + money(R.net / 12) +
+        "</div><div class='n'>take-home</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Your situation</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Breakdown</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>Based on published 2026 federal and state rates. Omits credits, " +
+    "local taxes and many special cases. Not tax advice.</div>";
+}
+
+function buildMortSheet(){
+  const m = readMort();
+  if (!(m.price > 0)){ $("sheet").innerHTML = ""; toast("Enter a home price first"); return false; }
+  const R = mortgage(m);
+  let inputs = row("Home price", money(m.price));
+  inputs += row("Down payment", money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 0) + ")");
+  inputs += row("Interest rate", pctStr(m.rate, 2));
+  inputs += row("Term", fmtNum(m.term) + " years");
+  if (R.pmi > 0) inputs += row("PMI", money(R.pmi) + "/mo");
+
+  let out = row("Principal & interest", money(R.pi));
+  out += row("Property tax", money(R.tax));
+  out += row("Insurance", money(R.ins));
+  if (R.maint > 0) out += row("Maintenance", money(R.maint));
+  if (R.hoa > 0) out += row("HOA", money(R.hoa));
+  out += row("Total monthly payment", money(R.total));
+  out += row("Total interest over loan", money(R.totalInterest));
+
+  const src = $("chartMo");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Mortgage Summary</h1><span>" + fmtNum(m.term) + " year term</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Monthly payment</div><div class='v'>" + money(R.total) +
+        "</div><div class='n'>all in</div></div>" +
+      "<div><div class='k'>Loan amount</div><div class='v'>" + money(R.loan) +
+        "</div><div class='n'>" + pctStr(m.price ? m.down / m.price : 0, 0) + " down</div></div>" +
+      "<div><div class='k'>Total interest</div><div class='v'>" + money(R.totalInterest) +
+        "</div><div class='n'>over the loan</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>The loan</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Monthly breakdown</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>Rate and costs are estimates. Actual terms depend on credit, " +
+    "lender and location. Not a loan offer.</div>";
+}
+
+function buildCollegeSheet(){
+  const inp = readCollege();
+  if (!(inp.annualCost > 0)){ $("sheet").innerHTML = ""; toast("Set an annual cost first"); return false; }
+  const R = collegeSavingsCalc(inp);
+  let inputs = row("Annual cost today", money(inp.annualCost));
+  inputs += row("Years until college", fmtNum(inp.yearsUntil));
+  inputs += row("Years of college", fmtNum(inp.collegeYrs));
+  inputs += row("Currently saved", money(inp.saved));
+  inputs += row("Investment return", pctStr(inp.investRet, 1));
+  inputs += row("Tuition inflation", pctStr(inp.tuitionInfl, 1));
+
+  let out = row("Total projected cost", money(R.totalFuture));
+  out += row("Savings grow to", money(R.savingsAtStart));
+  out += row("Shortfall to cover", money(R.shortfall));
+  out += row("Monthly savings needed", money(R.monthly));
+
+  const src = $("chartCl");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>College Savings Plan</h1><span>" + fmtNum(inp.yearsUntil) + " years to go</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Save per month</div><div class='v'>" + money(R.monthly) +
+        "</div><div class='n'>to close the gap</div></div>" +
+      "<div><div class='k'>Total projected cost</div><div class='v'>" + money(R.totalFuture) +
+        "</div><div class='n'>" + fmtNum(inp.collegeYrs) + " years</div></div>" +
+      "<div><div class='k'>Shortfall today</div><div class='v'>" + money(R.shortfall) +
+        "</div><div class='n'>after current savings grow</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>Excludes financial aid, scholarships and 529 tax advantages. " +
+    "Tuition inflation is an assumption, not a guarantee.</div>";
+}
+
+function buildRentBuySheet(){
+  const inp = readRB();
+  if (!(inp.price > 0)){ $("sheet").innerHTML = ""; toast("Enter a home price first"); return false; }
+  const R = rentBuyCalc(inp);
+  const last = R.years[R.years.length - 1];
+  if (!last){ $("sheet").innerHTML = ""; return false; }
+  const buyWins = last.buyerNW >= last.renterNW;
+
+  let inputs = row("Home price", money(inp.price));
+  inputs += row("Down payment", pctStr(inp.downPct / 100, 0));
+  inputs += row("Interest rate", pctStr(inp.rate / 100, 2));
+  inputs += row("Monthly rent", money(inp.rent));
+  inputs += row("Time horizon", fmtNum(inp.horizon) + " years");
+
+  let out = row("Buyer net worth", money(last.buyerNW));
+  out += row("Renter net worth", money(last.renterNW));
+  out += row("Difference", (buyWins ? "+" : "\u2212") + money(Math.abs(last.buyerNW - last.renterNW)));
+  out += row("Break-even point", R.breakEven ? "Year " + fmtNum(R.breakEven) : "Not within horizon");
+  out += row("Renter invests upfront", money(R.initialInvest));
+
+  const src = $("chartRB");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Rent vs. Buy</h1><span>After " + fmtNum(inp.horizon) + " years</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Better choice</div><div class='v'>" + (buyWins ? "Buying" : "Renting") +
+        "</div><div class='n'>by " + money(Math.abs(last.buyerNW - last.renterNW)) + "</div></div>" +
+      "<div><div class='k'>Buyer net worth</div><div class='v'>" + money(last.buyerNW) +
+        "</div><div class='n'>after " + fmtNum(inp.horizon) + " years</div></div>" +
+      "<div><div class='k'>Renter net worth</div><div class='v'>" + money(last.renterNW) +
+        "</div><div class='n'>after " + fmtNum(inp.horizon) + " years</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>Excludes the mortgage interest deduction and non-financial factors " +
+    "like stability. Projections, not predictions.</div>";
+}
+
+function buildDrawdownSheet(){
+  const o = readDD();
+  if (!(o.initial > 0)){ $("sheet").innerHTML = ""; toast("Enter a portfolio value first"); return false; }
+  const H = historicalBacktest(o);
+  const show = H.runs.filter(r => r.startYear === ddSelectedYear)[0] || H.firstFail || H.runs[0];
+
+  let inputs = row("Starting portfolio", money(o.initial));
+  inputs += row("Years in retirement", fmtNum(o.years));
+  inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
+  inputs += row("Withdrawal strategy",
+    o.strategy === "fixed" ? "Fixed amount" : o.strategy === "pct" ? "% of portfolio" :
+    o.strategy === "guardrails" ? "Guardrails" : "Floor & ceiling");
+  inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
+  if (o.ssAnnual > 0) inputs += row("Social Security", money(o.ssAnnual) + "/yr");
+
+  let out = row("Success rate", pctStr(H.successRate, 1));
+  out += row("Tested against", H.total + " periods since 1928");
+  out += row("Survived", H.survived + " of " + H.total);
+  out += row("Median ending balance", money(H.medianEnd));
+  out += row("Worst case", money(H.worstEnd));
+  if (show) out += row("Example: retiring in " + show.startYear,
+    show.depleted ? "Ran out in year " + show.depletedYear : "Survived the full period");
+
+  const src = $("chartDD");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement, tested since 1928</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Success rate</div><div class='v'>" + pctStr(H.successRate, 0) +
+        "</div><div class='n'>" + H.survived + " of " + H.total + " periods</div></div>" +
+      "<div><div class='k'>Median ending balance</div><div class='v'>" + money(H.medianEnd) +
+        "</div><div class='n'>today's dollars</div></div>" +
+      "<div><div class='k'>Worst case</div><div class='v'>" + money(H.worstEnd) +
+        "</div><div class='n'>today's dollars</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Plan</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>Tested against 98 years of real US market history (1928\u20132025). " +
+    "Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice.</div>";
+}
+
+function buildBudgetSheet(){
+  const incFreq = parseFloat($("bgIncomeFreq").value) || 12;
+  const incomeYr = num("bgIncomeIn") * incFreq;
+  const spentYr = budget.reduce((a, r) => a + annualize(r), 0);
+  const leftYr = incomeYr - spentYr;
+  if (!(incomeYr > 0) && !(spentYr > 0)){ $("sheet").innerHTML = ""; toast("Add your income first"); return false; }
+
+  let out = "";
+  const groups = {};
+  budget.forEach(r => {
+    if (annualize(r) <= 0) return;
+    (groups[r.group || "Custom"] = groups[r.group || "Custom"] || []).push(r);
+  });
+  Object.keys(groups).forEach(g => {
+    groups[g].forEach(r => { out += row(r.desc, money(annualize(r) / 12) + "/mo"); });
+  });
+
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Monthly Budget</h1><span>Per month, unless noted</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Income</div><div class='v'>" + money(incomeYr / 12) +
+        "</div><div class='n'>per month</div></div>" +
+      "<div><div class='k'>Spending</div><div class='v'>" + money(spentYr / 12) +
+        "</div><div class='n'>per month</div></div>" +
+      "<div><div class='k'>Left over</div><div class='v'>" + money(leftYr / 12) +
+        "</div><div class='n'>" + (incomeYr ? pctStr(leftYr / incomeYr, 0) : "\u2014") + " of income</div></div>" +
+    "</div>" +
+    "<div class='sh-cols'>" +
+      "<section style='flex:1 1 100%'><div class='sh-t'>Where it goes</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-foot'>A snapshot of what you entered. Doesn't include taxes withheld " +
+    "or account for irregular income.</div>";
+}
+
 function buildBasicSheet(){
   const p = readBasic();
   if (!(p.years > 0)){ $("sheet").innerHTML = ""; return; }
@@ -4752,6 +5224,63 @@ $("bgAdd").addEventListener("click", () => {
   // focus the new description field
   const inputs = $("bgList").querySelectorAll("input.desc");
   if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
+/* Shared handoff target for other tools sending a line into the budget.
+   Updates an existing row with the same description instead of duplicating
+   it if the button is clicked more than once. */
+function upsertBudgetLine(desc, monthlyAmount){
+  const existing = budget.find(r => r.desc === desc);
+  if (existing){
+    existing.amount = monthlyAmount;
+    existing.freq = 12;
+  } else {
+    budget.push({group:"Custom", desc, amount:monthlyAmount, freq:12, custom:true});
+  }
+  buildBudget(); renderBudget();
+}
+
+$("bgCopyRetire").addEventListener("click", () => {
+  let contrib = 0, period = "Monthly";
+  if (!$("tab-simple").hidden){
+    contrib = num("qContrib"); period = $("qPeriod").value;
+  } else if (!$("tab-single").hidden){
+    contrib = num("contrib"); period = $("period").value;
+  } else if (!$("tab-series").hidden){
+    if (stages.length){ contrib = stages[0].contrib; period = stages[0].period; }
+  } else {
+    toast("Open a retirement tab first, then come back");
+    return;
+  }
+  if (!(contrib > 0)){ toast("No contribution amount found there yet"); return; }
+  const monthly = contrib * PPY[period] / 12;
+  upsertBudgetLine("Retirement contribution", monthly);
+  toast("Added " + money(monthly) + "/mo from your retirement plan");
+});
+
+$("bgCopyCollege").addEventListener("click", () => {
+  const inp = readCollege();
+  if (!(inp.annualCost > 0)){ toast("Set up the College Savings tool first"); return; }
+  const R = collegeSavingsCalc(inp);
+  if (!(R.monthly > 0)){ toast("No monthly amount needed there yet"); return; }
+  upsertBudgetLine("College savings", R.monthly);
+  toast("Added " + money(R.monthly) + "/mo from College Savings");
+});
+
+$("rbCopyMort").addEventListener("click", () => {
+  const price = num("moPrice");
+  if (!(price > 0)){ toast("Set up the Mortgage tool first"); return; }
+  $("rbPrice").value = groupDigits(price, true);
+  $("rbDown").value = $("moDownPct").value;
+  $("rbRate").value = $("moRate").value;
+  // rbTerm only offers 30/20/15; a 10-year mortgage falls back to 15, the
+  // closest option, rather than silently leaving the old term selected.
+  const morTerm = $("moTerm").value;
+  $("rbTerm").value = ["30", "20", "15"].includes(morTerm) ? morTerm : "15";
+  $("rbPropTax").value = $("moTax").value;
+  $("rbIns").value = $("moIns").value;
+  renderRentBuy();
+  toast("Copied the home from your mortgage calculation");
 });
 ["bgIncomeIn"].forEach(id => $(id).addEventListener("input", renderBudget));
 let bgIncomeFreq = 1;   // 1 = typed as annual, 12 = typed as monthly
@@ -5409,7 +5938,16 @@ const GLOSS = {
   sequence: "The order returns arrive in. A bad decade early does far more damage than the same decade late, even at an identical average.",
   guardrails: "Each year, this compares what you\u0027re about to withdraw to your portfolio\u0027s current value. If that percentage has drifted too far from where you started \u2014 up because markets fell, or down because they rose \u2014 spending is cut or raised to bring it back toward target.",
   strategy: "The rule you follow for how much to take out each year. Different rules trade off steadier income against protecting the portfolio \u2014 the description below updates with whichever one you pick.",
-  aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one."
+  aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one.",
+  closingcost: "One-time fees to finalize a home purchase \u2014 lender fees, title insurance, appraisal, and more. Typically 2\u20135% of the price, paid by the buyer.",
+  sellingcost: "What it costs to sell a home, mostly real estate agent commission. Typically 5\u20136% of the sale price, split between both agents.",
+  appreciation: "How fast a home's value is assumed to grow each year. Home prices have historically risen more slowly than the stock market over long periods, though it varies a lot by location.",
+  tuitioninfl: "How fast college costs specifically rise, which has historically outpaced general inflation \u2014 often 3\u20135% a year versus 2\u20133% for prices generally.",
+  maxcut: "The most spending can drop from one year to the next, no matter what the target percentage would otherwise call for. Protects against a sudden, jarring cut in a single bad year.",
+  maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
+  spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below \u2014 stacked on top of whatever the strategy above would otherwise do.",
+  deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses \u2014 mortgage interest, charitable giving, state and local taxes \u2014 and you use whichever is larger.",
+  ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins."
 };
 function tipFor(key){ return GLOSS[key] || ""; }
 (function(){
@@ -5846,6 +6384,74 @@ function buildCardSVG(){
       ["Survived", Hb.survived + " of " + Hb.total],
       ["Median ending balance", money(Hb.medianEnd)],
       ["Starting portfolio", money(od.initial)]
+    ];
+  } else if (t === "tools" && toolSub === "tax"){
+    var it = readTax();
+    var Rt = computeTax(it);
+    title = "My take-home pay";
+    bigLabel = "Per year";
+    big = money(Rt.net);
+    sub = money(it.gross) + " gross \u00b7 " + pctStr(Rt.effTotal, 1) + " effective rate";
+    rows = [
+      ["Federal tax", money(Rt.federal)],
+      ["State tax", money(Rt.state)],
+      ["FICA", money(Rt.fica)],
+      ["Per month", money(Rt.net / 12)]
+    ];
+  } else if (t === "tools" && toolSub === "mortgage"){
+    var im = readMort();
+    var Rm = mortgage(im);
+    title = "My mortgage";
+    bigLabel = "Monthly payment";
+    big = money(Rm.total);
+    sub = money(im.price) + " home \u00b7 " + pctStr(im.rate, 2) + " rate \u00b7 " + fmtNum(im.term) + " yrs";
+    rows = [
+      ["Principal & interest", money(Rm.pi)],
+      ["Loan amount", money(Rm.loan)],
+      ["Total interest", money(Rm.totalInterest)],
+      ["Down payment", pctStr(im.price ? im.down / im.price : 0, 0)]
+    ];
+  } else if (t === "tools" && toolSub === "college"){
+    var ic = readCollege();
+    var Rc = collegeSavingsCalc(ic);
+    title = "College savings plan";
+    bigLabel = "Save per month";
+    big = money(Rc.monthly);
+    sub = fmtNum(ic.yearsUntil) + " years to go \u00b7 " + money(ic.annualCost) + "/yr today";
+    rows = [
+      ["Total projected cost", money(Rc.totalFuture)],
+      ["Shortfall to cover", money(Rc.shortfall)],
+      ["Currently saved", money(ic.saved)],
+      ["Investment return", pctStr(ic.investRet, 1)]
+    ];
+  } else if (t === "tools" && toolSub === "rentbuy"){
+    var ir = readRB();
+    var Rr = rentBuyCalc(ir);
+    var lastR = Rr.years[Rr.years.length - 1];
+    var buyWins = lastR && lastR.buyerNW >= lastR.renterNW;
+    title = "Rent vs. buy";
+    bigLabel = "Better after " + fmtNum(ir.horizon) + " years";
+    big = buyWins ? "Buying" : "Renting";
+    sub = money(ir.price) + " home \u00b7 " + money(ir.rent) + "/mo rent";
+    rows = lastR ? [
+      ["Buyer net worth", money(lastR.buyerNW)],
+      ["Renter net worth", money(lastR.renterNW)],
+      ["Break-even", Rr.breakEven ? "Year " + fmtNum(Rr.breakEven) : "Not yet"],
+      ["Renter invests upfront", money(Rr.initialInvest)]
+    ] : [];
+  } else if (t === "tools" && toolSub === "budget"){
+    var incFreqC = parseFloat($("bgIncomeFreq").value) || 12;
+    var incYrC = num("bgIncomeIn") * incFreqC;
+    var spentYrC = budget.reduce(function(a, r){ return a + annualize(r); }, 0);
+    title = "My monthly budget";
+    bigLabel = "Left over";
+    big = money((incYrC - spentYrC) / 12);
+    sub = money(incYrC / 12) + " income \u00b7 " + money(spentYrC / 12) + " spending, per month";
+    rows = [
+      ["Income", money(incYrC / 12) + "/mo"],
+      ["Spending", money(spentYrC / 12) + "/mo"],
+      ["Left over", money((incYrC - spentYrC) / 12) + "/mo"],
+      ["Percent saved", incYrC ? pctStr((incYrC - spentYrC) / incYrC, 0) : "\u2014"]
     ];
   } else if (t === "simple"){
     var p = readBasic();
