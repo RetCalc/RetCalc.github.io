@@ -132,7 +132,12 @@ main{max-width:1220px;margin:0 auto;padding:22px 26px 70px;
 .h2ctrl input{padding:5px 0;font-size:13px;text-align:center}
 .h2ctrl .affix{padding:0 7px}
 .panel .body{padding:16px 18px}
-aside{position:sticky;top:16px}
+aside{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+  overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+aside::-webkit-scrollbar{width:8px}
+aside::-webkit-scrollbar-track{background:transparent}
+aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
 
 /* ---------- fields ---------- */
 .field{margin-bottom:13px}
@@ -381,6 +386,21 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   font-size:18px;line-height:1;padding:0 6px;flex:none}
 .bgrow .del:hover{color:var(--coral)}
 .bgrow .delspace{width:26px;flex:none}
+.tipdot{display:inline-flex;align-items:center;justify-content:center;width:15px;
+  height:15px;border-radius:50%;border:1px solid var(--line);color:var(--dimmer);
+  font-size:10px;font-family:var(--sans);margin-left:5px;cursor:help;flex:none;
+  vertical-align:middle;user-select:none;transition:border-color .12s,color .12s}
+.tipdot:hover,.tipdot.on{border-color:var(--jade);color:var(--jade)}
+.tipbox{position:fixed;z-index:95;max-width:280px;background:var(--pop);
+  color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+  font-size:12.5px;line-height:1.55;box-shadow:0 12px 34px -10px var(--shadow);
+  opacity:0;pointer-events:none;transition:opacity .12s}
+.tipbox.on{opacity:1}
+.ddrow{cursor:pointer;transition:background .1s}
+.ddrow:hover{background:var(--panel-2)}
+.ddrow.sel{background:rgba(79,191,149,.10)}
+.ddrow.sel td:first-child{color:var(--jade);font-weight:600}
+.ddrow:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .efrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .efrow>span{font-size:13.5px;color:var(--dim)}
 .txhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
@@ -454,7 +474,7 @@ svg{display:block;width:100%;height:auto}
 @media (max-width:900px){
   main{grid-template-columns:minmax(0,1fr);padding:18px 20px 60px}
   nav[role=tablist]{padding:0 20px}
-  aside{position:static}
+  aside{position:static;max-height:none;overflow-y:visible}
   .masthead{padding:18px 20px 20px}
 }
 /* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
@@ -626,7 +646,7 @@ window.onerror = function(msg){
         </div>
         <div class="derived">
           <div><span>Years until retirement</span><span class="num" id="qYears"></span></div>
-          <div><span>Growth after inflation</span><span class="num" id="qReal"></span></div>
+          <div><span>Growth after inflation<span class="tipdot" data-tip="realreturn" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="qReal"></span></div>
         </div>
       </div>
     </div>
@@ -667,19 +687,19 @@ window.onerror = function(msg){
             <div class="inputwrap"><button type="button" class="signflip" data-sign="nominal" title="Flip sign" aria-label="Flip sign">&plusmn;</button><input id="nominal" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%</span></div>
           </div>
           <div class="field">
-            <label for="inflation">Inflation</label>
+            <label for="inflation">Inflation<span class="tipdot" data-tip="inflation" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="inflation" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
           </div>
         </div>
         <div class="field">
-          <label for="fees">Fees <span class="opt">optional</span></label>
+          <label for="fees">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="fees" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
           <div class="hint">Expense ratios and advisory fees, taken straight off your
             rate of return. Leave at 0 to ignore it.</div>
         </div>
         <div class="two">
           <div class="field">
-            <label for="withdrawal">Withdrawal rate</label>
+            <label for="withdrawal">Withdrawal rate<span class="tipdot" data-tip="withdrawal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
           </div>
           <div class="field">
@@ -689,7 +709,7 @@ window.onerror = function(msg){
         </div>
         <div class="derived">
           <div><span>Return net of fees</span><span class="num" id="dNetRate"></span></div>
-          <div><span>Real rate of return</span><span class="num" id="dRealRate"></span></div>
+          <div><span>Real rate of return<span class="tipdot" data-tip="realreturn" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="dRealRate"></span></div>
           <div><span>Periods per year</span><span class="num" id="dPPY"></span></div>
           <div><span>Periodic rate</span><span class="num" id="dPeriodic"></span></div>
           <div><span>Periods modelled</span><span class="num" id="dPeriods"></span></div>
@@ -923,7 +943,7 @@ window.onerror = function(msg){
       </h2>
       <div class="mcbar" id="mcBar" hidden>
         <div class="field">
-          <label for="volatility">Volatility</label>
+          <label for="volatility">Volatility<span class="tipdot" data-tip="volatility" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="volatility" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%/yr</span></div>
         </div>
         <button class="btn" type="button" id="btnReroll">Re-roll</button>
@@ -1343,6 +1363,197 @@ window.onerror = function(msg){
     <div class="panel">
       <h2>Year by year</h2>
       <div class="scroll"><table id="rbTable"><thead><tr><th>Year</th><th>Buyer NW</th><th>Renter NW</th><th>Difference</th><th>Home value</th><th>Balance</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- DRAWDOWN -->
+  <aside id="asideDD" hidden>
+    <div class="panel inputs">
+      <h2>Your retirement</h2>
+      <div class="body">
+        <div class="field">
+          <label for="ddInitial">Portfolio at retirement</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="ddInitial" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <button class="btn mini" type="button" id="ddCopy" style="margin-top:6px">Copy from retirement calc</button>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="ddYears">Years in retirement</label>
+            <div class="inputwrap"><input id="ddYears" type="text" inputmode="decimal" data-num data-step="1" min="1" max="60" data-nonneg><span class="affix">yrs</span></div>
+          </div>
+          <div class="field">
+            <label for="ddStock">Stocks</label>
+            <div class="inputwrap"><input id="ddStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="hint" id="ddMixNote"></div>
+        <div class="field">
+          <label for="ddFee">Fees</label>
+          <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+        </div>
+
+        <div class="field">
+          <label for="ddStrategy">Withdrawal strategy<span class="tipdot" data-tip="strategy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="ddStrategy">
+            <option value="fixed">Fixed amount, rising with inflation</option>
+            <option value="pct">Fixed % of portfolio each year</option>
+            <option value="guardrails">Guardrails (cut in bad years)</option>
+            <option value="floorceil">Floor &amp; ceiling</option>
+          </select>
+          <div class="hint" id="ddStratNote"></div>
+        </div>
+        <div class="field">
+          <label for="ddRate" id="ddRateLabel">Withdrawal rate</label>
+          <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
+          <div class="hint" id="ddRateNote"></div>
+        </div>
+        <div class="two" id="ddGuardWrap" hidden>
+          <div class="field">
+            <label for="ddGuardBand">How far off target before adjusting<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddAdjust">Size of the cut or raise</label>
+            <div class="inputwrap"><input id="ddAdjust" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg value="10"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="hint" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="two" id="ddFloorWrap" hidden>
+          <div class="field">
+            <label for="ddFloor">Max cut</label>
+            <div class="inputwrap"><input id="ddFloor" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddCeil">Max raise</label>
+            <div class="inputwrap"><input id="ddCeil" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="field" id="ddSpendFloorWrap" hidden>
+          <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+          <div class="hint">In today's dollars, per year. Spending never drops below this, even in years the strategy above would otherwise call for less. Leave at 0 for no floor.</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label for="ddSSMode">Social Security</label>
+          <select id="ddSSMode">
+            <option value="none">Not included</option>
+            <option value="est">Estimate it for me</option>
+            <option value="manual">I know my benefit</option>
+          </select>
+        </div>
+        <div id="ddSSEst" hidden>
+          <div class="two">
+            <div class="field">
+              <label for="ddSSIncome">Current income</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
+            </div>
+            <div class="field">
+              <label for="ddSSClaim">Claim at age</label>
+              <div class="inputwrap"><input id="ddSSClaim" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg value="67"><span class="affix">yrs</span></div>
+            </div>
+          </div>
+          <div class="hint" id="ddSSEstNote"></div>
+        </div>
+        <div id="ddSSManual" hidden>
+          <div class="field">
+            <label for="ddSSAmount">Annual benefit, today's dollars</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
+            <div class="hint">Find your number at ssa.gov/myaccount for the most accurate figure.</div>
+          </div>
+        </div>
+        <div class="field" id="ddSSDelayWrap" hidden>
+          <label for="ddSSDelay">Starts after</label>
+          <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix">yrs</span></div>
+          <div class="hint">Years into retirement before benefits begin. Use 0 if they start right away.</div>
+        </div>
+        <div class="derived">
+          <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
+          <div><span>First year withdrawal</span><span class="num" id="ddFirstW"></span></div>
+          <div><span>That is, per month</span><span class="num" id="ddFirstMo"></span></div>
+          <div><span>Periods tested</span><span class="num" id="ddPeriods"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-drawdown" hidden>
+    <div class="panel">
+      <div class="txhead">
+        <span class="seg" id="segDD">
+          <button type="button" data-dd="hist" class="on">Historical</button>
+          <button type="button" data-dd="mc">Monte Carlo</button>
+        </span>
+        <span class="txbadge" id="ddBadge">1928&ndash;2025</span>
+      </div>
+      <div class="headline">
+        <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">--</div>
+          <div class="note" id="ddSuccessNote"></div></div>
+        <div><div class="k">Median ending balance</div><div class="v" id="ddMedian">--</div>
+          <div class="note">In today's dollars</div></div>
+        <div><div class="k">Worst case</div><div class="v" id="ddWorst">--</div>
+          <div class="note" id="ddWorstNote"></div></div>
+      </div>
+      <div class="body"><div id="ddVerdict"></div></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddChartTitle">Every historical starting year</h2>
+      <div class="chartwrap" id="chartWrapDD">
+        <svg id="chartDD" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Portfolio balance through retirement"></svg>
+        <div class="tip" id="tipDD"></div>
+      </div>
+      <div class="legend" id="legendDD"></div>
+      <div class="mcnote" id="ddChartNote"></div>
+    </div>
+
+    <div class="panel" id="ddYearsPanel">
+      <h2>How each starting year fared</h2>
+      <div class="scroll">
+        <table id="ddStartTable">
+          <thead><tr><th>Retired in</th><th>Outcome</th><th>Ending balance</th><th>Lowest year's spending</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Highest year, in today's $</span><span class="v pos" id="ddSpendHigh"></span></div>
+            <div class="kv"><span class="k">Lowest year, in today's $</span><span class="v neg" id="ddSpendLow"></span></div>
+            <div class="kv"><span class="k">Median year, in today's $</span><span class="v" id="ddSpendMed"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Years spending was cut</span><span class="v" id="ddSpendCuts"></span></div>
+            <div class="kv"><span class="k">Biggest single-year cut</span><span class="v" id="ddSpendMaxCut"></span></div>
+            <div class="kv"><span class="k">Total spent over retirement</span><span class="v" id="ddSpendTotal"></span></div>
+          </div>
+        </div>
+        <div class="hint" id="ddSpendNote" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddIncomeChartTitle">Spending through retirement</h2>
+      <div class="chartwrap" id="chartWrapDDI">
+        <svg id="chartDDI" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Withdrawal amount over time"></svg>
+        <div class="tip" id="tipDDI"></div>
+      </div>
+      <div class="legend" id="legendDDI"></div>
+      <div class="hint" id="ddIncomeNote" style="padding:0 18px 14px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddDetailTitle">Year by year</h2>
+      <div class="hint" style="padding:0 18px" id="ddDetailNote"></div>
+      <div class="scroll">
+        <table id="ddTable">
+          <thead><tr><th>Year</th><th>Start, today's $</th><th>Social Security</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1821,7 +2032,7 @@ window.onerror = function(msg){
         <div class="derived">
           <div><span>Standard deduction</span><span class="num" id="txStdShow"></span></div>
           <div><span>Taxable income</span><span class="num" id="txTaxable"></span></div>
-          <div><span>Marginal federal rate</span><span class="num" id="txMarginal"></span></div>
+          <div><span>Marginal federal rate<span class="tipdot" data-tip="marginal" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txMarginal"></span></div>
         </div>
       </div>
     </div>
@@ -1830,6 +2041,11 @@ window.onerror = function(msg){
   <!-- ========== TOOL PICKER ========== -->
   <div class="stack solo" id="tab-toolpicker" hidden>
     <div class="toolcards">
+      <div class="toolcard" data-pick="drawdown">
+        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="13" cy="18" r="2" fill="currentColor"/><circle cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
+        <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1928.</div></div>
+        <div class="toolcard-arrow">&#8250;</div>
+      </div>
       <div class="toolcard" data-pick="tax">
         <div class="toolcard-icon">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1868,7 +2084,14 @@ window.onerror = function(msg){
         <div class="toolcard-arrow">&#8250;</div>
       </div>
       <div class="toolcard" data-pick="rentbuy">
-        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20 L20 6 L36 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="10" y="20" width="20" height="14" rx="1" stroke="currentColor" stroke-width="2"/><rect x="16" y="26" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="20" y1="6" x2="20" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="12" x2="32" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 12 L8 20 L12 20 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+            <path d="M28 12 L32 20 L36 20 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+            <path d="M13 6 L20 2 L27 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="15" y="30" width="10" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+          </svg></div>
         <div class="toolcard-body"><div class="toolcard-name">Rent vs. Buy</div><div class="toolcard-desc">Full model comparing buyer and renter net worth over any horizon, including opportunity cost and appreciation.</div></div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
@@ -1984,7 +2207,7 @@ window.onerror = function(msg){
         </div>
         <div class="two">
           <div class="field">
-            <label for="moPmi">PMI</label>
+            <label for="moPmi">PMI<span class="tipdot" data-tip="pmi" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="moPmi" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
           </div>
           <div class="field">
@@ -2091,7 +2314,7 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
-      <h2>Amortization by year</h2>
+      <h2>Amortization by year<span class="tipdot" data-tip="amort" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="moTable">
@@ -2107,6 +2330,7 @@ window.onerror = function(msg){
 
 <!-- one-page summary, hidden until printed -->
 <div id="sheet" aria-hidden="true"></div>
+<div class="tipbox" id="tipbox" role="tooltip"></div>
 
 <script>
 // ===MATH START===
@@ -2589,6 +2813,250 @@ function mortgage(m){
           totalInterest, pmiPaid, ltv, n};
 }
 
+/* Historical annual returns, 1928-2025 (98 years).
+   Stocks: S&P 500 total return incl. dividends.
+   Bonds: US 10-year Treasury total return.
+   Both from NYU Stern (Damodaran), updated January 2026.
+   Inflation: annual average CPI-U change, US Bureau of Labor Statistics. */
+var HIST_START = 1928;
+var HIST_STOCK = [43.81,-8.30,-25.12,-43.84,-8.64,49.98,-1.19,46.74,31.94,-35.34,
+29.28,-1.10,-10.67,-12.77,19.17,25.06,19.03,35.82,-8.43,5.20,5.70,18.30,30.81,
+23.68,18.15,-1.21,52.56,32.60,7.44,-10.46,43.72,12.06,0.34,26.64,-8.81,22.61,
+16.42,12.40,-9.97,23.80,10.81,-8.24,3.56,14.22,18.76,-14.31,-25.90,37.00,23.83,
+-6.98,6.51,18.52,31.74,-4.70,20.42,22.34,6.15,31.24,18.49,5.81,16.54,31.48,-3.06,
+30.23,7.49,9.97,1.33,37.20,22.68,33.10,28.34,20.89,-9.03,-11.85,-21.97,28.36,
+10.74,4.83,15.61,5.48,-36.55,25.94,14.82,2.10,15.89,32.15,13.52,1.38,11.77,21.61,
+-4.23,31.21,18.02,28.47,-18.04,26.06,24.88,17.78];
+var HIST_BOND = [0.84,4.20,4.54,-2.56,8.79,1.86,7.96,4.47,5.02,1.38,4.21,4.41,
+5.40,-2.02,2.29,2.49,2.58,3.80,3.13,0.92,1.95,4.66,0.43,-0.30,2.27,4.14,3.29,
+-1.34,-2.26,6.80,-2.10,-2.65,11.64,2.06,5.69,1.68,3.73,0.72,2.91,-1.58,3.27,
+-5.01,16.75,9.79,2.82,3.66,1.99,3.61,15.98,1.29,-0.78,0.67,-2.99,8.20,32.81,
+3.20,13.73,25.71,24.28,-4.96,8.22,17.69,6.24,15.00,9.36,14.21,-8.04,23.48,1.43,
+9.94,14.92,-8.25,16.66,5.57,15.12,0.38,4.49,2.87,1.96,10.21,20.10,-11.12,8.46,
+16.04,2.97,-9.10,10.75,1.28,0.69,2.80,-0.02,9.64,11.33,-4.42,-17.83,3.88,-1.64,7.80];
+var HIST_INFL = [-1.7,0.0,-2.3,-9.0,-9.9,-5.1,3.1,2.2,1.5,3.6,-2.1,-1.4,0.7,5.0,
+10.9,6.1,1.7,2.3,8.3,14.4,8.1,-1.2,1.3,7.9,1.9,0.8,0.7,-0.4,1.5,3.3,2.8,0.7,1.7,
+1.0,1.0,1.3,1.3,1.6,2.9,3.1,4.2,5.5,5.7,4.4,3.2,6.2,11.0,9.1,5.8,6.5,7.6,11.3,
+13.5,10.3,6.2,3.2,4.3,3.6,1.9,3.6,4.1,4.8,5.4,4.2,3.0,3.0,2.6,2.8,3.0,2.3,1.6,
+2.2,3.4,2.8,1.6,2.3,2.7,3.4,3.2,2.8,3.8,-0.4,1.6,3.2,2.1,1.5,1.6,0.1,1.3,2.1,
+2.4,1.8,1.2,4.7,8.0,4.1,2.9,2.6];
+
+/* ---------- drawdown engine ----------
+   One retirement run. Withdrawal happens at the start of each year, then the
+   remaining balance earns that year's blended stock/bond return less fees.
+   Sequence is an array of {stock, bond, infl} in percent. */
+function runDrawdown(o, seq) {
+  var bal = o.initial;
+  var stockW = o.stockPct / 100;
+  var bondW = 1 - stockW;
+  var cumInfl = 1;
+  var baseW = o.initial * o.initialPct / 100;   // year-1 withdrawal, nominal
+  var prevW = baseW;
+  var rows = [];
+  var depletedYear = null;
+  var totalReal = 0;
+
+  for (var y = 0; y < o.years; y++) {
+    var s = seq[y];
+    var infl = s.infl / 100;
+    var w;
+
+    if (o.strategy === "fixed") {
+      // 4%-rule style: first-year amount, then follow inflation regardless.
+      // Uses THIS year's price level (cumInfl folded forward) so it lines up
+      // with how realSpend is computed below \u2014 otherwise the withdrawal
+      // is a year behind its own inflation adjustment and real spend drifts.
+      w = baseW * cumInfl * (1 + infl);
+
+    } else if (o.strategy === "pct") {
+      // constant percentage of whatever the portfolio is worth now
+      w = bal * o.initialPct / 100;
+
+    } else if (o.strategy === "guardrails") {
+      // Guyton-Klinger style: follow inflation, but cut or raise spending
+      // when the withdrawal rate drifts outside a band around the target
+      w = (y === 0) ? baseW : prevW * (1 + infl);
+      if (bal > 0) {
+        var curRate = w / bal * 100;
+        var hi = o.initialPct * (1 + o.guardBand / 100);
+        var lo = o.initialPct * (1 - o.guardBand / 100);
+        if (curRate > hi) w = w * (1 - o.adjustPct / 100);
+        else if (curRate < lo) w = w * (1 + o.adjustPct / 100);
+      }
+
+    } else {
+      // floor & ceiling: aim at a fixed % of the current balance, but never
+      // change spending by more than the allowed step from last year
+      var target = bal * o.initialPct / 100;
+      var infAdj = (y === 0) ? baseW : prevW * (1 + infl);
+      var floor = infAdj * (1 - o.floorPct / 100);
+      var ceil = infAdj * (1 + o.ceilPct / 100);
+      w = Math.min(Math.max(target, floor), ceil);
+    }
+
+    // Optional hard floor: spending in today's dollars never falls below this,
+    // regardless of what the strategy above would otherwise call for. Applies
+    // to strategies where spending can actually fall — fixed-inflation
+    // spending never needs it, since it never drops in real terms by design.
+    // For floor & ceiling, this is a different thing from that strategy's own
+    // "max cut" limit: max cut bounds how much spending can drop from last
+    // year, while this sets an absolute dollar amount it can never go under.
+    // Uses THIS year's price level (cumInfl folded forward), matching how
+    // realSpend is computed below, so the floor lands where it's meant to.
+    if (o.spendFloor > 0 && (o.strategy === "pct" || o.strategy === "guardrails" || o.strategy === "floorceil")) {
+      var floorNominal = o.spendFloor * cumInfl * (1 + infl);
+      if (w < floorNominal) w = floorNominal;
+    }
+
+    // Social Security covers part of the spending once it starts, so the
+    // portfolio only has to provide the remainder.
+    var ssThisYear = 0;
+    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0)) ssThisYear = o.ssAnnual * cumInfl;
+    var spend = w;
+    w = Math.max(0, w - ssThisYear);
+
+    if (w > bal) w = bal;
+    if (w < 0) w = 0;
+
+    var start = bal;
+    bal = bal - w;
+    var ret = (stockW * s.stock + bondW * s.bond) / 100 - (o.fee || 0) / 100;
+    var growth = bal * ret;
+    bal = bal + growth;
+    if (bal < 0) bal = 0;
+
+    cumInfl = cumInfl * (1 + infl);
+    var realW = w / cumInfl;
+    totalReal += realW;
+
+    rows.push({
+      year: y + 1, start: start, withdrawal: w, realWithdrawal: realW,
+      growth: growth, end: bal, realEnd: bal / cumInfl, infl: s.infl,
+      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: spend / cumInfl
+    });
+
+    prevW = spend;
+    if (bal <= 0 && depletedYear === null) depletedYear = y + 1;
+  }
+
+  return {
+    rows: rows,
+    depleted: depletedYear !== null,
+    depletedYear: depletedYear,
+    endBalance: bal,
+    endReal: rows.length ? rows[rows.length - 1].realEnd : o.initial,
+    totalRealSpend: totalReal,
+    minRealW: rows.reduce(function (m, r) { return Math.min(m, r.realWithdrawal); }, Infinity)
+  };
+}
+
+/* Every rolling historical start year that has enough data to run the full
+   retirement. This is the sequence-of-returns test: 1966 and 1929 fail plans
+   that a random-draw simulation would call safe. */
+function historicalBacktest(o) {
+  var n = HIST_STOCK.length;
+  var runs = [];
+  for (var start = 0; start + o.years <= n; start++) {
+    var seq = [];
+    for (var k = 0; k < o.years; k++) {
+      seq.push({ stock: HIST_STOCK[start + k], bond: HIST_BOND[start + k], infl: HIST_INFL[start + k] });
+    }
+    var r = runDrawdown(o, seq);
+    r.startYear = HIST_START + start;
+    runs.push(r);
+  }
+  var survived = runs.filter(function (r) { return !r.depleted; }).length;
+  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
+  var fails = runs.filter(function (r) { return r.depleted; });
+  return {
+    runs: runs,
+    total: runs.length,
+    survived: survived,
+    successRate: runs.length ? survived / runs.length : 0,
+    medianEnd: ends.length ? ends[Math.floor(ends.length / 2)] : 0,
+    worstEnd: ends.length ? ends[0] : 0,
+    bestEnd: ends.length ? ends[ends.length - 1] : 0,
+    failYears: fails.map(function (r) { return r.startYear; }),
+    firstFail: fails.length ? fails[0] : null
+  };
+}
+
+/* Random sequences drawn from the same historical distribution, using the
+   seeded generator so a given set of inputs always produces the same chart. */
+function monteCarloDrawdown(o, trials, seed) {
+  var rng = mulberry32(seed >>> 0);
+  var n = HIST_STOCK.length;
+  var runs = [];
+  for (var t = 0; t < trials; t++) {
+    var seq = [];
+    for (var k = 0; k < o.years; k++) {
+      var i = Math.floor(rng() * n);
+      seq.push({ stock: HIST_STOCK[i], bond: HIST_BOND[i], infl: HIST_INFL[i] });
+    }
+    runs.push(runDrawdown(o, seq));
+  }
+  var survived = runs.filter(function (r) { return !r.depleted; }).length;
+  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
+  var pick = function (q) { return ends.length ? ends[Math.min(ends.length - 1, Math.floor(ends.length * q))] : 0; };
+
+  // percentile bands of the real balance path, for the fan chart
+  var bands = [];
+  for (var y = 0; y < o.years; y++) {
+    var col = runs.map(function (r) { return r.rows[y] ? r.rows[y].realEnd : 0; })
+      .sort(function (a, b) { return a - b; });
+    var at = function (q) { return col[Math.min(col.length - 1, Math.floor(col.length * q))]; };
+    bands.push({ year: y + 1, p10: at(.10), p25: at(.25), p50: at(.50), p75: at(.75), p90: at(.90) });
+  }
+  return {
+    runs: runs, trials: trials, survived: survived,
+    successRate: runs.length ? survived / runs.length : 0,
+    medianEnd: pick(.5), p10End: pick(.10), p90End: pick(.90),
+    bands: bands
+  };
+}
+
+/* ---------- Social Security estimator ----------
+   Uses the real PIA formula: average indexed monthly earnings run through two
+   bend points, then adjusted for claiming age. This assumes a roughly steady
+   career at the income entered. A statement from ssa.gov reflects your actual
+   35-year earnings record, so the manual figure is always more accurate.
+   2026 bend points; taxable maximum matches the FICA wage base. */
+var SS_BEND1 = 1226;
+var SS_BEND2 = 7391;
+var SS_CAP = 184500;
+var SS_FRA = 67;
+
+function ssEstimate(income, careerYears, claimAge) {
+  var capped = Math.min(Math.max(0, income), SS_CAP);
+  // Social Security averages your best 35 years; a shorter career means zeros
+  // get averaged in, which drags the benefit down.
+  var yrs = Math.max(1, Math.min(35, careerYears || 35));
+  var aime = (capped / 12) * (yrs / 35);
+  var pia;
+  if (aime <= SS_BEND1) {
+    pia = 0.90 * aime;
+  } else if (aime <= SS_BEND2) {
+    pia = 0.90 * SS_BEND1 + 0.32 * (aime - SS_BEND1);
+  } else {
+    pia = 0.90 * SS_BEND1 + 0.32 * (SS_BEND2 - SS_BEND1) + 0.15 * (aime - SS_BEND2);
+  }
+  var age = Math.min(70, Math.max(62, claimAge || SS_FRA));
+  var adj = 1;
+  if (age < SS_FRA) {
+    var early = (SS_FRA - age) * 12;
+    var first36 = Math.min(36, early);
+    var beyond = Math.max(0, early - 36);
+    adj = 1 - (first36 * (5 / 9) / 100) - (beyond * (5 / 12) / 100);
+  } else if (age > SS_FRA) {
+    adj = 1 + (age - SS_FRA) * 0.08;
+  }
+  return {
+    aime: aime, pia: pia, adjustment: adj,
+    monthly: pia * adj, annual: pia * adj * 12,
+    atFRA: pia * 12, fra: SS_FRA
+  };
+}
+
 // ===MATH END===
 
 if (typeof module !== "undefined")
@@ -2632,7 +3100,8 @@ const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, no
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
 const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
               mortgage:"finance-tools.mortgage.v1", budget:"finance-tools.budget.v1",
-              college:"finance-tools.college.v1", rentbuy:"finance-tools.rentbuy.v1"};
+              college:"finance-tools.college.v1", rentbuy:"finance-tools.rentbuy.v1",
+              drawdown:"finance-tools.drawdown.v1"};
 const memory = {};
 function storeRead(which){
   try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
@@ -2646,7 +3115,8 @@ function storeWrite(which, v){
 /* one saved-scenario list per tool */
 const SC = {retire: storeRead("retire") || [], tax: storeRead("tax") || [],
             mortgage: storeRead("mortgage") || [], budget: storeRead("budget") || [],
-            college: storeRead("college") || [], rentbuy: storeRead("rentbuy") || []};
+            college: storeRead("college") || [], rentbuy: storeRead("rentbuy") || [],
+            drawdown: storeRead("drawdown") || []};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
@@ -3724,10 +4194,12 @@ function showTool(sub){
   $("tab-budget").hidden = (sub !== "budget");
   $("tab-college").hidden = (sub !== "college");
   $("tab-rentbuy").hidden = (sub !== "rentbuy");
+  $("tab-drawdown").hidden = (sub !== "drawdown");
   $("asideTax").hidden = (sub !== "tax");
   $("asideMort").hidden = (sub !== "mortgage");
   $("asideCollege").hidden = (sub !== "college");
   $("asideRB").hidden = (sub !== "rentbuy");
+  $("asideDD").hidden = (sub !== "drawdown");
   $("main").classList.toggle("solo", onPicker);
   refreshScenarioList("");
   if (sub === "tax") renderTax();
@@ -3735,6 +4207,7 @@ function showTool(sub){
   else if (sub === "budget") renderBudget();
   else if (sub === "college") renderCollege();
   else if (sub === "rentbuy") renderRentBuy();
+  else if (sub === "drawdown") renderDrawdown();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
 }
 function showTab(t){
@@ -3757,6 +4230,8 @@ function showTab(t){
     $("asideRB").hidden = true;
     $("tab-college").hidden = true;
     $("tab-rentbuy").hidden = true;
+    $("tab-drawdown").hidden = true;
+    $("asideDD").hidden = true;
     $("main").classList.remove("solo");
   }
   $("asideSimple").hidden = (t !== "simple");
@@ -4619,6 +5094,369 @@ function rentBuyCalc(inp) {
   };
 }
 
+/* ---------- drawdown UI ---------- */
+var ddPoints = [];
+var ddMode = "hist";
+var ddSelectedYear = null;
+var DD_STRAT_NOTES = {
+  fixed: "The classic 4% rule. You set a first-year amount and give yourself a raise for inflation every year, no matter what markets do. Simple, but it cannot react to a bad decade.",
+  pct: "Take the same percentage of whatever the portfolio is worth each year. It can never run dry, but your income swings with the market.",
+  guardrails: "Follow inflation normally, like the fixed-amount approach. But check your withdrawal rate each year against your original target \u2014 if the portfolio grows a lot, your rate drops below target, so you get a raise; if it shrinks a lot, your rate climbs above target, so spending gets cut. This reacts to bad markets without giving up the yearly raise fixed spending never gets you.",
+  floorceil: "Aim at a percentage of the current balance, but never change spending by more than the limits you set from one year to the next."
+};
+
+function readDD() {
+  var strat = $("ddStrategy").value;
+  return {
+    initial: num("ddInitial"),
+    years: Math.min(60, Math.max(1, Math.round(num("ddYears")))),
+    stockPct: Math.min(100, Math.max(0, num("ddStock"))),
+    fee: num("ddFee"),
+    strategy: strat,
+    initialPct: num("ddRate"),
+    guardBand: num("ddGuardBand"),
+    adjustPct: num("ddAdjust"),
+    floorPct: num("ddFloor"),
+    ceilPct: num("ddCeil"),
+    spendFloor: num("ddSpendFloor"),
+    ssAnnual: ddSSAnnual(),
+    ssDelayYears: Math.max(0, Math.round(num("ddSSDelay")))
+  };
+}
+
+function ddSSAnnual() {
+  var mode = $("ddSSMode").value;
+  if (mode === "manual") return num("ddSSAmount");
+  if (mode === "est") {
+    var r = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
+    return r.annual;
+  }
+  return 0;
+}
+function renderDrawdown() {
+  var ssMode = $("ddSSMode").value;
+  $("ddSSEst").hidden = (ssMode !== "est");
+  $("ddSSManual").hidden = (ssMode !== "manual");
+  $("ddSSDelayWrap").hidden = (ssMode === "none");
+  var ssAmt = ddSSAnnual();
+  $("ddSSShow").textContent = ssAmt > 0 ? money(ssAmt) + "/yr" : "Not included";
+  if (ssMode === "est"){
+    var e = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
+    $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month claiming at " +
+      Math.round(num("ddSSClaim")) + ". Full retirement age is " + SS_FRA +
+      "; claiming earlier permanently reduces it, later increases it 8% a year.";
+  }
+  var o = readDD();
+  var strat = o.strategy;
+  $("ddGuardWrap").hidden = (strat !== "guardrails");
+  $("ddFloorWrap").hidden = (strat !== "floorceil");
+  $("ddSpendFloorWrap").hidden = !(strat === "pct" || strat === "guardrails" || strat === "floorceil");
+  $("ddStratNote").textContent = DD_STRAT_NOTES[strat] || "";
+
+  if (strat === "guardrails") {
+    var target = o.initialPct;
+    var bandV = Math.max(0, num("ddGuardBand"));
+    var adjV = Math.max(0, num("ddAdjust"));
+    var hiRate = target * (1 + bandV / 100);
+    var loRate = target * (1 - bandV / 100);
+    $("ddGuardExample").hidden = false;
+    $("ddGuardExample").innerHTML = "With a " + pctStr(target / 100, 1) + " target: if your withdrawal " +
+      "ever climbs above <b>" + pctStr(hiRate / 100, 1) + "</b> of the portfolio, spending is cut " +
+      adjV + "%. If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + adjV + "% raise.";
+  } else {
+    $("ddGuardExample").hidden = true;
+  }
+  $("ddRateLabel").textContent = (strat === "pct")
+    ? "Percentage taken each year" : "Starting withdrawal rate";
+  $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
+
+  var firstW = o.initial * o.initialPct / 100;
+  $("ddFirstW").textContent = money(firstW);
+  $("ddFirstMo").textContent = money(firstW / 12);
+  $("ddRateNote").textContent = o.initial > 0
+    ? "That\u0027s " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above."
+    : "Enter your portfolio value above to see this in dollars.";
+
+  if (o.initial <= 0) {
+    setBig("ddSuccess", "--"); setBig("ddMedian", "--"); setBig("ddWorst", "--");
+    $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Enter your portfolio value to run the simulation.</div>";
+    return;
+  }
+
+  if (ddMode === "hist") {
+    var H = historicalBacktest(o);
+    $("ddPeriods").textContent = H.total + " start years";
+    $("ddBadge").textContent = "1928\u20132025";
+    setBig("ddSuccess", pctStr(H.successRate, 1));
+    $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
+    $("ddSuccessNote").textContent = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
+    setBig("ddMedian", money(H.medianEnd));
+    setBig("ddWorst", money(H.worstEnd));
+    $("ddWorstNote").textContent = H.failYears.length
+      ? "Ran out in " + H.failYears.length + " period" + (H.failYears.length === 1 ? "" : "s")
+      : "Never ran out";
+
+    var verdict;
+    if (H.successRate >= 0.99) verdict = "<b class='pos'>This plan survived every historical period.</b> Including the Great Depression, the 1970s stagflation, and the 2008 crash.";
+    else if (H.successRate >= 0.90) verdict = "<b class='gold'>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") + (H.failYears.length > 6 ? " and others" : "") + " \u2014 the worst sequences on record.";
+    else verdict = "<b class='neg'>This plan ran out of money in " + H.failYears.length + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.";
+    $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + verdict + "</div>";
+
+    // chart: every start year's real balance path
+    $("ddChartTitle").textContent = "Every historical starting year";
+    var maxY = o.years;
+    var pts = [];
+    for (var y = 0; y <= maxY; y++) {
+      var vals = H.runs.map(function (r) {
+        return y === 0 ? o.initial : (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0);
+      }).sort(function (a, b) { return a - b; });
+      var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
+      pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
+    }
+    ddPoints = paintChart("chartDD", pts, maxY, "mc", []);
+    mcLegend("legendDD");
+    $("ddChartNote").hidden = false;
+    $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
+      " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
+
+    $("ddYearsPanel").hidden = false;
+    // default to the first failure if one exists (the toughest test), or the
+    // worst-surviving period otherwise, but the person can click any row
+    if (ddSelectedYear === null || !H.runs.some(function (r) { return r.startYear === ddSelectedYear; })) {
+      var worst = H.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[0];
+      ddSelectedYear = (H.firstFail || worst).startYear;
+    }
+    $("ddStartTable").querySelector("tbody").innerHTML = H.runs.map(function (r) {
+      return "<tr class='ddrow" + (r.startYear === ddSelectedYear ? " sel" : "") +
+        "' data-year='" + r.startYear + "' tabindex='0'><td>" + r.startYear + "</td><td class='" +
+        (r.depleted ? "neg" : "pos") + "'>" +
+        (r.depleted ? "Ran out in year " + r.depletedYear : "Survived") + "</td><td>" +
+        money(r.endReal) + "</td><td>" + money(r.minRealW) + "</td></tr>";
+    }).join("");
+
+    var show = H.runs.filter(function (r) { return r.startYear === ddSelectedYear; })[0] || H.runs[0];
+    $("ddDetailTitle").textContent = "Year by year \u2014 retiring in " + show.startYear;
+    $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
+      (show.depleted ? "This one ran out of money in year " + show.depletedYear + "."
+                      : "This one survived the full " + o.years + " years.");
+    fillDDTable(show);
+    $("ddIncomeChartTitle").textContent = "Spending through retirement \u2014 retiring in " + show.startYear;
+    renderSpendStats(show, "Showing the period selected above.");
+    renderIncomeChart(show);
+
+  } else {
+    var trials = 5000;
+    var M = monteCarloDrawdown(o, trials, mcSeed);
+    $("ddPeriods").textContent = trials.toLocaleString() + " runs";
+    $("ddBadge").textContent = trials.toLocaleString() + " simulations";
+    setBig("ddSuccess", pctStr(M.successRate, 1));
+    $("ddSuccess").className = "v " + (M.successRate >= 0.95 ? "pos" : M.successRate >= 0.85 ? "gold" : "neg");
+    $("ddSuccessNote").textContent = M.survived.toLocaleString() + " of " + trials.toLocaleString() + " runs lasted " + o.years + " years";
+    setBig("ddMedian", money(M.medianEnd));
+    setBig("ddWorst", money(M.p10End));
+    $("ddWorstNote").textContent = "10th percentile outcome";
+    $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>Each run draws " +
+      o.years + " years at random from the 1928\u20132025 record. This captures the range of possible " +
+      "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
+
+    $("ddChartTitle").textContent = "Range of outcomes";
+    var mpts = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial }];
+    M.bands.forEach(function (b) {
+      mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
+    });
+    ddPoints = paintChart("chartDD", mpts, o.years, "mc", []);
+    mcLegend("legendDD");
+    $("ddChartNote").hidden = false;
+    $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
+      " simulated retirements.";
+    $("ddYearsPanel").hidden = true;
+
+    var med = M.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[Math.floor(M.runs.length / 2)];
+    $("ddDetailTitle").textContent = "Year by year \u2014 a median run";
+    $("ddDetailNote").textContent = "One representative simulation from the middle of the range.";
+    fillDDTable(med);
+    $("ddIncomeChartTitle").textContent = "Spending through retirement \u2014 a median run";
+    renderSpendStats(med, "Showing the same run as the table below.");
+    renderIncomeChart(med);
+  }
+}
+
+function fillDDTable(run) {
+  // The engine tracks balances in the dollars of the year they occur in
+  // (nominal), which is necessary for the math but confusing to read side by
+  // side over a long horizon \u2014 50 years of inflation alone can turn a real
+  // $20M into a nominal $140M. Every dollar figure here is converted back to
+  // today's terms so the table reads consistently with the rest of the app.
+  $("ddTable").querySelector("tbody").innerHTML = run.rows.map(function (r, i) {
+    var prevReal = i === 0 ? r.start : run.rows[i - 1].realEnd;
+    return "<tr><td>" + r.year + "</td><td>" + money(prevReal) + "</td><td>" +
+      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td><td>" + money(r.withdrawal) +
+      "</td><td>" + money(r.spend) + "</td><td>" + money(r.realSpend != null ? r.realSpend : r.realWithdrawal) +
+      "</td><td class='" + (r.ret >= 0 ? "pos" : "neg") + "'>" +
+      r.ret.toFixed(1) + "%</td><td>" + money(r.realEnd) + "</td></tr>";
+  }).join("");
+}
+
+/* Summarises spending across every year of one run: the swings, the cuts, and
+   the total. This is what tells the story a single ending balance can't. */
+function renderSpendStats(run, label) {
+  var real = run.rows.map(function (r) { return r.realSpend != null ? r.realSpend : r.realWithdrawal; });
+  var sorted = real.slice().sort(function (a, b) { return a - b; });
+  var high = sorted[sorted.length - 1], low = sorted[0];
+  var med = sorted[Math.floor(sorted.length / 2)];
+  var total = real.reduce(function (a, v) { return a + v; }, 0);
+
+  var cuts = 0, maxCut = 0;
+  for (var i = 1; i < real.length; i++) {
+    var chg = real[i] - real[i - 1];
+    if (chg < -0.5) { cuts++; if (-chg > maxCut) maxCut = -chg; }
+  }
+
+  $("ddSpendHigh").textContent = money(high);
+  $("ddSpendLow").textContent = money(low);
+  $("ddSpendMed").textContent = money(med);
+  $("ddSpendCuts").textContent = cuts + " of " + real.length + " years";
+  $("ddSpendMaxCut").textContent = maxCut > 0 ? "\u2212" + money(maxCut) + " in one year" : "None";
+  $("ddSpendTotal").textContent = money(total);
+
+  var swing = high > 0 ? (high - low) / high : 0;
+  $("ddSpendNote").innerHTML = label + " Spending in today\u0027s dollars ranged from " +
+    money(low) + " to " + money(high) + (swing > 0.01
+      ? ", a swing of " + pctStr(swing, 0) + " between the best and worst year."
+      : ", essentially flat throughout.");
+}
+
+/* Line chart of what was actually spent each year, in today's dollars, split
+   into the Social Security portion and the portfolio portion. */
+function renderIncomeChart(run) {
+  var pts = run.rows.map(function (r) {
+    var real = r.realSpend != null ? r.realSpend : r.realWithdrawal;
+    var realSS = (r.ss || 0) / Math.pow(1 + (r.infl || 0) / 100, 0); // ss already deflated via cumInfl upstream
+    return { year: r.year, base: real, hi: real, lo: real };
+  });
+  if (!pts.length) { paintChart("chartDDI", [], 1, "band", []); return; }
+  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", []);
+  $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today\u0027s dollars");
+}
+var ddiPoints = [];
+attachChart("chartWrapDDI", "chartDDI", "tipDDI", function () { return ddiPoints; },
+  function (best) {
+    return "<b>Year " + fmtNum(best.year) + "</b>" +
+      "<br><span style=\u0027color:#e9b872\u0027>Spending</span> <span class=\u0027n\u0027>" + money(best.base) + "</span>";
+  });
+
+attachChart("chartWrapDD", "chartDD", "tipDD", function () { return ddPoints; },
+  function (best) {
+    return "<b>Year " + fmtNum(best.year) + "</b>" +
+      "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
+      "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
+      "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
+  });
+
+$("ddStartTable").addEventListener("click", function (e) {
+  var tr = e.target.closest ? e.target.closest("tr[data-year]") : null;
+  if (!tr) return;
+  ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
+  renderDrawdown();
+});
+$("ddStartTable").addEventListener("keydown", function (e) {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  var tr = e.target.closest ? e.target.closest("tr[data-year]") : null;
+  if (!tr) return;
+  e.preventDefault();
+  ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
+  renderDrawdown();
+});
+$("segDD").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("button[data-dd]") : null;
+  if (!b) return;
+  ddMode = b.getAttribute("data-dd");
+  $("segDD").querySelectorAll("button").forEach(function (x) {
+    x.classList.toggle("on", x.getAttribute("data-dd") === ddMode);
+  });
+  renderDrawdown();
+});
+["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
+ "ddFloor", "ddCeil", "ddSpendFloor", "ddSSIncome", "ddSSClaim", "ddSSAmount", "ddSSDelay"]
+  .forEach(function (id) { $(id).addEventListener("input", renderDrawdown); });
+$("ddSSMode").addEventListener("change", renderDrawdown);
+$("ddStrategy").addEventListener("change", renderDrawdown);
+$("ddCopy").addEventListener("click", function () {
+  var v = lastRun ? lastRun.fvReal : 0;
+  if (!v && simpleRun) v = simpleRun.fv;
+  if (!v) { toast("Run a retirement projection first"); return; }
+  $("ddInitial").value = groupDigits(Math.round(v), true);
+  renderDrawdown();
+  toast("Copied " + money(v) + " from the retirement calculator");
+});
+
+/* ---------- glossary tooltips ----------
+   Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
+const GLOSS = {
+  realreturn: "Growth after inflation is stripped out. A 7% return with 3% inflation is about 4% real \u2014 that is what actually buys more.",
+  withdrawal: "The share of your portfolio you take in the first year of retirement. 4% is the common starting point, though some argue for 3\u20133.5% today.",
+  volatility: "How much returns bounce around year to year. Broad stock funds have run near 15\u201318%; a balanced portfolio nearer 8\u201312%.",
+  effrate: "Your average tax rate across all income \u2014 always lower than the bracket you are in, because earlier dollars are taxed less.",
+  marginal: "The rate on your next dollar of income. It is the top bracket you reach, not what you pay overall.",
+  inflation: "How fast prices rise. Long-run US inflation has averaged roughly 2\u20133%; the Federal Reserve targets 2%.",
+  coast: "The point where your balance is big enough that, with no further contributions, growth alone reaches your goal on time.",
+  crossover: "The year your portfolio's growth first exceeds what you contribute that year. After it, the account is doing more work than you are.",
+  fees: "Expense ratios plus any advisory fee, taken off your return every year. Index funds often charge under 0.10%; advisors commonly around 1%.",
+  ltv: "Loan divided by home value. Above 80% \u2014 less than 20% down \u2014 lenders usually require mortgage insurance.",
+  pmi: "Private mortgage insurance, charged when you put down less than 20%. It falls away once you reach 20% equity.",
+  amort: "How each payment splits between interest and principal. Early on almost all of it is interest; the crossover comes later than most expect.",
+  successrate: "The share of tested retirements where the money lasted the full period without running out.",
+  sequence: "The order returns arrive in. A bad decade early does far more damage than the same decade late, even at an identical average.",
+  guardrails: "Each year, this compares what you\u0027re about to withdraw to your portfolio\u0027s current value. If that percentage has drifted too far from where you started \u2014 up because markets fell, or down because they rose \u2014 spending is cut or raised to bring it back toward target.",
+  strategy: "The rule you follow for how much to take out each year. Different rules trade off steadier income against protecting the portfolio \u2014 the description below updates with whichever one you pick.",
+  aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one."
+};
+function tipFor(key){ return GLOSS[key] || ""; }
+(function(){
+  let openDot = null;
+  const box = () => $("tipbox");
+  function place(dot){
+    const b = box(), r = dot.getBoundingClientRect();
+    b.classList.add("on");
+    const bw = b.offsetWidth, bh = b.offsetHeight;
+    let left = r.left + r.width / 2 - bw / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - bw - 8));
+    let top = r.top - bh - 10;
+    if (top < 8) top = r.bottom + 10;
+    b.style.left = left + "px";
+    b.style.top = top + "px";
+  }
+  function show(dot){
+    const key = dot.getAttribute("data-tip");
+    const txt = tipFor(key);
+    if (!txt) return;
+    box().textContent = txt;
+    dot.classList.add("on");
+    place(dot);
+    openDot = dot;
+  }
+  function hide(){
+    box().classList.remove("on");
+    if (openDot) openDot.classList.remove("on");
+    openDot = null;
+  }
+  document.addEventListener("mouseover", e => {
+    const d = e.target.closest ? e.target.closest(".tipdot") : null;
+    if (d) show(d);
+  });
+  document.addEventListener("mouseout", e => {
+    const d = e.target.closest ? e.target.closest(".tipdot") : null;
+    if (d && d === openDot) hide();
+  });
+  // touch: tap to open, tap anywhere to close
+  document.addEventListener("click", e => {
+    const d = e.target.closest ? e.target.closest(".tipdot") : null;
+    if (d){ if (d === openDot) hide(); else show(d); e.preventDefault(); }
+    else if (openDot) hide();
+  });
+  window.addEventListener("scroll", () => { if (openDot) hide(); }, true);
+})();
+
 /* ---------- theme ---------- */
 const THEME_KEY = "retcalc-theme";
 const THEME_META = {dark:"#0c1114", light:"#f4f6f5"};
@@ -4921,7 +5759,8 @@ function writeBudgetState(d){
 }
 const TOOL_LABEL = {retire:"scenario", tax:"tax scenario",
                     mortgage:"mortgage scenario", budget:"budget",
-                    college:"college plan", rentbuy:"rent-vs-buy scenario"};
+                    college:"college plan", rentbuy:"rent-vs-buy scenario",
+                    drawdown:"drawdown plan"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
   const list = SC[activeTool()];
@@ -4984,13 +5823,140 @@ $("btnScenario").addEventListener("click", async () => {
   if (choice === 0) doSave();
   else if (choice === 1) doDelete();
 });
+/* ---------- shareable summary card ----------
+   Draws an SVG card, rasterises it through a canvas, and hands back a PNG the
+   user can download or copy. Everything happens locally; no upload. */
+function cardEscape(t){
+  return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function buildCardSVG(){
+  var W = 1080, H = 1080;
+  var t = chartMode.tab;
+  var title, big, bigLabel, sub, rows;
+
+  if (t === "tools" && toolSub === "drawdown"){
+    var od = readDD();
+    var Hb = historicalBacktest(od);
+    title = "Will my money last?";
+    bigLabel = "Success rate";
+    big = pctStr(Hb.successRate, 0);
+    sub = od.years + " years \u00b7 " + od.initialPct + "% withdrawal \u00b7 " + od.stockPct + "% stocks";
+    rows = [
+      ["Tested against", Hb.total + " real retirements since 1928"],
+      ["Survived", Hb.survived + " of " + Hb.total],
+      ["Median ending balance", money(Hb.medianEnd)],
+      ["Starting portfolio", money(od.initial)]
+    ];
+  } else if (t === "simple"){
+    var p = readBasic();
+    var R = project(p);
+    title = "My retirement projection";
+    bigLabel = "At age " + fmtNum(p.retire);
+    big = money(R.fv);
+    sub = "In today's dollars \u00b7 " + fmtYears(p.years) + " of saving";
+    rows = [
+      ["Monthly income", money(R.fv * .04 / 12)],
+      ["I put in", money(R.contribTotal)],
+      ["Growth added", money(R.growth)],
+      ["Growth after inflation", pctStr(p.real, 2)]
+    ];
+  } else {
+    var pa = readInputs();
+    var Ra = project(pa);
+    title = "My retirement projection";
+    bigLabel = "In today's dollars";
+    big = money(Ra.fvReal);
+    sub = fmtYears(pa.years) + " \u00b7 " + money(pa.contrib, 0) + " " + PERIOD_ADV[pa.period];
+    rows = [
+      ["Future value", money(Ra.fv)],
+      ["After-tax income / yr", money(Ra.afterTax)],
+      ["I put in", money(Ra.contribTotal)],
+      ["Growth added", money(Ra.growth)]
+    ];
+  }
+
+  var bg = "#0c1114", panel = "#131b20", line = "#22303a";
+  var text = "#e9f0f3", dim = "#8ba0ac", gold = "#e9b872", jade = "#4fbf95";
+  var mono = "ui-monospace, Menlo, monospace";
+  var sans = "Inter, Helvetica, Arial, sans-serif";
+
+  var y = 300;
+  var rowSvg = rows.map(function(r){
+    var block =
+      '<text x="90" y="' + y + '" font-family="' + sans + '" font-size="30" fill="' + dim + '">' + cardEscape(r[0]) + '</text>' +
+      '<text x="990" y="' + y + '" font-family="' + mono + '" font-size="32" font-weight="600" fill="' + text + '" text-anchor="end">' + cardEscape(r[1]) + '</text>' +
+      '<line x1="90" y1="' + (y + 26) + '" x2="990" y2="' + (y + 26) + '" stroke="' + line + '" stroke-width="1"/>';
+    y += 88;
+    return block;
+  }).join("");
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
+    '<rect width="' + W + '" height="' + H + '" fill="' + bg + '"/>' +
+    '<rect x="40" y="40" width="1000" height="1000" rx="28" fill="' + panel + '" stroke="' + line + '"/>' +
+    '<text x="90" y="140" font-family="' + sans + '" font-size="34" font-weight="600" fill="' + text + '">' + cardEscape(title) + '</text>' +
+    '<text x="90" y="182" font-family="' + sans + '" font-size="26" fill="' + dim + '">' + cardEscape(sub) + '</text>' +
+    '<text x="90" y="243" font-family="' + sans + '" font-size="24" fill="' + dim + '">' + cardEscape(bigLabel) + '</text>' +
+    '<text x="990" y="243" font-family="' + mono + '" font-size="76" font-weight="700" fill="' + gold + '" text-anchor="end">' + cardEscape(big) + '</text>' +
+    rowSvg +
+    '<path d="M90 900 L200 830 L280 865 L410 760" stroke="' + jade + '" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="410" cy="760" r="12" fill="' + jade + '"/>' +
+    '<text x="90" y="985" font-family="' + sans + '" font-size="24" fill="' + dim + '">Projections, not predictions. Not financial advice.</text>' +
+    '<text x="990" y="985" font-family="' + sans + '" font-size="26" font-weight="600" fill="' + jade + '" text-anchor="end">retcalc.github.io</text>' +
+    '</svg>';
+}
+
+function cardToBlob(cb){
+  var svg = buildCardSVG();
+  var img = new Image();
+  var blob = new Blob([svg], {type: "image/svg+xml;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  img.onload = function(){
+    var c = document.createElement("canvas");
+    c.width = 1080; c.height = 1080;
+    var ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    c.toBlob(function(b){ cb(b); }, "image/png");
+  };
+  img.onerror = function(){ URL.revokeObjectURL(url); cb(null); };
+  img.src = url;
+}
+
+function downloadCard(){
+  cardToBlob(function(b){
+    if (!b){ toast("Couldn't build the image"); return; }
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "retirement-summary.png";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    toast("Image saved");
+  });
+}
+function copyCard(){
+  if (!navigator.clipboard || !window.ClipboardItem){
+    toast("Your browser can't copy images. Downloading instead.");
+    downloadCard(); return;
+  }
+  cardToBlob(function(b){
+    if (!b){ toast("Couldn't build the image"); return; }
+    navigator.clipboard.write([new ClipboardItem({"image/png": b})])
+      .then(function(){ toast("Image copied to clipboard"); })
+      .catch(function(){ toast("Copy blocked. Downloading instead."); downloadCard(); });
+  });
+}
+
 $("btnShareMenu").addEventListener("click", async () => {
   const choice = await showPopup("Share", [
     {label:"Copy link", desc:"Copy a shareable URL with all your inputs"},
-    {label:"Summary", desc:"One-page printable overview (Save as PDF)"}
+    {label:"Summary", desc:"One-page printable overview (Save as PDF)"},
+    {label:"Save image card", desc:"A square PNG of your headline numbers"},
+    {label:"Copy image card", desc:"Put that image straight on the clipboard"}
   ]);
   if (choice === 0) doShare();
   else if (choice === 1) doSummary();
+  else if (choice === 2) downloadCard();
+  else if (choice === 3) copyCard();
 });
 
 function doSave(){
@@ -5125,6 +6091,11 @@ $("moPmi").value = "0";
 $("moHoa").value = groupDigits(0, true);
 $("moMaint").value = "1";
 $("moUtil").value = groupDigits(300, true);
+$("ddInitial").value = groupDigits(1000000, true);
+$("ddYears").value = "30";
+$("ddStock").value = "60";
+$("ddFee").value = "0";
+$("ddRate").value = "4";
 $("qAge").value = "30";
 $("qRetire").value = "65";
 $("qSaved").value = groupDigits(10000, true);
@@ -5150,6 +6121,7 @@ renderTax();
 renderMort();
 renderCollege();
 renderRentBuy();
+renderDrawdown();
 buildBudget();
 renderBudget();
 initTheme();
