@@ -197,6 +197,15 @@ select:hover,.btn:hover{border-color:#33454f}
 nav[role=tablist]{max-width:1220px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
 .toolcards{display:flex;flex-direction:column;gap:12px;max-width:640px;
   margin:30px auto;padding:0 26px}
+/* Budget has no sidebar, so in solo mode it gets a centered, generously
+   wide column instead of stretching a form edge-to-edge or sitting narrow
+   with blank space beside it like a sidebar-shaped tool would. Desktop
+   only \u2014 mobile's existing layout for this already works well. */
+@media (min-width:641px){
+  #tab-budget{max-width:820px;margin:0 auto;width:100%}
+  #tab-budget .bgrow .desc{font-size:14px}
+  #tab-budget .bgrow .inputwrap{flex:0 0 150px;width:150px}
+}
 .toolcard{display:flex;align-items:center;gap:18px;padding:20px 22px;
   background:var(--panel);border:1px solid var(--line);border-radius:12px;
   cursor:pointer;transition:border-color .15s,background .15s;text-decoration:none}
@@ -1227,7 +1236,7 @@ window.onerror = function(msg){
         </div>
         <div class="field">
           <label for="clCost">Annual cost today</label>
-          <div class="inputwrap"><span class="affix">$</span><input id="clCost" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="inputwrap"><span class="affix">$</span><input id="clCost" type="text" inputmode="decimal" data-money data-nonneg value="27000"></div>
         </div>
         <div class="two">
           <div class="field">
@@ -2470,6 +2479,7 @@ window.onerror = function(msg){
       <div class="body">
         <div class="kv total" style="font-size:15px"><span class="k">Total spending, per year</span><span class="v" id="bgTotYr"></span></div>
         <div class="kv total" style="font-size:15px"><span class="k">Total spending, per month</span><span class="v" id="bgTotMo"></span></div>
+        <div class="kv total" style="font-size:15px" id="bgSaveRow" hidden><span class="k">Total saving, per month</span><span class="v pos" id="bgSaveMo"></span></div>
         <div class="kv total" style="font-size:16px"><span class="k">Left over, per year</span><span class="v" id="bgLeftYr"></span></div>
         <div class="kv total" style="font-size:16px"><span class="k">Left over, per month</span><span class="v" id="bgLeftMo"></span></div>
       </div>
@@ -4398,7 +4408,9 @@ function showTool(sub){
   $("asideCollege").hidden = (sub !== "college");
   $("asideRB").hidden = (sub !== "rentbuy");
   $("asideDD").hidden = (sub !== "drawdown");
-  $("main").classList.toggle("solo", onPicker);
+  // Budget has no sidebar inputs, so it earns the same full-width layout
+  // as the tool picker rather than sitting narrow with empty space beside it.
+  $("main").classList.toggle("solo", onPicker || sub === "budget");
   refreshScenarioList("");
   if (sub === "tax") renderTax();
   else if (sub === "mortgage") renderMort();
@@ -5168,11 +5180,18 @@ function buildBudget(){
   initFields($("bgList"));
 }
 
+/* "Savings & investments" and any "Retirement contribution" line (added via
+   the handoff button) are money being set aside, not spent \u2014 they're kept
+   out of total spending and the emergency fund, and shown as saving instead. */
+const SAVINGS_DESCS = ["Savings & investments", "Retirement contribution"];
+function isSavingsRow(r){ return SAVINGS_DESCS.includes(r.desc); }
+
 function renderBudget(){
   const incFreq = bgIncomeFreq;
   const incomeYr = num("bgIncomeIn") * incFreq;
-  const spentYr = budget.reduce((a, r) => a + annualize(r), 0);
-  const leftYr = incomeYr - spentYr;
+  const spentYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
+  const savedYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
+  const leftYr = incomeYr - spentYr - savedYr;
   const pct = incomeYr > 0 ? leftYr / incomeYr : 0;
 
   setBig("bgIncome", money(incomeYr));
@@ -5186,10 +5205,14 @@ function renderBudget(){
 
   $("bgTotYr").textContent = money(spentYr);
   $("bgTotMo").textContent = money(spentYr / 12);
+  $("bgSaveRow").hidden = !(savedYr > 0);
+  if (savedYr > 0) $("bgSaveMo").textContent = money(savedYr / 12);
   const ly = $("bgLeftYr"), lm = $("bgLeftMo");
   ly.textContent = money(leftYr); lm.textContent = money(leftYr / 12);
   ly.className = "v " + (leftYr < 0 ? "neg" : "pos");
   lm.className = "v " + (leftYr < 0 ? "neg" : "pos");
+
+  renderEF(spentYr / 12);
 }
 
 $("bgList").addEventListener("input", e => {
@@ -5240,22 +5263,26 @@ function upsertBudgetLine(desc, monthlyAmount){
   buildBudget(); renderBudget();
 }
 
+/* Reads whatever is currently entered in each retirement mode, regardless of
+   which tab happens to be open \u2014 the inputs hold their values in the
+   background even while you're looking at Budget. Basic is checked first
+   since it's the default landing mode; Stages uses its first stage, since
+   that's the contribution happening right now. */
 $("bgCopyRetire").addEventListener("click", () => {
-  let contrib = 0, period = "Monthly";
-  if (!$("tab-simple").hidden){
-    contrib = num("qContrib"); period = $("qPeriod").value;
-  } else if (!$("tab-single").hidden){
-    contrib = num("contrib"); period = $("period").value;
-  } else if (!$("tab-series").hidden){
-    if (stages.length){ contrib = stages[0].contrib; period = stages[0].period; }
-  } else {
-    toast("Open a retirement tab first, then come back");
+  const candidates = [
+    {contrib: num("qContrib"), period: $("qPeriod").value, label: "Basic"},
+    {contrib: num("contrib"), period: $("period").value, label: "Advanced"},
+    {contrib: stages.length ? stages[0].contrib : 0,
+     period: stages.length ? stages[0].period : "Monthly", label: "Stages"}
+  ];
+  const found = candidates.find(c => c.contrib > 0);
+  if (!found){
+    toast("Set a contribution amount in Basic, Advanced, or Stages first");
     return;
   }
-  if (!(contrib > 0)){ toast("No contribution amount found there yet"); return; }
-  const monthly = contrib * PPY[period] / 12;
-  upsertBudgetLine("Retirement contribution", monthly);
-  toast("Added " + money(monthly) + "/mo from your retirement plan");
+  const monthly = found.contrib * PPY[found.period] / 12;
+  upsertBudgetLine("Retirement contribution", Math.round(monthly));
+  toast("Added " + money(Math.round(monthly)) + "/mo from " + found.label);
 });
 
 $("bgCopyCollege").addEventListener("click", () => {
@@ -5263,8 +5290,9 @@ $("bgCopyCollege").addEventListener("click", () => {
   if (!(inp.annualCost > 0)){ toast("Set up the College Savings tool first"); return; }
   const R = collegeSavingsCalc(inp);
   if (!(R.monthly > 0)){ toast("No monthly amount needed there yet"); return; }
-  upsertBudgetLine("College savings", R.monthly);
-  toast("Added " + money(R.monthly) + "/mo from College Savings");
+  const monthly = Math.round(R.monthly);
+  upsertBudgetLine("College savings", monthly);
+  toast("Added " + money(monthly) + "/mo from College Savings");
 });
 
 $("rbCopyMort").addEventListener("click", () => {
@@ -5298,9 +5326,7 @@ function renderEF(monthlySpend) {
   $("efLabel").textContent = mo + "-month emergency fund";
   $("efTarget").textContent = money(monthlySpend * mo);
 }
-$("efMonths").addEventListener("input", function() {
-  renderEF(budget.reduce(function(a,r){ return a + annualize(r); }, 0) / 12);
-});
+$("efMonths").addEventListener("input", renderBudget);
 /* ---------- college UI ---------- */
 var collegePoints = [];
 
