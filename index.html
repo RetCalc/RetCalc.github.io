@@ -3986,9 +3986,10 @@ function renderSolve(){
 $("btnApply").addEventListener("click", () => {
   const p = readInputs();
   const S = goalSolve(p, $("solveFor").value, num("target"));
-  $("contrib").value = groupDigits(S.perPeriod.toFixed(2));
+  const rounded = Math.round(S.perPeriod);
+  $("contrib").value = groupDigits(rounded, true);
   renderAll();
-  toast("Contribution set to " + money(S.perPeriod, 2) + " " + PERIOD_ADV[p.period]);
+  toast("Contribution set to " + money(rounded) + " " + PERIOD_ADV[p.period]);
 });
 
 $("btnApplyYears").addEventListener("click", () => {
@@ -4040,10 +4041,11 @@ function renderConverter(){
   const names = Object.keys(PPY);
   $("convOut").innerHTML = names.map(to => {
     const v = annual / PPY[to];
+    const rounded = Math.round(v);
     return "<div class='convrow'><span class='k'>" + to + "</span>" +
       "<span class='v'>" + money(v, 2) + "</span>" +
       "<button class='btn mini' type='button' data-period='" + to +
-      "' data-amt='" + v.toFixed(2) + "'>Use</button></div>";
+      "' data-amt='" + rounded + "'>Use</button></div>";
   }).join("");
 }
 
@@ -4275,9 +4277,9 @@ $("btnApplyS").addEventListener("click", () => {
   // contribution adjustment before writing the number back into the card
   const infl = g.inflation || 0;
   const factor = (stages[i].adj && i > 0) ? Math.pow(1 + infl, stageStartYear(i)) : 1;
-  stages[i].contrib = F.perPeriod / factor;
+  stages[i].contrib = Math.round(F.perPeriod / factor);
   buildStages(); renderSeries();
-  toast("Final stage contribution set to " + money(stages[i].contrib, 2));
+  toast("Final stage contribution set to " + money(stages[i].contrib));
 });
 $("btnApplyYearsS").addEventListener("click", () => {
   const g = readGlobals();
