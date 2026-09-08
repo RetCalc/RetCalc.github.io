@@ -318,29 +318,68 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 @media print{
   html,body{background:#fff !important;color:#111 !important}
   header,main,.toast,nav{display:none !important}
-  #sheet{display:block !important;font-family:var(--sans);color:#111}
-  @page{size:letter portrait;margin:0.5in}
-  .sh-h{display:flex;align-items:baseline;gap:10px;border-bottom:2px solid #111;
-    padding-bottom:8px;margin-bottom:16px}
-  .sh-h h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em}
-  .sh-h span{font-size:11px;color:#666;margin-left:auto}
-  .sh-big{display:flex;gap:14px;margin-bottom:16px}
-  .sh-big div{flex:1;border:1px solid #ccc;border-radius:6px;padding:10px 12px}
-  .sh-big .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;color:#666}
-  .sh-big .v{font-family:var(--mono);font-size:19px;font-weight:600;margin-top:3px;
-    letter-spacing:-.02em}
-  .sh-big .n{font-size:9px;color:#777;margin-top:2px}
-  .sh-cols{display:flex;gap:20px;margin-bottom:14px}
-  .sh-cols section{flex:1}
-  .sh-t{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#444;
-    border-bottom:1px solid #bbb;padding-bottom:4px;margin-bottom:6px;font-weight:700}
-  .sh-r{display:flex;justify-content:space-between;gap:10px;font-size:10.5px;
-    padding:2.5px 0;border-bottom:1px solid #f0f0f0}
-  .sh-r b{font-family:var(--mono);font-weight:600}
-  .sh-chart{border:1px solid #ccc;border-radius:6px;padding:8px;margin-bottom:12px}
-  .sh-chart svg{width:100%;height:auto}
-  .sh-foot{font-size:8.5px;color:#666;line-height:1.5;border-top:1px solid #ccc;
-    padding-top:7px}
+  #sheet{display:block !important;font-family:var(--sans);color:#111;
+    max-width:7.5in;margin:0 auto}
+  @page{size:letter portrait;margin:0.45in}
+
+  /* Masthead: name of the report, a right-aligned context line, and a thin
+     rule underneath. Deliberately small \u2014 this is a header, not a title
+     page \u2014 so it costs almost no vertical space. */
+  .sh-h{display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid #111;
+    padding-bottom:6px;margin-bottom:10px}
+  .sh-h h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .sh-h span{font-size:9.5px;color:#666;margin-left:auto}
+
+  /* The three headline numbers. This is the only oversized text on the page
+     on purpose \u2014 everything else is reference detail underneath it. */
+  .sh-big{display:flex;gap:10px;margin-bottom:10px}
+  .sh-big div{flex:1;border:1px solid #ccc;border-radius:5px;padding:7px 9px}
+  .sh-big .k{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#666;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh-big .v{font-family:var(--mono);font-size:15.5px;font-weight:700;margin-top:2px;
+    letter-spacing:-.02em;white-space:nowrap}
+  .sh-big .n{font-size:8px;color:#777;margin-top:1px}
+
+  /* Chart: a fixed, deliberately compact height rather than width:100% at the
+     source aspect ratio, which was the main reason sheets ran long. Capped
+     at 1.35in regardless of the underlying viewBox \u2014 tall enough to read
+     the shape of a curve, short enough to leave room for the data below it,
+     which is the part people actually reference. */
+  .sh-chart{border:1px solid #ccc;border-radius:5px;padding:5px 7px 3px;
+    margin-bottom:10px;height:1.35in;display:flex;align-items:center}
+  .sh-chart svg{width:100%;height:100%;display:block}
+
+  /* Detail columns: the dense reference material. Tightened line height and
+     a smaller type size than the old sheet, since a printed page is read up
+     close and doesn't need the same size as an on-screen panel. */
+  .sh-cols{display:flex;gap:16px;margin-bottom:10px}
+  .sh-cols section{flex:1;min-width:0}
+  .sh-t{font-size:8.5px;text-transform:uppercase;letter-spacing:.07em;color:#444;
+    border-bottom:1px solid #bbb;padding-bottom:3px;margin-bottom:4px;font-weight:700}
+  .sh-r{display:flex;justify-content:space-between;gap:8px;font-size:9px;
+    padding:2px 0;border-bottom:1px solid #f0f0f0;line-height:1.3}
+  .sh-r span{color:#333}
+  .sh-r b{font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .sh-more{font-size:8px;color:#999;font-style:italic;padding-top:2px}
+
+  /* A compact data table \u2014 amortization, tax brackets, year-by-year \u2014
+     for sheets that have real tabular detail worth including. Deliberately
+     denser than the on-screen version: a printed page is read up close, and
+     someone asked for a PDF specifically wants the numbers, not the polish. */
+  .sh-table{margin-bottom:10px}
+  .sh-table table{width:100%;border-collapse:collapse}
+  .sh-table th{font-size:7.5px;text-transform:uppercase;letter-spacing:.05em;
+    color:#555;text-align:right;font-weight:700;padding:2px 5px;
+    border-bottom:1px solid #999}
+  .sh-table th:first-child,.sh-table td:first-child{text-align:left}
+  .sh-table td{font-family:var(--mono);font-size:8px;text-align:right;
+    padding:1.5px 5px;border-bottom:1px solid #eee;white-space:nowrap}
+  .sh-table tr:nth-child(even) td{background:#fafafa}
+
+  /* Footer disclaimer: present, legible, and unmistakably the least important
+     text on the page. */
+  .sh-foot{font-size:7.5px;color:#666;line-height:1.45;border-top:1px solid #ccc;
+    padding-top:5px}
 }
 .about .body{padding:16px 20px 20px}
 .about p{margin:0 0 12px;font-size:13.5px;line-height:1.65;color:var(--dim)}
@@ -438,16 +477,18 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   padding:0 8px;cursor:pointer;flex:none;line-height:1}
 .signflip:hover{color:var(--gold)}
 .signflip.on{color:var(--coral)}
-.adjrow{display:flex;align-items:center;margin-top:8px;font-size:11.5px;
+.adjrow{display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:11.5px;
   color:var(--dim);cursor:pointer;
   background:rgba(79,191,149,.05);border:1px solid #22343a;border-radius:6px;
-  padding:8px 10px;transition:border-color .12s,background .12s}
+  padding:9px 10px;transition:border-color .12s,background .12s}
 .adjrow:hover{border-color:#2f4a4a;background:rgba(79,191,149,.08)}
+.adjrow-top{display:flex;align-items:center;min-width:0}
 .adjrow input{accent-color:var(--jade);width:15px;height:15px;flex:none;
   margin:0 10px 0 0;cursor:pointer}
 .adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap}
-.adjnote{font-family:var(--mono);color:var(--gold);font-size:11px;flex:none;
-  margin-left:12px;letter-spacing:-.01em}
+.adjnote{font-family:var(--mono);color:var(--gold);font-size:12px;
+  letter-spacing:-.01em;padding-left:25px}
+.adjnote:empty{display:none}
 .coastrow .k{color:var(--text)}
 .coastrow .v{font-weight:600}
 #sCoastAction{margin-top:10px}
@@ -1266,7 +1307,7 @@ window.onerror = function(msg){
         <div class="derived">
           <div><span>Total projected cost</span><span class="num" id="clTotCost"></span></div>
           <div><span>Your savings grow to</span><span class="num" id="clSavGrow"></span></div>
-          <div><span>Shortfall at start</span><span class="num" id="clShortfall"></span></div>
+          <div><span>Need saved by year 1</span><span class="num" id="clShortfall"></span></div>
         </div>
       </div>
     </div>
@@ -1276,7 +1317,7 @@ window.onerror = function(msg){
       <div class="headline">
         <div><div class="k">Save per month</div><div class="v gold" id="clMonthly">--</div><div class="note" id="clMonthlyNote"></div></div>
         <div><div class="k">Total projected cost</div><div class="v" id="clTotalOut">--</div><div class="note" id="clTotalNote"></div></div>
-        <div><div class="k">Shortfall to cover</div><div class="v" id="clShortOut">--</div><div class="note">After your savings grow</div></div>
+        <div><div class="k">Need saved by year 1<span class="tipdot" data-tip="collegepv" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v" id="clShortOut">--</div><div class="note" id="clShortNote"></div></div>
       </div>
     </div>
     <div class="panel">
@@ -1443,7 +1484,7 @@ window.onerror = function(msg){
         </div>
         <div class="two" id="ddGuardWrap" hidden>
           <div class="field">
-            <label for="ddGuardBand">How far off target before adjusting<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <label for="ddGuardBand">Guardrail width<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
           </div>
           <div class="field">
@@ -4107,9 +4148,11 @@ function buildStages(){
           "<span class='affix'>$</span><input type='text' inputmode='decimal' data-f='contrib' data-i='" + i +
           "' value='" + groupDigits(st.contrib, true) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " contribution'>" +
           "</div>" + (i > 0 ?
-            "<label class='adjrow'><input type='checkbox' data-f='adj' data-i='" + i + "'" +
-            (st.adj ? " checked" : "") + "><span class='adjtxt'>Inflation adjusted</span>" +
-            "<span class='adjnote' data-adj='" + i + "'></span></label>" : "") +
+            "<label class='adjrow'>" +
+              "<span class='adjrow-top'><input type='checkbox' data-f='adj' data-i='" + i + "'" +
+              (st.adj ? " checked" : "") + "><span class='adjtxt'>Inflation adjusted</span></span>" +
+              "<span class='adjnote' data-adj='" + i + "'></span>" +
+            "</label>" : "") +
           "</div>" +
         "<div class='field'><label>Frequency</label>" +
           "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select></div>" +
@@ -4539,10 +4582,16 @@ function buildSheet(){
     inputs += row("Withdrawal rate", pctStr(g.withdrawal, 2));
     inputs += row("Effective tax rate", pctStr(g.taxRate, 2));
     if (g.fees > 0) inputs += row("Fees", pctStr(g.fees, 2));
-    effectiveStages(g).forEach((st, i) => {
+    // Capped so a plan with many stages can't push the sheet onto a second
+    // page; a "+N more" line is honest about what got left off.
+    const allStages = effectiveStages(g);
+    allStages.slice(0, 5).forEach((st, i) => {
       inputs += row("Stage " + (i+1) + " &middot; " + fmtNum(st.years) + " yrs",
         money(st.contrib, 0) + " " + st.period.toLowerCase() + " @ " + pctStr(st.nominal, 2));
     });
+    if (allStages.length > 5)
+      inputs += "<div class='sh-more'>+ " + (allStages.length - 5) + " more stage" +
+        (allStages.length - 5 === 1 ? "" : "s") + "</div>";
   } else {
     inputs += row("Starting value", money(p.initial));
     inputs += row("Contribution", money(p.contrib, 2) + " " + p.period.toLowerCase());
@@ -4574,6 +4623,37 @@ function buildSheet(){
     ms += row("Reaches " + money(v), hit ? "Year " + fmtNum(hit.year) : "\u2014");
   });
 
+  // Goal-solve and Coast FIRE, single-run only \u2014 this is where they live
+  // on screen, and both are genuinely useful reference numbers when present.
+  let goalSection = "";
+  if (!series){
+    const solveFor = $("solveFor").value;
+    const S = goalSolve(p, solveFor, num("target"));
+    const C = coastFire(p, S.portFuture);
+    let goal = row("Target", solveFor === "After-Tax Withdrawal"
+      ? money(num("target")) + "/yr after tax" : money(num("target")));
+    goal += row("Portfolio needed", money(S.portToday));
+    goal += row("Raise contribution to", money(S.perPeriod, 2) + " " + p.period.toLowerCase());
+    goal += row("Or extend timeline to", solveYears(p, S.portToday).reached
+      ? fmtYears(solveYears(p, S.portToday).years) : "Not reached in 100 yrs");
+    goal += row("Coast FIRE", C.state === "already" ? "Already there" :
+      C.state === "reachable" ? fmtYears(C.years) : "Not on track");
+    goalSection = "<section><div class='sh-t'>Working toward a target</div>" + goal + "</section>";
+  }
+
+  // Compact year-by-year, sampled if long.
+  const step = rows.length <= 15 ? 1 : rows.length <= 30 ? 2 : 3;
+  const tableRows = rows.filter((r, i) => i === 0 || i === rows.length - 1 || i % step === 0);
+  let table = "<table><thead><tr><th>Year</th><th>Contributed</th><th>Growth</th>" +
+    "<th>Balance</th><th>In today's $</th></tr></thead><tbody>";
+  const defl = series ? g.inflation : p.inflation;
+  tableRows.forEach(r => {
+    table += "<tr><td>" + r.year + "</td><td>" + money(r.contrib) + "</td><td>" +
+      money(r.growth) + "</td><td>" + money(r.end) + "</td><td>" +
+      money(r.end / Math.pow(1 + defl, r.year)) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   const src = $(series ? "chartS" : "chart");
   let chart = "";
   if (src && src.childNodes.length){
@@ -4604,7 +4684,9 @@ function buildSheet(){
       "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
       "<section><div class='sh-t'>Milestones</div>" + ms + "</section>" +
+      goalSection +
     "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Year by year</div>" + table + "</div>" +
     "<div class='sh-foot'>Figures are projections generated from the assumptions listed " +
     "above, not predictions. Past performance does not predict future returns. " +
     "This is not financial advice.</div>";
@@ -4617,23 +4699,41 @@ function buildTaxSheet(){
   inputs += row("Filing status", inp.status === "m" ? "Married filing jointly" : "Single");
   inputs += row("State", R.stateName || "None");
   if (inp.pre > 0) inputs += row("Pre-tax deductions", money(inp.pre));
-  inputs += row("Deduction", inp.dedType === "item" ? "Itemized" : "Standard");
+  inputs += row("Deduction", inp.dedType === "item" ? "Itemized (" + money(inp.item) + ")" : "Standard (" + money(FED_STD[inp.status]) + ")");
+  inputs += row("Taxable income", money(R.fedTaxable));
 
   let out = row("Federal tax", money(R.federal));
   out += row("State tax", money(R.state));
-  out += row("FICA", money(R.fica));
+  out += row("Social Security", money(R.ss));
+  out += row("Medicare" + (R.addl > 0 ? " (+ surtax)" : ""), money(R.med + R.addl));
   out += row("Total tax", money(R.total));
-  out += row("Take-home pay", money(R.net));
   out += row("Effective rate", pctStr(R.effTotal, 1));
   out += row("Marginal rate", pctStr(R.marginal, 0));
+
+  let pay = row("Take-home, per year", money(R.net));
+  pay += row("Per month", money(R.net / 12));
+  pay += row("Per biweekly check", money(R.net / 26));
+  const netPay = R.gross - R.total;
+  if (inp.pre > 0) pay += row("Net pay (before pre-tax)", money(netPay));
 
   const src = $("txPie");
   let chart = "";
   if (src && src.childNodes.length){
     const clone = src.cloneNode(true);
     lighten(clone); clone.removeAttribute("style");
-    chart = "<div class='sh-chart' style='max-width:260px;margin:0 auto 12px'>" + clone.outerHTML + "</div>";
+    chart = "<div class='sh-chart' style='width:1.5in;flex:none;margin:0'>" + clone.outerHTML + "</div>";
   }
+
+  // Full federal bracket table \u2014 genuinely useful reference material that
+  // fits comfortably given how few rows federal brackets have.
+  let table = "<table><thead><tr><th>Rate</th><th>Income range</th><th>Taxed in band</th><th>Tax</th></tr></thead><tbody>";
+  R.bands.forEach(b => {
+    table += "<tr" + (b.amount > 0 ? "" : " style='color:#bbb'") + "><td>" + pctStr(b.rate, 0) +
+      "</td><td>" + money(b.lo) + (b.hi === Infinity ? " and up" : " \u2013 " + money(b.hi)) +
+      "</td><td>" + money(b.amount) + "</td><td>" + money(b.tax) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>Income Tax Summary</h1><span>Tax year 2026</span></div>" +
     "<div class='sh-big'>" +
@@ -4643,11 +4743,15 @@ function buildTaxSheet(){
         "</div><div class='n'>" + pctStr(R.effTotal, 1) + " effective</div></div>" +
       "<div><div class='k'>Per month</div><div class='v'>" + money(R.net / 12) +
         "</div><div class='n'>take-home</div></div>" +
-    "</div>" + chart +
-    "<div class='sh-cols'>" +
-      "<section><div class='sh-t'>Your situation</div>" + inputs + "</section>" +
-      "<section><div class='sh-t'>Breakdown</div>" + out + "</section>" +
     "</div>" +
+    "<div style='display:flex;gap:16px;margin-bottom:10px;align-items:stretch'>" + chart +
+      "<div style='flex:1;display:flex;gap:16px'>" +
+        "<section style='flex:1'><div class='sh-t'>Your situation</div>" + inputs + "</section>" +
+        "<section style='flex:1'><div class='sh-t'>Tax breakdown</div>" + out + "</section>" +
+        "<section style='flex:1'><div class='sh-t'>Paycheck</div>" + pay + "</section>" +
+      "</div>" +
+    "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Federal tax brackets</div>" + table + "</div>" +
     "<div class='sh-foot'>Based on published 2026 federal and state rates. Omits credits, " +
     "local taxes and many special cases. Not tax advice.</div>";
 }
@@ -4658,17 +4762,26 @@ function buildMortSheet(){
   const R = mortgage(m);
   let inputs = row("Home price", money(m.price));
   inputs += row("Down payment", money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 0) + ")");
+  inputs += row("Loan amount", money(R.loan));
   inputs += row("Interest rate", pctStr(m.rate, 2));
   inputs += row("Term", fmtNum(m.term) + " years");
-  if (R.pmi > 0) inputs += row("PMI", money(R.pmi) + "/mo");
+  if (R.pmi > 0) inputs += row("PMI", money(R.pmi) + "/mo until 80% equity");
 
-  let out = row("Principal & interest", money(R.pi));
-  out += row("Property tax", money(R.tax));
-  out += row("Insurance", money(R.ins));
-  if (R.maint > 0) out += row("Maintenance", money(R.maint));
-  if (R.hoa > 0) out += row("HOA", money(R.hoa));
-  out += row("Total monthly payment", money(R.total));
-  out += row("Total interest over loan", money(R.totalInterest));
+  let pay = row("Principal & interest", money(R.pi));
+  pay += row("Property tax", money(R.tax));
+  pay += row("Insurance", money(R.ins));
+  if (R.pmi > 0) pay += row("PMI", money(R.pmi));
+  if (R.maint > 0) pay += row("Maintenance", money(R.maint));
+  if (R.util > 0) pay += row("Utilities", money(R.util));
+  if (R.hoa > 0) pay += row("HOA", money(R.hoa));
+  pay += row("Total monthly payment", money(R.total));
+
+  let out = row("Total interest paid", money(R.totalInterest));
+  out += row("Total cost of loan", money(R.loan + R.totalInterest));
+  if (R.pmiPaid > 0) out += row("Total PMI paid", money(R.pmiPaid));
+  const halfwayYear = R.years.findIndex(y => y.balance <= R.loan / 2) + 1;
+  if (halfwayYear > 0) out += row("Halfway point (balance)", "Year " + halfwayYear);
+  out += row("Payoff", "Year " + R.years.length);
 
   const src = $("chartMo");
   let chart = "";
@@ -4677,6 +4790,18 @@ function buildMortSheet(){
     lighten(clone); clone.removeAttribute("style");
     chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
   }
+
+  // Amortization, sampled so a 30-year loan doesn't spill onto a second page.
+  const step = R.years.length <= 15 ? 1 : R.years.length <= 30 ? 2 : 3;
+  const tableRows = R.years.filter((y, i) => i === 0 || i === R.years.length - 1 || i % step === 0);
+  let table = "<table><thead><tr><th>Year</th><th>Interest</th><th>Principal</th>" +
+    "<th>Total paid</th><th>Balance</th></tr></thead><tbody>";
+  tableRows.forEach(y => {
+    table += "<tr><td>" + y.year + "</td><td>" + money(y.interest) + "</td><td>" +
+      money(y.principal) + "</td><td>" + money(y.paid) + "</td><td>" + money(y.balance) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>Mortgage Summary</h1><span>" + fmtNum(m.term) + " year term</span></div>" +
     "<div class='sh-big'>" +
@@ -4689,8 +4814,10 @@ function buildMortSheet(){
     "</div>" + chart +
     "<div class='sh-cols'>" +
       "<section><div class='sh-t'>The loan</div>" + inputs + "</section>" +
-      "<section><div class='sh-t'>Monthly breakdown</div>" + out + "</section>" +
+      "<section><div class='sh-t'>Monthly payment</div>" + pay + "</section>" +
+      "<section><div class='sh-t'>Over the life of the loan</div>" + out + "</section>" +
     "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Amortization</div>" + table + "</div>" +
     "<div class='sh-foot'>Rate and costs are estimates. Actual terms depend on credit, " +
     "lender and location. Not a loan offer.</div>";
 }
@@ -4706,10 +4833,15 @@ function buildCollegeSheet(){
   inputs += row("Investment return", pctStr(inp.investRet, 1));
   inputs += row("Tuition inflation", pctStr(inp.tuitionInfl, 1));
 
-  let out = row("Total projected cost", money(R.totalFuture));
+  let out = row("Total cost, all years", money(R.totalFuture));
   out += row("Savings grow to", money(R.savingsAtStart));
-  out += row("Shortfall to cover", money(R.shortfall));
+  out += row("Need saved by year 1", money(R.targetAtStart));
+  out += row("Shortfall to close", money(R.shortfall));
   out += row("Monthly savings needed", money(R.monthly));
+
+  // What each year of college actually costs, inflated to when it happens.
+  let costs = "";
+  R.yearCosts.forEach((c, i) => { costs += row("College year " + (i+1), money(c)); });
 
   const src = $("chartCl");
   let chart = "";
@@ -4718,20 +4850,34 @@ function buildCollegeSheet(){
     lighten(clone); clone.removeAttribute("style");
     chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
   }
+
+  // Savings accumulation, sampled if the horizon is long.
+  const step = R.rows.length <= 15 ? 1 : R.rows.length <= 30 ? 2 : 3;
+  const tableRows = R.rows.filter((r, i) => i === 0 || i === R.rows.length - 1 || i % step === 0);
+  let table = "<table><thead><tr><th>Year</th><th>Contributed</th><th>Growth</th>" +
+    "<th>Balance</th></tr></thead><tbody>";
+  tableRows.forEach(r => {
+    table += "<tr><td>" + r.year + "</td><td>" + money(r.contribs) + "</td><td>" +
+      money(r.growth) + "</td><td>" + money(r.balance) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>College Savings Plan</h1><span>" + fmtNum(inp.yearsUntil) + " years to go</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Save per month</div><div class='v'>" + money(R.monthly) +
         "</div><div class='n'>to close the gap</div></div>" +
-      "<div><div class='k'>Total projected cost</div><div class='v'>" + money(R.totalFuture) +
+      "<div><div class='k'>Total cost, all years</div><div class='v'>" + money(R.totalFuture) +
         "</div><div class='n'>" + fmtNum(inp.collegeYrs) + " years</div></div>" +
-      "<div><div class='k'>Shortfall today</div><div class='v'>" + money(R.shortfall) +
-        "</div><div class='n'>after current savings grow</div></div>" +
+      "<div><div class='k'>Need saved by year 1</div><div class='v'>" + money(R.targetAtStart) +
+        "</div><div class='n'>present value</div></div>" +
     "</div>" + chart +
     "<div class='sh-cols'>" +
       "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+      "<section><div class='sh-t'>Cost by college year</div>" + costs + "</section>" +
     "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Savings accumulation</div>" + table + "</div>" +
     "<div class='sh-foot'>Excludes financial aid, scholarships and 529 tax advantages. " +
     "Tuition inflation is an assumption, not a guarantee.</div>";
 }
@@ -4747,7 +4893,11 @@ function buildRentBuySheet(){
   let inputs = row("Home price", money(inp.price));
   inputs += row("Down payment", pctStr(inp.downPct / 100, 0));
   inputs += row("Interest rate", pctStr(inp.rate / 100, 2));
-  inputs += row("Monthly rent", money(inp.rent));
+  inputs += row("Loan term", fmtNum(inp.term) + " years");
+  inputs += row("Monthly rent (start)", money(inp.rent));
+  inputs += row("Rent increase", pctStr(inp.rentInc / 100, 1) + "/yr");
+  inputs += row("Home appreciation", pctStr(inp.appr / 100, 1) + "/yr");
+  inputs += row("Investment return", pctStr(inp.invest / 100, 1) + "/yr");
   inputs += row("Time horizon", fmtNum(inp.horizon) + " years");
 
   let out = row("Buyer net worth", money(last.buyerNW));
@@ -4755,6 +4905,10 @@ function buildRentBuySheet(){
   out += row("Difference", (buyWins ? "+" : "\u2212") + money(Math.abs(last.buyerNW - last.renterNW)));
   out += row("Break-even point", R.breakEven ? "Year " + fmtNum(R.breakEven) : "Not within horizon");
   out += row("Renter invests upfront", money(R.initialInvest));
+  out += row("Monthly cost, buying", money(R.monthlyBuy));
+  out += row("Monthly cost, renting", money(inp.rent) + " (starting)");
+  out += row("Home value at end", money(last.homeVal));
+  out += row("Mortgage balance at end", money(last.balance));
 
   const src = $("chartRB");
   let chart = "";
@@ -4763,6 +4917,22 @@ function buildRentBuySheet(){
     lighten(clone); clone.removeAttribute("style");
     chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
   }
+
+  // Year-by-year net worth, sampled if the horizon is long, always keeping
+  // the actual break-even year even if sampling would otherwise skip it.
+  const step = R.years.length <= 15 ? 1 : R.years.length <= 30 ? 2 : 3;
+  const tableRows = R.years.filter((y, i) =>
+    i === 0 || i === R.years.length - 1 || i % step === 0 || y.year === R.breakEven);
+  let table = "<table><thead><tr><th>Year</th><th>Buyer NW</th><th>Renter NW</th>" +
+    "<th>Home value</th><th>Balance</th></tr></thead><tbody>";
+  tableRows.forEach(y => {
+    const isBE = y.year === R.breakEven;
+    table += "<tr" + (isBE ? " style='font-weight:700;background:#f5f0e0'" : "") + "><td>" + y.year +
+      (isBE ? " \u2605" : "") + "</td><td>" + money(y.buyerNW) + "</td><td>" + money(y.renterNW) +
+      "</td><td>" + money(y.homeVal) + "</td><td>" + money(y.balance) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>Rent vs. Buy</h1><span>After " + fmtNum(inp.horizon) + " years</span></div>" +
     "<div class='sh-big'>" +
@@ -4777,6 +4947,8 @@ function buildRentBuySheet(){
       "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
     "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Net worth by year" +
+      (R.breakEven ? " &middot; \u2605 marks the break-even year" : "") + "</div>" + table + "</div>" +
     "<div class='sh-foot'>Excludes the mortgage interest deduction and non-financial factors " +
     "like stability. Projections, not predictions.</div>";
 }
@@ -4794,6 +4966,8 @@ function buildDrawdownSheet(){
     o.strategy === "fixed" ? "Fixed amount" : o.strategy === "pct" ? "% of portfolio" :
     o.strategy === "guardrails" ? "Guardrails" : "Floor & ceiling");
   inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
+  if (o.strategy === "guardrails") inputs += row("Guardrail width", num("ddGuardBand") + "%");
+  if (o.spendFloor > 0) inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
   if (o.ssAnnual > 0) inputs += row("Social Security", money(o.ssAnnual) + "/yr");
 
   let out = row("Success rate", pctStr(H.successRate, 1));
@@ -4801,8 +4975,23 @@ function buildDrawdownSheet(){
   out += row("Survived", H.survived + " of " + H.total);
   out += row("Median ending balance", money(H.medianEnd));
   out += row("Worst case", money(H.worstEnd));
-  if (show) out += row("Example: retiring in " + show.startYear,
-    show.depleted ? "Ran out in year " + show.depletedYear : "Survived the full period");
+  out += row("Best case", money(H.bestEnd));
+
+  // Spending behavior over the example period \u2014 the part a single ending
+  // balance can't tell you.
+  const real = show.rows.map(r => r.realSpend != null ? r.realSpend : r.realWithdrawal);
+  const sortedReal = real.slice().sort((a,b) => a-b);
+  const highSpend = sortedReal[sortedReal.length-1], lowSpend = sortedReal[0];
+  let cuts = 0, maxCut = 0;
+  for (let i = 1; i < real.length; i++){
+    const chg = real[i] - real[i-1];
+    if (chg < -0.5){ cuts++; if (-chg > maxCut) maxCut = -chg; }
+  }
+  let spend = row("Highest year's spending", money(highSpend));
+  spend += row("Lowest year's spending", money(lowSpend));
+  spend += row("Years spending was cut", cuts + " of " + real.length);
+  if (maxCut > 0) spend += row("Biggest single-year cut", "\u2212" + money(maxCut));
+  spend += row("Total spent, example period", money(real.reduce((a,v)=>a+v,0)));
 
   const src = $("chartDD");
   let chart = "";
@@ -4811,8 +5000,31 @@ function buildDrawdownSheet(){
     lighten(clone); clone.removeAttribute("style");
     chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
   }
+
+  // Verdict line, matching the on-screen wording
+  let verdict;
+  if (H.successRate >= 0.99) verdict = "Survived every historical period, including the Depression, 1970s stagflation, and 2008.";
+  else if (H.successRate >= 0.90) verdict = "Survived most historical periods. Failed only when retirement began in " +
+    H.failYears.slice(0, 8).join(", ") + (H.failYears.length > 8 ? ", and others" : "") + ".";
+  else verdict = "Ran out of money in " + H.failYears.length + " of " + H.total +
+    " historical periods. Consider a lower withdrawal rate or a strategy that adjusts spending.";
+
+  // Compact year-by-year for the example period, sampled if long so it never
+  // overflows the page \u2014 every year for a plan under ~20 years, every other
+  // year beyond that, every 3rd beyond 40.
+  const step = show.rows.length <= 20 ? 1 : show.rows.length <= 40 ? 2 : 3;
+  const tableRows = show.rows.filter((r, i) => i === 0 || i === show.rows.length - 1 || i % step === 0);
+  let table = "<table><thead><tr><th>Year</th><th>Withdrawal</th><th>Soc. Sec.</th>" +
+    "<th>Return</th><th>End balance</th></tr></thead><tbody>";
+  tableRows.forEach(r => {
+    table += "<tr><td>" + r.year + "</td><td>" + money(r.withdrawal) + "</td><td>" +
+      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td><td>" + r.ret.toFixed(1) + "%</td><td>" +
+      money(r.realEnd) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement, tested since 1928</span></div>" +
+    "<div class='sh-h'><h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement &middot; tested since 1928</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Success rate</div><div class='v'>" + pctStr(H.successRate, 0) +
         "</div><div class='n'>" + H.survived + " of " + H.total + " periods</div></div>" +
@@ -4824,43 +5036,77 @@ function buildDrawdownSheet(){
     "<div class='sh-cols'>" +
       "<section><div class='sh-t'>Plan</div>" + inputs + "</section>" +
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+      "<section><div class='sh-t'>Spending, retiring " + show.startYear + "</div>" + spend + "</section>" +
     "</div>" +
-    "<div class='sh-foot'>Tested against 98 years of real US market history (1928\u20132025). " +
+    "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + show.startYear +
+      (show.depleted ? " (ran out in year " + show.depletedYear + ")" : " (survived)") + "</div>" + table + "</div>" +
+    "<div class='sh-foot'>" + verdict + " Tested against 98 years of real US market history (1928\u20132025). " +
     "Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice.</div>";
 }
 
 function buildBudgetSheet(){
   const incFreq = parseFloat($("bgIncomeFreq").value) || 12;
   const incomeYr = num("bgIncomeIn") * incFreq;
-  const spentYr = budget.reduce((a, r) => a + annualize(r), 0);
-  const leftYr = incomeYr - spentYr;
+  const spentYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
+  const savedYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
+  const leftYr = incomeYr - spentYr - savedYr;
   if (!(incomeYr > 0) && !(spentYr > 0)){ $("sheet").innerHTML = ""; toast("Add your income first"); return false; }
 
-  let out = "";
+  // Group spending by its preset category, in the same order the budget tool
+  // itself uses, so the sheet reads like the tool rather than an arbitrary list.
+  const order = ["Housing", "Transportation", "Health", "Food", "Lifestyle", "Saving & debt", "Custom"];
   const groups = {};
   budget.forEach(r => {
-    if (annualize(r) <= 0) return;
-    (groups[r.group || "Custom"] = groups[r.group || "Custom"] || []).push(r);
+    if (annualize(r) <= 0 || isSavingsRow(r)) return;
+    const g = r.group || "Custom";
+    (groups[g] = groups[g] || []).push(r);
   });
-  Object.keys(groups).forEach(g => {
-    groups[g].forEach(r => { out += row(r.desc, money(annualize(r) / 12) + "/mo"); });
+  let spendCols = "";
+  order.filter(g => groups[g]).forEach(g => {
+    let section = "<section style='flex:1;min-width:0'><div class='sh-t'>" + g + "</div>";
+    groups[g].forEach(r => { section += row(r.desc, money(annualize(r) / 12) + "/mo"); });
+    section += "</section>";
+    spendCols += section;
   });
+
+  let saveRows = "";
+  budget.filter(r => isSavingsRow(r) && annualize(r) > 0).forEach(r => {
+    saveRows += row(r.desc, money(annualize(r) / 12) + "/mo");
+  });
+
+  let summary = row("Income", money(incomeYr / 12) + "/mo");
+  summary += row("Spending", money(spentYr / 12) + "/mo");
+  if (savedYr > 0) summary += row("Saving", money(savedYr / 12) + "/mo");
+  summary += row("Left over", money(leftYr / 12) + "/mo");
+  summary += row("Percent of income spent", incomeYr ? pctStr(spentYr / incomeYr, 0) : "\u2014");
+  if (savedYr > 0) summary += row("Percent of income saved", incomeYr ? pctStr(savedYr / incomeYr, 0) : "\u2014");
+
+  const efMonths = Math.max(1, Math.round(num("efMonths")) || 6);
+  const efTarget = (spentYr / 12) * efMonths;
 
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>Monthly Budget</h1><span>Per month, unless noted</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Income</div><div class='v'>" + money(incomeYr / 12) +
         "</div><div class='n'>per month</div></div>" +
-      "<div><div class='k'>Spending</div><div class='v'>" + money(spentYr / 12) +
+      "<div><div class='k'>Spending + saving</div><div class='v'>" + money((spentYr + savedYr) / 12) +
         "</div><div class='n'>per month</div></div>" +
       "<div><div class='k'>Left over</div><div class='v'>" + money(leftYr / 12) +
         "</div><div class='n'>" + (incomeYr ? pctStr(leftYr / incomeYr, 0) : "\u2014") + " of income</div></div>" +
     "</div>" +
     "<div class='sh-cols'>" +
-      "<section style='flex:1 1 100%'><div class='sh-t'>Where it goes</div>" + out + "</section>" +
+      "<section style='flex:1;min-width:0'><div class='sh-t'>Summary</div>" + summary +
+        (saveRows ? "<div class='sh-t' style='margin-top:8px'>Saving</div>" + saveRows : "") +
+      "</section>" +
+      "<section style='flex:1;min-width:0'><div class='sh-t'>Emergency fund</div>" +
+        row(efMonths + "-month target", money(efTarget)) +
+        row("Based on", money(spentYr / 12) + "/mo actual expenses") +
+      "</section>" +
     "</div>" +
-    "<div class='sh-foot'>A snapshot of what you entered. Doesn't include taxes withheld " +
-    "or account for irregular income.</div>";
+    "<div class='sh-cols'>" + spendCols + "</div>" +
+    "<div class='sh-foot'>A snapshot of what you entered. Savings and retirement contributions " +
+    "are shown separately from spending and excluded from the emergency fund target. " +
+    "Doesn't include taxes withheld or account for irregular income.</div>";
 }
 
 function buildBasicSheet(){
@@ -4895,6 +5141,19 @@ function buildBasicSheet(){
     lighten(clone); clone.removeAttribute("style");
     chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
   }
+
+  // Compact year-by-year, using age rather than plan-year to match how Basic
+  // presents everything else.
+  const step = rows.length <= 15 ? 1 : rows.length <= 30 ? 2 : 3;
+  const tableRows = rows.filter((r, i) => i === 0 || i === rows.length - 1 || i % step === 0);
+  let table = "<table><thead><tr><th>Age</th><th>Contributed</th><th>Growth</th>" +
+    "<th>Balance</th></tr></thead><tbody>";
+  tableRows.forEach(r => {
+    table += "<tr><td>" + (p.age + r.year) + "</td><td>" + money(r.contrib) + "</td><td>" +
+      money(r.growth) + "</td><td>" + money(r.end) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
   $("sheet").innerHTML =
     "<div class='sh-h'><h1>Retirement Projection</h1><span>" +
       fmtYears(p.years) + " of saving &middot; every figure in today's dollars</span></div>" +
@@ -4911,6 +5170,7 @@ function buildBasicSheet(){
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
       "<section><div class='sh-t'>Milestones</div>" + ms + "</section>" +
     "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Year by year</div>" + table + "</div>" +
     "<div class='sh-foot'>All figures are in today's dollars and assume a steady " +
     "return after inflation, no tax and no fees. Real returns vary year to year. " +
     "Projections are not predictions, and this is not financial advice.</div>";
@@ -5360,15 +5620,29 @@ function renderCollege() {
   setBig("clTotalOut", money(R.totalFuture));
   $("clTotalNote").textContent = inp.collegeYrs + " years at " + money(inp.annualCost, 0) + "/yr, " + pctStr(inp.tuitionInfl, 1) + " inflation";
   setBig("clShortOut", money(R.shortfall));
+  $("clShortNote").textContent = "Less than the " + money(R.totalFuture) +
+    " total, since what's saved keeps earning " + pctStr(inp.investRet, 1) +
+    " while later years' tuition is paid";
 
-  var pts = [{year:0, base:inp.saved, hi:inp.saved, lo:inp.saved}];
+  // The comparison line is what the full 4-year cost would be if college
+  // started in that year \u2014 rising with tuition inflation, landing on the
+  // real total by the time college actually starts. Year 0 uses the same
+  // formula rather than defaulting to zero, so the line starts at a real cost.
+  function costIfStartingAt(t){
+    var total = 0;
+    for (var k = 0; k < inp.collegeYrs; k++){
+      total += inp.annualCost * Math.pow(1 + inp.tuitionInfl, t + k);
+    }
+    return total;
+  }
+  var pts = [{year:0, base:inp.saved, hi:costIfStartingAt(0), lo:inp.saved}];
   R.rows.forEach(function(r) {
-    pts.push({year: r.year, base: r.balance, hi: r.projCost * inp.collegeYrs, lo: 0});
+    pts.push({year: r.year, base: r.balance, hi: costIfStartingAt(r.year), lo: 0});
   });
   collegePoints = paintChart("chartCl", pts, inp.yearsUntil, "band", []);
   $("legendCl").innerHTML =
     swatch("#e9b872", "Your savings") +
-    swatch("#4fbf95", "Projected total cost");
+    swatch("#4fbf95", "Cost of college, that year");
 
   $("clTable").querySelector("tbody").innerHTML = R.rows.map(function(r) {
     return "<tr><td>" + fmtNum(r.year) + "</td><td>" + money(r.balance) +
@@ -5973,7 +6247,8 @@ const GLOSS = {
   maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
   spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below \u2014 stacked on top of whatever the strategy above would otherwise do.",
   deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses \u2014 mortgage interest, charitable giving, state and local taxes \u2014 and you use whichever is larger.",
-  ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins."
+  ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins.",
+  collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college \u2014 smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition."
 };
 function tipFor(key){ return GLOSS[key] || ""; }
 (function(){
@@ -6393,118 +6668,204 @@ $("btnScenario").addEventListener("click", async () => {
 function cardEscape(t){
   return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+/* Forces a chart clone to fixed dark colors regardless of the app's current
+   theme, so a card generated in light mode still looks right on the card's
+   dark panel \u2014 the counterpart to lighten() used for the light PDF page. */
+function darkenForCard(node){
+  var swap = {};
+  swap[cssVar("--grid").toLowerCase()] = "#22303a";
+  swap[cssVar("--axis").toLowerCase()] = "#7c93a0";
+  swap[cssVar("--stageline").toLowerCase()] = "#4a5f6b";
+  swap[cssVar("--dotstroke").toLowerCase()] = "#0c1114";
+  swap[cssVar("--bg").toLowerCase()] = "#131b20";
+  var walk = function(nd){
+    ["stroke","fill"].forEach(function(a){
+      var v = nd.getAttribute && nd.getAttribute(a);
+      if (v && swap[v.toLowerCase()]) nd.setAttribute(a, swap[v.toLowerCase()]);
+    });
+    for (var k = 0; k < nd.childNodes.length; k++) walk(nd.childNodes[k]);
+  };
+  walk(node);
+}
+
+/* Clones a live chart element and returns markup for a nested <svg> sized
+   and positioned inside the card. Returns "" if the source has no content
+   yet (e.g. the tool has never been rendered), which callers treat as "no
+   chart for this card" rather than an error. */
+function embedChart(elId, x, y, w, h){
+  var src = $(elId);
+  if (!src || !src.childNodes.length) return "";
+  var clone = src.cloneNode(true);
+  darkenForCard(clone);
+  clone.removeAttribute("style");
+  clone.removeAttribute("width");
+  clone.removeAttribute("height");
+  clone.setAttribute("x", x); clone.setAttribute("y", y);
+  clone.setAttribute("width", w); clone.setAttribute("height", h);
+  clone.setAttribute("preserveAspectRatio", "none");
+  return clone.outerHTML;
+}
+
 function buildCardSVG(){
-  var W = 1080, H = 1080;
+  var W = 1080, H = 1350;
   var t = chartMode.tab;
-  var title, big, bigLabel, sub, rows;
+  var title, big, bigLabel, sub, rows, chartSvg = "", chartH = 0, verdict = "";
 
   if (t === "tools" && toolSub === "drawdown"){
     var od = readDD();
     var Hb = historicalBacktest(od);
+    var stratName = od.strategy === "fixed" ? "Fixed amount" : od.strategy === "pct" ? "% of portfolio" :
+      od.strategy === "guardrails" ? "Guardrails" : "Floor & ceiling";
     title = "Will my money last?";
-    bigLabel = "Success rate";
+    bigLabel = "Success rate, tested since 1928";
     big = pctStr(Hb.successRate, 0);
-    sub = od.years + " years \u00b7 " + od.initialPct + "% withdrawal \u00b7 " + od.stockPct + "% stocks";
+    sub = fmtNum(od.years) + " year retirement \\u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
     rows = [
-      ["Tested against", Hb.total + " real retirements since 1928"],
-      ["Survived", Hb.survived + " of " + Hb.total],
+      ["Withdrawal strategy", stratName],
+      ["Starting withdrawal rate", pctStr(od.initialPct / 100, 1)],
+      ["Starting portfolio", money(od.initial)],
+      ["Tested against", Hb.total + " real retirements"],
+      ["Survived", Hb.survived + " of " + Hb.total + " periods"],
       ["Median ending balance", money(Hb.medianEnd)],
-      ["Starting portfolio", money(od.initial)]
+      ["Worst case", money(Hb.worstEnd)]
     ];
+    verdict = Hb.successRate >= 0.99 ? "Survived every historical period on record."
+      : Hb.successRate >= 0.90 ? "Survived the large majority of historical periods."
+      : "Failed in a meaningful share of historical periods.";
+    chartSvg = embedChart("chartDD", 90, 0, 900, 300); chartH = 300;
+
   } else if (t === "tools" && toolSub === "tax"){
     var it = readTax();
     var Rt = computeTax(it);
     title = "My take-home pay";
-    bigLabel = "Per year";
+    bigLabel = "Take-home, per year";
     big = money(Rt.net);
-    sub = money(it.gross) + " gross \u00b7 " + pctStr(Rt.effTotal, 1) + " effective rate";
+    sub = money(it.gross) + " gross \\u00b7 " + (Rt.stateName || "no state tax") + " \\u00b7 tax year 2026";
     rows = [
       ["Federal tax", money(Rt.federal)],
       ["State tax", money(Rt.state)],
-      ["FICA", money(Rt.fica)],
-      ["Per month", money(Rt.net / 12)]
+      ["Social Security + Medicare", money(Rt.fica)],
+      ["Total tax", money(Rt.total)],
+      ["Effective rate", pctStr(Rt.effTotal, 1)],
+      ["Per month", money(Rt.net / 12)],
+      ["Per biweekly check", money(Rt.net / 26)]
     ];
+    chartSvg = embedChart("txPie", 340, 20, 400, 400); chartH = 420;
+
   } else if (t === "tools" && toolSub === "mortgage"){
     var im = readMort();
     var Rm = mortgage(im);
     title = "My mortgage";
-    bigLabel = "Monthly payment";
+    bigLabel = "Total monthly payment";
     big = money(Rm.total);
-    sub = money(im.price) + " home \u00b7 " + pctStr(im.rate, 2) + " rate \u00b7 " + fmtNum(im.term) + " yrs";
+    sub = money(im.price) + " home \\u00b7 " + pctStr(im.rate, 2) + " rate \\u00b7 " + fmtNum(im.term) + " year term";
     rows = [
       ["Principal & interest", money(Rm.pi)],
+      ["Property tax & insurance", money(Rm.tax + Rm.ins)],
       ["Loan amount", money(Rm.loan)],
-      ["Total interest", money(Rm.totalInterest)],
-      ["Down payment", pctStr(im.price ? im.down / im.price : 0, 0)]
+      ["Down payment", money(im.down) + " (" + pctStr(im.price ? im.down/im.price : 0, 0) + ")"],
+      ["Total interest, full loan", money(Rm.totalInterest)],
+      ["Total cost of the loan", money(Rm.loan + Rm.totalInterest)],
+      ["Payoff", "Year " + Rm.years.length]
     ];
+    chartSvg = embedChart("chartMo", 90, 0, 900, 300); chartH = 300;
+
   } else if (t === "tools" && toolSub === "college"){
     var ic = readCollege();
     var Rc = collegeSavingsCalc(ic);
     title = "College savings plan";
     bigLabel = "Save per month";
     big = money(Rc.monthly);
-    sub = fmtNum(ic.yearsUntil) + " years to go \u00b7 " + money(ic.annualCost) + "/yr today";
+    sub = fmtNum(ic.yearsUntil) + " years to go \\u00b7 " + money(ic.annualCost) + "/yr today \\u00b7 " + fmtNum(ic.collegeYrs) + " years of school";
     rows = [
-      ["Total projected cost", money(Rc.totalFuture)],
-      ["Shortfall to cover", money(Rc.shortfall)],
+      ["Total cost, all years", money(Rc.totalFuture)],
+      ["Need saved by year 1", money(Rc.targetAtStart)],
       ["Currently saved", money(ic.saved)],
-      ["Investment return", pctStr(ic.investRet, 1)]
+      ["Savings grow to", money(Rc.savingsAtStart)],
+      ["Shortfall to close", money(Rc.shortfall)],
+      ["Investment return", pctStr(ic.investRet, 1)],
+      ["Tuition inflation", pctStr(ic.tuitionInfl, 1)]
     ];
+    chartSvg = embedChart("chartCl", 90, 0, 900, 300); chartH = 300;
+
   } else if (t === "tools" && toolSub === "rentbuy"){
     var ir = readRB();
     var Rr = rentBuyCalc(ir);
     var lastR = Rr.years[Rr.years.length - 1];
     var buyWins = lastR && lastR.buyerNW >= lastR.renterNW;
     title = "Rent vs. buy";
-    bigLabel = "Better after " + fmtNum(ir.horizon) + " years";
+    bigLabel = "Better choice after " + fmtNum(ir.horizon) + " years";
     big = buyWins ? "Buying" : "Renting";
-    sub = money(ir.price) + " home \u00b7 " + money(ir.rent) + "/mo rent";
+    sub = money(ir.price) + " home \\u00b7 " + money(ir.rent) + "/mo rent \\u00b7 " + pctStr(ir.downPct/100, 0) + " down";
     rows = lastR ? [
       ["Buyer net worth", money(lastR.buyerNW)],
       ["Renter net worth", money(lastR.renterNW)],
-      ["Break-even", Rr.breakEven ? "Year " + fmtNum(Rr.breakEven) : "Not yet"],
-      ["Renter invests upfront", money(Rr.initialInvest)]
+      ["Difference", (buyWins ? "+" : "\\u2212") + money(Math.abs(lastR.buyerNW - lastR.renterNW))],
+      ["Break-even point", Rr.breakEven ? "Year " + fmtNum(Rr.breakEven) : "Not within horizon"],
+      ["Renter invests upfront", money(Rr.initialInvest)],
+      ["Home value at end", money(lastR.homeVal)],
+      ["Monthly cost, buying", money(Rr.monthlyBuy)]
     ] : [];
+    chartSvg = embedChart("chartRB", 90, 0, 900, 300); chartH = 300;
+
   } else if (t === "tools" && toolSub === "budget"){
     var incFreqC = parseFloat($("bgIncomeFreq").value) || 12;
     var incYrC = num("bgIncomeIn") * incFreqC;
-    var spentYrC = budget.reduce(function(a, r){ return a + annualize(r); }, 0);
+    var spentYrC = budget.reduce(function(a, r){ return a + (isSavingsRow(r) ? 0 : annualize(r)); }, 0);
+    var savedYrC = budget.reduce(function(a, r){ return a + (isSavingsRow(r) ? annualize(r) : 0); }, 0);
+    var leftYrC = incYrC - spentYrC - savedYrC;
+    var efMonthsC = Math.max(1, Math.round(num("efMonths")) || 6);
     title = "My monthly budget";
-    bigLabel = "Left over";
-    big = money((incYrC - spentYrC) / 12);
-    sub = money(incYrC / 12) + " income \u00b7 " + money(spentYrC / 12) + " spending, per month";
+    bigLabel = "Left over, per month";
+    big = money(leftYrC / 12);
+    sub = money(incYrC / 12) + " income \\u00b7 " + money(spentYrC / 12) + " spending, per month";
+    var topCats = {};
+    budget.forEach(function(r){
+      if (annualize(r) <= 0 || isSavingsRow(r)) return;
+      var g = r.group || "Custom";
+      topCats[g] = (topCats[g] || 0) + annualize(r);
+    });
+    var catRows = Object.keys(topCats).sort(function(a,b){ return topCats[b]-topCats[a]; })
+      .slice(0, 3).map(function(g){ return [g, money(topCats[g]/12) + "/mo"]; });
     rows = [
       ["Income", money(incYrC / 12) + "/mo"],
-      ["Spending", money(spentYrC / 12) + "/mo"],
-      ["Left over", money((incYrC - spentYrC) / 12) + "/mo"],
-      ["Percent saved", incYrC ? pctStr((incYrC - spentYrC) / incYrC, 0) : "\u2014"]
-    ];
+      ["Spending", money(spentYrC / 12) + "/mo"]
+    ].concat(savedYrC > 0 ? [["Saving", money(savedYrC / 12) + "/mo"]] : [])
+     .concat(catRows)
+     .concat([["Emergency fund target", money((spentYrC/12) * efMonthsC) + " (" + efMonthsC + " mo)"]]);
+
   } else if (t === "simple"){
     var p = readBasic();
     var R = project(p);
     title = "My retirement projection";
-    bigLabel = "At age " + fmtNum(p.retire);
+    bigLabel = "Value at retirement, age " + fmtNum(p.retire);
     big = money(R.fv);
-    sub = "In today's dollars \u00b7 " + fmtYears(p.years) + " of saving";
+    sub = "In today's dollars \\u00b7 " + fmtYears(p.years) + " of saving \\u00b7 " + pctStr(p.real, 2) + " real return";
     rows = [
-      ["Monthly income", money(R.fv * .04 / 12)],
-      ["I put in", money(R.contribTotal)],
+      ["Income per year", money(R.fv * .04)],
+      ["Income per month", money(R.fv * .04 / 12)],
+      ["You put in", money(R.contribTotal)],
       ["Growth added", money(R.growth)],
       ["Growth after inflation", pctStr(p.real, 2)]
     ];
+    chartSvg = embedChart("chartQ", 90, 0, 900, 300); chartH = 300;
+
   } else {
     var pa = readInputs();
     var Ra = project(pa);
-    title = "My retirement projection";
-    bigLabel = "In today's dollars";
+    var series = !$("tab-series").hidden;
+    title = series ? "My staged retirement plan" : "My retirement projection";
+    bigLabel = "Inflation-adjusted value";
     big = money(Ra.fvReal);
-    sub = fmtYears(pa.years) + " \u00b7 " + money(pa.contrib, 0) + " " + PERIOD_ADV[pa.period];
+    sub = fmtYears(pa.years) + " \\u00b7 " + money(pa.contrib, 0) + " " + PERIOD_ADV[pa.period] + " \\u00b7 " + pctStr(pa.gross, 2) + " return";
     rows = [
       ["Future value", money(Ra.fv)],
+      ["Inflation adjusted", money(Ra.fvReal)],
       ["After-tax income / yr", money(Ra.afterTax)],
       ["I put in", money(Ra.contribTotal)],
       ["Growth added", money(Ra.growth)]
     ];
+    chartSvg = embedChart(series ? "chartS" : "chart", 90, 0, 900, 300); chartH = 300;
   }
 
   var bg = "#0c1114", panel = "#131b20", line = "#22303a";
@@ -6512,28 +6873,44 @@ function buildCardSVG(){
   var mono = "ui-monospace, Menlo, monospace";
   var sans = "Inter, Helvetica, Arial, sans-serif";
 
-  var y = 300;
+  // Layout flows top to bottom: header, headline number, chart (if any),
+  // then the row list, then the footer \\u2014 so a tool with no chart (Budget)
+  // simply gets a taller row list instead of empty space.
+  var chartY = 268;
+  var rowsY = chartH > 0 ? chartY + chartH + 40 : chartY + 30;
+
+  var chartBlock = chartSvg
+    ? '<rect x="90" y="' + chartY + '" width="900" height="' + chartH + '" rx="10" fill="' + bg + '" stroke="' + line + '"/>' + chartSvg
+    : "";
+
+  var y = rowsY;
   var rowSvg = rows.map(function(r){
     var block =
-      '<text x="90" y="' + y + '" font-family="' + sans + '" font-size="30" fill="' + dim + '">' + cardEscape(r[0]) + '</text>' +
-      '<text x="990" y="' + y + '" font-family="' + mono + '" font-size="32" font-weight="600" fill="' + text + '" text-anchor="end">' + cardEscape(r[1]) + '</text>' +
-      '<line x1="90" y1="' + (y + 26) + '" x2="990" y2="' + (y + 26) + '" stroke="' + line + '" stroke-width="1"/>';
-    y += 88;
+      '<text x="90" y="' + y + '" font-family="' + sans + '" font-size="27" fill="' + dim + '">' + cardEscape(r[0]) + '</text>' +
+      '<text x="990" y="' + y + '" font-family="' + mono + '" font-size="29" font-weight="600" fill="' + text + '" text-anchor="end">' + cardEscape(r[1]) + '</text>' +
+      '<line x1="90" y1="' + (y + 22) + '" x2="990" y2="' + (y + 22) + '" stroke="' + line + '" stroke-width="1"/>';
+    y += 76;
     return block;
   }).join("");
 
+  var verdictBlock = verdict
+    ? '<text x="90" y="' + (y + 10) + '" font-family="' + sans + '" font-size="24" fill="' + jade + '" font-weight="600">' + cardEscape(verdict) + '</text>'
+    : "";
+  var footY = H - 60;
+
   return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
     '<rect width="' + W + '" height="' + H + '" fill="' + bg + '"/>' +
-    '<rect x="40" y="40" width="1000" height="1000" rx="28" fill="' + panel + '" stroke="' + line + '"/>' +
+    '<rect x="40" y="40" width="1000" height="' + (H - 80) + '" rx="28" fill="' + panel + '" stroke="' + line + '"/>' +
     '<text x="90" y="140" font-family="' + sans + '" font-size="34" font-weight="600" fill="' + text + '">' + cardEscape(title) + '</text>' +
-    '<text x="90" y="182" font-family="' + sans + '" font-size="26" fill="' + dim + '">' + cardEscape(sub) + '</text>' +
-    '<text x="90" y="243" font-family="' + sans + '" font-size="24" fill="' + dim + '">' + cardEscape(bigLabel) + '</text>' +
-    '<text x="990" y="243" font-family="' + mono + '" font-size="76" font-weight="700" fill="' + gold + '" text-anchor="end">' + cardEscape(big) + '</text>' +
+    '<text x="90" y="182" font-family="' + sans + '" font-size="24" fill="' + dim + '">' + cardEscape(sub) + '</text>' +
+    '<text x="90" y="243" font-family="' + sans + '" font-size="22" fill="' + dim + '">' + cardEscape(bigLabel) + '</text>' +
+    '<text x="990" y="243" font-family="' + mono + '" font-size="68" font-weight="700" fill="' + gold + '" text-anchor="end">' + cardEscape(big) + '</text>' +
+    chartBlock +
     rowSvg +
-    '<path d="M90 900 L200 830 L280 865 L410 760" stroke="' + jade + '" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
-    '<circle cx="410" cy="760" r="12" fill="' + jade + '"/>' +
-    '<text x="90" y="985" font-family="' + sans + '" font-size="24" fill="' + dim + '">Projections, not predictions. Not financial advice.</text>' +
-    '<text x="990" y="985" font-family="' + sans + '" font-size="26" font-weight="600" fill="' + jade + '" text-anchor="end">retcalc.github.io</text>' +
+    verdictBlock +
+    '<line x1="90" y1="' + (footY - 20) + '" x2="990" y2="' + (footY - 20) + '" stroke="' + line + '" stroke-width="1"/>' +
+    '<text x="90" y="' + footY + '" font-family="' + sans + '" font-size="20" fill="' + dim + '">Projections, not predictions. Not financial advice.</text>' +
+    '<text x="990" y="' + footY + '" font-family="' + sans + '" font-size="22" font-weight="600" fill="' + jade + '" text-anchor="end">retcalc.github.io</text>' +
     '</svg>';
 }
 
@@ -6544,7 +6921,7 @@ function cardToBlob(cb){
   var url = URL.createObjectURL(blob);
   img.onload = function(){
     var c = document.createElement("canvas");
-    c.width = 1080; c.height = 1080;
+    c.width = 1080; c.height = 1350;
     var ctx = c.getContext("2d");
     ctx.drawImage(img, 0, 0);
     URL.revokeObjectURL(url);
