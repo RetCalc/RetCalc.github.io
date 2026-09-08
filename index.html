@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0c1114">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -6340,6 +6340,11 @@ function applyTheme(stored){
   document.documentElement.setAttribute("data-theme", eff);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", THEME_META[eff] || THEME_META.dark);
+  // Native form controls (checkboxes, scrollbars) render using this rather
+  // than the page's own CSS, so it has to track the theme too -- otherwise
+  // an unchecked checkbox keeps its dark-mode appearance in light mode.
+  const scheme = document.querySelector('meta[name="color-scheme"]');
+  if (scheme) scheme.setAttribute("content", eff);
   document.querySelectorAll("#segTheme button").forEach(b =>
     b.classList.toggle("on", b.getAttribute("data-theme") === stored));
   if (!$("tab-simple").hidden) renderBasic();
