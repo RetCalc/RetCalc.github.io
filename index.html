@@ -382,6 +382,15 @@ main.solo{grid-template-columns:minmax(0,1fr)}
     padding-top:5px}
 }
 .about .body{padding:16px 20px 20px}
+/* Collapsible About sections: collapsed by default, toggled by clicking the
+   h2. Appearance, What this is, and Disclaimer opt out via .no-collapse /
+   .disclaimer, since those stay fully visible regardless of the toggle. */
+.panel.about:not(.no-collapse):not(.disclaimer) > h2{cursor:pointer;user-select:none}
+.panel.about:not(.no-collapse):not(.disclaimer) > h2:hover{background:var(--panel-2)}
+.panel.about .about-chevron{margin-left:auto;flex:none;color:var(--dimmer);
+  transition:transform .18s;display:flex}
+.panel.about.collapsed .about-chevron{transform:rotate(-90deg)}
+.panel.about.collapsed > .body{display:none}
 .about p{margin:0 0 12px;font-size:13.5px;line-height:1.65;color:var(--dim)}
 .about p:last-child{margin-bottom:0}
 .about b{color:var(--text);font-weight:600}
@@ -417,6 +426,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   transition:border-color .12s,background .12s}
 .popup .popbtn:hover{border-color:var(--jade);background:var(--panel-2)}
 .popup .popbtn .subdesc{display:block;font-size:11.5px;color:var(--dim);margin-top:3px}
+.popup .popbtn .subdesc.money{font-family:var(--mono);font-size:13px;color:var(--jade);font-weight:600}
 .popup .cancel{display:block;width:100%;text-align:center;background:transparent;border:0;
   color:var(--dimmer);font-size:12.5px;padding:8px 0 2px;cursor:pointer;font-family:var(--sans)}
 .popup .cancel:hover{color:var(--text)}
@@ -1654,7 +1664,7 @@ window.onerror = function(msg){
 
   <!-- ========== ABOUT ========== -->
   <div class="stack" id="tab-about" hidden>
-    <div class="panel about">
+    <div class="panel about no-collapse">
       <h2>Appearance</h2>
       <div class="body">
         <div class="themerow">
@@ -1668,7 +1678,7 @@ window.onerror = function(msg){
       </div>
     </div>
 
-    <div class="panel about">
+    <div class="panel about no-collapse">
       <h2>What this is</h2>
       <div class="body">
         <p>A compounding calculator. You describe what you put in and what you expect
@@ -5045,7 +5055,7 @@ function buildDrawdownSheet(){
 }
 
 function buildBudgetSheet(){
-  const incFreq = parseFloat($("bgIncomeFreq").value) || 12;
+  const incFreq = bgIncomeFreq;
   const incomeYr = num("bgIncomeIn") * incFreq;
   const spentYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
   const savedYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
@@ -6210,14 +6220,33 @@ $("segDD").addEventListener("click", function (e) {
   .forEach(function (id) { $(id).addEventListener("input", renderDrawdown); });
 $("ddSSMode").addEventListener("change", renderDrawdown);
 $("ddStrategy").addEventListener("change", renderDrawdown);
-$("ddCopy").addEventListener("click", function () {
-  var v = lastRun ? lastRun.fvReal : 0;
-  if (!v && simpleRun) v = simpleRun.fv;
-  if (!v) { toast("Run a retirement projection first"); return; }
-  $("ddInitial").value = groupDigits(Math.round(v), true);
-  renderDrawdown();
-  toast("Copied " + money(v) + " from the retirement calculator");
+/* All three retirement modes keep their last computed result in the
+   background regardless of which tab is currently open, so every source
+   that has a real number is offered \u2014 not just whichever one happens to
+   be on screen. */
+$("ddCopy").addEventListener("click", async function () {
+  var sources = [
+    {label: "Basic", value: simpleRun ? simpleRun.fv : 0},
+    {label: "Advanced", value: lastRun ? lastRun.fvReal : 0},
+    {label: "Stages", value: seriesRun ? seriesRun.fvReal : 0}
+  ].filter(function (s) { return s.value > 0; });
+
+  if (!sources.length) { toast("Run a retirement projection first"); return; }
+  if (sources.length === 1) {
+    applyDDCopy(sources[0]);
+    return;
+  }
+
+  var choice = await showPopup("Copy from which plan?", sources.map(function (s) {
+    return {label: s.label, desc: money(s.value), money: true};
+  }));
+  if (choice >= 0) applyDDCopy(sources[choice]);
 });
+function applyDDCopy(source) {
+  $("ddInitial").value = groupDigits(Math.round(source.value), true);
+  renderDrawdown();
+  toast("Copied " + money(source.value) + " from " + source.label);
+}
 
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
@@ -6329,6 +6358,27 @@ $("segTheme").addEventListener("click", e => {
   applyTheme(stored);
   try { localStorage.setItem(THEME_KEY, stored); } catch(e){}
 });
+
+/* Collapses every About section except Appearance, What this is, and
+   Disclaimer, so the tab reads as a list of topics instead of a long page
+   to scroll through. Adds a chevron to each collapsible heading and toggles
+   on click; built generically off the existing panel/h2/body structure
+   rather than touching each section's markup individually. */
+function initAboutCollapse(){
+  const panels = document.querySelectorAll(".panel.about:not(.no-collapse):not(.disclaimer)");
+  panels.forEach(p => {
+    const h2 = p.querySelector("h2");
+    if (!h2 || h2.querySelector(".about-chevron")) return;
+    const chev = document.createElement("span");
+    chev.className = "about-chevron";
+    chev.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none">' +
+      '<path d="M5 6l3 3 3-3" stroke="currentColor" stroke-width="1.6" ' +
+      'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    h2.appendChild(chev);
+    p.classList.add("collapsed");
+    h2.addEventListener("click", () => p.classList.toggle("collapsed"));
+  });
+}
 if (window.matchMedia){
   window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function(){
     let stored = "system";
@@ -6641,7 +6691,7 @@ function showPopup(title, options){
     ov.className = "popup-overlay";
     ov.innerHTML = "<div class='popup'><h3>" + title + "</h3>" +
       options.map((o, i) => "<button class='popbtn' data-pop='" + i + "'>" +
-        o.label + (o.desc ? "<span class='subdesc'>" + o.desc + "</span>" : "") +
+        o.label + (o.desc ? "<span class='subdesc" + (o.money ? " money" : "") + "'>" + o.desc + "</span>" : "") +
         "</button>").join("") +
       "<button class='cancel'>Cancel</button></div>";
     ov.addEventListener("click", e => {
@@ -6692,24 +6742,37 @@ function darkenForCard(node){
    and positioned inside the card. Returns "" if the source has no content
    yet (e.g. the tool has never been rendered), which callers treat as "no
    chart for this card" rather than an error. */
-function embedChart(elId, x, y, w, h){
+/* Nesting a live <svg> inside the card's outer <svg> is unreliable once the
+   whole thing gets rasterised through an <img>/<canvas> round trip \u2014
+   viewBox scaling on a nested svg doesn't always survive that pipeline
+   consistently across browsers. Instead, the chart's own viewBox is read
+   directly and used to build an explicit scale + translate transform on a
+   plain <g>, so its children (paths, lines, text) are placed in the card's
+   coordinate space by simple arithmetic rather than relying on nested-SVG
+   scaling to do it. The source chart's viewBox also depends on the window
+   width it was last drawn at (narrower windows use a 470x400 chart), so
+   that native size is read fresh each time rather than assumed. */
+function embedChart(elId, w, h){
   var src = $(elId);
   if (!src || !src.childNodes.length) return "";
+  var vb = (src.getAttribute("viewBox") || "0 0 900 340").split(/\s+/).map(Number);
+  var srcW = vb[2] || 900, srcH = vb[3] || 340;
+  var scaleX = w / srcW, scaleY = h / srcH;
   var clone = src.cloneNode(true);
   darkenForCard(clone);
   clone.removeAttribute("style");
+  clone.removeAttribute("viewBox");
   clone.removeAttribute("width");
   clone.removeAttribute("height");
-  clone.setAttribute("x", x); clone.setAttribute("y", y);
-  clone.setAttribute("width", w); clone.setAttribute("height", h);
-  clone.setAttribute("preserveAspectRatio", "none");
-  return clone.outerHTML;
+  clone.removeAttribute("id");
+  var inner = clone.innerHTML;
+  return '<g transform="scale(' + scaleX + ',' + scaleY + ')">' + inner + '</g>';
 }
 
 function buildCardSVG(){
   var W = 1080, H = 1350;
   var t = chartMode.tab;
-  var title, big, bigLabel, sub, rows, chartSvg = "", chartH = 0, verdict = "";
+  var title, big, bigLabel, sub, rows, chartSvg = "", chartW = 900, chartH = 0, verdict = "";
 
   if (t === "tools" && toolSub === "drawdown"){
     var od = readDD();
@@ -6719,7 +6782,7 @@ function buildCardSVG(){
     title = "Will my money last?";
     bigLabel = "Success rate, tested since 1928";
     big = pctStr(Hb.successRate, 0);
-    sub = fmtNum(od.years) + " year retirement \\u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
+    sub = fmtNum(od.years) + " year retirement \u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
     rows = [
       ["Withdrawal strategy", stratName],
       ["Starting withdrawal rate", pctStr(od.initialPct / 100, 1)],
@@ -6732,7 +6795,7 @@ function buildCardSVG(){
     verdict = Hb.successRate >= 0.99 ? "Survived every historical period on record."
       : Hb.successRate >= 0.90 ? "Survived the large majority of historical periods."
       : "Failed in a meaningful share of historical periods.";
-    chartSvg = embedChart("chartDD", 90, 0, 900, 300); chartH = 300;
+    chartSvg = embedChart("chartDD", 900, 300); chartW = 900; chartH = 300;
 
   } else if (t === "tools" && toolSub === "tax"){
     var it = readTax();
@@ -6740,7 +6803,7 @@ function buildCardSVG(){
     title = "My take-home pay";
     bigLabel = "Take-home, per year";
     big = money(Rt.net);
-    sub = money(it.gross) + " gross \\u00b7 " + (Rt.stateName || "no state tax") + " \\u00b7 tax year 2026";
+    sub = money(it.gross) + " gross \u00b7 " + (Rt.stateName || "no state tax") + " \u00b7 tax year 2026";
     rows = [
       ["Federal tax", money(Rt.federal)],
       ["State tax", money(Rt.state)],
@@ -6750,7 +6813,7 @@ function buildCardSVG(){
       ["Per month", money(Rt.net / 12)],
       ["Per biweekly check", money(Rt.net / 26)]
     ];
-    chartSvg = embedChart("txPie", 340, 20, 400, 400); chartH = 420;
+    chartSvg = embedChart("txPie", 400, 400); chartW = 400; chartH = 400;
 
   } else if (t === "tools" && toolSub === "mortgage"){
     var im = readMort();
@@ -6758,7 +6821,7 @@ function buildCardSVG(){
     title = "My mortgage";
     bigLabel = "Total monthly payment";
     big = money(Rm.total);
-    sub = money(im.price) + " home \\u00b7 " + pctStr(im.rate, 2) + " rate \\u00b7 " + fmtNum(im.term) + " year term";
+    sub = money(im.price) + " home \u00b7 " + pctStr(im.rate, 2) + " rate \u00b7 " + fmtNum(im.term) + " year term";
     rows = [
       ["Principal & interest", money(Rm.pi)],
       ["Property tax & insurance", money(Rm.tax + Rm.ins)],
@@ -6768,7 +6831,7 @@ function buildCardSVG(){
       ["Total cost of the loan", money(Rm.loan + Rm.totalInterest)],
       ["Payoff", "Year " + Rm.years.length]
     ];
-    chartSvg = embedChart("chartMo", 90, 0, 900, 300); chartH = 300;
+    chartSvg = embedChart("chartMo", 900, 300); chartW = 900; chartH = 300;
 
   } else if (t === "tools" && toolSub === "college"){
     var ic = readCollege();
@@ -6776,7 +6839,7 @@ function buildCardSVG(){
     title = "College savings plan";
     bigLabel = "Save per month";
     big = money(Rc.monthly);
-    sub = fmtNum(ic.yearsUntil) + " years to go \\u00b7 " + money(ic.annualCost) + "/yr today \\u00b7 " + fmtNum(ic.collegeYrs) + " years of school";
+    sub = fmtNum(ic.yearsUntil) + " years to go \u00b7 " + money(ic.annualCost) + "/yr today \u00b7 " + fmtNum(ic.collegeYrs) + " years of school";
     rows = [
       ["Total cost, all years", money(Rc.totalFuture)],
       ["Need saved by year 1", money(Rc.targetAtStart)],
@@ -6786,7 +6849,7 @@ function buildCardSVG(){
       ["Investment return", pctStr(ic.investRet, 1)],
       ["Tuition inflation", pctStr(ic.tuitionInfl, 1)]
     ];
-    chartSvg = embedChart("chartCl", 90, 0, 900, 300); chartH = 300;
+    chartSvg = embedChart("chartCl", 900, 300); chartW = 900; chartH = 300;
 
   } else if (t === "tools" && toolSub === "rentbuy"){
     var ir = readRB();
@@ -6796,20 +6859,20 @@ function buildCardSVG(){
     title = "Rent vs. buy";
     bigLabel = "Better choice after " + fmtNum(ir.horizon) + " years";
     big = buyWins ? "Buying" : "Renting";
-    sub = money(ir.price) + " home \\u00b7 " + money(ir.rent) + "/mo rent \\u00b7 " + pctStr(ir.downPct/100, 0) + " down";
+    sub = money(ir.price) + " home \u00b7 " + money(ir.rent) + "/mo rent \u00b7 " + pctStr(ir.downPct/100, 0) + " down";
     rows = lastR ? [
       ["Buyer net worth", money(lastR.buyerNW)],
       ["Renter net worth", money(lastR.renterNW)],
-      ["Difference", (buyWins ? "+" : "\\u2212") + money(Math.abs(lastR.buyerNW - lastR.renterNW))],
+      ["Difference", (buyWins ? "+" : "\u2212") + money(Math.abs(lastR.buyerNW - lastR.renterNW))],
       ["Break-even point", Rr.breakEven ? "Year " + fmtNum(Rr.breakEven) : "Not within horizon"],
       ["Renter invests upfront", money(Rr.initialInvest)],
       ["Home value at end", money(lastR.homeVal)],
       ["Monthly cost, buying", money(Rr.monthlyBuy)]
     ] : [];
-    chartSvg = embedChart("chartRB", 90, 0, 900, 300); chartH = 300;
+    chartSvg = embedChart("chartRB", 900, 300); chartW = 900; chartH = 300;
 
   } else if (t === "tools" && toolSub === "budget"){
-    var incFreqC = parseFloat($("bgIncomeFreq").value) || 12;
+    var incFreqC = bgIncomeFreq;
     var incYrC = num("bgIncomeIn") * incFreqC;
     var spentYrC = budget.reduce(function(a, r){ return a + (isSavingsRow(r) ? 0 : annualize(r)); }, 0);
     var savedYrC = budget.reduce(function(a, r){ return a + (isSavingsRow(r) ? annualize(r) : 0); }, 0);
@@ -6818,7 +6881,7 @@ function buildCardSVG(){
     title = "My monthly budget";
     bigLabel = "Left over, per month";
     big = money(leftYrC / 12);
-    sub = money(incYrC / 12) + " income \\u00b7 " + money(spentYrC / 12) + " spending, per month";
+    sub = money(incYrC / 12) + " income \u00b7 " + money(spentYrC / 12) + " spending, per month";
     var topCats = {};
     budget.forEach(function(r){
       if (annualize(r) <= 0 || isSavingsRow(r)) return;
@@ -6840,7 +6903,7 @@ function buildCardSVG(){
     title = "My retirement projection";
     bigLabel = "Value at retirement, age " + fmtNum(p.retire);
     big = money(R.fv);
-    sub = "In today's dollars \\u00b7 " + fmtYears(p.years) + " of saving \\u00b7 " + pctStr(p.real, 2) + " real return";
+    sub = "In today's dollars \u00b7 " + fmtYears(p.years) + " of saving \u00b7 " + pctStr(p.real, 2) + " real return";
     rows = [
       ["Income per year", money(R.fv * .04)],
       ["Income per month", money(R.fv * .04 / 12)],
@@ -6848,7 +6911,7 @@ function buildCardSVG(){
       ["Growth added", money(R.growth)],
       ["Growth after inflation", pctStr(p.real, 2)]
     ];
-    chartSvg = embedChart("chartQ", 90, 0, 900, 300); chartH = 300;
+    chartSvg = embedChart("chartQ", 900, 300); chartW = 900; chartH = 300;
 
   } else {
     var pa = readInputs();
@@ -6857,7 +6920,7 @@ function buildCardSVG(){
     title = series ? "My staged retirement plan" : "My retirement projection";
     bigLabel = "Inflation-adjusted value";
     big = money(Ra.fvReal);
-    sub = fmtYears(pa.years) + " \\u00b7 " + money(pa.contrib, 0) + " " + PERIOD_ADV[pa.period] + " \\u00b7 " + pctStr(pa.gross, 2) + " return";
+    sub = fmtYears(pa.years) + " \u00b7 " + money(pa.contrib, 0) + " " + PERIOD_ADV[pa.period] + " \u00b7 " + pctStr(pa.gross, 2) + " return";
     rows = [
       ["Future value", money(Ra.fv)],
       ["Inflation adjusted", money(Ra.fvReal)],
@@ -6865,7 +6928,7 @@ function buildCardSVG(){
       ["I put in", money(Ra.contribTotal)],
       ["Growth added", money(Ra.growth)]
     ];
-    chartSvg = embedChart(series ? "chartS" : "chart", 90, 0, 900, 300); chartH = 300;
+    chartSvg = embedChart(series ? "chartS" : "chart", 900, 300); chartW = 900; chartH = 300;
   }
 
   var bg = "#0c1114", panel = "#131b20", line = "#22303a";
@@ -6874,13 +6937,17 @@ function buildCardSVG(){
   var sans = "Inter, Helvetica, Arial, sans-serif";
 
   // Layout flows top to bottom: header, headline number, chart (if any),
-  // then the row list, then the footer \\u2014 so a tool with no chart (Budget)
-  // simply gets a taller row list instead of empty space.
+  // then the row list, then the footer \u2014 so a tool with no chart (Budget)
+  // simply gets a taller row list instead of empty space. The chart itself
+  // is emitted at its own local origin by embedChart(); a <g transform>
+  // here is what actually places it on the card, with narrower charts
+  // (the tax donut) centered inside the standard 900px content width.
   var chartY = 268;
   var rowsY = chartH > 0 ? chartY + chartH + 40 : chartY + 30;
 
   var chartBlock = chartSvg
-    ? '<rect x="90" y="' + chartY + '" width="900" height="' + chartH + '" rx="10" fill="' + bg + '" stroke="' + line + '"/>' + chartSvg
+    ? '<rect x="90" y="' + chartY + '" width="900" height="' + chartH + '" rx="10" fill="' + bg + '" stroke="' + line + '"/>' +
+      '<g transform="translate(' + (90 + (900 - chartW) / 2) + ',' + chartY + ')">' + chartSvg + '</g>'
     : "";
 
   var y = rowsY;
@@ -6931,16 +6998,35 @@ function cardToBlob(cb){
   img.src = url;
 }
 
+/* A plain <a download> link saves to the browser's generic downloads
+   location \u2014 on a phone that's the Files app, not the Photos camera roll,
+   and often opens a preview instead of actually saving anything. The Web
+   Share API's native share sheet is what actually offers "Save to Photos" /
+   "Save Image" on iOS and Android, so that's used whenever the browser
+   supports sharing a file; the old download link remains the fallback for
+   desktop browsers, where there's no camera roll to save into anyway. */
 function downloadCard(){
   cardToBlob(function(b){
     if (!b){ toast("Couldn't build the image"); return; }
-    var a = document.createElement("a");
-    a.href = URL.createObjectURL(b);
-    a.download = "retirement-summary.png";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
-    toast("Image saved");
+    var file = new File([b], "retirement-summary.png", {type: "image/png"});
+    if (navigator.share && navigator.canShare && navigator.canShare({files: [file]})){
+      navigator.share({files: [file]}).catch(function(err){
+        // A user-cancelled share isn't an error worth reporting.
+        if (err && err.name === "AbortError") return;
+        fallbackDownload(b);
+      });
+      return;
+    }
+    fallbackDownload(b);
   });
+}
+function fallbackDownload(b){
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(b);
+  a.download = "retirement-summary.png";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  toast("Image saved");
 }
 function copyCard(){
   if (!navigator.clipboard || !window.ClipboardItem){
@@ -7134,6 +7220,7 @@ renderDrawdown();
 buildBudget();
 renderBudget();
 initTheme();
+initAboutCollapse();
 if (fromLink) toast("Loaded from a shared link");
 })();
 </script>
