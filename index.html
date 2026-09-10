@@ -141,14 +141,13 @@ html[data-theme="light"] header{
 .brand{display:flex;align-items:center;gap:13px}
 /* The mark sits proud of the bezel, catching the same overhead light. */
 .mark{width:34px;height:34px;flex:none;border-radius:10px;
-  background:linear-gradient(160deg,#5fd3a6 0%,#2f8f6d 100%);
+  background:linear-gradient(160deg,#1c2740 0%,#0d1322 100%);
   display:grid;place-items:center;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.45),
-    0 0 0 1px rgba(79,191,149,.30),
-    0 8px 20px -8px rgba(79,191,149,.55)}
-.mark svg{width:18px;height:18px;display:block}
-.mark svg path{stroke:#04211a}
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 0 0 1px rgba(79,191,149,.20),
+    0 8px 20px -8px rgba(0,0,0,.55)}
+.mark svg{width:26px;height:26px;display:block}
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .scenariobar{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .scenariobar select{min-width:180px}
@@ -229,6 +228,10 @@ html[data-theme="light"] select:hover,html[data-theme="light"] .btn:hover{border
 .btn.primary:hover{background:linear-gradient(180deg,#6fe0b3,#3cb489)}
 .btn:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* When one label in a two-up row wraps and the other does not, the inputs
+   stop lining up. Bottom-aligning the row keeps the fields on one line
+   regardless of how tall either label ends up. */
+.two.bottomalign{align-items:end}
 .hint{font-size:11.5px;color:var(--dimmer);margin-top:5px;line-height:1.45}
 
 .derived{border-top:1px solid var(--line-soft);margin-top:8px;padding-top:12px;
@@ -274,6 +277,40 @@ html[data-theme="light"] .headline .v.jade{color:var(--jade);text-shadow:none}
 .headline .note{font-size:11px;color:var(--dimmer);margin-top:9px;line-height:1.4}
 .headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft);
   border-radius:0 0 var(--r-bezel) var(--r-bezel)}
+
+/* Where a control row sits above the readout (the Drawdown mode switch, the
+   Income Tax view switch), the two used to be painted separately: the row took
+   the panel's own background and left a pale band above the glass. Wrapping
+   both in .readout moves the gradient up one level, so a single unbroken fill
+   runs from the top of the toggle row to the bottom of the numbers. The
+   children then paint nothing of their own. */
+.readout{
+  border-radius:var(--r-bezel) var(--r-bezel) 0 0;
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.13),transparent 62%),
+    linear-gradient(180deg,#03050c 0%,#080d1a 100%);
+  box-shadow:
+    inset 0 3px 10px -3px rgba(0,0,0,.95),
+    inset 0 1px 0 rgba(0,0,0,.7),
+    inset 0 -1px 0 rgba(255,255,255,.05);
+  position:relative;overflow:hidden}
+html[data-theme="light"] .readout{
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.18),transparent 62%),
+    linear-gradient(180deg,#dfe4ef 0%,#eef1f7 100%);
+  box-shadow:inset 0 3px 8px -4px rgba(22,32,55,.3),inset 0 -1px 0 rgba(255,255,255,.8)}
+.readout::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;z-index:2;
+  background:linear-gradient(90deg,transparent,rgba(125,159,214,.5),transparent)}
+/* These have to out-specify html[data-theme="light"] .headline, which is more
+   specific than a bare .readout > .headline would be. Without the extra
+   qualifier the child keeps its own gradient, restarts it at its own top edge,
+   and reintroduces the very seam this wrapper exists to remove. */
+html .readout > .headline,
+html[data-theme="light"] .readout > .headline{
+  background:none;box-shadow:none;border-bottom:0;border-radius:0}
+.readout > .headline::before{display:none}
 
 /* ---------- tabs: a lit rail ---------- */
 nav[role=tablist]{max-width:1330px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
@@ -540,6 +577,12 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .about ul li{margin-bottom:9px}
 .about ul li::marker{color:var(--jade)}
 .about ul + p,.about dl + p{margin-top:14px}
+/* Sub-heads inside a single tool's About panel, for tools with more than one
+   mode to explain. */
+.about h3{font-size:12.5px;font-weight:600;color:var(--gold);margin:22px 0 10px;
+  letter-spacing:.04em;text-transform:uppercase}
+.about h3:first-child{margin-top:0}
+.about p + h3,.about dl + h3{margin-top:24px}
 .gloss{margin:0}
 .gloss dt{font-size:13px;font-weight:600;color:var(--text);margin-top:16px}
 .gloss dt:first-child{margin-top:0}
@@ -675,6 +718,22 @@ html[data-theme="light"] .about.disclaimer{
   padding:14px 18px 0;flex-wrap:wrap}
 .txbadge{font-size:11px;color:var(--dim);border:1px solid var(--line);
   border-radius:999px;padding:3px 10px;background:var(--field)}
+.txmodelbl{font-size:12px;color:var(--dim);letter-spacing:-.005em}
+/* The four withdrawal buckets total to gross income, so the total gets the
+   weight of a sum line rather than another ordinary derived row. */
+.derived.txtotal{margin-top:2px;margin-bottom:16px;border-top:1px solid var(--line);padding-top:8px}
+.derived.txtotal div{padding:2px 0}
+.derived.txtotal span{font-size:12.5px;color:var(--text);font-weight:600}
+.derived.txtotal .num{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:13px;color:var(--gold)}
+#txStackWrap{width:100%;overflow:hidden}
+#txStack{width:100%;height:auto;display:block}
+.stacklegend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;
+  font-size:12px;color:var(--dim)}
+.stacklegend span{display:inline-flex;align-items:center;gap:7px}
+.stacklegend i{width:10px;height:10px;border-radius:2px;flex:none;font-style:normal}
+.stacklegend b{color:var(--text);font-family:var(--mono);font-weight:600;
+  font-variant-numeric:tabular-nums}
 #txTable td:first-child,#moTable td:first-child{font-family:var(--sans);
   font-variant-numeric:normal}
 /* The donut caps at 220px, so an even 1:1 split left it floating in a
@@ -805,6 +864,8 @@ svg{display:block;width:100%;height:auto}
   .panel .body{padding:14px}
 
   .headline{grid-template-columns:1fr;border-radius:12px 12px 0 0}
+  .readout{border-radius:12px 12px 0 0}
+  .readout > .headline{border-radius:0}
   .headline > div{padding:16px 14px}
   .headline > div + div{border-left:0;border-top:1px solid var(--line-soft)}
   .headline .v{font-size:28px}
@@ -924,9 +985,11 @@ window.onerror = function(msg){
   <div class="masthead">
     <div class="brand">
       <div class="mark">
-        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M2 15.5L7 9.5l3.5 3L18 4" stroke="#06231a" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 20 20" aria-hidden="true">
+          <polygon points="10,1.2 10,10 1.2,10" fill="#4fbf95"/>
+          <polygon points="10,1.2 10,10 18.8,10" fill="#e9b872"/>
+          <polygon points="10,18.8 10,10 1.2,10" fill="#7d9fd6"/>
+          <polygon points="10,18.8 10,10 18.8,10" fill="#2f7a5c"/>
         </svg>
       </div>
       <h1>Retirement Calculator</h1>
@@ -1880,20 +1943,22 @@ window.onerror = function(msg){
       </div>
     </div>
     <div class="panel">
-      <div class="txhead">
-        <span class="seg" id="segDD">
-          <button type="button" data-dd="hist" class="on">Historical</button>
-          <button type="button" data-dd="mc">Monte Carlo</button>
-        </span>
-        <span class="txbadge" id="ddBadge">1928&ndash;2025</span>
-      </div>
-      <div class="headline">
-        <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">--</div>
-          <div class="note" id="ddSuccessNote"></div></div>
-        <div><div class="k">Median ending balance</div><div class="v" id="ddMedian">--</div>
-          <div class="note">In today's dollars</div></div>
-        <div><div class="k">Worst case</div><div class="v" id="ddWorst">--</div>
-          <div class="note" id="ddWorstNote"></div></div>
+      <div class="readout">
+        <div class="txhead">
+          <span class="seg" id="segDD">
+            <button type="button" data-dd="hist" class="on">Historical</button>
+            <button type="button" data-dd="mc">Monte Carlo</button>
+          </span>
+          <span class="txbadge" id="ddBadge">1928&ndash;2025</span>
+        </div>
+        <div class="headline">
+          <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">--</div>
+            <div class="note" id="ddSuccessNote"></div></div>
+          <div><div class="k">Median ending balance</div><div class="v" id="ddMedian">--</div>
+            <div class="note">In today's dollars</div></div>
+          <div><div class="k">Worst case</div><div class="v" id="ddWorst">--</div>
+            <div class="note" id="ddWorstNote"></div></div>
+        </div>
       </div>
       <div class="body"><div id="ddVerdict"></div></div>
     </div>
@@ -2298,9 +2363,11 @@ window.onerror = function(msg){
     <div class="panel about">
       <h2>Income Tax</h2>
       <div class="body">
-        <p>Estimates what you keep from a salary after federal income tax, state
-        income tax and FICA. It's built for the common case &mdash; wage income, one
-        state, standard or itemized deduction &mdash; not for every situation.</p>
+        <p>Two modes, switched at the top of the input panel. <b>Normal Income</b>
+        estimates what you keep from a salary after federal income tax, state income
+        tax and FICA. <b>Retirement Income</b> answers a different question: you are
+        no longer earning a paycheck, you are drawing one down, and what a
+        withdrawal costs depends entirely on which account it comes out of.</p>
         <p><b>The numbers are tax year 2026.</b> Federal brackets, the standard
         deduction and FICA limits come from the IRS inflation adjustments
         (Rev. Proc. 2025-32). State brackets, standard deductions and personal
@@ -2308,6 +2375,7 @@ window.onerror = function(msg){
         $32,200 married filing jointly. Social Security is 6.2% on the first $184,500,
         Medicare 1.45% on everything, plus a 0.9% surtax above $200,000 single or
         $250,000 joint.</p>
+        <h3>Normal Income</h3>
         <dl class="gloss">
           <dt>Gross income</dt>
           <dd>Salary before anything is taken out.</dd>
@@ -2325,13 +2393,124 @@ window.onerror = function(msg){
           on $100,000 sits in the 22% bracket but pays about 13% of income in federal
           tax.</dd>
         </dl>
-        <p><b>What it leaves out:</b> tax credits (child tax credit, earned income
-        credit), local and city income taxes, the Alternative Minimum Tax, capital
-        gains and investment income, self-employment tax, head-of-household and
-        married-filing-separately status, state credits and phase-outs, and the extra
-        deductions available at 65 and over. Several states phase out deductions at
-        higher incomes in ways this doesn't model. Treat the result as a solid
-        estimate, not a tax return.</p>
+        <p><b>What Normal Income leaves out:</b> tax credits (child tax credit,
+        earned income credit), local and city income taxes, the Alternative Minimum
+        Tax, capital gains and investment income, self-employment tax,
+        head-of-household and married-filing-separately status, state credits and
+        phase-outs, and the extra deductions available at 65 and over. Most states
+        phase out deductions at higher incomes in ways this doesn't model; Illinois
+        is the one exception, since its exemption cliff at $250,000 / $500,000 of
+        income is applied. Treat the result as a solid estimate, not a tax return.</p>
+
+        <h3>Retirement Income</h3>
+        <p>A salary is one kind of income taxed one way. A year of retirement
+        spending is usually four or five kinds of income taxed four or five different
+        ways, and the total bill depends less on how much you withdraw than on which
+        accounts you withdraw it from. Instead of one gross income figure, you enter
+        each source separately; the tool totals them for reference and then taxes
+        each one on its own terms. There is no FICA, because none of it is wages, and
+        no Net Pay vs. Take-Home switch, because you are no longer contributing to
+        anything.</p>
+        <dl class="gloss">
+          <dt>Traditional 401(k) / IRA withdrawal</dt>
+          <dd>You deducted it going in, so all of it comes out as ordinary income at
+          the same 10&ndash;37% brackets a salary would face. Required minimum
+          distributions belong here too.</dd>
+          <dt>Roth withdrawal</dt>
+          <dd>Zero tax, federal and state. It also stays out of the provisional
+          income figure that decides how much of your Social Security is taxable, and
+          out of the MAGI that drives the net investment income tax and the senior
+          deduction phase-out. That second effect is invisible on a tax return but
+          worth real money.</dd>
+          <dt>Taxable brokerage withdrawal, and the gain percentage</dt>
+          <dd>Only the growth is taxable &mdash; the rest is your own basis coming
+          back untouched, which is why the gain percentage matters as much as the
+          withdrawal itself. Sell $40,000 from a position that is 30% gain and only
+          $12,000 hits the return. Everything here is assumed to be long-term, held
+          over a year, so it gets the preferential 0/15/20% rates rather than
+          ordinary ones.</dd>
+          <dt>Social Security benefits</dt>
+          <dd>Somewhere between none and 85% of the benefit becomes taxable, worked
+          out under the actual IRC &sect;86 formula rather than assumed. What drives
+          it is provisional income &mdash; everything else on the return plus half
+          your benefits &mdash; against thresholds of $25,000 and $34,000 single, or
+          $32,000 and $44,000 joint. Those four numbers were set in 1983 and 1993 and
+          have never been indexed, which is why a rising share of retirees crosses
+          them every year.</dd>
+          <dt>Other ordinary income</dt>
+          <dd>Pensions, annuity payments, interest, non-qualified dividends, rental
+          income. Ordinary rates, no FICA.</dd>
+          <dt>Age 65 or older</dt>
+          <dd>Two separate deductions stack on top of the regular standard deduction.
+          The long-standing age add-on is $2,050 for a single filer or $1,650 per
+          qualifying spouse, and needs the standard deduction. The newer senior
+          deduction from the 2025 tax act (OBBBA &sect;70103) is $6,000 per
+          qualifying person, runs only through 2028, is available to itemizers too,
+          and shrinks by 6 cents per dollar of income above $75,000 single or
+          $150,000 joint. A single filer 65 and over can reach $24,150 of deduction
+          against the $16,100 a younger filer gets.</dd>
+        </dl>
+        <p><b>Why gains stack.</b> Long-term gains do not get their own run at the
+        brackets. Ordinary income fills the brackets first and then acts as the floor
+        the gain sits on, so what the gain costs depends on what else you withdrew
+        that year. In 2026 the 0% band runs to $49,450 of total taxable income single
+        and $98,900 joint, 15% to $545,500 and $613,700, and 20% above. The stacking
+        chart draws exactly this: your ordinary income as the floor, the gain on top
+        of it, and the band boundaries it crosses. Where there is unused room in the
+        0% band the tool tells you how much, because that headroom is the whole basis
+        of gain harvesting.</p>
+        <p><b>Why the marginal rate isn't the bracket.</b> On a salary, the rate on
+        your next dollar is just the bracket you are in. In retirement it usually
+        isn't. Another $1,000 from a traditional account can pull several hundred
+        dollars of Social Security into the tax base alongside it, and can shove gain
+        out of the 0% band into the 15% band, so the real cost of that $1,000 runs
+        well above the nominal rate through a wide band of middle incomes. Rather
+        than report the bracket and call it the marginal rate, this runs the entire
+        calculation a second time with $1,000 more of ordinary income and reports
+        what actually changed. A 12% bracket showing a 22% marginal rate is not a bug
+        &mdash; it is the effect worth planning around.</p>
+        <p><b>The 3.8% surtax.</b> Above $200,000 of MAGI single or $250,000 joint,
+        the net investment income tax applies to the lesser of your investment income
+        and the amount you are over the line &mdash; on top of the capital gain rate,
+        not instead of it. Those thresholds are statutory and have never been indexed
+        either.</p>
+        <p><b>States.</b> Eight states still include some Social Security in taxable
+        income for 2026: Colorado, Connecticut, Minnesota, Montana, New Mexico, Rhode
+        Island, Utah and Vermont. West Virginia finished phasing its tax out
+        effective this year, and Missouri, Kansas and Nebraska dropped off earlier.
+        Everywhere else, plus DC, benefits are fully exempt and this reflects that.
+        Long-term gains are generally taxed at each state's ordinary rates, which is
+        what nearly every state does.</p>
+        <p><b>Illinois is modeled in full,</b> since it's the tool's default state.
+        Illinois taxes at a flat 4.95% on federal AGI rather than federal taxable
+        income &mdash; the federal standard or itemized deduction never reduces the
+        Illinois base, only a $2,925 personal exemption per person (2026), plus
+        another $1,000 per person 65 or older. That exemption disappears entirely,
+        not gradually, once federal AGI passes $250,000 single or $500,000 joint (35
+        ILCS 5/204). Social Security is fully exempt, as it is everywhere by default,
+        and Illinois goes further: <b>traditional 401(k) and IRA withdrawals are
+        excluded from the state's tax base entirely.</b> Only the taxable gain on a
+        brokerage withdrawal, and anything in Other ordinary income, are actually
+        subject to Illinois tax. The per-source table reflects this directly &mdash;
+        the traditional-account row shows $0 of state tax when Illinois is
+        selected.</p>
+        <p><b>What Retirement Income leaves out for every other state &mdash; read
+        this before trusting the state figure elsewhere.</b> Illinois aside, state
+        treatment of retirement income is modeled only for Social Security. Many
+        states exclude some or all pension, 401(k) and IRA income the way Illinois
+        does; Pennsylvania and Mississippi are broadly similar, and a long list of
+        others give partial exclusions or senior credits that this doesn't model. In
+        the eight states that do tax benefits, each has its own income-based
+        exemption that isn't modeled either &mdash; only Colorado's full subtraction
+        at 65 and over is applied, because it is a clean rule. Also absent
+        everywhere: short-term gains and non-qualified dividends, which would be
+        taxed as ordinary income; qualified charitable distributions; IRMAA Medicare
+        premium surcharges, which behave like a tax cliff just above these
+        thresholds; the Alternative Minimum Tax; state capital gain regimes that
+        depart from ordinary treatment, such as Washington's; local and city taxes;
+        and any state that taxes Social Security on a different base than the
+        federal taxable amount. Treat the federal number, and the Illinois number,
+        as solid; treat every other state's number as a starting point.</p>
       </div>
     </div>
 
@@ -2603,17 +2782,65 @@ window.onerror = function(msg){
   <!-- ========== INCOME TAX ========== -->
   <aside id="asideTax" hidden>
     <div class="panel inputs">
-      <h2>Your situation</h2>
+      <h2>Your situation
+        <span class="h2ctrl">
+          <span class="seg" id="segTxMode">
+            <button type="button" data-txmode="normal" class="on">Normal Income</button>
+            <button type="button" data-txmode="retire">Retirement Income</button>
+          </span>
+        </span>
+      </h2>
       <div class="body">
-        <div class="field">
+        <div class="field" id="txGrossWrap">
           <label for="txGross">Gross income</label>
           <div class="inputwrap"><span class="affix">$</span><input id="txGross" type="text" inputmode="decimal" data-money data-nonneg></div>
         </div>
+
+        <div id="txRetSources" hidden>
+          <div class="field">
+            <label for="txTrad">Traditional 401(k) / IRA withdrawal<span class="tipdot" data-tip="bkttrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txTrad" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field">
+            <label for="txRoth">Roth withdrawal<span class="tipdot" data-tip="bktroth" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txRoth" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="two bottomalign">
+            <div class="field">
+              <label for="txBrok">Brokerage<span class="tipdot" data-tip="bktbrok" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="txBrok" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="txGainPct">Gain portion<span class="tipdot" data-tip="bktgain" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><input id="txGainPct" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">%</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="txSS">Social Security benefits<span class="tipdot" data-tip="bktss" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txSS" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field">
+            <label for="txOther">Other ordinary income<span class="tipdot" data-tip="bktother" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txOther" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="derived txtotal">
+            <div><span>Gross retirement income</span><span class="num" id="txRetGross"></span></div>
+          </div>
+        </div>
+
         <div class="field">
           <label for="txStatus">Filing status</label>
           <select id="txStatus">
             <option value="s">Single</option>
             <option value="m">Married filing jointly</option>
+          </select>
+        </div>
+        <div class="field" id="txSeniorWrap" hidden>
+          <label for="txSeniors">Age 65 or older<span class="tipdot" data-tip="senior" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="txSeniors">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">Both spouses</option>
           </select>
         </div>
         <div class="field">
@@ -2623,7 +2850,7 @@ window.onerror = function(msg){
         <div class="field">
           <label for="txPre">Pre-tax deductions</label>
           <div class="inputwrap"><span class="affix">$</span><input id="txPre" type="text" inputmode="decimal" data-money data-nonneg></div>
-          <div class="hint">401(k), HSA, traditional IRA, health premiums. Comes off before income tax.</div>
+          <div class="hint" id="txPreHint">401(k), HSA, traditional IRA, health premiums. Comes off before income tax.</div>
         </div>
         <div class="field">
           <label for="txDedType">Deduction<span class="tipdot" data-tip="deduction" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -2638,9 +2865,10 @@ window.onerror = function(msg){
           <div class="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
         </div>
         <div class="derived">
-          <div><span>Standard deduction</span><span class="num" id="txStdShow"></span></div>
+          <div id="txSSRow" hidden><span>Taxable Social Security<span class="tipdot" data-tip="ss86" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txSSShow"></span></div>
+          <div><span id="txStdLabel">Standard deduction</span><span class="num" id="txStdShow"></span></div>
           <div><span>Taxable income</span><span class="num" id="txTaxable"></span></div>
-          <div><span>Marginal federal rate<span class="tipdot" data-tip="marginal" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txMarginal"></span></div>
+          <div><span id="txMarginalLabel">Marginal federal rate<span class="tipdot" data-tip="marginal" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txMarginal"></span></div>
         </div>
       </div>
     </div>
@@ -2668,7 +2896,7 @@ window.onerror = function(msg){
         </div>
         <div class="toolcard-body">
           <div class="toolcard-name">Income Tax</div>
-          <div class="toolcard-desc">Estimate your federal, state, and FICA taxes for 2026 and see your take-home pay.</div>
+          <div class="toolcard-desc">Estimate your 2026 federal, state and FICA tax on a salary &mdash; or switch to retirement mode and see what a year of withdrawals costs across traditional, Roth, brokerage and Social Security.</div>
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
@@ -2727,20 +2955,23 @@ window.onerror = function(msg){
 
   <div class="stack" id="tab-tax" hidden>
     <div class="panel">
-      <div class="txhead">
-        <span class="seg" id="segTxView">
-          <button type="button" data-view="net" class="on">Net Pay</button>
-          <button type="button" data-view="take">Take-Home Pay</button>
-        </span>
-        <span class="txbadge">2026 rates</span>
-      </div>
-      <div class="headline">
-        <div><div class="k" id="txNetLabel">Net pay</div><div class="v gold" id="txNet">—</div>
-          <div class="note" id="txNetNote"></div></div>
-        <div><div class="k">Per month</div><div class="v" id="txMonth">—</div>
-          <div class="note" id="txMonthNote">After all taxes</div></div>
-        <div><div class="k">Every two weeks</div><div class="v" id="txBiweek">—</div>
-          <div class="note">26 paychecks a year</div></div>
+      <div class="readout">
+        <div class="txhead">
+          <span class="seg" id="segTxView">
+            <button type="button" data-view="net" class="on">Net Pay</button>
+            <button type="button" data-view="take">Take-Home Pay</button>
+          </span>
+          <span class="txmodelbl" id="txRetLbl" hidden>Retirement income</span>
+          <span class="txbadge">2026 rates</span>
+        </div>
+        <div class="headline">
+          <div><div class="k" id="txNetLabel">Net pay</div><div class="v gold" id="txNet">—</div>
+            <div class="note" id="txNetNote"></div></div>
+          <div><div class="k">Per month</div><div class="v" id="txMonth">—</div>
+            <div class="note" id="txMonthNote">After all taxes</div></div>
+          <div><div class="k" id="txThirdLabel">Every two weeks</div><div class="v" id="txBiweek">—</div>
+            <div class="note" id="txThirdNote">26 paychecks a year</div></div>
+        </div>
       </div>
       <div class="body">
         <div class="grid2">
@@ -2759,6 +2990,30 @@ window.onerror = function(msg){
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <div class="panel" id="txBucketPanel" hidden>
+      <h2>Where each dollar came from, and how it was taxed</h2>
+      <div class="body">
+        <div id="txBucketBars"></div>
+      </div>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="txBucketTable">
+          <thead><tr><th>Source</th><th>Withdrawn</th><th>Taxable</th><th>Federal</th><th>State</th><th>Total tax</th><th>Effective rate<span class="tipdot" data-tip="effrate" role="button" tabindex="0" aria-label="What is this?">?</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="mcnote" id="txBucketNote"></div>
+    </div>
+
+    <div class="panel" id="txGainPanel" hidden>
+      <h2>Your capital gain, and which band it landed in<span class="tipdot" data-tip="ltcgstack" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <div class="body">
+        <div id="txStackWrap"><svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"></svg></div>
+        <div id="txStackLegend" class="stacklegend"></div>
+      </div>
+      <div class="mcnote" id="txGainNote"></div>
     </div>
 
     <div class="panel">
@@ -3455,6 +3710,40 @@ const FED_2026 = {
 const FED_STD = {s:16100, m:32200};
 const FICA = {ssRate:.062, ssCap:184500, medRate:.0145, addlRate:.009,
               addlThreshold:{s:200000, m:250000}};
+
+/* ---------- retirement-specific 2026 data ----------
+   Long-term capital gain / qualified dividend breakpoints are the maximum
+   zero-rate and maximum 15% amounts from IRS Rev. Proc. 2025-32 sec. 3.03,
+   stated as taxable income including the gain. Above the second figure the
+   rate is 20%. */
+const LTCG_2026 = {s:[49450, 545500], m:[98900, 613700]};
+
+/* IRC sec. 1411. The thresholds are statutory and have never been indexed. */
+const NIIT = {rate:.038, threshold:{s:200000, m:250000}};
+
+/* Two separate age-65 benefits stack in 2026:
+   - the long-standing additional standard deduction (Rev. Proc. 2025-32),
+     $2,050 for a single filer, $1,650 per qualifying spouse on a joint
+     return. Standard-deduction filers only.
+   - the OBBBA sec. 70103 "senior deduction", $6,000 per qualifying person for
+     tax years 2025-2028, available to itemizers too, reduced by 6% of MAGI
+     above $75,000 single / $150,000 joint. */
+const SENIOR_ADDL = {s:2050, m:1650};
+const SENIOR_BONUS = {amount:6000, rate:.06, start:{s:75000, m:150000}};
+
+/* IRC sec. 86. Provisional income = AGI + tax-exempt interest + half of
+   benefits. Between the two thresholds up to 50% of benefits become taxable;
+   above the second, up to 85%. Neither figure has ever been indexed. */
+const SS_PROV = {t1:{s:25000, m:32000}, t2:{s:34000, m:44000}};
+
+/* States that still include any Social Security in taxable income for 2026.
+   Every other state, plus DC, fully exempts benefits. West Virginia completed
+   its phase-out effective tax year 2026; Missouri, Kansas and Nebraska
+   dropped off in earlier years. Each of these eight has its own income-based
+   exemption that this does not model — see the About tab. Colorado is the one
+   exception handled here, because its subtraction is a clean full exemption
+   at 65 and over. */
+const SS_TAX_STATES = {CO:1, CT:1, MN:1, MT:1, NM:1, RI:1, UT:1, VT:1};
 const MORT_RATE_ASOF = "Freddie Mac weekly average, 3 September 2026";
 const MORT_RATE_30 = 6.71;
 
@@ -3473,7 +3762,18 @@ const STATES = {
   GA:{n:"Georgia",sd:[12000,24000],b:{s:[[0,.0519]],m:[[0,.0519]]}},
   HI:{n:"Hawaii",sd:[4400,8800],pe:[1144,2288],b:{s:[[0,.014],[9600,.032],[14400,.055],[19200,.064],[24000,.068],[36000,.072],[48000,.076],[125000,.079],[175000,.0825],[225000,.09],[275000,.10],[325000,.11]],m:[[0,.014],[19200,.032],[28800,.055],[38400,.064],[48000,.068],[72000,.072],[96000,.076],[250000,.079],[350000,.0825],[450000,.09],[550000,.10],[650000,.11]]}},
   ID:{n:"Idaho",sd:[16100,32200],b:{s:[[0,0],[4811,.053]],m:[[0,0],[9622,.053]]}},
-  IL:{n:"Illinois",pe:[2925,5850],b:{s:[[0,.0495]],m:[[0,.0495]]}},
+  /* Illinois is modeled precisely rather than through the generic state
+     machinery, since it is the tool's default state. Flat 4.95% rate, applied
+     to federal AGI rather than federal taxable income (the federal std/item
+     deduction never reduces the Illinois base, which the generic afterPre
+     figure already respects). $2,925 personal exemption per person for 2026,
+     +$1,000 per person 65 or older, and the exemption disappears entirely
+     -- a cliff, not a phase-out -- once federal AGI exceeds $250,000 single
+     or $500,000 joint (35 ILCS 5/204). retireExemptTrad marks that Illinois
+     excludes traditional 401(k)/IRA withdrawals from its tax base entirely,
+     on top of Social Security already being untaxed everywhere by default. */
+  IL:{n:"Illinois",pe:[2925,5850],peAge:1000,agiCap:[250000,500000],
+      retireExemptTrad:1,b:{s:[[0,.0495]],m:[[0,.0495]]}},
   IN:{n:"Indiana",pe:[1000,2000],b:{s:[[0,.0295]],m:[[0,.0295]]}},
   IA:{n:"Iowa",sd:[16100,32200],pec:[40,80],b:{s:[[0,.038]],m:[[0,.038]]}},
   KS:{n:"Kansas",sd:[3605,8240],pe:[9160,18320],b:{s:[[0,.052],[23000,.0558]],m:[[0,.052],[46000,.0558]]}},
@@ -3572,6 +3872,10 @@ function computeTax(inp){
     if (inp.dedType === "item" && S.sd) ded = Math.max(inp.item, 0);
     else if (S.sd) ded = S.sd[idx];
     if (S.pe) ded += S.pe[idx];
+    // Illinois-style cliff: some states drop the personal exemption entirely,
+    // rather than phasing it out, once AGI crosses a threshold. afterPre is
+    // this tool's stand-in for federal AGI (gross minus pre-tax deferrals).
+    if (S.agiCap && afterPre > S.agiCap[idx]) ded = 0;
     stateTaxable = Math.max(0, afterPre - ded);
     state = bracketTax(stateTaxable, S.b[st]).tax;
     if (S.pec) state = Math.max(0, state - S.pec[idx]);
@@ -3593,6 +3897,204 @@ function computeTax(inp){
           effTotal:rate(total), effNet:rate(net),
           marginal: marginalRate(fedTaxable, FED_2026[st]),
           bands: fedCalc.bands, stateName: S.n || "", stateNone: !!S.none};
+}
+
+/**
+ * Taxable portion of Social Security benefits under IRC sec. 86.
+ * @param {number} ss - gross benefits for the year, in dollars
+ * @param {number} otherAgi - AGI excluding any Social Security, in dollars
+ * @param {"s"|"m"} st - filing status
+ * @returns {{taxable: number, provisional: number, tier: number}}
+ */
+function ssTaxable(ss, otherAgi, st){
+  if (!(ss > 0)) return {taxable:0, provisional:Math.max(0, otherAgi), tier:0};
+  const t1 = SS_PROV.t1[st], t2 = SS_PROV.t2[st];
+  const prov = Math.max(0, otherAgi) + ss / 2;
+  if (prov <= t1) return {taxable:0, provisional:prov, tier:0};
+  if (prov <= t2)
+    return {taxable:Math.min(.5 * (prov - t1), .5 * ss), provisional:prov, tier:50};
+  const lower = Math.min(.5 * (t2 - t1), .5 * ss);
+  return {taxable:Math.min(.85 * (prov - t2) + lower, .85 * ss), provisional:prov, tier:85};
+}
+
+/**
+ * Retirement-year tax. Withdrawals are bucketed by account type, because the
+ * same dollar is taxed three different ways depending on where it comes from:
+ * ordinary rates from a traditional account, nothing at all from a Roth, and
+ * preferential capital-gain rates on the growth inside a taxable brokerage.
+ * There are no wages, so no FICA; the 3.8% net investment income tax takes its
+ * place as the surtax that can appear at higher incomes.
+ *
+ * @param {Object} inp
+ * @param {number} inp.trad - traditional 401(k)/IRA withdrawal, in dollars
+ * @param {number} inp.roth - Roth withdrawal, in dollars (qualified, untaxed)
+ * @param {number} inp.brok - taxable brokerage withdrawal, in dollars
+ * @param {number} inp.gainPct - share of that withdrawal that is gain, 0-1
+ * @param {number} inp.ss - gross Social Security benefits, in dollars
+ * @param {number} inp.other - pensions, annuities, interest, rent, in dollars
+ * @param {"s"|"m"} inp.status - filing status
+ * @param {string} inp.state - two-letter state code, a key into STATES
+ * @param {number} inp.pre - above-the-line deductions, in dollars
+ * @param {"std"|"item"} inp.dedType - standard vs. itemized deduction
+ * @param {number} inp.item - itemized total, in dollars
+ * @param {number} inp.seniors - people age 65+ on the return, 0-2
+ * @param {boolean} [inp._noMarginal] - internal, stops the marginal-rate probe recursing
+ * @returns {Object} the same shape computeTax returns, plus retirement detail
+ */
+function computeRetireTax(inp){
+  const st = inp.status, idx = st === "m" ? 1 : 0;
+  const seniors = Math.max(0, Math.min(st === "m" ? 2 : 1, Math.round(inp.seniors || 0)));
+
+  const trad  = Math.max(0, inp.trad);
+  const roth  = Math.max(0, inp.roth);
+  const brok  = Math.max(0, inp.brok);
+  const ssGross = Math.max(0, inp.ss);
+  const other = Math.max(0, inp.other);
+  const gainPct = Math.max(0, Math.min(1, inp.gainPct));
+  const gain = brok * gainPct;             // long-term; basis comes back untaxed
+  const basis = brok - gain;
+  const gross = trad + roth + brok + ssGross + other;
+
+  // Above-the-line deductions can only offset income that actually shows up on
+  // the return, so cap them at everything except the Roth and the basis.
+  const pre = Math.min(Math.max(0, inp.pre), trad + other + gain + ssGross);
+
+  // Social Security is the circular part: how much of it is taxable depends on
+  // AGI, which depends on how much of it is taxable. Everything else is fixed,
+  // so one pass over the sec. 86 formula settles it.
+  const otherAgi = trad + other + gain - pre;
+  const SS = ssTaxable(ssGross, otherAgi, st);
+  const taxableSS = SS.taxable;
+
+  const ordinaryAgi = trad + other + taxableSS - pre;
+  const agi = ordinaryAgi + gain;
+
+  // deductions
+  let ded = inp.dedType === "item" ? Math.max(0, inp.item) : FED_STD[st];
+  const ageAddl = inp.dedType === "item" ? 0 : SENIOR_ADDL[st] * seniors;
+  ded += ageAddl;
+  let bonus = 0;
+  if (seniors > 0){
+    const full = SENIOR_BONUS.amount * seniors;
+    bonus = Math.max(0, full - SENIOR_BONUS.rate *
+      Math.max(0, agi - SENIOR_BONUS.start[st]));
+  }
+  const fedDed = ded + bonus;
+
+  // Ordinary income fills the brackets first; the gain stacks on top of it.
+  // The deduction is applied against ordinary income first, spilling into the
+  // gain only once ordinary income is used up.
+  const taxableIncome = Math.max(0, agi - fedDed);
+  const ordTaxable = Math.max(0, ordinaryAgi - fedDed);
+  const gainTaxable = Math.max(0, taxableIncome - ordTaxable);
+
+  const fedCalc = bracketTax(ordTaxable, FED_2026[st]);
+  const fedOrdinary = fedCalc.tax;
+
+  const c0 = LTCG_2026[st][0], c15 = LTCG_2026[st][1];
+  const lo = ordTaxable, hi = ordTaxable + gainTaxable;
+  const g0  = Math.max(0, Math.min(hi, c0) - lo);
+  const g15 = Math.max(0, Math.min(hi, c15) - Math.max(lo, c0));
+  const g20 = Math.max(0, hi - Math.max(lo, c15));
+  const ltcg = g15 * .15 + g20 * .20;
+  const ltcgRate = gainTaxable > 0 ? ltcg / gainTaxable : 0;
+
+  // sec. 1411: 3.8% on the lesser of net investment income and the MAGI excess
+  const niitBase = Math.min(gain, Math.max(0, agi - NIIT.threshold[st]));
+  const niit = niitBase * NIIT.rate;
+
+  const federal = fedOrdinary + ltcg + niit;
+
+  // state
+  const S = STATES[inp.state] || {none:1};
+  const stateTaxesSS = !!SS_TAX_STATES[inp.state] &&
+    !(inp.state === "CO" && seniors > 0);
+  // A state can flag that it excludes traditional-account withdrawals from
+  // its own tax base entirely (Illinois does; most states do not, and are
+  // left at the general "everything but Roth" treatment below).
+  const stateTradAmt = S.retireExemptTrad ? 0 : trad;
+  let state = 0, stateTaxable = 0, stateBase = 0;
+  if (!S.none && S.b){
+    // Nearly every state that taxes income taxes long-term gains at its
+    // ordinary rates, so the gain goes in with everything else.
+    stateBase = Math.max(0, stateTradAmt + other + gain - pre +
+      (stateTaxesSS ? taxableSS : 0));
+    let sded = 0;
+    if (inp.dedType === "item" && S.sd) sded = Math.max(inp.item, 0);
+    else if (S.sd) sded = S.sd[idx];
+    if (S.pe) sded += S.pe[idx];
+    if (S.peAge) sded += S.peAge * seniors;
+    // Same AGI cliff as computeTax, checked against this mode's own AGI.
+    if (S.agiCap && agi > S.agiCap[idx]) sded = 0;
+    stateTaxable = Math.max(0, stateBase - sded);
+    state = bracketTax(stateTaxable, S.b[st]).tax;
+    if (S.pec) state = Math.max(0, state - S.pec[idx]);
+    if (S.sdc) state = Math.max(0, state - S.sdc[idx]);
+  }
+
+  const total = federal + state;
+  const net = gross - total - pre;
+  const rate = v => gross > 0 ? v / gross : 0;
+
+  // The bracket a retiree sits in and the rate on their next dollar are often
+  // not the same number. Another $1,000 from the traditional account can drag
+  // more Social Security into the tax base with it, and can push gain from the
+  // 0% band into the 15% band, so the real marginal rate runs above the
+  // nominal bracket through a wide middle band. Probing the whole calculation
+  // with an extra $1,000 is the only honest way to report it.
+  let effMarginal = marginalRate(ordTaxable, FED_2026[st]);
+  if (!inp._noMarginal){
+    const step = 1000;
+    const bumped = computeRetireTax(Object.assign({}, inp,
+      {trad: trad + step, _noMarginal: true}));
+    effMarginal = (bumped.federal - federal) / step;
+  }
+
+  // Attribution: the ordinary federal tax is split across the ordinary sources
+  // in proportion to what each one contributed to ordinary taxable income.
+  const ordSum = trad + other + taxableSS;
+  const shareOf = amt => ordSum > 0 ? amt / ordSum : 0;
+  const stateOnOrd = stateBase > 0 ? state * Math.max(0, stateBase - gain) / stateBase : 0;
+  const stateOnGain = state - stateOnOrd;
+  // The state base is not the federal one: a state that exempts Social
+  // Security -- or, like Illinois, traditional-account withdrawals too --
+  // has a smaller pool of ordinary income to spread its tax across, so the
+  // state split needs its own denominator or the rows stop adding up.
+  const stateOrdSum = stateTradAmt + other + (stateTaxesSS ? taxableSS : 0);
+  const sShare = amt => stateOrdSum > 0 ? amt / stateOrdSum : 0;
+  const bucket = (label, withdrawn, taxable, fed, stt) => ({
+    label, withdrawn, taxable, federal:fed, state:stt, tax:fed + stt,
+    eff: withdrawn > 0 ? (fed + stt) / withdrawn : 0});
+  const buckets = [
+    bucket("Traditional 401(k) / IRA", trad, trad,
+           fedOrdinary * shareOf(trad), stateOnOrd * sShare(stateTradAmt)),
+    bucket("Roth account", roth, 0, 0, 0),
+    bucket("Taxable brokerage", brok, gain, ltcg + niit, stateOnGain),
+    bucket("Social Security", ssGross, taxableSS,
+           fedOrdinary * shareOf(taxableSS),
+           stateTaxesSS ? stateOnOrd * sShare(taxableSS) : 0),
+    bucket("Other ordinary income", other, other,
+           fedOrdinary * shareOf(other), stateOnOrd * sShare(other))
+  ];
+
+  return {
+    gross, pre, afterPre:agi, fedDed, fedTaxable:taxableIncome, federal, state,
+    stateTaxable, fica:0, ss:0, med:0, addl:0, total, net, takeHome:net,
+    effFed:rate(federal), effState:rate(state), effFica:0,
+    effTotal:rate(total), effNet:rate(net),
+    marginal:effMarginal,
+    nominalMarginal:marginalRate(ordTaxable, FED_2026[st]),
+    bands:fedCalc.bands, stateName:S.n || "", stateNone:!!S.none,
+    // retirement detail
+    retirement:true, trad, roth, brok, gain, basis, ssGross, other,
+    taxableSS, ssTier:SS.tier, provisional:SS.provisional, ssStateTaxed:stateTaxesSS,
+    stateExemptTrad:!!S.retireExemptTrad,
+    agi, ordinaryAgi, ordTaxable, gainTaxable, fedOrdinary, ltcg, ltcgRate,
+    ltcgBands:[{rate:0, amount:g0, tax:0}, {rate:.15, amount:g15, tax:g15 * .15},
+               {rate:.20, amount:g20, tax:g20 * .20}],
+    ltcgCut:[c0, c15], niit, niitBase, seniors, ageAddl, seniorBonus:bonus,
+    zeroRoom:Math.max(0, c0 - hi), buckets
+  };
 }
 
 /* ---------- mortgage ---------- */
@@ -3989,6 +4491,8 @@ if (typeof module !== "undefined")
   module.exports = {PPY, project, goalSolve, solveYears, projectSeries,
                     monteCarlo, lognormalParams, mulberry32, coastFire, computeTax,
                     mortgage, STATES, FED_2026, FED_STD, FICA,
+                    computeRetireTax, ssTaxable, LTCG_2026, NIIT,
+                    SENIOR_ADDL, SENIOR_BONUS, SS_PROV, SS_TAX_STATES,
                     finalStageSolve, balanceBeforeLast};
 </script>
 
@@ -5543,27 +6047,64 @@ function buildSheet(){
 function buildTaxSheet(){
   const inp = readTax();
   if (!(inp.gross > 0)){ $("sheet").innerHTML = ""; toast("Enter your income first"); return false; }
-  const R = computeTax(inp);
-  let inputs = row("Gross income", money(inp.gross));
+  const R = runTax(inp);
+  const ret = inp.mode === "retire";
+  let inputs = "";
+  if (ret){
+    if (inp.trad > 0) inputs += row("Traditional withdrawal", money(inp.trad));
+    if (inp.roth > 0) inputs += row("Roth withdrawal", money(inp.roth));
+    if (inp.brok > 0) inputs += row("Brokerage withdrawal",
+      money(inp.brok) + " (" + pctStr(inp.gainPct, 0) + " gain)");
+    if (inp.ss > 0) inputs += row("Social Security", money(inp.ss));
+    if (inp.other > 0) inputs += row("Other ordinary income", money(inp.other));
+    inputs += row("Gross income", money(R.gross));
+  } else {
+    inputs += row("Gross income", money(inp.gross));
+  }
   inputs += row("Filing status", inp.status === "m" ? "Married filing jointly" : "Single");
+  if (ret && R.seniors > 0) inputs += row("Age 65 or older",
+    R.seniors === 2 ? "Both spouses" : "Yes");
   inputs += row("State", R.stateName || "None");
   if (inp.pre > 0) inputs += row("Pre-tax deductions", money(inp.pre));
-  inputs += row("Deduction", inp.dedType === "item" ? "Itemized (" + money(inp.item) + ")" : "Standard (" + money(FED_STD[inp.status]) + ")");
+  inputs += row("Deduction", inp.dedType === "item"
+    ? "Itemized (" + money(inp.item) + ")"
+    : "Standard (" + money(ret ? R.fedDed : FED_STD[inp.status]) + ")");
+  if (ret && R.ssGross > 0) inputs += row("Taxable Social Security", money(R.taxableSS));
   inputs += row("Taxable income", money(R.fedTaxable));
 
-  let out = row("Federal tax", money(R.federal));
-  out += row("State tax", money(R.state));
-  out += row("Social Security", money(R.ss));
-  out += row("Medicare" + (R.addl > 0 ? " (+ surtax)" : ""), money(R.med + R.addl));
-  out += row("Total tax", money(R.total));
-  out += row("Effective rate", pctStr(R.effTotal, 1));
-  out += row("Marginal rate", pctStr(R.marginal, 0));
+  let out;
+  if (ret){
+    out = row("Federal, ordinary income", money(R.fedOrdinary));
+    out += row("Federal, long-term gains", money(R.ltcg) +
+      (R.gainTaxable > 0 ? " (" + pctStr(R.ltcgRate, 1) + ")" : ""));
+    if (R.niit > 0) out += row("Net investment income tax", money(R.niit));
+    out += row("State tax", money(R.state));
+    out += row("Total tax", money(R.total));
+    out += row("Effective rate", pctStr(R.effTotal, 1));
+    out += row("Marginal rate", pctStr(R.marginal, 1));
+  } else {
+    out = row("Federal tax", money(R.federal));
+    out += row("State tax", money(R.state));
+    out += row("Social Security", money(R.ss));
+    out += row("Medicare" + (R.addl > 0 ? " (+ surtax)" : ""), money(R.med + R.addl));
+    out += row("Total tax", money(R.total));
+    out += row("Effective rate", pctStr(R.effTotal, 1));
+    out += row("Marginal rate", pctStr(R.marginal, 0));
+  }
 
-  let pay = row("Take-home, per year", money(R.net));
-  pay += row("Per month", money(R.net / 12));
-  pay += row("Per biweekly check", money(R.net / 26));
-  const netPay = R.gross - R.total;
-  if (inp.pre > 0) pay += row("Net pay (before pre-tax)", money(netPay));
+  let pay;
+  if (ret){
+    pay = row("Income after tax, per year", money(R.net));
+    pay += row("Per month", money(R.net / 12));
+    if (R.gain > 0) pay += row("Gain realised", money(R.gain));
+    if (R.zeroRoom > 0) pay += row("Room left in 0% band", money(R.zeroRoom));
+  } else {
+    pay = row("Take-home, per year", money(R.net));
+    pay += row("Per month", money(R.net / 12));
+    pay += row("Per biweekly check", money(R.net / 26));
+    const netPay = R.gross - R.total;
+    if (inp.pre > 0) pay += row("Net pay (before pre-tax)", money(netPay));
+  }
 
   const src = $("txPie");
   let chart = "";
@@ -5584,20 +6125,22 @@ function buildTaxSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Income Tax Summary</h1><span>Tax year 2026</span></div>" +
+    "<div class='sh-h'><h1>" + (ret ? "Retirement Tax Summary" : "Income Tax Summary") +
+      "</h1><span>Tax year 2026</span></div>" +
     "<div class='sh-big'>" +
-      "<div><div class='k'>Take-home pay</div><div class='v'>" + money(R.net) +
+      "<div><div class='k'>" + (ret ? "Income after tax" : "Take-home pay") +
+        "</div><div class='v'>" + money(R.net) +
         "</div><div class='n'>per year</div></div>" +
       "<div><div class='k'>Total tax</div><div class='v'>" + money(R.total) +
         "</div><div class='n'>" + pctStr(R.effTotal, 1) + " effective</div></div>" +
       "<div><div class='k'>Per month</div><div class='v'>" + money(R.net / 12) +
-        "</div><div class='n'>take-home</div></div>" +
+        "</div><div class='n'>" + (ret ? "after tax" : "take-home") + "</div></div>" +
     "</div>" +
     "<div style='display:flex;gap:16px;margin-bottom:10px;align-items:stretch'>" + chart +
       "<div style='flex:1;display:flex;gap:16px'>" +
         "<section style='flex:1'><div class='sh-t'>Your situation</div>" + inputs + "</section>" +
         "<section style='flex:1'><div class='sh-t'>Tax breakdown</div>" + out + "</section>" +
-        "<section style='flex:1'><div class='sh-t'>Paycheck</div>" + pay + "</section>" +
+        "<section style='flex:1'><div class='sh-t'>" + (ret ? "What you keep" : "Paycheck") + "</div>" + pay + "</section>" +
       "</div>" +
     "</div>" +
     "<div class='sh-table'><div class='sh-t'>Federal tax brackets</div>" + table + "</div>" +
@@ -6042,9 +6585,27 @@ $("txState").innerHTML = Object.keys(STATES)
   .sort((a,b) => STATES[a].n.localeCompare(STATES[b].n))
   .map(k => "<option value='" + k + "'>" + STATES[k].n + "</option>").join("");
 
+let txMode = "normal";
+const BKT_COLORS = {trad:"#e2795f", roth:"#4fbf95", brok:"#7d9fd6",
+                    ss:"#e9b872", other:"#a98fd6"};
+const LTCG_COLORS = ["#4fbf95", "#e9b872", "#e2795f"];   // 0%, 15%, 20%
+
 function readTax(){
-  return {gross:num("txGross"), status:$("txStatus").value, state:$("txState").value,
+  const status = $("txStatus").value;
+  const seniors = Math.min(status === "m" ? 2 : 1, parseInt($("txSeniors").value, 10) || 0);
+  const trad = num("txTrad"), roth = num("txRoth"), brok = num("txBrok"),
+        ss = num("txSS"), other = num("txOther");
+  return {mode:txMode,
+          gross: txMode === "retire" ? trad + roth + brok + ss + other : num("txGross"),
+          trad, roth, brok, ss, other, gainPct:num("txGainPct") / 100, seniors,
+          status, state:$("txState").value,
           pre:num("txPre"), dedType:$("txDedType").value, item:num("txItem")};
+}
+/* One entry point, so everything downstream — the summary sheet, the share
+   card, the budget's "copy from tax" button — keeps working without caring
+   which mode the tool is in. Both branches return the same core keys. */
+function runTax(inp){
+  return inp.mode === "retire" ? computeRetireTax(inp) : computeTax(inp);
 }
 function bar(label, value, share, color){
   return "<div class='bar'><div class='lbl'><span>" + label + "</span><b>" +
@@ -6068,11 +6629,117 @@ function donut(parts){
   });
   return out;
 }
+/* One bar per income source. The track length is that bucket's withdrawal set
+   against the largest bucket, so you can see the relative size of each pot;
+   the filled part is the share of it that went to tax. */
+function bucketBar(b, maxAmt, color){
+  const trackPct = maxAmt > 0 ? (b.withdrawn / maxAmt) * 100 : 0;
+  const fillPct = b.withdrawn > 0 ? (b.tax / b.withdrawn) * 100 : 0;
+  return "<div class='bar'><div class='lbl'><span>" + b.label + "</span><b>" +
+    money(b.withdrawn) + (b.withdrawn > 0
+      ? " \u00b7 " + money(b.tax) + " tax (" + pctStr(b.eff, 1) + ")" : "") +
+    "</b></div><div class='track' style='width:" + Math.max(trackPct, 1.5).toFixed(1) +
+    "%'><div class='fill' style='width:" + Math.min(100, fillPct).toFixed(1) +
+    "%;background:" + color + "'></div></div></div>";
+}
+
+/* The stacking chart. Ordinary taxable income fills the ordinary brackets
+   first and then acts as the floor for the gain, so where the gain lands
+   depends entirely on how much ordinary income sits underneath it. Drawing
+   both on one axis against the 0/15/20% breakpoints is the whole point. */
+function txStackChart(R){
+  const W = 720, H = 150, padL = 6, padR = 6, iw = W - padL - padR;
+  const c0 = R.ltcgCut[0], c15 = R.ltcgCut[1];
+  const lo = R.ordTaxable, hi = lo + R.gainTaxable;
+  let max = Math.max(hi * 1.12, c0 * 1.14, 1);
+  if (hi > c15) max = hi * 1.06;
+  const x = v => padL + Math.max(0, Math.min(1, v / max)) * iw;
+  const dim = cssVar("--dim"), dimmer = cssVar("--dimmer"),
+        text = cssVar("--text"), sans = cssVar("--sans"), mono = cssVar("--mono");
+  const barY = 44, barH = 40;
+  let s = "";
+
+  // faint zones behind the bar, so the bands read as territory
+  const zone = (a, b, fill) => {
+    if (b <= a) return "";
+    return "<rect x='" + x(a).toFixed(1) + "' y='" + barY + "' width='" +
+      (x(b) - x(a)).toFixed(1) + "' height='" + barH + "' fill='" + fill + "'/>";
+  };
+  s += zone(0, Math.min(max, c0), "rgba(79,191,149,.09)");
+  s += zone(Math.min(max, c0), Math.min(max, c15), "rgba(233,184,114,.09)");
+  s += zone(Math.min(max, c15), max, "rgba(226,121,95,.09)");
+
+  // ordinary income floor
+  if (lo > 0)
+    s += "<rect x='" + x(0).toFixed(1) + "' y='" + barY + "' width='" +
+      (x(lo) - x(0)).toFixed(1) + "' height='" + barH +
+      "' fill='#8ba0ac' opacity='.85' rx='2'/>";
+
+  // the gain, segment by segment
+  let cur = lo;
+  R.ltcgBands.forEach((b, i) => {
+    if (!(b.amount > 0)) return;
+    s += "<rect x='" + x(cur).toFixed(1) + "' y='" + barY + "' width='" +
+      Math.max(1, x(cur + b.amount) - x(cur)).toFixed(1) + "' height='" + barH +
+      "' fill='" + LTCG_COLORS[i] + "' rx='2'/>";
+    cur += b.amount;
+  });
+
+  // breakpoint markers
+  const mark = (v, label) => {
+    if (v >= max) return "";
+    const px = x(v);
+    return "<line x1='" + px.toFixed(1) + "' y1='" + (barY - 12) + "' x2='" +
+      px.toFixed(1) + "' y2='" + (barY + barH + 8) +
+      "' stroke='" + dim + "' stroke-width='1' stroke-dasharray='3 3'/>" +
+      "<text x='" + Math.min(px + 6, W - 130).toFixed(1) + "' y='" + (barY - 18) +
+      "' font-size='11.5' fill='" + dim + "' font-family='" + sans + "'>" + label +
+      " <tspan font-family='" + mono + "' fill='" + text + "'>" + money(v) + "</tspan></text>";
+  };
+  s += mark(c0, "0% ends at");
+  s += mark(c15, "20% starts at");
+
+  // The two edges of the stack, called out underneath. Both have to stay
+  // inside the viewBox and off each other: near the right edge the label flips
+  // to end-anchored, and when the two edges are close the second one drops to
+  // its own row rather than colliding.
+  const xLo = x(lo), xHi = x(hi);
+  const row1 = barY + barH + 26, row2 = barY + barH + 44;
+  const foot = (px, label, anchor, y) =>
+    "<text x='" + Math.max(3, Math.min(px, W - 3)).toFixed(1) + "' y='" + y +
+    "' font-size='11.5' text-anchor='" + anchor + "' fill='" + dimmer +
+    "' font-family='" + sans + "'>" + label + "</text>";
+  const est = txt => txt.length * 6.0;          // rough width at 11.5px
+  if (lo > 0 && hi > lo){
+    const lbl1 = "ordinary income ends " + money(lo);
+    const lbl2 = "gain ends " + money(hi);
+    const a2 = xHi + est(lbl2) > W - 4 ? "end" : "start";
+    const left2 = a2 === "end" ? xHi - est(lbl2) : xHi;
+    const collides = left2 < xLo + 6;
+    s += foot(xLo, lbl1, xLo - est(lbl1) < 4 ? "start" : "end", row1);
+    s += foot(xHi, lbl2, a2, collides ? row2 : row1);
+  } else if (lo > 0){
+    s += foot(xLo, "ordinary income ends " + money(lo), "middle", row1);
+  } else if (hi > 0){
+    const lbl = "gain ends " + money(hi);
+    s += foot(xHi, lbl, xHi + est(lbl) > W - 4 ? "end" : "start", row1);
+  }
+
+  return s;
+}
+
 function renderTax(){
   const inp = readTax();
+  const ret = inp.mode === "retire";
   $("txItemWrap").hidden = inp.dedType !== "item";
-  const R = computeTax(inp);
+  const R = runTax(inp);
+  return ret ? renderRetireTax(inp, R) : renderNormalTax(inp, R);
+}
+
+function renderNormalTax(inp, R){
+  $("txStdLabel").textContent = "Standard deduction";
   $("txStdShow").textContent = money(FED_STD[inp.status]);
+  $("txSSRow").hidden = true;
   $("txTaxable").textContent = money(R.fedTaxable);
   $("txMarginal").textContent = pctStr(R.marginal, 0);
 
@@ -6088,6 +6755,8 @@ function renderTax(){
     : "Enter your income to begin";
   $("txMonthNote").textContent = txView === "take"
     ? "In your paycheck, after pre-tax savings" : "After all taxes";
+  $("txThirdLabel").textContent = "Every two weeks";
+  $("txThirdNote").textContent = "26 paychecks a year";
   setBig("txNet", money(shown));
   setBig("txMonth", money(shown / 12));
   setBig("txBiweek", money(shown / 26));
@@ -6102,21 +6771,13 @@ function renderTax(){
   const parts = [{v:R.net, c:TAX_COLORS.net}, {v:R.federal, c:TAX_COLORS.fed},
                  {v:R.state, c:TAX_COLORS.state}, {v:R.fica, c:TAX_COLORS.fica}];
   if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac"});
-  $("txPie").innerHTML = donut(parts) +
-    "<text x='110' y='104' text-anchor='middle' font-size='13' fill='" + cssVar("--dim") +
-    "' font-family='" + cssVar("--sans") + "'>All taxes</text>" +
-    "<text x='110' y='128' text-anchor='middle' font-size='22' font-weight='600' fill='" +
-    cssVar("--text") + "' font-family='" + cssVar("--mono") + "'>" +
-    pctStr(R.effTotal, 1) + "</text>";
+  txDonut(R, parts);
 
-  const row2 = (k, v, eff, cls) => "<tr><td>" + k + "</td><td>" + money(v) +
-    "</td><td>" + pctStr(eff, 2) + "</td><td>" +
-    "<span style='color:" + cls + "'>\u25a0</span> " + pctStr(eff, 1) + "</td></tr>";
   $("txTable").querySelector("tbody").innerHTML =
-    row2("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed) +
-    row2("State income tax" + (R.stateName ? " \u00b7 " + R.stateName : ""), R.state, R.effState, TAX_COLORS.state) +
-    row2("Social Security", R.ss, R.gross ? R.ss / R.gross : 0, TAX_COLORS.fica) +
-    row2("Medicare" + (R.addl > 0 ? " (incl. surtax)" : ""), R.med + R.addl,
+    txRow("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed) +
+    txRow("State income tax" + (R.stateName ? " \u00b7 " + R.stateName : ""), R.state, R.effState, TAX_COLORS.state) +
+    txRow("Social Security", R.ss, R.gross ? R.ss / R.gross : 0, TAX_COLORS.fica) +
+    txRow("Medicare" + (R.addl > 0 ? " (incl. surtax)" : ""), R.med + R.addl,
          R.gross ? (R.med + R.addl) / R.gross : 0, TAX_COLORS.fica) +
     "<tr style='font-weight:600'><td>All taxes</td><td>" + money(R.total) + "</td><td>" +
       pctStr(R.effTotal, 2) + "</td><td></td></tr>" +
@@ -6127,11 +6788,184 @@ function renderTax(){
     "<tr style='font-weight:600;border-top:2px solid var(--line)'><td>Gross pay</td><td>" +
       money(R.gross) + "</td><td>100.00%</td><td></td></tr>";
 
+  txBracketTable(R);
+}
+
+function renderRetireTax(inp, R){
+  $("txRetGross").textContent = money(R.gross);
+
+  const dedLabel = inp.dedType === "item" ? "Itemized deduction" :
+    (R.seniors > 0 ? "Standard deduction, incl. 65+" : "Standard deduction");
+  $("txStdLabel").textContent = dedLabel;
+  $("txStdShow").textContent = money(R.fedDed);
+  $("txSSRow").hidden = !(R.ssGross > 0);
+  $("txSSShow").textContent = R.ssGross > 0
+    ? money(R.taxableSS) + " (" + pctStr(R.taxableSS / R.ssGross, 0) + ")" : "\u2014";
+  $("txTaxable").textContent = money(R.fedTaxable);
+  $("txMarginal").textContent = pctStr(R.marginal, 1);
+
+  $("txNetLabel").textContent = "Income after tax";
+  $("txNetNote").textContent = R.gross > 0
+    ? pctStr(R.effNet, 1) + " of what you withdrew"
+    : "Enter your withdrawals to begin";
+  $("txMonthNote").textContent = "After all taxes";
+  $("txThirdLabel").textContent = "Effective tax rate";
+  $("txThirdNote").textContent = R.gross > 0
+    ? "Marginal on the next dollar: " + pctStr(R.marginal, 1) : "";
+  setBig("txNet", money(R.net));
+  setBig("txMonth", money(R.net / 12));
+  setBig("txBiweek", pctStr(R.effTotal, 2));
+
+  $("txBars").innerHTML =
+    bar("Income after tax", R.net, R.effNet, TAX_COLORS.net) +
+    bar("Federal ordinary income tax", R.fedOrdinary, R.gross ? R.fedOrdinary / R.gross : 0, TAX_COLORS.fed) +
+    bar("Federal long-term capital gain tax", R.ltcg, R.gross ? R.ltcg / R.gross : 0, LTCG_COLORS[1]) +
+    (R.niit > 0 ? bar("Net investment income tax (3.8%)", R.niit, R.gross ? R.niit / R.gross : 0, "#a98fd6") : "") +
+    bar("State income tax" + (R.stateNone ? " (none)" : ""), R.state, R.effState, TAX_COLORS.state) +
+    (R.pre > 0 ? bar("Pre-tax deductions", R.pre, R.gross ? R.pre / R.gross : 0, "#8ba0ac") : "");
+
+  const parts = [{v:R.net, c:TAX_COLORS.net}, {v:R.fedOrdinary, c:TAX_COLORS.fed},
+                 {v:R.ltcg, c:LTCG_COLORS[1]}, {v:R.niit, c:"#a98fd6"},
+                 {v:R.state, c:TAX_COLORS.state}];
+  if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac"});
+  txDonut(R, parts);
+
+  $("txTable").querySelector("tbody").innerHTML =
+    txRow("Federal tax on ordinary income", R.fedOrdinary, R.gross ? R.fedOrdinary / R.gross : 0, TAX_COLORS.fed) +
+    txRow("Federal tax on long-term gains", R.ltcg, R.gross ? R.ltcg / R.gross : 0, LTCG_COLORS[1]) +
+    (R.niit > 0 ? txRow("Net investment income tax", R.niit, R.gross ? R.niit / R.gross : 0, "#a98fd6") : "") +
+    txRow("State income tax" + (R.stateName ? " \u00b7 " + R.stateName : ""), R.state, R.effState, TAX_COLORS.state) +
+    "<tr style='font-weight:600'><td>All taxes</td><td>" + money(R.total) + "</td><td>" +
+      pctStr(R.effTotal, 2) + "</td><td></td></tr>" +
+    "<tr><td>Income after tax</td><td>" + money(R.net) + "</td><td>" +
+      pctStr(R.effNet, 2) + "</td><td></td></tr>" +
+    (R.pre > 0 ? "<tr><td>Pre-tax deductions</td><td>" + money(R.pre) + "</td><td>" +
+      pctStr(R.gross ? R.pre / R.gross : 0, 2) + "</td><td></td></tr>" : "") +
+    "<tr style='font-weight:600;border-top:2px solid var(--line)'><td>Gross withdrawals</td><td>" +
+      money(R.gross) + "</td><td>100.00%</td><td></td></tr>";
+
+  txBracketTable(R);
+
+  // --- per-bucket panel ---
+  const keys = ["trad", "roth", "brok", "ss", "other"];
+  const live = R.buckets.map((b, i) => ({b, c:BKT_COLORS[keys[i]]}))
+                        .filter(o => o.b.withdrawn > 0);
+  const maxAmt = live.reduce((a, o) => Math.max(a, o.b.withdrawn), 0);
+  $("txBucketBars").innerHTML = live.length
+    ? live.map(o => bucketBar(o.b, maxAmt, o.c)).join("")
+    : "<div class='hint'>Enter a withdrawal above to see how it is taxed.</div>";
+  $("txBucketTable").querySelector("tbody").innerHTML =
+    live.map(o => "<tr><td><span style='color:" + o.c + "'>\u25a0</span> " + o.b.label +
+      "</td><td>" + money(o.b.withdrawn) + "</td><td>" + money(o.b.taxable) +
+      "</td><td>" + money(o.b.federal) + "</td><td>" + money(o.b.state) +
+      "</td><td>" + money(o.b.tax) + "</td><td>" + pctStr(o.b.eff, 1) + "</td></tr>").join("") +
+    "<tr style='font-weight:600;border-top:2px solid var(--line)'><td>All sources</td><td>" +
+      money(R.gross) + "</td><td>" +
+      money(live.reduce((a, o) => a + o.b.taxable, 0)) + "</td><td>" +
+      money(R.federal) + "</td><td>" + money(R.state) + "</td><td>" + money(R.total) +
+      "</td><td>" + pctStr(R.effTotal, 1) + "</td></tr>";
+
+  let note = "The Roth column is zero by construction, and only the gain portion of " +
+    "the brokerage withdrawal is taxable \u2014 the rest is your own basis coming back. " +
+    "Ordinary tax is split across the traditional, Social Security and other-income " +
+    "rows in proportion to what each contributed to ordinary taxable income.";
+  if (R.ssGross > 0){
+    note += " Your provisional income is " + money(R.provisional) + ", which puts " +
+      (R.ssTier === 0 ? "none of your benefits in the tax base."
+       : "up to " + R.ssTier + "% of your benefits in the tax base \u2014 " +
+         money(R.taxableSS) + " of " + money(R.ssGross) + ".");
+  }
+  if (R.stateExemptTrad && R.trad > 0){
+    note += " " + (R.stateName || "This state") + " excludes traditional 401(k) and IRA " +
+      "withdrawals from its own tax base entirely, which is why that row shows $0 of " +
+      "state tax above.";
+  }
+  $("txBucketNote").innerHTML = note;
+
+  // --- capital gain stacking panel ---
+  const hasGain = R.gain > 0;
+  $("txGainPanel").hidden = !hasGain;
+  if (hasGain){
+    $("txStack").innerHTML = txStackChart(R);
+    const chip = (c, label, v) => "<span><i style='background:" + c + "'></i>" +
+      label + " <b>" + v + "</b></span>";
+    let leg = chip("#8ba0ac", "Ordinary taxable income", money(R.ordTaxable));
+    R.ltcgBands.forEach((b, i) => {
+      if (b.amount > 0)
+        leg += chip(LTCG_COLORS[i], "Gain taxed at " + pctStr(b.rate, 0), money(b.amount));
+    });
+    $("txStackLegend").innerHTML = leg;
+
+    let g = "You realised " + money(R.gain) + " of long-term gain on a " +
+      money(R.brok) + " brokerage withdrawal; " + money(R.basis) +
+      " of that was basis and never touched the return. ";
+    g += R.gainTaxable > 0
+      ? "The gain sits on top of " + money(R.ordTaxable) +
+        " of ordinary taxable income, so it is taxed at a blended <b>" +
+        pctStr(R.ltcgRate, 1) + "</b>, costing " + money(R.ltcg) + ". "
+      : "Your deductions cover everything, so none of the gain is taxable at all. ";
+    if (R.zeroRoom > 0)
+      g += "You have <b>" + money(R.zeroRoom) + "</b> of room left in the 0% band \u2014 " +
+        "gain harvested up to that point would be federally free.";
+    else if (R.ltcgBands[0].amount > 0)
+      g += "The 0% band is now full.";
+    if (R.niit > 0)
+      g += " Your MAGI of " + money(R.agi) + " is above the " +
+        money(NIIT.threshold[inp.status]) + " net investment income tax threshold, " +
+        "adding " + money(R.niit) + ".";
+    $("txGainNote").innerHTML = g;
+  }
+  $("txBucketPanel").hidden = false;
+}
+
+function txDonut(R, parts){
+  $("txPie").innerHTML = donut(parts) +
+    "<text x='110' y='104' text-anchor='middle' font-size='13' fill='" + cssVar("--dim") +
+    "' font-family='" + cssVar("--sans") + "'>All taxes</text>" +
+    "<text x='110' y='128' text-anchor='middle' font-size='22' font-weight='600' fill='" +
+    cssVar("--text") + "' font-family='" + cssVar("--mono") + "'>" +
+    pctStr(R.effTotal, 1) + "</text>";
+}
+function txRow(k, v, eff, cls){
+  return "<tr><td>" + k + "</td><td>" + money(v) + "</td><td>" + pctStr(eff, 2) +
+    "</td><td><span style='color:" + cls + "'>\u25a0</span> " + pctStr(eff, 1) + "</td></tr>";
+}
+function txBracketTable(R){
   $("txBrackets").querySelector("tbody").innerHTML = R.bands.map(b =>
     "<tr" + (b.amount > 0 ? "" : " style='opacity:.4'") + "><td>" + pctStr(b.rate, 0) +
     "</td><td>" + money(b.lo) + (b.hi === Infinity ? " and up" : " \u2013 " + money(b.hi)) +
     "</td><td>" + money(b.amount) + "</td><td>" + money(b.tax) + "</td></tr>").join("");
 }
+
+/* Switching modes swaps which inputs are on screen and which output panels
+   exist. The Normal Income side is left exactly as it was. */
+function applyTaxMode(){
+  const ret = txMode === "retire";
+  $("segTxMode").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x.getAttribute("data-txmode") === txMode));
+  $("txGrossWrap").hidden = ret;
+  $("txRetSources").hidden = !ret;
+  $("txSeniorWrap").hidden = !ret;
+  $("segTxView").hidden = ret;
+  $("txRetLbl").hidden = !ret;
+  $("txBucketPanel").hidden = !ret;
+  $("txGainPanel").hidden = true;      // renderRetireTax turns it back on if there is a gain
+  $("txPreHint").textContent = ret
+    ? "HSA, self-employed health premiums, deductible IRA contributions. Comes off before income tax."
+    : "401(k), HSA, traditional IRA, health premiums. Comes off before income tax.";
+  syncSeniorOptions();
+}
+/* "Both spouses" only means anything on a joint return. */
+function syncSeniorOptions(){
+  const joint = $("txStatus").value === "m";
+  const opt = $("txSeniors").querySelector("option[value='2']");
+  opt.hidden = !joint;
+  opt.disabled = !joint;
+  $("txSeniors").querySelector("option[value='1']").textContent =
+    joint ? "One spouse" : "Yes";
+  if (!joint && $("txSeniors").value === "2") $("txSeniors").value = "1";
+}
+
 let txView = "net";
 $("segTxView").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-view]") : null;
@@ -6141,8 +6975,17 @@ $("segTxView").addEventListener("click", e => {
     x.classList.toggle("on", x.getAttribute("data-view") === txView));
   renderTax();
 });
-["txGross","txPre","txItem"].forEach(id => $(id).addEventListener("input", renderTax));
-["txStatus","txState","txDedType"].forEach(id => $(id).addEventListener("change", renderTax));
+$("segTxMode").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-txmode]") : null;
+  if (!b) return;
+  txMode = b.getAttribute("data-txmode");
+  applyTaxMode();
+  renderTax();
+});
+["txGross","txPre","txItem","txTrad","txRoth","txBrok","txGainPct","txSS","txOther"]
+  .forEach(id => $(id).addEventListener("input", renderTax));
+["txStatus","txState","txDedType","txSeniors"].forEach(id =>
+  $(id).addEventListener("change", () => { syncSeniorOptions(); renderTax(); }));
 
 /* ---------- mortgage tool ---------- */
 let mortPoints = [];
@@ -6619,7 +7462,7 @@ $("rbTerm").addEventListener("change", renderRentBuy);
 /* ---------- EF + budget wiring ---------- */
 
 $("bgCopyTax").addEventListener("click", () => {
-  const R = computeTax(readTax());
+  const R = runTax(readTax());
   const netPay = R.gross - R.total;   // net pay = gross minus taxes
   $("bgIncomeIn").value = groupDigits(netPay.toFixed(0), true);
   bgIncomeFreq = 1;   // annual figure
@@ -7203,6 +8046,15 @@ const GLOSS = {
   maxcut: "The most spending can drop from one year to the next, no matter what the target percentage would otherwise call for. Protects against a sudden, jarring cut in a single bad year.",
   maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
   spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below \u2014 stacked on top of whatever the strategy above would otherwise do.",
+  bkttrad: "Money coming out of a traditional 401(k), 403(b) or IRA \u2014 including required minimum distributions. You took a deduction going in, so every dollar coming out is ordinary income, taxed at the same 10\u201337% brackets a salary would be. No FICA, though: withdrawals are not wages.",
+  bktroth: "Money coming out of a Roth 401(k) or Roth IRA. You already paid tax on the way in, so a qualified withdrawal is tax-free \u2014 zero federal, zero state, and it stays out of the provisional-income figure that decides how much of your Social Security is taxable. That second effect is why Roth dollars are worth more than the headline suggests.",
+  bktbrok: "Money coming out of an ordinary taxable brokerage account. Only the growth is taxed \u2014 the part that was your own money going in comes back untaxed. Assuming everything is held over a year, the growth gets long-term capital gain rates of 0%, 15% or 20% rather than ordinary rates, which is usually the cheapest income in a retiree's mix.",
+  bktgain: "How much of that brokerage withdrawal is gain rather than the money you originally put in. If you invested $60,000 and the position is now worth $100,000, it is 40%. Only this slice is taxable. A long-held position runs high; something bought recently runs low.",
+  bktss: "Your gross Social Security benefit for the year. Between zero and 85% of it becomes taxable, depending on your provisional income \u2014 everything else on the return plus half your benefits. Below $25,000 single or $32,000 joint none of it is taxed; above $34,000 or $44,000 the 85% ceiling starts to apply. Those thresholds have never been indexed for inflation, so more retirees cross them every year.",
+  bktother: "Pensions, annuity payments, interest, non-qualified dividends, rental income, part-time work \u2014 anything else taxed at ordinary rates. Wages would also bring FICA with them, which this does not add.",
+  senior: "At 65 and over, two separate deductions stack on top of the regular standard deduction: the long-standing age add-on, $2,050 single or $1,650 per qualifying spouse, and the newer $6,000-per-person senior deduction from the 2025 tax act, which runs through 2028 and shrinks by 6 cents for every dollar of income above $75,000 single or $150,000 joint. The age add-on needs the standard deduction; the $6,000 is available to itemizers too.",
+  ss86: "The share of your benefits that actually lands in taxable income. It is driven by provisional income \u2014 your other income plus half your benefits \u2014 not by the benefit alone, which is why another $1,000 from a traditional account can drag several hundred more dollars of Social Security into the tax base with it.",
+  ltcgstack: "Long-term gains do not get their own separate bracket run \u2014 they sit on top of your ordinary taxable income. Ordinary income fills the brackets first and becomes the floor, and whatever the gain reaches above that floor decides whether it is taxed at 0%, 15% or 20%. Two people with identical gains can pay wildly different amounts on them purely because of what else they withdrew that year.",
   deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses \u2014 mortgage interest, charitable giving, state and local taxes \u2014 and you use whichever is larger.",
   ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
   collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college \u2014 smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
@@ -7541,16 +8393,28 @@ function doShare(){
 
 /* ---------- scenarios ---------- */
 function readTaxState(){
-  return {gross:num("txGross"), status:$("txStatus").value, state:$("txState").value,
-          pre:num("txPre"), dedType:$("txDedType").value, item:num("txItem")};
+  return {mode:txMode, gross:num("txGross"), status:$("txStatus").value,
+          state:$("txState").value, pre:num("txPre"), dedType:$("txDedType").value,
+          item:num("txItem"), trad:num("txTrad"), roth:num("txRoth"),
+          brok:num("txBrok"), gainPct:num("txGainPct"), ss:num("txSS"),
+          other:num("txOther"), seniors:parseInt($("txSeniors").value, 10) || 0};
 }
 function writeTaxState(d){
+  if (d.mode) txMode = d.mode === "retire" ? "retire" : "normal";
   if (d.gross != null) $("txGross").value = groupDigits(d.gross, true);
   if (d.status) $("txStatus").value = d.status;
   if (d.state) $("txState").value = d.state;
   if (d.pre != null) $("txPre").value = groupDigits(d.pre, true);
   if (d.dedType) $("txDedType").value = d.dedType;
   if (d.item != null) $("txItem").value = groupDigits(d.item, true);
+  if (d.trad != null) $("txTrad").value = groupDigits(d.trad, true);
+  if (d.roth != null) $("txRoth").value = groupDigits(d.roth, true);
+  if (d.brok != null) $("txBrok").value = groupDigits(d.brok, true);
+  if (d.gainPct != null) $("txGainPct").value = String(d.gainPct);
+  if (d.ss != null) $("txSS").value = groupDigits(d.ss, true);
+  if (d.other != null) $("txOther").value = groupDigits(d.other, true);
+  if (d.seniors != null) $("txSeniors").value = String(d.seniors);
+  applyTaxMode();
 }
 const CL_DEFAULTS = {preset:"27000", cost:27000, years:18, collegeYrs:4, saved:0, ret:6, infl:4};
 function readCollegeState(){
@@ -7946,12 +8810,22 @@ function buildCardSVG(){
 
   } else if (t === "tools" && toolSub === "tax"){
     var it = readTax();
-    var Rt = computeTax(it);
-    title = "My take-home pay";
-    bigLabel = "Take-home, per year";
+    var Rt = runTax(it);
+    var isRet = it.mode === "retire";
+    title = isRet ? "My tax in retirement" : "My take-home pay";
+    bigLabel = isRet ? "Income after tax, per year" : "Take-home, per year";
     big = money(Rt.net);
-    sub = money(it.gross) + " gross \u00b7 " + (Rt.stateName || "no state tax") + " \u00b7 tax year 2026";
-    rows = [
+    sub = money(Rt.gross) + (isRet ? " withdrawn \u00b7 " : " gross \u00b7 ") +
+      (Rt.stateName || "no state tax") + " \u00b7 tax year 2026";
+    rows = isRet ? [
+      ["Federal, ordinary income", money(Rt.fedOrdinary)],
+      ["Federal, long-term gains", money(Rt.ltcg)],
+      ["Net investment income tax", money(Rt.niit)],
+      ["State tax", money(Rt.state)],
+      ["Total tax", money(Rt.total)],
+      ["Effective rate", pctStr(Rt.effTotal, 1)],
+      ["Per month", money(Rt.net / 12)]
+    ] : [
       ["Federal tax", money(Rt.federal)],
       ["State tax", money(Rt.state)],
       ["Social Security + Medicare", money(Rt.fica)],
@@ -8245,7 +9119,9 @@ function doDelete(){
 }
 /* Reset only the tool you're viewing, and ask first if anything differs from
    defaults — the button sits close to the tabs on mobile. */
-const TAX_DEFAULTS = {gross:100000, status:"s", state:"IL", pre:0, dedType:"std", item:0};
+const TAX_DEFAULTS = {mode:"normal", gross:100000, status:"s", state:"IL", pre:0,
+                      dedType:"std", item:0, trad:40000, roth:10000, brok:20000,
+                      gainPct:40, ss:30000, other:0, seniors:1};
 const MORT_DEFAULTS = {price:450000, downPct:20, downAmt:90000, rate:MORT_RATE_30,
   term:"30", tax:1.1, ins:1800, pmi:0, hoa:0, maint:1, util:300};
 function sameShallow(a, b){
@@ -8386,6 +9262,14 @@ $("txGross").value = groupDigits(100000, true);
 $("txPre").value = groupDigits(0, true);
 $("txItem").value = groupDigits(0, true);
 $("txState").value = "IL";
+$("txTrad").value = groupDigits(40000, true);
+$("txRoth").value = groupDigits(10000, true);
+$("txBrok").value = groupDigits(20000, true);
+$("txGainPct").value = "40";
+$("txSS").value = groupDigits(30000, true);
+$("txOther").value = groupDigits(0, true);
+$("txSeniors").value = "1";
+applyTaxMode();
 $("moPrice").value = groupDigits(450000, true);
 $("moDownPct").value = "20";
 $("moDownAmt").value = groupDigits(90000, true);
