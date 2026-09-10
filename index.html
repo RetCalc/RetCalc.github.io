@@ -4,83 +4,97 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#0c1114">
+<meta name="theme-color" content="#080b16">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="data:image/png;base64,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">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
-<meta name="apple-mobile-web-app-title" content="Investment">
-<title>Investment Calculator</title>
+<meta name="apple-mobile-web-app-title" content="Retirement">
+<title>Retirement Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <style>
+/* ============================================================
+   "The Instrument" — visual system
+   Depth encodes editability: recessed wells are where you type,
+   raised plateaus are what the machine computed. One light
+   source, from above, everywhere.
+   Data hues (jade/gold/steel/coral) are referenced by the chart
+   code and are deliberately unchanged.
+   ============================================================ */
 :root{
-  --bg:#0c1114;
-  --panel:#131b20;
-  --panel-2:#182229;
-  --field:#0e1519;
-  --line:#22303a;
-  --line-soft:#1a242b;
-  --text:#e9f0f3;
-  --dim:#8ba0ac;
-  --dimmer:#5f7583;
+  /* ground: deep indigo ink, not neutral near-black */
+  --bg:#080b16;
+  --sunk:#05070f;          /* below the ground plane */
+  --panel:#151e33;         /* raised plateau */
+  --panel-2:#1e2a44;       /* raised, one step up */
+  --field:#05070e;         /* recessed well */
+  --line:#26314b;
+  --line-soft:#1a2338;
+  --text:#e8edf7;
+  --dim:#94a3bd;
+  --dimmer:#64748f;
+
+  /* data hues — fixed, mirrored by the chart renderer */
   --gold:#e9b872;
   --jade:#4fbf95;
   --steel:#7d9fd6;
   --coral:#e2795f;
-  --grid:#1c272e;
-  --axis:#5f7583;
-  --stageline:#4a5f6b;
-  --dotstroke:#0c1114;
-  --shadow:rgba(0,0,0,.8);
-  --pop:#0a1013;
-  --sans:"Inter","SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI Variable Text",
-    "Segoe UI",system-ui,Roboto,sans-serif;
-  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Mono","Roboto Mono",Menlo,
-    Consolas,monospace;
+
+  --grid:#1c2740;
+  --axis:#64748f;
+  --stageline:#4a5a7b;
+  --dotstroke:#080b16;
+  --shadow:rgba(0,0,0,.75);
+  --pop:#0d1322;
+
+  /* role-encoded geometry */
+  --r-well:8px;
+  --r-panel:14px;
+  --r-bezel:18px;
+
+  /* one light source, from above */
+  --edge-up:inset 0 1px 0 rgba(255,255,255,.055);
+  --lift-1:0 1px 0 rgba(255,255,255,.05) inset, 0 8px 24px -14px rgba(0,0,0,.9);
+  --lift-2:0 24px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.05) inset;
+  --well:inset 0 2px 5px -2px rgba(0,0,0,.85), inset 0 1px 0 rgba(0,0,0,.4);
+
+  --sans:"Instrument Sans","Segoe UI Variable Text","SF Pro Text",
+    -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono","JetBrains Mono",
+    "Cascadia Mono",Menlo,Consolas,monospace;
 }
 
-/* light theme: same accents, inverted surfaces */
+/* light theme: the instrument under daylight — paper-pale body,
+   same accents, depth inverted to match an overhead source */
 html[data-theme="light"]{
-  --bg:#f4f6f5;
+  --bg:#eceef4;
+  --sunk:#dfe3ec;
   --panel:#ffffff;
-  --panel-2:#eef1f0;
-  --field:#f0f3f2;
-  --line:#d3dcd9;
-  --line-soft:#e4eae7;
-  --text:#16242c;
-  --dim:#4f6470;
-  --dimmer:#7c8f99;
-  --gold:#b07d1e;
-  --jade:#1f9268;
-  --steel:#3f6bb0;
-  --coral:#c0492e;
-  --grid:#e2e7e5;
-  --axis:#7c8f99;
-  --stageline:#9aa9b0;
+  --panel-2:#f3f5fa;
+  --field:#f4f6fb;
+  --line:#ccd3e2;
+  --line-soft:#e3e7f0;
+  --text:#111827;
+  --dim:#54607a;
+  --dimmer:#7b869c;
+  --gold:#a97516;
+  --jade:#16855c;
+  --steel:#3a63a8;
+  --coral:#bc4227;
+  --grid:#e0e4ee;
+  --axis:#7b869c;
+  --stageline:#9aa5bb;
   --dotstroke:#ffffff;
-  --shadow:rgba(30,45,55,.18);
+  --shadow:rgba(22,32,55,.20);
   --pop:#ffffff;
+  --edge-up:inset 0 1px 0 rgba(255,255,255,.9);
+  --lift-1:0 1px 0 rgba(255,255,255,.9) inset, 0 8px 22px -16px rgba(22,32,55,.5);
+  --lift-2:0 24px 60px -22px rgba(22,32,55,.35), 0 0 0 1px rgba(22,32,55,.05);
+  --well:inset 0 2px 4px -2px rgba(22,32,55,.18);
 }
-/* elements that hardcode dark surfaces get light equivalents */
-html[data-theme="light"] .panel.inputs{
-  background:linear-gradient(180deg,#f2f7f4 0%,#ffffff 100%);
-  border-color:#bcd8cd;
-  box-shadow:0 0 0 1px rgba(31,146,104,.05),0 10px 30px -18px var(--shadow)}
-html[data-theme="light"] .panel.inputs > h2{border-bottom-color:#d8e6e0}
-html[data-theme="light"] .panel.inputs .inputwrap,
-html[data-theme="light"] .panel.inputs select{background:#f6faf8;border-color:#cfe0d8}
-html[data-theme="light"] .stagecard{border-left-color:#8fc7b4}
-html[data-theme="light"] .adjrow{border-color:#cfe0d8}
-html[data-theme="light"] .adjrow:hover{border-color:#a9d3c4}
-html[data-theme="light"] .stagecard .inputwrap,
-html[data-theme="light"] .stagecard select{background:#ffffff}
-html[data-theme="light"] .inputwrap input::placeholder{color:#9aabae}
-html[data-theme="light"] .about.disclaimer{
-  border-color:#e6d3a8;background:linear-gradient(180deg,#fbf5e6,#ffffff)}
-html[data-theme="light"] ::-webkit-scrollbar-track{background:var(--bg)}
-html[data-theme="light"] ::-webkit-scrollbar-thumb{
-  background:#c3cfca;border:3px solid var(--bg)}
-html[data-theme="light"] header{
-  background:linear-gradient(180deg,#ffffff 0%,#f4f6f5 100%)}
+
 *{box-sizing:border-box}
 /* .stack sets display:flex, which outranks the browser's [hidden] rule and left
    the inactive tab pane laid out under the sticky sidebar. */
@@ -91,38 +105,62 @@ body{
   background:var(--bg);color:var(--text);
   font-family:var(--sans);font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  letter-spacing:-.008em;
+  letter-spacing:-.005em;
 }
+/* A faint overhead wash, so the page reads as lit from a source rather
+   than as a flat fill. One gradient, not a decoration on every element. */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(120% 60% at 50% -10%,rgba(125,159,214,.10),transparent 60%),
+    radial-gradient(80% 50% at 85% 0%,rgba(79,191,149,.06),transparent 70%);
+}
+html[data-theme="light"] body::before{
+  background:radial-gradient(120% 60% at 50% -10%,rgba(125,159,214,.16),transparent 65%);
+}
+header,main,.toast{position:relative;z-index:1}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-::selection{background:rgba(233,184,114,.28)}
+::selection{background:rgba(233,184,114,.3)}
 ::-webkit-scrollbar{width:11px;height:11px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:#26333c;border-radius:6px;border:3px solid var(--bg)}
-::-webkit-scrollbar-thumb:hover{background:#31424d}
+::-webkit-scrollbar-track{background:var(--sunk)}
+::-webkit-scrollbar-thumb{background:#2b3854;border-radius:7px;border:3px solid var(--sunk)}
+::-webkit-scrollbar-thumb:hover{background:#3a4a6e}
+html[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c2cadb;border-color:var(--sunk)}
 
-/* ---------- masthead ---------- */
+/* ---------- masthead: the bezel ---------- */
 header{
-  background:linear-gradient(180deg,#111a20 0%,#0d1418 100%);
+  background:linear-gradient(180deg,var(--panel) 0%,var(--bg) 100%);
   border-bottom:1px solid var(--line);
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 12px 30px -24px #000;
 }
-.masthead{max-width:1220px;margin:0 auto;padding:26px 26px 24px;
-  display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+html[data-theme="light"] header{
+  background:linear-gradient(180deg,#ffffff 0%,#eceef4 100%);
+}
+.masthead{max-width:1330px;margin:0 auto;padding:22px 26px 18px;
+  display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:13px}
-.mark{width:32px;height:32px;flex:none;border-radius:8px;
-  background:linear-gradient(145deg,var(--jade),#2f8f6d);
+/* The mark sits proud of the bezel, catching the same overhead light. */
+.mark{width:34px;height:34px;flex:none;border-radius:10px;
+  background:linear-gradient(160deg,#5fd3a6 0%,#2f8f6d 100%);
   display:grid;place-items:center;
-  box-shadow:0 0 0 1px rgba(79,191,149,.25),0 6px 18px -6px rgba(79,191,149,.5)}
-.mark svg{width:17px;height:17px;display:block}
-h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.02em}
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    0 0 0 1px rgba(79,191,149,.30),
+    0 8px 20px -8px rgba(79,191,149,.55)}
+.mark svg{width:18px;height:18px;display:block}
+.mark svg path{stroke:#04211a}
+h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .scenariobar{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .scenariobar select{min-width:180px}
 
 /* ---------- layout ---------- */
-main{max-width:1220px;margin:0 auto;padding:22px 26px 70px;
+main{max-width:1330px;margin:0 auto;padding:24px 26px 70px;
   display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+/* Raised plateau: computed output lives here. */
+.panel{background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-panel);box-shadow:var(--lift-1);position:relative}
 .panel > h2{
-  font-size:13px;font-weight:600;margin:0;letter-spacing:.01em;
+  font-size:13px;font-weight:600;margin:0;letter-spacing:-.005em;
   padding:14px 18px;border-bottom:1px solid var(--line-soft);color:var(--text);
   display:flex;align-items:center;gap:9px;flex-wrap:wrap}
 .panel > h2 .h2note{font-weight:400;font-size:12px;color:var(--dimmer);margin-left:0}
@@ -136,41 +174,59 @@ aside{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
   overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 aside::-webkit-scrollbar{width:8px}
 aside::-webkit-scrollbar-track{background:transparent}
-aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:0}
 aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
 
-/* ---------- fields ---------- */
+/* ---------- fields: recessed wells ---------- */
 .field{margin-bottom:13px}
 .field label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;
-  letter-spacing:.005em}
+  letter-spacing:-.002em}
 .inputwrap{display:flex;align-items:center;background:var(--field);
-  border:1px solid var(--line);border-radius:7px;transition:border-color .12s,box-shadow .12s}
-.inputwrap:focus-within{border-color:var(--jade);box-shadow:0 0 0 3px rgba(79,191,149,.13)}
+  border:1px solid var(--line);border-radius:var(--r-well);
+  box-shadow:var(--well);
+  transition:border-color .14s ease,box-shadow .18s ease,background .14s ease}
+.inputwrap:hover{border-color:#33415f}
+html[data-theme="light"] .inputwrap:hover{border-color:#b6c0d4}
+/* Focus blooms an accent ring: the well lights up where you're working. */
+.inputwrap:focus-within{
+  border-color:var(--jade);background:var(--sunk);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16),0 0 22px -6px rgba(79,191,149,.4)}
+html[data-theme="light"] .inputwrap:focus-within{background:#fff}
 .inputwrap .affix{padding:0 10px;color:var(--dimmer);font-size:12.5px;flex:none}
 .inputwrap input{
   width:100%;min-width:0;border:0;background:transparent;padding:9px 10px;
   font-family:var(--mono);font-size:13.5px;color:var(--text);
-  text-align:right;font-variant-numeric:tabular-nums}
+  text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .inputwrap .affix + input{padding-left:0}
 .inputwrap input:focus{outline:none}
-.inputwrap input::placeholder{color:#4d626e;font-family:var(--sans);font-size:12.5px}
+.inputwrap input::placeholder{color:#4a5878;font-family:var(--sans);font-size:12.5px}
 /* Native spinners overlap the value in these narrow, text-aligned boxes.
    Hidden here; arrow keys still step the value. */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
-select,.btn{font-family:var(--sans);font-size:13px;border-radius:7px;padding:8px 12px;
-  border:1px solid var(--line);background:var(--panel-2);color:var(--text);cursor:pointer;
-  transition:border-color .12s,background .12s}
-select{width:100%;background:var(--field);
+
+/* Controls read as raised keys, not wells — they're pressed, not filled. */
+select,.btn{font-family:var(--sans);font-size:13px;border-radius:var(--r-well);
+  padding:8px 12px;border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  color:var(--text);cursor:pointer;box-shadow:var(--edge-up);
+  transition:border-color .14s ease,background .14s ease,transform .08s ease,box-shadow .14s ease}
+select{width:100%;
+  background-color:var(--field);background-image:none;
+  box-shadow:var(--well);
   appearance:none;-webkit-appearance:none;
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%238ba0ac' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2394a3bd' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center;
   background-size:10px 10px;padding-right:26px}
-select:hover,.btn:hover{border-color:#33454f}
-.btn.primary{background:linear-gradient(180deg,#4fbf95,#37a37b);border-color:#2f8f6d;
-  color:#06231a;font-weight:600}
-.btn.primary:hover{background:linear-gradient(180deg,#5fcda3,#3fb187)}
+select:hover,.btn:hover{border-color:#3c4c6e}
+html[data-theme="light"] select:hover,html[data-theme="light"] .btn:hover{border-color:#aeb9cd}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:linear-gradient(180deg,#5fd3a6,#35a37c);
+  border-color:#2c8a68;color:#04211a;font-weight:600;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 16px -8px rgba(79,191,149,.7)}
+.btn.primary:hover{background:linear-gradient(180deg,#6fe0b3,#3cb489)}
 .btn:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hint{font-size:11.5px;color:var(--dimmer);margin-top:5px;line-height:1.45}
@@ -180,55 +236,112 @@ select:hover,.btn:hover{border-color:#33454f}
 .derived div{display:flex;justify-content:space-between;padding:3px 0}
 .derived .num{color:var(--text);font-size:12px}
 
-/* ---------- headline ---------- */
-.headline{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--line-soft)}
-.headline > div{padding:19px 20px;position:relative}
-.headline > div + div{border-left:1px solid var(--line-soft)}
-.headline .k{font-size:11.5px;color:var(--dim);margin-bottom:7px;letter-spacing:.01em}
-.headline .v{font-family:var(--mono);font-size:29px;line-height:1.05;
-  font-variant-numeric:tabular-nums;letter-spacing:-.03em;font-weight:500;
-  white-space:nowrap;overflow:hidden}
-.headline .v.gold{color:var(--gold);text-shadow:0 0 26px rgba(233,184,114,.28)}
-.headline .v.jade{color:var(--jade)}
-.headline .note{font-size:11px;color:var(--dimmer);margin-top:7px;line-height:1.4}
-.headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft)}
+/* ---------- the readout: the one bold thing ---------- */
+.headline{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.13),transparent 62%),
+    linear-gradient(180deg,#03050c 0%,#080d1a 100%);
+  border-radius:var(--r-bezel) var(--r-bezel) 0 0;
+  box-shadow:
+    inset 0 3px 10px -3px rgba(0,0,0,.95),
+    inset 0 1px 0 rgba(0,0,0,.7),
+    inset 0 -1px 0 rgba(255,255,255,.05);
+  position:relative;overflow:hidden}
+html[data-theme="light"] .headline{
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.18),transparent 62%),
+    linear-gradient(180deg,#dfe4ef 0%,#eef1f7 100%);
+  box-shadow:inset 0 3px 8px -4px rgba(22,32,55,.3),inset 0 -1px 0 rgba(255,255,255,.8)}
+/* the lit edge where the glass meets the bezel */
+.headline::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(125,159,214,.5),transparent)}
+.headline > div{padding:26px 22px 24px;position:relative}
+.headline > div + div{border-left:1px solid rgba(125,159,214,.13)}
+.headline .k{font-size:11.5px;color:var(--dim);margin-bottom:10px;letter-spacing:-.002em}
+/* Every readout is lit; the accented ones burn brighter. */
+.headline .v{font-family:var(--mono);font-size:35px;line-height:1.02;
+  font-variant-numeric:tabular-nums;letter-spacing:-.05em;font-weight:500;
+  white-space:nowrap;overflow:hidden;
+  color:#f2f6ff;text-shadow:0 0 34px rgba(200,220,255,.28)}
+html[data-theme="light"] .headline .v{color:#0d1424;text-shadow:none}
+.headline .v.gold{color:var(--gold);text-shadow:0 0 38px rgba(233,184,114,.55)}
+.headline .v.jade{color:var(--jade);text-shadow:0 0 38px rgba(79,191,149,.45)}
+html[data-theme="light"] .headline .v.gold{color:var(--gold);text-shadow:none}
+html[data-theme="light"] .headline .v.jade{color:var(--jade);text-shadow:none}
+.headline .note{font-size:11px;color:var(--dimmer);margin-top:9px;line-height:1.4}
+.headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft);
+  border-radius:0 0 var(--r-bezel) var(--r-bezel)}
 
-/* ---------- tabs ---------- */
-nav[role=tablist]{max-width:1220px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
+/* ---------- tabs: a lit rail ---------- */
+nav[role=tablist]{max-width:1330px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
+nav[role=tablist] button{
+  position:relative;font-family:var(--sans);font-size:14.5px;background:transparent;
+  color:var(--dim);border:0;padding:0 4px 11px;margin-right:18px;
+  cursor:pointer;transition:color .15s ease}
+nav[role=tablist] button::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;
+  background:var(--jade);box-shadow:0 0 12px rgba(79,191,149,.75);
+  transform:scaleX(0);transform-origin:50% 50%;transition:transform .22s cubic-bezier(.2,.7,.3,1)}
+nav[role=tablist] button:hover{color:var(--text)}
+nav[role=tablist] button[aria-selected="true"]{color:var(--text)}
+nav[role=tablist] button[aria-selected="true"]::after{transform:scaleX(1)}
+nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- tool cards: a rail, not a lift ---------- */
 .toolcards{display:flex;flex-direction:column;gap:12px;max-width:640px;
   margin:30px auto;padding:0 26px}
 /* Budget has no sidebar, so in solo mode it gets a centered, generously
    wide column instead of stretching a form edge-to-edge or sitting narrow
    with blank space beside it like a sidebar-shaped tool would. Desktop
-   only \u2014 mobile's existing layout for this already works well. */
+   only — mobile's existing layout for this already works well. */
 @media (min-width:641px){
   #tab-budget{max-width:820px;margin:0 auto;width:100%}
   #tab-budget .bgrow .desc{font-size:14px}
   #tab-budget .bgrow .inputwrap{flex:0 0 150px;width:150px}
 }
-.toolcard{display:flex;align-items:center;gap:18px;padding:20px 22px;
-  background:var(--panel);border:1px solid var(--line);border-radius:12px;
-  cursor:pointer;transition:border-color .15s,background .15s;text-decoration:none}
-.toolcard:hover{border-color:var(--jade);background:var(--panel-2)}
+/* A single column of 21 budget lines ran very long, and stranded each amount
+   far to the right of the label it belongs to. Two columns halves the page and
+   shortens that eye-trip; the category heading still spans both. */
+@media (min-width:900px){
+  #tab-budget{max-width:1040px}
+  .bggroup{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;align-items:start}
+  .bggroup-h{grid-column:1 / -1}
+  #tab-budget .bgrow .inputwrap{flex:0 0 140px;width:140px}
+  /* The totals and emergency-fund panels are single label/amount pairs. Left
+     at full width they strand each amount a screen away from its label, so
+     they keep a readable measure while the entry grid above uses the space. */
+  #tab-budget .kv,#tab-budget .efrow{max-width:620px}
+}
+.toolcard{position:relative;display:flex;align-items:center;gap:18px;
+  padding:20px 22px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-panel);box-shadow:var(--lift-1);cursor:pointer;
+  text-decoration:none;overflow:hidden;
+  transition:border-color .16s ease,background .16s ease}
+.toolcard::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--jade);
+  transform:scaleY(0);transform-origin:50% 50%;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1)}
+.toolcard:hover{border-color:#3a5a6e;background:var(--panel-2)}
+.toolcard:hover::before{transform:scaleY(1)}
 .toolcard-icon{flex:none;width:44px;height:44px;color:var(--jade);
-  display:flex;align-items:center;justify-content:center}
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1)}
+.toolcard:hover .toolcard-icon{transform:scale(1.06)}
 .toolcard-icon svg{width:100%;height:100%}
 .toolcard-body{flex:1 1 auto;min-width:0}
 .toolcard-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
 .toolcard-desc{font-size:13px;color:var(--dim);line-height:1.5}
-.toolcard-arrow{font-size:22px;color:var(--dimmer);flex:none;line-height:1}
-
-nav[role=tablist] button{
-  font-family:var(--sans);font-size:14.5px;background:transparent;color:var(--dim);
-  border:0;border-bottom:2px solid transparent;padding:0 4px 8px;margin-right:18px;
-  cursor:pointer;transition:color .12s,border-color .12s}
-nav[role=tablist] button:hover{color:var(--text)}
-nav[role=tablist] button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--jade)}
-nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.toolcard-arrow{font-size:17px;color:var(--dimmer);flex:none;line-height:1;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1),color .2s ease}
+.toolcard:hover .toolcard-arrow{transform:translateX(3px);color:var(--jade)}
 
 /* ---------- stage cards ---------- */
-.stagecard{border:1px solid var(--line);border-radius:9px;padding:14px;margin-bottom:12px;
-  background:var(--field)}
+.stagecard{border:1px solid var(--line);border-left:2px solid #2f6b57;
+  border-radius:var(--r-well);padding:14px;margin-bottom:12px;
+  background:var(--field);box-shadow:var(--well)}
 .stagecard:last-child{margin-bottom:0}
 .stagehead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .stagenum{font-size:13px;font-weight:600}
@@ -237,18 +350,20 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 .stagehead .btn{margin-left:auto}
 .stagegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
 .stagegrid .field{margin-bottom:0}
-.stagecard .inputwrap{background:var(--panel)}
-.stagecard select{background:var(--panel)}
+.stagecard .inputwrap,.stagecard select{background-color:var(--panel)}
 
 /* ---------- data ---------- */
 table{width:100%;border-collapse:collapse}
-th,td{text-align:right;padding:8px 10px;font-size:13px;border-bottom:1px solid var(--line-soft)}
-td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:9px 10px;font-size:13px;border-bottom:1px solid var(--line-soft)}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 th{font-size:11.5px;color:var(--dim);font-weight:500;border-bottom:1px solid var(--line);
-  position:sticky;top:0;background:var(--panel);letter-spacing:.01em}
+  position:sticky;top:0;background:var(--panel);letter-spacing:-.002em;z-index:1}
 th:first-child,td:first-child{text-align:left}
-tbody tr:hover{background:var(--panel-2)}
-.scroll{max-height:340px;overflow:auto}
+/* Row hover marks the row's edge rather than washing it — keeps money
+   columns legible while you track across. */
+tbody tr{transition:background .12s ease}
+tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
+.scroll{max-height:460px;overflow:auto}
 .kv{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
   border-bottom:1px solid var(--line-soft);font-size:13.5px;align-items:baseline}
 .kv:last-child{border-bottom:0}
@@ -264,15 +379,16 @@ tbody tr:hover{background:var(--panel-2)}
 .solveopts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line-soft)}
 .solveopt{padding:18px 20px;display:flex;flex-direction:column}
 .solveopt + .solveopt{border-left:1px solid var(--line-soft)}
-.optlabel{font-size:11.5px;color:var(--dim);margin-bottom:8px;letter-spacing:.01em}
+.optlabel{font-size:11.5px;color:var(--dim);margin-bottom:8px;letter-spacing:-.002em}
 .solveopt > .v{font-family:var(--mono);font-size:29px;line-height:1.05;font-weight:500;
-  font-variant-numeric:tabular-nums;letter-spacing:-.03em;white-space:nowrap;overflow:hidden}
-.solveopt > .v.gold{color:var(--gold);text-shadow:0 0 26px rgba(233,184,114,.28)}
+  font-variant-numeric:tabular-nums;letter-spacing:-.045em;white-space:nowrap;overflow:hidden}
+.solveopt > .v.gold{color:var(--gold);text-shadow:0 0 30px rgba(233,184,114,.4)}
 .solveopt > .note{font-size:11px;color:var(--dimmer);margin-top:7px;margin-bottom:6px;line-height:1.4}
 .solveopt .kv{font-size:13px;padding:8px 0}
 .solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0;text-shadow:none}
 .solveopt .btn{margin-top:14px;align-self:flex-start}
 .btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:active{transform:none}
 
 /* converter rows, each applyable */
 .convrow{display:flex;align-items:center;gap:10px;padding:9px 0;
@@ -287,13 +403,17 @@ tbody tr:hover{background:var(--panel-2)}
 .convrow .spacer{width:50px;flex:none}
 .btn.mini{padding:5px 11px;font-size:12px;flex:none;text-align:center;white-space:nowrap}
 
-/* segmented mode switch on the chart panels */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:none}
+/* segmented switch: a recessed track with a raised thumb */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-well);
+  overflow:hidden;flex:none;background:var(--field);box-shadow:var(--well)}
 .seg button{font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
-  color:var(--dim);border:0;cursor:pointer;white-space:nowrap;transition:background .12s,color .12s}
+  color:var(--dim);border:0;cursor:pointer;white-space:nowrap;
+  transition:background .16s ease,color .16s ease,box-shadow .16s ease}
 .seg button + button{border-left:1px solid var(--line)}
 .seg button:hover{color:var(--text)}
-.seg button.on{background:var(--panel-2);color:var(--text)}
+.seg button.on{
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));color:var(--text);
+  box-shadow:var(--edge-up),0 2px 8px -4px rgba(0,0,0,.8)}
 .seg button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .modeopt{display:flex;align-items:center;gap:8px}
 .mcnote{padding:0 18px 15px;font-size:12.5px;color:var(--dim);line-height:1.5}
@@ -301,37 +421,51 @@ tbody tr:hover{background:var(--panel-2)}
 .mcnote b.warn{color:var(--coral)}
 .msflag{color:var(--gold);font-weight:600}
 .mssub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:2px}
-/* the input column is the only place anything is typed, so it reads differently
-   from the result panels below it */
-.panel.inputs{background:linear-gradient(180deg,#15211f 0%,#131b20 100%);
-  border-color:#294a41;box-shadow:0 0 0 1px rgba(79,191,149,.06),0 10px 30px -18px #000}
-.panel.inputs > h2{color:var(--jade);text-transform:uppercase;letter-spacing:.09em;
-  font-size:11px;border-bottom-color:#22403a}
-.panel.inputs > h2 .h2note{text-transform:none;letter-spacing:0;color:var(--dimmer)}
-.panel.inputs .inputwrap{background:#0b1214;border-color:#283a38}
-.panel.inputs select{background:#0b1214;border-color:#283a38}
-.stagecard{border-left:2px solid #2b5147}
+
+/* ---------- the control deck ---------- */
+/* The input column is the only place anything is typed. It sits recessed
+   into the page, so the whole column reads as the surface you act on. */
+.panel.inputs{
+  background:linear-gradient(180deg,#04070e 0%,#080d18 100%);
+  border-color:#22405e;
+  box-shadow:
+    inset 0 3px 10px -4px rgba(0,0,0,.95),
+    inset 0 -1px 0 rgba(255,255,255,.04),
+    0 0 0 1px rgba(79,191,149,.06)}
+html[data-theme="light"] .panel.inputs{
+  background:linear-gradient(180deg,#f7f9fd 0%,#ffffff 100%);
+  border-color:#c2d2e4;
+  box-shadow:var(--well),0 0 0 1px rgba(22,133,92,.05)}
+.panel.inputs > h2{
+  color:var(--jade);font-size:13px;font-weight:600;letter-spacing:-.01em;
+  border-bottom-color:#1d3550}
+html[data-theme="light"] .panel.inputs > h2{border-bottom-color:#dde6f1}
+.panel.inputs > h2 .h2note{color:var(--dimmer)}
+.panel.inputs .inputwrap,.panel.inputs select{background-color:#05080f;border-color:#243b55}
+html[data-theme="light"] .panel.inputs .inputwrap,
+html[data-theme="light"] .panel.inputs select{background-color:#f2f6fb;border-color:#ccd9e8}
 main.solo{grid-template-columns:minmax(0,1fr)}
 
 /* ---------- printable one-page summary ---------- */
 #sheet{display:none}
 @media print{
   html,body{background:#fff !important;color:#111 !important}
+  body::before{display:none !important}
   header,main,.toast,nav{display:none !important}
   #sheet{display:block !important;font-family:var(--sans);color:#111;
     max-width:7.5in;margin:0 auto}
   @page{size:letter portrait;margin:0.45in}
 
   /* Masthead: name of the report, a right-aligned context line, and a thin
-     rule underneath. Deliberately small \u2014 this is a header, not a title
-     page \u2014 so it costs almost no vertical space. */
+     rule underneath. Deliberately small — this is a header, not a title
+     page — so it costs almost no vertical space. */
   .sh-h{display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid #111;
     padding-bottom:6px;margin-bottom:10px}
   .sh-h h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em}
   .sh-h span{font-size:9.5px;color:#666;margin-left:auto}
 
   /* The three headline numbers. This is the only oversized text on the page
-     on purpose \u2014 everything else is reference detail underneath it. */
+     on purpose — everything else is reference detail underneath it. */
   .sh-big{display:flex;gap:10px;margin-bottom:10px}
   .sh-big div{flex:1;border:1px solid #ccc;border-radius:5px;padding:7px 9px}
   .sh-big .k{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#666;
@@ -342,7 +476,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 
   /* Chart: a fixed, deliberately compact height rather than width:100% at the
      source aspect ratio, which was the main reason sheets ran long. Capped
-     at 1.35in regardless of the underlying viewBox \u2014 tall enough to read
+     at 1.35in regardless of the underlying viewBox — tall enough to read
      the shape of a curve, short enough to leave room for the data below it,
      which is the part people actually reference. */
   .sh-chart{border:1px solid #ccc;border-radius:5px;padding:5px 7px 3px;
@@ -362,7 +496,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   .sh-r b{font-family:var(--mono);font-weight:600;white-space:nowrap}
   .sh-more{font-size:8px;color:#999;font-style:italic;padding-top:2px}
 
-  /* A compact data table \u2014 amortization, tax brackets, year-by-year \u2014
+  /* A compact data table — amortization, tax brackets, year-by-year —
      for sheets that have real tabular detail worth including. Deliberately
      denser than the on-screen version: a printed page is read up close, and
      someone asked for a PDF specifically wants the numbers, not the polish. */
@@ -381,6 +515,14 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   .sh-foot{font-size:7.5px;color:#666;line-height:1.45;border-top:1px solid #ccc;
     padding-top:5px}
 }
+
+/* ---------- about ---------- */
+/* About runs full-width with no sidebar, which left prose at ~148 characters
+   a line. Narrowing the column instead of the paragraph keeps a readable
+   measure while the text still fills its panel edge to edge. */
+@media (min-width:900px){
+  #tab-about{max-width:820px;margin:0 auto;width:100%}
+}
 .about .body{padding:16px 20px 20px}
 /* Collapsible About sections: collapsed by default, toggled by clicking the
    h2. Appearance, What this is, and Disclaimer opt out via .no-collapse /
@@ -388,110 +530,185 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .panel.about:not(.no-collapse):not(.disclaimer) > h2{cursor:pointer;user-select:none}
 .panel.about:not(.no-collapse):not(.disclaimer) > h2:hover{background:var(--panel-2)}
 .panel.about .about-chevron{margin-left:auto;flex:none;color:var(--dimmer);
-  transition:transform .18s;display:flex}
+  transition:transform .22s cubic-bezier(.2,.7,.3,1);display:flex}
 .panel.about.collapsed .about-chevron{transform:rotate(-90deg)}
 .panel.about.collapsed > .body{display:none}
-.about p{margin:0 0 12px;font-size:13.5px;line-height:1.65;color:var(--dim)}
+.about p{margin:0 0 12px;font-size:13.5px;line-height:1.7;color:var(--dim)}
 .about p:last-child{margin-bottom:0}
 .about b{color:var(--text);font-weight:600}
-.about ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.65;color:var(--dim)}
+.about ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.7;color:var(--dim)}
 .about ul li{margin-bottom:9px}
 .about ul li::marker{color:var(--jade)}
 .about ul + p,.about dl + p{margin-top:14px}
 .gloss{margin:0}
 .gloss dt{font-size:13px;font-weight:600;color:var(--text);margin-top:16px}
 .gloss dt:first-child{margin-top:0}
-.gloss dd{margin:5px 0 0;font-size:13px;line-height:1.65;color:var(--dim)}
-.about.disclaimer{border-color:#4a3a24;background:linear-gradient(180deg,#1d1811,#141b20)}
+.gloss dd{margin:5px 0 0;font-size:13px;line-height:1.7;color:var(--dim)}
+.about.disclaimer{border-color:#4d3d24;
+  background:linear-gradient(180deg,#1c1710 0%,var(--panel) 100%)}
 .about.disclaimer > h2{color:var(--gold)}
+html[data-theme="light"] .about.disclaimer{
+  border-color:#e2cfa4;background:linear-gradient(180deg,#fbf4e4,#ffffff)}
+
+/* ---------- budget ---------- */
 .bgincome{max-width:520px}
 .bgincome label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
 .bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .bgincome-row .inputwrap{flex:1 1 140px}
-.bgseg{display:inline-flex;border:1px solid var(--jade);border-radius:5px;
+.bgseg{display:inline-flex;border:1px solid var(--jade);border-radius:6px;
   overflow:hidden;flex:none}
 .bgseg button{font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;
   color:var(--dimmer);border:0;cursor:pointer;white-space:nowrap;
-  transition:background .12s,color .12s;line-height:1}
+  transition:background .16s ease,color .16s ease;line-height:1}
 .bgseg button + button{border-left:1px solid var(--jade)}
-.bgseg button.on{background:var(--jade);color:#06231a;font-weight:700}
-.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;
-  align-items:center;justify-content:center;padding:20px}
-.popup{background:var(--panel);border:1px solid var(--line);border-radius:12px;
-  padding:22px 24px 18px;max-width:340px;width:100%;box-shadow:0 20px 60px -20px var(--shadow)}
-.popup h3{margin:0 0 14px;font-size:15px;color:var(--text);font-weight:600}
-.popup .popbtn{display:block;width:100%;text-align:left;background:var(--field);
-  border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:8px;
-  color:var(--text);font-family:var(--sans);font-size:13.5px;cursor:pointer;
-  transition:border-color .12s,background .12s}
-.popup .popbtn:hover{border-color:var(--jade);background:var(--panel-2)}
-.popup .popbtn .subdesc{display:block;font-size:11.5px;color:var(--dim);margin-top:3px}
-.popup .popbtn .subdesc.money{font-family:var(--mono);font-size:13px;color:var(--jade);font-weight:600}
-.popup .cancel{display:block;width:100%;text-align:center;background:transparent;border:0;
-  color:var(--dimmer);font-size:12.5px;padding:8px 0 2px;cursor:pointer;font-family:var(--sans)}
-.popup .cancel:hover{color:var(--text)}
-.freqsel{width:auto;min-width:104px;flex:none}
+.bgseg button.on{background:var(--jade);color:#04211a;font-weight:700}
 .bggroup{margin-bottom:6px}
-.bggroup-h{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--dimmer);
+.bggroup-h{font-size:11.5px;color:var(--dim);font-weight:600;
   padding:12px 0 6px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}
 .bgrow{display:flex;gap:8px;align-items:center;padding:5px 0}
 .bgrow .desc{flex:1 1 auto;min-width:0;font-size:13.5px;color:var(--text)}
-.bgrow input.desc{background:var(--field);border:1px solid var(--line);border-radius:7px;
-  padding:8px 10px;font-family:var(--sans);color:var(--text)}
+.bgrow input.desc{background:var(--field);border:1px solid var(--line);
+  border-radius:var(--r-well);padding:8px 10px;font-family:var(--sans);color:var(--text);
+  box-shadow:var(--well)}
+.bgrow input.desc:focus{outline:none;border-color:var(--jade)}
 .bgrow .inputwrap{flex:0 0 130px;width:130px}
-
 .bgrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
-  font-size:18px;line-height:1;padding:0 6px;flex:none}
+  font-size:18px;line-height:1;padding:0 6px;flex:none;transition:color .14s ease}
 .bgrow .del:hover{color:var(--coral)}
 .bgrow .delspace{width:26px;flex:none}
-.tipdot{display:inline-flex;align-items:center;justify-content:center;width:15px;
-  height:15px;border-radius:50%;border:1px solid var(--line);color:var(--dimmer);
+.freqsel{width:auto;min-width:104px;flex:none}
+
+/* ---------- popups: floating above the deck ---------- */
+.popup-overlay{position:fixed;inset:0;background:rgba(3,5,12,.62);z-index:90;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  animation:ovFade .16s ease}
+@keyframes ovFade{from{opacity:0}to{opacity:1}}
+.popup{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-bezel);
+  padding:22px 24px 18px;max-width:340px;width:100%;box-shadow:var(--lift-2);
+  animation:popIn .2s cubic-bezier(.2,.8,.3,1)}
+@keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}
+  to{opacity:1;transform:none}}
+.popup h3{margin:0 0 14px;font-size:15.5px;color:var(--text);font-weight:600;
+  letter-spacing:-.015em}
+.popup .popbtn{display:block;width:100%;text-align:left;background:var(--field);
+  border:1px solid var(--line);border-radius:var(--r-well);padding:12px 14px;
+  margin-bottom:8px;color:var(--text);font-family:var(--sans);font-size:13.5px;
+  cursor:pointer;box-shadow:var(--well);
+  transition:border-color .14s ease,background .14s ease,transform .1s ease}
+.popup .popbtn:hover{border-color:var(--jade);background:var(--panel-2);transform:translateX(2px)}
+.popup .popbtn .subdesc{display:block;font-size:11.5px;color:var(--dim);margin-top:3px}
+.popup .popbtn .subdesc.money{font-family:var(--mono);font-size:13px;color:var(--jade);font-weight:600}
+.popup .cancel{display:block;width:100%;text-align:center;background:transparent;border:0;
+  color:var(--dimmer);font-size:12.5px;padding:8px 0 2px;cursor:pointer;
+  font-family:var(--sans);box-shadow:none}
+.popup .cancel:hover{color:var(--text)}
+.popup.wide{max-width:420px}
+.popup.wide h3{margin-bottom:4px}
+.popup .formhint{font-size:11.5px;color:var(--dim);margin:0 0 16px;line-height:1.5}
+.popup .formfield{margin-bottom:13px}
+.popup .formfield label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.popup .forminput,.popup select.forminput{width:100%;background:var(--field);
+  border:1px solid var(--line);border-radius:var(--r-well);padding:9px 10px;
+  color:var(--text);font-family:var(--sans);font-size:13.5px;box-sizing:border-box;
+  box-shadow:var(--well)}
+.popup .forminput:focus,.popup select.forminput:focus{outline:none;border-color:var(--jade);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
+.popup .formwrap{display:flex;align-items:center;background:var(--field);
+  border:1px solid var(--line);border-radius:var(--r-well);overflow:hidden;
+  box-shadow:var(--well);transition:border-color .14s ease,box-shadow .16s ease}
+.popup .formwrap:focus-within{border-color:var(--jade);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
+.popup .formwrap .affix{padding:0 10px;color:var(--dim);font-size:13px;flex:none}
+.popup .formwrap input{border:0;background:transparent;flex:1 1 auto;min-width:0;
+  padding:9px 10px 9px 0;color:var(--text);font-family:var(--mono);font-size:13.5px}
+.popup .formwrap input:focus{outline:none}
+.popup .formtwo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.popup .formcheck{display:flex;align-items:center;gap:8px;font-size:12.5px;
+  color:var(--dim);margin-bottom:13px;cursor:pointer}
+.popup .formcheck input{accent-color:var(--jade);width:15px;height:15px;flex:none}
+.popup .formactions{display:flex;gap:8px;margin-top:6px}
+.popup .formactions .btn{flex:1}
+.popbtn:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+
+/* ---------- item rows ---------- */
+.itemrow{display:flex;align-items:center;gap:8px;padding:8px 0;
+  border-bottom:1px solid var(--line-soft);font-size:12.5px}
+.itemrow:last-child{border-bottom:0}
+.itemrow input[type=checkbox]{accent-color:var(--jade);width:15px;height:15px;flex:none;cursor:pointer}
+.itemrow .itemtxt{flex:1 1 auto;min-width:0;color:var(--text)}
+.itemrow .itemtxt small{display:block;color:var(--dim);font-size:11px;margin-top:1px}
+.itemrow.off .itemtxt{color:var(--dimmer);text-decoration:line-through;text-decoration-color:var(--dimmer)}
+.itemrow .itemdel{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
+  font-size:16px;line-height:1;padding:2px 4px;flex:none;transition:color .14s ease}
+.itemrow .itemdel:hover{color:var(--coral)}
+
+/* ---------- tooltips ---------- */
+.tipdot{display:inline-flex;align-items:center;justify-content:center;width:16px;
+  height:16px;border-radius:50%;border:1px solid var(--line);color:var(--dimmer);
   font-size:10px;font-family:var(--sans);margin-left:5px;cursor:help;flex:none;
-  vertical-align:middle;user-select:none;transition:border-color .12s,color .12s}
-.tipdot:hover,.tipdot.on{border-color:var(--jade);color:var(--jade)}
+  vertical-align:middle;user-select:none;
+  transition:border-color .14s ease,color .14s ease,box-shadow .14s ease}
+.tipdot:hover,.tipdot.on{border-color:var(--jade);color:var(--jade);
+  box-shadow:0 0 0 3px rgba(79,191,149,.13)}
 .tipbox{position:fixed;z-index:95;max-width:280px;background:var(--pop);
-  color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 12px;
-  font-size:12.5px;line-height:1.55;box-shadow:0 12px 34px -10px var(--shadow);
-  opacity:0;pointer-events:none;transition:opacity .12s}
-.tipbox.on{opacity:1}
-.ddrow{cursor:pointer;transition:background .1s}
+  color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px 13px;
+  font-size:12.5px;line-height:1.6;box-shadow:var(--lift-2);
+  opacity:0;transform:translateY(4px);pointer-events:none;
+  transition:opacity .14s ease,transform .14s ease}
+.tipbox.on{opacity:1;transform:none}
+.tipdot:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- drawdown rows ---------- */
+.ddrow{cursor:pointer;transition:background .12s ease}
 .ddrow:hover{background:var(--panel-2)}
-.ddrow.sel{background:rgba(79,191,149,.10)}
+.ddrow.sel{background:rgba(79,191,149,.11);box-shadow:inset 2px 0 0 var(--jade)}
 .ddrow.sel td:first-child{color:var(--jade);font-weight:600}
 .ddrow:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
-.tipdot:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .toolcard:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.popbtn:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+
+/* ---------- tax ---------- */
 .efrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .efrow>span{font-size:13.5px;color:var(--dim)}
 .txhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:14px 18px 0;flex-wrap:wrap}
-.txbadge{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--dim);
-  border:1px solid var(--line);border-radius:5px;padding:3px 8px}
+.txbadge{font-size:11px;color:var(--dim);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px;background:var(--field)}
 #txTable td:first-child,#moTable td:first-child{font-family:var(--sans);
   font-variant-numeric:normal}
+/* The donut caps at 220px, so an even 1:1 split left it floating in a
+   half-empty column while the bars beside it were cramped. */
+.grid2:has(.piewrap){grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
 .piewrap{display:flex;align-items:center;justify-content:center;padding:4px}
 .piewrap svg{max-width:220px;width:100%;height:auto}
 .bar{margin-bottom:11px}
 .bar .lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:10px}
 .bar .lbl b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
-.bar .track{height:9px;border-radius:5px;background:var(--field);overflow:hidden}
-.bar .fill{height:100%;border-radius:5px}
+.bar .track{height:9px;border-radius:5px;background:var(--field);overflow:hidden;
+  box-shadow:var(--well)}
+.bar .fill{height:100%;border-radius:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
 .themerow{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .themerow > span:first-child{font-size:13.5px;color:var(--dim)}
+
+/* ---------- monte carlo bar ---------- */
 .mcbar{display:flex;align-items:flex-end;gap:12px;padding:14px 18px 0;flex-wrap:wrap}
 .mcbar .field{margin-bottom:0}
 .mcbar .inputwrap,.mcbar select{width:104px}
 .mcbar .hint{flex:1 1 160px;min-width:0}
 .signflip{background:transparent;border:0;color:var(--dimmer);font-size:14px;
-  padding:0 8px;cursor:pointer;flex:none;line-height:1}
+  padding:0 8px;cursor:pointer;flex:none;line-height:1;box-shadow:none;
+  transition:color .14s ease}
 .signflip:hover{color:var(--gold)}
 .signflip.on{color:var(--coral)}
+
+/* ---------- optional toggles ---------- */
 .adjrow{display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:11.5px;
   color:var(--dim);cursor:pointer;
-  background:rgba(79,191,149,.05);border:1px solid #22343a;border-radius:6px;
-  padding:9px 10px;transition:border-color .12s,background .12s}
-.adjrow:hover{border-color:#2f4a4a;background:rgba(79,191,149,.08)}
+  background:rgba(79,191,149,.05);border:1px solid #223650;border-radius:var(--r-well);
+  padding:9px 10px;transition:border-color .14s ease,background .14s ease}
+.adjrow:hover{border-color:#2f5163;background:rgba(79,191,149,.09)}
+html[data-theme="light"] .adjrow{border-color:#cfdcea}
+html[data-theme="light"] .adjrow:hover{border-color:#a9c8d8}
 .adjrow-top{display:flex;align-items:center;min-width:0}
 .adjrow input{accent-color:var(--jade);width:15px;height:15px;flex:none;
   margin:0 10px 0 0;cursor:pointer}
@@ -499,61 +716,93 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .adjnote{font-family:var(--mono);color:var(--gold);font-size:12px;
   letter-spacing:-.01em;padding-left:25px}
 .adjnote:empty{display:none}
+
+/* Glide toggle: a compact button that expands into two fields when active,
+   so the collapsed state stays out of the way for anyone not using it. */
+.glidewrap{margin-top:0}
+.glidebtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:rgba(79,191,149,.05);border:1px solid #223650;border-radius:var(--r-well);
+  padding:9px 10px;cursor:pointer;font-family:var(--sans);font-size:12.5px;
+  color:var(--dim);box-shadow:none;
+  transition:border-color .14s ease,background .14s ease}
+.glidebtn:hover{border-color:#2f5163;background:rgba(79,191,149,.09)}
+html[data-theme="light"] .glidebtn{border-color:#cfdcea}
+html[data-theme="light"] .glidebtn:hover{border-color:#a9c8d8}
+.glidebtn-check{width:16px;height:16px;flex:none;border-radius:5px;
+  border:1.5px solid var(--dimmer);position:relative;
+  transition:background .16s ease,border-color .16s ease}
+.glidebtn.on .glidebtn-check{background:var(--jade);border-color:var(--jade);
+  box-shadow:0 0 12px -2px rgba(79,191,149,.7)}
+.glidebtn.on .glidebtn-check::after{content:"";position:absolute;left:4.5px;top:1.5px;
+  width:4px;height:8px;border:solid #04211a;border-width:0 2px 2px 0;
+  transform:rotate(40deg)}
+.glidebtn-txt{flex:1 1 auto;min-width:0;display:flex;align-items:center}
+.glidefields{margin-top:8px;padding:10px 10px 2px;background:rgba(79,191,149,.04);
+  border:1px solid #223650;border-radius:var(--r-well);
+  display:flex;flex-direction:column;gap:8px}
+html[data-theme="light"] .glidefields{border-color:#cfdcea}
 .coastrow .k{color:var(--text)}
 .coastrow .v{font-weight:600}
 #sCoastAction{margin-top:10px}
 #sCoastAction .btn{width:100%}
-.opt{color:var(--dimmer);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
-  border:1px solid var(--line);border-radius:4px;padding:1px 5px;margin-left:5px}
+.opt{color:var(--dimmer);font-size:11px;border:1px solid var(--line);
+  border-radius:999px;padding:1px 8px;margin-left:5px}
 #msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
 .convrow .btn.mini{width:50px;padding:5px 0}
 
 /* ---------- chart ---------- */
 .chartwrap{padding:16px 18px 6px;position:relative}
 svg{display:block;width:100%;height:auto}
+/* These charts use preserveAspectRatio="none", so the drawing stretches to
+   whatever box it lands in — including the axis text. Capping at the 900-unit
+   viewBox width keeps type undistorted on wide screens instead of smearing it. */
+.chartwrap > svg{max-width:900px;margin-left:auto;margin-right:auto}
 .legend{display:flex;gap:18px;font-size:11.5px;color:var(--dim);padding:0 18px 15px;
   flex-wrap:wrap}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;
   vertical-align:0}
 .tip{position:absolute;pointer-events:none;background:var(--pop);color:var(--text);
-  border:1px solid var(--line);padding:9px 11px;border-radius:8px;font-size:11.5px;
-  line-height:1.65;white-space:nowrap;opacity:0;transition:opacity .1s;
-  box-shadow:0 10px 30px -8px var(--shadow);z-index:5}
-.tip b{font-size:12px;letter-spacing:.01em}
+  border:1px solid var(--line);padding:10px 12px;border-radius:11px;font-size:11.5px;
+  line-height:1.65;white-space:nowrap;opacity:0;transition:opacity .12s ease;
+  box-shadow:var(--lift-2);z-index:5}
+.tip b{font-size:12px;letter-spacing:-.005em}
 .tip .n{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-.note-list{font-size:12px;color:var(--dim);line-height:1.7;margin:0;padding-left:17px}
+.note-list{font-size:12px;color:var(--dim);line-height:1.75;margin:0;padding-left:17px}
 .note-list li{margin-bottom:6px}
 .note-list li::marker{color:var(--dimmer)}
 .stack{display:flex;flex-direction:column;gap:20px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(8px);
   background:var(--pop);color:var(--text);border:1px solid var(--line);
-  padding:11px 18px;border-radius:9px;font-size:13px;
-  box-shadow:0 14px 40px -10px var(--shadow);
-  opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
-.toast.show{opacity:1}
+  padding:12px 20px;border-radius:12px;font-size:13px;
+  box-shadow:var(--lift-2);
+  opacity:0;transition:opacity .22s ease,transform .22s cubic-bezier(.2,.8,.3,1);
+  pointer-events:none;z-index:20}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
 /* Tablet and below: the sidebar moves above the results. */
 @media (max-width:900px){
   main{grid-template-columns:minmax(0,1fr);padding:18px 20px 60px}
   nav[role=tablist]{padding:0 20px}
   aside{position:static;max-height:none;overflow-y:visible}
-  .masthead{padding:18px 20px 20px}
+  .masthead{padding:18px 20px 16px}
 }
 /* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
    smaller than that, and the zoom never fully reverses. */
 @media (max-width:640px){
   main{padding:14px 14px 56px;gap:14px}
   .stack{gap:14px}
-  .masthead{padding:16px 14px 16px;gap:14px}
+  .masthead{padding:16px 14px 14px;gap:14px}
   h1{font-size:17px}
-  .panel{border-radius:9px}
+  .panel{border-radius:12px}
   .panel > h2{padding:13px 14px}
   .panel .body{padding:14px}
 
-  .headline{grid-template-columns:1fr}
+  .headline{grid-template-columns:1fr;border-radius:12px 12px 0 0}
   .headline > div{padding:16px 14px}
   .headline > div + div{border-left:0;border-top:1px solid var(--line-soft)}
+  .headline .v{font-size:28px}
   .grid2{grid-template-columns:1fr;gap:16px}
 
   nav[role=tablist]{padding:0 14px;overflow-x:auto}
@@ -601,14 +850,14 @@ svg{display:block;width:100%;height:auto}
 
   /* six money columns can't fit a phone; scroll them sideways instead of
      letting the text wrap into an unreadable stack */
-  .scroll{overflow:auto;-webkit-overflow-scrolling:touch}
+  .scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:340px}
   #yearTable{min-width:580px}
   th,td{padding:8px 9px;font-size:12.5px}
   .swipehint{display:block}
 }
 /* Small phones (SE, mini) leave each half of a two-column field row under
    170px, cramped for anything longer than a short label. Below this width,
-   stack them instead \u2014 normal phones keep the two-column layout above. */
+   stack them instead — normal phones keep the two-column layout above. */
 @media (max-width:400px){
   .two{grid-template-columns:1fr}
 }
@@ -619,16 +868,19 @@ svg{display:block;width:100%;height:auto}
   .btn.mini{font-size:14px}
   .seg button{font-size:14px}
   /* Tooltip dots stay visually small but get a much bigger invisible tap
-     area on touch, since 15px is well under a comfortable touch target. */
-  .tipdot{position:relative;width:16px;height:16px}
+     area on touch, since 16px is well under a comfortable touch target. */
+  .tipdot{position:relative;width:17px;height:17px}
   .tipdot::after{content:"";position:absolute;top:50%;left:50%;
     width:40px;height:40px;transform:translate(-50%,-50%)}
+  .toolcard:hover::before{transform:scaleY(0)}
 }
 /* Home-screen web app runs under the clock and battery, so reserve that space. */
 header{padding-top:env(safe-area-inset-top,0px)}
 main{padding-left:max(14px,env(safe-area-inset-left,0px));
      padding-right:max(14px,env(safe-area-inset-right,0px))}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
 </style>
 </head>
 <body>
@@ -672,11 +924,11 @@ window.onerror = function(msg){
                 stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <h1>Investment Calculator</h1>
+      <h1>Retirement Calculator</h1>
     </div>
     <div class="scenariobar">
       <select id="scenarioPick" aria-label="Saved scenarios"></select>
-      <button class="btn" id="btnScenario">Scenario</button>
+      <button class="btn" id="btnScenario">Save/Delete</button>
       <button class="btn" id="btnShareMenu">Share</button>
       <button class="btn" id="btnReset">Reset</button>
     </div>
@@ -755,7 +1007,7 @@ window.onerror = function(msg){
         </div>
         <div class="two">
           <div class="field">
-            <label for="growth">Contribution growth</label>
+            <label for="growth">Contribution growth<span class="tipdot" data-tip="contribgrowth" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="growth" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%/yr</span></div>
           </div>
           <div class="field">
@@ -765,12 +1017,31 @@ window.onerror = function(msg){
         </div>
         <div class="two">
           <div class="field">
-            <label for="nominal">Rate of return</label>
+            <label for="nominal">Rate of return<span class="tipdot" data-tip="nominalreturn" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><button type="button" class="signflip" data-sign="nominal" title="Flip sign" aria-label="Flip sign">&plusmn;</button><input id="nominal" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%</span></div>
           </div>
           <div class="field">
             <label for="inflation">Inflation<span class="tipdot" data-tip="inflation" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="inflation" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="glidewrap" id="glideWrap">
+          <button type="button" class="glidebtn" id="glideToggle" aria-expanded="false">
+            <span class="glidebtn-check" aria-hidden="true"></span>
+            <span class="glidebtn-txt">Glide to a more conservative return<span class="tipdot" data-tip="glide" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+          </button>
+          <div class="glidefields" id="glideFields" hidden>
+            <div class="two">
+              <div class="field">
+                <label for="glideEnd">End at</label>
+                <div class="inputwrap"><input id="glideEnd" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%</span></div>
+              </div>
+              <div class="field">
+                <label for="glideYears">Over final</label>
+                <div class="inputwrap"><input id="glideYears" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg><span class="affix">yrs</span></div>
+              </div>
+            </div>
+            <div class="hint" id="glideNote" style="margin:0"></div>
           </div>
         </div>
         <div class="field">
@@ -785,7 +1056,7 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
           </div>
           <div class="field">
-            <label for="taxrate">Effective Tax Rate</label>
+            <label for="taxrate">Effective Tax Rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="taxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
           </div>
         </div>
@@ -820,7 +1091,7 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="field">
-          <label for="gTaxrate">Effective Tax Rate</label>
+          <label for="gTaxrate">Effective Tax Rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="gTaxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
         </div>
         <div class="field">
@@ -1292,7 +1563,7 @@ window.onerror = function(msg){
         <div class="two">
           <div class="field">
             <label for="clYears">Years until college</label>
-            <div class="inputwrap"><input id="clYears" type="text" inputmode="decimal" data-num data-step="1" min="0" max="25" data-nonneg value="10"><span class="affix">yrs</span></div>
+            <div class="inputwrap"><input id="clYears" type="text" inputmode="decimal" data-num data-step="1" min="0" max="25" data-nonneg value="18"><span class="affix">yrs</span></div>
           </div>
           <div class="field">
             <label for="clCollegeYrs">Years of college</label>
@@ -1435,6 +1706,7 @@ window.onerror = function(msg){
         <div><div class="k">Renter net worth</div><div class="v" id="rbRenterNW">--</div><div class="note" id="rbRenterNote"></div></div>
       </div>
       <div class="body">
+        <div class="hint" style="margin-bottom:10px">Every month, whichever side costs less banks the difference and invests it at your chosen return — so a renter paying less than a buyer's monthly cost keeps growing that gap, and vice versa.</div>
         <div class="kv"><span class="k">Break-even point</span><span class="v" id="rbBreakEven"></span></div>
         <div class="kv"><span class="k">Renter invests</span><span class="v" id="rbRenterInvests"></span></div>
       </div>
@@ -1467,11 +1739,11 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="ddYears" type="text" inputmode="decimal" data-num data-step="1" min="1" max="60" data-nonneg><span class="affix">yrs</span></div>
           </div>
           <div class="field">
-            <label for="ddStock">Stocks</label>
+            <label for="ddStock">Stocks<span class="tipdot" data-tip="ddstocks" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">%</span></div>
+            <div class="hint" id="ddMixNote" style="margin-top:6px"></div>
           </div>
         </div>
-        <div class="hint" id="ddMixNote"></div>
         <div class="field">
           <label for="ddFee">Fees</label>
           <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
@@ -1482,8 +1754,9 @@ window.onerror = function(msg){
           <select id="ddStrategy">
             <option value="fixed">Fixed amount, rising with inflation</option>
             <option value="pct">Fixed % of portfolio each year</option>
-            <option value="guardrails">Guardrails (cut in bad years)</option>
+            <option value="guardrails">Guyton-Klinger Guardrails</option>
             <option value="floorceil">Floor &amp; ceiling</option>
+            <option value="yale">Yale Endowment</option>
           </select>
           <div class="hint" id="ddStratNote"></div>
         </div>
@@ -1513,6 +1786,17 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="ddCeil" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
           </div>
         </div>
+        <div class="two" id="ddYaleWrap" hidden>
+          <div class="field">
+            <label for="ddYaleWeight">Weight on last year<span class="tipdot" data-tip="yale" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddYaleWeight" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="70"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddYaleRate">Target spending rate</label>
+            <div class="inputwrap"><input id="ddYaleRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg value="5"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="hint" id="ddYaleNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
         <div class="field" id="ddSpendFloorWrap" hidden>
           <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
@@ -1543,13 +1827,23 @@ window.onerror = function(msg){
           <div class="field">
             <label for="ddSSAmount">Annual benefit, today's dollars</label>
             <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
-            <div class="hint">Find your number at ssa.gov/myaccount for the most accurate figure.</div>
+            <div class="hint">Find your number at ssa.gov/myaccount for the most accurate figure. Like the rest of the plan, it grows with inflation every year once it starts.</div>
           </div>
         </div>
         <div class="field" id="ddSSDelayWrap" hidden>
           <label for="ddSSDelay">Starts after<span class="tipdot" data-tip="ssdelay" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix">yrs</span></div>
           <div class="hint">Years into retirement before benefits begin. Use 0 if they start right away.</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Other income<span class="tipdot" data-tip="customincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div id="ddIncomeList"></div>
+          <button class="btn mini" type="button" id="ddAddIncome">+ Add income source</button>
+        </div>
+        <div class="field">
+          <label>Future expenses<span class="tipdot" data-tip="customexpense" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div id="ddExpenseList"></div>
+          <button class="btn mini" type="button" id="ddAddExpense">+ Add future expense</button>
         </div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
@@ -1801,10 +2095,12 @@ window.onerror = function(msg){
         never reaches the target at all, there is nothing to coast on and it says so.</p>
         <p><b>Model this as a staged plan</b> rebuilds the plan on the Stages tab as
         two stages: contributing as normal up to the coast year, then the remaining
-        years with contributions set to zero. Same assumptions throughout, so you can
-        see the whole glide path — including what Monte Carlo makes of it, which is
-        where coasting gets interesting. Coasting leans entirely on returns showing up,
-        with no further contributions cushioning a bad stretch.</p>
+        years with contributions set to zero. The rate of return stays the same across
+        both stages — this only stops the contributions, it doesn't shift toward a
+        more conservative mix the way the Glide feature does. See what Monte Carlo
+        makes of it, which is where coasting gets interesting: it leans entirely on
+        returns showing up, with no further contributions cushioning a bad
+        stretch.</p>
       </div>
     </div>
 
@@ -1845,10 +2141,28 @@ window.onerror = function(msg){
           dollar figure and raises it with inflation every year, no matter what
           markets do &mdash; the classic 4% rule. <b>Percentage of portfolio</b> takes
           the same share of whatever the account is worth, so it can never run dry but
-          income swings with the market. <b>Guardrails</b> follows inflation but cuts
-          or raises spending if the withdrawal rate drifts too far from target.
-          <b>Floor &amp; ceiling</b> aims at a percentage of the balance but limits how
-          much spending can change from one year to the next.</dd>
+          income swings with the market. <b>Guyton-Klinger Guardrails</b> follows
+          inflation but cuts or raises spending if the withdrawal rate drifts too far
+          from target. <b>Floor &amp; ceiling</b> aims at a percentage of the balance
+          but limits how much spending can change from one year to the next.
+          <b>Yale Endowment</b> blends last year's spending with a fresh percentage of
+          the current balance, smoothing swings while still tracking the market.</dd>
+
+          <dt>Glide path</dt>
+          <dd>An optional gradual shift toward a more conservative return over the
+          final years of retirement, modelling the common practice of easing out of
+          stocks as you go. You set the ending rate and how many years the shift
+          takes; everything before that stays at your original rate.</dd>
+
+          <dt>Other income &amp; future expenses</dt>
+          <dd>Beyond Social Security, add any other income &mdash; a pension, rental
+          property, part-time work &mdash; or a planned future cost like a car or
+          long-term care. Each can start in a specific year, last once, for a set
+          number of years, or the rest of retirement, and can grow with inflation or
+          stay fixed. Income offsets what the portfolio needs to provide, the same way
+          Social Security does, with any surplus invested rather than wasted; expenses
+          add directly to that year's spending regardless of the strategy chosen
+          above.</dd>
 
           <dt>Minimum spending</dt>
           <dd>An optional hard floor, in today's dollars, that spending never falls
@@ -1879,11 +2193,11 @@ window.onerror = function(msg){
         <p><b>What it leaves out:</b> the 1928&ndash;2025 record is US markets only, so
         it says nothing about how other countries' markets have behaved, and the
         historical test necessarily has just 98 starting points, not an infinite set
-        of possible futures. Required minimum distributions, taxes on withdrawals,
-        one-time expenses, and changing your mix over time aren't modelled. Above all:
-        a strategy surviving every year since 1928 is strong evidence, not a
-        guarantee &mdash; markets have never been obligated to repeat their history,
-        and the next 30 years don't have to look like any of the last 98.</p>
+        of possible futures. Required minimum distributions and taxes on withdrawals
+        aren't modelled. Above all: a strategy surviving every year since 1928 is
+        strong evidence, not a guarantee &mdash; markets have never been obligated to
+        repeat their history, and the next 30 years don't have to look like any of
+        the last 98.</p>
       </div>
     </div>
 
@@ -2207,6 +2521,11 @@ window.onerror = function(msg){
           <dd>A starting point, not a rulebook. Leave anything at zero to ignore it.</dd>
           <dt>Add custom item</dt>
           <dd>Adds a blank row you can name yourself, for anything the presets miss.</dd>
+          <dt>+ Retirement contribution &amp; + College savings</dt>
+          <dd>Pull a monthly figure straight from another tool instead of retyping it.
+          If more than one retirement mode (Basic, Advanced, Stages) has a contribution
+          set, you'll be asked which one to use, with each option's monthly amount
+          shown so the choice is never a guess.</dd>
           <dt>Left over</dt>
           <dd>Income minus everything budgeted, shown per year and per month, green
           when positive and red when you've allocated more than you make. The
@@ -2336,12 +2655,14 @@ window.onerror = function(msg){
       </div>
       <div class="toolcard" role="button" tabindex="0" data-pick="rentbuy">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <line x1="20" y1="6" x2="20" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="8" y1="12" x2="32" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M4 12 L8 20 L12 20 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
-            <path d="M28 12 L32 20 L36 20 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
-            <path d="M13 6 L20 2 L27 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="15" y="30" width="10" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+            <circle cx="20" cy="6" r="1.6" fill="currentColor"/>
+            <line x1="20" y1="7.5" x2="20" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="9" x2="32" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="9" x2="8" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <line x1="32" y1="9" x2="32" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M3 18 Q8 24 13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M27 18 Q32 24 37 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <rect x="14" y="30" width="12" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
           </svg></div>
         <div class="toolcard-body"><div class="toolcard-name">Rent vs. Buy</div><div class="toolcard-desc">Full model comparing buyer and renter net worth over any horizon, including opportunity cost and appreciation.</div></div>
         <div class="toolcard-arrow">&#8250;</div>
@@ -2593,17 +2914,137 @@ window.onerror = function(msg){
 
 <script>
 // ===MATH START===
+/* Type notes for the calculation engine below (checked with `tsc --checkJs`,
+   not used at runtime — browsers ignore these comments entirely). Grouping
+   the shared shapes here means a typo in a property name anywhere below
+   (e.g. p.grwoth) gets flagged instead of silently producing NaN or a wrong
+   number. Run: tsc --checkJs --noEmit --allowJs <extracted script> */
+
+/**
+ * @typedef {Object} GlidePath
+ * @property {boolean} on - whether the return glides down toward an end rate
+ * @property {number} years - final N years of the plan over which the rate ramps down
+ * @property {number} endRate - annual nominal return at the end of the glide, as a decimal (0.05 = 5%)
+ */
+
+/**
+ * A single plan or stage's own assumptions. `growth` and `inflation` are
+ * independent inputs — growth is never combined with inflation automatically;
+ * setting growth equal to inflation is what keeps contributions flat in real terms.
+ * @typedef {Object} PlanParams
+ * @property {string} period - contribution frequency, a key into PPY (e.g. "Monthly")
+ * @property {number} years - length of this plan or stage, in years
+ * @property {number} initial - starting balance, in dollars
+ * @property {number} contrib - contribution per period, in dollars
+ * @property {number} growth - annual growth rate of the contribution amount itself, as a decimal (0.04 = 4%)
+ * @property {number} nominal - annual rate of return before inflation, as a decimal
+ * @property {number} inflation - annual inflation rate, as a decimal
+ * @property {number|""|null} [inflYears] - years to deflate over when converting to today's dollars; blank/null defaults to `years`
+ * @property {number} [withdrawal] - annual withdrawal rate applied to the ending balance, as a decimal (only needed by project/goalSolve)
+ * @property {number} [taxRate] - flat tax rate applied to the withdrawal, as a decimal (only needed by project/goalSolve)
+ * @property {GlidePath} [glide] - optional declining-return glide path
+ */
+
+/**
+ * The parts of a staged plan that don't belong to any one stage.
+ * @typedef {Object} GlobalParams
+ * @property {number} initial - starting balance, in dollars
+ * @property {number} inflation - annual inflation rate, as a decimal
+ * @property {number|""|null} [inflYears] - years to deflate over; blank/null defaults to the total plan length
+ * @property {number} withdrawal - annual withdrawal rate applied to the ending balance, as a decimal
+ * @property {number} taxRate - flat tax rate applied to the withdrawal, as a decimal
+ */
+
+/**
+ * One stage in a multi-stage plan. Same shape as PlanParams minus `initial`
+ * (stages chain off the prior stage's ending balance) plus optional `vol`
+ * for Monte Carlo.
+ * @typedef {Object} StageParams
+ * @property {string} period
+ * @property {number} years
+ * @property {number} contrib
+ * @property {number} growth
+ * @property {number} nominal
+ * @property {number} [vol] - annual return volatility (standard deviation), as a decimal, used only by monteCarlo
+ * @property {GlidePath} [glide]
+ */
+
+/**
+ * A one-time or recurring income/expense line item in the Drawdown tool
+ * (the "Add income source" / "Add future expense" popups).
+ * @typedef {Object} CustomItem
+ * @property {string} name
+ * @property {number} annual - amount in today's dollars
+ * @property {boolean} inflate - whether this amount rises with inflation each year
+ * @property {number} startYear - 1-based year it begins, matching runDrawdown's row numbering
+ * @property {{type: "once"|"years"|"forever", years?: number}} duration
+ * @property {boolean} [on] - if explicitly false, this item is ignored
+ */
+
+/**
+ * Inputs to one retirement drawdown run.
+ * @typedef {Object} DrawdownOptions
+ * @property {number} initial - starting portfolio balance, in dollars
+ * @property {number} years - length of the retirement, in years
+ * @property {number} stockPct - stock allocation, 0-100 (not a decimal)
+ * @property {number} initialPct - starting withdrawal rate, 0-100 (not a decimal)
+ * @property {"fixed"|"pct"|"guardrails"|"floorceil"|"yale"} strategy
+ * @property {number} [guardBand] - guardrails band width, percent
+ * @property {number} [adjustPct] - guardrails cut/raise size, percent
+ * @property {number} [floorPct] - floor-and-ceiling max cut, percent
+ * @property {number} [ceilPct] - floor-and-ceiling max raise, percent
+ * @property {number} [yaleRate] - Yale rule target percentage of current balance
+ * @property {number} [yaleWeight] - Yale rule weight on last year's spending, 0-100
+ * @property {number} [spendFloor] - absolute dollar floor on spending, in today's dollars (0 disables)
+ * @property {number} [fee] - annual fee drag, percent
+ * @property {number} [ssAnnual] - Social Security benefit, in today's dollars
+ * @property {number} [ssDelayYears] - years into retirement before Social Security starts
+ * @property {CustomItem[]} [expenseItems]
+ * @property {CustomItem[]} [incomeItems]
+ */
+
 const PPY = {"Weekly":52,"Bi-Weekly":26,"Monthly":12,"Quarterly":4,"Annually":1};
 
 // Period-by-period engine. Contributions post at the end of each period; the
 // contribution amount steps up once per year. A partial final period is dropped.
+/* Glide path: the annual return steps down linearly from the plan's own rate
+   to a chosen end rate over its final N years, then stays flat before that.
+   Interpolating the ANNUAL rate (not the periodic one) keeps "8% down to 5%"
+   meaning what it sounds like, regardless of contribution frequency; each
+   period within a year uses that year's blended annual rate converted to a
+   periodic one, the same granularity contribution growth already uses. */
+/**
+ * @param {number} yearNo - which year of the plan this is (1-based)
+ * @param {number} totalYears - total length of the plan/stage, in years
+ * @param {number} glideYears - final N years over which the rate ramps down
+ * @param {number} startRate - annual nominal return before the glide starts, as a decimal
+ * @param {number} endRate - annual nominal return at the end of the glide, as a decimal
+ * @returns {number} the blended annual rate for yearNo, as a decimal
+ */
+function glideAnnualRate(yearNo, totalYears, glideYears, startRate, endRate){
+  if (!glideYears || glideYears <= 0) return startRate;
+  const glideStart = totalYears - glideYears;
+  if (yearNo <= glideStart) return startRate;
+  if (yearNo >= totalYears) return endRate;
+  const progress = (yearNo - glideStart) / glideYears;
+  return startRate + (endRate - startRate) * progress;
+}
+
+/**
+ * Single-plan projection: compounds one initial balance and one contribution
+ * schedule to a future value, period by period.
+ * @param {PlanParams} p
+ * @returns {Object} year-by-year rows plus summary totals (fv, fvReal, wd, wdReal, afterTax, ...)
+ */
 function project(p){
   const ppy = PPY[p.period];
   const n = Math.floor(p.years * ppy);
+  const glideOn = !!(p.glide && p.glide.on);
   const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
   let bal = p.initial, contribTotal = 0, lastContrib = 0;
   const years = [];
   let yearStart = p.initial, yearContrib = 0, curYear = 1;
+  let periodicR = r;
   for (let i = 1; i <= n; i++){
     const yearNo = Math.ceil(i / ppy);
     if (yearNo !== curYear){
@@ -2611,8 +3052,12 @@ function project(p){
                   growth:bal - yearStart - yearContrib, end:bal});
       yearStart = bal; yearContrib = 0; curYear = yearNo;
     }
+    if (glideOn){
+      const yearRate = glideAnnualRate(yearNo, p.years, p.glide.years, p.nominal, p.glide.endRate);
+      periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
+    }
     const c = p.contrib * Math.pow(1 + p.growth, yearNo - 1);
-    bal = bal * (1 + r) + c;
+    bal = bal * (1 + periodicR) + c;
     contribTotal += c; yearContrib += c; lastContrib = c;
   }
   if (n > 0) years.push({year:curYear, start:yearStart, contrib:yearContrib,
@@ -2635,7 +3080,13 @@ function project(p){
   };
 }
 
-// Closed-form solve: what contribution per period reaches the target?
+/**
+ * Closed-form solve: what contribution per period reaches the target?
+ * @param {PlanParams} p
+ * @param {string} solveFor - "After-Tax Withdrawal" or a portfolio-dollar target
+ * @param {number} target - the goal amount, in the units solveFor implies
+ * @returns {Object} perPeriod/perYear contribution needed, plus intermediate values
+ */
 function goalSolve(p, solveFor, target){
   const ppy = PPY[p.period];
   const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
@@ -2662,8 +3113,15 @@ function goalSolve(p, solveFor, target){
 // same engine as the projection, so the answer agrees with it rather than
 // coming from a separate closed form. When the inflation window is left blank
 // the target itself recedes as the timeline stretches, which this accounts for.
+/**
+ * @param {PlanParams} p
+ * @param {number} portToday - target portfolio value, in today's dollars
+ * @param {number} capYears - stop searching after this many years
+ * @returns {{reached: boolean, years: number, periods?: number, real: number, exact?: number}}
+ */
 function solveYears(p, portToday, capYears){
   const ppy = PPY[p.period];
+  const glideOn = !!(p.glide && p.glide.on);
   const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
   const cap = Math.round((capYears || 100) * ppy);
   const fixed = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
@@ -2671,10 +3129,19 @@ function solveYears(p, portToday, capYears){
   const defl = yrs => Math.pow(1 + p.inflation, fixed === null ? yrs : fixed);
 
   let bal = p.initial;
+  let periodicR = r;
   if (bal / defl(0) >= portToday) return {reached:true, years:0, periods:0, real:bal};
   for (let i = 1; i <= cap; i++){
     const yearNo = Math.ceil(i / ppy);
-    bal = bal * (1 + r) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+    // A glide is defined relative to the plan's OWN length (p.years); walking
+    // past that length while searching for a longer answer just holds at the
+    // glide's end rate, rather than looping the ramp or reverting to the
+    // start rate, since "5 years past retirement" isn't a meaningful glide year.
+    if (glideOn){
+      const yearRate = glideAnnualRate(Math.min(yearNo, p.years), p.years, p.glide.years, p.nominal, p.glide.endRate);
+      periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
+    }
+    bal = bal * (1 + periodicR) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
     const real = bal / defl(i / ppy);
     if (real >= portToday){
       // Round up to the displayed precision so re-running at this value still
@@ -2690,6 +3157,11 @@ function solveYears(p, portToday, capYears){
 // growth and rate of return; the closing balance of one becomes the opening
 // balance of the next. Contribution growth restarts each stage, since each
 // stage states its own starting contribution.
+/**
+ * @param {GlobalParams} g
+ * @param {StageParams[]} stages
+ * @returns {Object} rows (year-by-year), summary (per-stage), and total fv/fvReal/wd/wdReal/afterTax
+ */
 function projectSeries(g, stages){
   let bal = g.initial, contribTotal = 0, elapsed = 0;
   const rows = [], summary = [];
@@ -2697,7 +3169,9 @@ function projectSeries(g, stages){
     const st = stages[si];
     const ppy = PPY[st.period];
     const n = Math.floor(st.years * ppy);
+    const glideOn = !!(st.glide && st.glide.on);
     const r = Math.pow(1 + st.nominal, 1 / ppy) - 1;
+    let periodicR = r;
     const stageStart = bal;
     let stageContrib = 0, yearStart = bal, yearContrib = 0, curYear = 1;
     for (let i = 1; i <= n; i++){
@@ -2707,8 +3181,12 @@ function projectSeries(g, stages){
                    contrib:yearContrib, growth: bal - yearStart - yearContrib, end:bal});
         yearStart = bal; yearContrib = 0; curYear = yearNo;
       }
+      if (glideOn){
+        const yearRate = glideAnnualRate(yearNo, st.years, st.glide.years, st.nominal, st.glide.endRate);
+        periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
+      }
       const c = st.contrib * Math.pow(1 + st.growth, yearNo - 1);
-      bal = bal * (1 + r) + c;
+      bal = bal * (1 + periodicR) + c;
       contribTotal += c; stageContrib += c; yearContrib += c;
     }
     if (n > 0){
@@ -2772,6 +3250,13 @@ function pctl(sorted, q){
 /* Same stage chain as projectSeries, but each period's growth is drawn at
    random. Samples at exactly the year boundaries projectSeries reports, so the
    percentile fan lines up with the deterministic curve. */
+/**
+ * @param {GlobalParams} g
+ * @param {StageParams[]} stages
+ * @param {number} trials - number of random paths to simulate
+ * @param {number} seed - PRNG seed, so the same inputs always draw the same paths
+ * @returns {Object} percentile bands over time plus the sorted real final-balance distribution
+ */
 function monteCarlo(g, stages, trials, seed){
   const meta = stages.map(st => {
     const ppy = PPY[st.period];
@@ -2833,6 +3318,11 @@ function monteCarlo(g, stages, trials, seed){
    target by the date already set. Walks the real contribution schedule, and at
    each period asks whether the balance alone, compounded for the years that
    remain, would clear the goal. */
+/**
+ * @param {PlanParams} p
+ * @param {number} targetFuture - the goal, already inflated to its future-dollar value
+ * @returns {{state: "already"|"reachable"|"never", years: number, balance: number, periods?: number}}
+ */
 function coastFire(p, targetFuture){
   const ppy = PPY[p.period];
   const n = Math.floor(p.years * ppy);
@@ -2864,11 +3354,22 @@ function coastFire(p, targetFuture){
 /* ---------- staged target solving (final stage only) ---------- */
 /* Everything before the last stage is fixed, so the run is collapsed to the
    balance at the final stage's start and the last stage is solved on its own. */
+/**
+ * @param {GlobalParams} g
+ * @param {StageParams[]} stages
+ * @returns {number} balance at the start of the final stage
+ */
 function balanceBeforeLast(g, stages){
   if (stages.length < 2) return g.initial;
   const head = stages.slice(0, -1);
   return projectSeries(g, head).fv;
 }
+/**
+ * @param {GlobalParams} g
+ * @param {StageParams[]} stages
+ * @param {number} portToday - target portfolio value, in today's dollars
+ * @returns {Object|null} two routes to the target: a required contribution, or a required final-stage length
+ */
 function finalStageSolve(g, stages, portToday){
   if (!stages.length) return null;
   const last = stages[stages.length - 1];
@@ -2976,6 +3477,11 @@ const STATES = {
 };
 
 /* Progressive tax over [threshold, rate] pairs, plus the band-by-band detail. */
+/**
+ * @param {number} income - taxable income, in dollars
+ * @param {number[][]} brackets - [threshold, rate] pairs; rate is a decimal
+ * @returns {{tax: number, bands: Array<Object>}}
+ */
 function bracketTax(income, brackets){
   let tax = 0; const bands = [];
   for (let i = 0; i < brackets.length; i++){
@@ -2987,12 +3493,27 @@ function bracketTax(income, brackets){
   }
   return {tax, bands};
 }
+/**
+ * @param {number} income - taxable income, in dollars
+ * @param {number[][]} brackets - [threshold, rate] pairs; rate is a decimal
+ * @returns {number} the top marginal rate that applies to this income, as a decimal
+ */
 function marginalRate(income, brackets){
   let r = brackets[0][1];
   for (let i = 0; i < brackets.length; i++) if (income > brackets[i][0]) r = brackets[i][1];
   return r;
 }
 
+/**
+ * @param {Object} inp
+ * @param {"s"|"m"} inp.status - filing status: single or married
+ * @param {number} inp.gross - gross income, in dollars
+ * @param {number} inp.pre - pre-tax deductions (e.g. 401k), in dollars
+ * @param {"std"|"item"} inp.dedType - standard vs. itemized deduction
+ * @param {number} inp.item - itemized deduction total, in dollars (used only if dedType is "item")
+ * @param {string} inp.state - two-letter state code, a key into STATES
+ * @returns {Object} federal/state/FICA breakdown, net income, and effective/marginal rates
+ */
 function computeTax(inp){
   const st = inp.status, idx = st === "m" ? 1 : 0;
   const gross = Math.max(0, inp.gross);
@@ -3037,6 +3558,20 @@ function computeTax(inp){
 }
 
 /* ---------- mortgage ---------- */
+/**
+ * @param {Object} m
+ * @param {number} m.price - home price, in dollars
+ * @param {number} m.down - down payment, in dollars
+ * @param {number} m.rate - annual interest rate, as a decimal
+ * @param {number} m.term - loan term, in years
+ * @param {number} m.taxPct - annual property tax rate, as a decimal of price
+ * @param {number} m.ins - annual homeowners insurance, in dollars
+ * @param {number} m.pmiPct - annual PMI rate, as a decimal of the loan, applied above 80% LTV
+ * @param {number} m.hoa - monthly HOA dues, in dollars
+ * @param {number} [m.maintPct] - annual maintenance, as a decimal of price
+ * @param {number} [m.util] - monthly utilities, in dollars
+ * @returns {Object} monthly payment breakdown plus year-by-year amortization
+ */
 function mortgage(m){
   const loan = Math.max(0, m.price - m.down);
   const r = m.rate / 12, n = Math.round(m.term * 12);
@@ -3104,6 +3639,46 @@ var HIST_INFL = [-1.7,0.0,-2.3,-9.0,-9.9,-5.1,3.1,2.2,1.5,3.6,-2.1,-1.4,0.7,5.0,
    One retirement run. Withdrawal happens at the start of each year, then the
    remaining balance earns that year's blended stock/bond return less fees.
    Sequence is an array of {stock, bond, infl} in percent. */
+/**
+ * Only enabled items (item.on !== false) are ever considered active.
+ * @param {CustomItem[]} items
+ * @param {number} year - 1-based year, matching runDrawdown's row numbering
+ * @returns {CustomItem[]} the items active in this year
+ */
+function itemsActiveThisYear(items, year) {
+  if (!items || !items.length) return [];
+  return items.filter(function (it) {
+    if (it.on === false) return false;
+    var start = Math.max(1, Math.round(it.startYear || 1));
+    if (year < start) return false;
+    if (it.duration.type === "once") return year === start;
+    if (it.duration.type === "years") return year < start + Math.max(1, Math.round(it.duration.years));
+    return true; // forever
+  });
+}
+/**
+ * Matches how the base withdrawal and Social Security are inflated: the
+ * stated annual figure is in today's dollars, and gets the same amount of
+ * inflation applied as everything else by the year it's actually paid —
+ * whether that's year 1 or year 20 doesn't need special-casing, cumInfl
+ * already reflects however many years have passed by then.
+ * @param {CustomItem} it
+ * @param {number} year - 1-based year this amount is being paid
+ * @param {number} cumInfl - cumulative inflation multiplier through the start of this year
+ * @param {number} infl - this year's own inflation rate, as a decimal
+ * @returns {number} this item's dollar amount for this year
+ */
+function itemAmount(it, year, cumInfl, infl) {
+  if (!it.inflate) return it.annual;
+  return it.annual * cumInfl * (1 + infl);
+}
+
+/**
+ * Runs one retirement drawdown over a specific sequence of years.
+ * @param {DrawdownOptions} o
+ * @param {Array<{stock: number, bond: number, infl: number}>} seq - one year's stock/bond/inflation, in percent (not decimals), per row
+ * @returns {Object} year-by-year rows plus depleted/endBalance/totalRealSpend summary
+ */
 function runDrawdown(o, seq) {
   var bal = o.initial;
   var stockW = o.stockPct / 100;
@@ -3143,7 +3718,7 @@ function runDrawdown(o, seq) {
         else if (curRate < lo) w = w * (1 + o.adjustPct / 100);
       }
 
-    } else {
+    } else if (o.strategy === "floorceil") {
       // floor & ceiling: aim at a fixed % of the current balance, but never
       // change spending by more than the allowed step from last year
       var target = bal * o.initialPct / 100;
@@ -3151,6 +3726,20 @@ function runDrawdown(o, seq) {
       var floor = infAdj * (1 - o.floorPct / 100);
       var ceil = infAdj * (1 + o.ceilPct / 100);
       w = Math.min(Math.max(target, floor), ceil);
+
+    } else {
+      // Yale endowment rule: year 1 is a plain percentage of the starting
+      // portfolio, since there's no prior year yet. From year 2 on, blend
+      // last year's inflation-adjusted spending with a fresh percentage of
+      // the current portfolio, smoothing swings while still tracking the
+      // market over time.
+      if (y === 0) {
+        w = baseW;
+      } else {
+        var priorAdj = prevW * (1 + infl);
+        var pctOfBal = bal * o.yaleRate / 100;
+        w = (o.yaleWeight / 100) * priorAdj + (1 - o.yaleWeight / 100) * pctOfBal;
+      }
     }
 
     // Optional hard floor: spending in today's dollars never falls below this,
@@ -3162,10 +3751,24 @@ function runDrawdown(o, seq) {
     // year, while this sets an absolute dollar amount it can never go under.
     // Uses THIS year's price level (cumInfl folded forward), matching how
     // realSpend is computed below, so the floor lands where it's meant to.
-    if (o.spendFloor > 0 && (o.strategy === "pct" || o.strategy === "guardrails" || o.strategy === "floorceil")) {
+    if (o.spendFloor > 0 && o.strategy !== "fixed") {
       var floorNominal = o.spendFloor * cumInfl * (1 + infl);
       if (w < floorNominal) w = floorNominal;
     }
+
+    // This is the strategy's own ongoing baseline, before one-off custom
+    // items are layered on \u2014 it's what next year's guardrails/floor-ceiling/
+    // Yale calculations should treat as "last year's spending." A one-time
+    // expense must not permanently inflate that baseline the way it would if
+    // prevW were set from the post-expense total.
+    var strategyW = w;
+
+    // Custom future expenses are layered on top of whatever the strategy
+    // above already decided to spend, entirely independent of its logic —
+    // a $30k boat in year 5 means $30k more comes out that year, full stop.
+    var customExpense = itemsActiveThisYear(o.expenseItems, y + 1)
+      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl, infl); }, 0);
+    w = w + customExpense;
 
     // Social Security covers part of the spending once it starts, so the
     // portfolio only has to provide the remainder.
@@ -3174,11 +3777,21 @@ function runDrawdown(o, seq) {
     var spend = w;
     w = Math.max(0, w - ssThisYear);
 
+    // Custom future income (pension, rental, inheritance, etc.) works the
+    // same way Social Security does: it covers part of the year's planned
+    // spending first. If it covers more than the plan calls for, nothing
+    // is withdrawn and the extra is invested straight into the portfolio
+    // instead of being wasted or reducing next year's number.
+    var customIncomeTotal = itemsActiveThisYear(o.incomeItems, y + 1)
+      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl, infl); }, 0);
+    var incomeInvested = Math.max(0, customIncomeTotal - w);
+    w = Math.max(0, w - customIncomeTotal);
+
     if (w > bal) w = bal;
     if (w < 0) w = 0;
 
     var start = bal;
-    bal = bal - w;
+    bal = bal - w + incomeInvested;
     var ret = (stockW * s.stock + bondW * s.bond) / 100 - (o.fee || 0) / 100;
     var growth = bal * ret;
     bal = bal + growth;
@@ -3194,7 +3807,7 @@ function runDrawdown(o, seq) {
       ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: spend / cumInfl
     });
 
-    prevW = spend;
+    prevW = strategyW;
     if (bal <= 0 && depletedYear === null) depletedYear = y + 1;
   }
 
@@ -3212,6 +3825,10 @@ function runDrawdown(o, seq) {
 /* Every rolling historical start year that has enough data to run the full
    retirement. This is the sequence-of-returns test: 1966 and 1929 fail plans
    that a random-draw simulation would call safe. */
+/**
+ * @param {DrawdownOptions} o
+ * @returns {Object} one run per historical starting year, plus success rate and end-balance percentiles
+ */
 function historicalBacktest(o) {
   var n = HIST_STOCK.length;
   var runs = [];
@@ -3242,6 +3859,12 @@ function historicalBacktest(o) {
 
 /* Random sequences drawn from the same historical distribution, using the
    seeded generator so a given set of inputs always produces the same chart. */
+/**
+ * @param {DrawdownOptions} o
+ * @param {number} trials - number of random sequences to simulate
+ * @param {number} seed - PRNG seed, so the same inputs always draw the same paths
+ * @returns {Object} one run per trial, plus success rate and percentile bands over time
+ */
 function monteCarloDrawdown(o, trials, seed) {
   var rng = mulberry32(seed >>> 0);
   var n = HIST_STOCK.length;
@@ -3285,6 +3908,12 @@ var SS_BEND2 = 7391;
 var SS_CAP = 184500;
 var SS_FRA = 67;
 
+/**
+ * @param {number} income - annual income, in dollars
+ * @param {number} careerYears - years worked at this income (capped at 35, the number Social Security averages over)
+ * @param {number} claimAge - age benefits start, 62-70
+ * @returns {{aime: number, pia: number, adjustment: number, monthly: number, annual: number, atFRA: number, fra: number}}
+ */
 function ssEstimate(income, careerYears, claimAge) {
   var capped = Math.min(Math.max(0, income), SS_CAP);
   // Social Security averages your best 35 years; a shorter career means zeros
@@ -3355,6 +3984,7 @@ function setBig(id, text){
 // Starting point when nothing is saved.
 const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.075,
   inflation:.025, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
+const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, period:"Monthly", risk:.045};
 
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
 const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
@@ -3381,6 +4011,16 @@ function activeTool(){
   const t = chartMode.tab;
   if (t === "tools" && toolSub !== "picker") return toolSub;
   return "retire";
+}
+/* Scenario save/load treats Basic, Advanced and Stages as one bundle under
+   "retire", so activeTool() has to keep returning that. Reset needs to know
+   which of the three is actually on screen, though \u2014 otherwise it either
+   resets the wrong mode's inputs or resets more than one mode at once. */
+function activeRetireMode(){
+  const t = chartMode.tab;
+  if (t === "simple") return "basic";
+  if (t === "series") return "stages";
+  return "advanced";
 }
 
 let toastTimer;
@@ -3527,13 +4167,20 @@ function initFields(root){
 initFields(document);
 
 function readInputs(){
+  const years = Math.min(100, num("years"));
+  const glideOn = $("glideToggle").classList.contains("on");
   return {
     initial: num("initial"), contrib: num("contrib"), period: $("period").value,
     growth: rate("growth"), nominal: rate("nominal") - rate("fees"),
     inflation: rate("inflation"),
-    years: Math.min(100, num("years")),
+    years,
     withdrawal: rate("withdrawal"), taxRate: rate("taxrate"), vol: rate("volatility"),
-    fees: rate("fees"), gross: rate("nominal")
+    fees: rate("fees"), gross: rate("nominal"),
+    glide: glideOn ? {
+      on: true,
+      endRate: rate("glideEnd") - rate("fees"),
+      years: Math.min(years, Math.max(1, Math.round(num("glideYears"))))
+    } : {on: false}
   };
 }
 function writeInputs(s){
@@ -3547,6 +4194,13 @@ function writeInputs(s){
   $("volatility").value = +((s.vol == null ? .15 : s.vol) * 100).toFixed(6);
   $("fees").value = +((s.fees == null ? 0 : s.fees) * 100).toFixed(6);
   if (s.gross != null) $("nominal").value = +(s.gross * 100).toFixed(6);
+  const glideOn = !!(s.glide && s.glide.on);
+  $("glideToggle").classList.toggle("on", glideOn);
+  $("glideToggle").setAttribute("aria-expanded", String(glideOn));
+  $("glideFields").hidden = !glideOn;
+  $("glideEnd").value = glideOn ? +(s.glide.endRate * 100).toFixed(6) : "";
+  $("glideYears").value = glideOn ? s.glide.years : "";
+  updateGlideNote();
   // a hand-edited or imported file could carry a negative into one of these
   document.querySelectorAll("[data-nonneg]").forEach(el => {
     if (String(el.value).indexOf("-") !== -1) el.value = el.value.replace(/-/g, "");
@@ -3950,7 +4604,7 @@ function renderSolve(){
     coastNote.textContent = "Stop contributing then and growth alone still reaches "
       + money(S.portToday) + " by year " + fmtNum(p.years) + ".";
     $("sCoastAction").innerHTML =
-      "<button class='btn' type='button' id='btnCoast'>Model this as a staged plan</button>";
+      "<button class='btn primary' type='button' id='btnCoast'>Model this as a staged plan</button>";
     $("btnCoast").addEventListener("click", () => applyCoast(p, C));
   } else {
     coastEl.textContent = "Not on track";
@@ -3982,6 +4636,43 @@ function renderSolve(){
     $("btnApplyYears").disabled = false;
   }
 }
+
+/* Defaults to 3 points below the current rate, glide over the final 5 years,
+   both editable once expanded. Re-reads the current rate each time it's
+   turned on, since the person may have changed it since the last time. */
+$("glideToggle").addEventListener("click", () => {
+  const on = $("glideToggle").classList.toggle("on");
+  $("glideToggle").setAttribute("aria-expanded", String(on));
+  $("glideFields").hidden = !on;
+  if (on && $("glideEnd").value === ""){
+    const cur = num("nominal");
+    $("glideEnd").value = +(Math.max(0, cur - 3)).toFixed(2);
+    $("glideYears").value = Math.min(5, Math.max(1, Math.round(num("years")) || 5));
+  }
+  updateGlideNote();
+  renderAll();
+});
+function clampGlideYears(){
+  const total = Math.max(1, Math.round(num("years")));
+  const y = Math.round(num("glideYears"));
+  const clamped = Math.min(total, Math.max(1, y || 1));
+  if (clamped !== y) $("glideYears").value = clamped;
+  return clamped;
+}
+function updateGlideNote(){
+  if (!$("glideToggle").classList.contains("on")){ $("glideNote").textContent = ""; return; }
+  const total = Math.max(1, Math.round(num("years")));
+  const gy = clampGlideYears();
+  const startYear = Math.max(1, total - gy + 1);
+  $("glideNote").textContent = "Holds " + pctStr(rate("nominal"), 1) + " through year " +
+    (startYear - 1) + ", then eases down to " + pctStr(rate("glideEnd"), 1) +
+    " by year " + total + ".";
+}
+["glideEnd", "glideYears"].forEach(id => {
+  $(id).addEventListener("input", () => { updateGlideNote(); renderAll(); });
+});
+$("years").addEventListener("input", updateGlideNote);
+$("nominal").addEventListener("input", updateGlideNote);
 
 $("btnApply").addEventListener("click", () => {
   const p = readInputs();
@@ -4090,7 +4781,7 @@ function renderAll(){ renderProjection(); renderTools(); }
 let seriesPoints = [], seriesRun = null, seriesTarget = 0;
 
 const SERIES_GLOBALS = {initial:10000, inflation:.025, withdrawal:.04, taxRate:.10,
-  target:1000000, fees:0};
+  target:100000, fees:0};
 const SERIES_STAGES = [
   {years:10, contrib:500,  period:"Bi-Weekly", growth:.04, nominal:.085, vol:.17},
   {years:20, contrib:1200, period:"Monthly",   growth:.03, nominal:.060, vol:.09, adj:true}
@@ -4114,6 +4805,12 @@ function effectiveStages(g){
     const factor = (st.adj && i > 0) ? Math.pow(1 + infl, start) : 1;
     const out = Object.assign({}, st, {contrib: st.contrib * factor,
                                        nominal: st.nominal - fee});
+    // The glide end rate is stored as typed (pre-fee), matching how nominal
+    // is stored on the stage itself -- fees come off here, at the same point
+    // nominal's fee is applied, so both ends of the glide are net of fees.
+    if (out.glide && out.glide.on){
+      out.glide = Object.assign({}, out.glide, {endRate: out.glide.endRate - fee});
+    }
     start += st.years;
     return out;
   });
@@ -4168,7 +4865,7 @@ function buildStages(){
           "</div>" +
         "<div class='field'><label>Frequency</label>" +
           "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select></div>" +
-        "<div class='field'><label>Contribution growth</label><div class='inputwrap'>" +
+        "<div class='field'><label>Contribution growth<span class='tipdot' data-tip='contribgrowth' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
           "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
           "' value='" + (+(st.growth * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " contribution growth'>" +
           "<span class='affix'>%/yr</span></div></div>" +
@@ -4176,15 +4873,52 @@ function buildStages(){
           "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-nonneg data-f='vol' data-i='" + i +
           "' value='" + (+((st.vol || 0) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " volatility'>" +
           "<span class='affix'>%/yr</span></div></div>" +
-        "<div class='field'><label>Rate of return</label><div class='inputwrap'>" +
+        "<div class='field'><label>Rate of return<span class='tipdot' data-tip='nominalreturn' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
           "<button type='button' class='signflip' data-signstage='" + i + "' title='Flip sign'>&plusmn;</button>" +
           "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='nominal' data-i='" + i +
           "' value='" + (+(st.nominal * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " rate of return'>" +
-          "<span class='affix'>%</span></div></div>" +
-      "</div></div>";
+          "<span class='affix'>%</span></div>" +
+          "<div class='hint stagereal' data-realrate='" + i + "' style='margin:4px 0 0'></div></div>" +
+      "</div>" + (i === stages.length - 1 ? (
+        "<div class='glidewrap'>" +
+          "<button type='button' class='glidebtn" + (st.glide && st.glide.on ? " on" : "") +
+          "' data-glidetoggle='" + i + "' aria-expanded='" + (st.glide && st.glide.on ? "true" : "false") + "'>" +
+            "<span class='glidebtn-check' aria-hidden='true'></span>" +
+            "<span class='glidebtn-txt'>Glide to a more conservative return" +
+            "<span class='tipdot' data-tip='glide' role='button' tabindex='0' aria-label='What is this?'>?</span></span>" +
+          "</button>" +
+          "<div class='glidefields'" + ((st.glide && st.glide.on) ? "" : " hidden") + ">" +
+            "<div class='two'>" +
+              "<div class='field'><label>End at</label><div class='inputwrap'>" +
+                "<input type='text' inputmode='decimal' data-num data-step='1' data-f='glideEnd' data-i='" + i +
+                "' value='" + ((st.glide && st.glide.endRate != null) ? +(st.glide.endRate * 100).toFixed(6) : "") +
+                "' aria-label='Stage " + (i+1) + " glide end rate'><span class='affix'>%</span></div></div>" +
+              "<div class='field'><label>Over final</label><div class='inputwrap'>" +
+                "<input type='text' inputmode='decimal' data-num data-step='1' min='1' data-nonneg data-f='glideYears' data-i='" + i +
+                "' value='" + ((st.glide && st.glide.years) || "") +
+                "' aria-label='Stage " + (i+1) + " glide years'><span class='affix'>yrs</span></div></div>" +
+            "</div>" +
+            "<div class='hint' style='margin:0' data-glidenote='" + i + "'></div>" +
+          "</div>" +
+        "</div>"
+      ) : "") + "</div>";
   }).join("");
   $("stageEmpty").style.display = stages.length ? "none" : "block";
   initFields(list);
+  if (stages.length) updateStageGlideNote(stages.length - 1);
+  stages.forEach((st, i) => updateStageRealRate(i));
+}
+/* The advanced tab shows a real (inflation-adjusted) rate right next to the
+   nominal one; stages get the same, using the plan's single global inflation
+   rate since stages don't each have their own. */
+function updateStageRealRate(i){
+  const st = stages[i];
+  const note = $("stageList").querySelector("[data-realrate='" + i + "']");
+  if (!st || !note) return;
+  const infl = rate("gInflation");
+  const fees = rate("gFees");
+  const real = (1 + st.nominal - fees) / (1 + infl) - 1;
+  note.textContent = "Real: " + pctStr(real, 2) + " after " + pctStr(infl, 1) + " inflation";
 }
 
 $("stageList").addEventListener("input", e => {
@@ -4192,11 +4926,51 @@ $("stageList").addEventListener("input", e => {
   if (!f || f === "period") return;
   const i = parseInt(el.getAttribute("data-i"), 10);
   if (!stages[i]) return;
-  if (f === "years") stages[i].years = Math.min(100, parseNum(el.value));
+  if (f === "years"){
+    stages[i].years = Math.min(100, parseNum(el.value));
+    if (stages[i].glide) clampStageGlideYears(i);
+  }
   else if (f === "contrib") stages[i].contrib = parseNum(el.value);
+  else if (f === "glideEnd"){
+    stages[i].glide = stages[i].glide || {on: true};
+    stages[i].glide.endRate = parseNum(el.value) / 100;
+  }
+  else if (f === "glideYears"){
+    stages[i].glide = stages[i].glide || {on: true};
+    stages[i].glide.years = Math.max(1, Math.round(parseNum(el.value)));
+    clampStageGlideYears(i);
+  }
   else stages[i][f] = parseNum(el.value) / 100;
+  if (f === "glideEnd" || f === "glideYears") updateStageGlideNote(i);
+  if (f === "nominal") updateStageRealRate(i);
   renderSeries();
 });
+/* Glide years can never exceed the stage's own length \u2014 there's no
+   meaningful "final 10 years" of a 6-year stage. Silently caps it and
+   reflects the corrected number back into the field. */
+function clampStageGlideYears(i){
+  const st = stages[i];
+  if (!st || !st.glide) return;
+  const max = Math.max(1, Math.round(st.years));
+  const y = Math.round(st.glide.years || 1);
+  const clamped = Math.min(max, Math.max(1, y));
+  if (clamped !== st.glide.years){
+    st.glide.years = clamped;
+    const field = $("stageList").querySelector("[data-f='glideYears'][data-i='" + i + "']");
+    if (field) field.value = clamped;
+  }
+}
+function updateStageGlideNote(i){
+  const st = stages[i];
+  const note = $("stageList").querySelector("[data-glidenote='" + i + "']");
+  if (!note) return;
+  if (!st || !st.glide || !st.glide.on){ note.textContent = ""; return; }
+  const total = Math.max(1, Math.round(st.years));
+  const gy = Math.min(total, Math.max(1, Math.round(st.glide.years || 1)));
+  const startYear = Math.max(1, total - gy + 1);
+  note.textContent = "Holds " + pctStr(st.nominal, 1) + " through year " + (startYear - 1) +
+    " of this stage, then eases down to " + pctStr(st.glide.endRate || 0, 1) + " by year " + total + ".";
+}
 $("stageList").addEventListener("change", e => {
   const el = e.target;
   const f = el.getAttribute && el.getAttribute("data-f");
@@ -4207,11 +4981,33 @@ $("stageList").addEventListener("change", e => {
   else if (f === "adj"){ stages[i].adj = el.checked; renderSeries(); }
 });
 $("stageList").addEventListener("click", e => {
-  const b = e.target.closest ? e.target.closest("button[data-del]") : null;
-  if (!b) return;
-  stages.splice(parseInt(b.getAttribute("data-del"), 10), 1);
-  buildStages(); renderSeries();
-  toast("Stage removed");
+  const del = e.target.closest ? e.target.closest("button[data-del]") : null;
+  if (del){
+    stages.splice(parseInt(del.getAttribute("data-del"), 10), 1);
+    buildStages(); renderSeries();
+    toast("Stage removed");
+    return;
+  }
+  const gt = e.target.closest ? e.target.closest("button[data-glidetoggle]") : null;
+  if (gt){
+    const i = parseInt(gt.getAttribute("data-glidetoggle"), 10);
+    if (!stages[i]) return;
+    const wasOn = !!(stages[i].glide && stages[i].glide.on);
+    if (wasOn){
+      stages[i].glide.on = false;
+    } else {
+      // Defaults to 3 points below this stage's own rate, over its final 5
+      // years \u2014 re-derived each time it's turned on, in case the stage's
+      // rate or length changed since it was last used.
+      const cur = stages[i].nominal * 100;
+      stages[i].glide = {
+        on: true,
+        endRate: Math.max(0, cur - 3) / 100,
+        years: Math.min(5, Math.max(1, Math.round(stages[i].years)))
+      };
+    }
+    buildStages(); renderSeries();
+  }
 });
 $("btnAddStage").addEventListener("click", () => {
   const last = stages[stages.length - 1];
@@ -4396,6 +5192,9 @@ function drawSeriesChart(g, R){
 
 ["gInitial","gInflation","gWithdrawal","gTaxrate","gFees"]
   .forEach(id => $(id).addEventListener("input", renderSeries));
+["gInflation","gFees"].forEach(id => $(id).addEventListener("input", () => {
+  stages.forEach((st, i) => updateStageRealRate(i));
+}));
 $("bandS").addEventListener("input", () => {
   if (chartMode.series === "band" && seriesRun) renderSeries();
 });
@@ -4976,11 +5775,18 @@ function buildDrawdownSheet(){
   inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
   inputs += row("Withdrawal strategy",
     o.strategy === "fixed" ? "Fixed amount" : o.strategy === "pct" ? "% of portfolio" :
-    o.strategy === "guardrails" ? "Guardrails" : "Floor & ceiling");
+    o.strategy === "guardrails" ? "Guyton-Klinger Guardrails" :
+    o.strategy === "yale" ? "Yale Endowment" : "Floor & ceiling");
   inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
   if (o.strategy === "guardrails") inputs += row("Guardrail width", num("ddGuardBand") + "%");
+  if (o.strategy === "yale"){
+    inputs += row("Weight on last year", num("ddYaleWeight") + "%");
+    inputs += row("Target spending rate", num("ddYaleRate") + "%");
+  }
   if (o.spendFloor > 0) inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
   if (o.ssAnnual > 0) inputs += row("Social Security", money(o.ssAnnual) + "/yr");
+  (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
+  (o.expenseItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name + " (expense)", describeItem(it)));
 
   let out = row("Success rate", pctStr(H.successRate, 1));
   out += row("Tested against", H.total + " periods since 1928");
@@ -5540,22 +6346,38 @@ function upsertBudgetLine(desc, monthlyAmount){
    background even while you're looking at Budget. Basic is checked first
    since it's the default landing mode; Stages uses its first stage, since
    that's the contribution happening right now. */
-$("bgCopyRetire").addEventListener("click", () => {
-  const candidates = [
+/* Same pattern as the Drawdown tool's "copy portfolio" chooser: every source
+   that actually has a contribution is offered, with its monthly-equivalent
+   dollar amount shown right there, rather than silently picking the first
+   one that happens to be nonzero and leaving the person to guess from the
+   toast message afterward. */
+$("bgCopyRetire").addEventListener("click", async () => {
+  const sources = [
     {contrib: num("qContrib"), period: $("qPeriod").value, label: "Basic"},
     {contrib: num("contrib"), period: $("period").value, label: "Advanced"},
     {contrib: stages.length ? stages[0].contrib : 0,
      period: stages.length ? stages[0].period : "Monthly", label: "Stages"}
-  ];
-  const found = candidates.find(c => c.contrib > 0);
-  if (!found){
+  ].map(c => ({label: c.label, value: c.contrib * PPY[c.period] / 12}))
+   .filter(c => c.value > 0);
+
+  if (!sources.length){
     toast("Set a contribution amount in Basic, Advanced, or Stages first");
     return;
   }
-  const monthly = found.contrib * PPY[found.period] / 12;
-  upsertBudgetLine("Retirement contribution", Math.round(monthly));
-  toast("Added " + money(Math.round(monthly)) + "/mo from " + found.label);
+  if (sources.length === 1){
+    applyBudgetRetireCopy(sources[0]);
+    return;
+  }
+
+  const choice = await showPopup("Copy from which plan?", sources.map(s =>
+    ({label: s.label, desc: money(s.value) + "/mo", money: true})));
+  if (choice >= 0) applyBudgetRetireCopy(sources[choice]);
 });
+function applyBudgetRetireCopy(source){
+  const monthly = Math.round(source.value);
+  upsertBudgetLine("Retirement contribution", monthly);
+  toast("Added " + money(monthly) + "/mo from " + source.label);
+}
 
 $("bgCopyCollege").addEventListener("click", () => {
   const inp = readCollege();
@@ -5579,6 +6401,7 @@ $("rbCopyMort").addEventListener("click", () => {
   $("rbTerm").value = ["30", "20", "15"].includes(morTerm) ? morTerm : "15";
   $("rbPropTax").value = $("moTax").value;
   $("rbIns").value = $("moIns").value;
+  $("rbMaint").value = $("moMaint").value;
   renderRentBuy();
   toast("Copied the home from your mortgage calculation");
 });
@@ -5682,9 +6505,9 @@ attachChart("chartWrapCl", "chartCl", "tipCl", function() { return collegePoints
 /* ---------- rent vs buy UI ---------- */
 var rbPoints = [];
 var RB_DEFAULTS = {
-  rbPrice:400000, rbDown:20, rbRate:6.71, rbPropTax:1.1, rbIns:1800,
-  rbMaint:1, rbClose:2.5, rbSell:6, rbRent:2000, rbRentInc:3,
-  rbAppr:3.5, rbInvest:7, rbHorizon:10
+  rbPrice:450000, rbDown:20, rbRate:6.71, rbPropTax:1.1, rbIns:1800,
+  rbMaint:1, rbClose:3, rbSell:3, rbRent:1800, rbRentInc:3.2,
+  rbAppr:4, rbInvest:7, rbHorizon:30
 };
 
 function readRB() {
@@ -5722,9 +6545,9 @@ function renderRentBuy() {
   $("rbWinner").className = "v gold";
   $("rbWinNote").textContent = "by " + money(Math.abs(last.buyerNW - last.renterNW));
   setBig("rbBuyerNW", money(last.buyerNW));
-  $("rbBuyerNote").textContent = "Home equity after selling + savings";
+  $("rbBuyerNote").textContent = "Home equity after selling, plus whatever's invested in months buying costs less than renting";
   setBig("rbRenterNW", money(last.renterNW));
-  $("rbRenterNote").textContent = "Invested down payment + savings";
+  $("rbRenterNote").textContent = "Down payment invested from day one, plus whatever's invested in months renting costs less than buying";
 
   $("rbBreakEven").textContent = R.breakEven ? "Year " + fmtNum(R.breakEven) + " -- buying pulls ahead" : "Renting stays ahead throughout";
   $("rbRenterInvests").textContent = money(R.initialInvest) + " (down payment + closing costs)";
@@ -5943,8 +6766,15 @@ var DD_STRAT_NOTES = {
   fixed: "The classic 4% rule. You set a first-year amount and give yourself a raise for inflation every year, no matter what markets do. Simple, but it cannot react to a bad decade.",
   pct: "Take the same percentage of whatever the portfolio is worth each year. It can never run dry, but your income swings with the market.",
   guardrails: "Follow inflation normally, like the fixed-amount approach. But check your withdrawal rate each year against your original target \u2014 if the portfolio grows a lot, your rate drops below target, so you get a raise; if it shrinks a lot, your rate climbs above target, so spending gets cut. This reacts to bad markets without giving up the yearly raise fixed spending never gets you.",
-  floorceil: "Aim at a percentage of the current balance, but never change spending by more than the limits you set from one year to the next."
+  floorceil: "Aim at a percentage of the current balance, but never change spending by more than the limits you set from one year to the next.",
+  yale: "Blend most of last year's spending with a fresh percentage of the current balance. Smooths out the swings a pure percentage-of-portfolio approach would give you, while still tracking the market over time."
 };
+
+// Custom income and expense sources for the Drawdown tool: a pension, rental,
+// inheritance, future car purchase, and so on. Each item is independent of
+// the chosen withdrawal strategy \u2014 see runDrawdown() for how they're applied.
+let ddIncomeItems = [];
+let ddExpenseItems = [];
 
 function readDD() {
   var strat = $("ddStrategy").value;
@@ -5959,9 +6789,13 @@ function readDD() {
     adjustPct: num("ddAdjust"),
     floorPct: num("ddFloor"),
     ceilPct: num("ddCeil"),
+    yaleWeight: Math.min(100, Math.max(0, num("ddYaleWeight"))),
+    yaleRate: Math.max(0, num("ddYaleRate")),
     spendFloor: num("ddSpendFloor"),
     ssAnnual: ddSSAnnual(),
-    ssDelayYears: Math.max(0, Math.round(num("ddSSDelay")))
+    ssDelayYears: Math.max(0, Math.round(num("ddSSDelay"))),
+    incomeItems: ddIncomeItems,
+    expenseItems: ddExpenseItems
   };
 }
 
@@ -5983,16 +6817,28 @@ function renderDrawdown() {
   $("ddSSShow").textContent = ssAmt > 0 ? money(ssAmt) + "/yr" : "Not included";
   if (ssMode === "est"){
     var e = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
-    $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month claiming at " +
+    $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month in today's dollars, claiming at " +
       Math.round(num("ddSSClaim")) + ". Full retirement age is " + SS_FRA +
-      "; claiming earlier permanently reduces it, later increases it 8% a year.";
+      "; claiming earlier permanently reduces it, later increases it 8% a year. " +
+      "Like the rest of the plan, this grows with inflation every year once it starts.";
   }
   var o = readDD();
   var strat = o.strategy;
   $("ddGuardWrap").hidden = (strat !== "guardrails");
   $("ddFloorWrap").hidden = (strat !== "floorceil");
-  $("ddSpendFloorWrap").hidden = !(strat === "pct" || strat === "guardrails" || strat === "floorceil");
+  $("ddYaleWrap").hidden = (strat !== "yale");
+  $("ddSpendFloorWrap").hidden = (strat === "fixed");
   $("ddStratNote").textContent = DD_STRAT_NOTES[strat] || "";
+
+  if (strat === "yale") {
+    var w = Math.min(100, Math.max(0, num("ddYaleWeight")));
+    var yr = Math.max(0, num("ddYaleRate"));
+    $("ddYaleNote").hidden = false;
+    $("ddYaleNote").innerHTML = "Each year: <b>" + w + "%</b> of last year's spending (adjusted for inflation) " +
+      "plus <b>" + (100 - w) + "%</b> of <b>" + yr + "%</b> of the current portfolio.";
+  } else {
+    $("ddYaleNote").hidden = true;
+  }
 
   if (strat === "guardrails") {
     var target = o.initialPct;
@@ -6218,7 +7064,8 @@ $("segDD").addEventListener("click", function (e) {
   renderDrawdown();
 });
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
- "ddFloor", "ddCeil", "ddSpendFloor", "ddSSIncome", "ddSSClaim", "ddSSAmount", "ddSSDelay"]
+ "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor",
+ "ddSSIncome", "ddSSClaim", "ddSSAmount", "ddSSDelay"]
   .forEach(function (id) { $(id).addEventListener("input", renderDrawdown); });
 $("ddSSMode").addEventListener("change", renderDrawdown);
 $("ddStrategy").addEventListener("change", renderDrawdown);
@@ -6278,8 +7125,16 @@ const GLOSS = {
   maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
   spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below \u2014 stacked on top of whatever the strategy above would otherwise do.",
   deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses \u2014 mortgage interest, charitable giving, state and local taxes \u2014 and you use whichever is larger.",
-  ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins.",
-  collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college \u2014 smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition."
+  ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
+  collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college \u2014 smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
+  glide: "Many people shift toward more conservative investments \u2014 and lower expected returns \u2014 as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, and how long a plan takes to reach a target. Solving for a required contribution is the one exception \u2014 that math assumes one constant rate, so it still uses your starting rate throughout.",
+  contribgrowth: "The percentage your contribution amount itself increases each year \u2014 a standalone rate, not stacked on top of the inflation input. At 0%, your contribution stays the same dollar amount every year, which buys a little less as prices rise. Set it to match your inflation rate to keep contributions flat in today's dollars, or higher to model real income growth, like raises over a career.",
+  nominalreturn: "The return before subtracting inflation \u2014 what your statement would actually show. The S&P 500 has averaged roughly 10% a year (about 7% after inflation) since 1928, including its worst crashes. A diversified mix of stocks and bonds typically runs lower, often 6\u20138% nominal.",
+  efftaxrate: "Your total tax as a share of income \u2014 lower than your top bracket, since earlier dollars are taxed at lower rates. Many retirees land somewhere around 10\u201315%, though it depends heavily on income sources and where you live. The Income Tax tool can calculate yours precisely.",
+  ddstocks: "How the portfolio is split between stocks and bonds during retirement. Stocks have historically grown faster but swing harder in downturns, which matters more once you're withdrawing instead of contributing. 60/40 is a common conservative-to-moderate retirement mix.",
+  yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is \u2014 higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
+  customincome: "Any income beyond Social Security \u2014 a pension, rental property, part-time work, an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
+  customexpense: "A future cost on top of your regular spending \u2014 a car, a wedding, long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top."
 };
 function tipFor(key){ return GLOSS[key] || ""; }
 (function(){
@@ -6687,7 +7542,10 @@ $("scenarioPick").addEventListener("change", e => {
   const tool = activeTool();
   const s = SC[tool].find(x => x.name === e.target.value);
   if (!s) return;
-  if (tool === "retire"){ writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s); }
+  if (tool === "retire"){
+    writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s);
+    writeBasic(s.basic || BASIC_DEFAULTS); renderBasic();
+  }
   else if (tool === "tax"){ writeTaxState(s.data); renderTax(); }
   else if (tool === "mortgage"){ writeMortState(s.data); syncPmi(); renderMort(); }
   else if (tool === "budget"){ writeBudgetState(s.data); renderBudget(); }
@@ -6710,6 +7568,160 @@ function showPopup(title, options){
     document.body.appendChild(ov);
   });
 }
+
+/* A real form popup for adding a custom income or expense source, since the
+   simple choice-list showPopup() above doesn't fit a multi-field form. Kind
+   is "income" or "expense", used only for the title text and a default name
+   hint; the returned item shape is identical either way \u2014 runDrawdown()
+   treats them as two separate arrays but the same structure. */
+function showItemForm(kind, existing){
+  return new Promise(resolve => {
+    const isIncome = kind === "income";
+    const d = existing || {name:"", annual:0, inflate:true, startYear:1,
+      durationType:"forever", durationYears:5};
+    const ov = document.createElement("div");
+    ov.className = "popup-overlay";
+    ov.innerHTML =
+      "<div class='popup wide'><h3>" + (existing ? "Edit " : "Add ") +
+        (isIncome ? "income source" : "future expense") + "</h3>" +
+      "<div class='formhint'>" + (isIncome
+        ? "A pension, rental property, part-time work, an inheritance \u2014 anything that offsets what you'd otherwise withdraw."
+        : "A car, a boat, long-term care costs \u2014 anything on top of your regular spending.") + "</div>" +
+      "<div class='formfield'><label>Name</label>" +
+        "<input class='forminput' id='itName' type='text' maxlength='40' placeholder='" +
+        (isIncome ? "e.g. Pension" : "e.g. New car") + "' value='" + cardEscape(d.name) + "'></div>" +
+      "<div class='formfield'><label>Annual amount, today's dollars</label>" +
+        "<div class='formwrap'><span class='affix'>$</span>" +
+        "<input id='itAmount' type='text' inputmode='decimal' value='" + (d.annual ? groupDigits(d.annual, true) : "") + "'></div></div>" +
+      "<label class='formcheck'><input type='checkbox' id='itInflate'" + (d.inflate ? " checked" : "") + "> " +
+        "Adjust for inflation over time</label>" +
+      "<div class='formtwo'>" +
+        "<div class='formfield'><label>Starts in year</label>" +
+          "<div class='formwrap'><input id='itStartYear' type='text' inputmode='decimal' value='" + d.startYear + "'><span class='affix'>of ret.</span></div></div>" +
+        "<div class='formfield'><label>Lasts</label>" +
+          "<select class='forminput' id='itDuration'>" +
+            "<option value='once'" + (d.durationType === "once" ? " selected" : "") + ">One time only</option>" +
+            "<option value='years'" + (d.durationType === "years" ? " selected" : "") + ">A number of years</option>" +
+            "<option value='forever'" + (d.durationType === "forever" ? " selected" : "") + ">Rest of retirement</option>" +
+          "</select></div>" +
+      "</div>" +
+      "<div class='formfield' id='itYearsWrap'" + (d.durationType === "years" ? "" : " hidden") + ">" +
+        "<label>Number of years</label>" +
+        "<div class='formwrap'><input id='itYears' type='text' inputmode='decimal' value='" + d.durationYears + "'><span class='affix'>yrs</span></div></div>" +
+      "<div class='formactions'>" +
+        "<button class='btn cancel' type='button'>Cancel</button>" +
+        "<button class='btn primary' type='button' id='itSave'>" + (existing ? "Save" : "Add") + "</button>" +
+      "</div></div>";
+
+    const durSel = ov.querySelector("#itDuration");
+    durSel.addEventListener("change", () => {
+      ov.querySelector("#itYearsWrap").hidden = (durSel.value !== "years");
+    });
+    ov.querySelector("#itSave").addEventListener("click", () => {
+      const name = ov.querySelector("#itName").value.trim() || (isIncome ? "Income" : "Expense");
+      const annual = parseNum(ov.querySelector("#itAmount").value);
+      if (!(annual > 0)){ toast("Enter an amount greater than zero"); return; }
+      const startYear = Math.max(1, Math.round(parseNum(ov.querySelector("#itStartYear").value)) || 1);
+      const durationType = durSel.value;
+      const durationYears = Math.max(1, Math.round(parseNum(ov.querySelector("#itYears").value)) || 1);
+      ov.remove();
+      resolve({
+        name, annual, inflate: ov.querySelector("#itInflate").checked,
+        startYear, on: existing ? existing.on : true,
+        duration: durationType === "years" ? {type:"years", years:durationYears} : {type:durationType}
+      });
+    });
+    ov.addEventListener("click", e => {
+      if (e.target.classList.contains("cancel") || e.target === ov){ ov.remove(); resolve(null); }
+    });
+    document.body.appendChild(ov);
+    ov.querySelector("#itName").focus();
+  });
+}
+/* Renders the compact list of custom income/expense items under the sidebar
+   buttons: a checkbox to disable without deleting, a one-line summary, and a
+   delete button. Clicking the summary text reopens the form to edit it. */
+function describeItem(it){
+  var when = it.startYear === 1 ? "starting immediately" : "starting year " + it.startYear;
+  var dur = it.duration.type === "once" ? "one time" :
+    it.duration.type === "years" ? "for " + it.duration.years + " years" : "rest of retirement";
+  var infl = it.inflate ? "inflation-adjusted" : "fixed amount";
+  return money(it.annual) + "/yr, " + when + ", " + dur + " \u00b7 " + infl;
+}
+function renderItemList(elId, items){
+  var box = $(elId);
+  if (!items.length){ box.innerHTML = ""; return; }
+  box.innerHTML = items.map(function(it, i){
+    return "<div class='itemrow" + (it.on === false ? " off" : "") + "'>" +
+      "<input type='checkbox' data-itemtoggle='" + i + "'" + (it.on === false ? "" : " checked") + ">" +
+      "<span class='itemtxt' data-itemedit='" + i + "'>" + cardEscape(it.name) +
+        "<small>" + describeItem(it) + "</small></span>" +
+      "<button class='itemdel' type='button' data-itemdel='" + i + "' aria-label='Delete'>&times;</button>" +
+    "</div>";
+  }).join("");
+}
+function renderItemLists(){
+  renderItemList("ddIncomeList", ddIncomeItems);
+  renderItemList("ddExpenseList", ddExpenseItems);
+}
+renderItemLists();
+
+$("ddAddIncome").addEventListener("click", async () => {
+  var item = await showItemForm("income", null);
+  if (!item) return;
+  ddIncomeItems.push(item);
+  renderItemLists();
+  renderDrawdown();
+  toast("Added " + item.name);
+});
+$("ddAddExpense").addEventListener("click", async () => {
+  var item = await showItemForm("expense", null);
+  if (!item) return;
+  ddExpenseItems.push(item);
+  renderItemLists();
+  renderDrawdown();
+  toast("Added " + item.name);
+});
+
+function wireItemList(elId, items){
+  $(elId).addEventListener("click", async (e) => {
+    var del = e.target.closest ? e.target.closest("[data-itemdel]") : null;
+    if (del){
+      var i = parseInt(del.getAttribute("data-itemdel"), 10);
+      var name = items[i] ? items[i].name : "Item";
+      items.splice(i, 1);
+      renderItemLists();
+      renderDrawdown();
+      toast("Removed " + name);
+      return;
+    }
+    var edit = e.target.closest ? e.target.closest("[data-itemedit]") : null;
+    if (edit){
+      var j = parseInt(edit.getAttribute("data-itemedit"), 10);
+      var existing = items[j];
+      if (!existing) return;
+      var kind = elId === "ddIncomeList" ? "income" : "expense";
+      var updated = await showItemForm(kind, existing);
+      if (!updated) return;
+      items[j] = updated;
+      renderItemLists();
+      renderDrawdown();
+      return;
+    }
+  });
+  $(elId).addEventListener("change", (e) => {
+    var t = e.target.closest ? e.target.closest("[data-itemtoggle]") : null;
+    if (!t) return;
+    var i = parseInt(t.getAttribute("data-itemtoggle"), 10);
+    if (!items[i]) return;
+    items[i].on = t.checked;
+    renderItemList(elId, items);
+    renderDrawdown();
+  });
+}
+wireItemList("ddIncomeList", ddIncomeItems);
+wireItemList("ddExpenseList", ddExpenseItems);
+
 
 $("btnScenario").addEventListener("click", async () => {
   const choice = await showPopup("Scenario", [
@@ -6785,7 +7797,8 @@ function buildCardSVG(){
     var od = readDD();
     var Hb = historicalBacktest(od);
     var stratName = od.strategy === "fixed" ? "Fixed amount" : od.strategy === "pct" ? "% of portfolio" :
-      od.strategy === "guardrails" ? "Guardrails" : "Floor & ceiling";
+      od.strategy === "guardrails" ? "Guyton-Klinger Guardrails" :
+      od.strategy === "yale" ? "Yale Endowment" : "Floor & ceiling";
     title = "Will my money last?";
     bigLabel = "Success rate, tested since 1928";
     big = pctStr(Hb.successRate, 0);
@@ -6799,6 +7812,12 @@ function buildCardSVG(){
       ["Median ending balance", money(Hb.medianEnd)],
       ["Worst case", money(Hb.worstEnd)]
     ];
+    var enabledIncome = (od.incomeItems || []).filter(function(it){ return it.on !== false; });
+    var enabledExpense = (od.expenseItems || []).filter(function(it){ return it.on !== false; });
+    if (enabledIncome.length) rows.push(["Other income", enabledIncome.length === 1 ?
+      enabledIncome[0].name : enabledIncome.length + " sources"]);
+    if (enabledExpense.length) rows.push(["Future expenses", enabledExpense.length === 1 ?
+      enabledExpense[0].name : enabledExpense.length + " planned"]);
     verdict = Hb.successRate >= 0.99 ? "Survived every historical period on record."
       : Hb.successRate >= 0.90 ? "Survived the large majority of historical periods."
       : "Failed in a meaningful share of historical periods.";
@@ -7068,7 +8087,10 @@ function doSave(){
   if (!name || !name.trim()) return;
   let data;
   if (tool === "retire"){
+    const b = readBasic();
     data = Object.assign({name:name.trim()}, readInputs(), {
+      basic: {age:b.age, retire:b.retire, saved:b.initial, contrib:b.contrib,
+              period:b.period, risk:b.real},
       series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))},
       targets: {solveFor:$("solveFor").value, target:num("target"),
                 solveForS:$("solveForS").value, targetS:num("targetS")}});
@@ -7108,6 +8130,31 @@ function toolIsDirty(tool){
   if (tool === "mortgage") return !sameShallow(readMortState(), MORT_DEFAULTS);
   if (tool === "budget") return num("bgIncomeIn") > 0 ||
     budget.some(r => r.amount > 0 || r.custom);
+  if (tool !== "retire") return false;
+
+  const mode = activeRetireMode();
+  if (mode === "basic"){
+    const b = readBasic();
+    return b.age !== BASIC_DEFAULTS.age || b.retire !== BASIC_DEFAULTS.retire ||
+      b.initial !== BASIC_DEFAULTS.saved || b.contrib !== BASIC_DEFAULTS.contrib ||
+      b.period !== BASIC_DEFAULTS.period || Math.abs(b.real - BASIC_DEFAULTS.risk) > 1e-9;
+  }
+  if (mode === "stages"){
+    const g = readGlobals();
+    return Math.abs(g.initial - SERIES_GLOBALS.initial) > 1e-9 ||
+      Math.abs(g.inflation - SERIES_GLOBALS.inflation) > 1e-9 ||
+      Math.abs(g.withdrawal - SERIES_GLOBALS.withdrawal) > 1e-9 ||
+      Math.abs(g.taxRate - SERIES_GLOBALS.taxRate) > 1e-9 ||
+      Math.abs((g.fees||0) - (SERIES_GLOBALS.fees||0)) > 1e-9 ||
+      stages.length !== SERIES_STAGES.length ||
+      stages.some((st, i) => {
+        const d = SERIES_STAGES[i];
+        if (!d) return true;
+        return st.years !== d.years || st.contrib !== d.contrib || st.period !== d.period ||
+          Math.abs(st.growth - d.growth) > 1e-9 || Math.abs(st.nominal - d.nominal) > 1e-9;
+      });
+  }
+  // advanced
   const d = readInputs();
   return d.initial !== DEFAULTS.initial || d.contrib !== DEFAULTS.contrib ||
     d.period !== DEFAULTS.period || d.years !== DEFAULTS.years ||
@@ -7115,15 +8162,25 @@ function toolIsDirty(tool){
     Math.abs(d.nominal - DEFAULTS.nominal) > 1e-9 ||
     Math.abs(d.inflation - DEFAULTS.inflation) > 1e-9 ||
     Math.abs(d.withdrawal - DEFAULTS.withdrawal) > 1e-9 ||
-    Math.abs(d.taxRate - DEFAULTS.taxRate) > 1e-9 || (d.fees||0) !== 0 ||
-    stages.length !== SERIES_STAGES.length;
+    Math.abs(d.taxRate - DEFAULTS.taxRate) > 1e-9 || (d.fees||0) !== 0;
+}
+function writeBasic(d){
+  $("qAge").value = d.age; $("qRetire").value = d.retire;
+  $("qSaved").value = groupDigits(d.saved, true);
+  $("qContrib").value = groupDigits(d.contrib, true);
+  $("qPeriod").value = d.period;
+  $("qRisk").value = d.risk;
 }
 $("btnReset").addEventListener("click", () => {
   const tool = activeTool();
+  const mode = tool === "retire" ? activeRetireMode() : null;
+  const label = mode === "basic" ? "Basic" : mode === "stages" ? "Stages" :
+    mode === "advanced" ? "Advanced" : tool === "tax" ? "Tax" :
+    tool === "mortgage" ? "Mortgage" : "Budget";
   if (toolIsDirty(tool) &&
-      !confirm("Reset the " + (tool === "retire" ? "retirement" : tool) +
+      !confirm("Reset the " + label +
                " inputs to their defaults? Your saved " + TOOL_LABEL[tool] +
-               (tool === "budget" ? "s" : "s") + " won't be affected.")) return;
+               "s won't be affected.")) return;
   if (tool === "tax"){
     writeTaxState(TAX_DEFAULTS); renderTax();
   } else if (tool === "mortgage"){
@@ -7134,17 +8191,21 @@ $("btnReset").addEventListener("click", () => {
     $("bgIncomeFreq").querySelectorAll("button").forEach(x =>
       x.classList.toggle("on", x.getAttribute("data-freq") === "1"));
     buildBudget(); renderBudget();
-  } else {
-    writeInputs(DEFAULTS);
+  } else if (mode === "basic"){
+    writeBasic(BASIC_DEFAULTS);
+    renderBasic();
+  } else if (mode === "stages"){
     writeGlobals(SERIES_GLOBALS);
-    $("targetS").value = groupDigits(1000000);
+    $("targetS").value = groupDigits(100000);
     stages = SERIES_STAGES.map(x => Object.assign({}, x));
     buildStages();
-    renderAll(); renderSeries();
+    renderSeries();
+  } else {
+    writeInputs(DEFAULTS);
+    renderAll();
   }
   $("scenarioPick").value = "";
-  toast((tool === "retire" ? "Retirement" : tool === "tax" ? "Tax" :
-         tool === "mortgage" ? "Mortgage" : "Budget") + " inputs reset");
+  toast(label + " inputs reset");
 });
 
 /* ---------- wire up ---------- */
@@ -7193,6 +8254,20 @@ $("moPmi").value = "0";
 $("moHoa").value = groupDigits(0, true);
 $("moMaint").value = "1";
 $("moUtil").value = groupDigits(300, true);
+$("rbPrice").value = groupDigits(450000, true);
+$("rbDown").value = "20";
+$("rbRate").value = String(MORT_RATE_30);
+$("rbTerm").value = "30";
+$("rbPropTax").value = "1.1";
+$("rbIns").value = groupDigits(1800, true);
+$("rbMaint").value = "1";
+$("rbClose").value = "3";
+$("rbSell").value = "3";
+$("rbRent").value = groupDigits(1800, true);
+$("rbRentInc").value = "3.2";
+$("rbAppr").value = "4";
+$("rbInvest").value = "7";
+$("rbHorizon").value = "30";
 $("ddInitial").value = groupDigits(1000000, true);
 $("ddYears").value = "30";
 $("ddStock").value = "60";
@@ -7204,7 +8279,7 @@ $("qSaved").value = groupDigits(10000, true);
 $("qContrib").value = groupDigits(500, true);
 $("qPeriod").value = "Monthly";
 $("target").value = groupDigits(100000);
-$("targetS").value = groupDigits(1000000);
+$("targetS").value = groupDigits(100000);
 $("inflYrs").value = DEFAULTS.years;
 $("convAmt").value = groupDigits(DEFAULTS.contrib, true);
 $("convPeriod").value = DEFAULTS.period;
