@@ -356,7 +356,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   padding:20px 22px;background:var(--panel);border:1px solid var(--line);
   border-radius:var(--r-panel);box-shadow:var(--lift-1);cursor:pointer;
   text-decoration:none;overflow:hidden;
-  transition:border-color .16s ease,background .16s ease}
+  transition:border-color .16s ease,background .16s ease,transform .12s ease}
 .toolcard::before{
   content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--jade);
   transform:scaleY(0);transform-origin:50% 50%;
@@ -374,6 +374,47 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 .toolcard-arrow{font-size:17px;color:var(--dimmer);flex:none;line-height:1;
   transition:transform .2s cubic-bezier(.2,.7,.3,1),color .2s ease}
 .toolcard:hover .toolcard-arrow{transform:translateX(3px);color:var(--jade)}
+
+/* ---------- pane transitions ----------
+   Navigation swaps panes by toggling [hidden], which is instantaneous and
+   leaves no sense of where you came from. After each swap the newly visible
+   panes get a one-shot enter animation whose direction encodes the move:
+   rising for a plain tab change, a deeper rise + settle for drilling into a
+   tool, dropping from above for backing out to the picker. Short on purpose
+   — this is orientation, not a transition people should have to wait on. */
+@keyframes pane-in{from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}}
+@keyframes pane-in-fwd{from{opacity:0;transform:translateY(13px) scale(.988)}
+  to{opacity:1;transform:none}}
+@keyframes pane-in-back{from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:none}}
+@keyframes pane-fade{from{opacity:0}to{opacity:1}}
+@keyframes card-in{from{opacity:0;transform:translateY(11px)}
+  to{opacity:1;transform:none}}
+.pane-in{animation:pane-in .26s cubic-bezier(.2,.7,.3,1)}
+.pane-in-fwd{animation:pane-in-fwd .3s cubic-bezier(.2,.8,.3,1)}
+.pane-in-back{animation:pane-in-back .26s cubic-bezier(.2,.7,.3,1)}
+/* The picker is a list, so it reads better as cards arriving in sequence than
+   as one block sliding; the container only fades so the two don't compound. */
+.pane-in-cards{animation:pane-fade .18s ease-out}
+.pane-in-cards .toolcard{animation:card-in .3s cubic-bezier(.2,.7,.3,1) both}
+.pane-in-cards .toolcard:nth-child(1){animation-delay:.01s}
+.pane-in-cards .toolcard:nth-child(2){animation-delay:.06s}
+.pane-in-cards .toolcard:nth-child(3){animation-delay:.11s}
+.pane-in-cards .toolcard:nth-child(4){animation-delay:.16s}
+.pane-in-cards .toolcard:nth-child(5){animation-delay:.21s}
+.pane-in-cards .toolcard:nth-child(6){animation-delay:.26s}
+.pane-in-cards .toolcard:nth-child(7){animation-delay:.31s}
+.pane-in-cards .toolcard:nth-child(8){animation-delay:.36s}
+/* A card that was just clicked shouldn't animate back out from under the
+   pointer, so the press state is its own quick acknowledgement. */
+.toolcard:active{transform:scale(.988);transition-duration:.08s}
+@media (prefers-reduced-motion:reduce){
+  .about-collapse > .body{transition:none}
+  .pane-in,.pane-in-fwd,.pane-in-back,.pane-in-cards,
+  .pane-in-cards .toolcard{animation:none}
+  .toolcard:active{transform:none}
+}
 
 /* ---------- tool icon hover animations ----------
    Each picker icon plays a short one-shot animation that acts out what the
@@ -658,7 +699,21 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .panel.about .about-chevron{margin-left:auto;flex:none;color:var(--dimmer);
   transition:transform .22s cubic-bezier(.2,.7,.3,1);display:flex}
 .panel.about.collapsed .about-chevron{transform:rotate(-90deg)}
-.panel.about.collapsed > .body{display:none}
+/* Sweep open/closed instead of snapping. The body is wrapped at init in a
+   one-row grid, and the row is animated between 0fr and 1fr — that measures
+   the content itself, so nothing here has to read scrollHeight or guess a
+   max-height that breaks when the text reflows. The inner overflow:hidden is
+   what actually clips during the sweep, padding included. Browsers without
+   animatable grid-template-rows fall back to the instant toggle this
+   replaced, which is no worse than before. */
+.about-collapse{overflow:hidden}
+.about-collapse > .body{opacity:1;transition:opacity .2s ease .06s}
+/* Collapsed at rest is display:none, exactly as before the sweep existed, so
+   a shut section ends flush at the heading with no leftover strip. The sweep
+   itself runs on an inline height + display:block, which outranks this rule
+   for the duration of the animation and is cleared when it finishes. */
+.panel.about.collapsed > .about-collapse{display:none}
+.panel.about.collapsed .about-collapse > .body{opacity:0;transition-delay:0s}
 .about p{margin:0 0 12px;font-size:13.5px;line-height:1.7;color:var(--dim)}
 .about p:last-child{margin-bottom:0}
 .about b{color:var(--text);font-weight:600}
@@ -825,6 +880,17 @@ html[data-theme="light"] .about.disclaimer{
   font-variant-numeric:tabular-nums}
 #txTable td:first-child,#moTable td:first-child{font-family:var(--sans);
   font-variant-numeric:normal}
+/* Prose, not figures. The global td rule is right-aligned tabular monospace,
+   which is right for every other table in the app and wrong for this one --
+   these cells are sentences, so they take the same sans the rest of the site
+   reads in. */
+#txStateRules td{text-align:left;vertical-align:top;font-family:var(--sans);
+  font-variant-numeric:normal;letter-spacing:normal;font-size:12.5px;
+  line-height:1.55;padding:11px 10px;color:var(--text)}
+#txStateRules td:first-child{width:158px;color:var(--dim);font-weight:600}
+#txStateRules tbody tr:last-child td{border-bottom:0}
+#txStateRules tbody tr:hover{background:transparent;box-shadow:none}
+#txStateRuleWrap{padding:4px 8px 0}
 /* The donut caps at 220px, so an even 1:1 split left it floating in a
    half-empty column while the bars beside it were cramped. */
 .grid2:has(.piewrap){grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
@@ -1025,6 +1091,7 @@ svg{display:block;width:100%;height:auto}
   #ddTable{min-width:760px}
   #txTable{min-width:520px}
   #txBrackets{min-width:520px}
+  #txStateRules td:first-child{width:118px}
   #moTable{min-width:560px}
 
   .solveopts{grid-template-columns:1fr}
@@ -2612,43 +2679,76 @@ window.onerror = function(msg){
         and the amount you are over the line &mdash; on top of the capital gain rate,
         not instead of it. Those thresholds are statutory and have never been indexed
         either.</p>
-        <p><b>States.</b> Eight states still include some Social Security in taxable
-        income for 2026: Colorado, Connecticut, Minnesota, Montana, New Mexico, Rhode
-        Island, Utah and Vermont. West Virginia finished phasing its tax out
-        effective this year, and Missouri, Kansas and Nebraska dropped off earlier.
-        Everywhere else, plus DC, benefits are fully exempt and this reflects that.
-        Long-term gains are generally taxed at each state's ordinary rates, which is
-        what nearly every state does.</p>
-        <p><b>Illinois is modeled in full,</b> since it's the tool's default state.
-        Illinois taxes at a flat 4.95% on federal AGI rather than federal taxable
-        income &mdash; the federal standard or itemized deduction never reduces the
-        Illinois base, only a $2,925 personal exemption per person (2026), plus
-        another $1,000 per person 65 or older. That exemption disappears entirely,
-        not gradually, once federal AGI passes $250,000 single or $500,000 joint (35
-        ILCS 5/204). Social Security is fully exempt, as it is everywhere by default,
-        and Illinois goes further: <b>traditional 401(k) and IRA withdrawals are
-        excluded from the state's tax base entirely.</b> Only the taxable gain on a
-        brokerage withdrawal, and anything in Other ordinary income, are actually
-        subject to Illinois tax. The per-source table reflects this directly &mdash;
-        the traditional-account row shows $0 of state tax when Illinois is
-        selected.</p>
-        <p><b>What Retirement Income leaves out for every other state &mdash; read
-        this before trusting the state figure elsewhere.</b> Illinois aside, state
-        treatment of retirement income is modeled only for Social Security. Many
-        states exclude some or all pension, 401(k) and IRA income the way Illinois
-        does; Pennsylvania and Mississippi are broadly similar, and a long list of
-        others give partial exclusions or senior credits that this doesn't model. In
-        the eight states that do tax benefits, each has its own income-based
-        exemption that isn't modeled either &mdash; only Colorado's full subtraction
-        at 65 and over is applied, because it is a clean rule. Also absent
-        everywhere: short-term gains and non-qualified dividends, which would be
-        taxed as ordinary income; qualified charitable distributions; IRMAA Medicare
-        premium surcharges, which behave like a tax cliff just above these
-        thresholds; the Alternative Minimum Tax; state capital gain regimes that
-        depart from ordinary treatment, such as Washington's; local and city taxes;
-        and any state that taxes Social Security on a different base than the
-        federal taxable amount. Treat the federal number, and the Illinois number,
-        as solid; treat every other state's number as a starting point.</p>
+        <p><b>Pension / annuity, and why it has its own field.</b> Pension income
+        is split out from Other ordinary income because state law splits it out.
+        A dozen states exempt government pensions in full while taxing private
+        ones at full rates, and most states that give a retirement exclusion give
+        it to pensions and retirement-account withdrawals but not to interest or
+        rent. Federally the distinction does not exist &mdash; it is all ordinary
+        income &mdash; so it changes only the state figure, but it can change it
+        by thousands.</p>
+        <p><b>States, in full.</b> Every state that taxes income is modelled on
+        its own retirement rules, not just its brackets: whether Social Security
+        is in the base, what pension and retirement-account income is excluded
+        and up to what ceiling, what extra deduction, exemption or credit arrives
+        at 65, and how long-term gain is treated. The rules are as of 1 January
+        2026 and include the phase-ins that finish this year. Select a state and
+        the per-source table explains in a line what it does.</p>
+        <p><b>Social Security.</b> Eight states still include some benefits in
+        taxable income for 2026: Colorado, Connecticut, Minnesota, Montana, New
+        Mexico, Rhode Island, Utah and Vermont. West Virginia finished phasing its
+        tax out effective this year, and Missouri, Kansas and Nebraska dropped off
+        earlier. Six of the eight are income-tested and the test is applied here
+        &mdash; Connecticut and Rhode Island cut off at fixed AGI thresholds,
+        Minnesota and Vermont phase out over a band, New Mexico is a cliff, and
+        Colorado exempts benefits outright at 65. Utah taxes benefits and then
+        hands back a credit for the tax on them, withdrawn above $54,000 single or
+        $90,000 joint; that credit is computed here. Montana alone taxes the
+        federal taxable amount flat, with no relief.</p>
+        <p><b>Where retirement income is barely taxed at all.</b> Illinois,
+        Mississippi and Pennsylvania take qualified retirement income out of the
+        base entirely &mdash; pensions, annuities, 401(k) and IRA withdrawals
+        alike &mdash; so in those three only the gain on a brokerage sale and
+        genuinely other income are left. Iowa has done the same since 2023 for
+        anyone 55 or older. Alabama and Hawaii exempt pension income in full but
+        still tax the retirement account. Michigan's deduction is fully restored
+        for 2026, the last step of its 2023 phase-in, at roughly $68,000 single
+        and $136,000 joint.</p>
+        <p><b>Where the exclusion has a ceiling or an income test.</b> Kentucky
+        gives $31,110 a person at any age; Georgia $65,000 a person at 65, against
+        unearned income of any kind; New York $20,000 a person on top of a full
+        exemption for government pensions; New Jersey up to $100,000 joint but on
+        a hard income test that steps to nothing by $200,000; Connecticut a full
+        exemption below $75,000 single or $100,000 joint, phased out over the next
+        $25,000. Maine and Maryland reduce their exclusions dollar for dollar by
+        the Social Security you receive, which for a large benefit can consume
+        them outright. South Carolina, Virginia, West Virginia and Montana give a
+        flat deduction at 65 against income of any kind rather than a retirement
+        exclusion; Virginia's is withdrawn dollar for dollar above $50,000 single
+        or $75,000 joint.</p>
+        <p><b>State capital gain treatment.</b> Most states tax long-term gain at
+        their ordinary rates, and that is the default here. The exceptions are
+        modelled: Arkansas excludes 50%, South Carolina 44%, New Mexico and North
+        Dakota 40%, Wisconsin 30%, Vermont a flat $5,000. Hawaii caps the rate on
+        gain at 7.25% and Montana taxes it at reduced rates of 3.0% and 4.1%, both
+        as alternative computations that can never cost more than ordinary
+        treatment.</p>
+        <p><b>What the state figure still leaves out.</b> Age thresholds below 65
+        are treated as met only when you mark someone 65 or older, so a 62-year-old
+        in Georgia or New Jersey, or a 60-year-old in Delaware, is shown a higher
+        state bill than they would actually pay. Per-person exclusions are applied
+        per qualifying person without checking which spouse the income belongs to.
+        Occupational carve-outs &mdash; military, police, fire, railroad, federal
+        Civil Service &mdash; and rules that turn on a birth year rather than an
+        age are not modelled, and they are generous where they apply. Neither are
+        local and city income taxes, which matter most in Maryland, New York City,
+        Ohio and the Portland area. Also absent everywhere: short-term gains and
+        non-qualified dividends, which would be taxed as ordinary income; qualified
+        charitable distributions; IRMAA Medicare premium surcharges, which behave
+        like a tax cliff just above these thresholds; the Alternative Minimum Tax;
+        and state credits that phase out on income in ways too intricate to
+        generalise. Treat the federal number as solid and the state number as a
+        good estimate rather than a return.</p>
       </div>
     </div>
 
@@ -3079,6 +3179,19 @@ window.onerror = function(msg){
           <div class="field">
             <label for="txSS">Social Security benefits<span class="tipdot" data-tip="bktss" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><span class="affix">$</span><input id="txSS" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="two bottomalign">
+            <div class="field">
+              <label for="txPension">Pension / annuity<span class="tipdot" data-tip="bktpen" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="txPension" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="txPenType">Payer</label>
+              <select id="txPenType">
+                <option value="priv">Private employer</option>
+                <option value="pub">Government / public</option>
+              </select>
+            </div>
           </div>
           <div class="field">
             <label for="txOther">Other ordinary income<span class="tipdot" data-tip="bktother" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -3673,6 +3786,16 @@ window.onerror = function(msg){
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <div class="panel">
+      <h2>State rules, and what went into the figure above<span class="h2note" id="txStateRuleName"></span></h2>
+      <div id="txStateRuleWrap">
+        <table id="txStateRules">
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="mcnote" id="txStateGaps"></div>
     </div>
   </div>
 
@@ -4350,7 +4473,9 @@ function finalStageSolve(g, stages, portToday){
    (IRS Rev. Proc. 2025-32). State brackets, standard deductions and personal
    exemptions are as of January 1, 2026 per the Tax Foundation's annual survey.
    Brackets are [threshold, rate] pairs; the rate applies to income above the
-   threshold. Local income taxes are not included. */
+   threshold. Local income taxes are not included. Retirement-specific rules --
+   exclusions, senior deductions, state capital-gain treatment -- are separate,
+   in RET_STATE below. */
 const FED_2026 = {
   s: [[0,.10],[12400,.12],[50400,.22],[105700,.24],[201775,.32],[256225,.35],[640600,.37]],
   m: [[0,.10],[24800,.12],[100800,.22],[211400,.24],[403550,.32],[512450,.35],[768700,.37]]
@@ -4417,11 +4542,11 @@ const STATES = {
      figure already respects). $2,925 personal exemption per person for 2026,
      +$1,000 per person 65 or older, and the exemption disappears entirely
      -- a cliff, not a phase-out -- once federal AGI exceeds $250,000 single
-     or $500,000 joint (35 ILCS 5/204). retireExemptTrad marks that Illinois
-     excludes traditional 401(k)/IRA withdrawals from its tax base entirely,
-     on top of Social Security already being untaxed everywhere by default. */
+     or $500,000 joint (35 ILCS 5/204). What Illinois does to retirement
+     income specifically now lives with every other state's rules, in
+     RET_STATE below. */
   IL:{n:"Illinois",pe:[2925,5850],peAge:1000,agiCap:[250000,500000],
-      retireExemptTrad:1,b:{s:[[0,.0495]],m:[[0,.0495]]}},
+      b:{s:[[0,.0495]],m:[[0,.0495]]}},
   IN:{n:"Indiana",pe:[1000,2000],b:{s:[[0,.0295]],m:[[0,.0295]]}},
   IA:{n:"Iowa",sd:[16100,32200],pec:[40,80],b:{s:[[0,.038]],m:[[0,.038]]}},
   KS:{n:"Kansas",sd:[3605,8240],pe:[9160,18320],b:{s:[[0,.052],[23000,.0558]],m:[[0,.052],[46000,.0558]]}},
@@ -4488,6 +4613,297 @@ function marginalRate(income, brackets){
   let r = brackets[0][1];
   for (let i = 0; i < brackets.length; i++) if (income > brackets[i][0]) r = brackets[i][1];
   return r;
+}
+
+/* ---------- state retirement rules, tax year 2026 ----------
+   The bracket tables in STATES above describe how a state taxes a dollar of
+   ordinary income. They say nothing about the three things that actually
+   decide a retiree's state bill: whether Social Security is in the base,
+   whether pension and traditional-account withdrawals are excluded from it,
+   and what extra deduction, exemption or credit arrives at 65. That is what
+   this table adds. Rules are stated as of 1 January 2026 and reflect the
+   phase-ins that complete for this tax year.
+
+   Every key is optional. Amounts are [single, married filing jointly].
+
+     penFull   all pension and annuity income is exempt
+     tradFull  all traditional 401(k)/IRA withdrawals are exempt
+     pubFull   government / public-employer pensions are exempt
+     exAmt     retirement-income exclusion ceiling
+     exPer     1 = exAmt applies per person rather than per return
+     exAge     1 = the exclusion requires a person marked 65 or older
+     exSrc     what the exclusion may be applied against, in order:
+                 "tp"  traditional, then pension            (default)
+                 "t"   traditional only
+                 "p"   pension only
+                 "pub" public pension only
+                 "all" traditional, pension, other income, then gain
+     exLessSS  "gross" or "taxable" -- the exclusion is reduced dollar for
+               dollar by Social Security received on that basis
+     exCap     AGI above which the exclusion is lost
+     exPhase   "cliff" (default), "lin" over exRange, or "nj"
+     exRange   dollars over which a linear phase-out runs
+     sdAge     extra deduction per person 65 or older
+     peAge     extra personal exemption per person 65 or older
+     credAge   credit per person 65 or older
+     agePh     {amt, cap, rate} deduction per senior with a dollar-for-dollar
+               (or rate-scaled) phase-out above cap
+     ssFullAge 1 = benefits are fully exempt once a person is 65 or older
+     ssCap     AGI below which Social Security is fully exempt
+     ssRange   dollars over which that exemption phases out
+     ssPct     share of federally taxable benefits still taxed above the cap
+     ssCredit  {rate, cap, phase} credit offsetting the tax on benefits
+     cgPct     share of long-term gain excluded from the state base
+     cgFlat    flat long-term gain exclusion
+     cgMax     maximum rate on long-term gain (alternative-tax computation)
+     cgB       separate bracket table applied to long-term gain
+     ohRet     Ohio's retirement income credit table
+     note      one line shown under the per-source table
+
+   What is deliberately not modelled: narrow occupational carve-outs (military,
+   police, fire, railroad, federal Civil Service), rules that turn on a birth
+   year rather than an age, per-spouse ownership of the excluded income, and
+   local income taxes. */
+const RET_STATE = {
+  AL:{penFull:1, exAmt:[6000,6000], exPer:1, exAge:1, exSrc:"t",
+      note:"Alabama exempts defined-benefit pension income in full, public or private, and exempts the first $6,000 of 401(k) and IRA withdrawals per person aged 65 or over."},
+  AZ:{exAmt:[2500,2500], exPer:1, exSrc:"pub",
+      note:"Arizona exempts $2,500 per person of federal, state and local government pension income. Private pensions and retirement-account withdrawals are fully taxable at the flat 2.5% rate."},
+  AR:{exAmt:[6000,6000], exPer:1, exSrc:"tp", cgPct:.50,
+      note:"Arkansas exempts $6,000 per person of pension and retirement-account income, and excludes 50% of net long-term capital gain from the state base."},
+  CA:{credAge:[153,153],
+      note:"California taxes pension and retirement-account withdrawals in full at ordinary rates, with no retirement exclusion. Social Security is exempt, and there is an extra exemption credit at 65."},
+  CO:{exAmt:[24000,24000], exPer:1, exAge:1, exSrc:"tp", exLessSS:"taxable", ssFullAge:1,
+      note:"Colorado gives each person 65 or older a subtraction of up to $24,000 of pension and annuity income. Taxable Social Security comes out of that ceiling first, which in practice exempts benefits in full and leaves whatever is left for the rest."},
+  CT:{exAmt:[1e12,1e12], exSrc:"tp", exCap:[75000,100000], exPhase:"lin", exRange:25000,
+      ssCap:[75000,100000], ssPct:.25,
+      note:"Connecticut exempts pension, annuity and IRA income in full below $75,000 of AGI single or $100,000 joint, phasing the exemption out over the next $25,000. Social Security is exempt below the same thresholds; above them a quarter of the federally taxable benefit stays in the base."},
+  DE:{exAmt:[12500,12500], exPer:1, exAge:1, exSrc:"tp", sdAge:[2500,2500], credAge:[110,110],
+      note:"Delaware excludes $12,500 per person of pension and retirement-account income from age 60, and adds a $2,500 standard deduction and a $110 credit at 65."},
+  GA:{exAmt:[65000,65000], exPer:1, exAge:1, exSrc:"all",
+      note:"Georgia's retirement income exclusion is $65,000 per person at 65 and over -- $35,000 from 62 -- and it covers pensions, retirement-account withdrawals, interest, dividends, capital gain and rent alike."},
+  HI:{penFull:1, peAge:1144, cgMax:.0725,
+      note:"Hawaii exempts employer-funded pension income in full, public or private, but taxes the part of a 401(k) or IRA that came from your own contributions. Long-term gain is capped at 7.25%."},
+  ID:{note:"Idaho taxes pension and retirement-account income at ordinary rates. Its retirement benefits deduction is limited to specific federal, military and public-safety retirees and is not modelled here."},
+  IL:{penFull:1, tradFull:1,
+      note:"Illinois excludes qualified retirement income from its base entirely -- pensions, annuities, 401(k) and IRA withdrawals and Social Security alike. Only the taxable gain on a brokerage withdrawal and other ordinary income are actually subject to the 4.95% rate."},
+  IN:{peAge:1000,
+      note:"Indiana taxes pension and retirement-account income at the flat rate, with an extra $1,000 exemption per person at 65."},
+  IA:{exAmt:[1e12,1e12], exAge:1, exSrc:"tp",
+      note:"Iowa has exempted all retirement income -- pensions, annuities, 401(k) and IRA withdrawals -- for taxpayers 55 and over since 2023."},
+  KS:{pubFull:1, sdAge:[2320,2320],
+      note:"Kansas exempts federal, state and local government pensions in full, taxes private pensions and retirement-account withdrawals, and adds a $2,320 standard deduction per person at 65."},
+  KY:{exAmt:[31110,31110], exPer:1, exSrc:"tp",
+      note:"Kentucky excludes $31,110 per person of pension and retirement-account income, at any age."},
+  LA:{pubFull:1, exAmt:[12000,12000], exPer:1, exAge:1, exSrc:"tp",
+      note:"Louisiana exempts federal and state government pensions in full, and exempts $12,000 per person of other retirement income at 65 and over."},
+  ME:{exAmt:[35000,35000], exPer:1, exSrc:"tp", exLessSS:"gross", sdAge:[2050,1650],
+      note:"Maine's pension income deduction is up to $35,000 per person and covers retirement-account withdrawals, but it is reduced dollar for dollar by the Social Security you receive -- a large benefit can consume it outright."},
+  MD:{exAmt:[39500,39500], exPer:1, exAge:1, exSrc:"p", exLessSS:"gross", peAge:1000,
+      note:"Maryland's $39,500 pension exclusion at 65 covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maryland's county income taxes -- roughly 2.25% to 3.2% on top of the state rate -- are not included here."},
+  MA:{pubFull:1, peAge:700,
+      note:"Massachusetts exempts Massachusetts and federal government pensions in full, taxes private pensions and retirement-account withdrawals at 5%, and adds a $700 exemption per person at 65."},
+  MI:{exAmt:[68000,136000], exSrc:"tp",
+      note:"Michigan's retirement and pension deduction is fully restored for tax year 2026, the last step of the 2023 phase-in: roughly $68,000 single and $136,000 joint of pension and retirement-account income comes out of the base."},
+  MN:{ssCap:[85000,109000], ssRange:30000,
+      note:"Minnesota exempts Social Security in full below about $85,000 of AGI single or $109,000 joint and phases the subtraction out above that. Pension and retirement-account income is taxed at ordinary rates."},
+  MS:{penFull:1, tradFull:1,
+      note:"Mississippi exempts all qualified retirement income -- pensions, annuities, 401(k) and IRA withdrawals -- once you have reached the plan's retirement age."},
+  MO:{exAmt:[47000,47000], exPer:1, exSrc:"pub", exCap:[85000,100000],
+      exPhase:"lin", exRange:47000,
+      note:"Missouri exempts up to about $47,000 per person of public pension income, withdrawn dollar for dollar above $85,000 of AGI single or $100,000 joint. Its separate $6,000 private pension exemption cuts off at $25,000 / $32,000 and is not modelled."},
+  MT:{sdAge:[5800,5800], cgB:{s:[[0,.03],[20500,.041]], m:[[0,.03],[41000,.041]]},
+      note:"Montana is one of the states that still taxes Social Security, on the federal taxable amount. It gives an extra $5,800 subtraction per person at 65 and taxes long-term gain at reduced rates of 3.0% and 4.1%."},
+  NE:{note:"Nebraska finished exempting Social Security in 2024. Pension and retirement-account income is taxed at ordinary rates."},
+  NJ:{exAmt:[75000,100000], exAge:1, exSrc:"tp", exCap:[150000,150000], exPhase:"nj", peAge:1000,
+      note:"New Jersey's pension and retirement income exclusion is $75,000 single or $100,000 joint from age 62, but it is a hard income test: full below $150,000 of gross income, half to $175,000, a quarter to $200,000, and nothing above."},
+  NM:{ssCap:[100000,150000], exAmt:[8000,8000], exPer:1, exAge:1, exSrc:"all",
+      exCap:[28500,51000], cgPct:.40,
+      note:"New Mexico exempts Social Security below $100,000 of AGI single or $150,000 joint and taxes it above. It excludes 40% of net capital gain, and gives an $8,000 exemption at 65 that only survives at quite low incomes."},
+  NY:{pubFull:1, exAmt:[20000,20000], exPer:1, exSrc:"tp",
+      note:"New York exempts New York and federal government pensions in full, and excludes $20,000 per person of private pension and retirement-account income from age 59 and a half. New York City and Yonkers resident taxes are not included here."},
+  NC:{note:"North Carolina taxes pension and retirement-account income at its flat rate. The Bailey exemption for certain long-vested government retirees is too narrow to model."},
+  ND:{cgPct:.40,
+      note:"North Dakota taxes pension and retirement-account income at ordinary rates, but excludes 40% of net long-term capital gain."},
+  OH:{credAge:[50,50], ohRet:1, exCap:[100000,100000],
+      note:"Ohio taxes pension and retirement-account income at ordinary rates, offset only by a small retirement income credit of up to $200 and a $50 senior credit, both lost above $100,000 of Ohio income."},
+  OK:{exAmt:[10000,10000], exPer:1, exSrc:"tp",
+      note:"Oklahoma excludes $10,000 per person of pension and retirement-account income."},
+  OR:{sdAge:[1200,1000],
+      note:"Oregon taxes pension and retirement-account income at ordinary rates. Its retirement income credit applies only at low household incomes and is not modelled, nor are Portland-area local taxes."},
+  PA:{penFull:1, tradFull:1,
+      note:"Pennsylvania does not tax retirement income at all once you have retired -- pensions, annuities, 401(k) and IRA distributions are all outside the base. Interest, dividends and capital gain are still taxed at 3.07%."},
+  RI:{ssCap:[108000,135000], exAmt:[20000,20000], exPer:1, exAge:1, exSrc:"tp",
+      exCap:[108000,135000],
+      note:"Rhode Island exempts Social Security and up to $20,000 per person of pension and retirement-account income, but both require full retirement age and both cut off above roughly $108,000 of AGI single or $135,000 joint."},
+  SC:{sdAge:[15000,15000], cgPct:.44,
+      note:"South Carolina's age-65 deduction is $15,000 per person against any income, which absorbs its separate $10,000 retirement deduction. It also excludes 44% of net long-term capital gain."},
+  UT:{ssCredit:{rate:.045, cap:[54000,90000], phase:.025},
+      note:"Utah taxes Social Security but then hands back a credit for the tax on it, withdrawn at 2.5 cents per dollar of income above $54,000 single or $90,000 joint. Pension and retirement-account income is taxed at the flat 4.5% rate."},
+  VT:{ssCap:[50000,65000], ssRange:10000, cgFlat:[5000,5000],
+      note:"Vermont exempts Social Security below $50,000 of AGI single or $65,000 joint, phasing out over the next $10,000. It excludes $5,000 of long-term gain and otherwise taxes retirement income at ordinary rates."},
+  VA:{agePh:{amt:12000, cap:[50000,75000], rate:1},
+      note:"Virginia's age deduction is $12,000 per person at 65, but it is withdrawn dollar for dollar above $50,000 of income single or $75,000 joint, so it disappears entirely by $62,000 / $87,000."},
+  WV:{sdAge:[8000,8000],
+      note:"West Virginia completed its Social Security phase-out this year. It gives an $8,000 exemption per person at 65, applied against any income."},
+  WI:{exAmt:[24000,24000], exPer:1, exAge:1, exSrc:"tp", cgPct:.30,
+      note:"Wisconsin's 2025 retirement income exclusion is $24,000 per person from age 67, covering pensions and retirement-account withdrawals. It also excludes 30% of net long-term capital gain."},
+  DC:{note:"The District taxes pension and retirement-account income at ordinary rates. Its $3,000 government-pension exclusion at 62 is too narrow to model."}
+};
+
+/* Public pensions are exempt in some states and not others, so the tool has to
+   be told which kind the pension is. Everything else about a pension --
+   ordinary rates, no FICA -- is the same either way. */
+
+/**
+ * State-level retirement tax. Returns the tax, the base it was computed on,
+ * and the taxable amount each source contributed, so the per-source table can
+ * split the bill without guessing.
+ *
+ * @param {Object} S - the STATES entry
+ * @param {Object} c - context: status, idx, seniors, trad, pension, penPublic,
+ *                     other, gain, taxableSS, ssGross, agi, pre, dedType, item
+ * @returns {{tax:number, base:number, taxable:number, parts:Object, ssIn:number,
+ *            excluded:number, notes:string}}
+ */
+function stateRetireTax(S, c){
+  const R = RET_STATE[c.code] || {};
+  const st = c.status, idx = c.idx;
+  const zero = {tax:0, base:0, taxable:0, ssIn:0, excluded:0, ded:0, credit:0,
+                parts:{trad:0, pension:0, other:0, gain:0, ss:0},
+                note:R.note || "", ssTaxed:false};
+  if (S.none || !S.b) return zero;
+
+  // --- 1. Social Security ---------------------------------------------------
+  // Default is full exemption: 42 states and DC leave benefits out entirely.
+  let ssIn = 0, ssTaxed = false;
+  if (SS_TAX_STATES[c.code]){
+    ssTaxed = true;
+    ssIn = c.taxableSS;
+    if (R.ssFullAge && c.seniors > 0) ssIn = 0;
+    else if (R.ssCap){
+      const cap = R.ssCap[idx], range = R.ssRange || 0;
+      if (c.agi <= cap) ssIn = 0;
+      else if (range > 0 && c.agi < cap + range)
+        ssIn = c.taxableSS * ((c.agi - cap) / range);
+      if (c.agi > cap && R.ssPct) ssIn = Math.min(ssIn, c.taxableSS * R.ssPct);
+      if (ssIn <= 0) ssTaxed = false;
+    }
+  }
+
+  // --- 2. source-level exemptions ------------------------------------------
+  let trad = R.tradFull ? 0 : c.trad;
+  let pension = c.pension;
+  if (R.penFull) pension = 0;
+  else if (R.pubFull && c.penPublic){
+    // Missouri's public-pension exemption is the one with an income test.
+    const cap = R.exCap && !R.exAmt ? R.exCap[idx] : Infinity;
+    if (c.agi <= cap) pension = 0;
+  }
+  let other = c.other;
+
+  // --- 3. long-term gain ----------------------------------------------------
+  let gain = c.gain;
+  if (R.cgPct) gain = gain * (1 - R.cgPct);
+  if (R.cgFlat) gain = Math.max(0, gain - R.cgFlat[idx]);
+
+  // --- 4. the retirement income exclusion -----------------------------------
+  let excluded = 0;
+  if (R.exAmt){
+    const people = R.exPer ? (R.exAge ? c.seniors : (st === "m" ? 2 : 1)) : 1;
+    let room = R.exAmt[idx] * (R.exPer ? people : 1);
+    if (R.exAge && c.seniors === 0) room = 0;
+    if (R.exLessSS)
+      room = Math.max(0, room - (R.exLessSS === "gross" ? c.ssGross : c.taxableSS));
+    if (R.exCap){
+      const cap = R.exCap[idx];
+      if (R.exPhase === "nj"){
+        // New Jersey steps the exclusion down rather than phasing it linearly.
+        const g = c.grossForTest;
+        room *= g <= cap ? 1 : g <= cap + 25000 ? .5 : g <= cap + 50000 ? .25 : 0;
+      } else if (R.exPhase === "lin"){
+        const range = R.exRange || 1;
+        room *= c.agi <= cap ? 1
+              : c.agi >= cap + range ? 0
+              : 1 - (c.agi - cap) / range;
+      } else if (c.agi > cap) room = 0;
+    }
+    const order = R.exSrc === "t" ? ["trad"]
+                : R.exSrc === "p" ? ["pension"]
+                : R.exSrc === "pub" ? (c.penPublic ? ["pension"] : [])
+                : R.exSrc === "all" ? ["trad", "pension", "other", "gain"]
+                : ["trad", "pension"];
+    const box = {trad, pension, other, gain};
+    order.forEach(k => {
+      const take = Math.min(room, box[k]);
+      box[k] -= take; room -= take; excluded += take;
+    });
+    trad = box.trad; pension = box.pension; other = box.other; gain = box.gain;
+  }
+
+  // --- 5. the base ----------------------------------------------------------
+  const parts = {trad, pension, other, gain, ss:ssIn};
+  const preRaw = Math.max(0, c.pre);
+  const gross = trad + pension + other + gain + ssIn;
+  const base = Math.max(0, gross - preRaw);
+  // Pre-tax deductions shrink every surviving source proportionally, so the
+  // per-source split still adds up to the base the tax was computed on.
+  const keep = gross > 0 ? base / gross : 0;
+  Object.keys(parts).forEach(k => parts[k] *= keep);
+
+  // --- 6. deductions, exemptions and age add-ons ----------------------------
+  let ded = 0;
+  if (c.dedType === "item" && S.sd) ded = Math.max(c.item, 0);
+  else if (S.sd) ded = S.sd[idx];
+  if (S.pe) ded += S.pe[idx];
+  if (S.peAge) ded += S.peAge * c.seniors;      // Illinois
+  if (R.peAge) ded += R.peAge * c.seniors;
+  if (R.sdAge) ded += R.sdAge[idx] * c.seniors;
+  if (R.agePh){
+    // Virginia: a flat deduction withdrawn against income above a threshold.
+    const over = Math.max(0, c.agi - R.agePh.cap[idx]) * R.agePh.rate;
+    ded += Math.max(0, R.agePh.amt * c.seniors - over);
+  }
+  if (S.agiCap && c.agi > S.agiCap[idx]) ded = 0;   // Illinois-style cliff
+
+  const taxable = Math.max(0, base - ded);
+
+  // --- 7. rates -------------------------------------------------------------
+  let tax = bracketTax(taxable, S.b[st]).tax;
+  // A handful of states run gain through its own rate schedule. Both do it as
+  // an alternative computation, so the taxpayer never pays more than ordinary.
+  const gainInTaxable = Math.min(parts.gain, taxable);
+  if ((R.cgMax || R.cgB) && gainInTaxable > 0){
+    const ordPart = taxable - gainInTaxable;
+    const alt = bracketTax(ordPart, S.b[st]).tax + (R.cgMax
+      ? gainInTaxable * R.cgMax
+      : bracketTax(ordPart + gainInTaxable, R.cgB[st]).tax -
+        bracketTax(ordPart, R.cgB[st]).tax);
+    tax = Math.min(tax, alt);
+  }
+
+  // --- 8. credits -----------------------------------------------------------
+  if (S.pec) tax = Math.max(0, tax - S.pec[idx]);
+  if (S.sdc) tax = Math.max(0, tax - S.sdc[idx]);
+  let credit = 0;
+  if (R.credAge && c.seniors > 0 &&
+      (!R.ohRet || !R.exCap || c.agi <= R.exCap[idx]))
+    credit += R.credAge[idx] * c.seniors;
+  if (R.ohRet && (!R.exCap || c.agi <= R.exCap[idx])){
+    // Ohio's retirement income credit, a flat dollar amount by band.
+    const r = trad + pension;
+    credit += r >= 8000 ? 200 : r >= 5000 ? 130 : r >= 3000 ? 80
+            : r >= 1500 ? 50 : r >= 500 ? 25 : 0;
+  }
+  if (R.ssCredit && ssIn > 0){
+    const k = R.ssCredit;
+    const full = ssIn * k.rate;
+    credit += Math.max(0, full - Math.max(0, c.agi - k.cap[idx]) * k.phase);
+  }
+  tax = Math.max(0, tax - credit);
+
+  return {tax, base, taxable, ssIn, excluded, ded, credit, parts,
+          note:R.note || "", ssTaxed};
 }
 
 /**
@@ -4579,7 +4995,9 @@ function ssTaxable(ss, otherAgi, st){
  * @param {number} inp.brok - taxable brokerage withdrawal, in dollars
  * @param {number} inp.gainPct - share of that withdrawal that is gain, 0-1
  * @param {number} inp.ss - gross Social Security benefits, in dollars
- * @param {number} inp.other - pensions, annuities, interest, rent, in dollars
+ * @param {number} inp.pension - pension / annuity income, in dollars
+ * @param {boolean} inp.penPublic - true if that pension is a government pension
+ * @param {number} inp.other - interest, non-qualified dividends, rent, in dollars
  * @param {"s"|"m"} inp.status - filing status
  * @param {string} inp.state - two-letter state code, a key into STATES
  * @param {number} inp.pre - above-the-line deductions, in dollars
@@ -4597,24 +5015,27 @@ function computeRetireTax(inp){
   const roth  = Math.max(0, inp.roth);
   const brok  = Math.max(0, inp.brok);
   const ssGross = Math.max(0, inp.ss);
+  const pension = Math.max(0, inp.pension || 0);
+  const penPublic = !!inp.penPublic;
   const other = Math.max(0, inp.other);
   const gainPct = Math.max(0, Math.min(1, inp.gainPct));
   const gain = brok * gainPct;             // long-term; basis comes back untaxed
   const basis = brok - gain;
-  const gross = trad + roth + brok + ssGross + other;
+  const gross = trad + roth + brok + ssGross + pension + other;
 
   // Above-the-line deductions can only offset income that actually shows up on
   // the return, so cap them at everything except the Roth and the basis.
-  const pre = Math.min(Math.max(0, inp.pre), trad + other + gain + ssGross);
+  const pre = Math.min(Math.max(0, inp.pre),
+                       trad + pension + other + gain + ssGross);
 
   // Social Security is the circular part: how much of it is taxable depends on
   // AGI, which depends on how much of it is taxable. Everything else is fixed,
   // so one pass over the sec. 86 formula settles it.
-  const otherAgi = trad + other + gain - pre;
+  const otherAgi = trad + pension + other + gain - pre;
   const SS = ssTaxable(ssGross, otherAgi, st);
   const taxableSS = SS.taxable;
 
-  const ordinaryAgi = trad + other + taxableSS - pre;
+  const ordinaryAgi = trad + pension + other + taxableSS - pre;
   const agi = ordinaryAgi + gain;
 
   // deductions
@@ -4654,31 +5075,19 @@ function computeRetireTax(inp){
   const federal = fedOrdinary + ltcg + niit;
 
   // state
+  // Everything state-specific -- Social Security, pension and traditional
+  // exclusions, senior deductions, state capital-gain treatment, credits --
+  // lives in stateRetireTax() and RET_STATE, so this only has to hand it a
+  // context and take back the answer.
   const S = STATES[inp.state] || {none:1};
-  const stateTaxesSS = !!SS_TAX_STATES[inp.state] &&
-    !(inp.state === "CO" && seniors > 0);
-  // A state can flag that it excludes traditional-account withdrawals from
-  // its own tax base entirely (Illinois does; most states do not, and are
-  // left at the general "everything but Roth" treatment below).
-  const stateTradAmt = S.retireExemptTrad ? 0 : trad;
-  let state = 0, stateTaxable = 0, stateBase = 0;
-  if (!S.none && S.b){
-    // Nearly every state that taxes income taxes long-term gains at its
-    // ordinary rates, so the gain goes in with everything else.
-    stateBase = Math.max(0, stateTradAmt + other + gain - pre +
-      (stateTaxesSS ? taxableSS : 0));
-    let sded = 0;
-    if (inp.dedType === "item" && S.sd) sded = Math.max(inp.item, 0);
-    else if (S.sd) sded = S.sd[idx];
-    if (S.pe) sded += S.pe[idx];
-    if (S.peAge) sded += S.peAge * seniors;
-    // Same AGI cliff as computeTax, checked against this mode's own AGI.
-    if (S.agiCap && agi > S.agiCap[idx]) sded = 0;
-    stateTaxable = Math.max(0, stateBase - sded);
-    state = bracketTax(stateTaxable, S.b[st]).tax;
-    if (S.pec) state = Math.max(0, state - S.pec[idx]);
-    if (S.sdc) state = Math.max(0, state - S.sdc[idx]);
-  }
+  const ST = stateRetireTax(S, {
+    code:inp.state, status:st, idx, seniors,
+    trad, pension, penPublic, other, gain,
+    taxableSS, ssGross, agi, pre, dedType:inp.dedType, item:inp.item,
+    grossForTest: trad + pension + other + gain
+  });
+  const state = ST.tax, stateTaxable = ST.taxable, stateBase = ST.base;
+  const stateTaxesSS = ST.ssTaxed;
 
   const total = federal + state;
   const net = gross - total - pre;
@@ -4700,29 +5109,31 @@ function computeRetireTax(inp){
 
   // Attribution: the ordinary federal tax is split across the ordinary sources
   // in proportion to what each one contributed to ordinary taxable income.
-  const ordSum = trad + other + taxableSS;
+  const ordSum = trad + pension + other + taxableSS;
   const shareOf = amt => ordSum > 0 ? amt / ordSum : 0;
-  const stateOnOrd = stateBase > 0 ? state * Math.max(0, stateBase - gain) / stateBase : 0;
-  const stateOnGain = state - stateOnOrd;
-  // The state base is not the federal one: a state that exempts Social
-  // Security -- or, like Illinois, traditional-account withdrawals too --
-  // has a smaller pool of ordinary income to spread its tax across, so the
-  // state split needs its own denominator or the rows stop adding up.
-  const stateOrdSum = stateTradAmt + other + (stateTaxesSS ? taxableSS : 0);
-  const sShare = amt => stateOrdSum > 0 ? amt / stateOrdSum : 0;
+  // The state base is not the federal one. A state that exempts Social
+  // Security -- or pensions, or traditional withdrawals, or 44% of the gain --
+  // has a different pool of income to spread its tax across, so the state
+  // split runs off what actually survived into the state base, source by
+  // source. stateRetireTax() hands those amounts back in ST.parts, which is
+  // why the state column adds up to the state total however odd the rules.
+  const sBase = ST.base;
+  const sShare = amt => sBase > 0 ? amt / sBase : 0;
+  const sTax = amt => state * sShare(amt);
   const bucket = (label, withdrawn, taxable, fed, stt) => ({
     label, withdrawn, taxable, federal:fed, state:stt, tax:fed + stt,
     eff: withdrawn > 0 ? (fed + stt) / withdrawn : 0});
   const buckets = [
     bucket("Traditional 401(k) / IRA", trad, trad,
-           fedOrdinary * shareOf(trad), stateOnOrd * sShare(stateTradAmt)),
+           fedOrdinary * shareOf(trad), sTax(ST.parts.trad)),
     bucket("Roth account", roth, 0, 0, 0),
-    bucket("Taxable brokerage", brok, gain, ltcg + niit, stateOnGain),
+    bucket("Taxable brokerage", brok, gain, ltcg + niit, sTax(ST.parts.gain)),
     bucket("Social Security", ssGross, taxableSS,
-           fedOrdinary * shareOf(taxableSS),
-           stateTaxesSS ? stateOnOrd * sShare(taxableSS) : 0),
+           fedOrdinary * shareOf(taxableSS), sTax(ST.parts.ss)),
+    bucket("Pension / annuity", pension, pension,
+           fedOrdinary * shareOf(pension), sTax(ST.parts.pension)),
     bucket("Other ordinary income", other, other,
-           fedOrdinary * shareOf(other), stateOnOrd * sShare(other))
+           fedOrdinary * shareOf(other), sTax(ST.parts.other))
   ];
 
   return {
@@ -4734,9 +5145,11 @@ function computeRetireTax(inp){
     nominalMarginal:marginalRate(ordTaxable, FED_2026[st]),
     bands:fedCalc.bands, stateName:S.n || "", stateNone:!!S.none,
     // retirement detail
-    retirement:true, trad, roth, brok, gain, basis, ssGross, other,
-    taxableSS, ssTier:SS.tier, provisional:SS.provisional, ssStateTaxed:stateTaxesSS,
-    stateExemptTrad:!!S.retireExemptTrad,
+    retirement:true, trad, roth, brok, gain, basis, ssGross, pension, penPublic,
+    other, taxableSS, ssTier:SS.tier, provisional:SS.provisional,
+    ssStateTaxed:stateTaxesSS, stateBase, stateNote:ST.note,
+    stateExcluded:ST.excluded, stateDed:ST.ded, stateCredit:ST.credit,
+    stateParts:ST.parts, stateSSIn:ST.ssIn,
     agi, ordinaryAgi, ordTaxable, gainTaxable, fedOrdinary, ltcg, ltcgRate,
     ltcgBands:[{rate:0, amount:g0, tax:0}, {rate:.15, amount:g15, tax:g15 * .15},
                {rate:.20, amount:g20, tax:g20 * .20}],
@@ -5500,6 +5913,7 @@ if (typeof module !== "undefined")
                     mortgage, STATES, FED_2026, FED_STD, FICA,
                     computeRetireTax, ssTaxable, LTCG_2026, NIIT,
                     SENIOR_ADDL, SENIOR_BONUS, SS_PROV, SS_TAX_STATES,
+                    RET_STATE, stateRetireTax,
                     finalStageSolve, balanceBeforeLast};
 </script>
 
@@ -6797,6 +7211,30 @@ document.addEventListener("click", e => {
   el.dispatchEvent(new Event("change", {bubbles:true}));
 });
 
+/* Direction of the next pane swap, consumed by playPaneEnter. Set by whichever
+   control initiated the move; defaults back to a plain tab change so a stray
+   programmatic showTab can't inherit a stale direction. */
+let paneDir = "tab";
+const PANE_CLASSES = ["pane-in","pane-in-fwd","pane-in-back","pane-in-cards"];
+/* Runs after the [hidden] flags are set, so it animates whatever actually
+   ended up visible rather than trying to predict it. Removing the class and
+   reading offsetWidth forces a reflow, which is what lets the same animation
+   replay on a repeat visit to the same pane. */
+function playPaneEnter(){
+  const dir = paneDir;
+  paneDir = "tab";
+  const panes = Array.prototype.filter.call(
+    document.querySelectorAll("#main > .stack, #main > aside"), el => !el.hidden);
+  panes.forEach(el => {
+    const cls = (el.id === "tab-toolpicker") ? "pane-in-cards"
+      : (dir === "fwd") ? "pane-in-fwd"
+      : (dir === "back") ? "pane-in-back" : "pane-in";
+    PANE_CLASSES.forEach(c => el.classList.remove(c));
+    void el.offsetWidth;
+    el.classList.add(cls);
+  });
+}
+
 /* Tools is a container tab: picking it reveals a second row for choosing which
    tool, so more can be added later without crowding the main nav. */
 let toolSub = "picker";
@@ -6832,6 +7270,7 @@ function showTool(sub){
   else if (sub === "roth") renderRoth();
   else if (sub === "debt") renderDebt();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
+  playPaneEnter();
 }
 /* Drawdown packs in more than any other tool, so first-time visitors get a
    one-line orientation. Dismissing it is remembered, same pattern as the
@@ -6884,12 +7323,14 @@ function showTab(t){
   else if (t === "series") renderSeries();
   else if (t === "tools") showTool(toolSub);
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
+  if (t !== "tools") playPaneEnter();
 }
 document.querySelectorAll("nav[role=tablist] button").forEach(b => {
   b.addEventListener("click", () => {
     const t = b.getAttribute("data-tab");
     // Clicking Tools while a tool is open → return to picker
     if (t === "tools" && chartMode.tab === "tools" && toolSub !== "picker"){
+      paneDir = "back";
       showTool("picker");
     } else {
       showTab(t);
@@ -6899,6 +7340,7 @@ document.querySelectorAll("nav[role=tablist] button").forEach(b => {
 document.querySelectorAll(".toolcard[data-pick]").forEach(card => {
   const activate = () => {
     if (chartMode.tab !== "tools") showTab("tools");
+    paneDir = "fwd";
     showTool(card.getAttribute("data-pick"));
   };
   card.addEventListener("click", activate);
@@ -7078,6 +7520,8 @@ function buildTaxSheet(){
     if (inp.brok > 0) inputs += row("Brokerage withdrawal",
       money(inp.brok) + " (" + pctStr(inp.gainPct, 0) + " gain)");
     if (inp.ss > 0) inputs += row("Social Security", money(inp.ss));
+    if (inp.pension > 0) inputs += row("Pension / annuity", money(inp.pension) +
+      (inp.penPublic ? " (government)" : " (private)"));
     if (inp.other > 0) inputs += row("Other ordinary income", money(inp.other));
     inputs += row("Gross income", money(R.gross));
   } else {
@@ -7611,17 +8055,20 @@ $("rcState").innerHTML = $("txState").innerHTML;
 
 let txMode = "normal";
 const BKT_COLORS = {trad:"#e2795f", roth:"#4fbf95", brok:"#7d9fd6",
-                    ss:"#e9b872", other:"#a98fd6"};
+                    ss:"#e9b872", pension:"#c98fb8", other:"#a98fd6"};
 const LTCG_COLORS = ["#4fbf95", "#e9b872", "#e2795f"];   // 0%, 15%, 20%
 
 function readTax(){
   const status = $("txStatus").value;
   const seniors = Math.min(status === "m" ? 2 : 1, parseInt($("txSeniors").value, 10) || 0);
   const trad = num("txTrad"), roth = num("txRoth"), brok = num("txBrok"),
-        ss = num("txSS"), other = num("txOther");
+        ss = num("txSS"), pension = num("txPension"), other = num("txOther");
   return {mode:txMode,
-          gross: txMode === "retire" ? trad + roth + brok + ss + other : num("txGross"),
-          trad, roth, brok, ss, other, gainPct:num("txGainPct") / 100, seniors,
+          gross: txMode === "retire"
+            ? trad + roth + brok + ss + pension + other : num("txGross"),
+          trad, roth, brok, ss, pension, other,
+          penPublic: $("txPenType").value === "pub",
+          gainPct:num("txGainPct") / 100, seniors,
           status, state:$("txState").value,
           pre:num("txPre"), dedType:$("txDedType").value, item:num("txItem")};
 }
@@ -7871,7 +8318,7 @@ function renderRetireTax(inp, R){
   txBracketTable(R);
 
   // --- per-bucket panel ---
-  const keys = ["trad", "roth", "brok", "ss", "other"];
+  const keys = ["trad", "roth", "brok", "ss", "pension", "other"];
   const live = R.buckets.map((b, i) => ({b, c:BKT_COLORS[keys[i]]}))
                         .filter(o => o.b.withdrawn > 0);
   const maxAmt = live.reduce((a, o) => Math.max(a, o.b.withdrawn), 0);
@@ -7899,10 +8346,10 @@ function renderRetireTax(inp, R){
        : "up to " + R.ssTier + "% of your benefits in the tax base \u2014 " +
          money(R.taxableSS) + " of " + money(R.ssGross) + ".");
   }
-  if (R.stateExemptTrad && R.trad > 0){
-    note += " " + (R.stateName || "This state") + " excludes traditional 401(k) and IRA " +
-      "withdrawals from its own tax base entirely, which is why that row shows $0 of " +
-      "state tax above.";
+  if (R.stateNote){
+    note += " <b>" + (R.stateName || "This state") + ".</b> " + R.stateNote;
+    if (R.stateExcluded > 0)
+      note += " That removed " + money(R.stateExcluded) + " from the state tax base here.";
   }
   $("txBucketNote").innerHTML = note;
 
@@ -7955,10 +8402,283 @@ function txRow(k, v, eff, cls){
     "</td><td><span style='color:" + cls + "'>\u25a0</span> " + pctStr(eff, 1) + "</td></tr>";
 }
 function txBracketTable(R){
+  txStateRuleTable();
   $("txBrackets").querySelector("tbody").innerHTML = R.bands.map(b =>
     "<tr" + (b.amount > 0 ? "" : " style='opacity:.4'") + "><td>" + pctStr(b.rate, 0) +
     "</td><td>" + money(b.lo) + (b.hi === Infinity ? " and up" : " \u2013 " + money(b.hi)) +
     "</td><td>" + money(b.amount) + "</td><td>" + money(b.tax) + "</td></tr>").join("");
+}
+
+/* ---------- the state rules table ----------
+   Everything the two tax modes just did at the state level, said in English.
+   The rows are generated from the same STATES and RET_STATE data the
+   calculation runs on, so the table cannot drift away from the numbers above
+   it. The same six rows show in both modes: someone still working wants to
+   know what retirement will cost in the state they are in, and someone
+   retired wants to know how ordinary income is treated. */
+
+/* A rate, with trailing zeros trimmed: 4.95%, 5%, 2.5%. */
+function rp(r){ return (r * 100).toFixed(2).replace(/\.?0+$/, "") + "%"; }
+
+/* "$3,000 single / $6,000 joint", or "$3,000" when the two are the same. */
+function sj(pair){
+  return pair[0] === pair[1] ? money(pair[0])
+    : money(pair[0]) + " single / " + money(pair[1]) + " joint";
+}
+
+/* Row 1: how the state taxes a dollar of ordinary income. */
+function ruleOrdinary(code, S, st){
+  if (S.none) return "No individual income tax. Wages, pensions, retirement-account " +
+    "withdrawals, Social Security and investment income are all untaxed.";
+  const b = S.b[st];
+  const rates = b.map(x => x[1]);
+  const top = rates[rates.length - 1];
+  const paid = b.filter(x => x[1] > 0);
+  let out;
+  if (paid.length === 1){
+    out = "Flat " + rp(top) + " on all taxable income";
+    out += b[0][1] === 0
+      ? ", with a zero-rate band up to " + money(paid[0][0]) + ". " : ". ";
+  } else {
+    out = b.length + " brackets, " + rp(paid[0][1]) + " to " + rp(top) + ". ";
+    if (b[0][1] === 0) out += "The first " + money(paid[0][0]) +
+      " of taxable income is taxed at zero. ";
+    out += "The top rate starts at " + money(S.b.s[S.b.s.length - 1][0]) +
+      " single / " + money(S.b.m[S.b.m.length - 1][0]) + " joint. ";
+  }
+  const d = [];
+  if (S.sd) d.push("standard deduction " + sj(S.sd));
+  if (S.pe) d.push("personal exemption " + sj(S.pe));
+  if (S.pec) d.push("exemption credit " + sj(S.pec) + " rather than a deduction");
+  if (S.sdc) d.push("deduction delivered as a " + sj(S.sdc) + " credit");
+  out += d.length ? "Against that: " + d.join(", ") + "."
+                  : "No standard deduction or personal exemption.";
+  if (S.agiCap) out += " The exemption is lost outright \u2014 a cliff, not a " +
+    "phase-out \u2014 above " + sj(S.agiCap) + " of AGI.";
+  return out;
+}
+
+/* Row 2: long-term capital gain and other investment income. */
+function ruleGain(code, S, R){
+  if (S.none) return code === "WA"
+    ? "No tax on ordinary capital gain at the individual level, but Washington " +
+      "levies a separate 7% excise tax on long-term gains above roughly $270,000 " +
+      "a year, with real estate and retirement accounts exempt. That tax is not " +
+      "calculated here."
+    : "Not taxed.";
+  let out = "";
+  if (R.cgPct) out = rp(R.cgPct) + " of net long-term gain is excluded from the " +
+    "state base; the remainder is taxed at the ordinary rates above. ";
+  else if (R.cgFlat) out = sj(R.cgFlat) + " of long-term gain is excluded; the " +
+    "remainder is taxed at the ordinary rates above. ";
+  else if (R.cgMax) out = "Long-term gain is capped at " + rp(R.cgMax) +
+    ", computed as an alternative that can never cost more than ordinary rates. ";
+  else if (R.cgB) out = "Long-term gain gets its own reduced schedule \u2014 " +
+    R.cgB.s.map(x => rp(x[1])).join(" then ") + " \u2014 instead of the ordinary rates. ";
+  else out = "Taxed at the same ordinary rates as everything else. No preferential " +
+    "long-term rate, and no equivalent of the federal 0% band. ";
+  out += "Only the gain portion of a brokerage sale is taxed; your basis comes back " +
+    "untouched, as federally.";
+  return out;
+}
+
+/* Row 3: Social Security. */
+function ruleSS(code, S, R){
+  if (S.none) return "Not taxed.";
+  if (!SS_TAX_STATES[code])
+    return "Fully exempt. Benefits are subtracted from the state base no matter " +
+      "how large they are or what else you earn.";
+  let out = "Taxed, on the amount that is taxable federally under \u00a786. ";
+  if (R.ssFullAge) out += "Fully exempt once you are 65 or older, which is what " +
+    "this assumes when you mark someone 65+.";
+  else if (R.ssCredit) out += "A credit then refunds the tax on those benefits, " +
+    "withdrawn at " + rp(R.ssCredit.phase) + " of income above " + sj(R.ssCredit.cap) +
+    ", so the relief disappears well before the top of the income range.";
+  else if (R.ssCap && R.ssPct) out += "Fully exempt below " + sj(R.ssCap) +
+    " of AGI; above that, " + rp(R.ssPct) + " of the federally taxable benefit stays " +
+    "in the base.";
+  else if (R.ssCap && R.ssRange) out += "Fully exempt below " + sj(R.ssCap) +
+    " of AGI, phasing back in over the next " + money(R.ssRange) + ".";
+  else if (R.ssCap) out += "Fully exempt below " + sj(R.ssCap) + " of AGI and fully " +
+    "taxable above it \u2014 a cliff, not a phase-out.";
+  else out += "No income test and no exemption: the federal taxable amount goes " +
+    "straight into the state base.";
+  return out;
+}
+
+/* Rows 4 and 5: pension income, then traditional 401(k) and IRA withdrawals.
+   They are separate rows because roughly a dozen states treat them
+   differently, which is the whole reason the tool asks for them separately. */
+function rulePension(code, S, R){
+  if (S.none) return "Not taxed.";
+  const bits = [];
+  if (R.penFull) bits.push("Fully exempt, public or private.");
+  else if (R.pubFull) bits.push("Government pensions \u2014 federal, state and local " +
+    "\u2014 are fully exempt. Private-employer pensions are taxed at ordinary rates.");
+  else bits.push("Taxed at ordinary rates.");
+  const ex = exclusionSentence(R, "p");
+  if (ex) bits.push(ex);
+  return bits.join(" ");
+}
+function ruleTrad(code, S, R){
+  if (S.none) return "Not taxed.";
+  const bits = [];
+  if (R.tradFull) bits.push("Fully exempt. Qualified plan and IRA distributions " +
+    "are outside the state base entirely.");
+  else bits.push("Taxed at ordinary rates, the same as a pension would be.");
+  if (code === "HI") bits.push("Hawaii's exemption covers only the employer-funded " +
+    "share of a plan, so the part of a 401(k) that came from your own deferrals " +
+    "stays taxable. This treats the whole balance as your own deferrals, which is " +
+    "the conservative reading.");
+  if (code === "MD") bits.push("Maryland's pension exclusion specifically does " +
+    "not reach IRA distributions.");
+  const ex = exclusionSentence(R, "t");
+  if (ex) bits.push((R.exSrc === "t" ? "" :
+    "It shares one allowance with pension income rather than getting its own. ") + ex);
+  return bits.join(" ");
+}
+
+/* The shared description of a state's retirement-income exclusion, written
+   once and shown on whichever of the two rows it actually applies to. */
+function exclusionSentence(R, which){
+  if (!R.exAmt) return "";
+  const src = R.exSrc || "tp";
+  const hits = src === "all" || src === "tp" ? true
+             : src === "pub" || src === "p" ? which === "p"
+             : which === "t";
+  if (!hits) return "";
+  const big = R.exAmt[0] >= 1e11;
+  let out = big ? "Exempt in full" : "Up to " + sj(R.exAmt) + " is excluded";
+  if (R.exPer) out += " per person";
+  if (src === "all") out += ", and the same allowance covers interest, dividends, " +
+    "rent and capital gain";
+  if (src === "pub") out += ", and only for government pensions";
+  out += R.exAge ? ", from age 65 as modelled here" : ", at any age";
+  out += ".";
+  if (R.exLessSS === "gross") out += " The allowance is reduced dollar for dollar " +
+    "by the Social Security you receive, so a large benefit can consume it outright.";
+  else if (R.exLessSS === "taxable") out += " Taxable Social Security comes out of " +
+    "that ceiling first, which exempts benefits in full and leaves whatever is " +
+    "left over for the rest.";
+  if (R.exCap){
+    if (R.exPhase === "nj") out += " Full below " + money(R.exCap[0]) +
+      " of income, half to " + money(R.exCap[0] + 25000) + ", a quarter to " +
+      money(R.exCap[0] + 50000) + ", nothing above.";
+    else if (R.exPhase === "lin") out += " Withdrawn dollar for dollar as AGI " +
+      "rises above " + sj(R.exCap) + ", so it is gone by " +
+      money(R.exCap[0] + R.exRange) + " single / " +
+      money(R.exCap[1] + R.exRange) + " joint.";
+    else out += " Lost entirely above " + sj(R.exCap) + " of AGI.";
+  }
+  return out;
+}
+
+/* Row 6: what arrives at 65. */
+function ruleSenior(code, S, R){
+  if (S.none) return "No income tax, so nothing to give.";
+  const bits = [];
+  if (R.sdAge) bits.push("Extra deduction of " + sj(R.sdAge) + " per person, " +
+    "against income of any kind.");
+  if (R.agePh) bits.push("Deduction of " + money(R.agePh.amt) + " per person, " +
+    "withdrawn dollar for dollar above " + sj(R.agePh.cap) + " of income, so it is " +
+    "gone by " + money(R.agePh.cap[0] + R.agePh.amt) + " single / " +
+    money(R.agePh.cap[1] + R.agePh.amt) + " joint.");
+  if (R.peAge || S.peAge) bits.push("Extra personal exemption of " +
+    money(R.peAge || S.peAge) + " per person.");
+  if (R.credAge) bits.push("Credit of " + sj(R.credAge) + " per person" +
+    (R.ohRet ? ", plus a retirement income credit of up to $200, both lost above " +
+      sj(R.exCap) + " of state income." : "."));
+  else if (R.ohRet) bits.push("Retirement income credit of up to $200.");
+  if (R.exAge && R.exAmt) bits.push("Reaching 65 is also what unlocks the " +
+    "retirement exclusion in the rows above — that is the main thing age buys " +
+    "here, rather than a separate senior deduction.");
+  if (R.ssFullAge) bits.push("Social Security becomes fully exempt at 65.");
+  return bits.length ? bits.join(" ")
+    : "Nothing beyond the federal age-65 deductions. The state gives no extra " +
+      "deduction, exemption or credit at 65.";
+}
+
+/* What is knowingly missing. Two or three real items per state, not a
+   disclaimer wall: the point is that you know where to go look. */
+const STATE_GAPS = {
+  AL:"Municipal occupational taxes of roughly 1% to 2% in Birmingham and other cities. Alabama's standard deduction phases down with income.",
+  AZ:"Arizona's small-business alternative return, and the full exemption for military retirement pay.",
+  AR:"Arkansas's low-income tax tables, which override the brackets at the bottom of the range.",
+  CA:"State disability insurance, 1.2% of all wages with no cap, which functions like a payroll tax on the working side. California's own itemized deduction rules differ from the federal ones.",
+  CO:"The $20,000 version of the pension subtraction available from 55 to 64, and TABOR-driven rate reductions that temporarily cut the flat rate in some years.",
+  CT:"Connecticut's benefit recapture, which claws back the value of the lower brackets at higher incomes and can add several hundred dollars. Also the personal exemption's own phase-out.",
+  DE:"Wilmington's 1.25% city wage tax on earned income.",
+  GA:"The $5,000 sublimit on earned income inside the retirement exclusion, and the $35,000 version available from 62 to 64.",
+  HI:"Working out how much of a 401(k) was employer-funded, since that share is exempt too. This assumes none of it was, so the real Hawaii bill may be lower.",
+  ID:"Idaho's retirement benefits deduction for federal Civil Service, military and public-safety retirees, which is generous where it applies.",
+  IL:"Nothing large. Illinois has no local income taxes and its retirement treatment is unusually simple.",
+  IN:"County income taxes, which run roughly 1% to 3% on top of the state rate and apply to retirement income too. Indiana's military retirement exemption.",
+  IA:"Iowa's retired-farmer and employee-stock-ownership elections, and its inheritance tax.",
+  KS:"Kansas's food sales tax credit and homestead property tax refund, both of which matter at lower retirement incomes.",
+  KY:"Local occupational license taxes of roughly 1% to 2.5% on earned income in Louisville, Lexington and elsewhere. The full exemption for service credited before 1998.",
+  LA:"Parish-level differences and Louisiana's own itemized deduction rules, which depart from the federal ones.",
+  ME:"Maine's alternative minimum tax and the phase-out of its personal exemption at higher incomes.",
+  MD:"County and Baltimore City income taxes, which run 2.25% to 3.20% on top of the state rate and apply to retirement income. Maryland's senior tax credit of $1,000 to $1,750 below $100,000 / $150,000 of income.",
+  MA:"Working out the previously-taxed contribution basis in an IRA, which Massachusetts lets you recover tax-free. The 4% surtax above roughly $1.08 million is in the brackets above.",
+  MI:"City income taxes in Detroit, Grand Rapids and about two dozen others, roughly 1% to 2.4%, which reach retirement income.",
+  MN:"Minnesota's alternative minimum tax and its separate public-pension subtraction for certain retirees.",
+  MS:"The rule that early distributions taken before the plan's retirement age lose the exemption and are taxed in full.",
+  MO:"Earnings taxes of 1% in Kansas City and St. Louis. The $6,000 private pension exemption below $25,000 / $32,000 of income.",
+  MT:"Montana's capital gain credit interaction with its reduced gain rates, and its elderly homeowner credit.",
+  NE:"Nebraska's full exemption for military retirement benefits.",
+  NJ:"New Jersey taxes 401(k) contributions going in, so part of every withdrawal is a tax-free return of basis that this does not track \u2014 the real New Jersey bill is usually lower than shown. Also the property tax deduction and senior freeze.",
+  NM:"The cap on New Mexico's capital gain deduction, which limits the 40% figure at higher gain amounts.",
+  NY:"New York City resident tax of roughly 3.1% to 3.9%, and Yonkers's surcharge, both of which reach pension and retirement-account income. New York's supplemental tax recapture at high incomes.",
+  NC:"The Bailey exemption for government retirees vested before August 1989, which exempts their pensions entirely.",
+  ND:"Nothing large. North Dakota's rates are low enough that the gain exclusion does most of the work.",
+  OH:"Municipal income taxes of roughly 1% to 3% and school district income taxes, though most Ohio municipalities exempt retirement income. Ohio's joint filing credit and lump-sum retirement credit.",
+  OK:"Oklahoma's full exemption for military retirement and its separate federal Civil Service allowance.",
+  OR:"Multnomah County and Portland-area local income taxes, which stack to several percent on higher incomes. Oregon's retirement income credit at low household incomes, and its federal tax subtraction.",
+  PA:"Local earned income taxes of roughly 1% to 3.9%, though these fall on wages rather than retirement income. Distributions taken before retirement age lose the exemption.",
+  RI:"The requirement that you have actually reached full retirement age, not merely 65, for either the Social Security or pension relief.",
+  SC:"South Carolina's separate treatment of military retirement, and its two-wage-earner credit.",
+  UT:"Utah's credit phase-out runs on a modified AGI that adds back some untaxed income, so the real credit can be smaller than shown. The $450 retirement credit for taxpayers born before 1953.",
+  VT:"Vermont's alternative minimum tax, and the $10,000 exclusion for Civil Service and military retirement.",
+  VA:"The rule that the age deduction is unlimited for taxpayers born before 1939, and Virginia's separate military benefits subtraction.",
+  WV:"West Virginia's separate full exemptions for state police, teachers' and federal Civil Service retirement, and its senior citizen property tax credit.",
+  WI:"The requirement that you are 67, not 65, for the $24,000 exclusion \u2014 marking someone 65+ here grants it two years early. Wisconsin's married-couple credit and school property tax credit.",
+  DC:"The District's $3,000 exclusion for government pensions at 62, and its own itemized deduction limits.",
+  AK:"Nothing. Alaska has no individual income tax and no local income taxes.",
+  FL:"Nothing at the income tax level. Florida's tangible and documentary taxes are unrelated.",
+  NV:"Nothing. Nevada has no individual income tax.",
+  NH:"New Hampshire's interest and dividends tax was fully repealed effective 2025, so there is nothing left to model.",
+  SD:"Nothing. South Dakota has no individual income tax.",
+  TN:"Nothing. Tennessee's Hall tax on interest and dividends was repealed in 2021.",
+  TX:"Nothing. Texas has no individual income tax.",
+  WA:"The 7% excise tax on long-term capital gains above roughly $270,000 a year, which is not calculated here. Real estate and retirement accounts are exempt from it.",
+  WY:"Nothing. Wyoming has no individual income tax."
+};
+
+/* Things true of every state, worth saying once rather than fifty-one times. */
+const GAPS_UNIVERSAL = "Everywhere: state credits that phase out on income " +
+  "(property tax, renter, low-income and dependent credits), state alternative " +
+  "minimum taxes, differences between state and federal itemized deductions, " +
+  "part-year and non-resident apportionment, and estate or inheritance taxes.";
+
+function txStateRuleTable(){
+  const code = $("txState").value;
+  const st = $("txStatus").value;
+  const S = STATES[code] || {none:1, n:"None"};
+  const R = RET_STATE[code] || {};
+  const rows = [
+    ["Ordinary income", ruleOrdinary(code, S, st)],
+    ["Long-term capital gain", ruleGain(code, S, R)],
+    ["Social Security", ruleSS(code, S, R)],
+    ["Pension / annuity", rulePension(code, S, R)],
+    ["Traditional 401(k) / IRA", ruleTrad(code, S, R)],
+    ["Age 65 and over", ruleSenior(code, S, R)]
+  ];
+  $("txStateRuleName").textContent = S.n || "";
+  $("txStateRules").querySelector("tbody").innerHTML = rows.map(r =>
+    "<tr><td style='white-space:nowrap;font-weight:600'>" + r[0] + "</td><td>" +
+    r[1] + "</td></tr>").join("");
+  $("txStateGaps").innerHTML = "<b>Not included in the figures above.</b> " +
+    (STATE_GAPS[code] || "") + " " + GAPS_UNIVERSAL;
 }
 
 /* Switching modes swaps which inputs are on screen and which output panels
@@ -8006,9 +8726,9 @@ $("segTxMode").addEventListener("click", e => {
   applyTaxMode();
   renderTax();
 });
-["txGross","txPre","txItem","txTrad","txRoth","txBrok","txGainPct","txSS","txOther"]
+["txGross","txPre","txItem","txTrad","txRoth","txBrok","txGainPct","txSS","txPension","txOther"]
   .forEach(id => $(id).addEventListener("input", renderTax));
-["txStatus","txState","txDedType","txSeniors"].forEach(id =>
+["txStatus","txState","txDedType","txSeniors","txPenType"].forEach(id =>
   $(id).addEventListener("change", () => { syncSeniorOptions(); renderTax(); }));
 
 /* ---------- mortgage tool ---------- */
@@ -9090,7 +9810,8 @@ const GLOSS = {
   bktbrok: "Money coming out of an ordinary taxable brokerage account. Only the growth is taxed \u2014 the part that was your own money going in comes back untaxed. Assuming everything is held over a year, the growth gets long-term capital gain rates of 0%, 15% or 20% rather than ordinary rates, which is usually the cheapest income in a retiree's mix.",
   bktgain: "How much of that brokerage withdrawal is gain rather than the money you originally put in. If you invested $60,000 and the position is now worth $100,000, it is 40%. Only this slice is taxable. A long-held position runs high; something bought recently runs low.",
   bktss: "Your gross Social Security benefit for the year. Between zero and 85% of it becomes taxable, depending on your provisional income \u2014 everything else on the return plus half your benefits. Below $25,000 single or $32,000 joint none of it is taxed; above $34,000 or $44,000 the 85% ceiling starts to apply. Those thresholds have never been indexed for inflation, so more retirees cross them every year.",
-  bktother: "Pensions, annuity payments, interest, non-qualified dividends, rental income, part-time work \u2014 anything else taxed at ordinary rates. Wages would also bring FICA with them, which this does not add.",
+  bktpen: "Defined-benefit pension and annuity payments. Kept separate from other income because state law treats it separately: many states exclude some or all pension income, and a dozen or so exempt government pensions in full while taxing private ones. The Payer dropdown is what decides which of those you get.",
+  bktother: "Interest, non-qualified dividends, rental income, royalties, part-time work \u2014 anything else taxed at ordinary rates. Put pension and annuity income in the field above instead, since states treat it differently. Wages would also bring FICA with them, which this does not add.",
   senior: "At 65 and over, two separate deductions stack on top of the regular standard deduction: the long-standing age add-on, $2,050 single or $1,650 per qualifying spouse, and the newer $6,000-per-person senior deduction from the 2025 tax act, which runs through 2028 and shrinks by 6 cents for every dollar of income above $75,000 single or $150,000 joint. The age add-on needs the standard deduction; the $6,000 is available to itemizers too.",
   ss86: "The share of your benefits that actually lands in taxable income. It is driven by provisional income \u2014 your other income plus half your benefits \u2014 not by the benefit alone, which is why another $1,000 from a traditional account can drag several hundred more dollars of Social Security into the tax base with it.",
   ltcgstack: "Long-term gains do not get their own separate bracket run \u2014 they sit on top of your ordinary taxable income. Ordinary income fills the brackets first and becomes the floor, and whatever the gain reaches above that floor decides whether it is taxed at 0%, 15% or 20%. Two people with identical gains can pay wildly different amounts on them purely because of what else they withdrew that year.",
@@ -9941,6 +10662,48 @@ $("segTheme").addEventListener("click", e => {
    to scroll through. Adds a chevron to each collapsible heading and toggles
    on click; built generically off the existing panel/h2/body structure
    rather than touching each section's markup individually. */
+/* Sweeps a section open or shut by animating the wrapper's height between 0
+   and its measured content height. The .collapsed class flips immediately so
+   the chevron turns with the click; an inline display:block keeps the section
+   on screen while it closes, and both inline styles are cleared at the end so
+   the resting collapsed state is plain display:none again. */
+const ABOUT_SWEEP = 300;
+function toggleAbout(p){
+  const wrap = p.querySelector(":scope > .about-collapse");
+  if (!wrap){ p.classList.toggle("collapsed"); return; }
+  let reduce = false;
+  try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+  if (reduce){ p.classList.toggle("collapsed"); return; }
+  // Mid-sweep clicks reverse from wherever the height currently sits rather
+  // than from the full-open or fully-shut value, so a fast double-click
+  // doesn't jump.
+  const from = wrap.getBoundingClientRect().height;
+  if (wrap._aboutDone) wrap._aboutDone();
+  const opening = p.classList.contains("collapsed");
+  p.classList.toggle("collapsed", !opening);
+  wrap.style.display = "block";
+  wrap.style.transition = "none";
+  wrap.style.height = "auto";
+  const full = wrap.scrollHeight;
+  wrap.style.height = from + "px";
+  void wrap.offsetHeight;
+  wrap.style.transition = "height " + (ABOUT_SWEEP/1000) + "s cubic-bezier(.25,.8,.3,1)";
+  wrap.style.height = (opening ? full : 0) + "px";
+  const done = () => {
+    clearTimeout(wrap._aboutTimer);
+    wrap.removeEventListener("transitionend", done);
+    wrap._aboutDone = null;
+    wrap.style.transition = "";
+    wrap.style.height = "";
+    wrap.style.display = "";
+  };
+  wrap._aboutDone = done;
+  // transitionend can be skipped if the element is hidden mid-sweep (tab
+  // change), so the cleanup is also on a timer.
+  wrap._aboutTimer = setTimeout(done, ABOUT_SWEEP + 60);
+  wrap.addEventListener("transitionend", done);
+}
+
 function initAboutCollapse(){
   const panels = document.querySelectorAll(".panel.about:not(.no-collapse):not(.disclaimer)");
   panels.forEach(p => {
@@ -9952,8 +10715,15 @@ function initAboutCollapse(){
       '<path d="M5 6l3 3 3-3" stroke="currentColor" stroke-width="1.6" ' +
       'stroke-linecap="round" stroke-linejoin="round"/></svg>';
     h2.appendChild(chev);
+    const body = p.querySelector(":scope > .body");
+    if (body){
+      const wrap = document.createElement("div");
+      wrap.className = "about-collapse";
+      p.insertBefore(wrap, body);
+      wrap.appendChild(body);
+    }
     p.classList.add("collapsed");
-    h2.addEventListener("click", () => p.classList.toggle("collapsed"));
+    h2.addEventListener("click", () => toggleAbout(p));
   });
 }
 if (window.matchMedia){
@@ -10247,6 +11017,7 @@ function readTaxState(){
           state:$("txState").value, pre:num("txPre"), dedType:$("txDedType").value,
           item:num("txItem"), trad:num("txTrad"), roth:num("txRoth"),
           brok:num("txBrok"), gainPct:num("txGainPct"), ss:num("txSS"),
+          pension:num("txPension"), penType:$("txPenType").value,
           other:num("txOther"), seniors:parseInt($("txSeniors").value, 10) || 0};
 }
 function writeTaxState(d){
@@ -10262,6 +11033,8 @@ function writeTaxState(d){
   if (d.brok != null) $("txBrok").value = groupDigits(d.brok, true);
   if (d.gainPct != null) $("txGainPct").value = String(d.gainPct);
   if (d.ss != null) $("txSS").value = groupDigits(d.ss, true);
+  if (d.pension != null) $("txPension").value = groupDigits(d.pension, true);
+  if (d.penType != null) $("txPenType").value = d.penType;
   if (d.other != null) $("txOther").value = groupDigits(d.other, true);
   if (d.seniors != null) $("txSeniors").value = String(d.seniors);
   applyTaxMode();
@@ -11140,6 +11913,7 @@ $("txRoth").value = groupDigits(10000, true);
 $("txBrok").value = groupDigits(20000, true);
 $("txGainPct").value = "40";
 $("txSS").value = groupDigits(30000, true);
+$("txPension").value = groupDigits(0, true);
 $("txOther").value = groupDigits(0, true);
 $("txSeniors").value = "1";
 applyTaxMode();
