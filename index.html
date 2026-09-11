@@ -809,6 +809,55 @@ html[data-theme="light"] .glidefields{border-color:#cfdcea}
 .coastrow .v{font-weight:600}
 #sCoastAction{margin-top:10px}
 #sCoastAction .btn{width:100%}
+
+/* ---------- debt payoff ---------- */
+.dtrow{display:flex;gap:8px;align-items:center;padding:5px 0}
+.dthead{display:flex;gap:8px;align-items:center;padding:0 0 4px;font-size:11px;
+  color:var(--dimmer);text-transform:uppercase;letter-spacing:.05em}
+.dtrow .desc,.dthead .desc{flex:1 1 auto;min-width:0}
+.dtrow input.desc{background:var(--field);border:1px solid var(--line);
+  border-radius:7px;color:var(--text);font:inherit;font-size:13.5px;padding:7px 9px;
+  width:100%;min-width:0}
+.dtrow input.desc:focus{outline:none;border-color:var(--jade)}
+.dtrow .c1,.dthead .c1{flex:0 0 120px;width:120px}
+.dtrow .c2,.dthead .c2{flex:0 0 88px;width:88px}
+.dtrow .c3,.dthead .c3{flex:0 0 110px;width:110px}
+.dthead .c1,.dthead .c2,.dthead .c3{text-align:right;padding-right:10px}
+.dtrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
+  font-size:19px;line-height:1;width:26px;flex:none}
+.dtrow .del:hover{color:var(--coral)}
+.dtrow .delspace,.dthead .delspace{width:26px;flex:none}
+.dtstrat{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.dtwarn{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:12.5px;
+  line-height:1.5;color:var(--text);background:rgba(226,121,95,.12);
+  border:1px solid rgba(226,121,95,.4)}
+@media (max-width:720px){
+  .dtrow{flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+  .dtrow input.desc{flex:1 1 100%}
+  .dtrow .c1{flex:1 1 40%;width:auto}
+  .dtrow .c2{flex:1 1 22%;width:auto}
+  .dtrow .c3{flex:1 1 28%;width:auto}
+  .dthead{display:none}
+}
+
+/* ---------- csv export ---------- */
+.csvbtn{font-size:11px;padding:3px 9px;letter-spacing:.04em}
+.csvbar{display:flex;justify-content:flex-end;padding:0 16px 8px}
+
+/* ---------- roth conversion ---------- */
+.beta{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:4px;
+  font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--bg);background:var(--gold);vertical-align:2px}
+.rc-beta .body{display:flex;align-items:baseline;gap:9px;font-size:13px;
+  color:var(--dimmer);line-height:1.5}
+.rc-beta .beta{margin-left:0;flex:none}
+/* The year the survivor starts filing single is the hinge of the whole
+   comparison, so it gets a rule of its own in the table. */
+tr.rc-widow > td{border-top:1px solid var(--gold);background:rgba(233,184,114,.06)}
+.rc-tier{display:inline-block;margin-left:4px;padding:1px 5px;border-radius:4px;
+  font-size:11px;font-weight:600;color:var(--bg);background:#e2795f;
+  vertical-align:1px}
+html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 .opt{color:var(--dimmer);font-size:11px;border:1px solid var(--line);
   border-radius:999px;padding:1px 8px;margin-left:5px}
 #msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
@@ -1122,6 +1171,7 @@ window.onerror = function(msg){
           <div class="field">
             <label for="withdrawal">Withdrawal rate<span class="tipdot" data-tip="withdrawal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+            <button class="btn mini" type="button" id="toDrawdown" style="margin-top:6px">Test Different Withdrawals</button>
           </div>
           <div class="field">
             <label for="taxrate">Effective tax rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -2116,11 +2166,10 @@ window.onerror = function(msg){
         tax, fees, volatility or changing assumptions, <b>Open this in the full
         calculator</b> carries your answers to the Advanced tab, splitting the real
         rate back into a return and 2.5% inflation, with contributions set to rise
-        alongside it. Expect the inflation-adjusted total to land within about a
-        percent of the Basic figure rather than exactly on it: Basic keeps the
-        contribution level in real terms continuously, while Advanced steps it up
-        once a year. Advanced also applies a 10% tax rate that Basic ignores, so the
-        income figure will drop.</p>
+        alongside it. Basic's own contribution already steps up once a year behind
+        the scenes, the same way Advanced's does, so the inflation-adjusted total
+        should land on the Basic figure almost exactly. Advanced does apply a 10%
+        tax rate that Basic ignores, so the income figure will drop.</p>
       </div>
     </div>
 
@@ -2515,7 +2564,79 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
-      <h2>Mortgage</h2>
+      <h2>Roth Conversion &amp; RMDs</h2>
+      <div class="body">
+        <p>A traditional 401(k) or IRA is a loan from the IRS, not a gift. The tax was
+        deferred, not forgiven, and <b>required minimum distributions</b> are the year
+        the bill comes due: from age 73 &mdash; or 75 if you were born in 1960 or later
+        &mdash; a slice of the balance has to come out every year whether you need the
+        money or not. The slice is set by the IRS Uniform Lifetime Table and it widens
+        with age, from about 3.8% at 73 to over 15% in your nineties.</p>
+
+        <p>That is the problem a <b>Roth conversion</b> is trying to get ahead of.
+        Moving money from traditional to Roth means paying tax on it now, voluntarily,
+        at a rate you choose, in order to avoid paying tax on a larger balance later at
+        a rate somebody else chooses. The tool runs your household twice &mdash; once
+        converting on the schedule you set, once not touching anything &mdash; and puts
+        the two side by side.</p>
+
+        <dl class="gloss">
+          <dt>Fill to the top of a bracket</dt>
+          <dd>The usual approach. Each year it converts exactly enough to reach the top
+          of the bracket you pick and not a dollar more, after Social Security, RMDs and
+          everything else has been counted. Because it solves the whole return rather
+          than a simple subtraction, it picks up the Social Security tax torpedo and
+          capital-gain stacking on the way.</dd>
+
+          <dt>Fill to an IRMAA threshold</dt>
+          <dd>The same idea against a different line. Medicare&rsquo;s income-related
+          surcharge is a cliff, not a phase-in &mdash; one dollar over and the whole
+          tier applies &mdash; so for some households the binding constraint is the
+          IRMAA bracket, not the tax bracket.</dd>
+
+          <dt>Where the tax comes from</dt>
+          <dd>The largest single lever here. Paying conversion tax out of a taxable
+          account moves the full conversion into the Roth. Withholding it from the
+          conversion means a smaller amount actually lands, and every future year
+          compounds on the smaller number. Switch between the two and watch the
+          after-tax figure move.</dd>
+
+          <dt>The survivor&rsquo;s bracket</dt>
+          <dd>Sometimes called the widow&rsquo;s penalty. When the first spouse dies,
+          the survivor files single the following year: roughly the same income, but
+          single brackets and a single standard deduction. It is one of the strongest
+          arguments for converting while both are alive, and the tool flags the year it
+          happens.</dd>
+
+          <dt>Lifetime tax, present value</dt>
+          <dd>Every dollar of federal, state and IRMAA discounted back to today. A
+          conversion always costs money now to save money later, so comparing raw totals
+          across thirty years flatters it; discounting is the honest version.</dd>
+
+          <dt>After-tax net worth</dt>
+          <dd>Roth and brokerage at face value, traditional discounted by the rate you
+          expect to be paid on it &mdash; by you later, or by whoever inherits it.
+          Comparing pre-tax balances across a Roth and a traditional account compares
+          two different currencies.</dd>
+
+          <dt>Break-even</dt>
+          <dd>The first year the converting plan&rsquo;s after-tax net worth passes the
+          do-nothing plan and stays there. Early years always look worse. If break-even
+          lands past your horizon, the conversion is a bet on your heirs, not on you.</dd>
+        </dl>
+
+        <p><b>What it does not do.</b> Returns are a single real rate, not a sequence
+        &mdash; a market crash in the middle of a conversion window changes the answer
+        and is not modelled here. Estate tax, state estate tax, QCDs, the ACA premium
+        credit for anyone retiring before 65, and the inherited-IRA ten-year rule are
+        all absent. Brackets and thresholds are held fixed in real terms, so a change in
+        the law &mdash; the most likely reason any of this turns out differently &mdash;
+        is outside the model by construction.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Mortgage Calculator</h2>
       <div class="body">
         <p>Works out the full monthly cost of owning, not just the loan payment, and
         shows how the balance falls over time.</p>
@@ -2635,6 +2756,57 @@ window.onerror = function(msg){
         </dl>
         <p>Like the other tools, a budget can be saved, and Save/Delete act on the
         budget while you're on it. It keeps its own separate list.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Debt Payoff</h2>
+      <div class="body">
+        <p>Two well-known ways to clear several debts at once, and they differ in
+        exactly one respect: which debt gets the extra money. Everything else &mdash;
+        how much you pay each month, the minimums, the rates &mdash; is identical.</p>
+
+        <dl class="gloss">
+          <dt>Avalanche</dt>
+          <dd>Attack the highest interest rate first. This is arithmetically optimal:
+          no other ordering of the same dollars pays less interest. If the only thing
+          you care about is cost, the argument is over.</dd>
+
+          <dt>Snowball</dt>
+          <dd>Attack the smallest balance first, regardless of rate. It costs more,
+          sometimes a lot more, but it clears an entire debt sooner &mdash; and there is
+          decent evidence that people stick with it better. The tool prices that
+          directly: it shows how much earlier the first debt disappears, and what those
+          months cost you in interest. That is the real decision, and it is a personal
+          one rather than a mathematical one.</dd>
+
+          <dt>The rollover</dt>
+          <dd>The engine behind both. Your monthly payment is held fixed at the sum of
+          the original minimums plus anything extra. When a debt is cleared, its minimum
+          does not go back into your pocket &mdash; it rolls onto the next debt in line.
+          That is why the last debt gets paid off so much faster than the first, and why
+          both strategies crush paying minimums alone.</dd>
+
+          <dt>Minimums only</dt>
+          <dd>The third row of the comparison, and the one worth looking at. It pays each
+          minimum with no extra and no rollover, which is what happens by default if you
+          do nothing. On typical card balances it is usually decades and tens of
+          thousands of dollars worse.</dd>
+
+          <dt>Underwater minimums</dt>
+          <dd>If a minimum payment is smaller than one month of interest, the balance
+          grows no matter how long you pay. The tool flags this rather than quietly
+          projecting a payoff date sixty years out.</dd>
+        </dl>
+
+        <p><b>What it does not do.</b> Real credit card minimums are a percentage of the
+        balance, so they shrink as you pay down &mdash; this uses the fixed figure you
+        enter, which makes the projection slightly optimistic unless you keep paying the
+        original amount (which is what you should do anyway). Rates are fixed, so
+        promotional 0% periods, variable-rate cards and balance transfers are not
+        modelled, and neither is new borrowing. It also ignores the case for skipping all
+        of this and grabbing an employer match first: a 50% match beats paying off a 24%
+        card.</p>
       </div>
     </div>
 
@@ -2874,6 +3046,355 @@ window.onerror = function(msg){
     </div>
   </aside>
 
+  <!-- ROTH CONVERSION & RMD -->
+  <aside id="asideRC" hidden>
+    <div class="panel inputs">
+      <h2>Your situation</h2>
+      <div class="body">
+        <div class="two">
+          <div class="field">
+            <label for="rcAge">Your age</label>
+            <div class="inputwrap"><input id="rcAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="95" data-nonneg><span class="affix">age</span></div>
+          </div>
+          <div class="field">
+            <label for="rcEndAge">Plan through</label>
+            <div class="inputwrap"><input id="rcEndAge" type="text" inputmode="decimal" data-num data-step="1" min="60" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="rcStatus">Filing status</label>
+          <select id="rcStatus">
+            <option value="m">Married filing jointly</option>
+            <option value="s">Single</option>
+          </select>
+        </div>
+        <div class="field" id="rcSpouseWrap">
+          <label for="rcSpouseAge">Spouse's age</label>
+          <div class="inputwrap"><input id="rcSpouseAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="105" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="rcState">State</label>
+          <select id="rcState"></select>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">What you have</div></div>
+        <div class="field">
+          <label for="rcTrad">Traditional 401(k) / IRA<span class="tipdot" data-tip="rctrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="rcTrad" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <button class="btn mini" type="button" id="rcCopyDD" style="margin-top:6px">Copy from drawdown calc</button>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcRoth">Roth</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcRoth" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field">
+            <label for="rcBrok">Brokerage</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcBrok" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcBasis">Brokerage basis<span class="tipdot" data-tip="rcbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcBasis" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="rcReturn">Real return<span class="tipdot" data-tip="realreturn" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcReturn" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Income and spending</div></div>
+        <div class="field">
+          <label for="rcSpend">Annual spending<span class="tipdot" data-tip="rcspend" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="rcSpend" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="hint">In today's dollars, before tax. Tax is funded on top of this.</div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcSS">Your Social Security</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcSS" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="rcSSAge">Claim at</label>
+            <div class="inputwrap"><input id="rcSSAge" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="two" id="rcSpouseSSWrap">
+          <div class="field">
+            <label for="rcSpSS">Spouse's benefit</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcSpSS" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="rcSpSSAge">Claim at</label>
+            <div class="inputwrap"><input id="rcSpSSAge" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcOther">Other income<span class="tipdot" data-tip="rcother" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcOther" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="rcOtherStart">Starting at</label>
+            <div class="inputwrap"><input id="rcOtherStart" type="text" inputmode="decimal" data-num data-step="1" min="30" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field" id="rcDeathWrap">
+          <label for="rcDeath">Survivor transition<span class="tipdot" data-tip="rcwidow" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="rcDeath" type="text" inputmode="decimal" data-num data-step="1" min="0" max="45" data-nonneg><span class="affix">yrs from now</span></div>
+          <div class="hint">Years until the first death. From that year the survivor files
+            single, on single brackets, keeping the larger of the two benefits. Leave at 0
+            to skip it.</div>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">The conversion plan</div></div>
+        <div class="field">
+          <label for="rcStrategy">Strategy<span class="tipdot" data-tip="rcstrategy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcStrategy">
+            <option value="brk">Fill to the top of a bracket</option>
+            <option value="irm">Fill to an IRMAA threshold</option>
+            <option value="fix">A fixed amount each year</option>
+            <option value="pct">A share of the balance each year</option>
+            <option value="none">No conversions</option>
+          </select>
+        </div>
+        <div class="field" id="rcBracketWrap">
+          <label for="rcBracket">Fill to the top of</label>
+          <select id="rcBracket">
+            <option value="0.12">the 12% bracket</option>
+            <option value="0.22" selected>the 22% bracket</option>
+            <option value="0.24">the 24% bracket</option>
+            <option value="0.32">the 32% bracket</option>
+          </select>
+        </div>
+        <div class="field" id="rcIrmaaTierWrap" hidden>
+          <label for="rcIrmaaTier">Stay within<span class="tipdot" data-tip="irmaa" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcIrmaaTier">
+            <option value="0">No surcharge at all</option>
+            <option value="1">The first surcharge tier</option>
+            <option value="2">The second tier</option>
+            <option value="3">The third tier</option>
+          </select>
+        </div>
+        <div class="field" id="rcFixedWrap" hidden>
+          <label for="rcFixed">Convert each year</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="rcFixed" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field" id="rcPctWrap" hidden>
+          <label for="rcPct">Convert each year</label>
+          <div class="inputwrap"><input id="rcPct" type="text" inputmode="decimal" data-num data-step="1" min="0" max="100" data-nonneg><span class="affix">% of the balance</span></div>
+        </div>
+        <div class="two" id="rcWindowWrap">
+          <div class="field">
+            <label for="rcStartAge">Convert from</label>
+            <div class="inputwrap"><input id="rcStartAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+          <div class="field">
+            <label for="rcStopAge">Through</label>
+            <div class="inputwrap"><input id="rcStopAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field" id="rcPayWrap">
+          <label for="rcPayFrom">Conversion tax paid from<span class="tipdot" data-tip="rcpayfrom" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcPayFrom">
+            <option value="taxable">Taxable account</option>
+            <option value="withhold">Withheld from the conversion</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">How to score it</div></div>
+        <div class="field">
+          <label for="rcIrmaaOn">Medicare IRMAA<span class="tipdot" data-tip="irmaa" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcIrmaaOn">
+            <option value="1">Include the surcharge</option>
+            <option value="0">Ignore it</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcHeir">Rate on what's left<span class="tipdot" data-tip="rcheir" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcHeir" type="text" inputmode="decimal" data-num data-step="1" min="0" max="60" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="rcDisc">Discount rate<span class="tipdot" data-tip="rcdisc" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcDisc" type="text" inputmode="decimal" data-num data-step="0.5" min="0" max="15" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+
+        <div class="derived">
+          <div><span>RMDs begin<span class="tipdot" data-tip="rcrmdage" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="rcRmdAge"></span></div>
+          <div><span>First RMD</span><span class="num" id="rcFirstRMD"></span></div>
+          <div><span>Years converting</span><span class="num" id="rcConvYears"></span></div>
+          <div><span>Average conversion</span><span class="num" id="rcAvgConv"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-roth" hidden>
+    <div class="panel rc-beta">
+      <div class="body">
+        <span class="beta">Beta</span>
+        <span>Newest tool, still being checked over. The math is tested, but treat the
+        numbers as a starting point rather than a finished answer.</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="headline">
+        <div><div class="k">Lifetime tax saved<span class="tipdot" data-tip="rcpv" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v gold" id="rcSaved">--</div>
+          <div class="note" id="rcSavedNote"></div></div>
+        <div><div class="k">After-tax net worth</div><div class="v" id="rcNW">--</div>
+          <div class="note" id="rcNWNote"></div></div>
+        <div><div class="k">Peak RMD<span class="tipdot" data-tip="rcpeak" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="rcPeak">--</div>
+          <div class="note" id="rcPeakNote"></div></div>
+      </div>
+      <div class="body"><div id="rcVerdict"></div></div>
+    </div>
+
+    <div class="panel" id="rcWidow" hidden>
+      <div class="body">
+        <div style="font-weight:600;color:var(--text);margin-bottom:6px">The survivor's bracket</div>
+        <div class="hint" style="margin:0" id="rcWidowText"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Converting vs. not</h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Lifetime income tax, converting</span><span class="v" id="rcTaxPlan"></span></div>
+            <div class="kv"><span class="k">Lifetime income tax, doing nothing</span><span class="v" id="rcTaxBase"></span></div>
+            <div class="kv"><span class="k">Present value, tax + IRMAA<span class="tipdot" data-tip="rcpv" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="v" id="rcTaxPV"></span></div>
+            <div class="kv"><span class="k">Lifetime IRMAA</span><span class="v" id="rcIrmPlan"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Total converted</span><span class="v" id="rcConvTotal"></span></div>
+            <div class="kv"><span class="k">Break-even<span class="tipdot" data-tip="rcbreakeven" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="v" id="rcBreakEven"></span></div>
+            <div class="kv"><span class="k">Traditional at the end</span><span class="v" id="rcEndTrad"></span></div>
+            <div class="kv"><span class="k">Roth at the end</span><span class="v" id="rcEndRoth"></span></div>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:14px">Every figure is in today's dollars.
+          Brackets, the standard deduction and the IRMAA thresholds are held fixed in
+          real terms, which is what indexing does to them in practice.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="rcChartTitle">Traditional balance<span class="h2note">in today's dollars</span>
+        <span class="h2ctrl">
+          <span class="seg" id="segRC">
+            <button type="button" data-rc="bal" class="on">Balance</button>
+            <button type="button" data-rc="tax">Tax</button>
+          </span>
+        </span>
+      </h2>
+      <div class="chartwrap" id="chartWrapRC"><svg id="chartRC" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Converting versus not converting"></svg><div class="tip" id="tipRC"></div></div>
+      <div class="legend" id="legendRC"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year
+        <span class="h2ctrl">
+          <span class="seg" id="segRCTab">
+            <button type="button" data-rct="plan" class="on">Converting</button>
+            <button type="button" data-rct="base">Doing nothing</button>
+          </span>
+        </span>
+      </h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll"><table id="rcTable"><thead><tr><th>Age</th><th>Converted</th><th>RMD</th><th>Ordinary income</th><th>MAGI</th><th>Tax</th><th>IRMAA</th><th>Marginal</th><th>Traditional</th><th>Roth</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </div>
+
+  <div class="stack solo" id="tab-debt" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div><div class="k">Debt-free</div><div class="v gold" id="dtFree">--</div>
+          <div class="note" id="dtFreeNote"></div></div>
+        <div><div class="k">Total interest</div><div class="v" id="dtInterest">--</div>
+          <div class="note" id="dtInterestNote"></div></div>
+        <div><div class="k">Saved vs. minimums<span class="tipdot" data-tip="dtsaved" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v pos" id="dtSaved">--</div>
+          <div class="note" id="dtSavedNote"></div></div>
+      </div>
+      <div class="body">
+        <div class="bgincome">
+          <label for="dtExtra">Extra payment, on top of the minimums</label>
+          <div class="bgincome-row">
+            <div class="inputwrap"><span class="affix">$</span><input id="dtExtra" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+            <button class="btn" type="button" id="dtCopyBudget">Copy from Budget</button>
+          </div>
+        </div>
+        <div class="dtstrat">
+          <span class="seg" id="segDT">
+            <button type="button" data-dt="avalanche" class="on">Avalanche</button>
+            <button type="button" data-dt="snowball">Snowball</button>
+          </span>
+          <span class="hint" style="margin:0" id="dtStratNote"></span>
+        </div>
+        <div id="dtWarn" class="dtwarn" hidden></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Your debts</h2>
+      <div class="body">
+        <div class="dthead"><span class="desc">Debt</span><span class="c1">Balance</span><span class="c2">Rate</span><span class="c3">Minimum</span><span class="delspace"></span></div>
+        <div id="dtList"></div>
+        <button class="btn" type="button" id="dtAdd" style="margin-top:6px">Add a debt</button>
+        <div class="hint" style="margin-top:10px">Rate is the APR. Minimum is what the
+          lender requires each month &mdash; for a card that is usually a small percentage
+          of the balance, so use what your statement actually says.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Avalanche vs. snowball<span class="h2note">same money, different order</span></h2>
+      <div class="body">
+        <div id="dtVerdict"></div>
+      </div>
+      <div class="scroll">
+        <table id="dtCompare">
+          <thead><tr><th>Approach</th><th>Debt-free</th><th>How long</th><th>Total interest</th><th>First debt gone</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>What you owe, month by month<span class="h2note">months from now</span></h2>
+      <div class="chartwrap" id="chartWrapDT"><svg id="chartDT" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Balance over time"></svg><div class="tip" id="tipDT"></div></div>
+      <div class="legend" id="legendDT"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Payoff order</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="dtOrder">
+          <thead><tr><th>#</th><th>Debt</th><th>Balance</th><th>Rate</th><th>Minimum</th><th>Interest paid</th><th>Cleared</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>The schedule</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="dtSched">
+          <thead><tr><th>Month</th><th>Date</th><th>Balance</th><th>Interest to date</th><th>Debts cleared</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ========== TOOL PICKER ========== -->
   <div class="stack solo" id="tab-toolpicker" hidden>
     <div class="toolcards">
@@ -2900,6 +3421,21 @@ window.onerror = function(msg){
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
+      <div class="toolcard" role="button" tabindex="0" data-pick="roth">
+        <div class="toolcard-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="12" width="13" height="22" rx="2.5" stroke="currentColor" stroke-width="2"/>
+            <rect x="23" y="18" width="13" height="16" rx="2.5" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 9 h13 a3 3 0 0 1 3 3 v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M25 12 l3 3 -3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="toolcard-body">
+          <div class="toolcard-name">Roth Conversion &amp; RMDs<span class="beta">Beta</span></div>
+          <div class="toolcard-desc">Project required distributions to age 100, then test a conversion schedule against doing nothing &mdash; lifetime tax, after-tax net worth, IRMAA surcharges and the survivor&rsquo;s bracket.</div>
+        </div>
+        <div class="toolcard-arrow">&#8250;</div>
+      </div>
       <div class="toolcard" role="button" tabindex="0" data-pick="mortgage">
         <div class="toolcard-icon">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2909,7 +3445,7 @@ window.onerror = function(msg){
           </svg>
         </div>
         <div class="toolcard-body">
-          <div class="toolcard-name">Mortgage</div>
+          <div class="toolcard-name">Mortgage Calculator</div>
           <div class="toolcard-desc">Calculate your monthly payment, see how the balance falls, and explore amortization year by year.</div>
         </div>
         <div class="toolcard-arrow">&#8250;</div>
@@ -2947,6 +3483,23 @@ window.onerror = function(msg){
         <div class="toolcard-body">
           <div class="toolcard-name">Budget</div>
           <div class="toolcard-desc">Lay out your income and expenses, see what's left, and find out where your money goes.</div>
+        </div>
+        <div class="toolcard-arrow">&#8250;</div>
+      </div>
+      <div class="toolcard" role="button" tabindex="0" data-pick="debt">
+        <div class="toolcard-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 32 V24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M14 32 V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M22 32 V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M30 32 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 36 h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 10 L34 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3.5"/>
+          </svg>
+        </div>
+        <div class="toolcard-body">
+          <div class="toolcard-name">Debt Payoff</div>
+          <div class="toolcard-desc">List what you owe, then watch avalanche and snowball race each other &mdash; payoff date, total interest, and exactly what ordering by motivation instead of rate costs you.</div>
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
@@ -4097,6 +4650,365 @@ function computeRetireTax(inp){
   };
 }
 
+
+/* ---------- Roth conversion & RMD ---------- */
+/* Two projections of the same household, run side by side: one that converts
+   traditional dollars to Roth on a schedule, and one that never converts. The
+   annual tax in both comes from computeRetireTax(), so Social Security's
+   provisional-income formula, capital-gain stacking, NIIT and every state rule
+   already modelled elsewhere apply here unchanged.
+
+   Everything is in today's dollars. Brackets, the standard deduction and the
+   IRMAA thresholds are all indexed to inflation in real life, so holding them
+   fixed in real terms is the same assumption the rest of the app makes about
+   real returns -- and it keeps the output comparable to every other tool. */
+
+/* IRS Uniform Lifetime Table, Treas. Reg. sec. 1.401(a)(9)-9 (Pub. 590-B
+   Table III). These divisors took effect for distribution years from 2022 and
+   are unchanged for 2026. */
+const ULT = {72:27.4, 73:26.5, 74:25.5, 75:24.6, 76:23.7, 77:22.9, 78:22.0,
+  79:21.1, 80:20.2, 81:19.4, 82:18.5, 83:17.7, 84:16.8, 85:16.0, 86:15.2,
+  87:14.4, 88:13.7, 89:12.9, 90:12.2, 91:11.5, 92:10.8, 93:10.1, 94:9.5,
+  95:8.9, 96:8.4, 97:7.8, 98:7.3, 99:6.8, 100:6.4};
+function ultDivisor(age){
+  if (age < 72) return 0;
+  if (age >= 100) return 6.4;
+  return ULT[age] || 0;
+}
+/* SECURE 2.0: age 73 for those born 1951-1959, age 75 for 1960 and later. */
+function rmdStartAge(currentAge){
+  return (2026 - currentAge) >= 1960 ? 75 : 73;
+}
+
+/* 2026 Medicare IRMAA. Standard Part B is $202.90/month; higher brackets pay a
+   multiple of it, plus a flat Part D surcharge. Source: CMS 2026 Parts A & B
+   premiums fact sheet. The brackets are cliffs, not phase-ins -- one dollar
+   over a line costs the whole tier -- and they run on a two-year lookback, so
+   a conversion today sets the premium two years out. */
+const IRMAA = {
+  partB: 202.90,
+  tiers: [
+    {s:109000,   m:218000,   mult:1.0, partD:0},
+    {s:137000,   m:274000,   mult:1.4, partD:14.50},
+    {s:171000,   m:342000,   mult:2.0, partD:37.50},
+    {s:205000,   m:410000,   mult:2.6, partD:60.40},
+    {s:499999.99, m:749999.99, mult:3.2, partD:83.30},
+    {s:Infinity, m:Infinity, mult:3.4, partD:91.00}
+  ]
+};
+function irmaaTier(magi, status){
+  const key = status === "m" ? "m" : "s";
+  for (let i = 0; i < IRMAA.tiers.length; i++)
+    if (magi <= IRMAA.tiers[i][key]) return i;
+  return IRMAA.tiers.length - 1;
+}
+/**
+ * @param {number} magi - modified AGI from two years earlier, in dollars
+ * @param {"s"|"m"} status - filing status in the premium year
+ * @param {number} people - how many on the return are enrolled in Medicare
+ * @returns {number} the annual surcharge above standard premiums, in dollars
+ */
+function irmaaAnnual(magi, status, people){
+  if (people <= 0) return 0;
+  const t = IRMAA.tiers[irmaaTier(magi, status)];
+  return (IRMAA.partB * (t.mult - 1) + t.partD) * 12 * people;
+}
+/* Top of a federal bracket = where the next one starts. */
+function bracketTopFor(status, rate){
+  const b = FED_2026[status];
+  for (let i = 0; i < b.length; i++)
+    if (Math.abs(b[i][1] - rate) < 1e-9)
+      return (i + 1 < b.length) ? b[i + 1][0] : Infinity;
+  return Infinity;
+}
+
+const RC_STRATS = {
+  none:  "No conversions",
+  brk:   "Fill to the top of a bracket",
+  irm:   "Fill to an IRMAA threshold",
+  fix:   "A fixed amount each year",
+  pct:   "A share of the balance each year"
+};
+
+/**
+ * One year of tax, with the marginal probe switched off. The probe re-enters
+ * computeRetireTax, and this runs inside a bisection loop inside a year loop.
+ */
+function rcTax(o){
+  return computeRetireTax(Object.assign({pre:0, dedType:"std", item:0,
+    _noMarginal:true}, o));
+}
+
+/**
+ * Largest conversion that keeps probe(conv) at or below zero. probe is
+ * monotonically increasing in conv, so plain bisection settles it.
+ */
+function rcBisect(probe, maxConv){
+  if (maxConv <= 0) return 0;
+  if (probe(0) > 0) return 0;          // already over the line before converting
+  if (probe(maxConv) <= 0) return maxConv;
+  let lo = 0, hi = maxConv;
+  for (let i = 0; i < 44; i++){
+    const mid = (lo + hi) / 2;
+    if (probe(mid) <= 0) lo = mid; else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * Project one household year by year.
+ *
+ * @param {Object} inp - the form state, already parsed
+ * @param {boolean} doConvert - false runs the same plan with conversions off,
+ *   which is the baseline every headline figure is measured against
+ * @returns {Object} per-year rows plus the lifetime totals
+ */
+function runRoth(inp, doConvert){
+  const rows = [];
+  const r = inp.ret;
+  const startRMD = rmdStartAge(inp.age);
+  let trad = Math.max(0, inp.trad);
+  let roth = Math.max(0, inp.roth);
+  let brok = Math.max(0, inp.brokerage);
+  let basis = brok * Math.max(0, Math.min(1, inp.basisPct));
+  const magiHist = [];
+  let lifeTax = 0, lifeTaxPV = 0, lifeIrmaa = 0, totalConv = 0, peakRMD = 0;
+  const span = inp.endAge - inp.age + 1;
+  const n = (isFinite(span) && span > 0) ? Math.min(71, Math.round(span)) : 1;
+
+  for (let i = 0; i < n; i++){
+    const age = inp.age + i;
+    const spAge = inp.spouseAge + i;
+    // The survivor files single from the year of the first death onward. That
+    // is the widow's penalty: the same income, half the brackets.
+    const widowed = inp.status === "m" && inp.deathYear > 0 && i >= inp.deathYear;
+    const status = (inp.status === "m" && !widowed) ? "m" : "s";
+    const seniors = status === "m"
+      ? (age >= 65 ? 1 : 0) + (spAge >= 65 ? 1 : 0)
+      : (age >= 65 ? 1 : 0);
+
+    const mySS = age >= inp.ssAge ? inp.ss : 0;
+    const spSS = (inp.status === "m" && spAge >= inp.spSSAge) ? inp.spSS : 0;
+    // A surviving spouse keeps the larger of the two benefits, not both.
+    const ss = widowed ? Math.max(mySS, spSS) : mySS + spSS;
+    const other = age >= inp.otherStart ? inp.other : 0;
+
+    const tradBegin = trad;
+    const rmd = (age >= startRMD && trad > 0)
+      ? Math.min(trad, trad / ultDivisor(age)) : 0;
+    if (rmd > peakRMD) peakRMD = rmd;
+
+    // IRMAA runs two years behind. For the first two years of the projection
+    // there is no history to look back on, so the current year stands in.
+    const lookback = magiHist.length >= 2
+      ? magiHist[magiHist.length - 2] : null;
+    const medicare = inp.irmaaOn
+      ? (status === "m" ? (age >= 65 ? 1 : 0) + (spAge >= 65 ? 1 : 0)
+                        : (age >= 65 ? 1 : 0))
+      : 0;
+
+    const gainPct = brok > 0 ? Math.max(0, Math.min(1, (brok - basis) / brok)) : 0;
+    const canConvert = doConvert && inp.strategy !== "none" &&
+      age >= inp.startAge && age <= inp.stopAge;
+
+    let conv = 0, extraTrad = 0, sale = 0, rothW = 0, surplus = 0;
+    let T = null, irm = 0, taxDue = 0, rothCredit = 0;
+
+    // Conversion size and the funding waterfall depend on each other: a bigger
+    // conversion means a bigger tax bill, which may force another withdrawal,
+    // which changes the room left in the bracket. Two passes settle it.
+    for (let pass = 0; pass < 2; pass++){
+      const fixedOrd = rmd + extraTrad;
+
+      if (canConvert){
+        const maxConv = Math.max(0, trad - rmd);
+        if (inp.strategy === "fix"){
+          conv = Math.min(inp.fixedAmt, maxConv);
+        } else if (inp.strategy === "pct"){
+          conv = maxConv * Math.max(0, Math.min(1, inp.pctAmt));
+        } else if (inp.strategy === "brk"){
+          const top = bracketTopFor(status, inp.bracket);
+          conv = rcBisect(c => rcTax({status, trad:fixedOrd + c, roth:0,
+            brok:sale, gainPct, ss, other, state:inp.state, seniors})
+            .ordTaxable - top, maxConv);
+        } else if (inp.strategy === "irm"){
+          const key = status === "m" ? "m" : "s";
+          const lim = IRMAA.tiers[Math.min(inp.irmaaTarget,
+            IRMAA.tiers.length - 1)][key];
+          conv = rcBisect(c => rcTax({status, trad:fixedOrd + c, roth:0,
+            brok:sale, gainPct, ss, other, state:inp.state, seniors})
+            .agi - lim, maxConv);
+        }
+      }
+
+      // Funding: settle tax and withdrawals together, since extra traditional
+      // dollars pulled to pay the bill are themselves taxable.
+      extraTrad = 0; sale = 0; rothW = 0; surplus = 0;
+      for (let iter = 0; iter < 6; iter++){
+        const gp = brok > 0 ? Math.max(0, Math.min(1, (brok - basis) / brok)) : 0;
+        T = rcTax({status, trad:rmd + conv + extraTrad, roth:rothW, brok:sale,
+          gainPct:gp, ss, other, state:inp.state, seniors});
+        irm = (medicare > 0)
+          ? irmaaAnnual(lookback == null ? T.agi : lookback, status, medicare) : 0;
+        taxDue = T.total + irm;
+
+        // Withholding mode pays the conversion's tax out of the conversion
+        // itself, so fewer dollars actually land in the Roth. That is the
+        // single largest lever in the whole decision.
+        let fromConv = 0;
+        if (inp.payFrom === "withhold" && conv > 0)
+          fromConv = Math.min(conv, taxDue);
+        rothCredit = conv - fromConv;
+
+        const cashIn = rmd + ss + other;
+        const outflow = inp.spend + taxDue - fromConv;
+        let short = outflow - cashIn;
+
+        let nSale = 0, nTrad = 0, nRoth = 0, nSurplus = 0;
+        if (short <= 0){
+          nSurplus = -short;                       // banked in the brokerage
+        } else {
+          nSale = Math.min(short, Math.max(0, brok));
+          short -= nSale;
+          if (short > 0){
+            nTrad = Math.min(short, Math.max(0, trad - rmd - conv));
+            short -= nTrad;
+          }
+          if (short > 0) nRoth = Math.min(short, Math.max(0, roth + rothCredit));
+        }
+        const settled = Math.abs(nSale - sale) < 1 && Math.abs(nTrad - extraTrad) < 1;
+        sale = nSale; extraTrad = nTrad; rothW = nRoth; surplus = nSurplus;
+        if (settled) break;
+      }
+    }
+
+    const gp = brok > 0 ? Math.max(0, Math.min(1, (brok - basis) / brok)) : 0;
+    const magi = T.agi;
+    magiHist.push(magi);
+
+    // Move the money.
+    trad = Math.max(0, trad - rmd - conv - extraTrad);
+    roth = Math.max(0, roth + rothCredit - rothW);
+    basis = Math.max(0, basis - sale * (1 - gp) + surplus);
+    brok = Math.max(0, brok - sale + surplus);
+
+    lifeTax += T.total;
+    lifeIrmaa += irm;
+    lifeTaxPV += taxDue / Math.pow(1 + inp.disc, i);
+    totalConv += conv;
+
+    const afterTax = roth + brok + trad * (1 - inp.heirRate);
+    rows.push({i, age, spAge, status, widowed, rmd, conv, extraTrad, sale, rothW,
+      ss, other, ordinary:T.ordinaryAgi, magi, fed:T.federal, state:T.state,
+      tax:T.total, irmaa:irm, irmaaTier:medicare > 0
+        ? irmaaTier(lookback == null ? magi : lookback, status) : 0,
+      marginal:T.marginal, trad, roth, brok, afterTax, tradBegin});
+
+    // Real growth, applied once everything has moved.
+    trad *= (1 + r); roth *= (1 + r); brok *= (1 + r); basis = Math.min(basis, brok);
+  }
+
+  const last = rows[rows.length - 1];
+  return {rows, lifeTax, lifeTaxPV, lifeIrmaa, totalConv, peakRMD,
+    endAfterTax:last.afterTax, endTrad:last.trad, endRoth:last.roth,
+    endBrok:last.brok, rmdStart:startRMD};
+}
+
+
+/* ---------- debt payoff ---------- */
+/* Month-by-month simulation of a set of debts under three orderings. Interest
+   accrues first, then every debt takes its minimum, then whatever is left in
+   the monthly pool lands entirely on one target debt. The pool is held fixed
+   at the sum of the original minimums plus anything extra, so a debt that gets
+   cleared frees its minimum for the next one down the list. That rollover is
+   the whole mechanism -- it is why both strategies beat paying minimums, and
+   the two differ only in which debt they aim at. */
+const DEBT_CAP = 720;    // 60 years; past this a plan is not a plan
+
+/**
+ * @param {Array} list - [{desc, balance, apr (percent), min}]
+ * @param {number} extra - additional dollars per month, beyond the minimums
+ * @param {"avalanche"|"snowball"|"min"} mode - avalanche targets the highest
+ *   rate, snowball the smallest balance, min pays minimums with no rollover
+ * @returns {Object|null} monthly series, per-debt detail and totals
+ */
+function debtRun(list, extra, mode){
+  const d = (list || []).filter(x => x.balance > 0).map(x => ({
+    desc:x.desc || "Debt", apr:Math.max(0, x.apr) / 100,
+    min:Math.max(0, x.min), bal:x.balance, start:x.balance,
+    interest:0, paidMonth:0}));
+  if (!d.length) return null;
+
+  const roll = mode !== "min";
+  const order = mode === "avalanche"
+    ? d.slice().sort((a, b) => b.apr - a.apr || a.bal - b.bal)
+    : mode === "snowball"
+      ? d.slice().sort((a, b) => a.bal - b.bal || b.apr - a.apr)
+      : d.slice();
+
+  // The pool never shrinks as debts are cleared -- that is the rollover.
+  const baseMin = d.reduce((a, x) => a + x.min, 0);
+  const pool0 = baseMin + (roll ? Math.max(0, extra) : 0);
+
+  const months = [{m:0, balance:d.reduce((a, x) => a + x.start, 0), interest:0, cleared:0}];
+  let m = 0, totalInterest = 0, stalled = false;
+
+  while (d.some(x => x.bal > 0.005)){
+    m++;
+    if (m > DEBT_CAP){ stalled = true; break; }
+    d.forEach(x => {
+      if (x.bal > 0){
+        const i = x.bal * x.apr / 12;
+        x.bal += i; x.interest += i; totalInterest += i;
+      }
+    });
+    let pool = roll ? pool0 : d.reduce((a, x) => a + (x.bal > 0 ? x.min : 0), 0);
+    d.forEach(x => {
+      if (x.bal > 0 && pool > 0){
+        const p = Math.min(x.min, x.bal, pool);
+        x.bal -= p; pool -= p;
+      }
+    });
+    if (roll){
+      for (let k = 0; k < order.length; k++){
+        if (pool <= 0.005) break;
+        const x = order[k];
+        if (x.bal > 0.005){ const p = Math.min(pool, x.bal); x.bal -= p; pool -= p; }
+      }
+    }
+    d.forEach(x => { if (x.bal <= 0.005 && !x.paidMonth){ x.bal = 0; x.paidMonth = m; } });
+    months.push({m, balance:d.reduce((a, x) => a + x.bal, 0), interest:totalInterest,
+      cleared:d.filter(x => x.paidMonth && x.paidMonth <= m).length});
+  }
+
+  const cleared = d.filter(x => x.paidMonth).map(x => x.paidMonth);
+  return {months, debts:d, order, totalInterest, monthsTotal:m, stalled,
+    monthlyPool:pool0, baseMin,
+    firstCleared: cleared.length ? Math.min.apply(null, cleared) : 0,
+    totalPaid: d.reduce((a, x) => a + x.start, 0) + totalInterest};
+}
+
+/* A minimum that doesn't cover the first month's interest means the balance
+   grows no matter how long you wait. Worth saying out loud rather than
+   showing a payoff date sixty years out. */
+function debtUnderwater(list){
+  return (list || []).filter(x => x.balance > 0 &&
+    x.min <= x.balance * (Math.max(0, x.apr) / 100) / 12);
+}
+function debtDate(monthsOut){
+  const dt = new Date();
+  dt.setDate(1);
+  dt.setMonth(dt.getMonth() + Math.max(0, Math.round(monthsOut)));
+  return dt.toLocaleDateString("en-US", {month:"short", year:"numeric"});
+}
+function debtDur(m){
+  if (!(m > 0)) return "\u2014";
+  const y = Math.floor(m / 12), mo = m % 12;
+  if (!y) return mo + (mo === 1 ? " month" : " months");
+  if (!mo) return y + (y === 1 ? " year" : " years");
+  return y + "y " + mo + "m";
+}
+
 /* ---------- mortgage ---------- */
 /**
  * @param {Object} m
@@ -4532,7 +5444,9 @@ const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, period:"Mon
 const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
               mortgage:"finance-tools.mortgage.v1", budget:"finance-tools.budget.v1",
               college:"finance-tools.college.v1", rentbuy:"finance-tools.rentbuy.v1",
-              drawdown:"finance-tools.drawdown.v1"};
+              drawdown:"finance-tools.drawdown.v1",
+              roth:"finance-tools.roth.v1",
+              debt:"finance-tools.debt.v1"};
 const memory = {};
 function storeRead(which){
   try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
@@ -4547,7 +5461,9 @@ function storeWrite(which, v){
 const SC = {retire: storeRead("retire") || [], tax: storeRead("tax") || [],
             mortgage: storeRead("mortgage") || [], budget: storeRead("budget") || [],
             college: storeRead("college") || [], rentbuy: storeRead("rentbuy") || [],
-            drawdown: storeRead("drawdown") || []};
+            drawdown: storeRead("drawdown") || [],
+            roth: storeRead("roth") || [],
+            debt: storeRead("debt") || []};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
@@ -5799,21 +6715,27 @@ function showTool(sub){
   $("tab-college").hidden = (sub !== "college");
   $("tab-rentbuy").hidden = (sub !== "rentbuy");
   $("tab-drawdown").hidden = (sub !== "drawdown");
+  $("tab-roth").hidden = (sub !== "roth");
+  $("tab-debt").hidden = (sub !== "debt");
   $("asideTax").hidden = (sub !== "tax");
   $("asideMort").hidden = (sub !== "mortgage");
   $("asideCollege").hidden = (sub !== "college");
   $("asideRB").hidden = (sub !== "rentbuy");
   $("asideDD").hidden = (sub !== "drawdown");
+  $("asideRC").hidden = (sub !== "roth");
   // Budget has no sidebar inputs, so it earns the same full-width layout
   // as the tool picker rather than sitting narrow with empty space beside it.
-  $("main").classList.toggle("solo", onPicker || sub === "budget");
+  $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt");
   refreshScenarioList("");
+  initCSVButtons();
   if (sub === "tax") renderTax();
   else if (sub === "mortgage") renderMort();
   else if (sub === "budget") renderBudget();
   else if (sub === "college") renderCollege();
   else if (sub === "rentbuy") renderRentBuy();
   else if (sub === "drawdown"){ renderDrawdown(); showDDIntro(); }
+  else if (sub === "roth") renderRoth();
+  else if (sub === "debt") renderDebt();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
 }
 /* Drawdown packs in more than any other tool, so first-time visitors get a
@@ -5852,6 +6774,9 @@ function showTab(t){
     $("tab-rentbuy").hidden = true;
     $("tab-drawdown").hidden = true;
     $("asideDD").hidden = true;
+    $("tab-roth").hidden = true;
+    $("asideRC").hidden = true;
+    $("tab-debt").hidden = true;
     $("main").classList.remove("solo");
   }
   $("asideSimple").hidden = (t !== "simple");
@@ -5921,6 +6846,8 @@ function buildSheet(){
   if (!$("tab-college").hidden) return buildCollegeSheet();
   if (!$("tab-rentbuy").hidden) return buildRentBuySheet();
   if (!$("tab-drawdown").hidden) return buildDrawdownSheet();
+  if (!$("tab-roth").hidden) return buildRothSheet();
+  if (!$("tab-debt").hidden) return buildDebtSheet();
   if (!$("tab-simple").hidden) return buildBasicSheet();
   const series = !$("tab-series").hidden;
   const g = readGlobals(), p = readInputs();
@@ -6511,7 +7438,7 @@ function buildBudgetSheet(){
 function buildBasicSheet(){
   const p = readBasic();
   if (!(p.years > 0)){ $("sheet").innerHTML = ""; return; }
-  const R = project(p);
+  const R = projectBasic(p);
   const rows = R.years.map(y => ({year:y.year, end:y.end, growth:y.growth,
                                   contrib:y.contrib}));
   const cross = rows.find(r => r.growth > r.contrib && r.contrib > 0);
@@ -6584,6 +7511,8 @@ const TAX_COLORS = {fed:"#e2795f", state:"#e9b872", fica:"#7d9fd6", net:"#4fbf95
 $("txState").innerHTML = Object.keys(STATES)
   .sort((a,b) => STATES[a].n.localeCompare(STATES[b].n))
   .map(k => "<option value='" + k + "'>" + STATES[k].n + "</option>").join("");
+
+$("rcState").innerHTML = $("txState").innerHTML;
 
 let txMode = "normal";
 const BKT_COLORS = {trad:"#e2795f", roth:"#4fbf95", brok:"#7d9fd6",
@@ -7812,7 +8741,7 @@ function renderDrawdown() {
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + verdict + "</div>";
 
     // chart: every start year's real balance path
-    $("ddChartTitle").textContent = "Every historical starting year";
+    setH2Text($("ddChartTitle"), "Every historical starting year");
     var maxY = o.years;
     var pts = [];
     for (var y = 0; y <= maxY; y++) {
@@ -7844,12 +8773,12 @@ function renderDrawdown() {
     }).join("");
 
     var show = H.runs.filter(function (r) { return r.startYear === ddSelectedYear; })[0] || H.runs[0];
-    $("ddDetailTitle").textContent = "Year by year \u2014 retiring in " + show.startYear;
+    setH2Text($("ddDetailTitle"), "Year by year \u2014 retiring in " + show.startYear);
     $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
       (show.depleted ? "This one ran out of money in year " + show.depletedYear + "."
                       : "This one survived the full " + o.years + " years.");
     fillDDTable(show);
-    $("ddIncomeChartTitle").textContent = "Spending through retirement \u2014 retiring in " + show.startYear;
+    setH2Text($("ddIncomeChartTitle"), "Spending through retirement \u2014 retiring in " + show.startYear);
     renderSpendStats(show, "Showing the period selected above.");
     renderIncomeChart(show);
 
@@ -7868,7 +8797,7 @@ function renderDrawdown() {
       o.years + " years at random from the 1928\u20132025 record. This captures the range of possible " +
       "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
 
-    $("ddChartTitle").textContent = "Range of outcomes";
+    setH2Text($("ddChartTitle"), "Range of outcomes");
     var mpts = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial }];
     M.bands.forEach(function (b) {
       mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
@@ -7881,10 +8810,10 @@ function renderDrawdown() {
     $("ddYearsPanel").hidden = true;
 
     var med = M.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[Math.floor(M.runs.length / 2)];
-    $("ddDetailTitle").textContent = "Year by year \u2014 a median run";
+    setH2Text($("ddDetailTitle"), "Year by year \u2014 a median run");
     $("ddDetailNote").textContent = "One representative simulation from the middle of the range.";
     fillDDTable(med);
-    $("ddIncomeChartTitle").textContent = "Spending through retirement \u2014 a median run";
+    setH2Text($("ddIncomeChartTitle"), "Spending through retirement \u2014 a median run");
     renderSpendStats(med, "Showing the same run as the table below.");
     renderIncomeChart(med);
   }
@@ -8022,6 +8951,21 @@ function applyDDCopy(source) {
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
+  dtsaved: "Interest you avoid by adding an extra payment and rolling each cleared debt's minimum onto the next one, versus paying every minimum on its own forever.",
+  rctrad: "Everything taxed as ordinary income when it comes out \u2014 traditional 401(k), 403(b), 457(b), SEP, SIMPLE and rollover IRAs. This is the balance RMDs are calculated on.",
+  rcbasis: "The share of the brokerage account that is your original money rather than gain. Only the gain is taxed when you sell, so a high basis makes the account cheap to spend from.",
+  rcspend: "What the household actually spends in a year, in today's dollars, before tax. Tax is funded on top of it \u2014 from the brokerage first, then traditional, then Roth.",
+  rcother: "Pensions, annuities, rental income, interest \u2014 anything taxed at ordinary rates that isn't a retirement account withdrawal or Social Security.",
+  rcwidow: "Years from now until the first spouse dies. From that year the survivor files single: same income, single brackets, single standard deduction, and only the larger of the two Social Security benefits.",
+  rcstrategy: "How much to convert each year. Filling a bracket keeps the marginal rate under control; filling to an IRMAA line keeps the Medicare surcharge under control; the other two are blunter but easier to explain to a custodian.",
+  rcpayfrom: "Paying from a taxable account moves the whole conversion into the Roth. Withholding from the conversion means less lands there, and that shortfall compounds for the rest of the plan.",
+  rcheir: "The rate you expect traditional dollars to be taxed at when they finally come out \u2014 by you late in retirement, or by whoever inherits the account. It converts pre-tax balances into comparable money.",
+  rcdisc: "The real rate used to discount future tax back to today. A conversion pays tax now to avoid tax later, so the comparison only means something once the timing is priced.",
+  rcrmdage: "Age 73 if you were born between 1951 and 1959, age 75 if you were born in 1960 or later. That is SECURE 2.0; the original rule was 70\u00bd.",
+  rcpv: "The difference in lifetime federal, state and IRMAA between converting and not, discounted to today. Positive means converting costs less over the whole plan.",
+  rcpeak: "The largest single required distribution in the do-nothing plan. It is the number the conversion is really trying to shrink.",
+  rcbreakeven: "The first year the converting plan's after-tax net worth overtakes the do-nothing plan for good. Before that year, the conversion is behind.",
+  irmaa: "Medicare's income-related surcharge on Part B and Part D premiums. It runs on your income from two years earlier and works as a cliff \u2014 one dollar over a threshold triggers the whole tier for the year.",
   realreturn: "Growth after inflation is stripped out. A 7% return with 3% inflation is about 4% real \u2014 that is what actually buys more.",
   withdrawal: "The share of your portfolio you take in the first year of retirement. 4% is the common starting point, though some argue for 3\u20133.5% today.",
   volatility: "How much returns bounce around year to year. Broad stock funds have run near 15\u201318%; a balanced portfolio nearer 8\u201312%.",
@@ -8067,6 +9011,751 @@ const GLOSS = {
   customincome: "Any income beyond Social Security \u2014 a pension, rental property, part-time work, an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
   customexpense: "A future cost on top of your regular spending \u2014 a car, a wedding, long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top."
 };
+
+/* ---------- Roth conversion tool: form, render, charts ---------- */
+const RC_DEFAULTS = {age:62, spouseAge:62, status:"m", state:"IL", endAge:92,
+  trad:1500000, roth:150000, brok:400000, basis:60, ret:5, spend:100000,
+  ss:36000, ssAge:67, spSS:22000, spSSAge:67, other:0, otherStart:62,
+  death:15, strategy:"brk", bracket:"0.22", irmaaTarget:"0", fixed:75000,
+  pct:8, startAge:62, stopAge:75, payFrom:"taxable", heir:32, disc:3,
+  irmaaOn:"1"};
+
+function readRCState(){
+  return {age:num("rcAge"), spouseAge:num("rcSpouseAge"), status:$("rcStatus").value,
+    state:$("rcState").value, endAge:num("rcEndAge"), trad:num("rcTrad"),
+    roth:num("rcRoth"), brok:num("rcBrok"), basis:num("rcBasis"), ret:num("rcReturn"),
+    spend:num("rcSpend"), ss:num("rcSS"), ssAge:num("rcSSAge"), spSS:num("rcSpSS"),
+    spSSAge:num("rcSpSSAge"), other:num("rcOther"), otherStart:num("rcOtherStart"),
+    death:num("rcDeath"), strategy:$("rcStrategy").value, bracket:$("rcBracket").value,
+    irmaaTarget:$("rcIrmaaTier").value, fixed:num("rcFixed"), pct:num("rcPct"),
+    startAge:num("rcStartAge"), stopAge:num("rcStopAge"), payFrom:$("rcPayFrom").value,
+    heir:num("rcHeir"), disc:num("rcDisc"), irmaaOn:$("rcIrmaaOn").value};
+}
+function writeRCState(d){
+  const M = {trad:"rcTrad", roth:"rcRoth", brok:"rcBrok", spend:"rcSpend",
+             ss:"rcSS", spSS:"rcSpSS", other:"rcOther", fixed:"rcFixed"};
+  const P = {age:"rcAge", spouseAge:"rcSpouseAge", endAge:"rcEndAge",
+             basis:"rcBasis", ret:"rcReturn", ssAge:"rcSSAge", spSSAge:"rcSpSSAge",
+             otherStart:"rcOtherStart", death:"rcDeath", pct:"rcPct",
+             startAge:"rcStartAge", stopAge:"rcStopAge", heir:"rcHeir", disc:"rcDisc"};
+  const S = {status:"rcStatus", state:"rcState", strategy:"rcStrategy",
+             bracket:"rcBracket", irmaaTarget:"rcIrmaaTier", payFrom:"rcPayFrom",
+             irmaaOn:"rcIrmaaOn"};
+  for (const k in M) if (d[k] != null) $(M[k]).value = groupDigits(d[k], true);
+  for (const k in P) if (d[k] != null) $(P[k]).value = String(d[k]);
+  for (const k in S) if (d[k] != null) $(S[k]).value = String(d[k]);
+  syncRCFields();
+}
+/* Parsed form state, in the shape runRoth() wants. */
+/* num() hands back NaN for a field the user has half-cleared, and every
+   Math.max/min chain below would carry it straight into the projection. */
+function rcClamp(v, lo, hi, fallback){
+  const x = Math.round(v);
+  if (!isFinite(x)) return fallback;
+  return Math.max(lo, Math.min(hi, x));
+}
+function rcNum(v){ return isFinite(v) ? v : 0; }
+function readRC(){
+  const s = readRCState();
+  const status = s.status === "m" ? "m" : "s";
+  const age = rcClamp(s.age, 30, 95, 62);
+  return {age,
+    spouseAge:rcClamp(s.spouseAge, 30, 105, age),
+    status, state:s.state,
+    endAge:rcClamp(s.endAge, age + 1, 100, Math.min(100, age + 30)),
+    trad:rcNum(s.trad), roth:rcNum(s.roth), brokerage:rcNum(s.brok),
+    basisPct:Math.max(0, Math.min(1, rcNum(s.basis) / 100)),
+    ret:rcNum(s.ret) / 100, spend:rcNum(s.spend),
+    ss:rcNum(s.ss), ssAge:rcClamp(s.ssAge, 62, 70, 67),
+    spSS:status === "m" ? rcNum(s.spSS) : 0,
+    spSSAge:rcClamp(s.spSSAge, 62, 70, 67),
+    other:rcNum(s.other), otherStart:rcClamp(s.otherStart, 30, 100, age),
+    deathYear:status === "m" ? rcClamp(s.death, 0, 45, 0) : 0,
+    strategy:s.strategy, bracket:parseFloat(s.bracket) || 0.22,
+    irmaaTarget:parseInt(s.irmaaTarget, 10) || 0,
+    fixedAmt:rcNum(s.fixed), pctAmt:rcNum(s.pct) / 100,
+    startAge:rcClamp(s.startAge, 30, 100, age),
+    stopAge:rcClamp(s.stopAge, 30, 100, 100),
+    payFrom:s.payFrom, heirRate:Math.max(0, Math.min(1, rcNum(s.heir) / 100)),
+    disc:rcNum(s.disc) / 100, irmaaOn:s.irmaaOn === "1"};
+}
+/* Show only the inputs the current choices actually use. */
+function syncRCFields(){
+  const married = $("rcStatus").value === "m";
+  const strat = $("rcStrategy").value;
+  $("rcSpouseWrap").hidden = !married;
+  $("rcSpouseSSWrap").hidden = !married;
+  $("rcDeathWrap").hidden = !married;
+  $("rcBracketWrap").hidden = strat !== "brk";
+  $("rcIrmaaTierWrap").hidden = strat !== "irm";
+  $("rcFixedWrap").hidden = strat !== "fix";
+  $("rcPctWrap").hidden = strat !== "pct";
+  $("rcWindowWrap").hidden = strat === "none";
+  $("rcPayWrap").hidden = strat === "none";
+}
+
+let rcPoints = null, rcView = "bal", rcTableView = "plan", rcLast = null;
+
+function renderRoth(){
+  syncRCFields();
+  const inp = readRC();
+  if (!(inp.trad > 0) && !(inp.roth > 0) && !(inp.brokerage > 0)){
+    setBig("rcSaved", "--"); return;
+  }
+  const plan = runRoth(inp, true);
+  const base = runRoth(inp, false);
+  rcLast = {inp, plan, base};
+
+  // ---- derived input readouts
+  $("rcRmdAge").textContent = "Age " + plan.rmdStart;
+  const firstRMDRow = plan.rows.find(x => x.rmd > 0);
+  $("rcFirstRMD").textContent = firstRMDRow
+    ? money(firstRMDRow.rmd, 0) + " at " + firstRMDRow.age : "None in this window";
+  const convYears = plan.rows.filter(x => x.conv > 0).length;
+  $("rcConvYears").textContent = convYears
+    ? fmtNum(convYears) + (convYears === 1 ? " year" : " years") : "None";
+  $("rcAvgConv").textContent = convYears
+    ? money(plan.totalConv / convYears, 0) + "/yr" : "--";
+
+  // ---- headline
+  const taxSaved = base.lifeTaxPV - plan.lifeTaxPV;
+  const nwDelta = plan.endAfterTax - base.endAfterTax;
+  setBig("rcSaved", (taxSaved >= 0 ? "" : "\u2212") + money(Math.abs(taxSaved)));
+  $("rcSaved").className = "v " + (taxSaved >= 0 ? "gold" : "neg");
+  $("rcSavedNote").textContent = "Lifetime tax, discounted at " +
+    pctStr(inp.disc, 1) + " real";
+  setBig("rcNW", (nwDelta >= 0 ? "+" : "\u2212") + money(Math.abs(nwDelta)));
+  $("rcNW").className = "v " + (nwDelta >= 0 ? "pos" : "neg");
+  $("rcNWNote").textContent = "After-tax, at age " + inp.endAge;
+  setBig("rcPeak", money(base.peakRMD, 0));
+  $("rcPeakNote").textContent = plan.peakRMD < base.peakRMD
+    ? "Converting trims it to " + money(plan.peakRMD, 0)
+    : "Unchanged by this plan";
+
+  // ---- verdict
+  const verdict = taxSaved >= 0 && nwDelta >= 0
+    ? "Converting wins on both measures."
+    : taxSaved < 0 && nwDelta < 0
+      ? "Converting loses on both measures here."
+      : "The two measures disagree \u2014 read them together, not separately.";
+  $("rcVerdict").innerHTML = "<div class='hint' style='margin:0'>" + verdict +
+    " Lifetime tax is what you and your heirs hand over; after-tax net worth is " +
+    "what is left standing at age " + inp.endAge + ", with traditional dollars " +
+    "discounted at " + pctStr(inp.heirRate, 0) + " because they are still owed to the IRS.</div>";
+
+  // ---- side by side
+  $("rcTaxPlan").textContent = money(plan.lifeTax);
+  $("rcTaxBase").textContent = money(base.lifeTax);
+  $("rcTaxPV").textContent = money(plan.lifeTaxPV) + " vs " + money(base.lifeTaxPV);
+  $("rcIrmPlan").textContent = inp.irmaaOn
+    ? money(plan.lifeIrmaa) + " vs " + money(base.lifeIrmaa) : "Not included";
+  $("rcConvTotal").textContent = money(plan.totalConv);
+  $("rcEndTrad").textContent = money(plan.endTrad) + " vs " + money(base.endTrad);
+  $("rcEndRoth").textContent = money(plan.endRoth) + " vs " + money(base.endRoth);
+
+  // Break-even: the first year the converting plan's after-tax net worth
+  // catches the baseline and stays ahead. Early years always look worse,
+  // because the tax is paid up front and the benefit arrives later.
+  let be = 0;
+  for (let i = 0; i < plan.rows.length; i++){
+    if (plan.rows[i].afterTax >= base.rows[i].afterTax){
+      const rest = plan.rows.slice(i).every((x, k) => x.afterTax >= base.rows[i + k].afterTax);
+      if (rest){ be = plan.rows[i].age; break; }
+    }
+  }
+  $("rcBreakEven").textContent = be
+    ? "Age " + be + (be === inp.age ? " \u2014 ahead from the start" : "")
+    : "Never, within this horizon";
+
+  // ---- widow's penalty callout
+  const wRow = plan.rows.find(x => x.widowed);
+  $("rcWidow").hidden = !wRow;
+  if (wRow){
+    const before = plan.rows[Math.max(0, wRow.i - 1)];
+    $("rcWidowText").innerHTML = "Filing switches to single at age " + wRow.age +
+      ". The same income now meets single brackets and a single standard deduction: " +
+      "the marginal rate moves from " + pctStr(before.marginal, 1) + " to " +
+      pctStr(wRow.marginal, 1) + ", and tax that year from " +
+      money(before.tax) + " to " + money(wRow.tax) + ".";
+  }
+
+  drawRCChart();
+  fillRCTable();
+}
+
+function drawRCChart(){
+  if (!rcLast) return;
+  const {inp, plan, base} = rcLast;
+  const pts = [];
+  plan.rows.forEach((p, i) => {
+    const b = base.rows[i];
+    const a = rcView === "bal" ? p.trad : p.tax + p.irmaa;
+    const c = rcView === "bal" ? b.trad : b.tax + b.irmaa;
+    pts.push({year:p.age - inp.age, base:a, hi:c, lo:Math.min(a, c)});
+  });
+  rcPoints = paintChart("chartRC", pts, inp.endAge - inp.age, "band", []);
+  $("legendRC").innerHTML =
+    swatch("#e9b872", rcView === "bal" ? "Traditional balance, converting"
+                                       : "Tax paid, converting") +
+    swatch("#4fbf95", rcView === "bal" ? "Traditional balance, no conversions"
+                                       : "Tax paid, no conversions");
+  $("rcChartTitle").innerHTML = (rcView === "bal"
+    ? "Traditional balance" : "Tax paid each year") +
+    "<span class='h2note'>in today's dollars</span>";
+  attachChart("chartWrapRC", "chartRC", "tipRC", () => rcPoints, best => {
+    return "<b>Age " + fmtNum(inp.age + best.year) + "</b>" +
+      "<br><span style='color:#e9b872'>Converting</span> <span class='n'>" +
+      money(best.base) + "</span>" +
+      "<br><span style='color:#4fbf95'>No conversions</span> <span class='n'>" +
+      money(best.hi) + "</span>";
+  });
+}
+
+function fillRCTable(){
+  if (!rcLast) return;
+  const R = rcTableView === "plan" ? rcLast.plan : rcLast.base;
+  const irmOn = rcLast.inp.irmaaOn;
+  $("rcTable").querySelector("tbody").innerHTML = R.rows.map(y =>
+    "<tr" + (y.widowed ? " class='rc-widow'" : "") + "><td>" + fmtNum(y.age) +
+    "</td><td>" + (y.conv > 0 ? money(y.conv, 0) : "\u2014") +
+    "</td><td>" + (y.rmd > 0 ? money(y.rmd, 0) : "\u2014") +
+    "</td><td>" + money(y.ordinary, 0) +
+    "</td><td>" + money(y.magi, 0) +
+    "</td><td>" + money(y.tax, 0) +
+    "</td><td>" + (irmOn ? (y.irmaa > 0 ? money(y.irmaa, 0) +
+      " <span class='rc-tier'>T" + y.irmaaTier + "</span>" : "\u2014") : "\u2014") +
+    "</td><td>" + pctStr(y.marginal, 1) +
+    "</td><td>" + money(y.trad, 0) +
+    "</td><td>" + money(y.roth, 0) + "</td></tr>").join("");
+}
+
+["rcAge","rcSpouseAge","rcEndAge","rcTrad","rcRoth","rcBrok","rcBasis","rcReturn",
+ "rcSpend","rcSS","rcSSAge","rcSpSS","rcSpSSAge","rcOther","rcOtherStart","rcDeath",
+ "rcFixed","rcPct","rcStartAge","rcStopAge","rcHeir","rcDisc"].forEach(id => {
+  $(id).addEventListener("input", renderRoth);
+});
+["rcStatus","rcState","rcStrategy","rcBracket","rcIrmaaTier","rcPayFrom","rcIrmaaOn"]
+  .forEach(id => { $(id).addEventListener("change", renderRoth); });
+
+$("segRC").querySelectorAll("button").forEach(b => {
+  b.addEventListener("click", () => {
+    rcView = b.getAttribute("data-rc");
+    $("segRC").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x === b));
+    drawRCChart();
+  });
+});
+$("segRCTab").querySelectorAll("button").forEach(b => {
+  b.addEventListener("click", () => {
+    rcTableView = b.getAttribute("data-rct");
+    $("segRCTab").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x === b));
+    fillRCTable();
+  });
+});
+$("rcCopyDD").addEventListener("click", () => {
+  const v = num("ddInitial");
+  if (!(v > 0)){ toast("Set a portfolio value in the Drawdown Simulator first"); return; }
+  // Split the drawdown portfolio across the three account types in the
+  // proportions already on screen here, so the copy doesn't silently invent
+  // a tax profile the user never chose.
+  const cur = num("rcTrad") + num("rcRoth") + num("rcBrok");
+  if (cur > 0){
+    $("rcTrad").value = groupDigits((v * num("rcTrad") / cur).toFixed(0), true);
+    $("rcRoth").value = groupDigits((v * num("rcRoth") / cur).toFixed(0), true);
+    $("rcBrok").value = groupDigits((v * num("rcBrok") / cur).toFixed(0), true);
+  } else {
+    $("rcTrad").value = groupDigits(v.toFixed(0), true);
+  }
+  renderRoth();
+  toast("Copied " + money(v) + ", split across your current account mix");
+});
+
+function buildRothSheet(){
+  const inp = readRC();
+  if (!(inp.trad > 0)){ $("sheet").innerHTML = "";
+    toast("Enter a traditional balance first"); return false; }
+  const plan = runRoth(inp, true), base = runRoth(inp, false);
+  const taxSaved = base.lifeTaxPV - plan.lifeTaxPV;
+  const nwDelta = plan.endAfterTax - base.endAfterTax;
+
+  let inputs = row("Age", fmtNum(inp.age) + (inp.status === "m"
+    ? " &middot; spouse " + fmtNum(inp.spouseAge) : ""));
+  inputs += row("Filing status", inp.status === "m" ? "Married filing jointly" : "Single");
+  inputs += row("State", STATES[inp.state] && STATES[inp.state].n ? STATES[inp.state].n : inp.state);
+  inputs += row("Traditional", money(inp.trad));
+  inputs += row("Roth", money(inp.roth));
+  inputs += row("Brokerage", money(inp.brokerage) + " at " +
+    pctStr(inp.basisPct, 0) + " basis");
+  inputs += row("Real return", pctStr(inp.ret, 2));
+  inputs += row("Annual spending", money(inp.spend));
+  inputs += row("RMDs begin", "Age " + plan.rmdStart);
+
+  let strat = row("Strategy", RC_STRATS[inp.strategy]);
+  if (inp.strategy === "brk")
+    strat += row("Fill to", pctStr(inp.bracket, 0) + " bracket");
+  if (inp.strategy === "irm")
+    strat += row("Stay within", "IRMAA tier " + inp.irmaaTarget);
+  if (inp.strategy !== "none"){
+    strat += row("Window", "Ages " + fmtNum(inp.startAge) + "\u2013" + fmtNum(inp.stopAge));
+    strat += row("Tax paid from", inp.payFrom === "withhold"
+      ? "Withheld from the conversion" : "Taxable account");
+  }
+  strat += row("Heir rate on traditional", pctStr(inp.heirRate, 0));
+  strat += row("Discount rate", pctStr(inp.disc, 1) + " real");
+
+  let out = row("Lifetime tax, converting", money(plan.lifeTax));
+  out += row("Lifetime tax, no conversions", money(base.lifeTax));
+  out += row("Present value saved", money(taxSaved));
+  out += row("Total converted", money(plan.totalConv));
+  if (inp.irmaaOn)
+    out += row("Lifetime IRMAA", money(plan.lifeIrmaa) + " vs " + money(base.lifeIrmaa));
+  out += row("Traditional at " + fmtNum(inp.endAge),
+    money(plan.endTrad) + " vs " + money(base.endTrad));
+  out += row("Peak RMD", money(base.peakRMD) + " \u2192 " + money(plan.peakRMD));
+
+  const src = $("chartRC");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+
+  const step = plan.rows.length <= 15 ? 1 : plan.rows.length <= 30 ? 2 : 3;
+  const picked = plan.rows.filter((y, i) =>
+    i === 0 || i === plan.rows.length - 1 || y.conv > 0 || i % step === 0);
+  let table = "<table><thead><tr><th>Age</th><th>Converted</th><th>RMD</th>" +
+    "<th>MAGI</th><th>Tax</th><th>Marginal</th><th>Traditional</th><th>Roth</th>" +
+    "</tr></thead><tbody>";
+  picked.forEach(y => {
+    table += "<tr><td>" + y.age + "</td><td>" + (y.conv > 0 ? money(y.conv) : "\u2014") +
+      "</td><td>" + (y.rmd > 0 ? money(y.rmd) : "\u2014") +
+      "</td><td>" + money(y.magi) + "</td><td>" + money(y.tax) +
+      "</td><td>" + pctStr(y.marginal, 1) + "</td><td>" + money(y.trad) +
+      "</td><td>" + money(y.roth) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Roth Conversion &amp; RMDs</h1><span>Ages " +
+      fmtNum(inp.age) + "\u2013" + fmtNum(inp.endAge) + " &middot; today's dollars</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Lifetime tax saved</div><div class='v'>" + money(taxSaved) +
+        "</div><div class='n'>present value</div></div>" +
+      "<div><div class='k'>After-tax net worth</div><div class='v'>" +
+        (nwDelta >= 0 ? "+" : "\u2212") + money(Math.abs(nwDelta)) +
+        "</div><div class='n'>at age " + fmtNum(inp.endAge) + "</div></div>" +
+      "<div><div class='k'>Total converted</div><div class='v'>" + money(plan.totalConv) +
+        "</div><div class='n'>over " + fmtNum(plan.rows.filter(x => x.conv > 0).length) +
+        " years</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Your situation</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>The plan</div>" + strat + "</section>" +
+      "<section><div class='sh-t'>Converting vs. not</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Year by year, converting</div>" + table + "</div>" +
+    "<div class='sh-foot'>Estimates only. Brackets, the standard deduction and the " +
+    "IRMAA thresholds are held fixed in real terms, and every figure is in today's " +
+    "dollars. Not tax advice.</div>";
+}
+
+
+/* ---------- debt payoff: form, render, comparison ---------- */
+/* Deliberately chosen so the smallest balance is not also the highest rate --
+   otherwise avalanche and snowball pick the same order and the comparison the
+   tool is built around has nothing to show. */
+const DEBT_DEFAULTS = [
+  {desc:"Credit card",  balance:9800,  apr:22.9, min:245},
+  {desc:"Store card",   balance:1900,  apr:8.9,  min:60},
+  {desc:"Car loan",     balance:16200, apr:7.4,  min:395},
+  {desc:"Student loan", balance:21500, apr:5.5,  min:230}
+];
+function defaultDebts(){ return DEBT_DEFAULTS.map(d => Object.assign({}, d)); }
+let debts = defaultDebts();
+let dtMode = "avalanche";
+
+function buildDebtList(){
+  $("dtList").innerHTML = debts.map((r, i) =>
+    "<div class='dtrow'>" +
+      "<input class='desc' data-f='desc' data-i='" + i + "' value='" +
+        String(r.desc).replace(/'/g, "&#39;") + "' placeholder='Name' aria-label='Debt name'>" +
+      "<div class='inputwrap c1'><span class='affix'>$</span><input type='text' inputmode='decimal' " +
+        "data-money data-nonneg data-f='balance' data-i='" + i + "' value='" +
+        groupDigits(r.balance, true) + "' aria-label='Balance'></div>" +
+      "<div class='inputwrap c2'><input type='text' inputmode='decimal' data-num data-step='0.1' " +
+        "min='0' data-nonneg data-f='apr' data-i='" + i + "' value='" + r.apr +
+        "' aria-label='Rate'><span class='affix'>%</span></div>" +
+      "<div class='inputwrap c3'><span class='affix'>$</span><input type='text' inputmode='decimal' " +
+        "data-money data-nonneg data-f='min' data-i='" + i + "' value='" +
+        groupDigits(r.min, true) + "' aria-label='Minimum payment'></div>" +
+      (debts.length > 1
+        ? "<button class='del' type='button' data-del='" + i + "' title='Remove' aria-label='Remove'>\u00d7</button>"
+        : "<span class='delspace'></span>") +
+    "</div>").join("");
+  initFields($("dtList"));
+}
+
+let dtPoints = null, dtLast = null;
+
+function renderDebt(){
+  const extra = Math.max(0, num("dtExtra") || 0);
+  const live = debts.filter(d => d.balance > 0);
+  if (!live.length){
+    setBig("dtFree", "--"); $("dtFreeNote").textContent = "Add a debt to start";
+    setBig("dtInterest", "--"); setBig("dtSaved", "--");
+    $("dtWarn").hidden = true;
+    ["dtCompare","dtOrder","dtSched"].forEach(t =>
+      $(t).querySelector("tbody").innerHTML = "");
+    return;
+  }
+
+  const av = debtRun(debts, extra, "avalanche");
+  const sn = debtRun(debts, extra, "snowball");
+  const mn = debtRun(debts, 0, "min");
+  const pick = dtMode === "snowball" ? sn : av;
+  const other = dtMode === "snowball" ? av : sn;
+  dtLast = {pick, mn, extra};
+
+  // A minimum that doesn't cover interest is the only genuinely broken input
+  // here, and it invalidates every number below it.
+  const under = debtUnderwater(debts);
+  $("dtWarn").hidden = !under.length;
+  if (under.length)
+    $("dtWarn").innerHTML = "<b>" + under.map(u => u.desc).join(", ") +
+      "</b>: the minimum doesn't cover one month of interest, so that balance grows " +
+      "on its own. The payoff below only works because of the extra payment \u2014 " +
+      "check the minimum you entered.";
+
+  setBig("dtFree", pick.stalled ? "Never" : debtDate(pick.monthsTotal));
+  $("dtFreeNote").textContent = pick.stalled
+    ? "Payments never clear the balance"
+    : debtDur(pick.monthsTotal) + " from now";
+  setBig("dtInterest", money(pick.totalInterest));
+  $("dtInterestNote").textContent = "on " + money(live.reduce((a, d) => a + d.balance, 0)) +
+    " borrowed \u2014 " + money(pick.totalPaid) + " paid in all";
+
+  const saved = mn.totalInterest - pick.totalInterest;
+  const sooner = mn.monthsTotal - pick.monthsTotal;
+  setBig("dtSaved", money(Math.max(0, saved)));
+  $("dtSaved").className = "v " + (saved > 0 ? "pos" : "");
+  $("dtSavedNote").textContent = mn.stalled
+    ? "Minimums alone never clear it"
+    : sooner > 0 ? debtDur(sooner) + " sooner" : "Same as minimums";
+
+  $("dtStratNote").textContent = dtMode === "snowball"
+    ? "Smallest balance first \u2014 quicker wins, usually more interest."
+    : "Highest rate first \u2014 mathematically cheapest.";
+
+  // ---- verdict: the real trade-off between the two orderings
+  const dInt = sn.totalInterest - av.totalInterest;
+  const dMon = sn.monthsTotal - av.monthsTotal;
+  const dFirst = sn.firstCleared - av.firstCleared;
+  let v;
+  if (Math.abs(dInt) < 1 && dMon === 0){
+    v = "With these debts the two orderings land in the same place \u2014 pick whichever " +
+      "you'll actually stick to.";
+  } else {
+    v = "Avalanche costs " + money(Math.abs(dInt)) + " less in interest" +
+      (dMon > 0 ? " and finishes " + debtDur(dMon) + " sooner" : "") + ". ";
+    v += dFirst < 0
+      ? "Snowball clears your first debt " + debtDur(-dFirst) + " earlier, which is " +
+        "the whole argument for it \u2014 that's what " + money(Math.abs(dInt)) +
+        " of motivation costs."
+      : "Snowball offers nothing in return here: it clears the first debt no sooner.";
+  }
+  const rate = live.reduce((a, d) => a + d.balance * d.apr, 0) /
+               live.reduce((a, d) => a + d.balance, 0);
+  v += " Your blended rate is " + pctStr(rate / 100, 1) + " across " + live.length +
+    (live.length === 1 ? " debt" : " debts") + ", and you're putting " +
+    money(pick.monthlyPool, 0) + " a month at it.";
+
+  // A dollar of extra payment is the most underrated lever in the whole thing.
+  const bump = debtRun(debts, extra + 100, dtMode);
+  if (bump && !bump.stalled && !pick.stalled && bump.monthsTotal < pick.monthsTotal)
+    v += " Another $100 a month would clear it " +
+      debtDur(pick.monthsTotal - bump.monthsTotal) + " sooner and save " +
+      money(pick.totalInterest - bump.totalInterest) + " more.";
+  $("dtVerdict").innerHTML = "<div class='hint' style='margin:0 0 12px'>" + v + "</div>";
+
+  // ---- comparison table
+  const cmp = [["Avalanche \u2014 highest rate first", av],
+               ["Snowball \u2014 smallest balance first", sn],
+               ["Minimums only, no extra", mn]];
+  $("dtCompare").querySelector("tbody").innerHTML = cmp.map(([label, R]) => {
+    const best = R === av && av.totalInterest <= sn.totalInterest;
+    return "<tr><td>" + label + "</td><td>" +
+      (R.stalled ? "Never" : debtDate(R.monthsTotal)) + "</td><td>" +
+      (R.stalled ? "\u2014" : debtDur(R.monthsTotal)) + "</td><td" +
+      (best ? " class='pos'" : "") + ">" + money(R.totalInterest) + "</td><td>" +
+      (R.firstCleared ? debtDur(R.firstCleared) : "\u2014") + "</td></tr>";
+  }).join("");
+
+  // ---- payoff order
+  $("dtOrder").querySelector("tbody").innerHTML = pick.order.map((d, i) =>
+    "<tr><td>" + (i + 1) + "</td><td>" + d.desc + "</td><td>" + money(d.start) +
+    "</td><td>" + pctStr(d.apr, 2) + "</td><td>" + money(d.min) +
+    "</td><td>" + money(d.interest) + "</td><td>" +
+    (d.paidMonth ? debtDate(d.paidMonth) : "Not cleared") + "</td></tr>").join("");
+
+  // ---- schedule, thinned so a long plan stays scannable
+  const step = pick.months.length <= 30 ? 1 : pick.months.length <= 72 ? 3 : 6;
+  $("dtSched").querySelector("tbody").innerHTML = pick.months
+    .filter((x, i) => i === 0 || i === pick.months.length - 1 || i % step === 0)
+    .map(x => "<tr><td>" + x.m + "</td><td>" + debtDate(x.m) + "</td><td>" +
+      money(x.balance) + "</td><td>" + money(x.interest) + "</td><td>" +
+      x.cleared + " of " + live.length + "</td></tr>").join("");
+
+  drawDebtChart();
+}
+
+function drawDebtChart(){
+  if (!dtLast) return;
+  const {pick, mn} = dtLast;
+  const span = Math.max(pick.months.length, Math.min(mn.months.length, DEBT_CAP));
+  const at = (R, m) => {
+    const row = R.months[Math.min(m, R.months.length - 1)];
+    return m >= R.months.length ? 0 : row.balance;
+  };
+  const pts = [];
+  for (let m = 0; m < span; m++)
+    pts.push({year:m, base:at(pick, m), hi:at(mn, m),
+              lo:Math.min(at(pick, m), at(mn, m))});
+  dtPoints = paintChart("chartDT", pts, span - 1, "band", []);
+  $("legendDT").innerHTML =
+    swatch("#e9b872", dtMode === "snowball" ? "Snowball" : "Avalanche") +
+    swatch("#4fbf95", "Minimums only");
+  attachChart("chartWrapDT", "chartDT", "tipDT", () => dtPoints, best =>
+    "<b>Month " + fmtNum(best.year) + "</b> <span class='n'>" + debtDate(best.year) + "</span>" +
+    "<br><span style='color:#e9b872'>Your plan</span> <span class='n'>" + money(best.base) + "</span>" +
+    "<br><span style='color:#4fbf95'>Minimums</span> <span class='n'>" + money(best.hi) + "</span>");
+}
+
+$("dtList").addEventListener("input", e => {
+  const el = e.target;
+  const f = el.getAttribute("data-f"), i = parseInt(el.getAttribute("data-i"), 10);
+  if (!f || isNaN(i) || !debts[i]) return;
+  debts[i][f] = (f === "desc") ? el.value : parseNum(el.value);
+  renderDebt();
+});
+$("dtList").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("[data-del]") : null;
+  if (!b) return;
+  const i = parseInt(b.getAttribute("data-del"), 10);
+  if (isNaN(i)) return;
+  debts.splice(i, 1);
+  if (!debts.length) debts = [{desc:"Debt", balance:0, apr:0, min:0}];
+  buildDebtList(); renderDebt();
+});
+$("dtAdd").addEventListener("click", () => {
+  debts.push({desc:"New debt", balance:0, apr:0, min:0});
+  buildDebtList(); renderDebt();
+  const rows = $("dtList").querySelectorAll(".dtrow input.desc");
+  if (rows.length) rows[rows.length - 1].focus();
+});
+$("dtExtra").addEventListener("input", renderDebt);
+$("toDrawdown").addEventListener("click", () => {
+  showTab("tools"); showTool("drawdown");
+});
+$("segDT").querySelectorAll("button").forEach(b => {
+  b.addEventListener("click", () => {
+    dtMode = b.getAttribute("data-dt");
+    $("segDT").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    renderDebt();
+  });
+});
+$("dtCopyBudget").addEventListener("click", () => {
+  const incomeYr = num("bgIncomeIn") * bgIncomeFreq;
+  const spentYr = budget.reduce((a, r) => a + annualize(r), 0);
+  const leftMo = (incomeYr - spentYr) / 12;
+  if (!(leftMo > 0)){ toast("No money left over in the budget to put at debt"); return; }
+  $("dtExtra").value = groupDigits(leftMo.toFixed(0), true);
+  renderDebt();
+  toast("Using " + money(leftMo, 0) + "/mo left over from your budget");
+});
+
+function readDebtState(){
+  return {extra:num("dtExtra"), mode:dtMode,
+    rows:debts.map(d => ({desc:d.desc, balance:d.balance, apr:d.apr, min:d.min}))};
+}
+function writeDebtState(d){
+  if (d.extra != null) $("dtExtra").value = groupDigits(d.extra, true);
+  if (d.mode){
+    dtMode = d.mode === "snowball" ? "snowball" : "avalanche";
+    $("segDT").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-dt") === dtMode));
+  }
+  if (Array.isArray(d.rows) && d.rows.length)
+    debts = d.rows.map(r => Object.assign({}, r));
+  buildDebtList();
+}
+
+function buildDebtSheet(){
+  const live = debts.filter(d => d.balance > 0);
+  if (!live.length){ $("sheet").innerHTML = ""; toast("Add a debt first"); return false; }
+  const extra = Math.max(0, num("dtExtra") || 0);
+  const av = debtRun(debts, extra, "avalanche");
+  const sn = debtRun(debts, extra, "snowball");
+  const mn = debtRun(debts, 0, "min");
+  const pick = dtMode === "snowball" ? sn : av;
+  const owed = live.reduce((a, d) => a + d.balance, 0);
+
+  let inputs = row("Total owed", money(owed));
+  inputs += row("Number of debts", String(live.length));
+  inputs += row("Minimum payments", money(pick.baseMin) + "/mo");
+  inputs += row("Extra payment", money(extra) + "/mo");
+  inputs += row("Total going at debt", money(pick.monthlyPool) + "/mo");
+  inputs += row("Strategy", dtMode === "snowball"
+    ? "Snowball \u2014 smallest balance first"
+    : "Avalanche \u2014 highest rate first");
+
+  let out = row("Debt-free", pick.stalled ? "Never" : debtDate(pick.monthsTotal));
+  out += row("How long", pick.stalled ? "\u2014" : debtDur(pick.monthsTotal));
+  out += row("Total interest", money(pick.totalInterest));
+  out += row("Total paid", money(pick.totalPaid));
+  out += row("Interest saved vs. minimums", money(Math.max(0, mn.totalInterest - pick.totalInterest)));
+
+  let cmp = row("Avalanche interest", money(av.totalInterest));
+  cmp += row("Snowball interest", money(sn.totalInterest));
+  cmp += row("Difference", money(Math.abs(sn.totalInterest - av.totalInterest)));
+  cmp += row("Minimums only", mn.stalled ? "Never clears" : money(mn.totalInterest));
+  cmp += row("First debt gone", debtDur(pick.firstCleared));
+
+  const src = $("chartDT");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+
+  let table = "<table><thead><tr><th>#</th><th>Debt</th><th>Balance</th><th>Rate</th>" +
+    "<th>Minimum</th><th>Interest paid</th><th>Cleared</th></tr></thead><tbody>";
+  pick.order.forEach((d, i) => {
+    table += "<tr><td>" + (i + 1) + "</td><td>" + d.desc + "</td><td>" + money(d.start) +
+      "</td><td>" + pctStr(d.apr, 2) + "</td><td>" + money(d.min) + "</td><td>" +
+      money(d.interest) + "</td><td>" +
+      (d.paidMonth ? debtDate(d.paidMonth) : "Not cleared") + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Debt Payoff</h1><span>" + money(owed) + " across " +
+      live.length + (live.length === 1 ? " debt" : " debts") + "</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Debt-free</div><div class='v'>" +
+        (pick.stalled ? "Never" : debtDate(pick.monthsTotal)) +
+        "</div><div class='n'>" + debtDur(pick.monthsTotal) + " from now</div></div>" +
+      "<div><div class='k'>Total interest</div><div class='v'>" + money(pick.totalInterest) +
+        "</div><div class='n'>" + money(pick.totalPaid) + " paid in all</div></div>" +
+      "<div><div class='k'>Saved vs. minimums</div><div class='v'>" +
+        money(Math.max(0, mn.totalInterest - pick.totalInterest)) +
+        "</div><div class='n'>in interest</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>The debts</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Your plan</div>" + out + "</section>" +
+      "<section><div class='sh-t'>Avalanche vs. snowball</div>" + cmp + "</section>" +
+    "</div>" +
+    "<div class='sh-table'><div class='sh-t'>Payoff order</div>" + table + "</div>" +
+    "<div class='sh-foot'>Assumes fixed minimums, fixed rates, and no new borrowing. " +
+    "Card minimums usually fall as the balance does, which makes real payoff slower " +
+    "than this unless you keep paying the original amount. Not financial advice.</div>";
+}
+
+/* ---------- CSV export ---------- */
+/* Every on-screen table gets a download button in its panel heading. The tables
+   are already the full dataset -- only the print sheet samples rows -- so what
+   downloads is exactly what is on screen. */
+function cellText(el){
+  const c = el.cloneNode(true);
+  // Tooltip dots are interface, not data.
+  c.querySelectorAll(".tipdot").forEach(x => x.remove());
+  return (c.textContent || "").replace(/\s+/g, " ").trim();
+}
+/* A heading can carry a subtitle and a whole segmented control; neither
+   belongs in a filename. */
+/* Several headings have their text rewritten as results come in. Assigning
+   textContent would take the CSV button (and any segmented control) with it,
+   so only the heading's own text node gets replaced. */
+function setH2Text(el, text){
+  let n = el.firstChild;
+  while (n && n.nodeType !== 3) n = n.nextSibling;
+  if (n) n.nodeValue = text;
+  else el.insertBefore(document.createTextNode(text), el.firstChild);
+}
+function headingText(h2){
+  const c = h2.cloneNode(true);
+  c.querySelectorAll(".tipdot,.h2note,.h2ctrl").forEach(x => x.remove());
+  return (c.textContent || "").replace(/\s+/g, " ").trim();
+}
+/* Half the tools have a panel called "Year by year", so the tool name has to
+   be part of the filename or every download collides in the same folder. */
+function csvScope(){
+  const t = activeTool();
+  if (t !== "retire") return t;
+  const m = activeRetireMode();
+  return m === "basic" ? "basic" : m === "stages" ? "stages" : "advanced";
+}
+function csvEscape(v){
+  return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+function tableToCSV(tbl){
+  const lines = [];
+  tbl.querySelectorAll("tr").forEach(tr => {
+    const cells = tr.querySelectorAll("th,td");
+    if (!cells.length) return;
+    const out = [];
+    cells.forEach(c => out.push(csvEscape(cellText(c))));
+    lines.push(out.join(","));
+  });
+  return lines.join("\r\n");
+}
+function slugify(t){
+  return (t || "table").toLowerCase().replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "").slice(0, 48) || "table";
+}
+function downloadCSV(tbl, name){
+  const body = tbl.querySelector("tbody");
+  if (body && !body.querySelector("tr")){ toast("Nothing to export yet"); return; }
+  // The BOM is what makes Excel open UTF-8 correctly on Windows.
+  const blob = new Blob(["\ufeff" + tableToCSV(tbl)], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "retcalc-" + slugify(csvScope()) + "-" + slugify(name) + ".csv";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("Saved " + a.download);
+}
+function initCSVButtons(){
+  document.querySelectorAll(".panel table").forEach(tbl => {
+    if (!tbl.querySelector("tbody")) return;
+    const panel = tbl.closest(".panel");
+    if (!panel) return;
+    const h2 = panel.querySelector(":scope > h2");
+    let host;
+    if (h2){
+      host = h2.querySelector(".h2ctrl");
+      if (!host){ host = document.createElement("span"); host.className = "h2ctrl"; h2.appendChild(host); }
+    } else {
+      host = document.createElement("div");
+      host.className = "csvbar";
+      panel.insertBefore(host, tbl.closest(".scroll") || tbl);
+    }
+    if (host.querySelector(".csvbtn")) return;   // one button per panel
+    const label = h2 ? headingText(h2) : "table";
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "btn mini csvbtn";
+    b.textContent = "CSV";
+    b.title = "Download this table as a CSV";
+    b.setAttribute("aria-label", "Download " + label + " as CSV");
+    b.addEventListener("click", () => downloadCSV(tbl, label));
+    host.appendChild(b);
+  });
+}
+initCSVButtons();
+
 function tipFor(key){ return GLOSS[key] || ""; }
 (function(){
   let openDot = null;
@@ -8199,12 +9888,75 @@ $("qRisk").innerHTML = RISK_LEVELS.map((r, i) =>
   "<option value='" + r.real + "'" + (i === 2 ? " selected" : "") + ">" +
   r.label + " \u00b7 " + r.sub + "</option>").join("");
 
+
+/* Basic's own real-return engine, replacing the old flat-forever contribution
+   with one that steps up once a year, the way Advanced's does.
+
+   Basic never asks for an inflation rate -- it only ever shows a single real
+   (after-inflation) return. But "the contribution keeps pace with inflation"
+   is not a free-standing fact; it has a shape. Held perfectly flat in real
+   dollars every single month, a contribution is implicitly rising in nominal
+   terms every month too -- continuously, at the same frequency the plan
+   compounds. Advanced does something different: it steps the nominal
+   contribution up once a year and only converts to today's dollars at the
+   very end. Those two are not the same plan, and the gap between them is
+   exactly what produced the mismatch: Basic's number was quietly larger
+   because "continuously" compounds more advantageously than "once a year."
+
+   To close it without ever surfacing an inflation input, BASIC_INFL is used
+   purely to shape the timing of the step -- it cancels out of the return the
+   person actually sees. Expressed in today's dollars, a contribution that is
+   flat in nominal terms for twelve months and then jumps at the year mark
+   loses a little ground every month within that year and recovers it all at
+   once at the boundary. The real-dollar contribution multiplier at month j
+   of a year (j = 1..periods-per-year) works out to (1+infl)^(-j/ppy) --
+   independent of which year it is, so it can be applied directly without
+   tracking nominal dollars anywhere. Run that multiplier through the same
+   periodic real return Basic has always used, and the result lands within
+   a rounding error of Advanced's own fvReal for the same real return and the
+   2.5% BASIC_INFL is intentionally the same figure "Open in Advanced" already
+   assumes when it splits the real rate back into a return and an inflation
+   rate, so the two tabs now agree with each other everywhere, not just here. */
+const BASIC_INFL = 0.025;
+
+function projectBasic(p){
+  const ppy = PPY[p.period];
+  const n = Math.floor(p.years * ppy);
+  const periodicReal = Math.pow(1 + p.real, 1 / ppy) - 1;
+  let bal = p.initial, contribTotal = 0;
+  const years = [];
+  let yearStart = p.initial, yearContrib = 0, curYear = 1;
+
+  for (let i = 1; i <= n; i++){
+    const yearNo = Math.ceil(i / ppy);
+    if (yearNo !== curYear){
+      years.push({year:curYear, start:yearStart, contrib:yearContrib,
+                  growth:bal - yearStart - yearContrib, end:bal});
+      yearStart = bal; yearContrib = 0; curYear = yearNo;
+    }
+    const j = i - (yearNo - 1) * ppy;             // 1..ppy, resets every year
+    const c = p.contrib / Math.pow(1 + BASIC_INFL, j / ppy);
+    bal = bal * (1 + periodicReal) + c;
+    contribTotal += c; yearContrib += c;
+  }
+  if (n > 0) years.push({year:curYear, start:yearStart, contrib:yearContrib,
+                         growth:bal - yearStart - yearContrib, end:bal});
+
+  const fv = bal;
+  const invested = p.initial + contribTotal;
+  const wd = fv * p.withdrawal;
+  return {ppy, periods:n, years, fv, fvReal:fv, invested, growth:fv - invested,
+    contribTotal, wd, wdReal:wd, afterTax:wd, afterTaxMo:wd / 12};
+}
+
 function readBasic(){
   const age = num("qAge"), retire = num("qRetire");
   const real = parseFloat($("qRisk").value) || 0;
   return {age, retire, years: Math.min(100, Math.max(0, retire - age)), real,
     initial: num("qSaved"), contrib: num("qContrib"), period: $("qPeriod").value,
-    // real terms: no inflation, no contribution growth, no tax, no fees
+    // projectBasic() does the actual math; these extra fields exist only so
+    // this same object can feed the generic project() used by btnUpgrade's
+    // Advanced comparison and drawBasicChart's better/worse band.
     growth:0, nominal: real, inflation:0, withdrawal:.04, taxRate:0, vol:.15,
     fees:0, gross: real};
 }
@@ -8236,7 +9988,7 @@ function renderBasic(){
   $("qWarn").hidden = true;
   $("qYears").textContent = fmtYears(p.years);
 
-  const R = project(p);
+  const R = projectBasic(p);
   simpleRun = R;
   setBig("qFV", money(R.fv));
   $("qFVnote").textContent = "At age " + fmtNum(p.retire) + ", in today's dollars";
@@ -8263,8 +10015,8 @@ function renderBasic(){
    dial to understand. */
 function drawBasicChart(R, p){
   if (!R.years.length){ simplePoints = paintChart("chartQ", [], 1, "band", []); return; }
-  const hiR = project(Object.assign({}, p, {nominal: p.real + BASIC_BAND}));
-  const loR = project(Object.assign({}, p, {nominal: Math.max(-0.99, p.real - BASIC_BAND)}));
+  const hiR = projectBasic(Object.assign({}, p, {real: p.real + BASIC_BAND}));
+  const loR = projectBasic(Object.assign({}, p, {real: Math.max(-0.99, p.real - BASIC_BAND)}));
   const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial}];
   R.years.forEach((y, i) => pts.push({year:y.year, base:y.end,
     hi: hiR.years[i] ? hiR.years[i].end : y.end,
@@ -8301,7 +10053,7 @@ $("qRisk").addEventListener("change", renderBasic);
    nominal rate and inflation so the two tabs agree. */
 $("btnUpgrade").addEventListener("click", () => {
   const p = readBasic();
-  const infl = .025;
+  const infl = BASIC_INFL;
   /* Basic holds the contribution steady in real terms, so the equivalent on
      Advanced is a contribution that grows with inflation each year. Without
      that the same plan would look roughly a quarter smaller. */
@@ -8328,7 +10080,8 @@ function currentState(){
     b:[g.initial, g.inflation, g.withdrawal, g.taxRate, num("targetS"), g.fees],
     c:stages.map(st => [st.years, st.contrib, st.period, st.growth, st.nominal,
                         st.vol || 0, st.adj ? 1 : 0]),
-    sub:toolSub, tx:readTaxState(), mo:readMortState(), bg:readBudgetState()};
+    sub:toolSub, tx:readTaxState(), mo:readMortState(), bg:readBudgetState(),
+    rc:readRCState()};
 }
 function applyState(o){
   if (!o || o.v !== 1) return false;
@@ -8361,7 +10114,9 @@ function applyState(o){
   if (o.tx) writeTaxState(o.tx);
   if (o.mo) writeMortState(o.mo);
   if (o.bg) writeBudgetState(o.bg);
-  if (o.sub === "tax" || o.sub === "mortgage" || o.sub === "budget") toolSub = o.sub;
+  if (o.rc) writeRCState(o.rc);
+  if (o.sub === "tax" || o.sub === "mortgage" || o.sub === "budget" ||
+      o.sub === "roth" || o.sub === "debt") toolSub = o.sub;
   else toolSub = "picker";
   linkTab = (o.t === "single" || o.t === "series" || o.t === "about" ||
              o.t === "tools" || o.t === "simple") ? o.t : "simple";
@@ -8493,7 +10248,8 @@ function writeBudgetState(d){
 const TOOL_LABEL = {retire:"scenario", tax:"tax scenario",
                     mortgage:"mortgage scenario", budget:"budget",
                     college:"college plan", rentbuy:"rent-vs-buy scenario",
-                    drawdown:"drawdown plan"};
+                    drawdown:"drawdown plan", roth:"conversion plan",
+                    debt:"debt plan"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
   const list = SC[activeTool()];
@@ -8920,7 +10676,7 @@ function buildCardSVG(){
 
   } else if (t === "simple"){
     var p = readBasic();
-    var R = project(p);
+    var R = projectBasic(p);
     title = "My retirement projection";
     bigLabel = "Value at retirement, age " + fmtNum(p.retire);
     big = money(R.fv);
@@ -9099,6 +10855,10 @@ function doSave(){
     data = {name:name.trim(), data:readRBState()};
   } else if (tool === "drawdown"){
     data = {name:name.trim(), data:readDDState()};
+  } else if (tool === "roth"){
+    data = {name:name.trim(), data:readRCState()};
+  } else if (tool === "debt"){
+    data = {name:name.trim(), data:readDebtState()};
   } else {
     data = {name:name.trim(), data:readBudgetState()};
   }
@@ -9135,6 +10895,14 @@ function toolIsDirty(tool){
     budget.some(r => r.amount > 0 || r.custom);
   if (tool === "college") return !sameShallow(readCollegeState(), CL_DEFAULTS);
   if (tool === "rentbuy") return !sameShallow(readRBState(), RB_DEFAULTS);
+  if (tool === "roth") return !sameShallow(readRCState(), RC_DEFAULTS);
+  if (tool === "debt") return num("dtExtra") > 0 || dtMode !== "avalanche" ||
+    debts.length !== DEBT_DEFAULTS.length ||
+    debts.some((d, i) => {
+      const x = DEBT_DEFAULTS[i];
+      return !x || d.desc !== x.desc || d.balance !== x.balance ||
+        d.apr !== x.apr || d.min !== x.min;
+    });
   if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) ||
     ddIncomeItems.some(it => it.on !== false) || ddExpenseItems.some(it => it.on !== false);
   if (tool !== "retire") return false;
@@ -9185,7 +10953,9 @@ $("btnReset").addEventListener("click", () => {
   const label = mode === "basic" ? "Basic" : mode === "stages" ? "Stages" :
     mode === "advanced" ? "Advanced" : tool === "tax" ? "Tax" :
     tool === "mortgage" ? "Mortgage" : tool === "college" ? "College" :
-    tool === "rentbuy" ? "Rent vs. Buy" : tool === "drawdown" ? "Drawdown" : "Budget";
+    tool === "rentbuy" ? "Rent vs. Buy" : tool === "drawdown" ? "Drawdown" :
+    tool === "roth" ? "Roth Conversion" :
+    tool === "debt" ? "Debt Payoff" : "Budget";
   if (toolIsDirty(tool) &&
       !confirm("Reset the " + label +
                " inputs to their defaults? Your saved " + TOOL_LABEL[tool] +
@@ -9209,6 +10979,14 @@ $("btnReset").addEventListener("click", () => {
     ddIncomeItems.forEach(it => { it.on = false; });
     ddExpenseItems.forEach(it => { it.on = false; });
     renderItemLists(); renderDrawdown();
+  } else if (tool === "roth"){
+    writeRCState(RC_DEFAULTS); renderRoth();
+  } else if (tool === "debt"){
+    debts = defaultDebts(); dtMode = "avalanche";
+    $("dtExtra").value = groupDigits(300, true);
+    $("segDT").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-dt") === "avalanche"));
+    buildDebtList(); renderDebt();
   } else if (mode === "basic"){
     writeBasic(BASIC_DEFAULTS);
     renderBasic();
@@ -9294,6 +11072,9 @@ $("rbRentInc").value = "3.2";
 $("rbAppr").value = "4";
 $("rbInvest").value = "7";
 $("rbHorizon").value = "30";
+writeRCState(RC_DEFAULTS);
+$("dtExtra").value = groupDigits(300, true);
+buildDebtList();
 $("ddInitial").value = groupDigits(1000000, true);
 $("ddYears").value = "30";
 $("ddStock").value = "60";
