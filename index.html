@@ -54,6 +54,17 @@
   --r-panel:14px;
   --r-bezel:18px;
 
+  /* One page gutter per breakpoint, widened by the notch inset on devices
+     that have one. The masthead, the tab rail and the content column all
+     read from it, so they sit on the same edge instead of drifting apart.
+     --gl/--gr resolve --gut at use time, so the breakpoint overrides below
+     flow through without redeclaring the max(). */
+  --gut:26px;
+  --gl:max(var(--gut),env(safe-area-inset-left,0px));
+  --gr:max(var(--gut),env(safe-area-inset-right,0px));
+  /* Height of the sticky tab rail, so sticky things below it can clear it. */
+  --navh:44px;
+
   /* one light source, from above */
   --edge-up:inset 0 1px 0 rgba(255,255,255,.055);
   --lift-1:0 1px 0 rgba(255,255,255,.05) inset, 0 8px 24px -14px rgba(0,0,0,.9);
@@ -96,6 +107,9 @@ html[data-theme="light"]{
 }
 
 *{box-sizing:border-box}
+.srlive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);
+  clip-path:inset(50%);white-space:nowrap;border:0;padding:0;margin:-1px}
+a,button,select,.toolcard,.popbtn,[role=button]{-webkit-tap-highlight-color:transparent}
 /* .stack sets display:flex, which outranks the browser's [hidden] rule and left
    the inactive tab pane laid out under the sticky sidebar. */
 [hidden]{display:none !important}
@@ -130,13 +144,12 @@ html[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c2cadb;border-col
 /* ---------- masthead: the bezel ---------- */
 header{
   background:linear-gradient(180deg,var(--panel) 0%,var(--bg) 100%);
-  border-bottom:1px solid var(--line);
-  box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 12px 30px -24px #000;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
 }
 html[data-theme="light"] header{
   background:linear-gradient(180deg,#ffffff 0%,#eceef4 100%);
 }
-.masthead{max-width:1330px;margin:0 auto;padding:22px 26px 18px;
+.masthead{max-width:1330px;margin:0 auto;padding:22px var(--gr) 18px var(--gl);
   display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:13px}
 /* The mark sits proud of the bezel, catching the same overhead light. */
@@ -151,9 +164,14 @@ html[data-theme="light"] header{
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .scenariobar{margin-left:auto;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .scenariobar select{min-width:180px}
+/* Light/dark was three interactions deep inside About, which is the wrong
+   depth for something people flip when the room changes. */
+.btn.iconbtn{flex:none;width:34px;padding:8px;display:inline-flex;
+  align-items:center;justify-content:center}
+.btn.iconbtn svg{width:16px;height:16px;display:block}
 
 /* ---------- layout ---------- */
-main{max-width:1330px;margin:0 auto;padding:24px 26px 70px;
+main{max-width:1330px;margin:0 auto;padding:24px var(--gr) 70px var(--gl);
   display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;align-items:start}
 /* Raised plateau: computed output lives here. */
 .panel{background:var(--panel);border:1px solid var(--line);
@@ -169,7 +187,8 @@ main{max-width:1330px;margin:0 auto;padding:24px 26px 70px;
 .h2ctrl input{padding:5px 0;font-size:13px;text-align:center}
 .h2ctrl .affix{padding:0 7px}
 .panel .body{padding:16px 18px}
-aside{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;
+aside{position:sticky;top:calc(var(--navh) + 16px);
+  max-height:calc(100vh - var(--navh) - 32px);overflow-y:auto;
   overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 aside::-webkit-scrollbar{width:8px}
 aside::-webkit-scrollbar-track{background:transparent}
@@ -218,6 +237,8 @@ select{width:100%;
   background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2394a3bd' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center;
   background-size:10px 10px;padding-right:26px}
+html[data-theme="light"] select{
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2354607a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 select:hover,.btn:hover{border-color:#3c4c6e}
 html[data-theme="light"] select:hover,html[data-theme="light"] .btn:hover{border-color:#aeb9cd}
 .btn:active{transform:translateY(1px)}
@@ -313,10 +334,28 @@ html[data-theme="light"] .readout > .headline{
 .readout > .headline::before{display:none}
 
 /* ---------- tabs: a lit rail ---------- */
-nav[role=tablist]{max-width:1330px;margin:0 auto;padding:0 26px;display:flex;gap:4px}
+/* The rail sticks to the top of the viewport for the whole page, so switching
+   tools never means scrolling back up first. It lives outside <header> in the
+   markup: sticky positions against the nearest scrolling ancestor, and inside
+   the header it would have scrolled away with it. .navbar carries the full
+   width background so the rail doesn't end at the 1330px measure on a wide
+   screen, and nav keeps the measure. */
+.navbar{position:sticky;top:0;z-index:30;background:var(--bg);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 12px 30px -24px #000}
+/* In a home-screen web app the rail parks under the status bar, so it paints
+   the inset strip above itself. Zero height on every device without a notch,
+   and directly under the header's gradient, which ends on this same colour. */
+.navbar::before{content:"";position:absolute;left:0;right:0;bottom:100%;
+  height:env(safe-area-inset-top,0px);background:var(--bg);
+  opacity:0;transition:opacity .12s ease}
+.navbar.stuck::before{opacity:1}
+.navbar.stuck{box-shadow:0 14px 30px -22px rgba(0,0,0,.9)}
+nav[role=tablist]{max-width:1330px;margin:0 auto;
+  padding:0 var(--gr) 0 var(--gl);display:flex;gap:4px}
 nav[role=tablist] button{
   position:relative;font-family:var(--sans);font-size:14.5px;background:transparent;
-  color:var(--dim);border:0;padding:0 4px 11px;margin-right:18px;
+  color:var(--dim);border:0;padding:10px 4px 11px;margin-right:18px;
   cursor:pointer;transition:color .15s ease}
 nav[role=tablist] button::after{
   content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;
@@ -328,8 +367,14 @@ nav[role=tablist] button[aria-selected="true"]::after{transform:scaleX(1)}
 nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
 /* ---------- tool cards: a rail, not a lift ---------- */
-.toolcards{display:flex;flex-direction:column;gap:12px;max-width:640px;
-  margin:30px auto;padding:0 26px}
+.toolcards{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;
+  max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
+/* Eight cards in one column ran past the fold on a laptop, which left the
+   last two tools effectively hidden on the landing view. Two columns fit the
+   whole set on screen at once. */
+@media (min-width:900px){
+  .toolcards{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1060px;gap:14px}
+}
 /* Budget has no sidebar, so in solo mode it gets a centered, generously
    wide column instead of stretching a form edge-to-edge or sitting narrow
    with blank space beside it like a sidebar-shaped tool would. Desktop
@@ -399,13 +444,13 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 .pane-in-cards{animation:pane-fade .18s ease-out}
 .pane-in-cards .toolcard{animation:card-in .3s cubic-bezier(.2,.7,.3,1) both}
 .pane-in-cards .toolcard:nth-child(1){animation-delay:.01s}
-.pane-in-cards .toolcard:nth-child(2){animation-delay:.06s}
-.pane-in-cards .toolcard:nth-child(3){animation-delay:.11s}
-.pane-in-cards .toolcard:nth-child(4){animation-delay:.16s}
-.pane-in-cards .toolcard:nth-child(5){animation-delay:.21s}
-.pane-in-cards .toolcard:nth-child(6){animation-delay:.26s}
-.pane-in-cards .toolcard:nth-child(7){animation-delay:.31s}
-.pane-in-cards .toolcard:nth-child(8){animation-delay:.36s}
+.pane-in-cards .toolcard:nth-child(2){animation-delay:.04s}
+.pane-in-cards .toolcard:nth-child(3){animation-delay:.07s}
+.pane-in-cards .toolcard:nth-child(4){animation-delay:.10s}
+.pane-in-cards .toolcard:nth-child(5){animation-delay:.13s}
+.pane-in-cards .toolcard:nth-child(6){animation-delay:.16s}
+.pane-in-cards .toolcard:nth-child(7){animation-delay:.19s}
+.pane-in-cards .toolcard:nth-child(8){animation-delay:.22s}
 /* A card that was just clicked shouldn't animate back out from under the
    pointer, so the press state is its own quick acknowledgement. */
 .toolcard:active{transform:scale(.988);transition-duration:.08s}
@@ -504,6 +549,23 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .rb-beam,.toolcard:hover .bg-coin,
   .toolcard:hover .db-bar{animation:none;stroke-dasharray:none}
 }
+
+/* ---------- back to the tool picker ---------- */
+.toolback{grid-column:1 / -1;display:flex;align-items:center;gap:11px;
+  min-width:0;margin:-2px 0 -6px}
+.toolback .backbtn{display:inline-flex;align-items:center;gap:7px;flex:none;
+  background:transparent;border:0;box-shadow:none;cursor:pointer;
+  padding:6px 10px 6px 7px;margin-left:-7px;border-radius:var(--r-well);
+  font-family:var(--sans);font-size:13px;color:var(--dim);
+  transition:color .14s ease,background .14s ease}
+.toolback .backbtn:hover{color:var(--text);background:var(--panel)}
+.toolback .backbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.toolback .backbtn svg{width:13px;height:13px;flex:none;
+  transition:transform .18s cubic-bezier(.2,.7,.3,1)}
+.toolback .backbtn:hover svg{transform:translateX(-2px)}
+.toolback .crumb{font-size:13px;color:var(--dimmer);min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toolback .crumb::before{content:"/";margin-right:11px;color:var(--line)}
 
 /* ---------- stage cards ---------- */
 .stagecard{border:1px solid var(--line);border-left:2px solid #2f6b57;
@@ -618,7 +680,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 @media print{
   html,body{background:#fff !important;color:#111 !important}
   body::before{display:none !important}
-  header,main,.toast,nav{display:none !important}
+  header,main,.toast,nav,.navbar,#srLive{display:none !important}
   #sheet{display:block !important;font-family:var(--sans);color:#111;
     max-width:7.5in;margin:0 auto}
   @page{size:letter portrait;margin:0.45in}
@@ -757,7 +819,8 @@ html[data-theme="light"] .about.disclaimer{
 .bgrow input.desc{background:var(--field);border:1px solid var(--line);
   border-radius:var(--r-well);padding:8px 10px;font-family:var(--sans);color:var(--text);
   box-shadow:var(--well)}
-.bgrow input.desc:focus{outline:none;border-color:var(--jade)}
+.bgrow input.desc:focus{outline:none;border-color:var(--jade);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
 .bgrow .inputwrap{flex:0 0 130px;width:130px}
 .bgrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
   font-size:18px;line-height:1;padding:0 6px;flex:none;transition:color .14s ease}
@@ -767,12 +830,16 @@ html[data-theme="light"] .about.disclaimer{
 
 /* ---------- popups: floating above the deck ---------- */
 .popup-overlay{position:fixed;inset:0;background:rgba(3,5,12,.62);z-index:90;
-  display:flex;align-items:center;justify-content:center;padding:20px;
+  display:flex;align-items:flex-start;justify-content:center;padding:20px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
   -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   animation:ovFade .16s ease}
 @keyframes ovFade{from{opacity:0}to{opacity:1}}
 .popup{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-bezel);
   padding:22px 24px 18px;max-width:340px;width:100%;box-shadow:var(--lift-2);
+  /* auto margins centre it while it fits and release it to scroll once it
+     doesn't, which align-items:center could not do */
+  margin:auto;
   animation:popIn .2s cubic-bezier(.2,.8,.3,1)}
 @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}
   to{opacity:1;transform:none}}
@@ -973,7 +1040,8 @@ html[data-theme="light"] .glidefields{border-color:#cfdcea}
 .dtrow input.desc{background:var(--field);border:1px solid var(--line);
   border-radius:7px;color:var(--text);font:inherit;font-size:13.5px;padding:7px 9px;
   width:100%;min-width:0}
-.dtrow input.desc:focus{outline:none;border-color:var(--jade)}
+.dtrow input.desc:focus{outline:none;border-color:var(--jade);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
 .dtrow .c1,.dthead .c1{flex:0 0 120px;width:120px}
 .dtrow .c2,.dthead .c2{flex:0 0 88px;width:88px}
 .dtrow .c3,.dthead .c3{flex:0 0 110px;width:110px}
@@ -1051,17 +1119,20 @@ svg{display:block;width:100%;height:auto}
 
 /* Tablet and below: the sidebar moves above the results. */
 @media (max-width:900px){
-  main{grid-template-columns:minmax(0,1fr);padding:18px 20px 60px}
-  nav[role=tablist]{padding:0 20px}
+  :root{--gut:20px}
+  main{grid-template-columns:minmax(0,1fr);padding:18px var(--gr) 60px var(--gl)}
   aside{position:static;max-height:none;overflow-y:visible}
-  .masthead{padding:18px 20px 16px}
+  .masthead{padding:18px var(--gr) 16px var(--gl)}
 }
 /* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
    smaller than that, and the zoom never fully reverses. */
 @media (max-width:640px){
-  main{padding:14px 14px 56px;gap:14px}
+  :root{--gut:14px;--navh:43px}
+  main{padding:14px var(--gr) 56px var(--gl);gap:14px}
   .stack{gap:14px}
-  .masthead{padding:16px 14px 14px;gap:14px}
+  .masthead{padding:16px var(--gr) 14px var(--gl);gap:14px}
+  /* the panel heading right below already names the tool */
+  .toolback .crumb{display:none}
   h1{font-size:17px}
   .panel{border-radius:12px}
   .panel > h2{padding:13px 14px}
@@ -1075,9 +1146,9 @@ svg{display:block;width:100%;height:auto}
   .headline .v{font-size:28px}
   .grid2{grid-template-columns:1fr;gap:16px}
 
-  nav[role=tablist]{padding:0 14px;overflow-x:auto}
+  nav[role=tablist]{overflow-x:auto}
   nav[role=tablist] button{margin-right:14px;font-size:14px;white-space:nowrap}
-  .toolcards{padding:0 14px;margin:20px auto}
+  .toolcards{margin:20px auto}
   .toolcard{padding:16px 16px}
   .toolcard-name{font-size:14px}
   .stagegrid{grid-template-columns:1fr 1fr}
@@ -1108,9 +1179,10 @@ svg{display:block;width:100%;height:auto}
   .btn{padding:11px 12px}
   .field label{font-size:12.5px}
 
-  .scenariobar{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
+  .scenariobar{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px}
   .scenariobar select{grid-column:1 / -1}
   .scenariobar .btn{font-size:12px;padding:8px 0}
+  .scenariobar .btn.iconbtn{width:auto;padding:8px 13px}
 
   .h2ctrl{margin-left:0;width:100%;justify-content:space-between;gap:10px}
   .h2ctrl .inputwrap{width:110px}
@@ -1143,12 +1215,21 @@ svg{display:block;width:100%;height:auto}
   .tipdot{position:relative;width:17px;height:17px}
   .tipdot::after{content:"";position:absolute;top:50%;left:50%;
     width:40px;height:40px;transform:translate(-50%,-50%)}
+  /* Everything below was under 40px on a touch screen. These grow for real
+     rather than overflowing an invisible pad, which would have sat on top of
+     the field beside them and stolen taps meant for it. */
+  .seg button{font-size:14px;padding:10px 14px}
+  .bgseg button{font-size:14px;padding:9px 12px}
+  .bgrow .del,.itemrow .itemdel,.dtrow .del{width:40px;height:40px;padding:0;
+    display:flex;align-items:center;justify-content:center}
+  .bgrow .delspace,.dtrow .delspace,.dthead .delspace{width:40px}
+  .signflip{padding:0 13px}
   .toolcard:hover::before{transform:scaleY(0)}
 }
-/* Home-screen web app runs under the clock and battery, so reserve that space. */
+/* Home-screen web app runs under the clock and battery, so reserve that space.
+   The horizontal insets are folded into --gl/--gr at the top of the sheet, so
+   the masthead and the tab rail get them too rather than main alone. */
 header{padding-top:env(safe-area-inset-top,0px)}
-main{padding-left:max(14px,env(safe-area-inset-left,0px));
-     padding-right:max(14px,env(safe-area-inset-right,0px))}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
@@ -1204,19 +1285,31 @@ window.onerror = function(msg){
       <button class="btn" id="btnScenario">Save/Delete</button>
       <button class="btn" id="btnShareMenu">Share</button>
       <button class="btn" id="btnReset">Reset</button>
+      <button class="btn iconbtn" id="btnTheme" type="button" aria-label="Switch theme"></button>
     </div>
   </div>
-  <nav role="tablist" aria-label="Calculator mode">
-    <button role="tab" data-tab="simple" aria-selected="true">Basic</button>
-    <button role="tab" data-tab="single" aria-selected="false">Advanced</button>
-    <button role="tab" data-tab="series" aria-selected="false">Stages</button>
-    <button role="tab" data-tab="tools" aria-selected="false">Tools</button>
-    <button role="tab" data-tab="about" aria-selected="false">About</button>
-  </nav>
-
 </header>
 
+<div class="navbar">
+  <nav role="tablist" aria-label="Calculator mode">
+    <button role="tab" id="tabbtn-simple" data-tab="simple" aria-controls="tab-simple" aria-selected="true">Basic</button>
+    <button role="tab" id="tabbtn-single" data-tab="single" aria-controls="tab-single" aria-selected="false" tabindex="-1">Advanced</button>
+    <button role="tab" id="tabbtn-series" data-tab="series" aria-controls="tab-series" aria-selected="false" tabindex="-1">Stages</button>
+    <button role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-toolpicker" aria-selected="false" tabindex="-1">Tools</button>
+    <button role="tab" id="tabbtn-about" data-tab="about" aria-controls="tab-about" aria-selected="false" tabindex="-1">About</button>
+  </nav>
+</div>
+
+<div id="srLive" class="srlive" aria-live="polite" aria-atomic="true"></div>
+
 <main id="main">
+  <div class="toolback" id="toolBack" hidden>
+    <button type="button" class="backbtn" id="btnToolBack">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      All tools
+    </button>
+    <span class="crumb" id="toolCrumb"></span>
+  </div>
   <!-- ========== INPUTS ========== -->
   <!-- ========== SIMPLE INPUTS ========== -->
   <aside id="asideSimple">
@@ -1387,7 +1480,7 @@ window.onerror = function(msg){
 
   <!-- ========== RESULTS ========== -->
   <!-- ========== SIMPLE PANE ========== -->
-  <div class="stack" id="tab-simple">
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-simple" id="tab-simple">
 
     <div class="panel" id="qWarn" hidden>
       <div class="body"><div class="hint" id="qWarnText"></div></div>
@@ -1467,7 +1560,7 @@ window.onerror = function(msg){
 
   </div>
 
-  <div class="stack" id="tab-single" hidden>
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-single" id="tab-single" hidden>
 
     <div class="panel">
       <div class="headline">
@@ -1656,7 +1749,7 @@ window.onerror = function(msg){
   </div>
 
   <!-- ========== SERIES PANE ========== -->
-  <div class="stack" id="tab-series" hidden>
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-series" id="tab-series" hidden>
 
     <div class="panel">
       <h2>Stages
@@ -2233,7 +2326,7 @@ window.onerror = function(msg){
   </div>
 
   <!-- ========== ABOUT ========== -->
-  <div class="stack" id="tab-about" hidden>
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-about" id="tab-about" hidden>
     <div class="panel about no-collapse">
       <h2>Appearance</h2>
       <div class="body">
@@ -2431,7 +2524,9 @@ window.onerror = function(msg){
           <dt>Work backwards from a target</dt>
           <dd>Two routes to the same goal: raise the contribution, or extend the
           timeline. Either button applies its change to your inputs. On the Stages tab
-          both routes act on the final stage.</dd>
+          both routes act on the final stage. Both follow a glide if you have one
+          set, and the timeline route re-anchors it: land on 26 years with a 5-year
+          glide and the ramp runs years 22 through 26, not 26 through 30.</dd>
           <dt>Coast FIRE</dt>
           <dd>How far you are from the point where contributions could stop entirely
           and growth alone would still reach your target on schedule.</dd>
@@ -2842,41 +2937,18 @@ window.onerror = function(msg){
           credit score, term, points and lender, so replace it with a current quote.</dd>
           <dt>PMI</dt>
           <dd>Private mortgage insurance, charged when you put down less than 20%.
-          Typically 0.3&ndash;1.5% of the loan a year. Modeled here as ending once the
-          balance falls to 80% of the purchase price, which is when you can request
-          cancellation; federal law only forces automatic removal later, at 78%, if
-          you never ask.</dd>
+          Typically 0.3&ndash;1.5% of the loan a year. It drops off automatically here
+          once the balance falls to 80% of the purchase price.</dd>
           <dt>Property tax and insurance</dt>
           <dd>Pre-filled with rough national averages. Both vary enormously by
           location: property tax alone ranges from well under 0.5% to over 2%
           of value, so replace them with local figures if you have them.</dd>
         </dl>
-        <p>The <b>Already have this loan?</b> toggle below the main inputs opens extra
-        payments, a recast, and a refinance comparison &mdash; skip it entirely for a
-        quick estimate on a home you haven't bought yet.</p>
-        <dl class="gloss">
-          <dt>Extra payments</dt>
-          <dd>A recurring amount, a one-time amount, or both, applied straight to
-          principal. By default the required payment stays what it was &mdash; you're
-          just finishing early and paying less interest along the way.</dd>
-          <dt>Recast</dt>
-          <dd>After a one-time payment, choose to lower the monthly payment instead of
-          shortening the loan: the balance re-amortizes over whatever's left of the
-          original term, at the same rate. The payoff date doesn't move, but every
-          payment after that point is smaller. Lenders often charge $150&ndash;500 for
-          this, which isn't included.</dd>
-          <dt>Refinance comparison</dt>
-          <dd>Assumes you refinance today, on the loan as entered, into a new rate and
-          term with the same extra-payment plan carried over &mdash; so the comparison
-          isolates the refinance itself. Shows the new payment, how long closing costs
-          take to earn back in lower payments, and which loan costs less in total once
-          those costs are counted. Closing costs are assumed paid out of pocket rather
-          than rolled into the new balance.</dd>
-        </dl>
-        <p><b>What it leaves out:</b> closing costs rolled into the loan, adjustable
-        rates, cash-out refinancing, the mortgage interest deduction, and maintenance
-        beyond a flat percentage. A common rule of thumb is to budget roughly 1% of the
-        home's value a year for upkeep.</p>
+        <p><b>What it leaves out:</b> closing costs, PMI cancellation rules that
+        depend on appraised value rather than purchase price, adjustable rates, extra
+        payments, refinancing, the mortgage interest deduction, and maintenance. A
+        common rule of thumb is to budget roughly 1% of the home's value a year for
+        upkeep, which this doesn't include.</p>
       </div>
     </div>
 
@@ -3039,9 +3111,10 @@ window.onerror = function(msg){
         never reaches the target at all, there is nothing to coast on and it says so.</p>
         <p><b>Model this as a staged plan</b> rebuilds the plan on the Stages tab as
         two stages: contributing as normal up to the coast year, then the remaining
-        years with contributions set to zero. The rate of return stays the same across
-        both stages; this only stops the contributions, it doesn't shift toward a
-        more conservative mix the way the Glide feature does. See what Monte Carlo
+        years with contributions set to zero. A glide comes along with it, sitting on
+        the second stage so the ramp lands on the same years it did before &mdash; the
+        one exception is a coast stretch shorter than the glide itself, which gets
+        trimmed to fit, since the ramp can only live on the final stage. See what Monte Carlo
         makes of it, which is where coasting gets interesting: it leans entirely on
         returns showing up, with no further contributions cushioning a bad
         stretch.</p>
@@ -3266,6 +3339,8 @@ window.onerror = function(msg){
           <div><span id="txStdLabel">Standard deduction</span><span class="num" id="txStdShow"></span></div>
           <div><span>Taxable income</span><span class="num" id="txTaxable"></span></div>
           <div><span id="txMarginalLabel">Marginal federal rate<span class="tipdot" data-tip="marginal" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txMarginal"></span></div>
+          <div><span id="txRoomLabel">Room before next bracket</span><span class="num" id="txRoomShow"></span></div>
+          <div id="txZeroRoomRow" hidden><span>Room in the 0% gains rate</span><span class="num" id="txZeroRoomShow"></span></div>
         </div>
       </div>
     </div>
@@ -3621,7 +3696,7 @@ window.onerror = function(msg){
   </div>
 
   <!-- ========== TOOL PICKER ========== -->
-  <div class="stack solo" id="tab-toolpicker" hidden>
+  <div class="stack solo" role="tabpanel" aria-labelledby="tabbtn-tools" id="tab-toolpicker" hidden>
     <div class="toolcards">
       <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
@@ -3894,69 +3969,6 @@ window.onerror = function(msg){
         </div>
       </div>
     </div>
-
-    <div class="panel inputs">
-      <h2>Already have this loan?</h2>
-      <div class="body">
-        <div class="field">
-          <label for="moExtrasOn">Extra payments, recasting, or refinancing</label>
-          <select id="moExtrasOn">
-            <option value="0">No, just the basics</option>
-            <option value="1">Yes, show these options</option>
-          </select>
-          <div class="hint">Paying down faster or considering a refinance? These layer on
-            top of the loan above &mdash; leave them off for a quick estimate on a home
-            you haven't bought yet.</div>
-        </div>
-        <div id="moExtrasWrap" hidden>
-          <div class="field" style="margin-top:2px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Extra payments</div></div>
-          <div class="field">
-            <label for="moExtraMo">Extra toward principal</label>
-            <div class="inputwrap"><span class="affix">$</span><input id="moExtraMo" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
-          </div>
-          <div class="two">
-            <div class="field">
-              <label for="moExtraOnce">One-time extra payment</label>
-              <div class="inputwrap"><span class="affix">$</span><input id="moExtraOnce" type="text" inputmode="decimal" data-money data-nonneg></div>
-            </div>
-            <div class="field">
-              <label for="moExtraWhen">In month</label>
-              <div class="inputwrap"><input id="moExtraWhen" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg></div>
-            </div>
-          </div>
-          <div class="field" id="moRecastWrap">
-            <label for="moRecast">After that payment<span class="tipdot" data-tip="recast" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-            <select id="moRecast">
-              <option value="0">Keep the same payment, finish early</option>
-              <option value="1">Recast &mdash; lower the payment instead</option>
-            </select>
-          </div>
-
-          <div class="field" style="margin-top:12px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Compare a refinance</div></div>
-          <div class="two">
-            <div class="field">
-              <label for="moRefiRate">New rate</label>
-              <div class="inputwrap"><input id="moRefiRate" type="text" inputmode="decimal" data-num data-step="0.125" min="0" data-nonneg><span class="affix">%</span></div>
-            </div>
-            <div class="field">
-              <label for="moRefiTerm">New length</label>
-              <select id="moRefiTerm">
-                <option value="30">30 years</option>
-                <option value="20">20 years</option>
-                <option value="15">15 years</option>
-                <option value="10">10 years</option>
-              </select>
-            </div>
-          </div>
-          <div class="field">
-            <label for="moRefiCost">Closing costs</label>
-            <div class="inputwrap"><span class="affix">$</span><input id="moRefiCost" type="text" inputmode="decimal" data-money data-nonneg></div>
-            <div class="hint">Typically 2&ndash;5% of the loan amount, paid out of pocket
-              rather than rolled into the new loan.</div>
-          </div>
-        </div>
-      </div>
-    </div>
   </aside>
 
   <div class="stack" id="tab-budget" hidden>
@@ -3980,6 +3992,7 @@ window.onerror = function(msg){
             </span>
             <button class="btn" type="button" id="bgCopyTax">Copy from Income Tax</button>
           </div>
+          <div class="hint" id="bgDeferralNote">Taxes only. Voluntary pre-tax deferrals like 401(k) and HSA stay in this figure, since that money is yours &mdash; enter them under Savings &amp; investments below so they land as saving rather than spending.</div>
         </div>
       </div>
     </div>
@@ -4032,17 +4045,6 @@ window.onerror = function(msg){
           <div class="note">Tax, insurance, PMI, HOA</div></div>
       </div>
       <div class="body"><div id="moBars"></div></div>
-    </div>
-
-    <div class="panel" id="moExtraPanel" hidden>
-      <h2>Extra payments &amp; refinancing</h2>
-      <div class="body">
-        <div id="moExtraStats"></div>
-        <div id="moRefiBlock" hidden>
-          <div class="field" style="margin-top:4px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Refinancing to <span id="moRefiHead"></span></div></div>
-          <div id="moRefiStats"></div>
-        </div>
-      </div>
     </div>
 
     <div class="panel">
@@ -4191,6 +4193,44 @@ function glideAnnualRate(yearNo, totalYears, glideYears, startRate, endRate){
   return startRate + (endRate - startRate) * progress;
 }
 
+/* Future-value factors for a plan of a given length, walked with exactly the
+   arithmetic project() uses, dropped partial final period included. The ending
+   balance is linear in the contribution no matter what the rate does year to
+   year, so one walk yields both halves of it:
+
+       FV = initial * initFactor + contrib * annuity
+
+   That linearity is what lets the backward solves invert a glide path instead
+   of assuming a single constant rate: divide rather than iterate. The glide is
+   anchored to `len`, the length being tested, so it always covers the FINAL N
+   years of that timeline -- move the end date and the ramp moves with it. */
+/**
+ * @param {PlanParams|StageParams} p
+ * @param {number} [years] - length to walk; defaults to p.years
+ * @param {number} [periods] - exact period count, when the caller already has
+ *   it and `years` would round badly (i/ppy*ppy is not always i)
+ * @returns {{ppy:number, n:number, initFactor:number, annuity:number, periodicRate:number}}
+ */
+function fvFactors(p, years, periods){
+  const len = (years === undefined || years === null) ? p.years : years;
+  const ppy = PPY[p.period];
+  const n = (periods === undefined || periods === null) ? Math.floor(len * ppy) : periods;
+  const glideOn = !!(p.glide && p.glide.on);
+  const gYears = glideOn ? Math.min(p.glide.years, len) : 0;
+  const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
+  let periodicR = r, initFactor = 1, annuity = 0;
+  for (let i = 1; i <= n; i++){
+    const yearNo = Math.ceil(i / ppy);
+    if (glideOn){
+      const yearRate = glideAnnualRate(yearNo, len, gYears, p.nominal, p.glide.endRate);
+      periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
+    }
+    initFactor *= (1 + periodicR);
+    annuity = annuity * (1 + periodicR) + Math.pow(1 + p.growth, yearNo - 1);
+  }
+  return {ppy, n, initFactor, annuity, periodicRate:r};
+}
+
 /**
  * Single-plan projection: compounds one initial balance and one contribution
  * schedule to a future value, period by period.
@@ -4201,6 +4241,11 @@ function project(p){
   const ppy = PPY[p.period];
   const n = Math.floor(p.years * ppy);
   const glideOn = !!(p.glide && p.glide.on);
+  // Clamped the same way fvFactors, solveYears and coastFire clamp it. The UI
+  // caps this on entry, but the solvers invert THIS function, so if the two
+  // ever disagree about a glide longer than the plan the solved contribution
+  // silently misses its target.
+  const gYears = glideOn ? Math.min(p.glide.years, p.years) : 0;
   const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
   let bal = p.initial, contribTotal = 0, lastContrib = 0;
   const years = [];
@@ -4214,7 +4259,7 @@ function project(p){
       yearStart = bal; yearContrib = 0; curYear = yearNo;
     }
     if (glideOn){
-      const yearRate = glideAnnualRate(yearNo, p.years, p.glide.years, p.nominal, p.glide.endRate);
+      const yearRate = glideAnnualRate(yearNo, p.years, gYears, p.nominal, p.glide.endRate);
       periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
     }
     const c = p.contrib * Math.pow(1 + p.growth, yearNo - 1);
@@ -4242,15 +4287,19 @@ function project(p){
 }
 
 /**
- * Closed-form solve: what contribution per period reaches the target?
+ * What contribution per period reaches the target? Inverts the projection
+ * directly: fvFactors walks the plan's actual rate path once, and the answer
+ * falls out of (goal - what the starting balance becomes) / (what a $1-per-
+ * period schedule becomes). Works under a glide for the same reason it works
+ * without one, and agrees with project() period for period either way.
  * @param {PlanParams} p
  * @param {string} solveFor - "After-Tax Withdrawal" or a portfolio-dollar target
  * @param {number} target - the goal amount, in the units solveFor implies
  * @returns {Object} perPeriod/perYear contribution needed, plus intermediate values
  */
 function goalSolve(p, solveFor, target){
-  const ppy = PPY[p.period];
-  const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
+  const F = fvFactors(p, p.years);
+  const ppy = F.ppy;
   const portToday = solveFor === "After-Tax Withdrawal"
       ? target / (p.withdrawal * (1 - p.taxRate))
       : target;
@@ -4258,16 +4307,12 @@ function goalSolve(p, solveFor, target){
   const inflYears = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
                     ? p.years : p.inflYears;
   const portFuture = portToday * Math.pow(1 + p.inflation, inflYears);
-  const initFactor = Math.pow(1 + p.nominal, p.years);
+  const initFactor = F.initFactor;
   const initGrows = p.initial * initFactor;
-  const growthSum = (p.nominal === p.growth)
-      ? p.years * Math.pow(1 + p.nominal, p.years - 1)
-      : (Math.pow(1 + p.nominal, p.years) - Math.pow(1 + p.growth, p.years)) / (p.nominal - p.growth);
-  const annuity = (p.nominal === 0)
-      ? ppy * (p.growth === 0 ? p.years : (Math.pow(1 + p.growth, p.years) - 1) / p.growth)
-      : (p.nominal / r) * growthSum;
-  const perPeriod = portFuture <= initGrows ? 0 : (portFuture - initGrows) / annuity;
-  return {ppy, periodicRate:r, portToday, pays, portFuture, initFactor, initGrows,
+  const annuity = F.annuity;
+  const perPeriod = (annuity <= 0 || portFuture <= initGrows)
+      ? 0 : (portFuture - initGrows) / annuity;
+  return {ppy, periodicRate:F.periodicRate, portToday, pays, portFuture, initFactor, initGrows,
           annuity, perPeriod, perYear: perPeriod * ppy, change: perPeriod - p.contrib};
 }
 // How long until the plan reaches the target? Walks period by period using the
@@ -4289,30 +4334,73 @@ function solveYears(p, portToday, capYears){
                 ? null : p.inflYears;
   const defl = yrs => Math.pow(1 + p.inflation, fixed === null ? yrs : fixed);
 
-  let bal = p.initial;
-  let periodicR = r;
-  if (bal / defl(0) >= portToday) return {reached:true, years:0, periods:0, real:bal};
-  for (let i = 1; i <= cap; i++){
-    const yearNo = Math.ceil(i / ppy);
-    // A glide is defined relative to the plan's OWN length (p.years); walking
-    // past that length while searching for a longer answer just holds at the
-    // glide's end rate, rather than looping the ramp or reverting to the
-    // start rate, since "5 years past retirement" isn't a meaningful glide year.
-    if (glideOn){
-      const yearRate = glideAnnualRate(Math.min(yearNo, p.years), p.years, p.glide.years, p.nominal, p.glide.endRate);
-      periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
+  if (p.initial / defl(0) >= portToday) return {reached:true, years:0, periods:0, real:p.initial};
+
+  // Round up to the displayed precision so re-running at this value still
+  // clears the target instead of landing one period short.
+  const hit = (i, real) => ({reached:true, years: Math.ceil((i / ppy) * 100) / 100,
+                             exact: i / ppy, periods:i, real:real});
+
+  if (!glideOn){
+    let bal = p.initial;
+    for (let i = 1; i <= cap; i++){
+      const yearNo = Math.ceil(i / ppy);
+      bal = bal * (1 + r) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+      const real = bal / defl(i / ppy);
+      if (real >= portToday) return hit(i, real);
     }
-    bal = bal * (1 + periodicR) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
-    const real = bal / defl(i / ppy);
-    if (real >= portToday){
-      // Round up to the displayed precision so re-running at this value still
-      // clears the target instead of landing one period short.
-      const exact = i / ppy;
-      return {reached:true, years: Math.ceil(exact * 100) / 100, exact:exact,
-              periods:i, real:real};
-    }
+    return {reached:false, years:cap / ppy, periods:cap, real: bal / defl(cap / ppy)};
   }
-  return {reached:false, years:cap / ppy, periods:cap, real: bal / defl(cap / ppy)};
+
+  /* Under a glide the running balance can't simply be carried forward one
+     period at a time, because the glide belongs to the final N years of
+     whatever timeline is being tested -- stretch the plan and the ramp moves
+     with the end date rather than extending behind it. So every candidate
+     length gets its own rate path. That is what makes the answer reproduce
+     itself: apply the years this returns and the projection lands here too.
+
+     Rebuilding each candidate from scratch is O(n^2) and visibly janky on a
+     weekly schedule. Only the TAIL actually differs, though: every candidate
+     runs flat at the start rate until its own final N years, so that prefix is
+     one shared walk carried forward across candidates, and each candidate
+     re-walks only its glide tail -- N years long at most. Same arithmetic as
+     fvFactors, same order, so the two agree bit for bit. */
+  /* Both the rate and the contribution factor hold steady across a whole year,
+     so they are looked up once per year rather than once per period. Same
+     values, two orders of magnitude fewer Math.pow calls. */
+  const grow = [];
+  const growAt = k => {
+    const y = Math.ceil(k / ppy);
+    if (grow[y] === undefined) grow[y] = Math.pow(1 + p.growth, y - 1);
+    return grow[y];
+  };
+  let flatIF = 1, flatAN = 0, flatK = 0;
+  let real = 0;
+  for (let i = 1; i <= cap; i++){
+    const len = i / ppy;
+    const gYears = Math.min(p.glide.years, len);
+    const flatPeriods = Math.min(i, Math.max(0, Math.floor(len - gYears)) * ppy);
+    while (flatK < flatPeriods){
+      flatK++;
+      flatIF *= (1 + r);
+      flatAN = flatAN * (1 + r) + growAt(flatK);
+    }
+    let initFactor = flatIF, annuity = flatAN;
+    let tailYear = -1, q = 0, gf = 1;
+    for (let k = flatPeriods + 1; k <= i; k++){
+      const yearNo = Math.ceil(k / ppy);
+      if (yearNo !== tailYear){
+        tailYear = yearNo;
+        q = Math.pow(1 + glideAnnualRate(yearNo, len, gYears, p.nominal, p.glide.endRate), 1 / ppy) - 1;
+        gf = growAt(k);
+      }
+      initFactor *= (1 + q);
+      annuity = annuity * (1 + q) + gf;
+    }
+    real = (p.initial * initFactor + p.contrib * annuity) / defl(len);
+    if (real >= portToday) return hit(i, real);
+  }
+  return {reached:false, years:cap / ppy, periods:cap, real:real};
 }
 // A run of consecutive stages. Each stage keeps its own contribution, schedule,
 // growth and rate of return; the closing balance of one becomes the opening
@@ -4419,10 +4507,29 @@ function pctl(sorted, q){
  * @returns {Object} percentile bands over time plus the sorted real final-balance distribution
  */
 function monteCarlo(g, stages, trials, seed){
+  /* A stage that glides doesn't have one expected return, it has a different
+     one every year, so the lognormal parameters have to be rebuilt per year
+     rather than once per stage. Without this the fan is drawn off a flat rate
+     while the deterministic line underneath it glides, and the two separate --
+     at zero volatility they must land on exactly the same number. Volatility
+     is held at the stage's own figure throughout; only the mean drifts. */
   const meta = stages.map(st => {
     const ppy = PPY[st.period];
-    const lp = lognormalParams(st.nominal, st.vol || 0, ppy);
-    return {ppy, n: Math.floor(st.years * ppy), m: lp.m, s: lp.s, st};
+    const n = Math.floor(st.years * ppy);
+    const glideOn = !!(st.glide && st.glide.on);
+    const gYears = glideOn ? Math.min(st.glide.years, st.years) : 0;
+    const flat = lognormalParams(st.nominal, st.vol || 0, ppy);
+    // one {m, s} per year of the stage, indexed by year number
+    let byYear = null;
+    if (glideOn){
+      byYear = [];
+      const lastYear = Math.ceil(st.years);
+      for (let y = 1; y <= lastYear; y++){
+        const yr = glideAnnualRate(y, st.years, gYears, st.nominal, st.glide.endRate);
+        byYear[y] = lognormalParams(yr, st.vol || 0, ppy);
+      }
+    }
+    return {ppy, n, m: flat.m, s: flat.s, byYear, st};
   });
   const marks = [];
   let elapsed = 0;
@@ -4448,10 +4555,15 @@ function monteCarlo(g, stages, trials, seed){
     for (let si = 0; si < meta.length; si++){
       const mt = meta[si], st = mt.st;
       let curYear = 1;
+      let m = mt.byYear ? mt.byYear[1].m : mt.m;
+      let s = mt.byYear ? mt.byYear[1].s : mt.s;
       for (let i = 1; i <= mt.n; i++){
         const y = Math.ceil(i / mt.ppy);
-        if (y !== curYear){ paths[mi++][t] = bal; curYear = y; }
-        bal = bal * Math.exp(mt.m + mt.s * gaussFrom(rng))
+        if (y !== curYear){
+          paths[mi++][t] = bal; curYear = y;
+          if (mt.byYear && mt.byYear[y]){ m = mt.byYear[y].m; s = mt.byYear[y].s; }
+        }
+        bal = bal * Math.exp(m + s * gaussFrom(rng))
             + st.contrib * Math.pow(1 + st.growth, y - 1);
       }
       if (mt.n > 0) paths[mi++][t] = bal;
@@ -4487,16 +4599,38 @@ function monteCarlo(g, stages, trials, seed){
 function coastFire(p, targetFuture){
   const ppy = PPY[p.period];
   const n = Math.floor(p.years * ppy);
+  const glideOn = !!(p.glide && p.glide.on);
+  const gYears = glideOn ? Math.min(p.glide.years, p.years) : 0;
   const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
   const round2 = v => Math.ceil(v * 100) / 100;
+
+  /* The retirement date doesn't move here, so the glide stays anchored where it
+     already is; coasting only stops the contributions. Period i therefore keeps
+     whatever rate the projection gives it. The rate holds across a year and the
+     coast test re-walks the tail from every candidate stop year, so the yearly
+     figures are worked out once up front -- a few dozen entries against a
+     couple of million lookups. */
+  const rateByYear = [];
+  if (glideOn){
+    const lastYear = Math.ceil(p.years);
+    for (let y = 1; y <= lastYear; y++){
+      rateByYear[y] = Math.pow(1 + glideAnnualRate(y, p.years, gYears, p.nominal, p.glide.endRate), 1 / ppy) - 1;
+    }
+  }
+  const rateAt = i => glideOn ? rateByYear[Math.ceil(i / ppy)] : r;
 
   /* Coasting is checked with the same period-by-period arithmetic the staged
      run uses, including its dropped partial period. Testing against smooth
      annual compounding instead would report a year that then falls just short
-     once the two-stage version is actually built. */
+     once the two-stage version is actually built. The coasting stretch is the
+     TAIL of the plan, so it draws the last `left` periods' rates -- the low end
+     of the glide, which is the whole point of checking it this way. */
   const coastsFrom = (bal, stopYears) => {
     const left = Math.floor((p.years - stopYears) * ppy);
-    return bal * Math.pow(1 + r, left) >= targetFuture;
+    if (!glideOn) return bal * Math.pow(1 + r, left) >= targetFuture;
+    let b = bal;
+    for (let i = n - left + 1; i <= n; i++) b *= (1 + rateAt(i));
+    return b >= targetFuture;
   };
 
   if (coastsFrom(p.initial, 0)) return {state:"already", years:0, balance:p.initial};
@@ -4504,7 +4638,7 @@ function coastFire(p, targetFuture){
   let bal = p.initial;
   for (let i = 1; i <= n; i++){
     const yearNo = Math.ceil(i / ppy);
-    bal = bal * (1 + r) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+    bal = bal * (1 + rateAt(i)) + p.contrib * Math.pow(1 + p.growth, yearNo - 1);
     const stop = round2(i / ppy);
     if (stop < p.years && coastsFrom(bal, stop))
       return {state:"reachable", years:stop, periods:i, balance:bal};
@@ -4539,24 +4673,21 @@ function finalStageSolve(g, stages, portToday){
   const totalYears = priorYears + last.years;
   const targetFuture = portToday * Math.pow(1 + g.inflation, totalYears);
 
-  // route 1: hold the timeline, change the final stage's contribution
-  const ppy = PPY[last.period];
-  const r = Math.pow(1 + last.nominal, 1 / ppy) - 1;
-  const grown = startBal * Math.pow(1 + last.nominal, last.years);
-  const growthSum = (last.nominal === last.growth)
-    ? last.years * Math.pow(1 + last.nominal, last.years - 1)
-    : (Math.pow(1 + last.nominal, last.years) - Math.pow(1 + last.growth, last.years))
-      / (last.nominal - last.growth);
-  const annuity = (last.nominal === 0)
-    ? ppy * (last.growth === 0 ? last.years
-             : (Math.pow(1 + last.growth, last.years) - 1) / last.growth)
-    : (last.nominal / r) * growthSum;
-  const perPeriod = targetFuture <= grown ? 0 : (targetFuture - grown) / annuity;
+  // route 1: hold the timeline, change the final stage's contribution.
+  // Same inversion as the Advanced tab, over the final stage's own rate path.
+  const F = fvFactors(last, last.years);
+  const ppy = F.ppy;
+  const grown = startBal * F.initFactor;
+  const annuity = F.annuity;
+  const perPeriod = (annuity <= 0 || targetFuture <= grown)
+    ? 0 : (targetFuture - grown) / annuity;
 
-  // route 2: hold the contribution, stretch the final stage
+  // route 2: hold the contribution, stretch the final stage. The stage carries
+  // its glide along, re-anchored to whatever length the solve lands on.
   const yrs = solveYears({initial:startBal, contrib:last.contrib, period:last.period,
     growth:last.growth, nominal:last.nominal, inflation:g.inflation,
-    inflYears:"", years:0}, portToday * Math.pow(1 + g.inflation, priorYears), 100);
+    inflYears:"", years:last.years, glide:last.glide},
+    portToday * Math.pow(1 + g.inflation, priorYears), 100);
 
   return {startBal, priorYears, totalYears, targetFuture, grown,
           perPeriod, perYear: perPeriod * ppy, change: perPeriod - last.contrib,
@@ -5165,9 +5296,18 @@ function computeRetireTax(inp){
   const ltcg = g15 * .15 + g20 * .20;
   const ltcgRate = gainTaxable > 0 ? ltcg / gainTaxable : 0;
 
-  // sec. 1411: 3.8% on the lesser of net investment income and the MAGI excess
-  const niitBase = Math.min(gain, Math.max(0, agi - NIIT.threshold[st]));
+  // sec. 1411: 3.8% on the lesser of net investment income and the MAGI excess.
+  // NII is the capital gain plus the "other ordinary income" bucket, which the
+  // field describes as interest, dividends, rent and royalties -- all of it
+  // investment income under sec. 1411. Traditional withdrawals, pensions and
+  // Social Security are statutorily excluded and stay out of the base.
+  const nii = gain + other;
+  const niitBase = Math.min(nii, Math.max(0, agi - NIIT.threshold[st]));
   const niit = niitBase * NIIT.rate;
+  // Split the surtax back across the two sources that generated it, so the
+  // per-bucket column still adds up to the federal total.
+  const niitOnGain  = nii > 0 ? niit * (gain / nii) : 0;
+  const niitOnOther = niit - niitOnGain;
 
   const federal = fedOrdinary + ltcg + niit;
 
@@ -5224,13 +5364,13 @@ function computeRetireTax(inp){
     bucket("Traditional 401(k) / IRA", trad, trad,
            fedOrdinary * shareOf(trad), sTax(ST.parts.trad)),
     bucket("Roth account", roth, 0, 0, 0),
-    bucket("Taxable brokerage", brok, gain, ltcg + niit, sTax(ST.parts.gain)),
+    bucket("Taxable brokerage", brok, gain, ltcg + niitOnGain, sTax(ST.parts.gain)),
     bucket("Social Security", ssGross, taxableSS,
            fedOrdinary * shareOf(taxableSS), sTax(ST.parts.ss)),
     bucket("Pension / annuity", pension, pension,
            fedOrdinary * shareOf(pension), sTax(ST.parts.pension)),
     bucket("Other ordinary income", other, other,
-           fedOrdinary * shareOf(other), sTax(ST.parts.other))
+           fedOrdinary * shareOf(other) + niitOnOther, sTax(ST.parts.other))
   ];
 
   return {
@@ -5319,6 +5459,17 @@ function irmaaAnnual(magi, status, people){
   return (IRMAA.partB * (t.mult - 1) + t.partD) * 12 * people;
 }
 /* Top of a federal bracket = where the next one starts. */
+/* How much more ordinary taxable income fits before crossing into the next
+   federal bracket -- the room a Roth conversion or extra withdrawal has to
+   work with before the marginal rate jumps. Null once already in the top
+   bracket, since there's no next threshold to report. */
+function bracketRoom(taxable, status){
+  const b = FED_2026[status];
+  let i = 0;
+  for (let k = 0; k < b.length; k++) if (taxable > b[k][0]) i = k;
+  if (i + 1 >= b.length) return null;
+  return {room:b[i + 1][0] - taxable, nextRate:b[i + 1][1]};
+}
 function bracketTopFor(status, rate){
   const b = FED_2026[status];
   for (let i = 0; i < b.length; i++)
@@ -5642,77 +5793,26 @@ function mortgage(m){
   const util = m.util || 0;
   const total = pi + tax + ins + pmiMonthly + hoa + maint + util;
 
-  // Extra payments, a recast, and PMI's end date all fall out of the same
-  // month-by-month walk, so one loop produces all of it. A lump sum only
-  // ever shortens the loan, so the original term is a safe upper bound on
-  // how many months this can run.
-  const extraMo = Math.max(0, m.extraMonthly || 0);
-  const lumpAmt = Math.max(0, m.extraOnce || 0);
-  const lumpMonth = lumpAmt > 0 ? Math.max(1, Math.round(m.extraOnceMonth || 0)) : 0;
-  const doRecast = !!m.recast && lumpAmt > 0;
-  const pmiWasActive = ltv > .80 && m.pmiPct > 0;
-
-  let bal = loan, totalInterest = 0, pmiPaid = 0, curPI = pi, recastPI = null;
-  let pmiEndMonth = pmiWasActive ? null : 0;   // 0 = PMI never applied
-  let payoffMonth = n;
+  // year-by-year amortization, dropping PMI once the balance reaches 80% LTV
+  let bal = loan, totalInterest = 0, pmiPaid = 0;
   const years = [];
-  let yi = 0, yp = 0, ypmi = 0, curYear = 1;
-
-  for (let i = 1; i <= n && bal > 0.005; i++){
-    const interest = bal * r;
-    let extra = extraMo + (i === lumpMonth ? lumpAmt : 0);
-    let principal = curPI - interest + extra;
-    if (principal > bal) principal = bal;
-    bal = Math.max(0, bal - principal);
-    totalInterest += interest;
-    yi += interest; yp += principal;
-
-    if (m.price > 0 && bal / m.price > .80 && m.pmiPct > 0){
-      ypmi += pmiMonthly; pmiPaid += pmiMonthly;
-    } else if (pmiWasActive && pmiEndMonth === null){
-      pmiEndMonth = i;
+  for (let y = 1; y <= Math.ceil(m.term); y++){
+    let yi = 0, yp = 0, ypmi = 0;
+    for (let k = 0; k < 12 && bal > 0; k++){
+      const interest = bal * r;
+      let principal = pi - interest;
+      if (principal > bal) principal = bal;
+      bal = Math.max(0, bal - principal);
+      yi += interest; yp += principal;
+      if (m.price > 0 && bal / m.price > .80) ypmi += loan * m.pmiPct / 12;
     }
-
-    // Recasting re-derives the required payment from the balance right after
-    // the lump sum lands, spread over whatever's left of the original term
-    // -- same rate, same payoff date, smaller check every month after.
-    if (doRecast && i === lumpMonth && bal > 0){
-      const remaining = Math.max(1, n - i);
-      curPI = (r === 0) ? bal / remaining : bal * r / (1 - Math.pow(1 + r, -remaining));
-      recastPI = curPI;
-    }
-
-    const yearNo = Math.ceil(i / 12);
-    if (yearNo !== curYear){
-      years.push({year:curYear, interest:yi, principal:yp, paid:yi + yp,
-                  balance:bal, pmi:ypmi});
-      yi = 0; yp = 0; ypmi = 0; curYear = yearNo;
-    }
-    if (bal <= 0.005) payoffMonth = i;
+    totalInterest += yi; pmiPaid += ypmi;
+    years.push({year:y, interest:yi, principal:yp, paid:yi + yp, balance:bal,
+                pmi:ypmi});
+    if (bal <= 0) break;
   }
-  if (yi > 0 || yp > 0 || !years.length)
-    years.push({year:curYear, interest:yi, principal:yp, paid:yi + yp,
-                balance:bal, pmi:ypmi});
-
   return {loan, pi, tax, ins, pmi:pmiMonthly, hoa, maint, util, total, years,
-          totalInterest, pmiPaid, ltv, n, payoffMonth, pmiEndMonth, recastPI,
-          extraActive: extraMo > 0 || lumpAmt > 0};
-}
-
-/* A refinance is compared as if it closed today, on the balance and terms
-   already entered: the new loan gets the same extra-payment plan as the
-   current one, so the comparison isolates the rate and term change rather
-   than mixing in a change in payment behavior too. */
-function refiCompare(m, refi){
-  const now = mortgage(m);
-  const then = mortgage(Object.assign({}, m, {rate:refi.rate, term:refi.term}));
-  const monthlyDelta = now.pi - then.pi;               // positive = payment drops
-  const breakEvenMonths = monthlyDelta > 0.005
-    ? Math.ceil(refi.cost / monthlyDelta) : null;
-  const allInNow = now.totalInterest + now.pmiPaid;
-  const allInThen = then.totalInterest + then.pmiPaid + refi.cost;
-  return {now, then, monthlyDelta, breakEvenMonths,
-          lifetimeDelta: allInNow - allInThen};      // positive = refinancing wins
+          totalInterest, pmiPaid, ltv, n};
 }
 
 /* Historical annual returns, 1928-2025 (98 years).
@@ -5880,8 +5980,14 @@ function runDrawdown(o, seq) {
 
     // Social Security covers part of the spending once it starts, so the
     // portfolio only has to provide the remainder.
+    // Uses THIS year's price level (cumInfl folded forward), the same way the
+    // withdrawal, the spending floor and custom items do. Deflating by cumInfl
+    // alone leaves the benefit a full year of inflation behind the spending it
+    // is offsetting, so a figure entered in today's dollars arrives permanently
+    // short in real terms.
     var ssThisYear = 0;
-    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0)) ssThisYear = o.ssAnnual * cumInfl;
+    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0))
+      ssThisYear = o.ssAnnual * cumInfl * (1 + infl);
     var spend = w;
     w = Math.max(0, w - ssThisYear);
 
@@ -5977,11 +6083,16 @@ function monteCarloDrawdown(o, trials, seed) {
   var rng = mulberry32(seed >>> 0);
   var n = HIST_STOCK.length;
   var runs = [];
+  /* runDrawdown only reads seq[y] during the call, so one buffer of year slots
+     is refilled per trial rather than allocating a fresh array of objects each
+     time. At 5,000 trials that is ~175,000 fewer short-lived objects per
+     render, which is most of what made this lurch on a phone. */
+  var seq = [];
+  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0 });
   for (var t = 0; t < trials; t++) {
-    var seq = [];
     for (var k = 0; k < o.years; k++) {
       var i = Math.floor(rng() * n);
-      seq.push({ stock: HIST_STOCK[i], bond: HIST_BOND[i], infl: HIST_INFL[i] });
+      seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
     }
     runs.push(runDrawdown(o, seq));
   }
@@ -5991,9 +6102,13 @@ function monteCarloDrawdown(o, trials, seed) {
 
   // percentile bands of the real balance path, for the fan chart
   var bands = [];
+  var col = new Float64Array(runs.length);
   for (var y = 0; y < o.years; y++) {
-    var col = runs.map(function (r) { return r.rows[y] ? r.rows[y].realEnd : 0; })
-      .sort(function (a, b) { return a - b; });
+    for (var c = 0; c < runs.length; c++) {
+      var rr = runs[c].rows[y];
+      col[c] = rr ? rr.realEnd : 0;
+    }
+    col.sort();   // typed arrays sort numerically, no comparator needed
     var at = function (q) { return col[Math.min(col.length - 1, Math.floor(col.length * q))]; };
     bands.push({ year: y + 1, p10: at(.10), p25: at(.25), p50: at(.50), p75: at(.75), p90: at(.90) });
   }
@@ -6056,7 +6171,7 @@ function ssEstimate(income, careerYears, claimAge) {
 // ===MATH END===
 
 if (typeof module !== "undefined")
-  module.exports = {PPY, project, goalSolve, solveYears, projectSeries,
+  module.exports = {PPY, project, goalSolve, solveYears, projectSeries, fvFactors, glideAnnualRate,
                     monteCarlo, lognormalParams, mulberry32, coastFire, computeTax,
                     mortgage, STATES, FED_2026, FED_STD, FICA,
                     computeRetireTax, ssTaxable, LTCG_2026, NIIT,
@@ -6069,10 +6184,17 @@ if (typeof module !== "undefined")
 (function(){
 "use strict";
 const $ = id => document.getElementById(id);
+/* toLocaleString builds a fresh Intl.NumberFormat on every call, and that
+   construction -- not the formatting -- is essentially the whole cost. Tables
+   here run to thousands of calls per render, so the formatters are built once
+   per decimal count and reused. Same output, roughly 45x less work. */
+const MONEY_FMT = {};
 const money = function(v, d){
   const dp = (d === undefined || d === null) ? 0 : d;
-  return (v < 0 ? "-" : "") + "$" + Math.abs(v).toLocaleString("en-US",
+  let f = MONEY_FMT[dp];
+  if (!f) f = MONEY_FMT[dp] = new Intl.NumberFormat("en-US",
     {minimumFractionDigits: dp, maximumFractionDigits: dp});
+  return (v < 0 ? "-" : "") + "$" + f.format(Math.abs(v));
 };
 const pctStr = function(v, d){
   return (v * 100).toFixed((d === undefined || d === null) ? 2 : d) + "%";
@@ -6651,12 +6773,26 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
   }
   wrap.addEventListener("mousemove", e => probe(e.clientX, e.clientY));
   wrap.addEventListener("mouseleave", clear);
+  /* Scrubbing sideways along the chart shouldn't scroll the page, but the
+     chart is a full-width block on a phone and swallowing every gesture that
+     started on it made it a dead zone for ordinary scrolling. The first move
+     decides: mostly vertical hands the gesture back to the page, mostly
+     horizontal keeps it here for the rest of the touch. */
+  let t0x = 0, t0y = 0, axis = "";
   wrap.addEventListener("touchstart", e => {
-    const t = e.touches[0]; if (t) probe(t.clientX, t.clientY);
+    const t = e.touches[0]; if (!t) return;
+    t0x = t.clientX; t0y = t.clientY; axis = "";
+    probe(t.clientX, t.clientY);
   }, {passive:true});
   wrap.addEventListener("touchmove", e => {
     const t = e.touches[0]; if (!t) return;
-    // scrubbing along the chart shouldn't scroll the page underneath it
+    if (!axis){
+      const dx = Math.abs(t.clientX - t0x), dy = Math.abs(t.clientY - t0y);
+      if (dx < 6 && dy < 6) return;
+      axis = (dy > dx) ? "y" : "x";
+      if (axis === "y") clear();
+    }
+    if (axis === "y") return;
     e.preventDefault();
     probe(t.clientX, t.clientY);
   }, {passive:false});
@@ -6825,18 +6961,33 @@ function applyCoast(p, C){
     return;
   writeGlobals({initial:p.initial, inflation:p.inflation, withdrawal:p.withdrawal,
                 taxRate:p.taxRate, fees:p.fees});
+  const coastYears = Math.round((p.years - C.years) * 100) / 100;
+  /* The glide lives on the final stage, and stage 2 ends where the single-run
+     plan ended, so the ramp lands on the same years either way -- unless the
+     coast stretch is shorter than the glide itself, in which case part of the
+     ramp would fall in stage 1, which the Stages tab can't express. Clamp and
+     say so rather than silently rebuilding a different plan. The end rate is
+     stored pre-fee on a stage, so the fee that readInputs took off goes back. */
+  const glideOn = !!(p.glide && p.glide.on);
+  const glideYears = glideOn ? Math.min(p.glide.years, coastYears) : 0;
+  const glideClipped = glideOn && glideYears < p.glide.years;
   stages = [
     {years:C.years, contrib:p.contrib, period:p.period, growth:p.growth,
      nominal:p.gross, vol:p.vol, adj:false},
-    {years:Math.round((p.years - C.years) * 100) / 100, contrib:0, period:p.period,
-     growth:0, nominal:p.gross, vol:p.vol, adj:false}
+    {years:coastYears, contrib:0, period:p.period,
+     growth:0, nominal:p.gross, vol:p.vol, adj:false,
+     glide: glideOn ? {on:true, endRate: p.glide.endRate + p.fees,
+                       years: Math.max(1, glideYears)} : {on:false}}
   ];
   buildStages();
   $("targetS").value = groupDigits(num("target"), true);
   $("solveForS").value = $("solveFor").value;
   showTab("series");
   renderSeries();
-  toast("Coast FIRE plan loaded into the Stages tab");
+  toast(glideClipped
+    ? "Coast FIRE plan loaded \u2014 glide shortened to " + fmtYears(Math.max(1, glideYears))
+      + " to fit the final stage"
+    : "Coast FIRE plan loaded into the Stages tab");
 }
 
 /* ---------- converter and inflation helper ---------- */
@@ -7383,12 +7534,47 @@ function playPaneEnter(){
   });
 }
 
+/* The back row is the first grid item in main and spans every column, so it
+   sits above the input pane in both layouts. Its label is read off the picker
+   card rather than duplicated here, so the two can't drift apart. */
+function setToolBack(sub){
+  const row = $("toolBack"), onPicker = (sub === "picker");
+  row.hidden = onPicker;
+  if (onPicker) return;
+  const card = document.querySelector('.toolcard[data-pick="' + sub + '"] .toolcard-name');
+  $("toolCrumb").textContent = card ? card.textContent : "";
+}
+$("btnToolBack").addEventListener("click", () => {
+  paneDir = "back";
+  showTool("picker");
+  pushNav();
+});
+
+/* Tab and tool moves are pushed as history entries so the phone's back
+   gesture steps back through the app instead of leaving it. The state lives
+   in the entry object, not the URL, so the "#p=" share link is untouched. */
+let navSuspended = false;
+function pushNav(){
+  if (navSuspended) return;
+  try { history.pushState({t:chartMode.tab, s:toolSub}, ""); } catch(e){}
+}
+window.addEventListener("popstate", e => {
+  const st = e.state;
+  if (!st || !st.t) return;
+  navSuspended = true;
+  paneDir = (st.t === "tools" && st.s === "picker") ? "back" : "tab";
+  if (st.t === "tools"){ toolSub = st.s || "picker"; showTab("tools"); }
+  else showTab(st.t);
+  navSuspended = false;
+});
+
 /* Tools is a container tab: picking it reveals a second row for choosing which
    tool, so more can be added later without crowding the main nav. */
 let toolSub = "picker";
 function showTool(sub){
   toolSub = sub;
   const onPicker = (sub === "picker");
+  setToolBack(sub);
   $("tab-toolpicker").hidden = !onPicker;
   $("tab-tax").hidden = (sub !== "tax");
   $("tab-mortgage").hidden = (sub !== "mortgage");
@@ -7436,8 +7622,11 @@ function dismissDDIntro(){
 $("ddIntroClose").addEventListener("click", dismissDDIntro);
 function showTab(t){
   chartMode.tab = t;
-  document.querySelectorAll("nav[role=tablist] button").forEach(x =>
-    x.setAttribute("aria-selected", String(x.getAttribute("data-tab") === t)));
+  document.querySelectorAll("nav[role=tablist] button").forEach(x => {
+    const on = x.getAttribute("data-tab") === t;
+    x.setAttribute("aria-selected", String(on));
+    if (on) x.removeAttribute("tabindex"); else x.setAttribute("tabindex", "-1");
+  });
   $("tab-simple").hidden = (t !== "simple");
   $("tab-single").hidden = (t !== "single");
   $("tab-series").hidden = (t !== "series");
@@ -7461,6 +7650,7 @@ function showTab(t){
     $("tab-debt").hidden = true;
     $("main").classList.remove("solo");
   }
+  if (t !== "tools") setToolBack("picker");
   $("asideSimple").hidden = (t !== "simple");
   $("asideSingle").hidden = (t !== "single");
   $("asideSeries").hidden = (t !== "series");
@@ -7473,7 +7663,9 @@ function showTab(t){
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
   if (t !== "tools") playPaneEnter();
 }
-document.querySelectorAll("nav[role=tablist] button").forEach(b => {
+const TABBTNS = Array.prototype.slice.call(
+  document.querySelectorAll("nav[role=tablist] button"));
+TABBTNS.forEach((b, i) => {
   b.addEventListener("click", () => {
     const t = b.getAttribute("data-tab");
     // Clicking Tools while a tool is open → return to picker
@@ -7483,6 +7675,21 @@ document.querySelectorAll("nav[role=tablist] button").forEach(b => {
     } else {
       showTab(t);
     }
+    pushNav();
+  });
+  /* A tablist is expected to move on the arrow keys, with one stop in the tab
+     order for the whole rail rather than one per tab. showTab keeps the
+     tabindex roving as the selection changes. */
+  b.addEventListener("keydown", e => {
+    let j = -1;
+    if (e.key === "ArrowRight") j = (i + 1) % TABBTNS.length;
+    else if (e.key === "ArrowLeft") j = (i - 1 + TABBTNS.length) % TABBTNS.length;
+    else if (e.key === "Home") j = 0;
+    else if (e.key === "End") j = TABBTNS.length - 1;
+    if (j < 0) return;
+    e.preventDefault();
+    TABBTNS[j].focus();
+    TABBTNS[j].click();
   });
 });
 document.querySelectorAll(".toolcard[data-pick]").forEach(card => {
@@ -7490,6 +7697,7 @@ document.querySelectorAll(".toolcard[data-pick]").forEach(card => {
     if (chartMode.tab !== "tools") showTab("tools");
     paneDir = "fwd";
     showTool(card.getAttribute("data-pick"));
+    pushNav();
   };
   card.addEventListener("click", activate);
   card.addEventListener("keydown", e => {
@@ -7787,23 +7995,7 @@ function buildMortSheet(){
   if (R.pmiPaid > 0) out += row("Total PMI paid", money(R.pmiPaid));
   const halfwayYear = R.years.findIndex(y => y.balance <= R.loan / 2) + 1;
   if (halfwayYear > 0) out += row("Halfway point (balance)", "Year " + halfwayYear);
-  out += row("Payoff", moWhen(R.payoffMonth));
-
-  if (R.extraActive){
-    const base = mortgage(Object.assign({}, m, {extraMonthly:0, extraOnce:0,
-      extraOnceMonth:0, recast:false}));
-    out += row("With extra payments", moDur(base.payoffMonth - R.payoffMonth) +
-      " sooner, " + money(base.totalInterest - R.totalInterest) + " less interest");
-    if (R.recastPI != null) out += row("Payment after recast", money(R.recastPI) + "/mo");
-  }
-  if (m.refiOn){
-    const RF = refiCompare(m, {rate:m.refiRate, term:m.refiTerm, cost:m.refiCost});
-    out += row("Refinance to " + pctStr(m.refiRate, 2) + ", " + fmtNum(m.refiTerm) + "yr",
-      money(RF.then.pi) + "/mo, breaks even in " +
-      (RF.breakEvenMonths ? moDur(RF.breakEvenMonths) : "never") +
-      ", " + (RF.lifetimeDelta >= 0 ? "saves " : "costs ") + money(Math.abs(RF.lifetimeDelta)) +
-      " lifetime");
-  }
+  out += row("Payoff", "Year " + R.years.length);
 
   const src = $("chartMo");
   let chart = "";
@@ -7971,7 +8163,8 @@ function buildRentBuySheet(){
     "</div>" +
     "<div class='sh-table'><div class='sh-t'>Net worth by year" +
       (R.breakEven ? " &middot; \u2605 marks the break-even year" : "") + "</div>" + table + "</div>" +
-    "<div class='sh-foot'>Excludes the mortgage interest deduction and non-financial factors " +
+    "<div class='sh-foot'>Property tax, insurance and maintenance grow with home value; PMI is included above 80% loan-to-value. " +
+    "Excludes the mortgage interest deduction and non-financial factors " +
     "like stability. Projections, not predictions.</div>";
 }
 
@@ -8395,6 +8588,15 @@ function renderNormalTax(inp, R){
   setBig("txNet", money(shown));
   setBig("txMonth", money(shown / 12));
   setBig("txBiweek", money(shown / 26));
+  $("txZeroRoomRow").hidden = true;
+  if (R.gross > 0){
+    const br = bracketRoom(R.fedTaxable, inp.status);
+    $("txRoomLabel").textContent = br ? "Room before " + pctStr(br.nextRate, 0) : "Room before next bracket";
+    $("txRoomShow").textContent = br ? money(br.room) : "Top bracket";
+  } else {
+    $("txRoomLabel").textContent = "Room before next bracket";
+    $("txRoomShow").textContent = "\u2014";
+  }
 
   $("txBars").innerHTML =
     bar("Take-home pay", R.net, R.effNet, TAX_COLORS.net) +
@@ -8450,6 +8652,17 @@ function renderRetireTax(inp, R){
   setBig("txNet", money(R.net));
   setBig("txMonth", money(R.net / 12));
   setBig("txBiweek", pctStr(R.effTotal, 2));
+  if (R.gross > 0){
+    const br = bracketRoom(R.ordTaxable, inp.status);
+    $("txRoomLabel").textContent = br ? "Room before " + pctStr(br.nextRate, 0) : "Room before next bracket";
+    $("txRoomShow").textContent = br ? money(br.room) : "Top bracket";
+    $("txZeroRoomRow").hidden = false;
+    $("txZeroRoomShow").textContent = R.zeroRoom > 0 ? money(R.zeroRoom) : "None left";
+  } else {
+    $("txRoomLabel").textContent = "Room before next bracket";
+    $("txRoomShow").textContent = "\u2014";
+    $("txZeroRoomRow").hidden = true;
+  }
 
   $("txBars").innerHTML =
     bar("Income after tax", R.net, R.effNet, TAX_COLORS.net) +
@@ -8898,20 +9111,10 @@ $("segTxMode").addEventListener("click", e => {
 /* ---------- mortgage tool ---------- */
 let mortPoints = [];
 function readMort(){
-  const extrasOn = $("moExtrasOn").value === "1";
   return {price:num("moPrice"), down:num("moDownAmt"), rate:rate("moRate"),
           term:parseFloat($("moTerm").value), taxPct:rate("moTax"), ins:num("moIns"),
           pmiPct:rate("moPmi"), hoa:num("moHoa"),
-          maintPct:rate("moMaint"), util:num("moUtil"),
-          // Zeroed out whenever the panel is collapsed, so toggling it off is
-          // the same as never having touched it -- not just hiding the fields.
-          extraMonthly: extrasOn ? num("moExtraMo") : 0,
-          extraOnce: extrasOn ? num("moExtraOnce") : 0,
-          extraOnceMonth: extrasOn ? num("moExtraWhen") : 0,
-          recast: extrasOn && $("moRecast").value === "1",
-          refiOn: extrasOn && rate("moRefiRate") > 0,
-          refiRate: rate("moRefiRate"), refiTerm: parseFloat($("moRefiTerm").value),
-          refiCost: num("moRefiCost")};
+          maintPct:rate("moMaint"), util:num("moUtil")};
 }
 /* PMI only exists below 20% down, so the field mirrors that: it fills in a
    default when PMI applies and blanks to 0 when it doesn't, rather than showing
@@ -8942,76 +9145,15 @@ function syncDown(from){
   }
   downLock = false;
 }
-/* An absolute point in the loan's life -- "year 8, month 1". */
-function moWhen(months){
-  const y = Math.floor(months / 12), m = months % 12;
-  if (!y) return m + (m === 1 ? " month" : " months") + " in";
-  if (!m) return "year " + y;
-  return "year " + y + ", month " + m;
-}
-/* A length of time -- "8 years, 1 month". */
-function moDur(months){
-  const y = Math.floor(months / 12), m = months % 12;
-  if (!y) return m + (m === 1 ? " month" : " months");
-  if (!m) return y + (y === 1 ? " year" : " years");
-  return y + "y " + m + "m";
-}
-function renderMortExtras(m, R){
-  const active = R.extraActive;
-  $("moExtraPanel").hidden = !active && !m.refiOn;
-  if (!active){
-    $("moExtraStats").innerHTML = "";
-  } else {
-    const base = mortgage(Object.assign({}, m, {extraMonthly:0, extraOnce:0,
-      extraOnceMonth:0, recast:false}));
-    const monthsSooner = base.payoffMonth - R.payoffMonth;
-    const interestSaved = base.totalInterest - R.totalInterest;
-    let html = "";
-    html += "<div class='kv'><span class='k'>Payoff</span><span class='v pos'>" +
-      moWhen(R.payoffMonth) + (monthsSooner > 0
-        ? " (" + moDur(monthsSooner) + " sooner)" : "") + "</span></div>";
-    html += "<div class='kv'><span class='k'>Interest saved</span><span class='v pos'>" +
-      money(Math.max(0, interestSaved)) + "</span></div>";
-    if (R.recastPI != null)
-      html += "<div class='kv'><span class='k'>Payment after the recast</span><span class='v'>" +
-        money(R.recastPI) + "/mo</span></div>";
-    $("moExtraStats").innerHTML = html;
-  }
-
-  $("moRefiBlock").hidden = !m.refiOn;
-  if (m.refiOn){
-    const RF = refiCompare(m, {rate:m.refiRate, term:m.refiTerm, cost:m.refiCost});
-    $("moRefiHead").textContent = pctStr(m.refiRate, 2) + " for " + fmtNum(m.refiTerm) + " years";
-    let html = "<div class='kv'><span class='k'>New payment</span><span class='v'>" +
-      money(RF.then.pi) + "/mo</span></div>";
-    html += "<div class='kv'><span class='k'>Monthly change</span><span class='v " +
-      (RF.monthlyDelta >= 0 ? "pos" : "neg") + "'>" +
-      (RF.monthlyDelta >= 0 ? "\u2212" : "+") + money(Math.abs(RF.monthlyDelta)) + "/mo</span></div>";
-    html += "<div class='kv'><span class='k'>Breaks even on closing costs</span><span class='v'>" +
-      (RF.breakEvenMonths ? moDur(RF.breakEvenMonths) : "Never \u2014 payment doesn't drop") +
-      "</span></div>";
-    html += "<div class='kv'><span class='k'>Over the life of the loan</span><span class='v " +
-      (RF.lifetimeDelta >= 0 ? "pos" : "neg") + "'>" +
-      (RF.lifetimeDelta >= 0 ? "Saves " : "Costs ") + money(Math.abs(RF.lifetimeDelta)) +
-      "</span></div>";
-    $("moRefiStats").innerHTML = html;
-  }
-}
 function renderMort(){
   const m = readMort();
   const R = mortgage(m);
   $("moLoan").textContent = money(R.loan);
   $("moDownShow").textContent = money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 1) + ")";
   $("moTotInt").textContent = money(R.totalInterest);
-  if (R.ltv > .80){
-    $("moPmiNote").textContent = R.pmiEndMonth
-      ? "PMI applies below 20% down. At this pace it ends around " + moWhen(R.pmiEndMonth) +
-        " (loan federally requires automatic removal by 22% equity regardless)."
-      : "PMI applies below 20% down and drops off automatically once you reach 20% equity.";
-  } else {
-    $("moPmiNote").textContent = "No PMI; you're at or above 20% down.";
-  }
-  renderMortExtras(m, R);
+  $("moPmiNote").textContent = R.ltv > .80
+    ? "PMI applies below 20% down and drops off automatically once you reach 20% equity."
+    : "No PMI; you're at or above 20% down.";
 
   setBig("moTotal", money(R.total));
   setBig("moPI", money(R.pi));
@@ -9053,14 +9195,6 @@ $("moPrice").addEventListener("input", () => { syncDown("pct"); syncPmi(); rende
 $("moDownPct").addEventListener("input", () => { syncDown("pct"); syncPmi(); renderMort(); });
 $("moDownAmt").addEventListener("input", () => { syncDown("amt"); syncPmi(); renderMort(); });
 $("moTerm").addEventListener("change", renderMort);
-
-["moExtraMo","moExtraOnce","moExtraWhen","moRefiRate","moRefiCost"].forEach(id =>
-  $(id).addEventListener("input", renderMort));
-["moRecast","moRefiTerm"].forEach(id => $(id).addEventListener("change", renderMort));
-$("moExtrasOn").addEventListener("change", () => {
-  $("moExtrasWrap").hidden = $("moExtrasOn").value !== "1";
-  renderMort();
-});
 
 /* ---------- budget tool ---------- */
 /* Grouped presets. freq is the default frequency for that row: 12 = a monthly
@@ -9450,7 +9584,11 @@ $("rbTerm").addEventListener("change", renderRentBuy);
 
 $("bgCopyTax").addEventListener("click", () => {
   const R = runTax(readTax());
-  const netPay = R.gross - R.total;   // net pay = gross minus taxes
+  // Deliberately gross minus TAXES only, not minus pre-tax deferrals. A 401(k)
+  // or HSA contribution is voluntary saving, not money spent, so it belongs in
+  // income here and gets entered again as a Savings & investments line -- where
+  // it shows up as saving rather than disappearing from the budget entirely.
+  const netPay = R.gross - R.total;
   $("bgIncomeIn").value = groupDigits(netPay.toFixed(0), true);
   bgIncomeFreq = 1;   // annual figure
   $("bgIncomeFreq").querySelectorAll("button").forEach(x =>
@@ -9473,7 +9611,11 @@ function collegeSavingsCalc(inp) {
   var saved       = inp.saved;
   var collegeYrs  = inp.collegeYrs;
 
-  var rm = investRet / 12;
+  // Geometric, not investRet/12: the stated return is an effective annual rate
+  // everywhere else in the app, so converting it the simple way would quietly
+  // compound to a higher annual return here than the same input produces in
+  // the retirement engine.
+  var rm = Math.pow(1 + investRet, 1 / 12) - 1;
   var n  = Math.round(yearsUntil * 12);
 
   // Project the cost of each year of college
@@ -9501,13 +9643,25 @@ function collegeSavingsCalc(inp) {
       : shortfall / n;
   }
 
-  // Year-by-year accumulation
+  // Year-by-year accumulation, walked with the SAME month-by-month arithmetic
+  // the contribution was solved with. Compounding annually here instead (with
+  // a half-year convention on contributions) left the final row short of the
+  // target the headline figure was solved to hit, so the table contradicted
+  // the answer above it.
   var bal       = saved;
   var contribYr = monthly * 12;
   var rows      = [];
+  var months    = 0;
   for (var yr = 1; yr <= yearsUntil; yr++) {
-    var growth = bal * investRet + contribYr * (investRet / 2);
-    bal = bal + contribYr + growth;
+    var yearStart = bal;
+    var yearContrib = 0;
+    for (var k = 0; k < 12 && months < n; k++) {
+      bal = bal * (1 + rm) + monthly;
+      yearContrib += monthly;
+      months++;
+    }
+    var growth = bal - yearStart - yearContrib;
+    contribYr = yearContrib;
     rows.push({
       year: yr,
       balance: bal,
@@ -9559,8 +9713,20 @@ function rentBuyCalc(inp) {
     ? loan * r / (1 - Math.pow(1 + r, -totalMo))
     : (totalMo > 0 ? loan / totalMo : 0);
   var ir         = invest / 100 / 12;
+  var apprMo     = appr / 100 / 12;
 
-  var fixedBuyCost = price * propTax / 100 / 12 + ins / 12 + price * maint / 100 / 12;
+  // Property tax, insurance and maintenance were held flat at their entered,
+  // today's-dollar amount for the whole horizon while rent climbed every
+  // year -- a thumb on the scale for buying that grows with the horizon.
+  // This tool has no inflation input of its own for these, so the least
+  // invasive fix ties them to the home's own value: property tax literally
+  // is a percentage of assessed value, and insurance/maintenance scale with
+  // what the home is worth to rebuild or upkeep, not with the dollar figure
+  // picked at closing. Insurance is entered as a flat $/yr, so it's carried
+  // forward as a fraction of the original price and scaled by the same
+  // appreciation ratio property tax and maintenance already move with.
+  var insBase    = ins / 12;
+  var maintRate  = maint / 100 / 12;
 
   var renterPort  = down + closeAmt;
   var buyerSavings = 0;
@@ -9568,18 +9734,32 @@ function rentBuyCalc(inp) {
   var homeVal     = price;
   var monthRent   = rent;
 
+  // PMI, same rate the mortgage tool defaults to when none is entered, and
+  // the same convention it drops PMI with: based on the balance against the
+  // ORIGINAL price, matching how a lender's amortization-schedule PMI
+  // cancellation actually works, not a moving appraisal.
+  var initPmi = (price > 0 && loan / price > .80) ? loan * PMI_DEFAULT / 100 / 12 : 0;
+  var initFixedCost = price * propTax / 100 / 12 + insBase + price * maintRate + initPmi;
+
   var years = [];
   for (var yr = 1; yr <= horizon; yr++) {
+    var taxMo = 0, insMo = 0, maintMo = 0, pmiMo = 0;
     for (var mo = 0; mo < 12; mo++) {
       var interest  = balance * r;
       var principal = Math.min(pi - interest, balance);
       balance = Math.max(0, balance - principal);
 
+      homeVal *= (1 + apprMo);
+
+      pmiMo = (price > 0 && balance / price > .80) ? loan * PMI_DEFAULT / 100 / 12 : 0;
+      taxMo = homeVal * propTax / 100 / 12;
+      insMo = insBase * (homeVal / price);
+      maintMo = homeVal * maintRate;
+      var fixedBuyCost = taxMo + insMo + maintMo + pmiMo;
+
       var buyCostMo  = pi + fixedBuyCost;
       var rentCostMo = monthRent;
       var diff       = rentCostMo - buyCostMo;
-
-      homeVal *= (1 + appr / 100 / 12);
 
       if (diff > 0) {
         buyerSavings += diff;
@@ -9601,7 +9781,7 @@ function rentBuyCalc(inp) {
       renterNW: renterNW,
       homeVal: homeVal,
       balance: balance,
-      monthBuy: pi + fixedBuyCost,
+      monthBuy: pi + taxMo + insMo + maintMo + pmiMo,
       monthRent: monthRent / (1 + rentInc / 100)
     });
   }
@@ -9617,7 +9797,7 @@ function rentBuyCalc(inp) {
     loan: loan,
     pi: pi,
     initialInvest: down + closeAmt,
-    monthlyBuy: pi + fixedBuyCost
+    monthlyBuy: pi + initFixedCost
   };
 }
 
@@ -9717,7 +9897,21 @@ function ddSSAnnual() {
   }
   return 0;
 }
+/* The historical view is cheap and renders on every keystroke as it always
+   has. The Monte Carlo view runs 5,000 retirements and is two orders of
+   magnitude heavier, so held keys are coalesced -- the same 160ms treatment
+   scheduleMC() already gives the retirement chart. Every other entry point
+   (tab switch, mode toggle, scenario load, table click) still calls
+   renderDrawdown directly and is unaffected. */
+var ddTypeTimer = null;
+function renderDrawdownTyping(){
+  if (ddMode !== "mc"){ clearTimeout(ddTypeTimer); renderDrawdown(); return; }
+  clearTimeout(ddTypeTimer);
+  ddTypeTimer = setTimeout(renderDrawdown, 160);
+}
+
 function renderDrawdown() {
+  clearTimeout(ddTypeTimer);
   var ssMode = $("ddSSMode").value;
   $("ddSSEst").hidden = (ssMode !== "est");
   $("ddSSManual").hidden = (ssMode !== "manual");
@@ -9927,7 +10121,6 @@ function renderSpendStats(run, label) {
 function renderIncomeChart(run) {
   var pts = run.rows.map(function (r) {
     var real = r.realSpend != null ? r.realSpend : r.realWithdrawal;
-    var realSS = (r.ss || 0) / Math.pow(1 + (r.infl || 0) / 100, 0); // ss already deflated via cumInfl upstream
     return { year: r.year, base: real, hi: real, lo: real };
   });
   if (!pts.length) { paintChart("chartDDI", [], 1, "band", []); return; }
@@ -9975,7 +10168,7 @@ $("segDD").addEventListener("click", function (e) {
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
  "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor",
  "ddSSIncome", "ddSSClaim", "ddSSAmount", "ddSSDelay"]
-  .forEach(function (id) { $(id).addEventListener("input", renderDrawdown); });
+  .forEach(function (id) { $(id).addEventListener("input", renderDrawdownTyping); });
 $("ddSSMode").addEventListener("change", renderDrawdown);
 $("ddStrategy").addEventListener("change", renderDrawdown);
 /* All three retirement modes keep their last computed result in the
@@ -10009,7 +10202,6 @@ function applyDDCopy(source) {
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
-  recast: "Your lender re-runs the amortization on the reduced balance right after a lump-sum payment, spreading it over whatever's left of the original term. The payoff date doesn't move, but the required payment drops for every month after. Most lenders charge a small fee for this, typically $150\u2013500, not included here.",
   dtsaved: "Interest you avoid by adding an extra payment and rolling each cleared debt's minimum onto the next one, versus paying every minimum on its own forever.",
   rctrad: "Everything taxed as ordinary income when it comes out: traditional 401(k), 403(b), 457(b), SEP, SIMPLE and rollover IRAs. This is the balance RMDs are calculated on.",
   rcbasis: "The share of the brokerage account that is your original money rather than gain. Only the gain is taxed when you sell, so a high basis makes the account cheap to spend from.",
@@ -10066,7 +10258,7 @@ const GLOSS = {
   deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses (mortgage interest, charitable giving, state and local taxes), and you use whichever is larger.",
   ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
   collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college, smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
-  glide: "Many people shift toward more conservative investments, and lower expected returns, as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, and how long a plan takes to reach a target. Solving for a required contribution is the one exception: that math assumes one constant rate, so it still uses your starting rate throughout.",
+  glide: "Many people shift toward more conservative investments, and lower expected returns, as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, Coast FIRE, and both routes in Work backwards from a target. The glide always covers the final years you set, counted back from the end of the plan \u2014 so if a solve moves your finish line, the glide moves with it rather than staying where it was.",
   contribgrowth: "The percentage your contribution amount itself increases each year, a standalone rate, not stacked on top of the inflation input. At 0%, your contribution stays the same dollar amount every year, which buys a little less as prices rise. Set it to match your inflation rate to keep contributions flat in today's dollars, or higher to model real income growth, like raises over a career.",
   nominalreturn: "The return before subtracting inflation: what your statement would actually show. The S&P 500 has averaged roughly 10% a year (about 7% after inflation) since 1928, including its worst crashes. A diversified mix of stocks and bonds typically runs lower, often 6\u20138% nominal.",
   efftaxrate: "Your total tax as a share of income, lower than your top bracket, since earlier dollars are taxed at lower rates. Many retirees land somewhere around 10\u201315%, though it depends heavily on income sources and where you live. The Income Tax tool can calculate yours precisely.",
@@ -10186,7 +10378,7 @@ function renderRoth(){
   const nwDelta = plan.endAfterTax - base.endAfterTax;
   setBig("rcSaved", (taxSaved >= 0 ? "" : "\u2212") + money(Math.abs(taxSaved)));
   $("rcSaved").className = "v " + (taxSaved >= 0 ? "gold" : "neg");
-  $("rcSavedNote").textContent = "Lifetime tax, discounted at " +
+  $("rcSavedNote").textContent = "Lifetime tax + IRMAA, discounted at " +
     pctStr(inp.disc, 1) + " real";
   setBig("rcNW", (nwDelta >= 0 ? "+" : "\u2212") + money(Math.abs(nwDelta)));
   $("rcNW").className = "v " + (nwDelta >= 0 ? "pos" : "neg");
@@ -10866,8 +11058,147 @@ function tipFor(key){ return GLOSS[key] || ""; }
   window.addEventListener("scroll", () => { if (openDot) hide(); }, true);
 })();
 
+
+/* ---------- readout tween ----------
+   The headline figures were the only thing in the app that changed with no
+   motion at all, which made the one element everything else is arranged
+   around the least alive. Rather than thread a setter through every render
+   path, this watches the readout nodes and animates whatever lands in them.
+   A change arrives as a finished string; it's parsed back into prefix,
+   number and suffix, counted from the value on screen, then committed
+   verbatim so the displayed text is always exactly what the renderer wrote. */
+const TWEEN_SEL = ".headline .v, .solveopt > .v";
+const TWEEN_RE = /^([^\d]*)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/;
+const TWEEN_MS = 240;
+function tweenFormat(v, sample){
+  const dot = sample.indexOf(".");
+  const dec = dot < 0 ? 0 : sample.length - dot - 1;
+  let out = v.toFixed(dec);
+  if (sample.indexOf(",") >= 0){
+    const parts = out.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    out = parts.join(".");
+  }
+  return out;
+}
+function tweenTo(el){
+  const cur = el.textContent;
+  if (cur === el._twLast) return;            // our own frame, not a new value
+  const m = TWEEN_RE.exec(cur);
+  const from = el._twShown;
+  const commit = () => {
+    el._twLast = null;
+    el._twShown = m ? parseFloat(m[2].replace(/,/g, "")) : null;
+    el._twPre = m ? m[1] : null;
+  };
+  if (el._twRaf){ cancelAnimationFrame(el._twRaf); el._twRaf = 0; }
+  // No previous number, a changed prefix (a sign flip, a different unit), or
+  // an offscreen pane: nothing worth animating between.
+  if (!m || from == null || el._twPre !== m[1] || el.offsetParent === null){
+    commit(); return;
+  }
+  const to = parseFloat(m[2].replace(/,/g, ""));
+  if (!isFinite(to) || to === from){ commit(); return; }
+  const t0 = performance.now();
+  const step = now => {
+    const k = Math.min(1, (now - t0) / TWEEN_MS);
+    const e = 1 - Math.pow(1 - k, 3);
+    if (k < 1){
+      const txt = m[1] + tweenFormat(from + (to - from) * e, m[2]) + m[3];
+      el._twLast = txt;
+      el.textContent = txt;
+      el._twRaf = requestAnimationFrame(step);
+    } else {
+      el._twRaf = 0;
+      el._twLast = cur;
+      el.textContent = cur;                  // land on the renderer's own string
+      el._twShown = to;
+      el._twPre = m[1];
+      el._twLast = null;
+    }
+  };
+  el._twRaf = requestAnimationFrame(step);
+}
+/* Every figure recomputes as you type, and none of it was announced. The
+   region is debounced well past a keystroke so it reports where the numbers
+   settled rather than narrating each one on the way there. */
+let liveTimer = 0;
+function announceReadout(){
+  const head = Array.prototype.filter.call(
+    document.querySelectorAll("#main .headline"), el => el.offsetParent !== null)[0];
+  if (!head) return;
+  const parts = [];
+  head.querySelectorAll(":scope > div").forEach(d => {
+    const k = d.querySelector(".k"), v = d.querySelector(".v");
+    const t = v ? v.textContent.trim() : "";
+    if (k && t && t !== "\u2014" && t !== "--")
+      parts.push(k.textContent.trim() + ": " + t);
+  });
+  if (parts.length) $("srLive").textContent = parts.join(". ");
+}
+function scheduleAnnounce(){
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(announceReadout, 700);
+}
+
+function initValueTween(){
+  let reduce = false;
+  try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+  if (reduce || typeof MutationObserver === "undefined") return;
+  document.querySelectorAll(TWEEN_SEL).forEach(el => {
+    const m = TWEEN_RE.exec(el.textContent);
+    el._twShown = m ? parseFloat(m[2].replace(/,/g, "")) : null;
+    el._twPre = m ? m[1] : null;
+  });
+  const obs = new MutationObserver(muts => {
+    const hit = [];
+    muts.forEach(mu => {
+      let n = mu.target;
+      if (n.nodeType !== 1) n = n.parentNode;
+      if (!n || !n.closest) return;
+      const el = n.closest(TWEEN_SEL);
+      if (el && hit.indexOf(el) < 0) hit.push(el);
+    });
+    hit.forEach(tweenTo);
+    if (hit.length) scheduleAnnounce();
+  });
+  obs.observe(document.getElementById("main"),
+    {subtree:true, childList:true, characterData:true});
+}
+/* Under reduced motion initValueTween returns before installing anything, so
+   the live region gets its own observer rather than riding along with it. */
+/* The rail's parked state drives both the notch strip and a slightly deeper
+   shadow, so it reads as lifted off the page only once it's actually over it. */
+function initStickyRail(){
+  const nb = document.querySelector(".navbar");
+  if (!nb) return;
+  let queued = false;
+  const check = () => {
+    queued = false;
+    nb.classList.toggle("stuck", nb.getBoundingClientRect().top <= 0.5);
+  };
+  window.addEventListener("scroll", () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(check);
+  }, {passive:true});
+  check();
+}
+
+function initLiveRegion(){
+  if (typeof MutationObserver === "undefined") return;
+  const obs = new MutationObserver(scheduleAnnounce);
+  obs.observe(document.getElementById("main"),
+    {subtree:true, childList:true, characterData:true});
+}
+
 /* ---------- theme ---------- */
 const THEME_KEY = "retcalc-theme";
+let themeStored = "system";
+const THEME_ICON = {
+  sun:'<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3.6" stroke="currentColor" stroke-width="1.7"/><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M10 1.6v2.2M10 16.2v2.2M18.4 10h-2.2M3.8 10H1.6M15.94 4.06l-1.56 1.56M5.62 14.38l-1.56 1.56M15.94 15.94l-1.56-1.56M5.62 5.62L4.06 4.06"/></g></svg>',
+  moon:'<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 12.4A7 7 0 017.6 3.5a7 7 0 108.9 8.9z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>'
+};
 const THEME_META = {dark:"#0c1114", light:"#f4f6f5"};
 function resolvedTheme(stored){
   if (stored !== "system") return stored;
@@ -10884,8 +11215,20 @@ function applyTheme(stored){
   // an unchecked checkbox keeps its dark-mode appearance in light mode.
   const scheme = document.querySelector('meta[name="color-scheme"]');
   if (scheme) scheme.setAttribute("content", eff);
+  themeStored = stored;
   document.querySelectorAll("#segTheme button").forEach(b =>
     b.classList.toggle("on", b.getAttribute("data-theme") === stored));
+  /* The masthead button flips to whichever theme isn't showing; the three-way
+     switch in About still owns the System option, and both read the same
+     stored value so they can't disagree. */
+  const tb = $("btnTheme");
+  if (tb){
+    const goingLight = (eff === "dark");
+    tb.innerHTML = goingLight ? THEME_ICON.sun : THEME_ICON.moon;
+    const lbl = goingLight ? "Switch to light theme" : "Switch to dark theme";
+    tb.setAttribute("aria-label", lbl);
+    tb.setAttribute("title", lbl);
+  }
   if (!$("tab-simple").hidden) renderBasic();
   else if (!$("tab-single").hidden){ if (lastRun) drawChart(lastRun, readInputs()); }
   else if (!$("tab-series").hidden) renderSeries();
@@ -10897,6 +11240,11 @@ function initTheme(){
   catch(e){}
   applyTheme(stored);
 }
+$("btnTheme").addEventListener("click", () => {
+  const next = resolvedTheme(themeStored) === "dark" ? "light" : "dark";
+  applyTheme(next);
+  try { localStorage.setItem(THEME_KEY, next); } catch(e){}
+});
 $("segTheme").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-theme]") : null;
   if (!b) return;
@@ -11254,7 +11602,7 @@ function copyText(txt){
 }
 function doShare(){
   const url = location.origin + location.pathname + "#p=" + encodeState(currentState());
-  history.replaceState(null, "", "#p=" + encodeState(currentState()));
+  history.replaceState({t:chartMode.tab, s:toolSub}, "", "#p=" + encodeState(currentState()));
   copyText(url).then(() => toast("Link copied; it opens with these exact numbers"))
                .catch(() => toast("Couldn't copy. The link is in your address bar."));
 }
@@ -11329,11 +11677,7 @@ function writeRBState(d){
 function readMortState(){
   return {price:num("moPrice"), downPct:num("moDownPct"), downAmt:num("moDownAmt"),
           rate:num("moRate"), term:$("moTerm").value, tax:num("moTax"), ins:num("moIns"),
-          pmi:num("moPmi"), hoa:num("moHoa"), maint:num("moMaint"), util:num("moUtil"),
-          extrasOn:$("moExtrasOn").value, extraMo:num("moExtraMo"),
-          extraOnce:num("moExtraOnce"), extraWhen:num("moExtraWhen"),
-          recast:$("moRecast").value, refiRate:num("moRefiRate"),
-          refiTerm:$("moRefiTerm").value, refiCost:num("moRefiCost")};
+          pmi:num("moPmi"), hoa:num("moHoa"), maint:num("moMaint"), util:num("moUtil")};
 }
 function writeMortState(d){
   if (d.price != null) $("moPrice").value = groupDigits(d.price, true);
@@ -11347,15 +11691,6 @@ function writeMortState(d){
   if (d.hoa != null) $("moHoa").value = groupDigits(d.hoa, true);
   if (d.maint != null) $("moMaint").value = String(d.maint);
   if (d.util != null) $("moUtil").value = groupDigits(d.util, true);
-  if (d.extrasOn != null) $("moExtrasOn").value = String(d.extrasOn);
-  if (d.extraMo != null) $("moExtraMo").value = groupDigits(d.extraMo, true);
-  if (d.extraOnce != null) $("moExtraOnce").value = groupDigits(d.extraOnce, true);
-  if (d.extraWhen != null) $("moExtraWhen").value = String(d.extraWhen);
-  if (d.recast != null) $("moRecast").value = String(d.recast);
-  if (d.refiRate != null) $("moRefiRate").value = String(d.refiRate);
-  if (d.refiTerm) $("moRefiTerm").value = d.refiTerm;
-  if (d.refiCost != null) $("moRefiCost").value = groupDigits(d.refiCost, true);
-  $("moExtrasWrap").hidden = $("moExtrasOn").value !== "1";
 }
 
 function readBudgetState(){
@@ -11420,6 +11755,34 @@ $("scenarioPick").addEventListener("change", e => {
   else if (tool === "rentbuy"){ writeRBState(s.data); renderRentBuy(); }
   else if (tool === "drawdown"){ writeDDState(s.data); renderItemLists(); renderDrawdown(); }
 });
+/* Shared modal behaviour for both popups below: Escape closes, Tab cycles
+   inside the dialog instead of walking into the page behind it, and focus
+   returns to whatever opened it. close() is the builder's own dismissal, so
+   each still resolves its promise with its own cancel value. */
+function wireModal(ov, close){
+  const opener = document.activeElement;
+  const pop = ov.querySelector(".popup");
+  pop.setAttribute("role", "dialog");
+  pop.setAttribute("aria-modal", "true");
+  const FOCUSABLE = "button,select,input,textarea,a[href],[tabindex]:not([tabindex='-1'])";
+  function onKey(e){
+    if (e.key === "Escape"){ e.preventDefault(); done(); close(); return; }
+    if (e.key !== "Tab") return;
+    const items = Array.prototype.filter.call(
+      pop.querySelectorAll(FOCUSABLE), el => !el.disabled && el.offsetParent !== null);
+    if (!items.length) return;
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+  function done(){
+    document.removeEventListener("keydown", onKey, true);
+    if (opener && opener.focus) { try { opener.focus(); } catch(e){} }
+  }
+  document.addEventListener("keydown", onKey, true);
+  ov._modalDone = done;
+}
+
 function showPopup(title, options){
   return new Promise(resolve => {
     const ov = document.createElement("div");
@@ -11429,13 +11792,17 @@ function showPopup(title, options){
         o.label + (o.desc ? "<span class='subdesc" + (o.money ? " money" : "") + "'>" + o.desc + "</span>" : "") +
         "</button>").join("") +
       "<button class='cancel'>Cancel</button></div>";
+    const shut = () => { if (ov._modalDone) ov._modalDone(); ov.remove(); };
     ov.addEventListener("click", e => {
       const b = e.target.closest ? e.target.closest("[data-pop]") : null;
-      if (b){ ov.remove(); resolve(parseInt(b.getAttribute("data-pop"), 10)); return; }
+      if (b){ shut(); resolve(parseInt(b.getAttribute("data-pop"), 10)); return; }
       if (e.target.classList.contains("cancel") || e.target === ov){
-        ov.remove(); resolve(-1); }
+        shut(); resolve(-1); }
     });
     document.body.appendChild(ov);
+    wireModal(ov, () => { shut(); resolve(-1); });
+    const firstBtn = ov.querySelector(".popbtn");
+    if (firstBtn) firstBtn.focus();
   });
 }
 
@@ -11494,6 +11861,7 @@ function showItemForm(kind, existing){
       const startYear = Math.max(1, Math.round(parseNum(ov.querySelector("#itStartYear").value)) || 1);
       const durationType = durSel.value;
       const durationYears = Math.max(1, Math.round(parseNum(ov.querySelector("#itYears").value)) || 1);
+      if (ov._modalDone) ov._modalDone();
       ov.remove();
       resolve({
         name, annual, inflate: ov.querySelector("#itInflate").checked,
@@ -11501,10 +11869,12 @@ function showItemForm(kind, existing){
         duration: durationType === "years" ? {type:"years", years:durationYears} : {type:durationType}
       });
     });
+    const shut = () => { if (ov._modalDone) ov._modalDone(); ov.remove(); };
     ov.addEventListener("click", e => {
-      if (e.target.classList.contains("cancel") || e.target === ov){ ov.remove(); resolve(null); }
+      if (e.target.classList.contains("cancel") || e.target === ov){ shut(); resolve(null); }
     });
     document.body.appendChild(ov);
+    wireModal(ov, () => { shut(); resolve(null); });
     ov.querySelector("#itName").focus();
   });
 }
@@ -12012,9 +12382,7 @@ const TAX_DEFAULTS = {mode:"normal", gross:100000, status:"s", state:"IL", pre:0
                       dedType:"std", item:0, trad:40000, roth:10000, brok:20000,
                       gainPct:40, ss:30000, other:0, seniors:1};
 const MORT_DEFAULTS = {price:450000, downPct:20, downAmt:90000, rate:MORT_RATE_30,
-  term:"30", tax:1.1, ins:1800, pmi:0, hoa:0, maint:1, util:300,
-  extrasOn:"0", extraMo:0, extraOnce:0, extraWhen:12, recast:"0",
-  refiRate:0, refiTerm:"30", refiCost:0};
+  term:"30", tax:1.1, ins:1800, pmi:0, hoa:0, maint:1, util:300};
 function sameShallow(a, b){
   for (const k in b) if (String(a[k]) !== String(b[k])) return false;
   return true;
@@ -12095,7 +12463,6 @@ $("btnReset").addEventListener("click", () => {
     writeTaxState(TAX_DEFAULTS); renderTax();
   } else if (tool === "mortgage"){
     writeMortState(MORT_DEFAULTS); syncPmi(); renderMort();
-    $("moExtrasWrap").hidden = true;
   } else if (tool === "budget"){
     budget = defaultBudget(); $("bgIncomeIn").value = groupDigits(0, true);
     bgIncomeFreq = 1;
@@ -12191,11 +12558,6 @@ $("moPmi").value = "0";
 $("moHoa").value = groupDigits(0, true);
 $("moMaint").value = "1";
 $("moUtil").value = groupDigits(300, true);
-$("moExtraMo").value = groupDigits(0, true);
-$("moExtraOnce").value = groupDigits(0, true);
-$("moExtraWhen").value = "12";
-$("moRefiRate").value = "0";
-$("moRefiCost").value = groupDigits(0, true);
 $("rbPrice").value = groupDigits(450000, true);
 $("rbDown").value = "20";
 $("rbRate").value = String(MORT_RATE_30);
@@ -12248,6 +12610,12 @@ buildBudget();
 renderBudget();
 initTheme();
 initAboutCollapse();
+// Seed an entry so the first back press has somewhere defined to land.
+try { history.replaceState({t:chartMode.tab, s:toolSub}, ""); } catch(e){}
+initStickyRail();
+let tweening = false;
+try { tweening = !window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+if (tweening) initValueTween(); else initLiveRegion();
 if (fromLink) toast("Loaded from a shared link");
 })();
 </script>
