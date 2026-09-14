@@ -70,7 +70,7 @@
      it. This pads past the reported inset rather than trusting it exactly.
      The *1.35 is a multiply, not an add, so it's still exactly 0 wherever
      there's no inset to begin with (a normal Safari tab, or desktop). */
-  --sb-clear:calc(env(safe-area-inset-top,0px) * 1.6);
+  --sb-clear:calc(env(safe-area-inset-top,0px) * 2);
 
   /* one light source, from above */
   --edge-up:inset 0 1px 0 rgba(255,255,255,.055);
@@ -358,6 +358,17 @@ html[data-theme="light"] .readout > .headline{
   background:var(--bg);border-bottom:1px solid var(--line);
   box-shadow:0 12px 30px -24px #000;transition:box-shadow .12s ease}
 .navbar.stuck{box-shadow:0 14px 30px -22px rgba(0,0,0,.9)}
+
+/* Once the rail is pinned below the status-bar clearance zone, the strip
+   above it (screen top down to --sb-clear) is no longer covered by the
+   header, which has scrolled out of view -- so whatever's scrolling past
+   underneath was showing through the blur. This paints that strip solid.
+   pointer-events:none from the start, not toggled with opacity, since that
+   was exactly the earlier bug (an invisible element that still ate taps). */
+.sbcover{position:fixed;top:0;left:0;right:0;height:var(--sb-clear);
+  background:var(--bg);z-index:29;pointer-events:none;
+  opacity:0;transition:opacity .12s ease}
+.sbcover.stuck{opacity:1}
 nav[role=tablist]{max-width:1330px;margin:0 auto;
   padding:0 var(--gr) 0 var(--gl);display:flex;gap:4px}
 nav[role=tablist] button{
@@ -1297,6 +1308,7 @@ window.onerror = function(msg){
   </div>
 </header>
 
+<div class="sbcover" id="sbCover" aria-hidden="true"></div>
 <div class="navbar">
   <nav role="tablist" aria-label="Calculator mode">
     <button role="tab" id="tabbtn-simple" data-tab="simple" aria-controls="tab-simple" aria-selected="true">Basic</button>
@@ -11178,15 +11190,18 @@ function initValueTween(){
    shadow, so it reads as lifted off the page only once it's actually over it. */
 function initStickyRail(){
   const nb = document.querySelector(".navbar");
+  const cover = document.getElementById("sbCover");
   if (!nb) return;
   let queued = false;
   const check = () => {
     queued = false;
-    // The sticky offset is env(safe-area-inset-top), not always 0 (see the
-    // .navbar rule), so "pinned" has to be checked against that same offset
-    // rather than a hardcoded 0.
+    // The sticky offset is var(--sb-clear), not always 0 (see the .navbar
+    // rule), so "pinned" has to be checked against that same offset rather
+    // than a hardcoded 0.
     const off = parseFloat(getComputedStyle(nb).top) || 0;
-    nb.classList.toggle("stuck", nb.getBoundingClientRect().top <= off + 0.5);
+    const stuck = nb.getBoundingClientRect().top <= off + 0.5;
+    nb.classList.toggle("stuck", stuck);
+    if (cover) cover.classList.toggle("stuck", stuck);
   };
   window.addEventListener("scroll", () => {
     if (queued) return;
