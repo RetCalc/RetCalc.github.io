@@ -340,16 +340,16 @@ html[data-theme="light"] .readout > .headline{
    the header it would have scrolled away with it. .navbar carries the full
    width background so the rail doesn't end at the 1330px measure on a wide
    screen, and nav keeps the measure. */
-.navbar{position:sticky;top:0;z-index:30;background:var(--bg);
-  border-bottom:1px solid var(--line);
-  box-shadow:0 12px 30px -24px #000}
-/* In a home-screen web app the rail parks under the status bar, so it paints
-   the inset strip above itself. Zero height on every device without a notch,
-   and directly under the header's gradient, which ends on this same colour. */
-.navbar::before{content:"";position:absolute;left:0;right:0;bottom:100%;
-  height:env(safe-area-inset-top,0px);background:var(--bg);
-  opacity:0;transition:opacity .12s ease}
-.navbar.stuck::before{opacity:1}
+/* Sticking to the literal top:0 works in a Safari tab, where the address bar
+   already occupies the notch/status-bar strip. It breaks in a home-screen
+   webapp: there's no browser chrome there, so top:0 pins the rail directly
+   under the status bar instead of below it -- it's not "not sticking", it's
+   stuck in a spot the translucent status bar paints over. env() resolves to
+   0 in a normal tab, so this offset is a no-op there and only does anything
+   once the page is actually running full-screen. */
+.navbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;
+  background:var(--bg);border-bottom:1px solid var(--line);
+  box-shadow:0 12px 30px -24px #000;transition:box-shadow .12s ease}
 .navbar.stuck{box-shadow:0 14px 30px -22px rgba(0,0,0,.9)}
 nav[role=tablist]{max-width:1330px;margin:0 auto;
   padding:0 var(--gr) 0 var(--gl);display:flex;gap:4px}
@@ -11175,7 +11175,11 @@ function initStickyRail(){
   let queued = false;
   const check = () => {
     queued = false;
-    nb.classList.toggle("stuck", nb.getBoundingClientRect().top <= 0.5);
+    // The sticky offset is env(safe-area-inset-top), not always 0 (see the
+    // .navbar rule), so "pinned" has to be checked against that same offset
+    // rather than a hardcoded 0.
+    const off = parseFloat(getComputedStyle(nb).top) || 0;
+    nb.classList.toggle("stuck", nb.getBoundingClientRect().top <= off + 0.5);
   };
   window.addEventListener("scroll", () => {
     if (queued) return;
