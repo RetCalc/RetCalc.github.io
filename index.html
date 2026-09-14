@@ -1738,8 +1738,12 @@ window.onerror = function(msg){
       </div>
     </div>
 
-    <!-- ========== INFLATION CALCULATOR ========== -->
-    <div class="panel">
+    <!-- ========== INFLATION CALCULATOR ==========
+         Hidden from the Advanced tab -- didn't earn its spot there. Left
+         wired up (markup, ids, and the renderConverter/segInfl JS below are
+         all untouched) so it can be dropped back in here or moved elsewhere
+         later with just this `hidden` removed. -->
+    <div class="panel" hidden>
       <h2>Inflation Calculator<span class="h2note" id="inflNote"></span></h2>
       <div class="body">
         <div class="seg" id="segInfl" style="margin-bottom:14px">
