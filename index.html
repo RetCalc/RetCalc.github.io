@@ -1769,6 +1769,17 @@ window.onerror = function(msg){
       <div class="body" id="msBody"></div>
     </div>
 
+    <div class="panel">
+      <h2>Want to model this in stages?</h2>
+      <div class="body">
+        <p class="hint" style="margin-top:0">The Stages tab lets you change your
+          contribution, return, or timeline partway through the plan. This will carry
+          your current numbers over as the first stage, then add a second stage with
+          the same numbers running 10 years longer.</p>
+        <button class="btn primary" type="button" id="btnToStages">Model these numbers in Stages</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- ========== SERIES PANE ========== -->
@@ -6501,7 +6512,7 @@ let lastRun = null;
 const MS_LADDER = [50e3, 100e3, 250e3, 500e3, 1e6, 2e6, 3e6, 5e6, 10e6, 25e6, 50e6, 100e6];
 
 /* rows: [{year, end, growth, contrib}] in chronological order */
-function renderMilestones(elId, rows, infl, feeCost, horizon, alreadyReal){
+function renderMilestones(elId, rows, infl, feeCost, horizon, alreadyReal, wholeYears){
   const box = $(elId);
   if (!rows || !rows.length){
     box.innerHTML = "<div class='hint'>Add some years to see milestones.</div>";
@@ -6509,13 +6520,19 @@ function renderMilestones(elId, rows, infl, feeCost, horizon, alreadyReal){
   }
   const final = rows[rows.length - 1].end;
   const out = [];
+  // Stages can land a milestone mid-year (a fractional first stage offsets
+  // every row after it), but "Year 20.5" reads oddly next to a dollar figure.
+  // The underlying row.year keeps its exact fractional value for every real
+  // calculation (inflation adjustment, sorting, etc.) -- only the label
+  // rounds up to the whole year the milestone had been reached by.
+  const yrLabel = y => wholeYears ? fmtNum(Math.ceil(y)) : fmtNum(y);
 
   // the year the portfolio starts out-earning you
   const cross = rows.find(r => r.growth > r.contrib && r.contrib > 0);
   if (cross){
     out.push("<div class='kv'><span class='k'><b class='msflag'>Crossover</b>" +
       "<span class='mssub'>Growth first outpaces what you put in</span></span>" +
-      "<span class='v'>Year " + fmtNum(cross.year) + "</span></div>");
+      "<span class='v'>Year " + yrLabel(cross.year) + "</span></div>");
   } else {
     out.push("<div class='kv'><span class='k'><b class='msflag'>Crossover</b>" +
       "<span class='mssub'>Growth never overtakes contributions in this run</span></span>" +
@@ -6528,7 +6545,7 @@ function renderMilestones(elId, rows, infl, feeCost, horizon, alreadyReal){
     out.push("<div class='kv'><span class='k'>" + money(v) +
       (alreadyReal ? "" : "<span class='mssub'>" +
         money(v / Math.pow(1 + infl, hit ? hit.year : 0)) + " in today's dollars</span>") +
-      "</span><span class='v'>Year " + (hit ? fmtNum(hit.year) : "\u2014") + "</span></div>");
+      "</span><span class='v'>Year " + (hit ? yrLabel(hit.year) : "\u2014") + "</span></div>");
   });
 
   if (feeCost > 0){
@@ -7013,6 +7030,40 @@ function applyCoast(p, C){
     : "Coast FIRE plan loaded into the Stages tab");
 }
 
+/* Carries Advanced's current inputs into the Stages tab as a two-stage plan:
+   stage 1 is the plan exactly as entered, stage 2 repeats the same inputs for
+   10 more years. A glide (if on) only makes sense at the true end of the
+   plan, so it moves to stage 2 rather than being duplicated on both -- same
+   convention applyCoast uses -- clamped to fit inside the 10-year stage. */
+$("btnToStages").addEventListener("click", () => {
+  const p = readInputs();
+  if (stagesLookEdited() &&
+      !confirm("Replace the stages currently on the Stages tab with these numbers?"))
+    return;
+  writeGlobals({initial:p.initial, inflation:p.inflation, withdrawal:p.withdrawal,
+                taxRate:p.taxRate, fees:p.fees});
+  const glideOn = !!(p.glide && p.glide.on);
+  const glideYears = glideOn ? Math.min(p.glide.years, 10) : 0;
+  const glideClipped = glideOn && glideYears < p.glide.years;
+  stages = [
+    {years:p.years, contrib:p.contrib, period:p.period, growth:p.growth,
+     nominal:p.gross, vol:p.vol, adj:false},
+    {years:10, contrib:p.contrib, period:p.period, growth:p.growth,
+     nominal:p.gross, vol:p.vol, adj:false,
+     glide: glideOn ? {on:true, endRate: p.glide.endRate + p.fees,
+                       years: Math.max(1, glideYears)} : {on:false}}
+  ];
+  buildStages();
+  $("targetS").value = groupDigits(num("target"), true);
+  $("solveForS").value = $("solveFor").value;
+  showTab("series");
+  renderSeries();
+  toast(glideClipped
+    ? "Copied into two stages \u2014 glide shortened to " + fmtYears(Math.max(1, glideYears))
+      + " to fit the second stage"
+    : "Copied into two stages, the second running 10 years longer");
+});
+
 /* ---------- converter and inflation helper ---------- */
 function renderConverter(){
   const from = $("convPeriod").value;
@@ -7433,7 +7484,7 @@ function renderSeries(){
   const feeCost = (g.fees || 0) > 0 ? projectSeries(g, stages).fv - R.fv : 0;
   renderMilestones("msBodyS",
     R.rows.map(r => ({year:r.endYear, end:r.end, growth:r.growth, contrib:r.contrib})),
-    g.inflation, feeCost, R.totalYears);
+    g.inflation, feeCost, R.totalYears, false, true);
 
   const solved = renderStagedSolve(g, R);
   seriesTarget = solved ? solved.portToday : 0;
