@@ -64,6 +64,13 @@
   --gr:max(var(--gut),env(safe-area-inset-right,0px));
   /* Height of the sticky tab rail, so sticky things below it can clear it. */
   --navh:44px;
+  /* iOS's status-bar blur material in the home-screen webapp turned out to
+     run taller than the official safe-area-inset-top value, leaving the
+     masthead and tab rail rendered right under the frost instead of clear of
+     it. This pads past the reported inset rather than trusting it exactly.
+     The *1.35 is a multiply, not an add, so it's still exactly 0 wherever
+     there's no inset to begin with (a normal Safari tab, or desktop). */
+  --sb-clear:calc(env(safe-area-inset-top,0px) * 1.35);
 
   /* one light source, from above */
   --edge-up:inset 0 1px 0 rgba(255,255,255,.055);
@@ -347,7 +354,7 @@ html[data-theme="light"] .readout > .headline{
    stuck in a spot the translucent status bar paints over. env() resolves to
    0 in a normal tab, so this offset is a no-op there and only does anything
    once the page is actually running full-screen. */
-.navbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;
+.navbar{position:sticky;top:var(--sb-clear);z-index:30;
   background:var(--bg);border-bottom:1px solid var(--line);
   box-shadow:0 12px 30px -24px #000;transition:box-shadow .12s ease}
 .navbar.stuck{box-shadow:0 14px 30px -22px rgba(0,0,0,.9)}
@@ -1229,7 +1236,7 @@ svg{display:block;width:100%;height:auto}
 /* Home-screen web app runs under the clock and battery, so reserve that space.
    The horizontal insets are folded into --gl/--gr at the top of the sheet, so
    the masthead and the tab rail get them too rather than main alone. */
-header{padding-top:env(safe-area-inset-top,0px)}
+header{padding-top:var(--sb-clear)}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
