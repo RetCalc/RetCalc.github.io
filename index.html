@@ -844,6 +844,11 @@ html[data-theme="light"] .about.disclaimer{
   box-shadow:var(--well)}
 .bgrow input.desc:focus{outline:none;border-color:var(--jade);
   box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
+.bgrow span.desc[contenteditable]{cursor:text;border-radius:4px;
+  padding:2px 5px;margin:-2px -5px;border:1px dashed transparent}
+.bgrow span.desc[contenteditable]:hover{border-color:var(--line)}
+.bgrow span.desc[contenteditable]:focus{outline:none;border-color:var(--jade);
+  border-style:solid;background:var(--panel)}
 .bgrow .inputwrap{flex:0 0 130px;width:130px}
 .bgrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
   font-size:18px;line-height:1;padding:0 6px;flex:none;transition:color .14s ease}
@@ -9351,6 +9356,12 @@ function defaultBudget(){
     rows.push({group:g.group, desc:it.desc, amount:0, freq:it.freq, custom:false})));
   return rows;
 }
+// Preset rows can never be added or removed, only ever renamed, so position i
+// in the budget array always lines up with position i in this flattened list
+// -- letting a blank rename fall back to "whatever this slot's default was"
+// without having to store that default on every row.
+const BUDGET_PRESET_DESCS = [];
+BUDGET_PRESETS.forEach(g => g.items.forEach(it => BUDGET_PRESET_DESCS.push(it.desc)));
 let budget = defaultBudget();
 
 function annualize(r){ return r.amount * r.freq; }
@@ -9370,14 +9381,18 @@ function buildBudget(){
       const descCell = r.custom
         ? "<input class='desc' data-f='desc' data-i='" + i + "' value='" +
           String(r.desc).replace(/'/g, "&#39;") + "' placeholder='Description' aria-label='Item name'>"
-        : "<span class='desc'>" + r.desc + "</span>";
+        : isSavingsRow(r)
+        ? "<span class='desc'>" + escapeHtml(r.desc) +
+          "<span class='tipdot' data-tip='bgsavings' role='button' tabindex='0' aria-label='What is this?'>?</span></span>"
+        : "<span class='desc' contenteditable='true' spellcheck='false' data-name='" + i +
+          "' title='Click to rename' aria-label='Item name'>" + escapeHtml(r.desc) + "</span>";
       const del = r.custom
         ? "<button class='del' type='button' data-del='" + i + "' title='Remove' aria-label='Remove'>\u00d7</button>"
         : "<span class='delspace'></span>";
       return "<div class='bgrow'>" + descCell +
         "<div class='inputwrap'><span class='affix'>$</span><input type='text' inputmode='decimal' " +
           "data-money data-nonneg data-f='amount' data-i='" + i + "' value='" +
-          groupDigits(r.amount, true) + "' aria-label='" + r.desc + " amount'></div>" +
+          groupDigits(r.amount, true) + "' aria-label='" + escapeHtml(r.desc) + " amount'></div>" +
         "<span class='seg bgseg' data-f='freqseg' data-i='" + i + "'>" +
           "<button type='button' data-fv='12'" + (r.freq === 12 ? " class='on'" : "") + ">/mo</button>" +
           "<button type='button' data-fv='1'" + (r.freq === 1 ? " class='on'" : "") + ">/yr</button>" +
@@ -9429,6 +9444,40 @@ $("bgList").addEventListener("input", e => {
   if (f === "amount") budget[i].amount = num2(el.value);
   else if (f === "desc") budget[i].desc = el.value;
   renderBudget();
+});
+/* Preset item names double as a rename field, the same way stage names work:
+   selecting all text on focus means a click can just be typed over, Enter
+   commits instead of adding a line break, and the value only actually saves
+   on blur. A blank entry falls back to that slot's original default name
+   rather than staying empty. The one preset row that's excluded from the
+   spending total ("Savings & investments") is left out of this entirely --
+   see the isSavingsRow() branch in buildBudget(), which renders it as plain
+   text with an explanatory tooltip instead of a rename field. */
+$("bgList").addEventListener("focusin", e => {
+  const el = e.target;
+  if (!el.getAttribute || el.getAttribute("data-name") === null) return;
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+});
+$("bgList").addEventListener("keydown", e => {
+  const el = e.target;
+  if (el.getAttribute && el.getAttribute("data-name") !== null && e.key === "Enter"){
+    e.preventDefault();
+    el.blur();
+  }
+});
+$("bgList").addEventListener("focusout", e => {
+  const el = e.target;
+  const attr = el.getAttribute && el.getAttribute("data-name");
+  if (attr === null || attr === undefined) return;
+  const i = parseInt(attr, 10);
+  if (!budget[i]) return;
+  const raw = el.textContent.replace(/\s+/g, " ").trim().slice(0, 60);
+  budget[i].desc = raw || BUDGET_PRESET_DESCS[i] || budget[i].desc;
+  buildBudget(); renderBudget();
 });
 $("bgList").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-fv]") : null;
@@ -10391,7 +10440,8 @@ const GLOSS = {
   ddstocks: "How the portfolio is split between stocks and bonds during retirement. Stocks have historically grown faster but swing harder in downturns, which matters more once you're withdrawing instead of contributing. 60/40 is a common conservative-to-moderate retirement mix.",
   yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is: higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
-  customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top."
+  customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top.",
+  bgsavings: "Money being set aside rather than spent, so it's kept out of the spending total above and shown as savings instead."
 };
 
 /* ---------- Roth conversion tool: form, render, charts ---------- */
