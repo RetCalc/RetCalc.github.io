@@ -1261,6 +1261,22 @@ header{padding-top:var(--sb-clear)}
 @media (prefers-reduced-motion:reduce){
   *{transition:none!important;animation:none!important}
 }
+
+/* ---------- compare screen ---------- */
+.cmpgrid{display:flex;gap:12px;flex-wrap:wrap}
+.cmpslot{flex:1 1 200px;min-width:0}
+.cmpslot .field{margin-bottom:8px}
+.cmpkey{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  letter-spacing:.02em;color:var(--dim);margin-bottom:6px}
+.cmpkey i{width:11px;height:11px;border-radius:3px;display:inline-block}
+#cmpOutTable tbody tr td:first-child,#cmpInTable tbody tr td:first-child{
+  text-align:left;white-space:normal;color:var(--dim)}
+#cmpOutTable tbody tr.cmphead td,#cmpInTable tbody tr.cmphead td{
+  color:var(--text);font-weight:650;background:var(--line-soft)}
+#cmpInTable tbody tr.cmpdiff td{background:rgba(233,184,114,.10)}
+#cmpInTable tbody tr.cmpdiff td:first-child{
+  box-shadow:inset 2px 0 0 var(--gold);color:var(--text)}
+.cmpna{color:var(--dimmer)}
 </style>
 </head>
 <body>
@@ -1682,6 +1698,7 @@ window.onerror = function(msg){
         <span class="h2ctrl">
           <span class="seg" id="segSingle">
             <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="hist">History</button>
             <button type="button" data-mode="mc">Monte Carlo</button>
           </span>
           <span class="modeopt" id="optBand">
@@ -1690,6 +1707,17 @@ window.onerror = function(msg){
 
         </span>
       </h2>
+      <div class="mcbar" id="histBar" hidden>
+        <div class="field">
+          <label for="histMix">Stock mix<span class="tipdot" data-tip="histmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMix" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+        </div>
+        <div class="field" id="histGlideWrap" hidden>
+          <label for="histMixEnd">Glides to<span class="tipdot" data-tip="histglidemix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMixEnd" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="40"><span class="affix">%</span></div>
+        </div>
+        <div class="hint" id="histNote" style="margin:0"></div>
+      </div>
       <div class="mcbar" id="mcBar" hidden>
         <div class="field">
           <label for="volatility">Volatility<span class="tipdot" data-tip="volatility" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -1895,6 +1923,7 @@ window.onerror = function(msg){
         <span class="h2ctrl">
           <span class="seg" id="segSeries">
             <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="hist">History</button>
             <button type="button" data-mode="mc">Monte Carlo</button>
           </span>
           <span class="modeopt" id="optBandS">
@@ -1903,6 +1932,9 @@ window.onerror = function(msg){
 
         </span>
       </h2>
+      <div class="mcbar" id="histBarS" hidden>
+        <div class="hint" id="histNoteS" style="margin:0"></div>
+      </div>
       <div class="mcbar" id="mcBarS" hidden>
         <button class="btn" type="button" id="btnRerollS">Re-roll</button>
         <div class="hint" style="margin:0">5,000 simulations per redraw. Volatility is
@@ -1951,6 +1983,200 @@ window.onerror = function(msg){
 
   </div>
 
+
+
+  <!-- ========== COMPARE SCENARIOS ========== -->
+  <div class="stack" id="tab-compare" hidden>
+    <div class="panel">
+      <h2>Compare scenarios<span class="h2ctrl"><button class="btn" type="button" id="cmpBack">Back</button></span></h2>
+      <div class="body">
+        <div class="hint" id="cmpEmpty" hidden></div>
+        <div class="cmpgrid" id="cmpPickers"></div>
+        <div class="hint" id="cmpHelp" style="margin-top:12px">Comparison reads saved
+          scenarios only, exactly as they were saved. Nothing here changes the numbers
+          on the Basic, Advanced or Stages tabs.</div>
+      </div>
+    </div>
+
+    <div class="panel" id="cmpChartPanel">
+      <h2>Balance over time<span class="h2note">in today's dollars</span></h2>
+      <div class="chartwrap" id="chartWrapC">
+        <svg id="chartC" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Saved scenarios compared"></svg>
+        <div class="tip" id="tipC"></div>
+      </div>
+      <div class="legend" id="legendC"></div>
+    </div>
+
+    <div class="panel" id="cmpOutPanel">
+      <h2>Results</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="cmpOutTable"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div class="panel" id="cmpInPanel">
+      <h2>Inputs<span class="h2note">differences highlighted</span></h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="cmpInTable"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PORTFOLIO BACKTEST ========== -->
+  <aside id="asideBT" hidden>
+    <div class="panel inputs">
+      <h2>The mix</h2>
+      <div class="body">
+        <div class="field">
+          <label for="btStock">Stocks<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="btStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+          <div class="seg" id="segBTMix" style="margin-top:8px">
+            <button type="button" data-mix="100">100</button>
+            <button type="button" data-mix="80" class="on">80</button>
+            <button type="button" data-mix="60">60</button>
+            <button type="button" data-mix="40">40</button>
+            <button type="button" data-mix="0">0</button>
+          </div>
+          <div class="hint" id="btMixNote"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="btFrom">From</label>
+            <div class="inputwrap"><input id="btFrom" type="text" inputmode="decimal" data-num data-step="1" min="1928" data-nonneg value="1928"></div>
+          </div>
+          <div class="field">
+            <label for="btTo">Through</label>
+            <div class="inputwrap"><input id="btTo" type="text" inputmode="decimal" data-num data-step="1" min="1928" data-nonneg value="2025"></div>
+          </div>
+        </div>
+        <div class="seg" id="segBTEra" style="margin-bottom:12px">
+          <button type="button" data-era="all" class="on">All</button>
+          <button type="button" data-era="50">Last 50</button>
+          <button type="button" data-era="30">Last 30</button>
+        </div>
+        <div class="derived">
+          <div><span>Years covered</span><span class="num" id="btYears"></span></div>
+          <div><span>Rebalanced</span><span class="num">Annually</span></div>
+          <div><span>Dividends</span><span class="num">Reinvested</span></div>
+        </div>
+        <div class="hint" style="margin-top:10px">S&amp;P 500 total return with dividends
+          reinvested, 10-year Treasury total return, and CPI-U, 1928&ndash;2025, no fees.
+          The chart tracks a fixed $10,000 starting point &mdash; only the mix and date
+          range change what you're looking at. Past returns describe what happened;
+          they are not a forecast.</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-backtest" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Return, per year</div>
+          <div class="v gold" id="btCagr">&mdash;</div>
+          <div class="note" id="btCagrNote"></div>
+        </div>
+        <div>
+          <div class="k">After inflation<span class="tipdot" data-tip="btreal" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="btReal">&mdash;</div>
+          <div class="note" id="btRealNote"></div>
+        </div>
+        <div>
+          <div class="k">Volatility<span class="tipdot" data-tip="btvol" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="btVol">&mdash;</div>
+          <div class="note">Standard deviation of annual returns</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Best year</span><span class="v pos" id="btBest"></span></div>
+            <div class="kv"><span class="k">Worst year</span><span class="v neg" id="btWorst"></span></div>
+            <div class="kv"><span class="k">Deepest fall<span class="tipdot" data-tip="btdd" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="v" id="btDD"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Up years</span><span class="v" id="btUp"></span></div>
+            <div class="kv"><span class="k">Grew to</span><span class="v" id="btEnd"></span></div>
+            <div class="kv"><span class="k">In today's dollars</span><span class="v" id="btEndReal"></span></div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn primary" type="button" id="btUseRate">Use these figures in Advanced</button>
+          <div class="hint" id="btUseNote" style="margin-top:6px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Growth of $10,000</h2>
+      <div class="chartwrap" id="chartWrapBT">
+        <svg id="chartBT" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Historical growth of the chosen mix"></svg>
+        <div class="tip" id="tipBT"></div>
+      </div>
+      <div class="legend" id="legendBT"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Inflation<span class="h2note" id="btInflSpan"></span></h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Average, per year</span><span class="v gold" id="btInfl"></span></div>
+            <div class="kv"><span class="k">Highest year</span><span class="v neg" id="btInflHigh"></span></div>
+            <div class="kv"><span class="k">Lowest year</span><span class="v pos" id="btInflLow"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Falling-price years</span><span class="v" id="btDefl"></span></div>
+            <div class="kv"><span class="k">Prices multiplied by<span class="tipdot" data-tip="btpricelevel" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="v" id="btPriceLevel"></span></div>
+            <div class="kv"><span class="k">$100 then is worth</span><span class="v" id="btPriceNow"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chartwrap" id="chartWrapBTI">
+        <svg id="chartBTI" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Annual inflation over the selected period"></svg>
+        <div class="tip" id="tipBTI"></div>
+      </div>
+      <div class="legend" id="legendBTI"></div>
+      <div class="body"><div class="hint" style="margin:0">A high return in a high-inflation
+        year buys less than a modest one in a quiet year, which is why the headline above
+        shows both. The ten-year line is the one that matters for a plan: single years
+        swing hard, but it is the sustained stretches that reprice a retirement.</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Rolling returns<span class="h2note" id="btRollNote"></span>
+        <span class="h2ctrl">
+          <span class="seg" id="segBTRoll">
+            <button type="button" data-roll="nom" class="on">Nominal</button>
+            <button type="button" data-roll="real">Real</button>
+          </span>
+        </span>
+      </h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="btRollTable">
+          <thead><tr><th>Window</th><th>Periods</th><th>Worst</th><th>Median</th><th>Best</th><th>Positive</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="body"><div class="hint" style="margin:0">Annualised, every overlapping
+        window in the range. The worst column is the one that matters: it is the return
+        someone actually lived through.</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="btTable">
+          <thead><tr><th>Year</th><th>Stocks</th><th>Bonds</th><th>Your mix</th><th>Inflation</th><th>Real</th><th>Balance</th><th>In today's $</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
   <!-- COLLEGE SAVINGS -->
   <aside id="asideCollege" hidden>
@@ -2705,6 +2931,43 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>Portfolio Backtest</h2>
+      <div class="body">
+        <p>Every projection in this app starts with a rate of return you have to
+        supply, and most people pick one out of the air. This tool is where that
+        number comes from. Choose a stock and bond mix, choose a stretch of history,
+        and it reports what that mix did: compound return, the same return after
+        inflation, volatility, the best and worst years by name, and the deepest
+        fall from a previous high.</p>
+        <p>The rolling-returns table is the part worth sitting with. It shows every
+        overlapping 1, 5, 10, 20 and 30-year window in the range, annualised. The
+        median tells you what was typical; the worst column tells you what someone
+        who started at the wrong moment actually earned, which is the figure a plan
+        should survive.</p>
+        <p>Inflation gets its own panel rather than being buried in the real-return
+        figure, because the spread is the point: the record runs from about &minus;10% in
+        1932 to +14% in 1947 in single years, and the stretches that did the damage to retirements
+        were sustained ones, not spikes. The ten-year line is drawn over the annual one
+        for exactly that reason.</p>
+        <p><b>Use these figures in Advanced</b> carries the return, the volatility and
+        the average inflation over together. They belong together: a nominal return
+        earned through a high-inflation stretch is only meaningful next to the inflation
+        that came with it, and pairing that return with a different inflation assumption
+        quietly changes the answer.</p>
+        <p><b>The assumptions.</b> Stock returns are S&amp;P 500 total return with
+        dividends reinvested, and bond returns include the coupon, not just the price
+        move &mdash; which is why stocks here compound near 10% a year rather than the
+        6&ndash;7% price-only figure people often have in mind. Annual rebalancing, no
+        fees, no taxes, no trading costs, so weigh in your own fund's expense ratio
+        separately. The growth chart runs from a fixed $10,000, since
+        that changes the dollar amounts but nothing else about the mix's behavior.
+        The bond series is 10-year Treasuries, not a broad bond fund. Past returns
+        describe what happened; they are not a forecast, and the further back the
+        data goes the less the world it describes resembles this one.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Income Tax</h2>
       <div class="body">
         <p>Two modes, switched at the top of the input panel. <b>Normal Income</b>
@@ -3190,6 +3453,42 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>History</h2>
+      <div class="body">
+        <p>Monte Carlo asks what could happen if returns are drawn from a
+        distribution. History asks a different question: what would this plan have
+        done in the past that actually happened? It takes your contribution
+        schedule and runs it through every overlapping window of the real record,
+        1928 to 2025 &mdash; a 30-year plan gets 69 runs, one starting in each year
+        from 1928 to 1996.</p>
+        <p>Two inputs stop being used in this mode, and it is worth being clear
+        about which:</p>
+        <ul>
+          <li>Your <b>rate of return</b> is ignored. Returns come from the
+          <b>stock mix</b> instead: that share in the S&amp;P 500, the rest in
+          10-year Treasuries, rebalanced once a year. Fees still come off every
+          year.</li>
+          <li>Your <b>inflation</b> setting is ignored. Each window is converted to
+          today's dollars using the inflation that window actually had, so a run
+          through the 1970s is judged against 1970s prices.</li>
+        </ul>
+        <p>A <b>glide</b> works differently here too. There is no rate to glide, so
+        it walks the stock mix down instead, from your starting share to the ending
+        share over the final years of the plan.</p>
+        <p>The bands read the same way the Monte Carlo fan does, except each one is a
+        real stretch of history rather than a simulated draw. The line labelled worst
+        is not a bad scenario someone invented; it is a period people lived through
+        while saving. Worth knowing: the worst outcome for a saver is rarely the
+        crash, because a crash early buys shares cheaply for decades afterwards.
+        A long flat stretch just before retirement does more damage.</p>
+        <p><b>What it can't do.</b> 98 years is a single overlapping sample, heavily
+        US-biased, and windows share years with each other, so they are not 69
+        independent trials. A plan longer than 98 years has no window to run in and
+        the mode says so instead of guessing.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Scenarios, sharing and the summary</h2>
       <div class="body">
         <dl class="gloss">
@@ -3201,10 +3500,18 @@ window.onerror = function(msg){
 
           <dt>The dropdown</dt>
           <dd>Each tool keeps its own saved list: retirement, tax, mortgage,
-          budget, college savings, rent-vs-buy, and drawdown scenarios are all
+          budget, college savings, rent-vs-buy, drawdown and backtest scenarios are all
           stored separately, and the dropdown shows whichever belongs to the tool you're on.
           A retirement scenario still captures all three retirement modes together.
           "Unsaved" means the current numbers don't match anything saved.</dd>
+
+          <dt>Compare</dt>
+          <dd>Opens a separate screen that puts two or three saved retirement
+          scenarios side by side: their balances on one chart, then every result and
+          every input in tables, with differing inputs highlighted. It reads saved
+          scenarios only and changes nothing, so set your inputs and save them first.
+          Each slot picks which mode to read the scenario in, since a saved retirement
+          scenario holds Basic, Advanced and Stages together.</dd>
 
           <dt>Delete</dt>
           <dd>Removes the selected scenario. It doesn't change the numbers on screen,
@@ -3745,6 +4052,22 @@ window.onerror = function(msg){
       <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
         <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1928.</div></div>
+        <div class="toolcard-arrow">&#8250;</div>
+      </div>
+      <div class="toolcard" role="button" tabindex="0" data-pick="backtest">
+        <div class="toolcard-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 32h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <rect x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect x="17.5" y="13" width="5" height="19" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect x="28" y="7" width="5" height="25" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <path class="dd-line" pathLength="100" d="M6 25 L14 17 L24 21 L34 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+          </svg>
+        </div>
+        <div class="toolcard-body">
+          <div class="toolcard-name">Portfolio Backtest</div>
+          <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1928.</div>
+        </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
       <div class="toolcard" role="button" tabindex="0" data-pick="tax">
@@ -6212,6 +6535,189 @@ function ssEstimate(income, careerYears, claimAge) {
   };
 }
 
+/* ---------- Historical sequences ---------- */
+/* Runs the plan's own contribution schedule through every rolling window of
+   real market history. The rate-of-return and inflation inputs are ignored
+   here on purpose: this mode asks what the plan would have done through the
+   actual past, so returns come from the stock/bond mix and the deflator comes
+   from that window's own CPI. Fees still come off every year, and the
+   contribution schedule, growth and glide are whatever the plan says.
+ * @param {Object} g - {initial, fees}
+ * @param {StageParams[]} stages - each may carry .mix (stock share, 0-1) and
+ *   .glide {on, years, endMix}
+ * @returns {Object} bands (percentiles per year), windows, finals, count
+ */
+function historicalRuns(g, stages){
+  const avail = HIST_STOCK.length;
+  let totalYears = 0;
+  for (let i = 0; i < stages.length; i++) totalYears += stages[i].years;
+  const N = Math.ceil(totalYears - 1e-9);
+  const base = {bands:[], windows:[], finals:[], totalYears, N,
+                count:0, median:0, first:HIST_START, last:HIST_START + avail - 1,
+                span:avail, tooLong:false};
+  if (!(N > 0)) return base;
+  if (N > avail) return Object.assign(base, {tooLong:true});
+
+  /* One entry per plan year: which stage it belongs to, what goes in that
+     year, and the stock weight that year. Building this once keeps the window
+     loop to plain arithmetic. */
+  const plan = [];
+  let elapsed = 0;
+  for (let si = 0; si < stages.length; si++){
+    const st = stages[si];
+    const ppy = PPY[st.period];
+    const mix = (st.mix == null ? .8 : st.mix);
+    const glideOn = !!(st.glide && st.glide.on);
+    const gYears = glideOn ? Math.min(st.glide.years, st.years) : 0;
+    // A glide is a move to something more conservative, so in this mode it
+    // walks the stock weight down rather than the rate of return.
+    const endMix = glideOn
+      ? (st.glide.endMix == null ? Math.min(mix, .4) : st.glide.endMix) : mix;
+    const lastYear = Math.ceil(st.years - 1e-9);
+    for (let y = 1; y <= lastYear; y++){
+      const frac = Math.min(1, st.years - (y - 1));
+      const w = glideOn ? glideAnnualRate(y, st.years, gYears, mix, endMix) : mix;
+      plan.push({stage: si + 1,
+                 endYear: elapsed + Math.min(y, st.years),
+                 frac,
+                 ppy,
+                 periods: Math.max(0, Math.round(ppy * frac)),
+                 contrib: st.contrib * Math.pow(1 + st.growth, y - 1),
+                 w: Math.max(0, Math.min(1, w))});
+    }
+    elapsed += st.years;
+  }
+
+  const M = plan.length;
+  if (!M) return base;
+  const count = avail - N + 1;
+  const fee = g.fees || 0;
+  const paths = [];
+  for (let k = 0; k < M; k++) paths.push(new Float64Array(count));
+  const finals = new Float64Array(count);
+  const windows = [];
+
+  for (let wi = 0; wi < count; wi++){
+    let bal = g.initial, cum = 1;
+    for (let k = 0; k < M; k++){
+      const pl = plan[k], idx = wi + k;
+      let r = (pl.w * HIST_STOCK[idx] + (1 - pl.w) * HIST_BOND[idx]) / 100 - fee;
+      if (r <= -0.999) r = -0.999;
+      const pr = Math.pow(1 + r, 1 / pl.ppy) - 1;
+      for (let q = 0; q < pl.periods; q++) bal = bal * (1 + pr) + pl.contrib;
+      cum *= Math.pow(1 + HIST_INFL[idx] / 100, pl.frac);
+      paths[k][wi] = bal / cum;
+    }
+    finals[wi] = bal / cum;
+    windows.push({start: HIST_START + wi, end: HIST_START + wi + N - 1,
+                  final: bal / cum});
+  }
+
+  const asc = (a, b) => a - b;
+  const bands = [];
+  for (let k = 0; k < M; k++){
+    const sorted = paths[k].slice().sort(asc);
+    bands.push({year: plan[k].endYear, stage: plan[k].stage,
+                p10: pctl(sorted, .10), p25: pctl(sorted, .25),
+                p50: pctl(sorted, .50), p75: pctl(sorted, .75),
+                p90: pctl(sorted, .90)});
+  }
+  const sortedFinals = finals.slice().sort(asc);
+  let worst = windows[0], best = windows[0];
+  windows.forEach(w => { if (w.final < worst.final) worst = w;
+                         if (w.final > best.final) best = w; });
+
+  return {bands, windows, finals:sortedFinals, totalYears, N, count,
+          median: pctl(sortedFinals, .5), worst, best,
+          first: HIST_START, last: HIST_START + avail - 1, span: avail,
+          tooLong:false};
+}
+
+/* ---------- Portfolio backtest ---------- */
+/* A fixed stock/bond mix, rebalanced once a year, run across a slice of the
+   historical record. Everything here is descriptive: no projection, no
+   assumption, just what this mix did. */
+/**
+ * @param {Object} o - {stockPct, fee, initial, startYear, endYear}
+ * @returns {Object} per-year rows, summary statistics and rolling-window tables
+ */
+function backtest(o){
+  const avail = HIST_STOCK.length;
+  let s0 = Math.round((o.startYear || HIST_START) - HIST_START);
+  let s1 = Math.round((o.endYear || (HIST_START + avail - 1)) - HIST_START);
+  s0 = Math.max(0, Math.min(avail - 1, s0));
+  s1 = Math.max(s0, Math.min(avail - 1, s1));
+  const w = Math.max(0, Math.min(1, (o.stockPct || 0) / 100));
+  const fee = (o.fee || 0) / 100;
+  const start = Math.max(1, o.initial || 10000);
+
+  const rows = [], rets = [], reals = [];
+  let bal = start, cum = 1, peak = start, maxDD = 0, ddFrom = 0, ddTo = 0;
+  let curPeakYear = HIST_START + s0;
+  for (let i = s0; i <= s1; i++){
+    const r = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100 - fee;
+    const infl = HIST_INFL[i] / 100;
+    const real = (1 + r) / (1 + infl) - 1;
+    bal = bal * (1 + r);
+    cum *= (1 + infl);
+    if (bal > peak){ peak = bal; curPeakYear = HIST_START + i; }
+    const dd = peak > 0 ? bal / peak - 1 : 0;
+    if (dd < maxDD){ maxDD = dd; ddFrom = curPeakYear; ddTo = HIST_START + i; }
+    rets.push(r); reals.push(real);
+    rows.push({year: HIST_START + i, stock: HIST_STOCK[i], bond: HIST_BOND[i],
+               ret: r, infl, real, end: bal, endReal: bal / cum});
+  }
+
+  const n = rets.length;
+  const mean = rets.reduce((a, b) => a + b, 0) / n;
+  let ss = 0;
+  rets.forEach(r => { ss += (r - mean) * (r - mean); });
+  const vol = n > 1 ? Math.sqrt(ss / (n - 1)) : 0;
+  const cagr = Math.pow(bal / start, 1 / n) - 1;
+  const realCagr = Math.pow((bal / cum) / start, 1 / n) - 1;
+  const inflCagr = Math.pow(cum, 1 / n) - 1;
+
+  let bestYr = rows[0], worstYr = rows[0];
+  rows.forEach(r => { if (r.ret > bestYr.ret) bestYr = r;
+                      if (r.ret < worstYr.ret) worstYr = r; });
+  const up = rets.filter(r => r > 0).length;
+
+  /* Inflation is its own story in this data, not just a deflator. */
+  let inflHigh = rows[0], inflLow = rows[0];
+  rows.forEach(r => { if (r.infl > inflHigh.infl) inflHigh = r;
+                      if (r.infl < inflLow.infl) inflLow = r; });
+  const deflationYears = rows.filter(r => r.infl < 0).length;
+
+  /* Rolling windows, annualised, from the selected slice only. */
+  const mid = arr => {
+    const a = arr.slice().sort((x, y) => x - y);
+    const h = Math.floor(a.length / 2);
+    return a.length % 2 ? a[h] : (a[h - 1] + a[h]) / 2;
+  };
+  const rolling = [1, 5, 10, 20, 30].map(L => {
+    if (L > n) return {len:L, count:0};
+    const nom = [], rl = [];
+    for (let i = 0; i + L <= n; i++){
+      let gN = 1, gR = 1;
+      for (let k = i; k < i + L; k++){ gN *= (1 + rets[k]); gR *= (1 + reals[k]); }
+      nom.push(Math.pow(gN, 1 / L) - 1);
+      rl.push(Math.pow(gR, 1 / L) - 1);
+    }
+    return {len:L, count:nom.length,
+            nomWorst: Math.min.apply(null, nom), nomBest: Math.max.apply(null, nom),
+            nomMed: mid(nom), nomPos: nom.filter(v => v > 0).length / nom.length,
+            realWorst: Math.min.apply(null, rl), realBest: Math.max.apply(null, rl),
+            realMed: mid(rl), realPos: rl.filter(v => v > 0).length / rl.length};
+  }).filter(x => x.count > 0);
+
+  return {rows, years:n, first: HIST_START + s0, last: HIST_START + s1,
+          stockPct: w * 100, cagr, realCagr, inflCagr, vol,
+          endBal: bal, endReal: bal / cum, start,
+          best: bestYr, worst: worstYr, upYears: up, downYears: n - up,
+          maxDD, ddFrom, ddTo, rolling,
+          inflHigh, inflLow, deflationYears, priceLevel: cum};
+}
+
 // ===MATH END===
 
 if (typeof module !== "undefined")
@@ -6221,7 +6727,9 @@ if (typeof module !== "undefined")
                     computeRetireTax, ssTaxable, LTCG_2026, NIIT,
                     SENIOR_ADDL, SENIOR_BONUS, SS_PROV, SS_TAX_STATES,
                     RET_STATE, stateRetireTax,
-                    finalStageSolve, balanceBeforeLast};
+                    finalStageSolve, balanceBeforeLast,
+                    historicalRuns, backtest,
+                    HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START};
 </script>
 
 <script>
@@ -6269,7 +6777,8 @@ const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
               college:"finance-tools.college.v1", rentbuy:"finance-tools.rentbuy.v1",
               drawdown:"finance-tools.drawdown.v1",
               roth:"finance-tools.roth.v1",
-              debt:"finance-tools.debt.v1"};
+              debt:"finance-tools.debt.v1",
+              backtest:"finance-tools.backtest.v1"};
 const memory = {};
 function storeRead(which){
   try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
@@ -6286,7 +6795,8 @@ const SC = {retire: storeRead("retire") || [], tax: storeRead("tax") || [],
             college: storeRead("college") || [], rentbuy: storeRead("rentbuy") || [],
             drawdown: storeRead("drawdown") || [],
             roth: storeRead("roth") || [],
-            debt: storeRead("debt") || []};
+            debt: storeRead("debt") || [],
+            backtest: storeRead("backtest") || []};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
@@ -6723,6 +7233,89 @@ function paintChart(svgId, pts, maxX, mode, stageMarks){
   return {pts, X, Y, hover, dot, maxX, W};
 }
 
+/* A plain multi-line painter. The fan painter above is built around one
+   series with a ribbon around it; this one draws n independent lines that may
+   not even share a length, which is what comparing scenarios needs. */
+const MULTI_COLORS = ["#e9b872", "#4fbf95", "#7d9fd6"];
+function paintMulti(svgId, series, maxX, opt){
+  const o = opt || {};
+  const svg = $(svgId);
+  const narrow = window.innerWidth < 640;
+  const W = narrow ? 470 : 900, H = narrow ? 400 : 340;
+  const L = narrow ? 60 : 78, Rp = narrow ? 12 : 14;
+  const T = narrow ? 12 : 14, B = narrow ? 34 : 30;
+  const fs = narrow ? 15 : 11, sw = narrow ? 1.7 : 1;
+  const pw = W - L - Rp, ph = H - T - B;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.innerHTML = "";
+  const live = (series || []).filter(x => x && x.pts && x.pts.length);
+  if (!live.length) return null;
+
+  const vals = [];
+  live.forEach(x => x.pts.forEach(pt => vals.push(pt.value)));
+  const maxY = Math.max.apply(null, vals) * 1.06 || 1;
+  const minY = Math.min(0, Math.min.apply(null, vals));
+  const span = (maxY - minY) || 1;
+  const X = y => L + (y / (maxX || 1)) * pw;
+  const Y = v => T + ph - ((v - minY) / span) * ph;
+
+  const fmtAxis = o.yFmt ? o.yFmt : v => {
+    const a = Math.abs(v);
+    return (v < 0 ? "-$" : "$") + (a >= 1e6 ? (a/1e6).toFixed(1) + "M"
+         : a >= 1e3 ? Math.round(a/1000) + "k" : Math.round(a));
+  };
+  for (let i = 0; i <= 4; i++){
+    const v = minY + span * i / 4, y = Y(v);
+    svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:y, y2:y, stroke:cssVar("--grid"),
+      "stroke-width":1 * sw}));
+    const t = svgEl("text", {x:L - 8, y:y + fs/3, "text-anchor":"end", "font-size":fs,
+      fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    t.textContent = fmtAxis(v); svg.appendChild(t);
+  }
+  const step = Math.max(1, Math.ceil(maxX / (narrow ? 6 : 12)));
+  for (let y = 0; y <= maxX; y += step){
+    const t = svgEl("text", {x:X(y), y:H - 10, "text-anchor":"middle", "font-size":fs,
+      fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    t.textContent = o.xFmt ? o.xFmt(y) : y; svg.appendChild(t);
+  }
+
+  if (minY < 0){
+    const zy = Y(0);
+    svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:zy, y2:zy,
+      stroke:cssVar("--axis"), "stroke-width":1 * sw, opacity:.55}));
+  }
+
+  const colors = live.map((x, i) => x.color || MULTI_COLORS[i % MULTI_COLORS.length]);
+  live.forEach((x, i) => {
+    const d = x.pts.map((pt, k) => (k ? "L" : "M") + X(pt.year) + " " + Y(pt.value)).join(" ");
+    const at = {d, fill:"none", stroke:colors[i], "stroke-width":(x.width || 2.4) * sw,
+                "stroke-linejoin":"round"};
+    if (x.dash) at["stroke-dasharray"] = x.dash;
+    svg.appendChild(svgEl("path", at));
+  });
+
+  /* One hover grid across every series, so the tooltip can show them together
+     even when one plan is shorter than another. */
+  const seen = {};
+  live.forEach(x => x.pts.forEach(pt => { seen[pt.year] = 1; }));
+  const yearList = Object.keys(seen).map(Number).sort((a, b) => a - b);
+  const maps = live.map(x => {
+    const m = {}; x.pts.forEach(pt => { m[pt.year] = pt.value; }); return m;
+  });
+  const pts = yearList.map(yr => {
+    const vs = maps.map(m => (m[yr] == null ? null : m[yr]));
+    let firstv = null;
+    for (let i = 0; i < vs.length; i++) if (vs[i] != null){ firstv = vs[i]; break; }
+    return {year:yr, base: firstv == null ? 0 : firstv, vals:vs};
+  });
+
+  const hover = svgEl("line", {x1:0, x2:0, y1:T, y2:T + ph, stroke:"#e9b872",
+    "stroke-width":1 * sw, opacity:0}); svg.appendChild(hover);
+  const dot = svgEl("circle", {r:4.5 * sw, fill:"#e9b872", stroke:cssVar("--dotstroke"),
+    "stroke-width":2.5 * sw, opacity:0}); svg.appendChild(dot);
+  return {pts, X, Y, hover, dot, maxX, W, names: live.map(x => x.name), colors};
+}
+
 function mcLegend(elId, extra){
   const parts = [swatch("#4fbf95", "10th\u201390th percentile"),
                  swatch("#3f9a78", "25th\u201375th"),
@@ -6730,6 +7323,74 @@ function mcLegend(elId, extra){
                  swatch("#7d9fd6", "Without volatility")];
   if (extra) parts.push(swatch(cssVar("--stageline"), extra));
   $(elId).innerHTML = parts.join("");
+}
+/* History mode shares the fan painter with Monte Carlo, but not its legend:
+   there is no "without volatility" line to show, because no assumed rate is
+   used at all. */
+function histLegend(elId, extra){
+  const parts = [swatch("#4fbf95", "10th\u201390th percentile of windows"),
+                 swatch("#3f9a78", "25th\u201375th"),
+                 swatch("#e9b872", "Median window")];
+  if (extra) parts.push(swatch(cssVar("--stageline"), extra));
+  $(elId).innerHTML = parts.join("");
+}
+function histSummary(noteId, H, target, label){
+  const el = $(noteId);
+  if (!H || !H.count){
+    if (H && H.tooLong){
+      el.hidden = false;
+      el.innerHTML = "<b class='warn'>" + H.N + " years</b> is longer than the " +
+        H.span + " years of history available (" + H.first + "\u2013" + H.last +
+        "). Shorten the plan to use this mode.";
+    } else el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  let out = "";
+  if (target > 0){
+    let hit = 0;
+    for (let i = 0; i < H.finals.length; i++) if (H.finals[i] >= target) hit++;
+    const pct = hit / H.count * 100;
+    out += "<b" + (pct >= 75 ? "" : " class='warn'") + ">" + hit + " of " + H.count +
+      "</b> windows reach " + money(target) + " " + label + ". ";
+  }
+  out += "Median outcome <b>" + money(H.median) + "</b>. Worst window started " +
+    H.worst.start + " (" + money(H.worst.final) + "), best started " +
+    H.best.start + " (" + money(H.best.final) + ").";
+  el.innerHTML = out;
+}
+function histBarNote(H, perStage){
+  if (!H || !H.count){
+    if (H && H.tooLong)
+      return "No window fits: history runs " + H.first + "\u2013" + H.last + ".";
+    return "Add some years to run this.";
+  }
+  return "<b>" + H.count + "</b> rolling " + H.N + "-year windows, " + H.first +
+    "\u2013" + H.last + ". " + (perStage
+      ? "Each stage uses its own stock mix, set on the cards above. "
+      : "") +
+    "Your rate of return and inflation inputs are ignored in this mode.";
+}
+/* One stage object for the single-plan tab, carrying the mix instead of a rate. */
+function histStagesSingle(p){
+  const mix = Math.max(0, Math.min(1, num("histMix") / 100));
+  const endMix = Math.max(0, Math.min(1, num("histMixEnd") / 100));
+  return [{years:p.years, contrib:p.contrib, period:p.period, growth:p.growth,
+           nominal:p.nominal, mix,
+           glide: (p.glide && p.glide.on)
+             ? {on:true, years:p.glide.years, endMix} : {on:false}}];
+}
+function histStagesSeries(g){
+  return effectiveStages(g).map((st, i) => {
+    const raw = stages[i] || {};
+    const mix = (raw.mix == null ? .8 : raw.mix);
+    const out = Object.assign({}, st, {mix});
+    if (out.glide && out.glide.on)
+      out.glide = Object.assign({}, out.glide, {
+        endMix: (raw.glide && raw.glide.endMix != null)
+          ? raw.glide.endMix : Math.min(mix, .4)});
+    return out;
+  });
 }
 function mcSummary(noteId, mc, target, label){
   if (!mc || !mc.finals.length || !(target > 0)){ $(noteId).hidden = true; return; }
@@ -6750,6 +7411,28 @@ function scheduleMC(fn){ clearTimeout(mcTimer); mcTimer = setTimeout(fn, 160); }
 function drawChart(R, p){
   if (!R || !R.years.length){ chartPoints = paintChart("chart", [], 1, "band", []); return; }
   const real = (v, yr) => v / Math.pow(1 + p.inflation, yr);
+
+  $("histGlideWrap").hidden = !(p.glide && p.glide.on);
+
+  if (chartMode.single === "hist"){
+    const H = historicalRuns({initial:p.initial, fees:p.fees}, histStagesSingle(p));
+    $("histNote").innerHTML = histBarNote(H, false);
+    if (!H.count){
+      chartPoints = paintChart("chart", [], 1, "mc", []);
+      $("legend").innerHTML = "";
+      histSummary("mcNote", H, 0, "");
+      return;
+    }
+    const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial,
+                  p25:p.initial, p75:p.initial}];
+    H.bands.forEach(b => pts.push({year:b.year, base:b.p50, hi:b.p90, lo:b.p10,
+                                   p25:b.p25, p75:b.p75}));
+    chartPoints = paintChart("chart", pts, p.years, "mc", []);
+    histLegend("legend");
+    const S = goalSolve(p, $("solveFor").value, num("target"));
+    histSummary("mcNote", H, S.portToday, "(the portfolio behind your target above)");
+    return;
+  }
 
   if (chartMode.single === "mc"){
     const mc = monteCarlo({initial:p.initial, inflation:p.inflation},
@@ -6850,6 +7533,12 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
 }
 
 function tipRows(best, mode){
+  if (mode === "hist")
+    return "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
+      "</span><br><span style='color:#3f9a78'>75th</span> <span class='n'>" + money(best.p75) +
+      "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
+      "</span><br><span style='color:#3f9a78'>25th</span> <span class='n'>" + money(best.p25) +
+      "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
   const nm = mode === "mc" ? ["90th","Median","10th"] : ["Higher","Your rate","Lower"];
   return "<br><span style='color:#4fbf95'>" + nm[0] + "</span> <span class='n'>" + money(best.hi) +
     "</span><br><span style='color:#e9b872'>" + nm[1] + "</span> <span class='n'>" + money(best.base) +
@@ -6860,6 +7549,311 @@ attachChart("chartWrap", "chart", "tip", () => chartPoints,
 attachChart("chartWrapS", "chartS", "tipS", () => seriesPoints,
   best => "<b>Year " + fmtNum(best.year) + "</b> <span style='color:#8ba0ac'>&middot; stage " +
           best.stage + "</span>" + tipRows(best, chartMode.series));
+
+/* ---------- compare scenarios ---------- */
+/* Read-only by design: every figure here comes from a saved scenario, run
+   through the same engines the tabs use, and nothing written back. */
+const CMP_LETTERS = ["A", "B", "C"];
+const CMP_MODE_LABEL = {basic:"Basic", advanced:"Advanced", stages:"Stages"};
+let cmpSlots = [{name:"", mode:"advanced"}, {name:"", mode:"advanced"},
+                {name:"", mode:"advanced"}];
+let cmpPoints = null;
+let cmpPrevTab = "single";
+const CMP_HELP = "Comparison reads saved scenarios only, exactly as they were " +
+  "saved. Nothing here changes the numbers on the Basic, Advanced or Stages tabs.";
+
+function cmpFmt(n, kind){
+  if (n == null || !isFinite(n)) return "\u2014";
+  if (kind === "pct") return pctStr(n, 2);
+  if (kind === "years") return fmtYears(n);
+  if (kind === "int") return fmtNum(n);
+  if (kind === "money2") return money(n, 2);
+  return money(n);
+}
+function cmpDelta(a, b, kind){
+  if (a == null || b == null || !isFinite(a) || !isFinite(b)) return null;
+  const d = b - a;
+  if (Math.abs(d) < 1e-9) return {t:"\u2014", cls:""};
+  const body = kind === "pct" ? pctStr(Math.abs(d), 2)
+             : kind === "years" ? fmtYears(Math.abs(d))
+             : kind === "int" ? fmtNum(Math.abs(d))
+             : money(Math.abs(d), kind === "money2" ? 2 : 0);
+  return {t:(d > 0 ? "+" : "\u2212") + body, cls:(d > 0 ? "pos" : "neg")};
+}
+const mrow = (k, n, kind) => ({k, n, kind: kind || "money"});
+
+/* One saved scenario, read in one of the three modes, returned as a chart
+   path plus two labelled row sets. */
+function cmpRun(sc, mode){
+  if (!sc) return null;
+  if (mode === "basic"){
+    const b = sc.basic || BASIC_DEFAULTS;
+    const years = Math.min(100, Math.max(0, (b.retire || 0) - (b.age || 0)));
+    const period = b.period || "Monthly";
+    const p = {years, real: b.risk || 0, initial: b.saved || 0,
+               contrib: b.contrib || 0, period, withdrawal:.04};
+    if (!(years > 0)) return null;
+    const R = projectBasic(p);
+    return {
+      years,
+      pts: [{year:0, value:p.initial}].concat(
+             R.years.map(y => ({year:y.year, value:y.end}))),
+      out: [mrow("Value at retirement", R.fv),
+            mrow("Income, per year (4%)", R.fv * .04),
+            mrow("Income, per month", R.fv * .04 / 12),
+            mrow("You put in", R.contribTotal),
+            mrow("Growth adds", R.growth),
+            mrow("Years saving", years, "years")],
+      inp: [["Age today", fmtNum(b.age || 0)],
+            ["Retirement age", fmtNum(b.retire || 0)],
+            ["Starting balance", money(b.saved || 0)],
+            ["Contribution", money(b.contrib || 0, 2) + " " + PERIOD_ADV[period]],
+            ["Growth after inflation", pctStr(b.risk || 0, 2)]]
+    };
+  }
+  if (mode === "stages"){
+    const g = sc.series && sc.series.globals;
+    const list = (sc.series && Array.isArray(sc.series.stages)) ? sc.series.stages : [];
+    if (!g || !list.length) return null;
+    const R = projectSeries(g, effectiveStagesFrom(g, list));
+    if (!R.rows.length) return null;
+    const defl = yr => Math.pow(1 + g.inflation, yr);
+    const inp = [["Starting value", money(g.initial)],
+                 ["Inflation", pctStr(g.inflation, 2)],
+                 ["Withdrawal rate", pctStr(g.withdrawal, 2)],
+                 ["Effective tax rate", pctStr(g.taxRate, 2)],
+                 ["Fees", pctStr(g.fees || 0, 2)]];
+    list.forEach((st, i) => {
+      const nm = st.name || ("Stage " + (i + 1));
+      inp.push([nm + " \u00b7 years", fmtNum(st.years)]);
+      inp.push([nm + " \u00b7 contribution",
+                money(st.contrib, 2) + " " + PERIOD_ADV[st.period]]);
+      inp.push([nm + " \u00b7 contribution growth", pctStr(st.growth || 0, 2)]);
+      inp.push([nm + " \u00b7 rate of return", pctStr(st.nominal, 2)]);
+    });
+    return {
+      years: R.totalYears,
+      pts: [{year:0, value:g.initial}].concat(
+             R.rows.map(r => ({year:r.endYear, value:r.end / defl(r.endYear)}))),
+      out: [mrow("Future value", R.fv),
+            mrow("Inflation adjusted", R.fvReal),
+            mrow("After-tax income, per year", R.afterTax),
+            mrow("After-tax income, per month", R.afterTaxMo),
+            mrow("Amount invested", R.invested),
+            mrow("Growth", R.growth),
+            mrow("Total contributions", R.contribTotal),
+            mrow("Total years", R.totalYears, "years"),
+            mrow("Stages", list.length, "int")],
+      inp
+    };
+  }
+  const p = sc;
+  if (!(p.years > 0)) return null;
+  const R = project(p);
+  const defl = yr => Math.pow(1 + p.inflation, yr);
+  const inp = [["Starting value", money(p.initial || 0)],
+               ["Contribution", money(p.contrib || 0, 2) + " " + PERIOD_ADV[p.period]],
+               ["Contribution growth", pctStr(p.growth || 0, 2)],
+               ["Time period", fmtYears(p.years)],
+               ["Rate of return", pctStr(p.gross == null ? p.nominal : p.gross, 2)],
+               ["Fees", pctStr(p.fees || 0, 2)],
+               ["Return net of fees", pctStr(p.nominal, 2)],
+               ["Inflation", pctStr(p.inflation, 2)],
+               ["Withdrawal rate", pctStr(p.withdrawal, 2)],
+               ["Effective tax rate", pctStr(p.taxRate, 2)]];
+  if (p.glide && p.glide.on)
+    inp.push(["Glide", pctStr(p.glide.endRate, 2) + " over the final " +
+                       fmtYears(p.glide.years)]);
+  return {
+    years: p.years,
+    pts: [{year:0, value:p.initial}].concat(
+           R.years.map(y => ({year:y.year, value:y.end / defl(y.year)}))),
+    out: [mrow("Future value", R.fv),
+          mrow("Inflation adjusted", R.fvReal),
+          mrow("After-tax income, per year", R.afterTax),
+          mrow("After-tax income, per month", R.afterTaxMo),
+          mrow("Amount invested", R.invested),
+          mrow("Growth", R.growth),
+          mrow("Total contributions", R.contribTotal),
+          mrow("Final contribution", R.lastContrib, "money2")],
+    inp
+  };
+}
+
+function buildComparePickers(){
+  const list = SC.retire;
+  const host = $("cmpPickers");
+  const panels = ["cmpChartPanel", "cmpOutPanel", "cmpInPanel"];
+  if (list.length < 2){
+    $("cmpEmpty").hidden = false;
+    $("cmpEmpty").innerHTML = "You have " +
+      (list.length ? "one saved scenario" : "no saved scenarios") +
+      ". Comparison runs on saved scenarios, so set your inputs on Basic, Advanced " +
+      "or Stages, save them from the bar above, and do that at least twice.";
+    host.innerHTML = "";
+    panels.forEach(id => { $(id).hidden = true; });
+    $("cmpHelp").hidden = true;
+    return false;
+  }
+  $("cmpEmpty").hidden = true;
+  $("cmpHelp").hidden = false;
+  panels.forEach(id => { $(id).hidden = false; });
+  host.innerHTML = cmpSlots.map((sl, i) => {
+    const opts = (i === 2 ? "<option value=''>None</option>" : "") +
+      list.map(x => "<option" + (x.name === sl.name ? " selected" : "") + ">" +
+                    escapeHtml(x.name) + "</option>").join("");
+    const modes = ["basic","advanced","stages"].map(m =>
+      "<option value='" + m + "'" + (m === sl.mode ? " selected" : "") + ">" +
+      CMP_MODE_LABEL[m] + "</option>").join("");
+    return "<div class='cmpslot'>" +
+      "<div class='cmpkey'><i style='background:" + MULTI_COLORS[i] + "'></i>" +
+        CMP_LETTERS[i] + "</div>" +
+      "<div class='field'><select data-cmp='" + i + "' aria-label='Scenario " +
+        CMP_LETTERS[i] + "'>" + opts + "</select></div>" +
+      "<div class='field'><select data-cmpmode='" + i + "' aria-label='Scenario " +
+        CMP_LETTERS[i] + " mode'>" + modes + "</select></div>" +
+    "</div>";
+  }).join("");
+  return true;
+}
+
+function renderCompare(){
+  const list = SC.retire;
+  const all = cmpSlots.map((sl, i) => {
+    const sc = sl.name ? list.find(x => x.name === sl.name) : null;
+    return {i, name: sl.name, mode: sl.mode, sc, run: cmpRun(sc, sl.mode)};
+  });
+  const slots = all.filter(x => x.run);
+  const blank = all.filter(x => x.name && !x.run);
+  $("cmpHelp").innerHTML = CMP_HELP + (blank.length
+    ? " <b>" + blank.map(x => escapeHtml(x.name) + " has nothing saved for " +
+        CMP_MODE_LABEL[x.mode]).join("; ") + ".</b>" : "");
+
+  if (!slots.length){
+    cmpPoints = paintMulti("chartC", [], 1);
+    $("legendC").innerHTML = "";
+    $("cmpOutTable").querySelector("thead").innerHTML = "";
+    $("cmpOutTable").querySelector("tbody").innerHTML = "";
+    $("cmpInTable").querySelector("thead").innerHTML = "";
+    $("cmpInTable").querySelector("tbody").innerHTML = "";
+    return;
+  }
+
+  /* chart */
+  const maxX = Math.max.apply(null, slots.map(x => x.run.years)) || 1;
+  cmpPoints = paintMulti("chartC", slots.map(x => ({
+    name: x.name, color: MULTI_COLORS[x.i], pts: x.run.pts})), maxX);
+  $("legendC").innerHTML = slots.map(x =>
+    swatch(MULTI_COLORS[x.i], escapeHtml(x.name) + " \u00b7 " +
+           CMP_MODE_LABEL[x.mode])).join("");
+
+  /* results, with a difference column against the first scenario */
+  const labels = [], kinds = {};
+  slots.forEach(x => x.run.out.forEach(r => {
+    if (labels.indexOf(r.k) < 0){ labels.push(r.k); kinds[r.k] = r.kind; }
+  }));
+  const valOf = (x, k) => {
+    const hit = x.run.out.find(r => r.k === k);
+    return hit ? hit.n : null;
+  };
+  const head = ["<th>Result</th>"].concat(slots.map(x =>
+    "<th>" + CMP_LETTERS[x.i] + " \u00b7 " + escapeHtml(x.name) + "</th>"));
+  slots.slice(1).forEach(x => head.push("<th>" + CMP_LETTERS[x.i] + " \u2212 " +
+    CMP_LETTERS[slots[0].i] + "</th>"));
+  $("cmpOutTable").querySelector("thead").innerHTML = "<tr>" + head.join("") + "</tr>";
+  $("cmpOutTable").querySelector("tbody").innerHTML = labels.map(k => {
+    const kind = kinds[k];
+    let tr = "<tr><td>" + k + "</td>";
+    slots.forEach(x => {
+      const v = valOf(x, k);
+      tr += "<td" + (v == null ? " class='cmpna'" : "") + ">" + cmpFmt(v, kind) + "</td>";
+    });
+    slots.slice(1).forEach(x => {
+      const d = cmpDelta(valOf(slots[0], k), valOf(x, k), kind);
+      tr += d ? "<td class='" + d.cls + "'>" + d.t + "</td>"
+              : "<td class='cmpna'>\u2014</td>";
+    });
+    return tr + "</tr>";
+  }).join("");
+
+  /* inputs, every row either side used, differences flagged */
+  const ilabels = [];
+  slots.forEach(x => x.run.inp.forEach(r => {
+    if (ilabels.indexOf(r[0]) < 0) ilabels.push(r[0]);
+  }));
+  $("cmpInTable").querySelector("thead").innerHTML = "<tr><th>Input</th>" +
+    slots.map(x => "<th>" + CMP_LETTERS[x.i] + " \u00b7 " +
+      escapeHtml(x.name) + "</th>").join("") + "</tr>";
+  $("cmpInTable").querySelector("tbody").innerHTML = ilabels.map(k => {
+    const cells = slots.map(x => {
+      const hit = x.run.inp.find(r => r[0] === k);
+      return hit ? hit[1] : null;
+    });
+    const seen = [];
+    cells.forEach(c => { if (seen.indexOf(String(c)) < 0) seen.push(String(c)); });
+    const diff = seen.length > 1;
+    return "<tr" + (diff ? " class='cmpdiff'" : "") + "><td>" + k + "</td>" +
+      cells.map(c => "<td" + (c == null ? " class='cmpna'" : "") + ">" +
+        (c == null ? "\u2014" : c) + "</td>").join("") + "</tr>";
+  }).join("");
+}
+
+$("cmpPickers").addEventListener("change", e => {
+  const el = e.target;
+  const i = el.getAttribute("data-cmp");
+  const j = el.getAttribute("data-cmpmode");
+  if (i != null) cmpSlots[+i].name = el.value;
+  else if (j != null) cmpSlots[+j].mode = el.value;
+  else return;
+  renderCompare();
+});
+
+function showCompare(){
+  if (chartMode.tab === "compare") return;
+  cmpPrevTab = chartMode.tab;
+  const m = activeRetireMode();
+  const dflt = (m === "basic" || m === "stages") ? m : "advanced";
+  const names = SC.retire.map(x => x.name);
+  cmpSlots.forEach(sl => { sl.mode = dflt; });
+  if (names.indexOf(cmpSlots[0].name) < 0) cmpSlots[0].name = names[0] || "";
+  if (names.indexOf(cmpSlots[1].name) < 0 || cmpSlots[1].name === cmpSlots[0].name){
+    let pick = "";
+    for (let i = 0; i < names.length; i++)
+      if (names[i] !== cmpSlots[0].name){ pick = names[i]; break; }
+    cmpSlots[1].name = pick;
+  }
+  if (names.indexOf(cmpSlots[2].name) < 0) cmpSlots[2].name = "";
+
+  chartMode.tab = "compare";
+  Array.prototype.forEach.call(
+    document.querySelectorAll("#main > .stack, #main > aside"),
+    el => { el.hidden = true; });
+  setToolBack("picker");
+  $("tab-compare").hidden = false;
+  $("main").classList.add("solo");
+  refreshScenarioList($("scenarioPick").value || "");
+  if (buildComparePickers()) renderCompare();
+  initCSVButtons();
+  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
+  playPaneEnter();
+}
+$("cmpBack").addEventListener("click", () => {
+  paneDir = "back";
+  const t = (cmpPrevTab === "compare" || !cmpPrevTab) ? "single" : cmpPrevTab;
+  showTab(t);
+  pushNav();
+});
+attachChart("chartWrapC", "chartC", "tipC", () => cmpPoints, best => {
+  const st = cmpPoints;
+  if (!st) return "";
+  let out = "<b>Year " + fmtNum(best.year) + "</b>";
+  st.names.forEach((nm, i) => {
+    if (best.vals[i] == null) return;
+    out += "<br><span style='color:" + st.colors[i] + "'>" + escapeHtml(nm) +
+      "</span> <span class='n'>" + money(best.vals[i]) + "</span>";
+  });
+  return out;
+});
 
 /* ---------- goal solve ---------- */
 function fmtYears(y){
@@ -7156,10 +8150,13 @@ function fmtNum(v){
    contribution restated in the dollars of its own start year: $3,000 entered
    for a stage beginning in year 5 is modelled as $3,000 x (1+inflation)^5. The
    stage's own growth rate then compounds from that adjusted base. */
-function effectiveStages(g){
+function effectiveStages(g){ return effectiveStagesFrom(g, stages); }
+/* Same transformation against any stage list, so a saved scenario can be run
+   without loading it into the live Stages tab. */
+function effectiveStagesFrom(g, list){
   const fee = g.fees || 0, infl = g.inflation || 0;
   let start = 0;
-  return stages.map((st, i) => {
+  return list.map((st, i) => {
     const factor = (st.adj && i > 0) ? Math.pow(1 + infl, start) : 1;
     const out = Object.assign({}, st, {contrib: st.contrib * factor,
                                        nominal: st.nominal - fee});
@@ -7229,6 +8226,10 @@ function buildStages(){
           "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
           "' value='" + (+(st.growth * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " contribution growth'>" +
           "<span class='affix'>%/yr</span></div></div>" +
+        "<div class='field stagemix'><label>Stock mix<span class='tipdot' data-tip='histmix' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-f='mix' data-i='" + i +
+          "' value='" + (+(((st.mix == null ? .8 : st.mix)) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " stock mix'>" +
+          "<span class='affix'>%</span></div></div>" +
         "<div class='field stagevol'><label>Volatility</label><div class='inputwrap'>" +
           "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-nonneg data-f='vol' data-i='" + i +
           "' value='" + (+((st.vol || 0) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " volatility'>" +
@@ -7258,6 +8259,10 @@ function buildStages(){
                 "' value='" + ((st.glide && st.glide.years) || "") +
                 "' aria-label='Stage " + (i+1) + " glide years'><span class='affix'>yrs</span></div></div>" +
             "</div>" +
+            "<div class='field stagemix'><label>Glides to<span class='tipdot' data-tip='histglidemix' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
+              "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-f='glideMix' data-i='" + i +
+              "' value='" + (+((((st.glide && st.glide.endMix != null) ? st.glide.endMix : Math.min((st.mix == null ? .8 : st.mix), .4)) * 100).toFixed(6))) +
+              "' aria-label='Stage " + (i+1) + " ending stock mix'><span class='affix'>%</span></div></div>" +
             "<div class='hint' style='margin:0' data-glidenote='" + i + "'></div>" +
           "</div>" +
         "</div>"
@@ -7299,6 +8304,10 @@ $("stageList").addEventListener("input", e => {
     stages[i].glide = stages[i].glide || {on: true};
     stages[i].glide.years = Math.max(1, Math.round(parseNum(el.value)));
     clampStageGlideYears(i);
+  }
+  else if (f === "glideMix"){
+    stages[i].glide = stages[i].glide || {on: true};
+    stages[i].glide.endMix = Math.max(0, Math.min(1, parseNum(el.value) / 100));
   }
   else stages[i][f] = parseNum(el.value) / 100;
   if (f === "glideEnd" || f === "glideYears") updateStageGlideNote(i);
@@ -7504,6 +8513,9 @@ function renderSeries(){
   $("stageList").querySelectorAll(".stagevol").forEach(el => {
     el.style.display = chartMode.series === "mc" ? "" : "none";
   });
+  $("stageList").querySelectorAll(".stagemix").forEach(el => {
+    el.style.display = chartMode.series === "hist" ? "" : "none";
+  });
 
   $("gStages").textContent = stages.length;
   $("gFeeNote").textContent = (g.fees || 0) > 0
@@ -7554,6 +8566,25 @@ function drawSeriesChart(g, R){
   const defl = yr => Math.pow(1 + g.inflation, yr);
   const marks = R.summary.slice(0, -1).map(x => ({year:x.endYear, label:String(x.stage + 1)}));
 
+  if (chartMode.series === "hist"){
+    const H = historicalRuns({initial:g.initial, fees:g.fees}, histStagesSeries(g));
+    $("histNoteS").innerHTML = histBarNote(H, true);
+    if (!H.count){
+      seriesPoints = paintChart("chartS", [], 1, "mc", []);
+      $("legendS").innerHTML = "";
+      histSummary("mcNoteS", H, 0, "");
+      return;
+    }
+    const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial,
+                  p25:g.initial, p75:g.initial}];
+    H.bands.forEach(b => pts.push({year:b.year, stage:b.stage, base:b.p50,
+                                   hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75}));
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks);
+    histLegend("legendS", "Stage boundary");
+    histSummary("mcNoteS", H, seriesTarget || 0, "(your target above)");
+    return;
+  }
+
   if (chartMode.series === "mc"){
     const mc = monteCarlo(g, effectiveStages(g), readTrials(), mcSeed);
     const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial,
@@ -7598,7 +8629,7 @@ $("bandS").addEventListener("input", () => {
 
 /* ---------- tabs ---------- */
 /* ---------- chart mode switches ---------- */
-function wireMode(segId, which, bandOptId, mcOptId, redraw){
+function wireMode(segId, which, opts, redraw){
   $(segId).addEventListener("click", e => {
     const b = e.target.closest ? e.target.closest("button[data-mode]") : null;
     if (!b) return;
@@ -7607,15 +8638,18 @@ function wireMode(segId, which, bandOptId, mcOptId, redraw){
     chartMode[which] = m;
     $(segId).querySelectorAll("button").forEach(x =>
       x.classList.toggle("on", x.getAttribute("data-mode") === m));
-    $(bandOptId).hidden = (m !== "band");
-    $(mcOptId).hidden = (m !== "mc");
+    for (const k in opts){ const el = $(opts[k]); if (el) el.hidden = (k !== m); }
     redraw();
     if (which === "series") renderSeries();
   });
 }
 const redrawSingle = () => { if (lastRun) drawChart(lastRun, readInputs()); };
-wireMode("segSingle", "single", "optBand", "mcBar", redrawSingle);
-wireMode("segSeries", "series", "optBandS", "mcBarS", () => renderSeries());
+wireMode("segSingle", "single", {band:"optBand", hist:"histBar", mc:"mcBar"}, redrawSingle);
+wireMode("segSeries", "series", {band:"optBandS", hist:"histBarS", mc:"mcBarS"},
+         () => renderSeries());
+["histMix","histMixEnd"].forEach(id => $(id).addEventListener("input", () => {
+  if (chartMode.single === "hist") redrawSingle();
+}));
 
 function reroll(){ mcSeed = (mcSeed * 1664525 + 1013904223) >>> 0; }
 $("btnReroll").addEventListener("click", () => {
@@ -7693,6 +8727,14 @@ window.addEventListener("popstate", e => {
   const st = e.state;
   if (!st || !st.t) return;
   navSuspended = true;
+  if (st.t === "compare"){
+    if (chartMode.tab === "compare"){ navSuspended = false; return; }
+    paneDir = "tab";
+    showCompare();
+    navSuspended = false;
+    return;
+  }
+  if (chartMode.tab === "compare") chartMode.tab = cmpPrevTab;
   paneDir = (st.t === "tools" && st.s === "picker") ? "back" : "tab";
   if (st.t === "tools"){ toolSub = st.s || "picker"; showTab("tools"); }
   else showTab(st.t);
@@ -7715,6 +8757,8 @@ function showTool(sub){
   $("tab-drawdown").hidden = (sub !== "drawdown");
   $("tab-roth").hidden = (sub !== "roth");
   $("tab-debt").hidden = (sub !== "debt");
+  $("tab-backtest").hidden = (sub !== "backtest");
+  $("asideBT").hidden = (sub !== "backtest");
   $("asideTax").hidden = (sub !== "tax");
   $("asideMort").hidden = (sub !== "mortgage");
   $("asideCollege").hidden = (sub !== "college");
@@ -7734,6 +8778,7 @@ function showTool(sub){
   else if (sub === "drawdown"){ renderDrawdown(); showDDIntro(); }
   else if (sub === "roth") renderRoth();
   else if (sub === "debt") renderDebt();
+  else if (sub === "backtest") renderBacktest();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
   playPaneEnter();
 }
@@ -7753,6 +8798,7 @@ function dismissDDIntro(){
 $("ddIntroClose").addEventListener("click", dismissDDIntro);
 function showTab(t){
   chartMode.tab = t;
+  $("tab-compare").hidden = true;
   document.querySelectorAll("nav[role=tablist] button").forEach(x => {
     const on = x.getAttribute("data-tab") === t;
     x.setAttribute("aria-selected", String(on));
@@ -7779,6 +8825,8 @@ function showTab(t){
     $("tab-roth").hidden = true;
     $("asideRC").hidden = true;
     $("tab-debt").hidden = true;
+    $("tab-backtest").hidden = true;
+    $("asideBT").hidden = true;
     $("main").classList.remove("solo");
   }
   if (t !== "tools") setToolBack("picker");
@@ -10377,6 +11425,13 @@ function applyDDCopy(source) {
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
+  histmix: "The share held in stocks, with the rest in 10-year Treasuries, rebalanced once a year. History mode replaces your rate of return with what this mix actually earned, year by year, so the mix is what sets returns here.",
+  histglidemix: "Where the stock share ends up by the end of the glide. In history mode a glide moves the mix, not the rate: it walks the stock share down to this figure over the final years of the plan.",
+  btmix: "Stocks versus 10-year Treasuries, rebalanced annually. Everything on this page is what that mix did over the years selected, not a projection.",
+  btreal: "The same return with inflation stripped out. This is the one to carry into a plan you are running in today's dollars.",
+  btvol: "Standard deviation of the annual returns. Roughly two thirds of years land within one of these of the average, which is the figure the Monte Carlo mode asks for.",
+  btpricelevel: "How much the overall price level rose across the whole period. A figure of 18 means something costing $1 at the start cost about $18 at the end, which is the same thing the real return column is correcting for.",
+  btdd: "The deepest fall from a previous high, measured on calendar year ends. Intra-year falls ran deeper: 2008 alone was worse inside the year than the year-end figures show.",
   dtsaved: "Interest you avoid by adding an extra payment and rolling each cleared debt's minimum onto the next one, versus paying every minimum on its own forever.",
   rctrad: "Everything taxed as ordinary income when it comes out: traditional 401(k), 403(b), 457(b), SEP, SIMPLE and rollover IRAs. This is the balance RMDs are calculated on.",
   rcbasis: "The share of the brokerage account that is your original money rather than gain. Only the gain is taxed when you sell, so a high basis makes the account cheap to spend from.",
@@ -11790,6 +12845,180 @@ function doShare(){
                .catch(() => toast("Couldn't copy. The link is in your address bar."));
 }
 
+/* ---------- portfolio backtest ---------- */
+const BT_DEFAULTS = {stock:80, from:1928, to:2025};
+function readBTState(){
+  return {stock:num("btStock"), from:num("btFrom"), to:num("btTo")};
+}
+function writeBTState(d){
+  if (d.stock != null) $("btStock").value = String(d.stock);
+  if (d.from != null) $("btFrom").value = String(d.from);
+  if (d.to != null) $("btTo").value = String(d.to);
+}
+let btRoll = "nom";
+let btPoints = null;
+let btInflPoints = null;
+let btFirstYear = HIST_START;
+let btRun = null;
+
+function renderBacktest(){
+  const st = readBTState();
+  const lo = HIST_START, hi = HIST_START + HIST_STOCK.length - 1;
+  const from = Math.max(lo, Math.min(hi, Math.round(st.from || lo)));
+  const to = Math.max(from, Math.min(hi, Math.round(st.to || hi)));
+  const B = backtest({stockPct: st.stock, fee: 0, initial: 10000, startYear: from, endYear: to});
+  btRun = B;
+  btFirstYear = B.first;
+
+  const bondPct = 100 - B.stockPct;
+  $("btMixNote").textContent = fmtNum(B.stockPct) + "% S&P 500, " + fmtNum(bondPct) +
+    "% 10-year Treasuries, rebalanced every year.";
+  $("segBTMix").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", parseFloat(x.getAttribute("data-mix")) === B.stockPct));
+  const lastYr = HIST_START + HIST_STOCK.length - 1;
+  $("segBTEra").querySelectorAll("button").forEach(x => {
+    const era = x.getAttribute("data-era");
+    const wantFrom = era === "all" ? HIST_START : lastYr - parseInt(era, 10) + 1;
+    x.classList.toggle("on", B.first === wantFrom && B.last === lastYr);
+  });
+  $("btYears").textContent = B.years + (B.years === 1 ? " yr" : " yrs");
+
+  $("btInflSpan").textContent = B.first + "\u2013" + B.last;
+  $("btInfl").textContent = pctStr(B.inflCagr, 2);
+  $("btInflHigh").textContent = pctStr(B.inflHigh.infl, 2) + " in " + B.inflHigh.year;
+  $("btInflLow").textContent = pctStr(B.inflLow.infl, 2) + " in " + B.inflLow.year;
+  $("btDefl").textContent = B.deflationYears + " of " + B.years;
+  $("btPriceLevel").textContent = B.priceLevel.toFixed(1) + "\u00d7";
+  $("btPriceNow").textContent = money(100 * B.priceLevel) + " today";
+
+  setBig("btCagr", pctStr(B.cagr, 2));
+  $("btCagrNote").textContent = "Compound annual growth, " + B.first + "\u2013" + B.last;
+  setBig("btReal", pctStr(B.realCagr, 2));
+  $("btRealNote").textContent = "Inflation averaged " + pctStr(B.inflCagr, 2) + " a year";
+  setBig("btVol", pctStr(B.vol, 2));
+
+  $("btBest").textContent = pctStr(B.best.ret, 2) + " in " + B.best.year;
+  $("btWorst").textContent = pctStr(B.worst.ret, 2) + " in " + B.worst.year;
+  $("btDD").textContent = B.maxDD < 0
+    ? pctStr(B.maxDD, 2) + " (" + B.ddFrom + "\u2013" + B.ddTo + ")" : "None";
+  $("btUp").textContent = B.upYears + " of " + B.years + " (" +
+    Math.round(B.upYears / B.years * 100) + "%)";
+  $("btEnd").textContent = money(B.endBal);
+  $("btEndReal").textContent = money(B.endReal);
+  $("btUseNote").textContent = "Sends " + pctStr(B.cagr, 2) + " return, " +
+    pctStr(B.vol, 2) + " volatility and " + pctStr(B.inflCagr, 2) +
+    " inflation to the Advanced tab, so the nominal figure and the inflation it " +
+    "was earned alongside travel together.";
+
+  const nom = [{year:0, value:B.start}].concat(
+    B.rows.map((r, i) => ({year:i + 1, value:r.end})));
+  const real = [{year:0, value:B.start}].concat(
+    B.rows.map((r, i) => ({year:i + 1, value:r.endReal})));
+  btPoints = paintMulti("chartBT",
+    [{name:"Balance", color:"#e9b872", pts:nom},
+     {name:"In today's dollars", color:"#7d9fd6", pts:real, dash:"5 4", width:2}],
+    B.years, {xFmt: y => String(B.first + y)});
+  $("legendBT").innerHTML = swatch("#e9b872", "Balance") +
+    swatch("#7d9fd6", "In today's dollars");
+
+  /* Annual CPI, with a trailing ten-year average over it: single years are noise,
+     sustained stretches are what actually reprice a plan. */
+  const annual = B.rows.map((r, i) => ({year:i + 1, value:r.infl}));
+  const decade = [];
+  for (let i = 9; i < B.rows.length; i++){
+    let g = 1;
+    for (let k = i - 9; k <= i; k++) g *= (1 + B.rows[k].infl);
+    decade.push({year:i + 1, value: Math.pow(g, 1 / 10) - 1});
+  }
+  btInflPoints = paintMulti("chartBTI",
+    [{name:"Annual", color:"#e2795f", pts:annual, width:1.9},
+     {name:"Ten-year average", color:"#7d9fd6", pts:decade, dash:"5 4", width:2.2}],
+    B.years, {xFmt: y => String(B.first + y),
+              yFmt: v => (v * 100).toFixed(0) + "%"});
+  $("legendBTI").innerHTML = swatch("#e2795f", "Annual") +
+    swatch("#7d9fd6", "Ten-year average") ;
+
+  $("btRollNote").textContent = btRoll === "nom" ? "nominal" : "after inflation";
+  $("btRollTable").querySelector("tbody").innerHTML = B.rolling.map(r => {
+    const w = btRoll === "nom"
+      ? {worst:r.nomWorst, med:r.nomMed, best:r.nomBest, pos:r.nomPos}
+      : {worst:r.realWorst, med:r.realMed, best:r.realBest, pos:r.realPos};
+    return "<tr><td>" + r.len + (r.len === 1 ? " year" : " years") + "</td><td>" +
+      r.count + "</td><td class='" + (w.worst < 0 ? "neg" : "") + "'>" +
+      pctStr(w.worst, 2) + "</td><td>" + pctStr(w.med, 2) + "</td><td class='pos'>" +
+      pctStr(w.best, 2) + "</td><td>" + Math.round(w.pos * 100) + "%</td></tr>";
+  }).join("");
+
+  $("btTable").querySelector("tbody").innerHTML = B.rows.map(r =>
+    "<tr><td>" + r.year + "</td><td class='" + (r.stock < 0 ? "neg" : "pos") + "'>" +
+    r.stock.toFixed(2) + "%</td><td class='" + (r.bond < 0 ? "neg" : "pos") + "'>" +
+    r.bond.toFixed(2) + "%</td><td class='" + (r.ret < 0 ? "neg" : "pos") + "'>" +
+    pctStr(r.ret, 2) + "</td><td>" + pctStr(r.infl, 2) + "</td><td class='" +
+    (r.real < 0 ? "neg" : "pos") + "'>" + pctStr(r.real, 2) + "</td><td>" +
+    money(r.end) + "</td><td>" + money(r.endReal) + "</td></tr>").join("");
+}
+
+["btStock","btFrom","btTo"].forEach(id =>
+  $(id).addEventListener("input", renderBacktest));
+$("segBTMix").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-mix]") : null;
+  if (!b) return;
+  $("btStock").value = b.getAttribute("data-mix");
+  renderBacktest();
+});
+$("segBTEra").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-era]") : null;
+  if (!b) return;
+  const era = b.getAttribute("data-era");
+  const last = HIST_START + HIST_STOCK.length - 1;
+  $("btFrom").value = String(era === "all" ? HIST_START : last - parseInt(era, 10) + 1);
+  $("btTo").value = String(last);
+  $("segBTEra").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x === b));
+  renderBacktest();
+});
+$("segBTRoll").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("button[data-roll]") : null;
+  if (!b) return;
+  btRoll = b.getAttribute("data-roll");
+  $("segBTRoll").querySelectorAll("button").forEach(x =>
+    x.classList.toggle("on", x === b));
+  renderBacktest();
+});
+$("btUseRate").addEventListener("click", () => {
+  if (!btRun) return;
+  $("nominal").value = +(btRun.cagr * 100).toFixed(2);
+  $("volatility").value = +(btRun.vol * 100).toFixed(2);
+  $("inflation").value = +(btRun.inflCagr * 100).toFixed(2);
+  renderAll();
+  paneDir = "back";
+  showTab("single");
+  pushNav();
+  toast("Return, volatility and inflation updated");
+});
+attachChart("chartWrapBTI", "chartBTI", "tipBTI", () => btInflPoints, best => {
+  const st = btInflPoints;
+  if (!st) return "";
+  let out = "<b>" + (btFirstYear + best.year) + "</b>";
+  st.names.forEach((nm, i) => {
+    if (best.vals[i] == null) return;
+    out += "<br><span style='color:" + st.colors[i] + "'>" + nm +
+      "</span> <span class='n'>" + pctStr(best.vals[i], 2) + "</span>";
+  });
+  return out;
+});
+attachChart("chartWrapBT", "chartBT", "tipBT", () => btPoints, best => {
+  const st = btPoints;
+  if (!st) return "";
+  let out = "<b>" + (btFirstYear + best.year) + "</b>";
+  st.names.forEach((nm, i) => {
+    if (best.vals[i] == null) return;
+    out += "<br><span style='color:" + st.colors[i] + "'>" + nm +
+      "</span> <span class='n'>" + money(best.vals[i]) + "</span>";
+  });
+  return out;
+});
+
 /* ---------- scenarios ---------- */
 function readTaxState(){
   return {mode:txMode, gross:num("txGross"), status:$("txStatus").value,
@@ -11896,7 +13125,7 @@ const TOOL_LABEL = {retire:"scenario", tax:"tax scenario",
                     mortgage:"mortgage scenario", budget:"budget",
                     college:"college plan", rentbuy:"rent-vs-buy scenario",
                     drawdown:"drawdown plan", roth:"conversion plan",
-                    debt:"debt plan"};
+                    debt:"debt plan", backtest:"backtest"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
   const list = SC[activeTool()];
@@ -11937,6 +13166,7 @@ $("scenarioPick").addEventListener("change", e => {
   else if (tool === "college"){ writeCollegeState(s.data); renderCollege(); }
   else if (tool === "rentbuy"){ writeRBState(s.data); renderRentBuy(); }
   else if (tool === "drawdown"){ writeDDState(s.data); renderItemLists(); renderDrawdown(); }
+  else if (tool === "backtest"){ writeBTState(s.data); renderBacktest(); }
 });
 /* Shared modal behaviour for both popups below: Escape closes, Tab cycles
    inside the dialog instead of walking into the page behind it, and focus
@@ -12149,10 +13379,12 @@ wireItemList("ddExpenseList", ddExpenseItems);
 $("btnScenario").addEventListener("click", async () => {
   const choice = await showPopup("Scenario", [
     {label:"Save", desc:"Save the current inputs under a name"},
-    {label:"Delete", desc:"Remove the selected saved scenario"}
+    {label:"Delete", desc:"Remove the selected saved scenario"},
+    {label:"Compare", desc:"Put saved retirement scenarios side by side"}
   ]);
   if (choice === 0) doSave();
   else if (choice === 1) doDelete();
+  else if (choice === 2){ paneDir = "fwd"; showCompare(); pushNav(); }
 });
 /* ---------- shareable summary card ----------
    Draws an SVG card, rasterises it through a canvas, and hands back a PNG the
@@ -12541,6 +13773,8 @@ function doSave(){
     data = {name:name.trim(), data:readRCState()};
   } else if (tool === "debt"){
     data = {name:name.trim(), data:readDebtState()};
+  } else if (tool === "backtest"){
+    data = {name:name.trim(), data:readBTState()};
   } else {
     data = {name:name.trim(), data:readBudgetState()};
   }
@@ -12585,6 +13819,7 @@ function toolIsDirty(tool){
       return !x || d.desc !== x.desc || d.balance !== x.balance ||
         d.apr !== x.apr || d.min !== x.min;
     });
+  if (tool === "backtest") return !sameShallow(readBTState(), BT_DEFAULTS);
   if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) ||
     ddIncomeItems.some(it => it.on !== false) || ddExpenseItems.some(it => it.on !== false);
   if (tool !== "retire") return false;
@@ -12630,6 +13865,7 @@ function writeBasic(d){
 }
 $("btnReset").addEventListener("click", () => {
   if (chartMode.tab === "about") return; // nothing to reset on the About tab
+  if (chartMode.tab === "compare"){ toast("Nothing to reset here"); return; }
   const tool = activeTool();
   const mode = tool === "retire" ? activeRetireMode() : null;
   const label = mode === "basic" ? "Basic" : mode === "stages" ? "Stages" :
@@ -12637,7 +13873,8 @@ $("btnReset").addEventListener("click", () => {
     tool === "mortgage" ? "Mortgage" : tool === "college" ? "College" :
     tool === "rentbuy" ? "Rent vs. Buy" : tool === "drawdown" ? "Drawdown" :
     tool === "roth" ? "Roth Conversion" :
-    tool === "debt" ? "Debt Payoff" : "Budget";
+    tool === "debt" ? "Debt Payoff" :
+    tool === "backtest" ? "Portfolio Backtest" : "Budget";
   if (toolIsDirty(tool) &&
       !confirm("Reset the " + label +
                " inputs to their defaults? Your saved " + TOOL_LABEL[tool] +
@@ -12661,6 +13898,14 @@ $("btnReset").addEventListener("click", () => {
     ddIncomeItems.forEach(it => { it.on = false; });
     ddExpenseItems.forEach(it => { it.on = false; });
     renderItemLists(); renderDrawdown();
+  } else if (tool === "backtest"){
+    writeBTState(BT_DEFAULTS);
+    btRoll = "nom";
+    $("segBTRoll").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-roll") === "nom"));
+    $("segBTEra").querySelectorAll("button").forEach(x =>
+      x.classList.toggle("on", x.getAttribute("data-era") === "all"));
+    renderBacktest();
   } else if (tool === "roth"){
     writeRCState(RC_DEFAULTS); renderRoth();
   } else if (tool === "debt"){
