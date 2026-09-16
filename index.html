@@ -2044,11 +2044,11 @@ window.onerror = function(msg){
         <div class="two">
           <div class="field">
             <label for="btFrom">From<span class="tipdot" data-tip="bthistory" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-            <div class="inputwrap"><input id="btFrom" type="text" inputmode="decimal" data-num data-step="1" min="1928" data-nonneg value="1928"></div>
+            <div class="inputwrap"><input id="btFrom" type="text" inputmode="decimal" data-num data-step="1" min="1926" data-nonneg value="1926"></div>
           </div>
           <div class="field">
             <label for="btTo">Through</label>
-            <div class="inputwrap"><input id="btTo" type="text" inputmode="decimal" data-num data-step="1" min="1928" data-nonneg value="2025"></div>
+            <div class="inputwrap"><input id="btTo" type="text" inputmode="decimal" data-num data-step="1" min="1926" data-nonneg value="2025"></div>
           </div>
         </div>
         <div class="seg" id="segBTEra" style="margin-bottom:12px">
@@ -2062,7 +2062,7 @@ window.onerror = function(msg){
           <div><span>Dividends</span><span class="num">Reinvested</span></div>
         </div>
         <div class="hint" style="margin-top:10px">S&amp;P 500 total return with dividends
-          reinvested, 10-year Treasury total return, and CPI-U, 1928&ndash;2025, no fees.
+          reinvested, 10-year Treasury total return, and CPI-U, 1926&ndash;2025, no fees.
           The chart tracks a fixed $10,000 starting point &mdash; only the mix and date
           range change what you're looking at. Past returns describe what happened;
           they are not a forecast.</div>
@@ -2526,7 +2526,7 @@ window.onerror = function(msg){
             Every other tool answers "how much will I have?" This one answers the
             harder question: once you start spending it, <b>will it last?</b> Set a
             portfolio value and a withdrawal strategy, then test it against every
-            real retirement since 1928: not a guess, actual market history.
+            real retirement since 1926: not a guess, actual market history.
             Click any row in the table below to see exactly what that year looked
             like, year by year.
           </div>
@@ -2541,7 +2541,7 @@ window.onerror = function(msg){
             <button type="button" data-dd="hist" class="on">Historical</button>
             <button type="button" data-dd="mc">Monte Carlo</button>
           </span>
-          <span class="txbadge" id="ddBadge">1928&ndash;2025</span>
+          <span class="txbadge" id="ddBadge">1926&ndash;2025</span>
         </div>
         <div class="headline">
           <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">--</div>
@@ -2898,7 +2898,7 @@ window.onerror = function(msg){
         run out.</p>
 
         <p><b>Historical mode</b> runs your plan starting from every single year since
-        1928: retire in 1929 right before the Depression, retire in 1966 into a lost
+        1926: retire in 1929 right before the Depression, retire in 1966 into a lost
         decade, retire in 2000 before two crashes in one decade. Each is a genuine
         sequence of stock returns, bond returns, and inflation that actually happened,
         not a statistical approximation of one. This matters because <i>the order</i>
@@ -2971,7 +2971,7 @@ window.onerror = function(msg){
         it says nothing about how other countries' markets have behaved, and the
         historical test necessarily has just 98 starting points, not an infinite set
         of possible futures. Required minimum distributions and taxes on withdrawals
-        aren't modelled. Above all: a strategy surviving every year since 1928 is
+        aren't modelled. Above all: a strategy surviving every year since 1926 is
         strong evidence, not a guarantee: markets have never been obligated to
         repeat their history, and the next 30 years don't have to look like any of
         the last 98.</p>
@@ -3693,9 +3693,18 @@ window.onerror = function(msg){
         </span>
       </h2>
       <div class="body">
-        <div class="field" id="txGrossWrap">
-          <label for="txGross">Gross income</label>
-          <div class="inputwrap"><span class="affix">$</span><input id="txGross" type="text" inputmode="decimal" data-money data-nonneg></div>
+        <div id="txGrossWrap">
+          <div class="field">
+            <label for="txGross" id="txGrossLabel">Gross income</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txGross" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field" id="txGross2Wrap" hidden>
+            <label for="txGross2">Spouse's gross income</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txGross2" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="derived txtotal" id="txGrossTotalWrap" hidden>
+          <div><span>Household gross income</span><span class="num" id="txGrossTotalShow"></span></div>
         </div>
 
         <div id="txRetSources" hidden>
@@ -4145,7 +4154,7 @@ window.onerror = function(msg){
     <div class="toolcards">
       <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
-        <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1928.</div></div>
+        <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1926.</div></div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
       <div class="toolcard" role="button" tabindex="0" data-pick="backtest">
@@ -4160,7 +4169,7 @@ window.onerror = function(msg){
         </div>
         <div class="toolcard-body">
           <div class="toolcard-name">Portfolio Backtest</div>
-          <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1928.</div>
+          <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
@@ -5672,7 +5681,12 @@ function stateRetireTax(S, c){
 /**
  * @param {Object} inp
  * @param {"s"|"m"} inp.status - filing status: single or married
- * @param {number} inp.gross - gross income, in dollars
+ * @param {number} inp.gross - gross income, in dollars. The sole earner's income for a
+ *   single filer, or earner 1's own income on a joint return with inp.gross2 given.
+ * @param {number} [inp.gross2] - spouse's own gross income, in dollars (joint returns
+ *   only). Summed with inp.gross for tax purposes, but kept separate for FICA: the
+ *   Social Security wage-base cap applies per earner, so running the household total
+ *   through the cap once (the pre-split behavior) understates a two-earner couple's tax.
  * @param {number} inp.pre - pre-tax deductions (e.g. 401k), in dollars
  * @param {"std"|"item"} inp.dedType - standard vs. itemized deduction
  * @param {number} inp.item - itemized deduction total, in dollars (used only if dedType is "item")
@@ -5681,7 +5695,9 @@ function stateRetireTax(S, c){
  */
 function computeTax(inp){
   const st = inp.status, idx = st === "m" ? 1 : 0;
-  const gross = Math.max(0, inp.gross);
+  const earner1 = Math.max(0, inp.gross);
+  const earner2 = Math.max(0, inp.gross2 || 0);
+  const gross = earner1 + earner2;
   const pre = Math.min(Math.max(0, inp.pre), gross);
   const afterPre = gross - pre;
 
@@ -5709,8 +5725,17 @@ function computeTax(inp){
     if (S.sdc) state = Math.max(0, state - S.sdc[idx]);
   }
 
-  // FICA is on gross wages; most pre-tax retirement deferrals do not reduce it
-  const ss = Math.min(gross, FICA.ssCap) * FICA.ssRate;
+  // FICA is on gross wages; most pre-tax retirement deferrals do not reduce it.
+  // The Social Security wage-base cap applies separately to each earner's own
+  // wages -- an employer stops withholding once *that employee's* pay crosses
+  // it -- so a two-earner household is run through the cap once per earner,
+  // not once against the combined total. Medicare's 1.45% is flat with no cap,
+  // so aggregating doesn't change it, and the 0.9% Additional Medicare surtax
+  // is genuinely a joint-return test against combined income (IRC 3101(b)(2)),
+  // so that one correctly stays on the household total either way.
+  const ss1 = Math.min(earner1, FICA.ssCap) * FICA.ssRate;
+  const ss2 = Math.min(earner2, FICA.ssCap) * FICA.ssRate;
+  const ss = ss1 + ss2;
   const med = gross * FICA.medRate;
   const addl = Math.max(0, gross - FICA.addlThreshold[st]) * FICA.addlRate;
   const fica = ss + med + addl;
@@ -5718,8 +5743,8 @@ function computeTax(inp){
   const total = federal + state + fica;
   const net = gross - total - pre;
   const rate = v => gross > 0 ? v / gross : 0;
-  return {gross, pre, afterPre, fedDed, fedTaxable, federal, state, stateTaxable,
-          fica, ss, med, addl, total, net, takeHome: net,
+  return {gross, earner1, earner2, pre, afterPre, fedDed, fedTaxable, federal, state, stateTaxable,
+          fica, ss, ss1, ss2, med, addl, total, net, takeHome: net,
           effFed:rate(federal), effState:rate(state), effFica:rate(fica),
           effTotal:rate(total), effNet:rate(net),
           marginal: marginalRate(fedTaxable, FED_2026[st]),
@@ -6401,11 +6426,6 @@ function refiCompare(m, refi){
           lifetimeDelta: allInNow - allInThen};      // positive = refinancing wins
 }
 
-/* Historical annual returns, 1928-2025 (98 years).
-   Stocks: S&P 500 total return incl. dividends.
-   Bonds: US 10-year Treasury total return.
-   Both from NYU Stern (Damodaran), updated January 2026.
-   Inflation: annual average CPI-U change, US Bureau of Labor Statistics. */
 var HIST_START = 1926;
 /* Monthly total returns, January 1926 through December 2025 (1,200 months).
    Stocks: S&P 500 monthly price with that month's dividend reinvested.
@@ -9593,7 +9613,7 @@ function buildSheet(){
 }
 function buildTaxSheet(){
   const inp = readTax();
-  if (!(inp.gross > 0)){ $("sheet").innerHTML = ""; toast("Enter your income first"); return false; }
+  if (!(inp.gross + inp.gross2 > 0)){ $("sheet").innerHTML = ""; toast("Enter your income first"); return false; }
   const R = runTax(inp);
   const ret = inp.mode === "retire";
   let inputs = "";
@@ -9607,6 +9627,10 @@ function buildTaxSheet(){
       (inp.penPublic ? " (government)" : " (private)"));
     if (inp.other > 0) inputs += row("Other ordinary income", money(inp.other));
     inputs += row("Gross income", money(R.gross));
+  } else if (inp.status === "m"){
+    inputs += row("Your gross income", money(inp.gross));
+    inputs += row("Spouse's gross income", money(inp.gross2));
+    inputs += row("Household gross income", money(R.gross));
   } else {
     inputs += row("Gross income", money(inp.gross));
   }
@@ -9634,7 +9658,12 @@ function buildTaxSheet(){
   } else {
     out = row("Federal tax", money(R.federal));
     out += row("State tax", money(R.state));
-    out += row("Social Security", money(R.ss));
+    if (inp.status === "m"){
+      out += row("Your Social Security", money(R.ss1));
+      out += row("Spouse's Social Security", money(R.ss2));
+    } else {
+      out += row("Social Security", money(R.ss));
+    }
     out += row("Medicare" + (R.addl > 0 ? " (+ surtax)" : ""), money(R.med + R.addl));
     out += row("Total tax", money(R.total));
     out += row("Effective rate", pctStr(R.effTotal, 1));
@@ -9937,7 +9966,7 @@ function buildDrawdownSheet(){
   (o.expenseItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name + " (expense)", describeItem(it)));
 
   let out = row("Success rate", pctStr(H.successRate, 1));
-  out += row("Tested against", H.total + " periods since 1928");
+  out += row("Tested against", H.total + " periods since " + H.first);
   out += row("Survived", H.survived + " of " + H.total);
   out += row("Median ending balance", money(H.medianEnd));
   out += row("Worst case", money(H.worstEnd));
@@ -9990,7 +10019,7 @@ function buildDrawdownSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement &middot; tested since 1928</span></div>" +
+    "<div class='sh-h'><h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement &middot; tested since " + H.first + "</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Success rate</div><div class='v'>" + pctStr(H.successRate, 0) +
         "</div><div class='n'>" + H.survived + " of " + H.total + " periods</div></div>" +
@@ -10006,7 +10035,8 @@ function buildDrawdownSheet(){
     "</div>" +
     "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + show.startYear +
       (show.depleted ? " (ran out in year " + show.depletedYear + ")" : " (survived)") + "</div>" + table + "</div>" +
-    "<div class='sh-foot'>" + verdict + " Tested against 98 years of real US market history (1928\u20132025). " +
+    "<div class='sh-foot'>" + verdict + " Tested against real US market history (" +
+      H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1) + "). " +
     "Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice.</div>";
 }
 
@@ -10164,9 +10194,14 @@ function readTax(){
   const seniors = Math.min(status === "m" ? 2 : 1, parseInt($("txSeniors").value, 10) || 0);
   const trad = num("txTrad"), roth = num("txRoth"), brok = num("txBrok"),
         ss = num("txSS"), pension = num("txPension"), other = num("txOther");
+  // Spouse's income only exists as a separate concept in Normal Income mode,
+  // where FICA's per-earner wage cap makes the split matter. Retirement mode
+  // has no FICA, so its withdrawals stay combined into one household total.
+  const gross2 = (txMode === "normal" && status === "m") ? num("txGross2") : 0;
   return {mode:txMode,
           gross: txMode === "retire"
             ? trad + roth + brok + ss + pension + other : num("txGross"),
+          gross2,
           trad, roth, brok, ss, pension, other,
           penPublic: $("txPenType").value === "pub",
           gainPct:num("txGainPct") / 100, seniors,
@@ -10314,6 +10349,7 @@ function renderNormalTax(inp, R){
   $("txSSRow").hidden = true;
   $("txTaxable").textContent = money(R.fedTaxable);
   $("txMarginal").textContent = pctStr(R.marginal, 0);
+  if (!$("txGrossTotalWrap").hidden) $("txGrossTotalShow").textContent = money(R.gross);
 
   // Net pay = gross minus taxes; take-home also subtracts pre-tax savings, which
   // is money you keep but never see in the paycheck.
@@ -10354,10 +10390,17 @@ function renderNormalTax(inp, R){
   if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac"});
   txDonut(R, parts);
 
+  // The Social Security wage cap applies per earner, so a joint return splits
+  // the line in two rather than showing one household figure that would imply
+  // a single shared cap.
+  const ssRows = inp.status === "m"
+    ? txRow("Your Social Security", R.ss1, R.gross ? R.ss1 / R.gross : 0, TAX_COLORS.fica) +
+      txRow("Spouse's Social Security", R.ss2, R.gross ? R.ss2 / R.gross : 0, TAX_COLORS.fica)
+    : txRow("Social Security", R.ss, R.gross ? R.ss / R.gross : 0, TAX_COLORS.fica);
   $("txTable").querySelector("tbody").innerHTML =
     txRow("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed) +
     txRow("State income tax" + (R.stateName ? " \u00b7 " + R.stateName : ""), R.state, R.effState, TAX_COLORS.state) +
-    txRow("Social Security", R.ss, R.gross ? R.ss / R.gross : 0, TAX_COLORS.fica) +
+    ssRows +
     txRow("Medicare" + (R.addl > 0 ? " (incl. surtax)" : ""), R.med + R.addl,
          R.gross ? (R.med + R.addl) / R.gross : 0, TAX_COLORS.fica) +
     "<tr style='font-weight:600'><td>All taxes</td><td>" + money(R.total) + "</td><td>" +
@@ -10819,6 +10862,7 @@ function applyTaxMode(){
     ? "HSA, self-employed health premiums, deductible IRA contributions. Comes off before income tax."
     : "401(k), HSA, traditional IRA, health premiums. Comes off before income tax.";
   syncSeniorOptions();
+  syncGrossFields();
 }
 /* "Both spouses" only means anything on a joint return. */
 function syncSeniorOptions(){
@@ -10829,6 +10873,18 @@ function syncSeniorOptions(){
   $("txSeniors").querySelector("option[value='1']").textContent =
     joint ? "One spouse" : "Yes";
   if (!joint && $("txSeniors").value === "2") $("txSeniors").value = "1";
+}
+/* A second earner only exists in Normal Income mode on a joint return -- that's
+   the only place FICA's per-earner wage cap makes the split matter. Toggling
+   in a second grid column (rather than just hiding/showing the field) keeps
+   the single-earner case from leaving a blank half-width gap next to it. */
+function syncGrossFields(){
+  const split = txMode === "normal" && $("txStatus").value === "m";
+  $("txGrossWrap").classList.toggle("two", split);
+  $("txGrossWrap").classList.toggle("bottomalign", split);
+  $("txGross2Wrap").hidden = !split;
+  $("txGrossTotalWrap").hidden = !split;
+  $("txGrossLabel").textContent = split ? "Your gross income" : "Gross income";
 }
 
 let txView = "net";
@@ -10847,10 +10903,10 @@ $("segTxMode").addEventListener("click", e => {
   applyTaxMode();
   renderTax();
 });
-["txGross","txPre","txItem","txTrad","txRoth","txBrok","txGainPct","txSS","txPension","txOther"]
+["txGross","txGross2","txPre","txItem","txTrad","txRoth","txBrok","txGainPct","txSS","txPension","txOther"]
   .forEach(id => $(id).addEventListener("input", renderTax));
 ["txStatus","txState","txDedType","txSeniors","txPenType"].forEach(id =>
-  $(id).addEventListener("change", () => { syncSeniorOptions(); renderTax(); }));
+  $(id).addEventListener("change", () => { syncSeniorOptions(); syncGrossFields(); renderTax(); }));
 
 /* ---------- mortgage tool ---------- */
 let mortPoints = [];
@@ -11983,7 +12039,8 @@ function renderDrawdown() {
     setBig("ddWorst", money(M.p10End));
     $("ddWorstNote").textContent = "10th percentile outcome";
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>Each run draws " +
-      o.years + " years at random from the 1928\u20132025 record. This captures the range of possible " +
+      o.years + " years at random from the " + HIST_START + "\u2013" +
+      (HIST_START + HIST_STOCK.length - 1) + " record. This captures the range of possible " +
       "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
 
     setH2Text($("ddChartTitle"), "Range of outcomes");
@@ -12292,7 +12349,7 @@ const GLOSS = {
   collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college, smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
   glide: "Many people shift toward more conservative investments, and lower expected returns, as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, Coast FIRE, and both routes in Work backwards from a target. The glide always covers the final years you set, counted back from the end of the plan \u2014 so if a solve moves your finish line, the glide moves with it rather than staying where it was.",
   contribgrowth: "The percentage your contribution amount itself increases each year, a standalone rate, not stacked on top of the inflation input. At 0%, your contribution stays the same dollar amount every year, which buys a little less as prices rise. Set it to match your inflation rate to keep contributions flat in today's dollars, or higher to model real income growth, like raises over a career.",
-  nominalreturn: "The return before subtracting inflation: what your statement would actually show. The S&P 500 has averaged roughly 10% a year (about 7% after inflation) since 1928, including its worst crashes. A diversified mix of stocks and bonds typically runs lower, often 6\u20138% nominal.",
+  nominalreturn: "The return before subtracting inflation: what your statement would actually show. The S&P 500 has averaged roughly 10% a year (about 7% after inflation) since 1926, including its worst crashes. A diversified mix of stocks and bonds typically runs lower, often 6\u20138% nominal.",
   efftaxrate: "Your total tax as a share of income, lower than your top bracket, since earlier dollars are taxed at lower rates. Many retirees land somewhere around 10\u201315%, though it depends heavily on income sources and where you live. The Income Tax tool can calculate yours precisely.",
   ddstocks: "How the portfolio is split between stocks and bonds during retirement. Stocks have historically grown faster but swing harder in downturns, which matters more once you're withdrawing instead of contributing. 60/40 is a common conservative-to-moderate retirement mix.",
   yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is: higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
@@ -13648,7 +13705,7 @@ function doShare(){
 }
 
 /* ---------- portfolio backtest ---------- */
-const BT_DEFAULTS = {stock:80, from:1928, to:2025};
+const BT_DEFAULTS = {stock:80, from:1926, to:2025};
 function readBTState(){
   return {stock:num("btStock"), from:num("btFrom"), to:num("btTo")};
 }
@@ -13762,6 +13819,30 @@ function renderBacktest(){
 
 ["btStock","btFrom","btTo"].forEach(id =>
   $(id).addEventListener("input", renderBacktest));
+
+/* The dataset is the only range these two fields can mean, so they clamp to it.
+   The upper bound rides the existing max-attribute machinery, which caps as you
+   type. The lower bound has to wait for blur: clamping it on input would turn
+   "1" into 1926 before you finished typing the year. Bounds are read from the
+   data rather than hardcoded, so extending the dataset moves them by itself. */
+(function(){
+  const lo = HIST_START, hi = HIST_START + HIST_STOCK.length - 1;
+  ["btFrom","btTo"].forEach(id => {
+    const el = $(id);
+    el.setAttribute("min", String(lo));
+    el.setAttribute("max", String(hi));
+    el.addEventListener("blur", () => {
+      const raw = Math.round(parseNum(el.value));
+      const fixed = (!isFinite(raw) || !raw)
+        ? (id === "btFrom" ? lo : hi)
+        : Math.max(lo, Math.min(hi, raw));
+      if (String(fixed) !== el.value){
+        el.value = String(fixed);
+        renderBacktest();
+      }
+    });
+  });
+})();
 $("segBTMix").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-mix]") : null;
   if (!b) return;
@@ -13823,7 +13904,7 @@ attachChart("chartWrapBT", "chartBT", "tipBT", () => btPoints, best => {
 
 /* ---------- scenarios ---------- */
 function readTaxState(){
-  return {mode:txMode, gross:num("txGross"), status:$("txStatus").value,
+  return {mode:txMode, gross:num("txGross"), gross2:num("txGross2"), status:$("txStatus").value,
           state:$("txState").value, pre:num("txPre"), dedType:$("txDedType").value,
           item:num("txItem"), trad:num("txTrad"), roth:num("txRoth"),
           brok:num("txBrok"), gainPct:num("txGainPct"), ss:num("txSS"),
@@ -13833,6 +13914,10 @@ function readTaxState(){
 function writeTaxState(d){
   if (d.mode) txMode = d.mode === "retire" ? "retire" : "normal";
   if (d.gross != null) $("txGross").value = groupDigits(d.gross, true);
+  // Older saved scenarios have no spouse split; default to $0 rather than
+  // guessing a 50/50 divide, so a reloaded scenario's numbers don't move
+  // until the spouse field is actually filled in.
+  $("txGross2").value = groupDigits(d.gross2 || 0, true);
   if (d.status) $("txStatus").value = d.status;
   if (d.state) $("txState").value = d.state;
   if (d.pre != null) $("txPre").value = groupDigits(d.pre, true);
@@ -14270,7 +14355,7 @@ function buildCardSVG(){
       od.strategy === "guardrails" ? "Guyton-Klinger Guardrails" :
       od.strategy === "yale" ? "Yale Endowment" : "Floor & ceiling";
     title = "Will my money last?";
-    bigLabel = "Success rate, tested since 1928";
+    bigLabel = "Success rate, tested since " + HIST_START;
     big = pctStr(Hb.successRate, 0);
     sub = fmtNum(od.years) + " year retirement \u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
     rows = [
@@ -14610,7 +14695,7 @@ function doDelete(){
 }
 /* Reset only the tool you're viewing, and ask first if anything differs from
    defaults — the button sits close to the tabs on mobile. */
-const TAX_DEFAULTS = {mode:"normal", gross:100000, status:"s", state:"IL", pre:0,
+const TAX_DEFAULTS = {mode:"normal", gross:100000, gross2:0, status:"s", state:"IL", pre:0,
                       dedType:"std", item:0, trad:40000, roth:10000, brok:20000,
                       gainPct:40, ss:30000, other:0, seniors:1};
 const MORT_DEFAULTS = {price:450000, downPct:20, downAmt:90000, rate:MORT_RATE_30,
@@ -14782,6 +14867,7 @@ writeGlobals(SERIES_GLOBALS);
 buildStages();
 refreshScenarioList("");
 $("txGross").value = groupDigits(100000, true);
+$("txGross2").value = groupDigits(0, true);
 $("txPre").value = groupDigits(0, true);
 $("txItem").value = groupDigits(0, true);
 $("txState").value = "IL";
