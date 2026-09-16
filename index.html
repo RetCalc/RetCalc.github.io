@@ -1120,6 +1120,7 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 
 /* ---------- chart ---------- */
 .chartwrap{padding:16px 18px 6px;position:relative}
+@keyframes chartFadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 svg{display:block;width:100%;height:auto}
 /* These charts use preserveAspectRatio="none", so the drawing stretches to
    whatever box it lands in — including the axis text. Capping at the 900-unit
@@ -7775,7 +7776,8 @@ const swatch = (c, t) => "<span><i style='background:" + c + "'></i>" + t + "</s
 
 /* Shared painter. Both tabs hand it the same shape of data, so the rate band
    and the Monte Carlo fan render through one code path. */
-function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset){
+function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
+  const o = opt || {};
   xOffset = xOffset || 0;
   const svg = $(svgId);
   const narrow = window.innerWidth < 640;
@@ -7871,7 +7873,20 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset){
     "stroke-width":1 * sw, opacity:0}); svg.appendChild(hover);
   const dot = svgEl("circle", {r:4.5 * sw, fill:"#e9b872", stroke:cssVar("--dotstroke"),
     "stroke-width":2.5 * sw, opacity:0}); svg.appendChild(dot);
-  return {pts, X, Y, hover, dot, maxX, W};
+
+  let dotHi = null, dotLo = null, xTick = null;
+  if (o.enhanced){
+    dotHi = svgEl("circle", {r:4 * sw, fill:"#4fbf95", stroke:cssVar("--dotstroke"),
+      "stroke-width":2 * sw, opacity:0}); svg.appendChild(dotHi);
+    dotLo = svgEl("circle", {r:4 * sw, fill:"#e2795f", stroke:cssVar("--dotstroke"),
+      "stroke-width":2 * sw, opacity:0}); svg.appendChild(dotLo);
+    xTick = svgEl("circle", {r:3 * sw, fill:cssVar("--dim"), opacity:0,
+      cy: T + ph + (B / 2)}); svg.appendChild(xTick);
+    svg.style.animation = "none";
+    svg.getBoundingClientRect();
+    svg.style.animation = "chartFadeUp .35s ease-out";
+  }
+  return {pts, X, Y, hover, dot, dotHi, dotLo, xTick, maxX, W};
 }
 
 /* A plain multi-line painter. The fan painter above is built around one
@@ -8057,7 +8072,7 @@ let mcTimer = null;
 function scheduleMC(fn){ clearTimeout(mcTimer); mcTimer = setTimeout(fn, 160); }
 
 function drawChart(R, p){
-  if (!R || !R.years.length){ chartPoints = paintChart("chart", [], 1, "band", []); return; }
+  if (!R || !R.years.length){ chartPoints = paintChart("chart", [], 1, "band", [], 0, {enhanced:true}); return; }
   const real = (v, yr) => v / Math.pow(1 + p.inflation, yr);
 
   $("histGlideWrap").hidden = !(p.glide && p.glide.on);
@@ -8066,7 +8081,7 @@ function drawChart(R, p){
     const H = historicalRuns({initial:p.initial, fees:p.fees}, histStagesSingle(p));
     $("histNote").innerHTML = histBarNote(H, false);
     if (!H.count){
-      chartPoints = paintChart("chart", [], 1, "mc", []);
+      chartPoints = paintChart("chart", [], 1, "mc", [], 0, {enhanced:true});
       $("legend").innerHTML = "";
       histSummary("mcNote", H, 0, "");
       return;
@@ -8075,7 +8090,7 @@ function drawChart(R, p){
                   p25:p.initial, p75:p.initial}];
     H.bands.forEach(b => pts.push({year:b.year, base:b.p50, hi:b.p90, lo:b.p10,
                                    p25:b.p25, p75:b.p75}));
-    chartPoints = paintChart("chart", pts, p.years, "mc", []);
+    chartPoints = paintChart("chart", pts, p.years, "mc", [], 0, {enhanced:true});
     histLegend("legend");
     const S = goalSolve(p, $("solveFor").value, num("target"));
     histSummary("mcNote", H, S.portToday, "(the portfolio behind your target above)");
@@ -8091,7 +8106,7 @@ function drawChart(R, p){
     mc.bands.forEach((b, i) => pts.push({year:b.year, base:b.p50, hi:b.p90, lo:b.p10,
       p25:b.p25, p75:b.p75,
       det: R.years[i] ? real(R.years[i].end, R.years[i].year) : b.p50}));
-    chartPoints = paintChart("chart", pts, p.years, "mc", []);
+    chartPoints = paintChart("chart", pts, p.years, "mc", [], 0, {enhanced:true});
     mcLegend("legend");
     const S = goalSolve(p, $("solveFor").value, num("target"));
     mcSummary("mcNote", mc, S.portToday, "(the portfolio behind your target above)");
@@ -8103,7 +8118,7 @@ function drawChart(R, p){
     R.years.forEach((y, i) => pts.push({year:y.year, base: real(y.end, y.year),
       hi: real(hiR.years[i] ? hiR.years[i].end : y.end, y.year),
       lo: real(loR.years[i] ? loR.years[i].end : y.end, y.year)}));
-    chartPoints = paintChart("chart", pts, p.years, "band", []);
+    chartPoints = paintChart("chart", pts, p.years, "band", [], 0, {enhanced:true});
     const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
     $("legend").innerHTML =
       swatch("#4fbf95", band > 0 ? "At " + pctStr(p.nominal + band, 2) + " (+" + lbl + ")" : "Higher") +
@@ -8126,12 +8141,27 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
     let best = st.pts[0];
     for (const a of st.pts)
       if (Math.abs(st.X(a.year) - vx) < Math.abs(st.X(best.year) - vx)) best = a;
-    st.hover.setAttribute("x1", st.X(best.year));
-    st.hover.setAttribute("x2", st.X(best.year));
+    const bx = st.X(best.year);
+    st.hover.setAttribute("x1", bx);
+    st.hover.setAttribute("x2", bx);
     st.hover.setAttribute("opacity", .4);
-    st.dot.setAttribute("cx", st.X(best.year));
+    st.dot.setAttribute("cx", bx);
     st.dot.setAttribute("cy", st.Y(best.base));
     st.dot.setAttribute("opacity", 1);
+    if (st.dotHi && best.hi != null){
+      st.dotHi.setAttribute("cx", bx);
+      st.dotHi.setAttribute("cy", st.Y(best.hi));
+      st.dotHi.setAttribute("opacity", 1);
+    }
+    if (st.dotLo && best.lo != null){
+      st.dotLo.setAttribute("cx", bx);
+      st.dotLo.setAttribute("cy", st.Y(best.lo));
+      st.dotLo.setAttribute("opacity", 1);
+    }
+    if (st.xTick){
+      st.xTick.setAttribute("cx", bx);
+      st.xTick.setAttribute("opacity", 1);
+    }
     const tip = $(tipId);
     tip.innerHTML = tipHtml(best);
     tip.style.opacity = 1;
@@ -8150,7 +8180,11 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
     $(tipId).style.opacity = 0;
     const st = getState();
     if (st && st.hover){ st.hover.setAttribute("opacity", 0);
-      st.dot.setAttribute("opacity", 0); }
+      st.dot.setAttribute("opacity", 0);
+      if (st.dotHi) st.dotHi.setAttribute("opacity", 0);
+      if (st.dotLo) st.dotLo.setAttribute("opacity", 0);
+      if (st.xTick) st.xTick.setAttribute("opacity", 0);
+    }
   }
   wrap.addEventListener("mousemove", e => probe(e.clientX, e.clientY));
   wrap.addEventListener("mouseleave", clear);
@@ -9222,7 +9256,7 @@ function renderSeries(){
 }
 
 function drawSeriesChart(g, R){
-  if (!R || !R.rows.length){ seriesPoints = paintChart("chartS", [], 1, "band", []); return; }
+  if (!R || !R.rows.length){ seriesPoints = paintChart("chartS", [], 1, "band", [], 0, {enhanced:true}); return; }
   const defl = yr => Math.pow(1 + g.inflation, yr);
   const marks = R.summary.slice(0, -1).map(x => ({year:x.endYear, label:String(x.stage + 1)}));
 
@@ -9230,7 +9264,7 @@ function drawSeriesChart(g, R){
     const H = historicalRuns({initial:g.initial, fees:g.fees}, histStagesSeries(g));
     $("histNoteS").innerHTML = histBarNote(H, true);
     if (!H.count){
-      seriesPoints = paintChart("chartS", [], 1, "mc", []);
+      seriesPoints = paintChart("chartS", [], 1, "mc", [], 0, {enhanced:true});
       $("legendS").innerHTML = "";
       histSummary("mcNoteS", H, 0, "");
       return;
@@ -9239,7 +9273,7 @@ function drawSeriesChart(g, R){
                   p25:g.initial, p75:g.initial}];
     H.bands.forEach(b => pts.push({year:b.year, stage:b.stage, base:b.p50,
                                    hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75}));
-    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks);
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks, 0, {enhanced:true});
     histLegend("legendS", "Stage boundary");
     histSummary("mcNoteS", H, seriesTarget || 0, "(your target above)");
     return;
@@ -9253,7 +9287,7 @@ function drawSeriesChart(g, R){
       stage: R.rows[i] ? R.rows[i].stage : 1,
       base:b.p50, hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75,
       det: R.rows[i] ? R.rows[i].end / defl(R.rows[i].endYear) : b.p50}));
-    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks);
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks, 0, {enhanced:true});
     mcLegend("legendS", "Stage boundary");
     mcSummary("mcNoteS", mc, seriesTarget || 0, "(your target above)");
   } else {
@@ -9267,7 +9301,7 @@ function drawSeriesChart(g, R){
       base: r.end / defl(r.endYear),
       hi: (hiR.rows[i] ? hiR.rows[i].end : r.end) / defl(r.endYear),
       lo: (loR.rows[i] ? loR.rows[i].end : r.end) / defl(r.endYear)}));
-    seriesPoints = paintChart("chartS", pts, R.totalYears, "band", marks);
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "band", marks, 0, {enhanced:true});
     const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
     $("legendS").innerHTML =
       swatch("#4fbf95", band > 0 ? "Every stage +" + lbl + "%" : "Higher") +
@@ -11190,7 +11224,7 @@ function renderMort(){
   const pts = [{year:0, base:R.loan, hi:0, lo:0}];
   R.years.forEach(y => { ci += y.interest; cp += y.principal;
     pts.push({year:y.year, base:y.balance, hi:cp, lo:ci}); });
-  mortPoints = paintChart("chartMo", pts, R.years.length || 1, "band", []);
+  mortPoints = paintChart("chartMo", pts, R.years.length || 1, "band", [], 0, {enhanced:true});
   $("legendMo").innerHTML = swatch("#e9b872", "Balance remaining") +
     swatch("#4fbf95", "Principal paid") + swatch("#e2795f", "Interest paid");
 }
@@ -11539,7 +11573,7 @@ function renderCollege() {
   R.rows.forEach(function(r) {
     pts.push({year: r.year, base: r.balance, hi: costIfStartingAt(r.year), lo: 0});
   });
-  collegePoints = paintChart("chartCl", pts, inp.yearsUntil, "band", []);
+  collegePoints = paintChart("chartCl", pts, inp.yearsUntil, "band", [], 0, {enhanced:true});
   $("legendCl").innerHTML =
     swatch("#e9b872", "Your savings") +
     swatch("#4fbf95", "Cost of college, that year");
@@ -11616,7 +11650,7 @@ function renderRentBuy() {
   R.years.forEach(function(y) {
     pts.push({year: y.year, base: y.buyerNW, hi: y.renterNW, lo: Math.min(y.buyerNW, y.renterNW)});
   });
-  rbPoints = paintChart("chartRB", pts, inp.horizon, "band", []);
+  rbPoints = paintChart("chartRB", pts, inp.horizon, "band", [], 0, {enhanced:true});
   $("legendRB").innerHTML =
     swatch("#e9b872", "Buyer net worth") +
     swatch("#4fbf95", "Renter net worth");
@@ -12223,7 +12257,7 @@ function renderDrawdown() {
       var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
       pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
     }
-    ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0);
+    ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
     mcLegend("legendDD");
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
@@ -12302,7 +12336,7 @@ function renderDrawdown() {
     M.bands.forEach(function (b) {
       mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
     });
-    ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0);
+    ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
     mcLegend("legendDD");
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
@@ -12378,8 +12412,8 @@ function renderIncomeChart(run) {
   });
   ddIncomeChartAgg = false;
   var xOff = ddRetireAge != null ? ddRetireAge - 1 : 0;
-  if (!pts.length) { paintChart("chartDDI", [], 1, "band", [], xOff); return; }
-  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", [], xOff);
+  if (!pts.length) { paintChart("chartDDI", [], 1, "band", [], xOff, {enhanced:true}); return; }
+  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", [], xOff, {enhanced:true});
   $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today\u0027s dollars");
 }
 
@@ -12400,7 +12434,7 @@ function renderIncomeChartAll(H, o) {
     pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
   }
   ddIncomeChartAgg = true;
-  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge - 1 : 0);
+  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge - 1 : 0, {enhanced:true});
   histLegend("legendDDI");
 }
 
@@ -12822,7 +12856,7 @@ function drawRCChart(){
     const c = rcView === "bal" ? b.trad : b.tax + b.irmaa;
     pts.push({year:p.age - inp.age, base:a, hi:c, lo:Math.min(a, c)});
   });
-  rcPoints = paintChart("chartRC", pts, inp.endAge - inp.age, "band", []);
+  rcPoints = paintChart("chartRC", pts, inp.endAge - inp.age, "band", [], 0, {enhanced:true});
   $("legendRC").innerHTML =
     swatch("#e9b872", rcView === "bal" ? "Traditional balance, converting"
                                        : "Tax paid, converting") +
@@ -13151,7 +13185,7 @@ function drawDebtChart(){
   for (let m = 0; m < span; m++)
     pts.push({year:m, base:at(pick, m), hi:at(mn, m),
               lo:Math.min(at(pick, m), at(mn, m))});
-  dtPoints = paintChart("chartDT", pts, span - 1, "band", []);
+  dtPoints = paintChart("chartDT", pts, span - 1, "band", [], 0, {enhanced:true});
   $("legendDT").innerHTML =
     swatch("#e9b872", dtMode === "snowball" ? "Snowball" : "Avalanche") +
     swatch("#4fbf95", "Minimums only");
@@ -13818,7 +13852,7 @@ function renderBasic(){
     ["qIn","qGrowth","qStart","qSpan"].forEach(id => $(id).textContent = "\u2014");
     $("qYearTable").querySelector("tbody").innerHTML = "";
     $("msBodyQ").innerHTML = "";
-    simplePoints = paintChart("chartQ", [], 1, "band", []);
+    simplePoints = paintChart("chartQ", [], 1, "band", [], 0, {enhanced:true});
     $("legendQ").innerHTML = "";
     $("qBandNote") && ($("qBandNote").textContent = "");
     return;
@@ -13852,14 +13886,14 @@ function renderBasic(){
 /* Fixed comparison band, no control: beginners get the range without another
    dial to understand. */
 function drawBasicChart(R, p){
-  if (!R.years.length){ simplePoints = paintChart("chartQ", [], 1, "band", []); return; }
+  if (!R.years.length){ simplePoints = paintChart("chartQ", [], 1, "band", [], 0, {enhanced:true}); return; }
   const hiR = projectBasic(Object.assign({}, p, {real: p.real + BASIC_BAND}));
   const loR = projectBasic(Object.assign({}, p, {real: Math.max(-0.99, p.real - BASIC_BAND)}));
   const pts = [{year:0, base:p.initial, hi:p.initial, lo:p.initial}];
   R.years.forEach((y, i) => pts.push({year:y.year, base:y.end,
     hi: hiR.years[i] ? hiR.years[i].end : y.end,
     lo: loR.years[i] ? loR.years[i].end : y.end}));
-  simplePoints = paintChart("chartQ", pts, p.years, "band", []);
+  simplePoints = paintChart("chartQ", pts, p.years, "band", [], 0, {enhanced:true});
   $("legendQ").innerHTML =
     swatch("#4fbf95", "If returns run better (" + pctStr(p.real + BASIC_BAND, 2) + ")") +
     swatch("#e9b872", "Your setting (" + pctStr(p.real, 2) + ")") +
