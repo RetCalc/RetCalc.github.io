@@ -3502,6 +3502,50 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>Historical</h2>
+      <div class="body">
+        <p>Monte Carlo asks what could happen if returns are drawn from a
+        distribution. Historical asks a different question: what would this plan
+        have done in the past that actually happened? It takes your contribution
+        schedule and runs it through every overlapping window of the real record,
+        January 1926 to December 2025, <b>compounding month by month</b>. A 30-year
+        plan gets 841 runs &mdash; one starting in each month from January 1926 to
+        January 1996.</p>
+        <p>The monthly step is the point. If the market falls 5% in March and you
+        contribute that month, you buy at March's lower level and get the full
+        benefit of whatever April does. Running a year as a single step averages
+        that away. It also means a quarterly contributor buys in March, June,
+        September and December rather than in twelve equal slices, and that
+        starting in July 1974 is a different plan from starting in January 1974.</p>
+        <p>Two inputs stop being used in this mode, and it is worth being clear
+        about which:</p>
+        <ul>
+          <li>Your <b>rate of return</b> is ignored. Returns come from the
+          <b>stock mix</b> instead: that share in the S&amp;P 500, the rest in
+          10-year Treasuries, rebalanced once a year. Fees still come off every
+          year.</li>
+          <li>Your <b>inflation</b> setting is ignored. Each window is converted to
+          today's dollars using the inflation that window actually had, so a run
+          through the 1970s is judged against 1970s prices.</li>
+        </ul>
+        <p>A <b>glide</b> works differently here too. There is no rate to glide, so
+        it walks the stock mix down instead, from your starting share to the ending
+        share over the final years of the plan.</p>
+        <p>The bands read the same way the Monte Carlo fan does, except each one is a
+        real stretch of history rather than a simulated draw. The line labelled worst
+        is not a bad scenario someone invented; it is a period people lived through
+        while saving. Worth knowing: the worst outcome for a saver is rarely the
+        crash, because a crash early buys shares cheaply for decades afterwards.
+        A long flat stretch just before retirement does more damage.</p>
+        <p><b>What it can't do.</b> A century is a single overlapping sample, heavily
+        US-biased, and the windows share almost all their months with each other,
+        so 841 runs are emphatically not 841 independent trials &mdash; consecutive
+        windows differ by one month at each end. A plan longer than 100 years has no
+        window to run in and the mode says so instead of guessing.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Coast FIRE</h2>
       <div class="body">
         <p><b>FIRE</b> stands for Financial Independence, Retire Early. <b>Coast FIRE</b>
@@ -3549,50 +3593,6 @@ window.onerror = function(msg){
         </ul>
         <p>Results are reproducible: the same inputs give the same fan every time.
         <b>Re-roll</b> deliberately draws a fresh set.</p>
-      </div>
-    </div>
-
-    <div class="panel about">
-      <h2>Historical</h2>
-      <div class="body">
-        <p>Monte Carlo asks what could happen if returns are drawn from a
-        distribution. Historical asks a different question: what would this plan
-        have done in the past that actually happened? It takes your contribution
-        schedule and runs it through every overlapping window of the real record,
-        January 1926 to December 2025, <b>compounding month by month</b>. A 30-year
-        plan gets 841 runs &mdash; one starting in each month from January 1926 to
-        January 1996.</p>
-        <p>The monthly step is the point. If the market falls 5% in March and you
-        contribute that month, you buy at March's lower level and get the full
-        benefit of whatever April does. Running a year as a single step averages
-        that away. It also means a quarterly contributor buys in March, June,
-        September and December rather than in twelve equal slices, and that
-        starting in July 1974 is a different plan from starting in January 1974.</p>
-        <p>Two inputs stop being used in this mode, and it is worth being clear
-        about which:</p>
-        <ul>
-          <li>Your <b>rate of return</b> is ignored. Returns come from the
-          <b>stock mix</b> instead: that share in the S&amp;P 500, the rest in
-          10-year Treasuries, rebalanced once a year. Fees still come off every
-          year.</li>
-          <li>Your <b>inflation</b> setting is ignored. Each window is converted to
-          today's dollars using the inflation that window actually had, so a run
-          through the 1970s is judged against 1970s prices.</li>
-        </ul>
-        <p>A <b>glide</b> works differently here too. There is no rate to glide, so
-        it walks the stock mix down instead, from your starting share to the ending
-        share over the final years of the plan.</p>
-        <p>The bands read the same way the Monte Carlo fan does, except each one is a
-        real stretch of history rather than a simulated draw. The line labelled worst
-        is not a bad scenario someone invented; it is a period people lived through
-        while saving. Worth knowing: the worst outcome for a saver is rarely the
-        crash, because a crash early buys shares cheaply for decades afterwards.
-        A long flat stretch just before retirement does more damage.</p>
-        <p><b>What it can't do.</b> A century is a single overlapping sample, heavily
-        US-biased, and the windows share almost all their months with each other,
-        so 841 runs are emphatically not 841 independent trials &mdash; consecutive
-        windows differ by one month at each end. A plan longer than 100 years has no
-        window to run in and the mode says so instead of guessing.</p>
       </div>
     </div>
 
@@ -7609,6 +7609,7 @@ function readInputs(){
     glide: glideOn ? {
       on: true,
       endRate: rate("glideEnd") - rate("fees"),
+      endRateGross: rate("glideEnd"),
       years: Math.min(years, Math.max(1, Math.round(num("glideYears"))))
     } : {on: false}
   };
@@ -7628,7 +7629,7 @@ function writeInputs(s){
   $("glideToggle").classList.toggle("on", glideOn);
   $("glideToggle").setAttribute("aria-expanded", String(glideOn));
   $("glideFields").hidden = !glideOn;
-  $("glideEnd").value = glideOn ? +(s.glide.endRate * 100).toFixed(6) : "";
+  $("glideEnd").value = glideOn ? +((s.glide.endRateGross != null ? s.glide.endRateGross : s.glide.endRate) * 100).toFixed(6) : "";
   $("glideYears").value = glideOn ? s.glide.years : "";
   updateGlideNote();
   // a hand-edited or imported file could carry a negative into one of these
