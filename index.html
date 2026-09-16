@@ -995,7 +995,7 @@ html[data-theme="light"] .about.disclaimer{
 .grid2:has(.piewrap){grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
 .piewrap{display:flex;align-items:center;justify-content:center;padding:4px}
 .piewrap svg{max-width:220px;width:100%;height:auto}
-.bar{margin-bottom:11px}
+.bar{margin-bottom:11px;cursor:pointer;transition:opacity .15s}
 .bar .lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:10px}
 .bar .lbl b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
 .bar .track{height:9px;border-radius:5px;background:var(--field);overflow:hidden;
@@ -10282,6 +10282,45 @@ const BKT_COLORS = {trad:"#e2795f", roth:"#4fbf95", brok:"#7d9fd6",
                     ss:"#e9b872", pension:"#c98fb8", other:"#a98fd6"};
 const LTCG_COLORS = ["#4fbf95", "#e9b872", "#e2795f"];   // 0%, 15%, 20%
 
+let txActiveParts = [], txPieDefaultLabel = "All taxes", txPieDefaultVal = "";
+let _txDeactivateTimer = null;
+
+(function(){
+  function txActivate(idx){
+    clearTimeout(_txDeactivateTimer);
+    $("txPie").querySelectorAll("circle[data-idx]").forEach(function(c){
+      c.style.opacity = +c.dataset.idx === idx ? "" : "0.18";
+    });
+    $("txBars").querySelectorAll(".bar[data-idx]").forEach(function(b){
+      b.style.opacity = +b.dataset.idx === idx ? "" : "0.25";
+    });
+    var pt = txActiveParts[idx];
+    var lbl = $("txPieLbl"), val = $("txPieVal");
+    if (pt && lbl && val){ lbl.textContent = pt.label || ""; val.textContent = money(pt.v); }
+  }
+  function txDeactivate(){
+    _txDeactivateTimer = setTimeout(function(){
+      $("txPie").querySelectorAll("circle[data-idx]").forEach(function(c){ c.style.opacity = ""; });
+      $("txBars").querySelectorAll(".bar[data-idx]").forEach(function(b){ b.style.opacity = ""; });
+      var lbl = $("txPieLbl"), val = $("txPieVal");
+      if (lbl) lbl.textContent = txPieDefaultLabel;
+      if (val) val.textContent = txPieDefaultVal;
+    }, 60);
+  }
+  var pie = $("txPie");
+  pie.addEventListener("mouseover", function(e){
+    var c = e.target.closest ? e.target.closest("circle[data-idx]") : null;
+    if (c) txActivate(+c.dataset.idx); else txDeactivate();
+  });
+  pie.addEventListener("mouseleave", txDeactivate);
+  var barsEl = $("txBars");
+  barsEl.addEventListener("mouseover", function(e){
+    var b = e.target.closest ? e.target.closest(".bar[data-idx]") : null;
+    if (b) txActivate(+b.dataset.idx);
+  });
+  barsEl.addEventListener("mouseleave", txDeactivate);
+})();
+
 function readTax(){
   const status = $("txStatus").value;
   const seniors = Math.min(status === "m" ? 2 : 1, parseInt($("txSeniors").value, 10) || 0);
@@ -10307,8 +10346,9 @@ function readTax(){
 function runTax(inp){
   return inp.mode === "retire" ? computeRetireTax(inp) : computeTax(inp);
 }
-function bar(label, value, share, color){
-  return "<div class='bar'><div class='lbl'><span>" + label + "</span><b>" +
+function bar(label, value, share, color, idx){
+  return "<div class='bar'" + (idx !== undefined ? " data-idx='" + idx + "'" : "") +
+    "><div class='lbl'><span>" + label + "</span><b>" +
     money(value) + "</b></div><div class='track'><div class='fill' style='width:" +
     (Math.max(0, Math.min(1, share)) * 100).toFixed(1) + "%;background:" + color +
     "'></div></div></div>";
@@ -10317,14 +10357,15 @@ function donut(parts){
   const R = 100, C = 110, sw = 30, circ = 2 * Math.PI * (R - sw / 2);
   const tot = parts.reduce((a, x) => a + x.v, 0) || 1;
   let off = 0, out = "";
-  parts.forEach(pt => {
+  parts.forEach((pt, i) => {
     const frac = pt.v / tot;
     if (frac <= 0) return;
     out += "<circle cx='" + C + "' cy='" + C + "' r='" + (R - sw / 2) +
       "' fill='none' stroke='" + pt.c + "' stroke-width='" + sw +
       "' stroke-dasharray='" + (frac * circ).toFixed(2) + " " + circ.toFixed(2) +
       "' stroke-dashoffset='" + (-off * circ).toFixed(2) +
-      "' transform='rotate(-90 " + C + " " + C + ")'></circle>";
+      "' transform='rotate(-90 " + C + " " + C + ")'" +
+      " data-idx='" + i + "' style='transition:opacity .15s;cursor:pointer'></circle>";
     off += frac;
   });
   return out;
@@ -10472,15 +10513,17 @@ function renderNormalTax(inp, R){
   }
 
   $("txBars").innerHTML =
-    bar("Take-home pay", R.net, R.effNet, TAX_COLORS.net) +
-    bar("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed) +
-    bar("State income tax" + (R.stateNone ? " (none)" : ""), R.state, R.effState, TAX_COLORS.state) +
-    bar("FICA (Social Security + Medicare)", R.fica, R.effFica, TAX_COLORS.fica) +
-    (R.pre > 0 ? bar("Pre-tax savings", R.pre, R.gross ? R.pre / R.gross : 0, "#8ba0ac") : "");
+    bar("Take-home pay", R.net, R.effNet, TAX_COLORS.net, 0) +
+    bar("Federal income tax", R.federal, R.effFed, TAX_COLORS.fed, 1) +
+    bar("State income tax" + (R.stateNone ? " (none)" : ""), R.state, R.effState, TAX_COLORS.state, 2) +
+    bar("FICA (Social Security + Medicare)", R.fica, R.effFica, TAX_COLORS.fica, 3) +
+    (R.pre > 0 ? bar("Pre-tax savings", R.pre, R.gross ? R.pre / R.gross : 0, "#8ba0ac", 4) : "");
 
-  const parts = [{v:R.net, c:TAX_COLORS.net}, {v:R.federal, c:TAX_COLORS.fed},
-                 {v:R.state, c:TAX_COLORS.state}, {v:R.fica, c:TAX_COLORS.fica}];
-  if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac"});
+  const parts = [{v:R.net, c:TAX_COLORS.net, label:"Take-home pay"},
+                 {v:R.federal, c:TAX_COLORS.fed, label:"Federal tax"},
+                 {v:R.state, c:TAX_COLORS.state, label:"State tax"},
+                 {v:R.fica, c:TAX_COLORS.fica, label:"FICA"}];
+  if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac", label:"Pre-tax savings"});
   txDonut(R, parts);
 
   // The Social Security wage cap applies per earner, so a joint return splits
@@ -10545,17 +10588,19 @@ function renderRetireTax(inp, R){
   }
 
   $("txBars").innerHTML =
-    bar("Income after tax", R.net, R.effNet, TAX_COLORS.net) +
-    bar("Federal ordinary income tax", R.fedOrdinary, R.gross ? R.fedOrdinary / R.gross : 0, TAX_COLORS.fed) +
-    bar("Federal long-term capital gain tax", R.ltcg, R.gross ? R.ltcg / R.gross : 0, LTCG_COLORS[1]) +
-    (R.niit > 0 ? bar("Net investment income tax (3.8%)", R.niit, R.gross ? R.niit / R.gross : 0, "#a98fd6") : "") +
-    bar("State income tax" + (R.stateNone ? " (none)" : ""), R.state, R.effState, TAX_COLORS.state) +
-    (R.pre > 0 ? bar("Pre-tax deductions", R.pre, R.gross ? R.pre / R.gross : 0, "#8ba0ac") : "");
+    bar("Income after tax", R.net, R.effNet, TAX_COLORS.net, 0) +
+    bar("Federal ordinary income tax", R.fedOrdinary, R.gross ? R.fedOrdinary / R.gross : 0, TAX_COLORS.fed, 1) +
+    bar("Federal long-term capital gain tax", R.ltcg, R.gross ? R.ltcg / R.gross : 0, LTCG_COLORS[1], 2) +
+    (R.niit > 0 ? bar("Net investment income tax (3.8%)", R.niit, R.gross ? R.niit / R.gross : 0, "#a98fd6", 3) : "") +
+    bar("State income tax" + (R.stateNone ? " (none)" : ""), R.state, R.effState, TAX_COLORS.state, 4) +
+    (R.pre > 0 ? bar("Pre-tax deductions", R.pre, R.gross ? R.pre / R.gross : 0, "#8ba0ac", 5) : "");
 
-  const parts = [{v:R.net, c:TAX_COLORS.net}, {v:R.fedOrdinary, c:TAX_COLORS.fed},
-                 {v:R.ltcg, c:LTCG_COLORS[1]}, {v:R.niit, c:"#a98fd6"},
-                 {v:R.state, c:TAX_COLORS.state}];
-  if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac"});
+  const parts = [{v:R.net, c:TAX_COLORS.net, label:"Income after tax"},
+                 {v:R.fedOrdinary, c:TAX_COLORS.fed, label:"Federal ordinary tax"},
+                 {v:R.ltcg, c:LTCG_COLORS[1], label:"Capital gain tax"},
+                 {v:R.niit, c:"#a98fd6", label:"Net investment tax"},
+                 {v:R.state, c:TAX_COLORS.state, label:"State tax"}];
+  if (R.pre > 0) parts.push({v:R.pre, c:"#8ba0ac", label:"Pre-tax deductions"});
   txDonut(R, parts);
 
   $("txTable").querySelector("tbody").innerHTML =
@@ -10647,11 +10692,13 @@ function renderRetireTax(inp, R){
 }
 
 function txDonut(R, parts){
+  txActiveParts = parts;
+  txPieDefaultVal = pctStr(R.effTotal, 1);
   $("txPie").innerHTML = donut(parts) +
-    "<text x='110' y='104' text-anchor='middle' font-size='13' fill='" + cssVar("--dim") +
-    "' font-family='" + cssVar("--sans") + "'>All taxes</text>" +
-    "<text x='110' y='128' text-anchor='middle' font-size='22' font-weight='600' fill='" +
-    cssVar("--text") + "' font-family='" + cssVar("--mono") + "'>" +
+    "<text id='txPieLbl' x='110' y='104' text-anchor='middle' font-size='13' fill='" + cssVar("--dim") +
+    "' font-family='" + cssVar("--sans") + "' style='pointer-events:none'>All taxes</text>" +
+    "<text id='txPieVal' x='110' y='128' text-anchor='middle' font-size='22' font-weight='600' fill='" +
+    cssVar("--text") + "' font-family='" + cssVar("--mono") + "' style='pointer-events:none'>" +
     pctStr(R.effTotal, 1) + "</text>";
 }
 function txRow(k, v, eff, cls){
