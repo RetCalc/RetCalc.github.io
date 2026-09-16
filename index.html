@@ -1698,7 +1698,7 @@ window.onerror = function(msg){
         <span class="h2ctrl">
           <span class="seg" id="segSingle">
             <button type="button" data-mode="band" class="on">Rate band</button>
-            <button type="button" data-mode="hist">History</button>
+            <button type="button" data-mode="hist">Historical</button>
             <button type="button" data-mode="mc">Monte Carlo</button>
           </span>
           <span class="modeopt" id="optBand">
@@ -1923,7 +1923,7 @@ window.onerror = function(msg){
         <span class="h2ctrl">
           <span class="seg" id="segSeries">
             <button type="button" data-mode="band" class="on">Rate band</button>
-            <button type="button" data-mode="hist">History</button>
+            <button type="button" data-mode="hist">Historical</button>
             <button type="button" data-mode="mc">Monte Carlo</button>
           </span>
           <span class="modeopt" id="optBandS">
@@ -2043,7 +2043,7 @@ window.onerror = function(msg){
         </div>
         <div class="two">
           <div class="field">
-            <label for="btFrom">From</label>
+            <label for="btFrom">From<span class="tipdot" data-tip="bthistory" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="btFrom" type="text" inputmode="decimal" data-num data-step="1" min="1928" data-nonneg value="1928"></div>
           </div>
           <div class="field">
@@ -2374,6 +2374,7 @@ window.onerror = function(msg){
           <div class="field">
             <label for="ddYears">Years in retirement</label>
             <div class="inputwrap"><input id="ddYears" type="text" inputmode="decimal" data-num data-step="1" min="1" max="60" data-nonneg><span class="affix">yrs</span></div>
+            <div class="hint" id="ddFromNote" style="margin-top:6px"></div>
           </div>
           <div class="field">
             <label for="ddStock">Stocks<span class="tipdot" data-tip="ddstocks" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -2447,10 +2448,18 @@ window.onerror = function(msg){
             <option value="manual">I know my benefit</option>
           </select>
         </div>
+        <div class="field" id="ddSSWhoWrap" hidden>
+          <label for="ddSSWho">Whose benefit</label>
+          <select id="ddSSWho">
+            <option value="single">Just me</option>
+            <option value="couple">Me and a spouse</option>
+          </select>
+          <div class="hint">Both benefits are added together and assumed to begin at the same point in retirement, set below.</div>
+        </div>
         <div id="ddSSEst" hidden>
           <div class="two">
             <div class="field">
-              <label for="ddSSIncome">Current income</label>
+              <label for="ddSSIncome" id="ddSSIncomeLabel">Current income</label>
               <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
             </div>
             <div class="field">
@@ -2458,13 +2467,27 @@ window.onerror = function(msg){
               <div class="inputwrap"><input id="ddSSClaim" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg value="67"><span class="affix">yrs</span></div>
             </div>
           </div>
+          <div class="two" id="ddSSEst2Wrap" hidden>
+            <div class="field">
+              <label for="ddSSIncome2">Spouse's income</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome2" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
+            </div>
+            <div class="field">
+              <label for="ddSSClaim2">Claim at age</label>
+              <div class="inputwrap"><input id="ddSSClaim2" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg value="67"><span class="affix">yrs</span></div>
+            </div>
+          </div>
           <div class="hint" id="ddSSEstNote"></div>
         </div>
         <div id="ddSSManual" hidden>
           <div class="field">
-            <label for="ddSSAmount">Annual benefit, today's dollars</label>
+            <label for="ddSSAmount" id="ddSSAmountLabel">Annual benefit, today's dollars</label>
             <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
             <div class="hint">Find your number at ssa.gov/myaccount for the most accurate figure. Like the rest of the plan, it grows with inflation every year once it starts.</div>
+          </div>
+          <div class="field" id="ddSSAmount2Wrap" hidden>
+            <label for="ddSSAmount2">Spouse's annual benefit, today's dollars</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount2" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
           </div>
         </div>
         <div class="field" id="ddSSDelayWrap" hidden>
@@ -2554,18 +2577,43 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
-      <h2>What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <h2>What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span>
+        <span class="h2ctrl" id="ddViewWrap" hidden>
+          <span class="seg" id="segDDView">
+            <button type="button" data-ddview="year">Selected year</button>
+            <button type="button" data-ddview="all" class="on">All years</button>
+          </span>
+        </span>
+      </h2>
       <div class="body">
-        <div class="grid2">
-          <div>
-            <div class="kv"><span class="k">Highest year, in today's $</span><span class="v pos" id="ddSpendHigh"></span></div>
-            <div class="kv"><span class="k">Lowest year, in today's $</span><span class="v neg" id="ddSpendLow"></span></div>
-            <div class="kv"><span class="k">Median year, in today's $</span><span class="v" id="ddSpendMed"></span></div>
+        <div id="ddSpendYearView" hidden>
+          <div class="grid2">
+            <div>
+              <div class="kv"><span class="k">Highest year, in today's $</span><span class="v pos" id="ddSpendHigh"></span></div>
+              <div class="kv"><span class="k">Lowest year, in today's $</span><span class="v neg" id="ddSpendLow"></span></div>
+              <div class="kv"><span class="k">Median year, in today's $</span><span class="v" id="ddSpendMed"></span></div>
+            </div>
+            <div>
+              <div class="kv"><span class="k">Years spending was cut</span><span class="v" id="ddSpendCuts"></span></div>
+              <div class="kv"><span class="k">Biggest single-year cut</span><span class="v" id="ddSpendMaxCut"></span></div>
+              <div class="kv"><span class="k">Total spent over retirement</span><span class="v" id="ddSpendTotal"></span></div>
+            </div>
           </div>
-          <div>
-            <div class="kv"><span class="k">Years spending was cut</span><span class="v" id="ddSpendCuts"></span></div>
-            <div class="kv"><span class="k">Biggest single-year cut</span><span class="v" id="ddSpendMaxCut"></span></div>
-            <div class="kv"><span class="k">Total spent over retirement</span><span class="v" id="ddSpendTotal"></span></div>
+        </div>
+        <div id="ddSpendAllView">
+          <div class="grid2">
+            <div>
+              <div class="kv"><span class="k">Best single year, in today's $</span><span class="v pos" id="ddAggHigh"></span></div>
+              <div class="kv"><span class="k">Worst single year, in today's $</span><span class="v neg" id="ddAggLow"></span></div>
+              <div class="kv"><span class="k">Median single year, in today's $</span><span class="v" id="ddAggMed"></span></div>
+              <div class="kv"><span class="k">Average single year, in today's $</span><span class="v" id="ddAggAvg"></span></div>
+            </div>
+            <div>
+              <div class="kv"><span class="k">Median total spent over retirement</span><span class="v" id="ddAggTotalMed"></span></div>
+              <div class="kv"><span class="k">Total spent, lowest to highest scenario</span><span class="v" id="ddAggTotalRange"></span></div>
+              <div class="kv"><span class="k">Years spending was cut, on average</span><span class="v" id="ddAggCutsAvg"></span></div>
+              <div class="kv"><span class="k">Biggest single-year cut, ever</span><span class="v neg" id="ddAggMaxCut"></span></div>
+            </div>
           </div>
         </div>
         <div class="hint" id="ddSpendNote" style="margin-top:4px"></div>
@@ -2919,7 +2967,7 @@ window.onerror = function(msg){
           that could have funded a better retirement.</dd>
         </dl>
 
-        <p><b>What it leaves out:</b> the 1928&ndash;2025 record is US markets only, so
+        <p><b>What it leaves out:</b> the 1926&ndash;2025 record is US markets only, so
         it says nothing about how other countries' markets have behaved, and the
         historical test necessarily has just 98 starting points, not an infinite set
         of possible futures. Required minimum distributions and taxes on withdrawals
@@ -2954,6 +3002,21 @@ window.onerror = function(msg){
         earned through a high-inflation stretch is only meaningful next to the inflation
         that came with it, and pairing that return with a different inflation assumption
         quietly changes the answer.</p>
+        <p><b>The data.</b> Monthly, January 1926 to December 2025. Stock prices,
+        dividend yields and 10-year Treasury yields come from Robert Shiller's
+        dataset (Yale); CPI-U comes from the US Bureau of Labor Statistics. Monthly
+        stock total return is the price change plus that month's share of the
+        trailing dividend; monthly bond return is one month of coupon plus the price
+        move implied by the change in yield. The calendar-year figures the Drawdown
+        Simulator and this tool use are compounded up from those same monthly
+        numbers, so there is one dataset aggregated two ways rather than two
+        datasets that can disagree.</p>
+        <p>Shiller's prices are <b>monthly averages of daily closes</b>, not month-end
+        closes &mdash; his long-standing convention, and the one most long-run
+        retirement research is built on. It slightly damps single-year extremes
+        against a December-to-December series (2008 reads about &minus;39% here rather
+        than &minus;37%) while leaving long-run compounding alone: stocks still run
+        near 10% a year over the period.</p>
         <p><b>The assumptions.</b> Stock returns are S&amp;P 500 total return with
         dividends reinvested, and bond returns include the coupon, not just the price
         move &mdash; which is why stocks here compound near 10% a year rather than the
@@ -3244,18 +3307,41 @@ window.onerror = function(msg){
           credit score, term, points and lender, so replace it with a current quote.</dd>
           <dt>PMI</dt>
           <dd>Private mortgage insurance, charged when you put down less than 20%.
-          Typically 0.3&ndash;1.5% of the loan a year. It drops off automatically here
-          once the balance falls to 80% of the purchase price.</dd>
+          Typically 0.3&ndash;1.5% of the loan a year. Modeled here as ending once the
+          balance falls to 80% of the purchase price, which is when you can request
+          cancellation; federal law only forces automatic removal later, at 78%, if
+          you never ask.</dd>
           <dt>Property tax and insurance</dt>
           <dd>Pre-filled with rough national averages. Both vary enormously by
           location: property tax alone ranges from well under 0.5% to over 2%
           of value, so replace them with local figures if you have them.</dd>
         </dl>
-        <p><b>What it leaves out:</b> closing costs, PMI cancellation rules that
-        depend on appraised value rather than purchase price, adjustable rates, extra
-        payments, refinancing, the mortgage interest deduction, and maintenance. A
-        common rule of thumb is to budget roughly 1% of the home's value a year for
-        upkeep, which this doesn't include.</p>
+        <p>The <b>Already have this loan?</b> toggle below the main inputs opens extra
+        payments, a recast, and a refinance comparison &mdash; skip it entirely for a
+        quick estimate on a home you haven't bought yet.</p>
+        <dl class="gloss">
+          <dt>Extra payments</dt>
+          <dd>A recurring amount, a one-time amount, or both, applied straight to
+          principal. By default the required payment stays what it was &mdash; you're
+          just finishing early and paying less interest along the way.</dd>
+          <dt>Recast</dt>
+          <dd>After a one-time payment, choose to lower the monthly payment instead of
+          shortening the loan: the balance re-amortizes over whatever's left of the
+          original term, at the same rate. The payoff date doesn't move, but every
+          payment after that point is smaller. Lenders often charge $150&ndash;500 for
+          this, which isn't included.</dd>
+          <dt>Refinance comparison</dt>
+          <dd>Assumes you refinance today, on the loan as entered, into a new rate and
+          term with the same extra-payment plan carried over &mdash; so the comparison
+          isolates the refinance itself. Shows the new payment, how long closing costs
+          take to earn back in lower payments, and which loan costs less in total once
+          those costs are counted. Closing costs are assumed paid out of pocket rather
+          than rolled into the new balance.</dd>
+        </dl>
+        <p><b>What it leaves out:</b> closing costs rolled into the loan, adjustable
+        rates, cash-out refinancing, the mortgage interest deduction, and maintenance
+        beyond a flat percentage. A common rule of thumb is to budget roughly 1% of the
+        home's value a year for upkeep.</p>
       </div>
     </div>
 
@@ -3453,14 +3539,21 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
-      <h2>History</h2>
+      <h2>Historical</h2>
       <div class="body">
         <p>Monte Carlo asks what could happen if returns are drawn from a
-        distribution. History asks a different question: what would this plan have
-        done in the past that actually happened? It takes your contribution
+        distribution. Historical asks a different question: what would this plan
+        have done in the past that actually happened? It takes your contribution
         schedule and runs it through every overlapping window of the real record,
-        1928 to 2025 &mdash; a 30-year plan gets 69 runs, one starting in each year
-        from 1928 to 1996.</p>
+        January 1926 to December 2025, <b>compounding month by month</b>. A 30-year
+        plan gets 841 runs &mdash; one starting in each month from January 1926 to
+        January 1996.</p>
+        <p>The monthly step is the point. If the market falls 5% in March and you
+        contribute that month, you buy at March's lower level and get the full
+        benefit of whatever April does. Running a year as a single step averages
+        that away. It also means a quarterly contributor buys in March, June,
+        September and December rather than in twelve equal slices, and that
+        starting in July 1974 is a different plan from starting in January 1974.</p>
         <p>Two inputs stop being used in this mode, and it is worth being clear
         about which:</p>
         <ul>
@@ -3481,10 +3574,11 @@ window.onerror = function(msg){
         while saving. Worth knowing: the worst outcome for a saver is rarely the
         crash, because a crash early buys shares cheaply for decades afterwards.
         A long flat stretch just before retirement does more damage.</p>
-        <p><b>What it can't do.</b> 98 years is a single overlapping sample, heavily
-        US-biased, and windows share years with each other, so they are not 69
-        independent trials. A plan longer than 98 years has no window to run in and
-        the mode says so instead of guessing.</p>
+        <p><b>What it can't do.</b> A century is a single overlapping sample, heavily
+        US-biased, and the windows share almost all their months with each other,
+        so 841 runs are emphatically not 841 independent trials &mdash; consecutive
+        windows differ by one month at each end. A plan longer than 100 years has no
+        window to run in and the mode says so instead of guessing.</p>
       </div>
     </div>
 
@@ -4336,6 +4430,69 @@ window.onerror = function(msg){
         </div>
       </div>
     </div>
+
+    <div class="panel inputs">
+      <h2>Already have this loan?</h2>
+      <div class="body">
+        <div class="field">
+          <label for="moExtrasOn">Extra payments, recasting, or refinancing</label>
+          <select id="moExtrasOn">
+            <option value="0">No, just the basics</option>
+            <option value="1">Yes, show these options</option>
+          </select>
+          <div class="hint">Paying down faster or considering a refinance? These layer on
+            top of the loan above &mdash; leave them off for a quick estimate on a home
+            you haven't bought yet.</div>
+        </div>
+        <div id="moExtrasWrap" hidden>
+          <div class="field" style="margin-top:2px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Extra payments</div></div>
+          <div class="field">
+            <label for="moExtraMo">Extra toward principal</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moExtraMo" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="moExtraOnce">One-time extra payment</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="moExtraOnce" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="moExtraWhen">In month</label>
+              <div class="inputwrap"><input id="moExtraWhen" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg></div>
+            </div>
+          </div>
+          <div class="field" id="moRecastWrap">
+            <label for="moRecast">After that payment<span class="tipdot" data-tip="recast" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <select id="moRecast">
+              <option value="0">Keep the same payment, finish early</option>
+              <option value="1">Recast &mdash; lower the payment instead</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin-top:12px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Compare a refinance</div></div>
+          <div class="two">
+            <div class="field">
+              <label for="moRefiRate">New rate</label>
+              <div class="inputwrap"><input id="moRefiRate" type="text" inputmode="decimal" data-num data-step="0.125" min="0" data-nonneg><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="moRefiTerm">New length</label>
+              <select id="moRefiTerm">
+                <option value="30">30 years</option>
+                <option value="20">20 years</option>
+                <option value="15">15 years</option>
+                <option value="10">10 years</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="moRefiCost">Closing costs</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moRefiCost" type="text" inputmode="decimal" data-money data-nonneg></div>
+            <div class="hint">Typically 2&ndash;5% of the loan amount, paid out of pocket
+              rather than rolled into the new loan.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </aside>
 
   <div class="stack" id="tab-budget" hidden>
@@ -4412,6 +4569,17 @@ window.onerror = function(msg){
           <div class="note">Tax, insurance, PMI, HOA</div></div>
       </div>
       <div class="body"><div id="moBars"></div></div>
+    </div>
+
+    <div class="panel" id="moExtraPanel" hidden>
+      <h2>Extra payments &amp; refinancing</h2>
+      <div class="body">
+        <div id="moExtraStats"></div>
+        <div id="moRefiBlock" hidden>
+          <div class="field" style="margin-top:4px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Refinancing to <span id="moRefiHead"></span></div></div>
+          <div id="moRefiStats"></div>
+        </div>
+      </div>
     </div>
 
     <div class="panel">
@@ -6160,26 +6328,77 @@ function mortgage(m){
   const util = m.util || 0;
   const total = pi + tax + ins + pmiMonthly + hoa + maint + util;
 
-  // year-by-year amortization, dropping PMI once the balance reaches 80% LTV
-  let bal = loan, totalInterest = 0, pmiPaid = 0;
+  // Extra payments, a recast, and PMI's end date all fall out of the same
+  // month-by-month walk, so one loop produces all of it. A lump sum only
+  // ever shortens the loan, so the original term is a safe upper bound on
+  // how many months this can run.
+  const extraMo = Math.max(0, m.extraMonthly || 0);
+  const lumpAmt = Math.max(0, m.extraOnce || 0);
+  const lumpMonth = lumpAmt > 0 ? Math.max(1, Math.round(m.extraOnceMonth || 0)) : 0;
+  const doRecast = !!m.recast && lumpAmt > 0;
+  const pmiWasActive = ltv > .80 && m.pmiPct > 0;
+
+  let bal = loan, totalInterest = 0, pmiPaid = 0, curPI = pi, recastPI = null;
+  let pmiEndMonth = pmiWasActive ? null : 0;   // 0 = PMI never applied
+  let payoffMonth = n;
   const years = [];
-  for (let y = 1; y <= Math.ceil(m.term); y++){
-    let yi = 0, yp = 0, ypmi = 0;
-    for (let k = 0; k < 12 && bal > 0; k++){
-      const interest = bal * r;
-      let principal = pi - interest;
-      if (principal > bal) principal = bal;
-      bal = Math.max(0, bal - principal);
-      yi += interest; yp += principal;
-      if (m.price > 0 && bal / m.price > .80) ypmi += loan * m.pmiPct / 12;
+  let yi = 0, yp = 0, ypmi = 0, curYear = 1;
+
+  for (let i = 1; i <= n && bal > 0.005; i++){
+    const interest = bal * r;
+    let extra = extraMo + (i === lumpMonth ? lumpAmt : 0);
+    let principal = curPI - interest + extra;
+    if (principal > bal) principal = bal;
+    bal = Math.max(0, bal - principal);
+    totalInterest += interest;
+    yi += interest; yp += principal;
+
+    if (m.price > 0 && bal / m.price > .80 && m.pmiPct > 0){
+      ypmi += pmiMonthly; pmiPaid += pmiMonthly;
+    } else if (pmiWasActive && pmiEndMonth === null){
+      pmiEndMonth = i;
     }
-    totalInterest += yi; pmiPaid += ypmi;
-    years.push({year:y, interest:yi, principal:yp, paid:yi + yp, balance:bal,
-                pmi:ypmi});
-    if (bal <= 0) break;
+
+    // Recasting re-derives the required payment from the balance right after
+    // the lump sum lands, spread over whatever's left of the original term
+    // -- same rate, same payoff date, smaller check every month after.
+    if (doRecast && i === lumpMonth && bal > 0){
+      const remaining = Math.max(1, n - i);
+      curPI = (r === 0) ? bal / remaining : bal * r / (1 - Math.pow(1 + r, -remaining));
+      recastPI = curPI;
+    }
+
+    const yearNo = Math.ceil(i / 12);
+    if (yearNo !== curYear){
+      years.push({year:curYear, interest:yi, principal:yp, paid:yi + yp,
+                  balance:bal, pmi:ypmi});
+      yi = 0; yp = 0; ypmi = 0; curYear = yearNo;
+    }
+    if (bal <= 0.005) payoffMonth = i;
   }
+  if (yi > 0 || yp > 0 || !years.length)
+    years.push({year:curYear, interest:yi, principal:yp, paid:yi + yp,
+                balance:bal, pmi:ypmi});
+
   return {loan, pi, tax, ins, pmi:pmiMonthly, hoa, maint, util, total, years,
-          totalInterest, pmiPaid, ltv, n};
+          totalInterest, pmiPaid, ltv, n, payoffMonth, pmiEndMonth, recastPI,
+          extraActive: extraMo > 0 || lumpAmt > 0};
+}
+
+/* A refinance is compared as if it closed today, on the balance and terms
+   already entered: the new loan gets the same extra-payment plan as the
+   current one, so the comparison isolates the rate and term change rather
+   than mixing in a change in payment behavior too. */
+function refiCompare(m, refi){
+  const now = mortgage(m);
+  const then = mortgage(Object.assign({}, m, {rate:refi.rate, term:refi.term}));
+  const monthlyDelta = now.pi - then.pi;               // positive = payment drops
+  const breakEvenMonths = monthlyDelta > 0.005
+    ? Math.ceil(refi.cost / monthlyDelta) : null;
+  const allInNow = now.totalInterest + now.pmiPaid;
+  const allInThen = then.totalInterest + then.pmiPaid + refi.cost;
+  return {now, then, monthlyDelta, breakEvenMonths,
+          lifetimeDelta: allInNow - allInThen};      // positive = refinancing wins
 }
 
 /* Historical annual returns, 1928-2025 (98 years).
@@ -6187,28 +6406,336 @@ function mortgage(m){
    Bonds: US 10-year Treasury total return.
    Both from NYU Stern (Damodaran), updated January 2026.
    Inflation: annual average CPI-U change, US Bureau of Labor Statistics. */
-var HIST_START = 1928;
-var HIST_STOCK = [43.81,-8.30,-25.12,-43.84,-8.64,49.98,-1.19,46.74,31.94,-35.34,
-29.28,-1.10,-10.67,-12.77,19.17,25.06,19.03,35.82,-8.43,5.20,5.70,18.30,30.81,
-23.68,18.15,-1.21,52.56,32.60,7.44,-10.46,43.72,12.06,0.34,26.64,-8.81,22.61,
-16.42,12.40,-9.97,23.80,10.81,-8.24,3.56,14.22,18.76,-14.31,-25.90,37.00,23.83,
--6.98,6.51,18.52,31.74,-4.70,20.42,22.34,6.15,31.24,18.49,5.81,16.54,31.48,-3.06,
-30.23,7.49,9.97,1.33,37.20,22.68,33.10,28.34,20.89,-9.03,-11.85,-21.97,28.36,
-10.74,4.83,15.61,5.48,-36.55,25.94,14.82,2.10,15.89,32.15,13.52,1.38,11.77,21.61,
--4.23,31.21,18.02,28.47,-18.04,26.06,24.88,17.78];
-var HIST_BOND = [0.84,4.20,4.54,-2.56,8.79,1.86,7.96,4.47,5.02,1.38,4.21,4.41,
-5.40,-2.02,2.29,2.49,2.58,3.80,3.13,0.92,1.95,4.66,0.43,-0.30,2.27,4.14,3.29,
--1.34,-2.26,6.80,-2.10,-2.65,11.64,2.06,5.69,1.68,3.73,0.72,2.91,-1.58,3.27,
--5.01,16.75,9.79,2.82,3.66,1.99,3.61,15.98,1.29,-0.78,0.67,-2.99,8.20,32.81,
-3.20,13.73,25.71,24.28,-4.96,8.22,17.69,6.24,15.00,9.36,14.21,-8.04,23.48,1.43,
-9.94,14.92,-8.25,16.66,5.57,15.12,0.38,4.49,2.87,1.96,10.21,20.10,-11.12,8.46,
-16.04,2.97,-9.10,10.75,1.28,0.69,2.80,-0.02,9.64,11.33,-4.42,-17.83,3.88,-1.64,7.80];
-var HIST_INFL = [-1.7,0.0,-2.3,-9.0,-9.9,-5.1,3.1,2.2,1.5,3.6,-2.1,-1.4,0.7,5.0,
-10.9,6.1,1.7,2.3,8.3,14.4,8.1,-1.2,1.3,7.9,1.9,0.8,0.7,-0.4,1.5,3.3,2.8,0.7,1.7,
-1.0,1.0,1.3,1.3,1.6,2.9,3.1,4.2,5.5,5.7,4.4,3.2,6.2,11.0,9.1,5.8,6.5,7.6,11.3,
-13.5,10.3,6.2,3.2,4.3,3.6,1.9,3.6,4.1,4.8,5.4,4.2,3.0,3.0,2.6,2.8,3.0,2.3,1.6,
-2.2,3.4,2.8,1.6,2.3,2.7,3.4,3.2,2.8,3.8,-0.4,1.6,3.2,2.1,1.5,1.6,0.1,1.3,2.1,
-2.4,1.8,1.2,4.7,8.0,4.1,2.9,2.6];
+var HIST_START = 1926;
+/* Monthly total returns, January 1926 through December 2025 (1,200 months).
+   Stocks: S&P 500 monthly price with that month's dividend reinvested.
+   Bonds: 10-year Treasury, one month of coupon plus the price move implied
+   by the change in yield. Inflation: CPI-U, month over month.
+   Sources: Robert Shiller (Yale) via multpl for prices, yields and dividend
+   yields; US BLS for CPI-U. Prices are monthly averages of daily closes,
+   Shiller's convention — see the About tab. */
+var HIST_M_STOCK = [
+  1.9310,0.5629,-6.3783,-2.3495,1.1592,5.2231,4.6604,4.3977,1.9483,-1.8303,1.7421,2.7100,
+  -0.2367,2.3778,1.9706,2.8816,3.8724,1.7061,2.6285,5.7292,6.0670,-1.1623,2.6592,2.7208,
+  0.7716,-0.8258,5.7497,6.6655,3.4381,-4.5624,1.0937,3.5938,7.3769,2.3602,7.0849,0.6973,
+  7.6962,0.8144,2.0541,-0.2983,1.8001,2.2051,9.2033,5.9603,4.2467,-10.3225,-26.1882,4.3770,
+  1.8265,6.6372,4.1222,6.6878,-5.6512,-9.7693,-1.7600,-0.8954,0.3434,-13.3709,-6.7992,-6.1872,
+  3.5497,8.1315,2.3738,-9.0862,-9.1673,-2.6866,3.8495,-2.4931,-14.3765,-12.7595,2.0433,-18.1101,
+  -0.8753,-0.0733,1.1139,-23.2512,-11.3501,-12.4317,6.1378,51.3089,10.3363,-13.2433,-0.3668,-2.6715,
+  4.5636,-11.2717,0.3263,11.2363,29.3123,17.5776,8.4576,-4.6454,-0.4882,-9.3811,2.7967,2.3174,
+  6.0854,7.7494,-4.7979,2.0200,-9.8257,1.7035,-4.3544,-3.5139,-2.0077,1.2091,3.2113,1.0598,
+  0.4050,-2.6189,-5.9299,7.9336,8.2629,4.1711,5.5993,7.1049,2.4333,2.9935,9.7178,0.3000,
+  5.8284,6.0382,2.4165,0.4241,-5.0101,4.5833,6.2455,2.3085,1.4545,5.5695,3.1202,-1.3825,
+  3.4633,3.3071,0.2350,-5.6105,-4.0715,-3.3231,6.3816,1.4250,-13.7743,-14.0920,-8.2590,-1.0119,
+  3.2311,-1.8073,-6.0232,-3.4542,1.5449,2.9227,20.4649,1.0396,-4.1021,11.5815,0.4335,-2.5822,
+  -1.1599,-0.4553,0.2691,-12.2390,4.0987,2.1745,2.8433,-1.0600,11.0634,1.3968,-1.3950,-1.9602,
+  -0.1458,-0.2257,-0.1428,1.4244,-13.3365,-8.0893,3.8748,2.6552,4.7628,1.4656,2.8501,-3.5901,
+  0.7226,-5.7216,1.1793,-2.5432,-1.5850,4.1093,5.7151,0.0782,0.8655,-3.4319,-4.0806,-5.8783,
+  2.6100,-2.4857,-4.7684,-3.4640,1.8602,5.7374,4.3680,0.0319,1.6490,7.9594,2.1463,1.0474,
+  6.5041,6.4338,4.0147,3.7867,4.3632,2.1800,2.4744,-4.5368,2.5550,-0.4980,-4.2044,1.7723,
+  3.6686,-0.2414,3.2424,-1.3064,2.2055,5.1444,3.0210,-1.0534,-1.2230,2.8838,-0.2842,2.6005,
+  3.3864,3.7354,0.3172,2.9013,4.1612,2.1876,-1.6936,0.7087,7.1817,4.5139,3.6058,2.0248,
+  4.3021,0.5892,-2.6747,6.7690,0.5183,-0.3387,-2.5457,-1.6220,-14.4211,-1.8687,-0.0092,3.3978,
+  0.9217,4.2720,-3.6708,-3.2911,-1.3544,3.9283,6.6990,-1.5532,-2.1611,3.0359,-0.7211,-1.1132,
+  -0.8628,-4.4471,1.9205,8.1877,5.3298,4.5869,-1.9535,-2.4848,-0.6744,3.1993,-5.0907,-0.1474,
+  1.6382,-3.3187,1.5006,0.4209,-0.1754,-4.9054,6.2678,4.1743,1.8745,3.1593,1.9649,3.2586,
+  2.6348,2.5276,1.3797,3.3906,3.9188,2.1689,-6.7046,6.6582,4.1282,4.7419,0.3958,0.2141,
+  8.0198,4.3150,-1.1058,1.9319,0.6334,-1.1399,2.3612,4.9603,3.1306,0.0154,-2.2665,3.5995,
+  3.8348,-1.3313,0.7506,0.2062,0.4635,3.2486,3.3667,0.8806,-1.1088,-1.6155,3.6632,4.5042,
+  0.9892,-0.7737,0.9575,-4.4718,1.0036,-3.1065,1.9140,0.8987,-4.1071,3.5206,2.7119,1.8402,
+  3.0260,2.6782,2.5843,4.4487,4.4205,1.2214,4.4588,2.3959,2.7413,2.7168,4.3086,4.9588,
+  2.1697,3.7061,-0.4352,3.8090,-0.0777,6.1461,7.6479,-0.2960,4.8194,-4.7238,7.0671,1.2380,
+  -2.3825,0.9554,7.2115,1.4869,-2.8342,-0.2579,5.7515,-0.2822,-3.0864,-0.9593,-0.7181,1.8032,
+  -1.8634,-3.9962,1.6200,2.6440,4.1604,1.9543,2.3241,-5.2032,-3.7378,-5.8949,-1.7985,0.3203,
+  2.3276,0.7009,2.4173,0.8939,3.5553,2.7330,3.0705,4.0546,2.9434,4.3603,3.3273,2.1634,
+  4.2559,-1.2640,2.8070,1.9373,1.7667,-0.6049,4.2288,-0.3172,-3.7025,0.1780,0.6704,3.4642,
+  -1.4803,-3.6042,-1.0723,1.5850,-0.6237,3.9890,-2.1963,1.4908,-2.7206,-1.6739,3.5412,2.6904,
+  5.4265,4.3740,3.3970,2.9193,1.2636,-1.0799,-0.0275,3.8397,-0.5412,1.3454,4.7742,1.1657,
+  -3.4867,1.9107,0.3416,-2.9440,-7.1842,-11.4121,2.7186,3.0238,-0.5921,-2.8541,7.2033,4.6260,
+  4.1472,1.5963,-0.1078,4.9802,2.2713,0.2188,-1.2215,3.0316,2.8937,0.5027,-0.3037,2.3957,
+  3.3317,1.4818,2.0731,1.6952,1.2223,-0.3486,3.9628,-1.2238,1.9679,1.9723,0.9387,-1.4882,
+  2.8222,0.9767,0.3374,1.5594,1.7344,-4.5054,0.1042,2.1205,3.5981,2.4985,1.0778,-0.2094,
+  1.9826,-0.4284,-3.8604,3.3223,-5.0062,-0.5578,0.0203,-5.7674,-3.2231,-0.5650,5.3152,0.7152,
+  4.1313,3.7312,2.6344,1.9926,2.0575,-0.9920,1.9934,1.8520,1.6547,0.0972,-2.8818,3.1114,
+  -0.0169,-4.2561,-1.5584,7.6632,2.5587,2.9422,0.0497,-1.9332,3.5087,2.7181,1.7868,1.2861,
+  -3.9843,-0.2381,-1.9131,2.2751,3.5141,-4.9703,-4.2049,-0.2828,0.6289,1.3466,0.9977,-5.0271,
+  -0.5890,-3.1960,2.0129,-2.7476,-11.1984,-0.2693,0.5226,3.2562,6.3214,2.4877,0.2055,7.1570,
+  4.1099,4.1499,2.8308,3.6739,-1.1085,-1.5960,-0.4631,-1.5175,2.4862,-1.8642,-4.3718,7.1634,
+  4.4224,2.0871,2.6196,1.2588,-0.7759,0.5159,-0.5033,3.7838,-1.2098,0.4191,5.2563,2.3131,
+  0.9902,-3.3247,-1.3449,-1.6320,-2.5684,-1.9887,1.2116,-1.6345,1.9969,4.2381,-6.8499,-6.8020,
+  1.7024,-2.4711,4.5764,-4.8151,-2.7039,0.4593,-11.3441,-3.7618,-10.0103,2.3769,3.7435,-6.0912,
+  8.6353,10.8100,4.9760,1.4886,6.7137,2.8963,0.4319,-6.9961,-0.8528,4.9705,2.0410,-1.1805,
+  9.5453,4.1780,0.8027,1.0970,-0.3816,0.9022,2.6680,-0.5581,2.4404,-3.1032,-0.3609,3.7922,
+  -0.5333,-2.3650,-0.0499,-1.1888,0.0695,0.9045,1.2865,-2.0744,-1.1711,-2.1930,0.9859,-0.0749,
+  -3.3867,-0.9676,0.2694,4.8337,5.5074,0.6769,-0.0591,7.3316,0.4025,-2.7719,-5.4359,1.9247,
+  4.1892,-1.0533,2.3444,2.4349,-1.8890,2.4215,1.4251,5.0191,1.5445,-3.3487,-0.3190,4.4076,
+  3.3163,4.3999,-8.7742,-1.1580,5.0397,6.8660,4.9722,3.5077,2.8389,3.3272,4.6168,-1.2433,
+  0.0123,-3.0677,4.1455,1.2961,-1.6153,0.8599,-2.0138,0.8056,-8.3000,1.7296,3.0459,1.1822,
+  -4.8019,-1.9120,-2.7428,5.4712,0.5714,-5.2683,0.2451,0.7948,12.0977,8.8821,4.5003,1.3560,
+  3.9265,2.1310,3.8665,4.1981,4.4243,1.7540,0.7093,-2.4060,3.3152,0.6493,-1.1402,-0.1268,
+  1.5776,-5.1103,0.4438,0.5092,-0.2503,-1.8464,-0.9074,9.2074,1.4079,-0.4098,1.2886,-0.7048,
+  4.6995,5.7894,-0.4763,1.0263,2.7367,2.5124,2.2489,-1.8435,-1.8834,1.4964,6.4214,5.2953,
+  0.7530,5.6991,6.1841,2.7423,0.4932,3.1340,-1.8025,2.2822,-2.4551,-0.0896,3.5334,1.7095,
+  6.6742,6.4623,4.3769,-0.8550,0.1749,4.5005,3.1232,6.4548,-3.0290,-11.8525,-12.3016,-1.3326,
+  4.2485,3.3302,3.2337,-0.8834,-2.1851,6.0013,-0.3044,-1.7160,1.9296,3.8042,-2.0173,2.3297,
+  3.5156,3.3035,-0.1584,3.5681,4.1202,3.3970,2.8032,4.6953,0.4600,0.2889,-1.8098,2.7398,
+  -2.2091,-2.5248,2.7090,0.1987,3.8539,3.1729,0.1715,-7.8601,-4.3399,-2.3135,2.9861,4.5888,
+  -0.6847,11.6066,3.0443,2.2589,-0.1788,0.3471,0.7817,2.6797,-0.3023,0.1813,0.0154,0.9345,
+  7.3587,-0.5998,-1.0111,0.2640,2.0683,-1.3289,1.9123,0.9423,0.3786,-1.1826,2.7570,3.2710,
+  0.1432,1.7251,2.1506,-1.3415,0.7251,0.8651,0.0611,1.7627,1.3553,1.2420,0.0076,0.8876,
+  1.7368,-0.0746,-1.4231,-3.3457,1.0592,1.1086,-0.5184,3.0827,0.8181,-0.4428,-0.3685,-1.0247,
+  2.4511,3.8187,2.5579,3.2170,3.3488,3.1795,3.5486,0.5145,3.7190,0.9134,2.3591,3.3898,
+  0.1639,5.9062,-0.1993,0.1980,2.3556,1.2798,-3.4746,3.0772,2.0252,4.1204,5.0526,1.1987,
+  3.2580,4.3618,-0.6232,-3.4046,9.2186,5.3372,5.7361,0.3485,1.1929,1.6461,-1.1519,2.6351,
+  0.2372,6.4023,5.3130,3.4069,-0.2211,0.1173,4.4677,-6.9703,-4.8981,1.2914,10.9741,4.1041,
+  5.0479,-0.0664,2.9238,4.2498,-0.0992,-0.6121,4.5232,-3.7739,-0.5978,-1.2725,7.1062,2.8090,
+  -0.1190,-2.4775,3.9409,1.4249,-2.8388,3.1632,0.8500,0.9392,-1.0806,-5.2147,-0.7729,-3.3204,
+  0.4543,-2.1369,-9.0803,0.4477,6.8785,-2.3890,-2.6604,-2.0461,-11.2470,3.1839,5.0529,1.4656,
+  -0.2977,-3.3527,4.9450,-3.5140,-2.8193,-5.9203,-10.7589,1.1380,-4.7585,-1.3661,6.6268,-1.0340,
+  -0.2220,-6.4145,1.3087,5.2856,5.3121,5.7043,0.5968,-0.1653,3.1626,2.0298,1.2126,3.0660,
+  4.9362,1.0884,-1.5639,0.9698,-2.5628,2.8590,-2.2373,-1.3864,2.7837,0.1030,4.7750,2.7280,
+  -1.3472,1.6827,-0.2540,-2.4071,1.3378,2.1823,1.8093,0.3113,0.2808,-2.6227,3.9637,2.1458,
+  1.4678,-0.0154,1.4873,0.8001,-0.7852,-2.7044,0.7217,2.2928,2.5327,3.6178,2.0030,2.1501,
+  0.6939,1.5972,-2.4729,4.1819,3.3933,0.3463,0.5762,-4.1993,3.0761,2.9931,-4.8048,1.2393,
+  -6.6337,-1.5632,-2.6254,4.2451,2.5638,-4.2458,-6.0780,2.1110,-4.8473,-20.1948,-8.6068,-0.3531,
+  -1.0988,-6.7063,-5.6914,12.3158,6.6546,2.8635,1.2722,8.1155,3.6459,2.3990,2.0900,2.2222,
+  1.3557,-2.8994,5.9417,4.0880,-5.8825,-3.5436,-0.1583,0.8647,3.3718,4.5785,2.4922,3.7145,
+  3.4637,3.1527,-1.1107,2.2227,0.6615,-3.6608,3.1037,-10.3989,-0.7869,3.0218,1.7699,1.5579,
+  4.7850,4.1646,2.8858,-0.0359,-3.0888,-1.1504,2.9234,3.3904,3.0237,-0.2136,-2.8344,2.1791,
+  4.2704,2.3343,2.7240,1.4560,4.5767,-1.1154,3.2567,0.2546,1.1944,2.1184,3.8609,1.5230,
+  0.9695,-0.1282,2.7238,0.2031,1.5339,3.1980,1.4971,-0.4257,1.7795,-2.6455,5.7067,0.6352,
+  -1.1080,2.8294,0.0570,0.8794,0.9800,-0.4341,-0.0782,-2.4235,-4.5058,4.3180,2.9336,-1.1020,
+  -6.4190,-0.5488,6.3634,2.8318,-0.3038,1.0670,3.2984,1.2004,-0.4377,-0.5053,1.2020,3.9465,
+  1.4386,2.5772,1.7501,-0.1528,1.6934,1.7774,0.9892,0.2490,1.6541,2.7353,1.5907,2.8846,
+  4.8633,-2.8852,0.0657,-1.6627,1.9631,2.1139,1.5820,2.4525,1.6807,-3.8473,-2.0744,-5.5614,
+  1.7372,5.8302,1.9493,3.7239,-1.5308,1.4058,3.8279,-3.1333,3.0865,0.0104,4.4341,2.4701,
+  3.3474,0.1228,-18.9163,4.3192,5.8868,6.5083,3.4756,5.8925,-0.6275,1.7257,3.9538,4.2600,
+  2.7948,2.4910,0.8207,6.0214,0.7606,1.8110,3.0693,2.1862,-0.0840,0.4533,4.7458,0.2658,
+  -2.0510,-2.9013,-0.8916,0.1199,-7.8713,-3.3681,0.4657,6.4482,-7.2762,-3.0898,5.2859,0.0119,
+  1.3774,3.1475,-2.5843,3.9967,0.7376,4.9424,3.8767,-1.6878,-0.2569,-3.2728,4.8583,5.1759,
+  2.6750,4.4408,3.2824,-1.3377,2.8603,3.5512,2.4709,-0.6246,2.3635,3.0639,2.4822,1.4705,
+  -0.4178,1.0947,-5.7688,-5.4202,8.3399,3.8800,4.5275,1.8894,2.8335,2.4034,0.1748,1.7610
+];
+var HIST_M_BOND = [
+  0.3899,0.5543,0.5522,0.4672,0.5486,0.5465,0.5444,0.5422,0.5401,0.5380,0.4522,0.5345,
+  0.5324,0.2783,0.2783,0.2783,0.2783,0.2783,0.2783,0.3622,0.2775,0.2775,0.2775,0.2775,
+  0.2775,0.1099,0.0282,0.1145,0.1163,0.1182,0.1200,0.0387,0.1246,0.1264,0.0454,0.1310,
+  0.1328,0.5486,0.4634,0.5451,0.4597,0.5415,0.5394,0.4537,0.5359,0.4499,0.5324,0.4462,
+  0.5288,0.2742,0.1902,0.2750,0.1910,0.2758,0.1919,0.2767,0.2767,0.1928,0.2775,0.1937,
+  0.2783,0.0272,0.0301,0.1163,0.0349,0.0378,0.0406,0.0435,0.0464,0.0493,0.1347,0.0540,
+  0.0569,0.5543,0.5522,0.5500,0.5479,0.5458,0.6270,0.5408,0.5387,0.5366,0.5345,0.5324,
+  0.5302,0.4439,0.3583,0.4417,0.3559,0.4395,0.4380,0.3519,0.4357,0.3496,0.4335,0.3472,
+  0.4312,0.5147,0.4275,0.5112,0.5091,0.5070,0.5049,0.4170,0.5014,0.4993,0.4111,0.4958,
+  0.4937,0.3188,0.3180,0.3172,0.4029,0.3148,0.3140,0.3132,0.3125,0.3984,0.3101,0.3093,
+  0.3085,0.2208,0.2208,0.1340,0.2217,0.2217,0.2217,0.1349,0.2225,0.2225,0.2225,0.1358,
+  0.2233,0.3101,0.3093,0.3085,0.3077,0.3069,0.3061,0.3054,0.3046,0.3038,0.3030,0.3022,
+  0.3014,0.3880,0.2991,0.3858,0.3843,0.2951,0.3821,0.3806,0.2912,0.3784,0.3769,0.2872,
+  0.3746,0.2849,0.2841,0.3717,0.2817,0.2809,0.2801,0.3680,0.2778,0.2770,0.3650,0.2746,
+  0.2738,0.3620,0.3606,0.4483,0.3569,0.3554,0.3539,0.3524,0.3509,0.3495,0.4380,0.3458,
+  0.3443,-0.1970,-0.2824,-0.1878,-0.1837,-0.1796,-0.1756,-0.2600,-0.1664,-0.1623,-0.2462,-0.1532,
+  -0.1491,0.2050,0.2050,0.2050,0.2050,0.2050,0.2050,0.1173,0.2058,0.2058,0.2058,0.2058,
+  0.2058,0.2058,0.2058,0.2058,0.2058,0.2058,0.2058,0.1182,0.2067,0.2067,0.2067,0.2067,
+  0.2067,0.2943,0.2935,0.2927,0.2920,0.2912,0.2904,0.2017,0.2896,0.2888,0.2880,0.2872,
+  0.2864,0.2857,0.3732,0.2833,0.3709,0.2809,0.3687,0.2786,0.3665,0.3650,0.2746,0.3628,
+  0.2723,0.1825,0.0936,0.1833,0.0945,0.1842,0.0954,0.1850,0.0962,0.1858,0.0971,0.1867,
+  0.0980,0.0104,0.1006,0.0131,0.1033,0.0159,0.0178,0.1077,0.0205,0.1103,0.0233,0.1129,
+  0.0261,0.2912,0.2904,0.2896,0.2888,0.2880,0.2872,0.3746,0.2849,0.2841,0.2833,0.2825,
+  0.2817,0.1925,0.1925,0.1925,0.1925,0.1925,0.1042,0.1933,0.1933,0.1933,0.1933,0.1933,
+  0.1933,0.0168,0.0187,0.0205,0.0224,0.0242,0.0261,-0.0596,0.0307,0.0325,0.0344,0.0362,
+  0.0381,0.1270,0.1279,0.1288,0.1296,0.1305,0.2183,0.1314,0.1323,0.1332,0.1340,0.1349,
+  0.1358,0.1367,0.1375,0.0519,0.1402,0.1411,0.0556,0.1437,0.1446,0.1454,0.0602,0.1481,
+  0.1490,0.4944,0.4923,-0.2854,-1.6360,-0.2548,1.8001,0.0731,0.9328,2.0620,0.0482,1.0074,
+  1.1796,0.2943,1.0869,0.9053,-0.5141,0.1094,0.9058,-0.3373,0.0205,-0.2409,-0.2356,-0.0558,
+  -0.6611,-0.1299,-0.0393,-0.3815,0.1428,0.0575,-0.7972,-0.3564,0.2475,1.0199,0.1542,-0.3575,
+  0.7611,0.7577,-0.7891,-1.6129,1.2000,0.8529,-0.6831,-1.5863,-0.1409,0.6170,-0.9698,-0.5371,
+  1.3825,1.2944,-0.3065,-0.2986,-0.7030,-1.3385,-0.7414,0.3275,0.4089,-0.0795,2.3871,4.6141,
+  1.2864,0.5978,0.8519,1.1066,-0.1026,-0.1838,-1.6946,-2.5553,-1.5109,-0.0144,0.8097,-0.6685,
+  -0.9748,0.8226,0.0866,-0.7156,-1.1742,0.1199,-0.1154,0.1285,-1.5916,1.5752,0.3775,-0.8768,
+  0.1560,2.2142,2.2968,0.1142,-0.2013,1.9726,2.3837,1.1442,0.3167,-0.4173,-0.0014,1.0633,
+  0.3200,0.8120,0.6437,-0.0164,0.8910,-1.0780,-0.0024,-0.6447,0.8238,0.8203,0.1640,-0.6421,
+  0.1768,0.6638,1.2320,1.0633,0.0751,-0.0034,-0.4849,0.5777,0.3317,0.7386,0.4089,0.8167,
+  0.5671,-0.4137,0.2453,0.0026,0.6564,-0.1594,0.0894,0.4972,-0.3130,0.0980,0.2619,0.2627,
+  0.0225,0.5085,-0.2158,0.2715,0.5934,0.5913,0.1868,0.3492,0.2689,0.4303,0.6712,0.1047,
+  0.2680,0.1886,0.3508,0.4311,0.2697,0.3508,0.4311,-0.0505,0.0344,-0.1208,-0.4307,-0.9664,
+  0.4637,-1.3287,0.0917,1.3438,0.1617,0.1645,-1.2192,-1.1096,0.7412,1.7437,-0.7318,2.9203,
+  2.4526,-0.0115,1.0966,-0.0156,-1.6399,-0.9073,-0.6544,-0.4841,0.2878,-0.9164,-1.5543,0.8525,
+  1.7546,0.2354,-0.8780,1.2271,-1.2333,1.6080,2.1349,1.0637,0.1496,-0.4461,-0.4309,-1.9504,
+  0.4290,-0.5908,-0.2824,1.4742,-0.5733,-1.2647,-0.5198,0.7738,-2.7193,1.0161,0.3125,-2.8818,
+  -0.3109,4.4696,1.7935,-1.6184,-2.8876,1.1323,3.2665,0.1418,1.5933,1.0309,4.0780,3.8217,
+  1.6241,1.4718,3.5702,-0.4896,-3.5607,-0.4012,-0.9502,1.6351,3.7654,2.0624,1.3854,-0.4020,
+  0.3466,-0.4574,0.5800,-0.3695,0.9547,0.6573,0.5092,-0.2196,-1.9210,1.0495,1.9927,-0.0556,
+  -0.1902,-0.7472,0.0550,0.8444,-0.7172,0.2180,-1.0308,-1.2676,2.7849,2.7185,0.9926,0.4897,
+  -1.1950,0.7936,-1.1590,-1.4575,0.1471,0.9057,-1.1990,-0.8897,0.6700,1.6137,2.1561,2.3615,
+  0.1387,1.3839,-1.6936,-2.6763,1.8235,2.0222,-0.6834,-1.5692,0.5025,2.6362,1.2809,1.0063,
+  2.4319,0.3063,1.0567,1.8079,-1.6618,0.9284,0.8579,1.0593,1.8780,1.8731,1.4491,3.5752,
+  -1.7925,-0.6409,0.1345,1.2431,-0.0047,1.8697,0.2608,0.1281,1.0315,-0.6227,0.2163,-0.1169,
+  -1.1742,0.1943,0.6022,-0.0631,-0.6419,-0.0272,-0.4687,2.2352,0.6350,-0.7329,-0.3802,-0.5488,
+  0.1758,0.7583,0.6307,0.3780,0.3207,2.9615,0.4852,0.2331,-1.1451,-5.1067,-1.2335,2.4587,
+  -1.5691,-8.0462,-0.8293,8.4544,8.8214,3.3296,-2.0422,-4.1308,-1.4388,-0.4109,-4.1324,0.1829,
+  2.5606,-2.2914,1.4772,-1.8645,-1.0422,4.5303,-3.0568,-2.1300,-0.6391,2.1250,10.6657,-0.6245,
+  -3.2921,2.0366,4.1920,1.1026,2.4794,-2.3708,3.0209,5.9803,5.1005,9.4818,3.0699,0.9392,
+  1.3603,-0.6777,2.1559,1.5403,0.9876,-1.9204,-2.1680,-1.7237,2.1339,1.6042,0.1033,0.1776,
+  1.9022,0.0056,-1.6903,-0.6806,-3.1115,0.3215,2.1998,4.6253,2.1664,3.0642,4.4065,1.3679,
+  1.6539,0.1988,-1.0298,3.4757,4.3898,5.1149,-0.0629,0.7380,0.6189,1.6548,3.7067,4.1143,
+  1.2172,3.9524,6.9600,3.9734,-2.1792,0.0331,4.1136,1.5143,-1.3288,0.7586,1.8689,1.5825,
+  0.8024,-0.5903,0.6042,-4.5579,-3.1840,2.1015,0.3712,-1.3065,-3.4285,0.1577,5.0552,-0.0963,
+  2.8330,3.7801,-0.3718,-1.5766,-1.6385,1.8524,-0.1528,-0.5140,2.5702,1.9138,-0.2953,-0.2113,
+  0.8870,0.2479,-0.4361,1.9261,2.8314,4.5815,2.4330,0.0674,0.1436,1.8898,1.6124,0.8586,
+  -1.8061,-1.0241,-0.0784,-0.5796,0.9271,2.5688,0.7724,-1.1111,-0.1737,1.8454,2.9026,2.8396,
+  0.5388,2.2955,-1.0818,1.1447,0.4693,-0.7190,0.7563,3.1831,2.3627,1.4601,1.3853,2.9265,
+  1.0117,-1.5577,-0.7586,1.0406,1.2442,1.5180,3.5768,2.3597,1.7759,-0.6820,-1.4293,1.2824,
+  1.7806,3.0219,2.5844,0.5720,-0.0167,1.0933,1.6107,1.4557,2.9017,0.6747,-2.4647,0.1046,
+  0.6298,-1.1424,-3.1722,-2.9063,-0.8819,1.1576,-0.7938,1.0251,-0.9095,-1.2794,-0.7673,1.6100,
+  0.8541,2.7791,2.5015,1.5806,3.6608,3.9110,-0.2848,-0.9870,2.6552,1.6921,1.3156,2.1359,
+  0.9249,-0.7175,-2.8586,-1.2020,-1.0925,-0.6373,0.8585,2.2152,-0.7917,2.7228,2.9501,-0.2090,
+  -1.4804,1.7029,-1.3888,-0.8544,1.8555,2.1414,2.5075,-0.0622,1.1809,1.8404,1.6128,1.0099,
+  2.5154,0.2363,-0.1345,0.5457,0.3952,1.6015,0.7604,1.3665,4.5755,2.6131,-1.9583,1.8956,
+  -0.2396,-1.7688,-1.3397,0.8186,-2.2767,-2.2006,1.3094,-0.6247,0.6428,-0.8978,1.0971,-1.3134,
+  -2.1881,1.5605,2.4336,2.5098,-2.7449,3.0273,0.8755,2.1365,0.7087,0.9304,0.6275,4.1403,
+  1.0496,0.8911,2.0553,-1.5099,-1.4661,1.2871,0.7453,2.5246,2.2919,1.6559,-0.2475,-2.9953,
+  0.8095,1.4282,-2.4094,0.9751,0.8173,2.2121,2.6101,3.5102,3.5388,-0.2470,-0.5616,0.4995,
+  0.1740,1.5602,1.0619,-0.9016,3.5621,2.3107,-4.9998,-3.3965,1.8114,0.1959,0.2776,0.5984,
+  1.3219,0.9113,2.3850,-3.8260,-2.5338,0.3151,2.2141,2.1348,1.5655,0.5863,-0.3815,0.0284,
+  0.4327,0.7538,-2.2637,1.6511,1.9726,1.4805,-1.1136,-0.2922,0.8368,-1.7114,-0.1814,0.8530,
+  0.7697,-0.8145,-0.7933,-1.6925,-0.5058,0.4258,0.5796,2.0552,1.6591,0.3151,1.4178,0.6989,
+  -1.1825,0.7098,1.6556,-0.6391,-0.0781,-2.2937,1.1972,3.0062,1.5749,0.2977,3.4368,0.7494,
+  3.2998,0.3117,2.2235,-1.0268,-1.4077,-1.4522,1.0713,1.3128,1.9717,-0.6751,2.6426,10.0492,
+  -0.6726,-2.7955,0.6696,-0.7067,-2.7818,-3.2626,1.6366,0.0483,1.8873,0.3670,0.1989,-1.2897,
+  -0.8518,0.6403,-0.0213,-0.6698,3.9114,2.1426,1.8866,2.9361,0.6592,1.1816,-1.6882,-4.2248,
+  -0.5621,-1.2913,1.7186,-0.0493,2.6554,1.7143,0.2500,6.4402,3.0691,-1.3501,1.4361,0.4373,
+  0.2550,0.1642,-1.6165,1.2559,2.4402,1.7995,0.9637,-1.2427,-0.2246,-0.1297,1.0608,-0.5006,
+  -1.5714,-0.4703,0.3450,1.9826,-1.3860,-3.1112,-2.2488,-1.1681,-0.3746,1.8868,-0.6470,-1.3166,
+  0.5853,1.5370,0.1393,0.3132,1.5346,-0.1349,0.7407,1.2663,-0.7596,2.2448,-0.0732,1.2603,
+  3.1671,-0.7425,-0.3728,1.1617,-2.2393,-1.2272,0.5500,1.5288,0.1808,1.0758,-1.5112,0.3657,
+  1.5277,2.9911,-0.8455,0.8833,0.1508,1.7070,1.4278,-0.4266,-0.5111,-1.0467,-3.2418,-2.8865,
+  0.7345,0.2904,-0.3240,1.7984,0.1917,1.1700,-0.9659,1.1706,0.2731,-1.2272,0.2849,-0.2440,
+  -1.3689,-2.1906,0.4103,-0.0209,-0.7001,0.8482,0.4141,0.2408,-0.6975,-1.0198,0.5168,2.7554,
+  1.2748,0.4860,1.1826,0.5637,1.4431,3.0631,0.2620,4.1100,-0.5029,0.0505,-0.7648,-0.3016,
+  1.0646,2.5444,6.1337,2.0982,-0.0414,-0.5208,1.1242,-0.2379,-0.2349,-0.9970,-0.6972,-0.4979,
+  -1.3371,-1.5913,-3.1040,-0.0490,0.2275,1.0562,1.9888,0.4832,-0.7291,-1.8143,0.3155,0.9613,
+  -2.5155,-1.3860,-1.6235,-5.1793,-1.0569,-1.7910,2.3194,0.2417,-4.9094,-3.4414,1.0657,2.5561,
+  1.0490,-1.5126,1.0550,1.9717,-0.6233,-1.1808,-0.9102,-1.8465,-1.3240,-2.9099,2.7738,4.2644,
+  0.0115,-0.8657,0.3508,-2.2552,0.8536,1.7312,0.8398,3.4564,1.5563,-2.7569,-1.7299,0.1247,
+  -1.5211,1.8136,1.7307,0.3567,-0.7555,0.6867,0.2854,1.4067,1.4838,0.8285,0.0961,-0.0619
+];
+var HIST_M_INFL = [
+  0.0000,0.0000,-0.5587,0.5618,-0.5587,-0.5618,-1.1299,-0.5714,0.5747,0.5714,0.5682,0.0000,
+  -1.1299,-0.5714,-0.5747,0.0000,0.5780,1.1494,-1.7045,-0.5780,0.5814,0.5780,-0.5747,0.0000,
+  0.0000,-1.1561,0.0000,0.0000,0.5848,-0.5814,0.0000,0.0000,1.1696,-0.5780,0.0000,-0.5814,
+  0.0000,0.0000,-0.5848,-0.5882,0.5917,0.5882,1.1696,0.0000,0.0000,0.0000,0.0000,-0.5780,
+  -0.5814,-0.5848,-0.5882,0.5917,-0.5882,-0.5917,-1.1905,-0.6024,0.6061,-0.6024,-0.6061,-1.8293,
+  -1.2422,-1.2579,-0.6369,-0.6410,-1.2903,-1.3072,0.0000,0.0000,-0.6623,-0.6667,-1.3423,-0.6803,
+  -2.0548,-1.3986,-0.7092,-0.7143,-1.4388,-0.7299,0.0000,-0.7353,-0.7407,-0.7463,-0.7519,-0.7576,
+  -1.5267,-1.5504,-0.7874,0.0000,0.0000,0.7937,3.1496,0.7634,0.0000,0.0000,0.0000,0.0000,
+  0.0000,0.7576,0.0000,0.0000,0.0000,0.7519,0.0000,0.0000,1.4925,-0.7353,0.0000,-0.7407,
+  1.4925,0.7353,0.0000,0.7299,0.0000,-0.7246,0.0000,0.0000,0.0000,0.0000,0.7299,0.0000,
+  0.0000,0.0000,-0.7246,0.0000,0.0000,0.7299,0.7246,0.7194,0.0000,0.0000,0.0000,0.0000,
+  0.7143,0.0000,0.7092,0.7042,0.6993,0.0000,0.6944,0.0000,0.6897,0.0000,-0.6849,-0.6897,
+  -1.3889,-0.7042,0.0000,0.7092,-0.7042,0.0000,0.0000,0.0000,0.0000,-0.7092,0.0000,0.0000,
+  0.0000,-0.7143,0.0000,-0.7194,0.0000,0.0000,0.0000,0.0000,2.1739,-0.7092,0.0000,0.0000,
+  -0.7143,0.7194,0.0000,0.0000,0.0000,0.7143,-0.7092,0.0000,0.0000,0.0000,0.0000,0.7143,
+  0.0000,0.0000,0.7092,0.7042,0.6993,2.0833,0.0000,1.3605,1.3423,1.3245,0.6536,0.6494,
+  1.2903,0.6369,1.2658,0.6250,1.2422,0.0000,0.6135,0.6098,0.0000,1.2121,0.5988,0.5952,
+  0.0000,0.0000,1.7751,1.1628,0.5747,0.0000,-0.5714,-0.5747,0.5780,0.0000,0.0000,0.0000,
+  0.0000,0.0000,0.0000,0.5747,0.0000,0.5714,0.5682,0.0000,0.0000,0.0000,0.0000,0.5650,
+  0.0000,0.0000,0.0000,0.0000,0.5618,1.1173,0.0000,0.0000,0.0000,0.0000,0.0000,0.5525,
+  0.0000,-0.5495,1.1050,0.5464,0.5435,1.0811,5.8824,2.0202,0.9901,1.9608,2.4038,0.9390,
+  0.0000,0.0000,1.8605,0.0000,0.0000,0.4566,0.9091,1.3514,2.2222,0.0000,0.4348,1.2987,
+  1.2821,-0.8439,-0.4255,1.7094,0.4202,0.8368,1.2448,0.4098,0.0000,-0.4082,-0.8197,-0.4132,
+  -0.4149,-0.8333,0.0000,0.4202,-0.4184,0.4202,-0.8368,0.4219,0.4202,-0.8368,0.4219,-0.8403,
+  -0.4237,0.0000,0.4255,0.0000,0.4237,0.4219,1.2605,0.8299,0.4115,0.8197,0.4065,1.2146,
+  1.6000,1.1811,0.3891,0.0000,0.3876,0.0000,0.0000,0.0000,0.7722,0.3831,0.7634,0.3788,
+  0.0000,-0.7547,0.0000,0.3802,0.0000,0.3788,0.7547,0.0000,0.0000,0.0000,0.0000,0.0000,
+  -0.3745,-0.3759,0.3774,0.0000,0.3759,0.3745,0.0000,0.3731,0.0000,0.3717,-0.3704,0.0000,
+  0.0000,0.0000,0.0000,-0.3717,0.3731,0.0000,0.0000,0.0000,-0.3717,0.0000,0.0000,-0.3731,
+  0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.3745,0.0000,0.3731,0.0000,0.0000,-0.3717,
+  0.0000,0.0000,0.0000,0.3731,0.3717,0.7407,0.7353,-0.3650,0.3663,0.3650,0.0000,0.3636,
+  0.0000,0.3623,0.3610,0.3597,0.3584,0.3571,0.7117,0.0000,0.0000,0.0000,0.3534,0.0000,
+  0.7042,0.0000,0.6993,0.3472,0.0000,0.0000,0.3460,-0.3448,0.0000,0.0000,0.3460,-0.3448,
+  0.3460,-0.3448,0.0000,0.3460,0.0000,0.3448,0.3436,0.0000,0.3425,0.3413,0.0000,0.0000,
+  -0.3401,0.3413,0.0000,0.3401,0.0000,0.3390,0.0000,0.0000,0.0000,0.6757,0.0000,0.0000,
+  0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.6711,-0.3333,0.3344,0.0000,0.0000,0.0000,
+  0.0000,0.3333,0.0000,0.3322,0.0000,0.0000,0.3311,0.0000,0.3300,0.0000,0.0000,0.0000,
+  0.0000,0.0000,0.3289,0.0000,0.0000,0.3279,0.3268,0.0000,0.0000,0.3257,0.0000,0.3247,
+  0.0000,0.0000,0.0000,0.0000,0.0000,0.3236,0.3226,-0.3215,0.3226,0.0000,0.3215,0.0000,
+  0.0000,0.0000,0.3205,0.3195,0.0000,0.6369,0.0000,0.0000,0.0000,0.3165,0.0000,0.3155,
+  0.0000,0.6289,0.3125,0.6231,0.0000,0.3096,0.3086,0.6154,0.0000,0.6116,0.0000,0.0000,
+  0.0000,0.0000,0.3040,0.3030,0.3021,0.3012,0.3003,0.2994,0.2985,0.2976,0.2967,0.2959,
+  0.5900,0.2933,0.2924,0.2915,0.2907,0.5797,0.5764,0.2865,0.2857,0.5698,0.2833,0.2825,
+  0.2817,0.5618,0.8380,0.5540,0.2755,0.5495,0.5464,0.5435,0.2703,0.5391,0.5362,0.5333,
+  0.2653,0.5291,0.5263,0.7853,0.2597,0.5181,0.5155,0.0000,0.5128,0.5102,0.5076,0.5051,
+  0.0000,0.2513,0.2506,0.2500,0.4988,0.7444,0.2463,0.2457,0.0000,0.2451,0.0000,0.4890,
+  0.0000,0.4866,0.2421,0.2415,0.2410,0.2404,0.4796,0.2387,0.2381,0.4751,0.2364,0.2358,
+  0.2353,0.7042,0.9324,0.6928,0.6881,0.6834,0.2262,1.8059,0.2217,0.8850,0.6579,0.6536,
+  0.8658,1.2876,1.2712,0.4184,1.2500,0.8230,0.8163,1.2146,1.2000,0.9881,0.7828,0.7767,
+  0.3854,0.7678,0.3810,0.3795,0.5671,0.7519,1.1194,0.1845,0.5525,0.5495,0.7286,0.3617,
+  0.1802,0.3597,0.1792,0.3578,0.7130,0.5310,0.5282,0.5254,0.3484,0.5208,0.1727,0.3448,
+  0.5155,1.0256,0.6768,0.8403,0.5000,0.6633,0.4942,0.3279,0.3268,0.3257,0.4870,0.3231,
+  0.6441,0.6400,0.7949,0.7886,0.9390,1.0853,0.7669,0.4566,0.7576,0.9023,0.4471,0.4451,
+  0.8863,1.1713,1.0130,1.1461,1.2748,1.1189,1.1065,0.9576,1.0840,0.8043,0.9309,1.0540,
+  1.4342,1.4139,1.5209,1.1236,0.9877,1.1002,0.0000,0.7255,0.8403,0.9524,0.8255,0.9357,
+  0.8111,1.0345,0.6826,0.6780,0.7856,0.8909,1.1038,0.7642,0.9751,0.2146,0.3212,0.3202,
+  0.3191,0.3181,-0.1057,0.4233,0.9484,1.2526,0.5155,0.2051,0.2047,0.3064,-0.2037,-0.4082,
+  0.2049,0.1022,0.0000,0.7150,0.6085,0.3024,0.4020,0.3003,0.4990,0.2979,0.1980,0.0988,
+  0.5923,0.4907,0.1953,0.4873,0.2910,0.2901,0.3857,0.3842,0.4785,0.2857,0.0000,0.0000,
+  0.1899,0.4739,0.3774,0.4699,0.3742,0.2796,0.1859,0.1855,0.2778,0.3693,0.2760,0.2752,
+  0.2745,-0.2737,-0.4575,-0.1838,0.2762,0.5510,0.0000,0.1826,0.4558,0.0907,0.0907,0.0906,
+  0.6335,0.3597,0.4480,0.5352,0.3549,0.3537,0.2643,0.5272,0.5245,0.2609,0.0867,0.0000,
+  0.2600,0.2593,0.4310,0.5150,0.3416,0.4255,0.4237,0.4219,0.6723,0.3339,0.0832,0.1663,
+  0.4979,0.4129,0.5757,0.6541,0.5686,0.2423,0.2417,0.1608,0.3210,0.4800,0.2389,0.1589,
+  1.0309,0.4710,0.5469,0.1554,0.2327,0.5418,0.3849,0.9202,0.8359,0.6029,0.2247,0.0000,
+  0.5979,0.1486,0.1484,0.1481,0.2959,0.2950,0.1471,0.2937,0.4392,0.1458,0.2911,0.0726,
+  0.1450,0.3621,0.5051,0.1436,0.1434,0.3579,0.2140,0.2847,0.2839,0.3539,0.1410,-0.0704,
+  0.4933,0.3506,0.3494,0.2786,0.1389,0.1387,0.0000,0.2770,0.2072,0.4135,0.0686,0.0000,
+  0.2743,0.3420,0.3408,0.1359,0.0678,0.3390,0.2703,0.4043,0.2685,0.0669,0.1338,0.0000,
+  0.4008,0.3992,0.3313,0.3303,0.1975,0.1971,0.0000,0.2623,0.1962,0.3264,-0.0651,-0.0651,
+  0.5863,0.3238,0.5165,0.3854,0.1919,0.0639,0.1914,0.1911,0.3179,0.3169,0.1895,0.0000,
+  0.3153,0.3143,0.2506,0.1250,-0.0624,0.1249,0.1248,0.1869,0.2488,0.2481,-0.0619,-0.1238,
+  0.1860,0.1856,0.1853,0.1850,0.1846,0.1229,0.1227,0.1225,0.1224,0.2445,0.0000,-0.0610,
+  0.2441,0.1217,0.3040,0.7273,0.0000,0.0000,0.3008,0.2400,0.4788,0.1787,0.0595,0.0000,
+  0.2971,0.5924,0.8245,0.0584,0.1168,0.5248,0.2320,0.0000,0.5208,0.1727,0.0575,-0.0574,
+  0.6322,0.3998,0.2275,0.3973,0.4522,0.1688,-0.2809,0.0000,0.4507,-0.3365,-0.1688,-0.3946,
+  0.2264,0.3953,0.5624,0.5593,0.0000,0.0556,0.1112,0.3331,0.1660,0.1657,0.0000,-0.2206,
+  0.4422,0.7705,0.6008,-0.2172,-0.1632,0.1090,0.1089,0.3806,0.3250,-0.1080,-0.2703,-0.1084,
+  0.4883,0.5400,0.6445,0.3202,0.5851,0.3173,-0.1581,0.0528,0.2111,0.5266,0.0524,-0.3665,
+  0.2102,0.5768,0.7821,0.6725,-0.1028,0.0514,0.4627,0.5118,1.2220,0.2012,-0.8032,-0.4049,
+  0.7622,0.2017,0.5536,0.8509,0.4963,0.1975,0.2957,0.1966,-0.4904,-0.5421,-0.1487,0.1489,
+  0.3072,0.5335,0.9091,0.6525,0.6096,0.1924,-0.0240,-0.1824,0.2741,0.2158,0.5935,-0.0666,
+  0.4951,0.2890,0.8692,0.6041,0.8426,1.0109,0.5210,-0.3955,-0.1415,-1.0101,-1.9116,-1.0356,
+  0.4329,0.4973,0.2451,0.2492,0.2908,0.8557,-0.1576,0.2229,0.0649,0.0972,0.0694,-0.1757,
+  0.3427,0.0231,0.4106,0.1746,0.0780,-0.1008,0.0229,0.1376,0.0595,0.1236,0.0412,0.1737,
+  0.4745,0.4950,0.9760,0.6444,0.4669,-0.1062,0.0886,0.2744,0.1545,-0.2071,-0.0839,-0.2475,
+  0.4387,0.4412,0.7599,0.3052,-0.1173,-0.1479,-0.1656,0.5587,0.4471,-0.0389,-0.4755,-0.2693,
+  0.2962,0.8207,0.2584,-0.1031,0.1806,0.2361,0.0428,0.1199,0.1154,-0.2562,-0.2055,-0.0086,
+  0.3733,0.3676,0.6432,0.3301,0.3501,0.1850,-0.0378,-0.1679,0.0757,-0.2521,-0.5391,-0.5674,
+  -0.4685,0.4322,0.5965,0.2033,0.5072,0.3532,0.0042,-0.1383,-0.1553,-0.0462,-0.2102,-0.3455,
+  0.1691,0.0802,0.4302,0.4745,0.4054,0.3289,-0.1618,0.0914,0.2408,0.1243,-0.1572,0.0331,
+  0.5840,0.3130,0.0821,0.2953,0.0859,0.0940,-0.0694,0.2982,0.5295,-0.0648,0.0041,-0.0608,
+  0.5476,0.4518,0.2249,0.4007,0.4151,0.1590,0.0079,0.0556,0.1150,0.1743,-0.3322,-0.3214,
+  0.1911,0.4251,0.5618,0.5311,0.2113,0.0195,0.1679,-0.0039,0.0780,0.2298,-0.0544,-0.0933,
+  0.3892,0.2752,-0.2203,-0.6664,0.0000,0.5499,0.5043,0.3165,0.1385,0.0423,-0.0614,0.0922,
+  0.4262,0.5467,0.7110,0.8192,0.8051,0.9287,0.4785,0.2088,0.2705,0.8312,0.4917,0.3058,
+  0.8429,0.9141,1.3323,0.5600,1.1034,1.3719,-0.0101,-0.0371,0.2161,0.4043,-0.1007,-0.3057,
+  0.7985,0.5582,0.3324,0.5036,0.2538,0.3222,0.1901,0.4384,0.2475,-0.0390,-0.2015,-0.0977,
+  0.5444,0.6193,0.6445,0.3906,0.1658,0.0318,0.1178,0.0827,0.1588,0.1142,-0.0539,0.0380,
+  0.6527,0.4439,0.2256,0.3127,0.2057,0.3422,0.1519,0.2879,0.2531,-0.1047,-0.1048,-0.0216
+];
+
+/* Calendar-year returns compounded from the monthly series above, so the
+   annual engines (drawdown, backtest) and the monthly engine can never drift
+   apart: there is one dataset, aggregated two ways. */
+function histAnnual(m){
+  var out = [], y, k, g;
+  for (y = 0; y * 12 < m.length; y++){
+    g = 1;
+    for (k = 0; k < 12; k++) g *= (1 + m[y * 12 + k] / 100);
+    out.push((g - 1) * 100);
+  }
+  return out;
+}
+var HIST_STOCK = histAnnual(HIST_M_STOCK);
+var HIST_BOND = histAnnual(HIST_M_BOND);
+var HIST_INFL = histAnnual(HIST_M_INFL);
 
 /* ---------- drawdown engine ----------
    One retirement run. Withdrawal happens at the start of each year, then the
@@ -6412,8 +6939,13 @@ function runDrawdown(o, seq) {
  */
 function historicalBacktest(o) {
   var n = HIST_STOCK.length;
+  /* The caller can pull the start of the record forward. Pre-1926 data does not
+     exist in this dataset, and starting later trades sample size for a world
+     that looks more like the present \u2014 the tooltip on that input explains the
+     trade. */
+  var from = Math.max(0, Math.min(n - 1, Math.round((o.fromYear || HIST_START) - HIST_START)));
   var runs = [];
-  for (var start = 0; start + o.years <= n; start++) {
+  for (var start = from; start + o.years <= n; start++) {
     var seq = [];
     for (var k = 0; k < o.years; k++) {
       seq.push({ stock: HIST_STOCK[start + k], bond: HIST_BOND[start + k], infl: HIST_INFL[start + k] });
@@ -6426,6 +6958,7 @@ function historicalBacktest(o) {
   var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
   var fails = runs.filter(function (r) { return r.depleted; });
   return {
+    first: HIST_START + from,
     runs: runs,
     total: runs.length,
     survived: survived,
@@ -6548,76 +7081,83 @@ function ssEstimate(income, careerYears, claimAge) {
  * @returns {Object} bands (percentiles per year), windows, finals, count
  */
 function historicalRuns(g, stages){
-  const avail = HIST_STOCK.length;
+  const avail = HIST_M_STOCK.length;            // months of real data
   let totalYears = 0;
   for (let i = 0; i < stages.length; i++) totalYears += stages[i].years;
-  const N = Math.ceil(totalYears - 1e-9);
+  const N = Math.ceil(totalYears * 12 - 1e-9);  // months the plan runs
   const base = {bands:[], windows:[], finals:[], totalYears, N,
-                count:0, median:0, first:HIST_START, last:HIST_START + avail - 1,
-                span:avail, tooLong:false};
+                count:0, median:0, first:HIST_START,
+                last:HIST_START + Math.floor(avail / 12) - 1,
+                span:Math.floor(avail / 12), tooLong:false};
   if (!(N > 0)) return base;
   if (N > avail) return Object.assign(base, {tooLong:true});
 
-  /* One entry per plan year: which stage it belongs to, what goes in that
-     year, and the stock weight that year. Building this once keeps the window
-     loop to plain arithmetic. */
+  /* One entry per month of the plan: what goes in that month and how much of
+     it sits in stocks. Contributions land on the months they actually happen —
+     a quarterly contributor buys in March, June, September and December, not in
+     twelve equal slices — which is the whole point of running this monthly. */
   const plan = [];
-  let elapsed = 0;
+  let elapsedM = 0;
   for (let si = 0; si < stages.length; si++){
     const st = stages[si];
     const ppy = PPY[st.period];
     const mix = (st.mix == null ? .8 : st.mix);
     const glideOn = !!(st.glide && st.glide.on);
     const gYears = glideOn ? Math.min(st.glide.years, st.years) : 0;
-    // A glide is a move to something more conservative, so in this mode it
-    // walks the stock weight down rather than the rate of return.
     const endMix = glideOn
       ? (st.glide.endMix == null ? Math.min(mix, .4) : st.glide.endMix) : mix;
-    const lastYear = Math.ceil(st.years - 1e-9);
-    for (let y = 1; y <= lastYear; y++){
-      const frac = Math.min(1, st.years - (y - 1));
-      const w = glideOn ? glideAnnualRate(y, st.years, gYears, mix, endMix) : mix;
+    const months = Math.ceil(st.years * 12 - 1e-9);
+    for (let k = 1; k <= months; k++){
+      const yearNo = Math.ceil(k / 12);                 // year within the stage
+      const w = glideOn
+        ? glideAnnualRate(yearNo, st.years, gYears, mix, endMix) : mix;
+      const grown = st.contrib * Math.pow(1 + st.growth, yearNo - 1);
+      let amount;
+      if (ppy >= 12) amount = grown * (ppy / 12);       // weekly, bi-weekly, monthly
+      else if (ppy === 4) amount = (k % 3 === 0) ? grown : 0;   // quarterly
+      else amount = (k % 12 === 0) ? grown : 0;                 // annually
       plan.push({stage: si + 1,
-                 endYear: elapsed + Math.min(y, st.years),
-                 frac,
-                 ppy,
-                 periods: Math.max(0, Math.round(ppy * frac)),
-                 contrib: st.contrib * Math.pow(1 + st.growth, y - 1),
+                 year: (elapsedM + k) / 12,
+                 amount,
                  w: Math.max(0, Math.min(1, w))});
     }
-    elapsed += st.years;
+    elapsedM += months;
   }
 
   const M = plan.length;
   if (!M) return base;
   const count = avail - N + 1;
-  const fee = g.fees || 0;
-  const paths = [];
-  for (let k = 0; k < M; k++) paths.push(new Float64Array(count));
+  const feeM = Math.pow(1 + (g.fees || 0), 1 / 12) - 1;   // annual fee, monthly
+  /* Band points once a year keeps the chart the same shape it has always been;
+     the arithmetic underneath is still month by month. */
+  const marks = [];
+  for (let k = 0; k < M; k++) if ((k + 1) % 12 === 0 || k === M - 1) marks.push(k);
+  const paths = marks.map(() => new Float64Array(count));
   const finals = new Float64Array(count);
   const windows = [];
 
   for (let wi = 0; wi < count; wi++){
-    let bal = g.initial, cum = 1;
+    let bal = g.initial, cum = 1, mi = 0;
     for (let k = 0; k < M; k++){
       const pl = plan[k], idx = wi + k;
-      let r = (pl.w * HIST_STOCK[idx] + (1 - pl.w) * HIST_BOND[idx]) / 100 - fee;
+      let r = (pl.w * HIST_M_STOCK[idx] + (1 - pl.w) * HIST_M_BOND[idx]) / 100 - feeM;
       if (r <= -0.999) r = -0.999;
-      const pr = Math.pow(1 + r, 1 / pl.ppy) - 1;
-      for (let q = 0; q < pl.periods; q++) bal = bal * (1 + pr) + pl.contrib;
-      cum *= Math.pow(1 + HIST_INFL[idx] / 100, pl.frac);
-      paths[k][wi] = bal / cum;
+      bal = bal * (1 + r) + pl.amount;
+      cum *= (1 + HIST_M_INFL[idx] / 100);
+      if (mi < marks.length && marks[mi] === k){ paths[mi][wi] = bal / cum; mi++; }
     }
     finals[wi] = bal / cum;
-    windows.push({start: HIST_START + wi, end: HIST_START + wi + N - 1,
+    const y0 = HIST_START + Math.floor(wi / 12);
+    windows.push({start: y0, startMonth: (wi % 12) + 1,
+                  end: HIST_START + Math.floor((wi + N - 1) / 12),
                   final: bal / cum});
   }
 
   const asc = (a, b) => a - b;
   const bands = [];
-  for (let k = 0; k < M; k++){
-    const sorted = paths[k].slice().sort(asc);
-    bands.push({year: plan[k].endYear, stage: plan[k].stage,
+  for (let j = 0; j < marks.length; j++){
+    const sorted = paths[j].slice().sort(asc);
+    bands.push({year: plan[marks[j]].year, stage: plan[marks[j]].stage,
                 p10: pctl(sorted, .10), p25: pctl(sorted, .25),
                 p50: pctl(sorted, .50), p75: pctl(sorted, .75),
                 p90: pctl(sorted, .90)});
@@ -6629,8 +7169,8 @@ function historicalRuns(g, stages){
 
   return {bands, windows, finals:sortedFinals, totalYears, N, count,
           median: pctl(sortedFinals, .5), worst, best,
-          first: HIST_START, last: HIST_START + avail - 1, span: avail,
-          tooLong:false};
+          first: HIST_START, last: HIST_START + Math.floor(avail / 12) - 1,
+          span: Math.floor(avail / 12), tooLong:false};
 }
 
 /* ---------- Portfolio backtest ---------- */
@@ -6728,8 +7268,9 @@ if (typeof module !== "undefined")
                     SENIOR_ADDL, SENIOR_BONUS, SS_PROV, SS_TAX_STATES,
                     RET_STATE, stateRetireTax,
                     finalStageSolve, balanceBeforeLast,
-                    historicalRuns, backtest,
-                    HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START};
+                    historicalRuns, backtest, historicalBacktest, runDrawdown,
+                    HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START,
+                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL};
 </script>
 
 <script>
@@ -7339,9 +7880,9 @@ function histSummary(noteId, H, target, label){
   if (!H || !H.count){
     if (H && H.tooLong){
       el.hidden = false;
-      el.innerHTML = "<b class='warn'>" + H.N + " years</b> is longer than the " +
-        H.span + " years of history available (" + H.first + "\u2013" + H.last +
-        "). Shorten the plan to use this mode.";
+      el.innerHTML = "<b class='warn'>" + fmtYears(H.totalYears) + "</b> is longer " +
+        "than the " + H.span + " years of history available (" + H.first +
+        "\u2013" + H.last + "). Shorten the plan to use this mode.";
     } else el.hidden = true;
     return;
   }
@@ -7355,9 +7896,15 @@ function histSummary(noteId, H, target, label){
       "</b> windows reach " + money(target) + " " + label + ". ";
   }
   out += "Median outcome <b>" + money(H.median) + "</b>. Worst window started " +
-    H.worst.start + " (" + money(H.worst.final) + "), best started " +
-    H.best.start + " (" + money(H.best.final) + ").";
+    histWhen(H.worst) + " (" + money(H.worst.final) + "), best started " +
+    histWhen(H.best) + " (" + money(H.best.final) + ").";
   el.innerHTML = out;
+}
+const HIST_MON = ["Jan","Feb","Mar","Apr","May","Jun",
+                  "Jul","Aug","Sep","Oct","Nov","Dec"];
+function histWhen(w){
+  return (w && w.startMonth) ? HIST_MON[w.startMonth - 1] + " " + w.start
+                             : (w ? String(w.start) : "");
 }
 function histBarNote(H, perStage){
   if (!H || !H.count){
@@ -7365,7 +7912,8 @@ function histBarNote(H, perStage){
       return "No window fits: history runs " + H.first + "\u2013" + H.last + ".";
     return "Add some years to run this.";
   }
-  return "<b>" + H.count + "</b> rolling " + H.N + "-year windows, " + H.first +
+  return "<b>" + fmtNum(H.count) + "</b> rolling windows of " +
+    fmtYears(H.totalYears) + ", compounded month by month, " + H.first +
     "\u2013" + H.last + ". " + (perStage
       ? "Each stage uses its own stock mix, set on the cards above. "
       : "") +
@@ -9174,7 +9722,24 @@ function buildMortSheet(){
   if (R.pmiPaid > 0) out += row("Total PMI paid", money(R.pmiPaid));
   const halfwayYear = R.years.findIndex(y => y.balance <= R.loan / 2) + 1;
   if (halfwayYear > 0) out += row("Halfway point (balance)", "Year " + halfwayYear);
-  out += row("Payoff", "Year " + R.years.length);
+  out += row("Payoff", moWhen(R.payoffMonth));
+
+  if (R.extraActive){
+    const base = mortgage(Object.assign({}, m, {extraMonthly:0, extraOnce:0,
+      extraOnceMonth:0, recast:false}));
+    out += row("With extra payments", moDur(base.payoffMonth - R.payoffMonth) +
+      " sooner, " + money(base.totalInterest - R.totalInterest) + " less interest");
+    if (R.recastPI != null) out += row("Payment after recast", money(R.recastPI) + "/mo");
+  }
+  if (m.refiOn){
+    const RF = refiCompare(m, {rate:m.refiRate, term:m.refiTerm, cost:m.refiCost});
+    out += row("Refinance to " + pctStr(m.refiRate, 2) + ", " + fmtNum(m.refiTerm) + "yr",
+      money(RF.then.pi) + "/mo, breaks even in " +
+      (RF.breakEvenMonths == null ? "never" :
+       RF.breakEvenMonths <= 0 ? "immediately" : moDur(RF.breakEvenMonths)) +
+      ", " + (RF.lifetimeDelta >= 0 ? "saves " : "costs ") + money(Math.abs(RF.lifetimeDelta)) +
+      " lifetime");
+  }
 
   const src = $("chartMo");
   let chart = "";
@@ -10290,10 +10855,20 @@ $("segTxMode").addEventListener("click", e => {
 /* ---------- mortgage tool ---------- */
 let mortPoints = [];
 function readMort(){
+  const extrasOn = $("moExtrasOn").value === "1";
   return {price:num("moPrice"), down:num("moDownAmt"), rate:rate("moRate"),
           term:parseFloat($("moTerm").value), taxPct:rate("moTax"), ins:num("moIns"),
           pmiPct:rate("moPmi"), hoa:num("moHoa"),
-          maintPct:rate("moMaint"), util:num("moUtil")};
+          maintPct:rate("moMaint"), util:num("moUtil"),
+          // Zeroed out whenever the panel is collapsed, so toggling it off is
+          // the same as never having touched it -- not just hiding the fields.
+          extraMonthly: extrasOn ? num("moExtraMo") : 0,
+          extraOnce: extrasOn ? num("moExtraOnce") : 0,
+          extraOnceMonth: extrasOn ? num("moExtraWhen") : 0,
+          recast: extrasOn && $("moRecast").value === "1",
+          refiOn: extrasOn && rate("moRefiRate") > 0,
+          refiRate: rate("moRefiRate"), refiTerm: parseFloat($("moRefiTerm").value),
+          refiCost: num("moRefiCost")};
 }
 /* PMI only exists below 20% down, so the field mirrors that: it fills in a
    default when PMI applies and blanks to 0 when it doesn't, rather than showing
@@ -10324,15 +10899,76 @@ function syncDown(from){
   }
   downLock = false;
 }
+function moWhen(months){
+  const y = Math.floor(months / 12), m = months % 12;
+  if (!y) return m + (m === 1 ? " month" : " months") + " in";
+  if (!m) return "year " + y;
+  return "year " + y + ", month " + m;
+}
+function moDur(months){
+  const y = Math.floor(months / 12), m = months % 12;
+  if (!y) return m + (m === 1 ? " month" : " months");
+  if (!m) return y + (y === 1 ? " year" : " years");
+  return y + "y " + m + "m";
+}
+function renderMortExtras(m, R){
+  const active = R.extraActive;
+  $("moExtraPanel").hidden = !active && !m.refiOn;
+  if (!active){
+    $("moExtraStats").innerHTML = "";
+  } else {
+    const base = mortgage(Object.assign({}, m, {extraMonthly:0, extraOnce:0,
+      extraOnceMonth:0, recast:false}));
+    const monthsSooner = base.payoffMonth - R.payoffMonth;
+    const interestSaved = base.totalInterest - R.totalInterest;
+    let html = "";
+    html += "<div class='kv'><span class='k'>Payoff</span><span class='v pos'>" +
+      moWhen(R.payoffMonth) + (monthsSooner > 0
+        ? " (" + moDur(monthsSooner) + " sooner)" : "") + "</span></div>";
+    html += "<div class='kv'><span class='k'>Interest saved</span><span class='v pos'>" +
+      money(Math.max(0, interestSaved)) + "</span></div>";
+    if (R.recastPI != null)
+      html += "<div class='kv'><span class='k'>Payment after the recast</span><span class='v'>" +
+        money(R.recastPI) + "/mo</span></div>";
+    $("moExtraStats").innerHTML = html;
+  }
+
+  $("moRefiBlock").hidden = !m.refiOn;
+  if (m.refiOn){
+    const RF = refiCompare(m, {rate:m.refiRate, term:m.refiTerm, cost:m.refiCost});
+    $("moRefiHead").textContent = pctStr(m.refiRate, 2) + " for " + fmtNum(m.refiTerm) + " years";
+    let html = "<div class='kv'><span class='k'>New payment</span><span class='v'>" +
+      money(RF.then.pi) + "/mo</span></div>";
+    html += "<div class='kv'><span class='k'>Monthly change</span><span class='v " +
+      (RF.monthlyDelta >= 0 ? "pos" : "neg") + "'>" +
+      (RF.monthlyDelta >= 0 ? "\u2212" : "+") + money(Math.abs(RF.monthlyDelta)) + "/mo</span></div>";
+    html += "<div class='kv'><span class='k'>Breaks even on closing costs</span><span class='v'>" +
+      (RF.breakEvenMonths == null ? "Never \u2014 payment doesn't drop" :
+       RF.breakEvenMonths <= 0 ? "Immediately \u2014 no closing costs to recover" :
+       moDur(RF.breakEvenMonths)) +
+      "</span></div>";
+    html += "<div class='kv'><span class='k'>Over the life of the loan</span><span class='v " +
+      (RF.lifetimeDelta >= 0 ? "pos" : "neg") + "'>" +
+      (RF.lifetimeDelta >= 0 ? "Saves " : "Costs ") + money(Math.abs(RF.lifetimeDelta)) +
+      "</span></div>";
+    $("moRefiStats").innerHTML = html;
+  }
+}
 function renderMort(){
   const m = readMort();
   const R = mortgage(m);
   $("moLoan").textContent = money(R.loan);
   $("moDownShow").textContent = money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 1) + ")";
   $("moTotInt").textContent = money(R.totalInterest);
-  $("moPmiNote").textContent = R.ltv > .80
-    ? "PMI applies below 20% down and drops off automatically once you reach 20% equity."
-    : "No PMI; you're at or above 20% down.";
+  if (R.ltv > .80){
+    $("moPmiNote").textContent = R.pmiEndMonth
+      ? "PMI applies below 20% down. At this pace it ends around " + moWhen(R.pmiEndMonth) +
+        " (loan federally requires automatic removal by 22% equity regardless)."
+      : "PMI applies below 20% down and drops off automatically once you reach 20% equity.";
+  } else {
+    $("moPmiNote").textContent = "No PMI; you're at or above 20% down.";
+  }
+  renderMortExtras(m, R);
 
   setBig("moTotal", money(R.total));
   setBig("moPI", money(R.pi));
@@ -10374,6 +11010,14 @@ $("moPrice").addEventListener("input", () => { syncDown("pct"); syncPmi(); rende
 $("moDownPct").addEventListener("input", () => { syncDown("pct"); syncPmi(); renderMort(); });
 $("moDownAmt").addEventListener("input", () => { syncDown("amt"); syncPmi(); renderMort(); });
 $("moTerm").addEventListener("change", renderMort);
+
+["moExtraMo","moExtraOnce","moExtraWhen","moRefiRate","moRefiCost"].forEach(id =>
+  $(id).addEventListener("input", renderMort));
+["moRecast","moRefiTerm"].forEach(id => $(id).addEventListener("change", renderMort));
+$("moExtrasOn").addEventListener("change", () => {
+  $("moExtrasWrap").hidden = $("moExtrasOn").value !== "1";
+  renderMort();
+});
 
 /* ---------- budget tool ---------- */
 /* Grouped presets. freq is the default frequency for that row: 12 = a monthly
@@ -11028,6 +11672,8 @@ function rentBuyCalc(inp) {
 var ddPoints = [];
 var ddMode = "hist";
 var ddSelectedYear = null;
+var ddView = "all";
+var ddIncomeChartAgg = false;
 var DD_STRAT_NOTES = {
   fixed: "The classic 4% rule. You set a first-year amount and give yourself a raise for inflation every year, no matter what markets do. Simple, but it cannot react to a bad decade.",
   pct: "Take the same percentage of whatever the portfolio is worth each year. It can never run dry, but your income swings with the market.",
@@ -11060,6 +11706,7 @@ function readDD() {
     spendFloor: num("ddSpendFloor"),
     ssAnnual: ddSSAnnual(),
     ssDelayYears: Math.max(0, Math.round(num("ddSSDelay"))),
+    fromYear: HIST_START,
     incomeItems: ddIncomeItems,
     expenseItems: ddExpenseItems
   };
@@ -11067,7 +11714,8 @@ function readDD() {
 
 const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
   guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
-  ssMode:"none", ssIncome:85000, ssClaim:67, ssAmount:33000, ssDelay:0};
+  ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
+  ssAmount:33000, ssAmount2:33000, ssDelay:0};
 /* Raw form state for scenario save/load and Reset \u2014 distinct from readDD(),
    which resolves Social Security to a derived annual dollar figure instead of
    keeping the mode/income/claim-age inputs that produced it. ddIncomeItems and
@@ -11081,8 +11729,10 @@ function readDDState(){
     floor:num("ddFloor"), ceil:num("ddCeil"),
     yaleWeight:num("ddYaleWeight"), yaleRate:num("ddYaleRate"),
     spendFloor:num("ddSpendFloor"),
-    ssMode:$("ddSSMode").value, ssIncome:num("ddSSIncome"), ssClaim:num("ddSSClaim"),
-    ssAmount:num("ddSSAmount"), ssDelay:num("ddSSDelay"),
+    ssMode:$("ddSSMode").value, ssWho:$("ddSSWho").value,
+    ssIncome:num("ddSSIncome"), ssClaim:num("ddSSClaim"),
+    ssIncome2:num("ddSSIncome2"), ssClaim2:num("ddSSClaim2"),
+    ssAmount:num("ddSSAmount"), ssAmount2:num("ddSSAmount2"), ssDelay:num("ddSSDelay"),
     incomeItems: ddIncomeItems.map(x => Object.assign({}, x)),
     expenseItems: ddExpenseItems.map(x => Object.assign({}, x))
   };
@@ -11102,9 +11752,13 @@ function writeDDState(d){
   if (d.yaleRate != null) $("ddYaleRate").value = d.yaleRate;
   if (d.spendFloor != null) $("ddSpendFloor").value = groupDigits(d.spendFloor, true);
   if (d.ssMode) $("ddSSMode").value = d.ssMode;
+  if (d.ssWho) $("ddSSWho").value = d.ssWho;
   if (d.ssIncome != null) $("ddSSIncome").value = groupDigits(d.ssIncome, true);
   if (d.ssClaim != null) $("ddSSClaim").value = d.ssClaim;
+  if (d.ssIncome2 != null) $("ddSSIncome2").value = groupDigits(d.ssIncome2, true);
+  if (d.ssClaim2 != null) $("ddSSClaim2").value = d.ssClaim2;
   if (d.ssAmount != null) $("ddSSAmount").value = groupDigits(d.ssAmount, true);
+  if (d.ssAmount2 != null) $("ddSSAmount2").value = groupDigits(d.ssAmount2, true);
   if (d.ssDelay != null) $("ddSSDelay").value = d.ssDelay;
   if (Array.isArray(d.incomeItems))
     ddIncomeItems.splice(0, ddIncomeItems.length, ...d.incomeItems.map(x => Object.assign({}, x)));
@@ -11113,10 +11767,21 @@ function writeDDState(d){
 }
 function ddSSAnnual() {
   var mode = $("ddSSMode").value;
-  if (mode === "manual") return num("ddSSAmount");
+  if (mode === "none") return 0;
+  var couple = $("ddSSWho").value === "couple";
+  if (mode === "manual") {
+    var amt = num("ddSSAmount");
+    if (couple) amt += num("ddSSAmount2");
+    return amt;
+  }
   if (mode === "est") {
     var r = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
-    return r.annual;
+    var total = r.annual;
+    if (couple) {
+      var r2 = ssEstimate(num("ddSSIncome2"), 40, Math.min(70, Math.max(62, num("ddSSClaim2"))));
+      total += r2.annual;
+    }
+    return total;
   }
   return 0;
 }
@@ -11136,17 +11801,31 @@ function renderDrawdownTyping(){
 function renderDrawdown() {
   clearTimeout(ddTypeTimer);
   var ssMode = $("ddSSMode").value;
+  $("ddSSWhoWrap").hidden = (ssMode === "none");
   $("ddSSEst").hidden = (ssMode !== "est");
   $("ddSSManual").hidden = (ssMode !== "manual");
   $("ddSSDelayWrap").hidden = (ssMode === "none");
+  var ssCouple = ssMode !== "none" && $("ddSSWho").value === "couple";
+  $("ddSSEst2Wrap").hidden = !(ssMode === "est" && ssCouple);
+  $("ddSSAmount2Wrap").hidden = !(ssMode === "manual" && ssCouple);
+  $("ddSSIncomeLabel").textContent = ssCouple ? "Your income" : "Current income";
+  $("ddSSAmountLabel").textContent = ssCouple ? "Your annual benefit, today's dollars" : "Annual benefit, today's dollars";
   var ssAmt = ddSSAnnual();
   $("ddSSShow").textContent = ssAmt > 0 ? money(ssAmt) + "/yr" : "Not included";
   if (ssMode === "est"){
     var e = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
-    $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month in today's dollars, claiming at " +
-      Math.round(num("ddSSClaim")) + ". Full retirement age is " + SS_FRA +
-      "; claiming earlier permanently reduces it, later increases it 8% a year. " +
-      "Like the rest of the plan, this grows with inflation every year once it starts.";
+    if (ssCouple) {
+      var e2 = ssEstimate(num("ddSSIncome2"), 40, Math.min(70, Math.max(62, num("ddSSClaim2"))));
+      $("ddSSEstNote").textContent = "About " + money(e.monthly) + "/mo for you and " + money(e2.monthly) +
+        "/mo for your spouse \u2014 " + money(e.monthly + e2.monthly) + "/mo combined, in today's dollars. " +
+        "Full retirement age is " + SS_FRA + "; claiming earlier permanently reduces it, later increases it 8% a year. " +
+        "Like the rest of the plan, this grows with inflation every year once it starts.";
+    } else {
+      $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month in today's dollars, claiming at " +
+        Math.round(num("ddSSClaim")) + ". Full retirement age is " + SS_FRA +
+        "; claiming earlier permanently reduces it, later increases it 8% a year. " +
+        "Like the rest of the plan, this grows with inflation every year once it starts.";
+    }
   }
   var o = readDD();
   var strat = o.strategy;
@@ -11198,8 +11877,27 @@ function renderDrawdown() {
 
   if (ddMode === "hist") {
     var H = historicalBacktest(o);
+    if (!H.total) {
+      /* The start year has been pulled so far forward that no complete
+         retirement of this length fits before the data ends. Say so rather than
+         reporting a 0% success rate, which would read as a failure. */
+      setBig("ddSuccess", "--"); setBig("ddMedian", "--"); setBig("ddWorst", "--");
+      $("ddSuccessNote").textContent = ""; $("ddWorstNote").textContent = "";
+      $("ddPeriods").textContent = "no complete runs";
+      $("ddBadge").textContent = "--";
+      $("ddFromNote").innerHTML = "<b class='warn'>No " + o.years +
+        "-year retirement fits in the " + HIST_START + "\u2013" +
+        (HIST_START + HIST_STOCK.length - 1) + " record.</b> Shorten the retirement.";
+      $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Nothing to test: " +
+        "a " + o.years + "-year retirement starting in " + o.fromYear +
+        " has not finished yet.</div>";
+      return;
+    }
     $("ddPeriods").textContent = H.total + " start years";
-    $("ddBadge").textContent = "1928\u20132025";
+    $("ddFromNote").innerHTML = "Testing <b>" + H.total + "</b> retirements beginning " +
+      H.first + "\u2013" + (HIST_START + HIST_STOCK.length - o.years) +
+      ". Data runs to " + (HIST_START + HIST_STOCK.length - 1) + ".";
+    $("ddBadge").textContent = H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1);
     setBig("ddSuccess", pctStr(H.successRate, 1));
     $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
     $("ddSuccessNote").textContent = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
@@ -11253,9 +11951,25 @@ function renderDrawdown() {
       (show.depleted ? "This one ran out of money in year " + show.depletedYear + "."
                       : "This one survived the full " + o.years + " years.");
     fillDDTable(show);
-    setH2Text($("ddIncomeChartTitle"), "Spending through retirement, retiring in " + show.startYear);
-    renderSpendStats(show, "Showing the period selected above.");
-    renderIncomeChart(show);
+
+    $("ddViewWrap").hidden = false;
+    $("segDDView").querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-ddview") === ddView);
+    });
+    $("ddSpendYearView").hidden = (ddView !== "year");
+    $("ddSpendAllView").hidden = (ddView !== "all");
+    if (ddView === "all") {
+      setH2Text($("ddIncomeChartTitle"), "Spending across every historical starting year");
+      renderSpendStatsAll(H, o);
+      renderIncomeChartAll(H, o);
+      $("ddIncomeNote").textContent = "Median, 10th\u201390th and 25th\u201375th percentile spending by " +
+        "year of retirement, across all " + H.total + " historical starting years.";
+    } else {
+      setH2Text($("ddIncomeChartTitle"), "Spending through retirement, retiring in " + show.startYear);
+      renderSpendStats(show, "Showing the period selected above.");
+      renderIncomeChart(show);
+      $("ddIncomeNote").textContent = "";
+    }
 
   } else {
     var trials = 5000;
@@ -11288,9 +12002,14 @@ function renderDrawdown() {
     setH2Text($("ddDetailTitle"), "Year by year, a median run");
     $("ddDetailNote").textContent = "One representative simulation from the middle of the range.";
     fillDDTable(med);
+
+    $("ddViewWrap").hidden = true;
+    $("ddSpendYearView").hidden = false;
+    $("ddSpendAllView").hidden = true;
     setH2Text($("ddIncomeChartTitle"), "Spending through retirement, a median run");
     renderSpendStats(med, "Showing the same run as the table below.");
     renderIncomeChart(med);
+    $("ddIncomeNote").textContent = "";
   }
 }
 
@@ -11346,13 +12065,85 @@ function renderIncomeChart(run) {
     var real = r.realSpend != null ? r.realSpend : r.realWithdrawal;
     return { year: r.year, base: real, hi: real, lo: real };
   });
+  ddIncomeChartAgg = false;
   if (!pts.length) { paintChart("chartDDI", [], 1, "band", []); return; }
   ddiPoints = paintChart("chartDDI", pts, pts.length, "band", []);
   $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today\u0027s dollars");
 }
+
+/* Same idea as the "every historical starting year" balance chart above, but
+   for spending: at each year of retirement (year 1, year 2, ...), collect
+   that year's real spending across every historical starting-year run and
+   take percentiles. This is what "All years" shows instead of one run. */
+function renderIncomeChartAll(H, o) {
+  var maxY = o.years;
+  var pts = [];
+  for (var y = 1; y <= maxY; y++) {
+    var vals = H.runs.map(function (r) {
+      var row = r.rows[y - 1];
+      if (!row) return 0;
+      return row.realSpend != null ? row.realSpend : row.realWithdrawal;
+    }).sort(function (a, b) { return a - b; });
+    var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
+    pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
+  }
+  ddIncomeChartAgg = true;
+  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", []);
+  histLegend("legendDDI");
+}
+
+/* Aggregate version of renderSpendStats: instead of one run's swings, this
+   pools every year of every historical starting-year run to show the full
+   range \u2014 the single best and worst years ever seen, and how the total
+   spent over a full retirement varied depending on when it began. */
+function renderSpendStatsAll(H, o) {
+  var n = H.runs.length;
+  var allVals = [], totals = [], cutsCounts = [], maxCutEver = 0;
+  H.runs.forEach(function (r) {
+    var real = r.rows.map(function (row) { return row.realSpend != null ? row.realSpend : row.realWithdrawal; });
+    real.forEach(function (v) { allVals.push(v); });
+    totals.push(real.reduce(function (a, v) { return a + v; }, 0));
+    var cuts = 0;
+    for (var i = 1; i < real.length; i++) {
+      var chg = real[i] - real[i - 1];
+      if (chg < -0.5) { cuts++; if (-chg > maxCutEver) maxCutEver = -chg; }
+    }
+    cutsCounts.push(cuts);
+  });
+
+  var sortedVals = allVals.slice().sort(function (a, b) { return a - b; });
+  var high = sortedVals[sortedVals.length - 1], low = sortedVals[0];
+  var med = sortedVals[Math.floor(sortedVals.length / 2)];
+  var avg = allVals.reduce(function (a, v) { return a + v; }, 0) / allVals.length;
+
+  var sortedTotals = totals.slice().sort(function (a, b) { return a - b; });
+  var totalMed = sortedTotals[Math.floor(sortedTotals.length / 2)];
+  var totalMin = sortedTotals[0], totalMax = sortedTotals[sortedTotals.length - 1];
+  var cutsAvg = cutsCounts.reduce(function (a, v) { return a + v; }, 0) / n;
+
+  $("ddAggHigh").textContent = money(high);
+  $("ddAggLow").textContent = money(low);
+  $("ddAggMed").textContent = money(med);
+  $("ddAggAvg").textContent = money(avg);
+  $("ddAggTotalMed").textContent = money(totalMed);
+  $("ddAggTotalRange").textContent = money(totalMin) + " \u2013 " + money(totalMax);
+  $("ddAggCutsAvg").textContent = cutsAvg.toFixed(1) + " of " + o.years + " years";
+  $("ddAggMaxCut").textContent = maxCutEver > 0 ? "\u2212" + money(maxCutEver) + " in one year" : "None";
+
+  $("ddSpendNote").innerHTML = "Across all " + n + " historical starting years. A single year's spending " +
+    "ranged from " + money(low) + " to " + money(high) + " in today\u2019s dollars, and a full " + o.years +
+    "-year retirement totaled anywhere from " + money(totalMin) + " to " + money(totalMax) +
+    " depending on when it began.";
+}
 var ddiPoints = [];
 attachChart("chartWrapDDI", "chartDDI", "tipDDI", function () { return ddiPoints; },
   function (best) {
+    if (ddIncomeChartAgg) {
+      return "<b>Year " + fmtNum(best.year) + "</b>" +
+        "<br><span style=\u0027color:#4fbf95\u0027>90th</span> <span class=\u0027n\u0027>" + money(best.hi) +
+        "</span><br><span style=\u0027color:#e9b872\u0027>Median</span> <span class=\u0027n\u0027>" + money(best.base) +
+        "</span><br><span style=\u0027color:#e2795f\u0027>10th</span> <span class=\u0027n\u0027>" + money(best.lo) + "</span>";
+    }
     return "<b>Year " + fmtNum(best.year) + "</b>" +
       "<br><span style=\u0027color:#e9b872\u0027>Spending</span> <span class=\u0027n\u0027>" + money(best.base) + "</span>";
   });
@@ -11369,6 +12160,7 @@ $("ddStartTable").addEventListener("click", function (e) {
   var tr = e.target.closest ? e.target.closest("tr[data-year]") : null;
   if (!tr) return;
   ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
+  ddView = "year";
   renderDrawdown();
 });
 $("ddStartTable").addEventListener("keydown", function (e) {
@@ -11377,6 +12169,7 @@ $("ddStartTable").addEventListener("keydown", function (e) {
   if (!tr) return;
   e.preventDefault();
   ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
+  ddView = "year";
   renderDrawdown();
 });
 $("segDD").addEventListener("click", function (e) {
@@ -11390,9 +12183,16 @@ $("segDD").addEventListener("click", function (e) {
 });
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
  "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor",
- "ddSSIncome", "ddSSClaim", "ddSSAmount", "ddSSDelay"]
+ "ddSSIncome", "ddSSClaim", "ddSSIncome2", "ddSSClaim2", "ddSSAmount", "ddSSAmount2", "ddSSDelay"]
   .forEach(function (id) { $(id).addEventListener("input", renderDrawdownTyping); });
 $("ddSSMode").addEventListener("change", renderDrawdown);
+$("ddSSWho").addEventListener("change", renderDrawdown);
+$("segDDView").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("button[data-ddview]") : null;
+  if (!b) return;
+  ddView = b.getAttribute("data-ddview");
+  renderDrawdown();
+});
 $("ddStrategy").addEventListener("change", renderDrawdown);
 /* All three retirement modes keep their last computed result in the
    background regardless of which tab is currently open, so every source
@@ -11425,6 +12225,8 @@ function applyDDCopy(source) {
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
+  recast: "Your lender re-runs the amortization on the reduced balance right after a lump-sum payment, spreading it over whatever's left of the original term. The payoff date doesn't move, but the required payment drops for every month after. Most lenders charge a small fee for this, typically $150\u2013500, not included here.",
+  bthistory: "The years the backtest covers. Earlier start dates give more data and more market regimes; later ones describe a world closer to the present. Both are useful, and they often disagree \u2014 a 60/40 mix looks very different measured from 1926 than from 1982.",
   histmix: "The share held in stocks, with the rest in 10-year Treasuries, rebalanced once a year. History mode replaces your rate of return with what this mix actually earned, year by year, so the mix is what sets returns here.",
   histglidemix: "Where the stock share ends up by the end of the glide. In history mode a glide moves the mix, not the rate: it walks the stock share down to this figure over the final years of the plan.",
   btmix: "Stocks versus 10-year Treasuries, rebalanced annually. Everything on this page is what that mix did over the years selected, not a projection.",
@@ -13089,7 +13891,11 @@ function writeRBState(d){
 function readMortState(){
   return {price:num("moPrice"), downPct:num("moDownPct"), downAmt:num("moDownAmt"),
           rate:num("moRate"), term:$("moTerm").value, tax:num("moTax"), ins:num("moIns"),
-          pmi:num("moPmi"), hoa:num("moHoa"), maint:num("moMaint"), util:num("moUtil")};
+          pmi:num("moPmi"), hoa:num("moHoa"), maint:num("moMaint"), util:num("moUtil"),
+          extrasOn:$("moExtrasOn").value, extraMo:num("moExtraMo"),
+          extraOnce:num("moExtraOnce"), extraWhen:num("moExtraWhen"),
+          recast:$("moRecast").value, refiRate:num("moRefiRate"),
+          refiTerm:$("moRefiTerm").value, refiCost:num("moRefiCost")};
 }
 function writeMortState(d){
   if (d.price != null) $("moPrice").value = groupDigits(d.price, true);
@@ -13103,6 +13909,15 @@ function writeMortState(d){
   if (d.hoa != null) $("moHoa").value = groupDigits(d.hoa, true);
   if (d.maint != null) $("moMaint").value = String(d.maint);
   if (d.util != null) $("moUtil").value = groupDigits(d.util, true);
+  if (d.extrasOn != null) $("moExtrasOn").value = String(d.extrasOn);
+  if (d.extraMo != null) $("moExtraMo").value = groupDigits(d.extraMo, true);
+  if (d.extraOnce != null) $("moExtraOnce").value = groupDigits(d.extraOnce, true);
+  if (d.extraWhen != null) $("moExtraWhen").value = String(d.extraWhen);
+  if (d.recast != null) $("moRecast").value = String(d.recast);
+  if (d.refiRate != null) $("moRefiRate").value = String(d.refiRate);
+  if (d.refiTerm) $("moRefiTerm").value = d.refiTerm;
+  if (d.refiCost != null) $("moRefiCost").value = groupDigits(d.refiCost, true);
+  $("moExtrasWrap").hidden = $("moExtrasOn").value !== "1";
 }
 
 function readBudgetState(){
@@ -13799,7 +14614,9 @@ const TAX_DEFAULTS = {mode:"normal", gross:100000, status:"s", state:"IL", pre:0
                       dedType:"std", item:0, trad:40000, roth:10000, brok:20000,
                       gainPct:40, ss:30000, other:0, seniors:1};
 const MORT_DEFAULTS = {price:450000, downPct:20, downAmt:90000, rate:MORT_RATE_30,
-  term:"30", tax:1.1, ins:1800, pmi:0, hoa:0, maint:1, util:300};
+  term:"30", tax:1.1, ins:1800, pmi:0, hoa:0, maint:1, util:300,
+  extrasOn:"0", extraMo:0, extraOnce:0, extraWhen:12, recast:"0",
+  refiRate:0, refiTerm:"30", refiCost:0};
 function sameShallow(a, b){
   for (const k in b) if (String(a[k]) !== String(b[k])) return false;
   return true;
@@ -13883,6 +14700,7 @@ $("btnReset").addEventListener("click", () => {
     writeTaxState(TAX_DEFAULTS); renderTax();
   } else if (tool === "mortgage"){
     writeMortState(MORT_DEFAULTS); syncPmi(); renderMort();
+    $("moExtrasWrap").hidden = true;
   } else if (tool === "budget"){
     budget = defaultBudget(); $("bgIncomeIn").value = groupDigits(0, true);
     bgIncomeFreq = 1;
@@ -13986,6 +14804,11 @@ $("moPmi").value = "0";
 $("moHoa").value = groupDigits(0, true);
 $("moMaint").value = "1";
 $("moUtil").value = groupDigits(300, true);
+$("moExtraMo").value = groupDigits(0, true);
+$("moExtraOnce").value = groupDigits(0, true);
+$("moExtraWhen").value = "12";
+$("moRefiRate").value = "0";
+$("moRefiCost").value = groupDigits(0, true);
 $("rbPrice").value = groupDigits(450000, true);
 $("rbDown").value = "20";
 $("rbRate").value = String(MORT_RATE_30);
