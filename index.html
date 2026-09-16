@@ -944,6 +944,10 @@ html[data-theme="light"] .about.disclaimer{
 
 /* ---------- drawdown rows ---------- */
 .ddrow{cursor:pointer;transition:background .12s ease}
+#ddStartTable th.sortcol{cursor:pointer;user-select:none}
+#ddStartTable th.sortcol:hover{color:var(--text)}
+#ddStartTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}
+#ddStartTable th.sortcol.sort-desc::after{content:"\2193";margin-left:4px;opacity:.7}
 .ddrow:hover{background:var(--panel-2)}
 .ddrow.sel{background:rgba(79,191,149,.11);box-shadow:inset 2px 0 0 var(--jade)}
 .ddrow.sel td:first-child{color:var(--jade);font-weight:600}
@@ -1186,7 +1190,7 @@ svg{display:block;width:100%;height:auto}
   #qYearTable{min-width:560px}
   #clTable{min-width:560px}
   #rbTable{min-width:640px}
-  #ddStartTable{min-width:520px}
+  #ddStartTable{min-width:640px}
   #ddTable{min-width:760px}
   #txTable{min-width:520px}
   #txBrackets{min-width:520px}
@@ -2370,6 +2374,10 @@ window.onerror = function(msg){
           <div class="inputwrap"><span class="affix">$</span><input id="ddInitial" type="text" inputmode="decimal" data-money data-nonneg></div>
           <button class="btn mini" type="button" id="ddCopy" style="margin-top:6px">Copy from retirement calc</button>
         </div>
+        <div class="field">
+          <label for="ddRetireAge">Age at retirement <span class="opt">optional</span><span class="tipdot" data-tip="retireage" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddRetireAge" type="text" inputmode="decimal" data-num data-step="1" min="0" max="120" data-nonneg><span class="affix">yrs</span></div>
+        </div>
         <div class="two">
           <div class="field">
             <label for="ddYears">Years in retirement</label>
@@ -2491,9 +2499,9 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="field" id="ddSSDelayWrap" hidden>
-          <label for="ddSSDelay">Starts after<span class="tipdot" data-tip="ssdelay" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-          <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix">yrs</span></div>
-          <div class="hint">Years into retirement before benefits begin. Use 0 if they start right away.</div>
+          <label for="ddSSDelay"><span id="ddSSDelayLabel">Starts after</span><span class="tipdot" id="ddSSDelayTip" data-tip="ssdelay" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix" id="ddSSDelayAffix">yrs</span></div>
+          <div class="hint" id="ddSSDelayHint">Years into retirement before benefits begin. Use 0 if they start right away.</div>
         </div>
         <div class="field" style="margin-top:14px">
           <label>Other income<span class="tipdot" data-tip="customincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -2570,7 +2578,13 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="ddStartTable">
-          <thead><tr><th>Retired in</th><th>Outcome</th><th>Ending balance</th><th>Lowest year's spending</th></tr></thead>
+          <thead><tr>
+            <th class="sortcol" data-sort="year">Retired in</th>
+            <th class="sortcol" data-sort="outcome">Outcome</th>
+            <th class="sortcol" data-sort="end">Ending balance</th>
+            <th class="sortcol" data-sort="med">Median year spending</th>
+            <th class="sortcol" data-sort="low">Lowest year's spending</th>
+          </tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -2636,7 +2650,7 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="ddTable">
-          <thead><tr><th>Year</th><th>Start, today's $</th><th>Social Security</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
+          <thead><tr><th id="ddTableYearHeader">Year</th><th>Start, today's $</th><th>Social Security</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -3587,25 +3601,30 @@ window.onerror = function(msg){
       <div class="body">
         <dl class="gloss">
           <dt>Save</dt>
-          <dd>Names the current setup and adds it to the dropdown. Saving under an
-          existing name overwrites it. Scenarios are stored in your browser, on the
+          <dd>Names the current setup and adds it to the dropdown. Saving under
+          the name of the scenario you already have loaded updates it; saving
+          under a different existing name asks first before overwriting it.
+          Scenarios are stored in your browser, on the
           device you're using; they don't sync between your phone and computer, and
           clearing site data removes them.</dd>
 
           <dt>The dropdown</dt>
-          <dd>Each tool keeps its own saved list: retirement, tax, mortgage,
-          budget, college savings, rent-vs-buy, drawdown and backtest scenarios are all
-          stored separately, and the dropdown shows whichever belongs to the tool you're on.
-          A retirement scenario still captures all three retirement modes together.
-          "Unsaved" means the current numbers don't match anything saved.</dd>
+          <dd>Each tool keeps its own saved list \u2014 Basic, Advanced and Stages
+          are now separate from each other, alongside tax, mortgage,
+          budget, college savings, rent-vs-buy, drawdown, Roth conversion, debt payoff
+          and backtest scenarios \u2014 and the dropdown shows whichever list belongs to
+          the tool you're on. It remembers which scenario you loaded or saved as you
+          move between tabs, and marks it "(edited)" once your current numbers no
+          longer match what's saved. "Unsaved" means the current numbers don't match
+          anything saved.</dd>
 
           <dt>Compare</dt>
           <dd>Opens a separate screen that puts two or three saved retirement
           scenarios side by side: their balances on one chart, then every result and
           every input in tables, with differing inputs highlighted. It reads saved
           scenarios only and changes nothing, so set your inputs and save them first.
-          Each slot picks which mode to read the scenario in, since a saved retirement
-          scenario holds Basic, Advanced and Stages together.</dd>
+          Each slot picks a mode \u2014 Basic, Advanced or Stages \u2014 and then a saved
+          scenario from that mode's own list.</dd>
 
           <dt>Delete</dt>
           <dd>Removes the selected scenario. It doesn't change the numbers on screen,
@@ -4704,8 +4723,11 @@ window.onerror = function(msg){
  * @property {number} [yaleWeight] - Yale rule weight on last year's spending, 0-100
  * @property {number} [spendFloor] - absolute dollar floor on spending, in today's dollars (0 disables)
  * @property {number} [fee] - annual fee drag, percent
- * @property {number} [ssAnnual] - Social Security benefit, in today's dollars
- * @property {number} [ssDelayYears] - years into retirement before Social Security starts
+ * @property {number} [ssAnnual] - primary Social Security benefit, in today's dollars
+ * @property {number} [ssDelayYears] - years into retirement before the primary benefit starts
+ * @property {number} [ssAnnual2] - spouse's Social Security benefit, in today's dollars (only ever set apart from ssAnnual when retireAge lets each spouse's benefit start at their own claiming age)
+ * @property {number} [ssDelayYears2] - years into retirement before the spouse's benefit starts
+ * @property {number|null} [retireAge] - age at retirement; when set, tables/charts show age instead of years into retirement, and Social Security timing is driven by claiming age(s) instead of ssDelayYears
  * @property {CustomItem[]} [expenseItems]
  * @property {CustomItem[]} [incomeItems]
  */
@@ -6902,6 +6924,8 @@ function runDrawdown(o, seq) {
     var ssThisYear = 0;
     if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0))
       ssThisYear = o.ssAnnual * cumInfl * (1 + infl);
+    if (o.ssAnnual2 > 0 && y >= (o.ssDelayYears2 || 0))
+      ssThisYear += o.ssAnnual2 * cumInfl * (1 + infl);
     var spend = w;
     w = Math.max(0, w - ssThisYear);
 
@@ -6939,6 +6963,9 @@ function runDrawdown(o, seq) {
     if (bal <= 0 && depletedYear === null) depletedYear = y + 1;
   }
 
+  var realSpendsSorted = rows.map(function (r) { return r.realSpend; }).sort(function (a, b) { return a - b; });
+  var medRealSpend = realSpendsSorted.length ? realSpendsSorted[Math.floor(realSpendsSorted.length / 2)] : 0;
+
   return {
     rows: rows,
     depleted: depletedYear !== null,
@@ -6946,7 +6973,8 @@ function runDrawdown(o, seq) {
     endBalance: bal,
     endReal: rows.length ? rows[rows.length - 1].realEnd : o.initial,
     totalRealSpend: totalReal,
-    minRealW: rows.reduce(function (m, r) { return Math.min(m, r.realWithdrawal); }, Infinity)
+    minRealSpend: rows.reduce(function (m, r) { return Math.min(m, r.realSpend); }, Infinity),
+    medRealSpend: medRealSpend
   };
 }
 
@@ -7333,7 +7361,12 @@ const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, no
 const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, period:"Monthly", risk:.045};
 
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
-const KEYS = {retire:"investment-calculator.v2", tax:"finance-tools.tax.v1",
+// v3 split: Basic/Advanced/Stages moved off the shared "retire" bundle onto
+// their own keys (retireBundleMigration() below moves old data across once).
+const KEYS = {basic:"investment-calculator.basic.v3",
+              advanced:"investment-calculator.advanced.v3",
+              stages:"investment-calculator.stages.v3",
+              tax:"finance-tools.tax.v1",
               mortgage:"finance-tools.mortgage.v1", budget:"finance-tools.budget.v1",
               college:"finance-tools.college.v1", rentbuy:"finance-tools.rentbuy.v1",
               drawdown:"finance-tools.drawdown.v1",
@@ -7351,27 +7384,72 @@ function storeWrite(which, v){
   try { localStorage.setItem(KEYS[which], JSON.stringify(v)); } catch(e){}
 }
 /* one saved-scenario list per tool */
-const SC = {retire: storeRead("retire") || [], tax: storeRead("tax") || [],
+const SC = {basic: storeRead("basic") || [], advanced: storeRead("advanced") || [],
+            stages: storeRead("stages") || [], tax: storeRead("tax") || [],
             mortgage: storeRead("mortgage") || [], budget: storeRead("budget") || [],
             college: storeRead("college") || [], rentbuy: storeRead("rentbuy") || [],
             drawdown: storeRead("drawdown") || [],
             roth: storeRead("roth") || [],
             debt: storeRead("debt") || [],
             backtest: storeRead("backtest") || []};
+/* One-time move: scenarios saved before the v3 split lived under a single
+   "retire" bundle key holding Basic + Advanced + Stages together. Split each
+   into its own list under the same name so nothing saved before this update
+   disappears. Guarded by a flag (not by list emptiness) so deleting every
+   split scenario later doesn't resurrect the old bundle. */
+function migrateBundledRetireScenarios(){
+  const FLAG = "investment-calculator.splitmigration.v1";
+  try { if (localStorage.getItem(FLAG) === "1") return; } catch(e){ return; }
+  let old = null;
+  try {
+    const raw = localStorage.getItem("investment-calculator.v2");
+    if (raw) old = JSON.parse(raw);
+  } catch(e){}
+  if (Array.isArray(old) && old.length){
+    old.forEach(s => {
+      if (!s || !s.name) return;
+      if (s.basic && !SC.basic.find(x => x.name === s.name)){
+        SC.basic.push({name:s.name, data:{age:s.basic.age, retire:s.basic.retire,
+          saved:s.basic.saved, contrib:s.basic.contrib, period:s.basic.period,
+          risk:s.basic.risk}});
+      }
+      if ((s.initial != null || s.years != null) &&
+          !SC.advanced.find(x => x.name === s.name)){
+        const adv = {initial:s.initial, contrib:s.contrib, period:s.period,
+          growth:s.growth, nominal:s.nominal, inflation:s.inflation, years:s.years,
+          withdrawal:s.withdrawal, taxRate:s.taxRate, vol:s.vol, fees:s.fees,
+          gross:s.gross, glide:s.glide};
+        if (s.targets){ adv.solveFor = s.targets.solveFor; adv.target = s.targets.target; }
+        SC.advanced.push({name:s.name, data:adv});
+      }
+      if (s.series && !SC.stages.find(x => x.name === s.name)){
+        const stg = {globals: s.series.globals, stages: s.series.stages};
+        if (s.targets){ stg.solveForS = s.targets.solveForS; stg.targetS = s.targets.targetS; }
+        SC.stages.push({name:s.name, data:stg});
+      }
+    });
+    storeWrite("basic", SC.basic);
+    storeWrite("advanced", SC.advanced);
+    storeWrite("stages", SC.stages);
+  }
+  try { localStorage.setItem(FLAG, "1"); } catch(e){}
+}
+migrateBundledRetireScenarios();
+/* Which named scenario the current inputs came from, per tool/mode \u2014 kept
+   so switching tabs and coming back still shows the name instead of
+   "Unsaved". Cleared on Reset or when the loaded scenario is deleted. */
+let currentScenario = {basic:"", advanced:"", stages:"", tax:"", mortgage:"",
+  budget:"", college:"", rentbuy:"", drawdown:"", roth:"", debt:"", backtest:""};
+/* JSON snapshot of the data as it was last saved/loaded for each tool, so the
+   dropdown can flag "(edited)" once the on-screen inputs drift from it. */
+let loadedSnapshot = {};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
   if (t === "tools" && toolSub !== "picker") return toolSub;
-  return "retire";
-}
-/* Scenario save/load treats Basic, Advanced and Stages as one bundle under
-   "retire", so activeTool() has to keep returning that. Reset needs to know
-   which of the three is actually on screen, though \u2014 otherwise it either
-   resets the wrong mode's inputs or resets more than one mode at once. */
-function activeRetireMode(){
-  const t = chartMode.tab;
   if (t === "simple") return "basic";
   if (t === "series") return "stages";
+  if (t === "single") return "advanced";
   return "advanced";
 }
 
@@ -7696,7 +7774,8 @@ const swatch = (c, t) => "<span><i style='background:" + c + "'></i>" + t + "</s
 
 /* Shared painter. Both tabs hand it the same shape of data, so the rate band
    and the Monte Carlo fan render through one code path. */
-function paintChart(svgId, pts, maxX, mode, stageMarks){
+function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset){
+  xOffset = xOffset || 0;
   const svg = $(svgId);
   const narrow = window.innerWidth < 640;
   const W = narrow ? 470 : 900, H = narrow ? 400 : 340;
@@ -7748,7 +7827,7 @@ function paintChart(svgId, pts, maxX, mode, stageMarks){
   for (let y = 0; y <= maxX; y += step){
     const t = svgEl("text", {x:X(y), y:H - 10, "text-anchor":"middle", "font-size":fs,
       fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
-    t.textContent = y; svg.appendChild(t);
+    t.textContent = y + xOffset; svg.appendChild(t);
   }
 
   const line = f => pts.map((a, i) => (i ? "L" : "M") + X(a.year) + " " + Y(f(a))).join(" ");
@@ -8150,12 +8229,13 @@ function cmpDelta(a, b, kind){
 }
 const mrow = (k, n, kind) => ({k, n, kind: kind || "money"});
 
-/* One saved scenario, read in one of the three modes, returned as a chart
-   path plus two labelled row sets. */
-function cmpRun(sc, mode){
-  if (!sc) return null;
+/* One saved scenario's data (already the unwrapped payload for its own
+   mode \u2014 SC.basic/advanced/stages entries no longer share one bundle),
+   returned as a chart path plus two labelled row sets. */
+function cmpRun(data, mode){
+  if (!data) return null;
   if (mode === "basic"){
-    const b = sc.basic || BASIC_DEFAULTS;
+    const b = data;
     const years = Math.min(100, Math.max(0, (b.retire || 0) - (b.age || 0)));
     const period = b.period || "Monthly";
     const p = {years, real: b.risk || 0, initial: b.saved || 0,
@@ -8180,8 +8260,8 @@ function cmpRun(sc, mode){
     };
   }
   if (mode === "stages"){
-    const g = sc.series && sc.series.globals;
-    const list = (sc.series && Array.isArray(sc.series.stages)) ? sc.series.stages : [];
+    const g = data.globals;
+    const list = Array.isArray(data.stages) ? data.stages : [];
     if (!g || !list.length) return null;
     const R = projectSeries(g, effectiveStagesFrom(g, list));
     if (!R.rows.length) return null;
@@ -8215,7 +8295,7 @@ function cmpRun(sc, mode){
       inp
     };
   }
-  const p = sc;
+  const p = data;
   if (!(p.years > 0)) return null;
   const R = project(p);
   const defl = yr => Math.pow(1 + p.inflation, yr);
@@ -8249,13 +8329,13 @@ function cmpRun(sc, mode){
 }
 
 function buildComparePickers(){
-  const list = SC.retire;
+  const total = SC.basic.length + SC.advanced.length + SC.stages.length;
   const host = $("cmpPickers");
   const panels = ["cmpChartPanel", "cmpOutPanel", "cmpInPanel"];
-  if (list.length < 2){
+  if (total < 2){
     $("cmpEmpty").hidden = false;
     $("cmpEmpty").innerHTML = "You have " +
-      (list.length ? "one saved scenario" : "no saved scenarios") +
+      (total ? "one saved scenario" : "no saved scenarios") +
       ". Comparison runs on saved scenarios, so set your inputs on Basic, Advanced " +
       "or Stages, save them from the bar above, and do that at least twice.";
     host.innerHTML = "";
@@ -8267,6 +8347,7 @@ function buildComparePickers(){
   $("cmpHelp").hidden = false;
   panels.forEach(id => { $(id).hidden = false; });
   host.innerHTML = cmpSlots.map((sl, i) => {
+    const list = SC[sl.mode] || [];
     const opts = (i === 2 ? "<option value=''>None</option>" : "") +
       list.map(x => "<option" + (x.name === sl.name ? " selected" : "") + ">" +
                     escapeHtml(x.name) + "</option>").join("");
@@ -8286,10 +8367,10 @@ function buildComparePickers(){
 }
 
 function renderCompare(){
-  const list = SC.retire;
   const all = cmpSlots.map((sl, i) => {
+    const list = SC[sl.mode] || [];
     const sc = sl.name ? list.find(x => x.name === sl.name) : null;
-    return {i, name: sl.name, mode: sl.mode, sc, run: cmpRun(sc, sl.mode)};
+    return {i, name: sl.name, mode: sl.mode, sc, run: cmpRun(sc ? sc.data : null, sl.mode)};
   });
   const slots = all.filter(x => x.run);
   const blank = all.filter(x => x.name && !x.run);
@@ -8370,18 +8451,28 @@ $("cmpPickers").addEventListener("change", e => {
   const el = e.target;
   const i = el.getAttribute("data-cmp");
   const j = el.getAttribute("data-cmpmode");
-  if (i != null) cmpSlots[+i].name = el.value;
-  else if (j != null) cmpSlots[+j].mode = el.value;
-  else return;
-  renderCompare();
+  if (i != null){
+    cmpSlots[+i].name = el.value;
+    renderCompare();
+    return;
+  }
+  if (j != null){
+    cmpSlots[+j].mode = el.value;
+    const list = SC[el.value] || [];
+    if (!list.find(x => x.name === cmpSlots[+j].name)) cmpSlots[+j].name = "";
+    // The mode change swaps which list the name dropdown reads from, so its
+    // options have to be rebuilt \u2014 renderCompare() alone only redraws results.
+    buildComparePickers();
+    renderCompare();
+  }
 });
 
 function showCompare(){
   if (chartMode.tab === "compare") return;
   cmpPrevTab = chartMode.tab;
-  const m = activeRetireMode();
+  const m = activeTool();
   const dflt = (m === "basic" || m === "stages") ? m : "advanced";
-  const names = SC.retire.map(x => x.name);
+  const names = (SC[dflt] || []).map(x => x.name);
   cmpSlots.forEach(sl => { sl.mode = dflt; });
   if (names.indexOf(cmpSlots[0].name) < 0) cmpSlots[0].name = names[0] || "";
   if (names.indexOf(cmpSlots[1].name) < 0 || cmpSlots[1].name === cmpSlots[0].name){
@@ -8399,7 +8490,7 @@ function showCompare(){
   setToolBack("picker");
   $("tab-compare").hidden = false;
   $("main").classList.add("solo");
-  refreshScenarioList($("scenarioPick").value || "");
+  refreshScenarioList(currentScenario[activeTool()] || "");
   if (buildComparePickers()) renderCompare();
   initCSVButtons();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
@@ -9336,7 +9427,7 @@ function showTool(sub){
   // Budget has no sidebar inputs, so it earns the same full-width layout
   // as the tool picker rather than sitting narrow with empty space beside it.
   $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt");
-  refreshScenarioList("");
+  refreshScenarioList(currentScenario[activeTool()] || "");
   initCSVButtons();
   if (sub === "tax") renderTax();
   else if (sub === "mortgage") renderMort();
@@ -9402,7 +9493,7 @@ function showTab(t){
   $("asideSingle").hidden = (t !== "single");
   $("asideSeries").hidden = (t !== "series");
   $("main").classList.toggle("solo", t === "about");
-  refreshScenarioList("");
+  refreshScenarioList(currentScenario[activeTool()] || "");
   if (t === "simple") renderBasic();
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
@@ -9943,6 +10034,7 @@ function buildRentBuySheet(){
 
 function buildDrawdownSheet(){
   const o = readDD();
+  ddRetireAge = o.retireAge;
   if (!(o.initial > 0)){ $("sheet").innerHTML = ""; toast("Enter a portfolio value first"); return false; }
   const H = historicalBacktest(o);
   const show = H.runs.filter(r => r.startYear === ddSelectedYear)[0] || H.firstFail || H.runs[0];
@@ -9961,7 +10053,7 @@ function buildDrawdownSheet(){
     inputs += row("Target spending rate", num("ddYaleRate") + "%");
   }
   if (o.spendFloor > 0) inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
-  if (o.ssAnnual > 0) inputs += row("Social Security", money(o.ssAnnual) + "/yr");
+  if (o.ssAnnual > 0 || o.ssAnnual2 > 0) inputs += row("Social Security", money(o.ssAnnualTotal) + "/yr");
   (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
   (o.expenseItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name + " (expense)", describeItem(it)));
 
@@ -10009,10 +10101,10 @@ function buildDrawdownSheet(){
   // year beyond that, every 3rd beyond 40.
   const step = show.rows.length <= 20 ? 1 : show.rows.length <= 40 ? 2 : 3;
   const tableRows = show.rows.filter((r, i) => i === 0 || i === show.rows.length - 1 || i % step === 0);
-  let table = "<table><thead><tr><th>Year</th><th>Withdrawal</th><th>Soc. Sec.</th>" +
+  let table = "<table><thead><tr><th>" + (ddRetireAge != null ? "Age" : "Year") + "</th><th>Withdrawal</th><th>Soc. Sec.</th>" +
     "<th>Return</th><th>End balance</th></tr></thead><tbody>";
   tableRows.forEach(r => {
-    table += "<tr><td>" + r.year + "</td><td>" + money(r.withdrawal) + "</td><td>" +
+    table += "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(r.withdrawal) + "</td><td>" +
       (r.ss > 0 ? money(r.ss) : "\u2014") + "</td><td>" + r.ret.toFixed(1) + "%</td><td>" +
       money(r.realEnd) + "</td></tr>";
   });
@@ -10034,7 +10126,7 @@ function buildDrawdownSheet(){
       "<section><div class='sh-t'>Spending, retiring " + show.startYear + "</div>" + spend + "</section>" +
     "</div>" +
     "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + show.startYear +
-      (show.depleted ? " (ran out in year " + show.depletedYear + ")" : " (survived)") + "</div>" + table + "</div>" +
+      (show.depleted ? (" (ran out " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + ")") : " (survived)") + "</div>" + table + "</div>" +
     "<div class='sh-foot'>" + verdict + " Tested against real US market history (" +
       H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1) + "). " +
     "Surviving every period is evidence a plan is reasonable, not a guarantee. Not financial advice.</div>";
@@ -11729,6 +11821,42 @@ var ddPoints = [];
 var ddMode = "hist";
 var ddSelectedYear = null;
 var ddView = "all";
+var ddSortCol = "year";
+var ddSortDir = "asc";
+
+/* Retirement age, refreshed at the top of every renderDrawdown() call. Null
+   when the optional "Age at retirement" field is blank, in which case every
+   table/chart in this tool falls back to its original years-into-retirement
+   display exactly as before this feature existed. */
+var ddRetireAge = null;
+
+/* yearIdx is a 1-based year of retirement (matches CustomItem.startYear and
+   runDrawdown's depletedYear/row numbering). Returns the age lived through
+   during that year when ddRetireAge is set, else just the year number back. */
+function ddAgeVal(yearIdx) {
+  return ddRetireAge != null ? (ddRetireAge + yearIdx - 1) : yearIdx;
+}
+/* Same, but for the point-in-time x-axis used by the balance/fan chart,
+   where 0 is the moment of retirement itself (before any withdrawal). */
+function ddAgeValPoint(pointYear) {
+  return ddRetireAge != null ? (ddRetireAge + pointYear) : pointYear;
+}
+function ddOutcomeText(r) {
+  if (!r.depleted) return "Survived";
+  return ddRetireAge != null ? ("Ran out at age " + ddAgeVal(r.depletedYear))
+                              : ("Ran out in year " + r.depletedYear);
+}
+
+/* Value used to compare two starting-year runs for a given sortable column. */
+function ddSortValue(r, col) {
+  switch (col) {
+    case "outcome": return ddOutcomeText(r);
+    case "end": return r.endReal;
+    case "med": return r.medRealSpend;
+    case "low": return r.minRealSpend;
+    default: return r.startYear;
+  }
+}
 var ddIncomeChartAgg = false;
 var DD_STRAT_NOTES = {
   fixed: "The classic 4% rule. You set a first-year amount and give yourself a raise for inflation every year, no matter what markets do. Simple, but it cannot react to a bad decade.",
@@ -11744,8 +11872,56 @@ var DD_STRAT_NOTES = {
 let ddIncomeItems = [];
 let ddExpenseItems = [];
 
+function ddRetireAgeVal() {
+  var v = $("ddRetireAge").value.trim();
+  return v === "" ? null : parseNum(v);
+}
+
+/* Resolves the Social Security mode/inputs into up to two independent
+   {annual, delay} streams (primary + spouse). Without a retirement age this
+   collapses to exactly the old behavior: one combined amount, one shared
+   delay taken from the "Starts after" input. With a retirement age set,
+   Manual mode reinterprets that same input as an absolute starting age
+   (still one shared stream), while Estimate mode drops it entirely and
+   drives each spouse's start straight off their own claiming age \u2014 letting
+   the two benefits begin in different years for the first time. */
+function ddSSTiming(retireAge) {
+  var ssMode = $("ddSSMode").value;
+  var couple = ssMode !== "none" && $("ddSSWho").value === "couple";
+  var out = { annual: 0, delay: 0, annual2: 0, delay2: 0 };
+  if (ssMode === "none") return out;
+
+  if (ssMode === "manual") {
+    var amt = num("ddSSAmount");
+    if (couple) amt += num("ddSSAmount2");
+    out.annual = amt;
+    var raw = num("ddSSDelay");
+    out.delay = retireAge != null ? Math.max(0, Math.round(raw - retireAge)) : Math.max(0, Math.round(raw));
+    return out;
+  }
+
+  // Estimate mode
+  var claim1 = Math.min(70, Math.max(62, num("ddSSClaim")));
+  out.annual = ssEstimate(num("ddSSIncome"), 40, claim1).annual;
+  out.delay = retireAge != null ? Math.max(0, Math.round(claim1 - retireAge))
+                                 : Math.max(0, Math.round(num("ddSSDelay")));
+  if (couple) {
+    var claim2 = Math.min(70, Math.max(62, num("ddSSClaim2")));
+    var annual2 = ssEstimate(num("ddSSIncome2"), 40, claim2).annual;
+    if (retireAge != null) {
+      out.annual2 = annual2;
+      out.delay2 = Math.max(0, Math.round(claim2 - retireAge));
+    } else {
+      out.annual += annual2; // old behavior: combined into one stream, one shared delay
+    }
+  }
+  return out;
+}
+
 function readDD() {
   var strat = $("ddStrategy").value;
+  var retireAge = ddRetireAgeVal();
+  var ssTiming = ddSSTiming(retireAge);
   return {
     initial: num("ddInitial"),
     years: Math.min(60, Math.max(1, Math.round(num("ddYears")))),
@@ -11760,8 +11936,12 @@ function readDD() {
     yaleWeight: Math.min(100, Math.max(0, num("ddYaleWeight"))),
     yaleRate: Math.max(0, num("ddYaleRate")),
     spendFloor: num("ddSpendFloor"),
-    ssAnnual: ddSSAnnual(),
-    ssDelayYears: Math.max(0, Math.round(num("ddSSDelay"))),
+    ssAnnual: ssTiming.annual,
+    ssDelayYears: ssTiming.delay,
+    ssAnnual2: ssTiming.annual2,
+    ssDelayYears2: ssTiming.delay2,
+    ssAnnualTotal: ddSSAnnual(),
+    retireAge: retireAge,
     fromYear: HIST_START,
     incomeItems: ddIncomeItems,
     expenseItems: ddExpenseItems
@@ -11771,7 +11951,7 @@ function readDD() {
 const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
   guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
   ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
-  ssAmount:33000, ssAmount2:33000, ssDelay:0};
+  ssAmount:33000, ssAmount2:33000, ssDelay:0, retireAge:""};
 /* Raw form state for scenario save/load and Reset \u2014 distinct from readDD(),
    which resolves Social Security to a derived annual dollar figure instead of
    keeping the mode/income/claim-age inputs that produced it. ddIncomeItems and
@@ -11789,6 +11969,7 @@ function readDDState(){
     ssIncome:num("ddSSIncome"), ssClaim:num("ddSSClaim"),
     ssIncome2:num("ddSSIncome2"), ssClaim2:num("ddSSClaim2"),
     ssAmount:num("ddSSAmount"), ssAmount2:num("ddSSAmount2"), ssDelay:num("ddSSDelay"),
+    retireAge: $("ddRetireAge").value.trim(),
     incomeItems: ddIncomeItems.map(x => Object.assign({}, x)),
     expenseItems: ddExpenseItems.map(x => Object.assign({}, x))
   };
@@ -11816,6 +11997,7 @@ function writeDDState(d){
   if (d.ssAmount != null) $("ddSSAmount").value = groupDigits(d.ssAmount, true);
   if (d.ssAmount2 != null) $("ddSSAmount2").value = groupDigits(d.ssAmount2, true);
   if (d.ssDelay != null) $("ddSSDelay").value = d.ssDelay;
+  if (d.retireAge != null) $("ddRetireAge").value = d.retireAge;
   if (Array.isArray(d.incomeItems))
     ddIncomeItems.splice(0, ddIncomeItems.length, ...d.incomeItems.map(x => Object.assign({}, x)));
   if (Array.isArray(d.expenseItems))
@@ -11856,11 +12038,24 @@ function renderDrawdownTyping(){
 
 function renderDrawdown() {
   clearTimeout(ddTypeTimer);
+  var retireAge = ddRetireAgeVal();
+  ddRetireAge = retireAge;
   var ssMode = $("ddSSMode").value;
   $("ddSSWhoWrap").hidden = (ssMode === "none");
   $("ddSSEst").hidden = (ssMode !== "est");
   $("ddSSManual").hidden = (ssMode !== "manual");
-  $("ddSSDelayWrap").hidden = (ssMode === "none");
+  // Once an age is entered, Estimate mode derives timing straight from each
+  // claim-age input above and no longer needs a separate delay; Manual mode
+  // still needs one number, so that same field just gets relabeled below.
+  $("ddSSDelayWrap").hidden = (ssMode === "none") || (ssMode === "est" && retireAge != null);
+  var ssAgeMode = ssMode === "manual" && retireAge != null;
+  $("ddSSDelayLabel").textContent = ssAgeMode ? "Starts at age" : "Starts after";
+  $("ddSSDelayAffix").textContent = "yrs";
+  $("ddSSDelayTip").setAttribute("data-tip", ssAgeMode ? "ssdelayage" : "ssdelay");
+  $("ddSSDelayHint").textContent = ssAgeMode
+    ? "Age Social Security begins. Use your retirement age if it starts right away."
+    : "Years into retirement before benefits begin. Use 0 if they start right away.";
+  $("ddSSDelay").setAttribute("max", ssAgeMode ? "120" : "30");
   var ssCouple = ssMode !== "none" && $("ddSSWho").value === "couple";
   $("ddSSEst2Wrap").hidden = !(ssMode === "est" && ssCouple);
   $("ddSSAmount2Wrap").hidden = !(ssMode === "manual" && ssCouple);
@@ -11980,7 +12175,7 @@ function renderDrawdown() {
       var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
       pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
     }
-    ddPoints = paintChart("chartDD", pts, maxY, "mc", []);
+    ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0);
     mcLegend("legendDD");
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
@@ -11993,19 +12188,30 @@ function renderDrawdown() {
       var worst = H.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[0];
       ddSelectedYear = (H.firstFail || worst).startYear;
     }
-    $("ddStartTable").querySelector("tbody").innerHTML = H.runs.map(function (r) {
+    var sortedRuns = H.runs.slice().sort(function (a, b) {
+      var av = ddSortValue(a, ddSortCol), bv = ddSortValue(b, ddSortCol);
+      var cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+      return ddSortDir === "asc" ? cmp : -cmp;
+    });
+    $("ddStartTable").querySelector("tbody").innerHTML = sortedRuns.map(function (r) {
       return "<tr class='ddrow" + (r.startYear === ddSelectedYear ? " sel" : "") +
         "' data-year='" + r.startYear + "' tabindex='0'><td>" + r.startYear + "</td><td class='" +
         (r.depleted ? "neg" : "pos") + "'>" +
-        (r.depleted ? "Ran out in year " + r.depletedYear : "Survived") + "</td><td>" +
-        money(r.endReal) + "</td><td>" + money(r.minRealW) + "</td></tr>";
+        ddOutcomeText(r) + "</td><td>" +
+        money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td></tr>";
     }).join("");
+    $("ddStartTable").querySelectorAll("th.sortcol").forEach(function (th) {
+      th.classList.remove("sort-asc", "sort-desc");
+      if (th.getAttribute("data-sort") === ddSortCol) th.classList.add(ddSortDir === "asc" ? "sort-asc" : "sort-desc");
+    });
 
     var show = H.runs.filter(function (r) { return r.startYear === ddSelectedYear; })[0] || H.runs[0];
     setH2Text($("ddDetailTitle"), "Year by year, retiring in " + show.startYear);
     $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
-      (show.depleted ? "This one ran out of money in year " + show.depletedYear + "."
-                      : "This one survived the full " + o.years + " years.");
+      (show.depleted
+        ? "This one ran out of money " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + "."
+        : "This one survived the full " + o.years + " years.");
+    $("ddTableYearHeader").textContent = ddRetireAge != null ? "Age" : "Year";
     fillDDTable(show);
 
     $("ddViewWrap").hidden = false;
@@ -12048,7 +12254,7 @@ function renderDrawdown() {
     M.bands.forEach(function (b) {
       mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
     });
-    ddPoints = paintChart("chartDD", mpts, o.years, "mc", []);
+    ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0);
     mcLegend("legendDD");
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
@@ -12078,7 +12284,7 @@ function fillDDTable(run) {
   // today's terms so the table reads consistently with the rest of the app.
   $("ddTable").querySelector("tbody").innerHTML = run.rows.map(function (r, i) {
     var prevReal = i === 0 ? r.start : run.rows[i - 1].realEnd;
-    return "<tr><td>" + r.year + "</td><td>" + money(prevReal) + "</td><td>" +
+    return "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(prevReal) + "</td><td>" +
       (r.ss > 0 ? money(r.ss) : "\u2014") + "</td><td>" + money(r.withdrawal) +
       "</td><td>" + money(r.spend) + "</td><td>" + money(r.realSpend != null ? r.realSpend : r.realWithdrawal) +
       "</td><td class='" + (r.ret >= 0 ? "pos" : "neg") + "'>" +
@@ -12123,8 +12329,9 @@ function renderIncomeChart(run) {
     return { year: r.year, base: real, hi: real, lo: real };
   });
   ddIncomeChartAgg = false;
-  if (!pts.length) { paintChart("chartDDI", [], 1, "band", []); return; }
-  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", []);
+  var xOff = ddRetireAge != null ? ddRetireAge - 1 : 0;
+  if (!pts.length) { paintChart("chartDDI", [], 1, "band", [], xOff); return; }
+  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", [], xOff);
   $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today\u0027s dollars");
 }
 
@@ -12145,7 +12352,7 @@ function renderIncomeChartAll(H, o) {
     pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
   }
   ddIncomeChartAgg = true;
-  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", []);
+  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge - 1 : 0);
   histLegend("legendDDI");
 }
 
@@ -12195,25 +12402,35 @@ function renderSpendStatsAll(H, o) {
 var ddiPoints = [];
 attachChart("chartWrapDDI", "chartDDI", "tipDDI", function () { return ddiPoints; },
   function (best) {
+    var lbl = ddRetireAge != null ? "Age " + ddAgeVal(best.year) : "Year " + fmtNum(best.year);
     if (ddIncomeChartAgg) {
-      return "<b>Year " + fmtNum(best.year) + "</b>" +
+      return "<b>" + lbl + "</b>" +
         "<br><span style=\u0027color:#4fbf95\u0027>90th</span> <span class=\u0027n\u0027>" + money(best.hi) +
         "</span><br><span style=\u0027color:#e9b872\u0027>Median</span> <span class=\u0027n\u0027>" + money(best.base) +
         "</span><br><span style=\u0027color:#e2795f\u0027>10th</span> <span class=\u0027n\u0027>" + money(best.lo) + "</span>";
     }
-    return "<b>Year " + fmtNum(best.year) + "</b>" +
+    return "<b>" + lbl + "</b>" +
       "<br><span style=\u0027color:#e9b872\u0027>Spending</span> <span class=\u0027n\u0027>" + money(best.base) + "</span>";
   });
 
 attachChart("chartWrapDD", "chartDD", "tipDD", function () { return ddPoints; },
   function (best) {
-    return "<b>Year " + fmtNum(best.year) + "</b>" +
+    var lbl = ddRetireAge != null ? "Age " + ddAgeValPoint(best.year) : "Year " + fmtNum(best.year);
+    return "<b>" + lbl + "</b>" +
       "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
       "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
       "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
   });
 
 $("ddStartTable").addEventListener("click", function (e) {
+  var th = e.target.closest ? e.target.closest("th.sortcol") : null;
+  if (th) {
+    var col = th.getAttribute("data-sort");
+    if (ddSortCol === col) ddSortDir = ddSortDir === "asc" ? "desc" : "asc";
+    else { ddSortCol = col; ddSortDir = "desc"; }
+    renderDrawdown();
+    return;
+  }
   var tr = e.target.closest ? e.target.closest("tr[data-year]") : null;
   if (!tr) return;
   ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
@@ -12242,6 +12459,22 @@ $("segDD").addEventListener("click", function (e) {
  "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor",
  "ddSSIncome", "ddSSClaim", "ddSSIncome2", "ddSSClaim2", "ddSSAmount", "ddSSAmount2", "ddSSDelay"]
   .forEach(function (id) { $(id).addEventListener("input", renderDrawdownTyping); });
+/* Entering a retirement age is what flips the whole tool from "years into
+   retirement" to "age" everywhere. As a small kindness, if the Social
+   Security delay field is still sitting at its untouched default of 0, we
+   carry its meaning ("starts right away") forward into age terms too,
+   rather than leaving it reading "Starts at age 0" the moment it's
+   relabeled. Never overwrites a value the person actually set. */
+$("ddRetireAge").addEventListener("input", function () {
+  var v = $("ddRetireAge").value.trim();
+  if (v !== "") {
+    var age = parseNum(v);
+    if (age > 0 && parseNum($("ddSSDelay").value) === 0) {
+      $("ddSSDelay").value = String(Math.round(age));
+    }
+  }
+  renderDrawdownTyping();
+});
 $("ddSSMode").addEventListener("change", renderDrawdown);
 $("ddSSWho").addEventListener("change", renderDrawdown);
 $("segDDView").addEventListener("click", function (e) {
@@ -12346,6 +12579,8 @@ const GLOSS = {
   ltcgstack: "Long-term gains do not get their own separate bracket run; they sit on top of your ordinary taxable income. Ordinary income fills the brackets first and becomes the floor, and whatever the gain reaches above that floor decides whether it is taxed at 0%, 15% or 20%. Two people with identical gains can pay wildly different amounts on them purely because of what else they withdrew that year.",
   deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses (mortgage interest, charitable giving, state and local taxes), and you use whichever is larger.",
   ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modelled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
+  ssdelayage: "The age Social Security starts. Delaying it increases the monthly benefit, up to age 70. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
+  retireage: "Optional. Once set, every table and chart in this tool switches from counting years into retirement to showing your actual age. It also replaces the separate Social Security start-delay input: benefits begin at the claiming age(s) set above instead.",
   collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college, smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
   glide: "Many people shift toward more conservative investments, and lower expected returns, as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, Coast FIRE, and both routes in Work backwards from a target. The glide always covers the final years you set, counted back from the end of the plan \u2014 so if a solve moves your finish line, the glide moves with it rather than staying where it was.",
   contribgrowth: "The percentage your contribution amount itself increases each year, a standalone rate, not stacked on top of the inflation input. At 0%, your contribution stays the same dollar amount every year, which buys a little less as prices rise. Set it to match your inflation rate to keep contributions flat in today's dollars, or higher to model real income growth, like raises over a career.",
@@ -13039,10 +13274,7 @@ function headingText(h2){
 /* Half the tools have a panel called "Year by year", so the tool name has to
    be part of the filename or every download collides in the same folder. */
 function csvScope(){
-  const t = activeTool();
-  if (t !== "retire") return t;
-  const m = activeRetireMode();
-  return m === "basic" ? "basic" : m === "stages" ? "stages" : "advanced";
+  return activeTool();
 }
 function csvEscape(v){
   return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
@@ -14021,7 +14253,8 @@ function writeBudgetState(d){
     budget = d.rows.map(r => Object.assign({}, r));
   buildBudget();
 }
-const TOOL_LABEL = {retire:"scenario", tax:"tax scenario",
+const TOOL_LABEL = {basic:"scenario", advanced:"scenario", stages:"scenario",
+                    tax:"tax scenario",
                     mortgage:"mortgage scenario", budget:"budget",
                     college:"college plan", rentbuy:"rent-vs-buy scenario",
                     drawdown:"drawdown plan", roth:"conversion plan",
@@ -14034,39 +14267,61 @@ function refreshScenarioList(selected){
     return;
   }
   sel.innerHTML = "<option value=''>Unsaved</option>" +
-    list.map(s => "<option>" + s.name + "</option>").join("");
+    list.map(s => "<option value='" + escapeHtml(s.name) + "'>" +
+      escapeHtml(s.name) + "</option>").join("");
   sel.value = selected || "";
+  updateScenarioDirtyUI();
 }
-function applySeriesFrom(s){
-  if (!s || !s.series) return;
-  if (s.series.globals) writeGlobals(s.series.globals);
-  if (Array.isArray(s.series.stages))
-    stages = s.series.stages.map(x => Object.assign({}, x));
-  buildStages(); renderSeries();
+/* Flags the loaded scenario's own option as "(edited)" once the on-screen
+   inputs drift from what was last saved/loaded, without rebuilding the
+   dropdown (which would fight the browser's own open/close state on mobile). */
+function updateScenarioDirtyUI(){
+  const tool = activeTool();
+  const sel = $("scenarioPick");
+  const name = currentScenario[tool];
+  if (!name || loadedSnapshot[tool] == null) return;
+  let opt = null;
+  for (let i = 0; i < sel.options.length; i++)
+    if (sel.options[i].value === name){ opt = sel.options[i]; break; }
+  if (!opt) return;
+  let dirty = false;
+  try { dirty = JSON.stringify(buildToolData(tool)) !== loadedSnapshot[tool]; }
+  catch(e){}
+  const base = name;
+  opt.textContent = dirty ? base + " (edited)" : base;
 }
-function applyTargetsFrom(s){
-  if (!s || !s.targets) return;
-  const t = s.targets;
-  if (t.solveFor) $("solveFor").value = t.solveFor;
-  if (t.target != null) $("target").value = groupDigits(t.target, true);
-  if (t.solveForS) $("solveForS").value = t.solveForS;
-  if (t.targetS != null) $("targetS").value = groupDigits(t.targetS, true);
+let dirtyCheckTimer;
+function scheduleDirtyCheck(){
+  clearTimeout(dirtyCheckTimer);
+  dirtyCheckTimer = setTimeout(updateScenarioDirtyUI, 120);
 }
+document.addEventListener("input", scheduleDirtyCheck, true);
+document.addEventListener("change", scheduleDirtyCheck, true);
 $("scenarioPick").addEventListener("change", e => {
   const tool = activeTool();
-  const s = SC[tool].find(x => x.name === e.target.value);
-  if (!s) return;
-  if (tool === "retire"){
-    writeInputs(s); applyTargetsFrom(s); renderAll(); applySeriesFrom(s);
-    writeBasic(s.basic || BASIC_DEFAULTS); renderBasic();
+  const val = e.target.value;
+  if (!val){
+    currentScenario[tool] = "";
+    loadedSnapshot[tool] = null;
+    return;
   }
+  const s = SC[tool].find(x => x.name === val);
+  if (!s) return;
+  if (tool === "basic"){ writeBasic(s.data); renderBasic(); }
+  else if (tool === "advanced"){ writeAdvancedState(s.data); renderAll(); }
+  else if (tool === "stages"){ writeStagesState(s.data); }
   else if (tool === "tax"){ writeTaxState(s.data); renderTax(); }
   else if (tool === "mortgage"){ writeMortState(s.data); syncPmi(); renderMort(); }
   else if (tool === "budget"){ writeBudgetState(s.data); renderBudget(); }
   else if (tool === "college"){ writeCollegeState(s.data); renderCollege(); }
   else if (tool === "rentbuy"){ writeRBState(s.data); renderRentBuy(); }
   else if (tool === "drawdown"){ writeDDState(s.data); renderItemLists(); renderDrawdown(); }
+  else if (tool === "roth"){ writeRCState(s.data); renderRoth(); }
+  else if (tool === "debt"){ writeDebtState(s.data); renderDebt(); }
   else if (tool === "backtest"){ writeBTState(s.data); renderBacktest(); }
+  currentScenario[tool] = s.name;
+  loadedSnapshot[tool] = JSON.stringify(buildToolData(tool));
+  updateScenarioDirtyUI();
 });
 /* Shared modal behaviour for both popups below: Escape closes, Tab cycles
    inside the dialog instead of walking into the page behind it, and focus
@@ -14127,6 +14382,7 @@ function showPopup(title, options){
 function showItemForm(kind, existing){
   return new Promise(resolve => {
     const isIncome = kind === "income";
+    const ageMode = ddRetireAge != null;
     const d = existing || {name:"", annual:0, inflate:true, startYear:1,
       durationType:"forever", durationYears:5};
     const ov = document.createElement("div");
@@ -14146,8 +14402,10 @@ function showItemForm(kind, existing){
       "<label class='formcheck'><input type='checkbox' id='itInflate'" + (d.inflate ? " checked" : "") + "> " +
         "Adjust for inflation over time</label>" +
       "<div class='formtwo'>" +
-        "<div class='formfield'><label>Starts in year</label>" +
-          "<div class='formwrap'><input id='itStartYear' type='text' inputmode='decimal' value='" + d.startYear + "'><span class='affix'>of ret.</span></div></div>" +
+        "<div class='formfield'><label>" + (ageMode ? "Starts at age" : "Starts in year") + "</label>" +
+          "<div class='formwrap'><input id='itStartYear' type='text' inputmode='decimal' value='" +
+            (ageMode ? ddAgeVal(d.startYear) : d.startYear) + "'><span class='affix'>" +
+            (ageMode ? "yrs" : "of ret.") + "</span></div></div>" +
         "<div class='formfield'><label>Lasts</label>" +
           "<select class='forminput' id='itDuration'>" +
             "<option value='once'" + (d.durationType === "once" ? " selected" : "") + ">One time only</option>" +
@@ -14171,7 +14429,9 @@ function showItemForm(kind, existing){
       const name = ov.querySelector("#itName").value.trim() || (isIncome ? "Income" : "Expense");
       const annual = parseNum(ov.querySelector("#itAmount").value);
       if (!(annual > 0)){ toast("Enter an amount greater than zero"); return; }
-      const startYear = Math.max(1, Math.round(parseNum(ov.querySelector("#itStartYear").value)) || 1);
+      const rawStart = Math.round(parseNum(ov.querySelector("#itStartYear").value)) ||
+        (ageMode ? ddRetireAge : 1);
+      const startYear = ageMode ? Math.max(1, rawStart - ddRetireAge + 1) : Math.max(1, rawStart);
       const durationType = durSel.value;
       const durationYears = Math.max(1, Math.round(parseNum(ov.querySelector("#itYears").value)) || 1);
       if (ov._modalDone) ov._modalDone();
@@ -14195,7 +14455,9 @@ function showItemForm(kind, existing){
    buttons: a checkbox to disable without deleting, a one-line summary, and a
    delete button. Clicking the summary text reopens the form to edit it. */
 function describeItem(it){
-  var when = it.startYear === 1 ? "starting immediately" : "starting year " + it.startYear;
+  var when = it.startYear === 1 ? "starting immediately"
+    : ddRetireAge != null ? "starting at age " + ddAgeVal(it.startYear)
+    : "starting year " + it.startYear;
   var dur = it.duration.type === "once" ? "one time" :
     it.duration.type === "years" ? "for " + it.duration.years + " years" : "rest of retirement";
   var infl = it.inflate ? "inflation-adjusted" : "fixed amount";
@@ -14645,44 +14907,47 @@ $("btnShareMenu").addEventListener("click", async () => {
   else if (choice === 3) copyCard();
 });
 
+/* One payload builder per tool, reused by Save (to build what gets written),
+   and by the dirty check (to compare current inputs against what was last
+   saved/loaded) so both always agree on what a scenario "is". */
+function buildToolData(tool){
+  if (tool === "basic") return readBasicState();
+  if (tool === "advanced") return readAdvancedState();
+  if (tool === "stages") return readStagesState();
+  if (tool === "tax") return readTaxState();
+  if (tool === "mortgage") return readMortState();
+  if (tool === "college") return readCollegeState();
+  if (tool === "rentbuy") return readRBState();
+  if (tool === "drawdown") return readDDState();
+  if (tool === "roth") return readRCState();
+  if (tool === "debt") return readDebtState();
+  if (tool === "backtest") return readBTState();
+  return readBudgetState();
+}
 function doSave(){
   /* was: $("btnSave").addEventListener("click", () => { */
   const tool = activeTool();
-  const name = prompt("Name this " + TOOL_LABEL[tool] + ":", $("scenarioPick").value || "");
+  const existingName = currentScenario[tool] || "";
+  const name = prompt("Name this " + TOOL_LABEL[tool] + ":",
+    existingName || $("scenarioPick").value || "");
   if (!name || !name.trim()) return;
-  let data;
-  if (tool === "retire"){
-    const b = readBasic();
-    data = Object.assign({name:name.trim()}, readInputs(), {
-      basic: {age:b.age, retire:b.retire, saved:b.initial, contrib:b.contrib,
-              period:b.period, risk:b.real},
-      series: {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x))},
-      targets: {solveFor:$("solveFor").value, target:num("target"),
-                solveForS:$("solveForS").value, targetS:num("targetS")}});
-  } else if (tool === "tax"){
-    data = {name:name.trim(), data:readTaxState()};
-  } else if (tool === "mortgage"){
-    data = {name:name.trim(), data:readMortState()};
-  } else if (tool === "college"){
-    data = {name:name.trim(), data:readCollegeState()};
-  } else if (tool === "rentbuy"){
-    data = {name:name.trim(), data:readRBState()};
-  } else if (tool === "drawdown"){
-    data = {name:name.trim(), data:readDDState()};
-  } else if (tool === "roth"){
-    data = {name:name.trim(), data:readRCState()};
-  } else if (tool === "debt"){
-    data = {name:name.trim(), data:readDebtState()};
-  } else if (tool === "backtest"){
-    data = {name:name.trim(), data:readBTState()};
-  } else {
-    data = {name:name.trim(), data:readBudgetState()};
-  }
+  const trimmed = name.trim();
   const list = SC[tool];
-  const i = list.findIndex(s => s.name === data.name);
+  const i = list.findIndex(s => s.name === trimmed);
+  // Only ask when the name belongs to a *different* saved scenario than the
+  // one currently loaded \u2014 re-saving over your own loaded scenario by typing
+  // its own name back is the normal "update" flow and shouldn't be gated.
+  if (i >= 0 && trimmed !== existingName &&
+      !confirm("\"" + trimmed + "\" already exists as a saved " + TOOL_LABEL[tool] +
+                ". Overwrite it?")) return;
+  const payload = buildToolData(tool);
+  const data = {name: trimmed, data: payload};
   if (i >= 0) list[i] = data; else list.push(data);
-  storeWrite(tool, list); refreshScenarioList(data.name);
-  toast("Saved " + data.name);
+  storeWrite(tool, list);
+  currentScenario[tool] = trimmed;
+  loadedSnapshot[tool] = JSON.stringify(payload);
+  refreshScenarioList(trimmed);
+  toast("Saved " + trimmed);
 }
 function doDelete(){
   const tool = activeTool();
@@ -14690,7 +14955,12 @@ function doDelete(){
   if (!name){ toast("Pick a saved " + TOOL_LABEL[tool] + " first"); return; }
   if (!confirm("Delete " + name + "?")) return;
   SC[tool] = SC[tool].filter(s => s.name !== name);
-  storeWrite(tool, SC[tool]); refreshScenarioList("");
+  storeWrite(tool, SC[tool]);
+  if (currentScenario[tool] === name){
+    currentScenario[tool] = "";
+    loadedSnapshot[tool] = null;
+  }
+  refreshScenarioList(currentScenario[tool] || "");
   toast("Deleted " + name);
 }
 /* Reset only the tool you're viewing, and ask first if anything differs from
@@ -14724,16 +14994,13 @@ function toolIsDirty(tool){
   if (tool === "backtest") return !sameShallow(readBTState(), BT_DEFAULTS);
   if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) ||
     ddIncomeItems.some(it => it.on !== false) || ddExpenseItems.some(it => it.on !== false);
-  if (tool !== "retire") return false;
-
-  const mode = activeRetireMode();
-  if (mode === "basic"){
+  if (tool === "basic"){
     const b = readBasic();
     return b.age !== BASIC_DEFAULTS.age || b.retire !== BASIC_DEFAULTS.retire ||
       b.initial !== BASIC_DEFAULTS.saved || b.contrib !== BASIC_DEFAULTS.contrib ||
       b.period !== BASIC_DEFAULTS.period || Math.abs(b.real - BASIC_DEFAULTS.risk) > 1e-9;
   }
-  if (mode === "stages"){
+  if (tool === "stages"){
     const g = readGlobals();
     return Math.abs(g.initial - SERIES_GLOBALS.initial) > 1e-9 ||
       Math.abs(g.inflation - SERIES_GLOBALS.inflation) > 1e-9 ||
@@ -14765,13 +15032,41 @@ function writeBasic(d){
   $("qPeriod").value = d.period;
   $("qRisk").value = d.risk;
 }
+/* Storage shapes for the three retirement scenario lists \u2014 distinct from
+   readBasic()/readInputs(), which return the richer runtime shape those
+   modes compute with. Kept minimal so saved scenarios stay easy to read. */
+function readBasicState(){
+  const b = readBasic();
+  return {age:b.age, retire:b.retire, saved:b.initial, contrib:b.contrib,
+          period:b.period, risk:b.real};
+}
+function readAdvancedState(){
+  return Object.assign({}, readInputs(),
+    {solveFor:$("solveFor").value, target:num("target")});
+}
+function writeAdvancedState(d){
+  writeInputs(d);
+  if (d.solveFor) $("solveFor").value = d.solveFor;
+  if (d.target != null) $("target").value = groupDigits(d.target, true);
+}
+function readStagesState(){
+  return {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x)),
+          solveForS: $("solveForS").value, targetS: num("targetS")};
+}
+function writeStagesState(d){
+  if (d.globals) writeGlobals(d.globals);
+  if (Array.isArray(d.stages)) stages = d.stages.map(x => Object.assign({}, x));
+  buildStages();
+  if (d.solveForS) $("solveForS").value = d.solveForS;
+  if (d.targetS != null) $("targetS").value = groupDigits(d.targetS, true);
+  renderSeries();
+}
 $("btnReset").addEventListener("click", () => {
   if (chartMode.tab === "about") return; // nothing to reset on the About tab
   if (chartMode.tab === "compare"){ toast("Nothing to reset here"); return; }
   const tool = activeTool();
-  const mode = tool === "retire" ? activeRetireMode() : null;
-  const label = mode === "basic" ? "Basic" : mode === "stages" ? "Stages" :
-    mode === "advanced" ? "Advanced" : tool === "tax" ? "Tax" :
+  const label = tool === "basic" ? "Basic" : tool === "stages" ? "Stages" :
+    tool === "advanced" ? "Advanced" : tool === "tax" ? "Tax" :
     tool === "mortgage" ? "Mortgage" : tool === "college" ? "College" :
     tool === "rentbuy" ? "Rent vs. Buy" : tool === "drawdown" ? "Drawdown" :
     tool === "roth" ? "Roth Conversion" :
@@ -14817,10 +15112,10 @@ $("btnReset").addEventListener("click", () => {
     $("segDT").querySelectorAll("button").forEach(x =>
       x.classList.toggle("on", x.getAttribute("data-dt") === "avalanche"));
     buildDebtList(); renderDebt();
-  } else if (mode === "basic"){
+  } else if (tool === "basic"){
     writeBasic(BASIC_DEFAULTS);
     renderBasic();
-  } else if (mode === "stages"){
+  } else if (tool === "stages"){
     writeGlobals(SERIES_GLOBALS);
     $("targetS").value = groupDigits(100000);
     stages = SERIES_STAGES.map(x => Object.assign({}, x));
@@ -14830,7 +15125,9 @@ $("btnReset").addEventListener("click", () => {
     writeInputs(DEFAULTS);
     renderAll();
   }
-  $("scenarioPick").value = "";
+  currentScenario[tool] = "";
+  loadedSnapshot[tool] = null;
+  refreshScenarioList("");
   toast(label + " inputs reset");
 });
 
