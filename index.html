@@ -8007,8 +8007,8 @@ function histSummary(noteId, H, target, label){
     let hit = 0;
     for (let i = 0; i < H.finals.length; i++) if (H.finals[i] >= target) hit++;
     const pct = hit / H.count * 100;
-    out += "<b" + (pct >= 75 ? "" : " class='warn'") + ">" + hit + " of " + H.count +
-      "</b> windows reach " + money(target) + " " + label + ". ";
+    out += "<b" + (pct >= 75 ? "" : " class='warn'") + ">" + pct.toFixed(1) + "%" +
+      "</b> of windows reach " + money(target) + " " + label + ". ";
   }
   out += "Median outcome <b>" + money(H.median) + "</b>. Worst window started " +
     histWhen(H.worst) + " (" + money(H.worst.final) + "), best started " +
