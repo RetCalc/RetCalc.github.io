@@ -2041,6 +2041,14 @@ window.onerror = function(msg){
         </span>
       </h2>
       <div class="mcbar" id="histBarS" hidden>
+        <div class="field">
+          <label for="histMixS">Stock mix<span class="tipdot" data-tip="histmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMixS" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+        </div>
+        <div class="field" id="histGlideWrapS" hidden>
+          <label for="histMixEndS">Glides to<span class="tipdot" data-tip="histglidemix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMixEndS" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="40"><span class="affix">%</span></div>
+        </div>
         <div class="hint" id="histNoteS" style="margin:0"></div>
       </div>
       <div class="mcbar" id="mcBarS" hidden>
@@ -8169,14 +8177,12 @@ function histStagesSingle(p){
              ? {on:true, years:p.glide.years, endMix} : {on:false}}];
 }
 function histStagesSeries(g){
-  return effectiveStages(g).map((st, i) => {
-    const raw = stages[i] || {};
-    const mix = (raw.mix == null ? .8 : raw.mix);
+  const mix = Math.max(0, Math.min(1, num("histMixS") / 100));
+  const endMix = Math.max(0, Math.min(1, num("histMixEndS") / 100));
+  return effectiveStages(g).map(st => {
     const out = Object.assign({}, st, {mix});
     if (out.glide && out.glide.on)
-      out.glide = Object.assign({}, out.glide, {
-        endMix: (raw.glide && raw.glide.endMix != null)
-          ? raw.glide.endMix : Math.min(mix, .4)});
+      out.glide = Object.assign({}, out.glide, {endMix});
     return out;
   });
 }
@@ -9339,7 +9345,7 @@ function renderSeries(){
     el.style.display = chartMode.series === "mc" ? "" : "none";
   });
   $("stageList").querySelectorAll(".stagemix").forEach(el => {
-    el.style.display = chartMode.series === "hist" ? "" : "none";
+    el.style.display = "none";
   });
 
   $("gStages").textContent = stages.length;
@@ -9392,8 +9398,10 @@ function drawSeriesChart(g, R){
   const marks = R.summary.slice(0, -1).map(x => ({year:x.endYear, label:String(x.stage + 1)}));
 
   if (chartMode.series === "hist"){
+    const lastSt = stages.length ? stages[stages.length - 1] : null;
+    $("histGlideWrapS").hidden = !(lastSt && lastSt.glide && lastSt.glide.on);
     const H = historicalRuns({initial:g.initial, fees:g.fees}, histStagesSeries(g));
-    $("histNoteS").innerHTML = histBarNote(H, true);
+    $("histNoteS").innerHTML = histBarNote(H, false);
     if (!H.count){
       seriesPoints = paintChart("chartS", [], 1, "mc", [], 0, {enhanced:true});
       $("legendS").innerHTML = "";
@@ -9474,6 +9482,9 @@ wireMode("segSeries", "series", {band:"optBandS", hist:"histBarS", mc:"mcBarS"},
          () => renderSeries());
 ["histMix","histMixEnd"].forEach(id => $(id).addEventListener("input", () => {
   if (chartMode.single === "hist") redrawSingle();
+}));
+["histMixS","histMixEndS"].forEach(id => $(id).addEventListener("input", () => {
+  if (chartMode.series === "hist") renderSeries();
 }));
 
 function reroll(){ mcSeed = (mcSeed * 1664525 + 1013904223) >>> 0; }
