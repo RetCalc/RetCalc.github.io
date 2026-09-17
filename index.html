@@ -2675,16 +2675,6 @@ window.onerror = function(msg){
       <div class="body"><div id="ddVerdict"></div></div>
     </div>
 
-    <div class="panel">
-      <h2 id="ddChartTitle">Every historical starting year</h2>
-      <div class="chartwrap" id="chartWrapDD">
-        <svg id="chartDD" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Portfolio balance through retirement"></svg>
-        <div class="tip" id="tipDD"></div>
-      </div>
-      <div class="legend" id="legendDD"></div>
-      <div class="mcnote" id="ddChartNote"></div>
-    </div>
-
     <div class="panel" id="ddYearsPanel">
       <h2>How each starting year fared</h2>
       <div class="swipehint">Swipe the table sideways to see every column.</div>
@@ -2703,14 +2693,22 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
-      <h2>What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span>
-        <span class="h2ctrl" id="ddViewWrap" hidden>
+      <h2 id="ddChartTitle">Every historical starting year<span class="h2ctrl" id="ddViewWrap" hidden>
           <span class="seg" id="segDDView">
             <button type="button" data-ddview="year">Selected year</button>
             <button type="button" data-ddview="all" class="on">All years</button>
           </span>
-        </span>
-      </h2>
+        </span></h2>
+      <div class="chartwrap" id="chartWrapDD">
+        <svg id="chartDD" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Portfolio balance through retirement"></svg>
+        <div class="tip" id="tipDD"></div>
+      </div>
+      <div class="legend" id="legendDD"></div>
+      <div class="mcnote" id="ddChartNote"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddIncomeSectionTitle">What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
       <div class="body">
         <div id="ddSpendYearView" hidden>
           <div class="grid2">
@@ -12424,23 +12422,13 @@ function renderDrawdown() {
     else verdict = "<b class='neg'>This plan ran out of money in " + H.failYears.length + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.";
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + verdict + "</div>";
 
-    // chart: every start year's real balance path
-    setH2Text($("ddChartTitle"), "Every historical starting year");
-    var maxY = o.years;
-    var pts = [];
-    for (var y = 0; y <= maxY; y++) {
-      var vals = H.runs.map(function (r) {
-        return y === 0 ? o.initial : (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0);
-      }).sort(function (a, b) { return a - b; });
-      var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
-      pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
-    }
-    ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
-    mcLegend("legendDD");
-    $("ddChartNote").hidden = false;
-    $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
-      " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
+    // show/hide toggle and sync button state (toggle is now on the chart h2)
+    $("ddViewWrap").hidden = false;
+    $("segDDView").querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("on", b.getAttribute("data-ddview") === ddView);
+    });
 
+    // "How each starting year fared" table
     $("ddYearsPanel").hidden = false;
     // default to the first failure if one exists (the toughest test), or the
     // worst-surviving period otherwise, but the person can click any row
@@ -12466,6 +12454,37 @@ function renderDrawdown() {
     });
 
     var show = H.runs.filter(function (r) { return r.startYear === ddSelectedYear; })[0] || H.runs[0];
+
+    // Portfolio balance chart: all years fan or single selected-year line
+    var maxY = o.years;
+    if (ddView === "all") {
+      setH2Text($("ddChartTitle"), "Every historical starting year");
+      var pts = [];
+      for (var y = 0; y <= maxY; y++) {
+        var vals = H.runs.map(function (r) {
+          return y === 0 ? o.initial : (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0);
+        }).sort(function (a, b) { return a - b; });
+        var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
+        pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
+      }
+      ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
+      mcLegend("legendDD");
+      $("ddChartNote").hidden = false;
+      $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
+        " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
+    } else {
+      setH2Text($("ddChartTitle"), "Starting in " + ddSelectedYear);
+      var singlePts = [{ year: 0, base: o.initial, hi: o.initial, lo: 0 }];
+      show.rows.forEach(function (r) {
+        singlePts.push({ year: r.year, base: r.realEnd, hi: r.realEnd, lo: 0 });
+      });
+      ddPoints = paintChart("chartDD", singlePts, maxY, "band", [], ddRetireAge != null ? ddRetireAge : 0, { enhanced: true, noLoLine: true });
+      $("legendDD").innerHTML = swatch("#e9b872", "Portfolio balance, in today\u2019s dollars");
+      $("ddChartNote").hidden = false;
+      $("ddChartNote").innerHTML = "Balance in today\u2019s dollars, retiring in " + ddSelectedYear + ".";
+    }
+
+    // "Year by year" detail table (always shows selected year)
     setH2Text($("ddDetailTitle"), "Year by year, retiring in " + show.startYear);
     $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
       (show.depleted
@@ -12474,19 +12493,18 @@ function renderDrawdown() {
     $("ddTableYearHeader").textContent = ddRetireAge != null ? "Age" : "Year";
     fillDDTable(show);
 
-    $("ddViewWrap").hidden = false;
-    $("segDDView").querySelectorAll("button").forEach(function (b) {
-      b.classList.toggle("on", b.getAttribute("data-ddview") === ddView);
-    });
+    // Income section: follows the same toggle, no separate control
     $("ddSpendYearView").hidden = (ddView !== "year");
     $("ddSpendAllView").hidden = (ddView !== "all");
     if (ddView === "all") {
-      setH2Text($("ddIncomeChartTitle"), "Spending across every historical starting year");
+      setH2Text($("ddIncomeSectionTitle"), "What your income looked like");
+      setH2Text($("ddIncomeChartTitle"), "Spending through retirement");
       renderSpendStatsAll(H, o);
       renderIncomeChartAll(H, o);
       $("ddIncomeNote").textContent = "Median, 10th\u201390th and 25th\u201375th percentile spending by " +
         "year of retirement, across all " + H.total + " historical starting years.";
     } else {
+      setH2Text($("ddIncomeSectionTitle"), "What your income looked like starting in " + show.startYear);
       setH2Text($("ddIncomeChartTitle"), "Spending through retirement, retiring in " + show.startYear);
       renderSpendStats(show, "Showing the period selected above.");
       renderIncomeChart(show);
