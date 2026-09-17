@@ -984,10 +984,10 @@ html[data-theme="light"] .about.disclaimer{
 
 /* ---------- drawdown rows ---------- */
 .ddrow{cursor:pointer;transition:background .12s ease}
-#ddStartTable th.sortcol{cursor:pointer;user-select:none}
-#ddStartTable th.sortcol:hover{color:var(--text)}
-#ddStartTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}
-#ddStartTable th.sortcol.sort-desc::after{content:"\2193";margin-left:4px;opacity:.7}
+#ddStartTable th.sortcol,#btTable th.sortcol{cursor:pointer;user-select:none}
+#ddStartTable th.sortcol:hover,#btTable th.sortcol:hover{color:var(--text)}
+#ddStartTable th.sortcol.sort-asc::after,#btTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}
+#ddStartTable th.sortcol.sort-desc::after,#btTable th.sortcol.sort-desc::after{content:"\2193";margin-left:4px;opacity:.7}
 .ddrow:hover{background:var(--panel-2)}
 .ddrow.sel{background:rgba(79,191,149,.11);box-shadow:inset 2px 0 0 var(--jade)}
 .ddrow.sel td:first-child{color:var(--jade);font-weight:600}
@@ -2279,7 +2279,7 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="btTable">
-          <thead><tr><th>Year</th><th>Stocks</th><th>Bonds</th><th>Your mix</th><th>Inflation</th><th>Real</th><th>Balance</th><th>In today's $</th></tr></thead>
+          <thead><tr><th class="sortcol" data-sort="year">Year</th><th class="sortcol" data-sort="stock">Stocks</th><th class="sortcol" data-sort="bond">Bonds</th><th class="sortcol" data-sort="ret">Your mix</th><th class="sortcol" data-sort="infl">Inflation</th><th class="sortcol" data-sort="real">Real</th><th class="sortcol" data-sort="end">Balance</th><th class="sortcol" data-sort="endReal">In today's $</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -4654,7 +4654,7 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel">
-      <h2>Your budget</h2>
+      <h2>Your budget<span class="h2ctrl"><button type="button" class="btn mini csvbtn" id="bgCsv" title="Download your budget as a CSV" aria-label="Download budget as CSV">CSV</button></span></h2>
       <div class="body">
         <div id="bgList"></div>
         <button class="btn" type="button" id="bgAdd" style="margin-top:6px">Add custom item</button>
@@ -11643,6 +11643,42 @@ function renderEF(monthlySpend) {
   $("efTarget").textContent = money(monthlySpend * mo);
 }
 $("efMonths").addEventListener("input", renderBudget);
+
+/* The budget isn't a <table>, so the automatic CSV buttons skip it. This
+   exports the same figures as a three-column sheet: item, amount, and whether
+   it's a monthly or yearly figure. Custom items (added at the end) are part of
+   the same list, so they're included too. Rows left blank or at zero are left
+   out. It's a flat list of the populated items -- no category headings --
+   with income and the totals as labelled rows. */
+function exportBudgetCSV(){
+  const period = f => f === 12 ? "Per month" : "Per year";
+  const incomeAmt = num("bgIncomeIn");
+  const spentYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
+  const savedYr = budget.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
+  if (!(incomeAmt > 0) && !(spentYr > 0) && !(savedYr > 0)){
+    toast("Nothing to export yet"); return;
+  }
+  const rows = [["Budget Item", "Amount", "Period"]];
+  if (incomeAmt > 0) rows.push(["Income after taxes", money(incomeAmt), period(bgIncomeFreq)]);
+  budget.forEach(r => {
+    if (!(r.amount > 0)) return;   // skip blank / zero rows
+    rows.push([r.desc, money(r.amount), period(r.freq)]);
+  });
+  const leftYr = incomeAmt * bgIncomeFreq - spentYr - savedYr;
+  rows.push(["Total spending", money(spentYr), "Per year"]);
+  if (savedYr > 0) rows.push(["Total saving", money(savedYr), "Per year"]);
+  rows.push(["Left over", money(leftYr), "Per year"]);
+
+  const csv = rows.map(cols => cols.map(c => csvEscape(String(c))).join(",")).join("\r\n");
+  const blob = new Blob(["﻿" + csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "retcalc-budget.csv";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("Saved " + a.download);
+}
+$("bgCsv").addEventListener("click", exportBudgetCSV);
 /* ---------- college UI ---------- */
 var collegePoints = [];
 
@@ -14155,6 +14191,23 @@ let btPoints = null;
 let btInflPoints = null;
 let btFirstYear = HIST_START;
 let btRun = null;
+/* Year-by-year table sort. Defaults to year ascending, which is the natural
+   chronological order the table already showed. */
+let btSortCol = "year";
+let btSortDir = "asc";
+function btSortValue(r, col){
+  switch (col){
+    case "year": return r.year;
+    case "stock": return r.stock;
+    case "bond": return r.bond;
+    case "ret": return r.ret;
+    case "infl": return r.infl;
+    case "real": return r.real;
+    case "end": return r.end;
+    case "endReal": return r.endReal;
+  }
+  return 0;
+}
 
 function renderBacktest(){
   const st = readBTState();
@@ -14244,17 +14297,38 @@ function renderBacktest(){
       pctStr(w.best, 2) + "</td><td>" + Math.round(w.pos * 100) + "%</td></tr>";
   }).join("");
 
-  $("btTable").querySelector("tbody").innerHTML = B.rows.map(r =>
+  var btSorted = B.rows.slice().sort(function (a, b){
+    var cmp = btSortValue(a, btSortCol) - btSortValue(b, btSortCol);
+    return btSortDir === "asc" ? cmp : -cmp;
+  });
+  $("btTable").querySelector("tbody").innerHTML = btSorted.map(r =>
     "<tr><td>" + r.year + "</td><td class='" + (r.stock < 0 ? "neg" : "pos") + "'>" +
     r.stock.toFixed(2) + "%</td><td class='" + (r.bond < 0 ? "neg" : "pos") + "'>" +
     r.bond.toFixed(2) + "%</td><td class='" + (r.ret < 0 ? "neg" : "pos") + "'>" +
     pctStr(r.ret, 2) + "</td><td>" + pctStr(r.infl, 2) + "</td><td class='" +
     (r.real < 0 ? "neg" : "pos") + "'>" + pctStr(r.real, 2) + "</td><td>" +
     money(r.end) + "</td><td>" + money(r.endReal) + "</td></tr>").join("");
+  $("btTable").querySelectorAll("th.sortcol").forEach(function (th){
+    th.classList.remove("sort-asc", "sort-desc");
+    if (th.getAttribute("data-sort") === btSortCol)
+      th.classList.add(btSortDir === "asc" ? "sort-asc" : "sort-desc");
+  });
 }
 
 ["btStock","btFrom","btTo"].forEach(id =>
   $(id).addEventListener("input", renderBacktest));
+
+/* Click a column header to sort the year-by-year table; a new column starts
+   high-to-low, clicking the active one again flips the direction. Mirrors the
+   drawdown "how each starting year fared" table. */
+$("btTable").addEventListener("click", function (e){
+  var th = e.target.closest ? e.target.closest("th.sortcol") : null;
+  if (!th) return;
+  var col = th.getAttribute("data-sort");
+  if (btSortCol === col) btSortDir = btSortDir === "asc" ? "desc" : "asc";
+  else { btSortCol = col; btSortDir = "desc"; }
+  renderBacktest();
+});
 
 /* The dataset is the only range these two fields can mean, so they clamp to it.
    The upper bound rides the existing max-attribute machinery, which caps as you
