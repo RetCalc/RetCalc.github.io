@@ -1315,6 +1315,11 @@ svg{display:block;width:100%;height:auto}
   /* Room so the fixed bar never covers the last panel, and lift toasts above it. */
   html.pwa main{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
   html.pwa .toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  /* With the tabs moved to the bottom, the tall top clearance that keeps the
+     masthead out of the iOS status-bar blur can come down ~30% (2x -> 1.4x the
+     safe-area inset). Web app only. If the logo/title dips back into the blur,
+     nudge the 1.4 up toward 2; if there's still too much dead space, down. */
+  html.pwa header{padding-top:calc(env(safe-area-inset-top,0px) * 1.4)}
 }
 /* Small phones (SE, mini) leave each half of a two-column field row under
    170px, cramped for anything longer than a short label. Below this width,
