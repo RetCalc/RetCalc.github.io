@@ -1306,9 +1306,9 @@ svg{display:block;width:100%;height:auto}
     padding-left:env(safe-area-inset-left,0px);
     padding-right:env(safe-area-inset-right,0px)}
   html.pwa nav[role=tablist] button{
-    flex:1 1 0;margin-right:0;min-height:62px;padding:10px 2px 9px;
+    flex:1 1 0;margin-right:0;min-height:62px;padding:10px 1px 9px;
     display:flex;align-items:center;justify-content:center;
-    font-size:13.5px;font-weight:600;white-space:nowrap}
+    font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
   html.pwa nav[role=tablist] button[aria-selected="true"]{color:var(--jade);font-weight:700}
   /* The active indicator rides the top edge of the button in a bottom bar. */
   html.pwa nav[role=tablist] button::after{top:0;bottom:auto}
@@ -1326,7 +1326,7 @@ svg{display:block;width:100%;height:auto}
      masthead out of the iOS status-bar blur can come down ~30% (2x -> 1.4x the
      safe-area inset). Web app only. If the logo/title dips back into the blur,
      nudge the 1.4 up toward 2; if there's still too much dead space, down. */
-  html.pwa header{padding-top:calc(env(safe-area-inset-top,0px) * 1.4)}
+  html.pwa header{padding-top:calc(env(safe-area-inset-top,0px) * 1.45)}
 }
 /* Small phones (SE, mini) leave each half of a two-column field row under
    170px, cramped for anything longer than a short label. Below this width,
