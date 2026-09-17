@@ -664,17 +664,30 @@ tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
 .btn.mini{padding:5px 11px;font-size:12px;flex:none;text-align:center;white-space:nowrap}
 
 /* segmented switch: a recessed track with a raised thumb */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-well);
+.seg{position:relative;display:inline-flex;border:1px solid var(--line);
+  border-radius:var(--r-well);
   overflow:hidden;flex:none;background:var(--field);box-shadow:var(--well)}
-.seg button{font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
+/* A single raised thumb glides under the active option instead of each button
+   repainting its own highlight. It's positioned by a small script from the
+   active button's box, so it tracks segments of unequal width. */
+.seg-thumb{position:absolute;top:0;left:0;height:100%;width:0;
+  border-radius:calc(var(--r-well) - 1px);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  box-shadow:var(--edge-up),0 2px 8px -4px rgba(0,0,0,.8);
+  opacity:0;pointer-events:none;z-index:0;
+  transition:transform .24s cubic-bezier(.2,.8,.3,1),
+    width .24s cubic-bezier(.2,.8,.3,1),opacity .16s ease}
+.seg-thumb.ready{opacity:1}
+.seg button{position:relative;z-index:1;
+  font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
   color:var(--dim);border:0;cursor:pointer;white-space:nowrap;
   transition:background .16s ease,color .16s ease,box-shadow .16s ease}
 .seg button + button{border-left:1px solid var(--line)}
 .seg button:hover{color:var(--text)}
 .seg button:hover:not(.on){background:rgba(125,159,214,.10)}
-.seg button.on{
-  background:linear-gradient(180deg,var(--panel-2),var(--panel));color:var(--text);
-  box-shadow:var(--edge-up),0 2px 8px -4px rgba(0,0,0,.8)}
+.seg button.on{color:var(--text)}
+/* The raised thumb covers the dividers it sits against. */
+.seg button.on,.seg button.on + button{border-left-color:transparent}
 .seg button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .modeopt{display:flex;align-items:center;gap:8px}
 .mcnote{padding:0 18px 15px;font-size:12.5px;color:var(--dim);line-height:1.5}
@@ -1152,12 +1165,22 @@ svg{display:block;width:100%;height:auto}
 .stack{display:flex;flex-direction:column;gap:20px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(8px);
+  display:inline-flex;align-items:center;gap:10px;
   background:var(--pop);color:var(--text);border:1px solid var(--line);
-  padding:12px 20px;border-radius:12px;font-size:13px;
+  border-left:3px solid var(--line);
+  padding:12px 18px;border-radius:12px;font-size:13px;
   box-shadow:var(--lift-2);
   opacity:0;transition:opacity .22s ease,transform .22s cubic-bezier(.2,.8,.3,1);
   pointer-events:none;z-index:20}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* A glyph and a coloured left edge say at a glance whether it worked (jade
+   check) or is a nudge to set something up first (gold info). */
+.toast .toast-ic{width:17px;height:17px;flex:none}
+.toast .toast-msg{min-width:0}
+.toast.ok{border-left-color:var(--jade)}
+.toast.ok .toast-ic{color:var(--jade)}
+.toast.warn{border-left-color:var(--gold)}
+.toast.warn .toast-ic{color:var(--gold)}
 
 /* Tablet and below: the sidebar moves above the results. */
 @media (max-width:900px){
@@ -7464,8 +7487,27 @@ function activeTool(){
 }
 
 let toastTimer;
-function toast(msg){
-  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+/* A confirmation gets a jade check; a "set something up first" nudge gets a
+   gold info glyph. Callers can force it with the second argument; otherwise
+   the wording is classed automatically, so existing one-arg calls just work. */
+function toast(msg, type){
+  const t = $("toast");
+  const kind = type ||
+    (/\bfirst\b|isn't reachable|nothing to export|couldn't|no money left|no monthly amount/i
+      .test(msg) ? "warn" : "ok");
+  const icon = kind === "warn"
+    ? '<svg class="toast-ic" viewBox="0 0 20 20" aria-hidden="true">'
+      + '<circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.6"/>'
+      + '<path d="M10 5.8v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>'
+      + '<circle cx="10" cy="14.1" r="1" fill="currentColor"/></svg>'
+    : '<svg class="toast-ic" viewBox="0 0 20 20" aria-hidden="true">'
+      + '<circle cx="10" cy="10" r="8.2" fill="none" stroke="currentColor" stroke-width="1.6"/>'
+      + '<path d="M6.3 10.4l2.5 2.5 4.9-5.3" fill="none" stroke="currentColor" '
+      + 'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  t.className = "toast " + kind;
+  t.innerHTML = icon + '<span class="toast-msg"></span>';
+  t.querySelector(".toast-msg").textContent = msg;
+  t.classList.add("show");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
 }
 
@@ -15348,5 +15390,44 @@ if (fromLink) toast("Loaded from a shared link");
      the referrer; never reads or transmits anything the user types. -->
 <script data-goatcounter="https://retcalcsite.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
+<!-- Segmented-switch thumb: gives each .seg a single raised highlight that
+     slides between options rather than blinking from one to the next. The
+     thumb is measured off the active button, so unequal-width options line up,
+     and it re-measures when the active option changes or the switch first
+     lays out (e.g. when its tool tab is opened). Pure enhancement — the switch
+     works exactly as before if this never runs. -->
+<script>
+(function(){
+  function initSeg(seg){
+    if (seg.__thumb) return; seg.__thumb = true;
+    var thumb = document.createElement("span");
+    thumb.className = "seg-thumb";
+    seg.insertBefore(thumb, seg.firstChild);
+    function place(){
+      var on = seg.querySelector("button.on");
+      if (!on || !on.offsetWidth){
+        if (thumb.classList.contains("ready")) thumb.classList.remove("ready");
+        return;
+      }
+      var w = on.offsetWidth + "px";
+      var x = "translateX(" + on.offsetLeft + "px)";
+      /* Only write when something actually changed, so the class mutation can
+         never re-trigger this observer in a loop. */
+      if (thumb.style.width !== w) thumb.style.width = w;
+      if (thumb.style.transform !== x) thumb.style.transform = x;
+      if (!thumb.classList.contains("ready")) thumb.classList.add("ready");
+    }
+    new MutationObserver(place).observe(seg,
+      {subtree:true, attributes:true, attributeFilter:["class"]});
+    if (window.ResizeObserver) new ResizeObserver(place).observe(seg);
+    else window.addEventListener("resize", place);
+    place();
+  }
+  function boot(){ document.querySelectorAll(".seg").forEach(initSeg); }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>
 </body>
 </html>
