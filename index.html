@@ -7985,8 +7985,9 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
   } else {
     svg.appendChild(svgEl("path", {d:line(a => a.hi), fill:"none", stroke:"#4fbf95",
       "stroke-width":1.8 * sw, "stroke-linejoin":"round", opacity:.9}));
-    svg.appendChild(svgEl("path", {d:line(a => a.lo), fill:"none", stroke:"#e2795f",
-      "stroke-width":1.8 * sw, "stroke-linejoin":"round", opacity:.9}));
+    if (!o.noLoLine)
+      svg.appendChild(svgEl("path", {d:line(a => a.lo), fill:"none", stroke:"#e2795f",
+        "stroke-width":1.8 * sw, "stroke-linejoin":"round", opacity:.9}));
     svg.appendChild(svgEl("path", {d:line(a => a.base), fill:"none", stroke:"#e9b872",
       "stroke-width":2.6 * sw, "stroke-linejoin":"round"}));
   }
@@ -8000,8 +8001,10 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
   if (o.enhanced){
     dotHi = svgEl("circle", {r:4 * sw, fill:"#4fbf95", stroke:cssVar("--dotstroke"),
       "stroke-width":2 * sw, opacity:0}); svg.appendChild(dotHi);
-    dotLo = svgEl("circle", {r:4 * sw, fill:"#e2795f", stroke:cssVar("--dotstroke"),
-      "stroke-width":2 * sw, opacity:0}); svg.appendChild(dotLo);
+    if (!o.noLoLine){
+      dotLo = svgEl("circle", {r:4 * sw, fill:"#e2795f", stroke:cssVar("--dotstroke"),
+        "stroke-width":2 * sw, opacity:0}); svg.appendChild(dotLo);
+    }
     xTick = svgEl("circle", {r:3 * sw, fill:cssVar("--dim"), opacity:0,
       cy: T + ph + (B / 2)}); svg.appendChild(xTick);
     svg.style.animation = "none";
@@ -8343,7 +8346,13 @@ function tipRows(best, mode){
       "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
       "</span><br><span style='color:#3f9a78'>25th</span> <span class='n'>" + money(best.p25) +
       "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
-  const nm = mode === "mc" ? ["90th","Median","10th"] : ["Higher","Your rate","Lower"];
+  if (mode === "mc")
+    return "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
+      "</span><br><span style='color:#3f9a78'>75th</span> <span class='n'>" + money(best.p75) +
+      "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
+      "</span><br><span style='color:#3f9a78'>25th</span> <span class='n'>" + money(best.p25) +
+      "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
+  const nm = ["Higher","Your rate","Lower"];
   return "<br><span style='color:#4fbf95'>" + nm[0] + "</span> <span class='n'>" + money(best.hi) +
     "</span><br><span style='color:#e9b872'>" + nm[1] + "</span> <span class='n'>" + money(best.base) +
     "</span><br><span style='color:#e2795f'>" + nm[2] + "</span> <span class='n'>" + money(best.lo) + "</span>";
@@ -11727,11 +11736,11 @@ function renderCollege() {
     }
     return total;
   }
-  var pts = [{year:0, base:inp.saved, hi:costIfStartingAt(0), lo:inp.saved}];
+  var pts = [{year:0, base:inp.saved, hi:costIfStartingAt(0), lo:0}];
   R.rows.forEach(function(r) {
     pts.push({year: r.year, base: r.balance, hi: costIfStartingAt(r.year), lo: 0});
   });
-  collegePoints = paintChart("chartCl", pts, inp.yearsUntil, "band", [], 0, {enhanced:true});
+  collegePoints = paintChart("chartCl", pts, inp.yearsUntil, "band", [], 0, {enhanced:true, noLoLine:true});
   $("legendCl").innerHTML =
     swatch("#e9b872", "Your savings") +
     swatch("#4fbf95", "Cost of college, that year");
@@ -12646,7 +12655,9 @@ attachChart("chartWrapDDI", "chartDDI", "tipDDI", function () { return ddiPoints
     if (ddIncomeChartAgg) {
       return "<b>" + lbl + "</b>" +
         "<br><span style=\u0027color:#4fbf95\u0027>90th</span> <span class=\u0027n\u0027>" + money(best.hi) +
+        "</span><br><span style=\u0027color:#3f9a78\u0027>75th</span> <span class=\u0027n\u0027>" + money(best.p75) +
         "</span><br><span style=\u0027color:#e9b872\u0027>Median</span> <span class=\u0027n\u0027>" + money(best.base) +
+        "</span><br><span style=\u0027color:#3f9a78\u0027>25th</span> <span class=\u0027n\u0027>" + money(best.p25) +
         "</span><br><span style=\u0027color:#e2795f\u0027>10th</span> <span class=\u0027n\u0027>" + money(best.lo) + "</span>";
     }
     return "<b>" + lbl + "</b>" +
@@ -12658,7 +12669,9 @@ attachChart("chartWrapDD", "chartDD", "tipDD", function () { return ddPoints; },
     var lbl = ddRetireAge != null ? "Age " + ddAgeValPoint(best.year) : "Year " + fmtNum(best.year);
     return "<b>" + lbl + "</b>" +
       "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
+      "</span><br><span style='color:#3f9a78'>75th</span> <span class='n'>" + money(best.p75) +
       "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
+      "</span><br><span style='color:#3f9a78'>25th</span> <span class='n'>" + money(best.p25) +
       "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
   });
 
