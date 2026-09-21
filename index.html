@@ -2140,6 +2140,33 @@ window.onerror = function(msg){
     </div>
   </div>
 
+
+  <div class="stack" id="tab-dd-compare" hidden>
+    <div class="panel">
+      <h2>Compare drawdown scenarios<span class="h2ctrl"><button class="btn" type="button" id="ddCmpBack">Back</button></span></h2>
+      <div class="body">
+        <div class="hint" id="ddCmpEmpty" hidden></div>
+        <div class="cmpgrid" id="ddCmpPickers"></div>
+        <div class="hint" id="ddCmpHelp" style="margin-top:12px">Comparison reads saved scenarios only. Nothing here changes the numbers on the Drawdown Simulator tab.</div>
+      </div>
+    </div>
+    <div class="panel" id="ddCmpChartPanel">
+      <h2>Median portfolio balance<span class="h2note">in today’s dollars, historical backtest</span></h2>
+      <div class="chartwrap" id="chartWrapDDC">
+        <svg id="chartDDC" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Drawdown scenarios compared"></svg>
+        <div class="tip" id="tipDDC"></div>
+      </div>
+      <div class="legend" id="legendDDC"></div>
+    </div>
+    <div class="panel" id="ddCmpOutPanel">
+      <h2>Results</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="ddCmpOutTable"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+
   <!-- ========== PORTFOLIO BACKTEST ========== -->
   <aside id="asideBT" hidden>
     <div class="panel inputs">
@@ -2503,6 +2530,11 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="field">
+          <label for="ddStockEnd">Glide to</label>
+          <div class="inputwrap"><input id="ddStockEnd" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value=""><span class="affix">% stocks at end</span></div>
+          <div class="hint">Optional: gradually shift your stock allocation to this level by the end of retirement. Leave blank to keep it constant.</div>
+        </div>
+        <div class="field">
           <label for="ddFee">Fees</label>
           <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
         </div>
@@ -2584,7 +2616,7 @@ window.onerror = function(msg){
             </div>
             <div class="field">
               <label for="ddSSClaim">Claim at age</label>
-              <div class="inputwrap"><input id="ddSSClaim" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg value="67"><span class="affix">yrs</span></div>
+              <div class="inputwrap"><select id="ddSSClaim"><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67" selected>67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option></select><span class="affix">yrs</span></div>
             </div>
           </div>
           <div class="two" id="ddSSEst2Wrap" hidden>
@@ -2594,7 +2626,7 @@ window.onerror = function(msg){
             </div>
             <div class="field">
               <label for="ddSSClaim2">Claim at age</label>
-              <div class="inputwrap"><input id="ddSSClaim2" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg value="67"><span class="affix">yrs</span></div>
+              <div class="inputwrap"><select id="ddSSClaim2"><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67" selected>67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option></select><span class="affix">yrs</span></div>
             </div>
           </div>
           <div class="hint" id="ddSSEstNote"></div>
@@ -2624,6 +2656,11 @@ window.onerror = function(msg){
           <label>Future expenses<span class="tipdot" data-tip="customexpense" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div id="ddExpenseList"></div>
           <button class="btn mini" type="button" id="ddAddExpense">+ Add future expense</button>
+        </div>
+        <div class="field">
+          <label for="ddLegacyGoal">Legacy goal</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="ddLegacyGoal" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
+          <div class="hint">Optional target ending balance. Results will show what % of scenarios end above this amount.</div>
         </div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
@@ -2670,6 +2707,7 @@ window.onerror = function(msg){
             <div class="note">In today's dollars</div></div>
           <div><div class="k">Worst case</div><div class="v" id="ddWorst">--</div>
             <div class="note" id="ddWorstNote"></div></div>
+          <div id="ddLegacyWrap" hidden><div class="k">Meet legacy goal</div><div class="v" id="ddLegacy">--</div><div class="note" id="ddLegacyNote"></div></div>
         </div>
       </div>
       <div class="body"><div id="ddVerdict"></div></div>
@@ -2764,6 +2802,26 @@ window.onerror = function(msg){
           <tbody></tbody>
         </table>
       </div>
+
+    <div class="panel" id="ddDepletionPanel" hidden>
+      <h2>Probability of depletion by age</h2>
+      <div class="chartwrap" id="chartWrapDDDep" style="overflow:hidden">
+        <svg id="chartDDDepletion" viewBox="0 0 900 220" preserveAspectRatio="none" role="img" aria-label="Depletion probability over time"></svg>
+      </div>
+      <div class="mcnote" id="ddDepletionNote"></div>
+    </div>
+
+    <div class="panel" id="ddSensPanel" hidden>
+      <h2>Return sensitivity</h2>
+      <div style="padding:0 18px 10px" class="hint">How your plan holds up if returns run higher or lower than history suggests.</div>
+      <div style="padding:0 18px 14px" id="ddSensTable"></div>
+    </div>
+
+    <div class="panel" id="ddSSBreakEvenPanel" hidden>
+      <h2>Social Security claiming age comparison</h2>
+      <div style="padding:0 18px 10px" class="hint">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
+      <div style="padding:0 18px 14px" id="ddSSBreakEvenTable"></div>
+    </div>
     </div>
   </div>
 
@@ -6937,6 +6995,7 @@ function runDrawdown(o, seq) {
   var bal = o.initial;
   var stockW = o.stockPct / 100;
   var bondW = 1 - stockW;
+  var useGlide = o.stockPctEnd != null;
   var cumInfl = 1;
   var baseW = o.initial * o.initialPct / 100;   // year-1 withdrawal, nominal
   var prevW = baseW;
@@ -6946,6 +7005,11 @@ function runDrawdown(o, seq) {
 
   for (var y = 0; y < o.years; y++) {
     var s = seq[y];
+    if (useGlide) {
+      var yPct = o.stockPct + (o.stockPctEnd - o.stockPct) * y / Math.max(1, o.years - 1);
+      stockW = Math.min(100, Math.max(0, yPct)) / 100;
+      bondW = 1 - stockW;
+    }
     var infl = s.infl / 100;
     var w;
 
@@ -7054,7 +7118,7 @@ function runDrawdown(o, seq) {
 
     var start = bal;
     bal = bal - w + incomeInvested;
-    var ret = (stockW * s.stock + bondW * s.bond) / 100 - (o.fee || 0) / 100;
+    var ret = (stockW * s.stock + bondW * s.bond) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
     var growth = bal * ret;
     bal = bal + growth;
     if (bal < 0) bal = 0;
@@ -8103,6 +8167,52 @@ function paintMulti(svgId, series, maxX, opt){
   return {pts, X, Y, hover, dot, maxX, W, names: live.map(x => x.name), colors};
 }
 
+function paintDepletionCurve(svgId, runs, years, retireAge) {
+  var svg = $(svgId);
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var narrow = window.innerWidth < 640;
+  var W = narrow ? 470 : 900, Hpx = 220;
+  var PL = narrow ? 60 : 68, PR = narrow ? 12 : 14, PT = 16, PB = 28;
+  var sw = narrow ? 1.7 : 1;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + Hpx);
+  var cW = W - PL - PR, cH = Hpx - PT - PB;
+  var total = runs.length;
+  var xScale = function(y) { return PL + y / (years || 1) * cW; };
+  var yScale = function(p) { return PT + cH * (1 - p / 100); };
+  var fs = narrow ? 15 : 11;
+  var gColor = cssVar("--grid"), aColor = cssVar("--axis");
+  var ff = "ui-monospace,SF Mono,Menlo,monospace";
+  [0, 25, 50, 75, 100].forEach(function(p) {
+    var gy = yScale(p);
+    svg.appendChild(svgEl("line", {x1:PL, y1:gy, x2:W - PR, y2:gy, stroke:gColor, "stroke-width":0.8 * sw}));
+    var t = svgEl("text", {x:PL - 5, y:gy + fs / 3, "text-anchor":"end", "font-size":fs, fill:aColor, "font-family":ff});
+    t.textContent = p + "%"; svg.appendChild(t);
+  });
+  var xStep = years <= 20 ? 5 : years <= 40 ? 10 : 15;
+  for (var ty = xStep; ty <= years; ty += xStep) {
+    var tx = xScale(ty);
+    svg.appendChild(svgEl("line", {x1:tx, y1:PT, x2:tx, y2:PT + cH, stroke:gColor, "stroke-width":0.8 * sw}));
+    var t2 = svgEl("text", {x:tx, y:Hpx - PB + fs + 2, "text-anchor":"middle", "font-size":fs, fill:aColor, "font-family":ff});
+    t2.textContent = retireAge != null ? "Age " + (retireAge + ty) : "Yr " + ty;
+    svg.appendChild(t2);
+  }
+  var pts = [{y:0, pct:0}];
+  for (var yr = 1; yr <= years; yr++) {
+    var n = 0;
+    for (var i = 0; i < runs.length; i++) {
+      if (runs[i].depleted && runs[i].depletedYear <= yr) n++;
+    }
+    pts.push({y:yr, pct:total > 0 ? n / total * 100 : 0});
+  }
+  var fillD = "M" + xScale(0) + "," + yScale(0);
+  pts.forEach(function(p) { fillD += " L" + xScale(p.y) + "," + yScale(p.pct); });
+  fillD += " L" + xScale(years) + "," + yScale(0) + "Z";
+  svg.appendChild(svgEl("path", {d:fillD, fill:"rgba(226,121,95,0.18)", stroke:"none"}));
+  var lineD = "M" + xScale(pts[0].y) + "," + yScale(pts[0].pct);
+  pts.slice(1).forEach(function(p) { lineD += " L" + xScale(p.y) + "," + yScale(p.pct); });
+  svg.appendChild(svgEl("path", {d:lineD, fill:"none", stroke:"#e2795f", "stroke-width":2.2 * sw, "stroke-linejoin":"round"}));
+}
+
 function mcLegend(elId, extra){
   const parts = [swatch("#4fbf95", "10th\u201390th percentile"),
                  swatch("#3f9a78", "25th\u201375th"),
@@ -8683,6 +8793,182 @@ attachChart("chartWrapC", "chartC", "tipC", () => cmpPoints, best => {
   });
   return out;
 });
+
+/* ========== Drawdown Strategy Comparison ========== */
+
+function ddStateToOpts(data) {
+  var retireAge = data.retireAge ? parseFloat(data.retireAge) : null;
+  if (!isFinite(retireAge) || retireAge <= 0) retireAge = null;
+  var ssAnnual = 0, ssDelay = 0, ssAnnual2 = 0, ssDelay2 = 0;
+  if (data.ssMode === "est") {
+    var claim1 = Math.min(70, Math.max(62, +data.ssClaim || 67));
+    ssAnnual = ssEstimate(+data.ssIncome || 0, 40, claim1).annual;
+    ssDelay = retireAge != null ? Math.max(0, Math.round(claim1 - retireAge)) : 0;
+    if (data.ssWho === "couple") {
+      var claim2 = Math.min(70, Math.max(62, +data.ssClaim2 || 67));
+      ssAnnual2 = ssEstimate(+data.ssIncome2 || 0, 40, claim2).annual;
+      ssDelay2 = retireAge != null ? Math.max(0, Math.round(claim2 - retireAge)) : 0;
+    }
+  } else if (data.ssMode === "manual") {
+    ssAnnual = +data.ssAmount || 0;
+    if (data.ssWho === "couple") ssAnnual2 = +data.ssAmount2 || 0;
+    var delayRaw = +data.ssDelay || 0;
+    ssDelay = retireAge != null ? Math.max(0, Math.round(delayRaw - retireAge)) : Math.max(0, Math.round(delayRaw));
+    ssDelay2 = ssDelay;
+  }
+  return {
+    initial: +data.initial || 0,
+    years: Math.min(60, Math.max(1, Math.round(+data.years || 30))),
+    stockPct: Math.min(100, Math.max(0, +data.stock || 60)),
+    stockPctEnd: (data.stockEnd && data.stockEnd !== "") ? Math.min(100, Math.max(0, +data.stockEnd || 0)) : null,
+    fee: +data.fee || 0,
+    strategy: data.strategy || "fixed",
+    initialPct: +data.rate || 4,
+    guardBand: +data.guardBand || 20,
+    adjustPct: +data.adjust || 10,
+    floorPct: +data.floor || 10,
+    ceilPct: +data.ceil || 10,
+    yaleWeight: Math.min(100, Math.max(0, +data.yaleWeight || 70)),
+    yaleRate: Math.max(0, +data.yaleRate || 5),
+    spendFloor: +data.spendFloor || 0,
+    legacyGoal: +data.legacyGoal || 0,
+    ssAnnual: ssAnnual, ssDelayYears: ssDelay,
+    ssAnnual2: ssAnnual2, ssDelayYears2: ssDelay2,
+    retireAge: retireAge, fromYear: HIST_START,
+    incomeItems: Array.isArray(data.incomeItems) ? data.incomeItems.map(function(x){ return Object.assign({},x); }) : [],
+    expenseItems: Array.isArray(data.expenseItems) ? data.expenseItems.map(function(x){ return Object.assign({},x); }) : []
+  };
+}
+
+var ddCmpSlots = [{name:""}, {name:""}, {name:""}];
+var ddCmpPrevTab = "single";
+var ddCmpPoints = null;
+
+function buildDDComparePickers() {
+  var total = SC.drawdown.length;
+  var host = $("ddCmpPickers");
+  var panels = ["ddCmpChartPanel", "ddCmpOutPanel"];
+  if (total < 2) {
+    $("ddCmpEmpty").hidden = false;
+    $("ddCmpEmpty").innerHTML = "You have " + (total ? "one saved scenario" : "no saved scenarios") +
+      ". Save at least two Drawdown scenarios from the bar above, then come back to compare.";
+    host.innerHTML = "";
+    panels.forEach(function(id) { $(id).hidden = true; });
+    $("ddCmpHelp").hidden = true;
+    return false;
+  }
+  $("ddCmpEmpty").hidden = true;
+  $("ddCmpHelp").hidden = false;
+  panels.forEach(function(id) { $(id).hidden = false; });
+  var list = SC.drawdown;
+  host.innerHTML = ddCmpSlots.map(function(sl, i) {
+    var opts = (i === 2 ? "<option value=''>None</option>" : "") +
+      list.map(function(x) {
+        return "<option" + (x.name === sl.name ? " selected" : "") + ">" + escapeHtml(x.name) + "</option>";
+      }).join("");
+    return "<div class='cmpslot'>" +
+      "<div class='cmpkey'><i style='background:" + MULTI_COLORS[i] + "'></i>" + CMP_LETTERS[i] + "</div>" +
+      "<div class='field'><select data-ddcmp='" + i + "' aria-label='Scenario " + CMP_LETTERS[i] + "'>" + opts + "</select></div>" +
+      "</div>";
+  }).join("");
+  return true;
+}
+
+function renderDDCompare() {
+  var all = ddCmpSlots.map(function(sl, i) {
+    var sc = sl.name ? SC.drawdown.find(function(x) { return x.name === sl.name; }) : null;
+    if (!sc) return {i:i, name:sl.name, H:null};
+    var o = ddStateToOpts(sc.data);
+    if (!(o.initial > 0) || !(o.years > 0)) return {i:i, name:sl.name, H:null};
+    var H = historicalBacktest(o);
+    if (!H.total) return {i:i, name:sl.name, H:null};
+    var medPts = [{year:0, value:o.initial}];
+    for (var y = 1; y <= o.years; y++) {
+      var vals = H.runs.map(function(r) { return r.rows[y-1] ? r.rows[y-1].realEnd : 0; }).sort(function(a,b){return a-b;});
+      medPts.push({year:y, value:vals[Math.floor(vals.length * 0.5)] || 0});
+    }
+    return {i:i, name:sl.name, o:o, H:H, medPts:medPts};
+  });
+  var slots = all.filter(function(x) { return x.H; });
+  if (!slots.length) {
+    ddCmpPoints = paintMulti("chartDDC", [], 1);
+    $("legendDDC").innerHTML = "";
+    $("ddCmpOutTable").querySelector("thead").innerHTML = "";
+    $("ddCmpOutTable").querySelector("tbody").innerHTML = "";
+    return;
+  }
+  var maxX = Math.max.apply(null, slots.map(function(x) { return x.o.years; })) || 1;
+  ddCmpPoints = paintMulti("chartDDC", slots.map(function(x) {
+    return {name:x.name, color:MULTI_COLORS[x.i], pts:x.medPts};
+  }), maxX);
+  $("legendDDC").innerHTML = slots.map(function(x) { return swatch(MULTI_COLORS[x.i], escapeHtml(x.name)); }).join("");
+  var head = ["<th>Result</th>"].concat(slots.map(function(x) {
+    return "<th>" + CMP_LETTERS[x.i] + " · " + escapeHtml(x.name) + "</th>";
+  }));
+  $("ddCmpOutTable").querySelector("thead").innerHTML = "<tr>" + head.join("") + "</tr>";
+  var stratLabels = {fixed:"Fixed amount", pct:"Fixed %", guardrails:"Guardrails", floorceil:"Floor & ceiling", yale:"Yale endowment"};
+  $("ddCmpOutTable").querySelector("tbody").innerHTML = [
+    {k:"Strategy", fn:function(x){return stratLabels[x.o.strategy]||x.o.strategy;}},
+    {k:"Withdrawal rate", fn:function(x){return x.o.initialPct.toFixed(1)+"%";}},
+    {k:"Stock allocation", fn:function(x){return x.o.stockPct+(x.o.stockPctEnd!=null?" → "+x.o.stockPctEnd:"")+"% stocks";}},
+    {k:"Periods tested", fn:function(x){return x.H.total+"";}},
+    {k:"Success rate", fn:function(x){return "<span class='"+(x.H.successRate>=0.95?"pos":x.H.successRate>=0.85?"gold":"neg")+"'>"+pctStr(x.H.successRate,1)+"</span>";}},
+    {k:"Median ending balance", fn:function(x){return money(x.H.medianEnd);}},
+    {k:"Worst case", fn:function(x){return money(x.H.worstEnd);}},
+    {k:"Failure years", fn:function(x){return x.H.failYears.length?x.H.failYears.slice(0,5).join(", ")+(x.H.failYears.length>5?"…":""):"None";}}
+  ].map(function(r) {
+    return "<tr><td>" + r.k + "</td>" + slots.map(function(x){ return "<td>" + r.fn(x) + "</td>"; }).join("") + "</tr>";
+  }).join("");
+}
+
+function showDDCompare() {
+  if (chartMode.tab === "dd-compare") return;
+  ddCmpPrevTab = chartMode.tab;
+  var names = SC.drawdown.map(function(x) { return x.name; });
+  if (names.indexOf(ddCmpSlots[0].name) < 0) ddCmpSlots[0].name = names[0] || "";
+  if (names.indexOf(ddCmpSlots[1].name) < 0 || ddCmpSlots[1].name === ddCmpSlots[0].name) {
+    var pick = "";
+    for (var i = 0; i < names.length; i++)
+      if (names[i] !== ddCmpSlots[0].name) { pick = names[i]; break; }
+    ddCmpSlots[1].name = pick;
+  }
+  if (names.indexOf(ddCmpSlots[2].name) < 0) ddCmpSlots[2].name = "";
+  chartMode.tab = "dd-compare";
+  Array.prototype.forEach.call(
+    document.querySelectorAll("#main > .stack, #main > aside"),
+    function(el) { el.hidden = true; });
+  setToolBack("picker");
+  $("tab-dd-compare").hidden = false;
+  $("main").classList.add("solo");
+  refreshScenarioList(currentScenario[activeTool()] || "");
+  if (buildDDComparePickers()) renderDDCompare();
+  initCSVButtons();
+  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
+  playPaneEnter();
+}
+$("ddCmpBack").addEventListener("click", function() {
+  paneDir = "back";
+  var t = (ddCmpPrevTab === "dd-compare" || !ddCmpPrevTab) ? "single" : ddCmpPrevTab;
+  showTab(t);
+  pushNav();
+});
+$("ddCmpPickers").addEventListener("change", function(e) {
+  var el = e.target;
+  var i = el.getAttribute("data-ddcmp");
+  if (i != null) { ddCmpSlots[+i].name = el.value; renderDDCompare(); }
+});
+attachChart("chartWrapDDC", "chartDDC", "tipDDC", function(){ return ddCmpPoints; }, function(best) {
+  var st = ddCmpPoints;
+  if (!st) return "";
+  var out = "<b>Year " + fmtNum(best.year) + "</b>";
+  st.names.forEach(function(nm, i) {
+    if (best.vals[i] == null) return;
+    out += "<br><span style='color:" + st.colors[i] + "'>" + escapeHtml(nm) +
+      "</span> <span class='n'>" + money(best.vals[i]) + "</span>";
+  });
+  return out;
+});
+
 
 /* ---------- goal solve ---------- */
 function fmtYears(y){
@@ -9568,7 +9854,15 @@ window.addEventListener("popstate", e => {
     navSuspended = false;
     return;
   }
+  if (st.t === "dd-compare"){
+    if (chartMode.tab === "dd-compare"){ navSuspended = false; return; }
+    paneDir = "tab";
+    showDDCompare();
+    navSuspended = false;
+    return;
+  }
   if (chartMode.tab === "compare") chartMode.tab = cmpPrevTab;
+  if (chartMode.tab === "dd-compare") chartMode.tab = ddCmpPrevTab;
   paneDir = (st.t === "tools" && st.s === "picker") ? "back" : "tab";
   if (st.t === "tools"){ toolSub = st.s || "picker"; showTab("tools"); }
   else showTab(st.t);
@@ -9633,6 +9927,7 @@ $("ddIntroClose").addEventListener("click", dismissDDIntro);
 function showTab(t){
   chartMode.tab = t;
   $("tab-compare").hidden = true;
+  $("tab-dd-compare").hidden = true;
   document.querySelectorAll("nav[role=tablist] button").forEach(x => {
     const on = x.getAttribute("data-tab") === t;
     x.setAttribute("aria-selected", String(on));
@@ -12184,6 +12479,7 @@ function readDD() {
     initial: num("ddInitial"),
     years: Math.min(60, Math.max(1, Math.round(num("ddYears")))),
     stockPct: Math.min(100, Math.max(0, num("ddStock"))),
+    stockPctEnd: (function(){ var v = $("ddStockEnd").value.trim(); return v === "" ? null : Math.min(100, Math.max(0, parseFloat(v) || 0)); })(),
     fee: num("ddFee"),
     strategy: strat,
     initialPct: num("ddRate"),
@@ -12199,6 +12495,7 @@ function readDD() {
     ssAnnual2: ssTiming.annual2,
     ssDelayYears2: ssTiming.delay2,
     ssAnnualTotal: ddSSAnnual(),
+    legacyGoal: num("ddLegacyGoal") || 0,
     retireAge: retireAge,
     fromYear: HIST_START,
     incomeItems: ddIncomeItems,
@@ -12208,6 +12505,7 @@ function readDD() {
 
 const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
   guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
+  stockEnd:"", legacyGoal:0,
   ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
   ssAmount:33000, ssAmount2:33000, ssDelay:0, retireAge:""};
 /* Raw form state for scenario save/load and Reset \u2014 distinct from readDD(),
@@ -12223,6 +12521,8 @@ function readDDState(){
     floor:num("ddFloor"), ceil:num("ddCeil"),
     yaleWeight:num("ddYaleWeight"), yaleRate:num("ddYaleRate"),
     spendFloor:num("ddSpendFloor"),
+    stockEnd:$("ddStockEnd").value.trim(),
+    legacyGoal:num("ddLegacyGoal") || 0,
     ssMode:$("ddSSMode").value, ssWho:$("ddSSWho").value,
     ssIncome:num("ddSSIncome"), ssClaim:num("ddSSClaim"),
     ssIncome2:num("ddSSIncome2"), ssClaim2:num("ddSSClaim2"),
@@ -12246,6 +12546,8 @@ function writeDDState(d){
   if (d.yaleWeight != null) $("ddYaleWeight").value = d.yaleWeight;
   if (d.yaleRate != null) $("ddYaleRate").value = d.yaleRate;
   if (d.spendFloor != null) $("ddSpendFloor").value = groupDigits(d.spendFloor, true);
+  if (d.stockEnd != null) $("ddStockEnd").value = d.stockEnd;
+  if (d.legacyGoal != null) $("ddLegacyGoal").value = d.legacyGoal > 0 ? groupDigits(d.legacyGoal, true) : "";
   if (d.ssMode) $("ddSSMode").value = d.ssMode;
   if (d.ssWho) $("ddSSWho").value = d.ssWho;
   if (d.ssIncome != null) $("ddSSIncome").value = groupDigits(d.ssIncome, true);
@@ -12422,6 +12724,17 @@ function renderDrawdown() {
     else verdict = "<b class='neg'>This plan ran out of money in " + H.failYears.length + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.";
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + verdict + "</div>";
 
+    // Legacy goal
+    if (o.legacyGoal > 0) {
+      var metLegacy = H.runs.filter(function(r){ return r.endReal >= o.legacyGoal; }).length;
+      $("ddLegacyWrap").hidden = false;
+      $("ddLegacy").textContent = pctStr(metLegacy / H.runs.length, 1);
+      $("ddLegacy").className = "v " + (metLegacy/H.runs.length >= 0.75 ? "pos" : metLegacy/H.runs.length >= 0.5 ? "gold" : "neg");
+      $("ddLegacyNote").textContent = metLegacy + " of " + H.total + " periods";
+    } else {
+      $("ddLegacyWrap").hidden = true;
+    }
+
     // show/hide toggle and sync button state (toggle is now on the chart h2)
     $("ddViewWrap").hidden = false;
     $("segDDView").querySelectorAll("button").forEach(function (b) {
@@ -12511,6 +12824,64 @@ function renderDrawdown() {
       $("ddIncomeNote").textContent = "";
     }
 
+    // Depletion probability chart
+    $("ddDepletionPanel").hidden = false;
+    paintDepletionCurve("chartDDDepletion", H.runs, o.years, ddRetireAge);
+    $("ddDepletionNote").innerHTML = "Percentage of historical retirements that ran out of money by each year. " +
+      (H.successRate >= 1 ? "This plan never ran out." : H.survived + " of " + H.total + " survived the full " + o.years + " years.");
+
+    // Return sensitivity
+    $("ddSensPanel").hidden = false;
+    (function() {
+      var drags = [-2, -1, 0, 1];
+      var rows = drags.map(function(drag) {
+        var oS = Object.assign({}, o, {returnDrag: drag});
+        var S = historicalBacktest(oS);
+        return {drag:drag, rate:S.successRate, median:S.medianEnd};
+      });
+      $("ddSensTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
+        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Return assumption</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+        rows.map(function(r) {
+          var label = r.drag === 0 ? "Baseline (historical)" : (r.drag > 0 ? "+" + r.drag + "% / yr" : r.drag + "% / yr");
+          var wt = r.drag === 0 ? "font-weight:600" : "";
+          return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
+            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
+            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+    })();
+
+    // SS break-even (estimate mode, single or couple)
+    (function() {
+      var ssMode = $("ddSSMode").value;
+      if (ssMode !== "est" || !(num("ddSSIncome") > 0)) { $("ddSSBreakEvenPanel").hidden = true; return; }
+      $("ddSSBreakEvenPanel").hidden = false;
+      var ssIncome = num("ddSSIncome");
+      var currentAge = num("ddSSClaim");
+      var testAges = [62, 64, 67, 70];
+      var ssRows = testAges.map(function(testAge) {
+        var annual = ssEstimate(ssIncome, 40, testAge).annual;
+        var delay = o.retireAge != null ? Math.max(0, Math.round(testAge - o.retireAge)) : 0;
+        var oT = Object.assign({}, o, {ssAnnual: annual, ssDelayYears: delay});
+        var S = historicalBacktest(oT);
+        return {age:testAge, annual:annual, rate:S.successRate, median:S.medianEnd, current:testAge === Math.round(currentAge)};
+      });
+      $("ddSSBreakEvenTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
+        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+        ssRows.map(function(r) {
+          var wt = r.current ? "font-weight:600" : "";
+          var cur = r.current ? " ◄ current" : "";
+          return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
+            "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
+            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
+            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+    })();
+
   } else {
     var trials = 5000;
     var M = monteCarloDrawdown(o, trials, mcSeed);
@@ -12526,6 +12897,17 @@ function renderDrawdown() {
       o.years + " years at random from the " + HIST_START + "\u2013" +
       (HIST_START + HIST_STOCK.length - 1) + " record. This captures the range of possible " +
       "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
+
+    // Legacy goal
+    if (o.legacyGoal > 0) {
+      var metLegacyMC = M.runs.filter(function(r){ return r.endReal >= o.legacyGoal; }).length;
+      $("ddLegacyWrap").hidden = false;
+      $("ddLegacy").textContent = pctStr(metLegacyMC / M.runs.length, 1);
+      $("ddLegacy").className = "v " + (metLegacyMC/M.runs.length >= 0.75 ? "pos" : metLegacyMC/M.runs.length >= 0.5 ? "gold" : "neg");
+      $("ddLegacyNote").textContent = metLegacyMC.toLocaleString() + " of " + M.runs.length.toLocaleString() + " simulations";
+    } else {
+      $("ddLegacyWrap").hidden = true;
+    }
 
     setH2Text($("ddChartTitle"), "Range of outcomes");
     var mpts = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial }];
@@ -12551,6 +12933,64 @@ function renderDrawdown() {
     renderSpendStats(med, "Showing the same run as the table below.");
     renderIncomeChart(med);
     $("ddIncomeNote").textContent = "";
+
+    // Depletion probability chart (MC)
+    $("ddDepletionPanel").hidden = false;
+    paintDepletionCurve("chartDDDepletion", M.runs, o.years, ddRetireAge);
+    $("ddDepletionNote").innerHTML = "Percentage of " + trials.toLocaleString() + " simulated retirements that ran out of money by each year.";
+
+    // Return sensitivity (MC)
+    $("ddSensPanel").hidden = false;
+    (function() {
+      var drags = [-2, -1, 0, 1];
+      var rows = drags.map(function(drag) {
+        var oS = Object.assign({}, o, {returnDrag: drag});
+        var S = monteCarloDrawdown(oS, 500, mcSeed);
+        return {drag:drag, rate:S.successRate, median:S.medianEnd};
+      });
+      $("ddSensTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
+        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Return assumption</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+        rows.map(function(r) {
+          var label = r.drag === 0 ? "Baseline (sampled)" : (r.drag > 0 ? "+" + r.drag + "% / yr" : r.drag + "% / yr");
+          var wt = r.drag === 0 ? "font-weight:600" : "";
+          return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
+            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
+            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+    })();
+
+    // SS break-even (MC)
+    (function() {
+      var ssMode = $("ddSSMode").value;
+      if (ssMode !== "est" || !(num("ddSSIncome") > 0)) { $("ddSSBreakEvenPanel").hidden = true; return; }
+      $("ddSSBreakEvenPanel").hidden = false;
+      var ssIncome = num("ddSSIncome");
+      var currentAge = num("ddSSClaim");
+      var testAges = [62, 64, 67, 70];
+      var ssRows = testAges.map(function(testAge) {
+        var annual = ssEstimate(ssIncome, 40, testAge).annual;
+        var delay = o.retireAge != null ? Math.max(0, Math.round(testAge - o.retireAge)) : 0;
+        var oT = Object.assign({}, o, {ssAnnual: annual, ssDelayYears: delay});
+        var S = monteCarloDrawdown(oT, 500, mcSeed);
+        return {age:testAge, annual:annual, rate:S.successRate, median:S.medianEnd, current:testAge === Math.round(currentAge)};
+      });
+      $("ddSSBreakEvenTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
+        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+        ssRows.map(function(r) {
+          var wt = r.current ? "font-weight:600" : "";
+          var cur = r.current ? " ◄ current" : "";
+          return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
+            "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
+            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
+            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+    })();
+
   }
 }
 
@@ -12739,8 +13179,10 @@ $("segDD").addEventListener("click", function (e) {
 });
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
  "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor",
- "ddSSIncome", "ddSSClaim", "ddSSIncome2", "ddSSClaim2", "ddSSAmount", "ddSSAmount2", "ddSSDelay"]
+ "ddSSIncome", "ddSSIncome2", "ddSSAmount", "ddSSAmount2", "ddSSDelay",
+ "ddStockEnd", "ddLegacyGoal"]
   .forEach(function (id) { $(id).addEventListener("input", renderDrawdownTyping); });
+["ddSSClaim", "ddSSClaim2"].forEach(function(id){ $(id).addEventListener("change", renderDrawdown); });
 /* Entering a retirement age is what flips the whole tool from "years into
    retirement" to "age" everywhere. As a small kindness, if the Social
    Security delay field is still sitting at its untouched default of 0, we
@@ -14866,7 +15308,7 @@ $("btnScenario").addEventListener("click", async () => {
   ]);
   if (choice === 0) doSave();
   else if (choice === 1) doDelete();
-  else if (choice === 2){ paneDir = "fwd"; showCompare(); pushNav(); }
+  else if (choice === 2){ paneDir = "fwd"; if (activeTool() === "drawdown") showDDCompare(); else showCompare(); pushNav(); }
 });
 /* ---------- shareable summary card ----------
    Draws an SVG card, rasterises it through a canvas, and hands back a PNG the
