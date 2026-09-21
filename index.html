@@ -2802,13 +2802,6 @@ window.onerror = function(msg){
           <tbody></tbody>
         </table>
       </div>
-
-    <div class="panel" id="ddDepletionPanel" hidden>
-      <h2>Probability of depletion by age</h2>
-      <div class="chartwrap" id="chartWrapDDDep" style="overflow:hidden">
-        <svg id="chartDDDepletion" viewBox="0 0 900 220" preserveAspectRatio="none" role="img" aria-label="Depletion probability over time"></svg>
-      </div>
-      <div class="mcnote" id="ddDepletionNote"></div>
     </div>
 
     <div class="panel" id="ddSensPanel" hidden>
@@ -2821,7 +2814,6 @@ window.onerror = function(msg){
       <h2>Social Security claiming age comparison</h2>
       <div style="padding:0 18px 10px" class="hint">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
       <div style="padding:0 18px 14px" id="ddSSBreakEvenTable"></div>
-    </div>
     </div>
   </div>
 
@@ -8167,52 +8159,6 @@ function paintMulti(svgId, series, maxX, opt){
   return {pts, X, Y, hover, dot, maxX, W, names: live.map(x => x.name), colors};
 }
 
-function paintDepletionCurve(svgId, runs, years, retireAge) {
-  var svg = $(svgId);
-  while (svg.firstChild) svg.removeChild(svg.firstChild);
-  var narrow = window.innerWidth < 640;
-  var W = narrow ? 470 : 900, Hpx = 220;
-  var PL = narrow ? 60 : 68, PR = narrow ? 12 : 14, PT = 16, PB = 28;
-  var sw = narrow ? 1.7 : 1;
-  svg.setAttribute("viewBox", "0 0 " + W + " " + Hpx);
-  var cW = W - PL - PR, cH = Hpx - PT - PB;
-  var total = runs.length;
-  var xScale = function(y) { return PL + y / (years || 1) * cW; };
-  var yScale = function(p) { return PT + cH * (1 - p / 100); };
-  var fs = narrow ? 15 : 11;
-  var gColor = cssVar("--grid"), aColor = cssVar("--axis");
-  var ff = "ui-monospace,SF Mono,Menlo,monospace";
-  [0, 25, 50, 75, 100].forEach(function(p) {
-    var gy = yScale(p);
-    svg.appendChild(svgEl("line", {x1:PL, y1:gy, x2:W - PR, y2:gy, stroke:gColor, "stroke-width":0.8 * sw}));
-    var t = svgEl("text", {x:PL - 5, y:gy + fs / 3, "text-anchor":"end", "font-size":fs, fill:aColor, "font-family":ff});
-    t.textContent = p + "%"; svg.appendChild(t);
-  });
-  var xStep = years <= 20 ? 5 : years <= 40 ? 10 : 15;
-  for (var ty = xStep; ty <= years; ty += xStep) {
-    var tx = xScale(ty);
-    svg.appendChild(svgEl("line", {x1:tx, y1:PT, x2:tx, y2:PT + cH, stroke:gColor, "stroke-width":0.8 * sw}));
-    var t2 = svgEl("text", {x:tx, y:Hpx - PB + fs + 2, "text-anchor":"middle", "font-size":fs, fill:aColor, "font-family":ff});
-    t2.textContent = retireAge != null ? "Age " + (retireAge + ty) : "Yr " + ty;
-    svg.appendChild(t2);
-  }
-  var pts = [{y:0, pct:0}];
-  for (var yr = 1; yr <= years; yr++) {
-    var n = 0;
-    for (var i = 0; i < runs.length; i++) {
-      if (runs[i].depleted && runs[i].depletedYear <= yr) n++;
-    }
-    pts.push({y:yr, pct:total > 0 ? n / total * 100 : 0});
-  }
-  var fillD = "M" + xScale(0) + "," + yScale(0);
-  pts.forEach(function(p) { fillD += " L" + xScale(p.y) + "," + yScale(p.pct); });
-  fillD += " L" + xScale(years) + "," + yScale(0) + "Z";
-  svg.appendChild(svgEl("path", {d:fillD, fill:"rgba(226,121,95,0.18)", stroke:"none"}));
-  var lineD = "M" + xScale(pts[0].y) + "," + yScale(pts[0].pct);
-  pts.slice(1).forEach(function(p) { lineD += " L" + xScale(p.y) + "," + yScale(p.pct); });
-  svg.appendChild(svgEl("path", {d:lineD, fill:"none", stroke:"#e2795f", "stroke-width":2.2 * sw, "stroke-linejoin":"round"}));
-}
-
 function mcLegend(elId, extra){
   const parts = [swatch("#4fbf95", "10th\u201390th percentile"),
                  swatch("#3f9a78", "25th\u201375th"),
@@ -12824,16 +12770,10 @@ function renderDrawdown() {
       $("ddIncomeNote").textContent = "";
     }
 
-    // Depletion probability chart
-    $("ddDepletionPanel").hidden = false;
-    paintDepletionCurve("chartDDDepletion", H.runs, o.years, ddRetireAge);
-    $("ddDepletionNote").innerHTML = "Percentage of historical retirements that ran out of money by each year. " +
-      (H.successRate >= 1 ? "This plan never ran out." : H.survived + " of " + H.total + " survived the full " + o.years + " years.");
-
     // Return sensitivity
     $("ddSensPanel").hidden = false;
     (function() {
-      var drags = [-2, -1, 0, 1];
+      var drags = [2, 1, 0, -1];
       var rows = drags.map(function(drag) {
         var oS = Object.assign({}, o, {returnDrag: drag});
         var S = historicalBacktest(oS);
@@ -12844,7 +12784,7 @@ function renderDrawdown() {
         "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
         "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
         rows.map(function(r) {
-          var label = r.drag === 0 ? "Baseline (historical)" : (r.drag > 0 ? "+" + r.drag + "% / yr" : r.drag + "% / yr");
+          var label = r.drag === 0 ? "Baseline (historical)" : (r.drag > 0 ? "-" + r.drag + "% / yr" : "+" + (-r.drag) + "% / yr");
           var wt = r.drag === 0 ? "font-weight:600" : "";
           return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
             "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
@@ -12857,29 +12797,44 @@ function renderDrawdown() {
       var ssMode = $("ddSSMode").value;
       if (ssMode !== "est" || !(num("ddSSIncome") > 0)) { $("ddSSBreakEvenPanel").hidden = true; return; }
       $("ddSSBreakEvenPanel").hidden = false;
-      var ssIncome = num("ddSSIncome");
-      var currentAge = num("ddSSClaim");
       var testAges = [62, 64, 67, 70];
-      var ssRows = testAges.map(function(testAge) {
-        var annual = ssEstimate(ssIncome, 40, testAge).annual;
-        var delay = o.retireAge != null ? Math.max(0, Math.round(testAge - o.retireAge)) : 0;
-        var oT = Object.assign({}, o, {ssAnnual: annual, ssDelayYears: delay});
-        var S = historicalBacktest(oT);
-        return {age:testAge, annual:annual, rate:S.successRate, median:S.medianEnd, current:testAge === Math.round(currentAge)};
+      var buildSSTable = function(rows) {
+        return "<table style='width:100%;border-collapse:collapse'>" +
+          "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
+          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
+          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+          rows.map(function(r) {
+            var wt = r.current ? "font-weight:600" : "";
+            var cur = r.current ? " ◄" : "";
+            return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
+              "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
+              "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
+              "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+          }).join("") + "</tbody></table>";
+      };
+      var ssIncome1 = num("ddSSIncome"), curAge1 = num("ddSSClaim");
+      var ssRows1 = testAges.map(function(a) {
+        var ann = ssEstimate(ssIncome1, 40, a).annual;
+        var del = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
+        var S = historicalBacktest(Object.assign({}, o, {ssAnnual: ann, ssDelayYears: del}));
+        return {age:a, annual:ann, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
       });
-      $("ddSSBreakEvenTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
-        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
-        ssRows.map(function(r) {
-          var wt = r.current ? "font-weight:600" : "";
-          var cur = r.current ? " ◄ current" : "";
-          return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
-            "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
-            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
-            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
-        }).join("") + "</tbody></table>";
+      var ssWho = $("ddSSWho").value;
+      if (ssWho === "couple" && num("ddSSIncome2") > 0) {
+        var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
+        var ssRows2 = testAges.map(function(a) {
+          var ann2 = ssEstimate(ssIncome2, 40, a).annual;
+          var del2 = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
+          var S = historicalBacktest(Object.assign({}, o, {ssAnnual2: ann2, ssDelayYears2: del2}));
+          return {age:a, annual:ann2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
+        });
+        $("ddSSBreakEvenTable").innerHTML =
+          "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + buildSSTable(ssRows1) +
+          "<p style='font-weight:600;margin:12px 0 6px'>Spouse’s claiming age (yours held constant)</p>" + buildSSTable(ssRows2);
+      } else {
+        $("ddSSBreakEvenTable").innerHTML = buildSSTable(ssRows1);
+      }
     })();
 
   } else {
@@ -12934,15 +12889,10 @@ function renderDrawdown() {
     renderIncomeChart(med);
     $("ddIncomeNote").textContent = "";
 
-    // Depletion probability chart (MC)
-    $("ddDepletionPanel").hidden = false;
-    paintDepletionCurve("chartDDDepletion", M.runs, o.years, ddRetireAge);
-    $("ddDepletionNote").innerHTML = "Percentage of " + trials.toLocaleString() + " simulated retirements that ran out of money by each year.";
-
     // Return sensitivity (MC)
     $("ddSensPanel").hidden = false;
     (function() {
-      var drags = [-2, -1, 0, 1];
+      var drags = [2, 1, 0, -1];
       var rows = drags.map(function(drag) {
         var oS = Object.assign({}, o, {returnDrag: drag});
         var S = monteCarloDrawdown(oS, 500, mcSeed);
@@ -12953,7 +12903,7 @@ function renderDrawdown() {
         "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
         "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
         rows.map(function(r) {
-          var label = r.drag === 0 ? "Baseline (sampled)" : (r.drag > 0 ? "+" + r.drag + "% / yr" : r.drag + "% / yr");
+          var label = r.drag === 0 ? "Baseline (sampled)" : (r.drag > 0 ? "-" + r.drag + "% / yr" : "+" + (-r.drag) + "% / yr");
           var wt = r.drag === 0 ? "font-weight:600" : "";
           return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
             "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
@@ -12966,29 +12916,44 @@ function renderDrawdown() {
       var ssMode = $("ddSSMode").value;
       if (ssMode !== "est" || !(num("ddSSIncome") > 0)) { $("ddSSBreakEvenPanel").hidden = true; return; }
       $("ddSSBreakEvenPanel").hidden = false;
-      var ssIncome = num("ddSSIncome");
-      var currentAge = num("ddSSClaim");
       var testAges = [62, 64, 67, 70];
-      var ssRows = testAges.map(function(testAge) {
-        var annual = ssEstimate(ssIncome, 40, testAge).annual;
-        var delay = o.retireAge != null ? Math.max(0, Math.round(testAge - o.retireAge)) : 0;
-        var oT = Object.assign({}, o, {ssAnnual: annual, ssDelayYears: delay});
-        var S = monteCarloDrawdown(oT, 500, mcSeed);
-        return {age:testAge, annual:annual, rate:S.successRate, median:S.medianEnd, current:testAge === Math.round(currentAge)};
+      var buildSSTable = function(rows) {
+        return "<table style='width:100%;border-collapse:collapse'>" +
+          "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
+          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
+          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+          rows.map(function(r) {
+            var wt = r.current ? "font-weight:600" : "";
+            var cur = r.current ? " ◄" : "";
+            return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
+              "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
+              "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
+              "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+          }).join("") + "</tbody></table>";
+      };
+      var ssIncome1 = num("ddSSIncome"), curAge1 = num("ddSSClaim");
+      var ssRows1 = testAges.map(function(a) {
+        var ann = ssEstimate(ssIncome1, 40, a).annual;
+        var del = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
+        var S = monteCarloDrawdown(Object.assign({}, o, {ssAnnual: ann, ssDelayYears: del}), 500, mcSeed);
+        return {age:a, annual:ann, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
       });
-      $("ddSSBreakEvenTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
-        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
-        ssRows.map(function(r) {
-          var wt = r.current ? "font-weight:600" : "";
-          var cur = r.current ? " ◄ current" : "";
-          return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
-            "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
-            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
-            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
-        }).join("") + "</tbody></table>";
+      var ssWho = $("ddSSWho").value;
+      if (ssWho === "couple" && num("ddSSIncome2") > 0) {
+        var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
+        var ssRows2 = testAges.map(function(a) {
+          var ann2 = ssEstimate(ssIncome2, 40, a).annual;
+          var del2 = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
+          var S = monteCarloDrawdown(Object.assign({}, o, {ssAnnual2: ann2, ssDelayYears2: del2}), 500, mcSeed);
+          return {age:a, annual:ann2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
+        });
+        $("ddSSBreakEvenTable").innerHTML =
+          "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + buildSSTable(ssRows1) +
+          "<p style='font-weight:600;margin:12px 0 6px'>Spouse’s claiming age (yours held constant)</p>" + buildSSTable(ssRows2);
+      } else {
+        $("ddSSBreakEvenTable").innerHTML = buildSSTable(ssRows1);
+      }
     })();
 
   }
@@ -13136,6 +13101,9 @@ attachChart("chartWrapDDI", "chartDDI", "tipDDI", function () { return ddiPoints
 attachChart("chartWrapDD", "chartDD", "tipDD", function () { return ddPoints; },
   function (best) {
     var lbl = ddRetireAge != null ? "Age " + ddAgeValPoint(best.year) : "Year " + fmtNum(best.year);
+    if (ddView === "year") {
+      return "<b>" + lbl + "</b><br><span class='n'>" + money(best.base) + "</span>";
+    }
     return "<b>" + lbl + "</b>" +
       "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
       "</span><br><span style='color:#3f9a78'>75th</span> <span class='n'>" + money(best.p75) +
