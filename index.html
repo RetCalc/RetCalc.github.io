@@ -2798,7 +2798,7 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="ddTable">
-          <thead><tr><th id="ddTableYearHeader">Year</th><th>Start, today's $</th><th>Social Security</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
+          <thead><tr><th id="ddTableYearHeader">Year</th><th>Start, today's $</th><th>Social Security</th><th id="ddOtherIncomeHeader" hidden>Other Income</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -7122,7 +7122,8 @@ function runDrawdown(o, seq) {
     rows.push({
       year: y + 1, start: start, withdrawal: w, realWithdrawal: realW,
       growth: growth, end: bal, realEnd: bal / cumInfl, infl: s.infl,
-      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: spend / cumInfl
+      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: spend / cumInfl,
+      customIncome: customIncomeTotal
     });
 
     prevW = strategyW;
@@ -10517,11 +10518,15 @@ function buildDrawdownSheet(){
   // year beyond that, every 3rd beyond 40.
   const step = show.rows.length <= 20 ? 1 : show.rows.length <= 40 ? 2 : 3;
   const tableRows = show.rows.filter((r, i) => i === 0 || i === show.rows.length - 1 || i % step === 0);
+  const sheetHasCustomIncome = (o.incomeItems || []).some(it => it.on !== false);
   let table = "<table><thead><tr><th>" + (ddRetireAge != null ? "Age" : "Year") + "</th><th>Withdrawal</th><th>Soc. Sec.</th>" +
+    (sheetHasCustomIncome ? "<th>Other Income</th>" : "") +
     "<th>Return</th><th>End balance</th></tr></thead><tbody>";
   tableRows.forEach(r => {
     table += "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(r.withdrawal) + "</td><td>" +
-      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td><td>" + r.ret.toFixed(1) + "%</td><td>" +
+      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td>" +
+      (sheetHasCustomIncome ? "<td>" + (r.customIncome > 0 ? money(r.customIncome) : "\u2014") + "</td>" : "") +
+      "<td>" + r.ret.toFixed(1) + "%</td><td>" +
       money(r.realEnd) + "</td></tr>";
   });
   table += "</tbody></table>";
@@ -12965,10 +12970,15 @@ function fillDDTable(run) {
   // side over a long horizon \u2014 50 years of inflation alone can turn a real
   // $20M into a nominal $140M. Every dollar figure here is converted back to
   // today's terms so the table reads consistently with the rest of the app.
+  var hasCustomIncome = ddIncomeItems.some(function(it){ return it.on !== false; });
+  $("ddOtherIncomeHeader").hidden = !hasCustomIncome;
   $("ddTable").querySelector("tbody").innerHTML = run.rows.map(function (r, i) {
     var prevReal = i === 0 ? r.start : run.rows[i - 1].realEnd;
+    var otherCell = hasCustomIncome
+      ? "<td>" + (r.customIncome > 0 ? money(r.customIncome) : "\u2014") + "</td>"
+      : "";
     return "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(prevReal) + "</td><td>" +
-      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td><td>" + money(r.withdrawal) +
+      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td>" + otherCell + "<td>" + money(r.withdrawal) +
       "</td><td>" + money(r.spend) + "</td><td>" + money(r.realSpend != null ? r.realSpend : r.realWithdrawal) +
       "</td><td class='" + (r.ret >= 0 ? "pos" : "neg") + "'>" +
       r.ret.toFixed(1) + "%</td><td>" + money(r.realEnd) + "</td></tr>";
@@ -15113,8 +15123,16 @@ function showItemForm(kind, existing){
   return new Promise(resolve => {
     const isIncome = kind === "income";
     const ageMode = ddRetireAge != null;
-    const d = existing || {name:"", annual:0, inflate:true, startYear:1,
-      durationType:"forever", durationYears:5};
+    const d = existing
+      ? {
+          name: existing.name,
+          annual: existing.annual,
+          inflate: existing.inflate !== false,
+          startYear: existing.startYear || 1,
+          durationType: (existing.duration && existing.duration.type) || "forever",
+          durationYears: (existing.duration && existing.duration.years) || 5
+        }
+      : {name:"", annual:0, inflate:true, startYear:1, durationType:"forever", durationYears:5};
     const ov = document.createElement("div");
     ov.className = "popup-overlay";
     ov.innerHTML =
