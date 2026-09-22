@@ -12,6 +12,22 @@
 <meta name="apple-mobile-web-app-title" content="Retirement">
 <title>Retirement Calculator</title>
 <script>
+  /* GitHub Pages has no server-side router, so a direct hit on a clean path
+     like /incometax 404s and is redirected here by 404.html, which packs the
+     real path into a "?/incometax" query string. Unpack it back into the
+     address bar before anything else runs, so boot()'s routing (further
+     down the page) sees the real path via location.pathname.
+     https://github.com/rafgraph/spa-github-pages */
+  (function(l){
+    if (l.search[1] === "/"){
+      var decoded = l.search.slice(1).split("&").map(function(s){
+        return s.replace(/~and~/g, "&");
+      }).join("?");
+      window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+    }
+  }(window.location));
+</script>
+<script>
   /* Flag the installed home-screen web app so the phone bottom tab bar applies
      there only, not in a regular Safari tab (which has its own bottom toolbar).
      Runs in <head> before first paint to avoid a flash of the top rail.
@@ -10245,9 +10261,39 @@ $("btnToolBack").addEventListener("click", () => {
    gesture steps back through the app instead of leaving it. The state lives
    in the entry object, not the URL, so the "#p=" share link is untouched. */
 let navSuspended = false;
+/* Clean paths for the tools that have one (e.g. /incometax), built from a
+   single table so the two directions can't drift apart. Tabs/states with no
+   entry here (compare views, the picker's own url) just don't rewrite the
+   address bar. The "#p=" share-link hash still wins on load when present,
+   since it carries full input state, not just which tab is open. */
+const TOOL_PATHS = {
+  tax:"incometax", mortgage:"mortgage", budget:"budget", college:"college",
+  rentbuy:"rentbuy", drawdown:"drawdown", roth:"roth", debt:"debt",
+  backtest:"backtest", healthcare:"healthcare", fire:"fire"
+};
+const SUB_BY_PATH = {};
+Object.keys(TOOL_PATHS).forEach(sub => { SUB_BY_PATH[TOOL_PATHS[sub]] = sub; });
+function pathForRoute(t, s){
+  if (t === "simple") return "/";
+  if (t === "single" || t === "series" || t === "about") return "/" + t;
+  if (t === "tools") return "/" + (TOOL_PATHS[s] || "tools");
+  return null;
+}
+function routeFromPath(path){
+  const seg = path.replace(/^\/+|\/+$/g, "");
+  if (!seg) return null;
+  if (seg === "single" || seg === "series" || seg === "about") return {t:seg};
+  if (seg === "tools") return {t:"tools", s:"picker"};
+  if (SUB_BY_PATH[seg]) return {t:"tools", s:SUB_BY_PATH[seg]};
+  return null;
+}
 function pushNav(){
   if (navSuspended) return;
-  try { history.pushState({t:chartMode.tab, s:toolSub}, ""); } catch(e){}
+  try {
+    const path = pathForRoute(chartMode.tab, toolSub);
+    if (path) history.pushState({t:chartMode.tab, s:toolSub}, "", path);
+    else history.pushState({t:chartMode.tab, s:toolSub}, "");
+  } catch(e){}
 }
 window.addEventListener("popstate", e => {
   const st = e.state;
@@ -16457,7 +16503,9 @@ if (location.hash && location.hash.indexOf("#p=") === 0){
   const st = decodeState(location.hash.slice(3));
   fromLink = !!(st && applyState(st));
 }
-showTab(fromLink ? linkTab : "simple");
+const pathRoute = fromLink ? null : routeFromPath(location.pathname);
+if (pathRoute) toolSub = pathRoute.s || "picker";
+showTab(fromLink ? linkTab : (pathRoute ? pathRoute.t : "simple"));
 renderConverter();
 renderAll();
 renderSeries();
