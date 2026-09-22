@@ -4910,15 +4910,9 @@ window.onerror = function(msg){
     <div class="panel inputs">
       <h2>Your situation</h2>
       <div class="body">
-        <div class="two">
-          <div class="field">
-            <label for="hcAge">Current age</label>
-            <div class="inputwrap"><input id="hcAge" type="text" inputmode="decimal" data-num min="18" max="80" value="55"></div>
-          </div>
-          <div class="field">
-            <label for="hcRetireAge">Retire at</label>
-            <div class="inputwrap"><input id="hcRetireAge" type="text" inputmode="decimal" data-num min="40" max="75" value="62"></div>
-          </div>
+        <div class="field">
+          <label for="hcRetireAge">Retirement age</label>
+          <div class="inputwrap"><input id="hcRetireAge" type="text" inputmode="decimal" data-num min="40" max="75" value="62"><span class="affix">yrs</span></div>
         </div>
         <div class="two">
           <div class="field">
@@ -16357,7 +16351,6 @@ function hcIRMAATier(magi, joint){
 }
 
 function renderHealthcare(){
-  var age = Math.round(num("hcAge")) || 55;
   var retireAge = Math.round(num("hcRetireAge")) || 62;
   var status = $("hcStatus").value;
   var joint = (status === "m");
@@ -16532,7 +16525,7 @@ function renderHealthcare(){
 // ── HC sidebar event wiring ──────────────────────────────────────────────────
 (function(){
   function hcListen(id){ var el = $(id); if (el) el.addEventListener("input", renderHealthcare); }
-  ["hcAge","hcRetireAge","hcIncome","hcManualPremium"].forEach(hcListen);
+  ["hcRetireAge","hcIncome","hcManualPremium"].forEach(hcListen);
   ["hcStatus","hcHousehold","hcState"].forEach(function(id){
     var el = $(id); if (el) el.addEventListener("change", renderHealthcare);
   });
