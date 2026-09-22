@@ -585,11 +585,11 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .db-b2{animation:db-pay .44s ease-in-out .14s}
   .toolcard:hover .db-b1{animation:db-pay .44s ease-in-out .21s}
 
-  /* Healthcare: cross pulses, ring dims. */
-  @keyframes hc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+  /* Healthcare: cross spins a full turn, ring dims while it goes. */
+  @keyframes hc-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   .hc-cross{transform-box:view-box;transform-origin:center}
-  .toolcard:hover .hc-cross{animation:hc-pulse .5s ease-out}
-  .toolcard:hover .hc-ring{opacity:.7;transition:opacity .2s ease}
+  .toolcard:hover .hc-cross{animation:hc-spin .55s cubic-bezier(.4,0,.2,1) forwards}
+  .toolcard:hover .hc-ring{opacity:.55;transition:opacity .3s ease}
 }
 @media (prefers-reduced-motion:reduce){
   .toolcard:hover .dd-line,.toolcard:hover .dd-dot,.toolcard:hover .tx-glass,
@@ -4945,7 +4945,7 @@ window.onerror = function(msg){
             <option value="AK">Alaska</option>
             <option value="AZ">Arizona</option>
             <option value="AR">Arkansas</option>
-            <option value="CA" selected>California</option>
+            <option value="CA">California</option>
             <option value="CO">Colorado</option>
             <option value="CT">Connecticut</option>
             <option value="DC">DC</option>
@@ -4954,7 +4954,7 @@ window.onerror = function(msg){
             <option value="GA">Georgia</option>
             <option value="HI">Hawaii</option>
             <option value="ID">Idaho</option>
-            <option value="IL">Illinois</option>
+            <option value="IL" selected>Illinois</option>
             <option value="IN">Indiana</option>
             <option value="IA">Iowa</option>
             <option value="KS">Kansas</option>
@@ -13532,7 +13532,7 @@ const GLOSS = {
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
   customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top.",
   bgsavings: "Money being set aside rather than spent, so it's kept out of the spending total above and shown as savings instead.",
-  hcincome: "The ACA uses your annual Modified Adjusted Gross Income (MAGI) to calculate your premium subsidy. Medicare IRMAA surcharges are also income-based, using your MAGI from two years earlier. For most retirees, MAGI ≈ AGI. Roth withdrawals are excluded from MAGI; Roth conversions and traditional withdrawals are included. If you have retirement income entered in the Tax tool (Retirement Income mode), it can be pulled in automatically.",
+  hcincome: "The ACA uses your annual Modified Adjusted Gross Income (MAGI) to calculate your premium subsidy. Medicare IRMAA surcharges are also income-based, using your MAGI from two years earlier. For most retirees, MAGI is close to AGI. Roth withdrawals are excluded from MAGI; Roth conversions and traditional IRA or 401(k) withdrawals are included. Use the Copy from Tax tool button to pull your estimated retirement MAGI from the Income Tax tool when it is set to Retirement Income mode.",
   hcbenchmark: "The ACA premium tax credit is calculated using the premium for the benchmark plan, defined as the second-lowest-cost Silver plan available in your county. The credit is the difference between that premium and a capped percentage of your income. This cap (not a flat dollar amount) is what the subsidy system targets. Enter your actual benchmark Silver premium from healthcare.gov for precision; otherwise a state-level estimate is used."
 };
 
@@ -16360,7 +16360,7 @@ function renderHealthcare(){
   var status = $("hcStatus").value;
   var joint = (status === "m");
   var household = parseInt($("hcHousehold").value) || (joint ? 2 : 1);
-  var state = $("hcState").value || "CA";
+  var state = $("hcState").value || "IL";
   var manualPremium = num("hcManualPremium") || 0;
 
   // ── income ───────────────────────────────────────────────────────────────
@@ -16387,17 +16387,25 @@ function renderHealthcare(){
     var pctFPLStr = (pctFPL * 100).toFixed(0) + "%";
     var medicaid = pctFPL < 1.0;
 
+    var netForStat = stdResult.eligible ? stdResult.net : (enhResult.eligible ? enhResult.net : grossMonthly);
     acaHTML += "<div class='hc-stats'>";
-    acaHTML += "<div class='hc-stat'><div class='v'>" + acaBridgeYears + " yr" + (acaBridgeYears !== 1 ? "s" : "") + "</div><div class='optlabel'>on ACA bridge</div></div>";
-    acaHTML += "<div class='hc-stat'><div class='v'>" + pctFPLStr + "</div><div class='optlabel'>of federal poverty line</div></div>";
+    acaHTML += "<div class='hc-stat'><div class='v'>" + acaBridgeYears + " yr" + (acaBridgeYears !== 1 ? "s" : "") + "</div><div class='optlabel'>years on ACA bridge</div></div>";
+    acaHTML += "<div class='hc-stat'><div class='v'>$" + Math.round(netForStat) + "/mo</div><div class='optlabel'>est. net Silver premium</div></div>";
     acaHTML += "</div>";
 
     if (medicaid){
-      acaHTML += "<div class='hc-insight'>At " + pctFPLStr + " FPL your income falls below the ACA subsidy floor. In states that expanded Medicaid you would qualify for Medicaid at little or no cost. In non-expansion states there is a coverage gap with no federal assistance.</div>";
+      acaHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>Your income of " + money(magi) + " is <b>" + pctFPLStr + " of the federal poverty level</b> for a " + household + "-person household. Premium tax credits only begin at 100% FPL, so ACA subsidies do not apply here.</p>";
+      acaHTML += "<div class='hc-insight'>In the 40 states (plus DC) that expanded Medicaid under the ACA, an income this low typically qualifies you for Medicaid at little or no monthly premium. In the remaining non-expansion states there is a coverage gap: income is too high for Medicaid but too low for ACA subsidies, leaving limited options for subsidized coverage. Check your state's Medicaid eligibility rules.</div>";
     } else {
+      // Context paragraph explaining what they're looking at
+      acaHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>Your income of " + money(magi) + " is <b>" + pctFPLStr + " of the federal poverty level</b> for a " + household + "-person household — this ratio drives your subsidy. " +
+        (stdResult.eligible
+          ? "The ACA sets what you're expected to contribute toward health coverage at " + (stdResult.pct * 100).toFixed(1) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment."
+          : "Under standard rules that income is above the 400% FPL cutoff where credits phase out, so you would pay the Silver plan's full list price. Enhanced rules (if legislation has extended them) cap your share at 8.5% of income for all income levels and would apply a credit here.") +
+        "</p>";
       // Standard rules
       acaHTML += "<div class='hc-section-label'>Standard ACA rules</div>";
-      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est.)</span>" : "") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
+      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver plan" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est., age " + acaAge + ") — the reference used to price your credit</span>" : " <span style='color:var(--dimmer);font-size:11px'>your entered premium</span>") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
       if (!stdResult.eligible){
         acaHTML += "<div class='kv'><span class='k'>Premium tax credit</span><span class='v' style='color:var(--dimmer)'>none (income above 400% FPL)</span></div>";
         acaHTML += "<div class='kv total'><span class='k'>Your net premium</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
@@ -16420,10 +16428,10 @@ function renderHealthcare(){
       // Plan tier comparison (using standard rules)
       var refCredit = stdResult.credit;
       acaHTML += "<div class='hc-section'>";
-      acaHTML += "<div class='hc-section-label'>Plan tier comparison <span style='font-weight:400;color:var(--dimmer)'>(standard rules, same credit)</span></div>";
-      acaHTML += "<div class='hc-tier-row'><span>🥉 Bronze: lower premium, higher out-of-pocket</span><span>~$" + Math.round(Math.max(0, bronzeGross - refCredit)) + "/mo</span></div>";
-      acaHTML += "<div class='hc-tier-row hc-tier-sel'><span>🥈 Silver: credit designed around this plan</span><span>$" + Math.round(stdResult.net) + "/mo</span></div>";
-      acaHTML += "<div class='hc-tier-row'><span>🥇 Gold: higher premium, lower cost-sharing</span><span>~$" + Math.round(Math.max(0, goldGross - refCredit)) + "/mo</span></div>";
+      acaHTML += "<div class='hc-section-label'>Plan tier comparison <span style='font-weight:400;color:var(--dimmer)'>(same credit applies to any tier)</span></div>";
+      acaHTML += "<div class='hc-tier-row'><span>🥉 Bronze: lowest monthly cost; high deductible — you pay most costs out-of-pocket until you hit it</span><span>~$" + Math.round(Math.max(0, bronzeGross - refCredit)) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row hc-tier-sel'><span>🥈 Silver: the credit is built around this tier; also unlocks cost-sharing reductions at lower incomes</span><span>$" + Math.round(stdResult.net) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row'><span>🥇 Gold: higher monthly cost; lower deductible and copays — better if you expect to use a lot of care</span><span>~$" + Math.round(Math.max(0, goldGross - refCredit)) + "/mo</span></div>";
       acaHTML += "</div>";
 
       // Income insights
@@ -16466,6 +16474,12 @@ function renderHealthcare(){
     medHTML = "<p style='color:var(--dim);font-size:14px'>Enter your expected retirement MAGI to see Medicare cost estimates. Medicare uses your income from <b>two years prior</b> to determine surcharges.</p>";
   } else {
     var hasIRMAA = irmaaTier > 0;
+    medHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>" +
+      "<b>Part B</b> covers doctor visits, outpatient care, and preventive services. " +
+      "<b>Part D</b> covers prescription drugs. " +
+      "Most enrollees add a <b>Medigap supplement</b> (like Plan G) which covers deductibles and copays that Parts A and B leave unpaid, capping your out-of-pocket exposure. " +
+      "Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums." +
+      "</p>";
     medHTML += "<div class='hc-irmaa-badge" + (hasIRMAA ? " hc-irmaa-hit" : "") + "'>" +
       "IRMAA " + tierNames[irmaaTier] + (hasIRMAA ? ": income surcharge applies" : ": standard premium") + "</div>";
 
