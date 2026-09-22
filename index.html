@@ -3649,68 +3649,6 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
-      <h2>Healthcare Cost Planner</h2>
-      <div class="body">
-        <p>Healthcare is one of the largest and most variable costs in early retirement.
-        This tool covers two phases: the ACA bridge between retirement and Medicare,
-        and Medicare itself from age 65 on.</p>
-
-        <p><b>Pre-65: ACA Bridge.</b> Most early retirees buy coverage on the ACA
-        marketplace until Medicare starts. Premiums are set by age and state; the tool
-        uses the official HHS age-rating multipliers to scale a state-level benchmark to
-        your retirement age. The premium tax credit reduces what you actually pay, and
-        its size depends on where your income falls relative to the federal poverty line.</p>
-
-        <dl class="gloss">
-          <dt>Retirement MAGI</dt>
-          <dd>Modified Adjusted Gross Income — the number the ACA and Medicare both use.
-          In retirement this is typically taxable withdrawals, pension income, taxable
-          Social Security, and capital gains added together. Use <b>Copy from Tax tool</b>
-          to pull it automatically when the Income Tax tool is in Retirement Income mode.</dd>
-
-          <dt>Standard vs. enhanced ACA rules</dt>
-          <dd>Standard rules cap your premium at a sliding percentage of income and phase
-          out subsidies at 400% FPL (the "subsidy cliff"). Enhanced rules, first passed in
-          2021, remove the cliff and cap contributions at 8.5% for all income levels. The
-          tool shows both, since their continuation depends on current legislation.</dd>
-
-          <dt>The 400% FPL cliff</dt>
-          <dd>Under standard rules, crossing this line eliminates the entire subsidy in
-          one dollar. The tool warns you when you're close and quantifies the exact monthly
-          cost — relevant when weighing Roth conversions, capital gains realizations, or
-          IRA withdrawal timing against ACA premium exposure.</dd>
-
-          <dt>State and age adjustment</dt>
-          <dd>The benchmark Silver premium is estimated per state for a 40-year-old and
-          scaled to your retirement age via the HHS multiplier table. Enter your own
-          quote from healthcare.gov in the sidebar for a precise number.</dd>
-        </dl>
-
-        <p><b>Post-65: Medicare.</b> Medicare Part B (outpatient) and Part D
-        (prescriptions) both carry income-related surcharges known as IRMAA, based on
-        your income from two years prior. Most enrollees add Medigap coverage to cap
-        out-of-pocket exposure.</p>
-
-        <dl class="gloss">
-          <dt>IRMAA</dt>
-          <dd>Income-Related Monthly Adjustment Amount. If your MAGI two years ago
-          exceeded a threshold ($106,000 single / $212,000 married in 2025), Part B and
-          Part D cost more — in six tiers up to three times the base premium. The tool
-          shows your tier, the dollar surcharge, and the exact savings from keeping income
-          below the next tier down, which matters for withdrawal sequencing and Roth
-          conversion decisions in the years before Medicare starts.</dd>
-
-          <dt>Medigap</dt>
-          <dd>Supplement plans like Plan G cover most of what Original Medicare leaves
-          unpaid. Premiums vary widely by state, insurer, and age at enrollment; the range
-          shown is a rough national estimate for a 65-year-old. Medicare Advantage
-          (Part C) plans work differently — often lower premiums but narrower networks
-          and different cost-sharing — and are not modelled here.</dd>
-        </dl>
-      </div>
-    </div>
-
-    <div class="panel about">
       <h2>Debt Payoff</h2>
       <div class="body">
         <p>Two well-known ways to clear several debts at once, and they differ in
@@ -3758,6 +3696,69 @@ window.onerror = function(msg){
         modelled, and neither is new borrowing. It also ignores the case for skipping all
         of this and grabbing an employer match first: a 50% match beats paying off a 24%
         card.</p>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Healthcare Cost Planner</h2>
+      <div class="body">
+        <p>Healthcare is one of the largest and most variable costs in early retirement.
+        This tool covers two phases: the ACA bridge between retirement and Medicare,
+        and Medicare itself from age 65 on.</p>
+
+        <p><b>Pre-65: ACA Bridge.</b> Most early retirees buy coverage on the ACA
+        marketplace until Medicare starts. Premiums are set by age and state; the tool
+        uses the official HHS age-rating multipliers to scale a state-level benchmark to
+        your retirement age. The premium tax credit reduces what you actually pay, and
+        its size depends on where your income falls relative to the federal poverty line.</p>
+
+        <dl class="gloss">
+          <dt>Retirement MAGI</dt>
+          <dd>Modified Adjusted Gross Income (MAGI) is the income figure the ACA and
+          Medicare both use. In retirement this is typically taxable withdrawals, pension
+          income, taxable Social Security, and capital gains added together. Use
+          <b>Copy from Tax tool</b> to pull it automatically when the Income Tax tool
+          is in Retirement Income mode.</dd>
+
+          <dt>Standard vs. enhanced ACA rules</dt>
+          <dd>Standard rules cap your premium at a sliding percentage of income and phase
+          out subsidies at 400% FPL (the "subsidy cliff"). Enhanced rules, first passed in
+          2021, remove the cliff and cap contributions at 8.5% for all income levels. The
+          tool shows both, since their continuation depends on current legislation.</dd>
+
+          <dt>The 400% FPL cliff</dt>
+          <dd>Under standard rules, crossing this line eliminates the entire subsidy in
+          one dollar. The tool warns you when you're close and quantifies the exact monthly
+          cost, which matters when weighing Roth conversions, capital gains realizations,
+          or IRA withdrawal timing against ACA premium exposure.</dd>
+
+          <dt>State and age adjustment</dt>
+          <dd>The benchmark Silver premium is estimated per state for a 40-year-old and
+          scaled to your retirement age via the HHS multiplier table. Enter your own
+          quote from healthcare.gov in the sidebar for a precise number.</dd>
+        </dl>
+
+        <p><b>Post-65: Medicare.</b> Medicare Part B (outpatient) and Part D
+        (prescriptions) both carry income-related surcharges known as IRMAA, based on
+        your income from two years prior. Most enrollees add Medigap coverage to cap
+        out-of-pocket exposure.</p>
+
+        <dl class="gloss">
+          <dt>IRMAA</dt>
+          <dd>Income-Related Monthly Adjustment Amount. If your MAGI two years ago
+          exceeded a threshold ($106,000 single / $212,000 married in 2025), Part B and
+          Part D cost more, in six tiers up to three times the base premium. The tool
+          shows your tier, the dollar surcharge, and the exact savings from keeping income
+          below the next tier down, which matters for withdrawal sequencing and Roth
+          conversion decisions in the years before Medicare starts.</dd>
+
+          <dt>Medigap</dt>
+          <dd>Supplement plans like Plan G cover most of what Original Medicare leaves
+          unpaid. Premiums vary widely by state, insurer, and age at enrollment; the range
+          shown is a rough national estimate for a 65-year-old. Medicare Advantage
+          (Part C) plans have lower premiums but narrower networks and different
+          cost-sharing, and are not modelled here.</dd>
+        </dl>
       </div>
     </div>
 
@@ -13532,7 +13533,7 @@ const GLOSS = {
   customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top.",
   bgsavings: "Money being set aside rather than spent, so it's kept out of the spending total above and shown as savings instead.",
   hcincome: "The ACA uses your annual Modified Adjusted Gross Income (MAGI) to calculate your premium subsidy. Medicare IRMAA surcharges are also income-based, using your MAGI from two years earlier. For most retirees, MAGI ≈ AGI. Roth withdrawals are excluded from MAGI; Roth conversions and traditional withdrawals are included. If you have retirement income entered in the Tax tool (Retirement Income mode), it can be pulled in automatically.",
-  hcbenchmark: "The ACA premium tax credit is calculated using the premium for the benchmark plan, defined as the second-lowest-cost Silver plan available in your county. The credit is the difference between that premium and a capped percentage of your income. This cap — not a flat dollar amount — is what the subsidy system targets. Enter your actual benchmark Silver premium from healthcare.gov for precision; otherwise a state-level estimate is used."
+  hcbenchmark: "The ACA premium tax credit is calculated using the premium for the benchmark plan, defined as the second-lowest-cost Silver plan available in your county. The credit is the difference between that premium and a capped percentage of your income. This cap (not a flat dollar amount) is what the subsidy system targets. Enter your actual benchmark Silver premium from healthcare.gov for precision; otherwise a state-level estimate is used."
 };
 
 /* ---------- Roth conversion tool: form, render, charts ---------- */
@@ -16379,7 +16380,7 @@ function renderHealthcare(){
 
   var acaHTML = "";
   if (acaBridgeYears <= 0){
-    acaHTML = "<p style='color:var(--dim);font-size:14px'>Retiring at 65 or later — no ACA bridge needed. Medicare coverage begins at 65.</p>";
+    acaHTML = "<p style='color:var(--dim);font-size:14px'>Retiring at 65 or later: no ACA bridge needed. Medicare coverage begins at 65.</p>";
   } else if (magi <= 0){
     acaHTML = "<p style='color:var(--dim);font-size:14px'>Enter your expected retirement MAGI to see your ACA premium estimate.</p>";
   } else {
@@ -16396,9 +16397,9 @@ function renderHealthcare(){
     } else {
       // Standard rules
       acaHTML += "<div class='hc-section-label'>Standard ACA rules</div>";
-      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver — gross" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est.)</span>" : "") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
+      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est.)</span>" : "") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
       if (!stdResult.eligible){
-        acaHTML += "<div class='kv'><span class='k'>Premium tax credit</span><span class='v' style='color:var(--dimmer)'>none — income above 400% FPL</span></div>";
+        acaHTML += "<div class='kv'><span class='k'>Premium tax credit</span><span class='v' style='color:var(--dimmer)'>none (income above 400% FPL)</span></div>";
         acaHTML += "<div class='kv total'><span class='k'>Your net premium</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
       } else {
         acaHTML += "<div class='kv'><span class='k'>Premium tax credit <span style='color:var(--dimmer);font-size:11px'>(" + (stdResult.pct * 100).toFixed(1) + "% income cap)</span></span><span class='v pos'>−$" + Math.round(stdResult.credit) + "/mo</span></div>";
@@ -16420,14 +16421,14 @@ function renderHealthcare(){
       var refCredit = stdResult.credit;
       acaHTML += "<div class='hc-section'>";
       acaHTML += "<div class='hc-section-label'>Plan tier comparison <span style='font-weight:400;color:var(--dimmer)'>(standard rules, same credit)</span></div>";
-      acaHTML += "<div class='hc-tier-row'><span>🥉 Bronze — lower premium, higher out-of-pocket</span><span>~$" + Math.round(Math.max(0, bronzeGross - refCredit)) + "/mo</span></div>";
-      acaHTML += "<div class='hc-tier-row hc-tier-sel'><span>🥈 Silver — credit designed around this plan</span><span>$" + Math.round(stdResult.net) + "/mo</span></div>";
-      acaHTML += "<div class='hc-tier-row'><span>🥇 Gold — higher premium, lower cost-sharing</span><span>~$" + Math.round(Math.max(0, goldGross - refCredit)) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row'><span>🥉 Bronze: lower premium, higher out-of-pocket</span><span>~$" + Math.round(Math.max(0, bronzeGross - refCredit)) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row hc-tier-sel'><span>🥈 Silver: credit designed around this plan</span><span>$" + Math.round(stdResult.net) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row'><span>🥇 Gold: higher premium, lower cost-sharing</span><span>~$" + Math.round(Math.max(0, goldGross - refCredit)) + "/mo</span></div>";
       acaHTML += "</div>";
 
       // Income insights
       if (joint){
-        acaHTML += "<div class='hc-insight'>For a couple, <b>both spouses need their own plan</b> — the per-person premium above applies to each. If both spouses are the same age the household ACA cost is roughly double.</div>";
+        acaHTML += "<div class='hc-insight'>For a couple, <b>both spouses need their own plan</b>. The per-person premium above applies to each. If both spouses are the same age the household ACA cost is roughly double.</div>";
       }
 
       // 400% cliff warning if near it (standard rules)
@@ -16445,7 +16446,7 @@ function renderHealthcare(){
     acaHTML += "<div class='hc-note'>" +
       (usingStateEst ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled to age " + acaAge + ". " : "Using your entered benchmark premium. ") +
       "Enter your actual quote from <a href='https://healthcare.gov' target='_blank'>healthcare.gov</a> in the sidebar for precision. " +
-      "Subsidy rules can change by legislation — the standard rules shown here are the ACA baseline; enhanced rules removed the 400% FPL cliff and capped contributions at 8.5% of income." +
+      "Subsidy rules can change by legislation. The standard rules shown here are the ACA baseline; enhanced rules removed the 400% FPL cliff and capped contributions at 8.5% of income." +
       "</div>";
   }
   $("hcACABody").innerHTML = acaHTML;
@@ -16466,7 +16467,7 @@ function renderHealthcare(){
   } else {
     var hasIRMAA = irmaaTier > 0;
     medHTML += "<div class='hc-irmaa-badge" + (hasIRMAA ? " hc-irmaa-hit" : "") + "'>" +
-      "IRMAA " + tierNames[irmaaTier] + (hasIRMAA ? " — income surcharge applies" : " — standard premium") + "</div>";
+      "IRMAA " + tierNames[irmaaTier] + (hasIRMAA ? ": income surcharge applies" : ": standard premium") + "</div>";
 
     medHTML += "<div class='kv'><span class='k'>Part B premium" +
       (hasIRMAA ? " <span style='color:var(--dimmer);font-size:11px'>includes IRMAA surcharge</span>" : "") +
@@ -16507,7 +16508,7 @@ function renderHealthcare(){
       }
     }
 
-    medHTML += "<div class='hc-note'>Medicare costs use 2025 IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65 — state and insurer make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>";
+    medHTML += "<div class='hc-note'>Medicare costs use 2025 IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>";
   }
   $("hcMedicareBody").innerHTML = medHTML;
 }
@@ -16536,6 +16537,8 @@ function renderHealthcare(){
   });
 
   $("hcGoTax").addEventListener("click", function(){
+    txMode = "retire";
+    applyTaxMode();
     showTab("tools");
     showTool("tax");
   });
