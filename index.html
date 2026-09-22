@@ -5090,12 +5090,12 @@ window.onerror = function(msg){
         </div>
         <div class="field">
           <label for="fiInitial">Current savings</label>
-          <div class="inputwrap"><span class="affix">$</span><input id="fiInitial" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="inputwrap"><span class="affix">$</span><input id="fiInitial" type="text" inputmode="decimal" data-money data-nonneg value="10000"></div>
         </div>
         <div class="two">
           <div class="field">
             <label for="fiContrib">Contribution</label>
-            <div class="inputwrap"><span class="affix">$</span><input id="fiContrib" type="text" inputmode="decimal" data-money data-nonneg></div>
+            <div class="inputwrap"><span class="affix">$</span><input id="fiContrib" type="text" inputmode="decimal" data-money data-nonneg value="1000"></div>
           </div>
           <div class="field">
             <label for="fiPeriod">Frequency</label>
@@ -5113,7 +5113,7 @@ window.onerror = function(msg){
         <div class="two">
           <div class="field">
             <label for="fiNominal">Return rate</label>
-            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="7"><span class="affix">%</span></div>
+            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="7.5"><span class="affix">%</span></div>
           </div>
           <div class="field">
             <label for="fiInflation">Inflation</label>
@@ -5129,7 +5129,7 @@ window.onerror = function(msg){
         </div>
         <div class="field">
           <label for="fiTarget">Target (today&rsquo;s dollars)</label>
-          <div class="inputwrap"><span class="affix">$</span><input id="fiTarget" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="inputwrap"><span class="affix">$</span><input id="fiTarget" type="text" inputmode="decimal" data-money data-nonneg value="40000"></div>
           <div class="hint" id="fiTargetHint"></div>
         </div>
         <div class="field">
@@ -16797,6 +16797,8 @@ function renderHealthcare(){
 var fiChartPoints = null;
 var fiHistRunsCache = null;
 var fiHistKey = null;
+var fiHistFullCache = null;
+var fiHistFullKey = null;
 var fiSuccessResults = null;
 var fiMaxYears = 50;
 var fiCurrentFireYear = null;
@@ -16880,6 +16882,23 @@ function fiYearsAtPct(results, pct){
   var idx = Math.min(Math.floor(pct / 100 * n), n - 1);
   var y = years[idx];
   return y >= 9999 ? null : y;
+}
+
+function fiYearsFromBands(bands, target, successPct){
+  if (!bands || !bands.length || !target) return null;
+  var level = (100 - successPct) / 100;
+  function bandVal(b){
+    if (level <= 0.10) return b.p10;
+    if (level <= 0.25) return b.p10 + (b.p25 - b.p10) * ((level - 0.10) / 0.15);
+    if (level <= 0.50) return b.p25 + (b.p50 - b.p25) * ((level - 0.25) / 0.25);
+    if (level <= 0.75) return b.p50 + (b.p75 - b.p50) * ((level - 0.50) / 0.25);
+    if (level <= 0.90) return b.p75 + (b.p90 - b.p75) * ((level - 0.75) / 0.15);
+    return b.p90;
+  }
+  for (var i = 0; i < bands.length; i++){
+    if (bandVal(bands[i]) >= target) return Math.round(bands[i].year);
+  }
+  return null;
 }
 
 function drawFireChart(p, displayYear, maxYears){
@@ -16988,10 +17007,11 @@ function drawFireChart(p, displayYear, maxYears){
 
     var R = paintChart(svgId, pts, drawMaxX, "band", null, 0, {});
     fiChartPoints = R;
+    var lbl = (p.band * 100).toFixed(1).replace(/\.0$/, "");
     $("legendFire").innerHTML =
-      swatch("var(--gold)", pctStr(nomBase * 100, 1) + "% base") +
-      swatch("var(--jade)", "+" + pctStr(p.band * 100, 1) + "% hi") +
-      swatch("#e2795f", "-" + pctStr(p.band * 100, 1) + "% lo");
+      swatch("#4fbf95", p.band > 0 ? "At " + pctStr(nomHi, 1) + " (+" + lbl + "%)" : "Higher") +
+      swatch("#e9b872", "At " + pctStr(nomBase, 1) + " (your rate)") +
+      swatch("#e2795f", p.band > 0 ? "At " + pctStr(Math.max(0.001, nomLo), 1) + " (−" + lbl + "%)" : "Lower");
     $("fiChartNote").textContent = "";
   }
 
@@ -17037,23 +17057,46 @@ function renderFireSuccess(p){
     return;
   }
 
-  if (!fiSuccessResults){
-    $("fiSuccessAge").textContent = "--";
-    drawFireChart(p, fiCurrentFireYear, fiMaxYears);
-    return;
-  }
+  var displayYear = fiCurrentFireYear;
 
-  var y = fiYearsAtPct(fiSuccessResults, sr);
-  var displayYear;
-  if (y !== null && y >= 0){
-    var age = p.curAge + y;
-    $("fiSuccessAge").textContent = "Age " + age + " (" + fmtYears(y) + " from now)";
-    $("fiSliderNote").textContent = sr + "% of historical periods since 1926 reached the target by age " + age + ".";
-    displayYear = y;
+  if (p.mode === "fire"){
+    var fullKey = JSON.stringify([p.histMix, p.initial, p.contrib, p.period, p.growth, fiMaxYears]);
+    if (fiHistFullKey !== fullKey){
+      var stages = [{years: fiMaxYears, contrib: p.contrib, period: p.period, growth: p.growth, mix: p.histMix}];
+      var H = historicalRuns({initial: p.initial, fees: 0}, stages);
+      fiHistFullCache = (H.tooLong || !H.bands || !H.bands.length) ? null : H;
+      fiHistFullKey = fullKey;
+    }
+    if (fiHistFullCache && p.target > 0){
+      var y = fiYearsFromBands(fiHistFullCache.bands, p.target, sr);
+      if (y !== null && y >= 0){
+        var age = p.curAge + y;
+        $("fiSuccessAge").textContent = "Age " + age + " (" + fmtYears(y) + " from now)";
+        $("fiSliderNote").textContent = sr + "% of historical windows since 1926 show the portfolio reaching the target by age " + age + ".";
+        displayYear = y;
+      } else {
+        $("fiSuccessAge").textContent = "Not in range";
+        $("fiSliderNote").textContent = sr + "% success rate not achievable within the projected window.";
+      }
+    } else {
+      $("fiSuccessAge").textContent = "--";
+      $("fiSliderNote").textContent = p.target > 0 ? "History too short for this horizon." : "Enter a target to see results.";
+    }
   } else {
-    $("fiSuccessAge").textContent = "Not in range";
-    $("fiSliderNote").textContent = sr + "% success not achievable within the projected window.";
-    displayYear = fiCurrentFireYear;
+    if (!fiSuccessResults){
+      $("fiSuccessAge").textContent = "--";
+    } else {
+      var y = fiYearsAtPct(fiSuccessResults, sr);
+      if (y !== null && y >= 0){
+        var age = p.curAge + y;
+        $("fiSuccessAge").textContent = "Age " + age + " (" + fmtYears(y) + " from now)";
+        $("fiSliderNote").textContent = sr + "% of historical periods since 1926 reached the coast target by age " + age + ".";
+        displayYear = y;
+      } else {
+        $("fiSuccessAge").textContent = "Not in range";
+        $("fiSliderNote").textContent = sr + "% success rate not achievable within the projected window.";
+      }
+    }
   }
   drawFireChart(p, displayYear, fiMaxYears);
 }
@@ -17181,7 +17224,8 @@ function renderFire(){
   }
   $("fiTableBody").innerHTML = rows;
 
-  fiSuccessResults = fiRunHistorical(p, maxYears);
+  fiHistFullKey = null;
+  fiSuccessResults = (p.mode === "coast") ? fiRunHistorical(p, maxYears) : null;
   renderFireSuccess(p);
 }
 
