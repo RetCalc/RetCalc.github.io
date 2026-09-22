@@ -17093,7 +17093,7 @@ function drawFireChart(p, displayYear, maxYears){
     }
     if (!pts.length){ svg.innerHTML = ""; return; }
     drawMaxX = pts[pts.length - 1].year;
-    var R = paintChart(svgId, pts, drawMaxX, "mc", null, 0, {});
+    var R = paintChart(svgId, pts, drawMaxX, "mc", null, p.curAge, {});
     fiChartPoints = R;
     histLegend("legendFire");
     $("fiChartNote").textContent = "";
@@ -17155,7 +17155,7 @@ function drawFireChart(p, displayYear, maxYears){
       if (ppB.b.years.length > 0) drawMaxX = ppB.b.years[ppB.b.years.length - 1].year;
     }
 
-    var R = paintChart(svgId, pts, drawMaxX, "band", null, 0, {});
+    var R = paintChart(svgId, pts, drawMaxX, "band", null, p.curAge, {});
     fiChartPoints = R;
     var lbl = (p.band * 100).toFixed(1).replace(/\.0$/, "");
     $("legendFire").innerHTML =
@@ -17393,7 +17393,7 @@ function renderFire(){
     var realBalK = (y2.end || 0) / deflK;
     var thisC = p.contrib * ppy2 * Math.pow(1 + p.growth, k);
     var rowClass2 = (y2.year === fireYear) ? " class=\"firow-fire\"" : "";
-    rows += "<tr" + rowClass2 + "><td>" + (new Date().getFullYear() + y2.year) + "</td>" +
+    rows += "<tr" + rowClass2 + "><td>" + y2.year + "</td>" +
       "<td>" + (p.curAge + y2.year) + "</td>" +
       "<td>" + money(thisC) + "</td>" +
       "<td>" + money(y2.end || 0) + "</td>" +
