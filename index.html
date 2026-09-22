@@ -5105,7 +5105,7 @@ window.onerror = function(msg){
         </div>
         <div class="field" id="fiRetireAgeWrap" hidden>
           <label for="fiRetireAge">Planned retirement age</label>
-          <div class="inputwrap"><input id="fiRetireAge" type="text" inputmode="decimal" data-num min="40" max="80" value="65"><span class="affix">yrs</span></div>
+          <div class="inputwrap"><input id="fiRetireAge" type="text" inputmode="decimal" data-num min="40" max="100" value="65"><span class="affix">yrs</span></div>
         </div>
         <div class="field">
           <label for="fiInitial">Current savings</label>
@@ -16872,7 +16872,7 @@ function readFire(){
   return {
     mode: mode,
     curAge: Math.max(18, Math.min(70, num("fiCurAge") || 30)),
-    retireAge: Math.max(40, Math.min(80, num("fiRetireAge") || 65)),
+    retireAge: Math.max(40, Math.min(100, num("fiRetireAge") || 65)),
     initial: Math.max(0, num("fiInitial") || 0),
     contrib: Math.max(0, num("fiContrib") || 0),
     period: $("fiPeriod").value || "Monthly",
@@ -17283,7 +17283,7 @@ function renderFire(){
   }
 
   var realRate = (1 + p.nominal) / (1 + p.inflation) - 1;
-  var maxYears = Math.max(5, Math.min(80 - p.curAge, 60));
+  var maxYears = Math.max(5, Math.min(100 - p.curAge, 80));
   fiMaxYears = maxYears;
 
   var pp = project({initial:p.initial, contrib:p.contrib, period:p.period,
@@ -17348,12 +17348,13 @@ function renderFire(){
     $("fiAge").textContent = ageNum.toFixed(1).replace(/\.0$/, '');
     $("fiPortfolio").textContent = money(firePortReal);
     $("fiYears").textContent = fireYear === 0 ? "Already there!" : fireYear.toFixed(1).replace(/\.0$/, '');
+    $("fiAgeNote").textContent = "In today’s plan";
   } else {
-    $("fiAge").textContent = "50+";
+    $("fiAge").textContent = "Not in range";
     $("fiPortfolio").textContent = "--";
-    $("fiYears").textContent = "50+";
+    $("fiYears").textContent = "Not in range";
+    $("fiAgeNote").textContent = "Won’t reach by age 100";
   }
-  $("fiAgeNote").textContent = "In today’s plan";
 
   $("fiCoastExtra").hidden = (p.mode !== "coast");
   if (p.mode === "coast" && fireYear !== null){
