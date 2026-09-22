@@ -5219,7 +5219,7 @@ window.onerror = function(msg){
         <div class="tip" id="tipFire"></div>
       </div>
       <div class="legend" id="legendFire"></div>
-      <div class="body" style="padding-top:0;padding-bottom:14px">
+      <div id="fiSliderWrap" class="body" style="padding-top:0;padding-bottom:14px" hidden>
         <div class="fire-slider-section">
           <div class="fire-slider-row">
             <span class="fire-slider-lbl">Historical success rate</span>
@@ -16798,6 +16798,8 @@ var fiChartPoints = null;
 var fiHistRunsCache = null;
 var fiHistKey = null;
 var fiSuccessResults = null;
+var fiMaxYears = 50;
+var fiCurrentFireYear = null;
 
 function readFire(){
   var modeBtn = $("segFireMode").querySelector("button.on");
@@ -16880,18 +16882,31 @@ function fiYearsAtPct(results, pct){
   return y >= 9999 ? null : y;
 }
 
-function drawFireChart(p, fireYear, maxYears){
+function drawFireChart(p, displayYear, maxYears){
   var svgId = "chartFire";
+  var svg = $(svgId);
   var pts = [];
   var drawMaxX = maxYears;
-  var svg = $(svgId);
+  var isCoast = (p.mode === "coast");
+  var retYrs = isCoast ? Math.max(1, p.retireAge - p.curAge) : maxYears;
 
   if (chartMode.fire === "hist"){
-    var key = JSON.stringify([p.histMix, p.initial, p.contrib, p.period, p.growth, maxYears]);
+    var cacheYr = (displayYear !== null && displayYear >= 0) ? displayYear : -1;
+    var key = JSON.stringify([p.histMix, p.initial, p.contrib, p.period, p.growth, maxYears, p.mode, cacheYr]);
     if (fiHistKey !== key){
-      var stages = [{years:maxYears, contrib:p.contrib, period:p.period,
-                     growth:p.growth, nominal:p.nominal, mix:p.histMix}];
-      var H = historicalRuns({initial:p.initial, fees:0}, stages);
+      var stages;
+      if (isCoast && displayYear !== null && displayYear > 0 && displayYear < retYrs){
+        stages = [
+          {years: displayYear,        contrib: p.contrib, period: p.period, growth: p.growth, mix: p.histMix},
+          {years: retYrs - displayYear, contrib: 0,       period: "Monthly", growth: 0,       mix: p.histMix}
+        ];
+      } else if (isCoast){
+        stages = [{years: retYrs, contrib: p.contrib, period: p.period, growth: p.growth, mix: p.histMix}];
+      } else {
+        var histYrs = (displayYear !== null && displayYear > 0) ? displayYear : maxYears;
+        stages = [{years: histYrs, contrib: p.contrib, period: p.period, growth: p.growth, mix: p.histMix}];
+      }
+      var H = historicalRuns({initial: p.initial, fees: 0}, stages);
       if (H.tooLong || !H.bands || !H.bands.length){
         svg.innerHTML = "";
         $("legendFire").innerHTML = "";
@@ -16900,12 +16915,12 @@ function drawFireChart(p, fireYear, maxYears){
       }
       fiHistRunsCache = H;
       fiHistKey = key;
-      $("fiHistNote").textContent = histBarNote(fiHistRunsCache);
+      $("fiHistNote").innerHTML = histBarNote(fiHistRunsCache);
     }
     var bands = fiHistRunsCache.bands;
     for (var bi = 0; bi < bands.length; bi++){
       var b = bands[bi];
-      pts.push({year:Math.round(b.year), base:b.p50, hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75});
+      pts.push({year: Math.round(b.year), base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75});
     }
     if (!pts.length){ svg.innerHTML = ""; return; }
     drawMaxX = pts[pts.length - 1].year;
@@ -16915,29 +16930,62 @@ function drawFireChart(p, fireYear, maxYears){
     $("fiChartNote").textContent = "";
   } else {
     var nomBase = p.nominal;
-    var nomHi = p.nominal + p.band;
-    var nomLo = Math.max(0.001, p.nominal - p.band);
-    var ppBase = project({initial:p.initial, contrib:p.contrib, period:p.period, growth:p.growth,
-                          nominal:nomBase, inflation:p.inflation, years:maxYears, withdrawal:0, taxRate:0});
-    var ppHi   = project({initial:p.initial, contrib:p.contrib, period:p.period, growth:p.growth,
-                          nominal:nomHi, inflation:p.inflation, years:maxYears, withdrawal:0, taxRate:0});
-    var ppLo   = project({initial:p.initial, contrib:p.contrib, period:p.period, growth:p.growth,
-                          nominal:nomLo, inflation:p.inflation, years:maxYears, withdrawal:0, taxRate:0});
+    var nomHi   = p.nominal + p.band;
+    var nomLo   = Math.max(0.001, p.nominal - p.band);
+
+    function projBand(init, contrib, years){
+      return {
+        b: project({initial:init, contrib:contrib, period:p.period, growth:p.growth,
+                    nominal:nomBase, inflation:p.inflation, years:years, withdrawal:0, taxRate:0}),
+        h: project({initial:init, contrib:contrib, period:p.period, growth:p.growth,
+                    nominal:nomHi,  inflation:p.inflation, years:years, withdrawal:0, taxRate:0}),
+        l: project({initial:init, contrib:contrib, period:p.period, growth:p.growth,
+                    nominal:nomLo,  inflation:p.inflation, years:years, withdrawal:0, taxRate:0})
+      };
+    }
 
     pts.push({year:0, base:p.initial, hi:p.initial, lo:p.initial});
-    for (var i = 0; i < ppBase.years.length; i++){
-      var yr = ppBase.years[i];
-      var hirY = ppHi.years[i] || yr;
-      var lorY = ppLo.years[i] || yr;
-      var defl = Math.pow(1 + p.inflation, yr.year);
-      pts.push({
-        year: yr.year,
-        base: (yr.end || 0) / defl,
-        hi:   (hirY.end || 0) / defl,
-        lo:   (lorY.end || 0) / defl
-      });
+
+    if (isCoast && displayYear !== null && displayYear > 0 && displayYear < retYrs){
+      var coastYrs = displayYear;
+      var ph1 = projBand(p.initial, p.contrib, coastYrs);
+      for (var i1 = 0; i1 < ph1.b.years.length; i1++){
+        var yr1 = ph1.b.years[i1];
+        var dfl1 = Math.pow(1 + p.inflation, yr1.year);
+        pts.push({year: yr1.year, base: (yr1.end||0)/dfl1,
+                  hi: ((ph1.h.years[i1]||yr1).end||0)/dfl1,
+                  lo: ((ph1.l.years[i1]||yr1).end||0)/dfl1});
+      }
+      var restYrs2 = retYrs - coastYrs;
+      if (restYrs2 > 0){
+        var ph2p = projBand(ph1.b.fv, 0, restYrs2);
+        var ph2h = projBand(ph1.h.fv, 0, restYrs2);
+        var ph2l = projBand(ph1.l.fv, 0, restYrs2);
+        for (var i2 = 0; i2 < ph2p.b.years.length; i2++){
+          var yr2 = ph2p.b.years[i2];
+          var dfl2 = Math.pow(1 + p.inflation, coastYrs + yr2.year);
+          pts.push({year: coastYrs + yr2.year,
+                    base: (yr2.end||0)/dfl2,
+                    hi:   ((ph2h.b.years[i2]||yr2).end||0)/dfl2,
+                    lo:   ((ph2l.b.years[i2]||yr2).end||0)/dfl2});
+        }
+      }
+      drawMaxX = retYrs;
+    } else {
+      var yrsToRun = (p.mode === "fire" && displayYear !== null && displayYear > 0)
+        ? displayYear : (isCoast ? retYrs : maxYears);
+      var ppB = projBand(p.initial, p.contrib, yrsToRun);
+      for (var ib = 0; ib < ppB.b.years.length; ib++){
+        var yrb = ppB.b.years[ib];
+        var deflb = Math.pow(1 + p.inflation, yrb.year);
+        pts.push({year: yrb.year,
+                  base: (yrb.end||0)/deflb,
+                  hi:   ((ppB.h.years[ib]||yrb).end||0)/deflb,
+                  lo:   ((ppB.l.years[ib]||yrb).end||0)/deflb});
+      }
+      if (ppB.b.years.length > 0) drawMaxX = ppB.b.years[ppB.b.years.length - 1].year;
     }
-    if (ppBase.years.length > 0) drawMaxX = ppBase.years[ppBase.years.length - 1].year;
+
     var R = paintChart(svgId, pts, drawMaxX, "band", null, 0, {});
     fiChartPoints = R;
     $("legendFire").innerHTML =
@@ -16955,49 +17003,59 @@ function drawFireChart(p, fireYear, maxYears){
 
   if (p.target > 0){
     var tY = fiChartPoints.Y(p.target);
-    if (tY >= T2 && tY <= T2 + ph2){
-      var tLine = svgEl("line", {x1:0, x2:W2, y1:tY, y2:tY,
-                                  stroke:"#4fbf95", "stroke-width":"1.5",
-                                  "stroke-dasharray":"6 4", opacity:"0.65"});
-      svg.appendChild(tLine);
-      var tLbl = svgEl("text", {x:W2 - (narrow ? 14 : 16), y:tY - 4,
-                                 "text-anchor":"end", "font-size":narrow ? "13" : "10",
-                                 fill:"#4fbf95",
-                                 "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    var tYok = (tY >= T2 && tY <= T2 + ph2);
+    if (tYok){
+      svg.appendChild(svgEl("line", {x1:0, x2:W2, y1:tY, y2:tY,
+        stroke:"#4fbf95", "stroke-width":"1.5", "stroke-dasharray":"6 4", opacity:"0.65"}));
+      var tLbl = svgEl("text", {x:W2-(narrow?14:16), y:tY-4, "text-anchor":"end",
+        "font-size":narrow?"13":"10", fill:"#4fbf95",
+        "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
       tLbl.textContent = "target"; svg.appendChild(tLbl);
     }
 
-    if (fireYear !== null && fireYear >= 0 && fireYear <= drawMaxX){
-      var fX = fiChartPoints.X(fireYear);
-      var fLine = svgEl("line", {x1:fX, x2:fX, y1:T2, y2:T2 + ph2,
-                                  stroke:"#4fbf95", "stroke-width":"1.5",
-                                  "stroke-dasharray":"4 3", opacity:"0.55"});
-      svg.appendChild(fLine);
-      if (tY >= T2 && tY <= T2 + ph2){
-        var fd = svgEl("circle", {cx:fX, cy:tY, r:narrow ? "6" : "4.5",
-                                   fill:"#4fbf95", stroke:cssVar("--bg"), "stroke-width":"2"});
-        svg.appendChild(fd);
+    if (displayYear !== null && displayYear >= 0 && displayYear <= drawMaxX){
+      var fX = fiChartPoints.X(displayYear);
+      svg.appendChild(svgEl("line", {x1:fX, x2:fX, y1:T2, y2:T2+ph2,
+        stroke:"#4fbf95", "stroke-width":"1.5", "stroke-dasharray":"4 3", opacity:"0.55"}));
+      if (!isCoast && tYok){
+        svg.appendChild(svgEl("circle", {cx:fX, cy:tY, r:narrow?"6":"4.5",
+          fill:"#4fbf95", stroke:cssVar("--bg"), "stroke-width":"2"}));
       }
     }
   }
 }
 
 function renderFireSuccess(p){
+  var isHist = (chartMode.fire === "hist");
+  $("fiSliderWrap").hidden = !isHist;
+
   var sr = p.successRate;
   $("fiSuccessPct").textContent = sr + "%";
-  if (!fiSuccessResults){
-    $("fiSuccessAge").textContent = "--";
+
+  if (!isHist){
+    drawFireChart(p, fiCurrentFireYear, fiMaxYears);
     return;
   }
+
+  if (!fiSuccessResults){
+    $("fiSuccessAge").textContent = "--";
+    drawFireChart(p, fiCurrentFireYear, fiMaxYears);
+    return;
+  }
+
   var y = fiYearsAtPct(fiSuccessResults, sr);
+  var displayYear;
   if (y !== null && y >= 0){
     var age = p.curAge + y;
     $("fiSuccessAge").textContent = "Age " + age + " (" + fmtYears(y) + " from now)";
     $("fiSliderNote").textContent = sr + "% of historical periods since 1926 reached the target by age " + age + ".";
+    displayYear = y;
   } else {
     $("fiSuccessAge").textContent = "Not in range";
     $("fiSliderNote").textContent = sr + "% success not achievable within the projected window.";
+    displayYear = fiCurrentFireYear;
   }
+  drawFireChart(p, displayYear, fiMaxYears);
 }
 
 function renderFire(){
@@ -17021,6 +17079,7 @@ function renderFire(){
 
   var realRate = (1 + p.nominal) / (1 + p.inflation) - 1;
   var maxYears = Math.max(5, Math.min(80 - p.curAge, 60));
+  fiMaxYears = maxYears;
 
   var pp = project({initial:p.initial, contrib:p.contrib, period:p.period,
                     growth:p.growth, nominal:p.nominal, inflation:p.inflation,
@@ -17105,7 +17164,7 @@ function renderFire(){
   $("fiKVNominal").textContent = pctStr(p.nominal, 1);
   $("fiKVRealReturn").textContent = pctStr(realRate, 1);
 
-  drawFireChart(p, fireYear, maxYears);
+  fiCurrentFireYear = fireYear;
 
   var rows = "";
   for (var k = 0; k < pp.years.length; k++){
@@ -17163,6 +17222,7 @@ function renderFire(){
     });
     $("fiOptBand").style.display = (m === "band") ? "" : "none";
     $("fiHistBar").hidden = (m !== "hist");
+    $("fiSliderWrap").hidden = (m !== "hist");
     fiHistKey = null;
     renderFire();
   });
@@ -17176,10 +17236,20 @@ function renderFire(){
     function(){ return fiChartPoints; },
     function(best){
       var p = readFire();
-      var lines = "<b>Year " + best.year + " • Age " + (p.curAge + best.year) + "</b><br>" +
-        "Portfolio: " + money(best.base || 0);
-      if (best.hi != null) lines += "<br>Range: " + money(best.lo || 0) + "–" + money(best.hi);
-      return lines;
+      var mode = chartMode.fire;
+      var header = "<b>Year " + best.year + " Age " + (p.curAge + best.year) + "</b>";
+      if (mode === "hist" || mode === "mc"){
+        return header +
+          "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) + "</span>" +
+          "<br><span style='color:#3f9a78'>75th</span> <span class='n'>" + money(best.p75) + "</span>" +
+          "<br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) + "</span>" +
+          "<br><span style='color:#3f9a78'>25th</span> <span class='n'>" + money(best.p25) + "</span>" +
+          "<br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
+      }
+      return header +
+        "<br><span style='color:#4fbf95'>Higher</span> <span class='n'>" + money(best.hi) + "</span>" +
+        "<br><span style='color:#e9b872'>Your rate</span> <span class='n'>" + money(best.base) + "</span>" +
+        "<br><span style='color:#e2795f'>Lower</span> <span class='n'>" + money(best.lo) + "</span>";
     }
   );
 })();
