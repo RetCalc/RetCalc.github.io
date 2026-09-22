@@ -592,6 +592,10 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .cl-cap,.toolcard:hover .cl-tassel,
   .toolcard:hover .rb-beam,.toolcard:hover .bg-coin,
   .toolcard:hover .db-bar{animation:none;stroke-dasharray:none}
+  @keyframes hc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+  .hc-cross{transform-box:view-box;transform-origin:center}
+  .toolcard:hover .hc-cross{animation:hc-pulse .5s ease-out}
+  .toolcard:hover .hc-ring{opacity:.7;transition:opacity .2s ease}
 }
 
 /* ---------- back to the tool picker ---------- */
@@ -737,6 +741,41 @@ html[data-theme="light"] .panel.inputs > h2{border-bottom-color:#dde6f1}
 html[data-theme="light"] .panel.inputs .inputwrap,
 html[data-theme="light"] .panel.inputs select{background-color:#f2f6fb;border-color:#ccd9e8}
 main.solo{grid-template-columns:minmax(0,1fr)}
+
+/* ---------- healthcare cost planner ---------- */
+.hc-stats{display:flex;gap:12px;margin-bottom:16px}
+.hc-stats .hc-stat{flex:1;background:var(--panel-2);border-radius:8px;padding:12px 14px}
+.hc-stats .hc-stat .v{font-family:var(--mono);font-size:26px;font-weight:600;
+  letter-spacing:-.04em;color:var(--text);white-space:nowrap}
+.hc-stats .hc-stat .optlabel{margin-top:3px}
+.hc-section{margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.hc-section-label{font-size:11.5px;color:var(--dimmer);text-transform:uppercase;
+  letter-spacing:.07em;font-weight:600;margin-bottom:8px}
+.hc-tier-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
+.hc-tier-row:last-child{border-bottom:0}
+.hc-tier-row span:first-child{color:var(--dim)}
+.hc-tier-row span:last-child{font-family:var(--mono);font-weight:600;color:var(--text)}
+.hc-tier-row.hc-tier-sel span:first-child{color:var(--text);font-weight:600}
+.hc-tier-row.hc-tier-sel span:last-child{color:var(--jade)}
+.hc-insight{background:color-mix(in srgb,var(--gold) 8%,transparent);
+  border-left:2px solid var(--gold);border-radius:0 6px 6px 0;
+  padding:10px 14px;margin-top:12px;font-size:13px;line-height:1.5;color:var(--dim)}
+.hc-insight b{color:var(--text)}
+.hc-note{font-size:12px;color:var(--dimmer);margin-top:14px;line-height:1.5;
+  padding-top:12px;border-top:1px solid var(--line-soft)}
+.hc-note a{color:var(--jade)}
+.hc-irmaa-badge{display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;
+  margin-bottom:14px;letter-spacing:.02em;
+  background:color-mix(in srgb,var(--jade) 12%,transparent);color:var(--jade)}
+.hc-irmaa-badge.hc-irmaa-hit{
+  background:color-mix(in srgb,var(--coral) 12%,transparent);color:var(--coral)}
+.hc-from-tax{font-size:13px;color:var(--dim);margin:8px 0}
+.hc-from-tax .v{font-family:var(--mono);font-weight:600;color:var(--text);float:right}
+.hc-link{font-size:12px;color:var(--jade);cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:3px;margin-top:4px}
+.hc-link:hover{text-decoration:underline}
 
 /* ---------- printable one-page summary ---------- */
 #sheet{display:none}
@@ -4459,6 +4498,19 @@ window.onerror = function(msg){
         </div>
         <div class="toolcard-arrow">&#8250;</div>
       </div>
+      <div class="toolcard" role="button" tabindex="0" data-pick="healthcare">
+        <div class="toolcard-icon">
+          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle class="hc-ring" cx="18" cy="18" r="14" stroke="currentColor" stroke-width="1.8"/>
+            <path class="hc-cross" d="M18 10v16M10 18h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="toolcard-body">
+          <div class="toolcard-name">Healthcare Cost Planner</div>
+          <div class="toolcard-desc">ACA marketplace premiums and subsidies for the gap before Medicare, then Medicare Part B, Part D, and IRMAA surcharges by income.</div>
+        </div>
+        <div class="toolcard-arrow">&#8250;</div>
+      </div>
     </div>
   </div>
 
@@ -4791,6 +4843,133 @@ window.onerror = function(msg){
       </div>
     </div>
   </div>
+  <aside id="asideHC" hidden>
+    <div class="panel inputs">
+      <h2>Your situation</h2>
+      <div class="body">
+        <div class="two">
+          <div class="field">
+            <label for="hcAge">Current age</label>
+            <div class="inputwrap"><input id="hcAge" type="text" inputmode="decimal" data-num min="18" max="80" value="55"></div>
+          </div>
+          <div class="field">
+            <label for="hcRetireAge">Retire at</label>
+            <div class="inputwrap"><input id="hcRetireAge" type="text" inputmode="decimal" data-num min="40" max="75" value="62"></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="hcStatus">Filing status</label>
+            <select id="hcStatus">
+              <option value="s">Single</option>
+              <option value="m">Married</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="hcHousehold">Household</label>
+            <select id="hcHousehold">
+              <option value="1">1 person</option>
+              <option value="2" selected>2 people</option>
+              <option value="3">3 people</option>
+              <option value="4">4 people</option>
+              <option value="5">5 people</option>
+              <option value="6">6 people</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="hcState">State</label>
+          <select id="hcState">
+            <option value="AL">Alabama</option>
+            <option value="AK">Alaska</option>
+            <option value="AZ">Arizona</option>
+            <option value="AR">Arkansas</option>
+            <option value="CA" selected>California</option>
+            <option value="CO">Colorado</option>
+            <option value="CT">Connecticut</option>
+            <option value="DC">DC</option>
+            <option value="DE">Delaware</option>
+            <option value="FL">Florida</option>
+            <option value="GA">Georgia</option>
+            <option value="HI">Hawaii</option>
+            <option value="ID">Idaho</option>
+            <option value="IL">Illinois</option>
+            <option value="IN">Indiana</option>
+            <option value="IA">Iowa</option>
+            <option value="KS">Kansas</option>
+            <option value="KY">Kentucky</option>
+            <option value="LA">Louisiana</option>
+            <option value="ME">Maine</option>
+            <option value="MD">Maryland</option>
+            <option value="MA">Massachusetts</option>
+            <option value="MI">Michigan</option>
+            <option value="MN">Minnesota</option>
+            <option value="MS">Mississippi</option>
+            <option value="MO">Missouri</option>
+            <option value="MT">Montana</option>
+            <option value="NE">Nebraska</option>
+            <option value="NV">Nevada</option>
+            <option value="NH">New Hampshire</option>
+            <option value="NJ">New Jersey</option>
+            <option value="NM">New Mexico</option>
+            <option value="NY">New York</option>
+            <option value="NC">North Carolina</option>
+            <option value="ND">North Dakota</option>
+            <option value="OH">Ohio</option>
+            <option value="OK">Oklahoma</option>
+            <option value="OR">Oregon</option>
+            <option value="PA">Pennsylvania</option>
+            <option value="RI">Rhode Island</option>
+            <option value="SC">South Carolina</option>
+            <option value="SD">South Dakota</option>
+            <option value="TN">Tennessee</option>
+            <option value="TX">Texas</option>
+            <option value="UT">Utah</option>
+            <option value="VT">Vermont</option>
+            <option value="VA">Virginia</option>
+            <option value="WA">Washington</option>
+            <option value="WV">West Virginia</option>
+            <option value="WI">Wisconsin</option>
+            <option value="WY">Wyoming</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Retirement income<span class="tipdot" data-tip="hcincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <span class="seg" id="segHCIncome">
+            <button type="button" data-hcincome="tax" class="on">Tax tool</button>
+            <button type="button" data-hcincome="manual">Manual</button>
+          </span>
+        </div>
+        <div id="hcIncomeFromTax"></div>
+        <div id="hcIncomeManualWrap" hidden>
+          <div class="field">
+            <label for="hcIncome">Annual MAGI</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="hcIncome" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="hcManualPremium">ACA benchmark premium<span class="tipdot" data-tip="hcbenchmark" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hcManualPremium" type="text" inputmode="decimal" data-money data-nonneg placeholder="state est. if blank"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-healthcare" hidden>
+    <div class="panel">
+      <h2>Pre-65: ACA Bridge</h2>
+      <div class="body" id="hcACABody">
+        <p style="color:var(--dim);font-size:14px">Fill in your situation to the left to see ACA premium estimates.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Post-65: Medicare</h2>
+      <div class="body" id="hcMedicareBody">
+        <p style="color:var(--dim);font-size:14px">Fill in your situation to the left to see Medicare cost estimates.</p>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <div class="toast" id="toast"></div>
@@ -9834,7 +10013,9 @@ function showTool(sub){
   $("tab-roth").hidden = (sub !== "roth");
   $("tab-debt").hidden = (sub !== "debt");
   $("tab-backtest").hidden = (sub !== "backtest");
+  $("tab-healthcare").hidden = (sub !== "healthcare");
   $("asideBT").hidden = (sub !== "backtest");
+  $("asideHC").hidden = (sub !== "healthcare");
   $("asideTax").hidden = (sub !== "tax");
   $("asideMort").hidden = (sub !== "mortgage");
   $("asideCollege").hidden = (sub !== "college");
@@ -9855,6 +10036,7 @@ function showTool(sub){
   else if (sub === "roth") renderRoth();
   else if (sub === "debt") renderDebt();
   else if (sub === "backtest") renderBacktest();
+  else if (sub === "healthcare") renderHealthcare();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
   playPaneEnter();
 }
@@ -9903,7 +10085,9 @@ function showTab(t){
     $("asideRC").hidden = true;
     $("tab-debt").hidden = true;
     $("tab-backtest").hidden = true;
+    $("tab-healthcare").hidden = true;
     $("asideBT").hidden = true;
+    $("asideHC").hidden = true;
     $("main").classList.remove("solo");
   }
   if (t !== "tools") setToolBack("picker");
@@ -13293,7 +13477,9 @@ const GLOSS = {
   yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is: higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
   customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top.",
-  bgsavings: "Money being set aside rather than spent, so it's kept out of the spending total above and shown as savings instead."
+  bgsavings: "Money being set aside rather than spent, so it's kept out of the spending total above and shown as savings instead.",
+  hcincome: "The ACA uses your annual Modified Adjusted Gross Income (MAGI) to calculate your premium subsidy. Medicare IRMAA surcharges are also income-based, using your MAGI from two years earlier. For most retirees, MAGI ≈ AGI. Roth withdrawals are excluded from MAGI; Roth conversions and traditional withdrawals are included. If you have retirement income entered in the Tax tool (Retirement Income mode), it can be pulled in automatically.",
+  hcbenchmark: "The ACA premium tax credit is calculated using the premium for the benchmark plan, defined as the second-lowest-cost Silver plan available in your county. The credit is the difference between that premium and a capped percentage of your income. This cap — not a flat dollar amount — is what the subsidy system targets. Enter your actual benchmark Silver premium from healthcare.gov for precision; otherwise a state-level estimate is used."
 };
 
 /* ---------- Roth conversion tool: form, render, charts ---------- */
@@ -16000,6 +16186,344 @@ let tweening = false;
 try { tweening = !window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
 if (tweening) initValueTween(); else initLiveRegion();
 if (fromLink) toast("Loaded from a shared link");
+
+// ===== HEALTHCARE COST PLANNER =====
+
+// 2025 Federal Poverty Level — contiguous 48 states + DC
+// For AK/HI the FPL is higher; this tool uses the 48-state baseline.
+var HC_FPL_BASE = [0,15060,20440,25820,31200,36580,41960,47340,52720];
+var HC_FPL_PER_ADDL = 5380;
+
+// Official HHS ACA age-rating multipliers (ages 21–64; 21 = 1.000, 64 = 3.000)
+var HC_AGE_MULT = [
+  1.000,1.000,1.000,1.000, // 21-24
+  1.034,1.068,1.102,1.160, // 25-28
+  1.197,1.221,1.245,1.269, // 29-32
+  1.289,1.310,1.330,1.352, // 33-36
+  1.371,1.395,1.420,1.445, // 37-40
+  1.477,1.508,1.541,1.574, // 41-44
+  1.626,1.677,1.716,1.756, // 45-48
+  1.824,1.893,1.942,1.991, // 49-52
+  2.043,2.097,2.148,2.201, // 53-56
+  2.255,2.310,2.339,2.370, // 57-60
+  2.450,2.491,2.539,3.000  // 61-64
+];
+var HC_AGE40_MULT = 1.445; // index 19 = age 40 - 21
+
+// Approximate 2025 benchmark Silver plan monthly premium for a 40-year-old (single, non-smoker).
+// Actual quotes vary by county and insurer. Used as a base; scaled by the HHS age multiplier.
+// Source: state marketplace average estimates. Verify at healthcare.gov.
+var HC_STATE_PREMIUM_40 = {
+  AL:560,AK:870,AZ:580,AR:550,CA:530,CO:580,CT:550,DC:380,
+  DE:460,FL:510,GA:440,HI:480,ID:500,IL:460,IN:470,IA:490,
+  KS:540,KY:510,LA:490,ME:480,MD:460,MA:440,MI:460,MN:570,
+  MS:520,MO:490,MT:620,NE:530,NV:540,NH:490,NJ:460,NM:620,
+  NY:560,NC:430,ND:530,OH:480,OK:540,OR:530,PA:450,RI:440,
+  SC:440,SD:530,TN:530,TX:490,UT:480,VT:660,VA:450,WA:530,
+  WV:680,WI:460,WY:790
+};
+
+// Medicare IRMAA tiers 2025
+// [individual_magi_max, joint_magi_max, partB_monthly, partD_irmaa_monthly]
+var HC_IRMAA = [
+  [106000,  212000, 185.00,   0.00],
+  [133000,  266000, 259.00,  13.70],
+  [167000,  334000, 370.00,  35.30],
+  [200000,  400000, 480.00,  57.00],
+  [500000,  750000, 591.00,  78.60],
+  [Infinity,Infinity,628.90, 85.80]
+];
+// Standard Part D average premium (national estimate, pre-IRMAA)
+var HC_PARTD_BASE = 50;
+// Medigap Plan G rough range at 65 (low/high, national)
+var HC_MEDIGAP_LOW = 120, HC_MEDIGAP_HIGH = 200;
+
+var hcIncomeMode = "tax";
+
+function hcFPL(size){
+  size = Math.max(1, Math.round(size));
+  if (size <= 8) return HC_FPL_BASE[size];
+  return HC_FPL_BASE[8] + (size - 8) * HC_FPL_PER_ADDL;
+}
+
+function hcAgeMultiplier(age){
+  age = Math.max(21, Math.min(64, Math.round(age)));
+  return HC_AGE_MULT[age - 21];
+}
+
+// Gross monthly benchmark Silver premium for given state & age
+function hcGrossPremium(state, age, manualOverride){
+  if (manualOverride > 0) return manualOverride;
+  var base = HC_STATE_PREMIUM_40[state] || 500;
+  return base / HC_AGE40_MULT * hcAgeMultiplier(age);
+}
+
+// Standard ACA contribution % of income (pre-ARP baseline, 400% FPL cliff)
+// Returns null when income is too high for subsidy
+function hcContribPctStd(pctFPL){
+  if (pctFPL < 1.0) return 0;
+  if (pctFPL >= 4.0) return null;
+  if (pctFPL < 1.33) return 0.0201;
+  if (pctFPL < 1.50) return 0.0201 + (pctFPL - 1.33) / 0.17 * (0.0403 - 0.0201);
+  if (pctFPL < 2.00) return 0.0403 + (pctFPL - 1.50) / 0.50 * (0.0630 - 0.0403);
+  if (pctFPL < 2.50) return 0.0630 + (pctFPL - 2.00) / 0.50 * (0.0805 - 0.0630);
+  if (pctFPL < 3.00) return 0.0805 + (pctFPL - 2.50) / 0.50 * (0.0978 - 0.0805);
+  return 0.0978;
+}
+
+// Enhanced contribution % (ARP/IRA rules: 8.5% cap, no cliff above 400% FPL)
+function hcContribPctEnhanced(pctFPL){
+  if (pctFPL < 1.0) return 0;
+  if (pctFPL < 1.50) return 0;
+  if (pctFPL < 2.00) return (pctFPL - 1.50) / 0.50 * 0.020;
+  if (pctFPL < 2.50) return 0.020 + (pctFPL - 2.00) / 0.50 * 0.020;
+  if (pctFPL < 3.00) return 0.040 + (pctFPL - 2.50) / 0.50 * 0.020;
+  if (pctFPL < 4.00) return 0.060 + (pctFPL - 3.00) / 1.00 * 0.025;
+  return 0.085;
+}
+
+// Returns {credit, net, eligible, pct} — monthly figures
+function hcCalcACA(income, grossPremium, pctFPL, enhanced){
+  var pct = enhanced ? hcContribPctEnhanced(pctFPL) : hcContribPctStd(pctFPL);
+  if (pct === null) return {credit:0, net:grossPremium, eligible:false, pct:0};
+  var maxContrib = income * pct / 12;
+  var credit = Math.max(0, grossPremium - maxContrib);
+  var net = Math.max(0, grossPremium - credit);
+  return {credit:credit, net:net, eligible:true, pct:pct};
+}
+
+function hcIRMAATier(magi, joint){
+  var col = joint ? 1 : 0;
+  for (var i = 0; i < HC_IRMAA.length; i++){
+    if (magi <= HC_IRMAA[i][col]) return i;
+  }
+  return HC_IRMAA.length - 1;
+}
+
+function renderHealthcare(){
+  var age = Math.round(num("hcAge")) || 55;
+  var retireAge = Math.round(num("hcRetireAge")) || 62;
+  var status = $("hcStatus").value;
+  var joint = (status === "m");
+  var household = parseInt($("hcHousehold").value) || (joint ? 2 : 1);
+  var state = $("hcState").value || "CA";
+  var manualPremium = num("hcManualPremium") || 0;
+
+  // ── income ───────────────────────────────────────────────────────────────
+  var magi = 0, incomeFromTax = false;
+  if (hcIncomeMode === "tax"){
+    try {
+      var txInp = readTax();
+      if (txInp.mode === "retire"){
+        var txResult = runTax(txInp);
+        magi = txResult.agi || 0;
+        incomeFromTax = magi > 0;
+      }
+    } catch(e){}
+  }
+  if (!incomeFromTax) magi = num("hcIncome") || 0;
+
+  // Show income source in sidebar
+  var fromTaxDiv = $("hcIncomeFromTax");
+  if (hcIncomeMode === "tax"){
+    if (incomeFromTax && magi > 0){
+      fromTaxDiv.innerHTML = "<div class='hc-from-tax'>" +
+        "<span>MAGI from Tax tool</span><span class='v'>" + money(magi) + "</span></div>" +
+        "<a class='hc-link' onclick='showTab(\"tools\");showTool(\"tax\");'>" +
+        "<svg width='10' height='10' viewBox='0 0 10 10' fill='none'>" +
+        "<path d='M1 5h8M6 2l3 3-3 3' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>" +
+        "</svg>Edit in Tax tool</a>";
+    } else {
+      fromTaxDiv.innerHTML = "<div class='hc-note'>Set the Tax tool to <b>Retirement Income</b> mode with income entered, or switch to manual entry.</div>";
+    }
+  } else {
+    fromTaxDiv.innerHTML = "";
+  }
+
+  // ── ACA Bridge ───────────────────────────────────────────────────────────
+  var acaBridgeYears = Math.max(0, 65 - retireAge);
+  var fpl = hcFPL(household);
+  var pctFPL = magi > 0 ? magi / fpl : 0;
+  var acaAge = Math.min(64, Math.max(21, retireAge));
+  var grossMonthly = hcGrossPremium(state, acaAge, manualPremium);
+  var stdResult = hcCalcACA(magi, grossMonthly, pctFPL, false);
+  var enhResult = hcCalcACA(magi, grossMonthly, pctFPL, true);
+  var bronzeGross = grossMonthly * 0.75;
+  var goldGross = grossMonthly * 1.25;
+  var usingStateEst = manualPremium <= 0;
+
+  var acaHTML = "";
+  if (acaBridgeYears <= 0){
+    acaHTML = "<p style='color:var(--dim);font-size:14px'>Retiring at 65 or later — no ACA bridge needed. Medicare coverage begins at 65.</p>";
+  } else if (magi <= 0){
+    acaHTML = "<p style='color:var(--dim);font-size:14px'>Enter your expected retirement MAGI to see your ACA premium estimate.</p>";
+  } else {
+    var pctFPLStr = (pctFPL * 100).toFixed(0) + "%";
+    var medicaid = pctFPL < 1.0;
+
+    acaHTML += "<div class='hc-stats'>";
+    acaHTML += "<div class='hc-stat'><div class='v'>" + acaBridgeYears + " yr" + (acaBridgeYears !== 1 ? "s" : "") + "</div><div class='optlabel'>on ACA bridge</div></div>";
+    acaHTML += "<div class='hc-stat'><div class='v'>" + pctFPLStr + "</div><div class='optlabel'>of federal poverty line</div></div>";
+    acaHTML += "</div>";
+
+    if (medicaid){
+      acaHTML += "<div class='hc-insight'>At " + pctFPLStr + " FPL your income falls below the ACA subsidy floor. In states that expanded Medicaid you would qualify for Medicaid at little or no cost. In non-expansion states there is a coverage gap with no federal assistance.</div>";
+    } else {
+      // Standard rules
+      acaHTML += "<div class='hc-section-label'>Standard ACA rules</div>";
+      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver — gross" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est.)</span>" : "") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
+      if (!stdResult.eligible){
+        acaHTML += "<div class='kv'><span class='k'>Premium tax credit</span><span class='v' style='color:var(--dimmer)'>none — income above 400% FPL</span></div>";
+        acaHTML += "<div class='kv total'><span class='k'>Your net premium</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
+      } else {
+        acaHTML += "<div class='kv'><span class='k'>Premium tax credit <span style='color:var(--dimmer);font-size:11px'>(" + (stdResult.pct * 100).toFixed(1) + "% income cap)</span></span><span class='v pos'>−$" + Math.round(stdResult.credit) + "/mo</span></div>";
+        acaHTML += "<div class='kv total'><span class='k'>Your net premium (Silver)</span><span class='v'>$" + Math.round(stdResult.net) + "/mo</span></div>";
+      }
+
+      // Enhanced rules — only show if materially different (cliff or lower cost)
+      var showEnhanced = (!stdResult.eligible && enhResult.eligible) ||
+        (stdResult.eligible && Math.abs(enhResult.net - stdResult.net) > 5);
+      if (showEnhanced){
+        acaHTML += "<div class='hc-section'>";
+        acaHTML += "<div class='hc-section-label'>Enhanced subsidy rules <span style='font-weight:400;color:var(--dimmer)'>(if legislation extended them)</span></div>";
+        acaHTML += "<div class='kv'><span class='k'>Premium tax credit <span style='color:var(--dimmer);font-size:11px'>(" + (enhResult.pct * 100).toFixed(1) + "% income cap, no 400% cliff)</span></span><span class='v pos'>−$" + Math.round(enhResult.credit) + "/mo</span></div>";
+        acaHTML += "<div class='kv total'><span class='k'>Your net premium (Silver)</span><span class='v'>$" + Math.round(enhResult.net) + "/mo</span></div>";
+        acaHTML += "</div>";
+      }
+
+      // Plan tier comparison (using standard rules)
+      var refCredit = stdResult.credit;
+      acaHTML += "<div class='hc-section'>";
+      acaHTML += "<div class='hc-section-label'>Plan tier comparison <span style='font-weight:400;color:var(--dimmer)'>(standard rules, same credit)</span></div>";
+      acaHTML += "<div class='hc-tier-row'><span>🥉 Bronze — lower premium, higher out-of-pocket</span><span>~$" + Math.round(Math.max(0, bronzeGross - refCredit)) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row hc-tier-sel'><span>🥈 Silver — credit designed around this plan</span><span>$" + Math.round(stdResult.net) + "/mo</span></div>";
+      acaHTML += "<div class='hc-tier-row'><span>🥇 Gold — higher premium, lower cost-sharing</span><span>~$" + Math.round(Math.max(0, goldGross - refCredit)) + "/mo</span></div>";
+      acaHTML += "</div>";
+
+      // Income insights
+      if (joint){
+        acaHTML += "<div class='hc-insight'>For a couple, <b>both spouses need their own plan</b> — the per-person premium above applies to each. If both spouses are the same age the household ACA cost is roughly double.</div>";
+      }
+
+      // 400% cliff warning if near it (standard rules)
+      if (stdResult.eligible && pctFPL > 3.5){
+        var cliff400 = fpl * 4.0;
+        var overCliff = magi - cliff400;
+        if (overCliff < 0){
+          var toCliff = -overCliff;
+          acaHTML += "<div class='hc-insight'>⚠️ Your income is <b>" + money(toCliff) + " below</b> the 400% FPL cliff (standard rules). Under standard rules, every dollar above $" + Math.round(cliff400).toLocaleString() + " eliminates the entire subsidy, adding $" + Math.round(stdResult.credit) + "/mo instantly. Roth conversions or portfolio decisions that push income over this line have an outsized cost.</div>";
+        }
+      }
+    }
+
+    // Premium estimate note
+    acaHTML += "<div class='hc-note'>" +
+      (usingStateEst ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled to age " + acaAge + ". " : "Using your entered benchmark premium. ") +
+      "Enter your actual quote from <a href='https://healthcare.gov' target='_blank'>healthcare.gov</a> in the sidebar for precision. " +
+      "Subsidy rules can change by legislation — the standard rules shown here are the ACA baseline; enhanced rules removed the 400% FPL cliff and capped contributions at 8.5% of income." +
+      "</div>";
+  }
+  $("hcACABody").innerHTML = acaHTML;
+
+  // ── Medicare ─────────────────────────────────────────────────────────────
+  var irmaaTier = hcIRMAATier(magi, joint);
+  var irmaaTierData = HC_IRMAA[irmaaTier];
+  var partBMonthly = irmaaTierData[2];
+  var partDIRMAA = irmaaTierData[3];
+  var partDTotal = HC_PARTD_BASE + partDIRMAA;
+  var totalLow = partBMonthly + partDTotal + HC_MEDIGAP_LOW;
+  var totalHigh = partBMonthly + partDTotal + HC_MEDIGAP_HIGH;
+  var tierNames = ["Standard","Tier 1","Tier 2","Tier 3","Tier 4","Tier 5"];
+
+  var medHTML = "";
+  if (magi <= 0){
+    medHTML = "<p style='color:var(--dim);font-size:14px'>Enter your expected retirement MAGI to see Medicare cost estimates. Medicare uses your income from <b>two years prior</b> to determine surcharges.</p>";
+  } else {
+    var hasIRMAA = irmaaTier > 0;
+    medHTML += "<div class='hc-irmaa-badge" + (hasIRMAA ? " hc-irmaa-hit" : "") + "'>" +
+      "IRMAA " + tierNames[irmaaTier] + (hasIRMAA ? " — income surcharge applies" : " — standard premium") + "</div>";
+
+    medHTML += "<div class='kv'><span class='k'>Part B premium" +
+      (hasIRMAA ? " <span style='color:var(--dimmer);font-size:11px'>includes IRMAA surcharge</span>" : "") +
+      "</span><span class='v'>$" + partBMonthly.toFixed(0) + "/mo per person</span></div>";
+    medHTML += "<div class='kv'><span class='k'>Part D estimate <span style='color:var(--dimmer);font-size:11px'>" +
+      (partDIRMAA > 0 ? "~$" + HC_PARTD_BASE + " avg plan + $" + partDIRMAA.toFixed(0) + " IRMAA" : "avg plan, no IRMAA") +
+      "</span></span><span class='v'>~$" + Math.round(partDTotal) + "/mo per person</span></div>";
+    medHTML += "<div class='kv'><span class='k'>Medigap Plan G <span style='color:var(--dimmer);font-size:11px'>varies by state, insurer &amp; age</span></span><span class='v'>~$" + HC_MEDIGAP_LOW + "–$" + HC_MEDIGAP_HIGH + "/mo per person</span></div>";
+    medHTML += "<div class='kv total'><span class='k'>Estimated total per person</span><span class='v'>~$" + Math.round(totalLow) + "–$" + Math.round(totalHigh) + "/mo</span></div>";
+
+    if (joint){
+      medHTML += "<div class='kv'><span class='k'>For the couple <span style='color:var(--dimmer);font-size:11px'>both at same IRMAA tier</span></span><span class='v'>~$" + Math.round(totalLow * 2) + "–$" + Math.round(totalHigh * 2) + "/mo</span></div>";
+    }
+
+    // IRMAA threshold insights
+    if (hasIRMAA){
+      var prevTier = HC_IRMAA[irmaaTier - 1];
+      var monthSavings = (partBMonthly - prevTier[2]) + (partDIRMAA - prevTier[3]);
+      var annualSavings = monthSavings * (joint ? 2 : 1) * 12;
+      var threshold = prevTier[joint ? 1 : 0];
+      var overBy = magi - threshold;
+      medHTML += "<div class='hc-insight'>Your income is <b>" + money(overBy, 0) + " above</b> the " +
+        tierNames[irmaaTier] + " threshold ($" + threshold.toLocaleString() + "). " +
+        "Reducing MAGI below that threshold saves <b>$" + Math.round(monthSavings) + "/mo per person</b> ($" + Math.round(annualSavings).toLocaleString() + "/yr" + (joint ? " for the couple" : "") + ") in Medicare premiums. " +
+        "Roth conversions and capital gains realizations both count toward IRMAA.</div>";
+    }
+
+    // Next tier warning (if not at top)
+    if (irmaaTier < HC_IRMAA.length - 1){
+      var nextTierData = HC_IRMAA[irmaaTier + 1];
+      var nextThreshold = nextTierData[joint ? 1 : 0];
+      var distToNext = nextThreshold - magi;
+      var nextExtraCost = (nextTierData[2] - partBMonthly) + (nextTierData[3] - partDIRMAA);
+      if (distToNext < 25000){
+        medHTML += "<div class='hc-insight'>Your income is <b>" + money(distToNext, 0) + " below</b> the next IRMAA threshold ($" + nextThreshold.toLocaleString() + "). " +
+          "Crossing it adds <b>$" + Math.round(nextExtraCost) + "/mo per person</b> ($" + Math.round(nextExtraCost * (joint ? 2 : 1) * 12).toLocaleString() + "/yr" + (joint ? " for the couple" : "") + "). " +
+          "Consider this before large Roth conversions or realizing capital gains.</div>";
+      }
+    }
+
+    medHTML += "<div class='hc-note'>Medicare costs use 2025 IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65 — state and insurer make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>";
+  }
+  $("hcMedicareBody").innerHTML = medHTML;
+}
+
+// ── HC sidebar event wiring ──────────────────────────────────────────────────
+(function(){
+  function hcListen(id){ var el = $(id); if (el) el.addEventListener("input", renderHealthcare); }
+  ["hcAge","hcRetireAge","hcIncome","hcManualPremium"].forEach(hcListen);
+  ["hcStatus","hcHousehold","hcState"].forEach(function(id){
+    var el = $(id); if (el) el.addEventListener("change", renderHealthcare);
+  });
+
+  // Income source toggle
+  $("segHCIncome").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-hcincome]");
+    if (!b) return;
+    hcIncomeMode = b.getAttribute("data-hcincome");
+    $("hcIncomeManualWrap").hidden = (hcIncomeMode !== "manual");
+    renderHealthcare();
+  });
+
+  // When the tax tool changes, re-render HC if it's visible
+  ["txGross","txTrad","txRoth","txBrok","txSS","txPension","txOther","txGainPct","txGross2"].forEach(function(id){
+    var el = $(id);
+    if (el) el.addEventListener("input", function(){
+      if (!$("tab-healthcare").hidden && hcIncomeMode === "tax") renderHealthcare();
+    });
+  });
+  ["txStatus","txState","txSeniors","txPenType"].forEach(function(id){
+    var el = $(id);
+    if (el) el.addEventListener("change", function(){
+      if (!$("tab-healthcare").hidden && hcIncomeMode === "tax") renderHealthcare();
+    });
+  });
+  // Also re-render on txMode button clicks
+  var segMode = $("segTxMode");
+  if (segMode) segMode.addEventListener("click", function(){
+    if (!$("tab-healthcare").hidden && hcIncomeMode === "tax")
+      setTimeout(renderHealthcare, 10);
+  });
+})();
 })();
 </script>
 <!-- Privacy-friendly pageview counting. Records that the page was viewed and
@@ -16044,6 +16568,7 @@ if (fromLink) toast("Loaded from a shared link");
     document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
+
 </script>
 </body>
 </html>
