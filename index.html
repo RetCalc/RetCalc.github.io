@@ -7738,7 +7738,8 @@ const SC = {basic: storeRead("basic") || [], advanced: storeRead("advanced") || 
             drawdown: storeRead("drawdown") || [],
             roth: storeRead("roth") || [],
             debt: storeRead("debt") || [],
-            backtest: storeRead("backtest") || []};
+            backtest: storeRead("backtest") || [],
+            healthcare: storeRead("healthcare") || []};
 /* One-time move: scenarios saved before the v3 split lived under a single
    "retire" bundle key holding Basic + Advanced + Stages together. Split each
    into its own list under the same name so nothing saved before this update
@@ -15185,7 +15186,8 @@ const TOOL_LABEL = {basic:"scenario", advanced:"scenario", stages:"scenario",
                     mortgage:"mortgage scenario", budget:"budget",
                     college:"college plan", rentbuy:"rent-vs-buy scenario",
                     drawdown:"drawdown plan", roth:"conversion plan",
-                    debt:"debt plan", backtest:"backtest"};
+                    debt:"debt plan", backtest:"backtest",
+                    healthcare:"healthcare plan"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
   const list = SC[activeTool()];
@@ -15857,6 +15859,7 @@ function buildToolData(tool){
   if (tool === "roth") return readRCState();
   if (tool === "debt") return readDebtState();
   if (tool === "backtest") return readBTState();
+  if (tool === "healthcare") return {};
   return readBudgetState();
 }
 function doSave(){
