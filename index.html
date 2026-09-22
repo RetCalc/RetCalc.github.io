@@ -10091,7 +10091,8 @@ function renderSeries(){
     "</td><td>" + money(r.end) + "</td><td>" +
     money(r.end / Math.pow(1 + g.inflation, r.endYear)) + "</td></tr>").join("");
 
-  const feeCost = (g.fees || 0) > 0 ? projectSeries(g, stages).fv - R.fv : 0;
+  const feeCost = (g.fees || 0) > 0
+    ? projectSeries(g, effectiveStagesFrom(Object.assign({}, g, {fees: 0}), stages)).fv - R.fv : 0;
   renderMilestones("msBodyS",
     R.rows.map(r => ({year:r.endYear, end:r.end, growth:r.growth, contrib:r.contrib})),
     g.inflation, feeCost, R.totalYears, false, true);
