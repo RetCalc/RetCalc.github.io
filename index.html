@@ -584,6 +584,12 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .db-b3{animation:db-pay .44s ease-in-out .07s}
   .toolcard:hover .db-b2{animation:db-pay .44s ease-in-out .14s}
   .toolcard:hover .db-b1{animation:db-pay .44s ease-in-out .21s}
+
+  /* Healthcare: cross pulses, ring dims. */
+  @keyframes hc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+  .hc-cross{transform-box:view-box;transform-origin:center}
+  .toolcard:hover .hc-cross{animation:hc-pulse .5s ease-out}
+  .toolcard:hover .hc-ring{opacity:.7;transition:opacity .2s ease}
 }
 @media (prefers-reduced-motion:reduce){
   .toolcard:hover .dd-line,.toolcard:hover .dd-dot,.toolcard:hover .tx-glass,
@@ -591,11 +597,8 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .roth-dest,.toolcard:hover .mg-roof,
   .toolcard:hover .cl-cap,.toolcard:hover .cl-tassel,
   .toolcard:hover .rb-beam,.toolcard:hover .bg-coin,
-  .toolcard:hover .db-bar{animation:none;stroke-dasharray:none}
-  @keyframes hc-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
-  .hc-cross{transform-box:view-box;transform-origin:center}
-  .toolcard:hover .hc-cross{animation:hc-pulse .5s ease-out}
-  .toolcard:hover .hc-ring{opacity:.7;transition:opacity .2s ease}
+  .toolcard:hover .db-bar,.toolcard:hover .hc-cross,
+  .toolcard:hover .hc-ring{animation:none;stroke-dasharray:none;transition:none}
 }
 
 /* ---------- back to the tool picker ---------- */
@@ -771,11 +774,6 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   background:color-mix(in srgb,var(--jade) 12%,transparent);color:var(--jade)}
 .hc-irmaa-badge.hc-irmaa-hit{
   background:color-mix(in srgb,var(--coral) 12%,transparent);color:var(--coral)}
-.hc-from-tax{font-size:13px;color:var(--dim);margin:8px 0}
-.hc-from-tax .v{font-family:var(--mono);font-weight:600;color:var(--text);float:right}
-.hc-link{font-size:12px;color:var(--jade);cursor:pointer;text-decoration:none;
-  display:inline-flex;align-items:center;gap:3px;margin-top:4px}
-.hc-link:hover{text-decoration:underline}
 
 /* ---------- printable one-page summary ---------- */
 #sheet{display:none}
@@ -3651,6 +3649,68 @@ window.onerror = function(msg){
     </div>
 
     <div class="panel about">
+      <h2>Healthcare Cost Planner</h2>
+      <div class="body">
+        <p>Healthcare is one of the largest and most variable costs in early retirement.
+        This tool covers two phases: the ACA bridge between retirement and Medicare,
+        and Medicare itself from age 65 on.</p>
+
+        <p><b>Pre-65: ACA Bridge.</b> Most early retirees buy coverage on the ACA
+        marketplace until Medicare starts. Premiums are set by age and state; the tool
+        uses the official HHS age-rating multipliers to scale a state-level benchmark to
+        your retirement age. The premium tax credit reduces what you actually pay, and
+        its size depends on where your income falls relative to the federal poverty line.</p>
+
+        <dl class="gloss">
+          <dt>Retirement MAGI</dt>
+          <dd>Modified Adjusted Gross Income — the number the ACA and Medicare both use.
+          In retirement this is typically taxable withdrawals, pension income, taxable
+          Social Security, and capital gains added together. Use <b>Copy from Tax tool</b>
+          to pull it automatically when the Income Tax tool is in Retirement Income mode.</dd>
+
+          <dt>Standard vs. enhanced ACA rules</dt>
+          <dd>Standard rules cap your premium at a sliding percentage of income and phase
+          out subsidies at 400% FPL (the "subsidy cliff"). Enhanced rules, first passed in
+          2021, remove the cliff and cap contributions at 8.5% for all income levels. The
+          tool shows both, since their continuation depends on current legislation.</dd>
+
+          <dt>The 400% FPL cliff</dt>
+          <dd>Under standard rules, crossing this line eliminates the entire subsidy in
+          one dollar. The tool warns you when you're close and quantifies the exact monthly
+          cost — relevant when weighing Roth conversions, capital gains realizations, or
+          IRA withdrawal timing against ACA premium exposure.</dd>
+
+          <dt>State and age adjustment</dt>
+          <dd>The benchmark Silver premium is estimated per state for a 40-year-old and
+          scaled to your retirement age via the HHS multiplier table. Enter your own
+          quote from healthcare.gov in the sidebar for a precise number.</dd>
+        </dl>
+
+        <p><b>Post-65: Medicare.</b> Medicare Part B (outpatient) and Part D
+        (prescriptions) both carry income-related surcharges known as IRMAA, based on
+        your income from two years prior. Most enrollees add Medigap coverage to cap
+        out-of-pocket exposure.</p>
+
+        <dl class="gloss">
+          <dt>IRMAA</dt>
+          <dd>Income-Related Monthly Adjustment Amount. If your MAGI two years ago
+          exceeded a threshold ($106,000 single / $212,000 married in 2025), Part B and
+          Part D cost more — in six tiers up to three times the base premium. The tool
+          shows your tier, the dollar surcharge, and the exact savings from keeping income
+          below the next tier down, which matters for withdrawal sequencing and Roth
+          conversion decisions in the years before Medicare starts.</dd>
+
+          <dt>Medigap</dt>
+          <dd>Supplement plans like Plan G cover most of what Original Medicare leaves
+          unpaid. Premiums vary widely by state, insurer, and age at enrollment; the range
+          shown is a rough national estimate for a 65-year-old. Medicare Advantage
+          (Part C) plans work differently — often lower premiums but narrower networks
+          and different cost-sharing — and are not modelled here.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="panel about">
       <h2>Debt Payoff</h2>
       <div class="body">
         <p>Two well-known ways to clear several debts at once, and they differ in
@@ -4934,18 +4994,10 @@ window.onerror = function(msg){
           </select>
         </div>
         <div class="field">
-          <label>Retirement income<span class="tipdot" data-tip="hcincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-          <span class="seg" id="segHCIncome">
-            <button type="button" data-hcincome="tax" class="on">Tax tool</button>
-            <button type="button" data-hcincome="manual">Manual</button>
-          </span>
-        </div>
-        <div id="hcIncomeFromTax"></div>
-        <div id="hcIncomeManualWrap" hidden>
-          <div class="field">
-            <label for="hcIncome">Annual MAGI</label>
-            <div class="inputwrap"><span class="affix">$</span><input id="hcIncome" type="text" inputmode="decimal" data-money data-nonneg></div>
-          </div>
+          <label for="hcIncome">Retirement MAGI<span class="tipdot" data-tip="hcincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hcIncome" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <button class="btn mini" type="button" id="hcCopyTax" style="margin-top:6px">Copy from Tax tool</button>
+          <button class="btn mini" type="button" id="hcGoTax" style="margin-top:4px">Open Tax tool</button>
         </div>
         <div class="field">
           <label for="hcManualPremium">ACA benchmark premium<span class="tipdot" data-tip="hcbenchmark" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -16241,8 +16293,6 @@ var HC_PARTD_BASE = 50;
 // Medigap Plan G rough range at 65 (low/high, national)
 var HC_MEDIGAP_LOW = 120, HC_MEDIGAP_HIGH = 200;
 
-var hcIncomeMode = "tax";
-
 function hcFPL(size){
   size = Math.max(1, Math.round(size));
   if (size <= 8) return HC_FPL_BASE[size];
@@ -16313,35 +16363,7 @@ function renderHealthcare(){
   var manualPremium = num("hcManualPremium") || 0;
 
   // ── income ───────────────────────────────────────────────────────────────
-  var magi = 0, incomeFromTax = false;
-  if (hcIncomeMode === "tax"){
-    try {
-      var txInp = readTax();
-      if (txInp.mode === "retire"){
-        var txResult = runTax(txInp);
-        magi = txResult.agi || 0;
-        incomeFromTax = magi > 0;
-      }
-    } catch(e){}
-  }
-  if (!incomeFromTax) magi = num("hcIncome") || 0;
-
-  // Show income source in sidebar
-  var fromTaxDiv = $("hcIncomeFromTax");
-  if (hcIncomeMode === "tax"){
-    if (incomeFromTax && magi > 0){
-      fromTaxDiv.innerHTML = "<div class='hc-from-tax'>" +
-        "<span>MAGI from Tax tool</span><span class='v'>" + money(magi) + "</span></div>" +
-        "<a class='hc-link' onclick='showTab(\"tools\");showTool(\"tax\");'>" +
-        "<svg width='10' height='10' viewBox='0 0 10 10' fill='none'>" +
-        "<path d='M1 5h8M6 2l3 3-3 3' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>" +
-        "</svg>Edit in Tax tool</a>";
-    } else {
-      fromTaxDiv.innerHTML = "<div class='hc-note'>Set the Tax tool to <b>Retirement Income</b> mode with income entered, or switch to manual entry.</div>";
-    }
-  } else {
-    fromTaxDiv.innerHTML = "";
-  }
+  var magi = num("hcIncome") || 0;
 
   // ── ACA Bridge ───────────────────────────────────────────────────────────
   var acaBridgeYears = Math.max(0, 65 - retireAge);
@@ -16498,33 +16520,24 @@ function renderHealthcare(){
     var el = $(id); if (el) el.addEventListener("change", renderHealthcare);
   });
 
-  // Income source toggle
-  $("segHCIncome").addEventListener("click", function(e){
-    var b = e.target.closest("button[data-hcincome]");
-    if (!b) return;
-    hcIncomeMode = b.getAttribute("data-hcincome");
-    $("hcIncomeManualWrap").hidden = (hcIncomeMode !== "manual");
-    renderHealthcare();
+  $("hcCopyTax").addEventListener("click", function(){
+    try {
+      var txInp = readTax();
+      if (txInp.mode !== "retire"){
+        toast("Switch the Tax tool to Retirement Income mode first");
+        return;
+      }
+      var agi = runTax(txInp).agi || 0;
+      if (!agi){ toast("Enter income in the Tax tool first"); return; }
+      $("hcIncome").value = groupDigits(Math.round(agi), true);
+      renderHealthcare();
+      toast("Copied " + money(agi) + " MAGI from Tax tool");
+    } catch(e){ toast("Could not read from Tax tool"); }
   });
 
-  // When the tax tool changes, re-render HC if it's visible
-  ["txGross","txTrad","txRoth","txBrok","txSS","txPension","txOther","txGainPct","txGross2"].forEach(function(id){
-    var el = $(id);
-    if (el) el.addEventListener("input", function(){
-      if (!$("tab-healthcare").hidden && hcIncomeMode === "tax") renderHealthcare();
-    });
-  });
-  ["txStatus","txState","txSeniors","txPenType"].forEach(function(id){
-    var el = $(id);
-    if (el) el.addEventListener("change", function(){
-      if (!$("tab-healthcare").hidden && hcIncomeMode === "tax") renderHealthcare();
-    });
-  });
-  // Also re-render on txMode button clicks
-  var segMode = $("segTxMode");
-  if (segMode) segMode.addEventListener("click", function(){
-    if (!$("tab-healthcare").hidden && hcIncomeMode === "tax")
-      setTimeout(renderHealthcare, 10);
+  $("hcGoTax").addEventListener("click", function(){
+    showTab("tools");
+    showTool("tax");
   });
 })();
 })();
