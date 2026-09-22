@@ -17116,7 +17116,7 @@ function drawFireChart(p, displayYear, maxYears){
     pts.push({year:0, base:p.initial, hi:p.initial, lo:p.initial});
 
     if (isCoast && displayYear !== null && displayYear > 0 && displayYear < retYrs){
-      var coastYrs = displayYear;
+      var coastYrs = Math.round(displayYear);
       var ph1 = projBand(p.initial, p.contrib, coastYrs);
       for (var i1 = 0; i1 < ph1.b.years.length; i1++){
         var yr1 = ph1.b.years[i1];
@@ -17135,8 +17135,8 @@ function drawFireChart(p, displayYear, maxYears){
           var dfl2 = Math.pow(1 + p.inflation, coastYrs + yr2.year);
           pts.push({year: coastYrs + yr2.year,
                     base: (yr2.end||0)/dfl2,
-                    hi:   ((ph2h.b.years[i2]||yr2).end||0)/dfl2,
-                    lo:   ((ph2l.b.years[i2]||yr2).end||0)/dfl2});
+                    hi:   ((ph2h.h.years[i2]||yr2).end||0)/dfl2,
+                    lo:   ((ph2l.l.years[i2]||yr2).end||0)/dfl2});
         }
       }
       drawMaxX = retYrs;
