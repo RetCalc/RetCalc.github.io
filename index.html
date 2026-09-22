@@ -587,6 +587,13 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .db-b2{animation:db-pay .44s ease-in-out .14s}
   .toolcard:hover .db-b1{animation:db-pay .44s ease-in-out .21s}
 
+  /* Backtest: bars rise in a left-to-right wave. */
+  @keyframes bt-wave{0%,100%{transform:translateY(0)} 45%{transform:translateY(-5px)}}
+  .bt-bar{transform-box:fill-box}
+  .toolcard:hover .bt-bar1{animation:bt-wave .55s ease-in-out}
+  .toolcard:hover .bt-bar2{animation:bt-wave .55s ease-in-out .1s}
+  .toolcard:hover .bt-bar3{animation:bt-wave .55s ease-in-out .2s}
+
   /* Healthcare: cross spins a full turn, ring dims while it goes. */
   @keyframes hc-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   .hc-cross{transform-box:view-box;transform-origin:center}
@@ -599,7 +606,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .toolcard:hover .roth-dest,.toolcard:hover .mg-roof,
   .toolcard:hover .cl-cap,.toolcard:hover .cl-tassel,
   .toolcard:hover .rb-beam,.toolcard:hover .bg-coin,
-  .toolcard:hover .db-bar,.toolcard:hover .hc-cross,
+  .toolcard:hover .db-bar,.toolcard:hover .bt-bar,.toolcard:hover .hc-cross,
   .toolcard:hover .hc-ring{animation:none;stroke-dasharray:none;transition:none}
 }
 
@@ -4443,10 +4450,9 @@ window.onerror = function(msg){
         <div class="toolcard-icon">
           <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 32h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <rect x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="2"/>
-            <rect x="17.5" y="13" width="5" height="19" rx="1.2" stroke="currentColor" stroke-width="2"/>
-            <rect x="28" y="7" width="5" height="25" rx="1.2" stroke="currentColor" stroke-width="2"/>
-            <path class="dd-line" pathLength="100" d="M6 25 L14 17 L24 21 L34 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>
+            <rect class="bt-bar bt-bar1" x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect class="bt-bar bt-bar2" x="17.5" y="13" width="5" height="19" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            <rect class="bt-bar bt-bar3" x="28" y="7" width="5" height="25" rx="1.2" stroke="currentColor" stroke-width="2"/>
           </svg>
         </div>
         <div class="toolcard-body">
