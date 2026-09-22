@@ -1363,7 +1363,7 @@ svg{display:block;width:100%;height:auto}
   /* six money columns can't fit a phone; scroll them sideways instead of
      letting the text wrap into an unreadable stack */
   .scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:340px}
-  #yearTable{min-width:580px}
+  #yearTable,#fiTable{min-width:580px}
   th,td{padding:8px 9px;font-size:12.5px}
   .swipehint{display:block}
 }
@@ -5254,9 +5254,13 @@ window.onerror = function(msg){
 
     <div class="panel">
       <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="fiTable">
-          <thead><tr><th>Year</th><th>Age</th><th>Annual contribution</th><th>Balance (nominal)</th><th>Balance (real)</th></tr></thead>
+          <thead><tr>
+            <th>Age</th><th>Start balance</th><th>Contributions</th><th>Growth</th>
+            <th>End balance</th><th>Inflation adj.</th>
+          </tr></thead>
           <tbody id="fiTableBody"></tbody>
         </table>
       </div>
@@ -17392,11 +17396,11 @@ function renderFire(){
     var y2 = pp.years[k];
     var deflK = Math.pow(1 + p.inflation, y2.year);
     var realBalK = (y2.end || 0) / deflK;
-    var thisC = p.contrib * ppy2 * Math.pow(1 + p.growth, k);
-    var rowClass2 = (y2.year === fireYear) ? " class=\"firow-fire\"" : "";
-    rows += "<tr" + rowClass2 + "><td>" + y2.year + "</td>" +
-      "<td>" + (p.curAge + y2.year) + "</td>" +
-      "<td>" + money(thisC) + "</td>" +
+    var rowClass2 = (fireYear !== null && y2.year === Math.ceil(fireYear)) ? " class=\"firow-fire\"" : "";
+    rows += "<tr" + rowClass2 + "><td>" + (p.curAge + y2.year) + "</td>" +
+      "<td>" + money(y2.start || 0) + "</td>" +
+      "<td>" + money(y2.contrib || 0) + "</td>" +
+      "<td class='pos'>" + money(y2.growth || 0) + "</td>" +
       "<td>" + money(y2.end || 0) + "</td>" +
       "<td>" + money(realBalK) + "</td></tr>";
   }
