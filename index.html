@@ -5113,11 +5113,11 @@ window.onerror = function(msg){
         <div class="two">
           <div class="field">
             <label for="fiNominal">Return rate</label>
-            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="7.5"><span class="affix">%</span></div>
+            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="9.65"><span class="affix">%</span></div>
           </div>
           <div class="field">
             <label for="fiInflation">Inflation</label>
-            <div class="inputwrap"><input id="fiInflation" type="text" inputmode="decimal" data-num data-step="0.5" value="2.5"><span class="affix">%</span></div>
+            <div class="inputwrap"><input id="fiInflation" type="text" inputmode="decimal" data-num data-step="0.5" value="2.94"><span class="affix">%</span></div>
           </div>
         </div>
         <div class="field">
@@ -7977,8 +7977,8 @@ function setBig(id, text){
 }
 
 // Starting point when nothing is saved.
-const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.075,
-  inflation:.025, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
+const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.0965,
+  inflation:.0294, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
 const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, period:"Monthly", risk:.045};
 
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
@@ -9642,11 +9642,11 @@ function renderAll(){ renderProjection(); renderTools(); }
 /* ---------- series of stages ---------- */
 let seriesPoints = [], seriesRun = null, seriesTarget = 0;
 
-const SERIES_GLOBALS = {initial:10000, inflation:.025, withdrawal:.04, taxRate:.10,
+const SERIES_GLOBALS = {initial:10000, inflation:.0294, withdrawal:.04, taxRate:.10,
   target:100000, fees:0};
 const SERIES_STAGES = [
-  {years:10, contrib:500,  period:"Bi-Weekly", growth:.04, nominal:.085, vol:.17},
-  {years:20, contrib:1200, period:"Monthly",   growth:.03, nominal:.060, vol:.09, adj:true}
+  {years:10, contrib:500,  period:"Bi-Weekly", growth:.04, nominal:.0965, vol:.17},
+  {years:20, contrib:1200, period:"Monthly",   growth:.03, nominal:.0965, vol:.09, adj:true}
 ];
 let stages = SERIES_STAGES.map(x => Object.assign({}, x));
 
@@ -16802,6 +16802,9 @@ var fiHistFullKey = null;
 var fiSuccessResults = null;
 var fiMaxYears = 50;
 var fiCurrentFireYear = null;
+var fiCrossingsCache = null;
+var fiCrossingsKey = null;
+var fiCrossingsTotal = 0;
 
 function readFire(){
   var modeBtn = $("segFireMode").querySelector("button.on");
@@ -16820,8 +16823,8 @@ function readFire(){
     contrib: Math.max(0, num("fiContrib") || 0),
     period: $("fiPeriod").value || "Monthly",
     growth: (num("fiGrowth") || 0) / 100,
-    nominal: Math.max(0, (num("fiNominal") || 7)) / 100,
-    inflation: Math.max(0, (num("fiInflation") || 2.5)) / 100,
+    nominal: Math.max(0, (num("fiNominal") || 9.65)) / 100,
+    inflation: Math.max(0, (num("fiInflation") || 2.94)) / 100,
     target: targetPortfolio,
     withdrawal: wr,
     solveFor: solveFor,
@@ -16899,6 +16902,48 @@ function fiYearsFromBands(bands, target, successPct){
     if (bandVal(bands[i]) >= target) return Math.round(bands[i].year);
   }
   return null;
+}
+
+function fiComputeCrossings(p, maxYears){
+  var avail = HIST_M_STOCK.length;
+  var N = Math.ceil(maxYears * 12 - 1e-9);
+  if (N > avail) return null;
+  var count = avail - N + 1;
+  var ppy = PPY[p.period] || 12;
+  var plan = [];
+  for (var k = 1; k <= N; k++){
+    var yearNo = Math.ceil(k / 12);
+    var grown = p.contrib * Math.pow(1 + p.growth, yearNo - 1);
+    var amount;
+    if (ppy >= 12) amount = grown * (ppy / 12);
+    else if (ppy === 4) amount = (k % 3 === 0) ? grown : 0;
+    else amount = (k % 12 === 0) ? grown : 0;
+    plan.push({amount: amount, w: p.histMix});
+  }
+  var target = p.target;
+  var crossings = [];
+  for (var wi = 0; wi < count; wi++){
+    var bal = p.initial, cum = 1;
+    for (var k = 0; k < N; k++){
+      var pl = plan[k], idx = wi + k;
+      var r = (pl.w * HIST_M_STOCK[idx] + (1 - pl.w) * HIST_M_BOND[idx]) / 100;
+      if (r <= -0.999) r = -0.999;
+      bal = bal * (1 + r) + pl.amount;
+      cum *= (1 + HIST_M_INFL[idx] / 100);
+      if ((bal / cum) >= target){
+        crossings.push((k + 1) / 12);
+        break;
+      }
+    }
+  }
+  crossings.sort(function(a, b){ return a - b; });
+  return {crossings: crossings, total: count};
+}
+
+function fiYearsFromCrossings(crossings, total, successPct){
+  var needed = Math.max(1, Math.floor(successPct / 100 * total));
+  if (needed > crossings.length) return null;
+  return crossings[needed - 1];
 }
 
 function drawFireChart(p, displayYear, maxYears){
@@ -17060,19 +17105,21 @@ function renderFireSuccess(p){
   var displayYear = fiCurrentFireYear;
 
   if (p.mode === "fire"){
-    var fullKey = JSON.stringify([p.histMix, p.initial, p.contrib, p.period, p.growth, fiMaxYears]);
-    if (fiHistFullKey !== fullKey){
-      var stages = [{years: fiMaxYears, contrib: p.contrib, period: p.period, growth: p.growth, mix: p.histMix}];
-      var H = historicalRuns({initial: p.initial, fees: 0}, stages);
-      fiHistFullCache = (H.tooLong || !H.bands || !H.bands.length) ? null : H;
-      fiHistFullKey = fullKey;
+    var crossKey = JSON.stringify([p.histMix, p.initial, p.contrib, p.period, p.growth, fiMaxYears]);
+    if (fiCrossingsKey !== crossKey){
+      var cr = fiComputeCrossings(p, fiMaxYears);
+      if (cr){ fiCrossingsCache = cr.crossings; fiCrossingsTotal = cr.total; }
+      else   { fiCrossingsCache = null;          fiCrossingsTotal = 0; }
+      fiCrossingsKey = crossKey;
     }
-    if (fiHistFullCache && p.target > 0){
-      var y = fiYearsFromBands(fiHistFullCache.bands, p.target, sr);
+    if (fiCrossingsCache && p.target > 0){
+      var y = fiYearsFromCrossings(fiCrossingsCache, fiCrossingsTotal, sr);
       if (y !== null && y >= 0){
-        var age = p.curAge + y;
-        $("fiSuccessAge").textContent = "Age " + age + " (" + fmtYears(y) + " from now)";
-        $("fiSliderNote").textContent = sr + "% of historical windows since 1926 show the portfolio reaching the target by age " + age + ".";
+        var ageNum = p.curAge + y;
+        var ageFmt = (ageNum % 1) ? ageNum.toFixed(1) : String(ageNum);
+        var yFmt   = (y % 1) ? y.toFixed(1) : String(y);
+        $("fiSuccessAge").textContent = "Age " + ageFmt + " (" + yFmt + (parseFloat(yFmt) === 1 ? " year" : " years") + " from now)";
+        $("fiSliderNote").textContent = sr + "% of historical windows since 1926 show the portfolio reaching the target by age " + ageFmt + ".";
         displayYear = y;
       } else {
         $("fiSuccessAge").textContent = "Not in range";
@@ -17225,6 +17272,7 @@ function renderFire(){
   $("fiTableBody").innerHTML = rows;
 
   fiHistFullKey = null;
+  fiCrossingsKey = null;
   fiSuccessResults = (p.mode === "coast") ? fiRunHistorical(p, maxYears) : null;
   renderFireSuccess(p);
 }
