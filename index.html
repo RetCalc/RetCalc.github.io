@@ -1350,6 +1350,20 @@ html[data-theme="light"] .glidebtn:hover{border-color:#a9c8d8}
   border:1px solid #223650;border-radius:var(--r-well);
   display:flex;flex-direction:column;gap:8px}
 html[data-theme="light"] .glidefields{border-color:#cfdcea}
+/* Desktop stage cards: a compact glide toggle with its settings in line
+   beside it, labels to the left of each input, instead of a full-width
+   button over a stacked panel. Phones keep the stacked layout. */
+@media (min-width:641px){
+  .stagecard .glidewrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .stagecard .glidewrap > .glidebtn{width:auto;flex:none;padding-right:14px}
+  .stagecard .glidefields{margin:0;padding:0;background:none;border:0;
+    flex:1 1 420px;min-width:0;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 14px}
+  .stagecard .glidefields .two{display:flex;gap:14px;flex:none;margin:0}
+  .stagecard .glidefields .two > .field{display:flex;align-items:center;gap:8px;margin:0}
+  .stagecard .glidefields .two > .field > label{margin:0;white-space:nowrap;align-self:center}
+  .stagecard .glidefields .inputwrap{width:96px}
+  .stagecard .glidefields [data-glidenote]{flex:1 1 220px;min-width:0}
+}
 .coastrow .k{color:var(--text)}
 .coastrow .v{font-weight:600}
 #sCoastAction{margin-top:10px}
