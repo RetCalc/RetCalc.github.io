@@ -1146,7 +1146,10 @@ html[data-theme="light"] .about.disclaimer{
 .sg-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .sg-intro,.sg-foot{font-size:13px;color:var(--dim);line-height:1.55;margin:0 0 16px}
 .sg-foot{margin:16px 0 0}
-.sg-cmp{width:100%;margin:0 0 18px;font-size:12.5px}
+.sg-cmpwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 0 18px}
+.sg-cmp{width:100%;margin:0;font-size:12.5px}
+/* a short table read in place: its header scrolls away with it */
+.sg-cmp th{position:static}
 .sg-cmp th,.sg-cmp td{text-align:left;font-family:var(--sans);padding:7px 8px;font-size:12.5px}
 .sg-cmp td:first-child{color:var(--text);font-weight:500}
 .sg-cmp tbody tr:hover{background:transparent;box-shadow:none}
@@ -1167,7 +1170,7 @@ html[data-theme="light"] .about.disclaimer{
   .popup.guide{padding:18px 16px}
   .sg-pc{grid-template-columns:1fr}
   .sg-item.sg-cur{margin-left:-10px;padding-left:8px}
-  .sg-cmp th:nth-child(4),.sg-cmp td:nth-child(4){display:none}
+  .sg-cmp{min-width:520px}
 }
 .popup.wide h3{margin-bottom:4px}
 .popup .formhint{font-size:11.5px;color:var(--dim);margin:0 0 16px;line-height:1.5}
@@ -16862,14 +16865,14 @@ var DD_GUIDE = [
 function openStrategyGuide(){
   var cur = $("ddStrategy").value;
   var list = function(items){ return "<ul>" + items.map(function(t){ return "<li>" + t + "</li>"; }).join("") + "</ul>"; };
-  var cmp = "<table class='sg-cmp'><thead><tr><th>Strategy</th><th>Income stability</th><th>Can run out</th><th>Left at the end</th></tr></thead><tbody>" +
+  var cmp = "<div class='sg-cmpwrap'><table class='sg-cmp'><thead><tr><th>Strategy</th><th>Income stability</th><th>Can run out</th><th>Left at the end</th></tr></thead><tbody>" +
     [["Fixed amount","Highest","Yes","Often a lot"],
      ["Fixed percentage","Lowest","No","Often a lot"],
      ["Guardrails","High, with occasional steps","Rarely","Moderate"],
      ["Floor and ceiling","High","Rarely","Moderate"],
      ["Yale endowment","High, slow to change","Sometimes","Moderate"],
      ["VPW","Low to moderate","Not before the horizon","About the future value"]]
-    .map(function(r){ return "<tr><td>" + r.join("</td><td>") + "</td></tr>"; }).join("") + "</tbody></table>";
+    .map(function(r){ return "<tr><td>" + r.join("</td><td>") + "</td></tr>"; }).join("") + "</tbody></table></div>";
   var body = DD_GUIDE.map(function(g){
     return "<section class='sg-item" + (g.k === cur ? " sg-cur" : "") + "'>" +
       "<div class='sg-head'><h4>" + g.name + "</h4><span class='sg-tag'>" + g.tag + "</span>" +
