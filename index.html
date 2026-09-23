@@ -691,8 +691,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 .hh-sum{flex:1 1 auto;min-width:0;font-size:13px;color:var(--dim);line-height:1.4}
 .hh-sum b{color:var(--text);font-weight:600;margin-right:8px}
 .hh-sum .hh-bits span + span::before{content:"\00b7";margin:0 7px;color:var(--dimmer)}
-.hh-sum .hh-bits{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;
-  letter-spacing:-.01em;color:var(--text)}
+.hh-sum .hh-bits{font-size:13px;font-variant-numeric:tabular-nums;color:var(--text)}
 .hh-body{border-top:1px solid var(--line-soft);padding:14px 14px 12px}
 .hh-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 12px}
 .hh-grid .field{margin-bottom:10px}
@@ -718,7 +717,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
      recognize it, and Edit shows the rest */
   .hh-sum{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
     overflow:hidden;font-size:12.5px}
-  .hh-sum .hh-bits{font-size:12px}
+  .hh-sum .hh-bits{font-size:12.5px}
   .hh-btns{width:100%}
   .hh-btns .btn{flex:1 1 auto}
 }
@@ -1580,6 +1579,12 @@ svg{display:block;width:100%;height:auto}
      nudge the 1.4 up toward 2; if there's still too much dead space, down. */
   html.pwa header{padding-top:calc(env(safe-area-inset-top,0px) * 1.55)}
 }
+/* The same status-bar blur covers the top of a pop-up tall enough to reach
+   it (the strategy guide), hiding its first lines and close button. Start
+   pop-ups below it, and clear the home indicator at the bottom. Web app only. */
+html.pwa .popup-overlay{
+  padding-top:calc(env(safe-area-inset-top,0px) * 1.55 + 20px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)}
 /* Small phones (SE, mini) leave each half of a two-column field row under
    170px, cramped for anything longer than a short label. Below this width,
    stack them instead — normal phones keep the two-column layout above. */
