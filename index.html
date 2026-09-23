@@ -6044,6 +6044,38 @@ function solveYears(p, portToday, capYears){
  * @param {StageParams[]} stages
  * @returns {Object} rows (year-by-year), summary (per-stage), and total fv/fvReal/wd/wdReal/afterTax
  */
+/* Where the Stages charts put a point: after the last period of every whole
+   year, and at the exact end of each stage, so a fractional stage adds one
+   point (16.92) between two whole years (16, 17) rather than shifting every
+   point after it. Returns, per stage, a map of period index -> chart year. */
+function seriesSnaps(stages){
+  let elapsed = 0;
+  return stages.map(st => {
+    const ppy = PPY[st.period], n = Math.floor(st.years * ppy), at = new Map();
+    const calOf = i => Math.max(1, Math.ceil(elapsed + i / ppy - 1e-9));
+    for (let i = 1; i <= n; i++){
+      if (i === n) at.set(i, elapsed + st.years);
+      else if (calOf(i + 1) !== calOf(i)) at.set(i, calOf(i));
+    }
+    elapsed += st.years;
+    return at;
+  });
+}
+/* A stage ending partway through a year can leave the next whole year with
+   no period of its own (stage 2's first monthly payment after 16.92 falls
+   at 17.003). Nothing is paid or earned between the boundary and that year,
+   so its point repeats the boundary's value. `copy(pt, year)` makes one. */
+function fillWholeYears(pts, copy){
+  const out = [];
+  pts.forEach((pt, i) => {
+    out.push(pt);
+    const next = pts[i + 1];
+    if (!next) return;
+    for (let y = Math.floor(pt.year) + 1; y < next.year - 1e-9; y++)
+      if (y > pt.year + 1e-9) out.push(copy(pt, y));
+  });
+  return out;
+}
 function projectSeries(g, stages){
   let bal = g.initial, contribTotal = 0, elapsed = 0, lastContrib = 0, lastPeriod = null;
   const rows = [], summary = [];
@@ -6051,7 +6083,7 @@ function projectSeries(g, stages){
      land on 16.92, 17.92... (the charts and Monte Carlo bands line up with
      them). `calRows` regroup the same periods by whole calendar year for
      the tables: year 17 holds the rest of stage 1 and the start of stage 2. */
-  const calRows = [];
+  const calRows = [], chartRows = [], snaps = seriesSnaps(stages);
   let cal = null;
   for (let si = 0; si < stages.length; si++){
     const st = stages[si];
@@ -6084,6 +6116,7 @@ function projectSeries(g, stages){
       lastContrib = c; lastPeriod = st.period;
       cal.stage = si + 1; cal.contrib += c; cal.end = bal; cal.t = t;
       cal.growth = cal.end - cal.start - cal.contrib;
+      if (snaps[si].has(i)) chartRows.push({year:snaps[si].get(i), stage:si + 1, end:bal});
     }
     if (n > 0){
       // a fractional stage ends partway through its final year
@@ -6105,7 +6138,8 @@ function projectSeries(g, stages){
   const wdReal = fvReal * g.withdrawal;
   const afterTax = wdReal * (1 - g.taxRate);
   return {
-    rows, calRows, summary, totalYears, inflYears:inflY,
+    rows, calRows, summary,
+    chartRows: fillWholeYears(chartRows, (pt, year) => Object.assign({}, pt, {year})), totalYears, inflYears:inflY,
     fv:bal, invested: g.initial + contribTotal, contribTotal, lastContrib, lastPeriod,
     growth: bal - g.initial - contribTotal,
     fvReal, wd: bal * g.withdrawal, wdReal, afterTax, afterTaxMo: afterTax / 12
@@ -6179,18 +6213,11 @@ function monteCarlo(g, stages, trials, seed){
     }
     return {ppy, n, m: flat.m, s: flat.s, byYear, st};
   });
+  // the same points the projection line uses (see seriesSnaps)
+  const snaps = seriesSnaps(stages);
   const marks = [];
-  let elapsed = 0;
-  meta.forEach(mt => {
-    let curYear = 1;
-    for (let i = 1; i <= mt.n; i++){
-      const y = Math.ceil(i / mt.ppy);
-      if (y !== curYear){ marks.push(elapsed + curYear); curYear = y; }
-    }
-    if (mt.n > 0) marks.push(elapsed + Math.min(curYear, mt.st.years));
-    elapsed += mt.st.years;
-  });
-  const totalYears = elapsed, M = marks.length;
+  snaps.forEach(at => at.forEach(y => marks.push(y)));
+  const totalYears = stages.reduce((a, st) => a + st.years, 0), M = marks.length;
   if (!M) return {marks:[], bands:[], finals:[], totalYears:0, trials:0, median:0};
 
   const paths = [];
@@ -6208,13 +6235,13 @@ function monteCarlo(g, stages, trials, seed){
       for (let i = 1; i <= mt.n; i++){
         const y = Math.ceil(i / mt.ppy);
         if (y !== curYear){
-          paths[mi++][t] = bal; curYear = y;
+          curYear = y;
           if (mt.byYear && mt.byYear[y]){ m = mt.byYear[y].m; s = mt.byYear[y].s; }
         }
         bal = bal * Math.exp(m + s * gaussFrom(rng))
             + st.contrib * Math.pow(1 + st.growth, y - 1);
+        if (snaps[si].has(i)) paths[mi++][t] = bal;
       }
-      if (mt.n > 0) paths[mi++][t] = bal;
     }
     finals[t] = bal;
   }
@@ -6228,6 +6255,11 @@ function monteCarlo(g, stages, trials, seed){
       p50: pctl(sorted, .50) / d, p75: pctl(sorted, .75) / d,
       p90: pctl(sorted, .90) / d});
   }
+  const filled = fillWholeYears(bands, (b, year) => {
+    const k = Math.pow(1 + g.inflation, b.year - year);
+    return {year, p10:b.p10 * k, p25:b.p25 * k, p50:b.p50 * k, p75:b.p75 * k, p90:b.p90 * k};
+  });
+  bands.length = 0; filled.forEach(b => bands.push(b));
   const fd = Math.pow(1 + g.inflation, totalYears);
   const finalsReal = finals.slice().sort();
   for (let i = 0; i < finalsReal.length; i++) finalsReal[i] /= fd;
@@ -8301,7 +8333,8 @@ function historicalRuns(g, stages){
   /* Band points once a year keeps the chart the same shape it has always been;
      the arithmetic underneath is still month by month. */
   const marks = [];
-  for (let k = 0; k < M; k++) if ((k + 1) % 12 === 0 || k === M - 1) marks.push(k);
+  for (let k = 0; k < M; k++)
+    if ((k + 1) % 12 === 0 || k === M - 1 || plan[k + 1].stage !== plan[k].stage) marks.push(k);
   const paths = marks.map(() => new Float64Array(count));
   const finals = new Float64Array(count);
   const windows = [];
@@ -11202,9 +11235,9 @@ function drawSeriesChart(g, R){
     const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial,
                   p25:g.initial, p75:g.initial, det:g.initial}];
     mc.bands.forEach((b, i) => pts.push({year:b.year,
-      stage: R.rows[i] ? R.rows[i].stage : 1,
+      stage: R.chartRows[i] ? R.chartRows[i].stage : 1,
       base:b.p50, hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75,
-      det: R.rows[i] ? R.rows[i].end / defl(R.rows[i].endYear) : b.p50}));
+      det: R.chartRows[i] ? R.chartRows[i].end / defl(R.chartRows[i].year) : b.p50}));
     seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks, 0, {enhanced:true});
     mcLegend("legendS", "Stage boundary");
     mcSummary("mcNoteS", mc, seriesTarget || 0, "(your target above)");
@@ -11215,10 +11248,10 @@ function drawSeriesChart(g, R){
     const hiR = projectSeries(g, shift(band));
     const loR = projectSeries(g, shift(-band));
     const pts = [{year:0, stage:1, base:g.initial, hi:g.initial, lo:g.initial}];
-    R.rows.forEach((r, i) => pts.push({year:r.endYear, stage:r.stage,
-      base: r.end / defl(r.endYear),
-      hi: (hiR.rows[i] ? hiR.rows[i].end : r.end) / defl(r.endYear),
-      lo: (loR.rows[i] ? loR.rows[i].end : r.end) / defl(r.endYear)}));
+    R.chartRows.forEach((r, i) => pts.push({year:r.year, stage:r.stage,
+      base: r.end / defl(r.year),
+      hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
+      lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year)}));
     seriesPoints = paintChart("chartS", pts, R.totalYears, "band", marks, 0, {enhanced:true});
     const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
     $("legendS").innerHTML =
