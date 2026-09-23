@@ -722,6 +722,19 @@ html[data-theme="light"] .acfields{border-color:#cfdcea}
 .two > [hidden] + .field:last-child:nth-child(2){grid-column:1 / -1}
 #acSchedule label{white-space:nowrap}
 .acwarn{color:var(--gold)}
+#acNote:empty,#saNote:empty{display:none}
+/* Running totals under the account rows, lined up with the columns above */
+.actotals{border-top:1px dashed var(--line);padding-top:8px;margin:-3px 0 12px}
+.actot{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}
+.actot .k{align-self:flex-start}
+/* a single total (Stages) has the room to sit on one line */
+.actotals:not(.two) .actot{flex-direction:row;align-items:baseline;justify-content:space-between}
+.actot .k{font-size:12px;color:var(--dim)}
+.actot .v{font-family:var(--mono);font-size:13px;color:var(--text);
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em;padding-right:11px}
+.actot .actsub{text-align:right;font-size:11.5px;color:var(--dimmer);
+  padding-right:11px}
+.actot .actsub:empty{display:none}
 .acsum{font-family:var(--mono);font-size:12px;color:var(--text)}
 #acResults td:first-child,#saResults td:first-child{font-family:var(--sans)}
 #acResults .acdot,#saResults .acdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px}
@@ -758,6 +771,20 @@ html[data-theme="light"] .acfields{border-color:#cfdcea}
 .stagehead .btn{margin-left:auto}
 .stagegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
 .stagegrid .field{margin-bottom:0}
+/* Side-by-side fields share their rows: every label in a row gets the same
+   height and every input starts on the same line, however the labels wrap.
+   Label widths depend on the font, and Windows' is wider than Apple's, so a
+   label that fits on a Mac can wrap on a PC and push its input down. Each
+   field is label / input / anything under it (a hint, a button), laid on
+   three rows it shares with its neighbours. */
+@supports (grid-template-rows: subgrid){
+  .two,.stagegrid{row-gap:0}
+  .two > .field,.stagegrid > .field{display:grid;grid-row:span 3;
+    grid-template-rows:subgrid;align-self:stretch;align-content:start}
+  .two > .field > label,.stagegrid > .field > label{align-self:end}
+  .stagegrid > .field{margin-bottom:10px}
+  .stagegrid{margin-bottom:-10px}
+}
 .stagecard .inputwrap,.stagecard select{background-color:var(--panel)}
 
 /* ---------- data ---------- */
@@ -1780,6 +1807,11 @@ window.onerror = function(msg){
                 <div class="inputwrap"><span class="affix">$</span><input id="acBrokC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
               </div>
             </div>
+            <div class="two actotals" aria-live="polite">
+              <div class="actot"><span class="k">Total balance</span><span class="v" id="acTotBal"></span></div>
+              <div class="actot"><span class="k">Total added</span><span class="v" id="acTotAdd"></span>
+                <span class="actsub" id="acTotSub"></span></div>
+            </div>
             <div class="field">
               <label for="acBrokBasis">Cost basis<span class="tipdot" data-tip="acbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
               <div class="inputwrap"><span class="affix">$</span><input id="acBrokBasis" type="text" inputmode="decimal" data-money data-nonneg></div>
@@ -1802,6 +1834,7 @@ window.onerror = function(msg){
                 <div class="inputwrap"><input id="acMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
               </div>
             </div>
+            <div class="hint" id="acNote" style="margin:-4px 0 10px"></div>
             <div class="acsep"></div>
             <div class="acgroup">Taxes in retirement</div>
             <div class="two">
@@ -1817,7 +1850,6 @@ window.onerror = function(msg){
                 <select id="acState"></select>
               </div>
             </div>
-            <div class="hint" id="acNote" style="margin:-4px 0 10px"></div>
           </div>
         </div>
         <div class="field" id="initialField">
@@ -1879,8 +1911,6 @@ window.onerror = function(msg){
         <div class="field">
           <label for="fees">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="fees" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
-          <div class="hint">Expense ratios and advisory fees, taken straight off your
-            rate of return. Leave at 0 to ignore it.</div>
         </div>
         <div class="two">
           <div class="field">
@@ -1940,10 +1970,27 @@ window.onerror = function(msg){
                 <div class="inputwrap"><span class="affix">$</span><input id="saBrokBasis" type="text" inputmode="decimal" data-money data-nonneg></div>
               </div>
             </div>
-            <div class="field">
-              <label for="saMatch">Employer match<span class="tipdot" data-tip="stmatch" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-              <div class="inputwrap"><input id="saMatch" type="text" inputmode="decimal" data-num data-step="10" min="0" data-nonneg><span class="affix">% of yours</span></div>
+            <div class="actotals" aria-live="polite">
+              <div class="actot"><span class="k">Total starting balance</span><span class="v" id="saTotBal"></span></div>
             </div>
+            <div class="acsep"></div>
+            <div class="acgroup">Employer match <span>paid into traditional</span></div>
+            <div class="field">
+              <label for="saSalary">Your salary today<span class="tipdot" data-tip="stsalary" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="saSalary" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+            </div>
+            <div class="two bottomalign">
+              <div class="field">
+                <label for="saMatchPct">Match rate</label>
+                <div class="inputwrap"><input id="saMatchPct" type="text" inputmode="decimal" data-num data-step="10" min="0" data-nonneg><span class="affix">%</span></div>
+              </div>
+              <div class="field">
+                <label for="saMatchCap">On the first</label>
+                <div class="inputwrap"><input id="saMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
+              </div>
+            </div>
+            <div class="hint acwarn" id="saNote" style="margin:-4px 0 10px"></div>
+            <div class="acsep"></div>
             <div class="two">
               <div class="field">
                 <label for="saStatus">Filing status</label>
@@ -1957,7 +2004,6 @@ window.onerror = function(msg){
                 <select id="saState"></select>
               </div>
             </div>
-            <div class="hint" style="margin:-4px 0 10px">Each stage card sets where its contribution goes.</div>
           </div>
         </div>
         <div class="field" id="gInitialField">
@@ -1983,9 +2029,8 @@ window.onerror = function(msg){
           <div class="inputwrap" style="box-shadow:none;background:transparent"><input id="saTaxOut" type="text" readonly tabindex="-1" aria-label="Tax on withdrawals, calculated"><span class="affix">calc</span></div>
         </div>
         <div class="field">
-          <label for="gFees">Fees <span class="opt">optional</span></label>
+          <label for="gFees">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="gFees" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
-          <div class="hint">Subtracted from every stage's rate of return.</div>
         </div>
         <div class="derived">
           <div><span>Stages</span><span class="num" id="gStages"></span></div>
@@ -1993,8 +2038,6 @@ window.onerror = function(msg){
           <div><span>Total horizon</span><span class="num" id="gTotalYears"></span></div>
           <div><span>Total contributed</span><span class="num" id="gTotalContrib"></span></div>
         </div>
-        <div class="hint" style="margin-top:10px">Contribution, schedule, growth and
-          rate of return are set per stage. Each stage picks up where the last one ended.</div>
       </div>
     </div>
   </aside>
@@ -2757,7 +2800,6 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="clInfl" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="4"><span class="affix">%/yr</span></div>
           </div>
         </div>
-        <div class="hint">Tuition has historically risen 3-5% per year, faster than general inflation.</div>
         <div class="derived">
           <div><span>Total projected cost</span><span class="num" id="clTotCost"></span></div>
           <div><span>Your savings grow to</span><span class="num" id="clSavGrow"></span></div>
@@ -2983,7 +3025,6 @@ window.onerror = function(msg){
         <div class="field" id="ddSpendFloorWrap" hidden>
           <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
-          <div class="hint">In today's dollars, per year. Spending never drops below this, even in years the strategy above would otherwise call for less. Leave at 0 for no floor.</div>
         </div>
         <div class="field" style="margin-top:14px">
           <label for="ddSSMode">Social Security</label>
@@ -3476,9 +3517,11 @@ window.onerror = function(msg){
           contribution goes: a share to traditional, a share to Roth, and the rest to
           the taxable brokerage account. That lets a plan go Roth early in a career
           and traditional later, and the tax on your retirement income reflects the
-          mix you end up with. The match here is a simple share of what you put into
-          traditional and Roth, added in every stage. A stage putting more into
-          traditional and Roth than the 2026 limits allow is flagged on its card.</dd>
+          mix you end up with. The employer match works as on Advanced, from your
+          salary, the match rate and the share of salary it applies to; your salary is
+          assumed to grow at each stage's contribution growth rate. A stage that misses
+          part of the match, or puts more into traditional and Roth than the 2026 limits
+          allow, is flagged on its card.</dd>
         </dl>
       </div>
     </div>
@@ -4528,7 +4571,6 @@ window.onerror = function(msg){
         <div class="field">
           <label for="rcSpend">Annual spending<span class="tipdot" data-tip="rcspend" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="rcSpend" type="text" inputmode="decimal" data-money data-nonneg></div>
-          <div class="hint">In today's dollars, before tax. Tax is funded on top of this.</div>
         </div>
         <div class="two">
           <div class="field">
@@ -4563,9 +4605,6 @@ window.onerror = function(msg){
         <div class="field" id="rcDeathWrap">
           <label for="rcDeath">Survivor transition<span class="tipdot" data-tip="rcwidow" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="rcDeath" type="text" inputmode="decimal" data-num data-step="1" min="0" max="45" data-nonneg><span class="affix">yrs from now</span></div>
-          <div class="hint">Years until the first death. From that year the survivor files
-            single, on single brackets, keeping the larger of the two benefits. Leave at 0
-            to skip it.</div>
         </div>
 
         <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">The conversion plan</div></div>
@@ -8931,22 +8970,26 @@ function renderAcct(p){
   const B = lastAcct, a = B.a, ppy = PPY[p.period];
   $("acTaxOut").value = pctStr(B.effRate, 1);
 
-  // what's going in, and how it squares with the 2026 limits
+  // running totals under the account rows
+  const perLbl = AC_PER[p.period] || "";
+  const mine = a.tradC + a.rothC + a.brokC;
+  $("acTotBal").textContent = money(a.tradBal + a.rothBal + a.brokBal);
+  $("acTotAdd").textContent = money(mine) + perLbl;
+  $("acTotSub").textContent = B.match > 0
+    ? "+ " + money(B.match) + perLbl + " match" : "";
+
+  // the match, and how the traditional + Roth total squares with 2026 limits
   const notes = [];
-  const yours = (a.tradC + a.rothC + a.brokC) * ppy;
-  const matchYr = B.match * ppy;
-  notes.push("Going in this year: <span class='acsum'>" + money(yours) + "</span> from you" +
-    (matchYr > 0 ? " + <span class='acsum'>" + money(matchYr) + "</span> match" : "") + ".");
   if (a.matchPct > 0 && !(a.salary > 0)){
     notes.push("Add your salary to count the employer match.");
   } else if (a.matchPct > 0 && a.matchCap > 0){
     const needYr = a.salary * a.matchCap / 100;
     const inYr = (a.tradC + a.rothC) * ppy;
     if (inYr + 0.5 < needYr)
-      notes.push("<span class='acwarn'>You're leaving " + money((needYr - inYr) * a.matchPct / 100) +
-        " a year of match unclaimed.</span> Putting " + money(needYr) +
-        " a year into traditional or Roth gets all of it.");
-    else notes.push("You're getting the full match.");
+      notes.push("<span class='acwarn'>You're missing " + money((needYr - inYr) * a.matchPct / 100) +
+        " a year of employer match.</span> Putting at least " + money(needYr) +
+        " a year into traditional and Roth gets all of it.");
+    else notes.push("You're getting the full employer match.");
   }
   const H = hhLoad();
   const age = H && H.age > 0 ? H.age : 0;
@@ -8955,15 +8998,13 @@ function renderAcct(p){
   const ira = L.ira + (age >= 50 ? L.iraCatch : 0);
   const taxAdv = (a.tradC + a.rothC) * ppy;
   if (taxAdv > k401 + ira)
-    notes.push("<span class='acwarn'>" + money(taxAdv) + " a year into traditional and Roth is over the " +
-      money(k401 + ira) + " you can put into a 401(k) and an IRA combined in 2026" +
-      (age ? " at " + age : "") + ".</span> The rest would have to go to the brokerage account.");
+    notes.push("<span class='acwarn'>" + money(taxAdv) + " a year into traditional and Roth is more than the " +
+      money(k401 + ira) + " a 401(k) and an IRA allow together in 2026" + (age ? " at " + age : "") +
+      ".</span> The extra would have to go to the brokerage account.");
   else if (taxAdv > k401)
-    notes.push("Over the " + money(k401) + " 401(k) limit, so this assumes an IRA takes the other " +
-      money(taxAdv - k401) + ".");
-  else if (!age && taxAdv > L.k401 * .8)
-    notes.push("2026 limits: " + money(L.k401) + " for a 401(k), " + money(L.ira) +
-      " for an IRA, more from age 50. Add your age to the household profile to check catch-up room.");
+    notes.push(money(taxAdv) + " a year into traditional and Roth is more than a 401(k) takes (" +
+      money(k401) + " in 2026), so this assumes the other " + money(taxAdv - k401) +
+      " goes into an IRA.");
   $("acNote").innerHTML = notes.join(" ");
 
   acRenderTable("acResults", "acResultsNote", B, B.matchTotal > 0
@@ -10122,12 +10163,28 @@ function stagesLookEdited(){
            st.growth !== d.growth || st.nominal !== d.nominal;
   });
 }
+/* Split by account type carries across as-is: the same balances, match and
+   tax settings, and each stage's contribution split in the same shares. The
+   stage contribution is yours alone; Stages adds the match back on top. */
+function advToStages(p){
+  if (!p.acct) return {acct:null, contrib:p.contrib, split:{}};
+  const a = p.acct;
+  const mine = a.tradC + a.rothC + a.brokC;
+  return {
+    acct: {on:true, tradBal:a.tradBal, rothBal:a.rothBal, brokBal:a.brokBal,
+           brokBasis:a.brokBasis, status:a.status, state:a.state,
+           salary:a.salary, matchPct:a.matchPct, matchCap:a.matchCap},
+    contrib: mine,
+    split: mine > 0 ? {sTrad: a.tradC / mine, sRoth: a.rothC / mine} : {sTrad:1, sRoth:0}
+  };
+}
 function applyCoast(p, C){
   if (stagesLookEdited() &&
       !confirm("Replace the stages currently on the Stages tab with this Coast FIRE plan?"))
     return;
+  const X = advToStages(p);
   writeGlobals({initial:p.initial, inflation:p.inflation, withdrawal:p.withdrawal,
-                taxRate:p.taxRate, fees:p.fees});
+                taxRate:p.taxRate, fees:p.fees, acct:X.acct});
   const coastYears = Math.round((p.years - C.years) * 100) / 100;
   /* The glide lives on the final stage, and stage 2 ends where the single-run
      plan ended, so the ramp lands on the same years either way -- unless the
@@ -10139,12 +10196,12 @@ function applyCoast(p, C){
   const glideYears = glideOn ? Math.min(p.glide.years, coastYears) : 0;
   const glideClipped = glideOn && glideYears < p.glide.years;
   stages = [
-    {years:C.years, contrib:p.contrib, period:p.period, growth:p.growth,
-     nominal:p.gross, vol:p.vol, adj:false},
-    {years:coastYears, contrib:0, period:p.period,
+    Object.assign({years:C.years, contrib:X.contrib, period:p.period, growth:p.growth,
+     nominal:p.gross, vol:p.vol, adj:false}, X.split),
+    Object.assign({years:coastYears, contrib:0, period:p.period,
      growth:0, nominal:p.gross, vol:p.vol, adj:false,
      glide: glideOn ? {on:true, endRate: p.glide.endRate + p.fees,
-                       years: Math.max(1, glideYears)} : {on:false}}
+                       years: Math.max(1, glideYears)} : {on:false}}, X.split)
   ];
   buildStages();
   $("targetS").value = groupDigits(num("target"), true);
@@ -10167,18 +10224,19 @@ $("btnToStages").addEventListener("click", () => {
   if (stagesLookEdited() &&
       !confirm("Replace the stages currently on the Stages tab with these numbers?"))
     return;
+  const X = advToStages(p);
   writeGlobals({initial:p.initial, inflation:p.inflation, withdrawal:p.withdrawal,
-                taxRate:p.taxRate, fees:p.fees});
+                taxRate:p.taxRate, fees:p.fees, acct:X.acct});
   const glideOn = !!(p.glide && p.glide.on);
   const glideYears = glideOn ? Math.min(p.glide.years, 10) : 0;
   const glideClipped = glideOn && glideYears < p.glide.years;
   stages = [
-    {years:p.years, contrib:p.contrib, period:p.period, growth:p.growth,
-     nominal:p.gross, vol:p.vol, adj:false},
-    {years:10, contrib:p.contrib, period:p.period, growth:p.growth,
+    Object.assign({years:p.years, contrib:X.contrib, period:p.period, growth:p.growth,
+     nominal:p.gross, vol:p.vol, adj:false}, X.split),
+    Object.assign({years:10, contrib:X.contrib, period:p.period, growth:p.growth,
      nominal:p.gross, vol:p.vol, adj:false,
      glide: glideOn ? {on:true, endRate: p.glide.endRate + p.fees,
-                       years: Math.max(1, glideYears)} : {on:false}}
+                       years: Math.max(1, glideYears)} : {on:false}}, X.split)
   ];
   buildStages();
   $("targetS").value = groupDigits(num("target"), true);
@@ -10279,11 +10337,15 @@ function effectiveStages(g){ return effectiveStagesFrom(g, stages); }
    without loading it into the live Stages tab. */
 function effectiveStagesFrom(g, list){
   const fee = g.fees || 0, infl = g.inflation || 0;
-  let start = 0;
+  let start = 0, salary = g.acct ? g.acct.salary || 0 : 0;
   return list.map((st, i) => {
     const factor = (st.adj && i > 0) ? Math.pow(1 + infl, start) : 1;
-    const out = Object.assign({}, st, {contrib: st.contrib * factor * stMatchFactor(g, st),
+    const mine = st.contrib * factor;
+    const mf = stMatchFactor(g, st, mine, salary);
+    const out = Object.assign({}, st, {contrib: mine * mf, mf, mine, salary,
                                        nominal: st.nominal - fee});
+    // the salary a later stage is matched on has had this stage's raises
+    salary *= Math.pow(1 + (st.growth || 0), st.years || 0);
     // The glide end rate is stored as typed (pre-fee), matching how nominal
     // is stored on the stage itself -- fees come off here, at the same point
     // nominal's fee is applied, so both ends of the glide are net of fees.
@@ -10329,7 +10391,8 @@ function readStageAcct(){
   const basisRaw = $("saBrokBasis").value.trim();
   return {on:true, tradBal:num("saTradBal"), rothBal:num("saRothBal"),
     brokBal:num("saBrokBal"), brokBasis: basisRaw === "" ? null : num("saBrokBasis"),
-    match:num("saMatch"), status:$("saStatus").value, state:$("saState").value};
+    salary:num("saSalary"), matchPct:num("saMatchPct"), matchCap:num("saMatchCap"),
+    status:$("saStatus").value, state:$("saState").value};
 }
 function writeStageAcct(a){
   const on = !!(a && a.on);
@@ -10338,7 +10401,9 @@ function writeStageAcct(a){
     $("saTradBal").value = m(a.tradBal); $("saRothBal").value = m(a.rothBal);
     $("saBrokBal").value = m(a.brokBal);
     $("saBrokBasis").value = a.brokBasis == null ? "" : m(a.brokBasis);
-    $("saMatch").value = String(a.match || 0);
+    $("saSalary").value = m(a.salary);
+    $("saMatchPct").value = String(a.matchPct || 0);
+    $("saMatchCap").value = String(a.matchCap == null ? 6 : a.matchCap);
     if (a.status) $("saStatus").value = a.status;
     if (a.state) $("saState").value = a.state;
   }
@@ -10364,24 +10429,33 @@ function stSplit(st){
   const r = Math.max(0, Math.min(1 - t, st.sRoth == null ? 0 : st.sRoth));
   return {t, r, b: Math.max(0, 1 - t - r)};
 }
-function stMatchFactor(g, st){
-  if (!g.acct || !(g.acct.match > 0)) return 1;
-  const s = stSplit(st);
-  return 1 + g.acct.match / 100 * (s.t + s.r);
+/* The same formula as Advanced: matchPct% of what goes into traditional and
+   Roth, on contributions up to matchCap% of salary. Worked out at the start
+   of the stage, as a multiple of your own contribution; both then grow at
+   the stage's growth rate, so the multiple holds for the whole stage and the
+   engine stays linear. `mine` is the stage's first-period contribution, in
+   the same dollars as `salary` at that point. */
+function stMatchFactor(g, st, mine, salary){
+  const a = g.acct;
+  if (!a || !(a.matchPct > 0) || !(salary > 0) || !(mine > 0)) return 1;
+  const s = stSplit(st), ppy = PPY[st.period];
+  const eligible = Math.min(mine * (s.t + s.r), salary * (a.matchCap || 0) / 100 / ppy);
+  return 1 + Math.max(0, eligible * a.matchPct / 100) / mine;
 }
 function applyStageAcct(g){
   const a = readStageAcct();
   g.initial = a.tradBal + a.rothBal + a.brokBal;
   g.acct = a;
   const eff = effectiveStagesFrom(g, stages);
+  // each effective stage carries its match multiple, mf: of every dollar
+  // going in, 1/mf is yours (split three ways) and the rest is match
+  const mfOf = i => eff[i].mf || 1;
   const slice = (bal, share) => projectSeries(Object.assign({}, g, {initial: bal}),
-    eff.map((st, i) => Object.assign({}, st, {contrib: st.contrib * share(stages[i])})));
-  const m = a.match / 100 || 0;
-  const whole = st => { const s = stSplit(st); return 1 + m * (s.t + s.r); };
-  const T = slice(a.tradBal, st => { const s = stSplit(st); return (s.t + m * (s.t + s.r)) / whole(st); });
-  const Ro = slice(a.rothBal, st => stSplit(st).r / whole(st));
-  const Br = slice(a.brokBal, st => stSplit(st).b / whole(st));
-  const Mt = slice(0, st => { const s = stSplit(st); return m * (s.t + s.r) / whole(st); });
+    eff.map((st, i) => Object.assign({}, st, {contrib: st.contrib * share(i)})));
+  const T = slice(a.tradBal, i => (stSplit(stages[i]).t + mfOf(i) - 1) / mfOf(i));
+  const Ro = slice(a.rothBal, i => stSplit(stages[i]).r / mfOf(i));
+  const Br = slice(a.brokBal, i => stSplit(stages[i]).b / mfOf(i));
+  const Mt = slice(0, i => (mfOf(i) - 1) / mfOf(i));
   const years = T.totalYears;
   const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
   const B = acFinish(a, {trad:T.fv, roth:Ro.fv, brok:Br.fv}, basis0 + Br.contribTotal,
@@ -10417,6 +10491,11 @@ function renderStageAcct(g){
   if (!g.acct || !lastStageAcct) return;
   const B = lastStageAcct, H = hhLoad(), L = AC_LIMITS_2026;
   $("saTaxOut").value = pctStr(B.effRate, 1);
+  $("saTotBal").textContent = money(g.initial);
+  const a = g.acct;
+  $("saNote").textContent = a.matchPct > 0 && !(a.salary > 0)
+    ? "Add your salary to count the employer match." : "";
+  const eff = effectiveStages(g);
   let start = 0;
   stages.forEach((st, i) => {
     const s = stSplit(st);
@@ -10429,12 +10508,19 @@ function renderStageAcct(g){
       const k401 = L.k401 + (age >= 60 && age <= 63 ? L.k401Catch6063 : age >= 50 ? L.k401Catch : 0);
       const cap = k401 + L.ira + (age >= 50 ? L.iraCatch : 0);
       const taxAdv = st.contrib * PPY[st.period] * (s.t + s.r);
+      const e = eff[i], ppyI = PPY[st.period];
+      const needYr = a.matchPct > 0 && e.salary > 0 ? e.salary * (a.matchCap || 0) / 100 : 0;
+      const inYr = e.mine * (s.t + s.r) * ppyI;
       note.innerHTML = rawT + rawR > 1.0001
         ? "<span class='acwarn'>Traditional and Roth add up to more than 100%, so Roth is cut to " +
           +(s.r * 100).toFixed(1) + "%.</span>"
         : taxAdv > cap
         ? "<span class='acwarn'>" + money(taxAdv) + " a year into traditional and Roth is over the " +
           money(cap) + " 2026 limit for a 401(k) and an IRA combined" + (age ? " at " + age : "") + ".</span>"
+        : inYr + 0.5 < needYr && st.contrib > 0
+        ? "<span class='acwarn'>Misses " + money((needYr - inYr) * a.matchPct / 100) +
+          " a year of employer match.</span> Putting " + money(needYr) +
+          " a year into traditional and Roth gets all of it."
         : "";
     }
     start += st.years;
@@ -10700,7 +10786,7 @@ function renderStagedSolve(g, R){
 
   // With a match on, the solve's contribution includes the employer's share;
   // show what you'd put in yourself.
-  const mf = stMatchFactor(g, last);
+  const mf = eff[eff.length - 1].mf || 1;
   setBig("tPerPeriod", money(F.perPeriod / mf, 2));
   $("tPerPeriodNote").textContent = "Stage " + stages.length + ", paid "
     + PERIOD_ADV[last.period] + " for " + fmtYears(last.years)
@@ -10742,7 +10828,7 @@ $("btnApplyS").addEventListener("click", () => {
     // contribution adjustment before writing the number back into the card
     const infl = g.inflation || 0;
     const factor = (stages[i].adj && i > 0) ? Math.pow(1 + infl, stageStartYear(i)) : 1;
-    stages[i].contrib = Math.round(F.perPeriod / factor / stMatchFactor(g, stages[i]));
+    stages[i].contrib = Math.round(F.perPeriod / factor / (effectiveStages(g)[i].mf || 1));
   }
   buildStages(); renderSeries();
   toast("Final stage contribution set to " + money(stages[i].contrib));
@@ -10771,7 +10857,7 @@ function renderSeries(){
     if (el) el.textContent = "Year " + fmtNum(acc) + " \u2013 " + fmtNum(acc + st.years);
     const note = $("stageList").querySelector("[data-adj='" + i + "']");
     if (note) note.textContent = (st.adj && i > 0)
-      ? "\u2192 " + money(eff[i].contrib / stMatchFactor(g, st), 2) : "";
+      ? "\u2192 " + money(eff[i].contrib / (eff[i].mf || 1), 2) : "";
     acc += st.years;
   });
   $("stageList").querySelectorAll(".stagevol").forEach(el => {
@@ -10888,7 +10974,7 @@ function drawSeriesChart(g, R){
 
 ["gInitial","gInflation","gWithdrawal","gTaxrate","gFees"]
   .forEach(id => $(id).addEventListener("input", renderSeries));
-["saTradBal","saRothBal","saBrokBal","saBrokBasis","saMatch"]
+["saTradBal","saRothBal","saBrokBal","saBrokBasis","saSalary","saMatchPct","saMatchCap"]
   .forEach(id => $(id).addEventListener("input", () => renderSeries()));
 ["saStatus","saState"].forEach(id => $(id).addEventListener("change", () => renderSeries()));
 $("saToggle").addEventListener("click", e => {
@@ -10899,7 +10985,8 @@ $("saToggle").addEventListener("click", e => {
     const blank = ["saTradBal","saRothBal","saBrokBal"].every(id => !(num(id) > 0));
     const H = hhLoad() || {};
     writeStageAcct(blank
-      ? {on:true, tradBal:num("gInitial"), rothBal:0, brokBal:0, brokBasis:null, match:0,
+      ? {on:true, tradBal:num("gInitial"), rothBal:0, brokBal:0, brokBasis:null,
+         salary:H.income || 0, matchPct:0, matchCap:6,
          status:H.status || $("txStatus").value, state:H.state || $("txState").value}
       : Object.assign(readStageAcct(), {on:true}));
     renderSeries();
@@ -10909,11 +10996,12 @@ $("saToggle").addEventListener("click", e => {
     // fold any match into each stage's contribution so the answer holds.
     // The match field is cleared so switching back doesn't count it twice.
     const g = readGlobals();
-    const matched = g.acct.match > 0;
-    stages.forEach(st => { st.contrib = Math.round(st.contrib * stMatchFactor(g, st)); });
+    const eff = effectiveStages(g);
+    const matched = eff.some(st => st.mf > 1);
+    stages.forEach((st, i) => { st.contrib = Math.round(st.contrib * (eff[i].mf || 1)); });
     $("gInitial").value = groupDigits(Math.round(g.initial), true);
     $("gTaxrate").value = +(g.taxRate * 100).toFixed(2);
-    if (matched) $("saMatch").value = "0";
+    if (matched) $("saMatchPct").value = "0";
     writeStageAcct(null);
     renderSeries();
     toast("Back to one total, with a " + pctStr(g.taxRate, 1) + " tax rate" +
@@ -14512,7 +14600,7 @@ const GLOSS = {
   rcbasis: "The share of the brokerage account that is your original money rather than gain. Only the gain is taxed when you sell, so a high basis makes the account cheap to spend from.",
   rcspend: "What the household actually spends in a year, in today's dollars, before tax. Tax is funded on top of it: from the brokerage first, then traditional, then Roth.",
   rcother: "Pensions, annuities, rental income, interest: anything taxed at ordinary rates that isn't a retirement account withdrawal or Social Security.",
-  rcwidow: "Years from now until the first spouse dies. From that year the survivor files single: same income, single brackets, single standard deduction, and only the larger of the two Social Security benefits.",
+  rcwidow: "Years from now until the first spouse dies. From that year the survivor files single: same income, single brackets, single standard deduction, and only the larger of the two Social Security benefits. Leave at 0 to skip it.",
   rcstrategy: "How much to convert each year. Filling a bracket keeps the marginal rate under control; filling to an IRMAA line keeps the Medicare surcharge under control; the other two are blunter but easier to explain to a custodian.",
   rcpayfrom: "Paying from a taxable account moves the whole conversion into the Roth. Withholding from the conversion means less lands there, and that shortfall compounds for the rest of the plan.",
   rcheir: "The rate you expect traditional dollars to be taxed at when they finally come out, whether by you late in retirement or by whoever inherits the account. It converts pre-tax balances into comparable money.",
@@ -14530,7 +14618,7 @@ const GLOSS = {
   inflation: "How fast prices rise. Long-run US inflation has averaged roughly 2\u20133%; the Federal Reserve targets 2%.",
   coast: "The point where your balance is big enough that, with no further contributions, growth alone reaches your goal on time.",
   crossover: "The year your portfolio's growth first exceeds what you contribute that year. After it, the account is doing more work than you are.",
-  fees: "Expense ratios plus any advisory fee, taken off your return every year. Index funds often charge under 0.10%; advisors commonly around 1%.",
+  fees: "Expense ratios plus any advisory fee, taken off your return every year. Index funds often charge under 0.10%; advisors commonly around 1%. Leave at 0 to ignore fees.",
   ltv: "Loan divided by home value. Above 80% (less than 20% down), lenders usually require mortgage insurance.",
   pmi: "Private mortgage insurance, charged when you put down less than 20%. It falls away once you reach 20% equity.",
   amort: "How each payment splits between interest and principal. Early on almost all of it is interest; the crossover comes later than most expect.",
@@ -14549,7 +14637,7 @@ const GLOSS = {
   tuitioninfl: "How fast college costs specifically rise, which has historically outpaced general inflation, often 3\u20135% a year versus 2\u20133% for prices generally.",
   maxcut: "The most spending can drop from one year to the next, no matter what the target percentage would otherwise call for. Protects against a sudden, jarring cut in a single bad year.",
   maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
-  spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below, stacked on top of whatever the strategy above would otherwise do.",
+  spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below, stacked on top of whatever the strategy above would otherwise do. Leave at 0 for no floor.",
   bkttrad: "Money coming out of a traditional 401(k), 403(b) or IRA, including required minimum distributions. You took a deduction going in, so every dollar coming out is ordinary income, taxed at the same 10\u201337% brackets a salary would be. No FICA, though: withdrawals are not wages.",
   bktroth: "Money coming out of a Roth 401(k) or Roth IRA. You already paid tax on the way in, so a qualified withdrawal is tax-free: zero federal, zero state, and it stays out of the provisional-income figure that decides how much of your Social Security is taxable. That second effect is why Roth dollars are worth more than the headline suggests.",
   bktbrok: "Money coming out of an ordinary taxable brokerage account. Only the growth is taxed; the part that was your own money going in comes back untaxed. Assuming everything is held over a year, the growth gets long-term capital gain rates of 0%, 15% or 20% rather than ordinary rates, which is usually the cheapest income in a retiree's mix.",
@@ -14571,7 +14659,7 @@ const GLOSS = {
   efftaxrate: "Your total tax as a share of income, lower than your top bracket, since earlier dollars are taxed at lower rates. Many retirees land somewhere around 10\u201315%, though it depends heavily on income sources and where you live. The Income Tax tool can calculate yours precisely.",
   accttypes: "Enter traditional, Roth and taxable money separately instead of one total. Every account grows at the same rate of return, but each is taxed differently when you take it out, so the tax on your retirement income is worked out with the 2026 federal and state rules instead of a flat rate you type in. Adds an employer match and checks your contributions against the 2026 limits.",
   staccttypes: "Enter traditional, Roth and taxable starting balances instead of one total, and choose on each stage card where that stage's contribution goes. A common pattern is Roth early in a career while your tax rate is low, then traditional once earnings rise. Tax on your retirement income is then worked out with the 2026 federal and state rules instead of a flat rate you type in.",
-  stmatch: "What your employer adds as a share of what you put into traditional and Roth, in every stage. It goes into traditional. Use your effective match: a 50% match on the first 6% of pay is 50% here if you contribute at least 6%, and less if you contribute more than that, since the extra isn't matched.",
+  stsalary: "Used only for the employer match, which works the same way as on the Advanced tab. Your salary is assumed to grow at each stage's contribution growth rate, the same way the match grows along with your contributions on Advanced, so a stage that follows years of raises is matched on the bigger salary.",
   stsplit: "Where this stage's contribution goes. Whatever isn't traditional or Roth goes to the taxable brokerage account.",
   acbasis: "The part of the brokerage balance that is money you put in, not growth; your statement lists it. Only the growth is taxed when you sell, at long-term capital gain rates. Leave it blank to treat the whole balance as money you put in.",
   actax: "Worked out from your first year of withdrawals, not typed in. Your withdrawal is taken from each account in proportion to its balance: traditional dollars are taxed as ordinary income, the growth in the brokerage account at capital gain rates, and Roth dollars not at all. Uses 2026 brackets and the standard deduction, in today's dollars, and leaves out Social Security and any other income, which would raise it.",
@@ -17446,6 +17534,7 @@ function hhApply(H, only){
   }
   if (want("stages") && (has(H.saved) || spend || saOn())){
     if (saOn()){
+      if (has(inc1)) $("saSalary").value = m(inc1);
       $("saStatus").value = married ? "m" : "s";
       if (H.state) $("saState").value = H.state;
     } else if (has(H.saved)) $("gInitial").value = m(H.saved);
@@ -17521,19 +17610,18 @@ function hhRerender(){
   else if (sub === "healthcare") renderHealthcare();
   else if (sub === "fire") $("fiTarget").dispatchEvent(new Event("input", {bubbles:true}));
 }
-function hhOpen(open, noFocus){
+function hhOpen(open){
   $("hhBody").hidden = !open;
   $("hhEdit").setAttribute("aria-expanded", String(open));
   if (open){
     $("hhEdit").textContent = "Close";
-    if (noFocus) return;
     const first = $("hhAge");
     try { first.focus({preventScroll:true}); } catch(e){ first.focus(); }
   } else hhSummary();
 }
 /* Shown on every visit; hiding it lasts until the page is next opened. On
-   About it moves into its own slot under Appearance and opens for editing,
-   and it goes back to the top of the page when you leave. */
+   About it moves into its own slot under Appearance, where it can't be
+   hidden, and it goes back to the top of the page when you leave. */
 let hhShown = true;
 function hhPlace(t){
   const card = $("hhCard"), slot = $("hhAboutSlot");
@@ -17541,7 +17629,6 @@ function hhPlace(t){
     if (card.parentNode !== slot) slot.appendChild(card);
     card.classList.add("inabout");
     card.hidden = false;
-    if ($("hhBody").hidden) hhOpen(true, true);
   } else {
     if (card.parentNode === slot){
       $("main").insertBefore(card, $("toolBack"));
