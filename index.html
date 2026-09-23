@@ -755,17 +755,14 @@ html[data-theme="light"] .acfields{border-color:#cfdcea}
 #acResults tfoot td,#saResults tfoot td{font-weight:600;border-top:1px solid var(--line);border-bottom:0}
 /* Stage card: where this stage's contribution goes. Two inputs and the
    remainder, on one line, under the stage's own grid. */
-.stagesplit{margin-top:12px}
-.stagesplit > label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
-.splitrow{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center}
-.splitrow .inputwrap .affix:first-child{padding-right:4px}
-.splitrest{font-size:12px;color:var(--dim);white-space:nowrap;padding:0 2px}
-.splitrest b{font-family:var(--mono);font-weight:500;color:var(--text);margin-left:6px;
-  font-variant-numeric:tabular-nums}
-.stagesplit .hint:empty{display:none}
-@media (max-width:640px){
-  .splitrow{grid-template-columns:1fr 1fr}
-  .splitrest{grid-column:1 / -1}
+.stagesplithint{margin:10px 0 0}
+.stagesplithint:empty{display:none}
+/* Split by account type: years, frequency, growth and return on top, the
+   three account amounts and their total underneath (five across when Monte
+   Carlo adds volatility). Phones keep their two columns. */
+@media (min-width:641px){
+  .stagegrid.split{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stagegrid.split.withvol{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
 
 /* ---------- stage cards ---------- */
@@ -1369,6 +1366,18 @@ html[data-theme="light"] .glidefields{border-color:#cfdcea}
 .coastrow .k{color:var(--text)}
 .coastrow .v{font-weight:600}
 #sCoastAction{margin-top:10px}
+/* Advanced's solve panel: Coast FIRE runs the full width under both
+   columns, with its button beside it on desktop, so neither column is left
+   with a gap. Phones stack it as before. */
+.solvecoast{margin-top:14px;border-top:1px solid var(--line-soft)}
+.solvecoast .coastrow{border-bottom:0}
+@media (min-width:641px){
+  .solvecoast{display:flex;align-items:center;gap:20px}
+  .solvecoast .coastrow{flex:1 1 auto;min-width:0}
+  .solvecoast #sCoastAction{margin-top:0;flex:none}
+  .solvecoast #sCoastAction .btn{width:auto;padding-left:22px;padding-right:22px}
+  .solvecoast #sCoastAction:empty{display:none}
+}
 #sCoastAction .btn{width:100%}
 
 /* ---------- debt payoff ---------- */
@@ -2274,7 +2283,7 @@ window.onerror = function(msg){
     <div class="panel">
       <h2>Work backwards from a target</h2>
       <div class="body">
-        <div class="grid2">
+        <div class="grid2" id="solveGrid">
           <div>
             <div class="field">
               <label for="solveFor">Solve for</label>
@@ -2289,14 +2298,16 @@ window.onerror = function(msg){
               <div class="hint" id="targetHint"></div>
             </div>
           </div>
-          <div>
+          <div class="solvekv">
             <div class="kv"><span class="k">Portfolio needed, inflation adjusted</span><span class="v" id="sPortToday"></span></div>
             <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="sPays"></span></div>
             <div class="kv"><span class="k">Portfolio needed at retirement</span><span class="v" id="sPortFuture"></span></div>
             <div class="kv"><span class="k">Your starting value grows to</span><span class="v" id="sInitGrows"></span></div>
-            <div class="kv coastrow"><span class="k">Coast FIRE<span class="tipdot" data-tip="coast" role="button" tabindex="0" aria-label="What is this?">?</span><span class="mssub" id="sCoastNote"></span></span><span class="v" id="sCoast"></span></div>
-            <div id="sCoastAction"></div>
           </div>
+        </div>
+        <div class="solvecoast">
+          <div class="kv coastrow"><span class="k">Coast FIRE<span class="tipdot" data-tip="coast" role="button" tabindex="0" aria-label="What is this?">?</span><span class="mssub" id="sCoastNote"></span></span><span class="v" id="sCoast"></span></div>
+          <div id="sCoastAction"></div>
         </div>
       </div>
       <div class="solveopts">
@@ -10857,21 +10868,7 @@ function stTargetRate(g){
   if (!g.acct || !lastStageAcct || $("solveForS").value !== "After-Tax Withdrawal") return g.taxRate;
   return acTargetRate(g.acct, lastStageAcct, num("targetS"), g.taxRate);
 }
-function stageSplitRow(st, i){
-  const s = stSplit(st);
-  const pct = v => +(v * 100).toFixed(4);
-  const field = (f, lbl, v) =>
-    "<div class='inputwrap'><span class='affix'>" + lbl + "</span>" +
-    "<input type='text' inputmode='decimal' data-num data-step='10' min='0' max='100' data-nonneg data-f='" + f +
-    "' data-i='" + i + "' value='" + pct(v) + "' aria-label='Stage " + (i+1) + " share to " + lbl + "'>" +
-    "<span class='affix'>%</span></div>";
-  return "<div class='stagesplit'>" +
-    "<label>Goes to<span class='tipdot' data-tip='stsplit' role='button' tabindex='0' aria-label='What is this?'>?</span></label>" +
-    "<div class='splitrow'>" + field("sTrad", "Traditional", s.t) + field("sRoth", "Roth", s.r) +
-    "<span class='splitrest'>Taxable<b data-staxable='" + i + "'>" + pct(s.b) + "%</b></span></div>" +
-    "<div class='hint' data-slimit='" + i + "'></div></div>";
-}
-/* Per-stage notes (the taxable remainder, and any stage over the 2026 limits)
+/* Per-stage notes (any stage over the 2026 limits, or missing match)
    plus the tax readout and results panel. */
 function renderStageAcct(g){
   saSync();
@@ -10937,6 +10934,7 @@ function stageGlideBtn(st, i){
 }
 function buildStages(){
   const list = $("stageList");
+  const split = saOn();
   list.innerHTML = stages.map((st, i) => {
     const opts = PERIOD_NAMES.map(n =>
       "<option" + (n === st.period ? " selected" : "") + ">" + n + "</option>").join("");
@@ -10946,48 +10944,8 @@ function buildStages(){
         escapeHtml(st.name || ("Stage " + (i + 1))) + "</span>" +
       "<span class='stagespan' data-span='" + i + "'></span>" +
       "<button class='btn mini' type='button' data-del='" + i + "'>Remove</button></div>" +
-      "<div class='stagegrid'>" +
-        "<div class='field'><label>Years</label><div class='inputwrap'>" +
-          "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-f='years' data-i='" + i +
-          "' value='" + st.years + "' data-nonneg aria-label='Stage " + (i+1) + " years'>" +
-          "<span class='affix'>yrs</span></div></div>" +
-        "<div class='field'><label>Contribution</label><div class='inputwrap'>" +
-          "<span class='affix'>$</span><input type='text' inputmode='decimal' data-f='contrib' data-i='" + i +
-          "' value='" + groupDigits(st.contrib, true) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " contribution'>" +
-          "</div>" + (i > 0 ?
-            "<label class='adjrow' title='Inflation adjusted: grows the amount you type by inflation up to the start of this stage'>" +
-              "<span class='adjrow-top'><input type='checkbox' data-f='adj' data-i='" + i + "'" +
-              (st.adj ? " checked" : "") + "><span class='adjtxt'>Infl. adj.</span></span>" +
-              "<span class='adjnote' data-adj='" + i + "'></span>" +
-            "</label>" : "") +
-          "</div>" +
-        "<div class='field'><label>Frequency</label>" +
-          "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select>" +
-          "<button type='button' class='linkbtn' data-conv='" + i + "'>" + CONV_ICON + "Convert</button></div>" +
-        "<div class='field'><label>Contribution growth<span class='tipdot' data-tip='contribgrowth' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
-          "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
-          "' value='" + (+(st.growth * 100).toFixed(st.gRates && saOn() ? 2 : 6)) + "' aria-label='Stage " + (i+1) + " contribution growth'" +
-          (st.gRates && saOn() ? " readonly class='blended' title='Blended from your per-account rates. Click to edit.'" : "") + ">" +
-          "<span class='affix'>%/yr</span></div>" +
-          (saOn() ? "<button type='button' class='linkbtn' data-grate='" + i + "'>" +
-            (st.gRates ? "Edit by account" : "Set by account") + "</button>" : "") + "</div>" +
-        "<div class='field stagemix'><label>Stock mix<span class='tipdot' data-tip='histmix' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
-          "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-f='mix' data-i='" + i +
-          "' value='" + (+(((st.mix == null ? .8 : st.mix)) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " stock mix'>" +
-          "<span class='affix'>%</span></div></div>" +
-        "<div class='field stagevol'><label>Volatility</label><div class='inputwrap'>" +
-          "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-nonneg data-f='vol' data-i='" + i +
-          "' value='" + (+((st.vol || 0) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " volatility'>" +
-          "<span class='affix'>%/yr</span></div></div>" +
-        "<div class='field'><label>Rate of return<span class='tipdot' data-tip='nominalreturn' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
-          "<button type='button' class='signflip' data-signstage='" + i + "' title='Flip sign'>&plusmn;</button>" +
-          "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='nominal' data-i='" + i +
-          "' value='" + (+(st.nominal * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " rate of return'>" +
-          "<span class='affix'>%</span></div>" +
-          "<div class='hint stagereal' data-realrate='" + i + "' style='margin:4px 0 0'></div></div>" +
-        (i === stages.length - 1 ? "<div class='field stageglide'><label aria-hidden='true'>&nbsp;</label>" +
-          stageGlideBtn(st, i) + "</div>" : "") +
-      "</div>" + (saOn() ? stageSplitRow(st, i) : "") + (i === stages.length - 1 ? (
+      stageGridHtml(st, i, opts) + "</div>" + (split ? "<div class='hint stagesplithint' data-slimit='" + i + "'></div>" : "") +
+      (i === stages.length - 1 ? (
         "<div class='glidewrap'>" + stageGlideBtn(st, i) +
           "<div class='glidefields'" + ((st.glide && st.glide.on) ? "" : " hidden") + ">" +
             "<div class='two'>" +
@@ -11014,6 +10972,81 @@ function buildStages(){
   if (stages.length) updateStageGlideNote(stages.length - 1);
   stages.forEach((st, i) => updateStageRealRate(i));
 }
+/* One stage card's field grid. Split by account type, the single
+   contribution becomes three dollar amounts (the same as Advanced) and a
+   read-only total, laid out as a second row of four under years,
+   frequency, growth and return. */
+function stageGridHtml(st, i, opts){
+  const split = saOn();
+  const adjRow = i > 0 ?
+            "<label class='adjrow' title='Inflation adjusted: grows the amount you type by inflation up to the start of this stage'>" +
+              "<span class='adjrow-top'><input type='checkbox' data-f='adj' data-i='" + i + "'" +
+              (st.adj ? " checked" : "") + "><span class='adjtxt'>Infl. adj.</span></span>" +
+              "<span class='adjnote' data-adj='" + i + "'></span>" +
+            "</label>" : "";
+  const f = {};
+  f.years =
+        "<div class='field'><label>Years</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-f='years' data-i='" + i +
+          "' value='" + st.years + "' data-nonneg aria-label='Stage " + (i+1) + " years'>" +
+          "<span class='affix'>yrs</span></div></div>";
+  f.contrib =
+        "<div class='field'><label>Contribution</label><div class='inputwrap'>" +
+          "<span class='affix'>$</span><input type='text' inputmode='decimal' data-f='contrib' data-i='" + i +
+          "' value='" + groupDigits(st.contrib, true) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " contribution'>" +
+          "</div>" + adjRow + "</div>";
+  if (split){
+    const s = stSplit(st), amt = x => groupDigits(Math.round(st.contrib * x * 100) / 100, true);
+    const acct = (k, lbl, x) =>
+        "<div class='field'><label>" + lbl + "</label><div class='inputwrap'>" +
+          "<span class='affix'>$</span><input type='text' inputmode='decimal' data-f='" + k + "' data-i='" + i +
+          "' value='" + amt(x) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " " + lbl + " contribution'>" +
+          "</div></div>";
+    f.trad = acct("cT", "Traditional", s.t);
+    f.roth = acct("cR", "Roth", s.r);
+    f.brok = acct("cB", "Taxable", s.b);
+    f.total =
+        "<div class='field'><label>Total</label><div class='inputwrap' style='box-shadow:none;background:transparent'>" +
+          "<span class='affix'>$</span><input type='text' readonly tabindex='-1' data-stotal='" + i +
+          "' value='" + groupDigits(st.contrib, true) + "' aria-label='Stage " + (i+1) + " total contribution'>" +
+          "</div>" + adjRow + "</div>";
+  }
+  f.freq =
+        "<div class='field'><label>Frequency</label>" +
+          "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select>" +
+          "<button type='button' class='linkbtn' data-conv='" + i + "'>" + CONV_ICON + "Convert</button></div>";
+  f.growth =
+        "<div class='field'><label>Contribution growth<span class='tipdot' data-tip='contribgrowth' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
+          "' value='" + (+(st.growth * 100).toFixed(st.gRates && saOn() ? 2 : 6)) + "' aria-label='Stage " + (i+1) + " contribution growth'" +
+          (st.gRates && saOn() ? " readonly class='blended' title='Blended from your per-account rates. Click to edit.'" : "") + ">" +
+          "<span class='affix'>%/yr</span></div>" +
+          (saOn() ? "<button type='button' class='linkbtn' data-grate='" + i + "'>" +
+            (st.gRates ? "Edit by account" : "Set by account") + "</button>" : "") + "</div>";
+  f.mix =
+        "<div class='field stagemix'><label>Stock mix<span class='tipdot' data-tip='histmix' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-f='mix' data-i='" + i +
+          "' value='" + (+(((st.mix == null ? .8 : st.mix)) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " stock mix'>" +
+          "<span class='affix'>%</span></div></div>";
+  f.vol =
+        "<div class='field stagevol'><label>Volatility</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='0' data-nonneg data-f='vol' data-i='" + i +
+          "' value='" + (+((st.vol || 0) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " volatility'>" +
+          "<span class='affix'>%/yr</span></div></div>";
+  f.rate =
+        "<div class='field'><label>Rate of return<span class='tipdot' data-tip='nominalreturn' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
+          "<button type='button' class='signflip' data-signstage='" + i + "' title='Flip sign'>&plusmn;</button>" +
+          "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='nominal' data-i='" + i +
+          "' value='" + (+(st.nominal * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " rate of return'>" +
+          "<span class='affix'>%</span></div>" +
+          "<div class='hint stagereal' data-realrate='" + i + "' style='margin:4px 0 0'></div></div>";
+  const order = split
+    ? ["years", "freq", "growth", "mix", "vol", "rate", "trad", "roth", "brok", "total"]
+    : ["years", "contrib", "freq", "growth", "mix", "vol", "rate"];
+  return "<div class='stagegrid" + (split ? " split" : "") + "'>" + order.map(k => f[k]).join("") +
+    (i === stages.length - 1 ? "<div class='field stageglide'><label aria-hidden='true'>&nbsp;</label>" +
+      stageGlideBtn(st, i) + "</div>" : "");
+}
 /* The advanced tab shows a real (inflation-adjusted) rate right next to the
    nominal one; stages get the same, using the plan's single global inflation
    rate since stages don't each have their own. */
@@ -11037,6 +11070,16 @@ $("stageList").addEventListener("input", e => {
     if (stages[i].glide) clampStageGlideYears(i);
   }
   else if (f === "contrib") stages[i].contrib = parseNum(el.value);
+  else if (f === "cT" || f === "cR" || f === "cB"){
+    // the three amounts are the stage's total and its split
+    const card = el.closest(".stagegrid");
+    const v = k => parseNum(card.querySelector("[data-f='" + k + "']").value);
+    const t = v("cT"), r = v("cR"), b = v("cB"), sum = t + r + b;
+    stages[i].contrib = sum;
+    if (sum > 0){ stages[i].sTrad = t / sum; stages[i].sRoth = r / sum; }
+    const tot = card.querySelector("[data-stotal]");
+    if (tot) tot.value = groupDigits(Math.round(sum * 100) / 100, true);
+  }
   else if (f === "glideEnd"){
     stages[i].glide = stages[i].glide || {on: true};
     stages[i].glide.endRate = parseNum(el.value) / 100;
@@ -11150,6 +11193,13 @@ $("stageList").addEventListener("click", e => {
       stages[i].contrib, stages[i].period, (v, p) => {
         if (!stages[i]) return;
         stages[i].contrib = v;
+        if (saOn()){
+          // split by account: scale each account, in whole dollars
+          const sp = stSplit(stages[i]);
+          const t = Math.round(v * sp.t), r = Math.round(v * sp.r), b = Math.round(v * sp.b);
+          stages[i].contrib = t + r + b;
+          if (t + r + b > 0){ stages[i].sTrad = t / (t + r + b); stages[i].sRoth = r / (t + r + b); }
+        }
         stages[i].period = p;
         buildStages(); renderSeries();
       });
@@ -11292,6 +11342,7 @@ function renderSeries(){
   });
   $("stageList").querySelectorAll(".stagevol").forEach(el => {
     el.style.display = chartMode.series === "mc" ? "" : "none";
+    el.parentNode.classList.toggle("withvol", chartMode.series === "mc");
   });
   $("stageList").querySelectorAll(".stagemix").forEach(el => {
     el.style.display = "none";
