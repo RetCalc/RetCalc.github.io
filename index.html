@@ -1924,6 +1924,10 @@ window.onerror = function(msg){
             <option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option>
             <option>Quarterly</option><option>Annually</option>
           </select>
+          <button type="button" class="linkbtn" id="convOpen">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Convert to another frequency
+          </button>
         </div>
         <div class="two">
           <span id="growthHome" hidden></span>
@@ -2341,36 +2345,9 @@ window.onerror = function(msg){
       </div>
     </div>
 
-    <!-- ========== CONTRIBUTION CONVERTER ========== -->
-    <div class="panel">
-      <h2>Contribution converter</h2>
-      <div class="body">
-        <div class="grid2">
-          <div>
-            <div class="field">
-              <label for="convAmt">Amount</label>
-              <div class="inputwrap"><span class="affix">$</span><input id="convAmt" type="text" inputmode="decimal" data-money data-nonneg></div>
-            </div>
-            <div class="field">
-              <label for="convPeriod">Paid</label>
-              <select id="convPeriod">
-                <option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option>
-                <option>Quarterly</option><option>Annually</option>
-              </select>
-            </div>
-            <div class="hint">Tap Use on any row to send that amount and frequency
-              to the inputs on the left.</div>
-          </div>
-          <div>
-            <div id="convOut"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- ========== INFLATION CALCULATOR ==========
          Hidden from the Advanced tab -- didn't earn its spot there. Left
-         wired up (markup, ids, and the renderConverter/segInfl JS below are
+         wired up (markup, ids, and the segInfl JS below are
          all untouched) so it can be dropped back in here or moved elsewhere
          later with just this `hidden` removed. -->
     <div class="panel" hidden>
@@ -3438,8 +3415,8 @@ window.onerror = function(msg){
 
           <dt>Contribution &amp; period</dt>
           <dd>What you add each time, and how often. Match it to how you actually
-          save, whether per paycheck or per month. The contribution converter at the bottom
-          translates between schedules.</dd>
+          save, whether per paycheck or per month. The <b>Convert to another frequency</b>
+          link under the period translates between schedules.</dd>
 
           <dt>Contribution growth</dt>
           <dd>How much the contribution amount itself increases each year, as a
@@ -10409,32 +10386,75 @@ $("btnToStages").addEventListener("click", () => {
 });
 
 /* ---------- converter and inflation helper ---------- */
-function renderConverter(){
-  const from = $("convPeriod").value;
-  const amt = num("convAmt");
-  const annual = amt * PPY[from];
-  const names = Object.keys(PPY);
-  $("convOut").innerHTML = names.map(to => {
-    const v = annual / PPY[to];
-    const rounded = Math.round(v);
-    return "<div class='convrow'><span class='k'>" + to + "</span>" +
-      "<span class='v'>" + money(v, 2) + "</span>" +
-      "<button class='btn mini' type='button' data-period='" + to +
-      "' data-amt='" + rounded + "'>Use</button></div>";
-  }).join("");
+const CONV_ICON = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+/* A pop-up that restates one contribution at every frequency. Apply on a row
+   hands that amount and frequency to `apply` and closes; it starts from
+   whatever the opener's fields already say. */
+function openConverter(title, amt, period, apply){
+  const ov = document.createElement("div");
+  ov.className = "popup-overlay";
+  ov.innerHTML = "<div class='popup wide'>" +
+    "<div class='sg-top'><h3>" + title + "</h3>" +
+    "<button type='button' class='sg-close' aria-label='Close'>&times;</button></div>" +
+    "<div class='formhint'>See what a contribution comes to at each frequency, then " +
+      "apply the one that matches how you save.</div>" +
+    "<div class='two'>" +
+      "<div class='field'><label for='convAmt'>Amount</label>" +
+        "<div class='inputwrap'><span class='affix'>$</span><input id='convAmt' type='text' " +
+        "inputmode='decimal' data-money data-nonneg></div></div>" +
+      "<div class='field'><label for='convPeriod'>Paid</label><select id='convPeriod'>" +
+        PERIOD_NAMES.map(n => "<option>" + n + "</option>").join("") + "</select></div>" +
+    "</div><div id='convOut'></div></div>";
+  const amtEl = ov.querySelector("#convAmt"), perEl = ov.querySelector("#convPeriod");
+  amtEl.value = groupDigits(Math.round(amt * 100) / 100, true);
+  perEl.value = PPY[period] ? period : "Monthly";
+  const render = () => {
+    const annual = parseNum(amtEl.value) * PPY[perEl.value];
+    ov.querySelector("#convOut").innerHTML = PERIOD_NAMES.map(to => {
+      const v = annual / PPY[to];
+      return "<div class='convrow'><span class='k'>" + to + "</span>" +
+        "<span class='v'>" + money(v, 2) + "</span>" +
+        "<button class='btn mini' type='button' data-period='" + to +
+        "' data-amt='" + Math.round(v) + "'>Apply</button></div>";
+    }).join("");
+  };
+  const shut = () => { if (ov._modalDone) ov._modalDone(); ov.remove(); };
+  ov.addEventListener("click", e => {
+    const b = e.target.closest ? e.target.closest("button[data-period]") : null;
+    if (b){
+      const per = b.getAttribute("data-period"), v = parseFloat(b.getAttribute("data-amt"));
+      shut();
+      apply(v, per);
+      toast("Contribution set to " + money(v, 2) + " " + per.toLowerCase());
+      return;
+    }
+    if (e.target === ov || (e.target.closest && e.target.closest(".sg-close"))) shut();
+  });
+  amtEl.addEventListener("input", render);
+  perEl.addEventListener("change", render);
+  document.body.appendChild(ov);
+  initFields(ov);
+  render();
+  wireModal(ov, shut);
+  amtEl.focus();
+  amtEl.select();
 }
 
-// delegated, because the rows are rebuilt on every keystroke
-$("convOut").addEventListener("click", e => {
-  const b = e.target.closest ? e.target.closest("button[data-period]") : null;
-  if (!b) return;
-  const per = b.getAttribute("data-period");
-  const amt = b.getAttribute("data-amt");
-  $("period").value = per;
-  if (acOn()) acSetTotal(parseFloat(amt));
-  else $("contrib").value = groupDigits(amt);
-  renderAll();
-  toast("Contribution set to " + money(parseFloat(amt), 2) + " " + per.toLowerCase());
+/* Split by account, the total is what acSetTotal() aims at: your three
+   contributions plus the match they earn. */
+$("convOpen").addEventListener("click", () => {
+  const per = $("period").value;
+  let cur = num("contrib");
+  if (acOn()){
+    const a = readAcctState();
+    cur = a.tradC + a.rothC + a.brokC + acMatchPer(a, PPY[per]);
+  }
+  openConverter("Contribution converter", cur, per, (v, p) => {
+    $("period").value = p;
+    if (acOn()) acSetTotal(v);
+    else $("contrib").value = groupDigits(v);
+    renderAll();
+  });
 });
 
 function renderTools(){
@@ -10722,7 +10742,8 @@ function buildStages(){
             "</label>" : "") +
           "</div>" +
         "<div class='field'><label>Frequency</label>" +
-          "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select></div>" +
+          "<select data-f='period' data-i='" + i + "' aria-label='Stage " + (i+1) + " frequency'>" + opts + "</select>" +
+          "<button type='button' class='linkbtn' data-conv='" + i + "'>" + CONV_ICON + "Convert</button></div>" +
         "<div class='field'><label>Contribution growth<span class='tipdot' data-tip='contribgrowth' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
           "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
           "' value='" + (+(st.growth * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " contribution growth'>" +
@@ -10884,6 +10905,19 @@ $("stageList").addEventListener("focusout", e => {
   el.textContent = stages[i].name || def;
 });
 $("stageList").addEventListener("click", e => {
+  const cv = e.target.closest ? e.target.closest("button[data-conv]") : null;
+  if (cv){
+    const i = parseInt(cv.getAttribute("data-conv"), 10);
+    if (!stages[i]) return;
+    openConverter(escapeHtml(stages[i].name || ("Stage " + (i + 1))) + " contribution",
+      stages[i].contrib, stages[i].period, (v, p) => {
+        if (!stages[i]) return;
+        stages[i].contrib = v;
+        stages[i].period = p;
+        buildStages(); renderSeries();
+      });
+    return;
+  }
   const del = e.target.closest ? e.target.closest("button[data-del]") : null;
   if (del){
     stages.splice(parseInt(del.getAttribute("data-del"), 10), 1);
@@ -17743,8 +17777,6 @@ $("solveForS").addEventListener("change", () => renderSeries());
 $("band").addEventListener("input", () => {
   if (chartMode.single === "band" && lastRun) drawChart(lastRun, readInputs());
 });
-$("convAmt").addEventListener("input", renderConverter);
-$("convPeriod").addEventListener("change", renderConverter);
 /* Mobile browsers fire resize when the URL bar hides during scroll. Redraw only
    when the width really changed, and debounce it. */
 let lastW = window.innerWidth, resizeTimer;
@@ -17822,8 +17854,6 @@ $("qPeriod").value = "Monthly";
 $("target").value = groupDigits(100000);
 $("targetS").value = groupDigits(100000);
 $("inflYrs").value = DEFAULTS.years;
-$("convAmt").value = groupDigits(DEFAULTS.contrib, true);
-$("convPeriod").value = DEFAULTS.period;
 
 /* ---------- household profile ---------- */
 /* The handful of facts nearly every tool asks for, entered once. It's a
@@ -18095,7 +18125,6 @@ if (!fromLink) hhApply(hhLoad());
 const pathRoute = fromLink ? null : routeFromPath(location.pathname);
 if (pathRoute) toolSub = pathRoute.s || "picker";
 showTab(fromLink ? linkTab : (pathRoute ? pathRoute.t : "simple"));
-renderConverter();
 renderAll();
 renderSeries();
 renderBasic();
