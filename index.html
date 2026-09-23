@@ -1302,19 +1302,19 @@ html[data-theme="light"] .about.disclaimer{
 .signflip.on{color:var(--coral)}
 
 /* ---------- optional toggles ---------- */
-.adjrow{display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:11.5px;
-  color:var(--dim);cursor:pointer;
+.adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
+  color:var(--dim);cursor:pointer;white-space:nowrap;
   background:rgba(79,191,149,.05);border:1px solid #223650;border-radius:var(--r-well);
-  padding:9px 10px;transition:border-color .14s ease,background .14s ease}
+  padding:6px 8px;transition:border-color .14s ease,background .14s ease}
 .adjrow:hover{border-color:#2f5163;background:rgba(79,191,149,.09)}
 html[data-theme="light"] .adjrow{border-color:#cfdcea}
 html[data-theme="light"] .adjrow:hover{border-color:#a9c8d8}
-.adjrow-top{display:flex;align-items:center;min-width:0}
+.adjrow-top{display:flex;align-items:center;min-width:0;flex:1 1 auto}
 .adjrow input{accent-color:var(--jade);width:15px;height:15px;flex:none;
-  margin:0 10px 0 0;cursor:pointer}
-.adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap}
-.adjnote{font-family:var(--mono);color:var(--gold);font-size:12px;
-  letter-spacing:-.01em;padding-left:25px}
+  margin:0 6px 0 0;cursor:pointer}
+.adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adjnote{font-family:var(--mono);color:var(--gold);font-size:11.5px;
+  letter-spacing:-.02em;margin-left:auto;flex:none}
 .adjnote:empty{display:none}
 
 /* Glide toggle: a compact button that expands into two fields when active,
@@ -10735,9 +10735,9 @@ function buildStages(){
           "<span class='affix'>$</span><input type='text' inputmode='decimal' data-f='contrib' data-i='" + i +
           "' value='" + groupDigits(st.contrib, true) + "' data-money data-nonneg aria-label='Stage " + (i+1) + " contribution'>" +
           "</div>" + (i > 0 ?
-            "<label class='adjrow'>" +
+            "<label class='adjrow' title='Inflation adjusted: grows the amount you type by inflation up to the start of this stage'>" +
               "<span class='adjrow-top'><input type='checkbox' data-f='adj' data-i='" + i + "'" +
-              (st.adj ? " checked" : "") + "><span class='adjtxt'>Inflation adjusted</span></span>" +
+              (st.adj ? " checked" : "") + "><span class='adjtxt'>Infl. adj.</span></span>" +
               "<span class='adjnote' data-adj='" + i + "'></span>" +
             "</label>" : "") +
           "</div>" +
@@ -10805,7 +10805,7 @@ function updateStageRealRate(i){
   const infl = rate("gInflation");
   const fees = rate("gFees");
   const real = (1 + st.nominal - fees) / (1 + infl) - 1;
-  note.textContent = "Real: " + pctStr(real, 2) + " after " + pctStr(infl, 2) + " inflation";
+  note.textContent = pctStr(real, 2) + " Real";
 }
 
 $("stageList").addEventListener("input", e => {
@@ -11050,7 +11050,7 @@ function renderSeries(){
     if (el) el.textContent = "Year " + fmtNum(acc) + " \u2013 " + fmtNum(acc + st.years);
     const note = $("stageList").querySelector("[data-adj='" + i + "']");
     if (note) note.textContent = (st.adj && i > 0)
-      ? "\u2192 " + money(eff[i].contrib / (eff[i].mf || 1), 2) : "";
+      ? money(eff[i].contrib / (eff[i].mf || 1)) : "";
     acc += st.years;
   });
   $("stageList").querySelectorAll(".stagevol").forEach(el => {
