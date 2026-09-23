@@ -13722,7 +13722,9 @@ $("clPreset").addEventListener("change", function() {
 attachChart("chartWrapCl", "chartCl", "tipCl", function() { return collegePoints; },
   function(best) {
     return "<b>Year " + fmtNum(best.year) + "</b>" +
-      "<br><span style='color:#e9b872'>Savings</span> <span class='n'>" + money(best.base) + "</span>";
+      "<br><span style='color:#e9b872'>Savings</span> <span class='n'>" + money(best.base) + "</span>" +
+      (best.hi != null ? "<br><span style='color:#4fbf95'>Cost of college</span> <span class='n'>" +
+        money(best.hi) + "</span>" : "");
   });
 
 /* ---------- rent vs buy UI ---------- */
