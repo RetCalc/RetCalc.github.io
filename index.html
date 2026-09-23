@@ -2017,7 +2017,7 @@ window.onerror = function(msg){
           <div class="field">
             <label for="withdrawal">Withdrawal rate<span class="tipdot" data-tip="withdrawal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
-            <button class="btn mini" type="button" id="toDrawdown" style="margin-top:6px">Test withdrawal strategies</button>
+            <button class="btn mini" type="button" id="toDrawdown" style="margin-top:6px">Test withdrawals</button>
           </div>
           <div class="field" id="taxrateField">
             <label for="taxrate">Effective tax rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -3524,9 +3524,9 @@ window.onerror = function(msg){
           changes is the tax. The first year's withdrawal is taken from each account in
           proportion to its balance and taxed with the 2026 rules the Income Tax tool
           uses: traditional as ordinary income, only the growth in the brokerage account
-          at capital-gain rates, and Roth not at all. Your contributions are checked
-          against the 2026 limits ($24,500 for a 401(k), $7,500 for an IRA, more from
-          age 50 if your household profile has your age). Switching back to one total
+          at capital-gain rates, and Roth not at all. Contributions aren't capped at the
+          annual limits, since backdoor and mega backdoor Roth strategies can go past
+          them; enter what you actually put in. Switching back to one total
           carries the totals and the calculated rate across, so the answer doesn't jump.</dd>
 
           <dt>Target</dt>
@@ -3608,8 +3608,7 @@ window.onerror = function(msg){
           mix you end up with. The employer match works as on Advanced, from your
           salary, the match rate and the share of salary it applies to; your salary is
           assumed to grow at each stage's contribution growth rate. A stage that misses
-          part of the match, or puts more into traditional and Roth than the 2026 limits
-          allow, is flagged on its card.</dd>
+          part of the match is flagged on its card.</dd>
         </dl>
       </div>
     </div>
@@ -8877,8 +8876,6 @@ function writeInputs(s){
    contribution, one fvFactors walk gives each account's own ending balance,
    and the first year's withdrawal is run through the Income Tax tool's
    retirement engine instead of a flat typed-in rate. */
-const AC_LIMITS_2026 = {k401:24500, k401Catch:8000, k401Catch6063:11250,
-                        ira:7500, iraCatch:1100};
 const AC_PER = {"Weekly":"/wk","Bi-Weekly":"/2wk","Monthly":"/mo","Quarterly":"/qtr","Annually":"/yr"};
 let lastAcct = null;
 function acOn(){ return $("acToggle").classList.contains("on"); }
@@ -9233,7 +9230,7 @@ function renderAcct(p){
   $("acTotSub").textContent = B.match > 0
     ? "+ " + money(B.match) + perLbl + " match" : "";
 
-  // the match, and how the traditional + Roth total squares with 2026 limits
+  // whether the contributions earn the whole employer match
   const notes = [];
   if (a.matchPct > 0 && !(a.salary > 0)){
     notes.push("Add your salary to count the employer match.");
@@ -9246,20 +9243,6 @@ function renderAcct(p){
         " a year into traditional and Roth gets all of it.");
     else notes.push("You're getting the full employer match.");
   }
-  const H = hhLoad();
-  const age = H && H.age > 0 ? H.age : 0;
-  const L = AC_LIMITS_2026;
-  const k401 = L.k401 + (age >= 60 && age <= 63 ? L.k401Catch6063 : age >= 50 ? L.k401Catch : 0);
-  const ira = L.ira + (age >= 50 ? L.iraCatch : 0);
-  const taxAdv = (a.tradC + a.rothC) * ppy;
-  if (taxAdv > k401 + ira)
-    notes.push("<span class='acwarn'>" + money(taxAdv) + " a year into traditional and Roth is more than the " +
-      money(k401 + ira) + " a 401(k) and an IRA allow together in 2026" + (age ? " at " + age : "") +
-      ".</span> The extra would have to go to the brokerage account.");
-  else if (taxAdv > k401)
-    notes.push(money(taxAdv) + " a year into traditional and Roth is more than a 401(k) takes (" +
-      money(k401) + " in 2026), so this assumes the other " + money(taxAdv - k401) +
-      " goes into an IRA.");
   $("acNote").innerHTML = notes.join(" ");
 
   acRenderTable("acResults", "acResultsNote", B, B.matchTotal > 0
@@ -10868,12 +10851,12 @@ function stTargetRate(g){
   if (!g.acct || !lastStageAcct || $("solveForS").value !== "After-Tax Withdrawal") return g.taxRate;
   return acTargetRate(g.acct, lastStageAcct, num("targetS"), g.taxRate);
 }
-/* Per-stage notes (any stage over the 2026 limits, or missing match)
+/* Per-stage notes (a stage missing part of the employer match)
    plus the tax readout and results panel. */
 function renderStageAcct(g){
   saSync();
   if (!g.acct || !lastStageAcct) return;
-  const B = lastStageAcct, H = hhLoad(), L = AC_LIMITS_2026;
+  const B = lastStageAcct;
   $("saTaxOut").value = pctStr(B.effRate, 1);
   $("saTotBal").textContent = money(g.initial);
   const a = g.acct;
@@ -10887,21 +10870,10 @@ function renderStageAcct(g){
     if (rest) rest.textContent = +(s.b * 100).toFixed(1) + "%";
     const note = $("stageList").querySelector("[data-slimit='" + i + "']");
     if (note){
-      const rawT = st.sTrad == null ? 1 : st.sTrad, rawR = st.sRoth == null ? 0 : st.sRoth;
-      const age = H && H.age > 0 ? Math.round(H.age + start) : 0;
-      const k401 = L.k401 + (age >= 60 && age <= 63 ? L.k401Catch6063 : age >= 50 ? L.k401Catch : 0);
-      const cap = k401 + L.ira + (age >= 50 ? L.iraCatch : 0);
-      const taxAdv = st.contrib * PPY[st.period] * (s.t + s.r);
       const e = eff[i], ppyI = PPY[st.period];
       const needYr = a.matchPct > 0 && e.salary > 0 ? e.salary * (a.matchCap || 0) / 100 : 0;
       const inYr = e.mine * (s.t + s.r) * ppyI;
-      note.innerHTML = rawT + rawR > 1.0001
-        ? "<span class='acwarn'>Traditional and Roth add up to more than 100%, so Roth is cut to " +
-          +(s.r * 100).toFixed(1) + "%.</span>"
-        : taxAdv > cap
-        ? "<span class='acwarn'>" + money(taxAdv) + " a year into traditional and Roth is over the " +
-          money(cap) + " 2026 limit for a 401(k) and an IRA combined" + (age ? " at " + age : "") + ".</span>"
-        : inYr + 0.5 < needYr && st.contrib > 0
+      note.innerHTML = inYr + 0.5 < needYr && st.contrib > 0
         ? "<span class='acwarn'>Misses " + money((needYr - inYr) * a.matchPct / 100) +
           " a year of employer match.</span> Putting " + money(needYr) +
           " a year into traditional and Roth gets all of it."
@@ -15807,8 +15779,14 @@ $("dtAdd").addEventListener("click", () => {
   if (rows.length) rows[rows.length - 1].focus();
 });
 $("dtExtra").addEventListener("input", renderDebt);
+/* Carries the plan's ending balance, in today's dollars, in as the
+   Drawdown Simulator's starting portfolio. */
 $("toDrawdown").addEventListener("click", () => {
+  const R = project(readInputs());
+  $("ddInitial").value = groupDigits(Math.round(R.fvReal), true);
   showTab("tools"); showTool("drawdown");
+  renderDrawdown();
+  toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
 });
 $("segDT").querySelectorAll("button").forEach(b => {
   b.addEventListener("click", () => {
