@@ -2458,6 +2458,7 @@ window.onerror = function(msg){
             <div class="kv"><span class="k">Amount invested</span><span class="v" id="xInvested"></span></div>
             <div class="kv"><span class="k">Growth</span><span class="v pos" id="xGrowth"></span></div>
             <div class="kv"><span class="k">Total contributions</span><span class="v" id="xContribs"></span></div>
+            <div class="kv"><span class="k">Final contribution</span><span class="v" id="xLastContrib"></span></div>
           </div>
           <div>
             <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="xWd"></span></div>
@@ -6044,7 +6045,7 @@ function solveYears(p, portToday, capYears){
  * @returns {Object} rows (year-by-year), summary (per-stage), and total fv/fvReal/wd/wdReal/afterTax
  */
 function projectSeries(g, stages){
-  let bal = g.initial, contribTotal = 0, elapsed = 0;
+  let bal = g.initial, contribTotal = 0, elapsed = 0, lastContrib = 0, lastPeriod = null;
   const rows = [], summary = [];
   for (let si = 0; si < stages.length; si++){
     const st = stages[si];
@@ -6069,6 +6070,7 @@ function projectSeries(g, stages){
       const c = st.contrib * Math.pow(1 + st.growth, yearNo - 1);
       bal = bal * (1 + periodicR) + c;
       contribTotal += c; stageContrib += c; yearContrib += c;
+      lastContrib = c; lastPeriod = st.period;
     }
     if (n > 0){
       // a fractional stage ends partway through its final year
@@ -6090,7 +6092,7 @@ function projectSeries(g, stages){
   const afterTax = wdReal * (1 - g.taxRate);
   return {
     rows, summary, totalYears, inflYears:inflY,
-    fv:bal, invested: g.initial + contribTotal, contribTotal,
+    fv:bal, invested: g.initial + contribTotal, contribTotal, lastContrib, lastPeriod,
     growth: bal - g.initial - contribTotal,
     fvReal, wd: bal * g.withdrawal, wdReal, afterTax, afterTaxMo: afterTax / 12
   };
@@ -9086,7 +9088,7 @@ function renderProjection(){
   $("rInvested").textContent = money(R.invested);
   $("rGrowth").textContent = money(R.growth);
   $("rContribs").textContent = money(R.contribTotal);
-  $("rLastContrib").textContent = money(R.lastContrib, 2) + " " + PERIOD_ADV[p.period];
+  $("rLastContrib").textContent = money(R.lastContrib) + " " + PERIOD_ADV[p.period];
   $("rWd").textContent = money(R.wd);
   $("rWdReal").textContent = money(R.wdReal);
   $("rAfterTax").textContent = money(R.afterTax);
@@ -9804,7 +9806,7 @@ function cmpRun(data, mode){
           mrow("Amount invested", R.invested),
           mrow("Growth", R.growth),
           mrow("Total contributions", R.contribTotal),
-          mrow("Final contribution", R.lastContrib, "money2")],
+          mrow("Final contribution", R.lastContrib)],
     inp
   };
 }
@@ -11121,6 +11123,8 @@ function renderSeries(){
   $("xInvested").textContent = money(R.invested);
   $("xGrowth").textContent = money(R.growth);
   $("xContribs").textContent = money(R.contribTotal);
+  $("xLastContrib").textContent = R.lastPeriod
+    ? money(R.lastContrib) + " " + PERIOD_ADV[R.lastPeriod] : money(0);
   $("xWd").textContent = money(R.wd);
   $("xWdReal").textContent = money(R.wdReal);
   $("xAfterTax").textContent = money(R.afterTax);
