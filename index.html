@@ -8637,6 +8637,12 @@ function formatMoneyField(el){
 function glueTipdots(root){
   root.querySelectorAll(".tipdot").forEach(t => {
     if (t.parentElement && t.parentElement.classList.contains("tipglue")) return;
+    // Only ordinary text flow can strand the dot on a line of its own. In a
+    // flex or grid container (the toggle buttons, panel headings) the text and
+    // the dot are already separate items side by side, and splitting the last
+    // word off would turn it into a third item: the space before it vanishes
+    // and it no longer sits on the text's baseline.
+    if (t.parentElement && /flex|grid/.test(getComputedStyle(t.parentElement).display)) return;
     const prev = t.previousSibling;
     const wrap = document.createElement("span");
     wrap.className = "tipglue";
