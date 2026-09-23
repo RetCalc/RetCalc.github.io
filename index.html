@@ -1098,6 +1098,15 @@ html[data-theme="light"] .about.disclaimer{
 .bgrow .delspace{width:26px;flex:none}
 .freqsel{width:auto;min-width:104px;flex:none}
 
+/* A text-weight button for opening a guide, sitting under the field it explains. */
+.linkbtn{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:2px 0;
+  background:none;border:0;cursor:pointer;font-family:var(--sans);font-size:12px;
+  color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.35);
+  text-underline-offset:3px;transition:text-decoration-color .14s ease}
+.linkbtn:hover{text-decoration-color:currentColor}
+.linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+.linkbtn svg{width:14px;height:14px;flex:none}
+
 /* ---------- popups: floating above the deck ---------- */
 .popup-overlay{position:fixed;inset:0;background:rgba(3,5,12,.62);z-index:90;
   display:flex;align-items:flex-start;justify-content:center;padding:20px;
@@ -1128,6 +1137,39 @@ html[data-theme="light"] .about.disclaimer{
   font-family:var(--sans);box-shadow:none}
 .popup .cancel:hover{color:var(--text)}
 .popup.wide{max-width:420px}
+/* The strategy guide: a reading pop-up, wide enough for pros and cons side by side. */
+.popup.guide{max-width:780px;padding:22px 26px 20px}
+.sg-top{display:flex;align-items:flex-start;gap:12px}
+.sg-top h3{margin:0 0 8px;flex:1 1 auto;font-size:17px}
+.sg-close{flex:none;width:30px;height:30px;margin:-4px -8px 0 0;border:0;border-radius:var(--r-well);
+  background:transparent;color:var(--dimmer);font-size:22px;line-height:1;cursor:pointer}
+.sg-close:hover{color:var(--text);background:var(--panel-2)}
+.sg-close:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.sg-intro,.sg-foot{font-size:13px;color:var(--dim);line-height:1.55;margin:0 0 16px}
+.sg-foot{margin:16px 0 0}
+.sg-cmp{width:100%;margin:0 0 18px;font-size:12.5px}
+.sg-cmp th,.sg-cmp td{text-align:left;font-family:var(--sans);padding:7px 8px;font-size:12.5px}
+.sg-cmp td:first-child{color:var(--text);font-weight:500}
+.sg-cmp tbody tr:hover{background:transparent;box-shadow:none}
+.sg-item{border-top:1px solid var(--line-soft);padding:16px 0 4px}
+.sg-item.sg-cur{border-left:2px solid var(--jade);padding-left:14px;margin-left:-16px}
+.sg-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.sg-head h4{margin:0;font-size:14.5px;color:var(--text);font-weight:600}
+.sg-tag{font-size:11.5px;color:var(--dimmer)}
+.sg-head .btn,.sg-using{margin-left:auto}
+.sg-using{font-size:11.5px;color:var(--jade);font-weight:600}
+.sg-item p{font-size:13px;color:var(--dim);line-height:1.6;margin:0 0 10px}
+.sg-pc{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
+.sg-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.sg-pc ul{margin:5px 0 10px;padding-left:18px;font-size:12.5px;color:var(--dim);line-height:1.5}
+.sg-pc li{margin-bottom:4px}
+.sg-item .sg-fit{color:var(--text)}
+@media (max-width:640px){
+  .popup.guide{padding:18px 16px}
+  .sg-pc{grid-template-columns:1fr}
+  .sg-item.sg-cur{margin-left:-10px;padding-left:8px}
+  .sg-cmp th:nth-child(4),.sg-cmp td:nth-child(4){display:none}
+}
 .popup.wide h3{margin-bottom:4px}
 .popup .formhint{font-size:11.5px;color:var(--dim);margin:0 0 16px;line-height:1.5}
 .popup .formfield{margin-bottom:13px}
@@ -1170,6 +1212,7 @@ html[data-theme="light"] .about.disclaimer{
 .itemrow .itemdel:hover{color:var(--coral)}
 
 /* ---------- tooltips ---------- */
+.tipglue{white-space:nowrap}
 .tipdot{display:inline-flex;align-items:center;justify-content:center;width:16px;
   height:16px;border-radius:50%;border:1px solid var(--line);color:var(--dimmer);
   font-size:10px;font-family:var(--sans);margin-left:5px;cursor:help;flex:none;
@@ -2624,7 +2667,7 @@ window.onerror = function(msg){
   <!-- ========== PORTFOLIO BACKTEST ========== -->
   <aside id="asideBT" hidden>
     <div class="panel inputs">
-      <h2>The mix</h2>
+      <h2>The mix<span class="tipdot" data-tip="btdata" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
       <div class="body">
         <div class="field">
           <label for="btStock">Stocks<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -2658,11 +2701,6 @@ window.onerror = function(msg){
           <div><span>Rebalanced</span><span class="num">Annually</span></div>
           <div><span>Dividends</span><span class="num">Reinvested</span></div>
         </div>
-        <div class="hint" style="margin-top:10px">S&amp;P 500 total return with dividends
-          reinvested, 10-year Treasury total return, and CPI-U, 1926&ndash;2025, no fees.
-          The chart tracks a fixed $10,000 starting point &mdash; only the mix and date
-          range change what you're looking at. Past returns describe what happened;
-          they are not a forecast.</div>
       </div>
     </div>
   </aside>
@@ -2781,14 +2819,13 @@ window.onerror = function(msg){
       <h2>College plan</h2>
       <div class="body">
         <div class="field">
-          <label for="clPreset">School type</label>
+          <label for="clPreset">School type<span class="tipdot" data-tip="schooltype" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="clPreset">
             <option value="27000">Public in-state · ~$27,000/yr</option>
             <option value="59000">Private non-profit · ~$59,000/yr</option>
             <option value="82000">Elite / Ivy · ~$82,000/yr</option>
             <option value="0">Custom</option>
           </select>
-          <div class="hint">All-in: tuition, room and board, fees.</div>
         </div>
         <div class="field">
           <label for="clCost">Annual cost today</label>
@@ -2981,12 +3018,11 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="field">
-          <label for="ddStockEnd">Glide to</label>
+          <label for="ddStockEnd">Glide to <span class="opt">optional</span><span class="tipdot" data-tip="ddglide" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddStockEnd" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value=""><span class="affix">% stocks at end</span></div>
-          <div class="hint">Optional: gradually shift your stock allocation to this level by the end of retirement. Leave blank to keep it constant.</div>
         </div>
         <div class="field">
-          <label for="ddFee">Fees</label>
+          <label for="ddFee">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
         </div>
 
@@ -2998,10 +3034,14 @@ window.onerror = function(msg){
             <option value="guardrails">Guyton-Klinger Guardrails</option>
             <option value="floorceil">Floor &amp; ceiling</option>
             <option value="yale">Yale Endowment</option>
+            <option value="vpw">Variable percentage withdrawal (VPW)</option>
           </select>
-          <div class="hint" id="ddStratNote"></div>
+          <button type="button" class="linkbtn" id="ddStratGuide">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg>
+            How the strategies compare
+          </button>
         </div>
-        <div class="field">
+        <div class="field" id="ddRateWrap">
           <label for="ddRate" id="ddRateLabel">Withdrawal rate</label>
           <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
           <div class="hint" id="ddRateNote"></div>
@@ -3038,10 +3078,28 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="hint" id="ddYaleNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
-        <div class="field" id="ddSpendFloorWrap" hidden>
-          <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-          <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+        <div id="ddVpwWrap" hidden>
+          <div class="field">
+            <label for="ddVpwRate">Expected rate of return<span class="tipdot" data-tip="vpwrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddVpwRate" type="text" inputmode="decimal" data-num data-step="0.25" value="3.8"><span class="affix">% after inflation</span></div>
+          </div>
+          <div class="field">
+            <label for="ddVpwFV">PMT future value<span class="tipdot" data-tip="vpwfv" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddVpwFV" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+          </div>
         </div>
+        <div class="hint" id="ddVpwNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="two" id="ddSpendFloorWrap" hidden>
+          <div class="field">
+            <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+          </div>
+          <div class="field">
+            <label for="ddSpendCeil">Maximum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendceil" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendCeil" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+          </div>
+        </div>
+        <div class="hint acwarn" id="ddSpendNote2" hidden style="margin-top:-6px;margin-bottom:12px"></div>
         <div class="field" style="margin-top:14px">
           <label for="ddSSMode">Social Security</label>
           <select id="ddSSMode">
@@ -3051,12 +3109,11 @@ window.onerror = function(msg){
           </select>
         </div>
         <div class="field" id="ddSSWhoWrap" hidden>
-          <label for="ddSSWho">Whose benefit</label>
+          <label for="ddSSWho">Whose benefit<span class="tipdot" data-tip="sswho" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="ddSSWho">
             <option value="single">Just me</option>
             <option value="couple">Me and a spouse</option>
           </select>
-          <div class="hint">Both benefits are added together and assumed to begin at the same point in retirement, set below.</div>
         </div>
         <div id="ddSSEst" hidden>
           <div class="two">
@@ -3065,7 +3122,7 @@ window.onerror = function(msg){
               <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
             </div>
             <div class="field">
-              <label for="ddSSClaim">Claim at age</label>
+              <label for="ddSSClaim">Claim at age<span class="tipdot" data-tip="ssclaim" role="button" tabindex="0" aria-label="What is this?">?</span></label>
               <div class="inputwrap"><select id="ddSSClaim"><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67" selected>67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option></select><span class="affix">yrs</span></div>
             </div>
           </div>
@@ -3075,7 +3132,7 @@ window.onerror = function(msg){
               <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome2" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
             </div>
             <div class="field">
-              <label for="ddSSClaim2">Claim at age</label>
+              <label for="ddSSClaim2">Claim at age<span class="tipdot" data-tip="ssclaim" role="button" tabindex="0" aria-label="What is this?">?</span></label>
               <div class="inputwrap"><select id="ddSSClaim2"><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67" selected>67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option></select><span class="affix">yrs</span></div>
             </div>
           </div>
@@ -3083,19 +3140,17 @@ window.onerror = function(msg){
         </div>
         <div id="ddSSManual" hidden>
           <div class="field">
-            <label for="ddSSAmount" id="ddSSAmountLabel">Annual benefit, today's dollars</label>
+            <label for="ddSSAmount"><span id="ddSSAmountLabel">Annual benefit, today's dollars</span><span class="tipdot" data-tip="ssbenefit" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
-            <div class="hint">Find your number at ssa.gov/myaccount for the most accurate figure. Like the rest of the plan, it grows with inflation every year once it starts.</div>
           </div>
           <div class="field" id="ddSSAmount2Wrap" hidden>
-            <label for="ddSSAmount2">Spouse's annual benefit, today's dollars</label>
+            <label for="ddSSAmount2">Spouse's annual benefit, today's dollars<span class="tipdot" data-tip="ssbenefit" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount2" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
           </div>
         </div>
         <div class="field" id="ddSSDelayWrap" hidden>
           <label for="ddSSDelay"><span id="ddSSDelayLabel">Starts after</span><span class="tipdot" id="ddSSDelayTip" data-tip="ssdelay" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix" id="ddSSDelayAffix">yrs</span></div>
-          <div class="hint" id="ddSSDelayHint">Years into retirement before benefits begin. Use 0 if they start right away.</div>
         </div>
         <div class="field" style="margin-top:14px">
           <label>Other income<span class="tipdot" data-tip="customincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -3108,9 +3163,8 @@ window.onerror = function(msg){
           <button class="btn mini" type="button" id="ddAddExpense">+ Add future expense</button>
         </div>
         <div class="field">
-          <label for="ddLegacyGoal">Legacy goal <span class="opt">optional</span></label>
+          <label for="ddLegacyGoal">Legacy goal <span class="opt">optional</span><span class="tipdot" data-tip="legacy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="ddLegacyGoal" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
-          <div class="hint">What you'd like left at the end. Results show the share of retirements that finish above it.</div>
         </div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
@@ -3582,7 +3636,12 @@ window.onerror = function(msg){
           from target. <b>Floor &amp; ceiling</b> aims at a percentage of the balance
           but limits how much spending can change from one year to the next.
           <b>Yale Endowment</b> blends last year's spending with a fresh percentage of
-          the current balance, smoothing swings while still tracking the market.</dd>
+          the current balance, smoothing swings while still tracking the market.
+          <b>Variable percentage withdrawal (VPW)</b>, from the Bogleheads community,
+          takes the payment that would spend the current balance down to a future
+          value (usually $0) over the years left at an expected real return, so the
+          share rises as the horizon shortens. <b>How the strategies compare</b>,
+          under the picker, covers each in depth with its pros and cons.</dd>
 
           <dt>Other income &amp; future expenses</dt>
           <dd>Beyond Social Security, add any other income (a pension, rental
@@ -3599,6 +3658,13 @@ window.onerror = function(msg){
           below, even in a year the strategy above would otherwise call for
           less. Available on every strategy except fixed amount, which by design
           never drops in real terms anyway.</dd>
+
+          <dt>Maximum spending</dt>
+          <dd>The mirror of the minimum: a hard cap, in today's dollars, that the
+          strategy's spending never goes above, however much a good year would allow.
+          A future expense you add is on top of it, so that year can go past the cap
+          by the expense. If the minimum is set above the maximum, the maximum wins.
+          Available on the same strategies as the minimum.</dd>
 
           <dt>Stock / bond mix</dt>
           <dd>How the portfolio is split during retirement. A higher stock allocation
@@ -4498,9 +4564,8 @@ window.onerror = function(msg){
           <select id="txState"></select>
         </div>
         <div class="field">
-          <label for="txPre">Pre-tax deductions</label>
+          <label for="txPre">Pre-tax deductions<span class="tipdot" id="txPreTip" data-tip="txpre" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="txPre" type="text" inputmode="decimal" data-money data-nonneg></div>
-          <div class="hint" id="txPreHint">401(k), HSA, traditional IRA, health premiums. Comes off before income tax.</div>
         </div>
         <div class="field">
           <label for="txDedType">Deduction<span class="tipdot" data-tip="deduction" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -4820,12 +4885,9 @@ window.onerror = function(msg){
     <div class="panel">
       <h2>Your debts</h2>
       <div class="body">
-        <div class="dthead"><span class="desc">Debt</span><span class="c1">Balance</span><span class="c2">Rate</span><span class="c3">Minimum</span><span class="delspace"></span></div>
+        <div class="dthead"><span class="desc">Debt</span><span class="c1">Balance</span><span class="c2">Rate<span class="tipdot" data-tip="dtrate" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="c3">Minimum<span class="tipdot" data-tip="dtmin" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="delspace"></span></div>
         <div id="dtList"></div>
         <button class="btn" type="button" id="dtAdd" style="margin-top:6px">Add a debt</button>
-        <div class="hint" style="margin-top:10px">Rate is the APR. Minimum is what the
-          lender requires each month; for a card that is usually a small percentage
-          of the balance, so use what your statement actually says.</div>
       </div>
     </div>
 
@@ -5191,14 +5253,11 @@ window.onerror = function(msg){
       <h2>Already have this loan?</h2>
       <div class="body">
         <div class="field">
-          <label for="moExtrasOn">Extra payments, recasting, or refinancing</label>
+          <label for="moExtrasOn">Extra payments, recasting, or refinancing<span class="tipdot" data-tip="moextras" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="moExtrasOn">
             <option value="0">No, just the basics</option>
             <option value="1">Yes, show these options</option>
           </select>
-          <div class="hint">Paying down faster or considering a refinance? These layer on
-            top of the loan above &mdash; leave them off for a quick estimate on a home
-            you haven't bought yet.</div>
         </div>
         <div id="moExtrasWrap" hidden>
           <div class="field" style="margin-top:2px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Extra payments</div></div>
@@ -5241,10 +5300,8 @@ window.onerror = function(msg){
             </div>
           </div>
           <div class="field">
-            <label for="moRefiCost">Closing costs</label>
+            <label for="moRefiCost">Closing costs<span class="tipdot" data-tip="reficost" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><span class="affix">$</span><input id="moRefiCost" type="text" inputmode="decimal" data-money data-nonneg></div>
-            <div class="hint">Typically 2&ndash;5% of the loan amount, paid out of pocket
-              rather than rolled into the new loan.</div>
           </div>
         </div>
       </div>
@@ -5263,7 +5320,7 @@ window.onerror = function(msg){
       </div>
       <div class="body">
         <div class="bgincome">
-          <label for="bgIncomeIn">Income after taxes</label>
+          <label for="bgIncomeIn">Income after taxes<span class="tipdot" data-tip="bgincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="bgincome-row">
             <div class="inputwrap"><span class="affix">$</span><input id="bgIncomeIn" type="text" inputmode="decimal" data-money data-nonneg></div>
             <span class="seg bgseg" id="bgIncomeFreq">
@@ -5272,7 +5329,6 @@ window.onerror = function(msg){
             </span>
             <button class="btn" type="button" id="bgCopyTax">Copy from Income Tax</button>
           </div>
-          <div class="hint" id="bgDeferralNote">Taxes only. Voluntary pre-tax deferrals like 401(k) and HSA stay in this figure, since that money is yours &mdash; enter them under Savings &amp; investments below so they land as saving rather than spending.</div>
         </div>
       </div>
     </div>
@@ -5300,7 +5356,7 @@ window.onerror = function(msg){
       </div>
     </div>
     <div class="panel">
-      <h2>Emergency fund</h2>
+      <h2>Emergency fund<span class="tipdot" data-tip="emergency" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
       <div class="body">
         <div class="efrow">
           <span>Target for</span>
@@ -5308,7 +5364,6 @@ window.onerror = function(msg){
           <span>of monthly expenses</span>
         </div>
         <div class="kv total" style="margin-top:12px"><span class="k" id="efLabel">6-month emergency fund</span><span class="v gold" id="efTarget">—</span></div>
-        <div class="hint" style="margin-top:8px">Based on your total monthly spending above. A common starting goal is 3–6 months; those with variable income often aim for 6–12.</div>
       </div>
     </div>
   </div>
@@ -5514,9 +5569,8 @@ window.onerror = function(msg){
           </select>
         </div>
         <div class="field">
-          <label for="fiTarget">Target (today's dollars)</label>
+          <label for="fiTarget">Target (today's dollars)<span class="tipdot" data-tip="fitarget" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="fiTarget" type="text" inputmode="decimal" data-money data-nonneg value="40000"></div>
-          <div class="hint" id="fiTargetHint"></div>
         </div>
         <div class="field">
           <label for="fiWithdrawal">Withdrawal rate<span class="tipdot" data-tip="withdrawal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -5718,7 +5772,7 @@ window.onerror = function(msg){
  * @property {number} years - length of the retirement, in years
  * @property {number} stockPct - stock allocation, 0-100 (not a decimal)
  * @property {number} initialPct - starting withdrawal rate, 0-100 (not a decimal)
- * @property {"fixed"|"pct"|"guardrails"|"floorceil"|"yale"} strategy
+ * @property {"fixed"|"pct"|"guardrails"|"floorceil"|"yale"|"vpw"} strategy
  * @property {number} [guardBand] - guardrails band width, percent
  * @property {number} [adjustPct] - guardrails cut/raise size, percent
  * @property {number} [floorPct] - floor-and-ceiling max cut, percent
@@ -5726,6 +5780,9 @@ window.onerror = function(msg){
  * @property {number} [yaleRate] - Yale rule target percentage of current balance
  * @property {number} [yaleWeight] - Yale rule weight on last year's spending, 0-100
  * @property {number} [spendFloor] - absolute dollar floor on spending, in today's dollars (0 disables)
+ * @property {number} [spendCeil] - absolute dollar cap on the strategy's spending, in today's dollars (0 disables); custom expenses can still take a year past it
+ * @property {number} [vpwRate] - VPW's expected real rate of return, percent
+ * @property {number} [vpwFV] - VPW's future value: what the plan aims to leave at the end, in today's dollars
  * @property {number} [fee] - annual fee drag, percent
  * @property {number} [ssAnnual] - primary Social Security benefit, in today's dollars
  * @property {number} [ssDelayYears] - years into retirement before the primary benefit starts
@@ -7829,6 +7886,14 @@ function itemAmount(it, year, cumInfl, infl) {
  * @param {Array<{stock: number, bond: number, infl: number}>} seq - one year's stock/bond/inflation, in percent (not decimals), per row
  * @returns {Object} year-by-year rows plus depleted/endBalance/totalRealSpend summary
  */
+/* Spreadsheet PMT with payments at the start of each period (type 1): the
+   level payment that takes pv down to fv over n periods at rate r. */
+function pmtStart(r, n, pv, fv){
+  if (n <= 0) return 0;
+  if (Math.abs(r) < 1e-12) return (pv - fv) / n;
+  const g = Math.pow(1 + r, n);
+  return (pv * g - fv) * r / ((g - 1) * (1 + r));
+}
 function runDrawdown(o, seq) {
   var bal = o.initial;
   var stockW = o.stockPct / 100;
@@ -7883,6 +7948,17 @@ function runDrawdown(o, seq) {
       var ceil = infAdj * (1 + o.ceilPct / 100);
       w = Math.min(Math.max(target, floor), ceil);
 
+    } else if (o.strategy === "vpw") {
+      // Variable percentage withdrawal (Bogleheads): each year, the payment
+      // that would draw the current balance down to the future value over the
+      // years left, at the expected real return, paid at the start of the
+      // year -- =PMT(rate, years left, -balance, future value, 1). Worked in
+      // real terms, so the future value is in today's dollars; this year's
+      // price level converts it. The share rises every year as the horizon
+      // shortens, and the final year takes whatever is left above the target.
+      var pLevel = cumInfl * (1 + infl);
+      w = Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years - y, bal, (o.vpwFV || 0) * pLevel));
+
     } else {
       // Yale endowment rule: year 1 is a plain percentage of the starting
       // portfolio, since there's no prior year yet. From year 2 on, blend
@@ -7910,6 +7986,15 @@ function runDrawdown(o, seq) {
     if (o.spendFloor > 0 && o.strategy !== "fixed") {
       var floorNominal = o.spendFloor * cumInfl * (1 + infl);
       if (w < floorNominal) w = floorNominal;
+    }
+    // Optional hard cap, the mirror of the floor: however much the strategy
+    // allows, spending never goes above this in today's dollars. Applied after
+    // the floor, so if the two ever cross the cap wins. It limits the
+    // strategy's own spending only; a custom future expense is added below,
+    // after it, so that year can go past the cap by the expense.
+    if (o.spendCeil > 0 && o.strategy !== "fixed") {
+      var ceilNominal = o.spendCeil * cumInfl * (1 + infl);
+      if (w > ceilNominal) w = ceilNominal;
     }
 
     // This is the strategy's own ongoing baseline, before one-off custom
@@ -7973,7 +8058,10 @@ function runDrawdown(o, seq) {
     });
 
     prevW = strategyW;
-    if (bal <= 0 && depletedYear === null) depletedYear = y + 1;
+    // VPW is built to spend down to its future value in the last year, so an
+    // empty portfolio after that final withdrawal is the plan, not a failure.
+    var plannedEnd = o.strategy === "vpw" && y === o.years - 1;
+    if (bal <= 0 && depletedYear === null && !plannedEnd) depletedYear = y + 1;
   }
 
   var realSpendsSorted = rows.map(function (r) { return r.realSpend; }).sort(function (a, b) { return a - b; });
@@ -8541,7 +8629,34 @@ function formatMoneyField(el){
 }
 /* Runs over a subtree so stage cards added later get the same behavior. The
    flags stop a second pass from double-binding fields that already have it. */
+/* A "?" should never sit alone on a line. Each one is wrapped together with
+   the word in front of it (or the "optional" tag) so a narrow column wraps
+   the pair, not just the dot. Runs over a subtree, like initFields, so stage
+   cards built later get it too; tooltip clicks are delegated, so moving the
+   dot into the wrapper changes nothing else. */
+function glueTipdots(root){
+  root.querySelectorAll(".tipdot").forEach(t => {
+    if (t.parentElement && t.parentElement.classList.contains("tipglue")) return;
+    const prev = t.previousSibling;
+    const wrap = document.createElement("span");
+    wrap.className = "tipglue";
+    if (prev && prev.nodeType === 3){
+      const m = prev.textContent.match(/^([\s\S]*?)(\S+\s*)$/);
+      if (!m) return;
+      prev.textContent = m[1];
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(document.createTextNode(m[2]));
+    } else if (prev && prev.nodeType === 1 && prev.tagName === "SPAN"){
+      // the "optional" tag, or a label span whose text is set by code --
+      // moving the span keeps its id, so those updates still land
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(prev);
+    } else return;
+    wrap.appendChild(t);
+  });
+}
 function initFields(root){
+  glueTipdots(root);
   root.querySelectorAll("[data-money]").forEach(el => {
     if (!el._moneyBound){
       el._moneyBound = true;
@@ -9907,6 +10022,9 @@ function ddStateToOpts(data) {
     yaleWeight: Math.min(100, Math.max(0, +data.yaleWeight || 70)),
     yaleRate: Math.max(0, +data.yaleRate || 5),
     spendFloor: +data.spendFloor || 0,
+    spendCeil: +data.spendCeil || 0,
+    vpwRate: data.vpwRate != null ? +data.vpwRate : 3.8,
+    vpwFV: +data.vpwFV || 0,
     legacyGoal: +data.legacyGoal || 0,
     ssAnnual: ssAnnual, ssDelayYears: ssDelay,
     ssAnnual2: ssAnnual2, ssDelayYears2: ssDelay2,
@@ -9982,10 +10100,11 @@ function renderDDCompare() {
     return "<th>" + CMP_LETTERS[x.i] + " · " + escapeHtml(x.name) + "</th>";
   }));
   $("ddCmpOutTable").querySelector("thead").innerHTML = "<tr>" + head.join("") + "</tr>";
-  var stratLabels = {fixed:"Fixed amount", pct:"Fixed %", guardrails:"Guardrails", floorceil:"Floor & ceiling", yale:"Yale endowment"};
+  var stratLabels = {fixed:"Fixed amount", pct:"Fixed %", guardrails:"Guardrails", floorceil:"Floor & ceiling", yale:"Yale endowment", vpw:"VPW"};
   $("ddCmpOutTable").querySelector("tbody").innerHTML = [
     {k:"Strategy", fn:function(x){return stratLabels[x.o.strategy]||x.o.strategy;}},
-    {k:"Withdrawal rate", fn:function(x){return x.o.initialPct.toFixed(1)+"%";}},
+    {k:"Withdrawal rate", fn:function(x){return x.o.strategy === "vpw"
+      ? "VPW at " + (x.o.vpwRate || 0).toFixed(2) + "% real" : x.o.initialPct.toFixed(1)+"%";}},
     {k:"Stock allocation", fn:function(x){return x.o.stockPct+(x.o.stockPctEnd!=null?" → "+x.o.stockPctEnd:"")+"% stocks";}},
     {k:"Periods tested", fn:function(x){return x.H.total+"";}},
     {k:"Success rate", fn:function(x){return "<span class='"+(x.H.successRate>=0.95?"pos":x.H.successRate>=0.85?"gold":"neg")+"'>"+pctStr(x.H.successRate,1)+"</span>";}},
@@ -11898,17 +12017,18 @@ function buildDrawdownSheet(){
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
   inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
-  inputs += row("Withdrawal strategy",
-    o.strategy === "fixed" ? "Fixed amount" : o.strategy === "pct" ? "% of portfolio" :
-    o.strategy === "guardrails" ? "Guyton-Klinger Guardrails" :
-    o.strategy === "yale" ? "Yale Endowment" : "Floor & ceiling");
-  inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
+  inputs += row("Withdrawal strategy", DD_STRAT_NAMES[o.strategy] || "Floor & ceiling");
+  if (o.strategy === "vpw"){
+    inputs += row("Expected return, real", pctStr((o.vpwRate || 0) / 100, 2));
+    inputs += row("PMT future value", money(o.vpwFV || 0));
+  } else inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
   if (o.strategy === "guardrails") inputs += row("Guardrail width", num("ddGuardBand") + "%");
   if (o.strategy === "yale"){
     inputs += row("Weight on last year", num("ddYaleWeight") + "%");
     inputs += row("Target spending rate", num("ddYaleRate") + "%");
   }
-  if (o.spendFloor > 0) inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
+  if (o.spendFloor > 0 && o.strategy !== "fixed") inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
+  if (o.spendCeil > 0 && o.strategy !== "fixed") inputs += row("Maximum spending", money(o.spendCeil) + "/yr");
   if (o.ssAnnual > 0 || o.ssAnnual2 > 0) inputs += row("Social Security", money(o.ssAnnualTotal) + "/yr");
   (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
   (o.expenseItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name + " (expense)", describeItem(it)));
@@ -12858,9 +12978,7 @@ function applyTaxMode(){
   $("txRetLbl").hidden = !ret;
   $("txBucketPanel").hidden = !ret;
   $("txGainPanel").hidden = true;      // renderRetireTax turns it back on if there is a gain
-  $("txPreHint").textContent = ret
-    ? "HSA, self-employed health premiums, deductible IRA contributions. Comes off before income tax."
-    : "401(k), HSA, traditional IRA, health premiums. Comes off before income tax.";
+  $("txPreTip").setAttribute("data-tip", ret ? "txpreret" : "txpre");
   syncSeniorOptions();
   syncGrossFields();
 }
@@ -13806,13 +13924,23 @@ function ddSortValue(r, col) {
   }
 }
 var ddIncomeChartAgg = false;
-var DD_STRAT_NOTES = {
-  fixed: "The classic 4% rule. You set a first-year amount and give yourself a raise for inflation every year, no matter what markets do. Simple, but it cannot react to a bad decade.",
-  pct: "Take the same percentage of whatever the portfolio is worth each year. It can never run dry, but your income swings with the market.",
-  guardrails: "Follow inflation normally, like the fixed-amount approach. But check your withdrawal rate each year against your original target: if the portfolio grows a lot, your rate drops below target, so you get a raise; if it shrinks a lot, your rate climbs above target, so spending gets cut. This reacts to bad markets without giving up the yearly raise fixed spending never gets you.",
-  floorceil: "Aim at a percentage of the current balance, but never change spending by more than the limits you set from one year to the next.",
-  yale: "Blend most of last year's spending with a fresh percentage of the current balance. Smooths out the swings a pure percentage-of-portfolio approach would give you, while still tracking the market over time."
-};
+/* Display names, shared by the summary sheet and the image card. */
+var DD_STRAT_NAMES = {fixed:"Fixed amount", pct:"% of portfolio",
+  guardrails:"Guyton-Klinger Guardrails", floorceil:"Floor & ceiling",
+  yale:"Yale Endowment", vpw:"Variable percentage (VPW)"};
+/* First-year spending under the chosen strategy, in today's dollars, with the
+   same minimum and maximum runDrawdown applies. */
+function ddFirstYearSpend(o){
+  var w = o.strategy === "vpw"
+    ? Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years, o.initial, o.vpwFV || 0))
+    : o.initial * o.initialPct / 100;
+  if (o.strategy !== "fixed"){
+    if (o.spendFloor > 0) w = Math.max(w, o.spendFloor);
+    if (o.spendCeil > 0) w = Math.min(w, o.spendCeil);
+  }
+  return w;
+}
+
 
 // Custom income and expense sources for the Drawdown tool: a pension, rental,
 // inheritance, future car purchase, and so on. Each item is independent of
@@ -13885,6 +14013,9 @@ function readDD() {
     yaleWeight: Math.min(100, Math.max(0, num("ddYaleWeight"))),
     yaleRate: Math.max(0, num("ddYaleRate")),
     spendFloor: num("ddSpendFloor"),
+    spendCeil: num("ddSpendCeil"),
+    vpwRate: num("ddVpwRate"),
+    vpwFV: num("ddVpwFV"),
     ssAnnual: ssTiming.annual,
     ssDelayYears: ssTiming.delay,
     ssAnnual2: ssTiming.annual2,
@@ -13900,6 +14031,7 @@ function readDD() {
 
 const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
   guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
+  spendCeil:0, vpwRate:3.8, vpwFV:0,
   stockEnd:"", legacyGoal:0,
   ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
   ssAmount:33000, ssAmount2:33000, ssDelay:0, retireAge:""};
@@ -13916,6 +14048,8 @@ function readDDState(){
     floor:num("ddFloor"), ceil:num("ddCeil"),
     yaleWeight:num("ddYaleWeight"), yaleRate:num("ddYaleRate"),
     spendFloor:num("ddSpendFloor"),
+    spendCeil:num("ddSpendCeil"),
+    vpwRate:num("ddVpwRate"), vpwFV:num("ddVpwFV"),
     stockEnd:$("ddStockEnd").value.trim(),
     legacyGoal:num("ddLegacyGoal") || 0,
     ssMode:$("ddSSMode").value, ssWho:$("ddSSWho").value,
@@ -13941,6 +14075,9 @@ function writeDDState(d){
   if (d.yaleWeight != null) $("ddYaleWeight").value = d.yaleWeight;
   if (d.yaleRate != null) $("ddYaleRate").value = d.yaleRate;
   if (d.spendFloor != null) $("ddSpendFloor").value = groupDigits(d.spendFloor, true);
+  if (d.spendCeil != null) $("ddSpendCeil").value = groupDigits(d.spendCeil, true);
+  if (d.vpwRate != null) $("ddVpwRate").value = String(d.vpwRate);
+  if (d.vpwFV != null) $("ddVpwFV").value = groupDigits(d.vpwFV, true);
   if (d.stockEnd != null) $("ddStockEnd").value = d.stockEnd;
   if (d.legacyGoal != null) $("ddLegacyGoal").value = d.legacyGoal > 0 ? groupDigits(d.legacyGoal, true) : "";
   if (d.ssMode) $("ddSSMode").value = d.ssMode;
@@ -14007,9 +14144,6 @@ function renderDrawdown() {
   $("ddSSDelayLabel").textContent = ssAgeMode ? "Starts at age" : "Starts after";
   $("ddSSDelayAffix").textContent = "yrs";
   $("ddSSDelayTip").setAttribute("data-tip", ssAgeMode ? "ssdelayage" : "ssdelay");
-  $("ddSSDelayHint").textContent = ssAgeMode
-    ? "Age Social Security begins. Use your retirement age if it starts right away."
-    : "Years into retirement before benefits begin. Use 0 if they start right away.";
   $("ddSSDelay").setAttribute("max", ssAgeMode ? "120" : "30");
   var ssCouple = ssMode !== "none" && $("ddSSWho").value === "couple";
   $("ddSSEst2Wrap").hidden = !(ssMode === "est" && ssCouple);
@@ -14023,14 +14157,10 @@ function renderDrawdown() {
     if (ssCouple) {
       var e2 = ssEstimate(num("ddSSIncome2"), 40, Math.min(70, Math.max(62, num("ddSSClaim2"))));
       $("ddSSEstNote").textContent = "About " + money(e.monthly) + "/mo for you and " + money(e2.monthly) +
-        "/mo for your spouse \u2014 " + money(e.monthly + e2.monthly) + "/mo combined, in today's dollars. " +
-        "Full retirement age is " + SS_FRA + "; claiming earlier permanently reduces it, later increases it 8% a year. " +
-        "Like the rest of the plan, this grows with inflation every year once it starts.";
+        "/mo for your spouse, " + money(e.monthly + e2.monthly) + "/mo combined, in today's dollars.";
     } else {
       $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month in today's dollars, claiming at " +
-        Math.round(num("ddSSClaim")) + ". Full retirement age is " + SS_FRA +
-        "; claiming earlier permanently reduces it, later increases it 8% a year. " +
-        "Like the rest of the plan, this grows with inflation every year once it starts.";
+        Math.round(num("ddSSClaim")) + ".";
     }
   }
   var o = readDD();
@@ -14039,7 +14169,19 @@ function renderDrawdown() {
   $("ddFloorWrap").hidden = (strat !== "floorceil");
   $("ddYaleWrap").hidden = (strat !== "yale");
   $("ddSpendFloorWrap").hidden = (strat === "fixed");
-  $("ddStratNote").textContent = DD_STRAT_NOTES[strat] || "";
+  $("ddVpwWrap").hidden = (strat !== "vpw");
+  $("ddVpwNote").hidden = (strat !== "vpw");
+  $("ddRateWrap").hidden = (strat === "vpw");
+  var clash = strat !== "fixed" && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
+  $("ddSpendNote2").hidden = !clash;
+  if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
+  if (strat === "vpw"){
+    var conv = (o.stockPct * 5.0 + (100 - o.stockPct) * 1.9) / 100;
+    var r1 = o.initial > 0 ? ddFirstYearSpend(o) / o.initial : 0;
+    $("ddVpwNote").innerHTML = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the " +
+      "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + o.stockPct + "/" +
+      (100 - o.stockPct) + " mix.";
+  }
 
   if (strat === "yale") {
     var w = Math.min(100, Math.max(0, num("ddYaleWeight")));
@@ -14068,7 +14210,7 @@ function renderDrawdown() {
     ? "Percentage taken each year" : "Starting withdrawal rate";
   $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
 
-  var firstW = o.initial * o.initialPct / 100;
+  var firstW = ddFirstYearSpend(o);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
@@ -14091,18 +14233,16 @@ function renderDrawdown() {
       $("ddSuccessNote").textContent = ""; $("ddWorstNote").textContent = "";
       $("ddPeriods").textContent = "no complete runs";
       $("ddBadge").textContent = "\u2014";
-      $("ddFromNote").innerHTML = "<b class='warn'>No " + o.years +
-        "-year retirement fits in the " + HIST_START + "\u2013" +
-        (HIST_START + HIST_STOCK.length - 1) + " record.</b> Shorten the retirement.";
+      $("ddFromNote").innerHTML = "<b class='warn'>Too long for the " + HIST_START + "\u2013" +
+        (HIST_START + HIST_STOCK.length - 1) + " data</b>";
       $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Nothing to test: " +
         "a " + o.years + "-year retirement starting in " + o.fromYear +
         " has not finished yet.</div>";
       return;
     }
     $("ddPeriods").textContent = H.total + " start years";
-    $("ddFromNote").innerHTML = "Testing <b>" + H.total + "</b> retirements beginning " +
-      H.first + "\u2013" + (HIST_START + HIST_STOCK.length - o.years) +
-      ". Data runs to " + (HIST_START + HIST_STOCK.length - 1) + ".";
+    $("ddFromNote").innerHTML = "<b>" + H.total + "</b> periods, " +
+      H.first + "\u2013" + (HIST_START + HIST_STOCK.length - o.years);
     $("ddBadge").textContent = H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1);
     setBig("ddSuccess", pctStr(H.successRate, 1));
     $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
@@ -14604,7 +14744,8 @@ $("segDD").addEventListener("click", function (e) {
   renderDrawdown();
 });
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
- "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor",
+ "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor", "ddSpendCeil",
+ "ddVpwRate", "ddVpwFV",
  "ddSSIncome", "ddSSIncome2", "ddSSAmount", "ddSSAmount2", "ddSSDelay",
  "ddStockEnd", "ddLegacyGoal"]
   .forEach(function (id) { $(id).addEventListener("input", renderDrawdownTyping); });
@@ -14708,7 +14849,26 @@ const GLOSS = {
   successrate: "The share of tested retirements where the money lasted the full period without running out.",
   sequence: "The order returns arrive in. A bad decade early does far more damage than the same decade late, even at an identical average.",
   guardrails: "Each year, this compares what you\u0027re about to withdraw to your portfolio\u0027s current value. If that percentage has drifted too far from where you started (up because markets fell, or down because they rose), spending is cut or raised to bring it back toward target.",
-  strategy: "The rule you follow for how much to take out each year. Different rules trade off steadier income against protecting the portfolio; the description below updates with whichever one you pick.",
+  strategy: "The rule you follow for how much to take out each year. Different rules trade off steadier income against protecting the portfolio. How the strategies compare, below, walks through each one with its pros and cons.",
+  txpre: "Money taken out of your pay before income tax: traditional 401(k) contributions, HSA contributions, a traditional IRA if deductible, and health premiums paid through work. It lowers income tax but not Social Security or Medicare tax.",
+  txpreret: "Deductions that still come off before income tax in retirement: HSA contributions, self-employed health premiums and deductible IRA contributions.",
+  moextras: "For paying the loan down faster or weighing a refinance. These build on the loan above; leave them off for a quick estimate on a home you haven't bought yet.",
+  reficost: "Fees to take out the new loan, typically 2\u20135% of the loan amount. Assumed paid out of pocket rather than rolled into the new balance.",
+  schooltype: "All-in yearly cost: tuition, room and board, and fees. Choose Custom to type in a specific school's figure.",
+  sswho: "Include one benefit or two. Both are added together and begin at the point in retirement you set below.",
+  ssbenefit: "Your benefit at the age you plan to claim, from your statement at ssa.gov/myaccount, the most accurate figure. Like the rest of the plan, it grows with inflation every year once it starts.",
+  ssclaim: "The age you start benefits. Full retirement age is 67 for anyone born in 1960 or later; claiming earlier permanently reduces the benefit, and each year you wait past it adds 8%, up to age 70. Like the rest of the plan, it grows with inflation every year once it starts.",
+  btdata: "S&P 500 total return with dividends reinvested, 10-year Treasury total return, and CPI-U inflation, 1926\u20132025, with no fees. The chart follows a fixed $10,000 starting point; only the mix and date range change what you see. Past returns describe what happened; they are not a forecast.",
+  bgincome: "What reaches you after taxes. Voluntary pre-tax savings like 401(k) and HSA contributions stay in this figure, since that money is yours; enter them under Savings & investments below so they count as saving rather than spending.",
+  emergency: "Months of spending set aside for a job loss or a large surprise bill, based on your total monthly spending above. A common starting goal is 3\u20136 months; those with variable income often aim for 6\u201312.",
+  dtrate: "The annual percentage rate (APR) on the debt, from your statement.",
+  dtmin: "What the lender requires each month. For a credit card it's usually a small percentage of the balance, so use what your statement actually says.",
+  fitarget: "Your goal in today's dollars. As an annual withdrawal, the portfolio target is that withdrawal divided by the withdrawal rate: $40,000 at 4% needs $1,000,000. As a portfolio value, it's the balance itself.",
+  ddglide: "Gradually shifts your stock allocation, in a straight line, from the starting mix above to this level by the final year of retirement. Leave it blank to keep the mix constant throughout.",
+  legacy: "What you'd like to have left at the end of retirement, in today's dollars. The results then show the share of tested retirements that finish above it.",
+  spendceil: "An absolute dollar amount, in today's terms, that spending is never allowed to go above, however much the strategy would allow in a good year. Future expenses you add are on top of it, so a year with one can go past it by that expense. Leave at 0 for no maximum.",
+  vpwrate: "The return, after inflation, that VPW assumes the portfolio earns. It sets how fast you spend: a higher rate front-loads spending. The Bogleheads tables use 5.0% for stocks and 1.9% for bonds, blended by your mix; a lower number is more conservative.",
+  vpwfv: "What VPW aims to leave at the end of the plan, in today's dollars: the future value in the spreadsheet PMT formula it uses. At $0, the plan spends the whole portfolio by the final year. The Bogleheads guidance is to leave it at $0 and plan a bequest separately.",
   aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one.",
   closingcost: "One-time fees to finalize a home purchase: lender fees, title insurance, appraisal, and more. Typically 2\u20135% of the price, paid by the buyer.",
   sellingcost: "What it costs to sell a home, mostly real estate agent commission. Typically 5\u20136% of the sale price, split between both agents.",
@@ -14728,8 +14888,8 @@ const GLOSS = {
   ss86: "The share of your benefits that actually lands in taxable income. It is driven by provisional income (your other income plus half your benefits), not by the benefit alone, which is why another $1,000 from a traditional account can drag several hundred more dollars of Social Security into the tax base with it.",
   ltcgstack: "Long-term gains do not get their own separate bracket run; they sit on top of your ordinary taxable income. Ordinary income fills the brackets first and becomes the floor, and whatever the gain reaches above that floor decides whether it is taxed at 0%, 15% or 20%. Two people with identical gains can pay wildly different amounts on them purely because of what else they withdrew that year.",
   deduction: "Standard takes a fixed amount set by law based on filing status. Itemizing totals actual deductible expenses (mortgage interest, charitable giving, state and local taxes), and you use whichever is larger.",
-  ssdelay: "How many years into retirement Social Security starts. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modeled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
-  ssdelayage: "The age Social Security starts. Delaying it increases the monthly benefit, up to age 70. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
+  ssdelay: "How many years into retirement Social Security starts; use 0 if it starts right away. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modeled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
+  ssdelayage: "The age Social Security starts; use your retirement age if it starts right away. Delaying it increases the monthly benefit, up to age 70. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
   retireage: "Optional. Once set, every table and chart in this tool switches from counting years into retirement to showing your actual age. It also replaces the separate Social Security start-delay input: benefits begin at the claiming age(s) set above instead.",
   collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college, smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
   glide: "Many people shift toward more conservative investments, and lower expected returns, as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, Coast FIRE, and both routes in Work backwards from a target. The glide always covers the final years you set, counted back from the end of the plan \u2014 so if a solve moves your finish line, the glide moves with it rather than staying where it was.",
@@ -16596,6 +16756,93 @@ function wireModal(ov, close){
   ov._modalDone = done;
 }
 
+/* ---------- withdrawal strategy guide ---------- */
+/* One pop-up that walks through every strategy side by side, in place of a
+   one-line description under the picker. Each section can apply its strategy
+   directly. */
+var DD_GUIDE = [
+  {k:"fixed", name:"Fixed amount, rising with inflation", tag:"The 4% rule",
+   how:"Take a set share of the portfolio in the first year, say 4%, then give yourself the same amount plus inflation every year after, whatever markets do. It comes from William Bengen's 1994 study of US history, where 4% lasted through every 30-year retirement he tested.",
+   pros:["The steadiest income of any strategy: you know next year's number","Simple to follow and to budget around","Easy to compare with a pension or annuity quote"],
+   cons:["Never reacts to markets, so a bad first decade can empty the portfolio","In good markets it leaves a large balance unspent","The safe starting rate depends heavily on how long retirement lasts"],
+   fit:"You want a predictable paycheck and have other ways to adapt, such as cutting back by choice if markets fall hard."},
+  {k:"pct", name:"Fixed percentage of the portfolio", tag:"Constant percentage",
+   how:"Take the same percentage of whatever the portfolio is worth at the start of each year. A 20% fall in the portfolio means a 20% cut in income the next year.",
+   pros:["Mathematically can't run out: you only ever take a slice of what's left","Spends more automatically when markets do well","One number to remember"],
+   cons:["Income swings as much as the portfolio does","A long bear market can push spending well below what you need","Tends to leave a sizable balance at the end"],
+   fit:"Social Security, a pension or other income covers your essentials, and the portfolio pays for flexible spending. Pair it with a minimum spending amount."},
+  {k:"guardrails", name:"Guyton-Klinger guardrails", tag:"Rules-based adjustments",
+   how:"Start like the fixed-amount method and raise spending with inflation. Each year, compare what you're about to take with the portfolio's value. If that rate has drifted too far above where you started (the upper guardrail, often 20% above), cut spending by a set step, often 10%. If it falls too far below, take a raise of the same size. Jonathan Guyton and William Klinger published the rules in 2006; this tool uses those two guardrails without the paper's extra rules.",
+   pros:["Supports a higher starting rate than the 4% rule, often 5% or more","Income stays steady most years and changes only when a guardrail is hit","Reacts to a bad market before it becomes a crisis"],
+   cons:["Cuts arrive as sudden 10% steps, and a long downturn can bring several","More rules to track each year","The historical record behind it is shorter than for the 4% rule"],
+   fit:"You'd accept an occasional real pay cut in exchange for more income to start with."},
+  {k:"floorceil", name:"Floor and ceiling", tag:"Vanguard's dynamic spending",
+   how:"Aim at a percentage of the current portfolio each year, like the fixed-percentage method, but limit how far spending can move from last year's inflation-adjusted amount: no more than the maximum raise up, and no more than the maximum cut down. Vanguard's version uses a 5% raise and a 2.5% cut.",
+   pros:["Follows the market, but in gentle steps","You set exactly how big a single year's change can be","A good middle ground between fixed income and fixed percentage"],
+   cons:["In a long downturn the small cuts keep adding up","The cap on raises means spending catches up slowly after a strong run","Can drift away from the target percentage for years"],
+   fit:"You want spending to respond to markets but can't absorb a large cut in any single year."},
+  {k:"yale", name:"Yale endowment rule", tag:"Smoothed percentage",
+   how:"Each year's spending is a blend: mostly last year's spending plus inflation, and a smaller share based on a target percentage of the current portfolio. Yale's endowment has used a version of this for decades, with 70/30 the commonly cited weighting.",
+   pros:["Very smooth income: a crash filters in over several years, not all at once","Still follows the portfolio over the long run","Proven in practice by large endowments"],
+   cons:["Slow to react, so it can keep spending too much early in a prolonged decline","Equally slow to pass on good years","Endowments plan to last forever; a person doesn't, so it can leave money unspent"],
+   fit:"Stable year-to-year income matters most to you, and you'd rather adjust slowly than sharply."},
+  {k:"vpw", name:"Variable percentage withdrawal (VPW)", tag:"The Bogleheads method",
+   how:"Each year, work out the level payment that would draw today's balance down to your future value (usually $0) over the years left, at an expected return after inflation. It's the spreadsheet PMT formula, the same math as a loan: =PMT(rate, years left, -balance, future value, 1). With 30 years left the share is modest; with 5 left it's large, so the percentage climbs every year. Here the horizon is the years in retirement you set; the Bogleheads tables plan to age 100.",
+   pros:["Built not to run out before the horizon, since it only ever pays out what's there","Spends the portfolio instead of leaving an accidental fortune","Transparent: one formula and two inputs you can check yourself"],
+   cons:["Income moves with the market, much like the fixed percentage","Spends toward the future value by the end, so choose a horizon you won't outlive","Later withdrawals are a large share of a shrinking balance, so late-life income is volatile"],
+   fit:"You want to use your savings fully, have Social Security or a pension as a floor, and can flex spending with markets."}
+];
+function openStrategyGuide(){
+  var cur = $("ddStrategy").value;
+  var list = function(items){ return "<ul>" + items.map(function(t){ return "<li>" + t + "</li>"; }).join("") + "</ul>"; };
+  var cmp = "<table class='sg-cmp'><thead><tr><th>Strategy</th><th>Income stability</th><th>Can run out</th><th>Left at the end</th></tr></thead><tbody>" +
+    [["Fixed amount","Highest","Yes","Often a lot"],
+     ["Fixed percentage","Lowest","No","Often a lot"],
+     ["Guardrails","High, with occasional steps","Rarely","Moderate"],
+     ["Floor and ceiling","High","Rarely","Moderate"],
+     ["Yale endowment","High, slow to change","Sometimes","Moderate"],
+     ["VPW","Low to moderate","Not before the horizon","About the future value"]]
+    .map(function(r){ return "<tr><td>" + r.join("</td><td>") + "</td></tr>"; }).join("") + "</tbody></table>";
+  var body = DD_GUIDE.map(function(g){
+    return "<section class='sg-item" + (g.k === cur ? " sg-cur" : "") + "'>" +
+      "<div class='sg-head'><h4>" + g.name + "</h4><span class='sg-tag'>" + g.tag + "</span>" +
+      (g.k === cur ? "<span class='sg-using'>Selected</span>"
+        : "<button type='button' class='btn mini' data-usestrat='" + g.k + "'>Use this strategy</button>") + "</div>" +
+      "<p>" + g.how + "</p>" +
+      "<div class='sg-pc'><div><div class='sg-lbl pos'>Pros</div>" + list(g.pros) + "</div>" +
+      "<div><div class='sg-lbl neg'>Cons</div>" + list(g.cons) + "</div></div>" +
+      "<p class='sg-fit'><b>A good fit if:</b> " + g.fit + "</p></section>";
+  }).join("");
+  var ov = document.createElement("div");
+  ov.className = "popup-overlay";
+  ov.innerHTML = "<div class='popup guide'>" +
+    "<div class='sg-top'><h3>How the withdrawal strategies compare</h3>" +
+    "<button type='button' class='sg-close' aria-label='Close'>&times;</button></div>" +
+    "<p class='sg-intro'>Every strategy trades a steady income against protection from running out. " +
+    "Rules that never cut spending can run dry in a bad decade; rules that follow the market can't run out, " +
+    "but your income moves with it. The minimum and maximum spending limits work with every strategy except fixed amount.</p>" +
+    cmp + body +
+    "<p class='sg-foot'>Test any of them against every retirement since 1926 with the simulator; the success rate " +
+    "and the income chart show the trade-off for your own numbers.</p></div>";
+  var shut = function(){ if (ov._modalDone) ov._modalDone(); ov.remove(); };
+  ov.addEventListener("click", function(e){
+    var use = e.target.closest ? e.target.closest("[data-usestrat]") : null;
+    if (use){
+      $("ddStrategy").value = use.getAttribute("data-usestrat");
+      shut();
+      renderDrawdown();
+      toast("Using " + DD_STRAT_NAMES[use.getAttribute("data-usestrat")]);
+      return;
+    }
+    if (e.target === ov || (e.target.closest && e.target.closest(".sg-close"))) shut();
+  });
+  document.body.appendChild(ov);
+  wireModal(ov, shut);
+  var closeBtn = ov.querySelector(".sg-close");
+  if (closeBtn) closeBtn.focus();
+}
+$("ddStratGuide").addEventListener("click", openStrategyGuide);
+
 function showPopup(title, options){
   return new Promise(resolve => {
     const ov = document.createElement("div");
@@ -16866,9 +17113,7 @@ function buildCardSVG(){
   if (t === "tools" && toolSub === "drawdown"){
     var od = readDD();
     var Hb = historicalBacktest(od);
-    var stratName = od.strategy === "fixed" ? "Fixed amount" : od.strategy === "pct" ? "% of portfolio" :
-      od.strategy === "guardrails" ? "Guyton-Klinger Guardrails" :
-      od.strategy === "yale" ? "Yale Endowment" : "Floor & ceiling";
+    var stratName = DD_STRAT_NAMES[od.strategy] || "Floor & ceiling";
     title = "Will my money last?";
     bigLabel = "Success rate, tested since " + HIST_START;
     big = pctStr(Hb.successRate, 0);
@@ -18778,14 +19023,6 @@ function renderFire(){
     });
   });
 
-  function updateTargetHint(){
-    var v = $("fiSolveFor").value;
-    $("fiTargetHint").textContent = v === "withdrawal"
-      ? "Portfolio target = annual withdrawal ÷ withdrawal rate"
-      : "";
-  }
-  $("fiSolveFor").addEventListener("change", function(){ updateTargetHint(); });
-  updateTargetHint();
 
   $("segFireChart").addEventListener("click", function(e){
     var b = e.target && e.target.closest ? e.target.closest("button[data-mode]") : null;
