@@ -1324,6 +1324,9 @@ html[data-theme="light"] .adjrow:hover{border-color:#a9c8d8}
    gap, and the grid above doesn't carry its own margin, so only the top
    needs setting here. */
 .stagecard .glidewrap{margin-top:13px;margin-bottom:0}
+/* Phones get the glide toggle in the field grid (see stageGlideBtn). */
+.stagegrid > .stageglide{display:none}
+.stageglide .glidebtn{align-self:stretch}
 .glidebtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
   background:rgba(79,191,149,.05);border:1px solid #223650;border-radius:var(--r-well);
   padding:9px 10px;cursor:pointer;font-family:var(--sans);font-size:12.5px;
@@ -1483,6 +1486,9 @@ svg{display:block;width:100%;height:auto}
   .toolcard{padding:16px 16px}
   .toolcard-name{font-size:14px}
   .stagegrid{grid-template-columns:1fr 1fr}
+  .stagegrid > .stageglide:not(.even){display:grid}
+  .stagecard:has(.stageglide:not(.even)) .glidewrap > .glidebtn{display:none}
+  .stagecard:has(.stageglide:not(.even)) .glidewrap:has(> .glidefields[hidden]){display:none}
   .stagecard{padding:12px}
   #stageTable{min-width:640px}
   #xYearTable{min-width:660px}
@@ -1953,7 +1959,7 @@ window.onerror = function(msg){
         <div class="glidewrap" id="glideWrap">
           <button type="button" class="glidebtn" id="glideToggle" aria-expanded="false">
             <span class="glidebtn-check" aria-hidden="true"></span>
-            <span class="glidebtn-txt">Glide to a more conservative return<span class="tipdot" data-tip="glide" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+            <span class="glidebtn-txt">Glide path<span class="tipdot" data-tip="glide" role="button" tabindex="0" aria-label="What is this?">?</span></span>
           </button>
           <div class="glidefields" id="glideFields" hidden>
             <div class="two">
@@ -3436,7 +3442,7 @@ window.onerror = function(msg){
           you shift toward bonds. The &plusmn; button lets you enter a negative return to
           stress-test a downturn.</dd>
 
-          <dt>Glide to a more conservative return <span class="opt">optional</span></dt>
+          <dt>Glide path <span class="opt">optional</span></dt>
           <dd>Holds your rate of return steady, then blends it down in a straight
           line to an end rate over however many final years you choose: the
           common practice of shifting toward bonds as retirement nears. It shapes
@@ -3543,7 +3549,7 @@ window.onerror = function(msg){
           then. The stage's own growth rate compounds from there. Turn it off to
           use the number exactly as typed.</dd>
 
-          <dt>Glide to a more conservative return <span class="opt">final stage only</span></dt>
+          <dt>Glide path <span class="opt">final stage only</span></dt>
           <dd>Available on the last stage only, since that's the one closest to
           retirement; earlier stages don't get the option. Works the same
           way as on the Advanced tab: holds steady, then blends down to an end rate
@@ -10715,6 +10721,18 @@ const PERIOD_ADV = {"Weekly":"weekly", "Bi-Weekly":"bi-weekly", "Monthly":"month
 
 /* Cards are rebuilt only when a stage is added, removed or loaded. Editing a
    field updates the model in place, so typing never loses focus. */
+/* The last stage's glide toggle is drawn twice: in the field grid, where it
+   sits beside rate of return on phones, and as its own row everywhere else.
+   CSS shows one; a click rebuilds the cards, so they never disagree. */
+function stageGlideBtn(st, i){
+  const on = !!(st.glide && st.glide.on);
+  return "<button type='button' class='glidebtn" + (on ? " on" : "") +
+    "' data-glidetoggle='" + i + "' aria-expanded='" + on + "'>" +
+    "<span class='glidebtn-check' aria-hidden='true'></span>" +
+    "<span class='glidebtn-txt'>Glide path" +
+    "<span class='tipdot' data-tip='glide' role='button' tabindex='0' aria-label='What is this?'>?</span></span>" +
+    "</button>";
+}
 function buildStages(){
   const list = $("stageList");
   list.innerHTML = stages.map((st, i) => {
@@ -10762,14 +10780,10 @@ function buildStages(){
           "' value='" + (+(st.nominal * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " rate of return'>" +
           "<span class='affix'>%</span></div>" +
           "<div class='hint stagereal' data-realrate='" + i + "' style='margin:4px 0 0'></div></div>" +
+        (i === stages.length - 1 ? "<div class='field stageglide'><label aria-hidden='true'>&nbsp;</label>" +
+          stageGlideBtn(st, i) + "</div>" : "") +
       "</div>" + (saOn() ? stageSplitRow(st, i) : "") + (i === stages.length - 1 ? (
-        "<div class='glidewrap'>" +
-          "<button type='button' class='glidebtn" + (st.glide && st.glide.on ? " on" : "") +
-          "' data-glidetoggle='" + i + "' aria-expanded='" + (st.glide && st.glide.on ? "true" : "false") + "'>" +
-            "<span class='glidebtn-check' aria-hidden='true'></span>" +
-            "<span class='glidebtn-txt'>Glide to a more conservative return" +
-            "<span class='tipdot' data-tip='glide' role='button' tabindex='0' aria-label='What is this?'>?</span></span>" +
-          "</button>" +
+        "<div class='glidewrap'>" + stageGlideBtn(st, i) +
           "<div class='glidefields'" + ((st.glide && st.glide.on) ? "" : " hidden") + ">" +
             "<div class='two'>" +
               "<div class='field'><label>End at</label><div class='inputwrap'>" +
@@ -11058,6 +11072,13 @@ function renderSeries(){
   });
   $("stageList").querySelectorAll(".stagemix").forEach(el => {
     el.style.display = "none";
+  });
+  // Two columns on phones: the glide toggle fills the cell beside rate of
+  // return when the fields before it leave one, else takes its own row.
+  $("stageList").querySelectorAll(".stageglide").forEach(el => {
+    const shown = Array.prototype.filter.call(el.parentNode.children,
+      f => f !== el && f.style.display !== "none").length;
+    el.classList.toggle("even", shown % 2 === 0);
   });
 
   $("gStages").textContent = stages.length;
