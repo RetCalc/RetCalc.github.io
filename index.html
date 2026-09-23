@@ -664,6 +664,66 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .toolback .crumb::before{content:"/";margin-right:11px;color:var(--line)}
 
+/* ---------- household profile ---------- */
+/* One slim bar above every tool. Collapsed it's a single line of what's on
+   file; open, it's the handful of facts most tools ask for. */
+.hh{grid-column:1 / -1;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-panel);box-shadow:var(--lift-1);min-width:0}
+.hh-bar{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;min-width:0}
+.hh-ic{width:28px;height:28px;flex:none;border-radius:8px;display:grid;place-items:center;
+  color:var(--jade);background:rgba(79,191,149,.09);border:1px solid rgba(79,191,149,.22)}
+.hh-ic svg{width:16px;height:16px;display:block}
+.hh-sum{flex:1 1 auto;min-width:0;font-size:13px;color:var(--dim);line-height:1.4}
+.hh-sum b{color:var(--text);font-weight:600;margin-right:8px}
+.hh-sum .hh-bits span + span::before{content:"\00b7";margin:0 7px;color:var(--dimmer)}
+.hh-sum .hh-bits{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums;
+  letter-spacing:-.01em;color:var(--text)}
+.hh-body{border-top:1px solid var(--line-soft);padding:14px 14px 12px}
+.hh-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 12px}
+.hh-grid .field{margin-bottom:10px}
+.hh-foot{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.hh-foot .hint{flex:1 1 320px;margin:0}
+.hh-btns{display:flex;gap:7px;margin-left:auto}
+.hh:not(.married) .hh-sp{display:none}
+.hh-x{flex:none;width:28px;height:28px;margin:0 -4px 0 -4px;display:grid;place-items:center;
+  background:transparent;border:0;border-radius:var(--r-well);color:var(--dimmer);cursor:pointer;
+  transition:color .14s ease,background .14s ease}
+.hh-x:hover{color:var(--text);background:var(--panel-2)}
+.hh-x:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.hh-x svg{width:14px;height:14px;display:block}
+/* On About the card is the place to edit the profile, so it can't be hidden */
+.hh.inabout .hh-x{display:none}
+/* The masthead house lights up while the bar is showing. */
+#btnHousehold[aria-pressed="true"]{color:var(--jade)}
+@media (max-width:1100px){ .hh-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:640px){
+  .hh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hh-bar{padding:9px 10px 9px 12px;align-items:center}
+  /* a full profile runs to five lines at this width; two is enough to
+     recognise it, and Edit shows the rest */
+  .hh-sum{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+    overflow:hidden;font-size:12.5px}
+  .hh-sum .hh-bits{font-size:12px}
+  .hh-btns{width:100%}
+  .hh-btns .btn{flex:1 1 auto}
+}
+
+/* ---------- account types (Advanced) ---------- */
+.acwrap{margin-bottom:13px}
+.acfields{margin-top:8px;padding:10px 10px 2px;background:rgba(79,191,149,.04);
+  border:1px solid #223650;border-radius:var(--r-well)}
+html[data-theme="light"] .acfields{border-color:#cfdcea}
+.acgroup{font-size:11.5px;font-weight:600;color:var(--text);margin:2px 0 7px;
+  display:flex;align-items:baseline;gap:8px}
+.acgroup span{font-weight:400;color:var(--dimmer)}
+.acgroup + .two,.acgroup + .field{margin-top:0}
+.acsep{border-top:1px solid var(--line-soft);margin:4px 0 10px}
+.acwarn{color:var(--gold)}
+.acsum{font-family:var(--mono);font-size:12px;color:var(--text)}
+#acResults td:first-child{font-family:var(--sans)}
+#acResults .acdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px}
+#acResults tfoot td{font-weight:600;border-top:1px solid var(--line);border-bottom:0}
+
 /* ---------- stage cards ---------- */
 .stagecard{border:1px solid var(--line);border-left:2px solid #2f6b57;
   border-radius:var(--r-well);padding:14px;margin-bottom:12px;
@@ -1348,7 +1408,7 @@ svg{display:block;width:100%;height:auto}
   .btn{padding:11px 12px}
   .field label{font-size:12.5px}
 
-  .scenariobar{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px}
+  .scenariobar{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr auto auto;gap:7px}
   .scenariobar select{grid-column:1 / -1}
   .scenariobar .btn{font-size:12px;padding:8px 0}
   .scenariobar .btn.iconbtn{width:auto;padding:8px 13px}
@@ -1521,6 +1581,7 @@ window.onerror = function(msg){
       <button class="btn" id="btnScenario">Save/Delete</button>
       <button class="btn" id="btnShareMenu">Share</button>
       <button class="btn" id="btnReset">Reset</button>
+      <button class="btn iconbtn" id="btnHousehold" type="button" aria-pressed="true" aria-label="Hide your household bar" title="Hide your household bar"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></button>
       <button class="btn iconbtn" id="btnTheme" type="button" aria-label="Switch theme"></button>
     </div>
   </div>
@@ -1540,6 +1601,76 @@ window.onerror = function(msg){
 <div id="srLive" class="srlive" aria-live="polite" aria-atomic="true"></div>
 
 <main id="main">
+  <!-- ========== HOUSEHOLD PROFILE ========== -->
+  <section class="hh" id="hhCard" aria-label="Your household">
+    <div class="hh-bar">
+      <span class="hh-ic" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+      <div class="hh-sum" id="hhSummary"></div>
+      <button class="btn mini" type="button" id="hhEdit" aria-expanded="false" aria-controls="hhBody">Set up</button>
+      <button class="hh-x" type="button" id="hhHide" aria-label="Hide your household bar" title="Hide">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="hh-body" id="hhBody" hidden>
+      <div class="hh-grid">
+        <div class="field">
+          <label for="hhStatus">Household</label>
+          <select id="hhStatus">
+            <option value="s">Just me</option>
+            <option value="m">Me and a spouse</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="hhAge">Your age</label>
+          <div class="inputwrap"><input id="hhAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field hh-sp">
+          <label for="hhSpouseAge">Spouse's age</label>
+          <div class="inputwrap"><input id="hhSpouseAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="hhRetire">Retire at</label>
+          <div class="inputwrap"><input id="hhRetire" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="hhState">State</label>
+          <select id="hhState"></select>
+        </div>
+        <div class="field">
+          <label for="hhSaved">Retirement savings</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhSaved" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="hhMonthly">You save each month</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhMonthly" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="hhIncome">Your gross income</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhIncome" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+        </div>
+        <div class="field hh-sp">
+          <label for="hhIncome2">Spouse's gross income</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhIncome2" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="hhSpend">Spending in retirement</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhSpend" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+        </div>
+      </div>
+      <div class="hh-foot">
+        <div class="hint">Any field can stay blank. Filling in replaces those numbers in
+          Basic, Advanced, Stages and the tools that use them. You can still change any
+          tool afterwards without touching this. Stored in this browser only.</div>
+        <div class="hh-btns">
+          <button class="btn" type="button" id="hhClear">Clear</button>
+          <button class="btn" type="button" id="hhCancel">Close</button>
+          <button class="btn primary" type="button" id="hhFill">Save and fill in tools</button>
+        </div>
+      </div>
+    </div>
+  </section>
   <div class="toolback" id="toolBack" hidden>
     <button type="button" class="backbtn" id="btnToolBack">
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1593,11 +1724,88 @@ window.onerror = function(msg){
     <div class="panel inputs">
       <h2>Your inputs</h2>
       <div class="body">
-        <div class="field">
+        <div class="glidewrap acwrap" id="acWrap">
+          <button type="button" class="glidebtn" id="acToggle" aria-expanded="false" aria-controls="acFields">
+            <span class="glidebtn-check" aria-hidden="true"></span>
+            <span class="glidebtn-txt">Split by account type<span class="tipdot" data-tip="accttypes" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+          </button>
+          <div class="acfields" id="acFields" hidden>
+            <div class="acgroup">Traditional 401(k) / IRA <span>pre-tax</span></div>
+            <div class="two">
+              <div class="field">
+                <label for="acTradBal">Balance</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acTradBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="acTradC">You add</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acTradC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
+              </div>
+            </div>
+            <div class="acgroup">Roth 401(k) / IRA <span>after-tax, grows tax-free</span></div>
+            <div class="two">
+              <div class="field">
+                <label for="acRothBal">Balance</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acRothBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="acRothC">You add</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acRothC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
+              </div>
+            </div>
+            <div class="acgroup">Taxable brokerage <span>gains taxed when sold</span></div>
+            <div class="two">
+              <div class="field">
+                <label for="acBrokBal">Balance</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acBrokBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="acBrokC">You add</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acBrokC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="acBrokBasis">Of that balance, what you paid in<span class="tipdot" data-tip="acbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="acBrokBasis" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="acsep"></div>
+            <div class="acgroup">Employer match <span>paid into traditional</span></div>
+            <div class="field">
+              <label for="acSalary">Your salary</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="acSalary" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+            </div>
+            <div class="two bottomalign">
+              <div class="field">
+                <label for="acMatchPct">Match rate</label>
+                <div class="inputwrap"><input id="acMatchPct" type="text" inputmode="decimal" data-num data-step="10" min="0" data-nonneg><span class="affix">%</span></div>
+              </div>
+              <div class="field">
+                <label for="acMatchCap">On the first</label>
+                <div class="inputwrap"><input id="acMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
+              </div>
+            </div>
+            <div class="acsep"></div>
+            <div class="acgroup">Taxes in retirement</div>
+            <div class="two">
+              <div class="field">
+                <label for="acStatus">Filing status</label>
+                <select id="acStatus">
+                  <option value="s">Single</option>
+                  <option value="m">Married filing jointly</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="acState">State</label>
+                <select id="acState"></select>
+              </div>
+            </div>
+            <div class="hint" id="acNote" style="margin:-4px 0 10px"></div>
+          </div>
+        </div>
+        <div class="field" id="initialField">
           <label for="initial">Starting value</label>
           <div class="inputwrap"><span class="affix">$</span><input id="initial" type="text" inputmode="decimal" data-money data-nonneg></div>
         </div>
-        <div class="field">
+        <div class="field" id="contribField">
           <label for="contrib">Contribution each period</label>
           <div class="inputwrap"><span class="affix">$</span><input id="contrib" type="text" inputmode="decimal" data-money></div>
         </div>
@@ -1659,9 +1867,13 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
             <button class="btn mini" type="button" id="toDrawdown" style="margin-top:6px">Test Different Withdrawals</button>
           </div>
-          <div class="field">
+          <div class="field" id="taxrateField">
             <label for="taxrate">Effective tax rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="taxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field" id="acTaxField" hidden>
+            <label>Tax on withdrawals<span class="tipdot" data-tip="actax" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap" style="box-shadow:none;background:transparent"><input id="acTaxOut" type="text" readonly tabindex="-1" aria-label="Tax on withdrawals, calculated"><span class="affix">calc</span></div>
           </div>
         </div>
         <div class="derived">
@@ -1833,6 +2045,19 @@ window.onerror = function(msg){
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ========== BY ACCOUNT TYPE ========== -->
+    <div class="panel" id="acPanel" hidden>
+      <h2>By account type <span class="h2note">at retirement, in today's dollars</span></h2>
+      <div class="scroll" style="max-height:none">
+        <table id="acResults">
+          <thead><tr><th>Account</th><th>Balance</th><th>Share</th><th>First-year withdrawal</th><th>Tax</th><th>After tax</th></tr></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+      <div class="mcnote" id="acResultsNote" style="padding-top:12px"></div>
     </div>
 
     <!-- ========== GOAL SOLVE ========== -->
@@ -2917,6 +3142,8 @@ window.onerror = function(msg){
       </div>
     </div>
 
+    <div id="hhAboutSlot"></div>
+
     <div class="panel about no-collapse">
       <h2>What this is</h2>
       <div class="body">
@@ -2929,6 +3156,13 @@ window.onerror = function(msg){
         extends that with calculators for taxes, mortgage, college savings, rent vs.
         buy, drawdown, FIRE planning, budget, and more. Each tool is described in
         its own section below.</p>
+        <p><b>Your household</b>, the bar above every tool, holds the facts most
+        tools ask for: ages, when you plan to retire, state, savings, income and
+        retirement spending. Saving it fills those numbers into Basic, Advanced,
+        Stages, Drawdown, Roth Conversion, Healthcare, Income Tax, Budget and FIRE,
+        and it fills them in again each time you open the site or reset a tool. It's
+        a one-way fill: changing a number inside a tool never changes the profile or
+        any other tool. A shared link opens with its own numbers, not your profile.</p>
       </div>
     </div>
 
@@ -3068,6 +3302,19 @@ window.onerror = function(msg){
           generally are not, and taxable brokerage accounts are usually taxed at
           capital-gains rates. Many retirees land somewhere in the 10&ndash;15% range,
           but this varies enormously. Use 0 for an all-Roth plan.</dd>
+
+          <dt>Split by account type <span class="opt">optional</span></dt>
+          <dd>Swaps the single starting value, contribution and tax rate for a
+          balance and contribution in each of traditional, Roth and taxable brokerage
+          accounts, plus an employer match and your filing status and state. Every
+          account grows at the same return, so the projection is unchanged; what
+          changes is the tax. The first year's withdrawal is taken from each account in
+          proportion to its balance and taxed with the 2026 rules the Income Tax tool
+          uses: traditional as ordinary income, only the growth in the brokerage account
+          at capital-gain rates, and Roth not at all. Your contributions are checked
+          against the 2026 limits ($24,500 for a 401(k), $7,500 for an IRA, more from
+          age 50 if your household profile has your age). Switching back to one total
+          carries the totals and the calculated rate across, so the answer doesn't jump.</dd>
 
           <dt>Target</dt>
           <dd>What you're aiming for, in today's dollars, either an after-tax income
@@ -7985,7 +8232,8 @@ const KEYS = {basic:"investment-calculator.basic.v3",
               drawdown:"finance-tools.drawdown.v1",
               roth:"finance-tools.roth.v1",
               debt:"finance-tools.debt.v1",
-              backtest:"finance-tools.backtest.v1"};
+              backtest:"finance-tools.backtest.v1",
+              household:"finance-tools.household.v1"};
 const memory = {};
 function storeRead(which){
   try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
@@ -8233,7 +8481,7 @@ initFields(document);
 function readInputs(){
   const years = Math.min(100, num("years"));
   const glideOn = $("glideToggle").classList.contains("on");
-  return {
+  const p = {
     initial: num("initial"), contrib: num("contrib"), period: $("period").value,
     growth: rate("growth"), nominal: rate("nominal") - rate("fees"),
     inflation: rate("inflation"),
@@ -8247,6 +8495,8 @@ function readInputs(){
       years: Math.min(years, Math.max(1, Math.round(num("glideYears"))))
     } : {on: false}
   };
+  if (acOn()) applyAcct(p);
+  return p;
 }
 function writeInputs(s){
   $("initial").value = groupDigits(s.initial, true); $("contrib").value = groupDigits(s.contrib);
@@ -8270,6 +8520,172 @@ function writeInputs(s){
   document.querySelectorAll("[data-nonneg]").forEach(el => {
     if (String(el.value).indexOf("-") !== -1) el.value = el.value.replace(/-/g, "");
   });
+  // Anything saved before account types existed carries no acct, and loads
+  // in the single-total mode it was saved in.
+  writeAcct(s.acct);
+}
+
+/* ---------- account types (Advanced) ---------- */
+/* The split doesn't change how anything grows: every account earns the same
+   return on the same contribution schedule, so the plan's total is just the
+   sum of the parts and every chart, solve and simulation keeps working off
+   one initial balance and one contribution. What the split changes is the
+   tax. Because the projection is linear in both the starting balance and the
+   contribution, one fvFactors walk gives each account's own ending balance,
+   and the first year's withdrawal is run through the Income Tax tool's
+   retirement engine instead of a flat typed-in rate. */
+const AC_LIMITS_2026 = {k401:24500, k401Catch:8000, k401Catch6063:11250,
+                        ira:7500, iraCatch:1100};
+const AC_PER = {"Weekly":"/wk","Bi-Weekly":"/2wk","Monthly":"/mo","Quarterly":"/qtr","Annually":"/yr"};
+let lastAcct = null;
+function acOn(){ return $("acToggle").classList.contains("on"); }
+function readAcctState(){
+  const basisRaw = $("acBrokBasis").value.trim();
+  return {on:true,
+    tradBal:num("acTradBal"), tradC:num("acTradC"),
+    rothBal:num("acRothBal"), rothC:num("acRothC"),
+    brokBal:num("acBrokBal"), brokC:num("acBrokC"),
+    brokBasis: basisRaw === "" ? null : num("acBrokBasis"),
+    salary:num("acSalary"), matchPct:num("acMatchPct"), matchCap:num("acMatchCap"),
+    status:$("acStatus").value, state:$("acState").value};
+}
+function writeAcct(a){
+  const on = !!(a && a.on);
+  if (on){
+    const m = v => groupDigits(v || 0, true);
+    $("acTradBal").value = m(a.tradBal); $("acTradC").value = m(a.tradC);
+    $("acRothBal").value = m(a.rothBal); $("acRothC").value = m(a.rothC);
+    $("acBrokBal").value = m(a.brokBal); $("acBrokC").value = m(a.brokC);
+    $("acBrokBasis").value = a.brokBasis == null ? "" : m(a.brokBasis);
+    $("acSalary").value = m(a.salary);
+    $("acMatchPct").value = String(a.matchPct || 0);
+    $("acMatchCap").value = String(a.matchCap == null ? 6 : a.matchCap);
+    if (a.status) $("acStatus").value = a.status;
+    if (a.state) $("acState").value = a.state;
+  }
+  $("acToggle").classList.toggle("on", on);
+  acSync();
+}
+/* The employer matches matchPct% of what you put into the workplace plan,
+   on your contributions up to matchCap% of salary -- "50% on the first 6%"
+   tops out at 3% of salary. Traditional and Roth contributions both count
+   toward it; the match itself always lands in traditional. */
+function acMatchPer(a, ppy){
+  if (!(a.salary > 0) || !(a.matchPct > 0)) return 0;
+  const eligible = Math.min(a.tradC + a.rothC, a.salary * a.matchCap / 100 / ppy);
+  return Math.max(0, eligible * a.matchPct / 100);
+}
+/* 65+ at retirement earns the extra standard deduction and the senior bonus.
+   Advanced has no age of its own, so this reads it off the household profile
+   and assumes under 65 when there isn't one. */
+function acSeniors(a, years){
+  const H = hhLoad();
+  if (!H || !(H.age > 0)) return 0;
+  let n = (H.age + years >= 65) ? 1 : 0;
+  if (a.status === "m" && H.status === "m" && H.spouseAge > 0 && H.spouseAge + years >= 65) n++;
+  return n;
+}
+function acTaxOn(a, w, seniors){
+  return computeRetireTax({status:a.status, seniors, trad:w.trad, roth:w.roth, brok:w.brok,
+    gainPct:w.gainPct, ss:0, pension:0, penPublic:false, other:0, pre:0,
+    dedType:"std", item:0, state:a.state, _noMarginal:true});
+}
+function acctBreakdown(p, a){
+  const ppy = PPY[p.period];
+  const match = acMatchPer(a, ppy);
+  const F = fvFactors(p, p.years);
+  const fvT = a.tradBal * F.initFactor + (a.tradC + match) * F.annuity;
+  const fvR = a.rothBal * F.initFactor + a.rothC * F.annuity;
+  const fvB = a.brokBal * F.initFactor + a.brokC * F.annuity;
+  // Dollars a $1-per-period schedule puts in, stepping up once a year: the
+  // brokerage basis grows by exactly this times the brokerage contribution.
+  let perDollar = 0;
+  for (let y = 1; y * ppy - ppy < F.n; y++)
+    perDollar += Math.min(ppy, F.n - (y - 1) * ppy) * Math.pow(1 + p.growth, y - 1);
+  const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
+  const basisEnd = basis0 + a.brokC * perDollar;
+  const gainPct = fvB > 0 ? Math.max(0, Math.min(1, 1 - basisEnd / fvB)) : 0;
+  const inflYears = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
+                    ? p.years : p.inflYears;
+  const defl = Math.pow(1 + p.inflation, inflYears);
+  const real = {trad:fvT / defl, roth:fvR / defl, brok:fvB / defl};
+  const totalReal = real.trad + real.roth + real.brok;
+  const w = {trad:real.trad * p.withdrawal, roth:real.roth * p.withdrawal,
+             brok:real.brok * p.withdrawal, gainPct};
+  const wTotal = w.trad + w.roth + w.brok;
+  const seniors = acSeniors(a, p.years);
+  const T = acTaxOn(a, w, seniors);
+  return {a, match, matchTotal: match * perDollar, perDollar, real, totalReal, w, wTotal,
+          gainPct, seniors, tax:T, effRate: wTotal > 0 ? T.total / wTotal : 0,
+          shares: totalReal > 0
+            ? {trad:real.trad / totalReal, roth:real.roth / totalReal, brok:real.brok / totalReal}
+            : {trad:1, roth:0, brok:0}};
+}
+function applyAcct(p){
+  const a = readAcctState();
+  const B = acctBreakdown(p, a);
+  p.initial = a.tradBal + a.rothBal + a.brokBal;
+  p.contrib = a.tradC + a.rothC + a.brokC + B.match;
+  p.taxRate = B.effRate;
+  p.acct = a;
+  lastAcct = B;
+}
+/* The headline tax rate comes from the income the plan actually produces.
+   An after-tax income target is a different income, taxed at a different
+   rate on a progressive schedule, so the solve finds the gross withdrawal
+   whose after-tax amount is the target -- same account mix, same rules. */
+function acSolveP(p){
+  if (!p.acct || !lastAcct || $("solveFor").value !== "After-Tax Withdrawal") return p;
+  const target = num("target");
+  if (!(target > 0)) return p;
+  const B = lastAcct, s = B.shares;
+  const net = G => G - acTaxOn(p.acct,
+    {trad:G * s.trad, roth:G * s.roth, brok:G * s.brok, gainPct:B.gainPct}, B.seniors).total;
+  let lo = target, hi = target * 2;
+  while (net(hi) < target && hi < target * 64) hi *= 2;
+  for (let i = 0; i < 50; i++){
+    const mid = (lo + hi) / 2;
+    if (net(mid) < target) lo = mid; else hi = mid;
+  }
+  return Object.assign({}, p, {taxRate: 1 - target / hi});
+}
+/* Solves and the converter hand back one total per period. Spread it over
+   the accounts you're already paying into, in the same proportions, and
+   let the match follow; the match is capped, so the scale is found by
+   bisection rather than a straight divide. */
+function acSetTotal(total){
+  const a = readAcctState(), ppy = PPY[$("period").value];
+  let base = {trad:a.tradC, roth:a.rothC, brok:a.brokC};
+  if (base.trad + base.roth + base.brok <= 0) base = {trad:1, roth:0, brok:0};
+  const at = k => {
+    const b = Object.assign({}, a, {tradC:base.trad * k, rothC:base.roth * k, brokC:base.brok * k});
+    return b.tradC + b.rothC + b.brokC + acMatchPer(b, ppy);
+  };
+  let lo = 0, hi = 1;
+  while (at(hi) < total && hi < 1e9) hi *= 2;
+  for (let i = 0; i < 60; i++){
+    const mid = (lo + hi) / 2;
+    if (at(mid) < total) lo = mid; else hi = mid;
+  }
+  const r = v => groupDigits(Math.round(v), true);
+  $("acTradC").value = r(base.trad * hi);
+  $("acRothC").value = r(base.roth * hi);
+  $("acBrokC").value = r(base.brok * hi);
+}
+function acSync(){
+  const on = acOn();
+  $("acToggle").setAttribute("aria-expanded", String(on));
+  $("acFields").hidden = !on;
+  $("initialField").hidden = on;
+  $("contribField").hidden = on;
+  $("taxrateField").hidden = on;
+  $("acTaxField").hidden = !on;
+  $("acPanel").hidden = !on;
+  const per = AC_PER[$("period").value] || "";
+  document.querySelectorAll("#acFields .acper").forEach(el => { el.textContent = per; });
+}
+function acFillStates(){
+  $("acState").innerHTML = $("txState").innerHTML;
 }
 
 /* iOS zooms toward a focused field even when the font is large enough. Pinning
@@ -8392,6 +8808,78 @@ function renderProjection(){
 
   drawChart(R, p);
   renderSolve();
+  renderAcct(p);
+}
+
+function renderAcct(p){
+  acSync();
+  if (!p.acct || !lastAcct) return;
+  const B = lastAcct, a = B.a, ppy = PPY[p.period];
+  $("acTaxOut").value = pctStr(B.effRate, 1);
+
+  // what's going in, and how it squares with the 2026 limits
+  const notes = [];
+  const yours = (a.tradC + a.rothC + a.brokC) * ppy;
+  const matchYr = B.match * ppy;
+  notes.push("Going in this year: <span class='acsum'>" + money(yours) + "</span> from you" +
+    (matchYr > 0 ? " + <span class='acsum'>" + money(matchYr) + "</span> match" : "") + ".");
+  if (a.matchPct > 0 && !(a.salary > 0)){
+    notes.push("Add your salary to count the employer match.");
+  } else if (a.matchPct > 0 && a.matchCap > 0){
+    const needYr = a.salary * a.matchCap / 100;
+    const inYr = (a.tradC + a.rothC) * ppy;
+    if (inYr + 0.5 < needYr)
+      notes.push("<span class='acwarn'>You're leaving " + money((needYr - inYr) * a.matchPct / 100) +
+        " a year of match unclaimed.</span> Putting " + money(needYr) +
+        " a year into traditional or Roth gets all of it.");
+    else notes.push("You're getting the full match.");
+  }
+  const H = hhLoad();
+  const age = H && H.age > 0 ? H.age : 0;
+  const L = AC_LIMITS_2026;
+  const k401 = L.k401 + (age >= 60 && age <= 63 ? L.k401Catch6063 : age >= 50 ? L.k401Catch : 0);
+  const ira = L.ira + (age >= 50 ? L.iraCatch : 0);
+  const taxAdv = (a.tradC + a.rothC) * ppy;
+  if (taxAdv > k401 + ira)
+    notes.push("<span class='acwarn'>" + money(taxAdv) + " a year into traditional and Roth is over the " +
+      money(k401 + ira) + " you can put into a 401(k) and an IRA combined in 2026" +
+      (age ? " at " + age : "") + ".</span> The rest would have to go to the brokerage account.");
+  else if (taxAdv > k401)
+    notes.push("Over the " + money(k401) + " 401(k) limit, so this assumes an IRA takes the other " +
+      money(taxAdv - k401) + ".");
+  else if (!age && taxAdv > L.k401 * .8)
+    notes.push("2026 limits: " + money(L.k401) + " for a 401(k), " + money(L.ira) +
+      " for an IRA, more from age 50. Add your age to the household profile to check catch-up room.");
+  $("acNote").innerHTML = notes.join(" ");
+
+  // results table
+  const rows = [
+    {k:"trad", label:"Traditional 401(k) / IRA", c:"#e2795f", b:B.tax.buckets[0]},
+    {k:"roth", label:"Roth 401(k) / IRA", c:"#4fbf95", b:B.tax.buckets[1]},
+    {k:"brok", label:"Taxable brokerage", c:"#7d9fd6", b:B.tax.buckets[2]}
+  ];
+  $("acResults").querySelector("tbody").innerHTML = rows.map(r =>
+    "<tr><td><i class='acdot' style='background:" + r.c + "'></i>" + r.label + "</td><td>" +
+    money(B.real[r.k]) + "</td><td>" + pctStr(B.shares[r.k], 0) + "</td><td>" +
+    money(B.w[r.k]) + "</td><td>" + money(r.b.tax) + "</td><td>" +
+    money(B.w[r.k] - r.b.tax) + "</td></tr>").join("");
+  $("acResults").querySelector("tfoot").innerHTML =
+    "<tr><td>Total</td><td>" + money(B.totalReal) + "</td><td></td><td>" + money(B.wTotal) +
+    "</td><td>" + money(B.tax.total) + " <span style='color:var(--dimmer);font-weight:400'>(" +
+    pctStr(B.effRate, 1) + ")</span></td><td>" + money(B.wTotal - B.tax.total) + "</td></tr>";
+
+  const st = STATES[a.state];
+  const bits = [];
+  bits.push("Taxed with 2026 " + (a.status === "m" ? "married filing jointly" : "single") +
+    " brackets" + (st && !st.none ? " and " + st.n + " state tax" : st ? ", no state income tax" : "") +
+    (B.seniors ? ", with the age 65+ deduction" : "") + ".");
+  if (B.w.brok > 0)
+    bits.push("<b>" + pctStr(B.gainPct, 0) + "</b> of the brokerage balance is growth by then, so only that share of each sale is taxed.");
+  if (B.matchTotal > 0)
+    bits.push("Your employer puts in <b>" + money(B.matchTotal) + "</b> over the " +
+      fmtNum(p.years) + " years, before growth.");
+  bits.push("Social Security and other income aren't included here and would raise the tax; the Income Tax tool can add them.");
+  $("acResultsNote").innerHTML = bits.join(" ");
 }
 
 /* ---------- charts ---------- */
@@ -8726,7 +9214,7 @@ function drawChart(R, p){
                                    p25:b.p25, p75:b.p75}));
     chartPoints = paintChart("chart", pts, p.years, "mc", [], 0, {enhanced:true});
     histLegend("legend");
-    const S = goalSolve(p, $("solveFor").value, num("target"));
+    const S = goalSolve(acSolveP(p), $("solveFor").value, num("target"));
     histSummary("mcNote", H, S.portToday, "(the portfolio behind your target above)");
     return;
   }
@@ -8742,7 +9230,7 @@ function drawChart(R, p){
       det: R.years[i] ? real(R.years[i].end, R.years[i].year) : b.p50}));
     chartPoints = paintChart("chart", pts, p.years, "mc", [], 0, {enhanced:true});
     mcLegend("legend");
-    const S = goalSolve(p, $("solveFor").value, num("target"));
+    const S = goalSolve(acSolveP(p), $("solveFor").value, num("target"));
     mcSummary("mcNote", mc, S.portToday, "(the portfolio behind your target above)");
   } else {
     const band = Math.max(0, num("band")) / 100;
@@ -9145,6 +9633,7 @@ $("cmpPickers").addEventListener("change", e => {
 function showCompare(){
   if (chartMode.tab === "compare") return;
   cmpPrevTab = chartMode.tab;
+  hhPlace("compare");
   const m = activeTool();
   const dflt = (m === "basic" || m === "stages") ? m : "advanced";
   const names = (SC[dflt] || []).map(x => x.name);
@@ -9319,6 +9808,7 @@ function renderDDCompare() {
 function showDDCompare() {
   if (chartMode.tab === "dd-compare") return;
   ddCmpPrevTab = chartMode.tab;
+  hhPlace("compare");
   var names = SC.drawdown.map(function(x) { return x.name; });
   if (names.indexOf(ddCmpSlots[0].name) < 0) ddCmpSlots[0].name = names[0] || "";
   if (names.indexOf(ddCmpSlots[1].name) < 0 || ddCmpSlots[1].name === ddCmpSlots[0].name) {
@@ -9375,7 +9865,7 @@ function fmtYears(y){
 function renderSolve(){
   const p = readInputs();
   const solveFor = $("solveFor").value;
-  const S = goalSolve(p, solveFor, num("target"));
+  const S = goalSolve(acSolveP(p), solveFor, num("target"));
   $("targetHint").textContent = solveFor === "After-Tax Withdrawal"
     ? "The after-tax income you want each year, in today's spending power."
     : "The portfolio balance you want, in today's spending power.";
@@ -9481,16 +9971,17 @@ $("nominal").addEventListener("input", updateGlideNote);
 
 $("btnApply").addEventListener("click", () => {
   const p = readInputs();
-  const S = goalSolve(p, $("solveFor").value, num("target"));
+  const S = goalSolve(acSolveP(p), $("solveFor").value, num("target"));
   const rounded = Math.round(S.perPeriod);
-  $("contrib").value = groupDigits(rounded, true);
+  if (p.acct) acSetTotal(rounded);
+  else $("contrib").value = groupDigits(rounded, true);
   renderAll();
   toast("Contribution set to " + money(rounded) + " " + PERIOD_ADV[p.period]);
 });
 
 $("btnApplyYears").addEventListener("click", () => {
   const p = readInputs();
-  const S = goalSolve(p, $("solveFor").value, num("target"));
+  const S = goalSolve(acSolveP(p), $("solveFor").value, num("target"));
   const Y = solveYears(p, S.portToday);
   if (!Y.reached){ toast("That target isn't reachable within 100 years"); return; }
   $("years").value = Y.years;
@@ -9600,8 +10091,9 @@ $("convOut").addEventListener("click", e => {
   if (!b) return;
   const per = b.getAttribute("data-period");
   const amt = b.getAttribute("data-amt");
-  $("contrib").value = groupDigits(amt);
   $("period").value = per;
+  if (acOn()) acSetTotal(parseFloat(amt));
+  else $("contrib").value = groupDigits(amt);
   renderAll();
   toast("Contribution set to " + money(parseFloat(amt), 2) + " " + per.toLowerCase());
 });
@@ -10372,6 +10864,7 @@ function showTab(t){
   $("tab-single").hidden = (t !== "single");
   $("tab-series").hidden = (t !== "series");
   $("tab-about").hidden = (t !== "about");
+  hhPlace(t);
   // tools tab always delegates to showTool for pane visibility
   if (t !== "tools"){
     $("tab-toolpicker").hidden = true;
@@ -10548,7 +11041,7 @@ function buildSheet(){
   let goalSection = "";
   if (!series){
     const solveFor = $("solveFor").value;
-    const S = goalSolve(p, solveFor, num("target"));
+    const S = goalSolve(acSolveP(p), solveFor, num("target"));
     const C = coastFire(p, S.portFuture);
     let goal = row("Target", solveFor === "After-Tax Withdrawal"
       ? money(num("target")) + "/yr after tax" : money(num("target")));
@@ -11188,6 +11681,7 @@ $("txState").innerHTML = Object.keys(STATES)
   .map(k => "<option value='" + k + "'>" + STATES[k].n + "</option>").join("");
 
 $("rcState").innerHTML = $("txState").innerHTML;
+acFillStates();
 
 let txMode = "normal";
 const BKT_COLORS = {trad:"#e2795f", roth:"#4fbf95", brok:"#7d9fd6",
@@ -13780,6 +14274,9 @@ const GLOSS = {
   contribgrowth: "The percentage your contribution amount itself increases each year, a standalone rate, not stacked on top of the inflation input. At 0%, your contribution stays the same dollar amount every year, which buys a little less as prices rise. Set it to match your inflation rate to keep contributions flat in today's dollars, or higher to model real income growth, like raises over a career.",
   nominalreturn: "The return before subtracting inflation: what your statement would actually show. The S&P 500 has averaged roughly 10% a year (about 7% after inflation) since 1926, including its worst crashes. A diversified mix of stocks and bonds typically runs lower, often 6\u20138% nominal.",
   efftaxrate: "Your total tax as a share of income, lower than your top bracket, since earlier dollars are taxed at lower rates. Many retirees land somewhere around 10\u201315%, though it depends heavily on income sources and where you live. The Income Tax tool can calculate yours precisely.",
+  accttypes: "Enter traditional, Roth and taxable money separately instead of one total. Every account grows at the same rate of return, but each is taxed differently when you take it out, so the tax on your retirement income is worked out with the 2026 federal and state rules instead of a flat rate you type in. Adds an employer match and checks your contributions against the 2026 limits.",
+  acbasis: "The part of the brokerage balance that is money you put in, not growth. Only the growth is taxed when you sell, at long-term capital gain rates. Your statement usually calls it cost basis. Leave it blank to treat the whole balance as money you put in.",
+  actax: "Worked out from your first year of withdrawals, not typed in. Your withdrawal is taken from each account in proportion to its balance: traditional dollars are taxed as ordinary income, the growth in the brokerage account at capital gain rates, and Roth dollars not at all. Uses 2026 brackets and the standard deduction, in today's dollars, and leaves out Social Security and any other income, which would raise it.",
   ddstocks: "How the portfolio is split between stocks and bonds during retirement. Stocks have historically grown faster but swing harder in downturns, which matters more once you're withdrawing instead of contributing. 60/40 is a common conservative-to-moderate retirement mix.",
   yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is: higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
@@ -15067,6 +15564,7 @@ function currentState(){
     b:[g.initial, g.inflation, g.withdrawal, g.taxRate, num("targetS"), g.fees],
     c:stages.map(st => [st.years, st.contrib, st.period, st.growth, st.nominal,
                         st.vol || 0, st.adj ? 1 : 0]),
+    ab:p.acct,
     sub:toolSub, tx:readTaxState(), mo:readMortState(), bg:readBudgetState(),
     rc:readRCState()};
 }
@@ -15078,6 +15576,7 @@ function applyState(o){
       nominal:a[4], inflation:a[5], years:a[6], withdrawal:a[7], taxRate:a[8],
       vol:a[9], fees:a[10]});
     if (a[11] != null) $("target").value = groupDigits(a[11], true);
+    if (o.ab) writeAcct(o.ab);
   }
   if (o.b){
     const b = o.b;
@@ -16223,7 +16722,31 @@ function sameShallow(a, b){
   for (const k in b) if (String(a[k]) !== String(b[k])) return false;
   return true;
 }
+/* Healthcare and FIRE keep their defaults in the markup itself, as each
+   field's value attribute and each select's selected option, so resetting
+   them means putting those back rather than keeping a second copy here. */
+function asideControls(id){
+  return Array.prototype.slice.call($(id).querySelectorAll("input, select"));
+}
+function asideDefault(el){
+  if (el.tagName === "SELECT"){
+    const opts = Array.prototype.slice.call(el.options);
+    const d = opts.find(o => o.defaultSelected) || opts[0];
+    return d ? d.value : "";
+  }
+  return el.hasAttribute("data-money")
+    ? groupDigits(el.defaultValue, el.hasAttribute("data-nonneg")) : el.defaultValue;
+}
+function resetAsideDefaults(id){
+  asideControls(id).forEach(el => { el.value = asideDefault(el); });
+}
+function asideIsDirty(id){
+  return asideControls(id).some(el => String(el.value) !== String(asideDefault(el)));
+}
 function toolIsDirty(tool){
+  if (tool === "healthcare") return asideIsDirty("asideHC");
+  if (tool === "fire") return asideIsDirty("asideFire") ||
+    !!$("segFireMode").querySelector('button[data-firemode="coast"].on');
   if (tool === "tax") return !sameShallow(readTaxState(), TAX_DEFAULTS);
   if (tool === "mortgage") return !sameShallow(readMortState(), MORT_DEFAULTS);
   if (tool === "budget") return num("bgIncomeIn") > 0 ||
@@ -16264,7 +16787,7 @@ function toolIsDirty(tool){
   }
   // advanced
   const d = readInputs();
-  return d.initial !== DEFAULTS.initial || d.contrib !== DEFAULTS.contrib ||
+  return !!d.acct || d.initial !== DEFAULTS.initial || d.contrib !== DEFAULTS.contrib ||
     d.period !== DEFAULTS.period || d.years !== DEFAULTS.years ||
     Math.abs(d.growth - DEFAULTS.growth) > 1e-9 ||
     Math.abs(d.nominal - DEFAULTS.nominal) > 1e-9 ||
@@ -16311,6 +16834,8 @@ function writeStagesState(d){
 $("btnReset").addEventListener("click", () => {
   if (chartMode.tab === "about") return; // nothing to reset on the About tab
   if (chartMode.tab === "compare"){ toast("Nothing to reset here"); return; }
+  // the tool picker has no inputs of its own
+  if (chartMode.tab === "tools" && toolSub === "picker") return;
   const tool = activeTool();
   const label = tool === "basic" ? "Basic" : tool === "stages" ? "Stages" :
     tool === "advanced" ? "Advanced" : tool === "tax" ? "Tax" :
@@ -16318,6 +16843,7 @@ $("btnReset").addEventListener("click", () => {
     tool === "rentbuy" ? "Rent vs. Buy" : tool === "drawdown" ? "Drawdown" :
     tool === "roth" ? "Roth Conversion" :
     tool === "debt" ? "Debt Payoff" :
+    tool === "healthcare" ? "Healthcare" : tool === "fire" ? "FIRE Calculator" :
     tool === "backtest" ? "Portfolio Backtest" : "Budget";
   if (toolIsDirty(tool) &&
       !confirm("Reset the " + label +
@@ -16359,6 +16885,14 @@ $("btnReset").addEventListener("click", () => {
     $("segDT").querySelectorAll("button").forEach(x =>
       x.classList.toggle("on", x.getAttribute("data-dt") === "avalanche"));
     buildDebtList(); renderDebt();
+  } else if (tool === "healthcare"){
+    resetAsideDefaults("asideHC");
+    renderHealthcare();
+  } else if (tool === "fire"){
+    resetAsideDefaults("asideFire");
+    const fireBtn = $("segFireMode").querySelector('button[data-firemode="fire"]');
+    if (fireBtn && !fireBtn.classList.contains("on")) fireBtn.click();
+    $("fiTarget").dispatchEvent(new Event("input", {bubbles:true}));
   } else if (tool === "basic"){
     writeBasic(BASIC_DEFAULTS);
     renderBasic();
@@ -16372,16 +16906,55 @@ $("btnReset").addEventListener("click", () => {
     writeInputs(DEFAULTS);
     renderAll();
   }
+  // With a household profile on file, "defaults" means your numbers, not ours.
+  const fromHH = hhApply(hhLoad(), tool).length > 0;
+  if (fromHH) hhRerender();
   currentScenario[tool] = "";
   loadedSnapshot[tool] = null;
   refreshScenarioList("");
-  toast(label + " inputs reset");
+  toast(label + (fromHH ? " reset to your household numbers" : " inputs reset"));
 });
 
 /* ---------- wire up ---------- */
 ["initial","contrib","growth","nominal","inflation","years","withdrawal","taxrate","fees"]
   .forEach(id => $(id).addEventListener("input", renderAll));
 $("period").addEventListener("change", renderAll);
+["acTradBal","acTradC","acRothBal","acRothC","acBrokBal","acBrokC","acBrokBasis",
+ "acSalary","acMatchPct","acMatchCap"].forEach(id => $(id).addEventListener("input", renderAll));
+["acStatus","acState"].forEach(id => $(id).addEventListener("change", renderAll));
+$("acToggle").addEventListener("click", e => {
+  if (e.target.closest && e.target.closest(".tipdot")) return;
+  const turningOn = !acOn();
+  if (turningOn){
+    // Seed from what's on screen, so switching modes doesn't change the answer
+    // until you start splitting it up: the whole balance and contribution
+    // start out in traditional.
+    const blank = ["acTradBal","acTradC","acRothBal","acRothC","acBrokBal","acBrokC"]
+      .every(id => !(num(id) > 0));
+    if (blank){
+      const H = hhLoad() || {};
+      writeAcct({on:true, tradBal:num("initial"), tradC:num("contrib"), rothBal:0, rothC:0,
+        brokBal:0, brokC:0, brokBasis:null, salary:H.income || 0, matchPct:0, matchCap:6,
+        status:H.status || $("txStatus").value, state:H.state || $("txState").value});
+    } else {
+      $("acToggle").classList.add("on");
+      acSync();
+    }
+    renderAll();
+    toast("Tax is now worked out from each account type");
+  } else {
+    // Carry the totals and the rate it worked out back into the single
+    // fields, so the answer doesn't jump when you switch back.
+    const p = readInputs();
+    $("initial").value = groupDigits(Math.round(p.initial), true);
+    $("contrib").value = groupDigits(Math.round(p.contrib), true);
+    $("taxrate").value = +(p.taxRate * 100).toFixed(2);
+    $("acToggle").classList.remove("on");
+    acSync();
+    renderAll();
+    toast("Back to one total, with a " + pctStr(p.taxRate, 1) + " tax rate");
+  }
+});
 $("target").addEventListener("input", renderSolve);
 $("solveFor").addEventListener("change", renderSolve);
 $("targetS").addEventListener("input", () => renderSeries());
@@ -16472,11 +17045,271 @@ $("inflYrs").value = DEFAULTS.years;
 $("convAmt").value = groupDigits(DEFAULTS.contrib, true);
 $("convPeriod").value = DEFAULTS.period;
 
+/* ---------- household profile ---------- */
+/* The handful of facts nearly every tool asks for, entered once. It's a
+   one-way fill: saving writes these numbers into each tool's own fields, and
+   from then on each tool is free to drift. Nothing here is read live, so an
+   edit in one tool never quietly changes another. */
+function hhLoad(){
+  const v = storeRead("household");
+  return v && typeof v === "object" ? v : null;
+}
+function hhIsEmpty(H){
+  return !H || Object.keys(H).every(k => k === "status" || H[k] == null || H[k] === "");
+}
+function hhReadForm(){
+  const opt = id => { const t = $(id).value.trim(); return t === "" ? null : parseNum(t); };
+  const married = $("hhStatus").value === "m";
+  return {status: married ? "m" : "s", age:opt("hhAge"),
+    spouseAge: married ? opt("hhSpouseAge") : null, retire:opt("hhRetire"),
+    state:$("hhState").value || null, saved:opt("hhSaved"), monthly:opt("hhMonthly"),
+    income:opt("hhIncome"), income2: married ? opt("hhIncome2") : null, spend:opt("hhSpend")};
+}
+function hhWriteForm(H){
+  H = H || {};
+  const put = (id, v, isMoney) => {
+    $(id).value = v == null ? "" : (isMoney ? groupDigits(v, true) : String(v));
+  };
+  $("hhStatus").value = H.status === "m" ? "m" : "s";
+  put("hhAge", H.age); put("hhSpouseAge", H.spouseAge); put("hhRetire", H.retire);
+  $("hhState").value = H.state || "";
+  put("hhSaved", H.saved, true); put("hhMonthly", H.monthly, true);
+  put("hhIncome", H.income, true); put("hhIncome2", H.income2, true);
+  put("hhSpend", H.spend, true);
+  hhSyncStatus();
+}
+function hhSyncStatus(){ $("hhCard").classList.toggle("married", $("hhStatus").value === "m"); }
+function hhSummary(){
+  const H = hhLoad();
+  if (hhIsEmpty(H)){
+    $("hhSummary").innerHTML = "<b>Your household</b>Enter a few details once and every tool starts from your numbers.";
+    $("hhEdit").textContent = "Set up";
+    return;
+  }
+  const bits = [];
+  if (H.age != null) bits.push("Age " + fmtNum(H.age) +
+    (H.status === "m" && H.spouseAge != null ? " & " + fmtNum(H.spouseAge) : ""));
+  if (H.retire != null) bits.push("retire at " + fmtNum(H.retire));
+  if (H.saved != null) bits.push(money(H.saved) + " saved");
+  if (H.monthly != null) bits.push(money(H.monthly) + "/mo");
+  const inc = (H.income || 0) + (H.income2 || 0);
+  if (inc > 0) bits.push(money(inc) + "/yr income");
+  if (H.spend != null) bits.push("spend " + money(H.spend) + "/yr");
+  if (H.state && STATES[H.state]) bits.push(STATES[H.state].n);
+  $("hhSummary").innerHTML = "<b>Your household</b><span class='hh-bits'>" +
+    bits.map(b => "<span>" + b + "</span>").join("") + "</span>";
+  $("hhEdit").textContent = "Edit";
+}
+/* Writes the profile into each tool's fields. `only` limits it to one tool
+   (Reset uses that). Blank profile fields leave the tool's own value alone.
+   Returns the names of the tools that actually changed. */
+function hhApply(H, only){
+  if (hhIsEmpty(H)) return [];
+  const done = [];
+  const want = t => !only || only === t;
+  const has = v => v != null && isFinite(v);
+  const m = v => groupDigits(Math.round(v), true);
+  const married = H.status === "m";
+  const age = has(H.age) && H.age > 0 && H.age < 120 ? Math.round(H.age) : null;
+  const retire = has(H.retire) && H.retire > 0 && H.retire < 120 ? Math.round(H.retire) : null;
+  const yrs = age && retire && retire > age ? Math.min(100, retire - age) : null;
+  const spend = has(H.spend) && H.spend > 0 ? H.spend : null;
+  const inc1 = has(H.income) ? H.income : null;
+  const inc2 = married && has(H.income2) ? H.income2 : null;
+
+  if (want("basic") && (age || retire || has(H.saved) || has(H.monthly))){
+    if (age) $("qAge").value = String(age);
+    if (retire && (!age || retire > age)) $("qRetire").value = String(age ? Math.min(retire, age + 100) : retire);
+    if (has(H.saved)) $("qSaved").value = m(H.saved);
+    if (has(H.monthly)){ $("qContrib").value = m(H.monthly); $("qPeriod").value = "Monthly"; }
+    done.push("Basic");
+  }
+  if (want("advanced")){
+    let hit = false;
+    if (yrs){ $("years").value = String(yrs); hit = true; }
+    if (acOn()){
+      // the split is the tool's own; only the facts about you carry in
+      if (has(inc1)) $("acSalary").value = m(inc1);
+      $("acStatus").value = married ? "m" : "s";
+      if (H.state) $("acState").value = H.state;
+      hit = true;
+    } else {
+      if (has(H.saved)){ $("initial").value = m(H.saved); hit = true; }
+      if (has(H.monthly)){ $("contrib").value = m(H.monthly); $("period").value = "Monthly"; hit = true; }
+    }
+    if (spend){ $("solveFor").value = "After-Tax Withdrawal"; $("target").value = m(spend); hit = true; }
+    if (hit){ updateGlideNote(); done.push("Advanced"); }
+  }
+  if (want("stages") && (has(H.saved) || spend)){
+    if (has(H.saved)) $("gInitial").value = m(H.saved);
+    if (spend){ $("solveForS").value = "After-Tax Withdrawal"; $("targetS").value = m(spend); }
+    done.push("Stages");
+  }
+  if (want("fire") && (age || retire || has(H.saved) || has(H.monthly) || spend)){
+    if (age) $("fiCurAge").value = String(Math.max(18, Math.min(70, age)));
+    if (retire) $("fiRetireAge").value = String(retire);
+    if (has(H.saved)) $("fiInitial").value = m(H.saved);
+    if (has(H.monthly)){ $("fiContrib").value = m(H.monthly); $("fiPeriod").value = "Monthly"; }
+    if (spend){
+      $("fiTarget").value = m(spend);
+      if ($("fiSolveFor").value !== "withdrawal"){
+        $("fiSolveFor").value = "withdrawal";
+        $("fiSolveFor").dispatchEvent(new Event("change", {bubbles:true}));
+      }
+    }
+    done.push("FIRE");
+  }
+  if (want("drawdown") && (retire || has(inc1))){
+    const d = {ssWho: married ? "couple" : "single"};
+    if (retire) d.retireAge = String(retire);
+    if (has(inc1)) d.ssIncome = inc1;
+    if (has(inc2)) d.ssIncome2 = inc2;
+    writeDDState(d);
+    done.push("Drawdown");
+  }
+  if (want("roth")){
+    const d = {status: married ? "m" : "s"};
+    if (age) d.age = age;
+    if (married && has(H.spouseAge) && H.spouseAge > 0) d.spouseAge = Math.round(H.spouseAge);
+    if (H.state) d.state = H.state;
+    if (spend) d.spend = spend;
+    writeRCState(d);
+    done.push("Roth");
+  }
+  if (want("healthcare")){
+    if (retire && retire >= 40 && retire <= 75) $("hcRetireAge").value = String(retire);
+    $("hcStatus").value = married ? "m" : "s";
+    if (!married || num("hcHousehold") <= 2) $("hcHousehold").value = married ? "2" : "1";
+    if (H.state && $("hcState").querySelector("option[value='" + H.state + "']"))
+      $("hcState").value = H.state;
+    done.push("Healthcare");
+  }
+  if (want("tax")){
+    const d = {status: married ? "m" : "s", gross2: inc2 || 0};
+    if (has(inc1)) d.gross = inc1;
+    if (H.state) d.state = H.state;
+    writeTaxState(d);
+    done.push("Income Tax");
+  }
+  if (want("budget") && has(inc1) && (inc1 + (inc2 || 0)) > 0){
+    // Budget wants take-home pay, so run the salary through the same 2026
+    // rules the Income Tax tool uses, before any retirement saving.
+    const T = computeTax({status: married ? "m" : "s", gross:inc1, gross2:inc2 || 0,
+      pre:0, dedType:"std", item:0, state:H.state || $("txState").value});
+    $("bgIncomeIn").value = m(T.net / bgIncomeFreq);
+    done.push("Budget");
+  }
+  return done;
+}
+/* Re-render whatever is on screen after a fill. Hidden tools render when
+   they're next opened, so there's no need to pay for them now. */
+function hhRerender(){
+  renderBasic(); renderAll(); renderSeries();
+  if (chartMode.tab !== "tools") return;
+  const sub = toolSub;
+  if (sub === "tax") renderTax();
+  else if (sub === "budget") renderBudget();
+  else if (sub === "drawdown") renderDrawdown();
+  else if (sub === "roth") renderRoth();
+  else if (sub === "healthcare") renderHealthcare();
+  else if (sub === "fire") $("fiTarget").dispatchEvent(new Event("input", {bubbles:true}));
+}
+function hhOpen(open, noFocus){
+  $("hhBody").hidden = !open;
+  $("hhEdit").setAttribute("aria-expanded", String(open));
+  if (open){
+    $("hhEdit").textContent = "Close";
+    if (noFocus) return;
+    const first = $("hhAge");
+    try { first.focus({preventScroll:true}); } catch(e){ first.focus(); }
+  } else hhSummary();
+}
+/* Shown on every visit; hiding it lasts until the page is next opened. On
+   About it moves into its own slot under Appearance and opens for editing,
+   and it goes back to the top of the page when you leave. */
+let hhShown = true;
+function hhPlace(t){
+  const card = $("hhCard"), slot = $("hhAboutSlot");
+  if (t === "about"){
+    if (card.parentNode !== slot) slot.appendChild(card);
+    card.classList.add("inabout");
+    card.hidden = false;
+    if ($("hhBody").hidden) hhOpen(true, true);
+  } else {
+    if (card.parentNode === slot){
+      $("main").insertBefore(card, $("toolBack"));
+      card.classList.remove("inabout");
+      if (!$("hhBody").hidden){ hhWriteForm(hhLoad()); hhOpen(false); }
+    }
+    card.hidden = !hhShown;
+  }
+}
+function hhSetShown(v){
+  hhShown = v;
+  const b = $("btnHousehold");
+  b.setAttribute("aria-pressed", String(v));
+  const lbl = v ? "Hide your household bar" : "Show your household bar";
+  b.setAttribute("aria-label", lbl); b.setAttribute("title", lbl);
+  if (!$("hhCard").classList.contains("inabout")) $("hhCard").hidden = !v;
+}
+$("hhHide").addEventListener("click", () => {
+  if (!$("hhBody").hidden){ hhWriteForm(hhLoad()); hhOpen(false); }
+  hhSetShown(false);
+  toast("Hidden. The house button at the top brings it back.");
+});
+$("btnHousehold").addEventListener("click", () => {
+  if ($("hhCard").classList.contains("inabout")){
+    if ($("hhBody").hidden) hhOpen(true);
+    try { $("hhCard").scrollIntoView({behavior:"smooth", block:"start"}); } catch(e){}
+    return;
+  }
+  hhSetShown(!hhShown);
+  if (hhShown){ try { window.scrollTo({top:0, behavior:"smooth"}); } catch(e){ window.scrollTo(0, 0); } }
+});
+$("hhState").innerHTML = "<option value=''>Not set</option>" + $("txState").innerHTML;
+initFields($("hhCard"));
+hhWriteForm(hhLoad());
+hhSummary();
+$("hhStatus").addEventListener("change", hhSyncStatus);
+$("hhEdit").addEventListener("click", () => {
+  if ($("hhBody").hidden) hhOpen(true);
+  else { hhWriteForm(hhLoad()); hhOpen(false); }
+});
+$("hhCancel").addEventListener("click", () => { hhWriteForm(hhLoad()); hhOpen(false); });
+$("hhFill").addEventListener("click", () => {
+  const H = hhReadForm();
+  if (H.age != null && H.retire != null && H.retire <= H.age){
+    toast("Retire-at age needs to be after your current age first", "warn");
+    return;
+  }
+  storeWrite("household", H);
+  const done = hhApply(H);
+  hhRerender();
+  hhOpen(false);
+  if (!done.length) toast("Saved. Add a few numbers to fill in the tools.");
+  else toast("Filled in " + done.length + (done.length === 1 ? " tool: " : " tools: ") +
+    done.join(", "));
+});
+$("hhClear").addEventListener("click", () => {
+  if (!hhIsEmpty(hhLoad()) && !confirm("Clear your household profile? Numbers already filled in to each tool stay as they are.")) return;
+  storeWrite("household", null);
+  hhWriteForm(null);
+  hhOpen(false);
+  toast("Household profile cleared");
+});
+$("hhBody").addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.tagName === "INPUT"){ e.preventDefault(); $("hhFill").click(); }
+  else if (e.key === "Escape"){ $("hhCancel").click(); }
+});
+
 let fromLink = false;
 if (location.hash && location.hash.indexOf("#p=") === 0){
   const st = decodeState(location.hash.slice(3));
   fromLink = !!(st && applyState(st));
 }
+// A shared link carries someone's exact numbers; the profile fills in
+// everything else on an ordinary visit.
+if (!fromLink) hhApply(hhLoad());
 const pathRoute = fromLink ? null : routeFromPath(location.pathname);
 if (pathRoute) toolSub = pathRoute.s || "picker";
 showTab(fromLink ? linkTab : (pathRoute ? pathRoute.t : "simple"));
