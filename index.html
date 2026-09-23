@@ -3091,12 +3091,12 @@ window.onerror = function(msg){
         <div class="hint" id="ddVpwNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
         <div class="two" id="ddSpendFloorWrap" hidden>
           <div class="field">
-            <label for="ddSpendFloor">Minimum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+            <label for="ddSpendFloor">Minimum spending<span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
           </div>
           <div class="field">
-            <label for="ddSpendCeil">Maximum spending <span class="opt">optional</span><span class="tipdot" data-tip="spendceil" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendCeil" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+            <label for="ddSpendCeil">Maximum spending<span class="tipdot" data-tip="spendceil" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendCeil" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
           </div>
         </div>
         <div class="hint acwarn" id="ddSpendNote2" hidden style="margin-top:-6px;margin-bottom:12px"></div>
@@ -14080,8 +14080,9 @@ function writeDDState(d){
   if (d.ceil != null) $("ddCeil").value = d.ceil;
   if (d.yaleWeight != null) $("ddYaleWeight").value = d.yaleWeight;
   if (d.yaleRate != null) $("ddYaleRate").value = d.yaleRate;
-  if (d.spendFloor != null) $("ddSpendFloor").value = groupDigits(d.spendFloor, true);
-  if (d.spendCeil != null) $("ddSpendCeil").value = groupDigits(d.spendCeil, true);
+  // 0 means "no limit", so it shows as an empty box rather than a $0 limit
+  if (d.spendFloor != null) $("ddSpendFloor").value = d.spendFloor > 0 ? groupDigits(d.spendFloor, true) : "";
+  if (d.spendCeil != null) $("ddSpendCeil").value = d.spendCeil > 0 ? groupDigits(d.spendCeil, true) : "";
   if (d.vpwRate != null) $("ddVpwRate").value = String(d.vpwRate);
   if (d.vpwFV != null) $("ddVpwFV").value = groupDigits(d.vpwFV, true);
   if (d.stockEnd != null) $("ddStockEnd").value = d.stockEnd;
@@ -14872,7 +14873,7 @@ const GLOSS = {
   fitarget: "Your goal in today's dollars. As an annual withdrawal, the portfolio target is that withdrawal divided by the withdrawal rate: $40,000 at 4% needs $1,000,000. As a portfolio value, it's the balance itself.",
   ddglide: "Gradually shifts your stock allocation, in a straight line, from the starting mix above to this level by the final year of retirement. Leave it blank to keep the mix constant throughout.",
   legacy: "What you'd like to have left at the end of retirement, in today's dollars. The results then show the share of tested retirements that finish above it.",
-  spendceil: "An absolute dollar amount, in today's terms, that spending is never allowed to go above, however much the strategy would allow in a good year. Future expenses you add are on top of it, so a year with one can go past it by that expense. Leave at 0 for no maximum.",
+  spendceil: "An absolute dollar amount, in today's terms, that spending is never allowed to go above, however much the strategy would allow in a good year. Future expenses you add are on top of it, so a year with one can go past it by that expense. Leave it blank for no maximum.",
   vpwrate: "The return, after inflation, that VPW assumes the portfolio earns. It sets how fast you spend: a higher rate front-loads spending. The Bogleheads tables use 5.0% for stocks and 1.9% for bonds, blended by your mix; a lower number is more conservative.",
   vpwfv: "What VPW aims to leave at the end of the plan, in today's dollars: the future value in the spreadsheet PMT formula it uses. At $0, the plan spends the whole portfolio by the final year. The Bogleheads guidance is to leave it at $0 and plan a bequest separately.",
   aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one.",
@@ -14882,7 +14883,7 @@ const GLOSS = {
   tuitioninfl: "How fast college costs specifically rise, which has historically outpaced general inflation, often 3\u20135% a year versus 2\u20133% for prices generally.",
   maxcut: "The most spending can drop from one year to the next, no matter what the target percentage would otherwise call for. Protects against a sudden, jarring cut in a single bad year.",
   maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
-  spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below, stacked on top of whatever the strategy above would otherwise do. Leave at 0 for no floor.",
+  spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below, stacked on top of whatever the strategy above would otherwise do. Leave it blank for no minimum.",
   bkttrad: "Money coming out of a traditional 401(k), 403(b) or IRA, including required minimum distributions. You took a deduction going in, so every dollar coming out is ordinary income, taxed at the same 10\u201337% brackets a salary would be. No FICA, though: withdrawals are not wages.",
   bktroth: "Money coming out of a Roth 401(k) or Roth IRA. You already paid tax on the way in, so a qualified withdrawal is tax-free: zero federal, zero state, and it stays out of the provisional-income figure that decides how much of your Social Security is taxable. That second effect is why Roth dollars are worth more than the headline suggests.",
   bktbrok: "Money coming out of an ordinary taxable brokerage account. Only the growth is taxed; the part that was your own money going in comes back untaxed. Assuming everything is held over a year, the growth gets long-term capital gain rates of 0%, 15% or 20% rather than ordinary rates, which is usually the cheapest income in a retiree's mix.",
