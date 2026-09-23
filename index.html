@@ -9773,6 +9773,7 @@ function cmpRun(data, mode){
             mrow("Amount invested", R.invested),
             mrow("Growth", R.growth),
             mrow("Total contributions", R.contribTotal),
+            mrow("Final contribution", R.lastContrib),
             mrow("Total years", R.totalYears, "years"),
             mrow("Stages", list.length, "int")],
       inp
@@ -11680,6 +11681,9 @@ function buildSheet(){
   let out = "";
   out += row("Amount invested", money(R.invested));
   out += row("Growth", money(R.growth));
+  const lastPer = series ? R.lastPeriod : p.period;
+  out += row("Final contribution", lastPer
+    ? money(R.lastContrib) + " " + PERIOD_ADV[lastPer] : money(0));
   out += row("Future value", money(R.fv));
   out += row("Inflation adjusted", money(R.fvReal));
   out += row("Annual withdrawal", money(R.wdReal) + " (adj.)");
