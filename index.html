@@ -1105,6 +1105,8 @@ html[data-theme="light"] .about.disclaimer{
 .linkbtn:hover{text-decoration-color:currentColor}
 .linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
 .linkbtn svg{width:14px;height:14px;flex:none}
+/* A growth field set per account shows the blend; clicking it edits the rates. */
+.inputwrap input.blended{cursor:pointer;color:var(--jade)}
 
 /* ---------- popups: floating above the deck ---------- */
 .popup-overlay{position:fixed;inset:0;background:rgba(3,5,12,.62);z-index:90;
@@ -1962,6 +1964,7 @@ window.onerror = function(msg){
           <div class="field" id="growthField">
             <label for="growth">Contribution growth<span class="tipdot" data-tip="contribgrowth" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="growth" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%/yr</span></div>
+            <button type="button" class="linkbtn" id="acGrowthBtn" hidden>Set by account</button>
           </div>
           <div class="field">
             <label for="years">Time period</label>
@@ -8776,6 +8779,7 @@ function initFields(root){
     });
     el.addEventListener("keydown", e => {
       if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      if (el.readOnly) return;
       e.preventDefault();
       const step = parseFloat(el.getAttribute("data-step")) || 1;
       let v = parseNum(el.value) + (e.key === "ArrowUp" ? step : -step);
@@ -8875,7 +8879,18 @@ function readAcctState(){
     brokBal:num("acBrokBal"), brokC:num("acBrokC"),
     brokBasis: basisRaw === "" ? null : num("acBrokBasis"),
     salary:num("acSalary"), matchPct:num("acMatchPct"), matchCap:num("acMatchCap"),
-    status:$("acStatus").value, state:$("acState").value};
+    status:$("acStatus").value, state:$("acState").value,
+    gRates: acGrowth ? Object.assign({}, acGrowth) : undefined};
+}
+/* Per-account contribution growth on Advanced, or null for one rate. */
+let acGrowth = null;
+function acGrowthSync(){
+  const on = acOn(), custom = on && !!acGrowth;
+  $("acGrowthBtn").hidden = !on;
+  $("acGrowthBtn").textContent = custom ? "Edit rates by account" : "Set by account";
+  $("growth").readOnly = custom;
+  $("growth").classList.toggle("blended", custom);
+  $("growth").title = custom ? "Blended from your per-account rates. Click to edit." : "";
 }
 function writeAcct(a){
   const on = !!(a && a.on);
@@ -8891,6 +8906,7 @@ function writeAcct(a){
     if (a.status) $("acStatus").value = a.status;
     if (a.state) $("acState").value = a.state;
   }
+  acGrowth = on && a.gRates ? Object.assign({}, a.gRates) : null;
   $("acToggle").classList.toggle("on", on);
   acSync();
 }
@@ -8918,22 +8934,50 @@ function acTaxOn(a, w, seniors){
     gainPct:w.gainPct, ss:0, pension:0, penPublic:false, other:0, pre:0,
     dedType:"std", item:0, state:a.state, _noMarginal:true});
 }
+/* Contribution growth by account. Each account's contributions can rise at
+   their own rate, but everything downstream (charts, solves, simulations)
+   runs on one contribution stream with one growth rate. The blend is that
+   one rate: the one at which the combined contribution ends at exactly the
+   same balance as the three accounts each growing at their own rate, so
+   the totals are exact and each account's own balance uses its own rate.
+   `w` is each account's share (or amount) of your contribution; any
+   employer match grows at the blend. `p` is the plan or stage it runs in. */
+function growthBlend(p, years, w, g){
+  const ann = x => fvFactors(Object.assign({}, p, {growth:x}), years).annuity;
+  const W = w.t + w.r + w.b;
+  if (!(W > 0)) return (g.t + g.r + g.b) / 3;
+  const target = (w.t * ann(g.t) + w.r * ann(g.r) + w.b * ann(g.b)) / W;
+  let lo = Math.min(g.t, g.r, g.b), hi = Math.max(g.t, g.r, g.b);
+  if (hi - lo < 1e-12) return lo;
+  for (let i = 0; i < 50; i++){
+    const mid = (lo + hi) / 2;
+    if (ann(mid) < target) lo = mid; else hi = mid;
+  }
+  return (lo + hi) / 2;
+}
 function acctBreakdown(p, a){
   const ppy = PPY[p.period];
   const match = acMatchPer(a, ppy);
   const F = fvFactors(p, p.years);
-  const fvT = a.tradBal * F.initFactor + (a.tradC + match) * F.annuity;
-  const fvR = a.rothBal * F.initFactor + a.rothC * F.annuity;
-  const fvB = a.brokBal * F.initFactor + a.brokC * F.annuity;
+  const gr = a.gRates || {t:p.growth, r:p.growth, b:p.growth};
+  const ann = x => x === p.growth ? F.annuity
+    : fvFactors(Object.assign({}, p, {growth:x}), p.years).annuity;
+  const fvT = a.tradBal * F.initFactor + a.tradC * ann(gr.t) + match * F.annuity;
+  const fvR = a.rothBal * F.initFactor + a.rothC * ann(gr.r);
+  const fvB = a.brokBal * F.initFactor + a.brokC * ann(gr.b);
   // Dollars a $1-per-period schedule puts in, stepping up once a year: the
   // brokerage basis grows by exactly this times the brokerage contribution.
-  let perDollar = 0;
-  for (let y = 1; y * ppy - ppy < F.n; y++)
-    perDollar += Math.min(ppy, F.n - (y - 1) * ppy) * Math.pow(1 + p.growth, y - 1);
+  const dollarsIn = x => {
+    let d = 0;
+    for (let y = 1; y * ppy - ppy < F.n; y++)
+      d += Math.min(ppy, F.n - (y - 1) * ppy) * Math.pow(1 + x, y - 1);
+    return d;
+  };
+  const perDollar = dollarsIn(p.growth);
   const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
   const inflYears = (p.inflYears === null || p.inflYears === undefined || p.inflYears === "")
                     ? p.years : p.inflYears;
-  return Object.assign(acFinish(a, {trad:fvT, roth:fvR, brok:fvB}, basis0 + a.brokC * perDollar,
+  return Object.assign(acFinish(a, {trad:fvT, roth:fvR, brok:fvB}, basis0 + a.brokC * dollarsIn(gr.b),
       Math.pow(1 + p.inflation, inflYears), p.withdrawal, acSeniors(a, p.years)),
     {match, matchTotal: match * perDollar, perDollar});
 }
@@ -8956,6 +9000,11 @@ function acFinish(a, fv, basisEnd, defl, withdrawal, seniors){
 }
 function applyAcct(p){
   const a = readAcctState();
+  if (a.gRates){
+    p.growth = growthBlend(p, p.years, {t:a.tradC, r:a.rothC, b:a.brokC}, a.gRates);
+    if ($("growth").readOnly || document.activeElement !== $("growth"))
+      $("growth").value = +(p.growth * 100).toFixed(2);
+  }
   const B = acctBreakdown(p, a);
   p.initial = a.tradBal + a.rothBal + a.brokBal;
   p.contrib = a.tradC + a.rothC + a.brokC + B.match;
@@ -9029,6 +9078,7 @@ function acSync(){
   }
   const per = AC_PER[$("period").value] || "";
   document.querySelectorAll("#acFields .acper").forEach(el => { el.textContent = per; });
+  acGrowthSync();
 }
 function acFillStates(){
   $("acState").innerHTML = $("txState").innerHTML;
@@ -10389,7 +10439,8 @@ function advToStages(p){
            brokBasis:a.brokBasis, status:a.status, state:a.state,
            salary:a.salary, matchPct:a.matchPct, matchCap:a.matchCap},
     contrib: mine,
-    split: mine > 0 ? {sTrad: a.tradC / mine, sRoth: a.rothC / mine} : {sTrad:1, sRoth:0}
+    split: Object.assign(mine > 0 ? {sTrad: a.tradC / mine, sRoth: a.rothC / mine} : {sTrad:1, sRoth:0},
+                         a.gRates ? {gRates: Object.assign({}, a.gRates)} : {})
   };
 }
 function applyCoast(p, C){
@@ -10518,6 +10569,63 @@ function openConverter(title, amt, period, apply){
   amtEl.select();
 }
 
+/* Contribution growth by account: three rates in, the blend shown live.
+   `blend(rates)` gives the blended rate for the preview; `apply` gets the
+   rates, or null for "Use one rate" (the blend then stays in the field). */
+function openGrowthRates(title, init, blend, apply, note){
+  const pct = v => +(v * 100).toFixed(4);
+  const ov = document.createElement("div");
+  ov.className = "popup-overlay";
+  const row = (k, lbl) => "<div class='formfield'><label for='gr_" + k + "'>" + lbl + "</label>" +
+    "<div class='formwrap'><input id='gr_" + k + "' type='text' inputmode='decimal' data-num data-step='0.5' value='" +
+    pct(init[k]) + "'><span class='affix'>%/yr</span></div></div>";
+  ov.innerHTML = "<div class='popup wide'>" +
+    "<div class='sg-top'><h3>" + title + "</h3>" +
+    "<button type='button' class='sg-close' aria-label='Close'>&times;</button></div>" +
+    "<div class='formhint'>How much each account's contribution rises each year. The contribution " +
+      "growth field shows the blend: the single rate that ends at the same total." +
+      (note ? " " + note : "") + "</div>" +
+    row("t", "Traditional") + row("r", "Roth") + row("b", "Taxable brokerage") +
+    "<div class='kv total' style='margin:4px 0 14px'><span class='k'>Blended</span><span class='v' id='gr_blend'></span></div>" +
+    "<div class='formactions'><button type='button' class='btn' data-gr='one'>Use one rate</button>" +
+    "<button type='button' class='btn primary' data-gr='apply'>Apply</button></div></div>";
+  const read = () => ({t: parseNum(ov.querySelector("#gr_t").value) / 100,
+                       r: parseNum(ov.querySelector("#gr_r").value) / 100,
+                       b: parseNum(ov.querySelector("#gr_b").value) / 100});
+  const show = () => { ov.querySelector("#gr_blend").textContent = pctStr(blend(read()), 2); };
+  const shut = () => { if (ov._modalDone) ov._modalDone(); ov.remove(); };
+  ov.addEventListener("input", show);
+  ov.addEventListener("click", e => {
+    const b = e.target.closest ? e.target.closest("[data-gr]") : null;
+    if (b){
+      const rates = b.getAttribute("data-gr") === "apply" ? read() : null;
+      shut(); apply(rates); return;
+    }
+    if (e.target === ov || (e.target.closest && e.target.closest(".sg-close"))) shut();
+  });
+  document.body.appendChild(ov);
+  initFields(ov);
+  show();
+  wireModal(ov, shut);
+  ov.querySelector("#gr_t").focus();
+}
+function openAcGrowth(){
+  if (!acOn()) return;
+  const g0 = rate("growth");
+  const init = acGrowth || {t:g0, r:g0, b:g0};
+  openGrowthRates("Contribution growth by account", init, rates => {
+    const p = readInputs(), a = readAcctState();
+    return growthBlend(p, p.years, {t:a.tradC, r:a.rothC, b:a.brokC}, rates);
+  }, rates => {
+    acGrowth = rates;
+    acGrowthSync();
+    renderAll();
+    toast(rates ? "Contribution growth set by account" : "One contribution growth rate for every account");
+  }, readAcctState().matchPct > 0 ? "Your employer match rises at the blended rate." : "");
+}
+$("acGrowthBtn").addEventListener("click", openAcGrowth);
+$("growth").addEventListener("click", () => { if ($("growth").readOnly) openAcGrowth(); });
+
 /* Split by account, the total is what acSetTotal() aims at: your three
    contributions plus the match they earn. */
 $("convOpen").addEventListener("click", () => {
@@ -10622,6 +10730,7 @@ function readGlobals(){
   const g = {initial: num("gInitial"), inflation: rate("gInflation"),
           withdrawal: rate("gWithdrawal"), taxRate: rate("gTaxrate"),
           target: num("targetS"), fees: rate("gFees"), inflYears: ""};
+  if (saOn()) stageGrowthBlends(g.fees);
   if (saOn()) applyStageAcct(g);
   return g;
 }
@@ -10699,6 +10808,23 @@ function stMatchFactor(g, st, mine, salary){
   const eligible = Math.min(mine * (s.t + s.r), salary * (a.matchCap || 0) / 100 / ppy);
   return 1 + Math.max(0, eligible * a.matchPct / 100) / mine;
 }
+/* A stage with per-account growth (st.gRates) runs on the blend of them,
+   weighted by that stage's split, at the stage's own return net of fees. */
+function stageGrowthBlend(st, fee){
+  const e = Object.assign({}, st, {nominal: st.nominal - fee,
+    glide: st.glide && st.glide.on
+      ? Object.assign({}, st.glide, {endRate: st.glide.endRate - fee}) : st.glide});
+  const s = stSplit(st);
+  return growthBlend(e, st.years, {t:s.t, r:s.r, b:s.b}, st.gRates);
+}
+function stageGrowthBlends(fee){
+  stages.forEach((st, i) => {
+    if (!st.gRates) return;
+    st.growth = stageGrowthBlend(st, fee);
+    const el = $("stageList").querySelector("[data-f='growth'][data-i='" + i + "']");
+    if (el && (el.readOnly || document.activeElement !== el)) el.value = +(st.growth * 100).toFixed(2);
+  });
+}
 function applyStageAcct(g){
   const a = readStageAcct();
   g.initial = a.tradBal + a.rothBal + a.brokBal;
@@ -10707,15 +10833,19 @@ function applyStageAcct(g){
   // each effective stage carries its match multiple, mf: of every dollar
   // going in, 1/mf is yours (split three ways) and the rest is match
   const mfOf = i => eff[i].mf || 1;
-  const slice = (bal, share) => projectSeries(Object.assign({}, g, {initial: bal}),
-    eff.map((st, i) => Object.assign({}, st, {contrib: st.contrib * share(i)})));
-  const T = slice(a.tradBal, i => (stSplit(stages[i]).t + mfOf(i) - 1) / mfOf(i));
-  const Ro = slice(a.rothBal, i => stSplit(stages[i]).r / mfOf(i));
-  const Br = slice(a.brokBal, i => stSplit(stages[i]).b / mfOf(i));
+  // each account's slice grows at its own rate where the stage sets one;
+  // the match grows at the stage's (blended) rate
+  const gOf = k => i => stages[i].gRates ? stages[i].gRates[k] : eff[i].growth;
+  const slice = (bal, share, grow) => projectSeries(Object.assign({}, g, {initial: bal}),
+    eff.map((st, i) => Object.assign({}, st, {contrib: st.contrib * share(i),
+                                              growth: grow ? grow(i) : st.growth})));
+  const T = slice(a.tradBal, i => stSplit(stages[i]).t / mfOf(i), gOf("t"));
+  const Ro = slice(a.rothBal, i => stSplit(stages[i]).r / mfOf(i), gOf("r"));
+  const Br = slice(a.brokBal, i => stSplit(stages[i]).b / mfOf(i), gOf("b"));
   const Mt = slice(0, i => (mfOf(i) - 1) / mfOf(i));
   const years = T.totalYears;
   const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
-  const B = acFinish(a, {trad:T.fv, roth:Ro.fv, brok:Br.fv}, basis0 + Br.contribTotal,
+  const B = acFinish(a, {trad:T.fv + Mt.fv, roth:Ro.fv, brok:Br.fv}, basis0 + Br.contribTotal,
     Math.pow(1 + g.inflation, years), g.withdrawal, acSeniors(a, years));
   B.matchTotal = Mt.contribTotal;
   B.years = years;
@@ -10836,8 +10966,11 @@ function buildStages(){
           "<button type='button' class='linkbtn' data-conv='" + i + "'>" + CONV_ICON + "Convert</button></div>" +
         "<div class='field'><label>Contribution growth<span class='tipdot' data-tip='contribgrowth' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
           "<input type='text' inputmode='decimal' data-num data-step='0.5' data-f='growth' data-i='" + i +
-          "' value='" + (+(st.growth * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " contribution growth'>" +
-          "<span class='affix'>%/yr</span></div></div>" +
+          "' value='" + (+(st.growth * 100).toFixed(st.gRates && saOn() ? 2 : 6)) + "' aria-label='Stage " + (i+1) + " contribution growth'" +
+          (st.gRates && saOn() ? " readonly class='blended' title='Blended from your per-account rates. Click to edit.'" : "") + ">" +
+          "<span class='affix'>%/yr</span></div>" +
+          (saOn() ? "<button type='button' class='linkbtn' data-grate='" + i + "'>" +
+            (st.gRates ? "Edit by account" : "Set by account") + "</button>" : "") + "</div>" +
         "<div class='field stagemix'><label>Stock mix<span class='tipdot' data-tip='histmix' role='button' tabindex='0' aria-label='What is this?'>?</span></label><div class='inputwrap'>" +
           "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-f='mix' data-i='" + i +
           "' value='" + (+(((st.mix == null ? .8 : st.mix)) * 100).toFixed(6)) + "' aria-label='Stage " + (i+1) + " stock mix'>" +
@@ -10991,6 +11124,24 @@ $("stageList").addEventListener("focusout", e => {
   el.textContent = stages[i].name || def;
 });
 $("stageList").addEventListener("click", e => {
+  const gr = e.target.closest
+    ? e.target.closest("button[data-grate], input[data-f='growth'][readonly]") : null;
+  if (gr){
+    const i = parseInt(gr.getAttribute("data-grate") || gr.getAttribute("data-i"), 10);
+    const st = stages[i];
+    if (!st) return;
+    const fee = rate("gFees");
+    openGrowthRates(escapeHtml(st.name || ("Stage " + (i + 1))) + " contribution growth",
+      st.gRates || {t:st.growth, r:st.growth, b:st.growth},
+      rates => stageGrowthBlend(Object.assign({}, st, {gRates: rates}), fee),
+      rates => {
+        if (!stages[i]) return;
+        if (rates) stages[i].gRates = rates; else delete stages[i].gRates;
+        buildStages(); renderSeries();
+        toast(rates ? "Contribution growth set by account" : "One contribution growth rate for every account");
+      }, readStageAcct().matchPct > 0 ? "Your employer match rises at the blended rate." : "");
+    return;
+  }
   const cv = e.target.closest ? e.target.closest("button[data-conv]") : null;
   if (cv){
     const i = parseInt(cv.getAttribute("data-conv"), 10);
@@ -11718,7 +11869,9 @@ function buildSheet(){
   } else {
     inputs += acSheetRows(p.acct, p.initial);
     inputs += row(p.acct ? "Contribution, with match" : "Contribution", money(p.contrib, 2) + " " + p.period.toLowerCase());
-    inputs += row("Contribution growth", pctStr(p.growth, 2) + " / yr");
+    inputs += row("Contribution growth", pctStr(p.growth, 2) + " / yr" +
+      (p.acct && p.acct.gRates ? " blended (traditional " + pctStr(p.acct.gRates.t, 2) +
+        ", Roth " + pctStr(p.acct.gRates.r, 2) + ", taxable " + pctStr(p.acct.gRates.b, 2) + ")" : ""));
     inputs += row("Time period", fmtNum(p.years) + " years");
     inputs += row("Rate of return", pctStr(p.gross, 2));
     if (p.fees > 0) inputs += row("Fees", "\u2212" + pctStr(p.fees, 2));
@@ -16341,7 +16494,7 @@ function currentState(){
     // the open tool's own inputs, whichever tool that is
     ts: chartMode.tab === "tools" && TOOL_PATHS[toolSub]
       ? {k:toolSub, d:buildToolData(toolSub)} : undefined,
-    cs: g.acct ? stages.map(st => [st.sTrad, st.sRoth]) : undefined,
+    cs: g.acct ? stages.map(st => [st.sTrad, st.sRoth, st.gRates]) : undefined,
     sub:toolSub, tx:readTaxState(), mo:readMortState(), bg:readBudgetState(),
     rc:readRCState()};
 }
@@ -16366,7 +16519,7 @@ function applyState(o){
       const st = {years:c[0], contrib:c[1], period:c[2], growth:c[3],
         nominal:c[4], vol:c[5], adj:!!c[6]};
       const sp = Array.isArray(o.cs) && o.cs[i];
-      if (sp){ st.sTrad = sp[0]; st.sRoth = sp[1]; }
+      if (sp){ st.sTrad = sp[0]; st.sRoth = sp[1]; if (sp[2]) st.gRates = sp[2]; }
       const x = Array.isArray(o.cx) && o.cx[i];
       if (x){
         if (x.g) st.glide = x.g;
