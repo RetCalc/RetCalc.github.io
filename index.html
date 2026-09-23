@@ -6047,6 +6047,12 @@ function solveYears(p, portToday, capYears){
 function projectSeries(g, stages){
   let bal = g.initial, contribTotal = 0, elapsed = 0, lastContrib = 0, lastPeriod = null;
   const rows = [], summary = [];
+  /* `rows` follow each stage's own years, so after a fractional stage they
+     land on 16.92, 17.92... (the charts and Monte Carlo bands line up with
+     them). `calRows` regroup the same periods by whole calendar year for
+     the tables: year 17 holds the rest of stage 1 and the start of stage 2. */
+  const calRows = [];
+  let cal = null;
   for (let si = 0; si < stages.length; si++){
     const st = stages[si];
     const ppy = PPY[st.period];
@@ -6068,9 +6074,16 @@ function projectSeries(g, stages){
         periodicR = Math.pow(1 + yearRate, 1 / ppy) - 1;
       }
       const c = st.contrib * Math.pow(1 + st.growth, yearNo - 1);
+      const t = elapsed + i / ppy, calYear = Math.max(1, Math.ceil(t - 1e-9));
+      if (!cal || cal.year !== calYear){
+        if (cal) calRows.push(cal);
+        cal = {year:calYear, stageFrom:si + 1, stage:si + 1, start:bal, contrib:0, t};
+      }
       bal = bal * (1 + periodicR) + c;
       contribTotal += c; stageContrib += c; yearContrib += c;
       lastContrib = c; lastPeriod = st.period;
+      cal.stage = si + 1; cal.contrib += c; cal.end = bal; cal.t = t;
+      cal.growth = cal.end - cal.start - cal.contrib;
     }
     if (n > 0){
       // a fractional stage ends partway through its final year
@@ -6084,6 +6097,7 @@ function projectSeries(g, stages){
                   end:bal, nominal:st.nominal, periods:n});
   }
 
+  if (cal) calRows.push(cal);
   const totalYears = elapsed;
   const inflY = (g.inflYears === null || g.inflYears === undefined || g.inflYears === "")
                 ? totalYears : g.inflYears;
@@ -6091,7 +6105,7 @@ function projectSeries(g, stages){
   const wdReal = fvReal * g.withdrawal;
   const afterTax = wdReal * (1 - g.taxRate);
   return {
-    rows, summary, totalYears, inflYears:inflY,
+    rows, calRows, summary, totalYears, inflYears:inflY,
     fv:bal, invested: g.initial + contribTotal, contribTotal, lastContrib, lastPeriod,
     growth: bal - g.initial - contribTotal,
     fvReal, wd: bal * g.withdrawal, wdReal, afterTax, afterTaxMo: afterTax / 12
@@ -11136,11 +11150,13 @@ function renderSeries(){
     "</td><td>" + money(x.start) + "</td><td>" + money(x.contrib) +
     "</td><td class='pos'>" + money(x.growth) + "</td><td>" + money(x.end) + "</td></tr>").join("");
 
-  $("xYearTable").querySelector("tbody").innerHTML = R.rows.map(r =>
-    "<tr><td>" + fmtNum(r.endYear) + "</td><td>" + r.stage + "</td><td>" + money(r.start) +
+  $("xYearTable").querySelector("tbody").innerHTML = R.calRows.map(r =>
+    "<tr><td>" + r.year + "</td><td>" +
+    (r.stageFrom === r.stage ? r.stage : r.stageFrom + "\u2013" + r.stage) +
+    "</td><td>" + money(r.start) +
     "</td><td>" + money(r.contrib) + "</td><td class='pos'>" + money(r.growth) +
     "</td><td>" + money(r.end) + "</td><td>" +
-    money(r.end / Math.pow(1 + g.inflation, r.endYear)) + "</td></tr>").join("");
+    money(r.end / Math.pow(1 + g.inflation, r.t)) + "</td></tr>").join("");
 
   const feeCost = (g.fees || 0) > 0
     ? projectSeries(g, effectiveStagesFrom(Object.assign({}, g, {fees: 0}), stages)).fv - R.fv : 0;
@@ -11691,7 +11707,7 @@ function buildSheet(){
   out += row("After tax, per month", money(R.afterTaxMo));
 
   const rows = series
-    ? R.rows.map(r => ({year:r.endYear, end:r.end, growth:r.growth, contrib:r.contrib}))
+    ? R.calRows.map(r => ({year:r.year, end:r.end, growth:r.growth, contrib:r.contrib}))
     : R.years.map(y => ({year:y.year, end:y.end, growth:y.growth, contrib:y.contrib}));
   const cross = rows.find(r => r.growth > r.contrib && r.contrib > 0);
   let ms = row("Crossover year", cross ? "Year " + fmtNum(cross.year) : "\u2014");
