@@ -736,7 +736,6 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 .two > [hidden] + .field:last-child:nth-child(2){grid-column:1 / -1}
 #acSchedule label{white-space:nowrap}
 .acwarn{color:var(--gold)}
-#acNote:empty,#saNote:empty{display:none}
 /* Running totals under the account rows, lined up with the columns above */
 .actotals{border-top:1px dashed var(--line);padding-top:8px;margin:-3px 0 12px}
 .actot{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}
@@ -755,8 +754,6 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 #acResults tfoot td,#saResults tfoot td{font-weight:600;border-top:1px solid var(--line);border-bottom:0}
 /* Stage card: where this stage's contribution goes. Two inputs and the
    remainder, on one line, under the stage's own grid. */
-.stagesplithint{margin:10px 0 0}
-.stagesplithint:empty{display:none}
 /* Split by account type: years, frequency, growth and return on top, the
    three account amounts and their total underneath (five across when Monte
    Carlo adds volatility). Phones keep their two columns. */
@@ -1930,7 +1927,6 @@ window.onerror = function(msg){
                 <div class="inputwrap"><input id="acMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
               </div>
             </div>
-            <div class="hint" id="acNote" style="margin:-4px 0 10px"></div>
             <div class="acsep"></div>
             <div class="acgroup">Taxes in retirement</div>
             <div class="two">
@@ -2093,7 +2089,6 @@ window.onerror = function(msg){
                 <div class="inputwrap"><input id="saMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
               </div>
             </div>
-            <div class="hint acwarn" id="saNote" style="margin:-4px 0 10px"></div>
             <div class="acsep"></div>
             <div class="two">
               <div class="field">
@@ -3607,8 +3602,7 @@ window.onerror = function(msg){
           and traditional later, and the tax on your retirement income reflects the
           mix you end up with. The employer match works as on Advanced, from your
           salary, the match rate and the share of salary it applies to; your salary is
-          assumed to grow at each stage's contribution growth rate. A stage that misses
-          part of the match is flagged on its card.</dd>
+          assumed to grow at each stage's contribution growth rate.</dd>
         </dl>
       </div>
     </div>
@@ -9230,20 +9224,6 @@ function renderAcct(p){
   $("acTotSub").textContent = B.match > 0
     ? "+ " + money(B.match) + perLbl + " match" : "";
 
-  // whether the contributions earn the whole employer match
-  const notes = [];
-  if (a.matchPct > 0 && !(a.salary > 0)){
-    notes.push("Add your salary to count the employer match.");
-  } else if (a.matchPct > 0 && a.matchCap > 0){
-    const needYr = a.salary * a.matchCap / 100;
-    const inYr = (a.tradC + a.rothC) * ppy;
-    if (inYr + 0.5 < needYr)
-      notes.push("<span class='acwarn'>You're missing " + money((needYr - inYr) * a.matchPct / 100) +
-        " a year of employer match.</span> Putting at least " + money(needYr) +
-        " a year into traditional and Roth gets all of it.");
-    else notes.push("You're getting the full employer match.");
-  }
-  $("acNote").innerHTML = notes.join(" ");
 
   acRenderTable("acResults", "acResultsNote", B, B.matchTotal > 0
     ? "Your employer puts in <b>" + money(B.matchTotal) + "</b> over the " +
@@ -10851,36 +10831,13 @@ function stTargetRate(g){
   if (!g.acct || !lastStageAcct || $("solveForS").value !== "After-Tax Withdrawal") return g.taxRate;
   return acTargetRate(g.acct, lastStageAcct, num("targetS"), g.taxRate);
 }
-/* Per-stage notes (a stage missing part of the employer match)
-   plus the tax readout and results panel. */
+/* The tax readout and results panel. */
 function renderStageAcct(g){
   saSync();
   if (!g.acct || !lastStageAcct) return;
   const B = lastStageAcct;
   $("saTaxOut").value = pctStr(B.effRate, 1);
   $("saTotBal").textContent = money(g.initial);
-  const a = g.acct;
-  $("saNote").textContent = a.matchPct > 0 && !(a.salary > 0)
-    ? "Add your salary to count the employer match." : "";
-  const eff = effectiveStages(g);
-  let start = 0;
-  stages.forEach((st, i) => {
-    const s = stSplit(st);
-    const rest = $("stageList").querySelector("[data-staxable='" + i + "']");
-    if (rest) rest.textContent = +(s.b * 100).toFixed(1) + "%";
-    const note = $("stageList").querySelector("[data-slimit='" + i + "']");
-    if (note){
-      const e = eff[i], ppyI = PPY[st.period];
-      const needYr = a.matchPct > 0 && e.salary > 0 ? e.salary * (a.matchCap || 0) / 100 : 0;
-      const inYr = e.mine * (s.t + s.r) * ppyI;
-      note.innerHTML = inYr + 0.5 < needYr && st.contrib > 0
-        ? "<span class='acwarn'>Misses " + money((needYr - inYr) * a.matchPct / 100) +
-          " a year of employer match.</span> Putting " + money(needYr) +
-          " a year into traditional and Roth gets all of it."
-        : "";
-    }
-    start += st.years;
-  });
   acRenderTable("saResults", "saResultsNote", B, B.matchTotal > 0
     ? "Your employer puts in <b>" + money(B.matchTotal) + "</b> over the " +
       fmtNum(B.years) + " years, before growth." : "");
@@ -10906,7 +10863,6 @@ function stageGlideBtn(st, i){
 }
 function buildStages(){
   const list = $("stageList");
-  const split = saOn();
   list.innerHTML = stages.map((st, i) => {
     const opts = PERIOD_NAMES.map(n =>
       "<option" + (n === st.period ? " selected" : "") + ">" + n + "</option>").join("");
@@ -10916,7 +10872,7 @@ function buildStages(){
         escapeHtml(st.name || ("Stage " + (i + 1))) + "</span>" +
       "<span class='stagespan' data-span='" + i + "'></span>" +
       "<button class='btn mini' type='button' data-del='" + i + "'>Remove</button></div>" +
-      stageGridHtml(st, i, opts) + "</div>" + (split ? "<div class='hint stagesplithint' data-slimit='" + i + "'></div>" : "") +
+      stageGridHtml(st, i, opts) + "</div>" +
       (i === stages.length - 1 ? (
         "<div class='glidewrap'>" + stageGlideBtn(st, i) +
           "<div class='glidefields'" + ((st.glide && st.glide.on) ? "" : " hidden") + ">" +
