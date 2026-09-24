@@ -2264,7 +2264,7 @@ window.onerror = function(msg){
             <div class="kv"><span class="k">Amount invested</span><span class="v" id="rInvested"></span></div>
             <div class="kv"><span class="k">Growth</span><span class="v pos" id="rGrowth"></span></div>
             <div class="kv"><span class="k">Total contributions</span><span class="v" id="rContribs"></span></div>
-            <div class="kv"><span class="k">Final contribution</span><span class="v" id="rLastContrib"></span></div>
+            <div class="kv"><span class="k">Final contribution, inflation adjusted</span><span class="v" id="rLastContrib"></span></div>
           </div>
           <div>
             <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="rWd"></span></div>
@@ -2482,7 +2482,7 @@ window.onerror = function(msg){
             <div class="kv"><span class="k">Amount invested</span><span class="v" id="xInvested"></span></div>
             <div class="kv"><span class="k">Growth</span><span class="v pos" id="xGrowth"></span></div>
             <div class="kv"><span class="k">Total contributions</span><span class="v" id="xContribs"></span></div>
-            <div class="kv"><span class="k">Final contribution</span><span class="v" id="xLastContrib"></span></div>
+            <div class="kv"><span class="k">Final contribution, inflation adjusted</span><span class="v" id="xLastContrib"></span></div>
           </div>
           <div>
             <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="xWd"></span></div>
@@ -5902,7 +5902,7 @@ function project(p){
   // silently misses its target.
   const gYears = glideOn ? Math.min(p.glide.years, p.years) : 0;
   const r = Math.pow(1 + p.nominal, 1 / ppy) - 1;
-  let bal = p.initial, contribTotal = 0, lastContrib = 0;
+  let bal = p.initial, contribTotal = 0, lastContrib = 0, lastAt = 0;
   const years = [];
   let yearStart = p.initial, yearContrib = 0, curYear = 1;
   let periodicR = r;
@@ -5919,7 +5919,7 @@ function project(p){
     }
     const c = p.contrib * Math.pow(1 + p.growth, yearNo - 1);
     bal = bal * (1 + periodicR) + c;
-    contribTotal += c; yearContrib += c; lastContrib = c;
+    contribTotal += c; yearContrib += c; lastContrib = c; lastAt = i / ppy;
   }
   if (n > 0) years.push({year:curYear, start:yearStart, contrib:yearContrib,
                          growth:bal - yearStart - yearContrib, end:bal});
@@ -5936,6 +5936,8 @@ function project(p){
   return {
     ppy, periods:n, periodicRate:r, years,
     fv, invested, growth: fv - invested, contribTotal, lastContrib,
+    // the last payment in today's dollars, deflated to when it's made
+    lastContribReal: lastContrib / Math.pow(1 + p.inflation, lastAt),
     inflYears, fvReal, wd, wdReal, afterTax, afterTaxMo: afterTax / 12,
     realReturn: (1 + p.nominal) / (1 + p.inflation) - 1
   };
@@ -6099,7 +6101,7 @@ function fillWholeYears(pts, copy){
   return out;
 }
 function projectSeries(g, stages){
-  let bal = g.initial, contribTotal = 0, elapsed = 0, lastContrib = 0, lastPeriod = null;
+  let bal = g.initial, contribTotal = 0, elapsed = 0, lastContrib = 0, lastPeriod = null, lastAt = 0;
   const rows = [], summary = [];
   /* `rows` follow each stage's own years, so after a fractional stage they
      land on 16.92, 17.92... (the charts and Monte Carlo bands line up with
@@ -6135,7 +6137,7 @@ function projectSeries(g, stages){
       }
       bal = bal * (1 + periodicR) + c;
       contribTotal += c; stageContrib += c; yearContrib += c;
-      lastContrib = c; lastPeriod = st.period;
+      lastContrib = c; lastPeriod = st.period; lastAt = t;
       cal.stage = si + 1; cal.contrib += c; cal.end = bal; cal.t = t;
       cal.growth = cal.end - cal.start - cal.contrib;
       if (snaps[si].has(i)) chartRows.push({year:snaps[si].get(i), stage:si + 1, end:bal});
@@ -6163,6 +6165,7 @@ function projectSeries(g, stages){
     rows, calRows, summary,
     chartRows: fillWholeYears(chartRows, (pt, year) => Object.assign({}, pt, {year})), totalYears, inflYears:inflY,
     fv:bal, invested: g.initial + contribTotal, contribTotal, lastContrib, lastPeriod,
+    lastContribReal: lastContrib / Math.pow(1 + (g.inflation || 0), lastAt),
     growth: bal - g.initial - contribTotal,
     fvReal, wd: bal * g.withdrawal, wdReal, afterTax, afterTaxMo: afterTax / 12
   };
@@ -9202,7 +9205,7 @@ function renderProjection(){
   $("rInvested").textContent = money(R.invested);
   $("rGrowth").textContent = money(R.growth);
   $("rContribs").textContent = money(R.contribTotal);
-  $("rLastContrib").textContent = money(R.lastContrib) + " " + PERIOD_ADV[p.period];
+  $("rLastContrib").textContent = money(R.lastContribReal) + " " + PERIOD_ADV[p.period];
   $("rWd").textContent = money(R.wd);
   $("rWdReal").textContent = money(R.wdReal);
   $("rAfterTax").textContent = money(R.afterTax);
@@ -9859,7 +9862,7 @@ function cmpRun(data, mode){
             mrow("Amount invested", R.invested),
             mrow("Growth", R.growth),
             mrow("Total contributions", R.contribTotal),
-            mrow("Final contribution", R.lastContrib),
+            mrow("Final contribution, inflation adj.", R.lastContribReal),
             mrow("Total years", R.totalYears, "years"),
             mrow("Stages", list.length, "int")],
       inp
@@ -9893,7 +9896,7 @@ function cmpRun(data, mode){
           mrow("Amount invested", R.invested),
           mrow("Growth", R.growth),
           mrow("Total contributions", R.contribTotal),
-          mrow("Final contribution", R.lastContrib)],
+          mrow("Final contribution, inflation adj.", R.lastContribReal)],
     inp
   };
 }
@@ -11317,7 +11320,7 @@ function renderSeries(){
   $("xGrowth").textContent = money(R.growth);
   $("xContribs").textContent = money(R.contribTotal);
   $("xLastContrib").textContent = R.lastPeriod
-    ? money(R.lastContrib) + " " + PERIOD_ADV[R.lastPeriod] : money(0);
+    ? money(R.lastContribReal) + " " + PERIOD_ADV[R.lastPeriod] : money(0);
   $("xWd").textContent = money(R.wd);
   $("xWdReal").textContent = money(R.wdReal);
   $("xAfterTax").textContent = money(R.afterTax);
@@ -11878,8 +11881,8 @@ function buildSheet(){
   out += row("Amount invested", money(R.invested));
   out += row("Growth", money(R.growth));
   const lastPer = series ? R.lastPeriod : p.period;
-  out += row("Final contribution", lastPer
-    ? money(R.lastContrib) + " " + PERIOD_ADV[lastPer] : money(0));
+  out += row("Final contribution, inflation adj.", lastPer
+    ? money(R.lastContribReal) + " " + PERIOD_ADV[lastPer] : money(0));
   out += row("Future value", money(R.fv));
   out += row("Inflation adjusted", money(R.fvReal));
   out += row("Annual withdrawal", money(R.wdReal) + " (adj.)");
