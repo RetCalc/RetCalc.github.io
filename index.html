@@ -784,8 +784,12 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
    Label widths depend on the font, and Windows' is wider than Apple's, so a
    label that fits on a Mac can wrap on a PC and push its input down. Each
    field is label / input / anything under it (a hint, a button), laid on
-   three rows it shares with its neighbours. */
-@supports (grid-template-rows: subgrid){
+   three rows it shares with its neighbours.
+   Not on iOS: WebKit there sizes these shared rows too short at times,
+   leaving boxes squashed and their values clipped until a tap relays the
+   page out. iPhones get plain rows instead (-webkit-touch-callout is
+   supported only on iOS). */
+@supports (grid-template-rows: subgrid) and (not (-webkit-touch-callout: none)){
   .two,.stagegrid,.hh-grid{row-gap:0}
   .two > .field,.stagegrid > .field,.hh-grid > .field{display:grid;grid-row:span 3;
     grid-template-rows:subgrid;align-self:stretch;align-content:start}
@@ -794,6 +798,12 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .stagegrid{margin-bottom:-10px}
 }
 .stagecard .inputwrap,.stagecard select{background-color:var(--panel)}
+/* iOS runs without the shared rows above, so the phone glide toggle beside
+   rate of return keeps a label row and its own height instead of stretching
+   to fill the cell. */
+@supports (-webkit-touch-callout: none){
+  .stagegrid > .stageglide{grid-template-rows:auto auto 1fr}
+}
 
 /* ---------- data ---------- */
 table{width:100%;border-collapse:collapse}
@@ -17013,37 +17023,6 @@ $("scenarioPick").addEventListener("change", e => {
    inside the dialog instead of walking into the page behind it, and focus
    returns to whatever opened it. close() is the builder's own dismissal, so
    each still resolves its promise with its own cancel value. */
-/* iOS Safari lays out a subgrid row pair (.two and friends) that was
-   hidden, such as an unopened tab or the account-split fields before they're
-   switched on, at a stale, too-short height once it's shown, clipping the
-   value inside until a tap forces a new layout. Whenever something stops
-   being hidden, rebuild the grids inside it once so they size correctly. */
-(function(){
-  if (!window.MutationObserver || !(window.CSS && CSS.supports &&
-      CSS.supports("grid-template-rows", "subgrid"))) return;
-  const GRIDS = ".two,.stagegrid,.hh-grid";
-  const pending = new Set();
-  let queued = false;
-  const flush = () => {
-    queued = false;
-    pending.forEach(root => {
-      const list = root.matches && root.matches(GRIDS) ? [root] : [];
-      root.querySelectorAll && root.querySelectorAll(GRIDS).forEach(g => list.push(g));
-      list.forEach(g => { g.style.display = "none"; });
-      void document.body.offsetHeight;
-      list.forEach(g => { g.style.display = ""; });
-    });
-    pending.clear();
-  };
-  new MutationObserver(muts => {
-    muts.forEach(m => {
-      const el = m.target;
-      if (el.nodeType === 1 && !el.hidden){ pending.add(el); }
-    });
-    if (pending.size && !queued){ queued = true; requestAnimationFrame(flush); }
-  }).observe(document.body, {subtree:true, attributes:true, attributeFilter:["hidden"]});
-})();
-
 function wireModal(ov, close){
   const opener = document.activeElement;
   const pop = ov.querySelector(".popup");
