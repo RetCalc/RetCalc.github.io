@@ -5919,7 +5919,7 @@ function project(p){
     }
     const c = p.contrib * Math.pow(1 + p.growth, yearNo - 1);
     bal = bal * (1 + periodicR) + c;
-    contribTotal += c; yearContrib += c; lastContrib = c; lastAt = i / ppy;
+    contribTotal += c; yearContrib += c; lastContrib = c; lastAt = yearNo - 1;
   }
   if (n > 0) years.push({year:curYear, start:yearStart, contrib:yearContrib,
                          growth:bal - yearStart - yearContrib, end:bal});
@@ -5936,7 +5936,9 @@ function project(p){
   return {
     ppy, periods:n, periodicRate:r, years,
     fv, invested, growth: fv - invested, contribTotal, lastContrib,
-    // the last payment in today's dollars, deflated to when it's made
+    // The last payment in today's dollars. Contributions step up once a
+    // year and hold flat through it, so it's deflated to the start of the
+    // year it's paid in: growth equal to inflation gives back the amount typed.
     lastContribReal: lastContrib / Math.pow(1 + p.inflation, lastAt),
     inflYears, fvReal, wd, wdReal, afterTax, afterTaxMo: afterTax / 12,
     realReturn: (1 + p.nominal) / (1 + p.inflation) - 1
@@ -6137,7 +6139,7 @@ function projectSeries(g, stages){
       }
       bal = bal * (1 + periodicR) + c;
       contribTotal += c; stageContrib += c; yearContrib += c;
-      lastContrib = c; lastPeriod = st.period; lastAt = t;
+      lastContrib = c; lastPeriod = st.period; lastAt = elapsed + yearNo - 1;
       cal.stage = si + 1; cal.contrib += c; cal.end = bal; cal.t = t;
       cal.growth = cal.end - cal.start - cal.contrib;
       if (snaps[si].has(i)) chartRows.push({year:snaps[si].get(i), stage:si + 1, end:bal});
