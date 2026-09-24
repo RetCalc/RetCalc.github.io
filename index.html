@@ -692,6 +692,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
 .hh-sum b{color:var(--text);font-weight:600;margin-right:8px}
 .hh-sum .hh-bits span + span::before{content:"\00b7";margin:0 7px;color:var(--dimmer)}
 .hh-sum .hh-bits{font-size:13px;font-variant-numeric:tabular-nums;color:var(--text)}
+.hh-sum .hh-short{display:none}
 .hh-body{border-top:1px solid var(--line-soft);padding:14px 14px 12px}
 .hh-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 12px}
 .hh-grid .field{margin-bottom:10px}
@@ -718,6 +719,11 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
   .hh-sum{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
     overflow:hidden;font-size:12.5px}
   .hh-sum .hh-bits{font-size:12.5px}
+  /* collapsed on a phone: the compact line alone, without the label */
+  .hh-sum .hh-long,.hh-sum b:has(+ .hh-long){display:none}
+  .hh-sum .hh-short{display:inline}
+  .hh-sum .hh-short span + span::before{margin:0 5px}
+  .hh-bar:has(.hh-short) .hh-ic{display:none}
   .hh-btns{width:100%}
   .hh-btns .btn{flex:1 1 auto}
 }
@@ -18146,18 +18152,28 @@ function hhSummary(){
     $("hhEdit").textContent = "Set up";
     return;
   }
-  const bits = [];
-  if (H.age != null) bits.push("Age " + fmtNum(H.age) +
-    (H.status === "m" && H.spouseAge != null ? " & " + fmtNum(H.spouseAge) : ""));
-  if (H.retire != null) bits.push("retire at " + fmtNum(H.retire));
-  if (H.saved != null) bits.push(money(H.saved) + " saved");
-  if (H.monthly != null) bits.push(money(H.monthly) + "/mo");
+  // Full wording for wide screens; phones get a compact line ($825K, IL)
+  // that fits the whole profile in the collapsed bar's two lines.
+  const k = v => {
+    const a = Math.abs(v), sign = v < 0 ? "-" : "";
+    const f = (x, u) => sign + "$" + (+x.toFixed(x < 10 ? 1 : 0)) + u;
+    return a >= 1e6 ? f(a / 1e6, "M") : a >= 1e3 ? f(a / 1e3, "K") : money(v);
+  };
+  const bits = [], short = [];
+  if (H.age != null){
+    const ages = fmtNum(H.age) + (H.status === "m" && H.spouseAge != null ? " & " + fmtNum(H.spouseAge) : "");
+    bits.push("Age " + ages); short.push("Age " + ages);
+  }
+  if (H.retire != null){ bits.push("retire at " + fmtNum(H.retire)); short.push("retire " + fmtNum(H.retire)); }
+  if (H.saved != null){ bits.push(money(H.saved) + " saved"); short.push(k(H.saved) + " saved"); }
+  if (H.monthly != null){ bits.push(money(H.monthly) + "/mo"); short.push(k(H.monthly) + "/mo"); }
   const inc = (H.income || 0) + (H.income2 || 0);
-  if (inc > 0) bits.push(money(inc) + "/yr income");
-  if (H.spend != null) bits.push("spend " + money(H.spend) + "/yr");
-  if (H.state && STATES[H.state]) bits.push(STATES[H.state].n);
-  $("hhSummary").innerHTML = "<b>Your household</b><span class='hh-bits'>" +
-    bits.map(b => "<span>" + b + "</span>").join("") + "</span>";
+  if (inc > 0){ bits.push(money(inc) + "/yr income"); short.push(k(inc) + " income"); }
+  if (H.spend != null){ bits.push("spend " + money(H.spend) + "/yr"); short.push(k(H.spend) + " spend"); }
+  if (H.state && STATES[H.state]){ bits.push(STATES[H.state].n); short.push(H.state); }
+  const list = (arr, cls) => "<span class='hh-bits " + cls + "'>" +
+    arr.map(b => "<span>" + b + "</span>").join("") + "</span>";
+  $("hhSummary").innerHTML = "<b>Your household</b>" + list(bits, "hh-long") + list(short, "hh-short");
   $("hhEdit").textContent = "Edit";
 }
 /* Writes the profile into each tool's fields. `only` limits it to one tool
