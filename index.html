@@ -1112,6 +1112,9 @@ html[data-theme="light"] .about.disclaimer{
   color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.35);
   text-underline-offset:3px;transition:text-decoration-color .14s ease}
 .linkbtn:hover{text-decoration-color:currentColor}
+a.txlink{color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.4);
+  text-underline-offset:2px}
+a.txlink:hover{text-decoration-color:currentColor}
 .linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
 .linkbtn svg{width:14px;height:14px;flex:none}
 /* A growth field set per account shows the blend; clicking it edits the rates. */
@@ -9274,7 +9277,8 @@ function acRenderTable(tableId, noteId, B, extra){
   if (B.w.brok > 0)
     bits.push("<b>" + pctStr(B.gainPct, 0) + "</b> of the brokerage balance is growth by then, so only that share of each sale is taxed.");
   if (extra) bits.push(extra);
-  bits.push("Social Security and other income aren't included here and would raise the tax; the Income Tax tool can add them.");
+  bits.push("Social Security and other income aren't included here and would raise the tax; the " +
+    "<a href='#' class='txlink' data-txfrom='" + tableId + "'>Income Tax tool</a> can add them.");
   $(noteId).innerHTML = bits.join(" ");
 }
 
@@ -15757,6 +15761,25 @@ $("dtAdd").addEventListener("click", () => {
 $("dtExtra").addEventListener("input", renderDebt);
 /* Carries the plan's ending balance, in today's dollars, in as the
    Drawdown Simulator's starting portfolio. */
+/* From either account table to the Income Tax tool's retirement mode, with
+   that table's first-year withdrawals, brokerage gain share, filing status,
+   state and 65+ count. Other income starts at zero, so the tool opens on the
+   same tax the table shows and Social Security or a pension can be added. */
+document.addEventListener("click", e => {
+  const a = e.target.closest ? e.target.closest("a.txlink") : null;
+  if (!a) return;
+  e.preventDefault();
+  const B = a.getAttribute("data-txfrom") === "acResults" ? lastAcct : lastStageAcct;
+  if (!B) return;
+  const r = v => Math.round(v || 0);
+  writeTaxState({mode:"retire", status:B.a.status, state:B.a.state,
+    trad:r(B.w.trad), roth:r(B.w.roth), brok:r(B.w.brok),
+    gainPct: Math.round(B.gainPct * 1000) / 10, seniors: B.seniors || 0,
+    ss:0, pension:0, other:0, pre:0, dedType:"std", item:0});
+  showTab("tools"); showTool("tax");
+  renderTax();
+  toast("Loaded your first-year withdrawals into Income Tax");
+});
 $("toDrawdown").addEventListener("click", () => {
   const R = project(readInputs());
   $("ddInitial").value = groupDigits(Math.round(R.fvReal), true);
