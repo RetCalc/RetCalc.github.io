@@ -1685,6 +1685,268 @@ header{padding-top:var(--sb-clear)}
 #cmpInTable tbody tr.cmpdiff td:first-child{
   box-shadow:inset 2px 0 0 var(--gold);color:var(--text)}
 .cmpna{color:var(--dimmer)}
+
+/* ---------- retirement readiness guide ----------
+   One question at a time in a wide card, with the live score and the whole
+   route beside it. Choices are full-width rows rather than the small .seg
+   switches, since each carries a sentence of its own. */
+#tab-guide{max-width:1120px;margin:0 auto;width:100%}
+.gd-top{padding:18px 22px 16px}
+.gd-top-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.gd-title{font-size:16px;font-weight:600;letter-spacing:-.012em;display:flex;align-items:center}
+.gd-count{margin-left:auto;font-size:12px;color:var(--dimmer);font-family:var(--mono)}
+.gd-mini{display:none;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.gd-mini b{font-family:var(--mono);font-size:15px;color:var(--text)}
+.gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:14px}
+.gd-seg{min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.gd-seg i{display:block;height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden;position:relative}
+.gd-seg i b{position:absolute;left:0;top:0;bottom:0;background:var(--jade);border-radius:3px;
+  transition:width .35s cubic-bezier(.2,.7,.3,1)}
+.gd-seg span{display:block;font-size:11px;color:var(--dimmer);margin-top:6px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.gd-seg.on span{color:var(--text);font-weight:600}
+.gd-seg:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+.gd-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+.gd-side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(var(--navh) + 16px)}
+@media (max-width:899px){
+  .gd-grid{grid-template-columns:minmax(0,1fr)}
+  .gd-side{position:static}
+  .gd-mini{display:inline-flex}
+}
+
+.gd-card{padding:26px 30px 22px}
+.gd-card:focus{outline:none}
+.gd-eyebrow{display:flex;gap:12px;justify-content:space-between;font-size:11px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--jade);margin-bottom:10px}
+.gd-eyebrow span + span{color:var(--dimmer);font-weight:600}
+.gd-q,.panel > h2.gd-q{display:block;padding:0;border:0;color:var(--text);
+  font-size:23px;line-height:1.25;font-weight:600;letter-spacing:-.022em;margin:0 0 10px}
+.gd-q:focus{outline:none}
+.gd-lead{color:var(--dim);font-size:14.5px;line-height:1.6;margin:0 0 18px;max-width:64ch}
+.gd-lead b{color:var(--text);font-weight:600}
+.gd-h3{font-size:13px;font-weight:600;color:var(--text);margin:20px 0 10px}
+.gd-choices{display:grid;gap:9px;margin:0 0 18px}
+.gd-choices.two{grid-template-columns:1fr 1fr}
+.gd-choice{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
+  padding:13px 15px;border-radius:12px;border:1px solid var(--line);
+  background:var(--panel-2);color:var(--text);cursor:pointer;font:inherit;
+  box-shadow:var(--edge-up);
+  transition:border-color .14s ease,background .14s ease,transform .08s ease}
+.gd-choice:hover{border-color:#3a5a6e}
+html[data-theme="light"] .gd-choice:hover{border-color:#9fc4b4}
+.gd-choice:active{transform:translateY(1px)}
+.gd-choice:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gd-choice .dot{flex:none;width:18px;height:18px;border-radius:50%;margin-top:1px;
+  border:1.5px solid var(--dimmer);position:relative;transition:border-color .14s ease}
+.gd-choice.on{border-color:var(--jade);background:rgba(79,191,149,.10)}
+.gd-choice.on .dot{border-color:var(--jade)}
+.gd-choice.on .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--jade)}
+.gd-choice .t{min-width:0}
+.gd-choice .t b{display:block;font-weight:600;font-size:14.5px;line-height:1.35}
+.gd-choice .t span{display:block;font-size:12.5px;color:var(--dimmer);margin-top:2px;line-height:1.45}
+.gd-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 16px;max-width:560px;margin-bottom:6px}
+.gd-fields .full{grid-column:1 / -1}
+.gd-fields .field{margin-bottom:12px}
+.gd-fields .field label{font-size:12.5px}
+.gd-picks{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.gd-pick{font:inherit;font-size:12.5px;padding:7px 12px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--dim)}
+.gd-pick b{font-family:var(--mono);font-weight:600;color:var(--text)}
+.gd-pick:hover{border-color:var(--jade);color:var(--text)}
+.gd-pick:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* The trip into a tool: what to do there, and the button that goes. */
+.gd-task{border:1px solid rgba(79,191,149,.32);border-radius:12px;padding:16px 18px 18px;margin:2px 0 16px;
+  background:linear-gradient(180deg,rgba(79,191,149,.09),rgba(79,191,149,.025))}
+.gd-task-h{display:flex;align-items:center;gap:13px;margin-bottom:10px}
+.gd-task-ic{flex:none;width:36px;height:36px;color:var(--jade)}
+.gd-task-ic svg{width:100%;height:100%;display:block}
+.gd-task-h b{display:block;font-size:14.5px;font-weight:600}
+.gd-task-h span{display:block;font-size:12px;color:var(--dimmer)}
+.gd-task .btn.primary{padding:10px 18px;font-size:13.5px}
+.gd-steps{margin:0 0 14px;padding:0;list-style:none;counter-reset:gds}
+.gd-steps li{position:relative;padding:5px 0 5px 33px;font-size:13.5px;color:var(--dim);line-height:1.5;
+  counter-increment:gds}
+.gd-steps li::before{content:counter(gds);position:absolute;left:0;top:5px;width:21px;height:21px;
+  border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;
+  font:600 11px/1 var(--mono);color:var(--dimmer);background:var(--panel)}
+.gd-steps li.ok::before{content:"";border-color:var(--jade);
+  background:var(--jade) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.4l2.6 2.6L12 5.6' fill='none' stroke='%2304211a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/13px no-repeat}
+.gd-steps li.todo::before{border-color:var(--gold);color:var(--gold)}
+.gd-steps li b{color:var(--text);font-weight:600}
+.gd-steps li em{font-style:normal;color:var(--jade);font-size:12px;margin-left:4px}
+
+.gd-callout{border-left:3px solid var(--steel);background:rgba(125,159,214,.08);padding:10px 14px;
+  border-radius:0 10px 10px 0;font-size:13.5px;color:var(--dim);line-height:1.55;margin:0 0 14px;max-width:66ch}
+.gd-callout b{color:var(--text);font-weight:600}
+.gd-callout.ok{border-left-color:var(--jade);background:rgba(79,191,149,.08)}
+.gd-callout.warn{border-left-color:var(--gold);background:rgba(233,184,114,.08)}
+.gd-callout.bad{border-left-color:var(--coral);background:rgba(226,121,95,.08)}
+.gd-callout .btn{margin-top:8px}
+.gd-callout:empty{display:none}
+.gd-link{background:none;border:0;padding:0;color:var(--dim);font:inherit;font-size:13px;cursor:pointer;
+  text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.gd-link:hover{color:var(--text);text-decoration-color:currentColor}
+.gd-link:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+.gd-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line-soft);
+  padding-top:16px;margin-top:22px}
+.gd-foot .sp{flex:1 1 auto}
+.gd-foot .btn.primary{padding:10px 20px;font-size:13.5px}
+.gd-foot .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.gd-foot .gd-why{font-size:12px;color:var(--dimmer)}
+
+/* Intro and results */
+.gd-perks{display:grid;gap:10px;margin:0 0 18px;padding:0;list-style:none;max-width:60ch}
+.gd-perks li{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--dim)}
+.gd-perks li i{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+  background:rgba(79,191,149,.12);color:var(--jade);font:700 12px/1 var(--mono);font-style:normal}
+.gd-perks li b{color:var(--text);font-weight:600}
+.gd-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:0 0 16px;
+  border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line)}
+.gd-stats > div{background:var(--panel-2);padding:14px 16px}
+.gd-stats .k{font-size:11.5px;color:var(--dim);margin-bottom:6px}
+.gd-stats .v{font-family:var(--mono);font-size:21px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--text)}
+.gd-stats .v.gold{color:var(--gold)}
+.gd-stats .v.jade{color:var(--jade)}
+.gd-stats .n{font-size:11px;color:var(--dimmer);margin-top:4px}
+.gd-cover{margin:4px 0 16px;max-width:620px}
+.gd-cover-bar{position:relative;height:16px;border-radius:8px;background:var(--line-soft);overflow:visible;display:flex}
+.gd-cover-bar i{display:block;height:100%}
+.gd-cover-bar i:first-child{border-radius:8px 0 0 8px}
+.gd-cover-bar .need{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--text);border-radius:1px}
+.gd-cover-key{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--dim);margin-top:9px}
+.gd-cover-key span{display:inline-flex;align-items:center;gap:6px}
+.gd-cover-key s{width:10px;height:10px;border-radius:2px;display:inline-block;text-decoration:none}
+.gd-fails{font-size:12.5px;color:var(--dimmer);margin:-6px 0 14px}
+.gd-hero{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin:4px 0 18px}
+.gd-hero .gd-ring{width:132px;height:132px}
+.gd-hero-t{flex:1 1 260px;min-width:0}
+.gd-hero-t .r{font-size:19px;font-weight:600;letter-spacing:-.015em}
+.gd-hero-t p{margin:6px 0 0;color:var(--dim);font-size:14px;line-height:1.55}
+.gd-acts{list-style:none;margin:0 0 18px;padding:0;display:grid;gap:10px;counter-reset:gda}
+.gd-act{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);
+  border-radius:12px;background:var(--panel-2);counter-increment:gda}
+.gd-act::before{content:counter(gda);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  font:700 12px/1 var(--mono);background:rgba(233,184,114,.16);color:var(--gold)}
+.gd-act > div{flex:1 1 auto;min-width:0}
+.gd-act b{display:block;font-size:14.5px;font-weight:600;margin-bottom:3px}
+.gd-act p{margin:0;font-size:13px;color:var(--dim);line-height:1.55}
+.gd-act .btn{margin-top:10px}
+.gd-wins{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.gd-wins span{font-size:12.5px;padding:6px 11px;border-radius:999px;color:var(--jade);
+  background:rgba(79,191,149,.10);border:1px solid rgba(79,191,149,.3)}
+.gd-more{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+.gd-kvs{max-width:560px;margin:0 0 10px}
+.gd-kvs .kv{font-size:13.5px}
+
+/* Score card */
+.gd-score .body{padding:18px}
+.gd-score-top{display:flex;align-items:center;gap:16px}
+.gd-ring{width:96px;height:96px;flex:none;display:block}
+.gd-ring .trk{stroke:var(--line-soft)}
+.gd-ring .val{transition:stroke-dashoffset .6s cubic-bezier(.2,.7,.3,1),stroke .3s ease}
+.gd-ring text{font-family:var(--mono);font-weight:600;fill:var(--text)}
+.gd-score-t .r{font-size:15px;font-weight:600}
+.gd-score-t .n{font-size:12px;color:var(--dimmer);margin-top:3px;line-height:1.4}
+.gd-facs{margin-top:14px}
+.gd-fac{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line-soft);
+  padding:9px 0 10px;font:inherit;color:inherit;cursor:pointer}
+.gd-fac:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+.gd-fac .top{display:flex;justify-content:space-between;gap:10px;font-size:12.5px}
+.gd-fac .top span{color:var(--dim)}
+.gd-fac .top em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--dimmer)}
+.gd-fac .bar{height:5px;border-radius:3px;background:var(--line-soft);margin-top:7px;overflow:hidden}
+.gd-fac .bar i{display:block;height:100%;border-radius:3px;transition:width .4s ease}
+.gd-fac .sub{font-size:11.5px;color:var(--dimmer);margin-top:5px;line-height:1.4}
+.gd-fac.na .top span{color:var(--dimmer)}
+.gd-fac.na .bar{display:none}
+
+/* Route */
+.gd-map .body{padding:8px 10px 12px}
+.gd-map-ch{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer);
+  padding:12px 8px 5px}
+.gd-map-st{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;
+  padding:6px 8px;border-radius:8px;font:inherit;font-size:13px;color:var(--dim);cursor:pointer}
+.gd-map-st:hover{background:var(--panel-2);color:var(--text)}
+.gd-map-st:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.gd-map-st i{flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line);position:relative}
+.gd-map-st.done i{background:var(--jade);border-color:var(--jade)}
+.gd-map-st.done i::after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;
+  border:solid #04211a;border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+.gd-map-st.cur{color:var(--text);background:var(--panel-2);font-weight:600}
+.gd-map-st.cur i{border-color:var(--gold);box-shadow:0 0 0 3px rgba(233,184,114,.18)}
+.gd-map-st.na{color:var(--dimmer);text-decoration:line-through;text-decoration-color:var(--line)}
+.gd-map-st.na i{border-style:dashed}
+.gd-map-st .tag{margin-left:auto;font-size:10.5px;color:var(--dimmer);font-weight:400}
+.gd-map-foot{padding:10px 8px 2px;border-top:1px solid var(--line-soft);margin-top:8px}
+
+@media (max-width:640px){
+  .gd-top{padding:15px 16px 14px}
+  .gd-seg span{display:none}
+  .gd-card{padding:20px 18px 18px}
+  .gd-q,.panel > h2.gd-q{font-size:20px}
+  .gd-lead{font-size:14px}
+  .gd-fields{grid-template-columns:minmax(0,1fr)}
+  .gd-choices.two{grid-template-columns:minmax(0,1fr)}
+  .gd-stats{grid-template-columns:minmax(0,1fr)}
+  .gd-stats > div{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:11px 14px}
+  .gd-stats .k{margin:0}
+  .gd-stats .n{display:none}
+  .gd-foot .btn.primary{flex:1 1 auto}
+}
+
+/* The coach: the guide's current step, docked over whichever tool it sent
+   you to. Bottom-right card on a wide screen, a bottom sheet on a phone. */
+.gd-coach{position:fixed;z-index:30;right:max(20px,env(safe-area-inset-right,0px));
+  bottom:calc(20px + env(safe-area-inset-bottom,0px));width:390px;max-width:calc(100vw - 40px);
+  display:flex;flex-direction:column;max-height:calc(100vh - 110px);
+  background:var(--pop);border:1px solid var(--line);border-top:3px solid var(--jade);
+  border-radius:14px;box-shadow:var(--lift-2)}
+.gd-coach-h{display:flex;align-items:center;gap:10px;padding:11px 12px 10px 16px}
+.gd-coach-h .t{flex:1 1 auto;min-width:0}
+.gd-coach-h .t span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--jade)}
+.gd-coach-h .t b{display:block;font-size:14px;font-weight:600;line-height:1.3;margin-top:2px}
+.gd-coach-ib{flex:none;width:32px;height:32px;display:grid;place-items:center;border-radius:8px;
+  background:none;border:1px solid transparent;color:var(--dimmer);cursor:pointer}
+.gd-coach-ib:hover{color:var(--text);border-color:var(--line);background:var(--panel-2)}
+.gd-coach-ib:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.gd-coach-ib svg{width:15px;height:15px;transition:transform .2s ease}
+.gd-coach.min .gd-coach-tog svg{transform:rotate(180deg)}
+.gd-coach-b{overflow-y:auto;overscroll-behavior:contain;padding:2px 16px 4px}
+.gd-coach-b .gd-steps{margin:0 0 8px}
+.gd-coach-b .gd-steps li{font-size:13px}
+.gd-coach-b p{margin:0 0 10px;font-size:13px;color:var(--dim);line-height:1.5}
+.gd-coach-f{display:flex;align-items:center;gap:10px;padding:10px 12px 12px 16px;border-top:1px solid var(--line-soft)}
+.gd-chip{flex:1 1 auto;min-width:0;font-size:12px;color:var(--dim);line-height:1.35}
+.gd-chip b{font-family:var(--mono);font-weight:600;color:var(--text);font-size:13px;white-space:nowrap}
+.gd-coach-f .btn{flex:none;white-space:nowrap}
+.gd-coach.min .gd-coach-b{display:none}
+.gd-coach-next{display:none;padding:0 16px 10px;font-size:12.5px;color:var(--dim);line-height:1.45}
+.gd-coach-next b{color:var(--text);font-weight:600}
+.gd-coach-next span{color:var(--gold);font-weight:600;margin-right:4px}
+.gd-coach.min .gd-coach-next:not([hidden]){display:block}
+body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 44px)}
+body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bottom,0px))}
+@media (max-width:640px){
+  .gd-coach{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:62vh;border-radius:16px 16px 0 0;
+    border-left:0;border-right:0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  html.pwa .gd-coach{bottom:calc(62px + env(safe-area-inset-bottom,0px));padding-bottom:0}
+  html.pwa body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 96px + env(safe-area-inset-bottom,0px))}
+  html.pwa body.gd-on .toast{bottom:calc(var(--gdh,140px) + 90px + env(safe-area-inset-bottom,0px))}
+}
+@media print{ .gd-coach{display:none !important} }
+
+/* The picker card for the guide shows where you left off. */
+.toolcard-prog{font-size:12px;color:var(--jade);margin-top:6px;font-weight:600}
+.toolcard-prog:empty{display:none}
+@media (hover:hover) and (pointer:fine){
+  @keyframes gd-walk{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
+  @keyframes gd-wave{0%,100%{transform:skewY(0)}40%{transform:skewY(-12deg)}70%{transform:skewY(6deg)}}
+  .gd-flag{transform-box:fill-box;transform-origin:0 50%}
+  .toolcard:hover .gd-route{animation:gd-walk .6s linear}
+  .toolcard:hover .gd-flag{animation:gd-wave .6s ease-in-out}
+}
 </style>
 </head>
 <body>
@@ -4967,6 +5229,23 @@ window.onerror = function(msg){
   <!-- ========== TOOL PICKER ========== -->
   <div class="stack solo" role="tabpanel" aria-labelledby="tabbtn-tools" id="tab-toolpicker" hidden>
     <div class="toolcards">
+      <div class="toolcard" role="button" tabindex="0" data-pick="guide">
+        <div class="toolcard-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path class="gd-route" d="M8 33 C8 25 21 27 21 19 S31 14 31 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
+            <circle cx="8" cy="33" r="3" stroke="currentColor" stroke-width="2"/>
+            <circle cx="21" cy="19" r="2.2" fill="currentColor"/>
+            <path d="M31 13 V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="gd-flag" d="M31 3.5 h7 l-2.2 2.6 2.2 2.6 h-7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="toolcard-body">
+          <div class="toolcard-name">Retirement Readiness Guide<span class="beta">Beta</span></div>
+          <div class="toolcard-desc">Answer questions about your money one at a time and get a readiness score. When you don't know an answer, the guide walks you through the tool that finds it.</div>
+          <div class="toolcard-prog" id="gdCardProg"></div>
+        </div>
+        <div class="toolcard-arrow">&#8250;</div>
+      </div>
       <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
         <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1926.</div></div>
@@ -5118,6 +5397,31 @@ window.onerror = function(msg){
           <div class="toolcard-desc">Find when your portfolio reaches financial independence. Toggle to Coast FIRE mode to see the moment you can stop contributing and let compound growth carry you the rest of the way.</div>
         </div>
         <div class="toolcard-arrow">&#8250;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== RETIREMENT READINESS GUIDE ========== -->
+  <div class="stack solo" id="tab-guide" hidden>
+    <div class="panel gd-top">
+      <div class="gd-top-row">
+        <div class="gd-title">Retirement Readiness Guide<span class="beta">Beta</span></div>
+        <div class="gd-mini" id="gdMini"></div>
+        <div class="gd-count" id="gdCount"></div>
+      </div>
+      <div class="gd-prog" id="gdProg"></div>
+    </div>
+    <div class="gd-grid">
+      <div class="panel gd-card" id="gdCard" tabindex="-1"></div>
+      <div class="gd-side">
+        <div class="panel gd-score">
+          <h2>Readiness score</h2>
+          <div class="body" id="gdScore"></div>
+        </div>
+        <div class="panel gd-map">
+          <h2>Your route</h2>
+          <div class="body" id="gdMap"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -5722,6 +6026,23 @@ window.onerror = function(msg){
 </main>
 
 <div class="toast" id="toast"></div>
+<div class="gd-coach" id="gdCoach" role="region" aria-label="Guide step" hidden>
+  <div class="gd-coach-h">
+    <div class="t"><span id="gdCoachSub">Guide</span><b id="gdCoachTitle"></b></div>
+    <button type="button" class="gd-coach-ib gd-coach-tog" id="gdCoachTog" aria-expanded="true" aria-controls="gdCoachBody" aria-label="Hide the steps" title="Hide the steps">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 10l4-4 4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="gd-coach-ib" id="gdCoachX" aria-label="Close the guide panel" title="Close the guide panel">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="gd-coach-next" id="gdCoachNext" hidden></div>
+  <div class="gd-coach-b" id="gdCoachBody"></div>
+  <div class="gd-coach-f">
+    <div class="gd-chip" id="gdCoachChip"></div>
+    <button type="button" class="btn primary" id="gdCoachBack">Back to guide</button>
+  </div>
+</div>
 
 <!-- one-page summary, hidden until printed -->
 <div id="sheet" aria-hidden="true"></div>
@@ -8634,7 +8955,7 @@ let loadedSnapshot = {};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
-  if (t === "tools" && toolSub !== "picker") return toolSub;
+  if (t === "tools" && toolSub !== "picker" && toolSub !== "guide") return toolSub;
   if (t === "simple") return "basic";
   if (t === "series") return "stages";
   if (t === "single") return "advanced";
@@ -11563,7 +11884,7 @@ let navSuspended = false;
 const TOOL_PATHS = {
   tax:"incometax", mortgage:"mortgage", budget:"budget", college:"college",
   rentbuy:"rentbuy", drawdown:"drawdown", roth:"roth", debt:"debt",
-  backtest:"backtest", healthcare:"healthcare", fire:"fire"
+  backtest:"backtest", healthcare:"healthcare", fire:"fire", guide:"guide"
 };
 const SUB_BY_PATH = {};
 Object.keys(TOOL_PATHS).forEach(sub => { SUB_BY_PATH[TOOL_PATHS[sub]] = sub; });
@@ -11661,6 +11982,7 @@ function showTool(sub){
   $("tab-backtest").hidden = (sub !== "backtest");
   $("tab-healthcare").hidden = (sub !== "healthcare");
   $("tab-fire").hidden = (sub !== "fire");
+  $("tab-guide").hidden = (sub !== "guide");
   $("asideBT").hidden = (sub !== "backtest");
   $("asideHC").hidden = (sub !== "healthcare");
   $("asideFire").hidden = (sub !== "fire");
@@ -11672,7 +11994,7 @@ function showTool(sub){
   $("asideRC").hidden = (sub !== "roth");
   // Budget has no sidebar inputs, so it earns the same full-width layout
   // as the tool picker rather than sitting narrow with empty space beside it.
-  $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt");
+  $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt" || sub === "guide");
   refreshScenarioList(currentScenario[activeTool()] || "");
   initCSVButtons();
   if (sub === "tax") renderTax();
@@ -11689,6 +12011,9 @@ function showTool(sub){
     var fiEl = $("fiTarget");
     if (fiEl) fiEl.dispatchEvent(new Event("input", {bubbles:true}));
   }
+  else if (sub === "guide") gdShow();
+  else if (sub === "picker") gdCardSync();
+  gdCoachSync();
   setDocTitle();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
   playPaneEnter();
@@ -11741,6 +12066,7 @@ function showTab(t){
     $("tab-backtest").hidden = true;
     $("tab-healthcare").hidden = true;
     $("tab-fire").hidden = true;
+    $("tab-guide").hidden = true;
     $("asideBT").hidden = true;
     $("asideHC").hidden = true;
     $("asideFire").hidden = true;
@@ -11756,7 +12082,7 @@ function showTab(t){
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
   else if (t === "tools") showTool(toolSub);
-  if (t !== "tools") setDocTitle();
+  if (t !== "tools"){ setDocTitle(); gdCoachSync(); }
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
   if (t !== "tools") playPaneEnter();
 }
@@ -18420,6 +18746,1702 @@ $("hhBody").addEventListener("keydown", e => {
   if (e.key === "Enter" && e.target.tagName === "INPUT"){ e.preventDefault(); $("hhFill").click(); }
   else if (e.key === "Escape"){ $("hhCancel").click(); }
 });
+
+/* ---------- retirement readiness guide ---------- */
+/* A long-form walkthrough: one question at a time about someone's money, in
+   the order a planner would take it (income, spending, safety net, big goals,
+   retirement). When they don't know an answer, a step sends them into the
+   tool that finds it, pre-filled, with a coach panel docked over the tool
+   that lists what to do there and ticks items off as the tool's own fields
+   change. "Back to guide" carries the tool's result back into the answer.
+
+   Answers live under their own key. The facts the household bar also holds
+   (ages, state, income, savings, spending) are written through to it, so the
+   rest of the site opens on the same numbers; nothing is pushed into a tool
+   except on the way into that tool, so the guide never quietly overwrites
+   work done elsewhere. */
+const GD_KEY = "finance-tools.guide.v1";
+let gdMem = null;
+function gdFresh(){ return {v:1, cur:"intro", a:{}, done:{}, trip:null, back:null, coachMin:false}; }
+function gdLoadState(){
+  try {
+    const raw = localStorage.getItem(GD_KEY);
+    if (raw){
+      const v = JSON.parse(raw);
+      if (v && v.v === 1 && v.a && typeof v.a === "object") return Object.assign(gdFresh(), v);
+    }
+  } catch(e){}
+  return gdMem ? JSON.parse(JSON.stringify(gdMem)) : gdFresh();
+}
+let gd = gdLoadState();
+function gdSave(){
+  gdMem = gd;
+  try { localStorage.setItem(GD_KEY, JSON.stringify(gd)); } catch(e){}
+}
+
+const gdOk = v => typeof v === "number" && isFinite(v);
+const gdPos = v => gdOk(v) && v > 0;
+const gdM = v => gdOk(v) ? groupDigits(Math.round(v), true) : "";
+function gdMar(){ return gd.a.status === "m"; }
+function gdGross(){ const a = gd.a; return (a.income || 0) + (gdMar() ? (a.income2 || 0) : 0); }
+function gdSaveMo(){ return (gd.a.contrib || 0) + (gd.a.employer || 0); }
+function gdInterp(x, pts){
+  if (x <= pts[0][0]) return pts[0][1];
+  for (let i = 1; i < pts.length; i++){
+    if (x <= pts[i][0]){
+      const x0 = pts[i - 1][0], y0 = pts[i - 1][1], x1 = pts[i][0], y1 = pts[i][1];
+      return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+    }
+  }
+  return pts[pts.length - 1][1];
+}
+function gdMonths(v){ return v >= 10 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ""); }
+function gdRiskLabel(real){
+  const r = RISK_LEVELS.find(x => Math.abs(x.real - real) < 1e-6) || RISK_LEVELS[2];
+  return r.label.toLowerCase();
+}
+
+/* Monthly take-home from the salary alone, through the same 2026 rules the
+   Income Tax tool uses: the fallback when someone skips that step. */
+function gdTaxEst(){
+  const g1 = gd.a.income || 0, g2 = gdMar() ? (gd.a.income2 || 0) : 0;
+  if (!(g1 + g2 > 0)) return 0;
+  const T = computeTax({status: gdMar() ? "m" : "s", gross:g1, gross2:g2, pre:0,
+    dedType:"std", item:0, state: gd.a.state || $("txState").value});
+  return T.net / 12;
+}
+
+/* Social Security in today's dollars. Claimed at 67 (full retirement age),
+   or at retirement if that's later, up to 70. Both spouses start together,
+   the same timing the Drawdown Simulator uses for a couple with one
+   retirement age, so the guide's success rate matches the tool's. A lower
+   earner is lifted to half the higher earner's full benefit, the spousal
+   rule, which matters for a one-income household. */
+function gdSS(retire){
+  const a = gd.a;
+  const claim = Math.max(67, Math.min(70, Math.round(retire)));
+  const delay = Math.max(0, claim - Math.round(retire));
+  if (gdPos(a.ssOwn)) return {a1:a.ssOwn * 12, a2:0, total:a.ssOwn * 12, delay, claim, own:true, spousal:false};
+  const s1 = ssEstimate(a.income || 0, 40, claim);
+  let a1 = s1.annual, a2 = 0, spousal = false;
+  if (gdMar()){
+    const s2 = ssEstimate(a.income2 || 0, 40, claim);
+    a2 = s2.annual;
+    // Spousal benefits earn no delay credits, so it's half the full benefit.
+    if (s1.atFRA * .5 > a2){ a2 = s1.atFRA * .5; spousal = true; }
+    if (s2.atFRA * .5 > a1){ a1 = s2.atFRA * .5; spousal = true; }
+  }
+  return {a1, a2, total:a1 + a2, delay, claim, own:false, spousal};
+}
+
+/* The retirement engine behind the score: Basic's projection to the
+   retirement age, then that balance run through every historical retirement
+   since 1926 by the Drawdown Simulator's own engine, spending a fixed amount
+   that rises with inflation, to age 95. `over` swaps in a different monthly
+   saving, retirement age or spending, which is how the fixes are found. */
+const gdSimCache = {};
+function gdSim(over){
+  over = over || {};
+  const a = gd.a;
+  if (!gdOk(a.age) || !gdOk(a.retire) || !gdOk(a.saved) || !gdOk(a.contrib) || !gdPos(a.retSpend)) return null;
+  const retire = over.retire != null ? over.retire : a.retire;
+  if (!(retire > a.age)) return null;
+  const monthly = over.monthly != null ? over.monthly : gdSaveMo();
+  const spend = over.spend != null ? over.spend : a.retSpend;
+  const real = a.risk || .045;
+  const ss = gdSS(retire);
+  const key = [a.age, retire, a.saved, monthly, real, spend, ss.a1, ss.a2, ss.delay].join("|");
+  if (gdSimCache[key]) return gdSimCache[key];
+  const R = projectBasic({age:a.age, retire, years:Math.min(100, retire - a.age), real,
+    initial:a.saved, contrib:monthly, period:"Monthly", withdrawal:.04});
+  const fv = R.fv;
+  const years = Math.max(20, Math.min(60, 95 - Math.round(retire)));
+  let H = null, success;
+  if (fv < 1000){
+    success = ss.total >= spend ? 1 : 0;
+  } else {
+    H = historicalBacktest({initial:fv, years, stockPct:60, stockPctEnd:null, fee:0,
+      strategy:"fixed", initialPct: spend / fv * 100, guardBand:20, adjustPct:10,
+      floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:5, spendFloor:0, spendCeil:0,
+      vpwRate:0, vpwFV:0, ssAnnual:ss.a1, ssDelayYears:ss.delay, ssAnnual2:ss.a2,
+      ssDelayYears2:ss.delay, legacyGoal:0, retireAge:retire, fromYear:HIST_START,
+      incomeItems:[], expenseItems:[]});
+    success = H.successRate;
+  }
+  const out = {fv, years, ss, spend, success, retire, monthly, real, H,
+    portIncome: fv * .04, coverage: (fv * .04 + ss.total) / spend};
+  gdSimCache[key] = out;
+  return out;
+}
+
+/* ---------- the score ---------- */
+const GD_FACTORS = [
+  {id:"outlook", name:"Retirement outlook", w:40, step:"outlook"},
+  {id:"rate",    name:"Savings rate",       w:20, step:"savings"},
+  {id:"cushion", name:"Emergency fund",     w:15, step:"cash"},
+  {id:"debt",    name:"Debt",               w:15, step:"debt"},
+  {id:"flow",    name:"Monthly cash flow",  w:10, step:"spending"}
+];
+function gdParts(){
+  const a = gd.a, P = {}, inc = gdGross();
+  const S = gdSim();
+  if (S) P.outlook = {p: gdInterp(S.success, [[.25,0],[.5,.35],[.7,.6],[.85,.85],[.95,1]]),
+    txt: pctStr(S.success, 0) + " of historical retirements lasted"};
+  if (inc > 0 && gdOk(a.contrib) && a.match){
+    const r = gdSaveMo() * 12 / inc;
+    let p = gdInterp(r, [[0,0],[.05,.35],[.10,.7],[.15,1]]);
+    if (a.match === "partial") p *= .75;
+    P.rate = {p, r, txt: pctStr(r, 1) + " of gross income" +
+      (a.match === "partial" ? ", missing some match" : "")};
+  }
+  if (gdOk(a.cash) && gdPos(a.spend)){
+    const m = a.cash / a.spend;
+    P.cushion = {p: gdInterp(m, [[0,0],[1,.3],[3,.75],[6,1]]), m,
+      txt: gdMonths(m) + (m === 1 ? " month" : " months") + " of spending"};
+  }
+  if (a.debtHas === "no") P.debt = {p:1, txt:"Nothing owed besides any mortgage"};
+  else if (a.debtHas === "yes" && gdOk(a.debtTotal) && inc > 0){
+    const hi = Math.min(a.debtHi || 0, a.debtTotal), lo = a.debtTotal - hi;
+    const p = Math.max(0, 1 - Math.min(1, hi / inc * 4) * .7 - Math.min(1, lo / inc) * .3);
+    P.debt = {p, txt: money(a.debtTotal) + " owed" + (hi > 0 ? ", " + money(hi) + " at 8% or more" : "")};
+  }
+  if (gdPos(a.takehome) && gdPos(a.spend)){
+    const m = (a.takehome - a.spend) / a.takehome;
+    P.flow = {p: gdInterp(m, [[-.05,0],[0,.25],[.1,.75],[.2,1]]), m,
+      txt: (a.takehome >= a.spend ? money(a.takehome - a.spend) + "/mo not spent"
+        : money(a.spend - a.takehome) + "/mo over take-home")};
+  }
+  return P;
+}
+function gdScore(){
+  const P = gdParts();
+  const have = GD_FACTORS.filter(f => P[f.id]);
+  const w = have.reduce((s, f) => s + f.w, 0);
+  // One area alone says too little to put a number on.
+  const score = have.length >= 2 ? Math.round(have.reduce((s, f) => s + f.w * P[f.id].p, 0) / w * 100) : null;
+  return {score, P, n:have.length};
+}
+function gdRating(s){
+  if (s == null) return {label:"Not scored yet", color:"var(--dimmer)"};
+  if (s >= 85) return {label:"On track", color:"var(--jade)"};
+  if (s >= 70) return {label:"Nearly there", color:"var(--jade)"};
+  if (s >= 50) return {label:"Getting there", color:"var(--gold)"};
+  if (s >= 30) return {label:"Needs work", color:"var(--gold)"};
+  return {label:"Needs attention", color:"var(--coral)"};
+}
+function gdBarColor(p){ return p >= .8 ? "var(--jade)" : p >= .5 ? "var(--gold)" : "var(--coral)"; }
+function gdRing(score, size){
+  const r = 52, c = 2 * Math.PI * r, f = score == null ? 0 : Math.max(0, Math.min(100, score)) / 100;
+  const col = gdRating(score).color;
+  return "<svg class='gd-ring' viewBox='0 0 120 120' role='img' aria-label='" +
+    (score == null ? "No score yet" : "Score " + score + " out of 100") + "'" +
+    (size ? " style='width:" + size + "px;height:" + size + "px'" : "") + ">" +
+    "<circle class='trk' cx='60' cy='60' r='" + r + "' fill='none' stroke-width='10'/>" +
+    "<circle class='val' cx='60' cy='60' r='" + r + "' fill='none' stroke-width='10' stroke-linecap='round'" +
+    " stroke='" + col + "' stroke-dasharray='" + c.toFixed(1) + "' stroke-dashoffset='" + (c * (1 - f)).toFixed(1) +
+    "' transform='rotate(-90 60 60)'/>" +
+    "<text x='60' y='" + (score == null ? 67 : 69) + "' text-anchor='middle' font-size='" + (score == null ? 22 : 32) + "'>" +
+    (score == null ? "—" : score) + "</text></svg>";
+}
+
+/* The cheapest ways to reach a 90% historical success rate: save more each
+   month, retire later, or spend less. Each is solved on its own. */
+function gdFixes(){
+  const S = gdSim();
+  if (!S) return null;
+  const goal = .9, out = {};
+  if (S.success >= goal) return out;
+  const base = gdSaveMo();
+  let hi = Math.max(1000, base * 3 + 3000);
+  const top = gdSim({monthly: base + hi});
+  if (top && top.success >= goal){
+    let lo = 0;
+    for (let i = 0; i < 18; i++){
+      const mid = (lo + hi) / 2, T = gdSim({monthly: base + mid});
+      if (T && T.success >= goal) hi = mid; else lo = mid;
+    }
+    out.extra = Math.ceil(hi / 25) * 25;
+  }
+  for (let r = Math.round(S.retire) + 1; r <= Math.min(75, Math.round(S.retire) + 15); r++){
+    const T = gdSim({retire:r});
+    if (T && T.success >= goal){ out.retire = r; break; }
+  }
+  let lo = 0, hs = S.spend;
+  for (let i = 0; i < 18; i++){
+    const mid = (lo + hs) / 2, T = gdSim({spend: Math.max(1, mid)});
+    if (T && T.success >= goal) lo = mid; else hs = mid;
+  }
+  if (lo > 0) out.spend = Math.floor(lo / 500) * 500;
+  return out;
+}
+
+/* ---------- shared bits of markup ---------- */
+function gdChoice(key, val, title, sub){
+  const on = gd.a[key] === val;
+  return "<button type='button' class='gd-choice" + (on ? " on" : "") + "' data-set='" + key +
+    "' data-val='" + val + "' aria-pressed='" + on + "'><i class='dot' aria-hidden='true'></i>" +
+    "<span class='t'><b>" + title + "</b>" + (sub ? "<span>" + sub + "</span>" : "") + "</span></button>";
+}
+function gdMoneyF(key, label, o){
+  o = o || {};
+  return "<div class='field" + (o.full ? " full" : "") + "'><label for='gdf-" + key + "'>" + label + "</label>" +
+    "<div class='inputwrap'><span class='affix'>$</span><input id='gdf-" + key + "' type='text' inputmode='decimal' " +
+    "data-money data-nonneg data-a='" + key + "' value='" + gdM(gd.a[key]) + "'" +
+    (o.ph ? " placeholder='" + o.ph + "'" : "") + ">" + (o.per ? "<span class='affix'>" + o.per + "</span>" : "") + "</div>" +
+    (o.hint ? "<div class='hint'>" + o.hint + "</div>" : "") + "</div>";
+}
+function gdNumF(key, label, affix, o){
+  o = o || {};
+  const v = gd.a[key];
+  return "<div class='field" + (o.full ? " full" : "") + "'><label for='gdf-" + key + "'>" + label + "</label>" +
+    "<div class='inputwrap'><input id='gdf-" + key + "' type='text' inputmode='decimal' data-num data-step='1' " +
+    "min='0' data-nonneg data-a='" + key + "' value='" + (gdOk(v) ? String(v) : "") + "'>" +
+    "<span class='affix'>" + affix + "</span></div>" + (o.hint ? "<div class='hint'>" + o.hint + "</div>" : "") + "</div>";
+}
+function gdSelF(key, label, opts, o){
+  o = o || {};
+  const v = gd.a[key] == null ? "" : String(gd.a[key]);
+  return "<div class='field" + (o.full ? " full" : "") + "'><label for='gdf-" + key + "'>" + label + "</label>" +
+    "<select id='gdf-" + key + "' data-a='" + key + "'" + (o.kind ? " data-kind='" + o.kind + "'" : "") +
+    (o.rerender ? " data-rerender" : "") + ">" +
+    opts.map(p => "<option value='" + p[0] + "'" + (String(p[0]) === v ? " selected" : "") + ">" + p[1] + "</option>").join("") +
+    "</select>" + (o.hint ? "<div class='hint'>" + o.hint + "</div>" : "") + "</div>";
+}
+function gdLive(name){ return "<div data-live='" + name + "'>" + (GD_LIVE[name] ? GD_LIVE[name]() : "") + "</div>"; }
+function gdToolIcon(tool){
+  if (tool === "basic")
+    return "<svg viewBox='0 0 40 40' fill='none'><path d='M5 33h30' stroke='currentColor' stroke-width='2' stroke-linecap='round'/><path d='M7 29 C15 27 22 22 33 9' stroke='currentColor' stroke-width='2' stroke-linecap='round'/><path d='M27 9h6v6' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>";
+  const ic = document.querySelector(".toolcard[data-pick='" + tool + "'] .toolcard-icon");
+  return ic ? ic.innerHTML : "";
+}
+/* The trip box: which tool, why, what you'll do there, and the button. */
+function gdTask(id, head, o){
+  o = o || {};
+  const T = GD_TRIPS[id];
+  const list = T.preview || [];
+  return "<div class='gd-task'><div class='gd-task-h'><div class='gd-task-ic' aria-hidden='true'>" + gdToolIcon(T.tool) +
+    "</div><div><b>" + head + "</b><span>" + T.name + (T.mins ? " · about " + T.mins + " minutes" : "") + "</span></div></div>" +
+    (list.length ? "<ol class='gd-steps'>" + list.map(t => "<li>" + t + "</li>").join("") + "</ol>" : "") +
+    "<button type='button' class='btn primary' data-trip='" + id + "'>" + (o.label || "Open " + T.name) + " ›</button>" +
+    (o.after || "") + "</div>";
+}
+function gdBack(stepId){
+  const B = gd.back;
+  if (!B || B.step !== stepId || !B.msg) return "";
+  return "<div class='gd-callout ok'>" + B.msg +
+    (B.undo ? "<br><button type='button' class='btn mini' data-gd='undo'>Undo</button>" : "") + "</div>";
+}
+
+/* Small pieces of a step that change while typing, redrawn in place so the
+   field being typed in never loses focus. */
+const GD_LIVE = {
+  aboutNote(){
+    const a = gd.a;
+    if (!gdOk(a.age) || !gdOk(a.retire)) return "";
+    if (a.retire <= a.age) return "<div class='gd-callout warn'>Your retirement age needs to be later than your age today. This guide is built for the saving years; if you've already retired, the <b>Drawdown Simulator</b> is the tool for you.</div>";
+    const yrs = a.retire - a.age;
+    return "<div class='gd-callout'>That gives you <b>" + fmtNum(yrs) + (yrs === 1 ? " year" : " years") + "</b> to prepare." +
+      (a.retire < 65 ? " Retiring before 65 means buying your own health insurance until Medicare starts; we'll price that out later." : "") + "</div>";
+  },
+  incomeNote(){
+    const g = gdGross();
+    return g > 0 ? "<div class='gd-callout'>That's <b>" + money(g / 12) + "</b> a month before taxes" + (gdMar() ? " for the two of you" : "") + ".</div>" : "";
+  },
+  flowNote(){
+    const a = gd.a;
+    if (!gdPos(a.takehome) || !gdPos(a.spend)) return "";
+    const left = a.takehome - a.spend, pct = left / a.takehome;
+    if (left < 0) return "<div class='gd-callout bad'>You're spending <b>" + money(-left) + "/mo more</b> than you bring home. That gap usually lands on a credit card, so it's the first thing to fix.</div>";
+    const sv = gdPos(a.bgSave) && a.bgSave <= left ? a.bgSave : 0;
+    return "<div class='gd-callout " + (pct >= .1 ? "ok" : "warn") + "'>That leaves <b>" + money(left) + "/mo</b> unspent, " + pctStr(pct, 0) + " of your take-home" +
+      (sv ? ": " + money(sv) + " already going to savings and <b>" + money(left - sv) + "</b> left over." : ", for saving and paying down debt.") +
+      (pct < .1 ? " Under 10% leaves little room for surprises." : "") + "</div>";
+  },
+  cashNote(){
+    const a = gd.a;
+    if (!gdOk(a.cash)) return "";
+    if (!gdPos(a.spend)) return "<div class='gd-callout'>Tell us your monthly spending on the step before this one to see how many months this covers.</div>";
+    const m = a.cash / a.spend, lo = a.spend * 3, hi = a.spend * 6;
+    const cls = m >= 3 ? "ok" : m >= 1 ? "warn" : "bad";
+    return "<div class='gd-callout " + cls + "'>That covers <b>" + gdMonths(m) + (m === 1 ? " month" : " months") + "</b> of spending. " +
+      "The usual target is 3 to 6 months: <b>" + money(lo) + "</b> to <b>" + money(hi) + "</b> for you." +
+      (m < 1 ? " Start with one month, " + money(a.spend) + ", before anything else." : "") + "</div>";
+  },
+  rateNote(){
+    const a = gd.a, inc = gdGross();
+    if (!(inc > 0) || !gdOk(a.contrib)) return "";
+    const r = gdSaveMo() * 12 / inc;
+    const cls = r >= .15 ? "ok" : r >= .1 ? "warn" : "bad";
+    let s = "<div class='gd-callout " + cls + "'>You're saving <b>" + pctStr(r, 1) + "</b> of your gross income for retirement, counting your employer's share. ";
+    s += r >= .15 ? "That meets the common 15% target." : "A common target is 15%: about " + money(inc * .15 / 12) + "/mo in all for you, <b>" +
+      money(inc * .15 / 12 - gdSaveMo()) + "/mo more</b> than now.";
+    if (a.match === "partial") s += " You're also leaving employer match on the table: raising your contribution to get all of it is the best return available anywhere.";
+    return s + "</div>";
+  },
+  ssNote(){
+    const a = gd.a;
+    if (!gdOk(a.retire)) return "";
+    const ss = gdSS(a.retire);
+    let s = "<div class='gd-callout'>";
+    s += ss.own ? "Using your statement: <b>" + money(ss.total / 12) + "/mo</b>"
+      : "We estimate Social Security at about <b>" + money(ss.total / 12) + "/mo</b>" + (gdMar() ? " for the two of you" : "") +
+        " in today's dollars, from your income over a full career" + (ss.spousal ? ", including the spousal benefit" : "");
+    s += ", starting at " + ss.claim + ".";
+    if (gdPos(a.retSpend)){
+      const share = ss.total / a.retSpend, early = Math.max(0, ss.claim - Math.round(a.retire));
+      if (share >= 1) s += " Once it starts, that alone covers the spending you entered" +
+        (early ? "; your savings carry the " + early + (early === 1 ? " year" : " years") + " before it." : ".");
+      else s += " That covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings need to cover the other " +
+        money(a.retSpend - ss.total) + " a year" + (early ? ", and all of it for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
+    }
+    if (!ss.own) s += " The program's trust fund is projected to run short in the 2030s; for a cautious plan, enter a lower figure below.";
+    return s + "</div>";
+  },
+  hcNote(){
+    const a = gd.a;
+    if (!gdPos(a.hcPrem) || !gdPos(a.retSpend)) return "";
+    if (a.hcAdded) return "<div class='gd-callout ok'>Added. Your retirement spending is now <b>" + money(a.retSpend) + " a year</b>.</div>";
+    const add = Math.round(a.hcPrem * 12 / 100) * 100;
+    return "<div class='gd-h3'>Is that already in the " + money(a.retSpend) + " a year you plan to spend?</div><div class='gd-choices two'>" +
+      gdChoice("hcIncl", "yes", "Yes, it's included") + gdChoice("hcIncl", "no", "No, it isn't") + "</div>" +
+      (a.hcIncl === "no" ? "<button type='button' class='btn' data-gd='addhc'>Add " + money(add) + " a year to my retirement spending</button>" +
+        "<div class='hint' style='margin-top:6px'>Medicare premiums after 65 run about the same, so it's fair to keep it for the whole retirement.</div>" : "");
+  },
+  houseNote(){
+    const a = gd.a, inc = gdGross();
+    if (!gdPos(a.housePay)) return "";
+    const p = inc > 0 ? a.housePay * 12 / inc : null;
+    return "<div class='gd-callout " + (p == null ? "" : p <= .28 ? "ok" : p <= .36 ? "warn" : "bad") + "'>Housing: <b>" + money(a.housePay) + "/mo</b>" +
+      (p != null ? ", " + pctStr(p, 0) + " of your gross income. Planners and lenders like to see 28% or less." : ".") + "</div>";
+  }
+};
+
+/* ---------- trips into the tools ---------- */
+/* preview: what the step card promises before you go. tasks(): the coach's
+   live checklist on the tool itself (ok true/false is a tick or a nudge;
+   undefined is a plain numbered note). capture(): read the tool's result
+   back into the answers, returning the message for the step card. */
+function gdBudgetNums(){
+  const inc = num("bgIncomeIn") * bgIncomeFreq;
+  let spent = 0, saved = 0, lines = 0;
+  budget.forEach(r => {
+    if (isSavingsRow(r)) saved += annualize(r);
+    else { spent += annualize(r); if (r.amount > 0) lines++; }
+  });
+  return {inc, spent, saved, lines, left: inc - spent - saved};
+}
+function gdDebtNums(){
+  const live = debts.filter(d => d.balance > 0);
+  const total = live.reduce((s, d) => s + d.balance, 0);
+  const hi = live.filter(d => d.apr >= 8).reduce((s, d) => s + d.balance, 0);
+  const min = live.reduce((s, d) => s + (d.min || 0), 0);
+  const top = live.reduce((m, d) => Math.max(m, d.apr || 0), 0);
+  return {live, total, hi, min, top};
+}
+function gdHousing(){
+  const R = mortgage(readMort());
+  return {R, piti: R.pi + R.tax + R.ins + R.pmi + R.hoa};
+}
+function gdFireMode(){
+  const on = $("segFireMode").querySelector("button.on");
+  return on ? on.getAttribute("data-firemode") : "fire";
+}
+/* Advanced and Stages are filled from the guide once per visit, so a second
+   tour keeps whatever you changed there. */
+const gdFilled = {};
+let gdStagesFrom = "", gdStagesN = 1;
+const GD_TRIPS = {
+  tax: {tool:"tax", name:"Income Tax", mins:3, title:"Find your take-home pay",
+    preview:["We fill in your salary, filing status and state.",
+      "You add anything taken out of your paycheck before tax, like 401(k) contributions.",
+      "You read off your monthly take-home, and the guide brings it back."],
+    prefill(){
+      const a = gd.a, d = {mode:"normal", status: gdMar() ? "m" : "s", gross2: gdMar() ? (a.income2 || 0) : 0};
+      if (gdOk(a.income)) d.gross = a.income;
+      if (a.state) d.state = a.state;
+      if (gdOk(a.txPre)) d.pre = a.txPre;
+      writeTaxState(d);
+    },
+    tasks(){
+      const inp = readTax();
+      return [
+        {h:"Check <b>Filing status</b> and <b>State</b> under Your situation. We filled them in from your answers."},
+        {h:"<b>Gross income</b> holds your salary. If your paycheck puts money into a 401(k), 403(b) or HSA before tax, enter the yearly total in <b>Pre-tax deductions</b>.", ok: inp.pre > 0 ? true : undefined},
+        {h:"Above the results, switch <b>Net pay</b> to <b>Take-home pay</b>: what actually reaches your bank account.", ok: txView === "take"},
+        {h:"<b>Per month</b> is your monthly take-home. Tap <b>Back to guide</b> and it comes with you."}
+      ];
+    },
+    chip(){
+      const R = runTax(readTax());
+      return R.gross > 0 ? "Take-home<br><b>" + money(R.net / 12) + "/mo</b>" : "";
+    },
+    capture(){
+      const R = runTax(readTax());
+      if (!(R.gross > 0)) return null;
+      const v = Math.round(R.net / 12);
+      gd.a.takehome = v; gd.a.txPre = readTax().pre;
+      return "From Income Tax: <b>" + money(v) + "/mo</b> take-home pay. If your pay stub says something different, use that instead.";
+    }},
+
+  budget: {tool:"budget", name:"Budget", mins:15, title:"Build your budget",
+    preview:["Your take-home pay is already filled in.",
+      "You go down the list of everyday costs, using a couple of months of bank and card statements.",
+      "The guide brings back what you spend and what's left over."],
+    prefill(){
+      const a = gd.a;
+      // Tools don't keep what's typed across a reload, so the guide keeps a
+      // copy of the lines and puts them back if the budget is blank again.
+      if (Array.isArray(a.bgRows) && a.bgRows.length && budget.every(r => !(r.amount > 0))){
+        budget = a.bgRows.map(r => Object.assign({}, r));
+        buildBudget();
+      }
+      if (gdPos(a.takehome)){
+        const b = $("bgIncomeFreq").querySelector("button[data-freq='12']");
+        if (bgIncomeFreq !== 12 && b) b.click();
+        $("bgIncomeIn").value = gdM(a.takehome);
+      }
+      renderBudget();
+    },
+    tasks(){
+      const B = gdBudgetNums();
+      return [
+        {h:"<b>Income after taxes</b> holds your take-home pay, set to <b>/mo</b>.", ok: B.inc > 0},
+        {h:"With your last two or three months of statements open, work down the list and fill in what you spend on each line. Skip lines that don't apply." +
+          (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: B.lines >= 5},
+        {h:"For bills that come once or twice a year (insurance, travel, gifts, car repairs), tap <b>/yr</b> on the line and enter the yearly total."},
+        {h:"Money you move into savings or investments goes on <b>Savings &amp; investments</b>. It counts as saving, not spending.", ok: B.saved > 0 ? true : undefined},
+        {h:"Something missing? <b>Add custom item</b> sits under the list."},
+        {h:"<b>Left over</b> at the top is what's free each month for debt and saving."}
+      ];
+    },
+    chip(){
+      const B = gdBudgetNums();
+      return B.spent > 0 ? "Spending <b>" + money(B.spent / 12) + "/mo</b><br>Left over <b>" + money(B.left / 12) + "/mo</b>" : "";
+    },
+    capture(){
+      const B = gdBudgetNums();
+      if (!(B.spent > 0)) return null;
+      const a = gd.a;
+      a.spend = Math.round(B.spent / 12); a.bgSave = Math.round(B.saved / 12);
+      // Rent or mortgage, property tax and home insurance: the first, second
+      // and fifth preset lines, which can be renamed but never move.
+      a.bgMort = budget[0] ? Math.round(annualize(budget[0]) / 12) || null : null;
+      a.bgHousing = Math.round([0, 1, 4].reduce((t, i) => t + (budget[i] ? annualize(budget[i]) : 0), 0) / 12) || null;
+      a.spendSrc = "budget";
+      a.bgRows = budget.map(r => Object.assign({}, r));
+      if (!gdPos(a.takehome) && B.inc > 0) a.takehome = Math.round(B.inc / 12);
+      return "From your budget: <b>" + money(a.spend) + "/mo</b> in spending" +
+        (a.bgSave > 0 ? " and <b>" + money(a.bgSave) + "/mo</b> going to savings" : "") +
+        ", with <b>" + money(B.left / 12) + "/mo</b> left over.";
+    }},
+
+  debt: {tool:"debt", name:"Debt Payoff", mins:5, title:"Make a payoff plan",
+    preview:["You list each debt with its balance, rate and minimum payment.",
+      "You add what you can pay on top of the minimums.",
+      "The tool compares the two classic payoff orders and gives you a debt-free date."],
+    prefill(){
+      if (JSON.stringify(debts) === JSON.stringify(DEBT_DEFAULTS)){
+        const a = gd.a, keep = Array.isArray(a.debtRows) && a.debtRows.length;
+        debts = keep ? a.debtRows.map(r => Object.assign({}, r)) : [{desc:"", balance:0, apr:0, min:0}];
+        buildDebtList();
+        $("dtExtra").value = keep && gdPos(a.debtExtra) ? gdM(a.debtExtra) : "";
+      }
+      renderDebt();
+    },
+    tasks(){
+      const D = gdDebtNums();
+      return [
+        {h:(Array.isArray(gd.a.debtRows) && gd.a.debtRows.length
+            ? "Your debts from last time are back. Update any balance that's changed, and add new ones with <b>Add a debt</b>."
+            : "The sample debts are cleared. Enter each of yours: a name, the <b>Balance</b>, the <b>Rate</b> (the APR on your statement) and the <b>Minimum</b> payment. <b>Add a debt</b> gives you another row.") +
+          (D.live.length ? "<em>" + D.live.length + " entered</em>" : ""), ok: D.live.length > 0},
+        {h:"In <b>Extra payment</b>, type what you can pay each month on top of the minimums, or tap <b>Copy from Budget</b> to use your budget's left-over" +
+          (gdPos(gd.a.takehome) && gdPos(gd.a.spend) && gd.a.takehome - gd.a.spend - (gd.a.bgSave || 0) > 0
+            ? " (" + money(gd.a.takehome - gd.a.spend - (gd.a.bgSave || 0)) + "/mo)." : "."), ok: num("dtExtra") > 0},
+        {h:"<b>Avalanche</b> pays the highest rate first and costs the least. <b>Snowball</b> clears the smallest balance first for quicker wins. Pick the one you'll stick with."},
+        {h:"Your <b>Debt-free</b> date is at the top."}
+      ];
+    },
+    chip(){
+      const D = gdDebtNums();
+      if (!D.live.length || !dtLast) return "";
+      return "Owed <b>" + money(D.total) + "</b><br>Debt-free <b>" + (dtLast.pick.stalled ? "never" : debtDate(dtLast.pick.monthsTotal)) + "</b>";
+    },
+    capture(){
+      renderDebt();
+      const D = gdDebtNums();
+      if (!D.live.length) return null;
+      const a = gd.a;
+      a.debtHas = "yes"; a.debtSrc = "tool";
+      a.debtTotal = Math.round(D.total); a.debtHi = Math.round(D.hi); a.debtMin = Math.round(D.min);
+      a.debtN = D.live.length; a.debtTop = D.top; a.debtExtra = Math.round(num("dtExtra"));
+      a.debtMonths = dtLast && !dtLast.pick.stalled ? dtLast.pick.monthsTotal : null;
+      a.debtRows = D.live.map(d => ({desc:d.desc, balance:d.balance, apr:d.apr, min:d.min}));
+      return "From Debt Payoff: <b>" + D.live.length + (D.live.length === 1 ? " debt" : " debts") + "</b> totaling <b>" + money(D.total) + "</b>" +
+        (D.hi > 0 ? ", " + money(D.hi) + " of it at 8% or more" : "") + "." +
+        (a.debtMonths ? " With " + money(a.debtExtra) + "/mo extra you're debt-free by <b>" + debtDate(a.debtMonths) + "</b>." : "");
+    }},
+
+  mortBuy: {tool:"mortgage", name:"Mortgage Calculator", mins:5, title:"See what a home would cost",
+    preview:["You enter a price you'd shop at, your down payment and a current rate.",
+      "The tool adds tax, insurance and PMI to get the real monthly cost.",
+      "The guide checks it against your income."],
+    prefill(){ if (gd.a.moState) writeMortState(gd.a.moState); },
+    tasks(){
+      const inc = gdGross(), H = gdHousing();
+      const cap = inc * .28 / 12;
+      return [
+        {h:"Enter a <b>Home price</b> you'd realistically shop at and your <b>Down payment</b>. Under 20% down adds PMI."},
+        {h:"Set <b>Interest rate</b> to a current quote. Lenders' sites post today's rates, and your credit score moves yours."},
+        {h:"Adjust <b>Property tax</b> and <b>Insurance</b> for the area if you know them."},
+        {h:"<b>Monthly payment</b> at the top is the whole cost. Keep the house payment (loan, tax, insurance, PMI and HOA) under about 28% of gross income" +
+          (inc > 0 ? ": <b>" + money(cap) + "/mo</b> for you." : "."), ok: inc > 0 && H.R.loan > 0 ? H.piti <= cap : undefined}
+      ];
+    },
+    chip(){
+      const inc = gdGross(), H = gdHousing();
+      if (!(H.R.loan > 0)) return "";
+      return "House payment <b>" + money(H.piti) + "/mo</b>" + (inc > 0 ? "<br><b>" + pctStr(H.piti * 12 / inc, 0) + "</b> of gross income" : "");
+    },
+    capture(){
+      const H = gdHousing();
+      if (!(H.R.loan > 0)) return null;
+      gd.a.housePay = Math.round(H.piti); gd.a.moState = readMortState();
+      return "From the Mortgage Calculator: a <b>" + money(num("moPrice")) + "</b> home comes to about <b>" + money(H.piti) + "/mo</b>.";
+    }},
+
+  mortOwn: {tool:"mortgage", name:"Mortgage Calculator", mins:5, title:"See what extra payments do",
+    preview:["You enter your loan as it stands today.",
+      "You try an extra $100 or $200 a month toward principal.",
+      "The tool shows the interest you'd save and how much sooner you'd be done."],
+    prefill(){ if (gd.a.moState) writeMortState(gd.a.moState); },
+    tasks(){
+      return [
+        {h:"Enter your loan as it is today: the remaining balance as <b>Home price</b>, <b>Down payment</b> at 0%, your rate, the <b>Length</b> closest to the years you have left, and <b>PMI</b> at 0 unless you still pay it."},
+        {h:"Under <b>Already have this loan?</b>, choose <b>Yes, show these options</b>.", ok: $("moExtrasOn").value === "1"},
+        {h:"Try $100 or $200 in <b>Extra toward principal</b> and see how much interest it saves and how much sooner you're done.", ok: $("moExtrasOn").value === "1" && num("moExtraMo") > 0},
+        {h:"Paying extra is a guaranteed return equal to your rate. Above about 6%, it often beats investing; below 4%, investing usually wins."}
+      ];
+    },
+    chip(){
+      const H = gdHousing();
+      return H.R.loan > 0 ? "House payment<br><b>" + money(H.piti) + "/mo</b>" : "";
+    },
+    capture(){
+      const H = gdHousing();
+      if (!(H.R.loan > 0)) return null;
+      gd.a.housePay = Math.round(H.piti); gd.a.mortPI = Math.round(H.R.pi); gd.a.moState = readMortState();
+      return "From the Mortgage Calculator: your house payment is about <b>" + money(H.piti) + "/mo</b>.";
+    }},
+
+  college: {tool:"college", name:"College Savings", mins:3, title:"Find your monthly college number",
+    preview:["Years until college is set from your child's age.",
+      "You pick a type of school and add what's already saved.",
+      "The tool gives the monthly amount to set aside."],
+    prefill(){
+      const a = gd.a;
+      if (a.clState) writeCollegeState(a.clState);
+      if (gdOk(a.kidAge)) writeCollegeState({years: Math.max(0, Math.min(25, 18 - Math.round(a.kidAge)))});
+      renderCollege();
+    },
+    tasks(){
+      return [
+        {h:"<b>Years until college</b> is set from your child's age.", ok: gdOk(gd.a.kidAge) ? true : undefined},
+        {h:"Pick a <b>School type</b>, or choose <b>Custom</b> and type a yearly cost."},
+        {h:"Enter what's already in a 529 or other college account in <b>Currently saved</b>."},
+        {h:"The monthly figure at the top is what to set aside. More than one child? Run it for each and add them up."}
+      ];
+    },
+    chip(){
+      const R = collegeSavingsCalc(readCollege());
+      return R.monthly > 0 ? "Save<br><b>" + money(R.monthly) + "/mo</b>" : "";
+    },
+    capture(){
+      const R = collegeSavingsCalc(readCollege());
+      if (!(R.monthly >= 0)) return null;
+      gd.a.collegeMo = Math.round(R.monthly); gd.a.clState = readCollegeState();
+      return "From College Savings: set aside about <b>" + money(R.monthly) + "/mo</b>. Change the figure below if you have more than one child.";
+    }},
+
+  basic: {tool:"basic", name:"Basic calculator", mins:3, title:"Explore your projection",
+    preview:["Your age, savings and monthly saving are filled in.",
+      "You see what your savings grow to by retirement, in today's dollars.",
+      "You try saving more or retiring later, and the guide can keep the change."],
+    prefill(){
+      const a = gd.a;
+      if (gdOk(a.age)) $("qAge").value = String(Math.round(a.age));
+      if (gdOk(a.retire)) $("qRetire").value = String(Math.round(a.retire));
+      if (gdOk(a.saved)) $("qSaved").value = gdM(a.saved);
+      $("qContrib").value = gdM(gdSaveMo());
+      $("qPeriod").value = "Monthly";
+      if (a.risk && $("qRisk").querySelector("option[value='" + a.risk + "']")) $("qRisk").value = String(a.risk);
+      gd.trip.base = gdBasicNow();
+    },
+    tasks(){
+      const b = gd.trip && gd.trip.base, n = gdBasicNow();
+      const tried = b && (Math.round(n.monthly) !== Math.round(b.monthly) || n.retire !== b.retire);
+      return [
+        {h:"Your age, retirement age, savings and monthly saving (yours plus your employer's) are filled in on the left."},
+        {h:"<b>Value at retirement</b> is what your savings could grow to, in today's dollars, so you can compare it with prices now."},
+        {h:"Raise <b>How much do you save</b> by $100 or $200 and watch it move. Then try retiring a year or two later.", ok: tried},
+        {h:"The shaded band on the chart is the same plan in better and worse markets."},
+        {h:"Want taxes, fees and account types? <b>Open these numbers in Advanced</b> at the bottom goes deeper."}
+      ];
+    },
+    chip(){
+      const p = readBasic();
+      if (!(p.years > 0)) return "";
+      return "At " + fmtNum(p.retire) + "<br><b>" + money(projectBasic(p).fv) + "</b>";
+    },
+    capture(){
+      const b = gd.trip && gd.trip.base, n = gdBasicNow(), a = gd.a;
+      if (!b) return null;
+      const ch = [], undo = {contrib:a.contrib, retire:a.retire, saved:a.saved, risk:a.risk};
+      if (Math.round(n.monthly) !== Math.round(b.monthly)){
+        ch.push("saving <b>" + money(n.monthly) + "/mo</b> (was " + money(b.monthly) + ")");
+        a.contrib = Math.max(0, Math.round(n.monthly - (a.employer || 0)));
+      }
+      if (n.retire !== b.retire && n.retire > a.age){ ch.push("retiring at <b>" + fmtNum(n.retire) + "</b> (was " + fmtNum(b.retire) + ")"); a.retire = n.retire; }
+      if (Math.round(n.saved) !== Math.round(b.saved)){ ch.push("<b>" + money(n.saved) + "</b> saved (was " + money(b.saved) + ")"); a.saved = Math.round(n.saved); }
+      if (Math.abs(n.risk - b.risk) > 1e-9){ ch.push("a " + gdRiskLabel(n.risk) + " mix"); a.risk = n.risk; }
+      if (!ch.length) return "Back from the Basic calculator. Nothing changed there, so your answers stand.";
+      gdHouseholdSync();
+      return {msg: "You changed your plan in Basic: " + ch.join(", ") + ". Your answers and score now use the new numbers.", undo};
+    }},
+
+  drawdown: {tool:"drawdown", name:"Drawdown Simulator", mins:5, title:"Test your plan against history",
+    preview:["Your projected savings, spending and Social Security are loaded.",
+      "You see how the plan did in every retirement since 1926.",
+      "You try a flexible withdrawal strategy and see what it changes."],
+    prefill(){
+      const a = gd.a, S = gdSim();
+      if (!S) return;
+      const d = {initial: Math.round(S.fv), years: S.years, strategy:"fixed", stock:60, stockEnd:"", fee:0,
+        rate: Math.max(0.01, Math.round(S.spend / Math.max(1, S.fv) * 10000) / 100), retireAge: String(Math.round(S.retire))};
+      if (S.ss.own || S.ss.spousal){
+        d.ssMode = "manual"; d.ssWho = "single"; d.ssAmount = Math.round(S.ss.total); d.ssDelay = S.ss.claim;
+      } else {
+        d.ssMode = "est"; d.ssWho = gdMar() ? "couple" : "single";
+        d.ssIncome = a.income || 0; d.ssClaim = S.ss.claim;
+        if (gdMar()){ d.ssIncome2 = a.income2 || 0; d.ssClaim2 = S.ss.claim; }
+      }
+      writeDDState(d);
+    },
+    tasks(){
+      return [
+        {h:"Your projected savings, retirement age, spending (shown as a <b>Withdrawal rate</b>) and Social Security are loaded on the left."},
+        {h:"<b>Success rate</b> is the share of real retirements since 1926 where this plan never ran out. Around 85% or more is solid; near 100% can mean room to spend more."},
+        {h:"In <b>How each starting year fared</b>, click a year that went badly, like 1966, to watch it play out year by year."},
+        {h:"Change <b>Withdrawal strategy</b> to <b>Guyton-Klinger Guardrails</b>. Trimming spending a little in bad years often lifts the success rate a lot.", ok: $("ddStrategy").value !== "fixed"},
+        {h:"<b>How the strategies compare</b>, under the strategy picker, explains each one."}
+      ];
+    },
+    chip(){
+      const t = $("ddSuccess").textContent.trim();
+      return t && t !== "—" ? "Success rate<br><b>" + t + "</b>" : "";
+    },
+    capture(){
+      const t = $("ddSuccess").textContent.trim(), sel = $("ddStrategy");
+      if (!t || t === "—") return null;
+      gd.a.ddTool = {rate:t, strat:sel.value};
+      const nm = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "";
+      return "Back from the Drawdown Simulator: <b>" + escapeHtml(nm) + "</b> reached a <b>" + t + "</b> success rate." +
+        (sel.value !== "fixed" ? " Your score still uses a fixed, inflation-adjusted withdrawal, the cautious case." : "");
+    }},
+
+  healthcare: {tool:"healthcare", name:"Healthcare Cost Planner", mins:4, title:"Price healthcare before Medicare",
+    preview:["Your retirement age, household and state are filled in.",
+      "You see marketplace premiums, and subsidies, for the years before 65.",
+      "Then what Medicare costs after."],
+    prefill(){
+      const a = gd.a;
+      if (gdOk(a.retire)) $("hcRetireAge").value = String(Math.max(40, Math.min(75, Math.round(a.retire))));
+      $("hcStatus").value = gdMar() ? "m" : "s";
+      $("hcHousehold").value = gdMar() ? "2" : "1";
+      if (a.state && $("hcState").querySelector("option[value='" + a.state + "']")) $("hcState").value = a.state;
+      if (gdPos(a.retSpend)) $("hcIncome").value = gdM(a.retSpend);
+    },
+    tasks(){
+      return [
+        {h:"Retirement age, filing status, household size and state are filled in from your answers."},
+        {h:"<b>Retirement MAGI</b> starts at your planned yearly spending, a cautious guess. Roth withdrawals and cash savings don't count toward it, so yours may be lower, which can mean a bigger subsidy."},
+        {h:"Read the <b>Pre-65</b> section for your monthly premium before Medicare, then <b>Post-65</b> for what Medicare costs after."},
+        {h:"Make sure those premiums fit inside the retirement spending you gave the guide."}
+      ];
+    },
+    chip(){
+      const v = gdHcPrem();
+      return v != null ? "Premium before 65<br><b>" + money(v) + "/mo</b>" : "";
+    },
+    capture(){
+      gd.a.hcSeen = true;
+      const v = gdHcPrem();
+      if (v != null) gd.a.hcPrem = v;
+      return (v != null ? "From the Healthcare Cost Planner: about <b>" + money(v) + "/mo</b> for marketplace coverage before 65. " : "Back from the Healthcare Cost Planner. ") +
+        "If that isn't part of your retirement spending, add it on the <b>Spending in retirement</b> step.";
+    }},
+
+  fire: {tool:"fire", name:"FIRE Calculator", mins:3, title:"Find your financial independence age",
+    preview:["Your savings, monthly saving and yearly spending are loaded.",
+      "You see the age your savings could cover your spending on their own.",
+      "Coast FIRE shows when you could stop contributing."],
+    prefill(){
+      const a = gd.a;
+      if (gdOk(a.age)) $("fiCurAge").value = String(Math.max(18, Math.min(70, Math.round(a.age))));
+      if (gdOk(a.retire)) $("fiRetireAge").value = String(Math.round(a.retire));
+      if (gdOk(a.saved)) $("fiInitial").value = gdM(a.saved);
+      $("fiContrib").value = gdM(gdSaveMo()); $("fiPeriod").value = "Monthly";
+      if (gdPos(a.retSpend)){
+        $("fiTarget").value = gdM(a.retSpend);
+        if ($("fiSolveFor").value !== "withdrawal"){
+          $("fiSolveFor").value = "withdrawal";
+          $("fiSolveFor").dispatchEvent(new Event("change", {bubbles:true}));
+        }
+      }
+    },
+    tasks(){
+      return [
+        {h:"Your savings, monthly saving and yearly spending (as the target) are loaded."},
+        {h:"<b>FIRE age</b> is when your savings could cover that spending at the <b>Withdrawal rate</b>: 4% is the classic figure, 3.5% more cautious."},
+        {h:"Switch to <b>Coast FIRE</b> at the top of the inputs. It finds when you could stop contributing and let growth carry you to your planned retirement age.", ok: gdFireMode() === "coast"},
+        {h:"Raise the contribution a little and see how many years it takes off."}
+      ];
+    },
+    chip(){
+      const t = $("fiAge").textContent.trim();
+      return t && t !== "—" ? $("fiAgeLabel").textContent + "<br><b>" + escapeHtml(t) + "</b>" : "";
+    },
+    capture(){
+      const t = $("fiAge").textContent.trim();
+      if (!t || t === "—") return null;
+      gd.a.fiAge = t; gd.a.fiLabel = $("fiAgeLabel").textContent;
+      return "From the FIRE Calculator: " + escapeHtml(gd.a.fiLabel) + " <b>" + escapeHtml(t) + "</b>.";
+    }},
+  advanced: {tool:"single", name:"Advanced calculator", mins:10, title:"Tour the Advanced calculator",
+    prefill(){
+      const a = gd.a;
+      // Only the first time per visit, so going back to tweak it keeps your
+      // changes; and never over an account-type split you've set up.
+      if (gdFilled.single || acOn() || !gdOk(a.age) || !gdOk(a.retire) || !(a.retire > a.age)) return;
+      gdFilled.single = true;
+      const infl = BASIC_INFL, gross = (1 + (a.risk || .045)) * (1 + infl) - 1;
+      writeInputs({initial:a.saved || 0, contrib:Math.round(gdSaveMo()), period:"Monthly", growth:infl,
+        gross, nominal:gross, inflation:infl, years:Math.round(a.retire - a.age), withdrawal:.04,
+        taxRate:.10, vol:.15, fees:0});
+      if (gdPos(a.retSpend)){ $("solveFor").value = "After-Tax Withdrawal"; $("target").value = gdM(a.retSpend); }
+      renderAll();
+    },
+    tasks(){
+      const mode = document.querySelector("#tab-single [data-mode].on");
+      return [
+        {h:"Your plan is carried over: savings as <b>Starting value</b>, your monthly saving, <b>Time period</b> until retirement, and a <b>Rate of return</b> for your mix, before inflation. Figures are in future dollars unless marked <b>inflation adjusted</b>."},
+        {h:"<b>Contribution growth</b> raises what you save each year. It's set to match inflation; try 4% or 5% if you expect raises."},
+        {h:"Turn on <b>Split by account type</b> to enter traditional, Roth and brokerage balances separately, plus your employer match. The <b>By account type</b> table then shows the tax on what you'd withdraw.", ok: acOn() ? true : undefined},
+        {h:"Set <b>Fees</b> to your funds' expense ratio (about 0.05% for index funds, 0.5% to 1% for managed ones) to see what they cost over decades.", ok: num("fees") > 0 ? true : undefined},
+        {h:"<b>Work backwards from a target</b> starts at your retirement spending. It shows the contribution, or the timeline, that gets you there; <b>Use this contribution</b> applies it."},
+        {h:"Above the chart, switch <b>Rate band</b> to <b>Historical</b> or <b>Monte Carlo</b> to see the plan in real and random markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined},
+        {h:"Unlike the guide, Advanced leaves out Social Security, so its numbers are for your savings alone."}
+      ];
+    },
+    chip(){
+      const t = $("rFVreal").textContent.trim();
+      return t && t !== "—" ? "Inflation adjusted<br><b>" + escapeHtml(t) + "</b>" : "";
+    },
+    capture(){
+      gd.a.advSeen = true;
+      return "Back from Advanced. Your guide answers are unchanged, and whatever you set up there stays in Advanced for next time.";
+    }},
+
+  stages: {tool:"series", name:"Stages calculator", mins:10, title:"Tour the Stages calculator",
+    prefill(){
+      const a = gd.a;
+      if (gdFilled.series) return;
+      gdStagesFrom = "";
+      if (saOn() || !gdOk(a.age) || !gdOk(a.retire) || !(a.retire > a.age)) return;
+      gdFilled.series = true;
+      const yrs = Math.round(a.retire - a.age), mo = Math.round(gdSaveMo()), infl = BASIC_INFL;
+      const gross = (1 + (a.risk || .045)) * (1 + infl) - 1;
+      const st = (name, years, contrib, adj) => ({name, years, contrib, period:"Monthly", growth:infl,
+        nominal:gross, vol:.15, adj:!!adj});
+      let list;
+      const dy = gdPos(a.debtMonths) ? Math.ceil(a.debtMonths / 12) : 0;
+      const cy = a.college === "yes" && gdOk(a.kidAge) && gdPos(a.collegeMo) ? Math.max(1, Math.round(22 - a.kidAge)) : 0;
+      // Start from a real turning point in their answers when there is one:
+      // the debt paid off frees its minimums, college ending frees that saving.
+      if (dy && dy < yrs && gdPos(a.debtMin)){
+        list = [st("Paying off debt", dy, mo), st("Debt-free", yrs - dy, mo + Math.round(a.debtMin), true)];
+        gdStagesFrom = "two stages: saving " + money(mo) + "/mo while you pay off debt, then adding the " + money(a.debtMin) + "/mo of minimums once it's gone";
+      } else if (cy && cy < yrs){
+        list = [st("Kids at home", cy, mo), st("After college", yrs - cy, mo + Math.round(a.collegeMo), true)];
+        gdStagesFrom = "two stages: saving " + money(mo) + "/mo until your youngest finishes college, then adding the " + money(a.collegeMo) + "/mo you'd been putting toward it";
+      } else {
+        list = [st("Until retirement", yrs, mo)];
+        gdStagesFrom = "one stage: " + money(mo) + "/mo for " + yrs + " years";
+      }
+      gdStagesN = list.length;
+      writeStagesState({globals:{initial:a.saved || 0, inflation:infl, withdrawal:.04, taxRate:.10, fees:0},
+        stages:list, solveForS:"After-Tax Withdrawal", targetS: gdPos(a.retSpend) ? a.retSpend : num("targetS")});
+    },
+    tasks(){
+      const mode = document.querySelector("#tab-series [data-mode].on");
+      return [
+        {h:"Stages splits your working years into chapters, each with its own contribution, raises and return." +
+          (gdStagesFrom ? " From your answers we started with " + gdStagesFrom + "." : "")},
+        {h:"Click <b>Add stage</b> for the next big change: a promotion, a paid-off car, going part-time. Give it <b>Years</b> and a <b>Contribution</b>.", ok: stages.length > gdStagesN},
+        {h:"Tick <b>Inflation adjusted</b> on a later stage to type its contribution in today's dollars; it's grown by inflation up to that stage's start."},
+        {h:"Each stage can have its own <b>Rate of return</b>, and the last one can glide toward bonds as retirement nears."},
+        {h:"<b>Stage by stage</b>, under the chart, shows what each chapter adds, and the chart marks every boundary.", ok: undefined},
+        {h:"Switch the chart to <b>Historical</b> to see the whole multi-stage plan in real markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined}
+      ];
+    },
+    chip(){
+      const t = $("xFVreal").textContent.trim();
+      return t && t !== "—" ? "Inflation adjusted<br><b>" + escapeHtml(t) + "</b>" : "";
+    },
+    capture(){
+      gd.a.stagesSeen = true;
+      return "Back from Stages. Your guide answers are unchanged, and your stages stay there for next time.";
+    }},
+  backtest: {tool:"backtest", name:"Portfolio Backtest", mins:5, title:"See what your mix has earned",
+    prefill(){
+      if (gdFilled.backtest) return;
+      gdFilled.backtest = true;
+      $("btStock").value = String(gdMixFor(gd.a.risk));
+    },
+    tasks(){
+      const a = gd.a, mix = gdMixFor(a.risk), era = document.querySelector("#segBTEra button.on");
+      const moved = (era && era.getAttribute("data-era") !== "all") || num("btStock") !== mix;
+      return [
+        {h:"<b>Stocks</b> is set to " + mix + "%, close to your " + gdRiskLabel(a.risk || .045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926."},
+        {h:"<b>After inflation</b> is the figure to compare with the " + pctStr(a.risk || .045, 1) + " a year the guide assumed for your plan. <b>Return, per year</b> is the same before inflation."},
+        {h:"Try <b>Last 30</b> or <b>Last 50</b>, and a different mix, to see how much the answer moves with the period you pick.", ok: moved},
+        {h:"<b>Worst year</b> and <b>Deepest fall</b> show what you'd have had to sit through. If a drop like that would have made you sell, a lower stock mix may suit you better."},
+        {h:"<b>Rolling returns</b> lists every stretch of years, not just one average, so you can see the range: the best, the worst and the typical."},
+        {h:"Use it to choose a reasonable rate for planning, and <b>Use these figures in Advanced</b> carries it over. Past performance doesn't predict future returns: treat history as a range of what's possible, and plan toward the cautious end of it."}
+      ];
+    },
+    chip(){
+      const t = $("btReal").textContent.trim();
+      return t && t !== "—" ? "After inflation<br><b>" + escapeHtml(t) + "</b>" : "";
+    },
+    capture(){
+      gd.a.btSeen = true;
+      return "Back from Portfolio Backtest. Remember, history shows the range of what's happened, not a forecast. The guide keeps assuming " +
+        pctStr(gd.a.risk || .045, 1) + " a year after inflation; change your mix on the <b>Retirement savings</b> step if you'd like a different one.";
+    }}
+};
+/* The planner's headline pre-65 premium, the first net figure it shows
+   (current law), read off the page since it's drawn as text. */
+function gdHcPrem(){
+  const el = $("hcACABody") && $("hcACABody").querySelector(".kv.total .v");
+  if (!el) return null;
+  const v = parseFloat(el.textContent.replace(/[^0-9.]/g, ""));
+  return isFinite(v) ? v : null;
+}
+/* The backtest's stock share nearest each of the guide's investment mixes. */
+function gdMixFor(real){
+  const i = RISK_LEVELS.findIndex(r => Math.abs(r.real - (real || .045)) < 1e-6);
+  return [20, 40, 60, 80, 100][i < 0 ? 2 : i];
+}
+function gdBasicNow(){
+  const p = readBasic();
+  return {monthly: p.contrib * (PPY[p.period] || 12) / 12, retire: p.retire, saved: p.initial, risk: p.real};
+}
+
+/* Everything the household bar also knows goes there too, so every tool
+   starts from these numbers after a reload. Blank answers leave the
+   profile's own value alone. */
+function gdHouseholdSync(){
+  const a = gd.a, H = Object.assign({}, hhLoad() || {});
+  if (a.status) H.status = a.status;
+  if (gdOk(a.age)) H.age = a.age;
+  H.spouseAge = gdMar() && gdOk(a.spouseAge) ? a.spouseAge : (gdMar() ? H.spouseAge : null);
+  if (gdOk(a.retire)) H.retire = a.retire;
+  if (a.state) H.state = a.state;
+  if (gdOk(a.income)) H.income = a.income;
+  H.income2 = gdMar() && gdOk(a.income2) ? a.income2 : (gdMar() ? H.income2 : null);
+  if (gdOk(a.saved)) H.saved = a.saved;
+  if (gdOk(a.contrib)) H.monthly = gdSaveMo();
+  if (gdPos(a.retSpend)) H.spend = a.retSpend;
+  storeWrite("household", H);
+  if ($("hhBody").hidden) hhWriteForm(H);
+  hhSummary();
+}
+/* First visit: start from whatever the household bar already holds. */
+function gdSeedFromHousehold(){
+  const H = hhLoad(), a = gd.a;
+  if (!H) return;
+  const put = (k, v) => { if (a[k] == null && v != null && v !== "") a[k] = v; };
+  put("status", H.status); put("age", H.age); put("spouseAge", H.spouseAge); put("retire", H.retire);
+  put("state", H.state); put("income", H.income); put("income2", H.income2); put("saved", H.saved);
+  put("retSpend", H.spend);
+}
+
+/* ---------- the steps ---------- */
+const GD_CH = ["About you", "Cash flow", "Safety net", "Big goals", "Retirement", "Your plan"];
+const GD_STEPS = [
+  {id:"intro", ch:-1, title:"Welcome",
+    body(){
+      const started = Object.keys(gd.done).length > 0;
+      return "<h2 class='gd-q' tabindex='-1'>" + (started ? "Welcome back" : "How ready are you for retirement?") + "</h2>" +
+        "<p class='gd-lead'>This guide goes through your money one question at a time: what you earn, what you spend, what you owe and what you've saved. " +
+        "When you don't know an answer, it opens the tool on this site that finds it, tells you exactly what to fill in, and brings the result back here.</p>" +
+        "<ul class='gd-perks'>" +
+        "<li><i>1</i><span><b>A readiness score out of 100</b> that updates as you answer, and shows what's pulling it down.</span></li>" +
+        "<li><i>2</i><span><b>A tour of the tools that apply to you.</b> No mortgage? No kids? Those get skipped.</span></li>" +
+        "<li><i>3</i><span><b>A short, ordered plan</b> of what to do next, with the tool for each step.</span></li></ul>" +
+        "<div class='gd-callout'>Plan on 20 to 40 minutes, depending on how many tools you open. Stop whenever you like: your answers are kept in this browser only and never leave it.</div>";
+    },
+    foot(){
+      const started = Object.keys(gd.done).length > 0;
+      return started
+        ? "<button type='button' class='btn' data-gd='restart'>Start over</button><span class='sp'></span><button type='button' class='btn primary' data-gd='resume'>Pick up where you left off ›</button>"
+        : "<span class='sp'></span><button type='button' class='btn primary' data-gd='next'>Let's begin ›</button>";
+    }},
+
+  {id:"about", ch:0, title:"About you",
+    body(){
+      const a = gd.a;
+      const states = [["", "Choose your state"]].concat(Array.prototype.map.call($("txState").options, o => [o.value, o.textContent]));
+      return "<h2 class='gd-q' tabindex='-1'>First, a little about you</h2>" +
+        "<p class='gd-lead'>These set the timeline for everything else. They also fill in the household bar at the top of the page, so every tool on the site starts from your numbers.</p>" +
+        "<div class='gd-fields'>" +
+        gdSelF("status", "Household", [["s", "Just me"], ["m", "Me and a spouse or partner"]], {rerender:true, full:true}) +
+        gdNumF("age", "Your age", "age") +
+        (gdMar() ? gdNumF("spouseAge", "Spouse's age", "age") : "") +
+        gdNumF("retire", "Age you'd like to retire", "age", {hint:"A guess is fine. You can try other ages later."}) +
+        gdSelF("state", "State", states, {hint:"For state income tax and healthcare costs."}) +
+        "</div>" + gdLive("aboutNote");
+    },
+    ok(a){ return gdOk(a.age) && a.age >= 16 && a.age < 100 && gdOk(a.retire) && a.retire > a.age && a.retire <= 90; },
+    why(){ return "Enter your age and a retirement age after it"; },
+    commit(){ if (!gd.a.status) gd.a.status = "s"; gdHouseholdSync(); }},
+
+  {id:"income", ch:1, title:"Your income",
+    body(){
+      return "<h2 class='gd-q' tabindex='-1'>What do you earn in a year?</h2>" +
+        "<p class='gd-lead'>Your salary or wages <b>before</b> taxes and paycheck deductions come out: the headline number on an offer letter. If your pay moves around, use last year's total.</p>" +
+        "<div class='gd-fields'>" +
+        gdMoneyF("income", "Your gross income", {per:"/yr", hint:"Self-employed? Use your net profit. Not working right now? Enter 0."}) +
+        (gdMar() ? gdMoneyF("income2", "Spouse's gross income", {per:"/yr"}) : "") +
+        "</div>" + gdLive("incomeNote");
+    },
+    ok(a){ return gdOk(a.income); },
+    why(){ return "Enter your yearly income"; },
+    commit(){ gdHouseholdSync(); }},
+
+  {id:"takehome", ch:1, title:"Take-home pay",
+    body(){
+      const a = gd.a, est = gdTaxEst();
+      const showField = a.thKnow === "yes" || gdPos(a.takehome);
+      return "<h2 class='gd-q' tabindex='-1'>Do you know your monthly take-home pay?</h2>" +
+        "<p class='gd-lead'>Take-home is what actually lands in your bank account after taxes and anything your employer takes out, like 401(k) contributions and health insurance. It's the number your budget has to live within.</p>" +
+        "<div class='gd-choices two'>" +
+        gdChoice("thKnow", "yes", "Yes, I know it", "I'll type it in") +
+        gdChoice("thKnow", "no", "No, help me work it out", "The Income Tax tool estimates it from your salary") +
+        "</div>" + gdBack("takehome") +
+        (a.thKnow === "no" ? gdTask("tax", "Find it with the Income Tax tool",
+          {label: gdPos(a.takehome) ? "Open Income Tax again" : null,
+           after: est > 0 && !gdPos(a.takehome) ? "<div style='margin-top:12px'><button type='button' class='gd-link' data-fill='takehome' data-v='" + Math.round(est) + "'>Or skip the tool and use a quick estimate: about " + money(est) + "/mo</button></div>" : ""}) : "") +
+        (showField ? "<div class='gd-fields'>" + gdMoneyF("takehome", "Monthly take-home pay", {per:"/mo",
+          hint: gdMar() ? "For the two of you together." : "Paid every two weeks? Multiply one paycheck by 26, then divide by 12."}) + "</div>" : "");
+    },
+    ok(a){ return gdPos(a.takehome); },
+    why(a){ return a.thKnow === "no" ? "Open the Income Tax tool, or use the estimate" : "Enter your monthly take-home"; }},
+
+  {id:"spending", ch:1, title:"Monthly spending",
+    body(){
+      const a = gd.a;
+      const showField = a.bgKnow === "yes" || gdPos(a.spend);
+      return "<h2 class='gd-q' tabindex='-1'>Do you know what you spend each month?</h2>" +
+        "<p class='gd-lead'>Knowing where the money goes is the foundation for the rest: it sizes your emergency fund, shows what you can put toward debt or savings, and hints at what retirement will cost.</p>" +
+        "<div class='gd-choices two'>" +
+        gdChoice("bgKnow", "yes", "Yes, I track it", "I have a budget or a good handle on it") +
+        gdChoice("bgKnow", "no", "Not really", "Let's build a budget together") +
+        "</div>" + gdBack("spending") +
+        (a.bgKnow === "no" ? gdTask("budget", "Build it in the Budget tool", {label: gdPos(a.spend) ? "Open Budget again" : null}) : "") +
+        (showField ? "<div class='gd-fields'>" + gdMoneyF("spend", "Monthly spending", {per:"/mo",
+          hint:"Everything except what you save or invest: housing, bills, food, car, fun. Add yearly costs divided by 12."}) + "</div>" : "") +
+        gdLive("flowNote");
+    },
+    ok(a){ return gdPos(a.spend); },
+    why(a){ return a.bgKnow === "no" ? "Build your budget first" : "Enter your monthly spending"; }},
+
+  {id:"cash", ch:2, title:"Emergency fund",
+    body(){
+      return "<h2 class='gd-q' tabindex='-1'>How much cash do you have for emergencies?</h2>" +
+        "<p class='gd-lead'>An emergency fund covers a job loss, a car repair or a medical bill without new debt. Count checking, savings and money market accounts, not retirement accounts or investments you'd have to sell.</p>" +
+        "<div class='gd-fields'>" + gdMoneyF("cash", "Cash savings", {hint:"One income, children, or pay that varies? Aim toward six months. Two steady incomes can aim toward three."}) + "</div>" +
+        gdLive("cashNote");
+    },
+    ok(a){ return gdOk(a.cash); },
+    why(){ return "Enter your cash savings, even if it's 0"; }},
+
+  {id:"debt", ch:2, title:"Debt",
+    body(){
+      const a = gd.a;
+      let s = "<h2 class='gd-q' tabindex='-1'>Do you owe money on anything besides a mortgage?</h2>" +
+        "<p class='gd-lead'>Credit cards you carry a balance on, car loans, student loans, personal or medical loans. Interest on high-rate debt often costs more than investments earn, so paying it off comes before most other goals.</p>" +
+        "<div class='gd-choices two'>" +
+        gdChoice("debtHas", "no", "No, nothing", "Or only a mortgage") +
+        gdChoice("debtHas", "yes", "Yes", "Let's see how fast you can be rid of it") +
+        "</div>" + gdBack("debt");
+      if (a.debtHas === "yes"){
+        if (a.debtSrc !== "tool") s += gdTask("debt", "Make a plan in Debt Payoff", {label:"List them in Debt Payoff",
+          after: a.debtSrc !== "quick" ? "<div style='margin-top:12px'><button type='button' class='gd-link' data-set='debtSrc' data-val='quick'>Rather not list them? Enter the totals instead</button></div>" : ""});
+        if (a.debtSrc === "quick" || a.debtSrc === "tool")
+          s += "<div class='gd-fields'>" + gdMoneyF("debtTotal", "Total you owe") +
+            gdMoneyF("debtHi", "Of that, at 8% interest or more", {hint:"Credit cards almost always are."}) + "</div>";
+        if (a.debtSrc === "tool") s += "<button type='button' class='gd-link' data-trip='debt'>Open your plan in Debt Payoff again</button>";
+      }
+      return s;
+    },
+    ok(a){ return a.debtHas === "no" || (a.debtHas === "yes" && gdOk(a.debtTotal)); },
+    why(a){ return a.debtHas === "yes" ? "List your debts, or enter the total" : "Choose an answer"; }},
+
+  {id:"home", ch:3, title:"Housing",
+    body(){
+      const a = gd.a;
+      let s = "<h2 class='gd-q' tabindex='-1'>What's your housing situation?</h2>" +
+        "<p class='gd-lead'>Housing is most people's biggest cost. If a home purchase or a mortgage is part of your picture, the Mortgage Calculator shows what it really costs. If not, we'll skip it.</p>" +
+        "<div class='gd-choices'>" +
+        gdChoice("home", "rent", "I rent, with no plans to buy soon") +
+        gdChoice("home", "buy", "I'd like to buy in the next few years", "See what a home would cost each month") +
+        gdChoice("home", "mortgage", "I own and I'm paying off a mortgage", "See what extra payments would do") +
+        gdChoice("home", "own", "I own my home outright") +
+        gdChoice("home", "other", "Something else", "Living with family, or it's complicated") +
+        "</div>" + gdBack("home");
+      if (a.home === "buy") s += gdTask("mortBuy", "Price it in the Mortgage Calculator", {after:"<div style='margin-top:10px' class='hint'>Optional. Continue whenever you're ready.</div>"});
+      if (a.home === "mortgage"){
+        s += gdTask("mortOwn", "Try extra payments in the Mortgage Calculator", {after:"<div style='margin-top:10px' class='hint'>Optional. Continue whenever you're ready.</div>"});
+        s += "<div class='gd-h3'>Will it be paid off by the time you retire?</div><div class='gd-choices two'>" +
+          gdChoice("mortPaid", "yes", "Yes", "Your spending drops once it's gone") + gdChoice("mortPaid", "no", "No, or not sure") + "</div>";
+      }
+      if (a.home === "mortgage" && !gdOk(a.housePay) && gdPos(a.bgHousing)) a.housePay = a.bgHousing;
+      if (a.home === "buy" || a.home === "mortgage")
+        s += "<div class='gd-fields'>" + gdMoneyF("housePay", a.home === "buy" ? "Expected house payment" : "Your house payment",
+          {per:"/mo", hint: a.home === "mortgage" && gdPos(a.bgHousing) && a.housePay === a.bgHousing ? "From your budget's housing lines. Loan, property tax, insurance, PMI and HOA."
+            : "Loan, property tax, insurance, PMI and HOA. The calculator fills this in."}) + "</div>" + gdLive("houseNote");
+      return s;
+    },
+    ok(a){ return !!a.home; },
+    why(){ return "Choose an answer"; }},
+
+  {id:"college", ch:3, title:"College",
+    body(){
+      const a = gd.a;
+      let s = "<h2 class='gd-q' tabindex='-1'>Are you saving for a child's college?</h2>" +
+        "<p class='gd-lead'>If helping with college is a goal, it helps to know the monthly number now. If not, or your children are grown, skip ahead.</p>" +
+        "<div class='gd-choices two'>" +
+        gdChoice("college", "yes", "Yes, or I'd like to") + gdChoice("college", "no", "No, or it doesn't apply") +
+        "</div>" + gdBack("college");
+      if (a.college === "yes"){
+        s += "<div class='gd-fields'>" + gdNumF("kidAge", "Youngest child's age", "age", {hint:"Not born yet? Enter 0."}) + "</div>";
+        s += gdTask("college", "Find the number with College Savings");
+        s += "<div class='gd-fields'>" + gdMoneyF("collegeMo", "Monthly for college", {per:"/mo", hint:"The tool fills this in."}) + "</div>";
+        s += "<div class='gd-callout warn'><b>Retirement comes first.</b> There are loans for college but none for retirement, and your own security is a gift to your children too.</div>";
+      }
+      return s;
+    },
+    ok(a){ return !!a.college; },
+    why(){ return "Choose an answer"; }},
+
+  {id:"savings", ch:4, title:"Retirement savings",
+    body(){
+      const a = gd.a;
+      if (a.risk == null) a.risk = .045;
+      return "<h2 class='gd-q' tabindex='-1'>Where do your retirement savings stand?</h2>" +
+        "<p class='gd-lead'>Add up everything set aside for retirement: 401(k), 403(b), IRAs, Roth accounts and any investments you've earmarked for it. Your account websites show the balances.</p>" +
+        "<div class='gd-fields'>" +
+        gdMoneyF("saved", "Saved for retirement so far", {full:true}) +
+        gdMoneyF("contrib", "You contribute", {per:"/mo", hint: gdPos(a.bgSave) ? "Your budget shows " + money(a.bgSave) + "/mo going to savings." : "From your paycheck and on your own."}) +
+        gdMoneyF("employer", "Your employer adds", {per:"/mo", hint:"Matching or profit sharing. 0 if none."}) +
+        "</div>" +
+        "<div class='gd-h3'>Does your employer match what you put in?</div><div class='gd-choices two'>" +
+        gdChoice("match", "full", "Yes, and I get all of it") + gdChoice("match", "partial", "Yes, but I'm not getting all of it") +
+        gdChoice("match", "none", "No match, or I'm self-employed") + gdChoice("match", "unsure", "Not sure") + "</div>" +
+        "<div class='gd-fields'>" + gdSelF("risk", "How is it invested?", RISK_LEVELS.map(r => [r.real, r.label + " · " + r.sub]),
+          {kind:"num", full:true, hint:"Target-date funds are usually Balanced or Growth until the last decade before retirement."}) + "</div>" +
+        gdLive("rateNote");
+    },
+    ok(a){ return gdOk(a.saved) && gdOk(a.contrib) && !!a.match; },
+    why(){ return "Fill in your savings and contributions, and answer the match question"; },
+    commit(){ if (!gdOk(gd.a.employer)) gd.a.employer = 0; gdHouseholdSync(); }},
+
+  {id:"retspend", ch:4, title:"Spending in retirement",
+    body(){
+      const a = gd.a, picks = [];
+      if (gdPos(a.spend)){
+        picks.push(["Same as today", a.spend * 12]);
+        picks.push(["80% of today", a.spend * 12 * .8]);
+        // Only the loan itself goes away; property tax and insurance don't.
+        const loan = gdPos(a.mortPI) ? a.mortPI : gdPos(a.bgMort) ? a.bgMort : 0;
+        if (a.home === "mortgage" && a.mortPaid === "yes" && loan > 0 && a.spend > loan)
+          picks.push(["Today, less the loan payment", (a.spend - loan) * 12]);
+      }
+      return "<h2 class='gd-q' tabindex='-1'>What will you spend in retirement?</h2>" +
+        "<p class='gd-lead'>A year of the retirement you want, priced at today's prices. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel and healthcare can push it back up.</p>" +
+        (picks.length ? "<div class='gd-picks'>" + picks.map(p => "<button type='button' class='gd-pick' data-fill='retSpend' data-v='" + Math.round(p[1] / 100) * 100 + "'>" +
+          p[0] + ": <b>" + money(Math.round(p[1] / 100) * 100) + "/yr</b></button>").join("") + "</div>" : "") +
+        "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, before income tax."}) + "</div>" +
+        gdLive("ssNote") +
+        "<div class='gd-fields'>" + gdMoneyF("ssOwn", "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:true,
+          ph:"optional", hint:"From ssa.gov/myaccount, at 67" + (gdMar() ? ", both of you added together" : "") + ". It reflects your real earnings, so it beats our estimate."}) + "</div>";
+    },
+    ok(a){ return gdPos(a.retSpend); },
+    why(){ return "Enter your yearly spending in retirement"; },
+    commit(){ gdHouseholdSync(); }},
+
+  {id:"outlook", ch:4, title:"Your projection",
+    body(){
+      const a = gd.a, S = gdSim();
+      let s = "<h2 class='gd-q' tabindex='-1'>Your retirement projection</h2>";
+      if (!S) return s + "<div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
+        "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
+      const need = S.spend, port = S.portIncome, ss = S.ss.total;
+      const sc = Math.max(need, port + ss) || 1;
+      s += "<p class='gd-lead'>Where your current path leads by " + fmtNum(S.retire) + ", in today's dollars, if a " + gdRiskLabel(S.real) +
+        " mix earns about " + pctStr(S.real, 1) + " a year after inflation and your saving keeps pace with inflation.</p>" + gdBack("outlook") +
+        "<div class='gd-stats'>" +
+        "<div><div class='k'>Savings at " + fmtNum(S.retire) + "</div><div class='v gold'>" + money(S.fv) + "</div><div class='n'>What " + money(gdSaveMo()) + "/mo grows to</div></div>" +
+        "<div><div class='k'>Income it supports</div><div class='v'>" + money(port) + "</div><div class='n'>A year, taking 4%</div></div>" +
+        "<div><div class='k'>Social Security</div><div class='v'>" + money(ss) + "</div><div class='n'>A year, from " + S.ss.claim + "</div></div></div>" +
+        "<div class='gd-cover'><div class='gd-cover-bar' role='img' aria-label='Income covers " + pctStr(Math.min(9.99, S.coverage), 0) + " of planned spending'>" +
+        "<i style='width:" + (port / sc * 100).toFixed(1) + "%;background:var(--jade)'></i>" +
+        "<i style='width:" + (ss / sc * 100).toFixed(1) + "%;background:var(--steel)'></i>" +
+        "<span class='need' style='left:calc(" + (need / sc * 100).toFixed(1) + "% - 1px)'></span></div>" +
+        "<div class='gd-cover-key'><span><s style='background:var(--jade)'></s>From savings</span><span><s style='background:var(--steel)'></s>Social Security</span>" +
+        "<span><s style='background:var(--text);width:2px'></s>Your spending: " + money(need) + "/yr</span></div></div>";
+      if (S.coverage >= 1) s += "<div class='gd-callout ok'>On this path, savings and Social Security together cover <b>" + pctStr(Math.min(S.coverage, 9.99), 0) + "</b> of the retirement you described.</div>";
+      else s += "<div class='gd-callout warn'>That covers <b>" + pctStr(S.coverage, 0) + "</b> of the " + money(need) + " a year you plan to spend, a gap of about <b>" + money(need - port - ss) + " a year</b>. The last step shows the quickest ways to close it.</div>";
+      if (S.retire < S.ss.claim) s += "<div class='gd-callout'>Social Security starts at " + S.ss.claim + ", so for the first " + (S.ss.claim - Math.round(S.retire)) + " years of retirement your savings carry everything. The next step tests exactly that.</div>";
+      s += gdTask("basic", "See it in the Basic calculator", {after:"<div style='margin-top:10px' class='hint'>Optional. Any change you make there can come back with you.</div>"});
+      return s;
+    }},
+
+  {id:"lasting", ch:4, title:"Will it last?",
+    body(){
+      const S = gdSim();
+      let s = "<h2 class='gd-q' tabindex='-1'>Will your money last?</h2>";
+      if (!S) return s + "<div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
+        "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
+      const r = S.success;
+      s += "<p class='gd-lead'>Averages hide the real risk: retiring into a bad market. We replayed your plan through every retirement since 1926: " +
+        money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year rising with inflation for " + S.years + " years, " +
+        "with Social Security from " + S.ss.claim + " and 60% in stocks.</p>" + gdBack("lasting") +
+        "<div class='gd-stats'><div><div class='k'>Success rate</div><div class='v " + (r >= .85 ? "jade" : "gold") + "'>" + pctStr(r, 0) + "</div>" +
+        "<div class='n'>" + (S.H ? S.H.survived + " of " + S.H.total + " starting years" : "Of historical retirements") + "</div></div>" +
+        "<div><div class='k'>Length tested</div><div class='v'>" + S.years + " years</div><div class='n'>To age " + (Math.round(S.retire) + S.years) + "</div></div>" +
+        "<div><div class='k'>Typical balance left</div><div class='v'>" + (S.H ? money(S.H.medianEnd) : "—") + "</div><div class='n'>In today's dollars</div></div></div>";
+      if (S.H && S.H.failYears.length) s += "<p class='gd-fails'>It ran short retiring in " + gdYears(S.H.failYears) + ".</p>";
+      s += r >= .95 ? "<div class='gd-callout ok'><b>Very solid.</b> The plan survived " + (r >= 1 ? "every" : "nearly every") + " market in history, which can mean you have room to spend more or retire sooner.</div>"
+        : r >= .85 ? "<div class='gd-callout ok'><b>A solid plan.</b> The few failures came from the worst starting years, and small spending cuts during a bad stretch usually fix those.</div>"
+        : r >= .7 ? "<div class='gd-callout warn'><b>Borderline.</b> It works in most markets but fails in enough of them to take seriously. A flexible withdrawal strategy, or the fixes in your plan, would firm it up.</div>"
+        : "<div class='gd-callout bad'><b>At risk.</b> This plan runs short in too many historical markets. The fixes in your plan show what closes the gap.</div>";
+      s += gdTask("drawdown", "Test it yourself in the Drawdown Simulator", {after:"<div style='margin-top:10px' class='hint'>Optional, and well worth the five minutes.</div>"});
+      return s;
+    }},
+
+  {id:"health", ch:4, title:"Healthcare before 65", when: a => gdOk(a.retire) && a.retire < 65,
+    body(){
+      const a = gd.a, gap = 65 - Math.round(a.retire);
+      return "<h2 class='gd-q' tabindex='-1'>Healthcare before Medicare</h2>" +
+        "<p class='gd-lead'>Retiring at " + fmtNum(a.retire) + " leaves <b>" + gap + (gap === 1 ? " year" : " years") + "</b> before Medicare starts at 65. " +
+        "Until then you'll buy coverage on the ACA marketplace, where the price depends heavily on your income in retirement: keeping it low can earn a large subsidy.</p>" +
+        gdBack("health") + gdTask("healthcare", "Price it in the Healthcare Cost Planner") +
+        "<div class='gd-fields'>" + gdMoneyF("hcPrem", "Monthly premium you found", {per:"/mo", ph:"optional", full:true,
+          hint:"The planner fills this in."}) + "</div>" + gdLive("hcNote");
+    }},
+
+  {id:"fire", ch:4, title:"Retiring early",
+    body(){
+      const a = gd.a;
+      return "<h2 class='gd-q' tabindex='-1'>Curious how soon you could stop working?</h2>" +
+        "<p class='gd-lead'>Financial independence is the point where your savings could cover your spending on their own, so work becomes a choice. " +
+        "The FIRE Calculator finds that age, and its Coast FIRE mode shows when you could stop contributing and let growth carry you the rest of the way.</p>" +
+        "<div class='gd-choices two'>" + gdChoice("fire", "yes", "Yes, show me") + gdChoice("fire", "no", "No thanks, skip this") + "</div>" +
+        gdBack("fire") + (a.fire === "yes" ? gdTask("fire", "Find it in the FIRE Calculator") : "");
+    },
+    ok(a){ return !!a.fire; },
+    why(){ return "Choose an answer"; }},
+
+  {id:"results", ch:5, title:"Score and plan",
+    body(){ return gdResultsHTML(); },
+    foot(){
+      return "<button type='button' class='btn' data-gd='prev'>‹ Back</button><span class='sp'></span>" +
+        "<button type='button' class='btn' data-gd='restart'>Start over</button>" +
+        "<button type='button' class='btn primary' data-go='about'>Review my answers</button>";
+    }}
+];
+function gdYears(list){
+  if (list.length <= 6) return list.join(", ").replace(/, (\d+)$/, " and $1");
+  return list.slice(0, 5).join(", ") + " and " + (list.length - 5) + " other years";
+}
+function gdStep(id){ return GD_STEPS.find(s => s.id === id); }
+function gdApplies(s){ return !s.when || s.when(gd.a); }
+function gdRoute(){ return GD_STEPS.filter(gdApplies); }
+function gdNumbered(){ return gdRoute().filter(s => s.id !== "intro"); }
+function gdFirstOpen(){
+  const L = gdNumbered();
+  return (L.find(s => !gd.done[s.id]) || L[L.length - 1]).id;
+}
+
+/* ---------- the plan ---------- */
+function gdActions(){
+  const a = gd.a, P = gdParts(), S = gdSim(), A = [];
+  const inc = gdGross();
+  if (P.flow && a.takehome < a.spend)
+    A.push({t:"Spend less than you bring home",
+      d:"You're spending " + money(a.spend - a.takehome) + "/mo more than your take-home. Go through your budget line by line and trim the biggest items until it's back in the black.", trip:"budget", btn:"Open Budget"});
+  if (P.cushion && P.cushion.m < 1)
+    A.push({t:"Build a starter emergency fund",
+      d:"Get one month of spending, " + money(a.spend) + ", into a savings account before anything else, so a surprise bill doesn't land on a credit card."});
+  if (a.match === "partial")
+    A.push({t:"Get your full employer match",
+      d:"Raise your 401(k) contribution until every matched dollar comes in. A match is an instant 50% to 100% return you won't find anywhere else."});
+  if (a.match === "unsure")
+    A.push({t:"Find out whether your employer matches",
+      d:"Check your benefits site or ask HR. If there's a match, contribute at least enough to get all of it."});
+  if (a.debtHas === "yes" && (a.debtHi || 0) > 0)
+    A.push({t:"Pay off your high-interest debt",
+      d:money(a.debtHi) + " at 8% or more costs more than investing is likely to earn. Put every spare dollar at it, highest rate first." +
+        (a.debtMonths ? " Your current plan has you debt-free by " + debtDate(a.debtMonths) + "." : ""), trip:"debt", btn:"Open Debt Payoff"});
+  if (P.cushion && P.cushion.m >= 1 && P.cushion.m < 3)
+    A.push({t:"Grow your emergency fund to 3 months or more",
+      d:"You have " + gdMonths(P.cushion.m) + " months. The target is " + money(a.spend * 3) + " to " + money(a.spend * 6) + ". Automate a transfer each payday until you're there."});
+  if (P.rate && P.rate.r < .15 && inc > 0)
+    A.push({t:"Raise your savings rate toward 15%",
+      d:"You save " + pctStr(P.rate.r, 1) + " of your income. Reaching 15% means about " + money(Math.max(0, inc * .15 / 12 - gdSaveMo())) + "/mo more. Raising it 1% each year, or at every raise, gets you there without feeling it.",
+      trip:"basic", btn:"Try it in Basic"});
+  if (S && S.success < .85){
+    const F = gdFixes() || {};
+    const opts = [];
+    if (F.extra) opts.push("save <b>" + money(F.extra) + "/mo more</b>");
+    if (F.retire) opts.push("retire at <b>" + F.retire + "</b>");
+    if (F.spend) opts.push("plan on <b>" + money(F.spend) + " a year</b> in retirement");
+    A.push({t:"Close your retirement gap",
+      d:"Your plan lasted in " + pctStr(S.success, 0) + " of historical retirements. " +
+        (opts.length ? "Any one of these gets it to 90%: " + opts.join(", or ").replace(/, or ([^,]*)$/, ", or $1") + ". A mix of smaller changes works too." : "Saving more, retiring later and spending less all help; try them in the Basic calculator."),
+      trip:"basic", btn:"Try it in Basic"});
+  }
+  if (gdOk(a.retire) && a.retire < 65 && !a.hcSeen)
+    A.push({t:"Price out healthcare before Medicare",
+      d:"You plan to retire " + (65 - Math.round(a.retire)) + " years before Medicare. Marketplace premiums can run hundreds a month, so make sure they're in your retirement spending.", trip:"healthcare", btn:"Open Healthcare Cost Planner"});
+  if (gdPos(a.hcPrem) && gdPos(a.retSpend) && a.hcIncl !== "yes" && !a.hcAdded)
+    A.push({t:"Make sure healthcare is in your retirement spending",
+      d:"You found premiums of about " + money(a.hcPrem) + "/mo before Medicare. If your " + money(a.retSpend) + " a year doesn't include them, add them.", go:"health", btn:"Review healthcare"});
+  if (a.college === "yes" && !gdPos(a.collegeMo))
+    A.push({t:"Set a monthly college number", d:"Find out what to put aside each month, and consider a 529 plan for the tax break.", trip:"college", btn:"Open College Savings"});
+  if (!gdPos(a.ssOwn) && S)
+    A.push({t:"Check your Social Security estimate",
+      d:"We estimated it from today's income. Your statement at ssa.gov/myaccount uses your real earnings record and takes five minutes to get.", go:"retspend", btn:"Add it to your answers"});
+  if (S && S.success >= .85 && !(a.ddTool))
+    A.push({t:"Stress-test your plan", d:"Your plan looks solid. The Drawdown Simulator shows how it did through 1929, 1966 and 2000, and how a flexible withdrawal strategy helps.", trip:"drawdown", btn:"Open Drawdown Simulator"});
+  return A.slice(0, 6);
+}
+function gdResultsHTML(){
+  const a = gd.a, R = gdScore(), rt = gdRating(R.score), S = gdSim();
+  let s = "<h2 class='gd-q' tabindex='-1'>Your retirement readiness</h2>";
+  s += gdBack("results");
+  if (R.score == null) return s + "<div class='gd-callout warn'>There isn't enough to score yet. Answer the questions before this one and your score will appear here.</div>" +
+    "<button type='button' class='btn primary' data-go='" + gdFirstOpen() + "'>Go to the next open question</button>";
+  const summary = R.score >= 85 ? "You're doing the big things right. Keep it going, and use the list below to fine-tune."
+    : R.score >= 70 ? "You're close. A couple of changes below would put you firmly on track."
+    : R.score >= 50 ? "You've got a foundation to build on. Work down the list below, in order."
+    : "There's real work to do, and the list below puts it in the order that matters most. Every item moves the score.";
+  s += "<div class='gd-hero'>" + gdRing(R.score, 132) + "<div class='gd-hero-t'><div class='r' style='color:" + rt.color + "'>" + rt.label + "</div>" +
+    "<p>" + summary + "</p>" + (R.n < GD_FACTORS.length ? "<p class='hint' style='margin-top:6px'>Based on " + R.n + " of " + GD_FACTORS.length + " areas. Answer the rest to complete it.</p>" : "") + "</div></div>";
+  const A = gdActions();
+  if (A.length){
+    s += "<div class='gd-h3'>Your next moves, in order</div><ol class='gd-acts'>" + A.map(x => "<li class='gd-act'><div><b>" + x.t + "</b><p>" + x.d + "</p>" +
+      (x.trip ? "<button type='button' class='btn mini' data-trip='" + x.trip + "' data-from='results'>" + x.btn + " ›</button>" : "") +
+      (x.go ? "<button type='button' class='btn mini' data-go='" + x.go + "'>" + x.btn + "</button>" : "") + "</div></li>").join("") + "</ol>";
+  }
+  const wins = GD_FACTORS.filter(f => R.P[f.id] && R.P[f.id].p >= .9).map(f => f.name + ": " + R.P[f.id].txt);
+  if (wins.length) s += "<div class='gd-h3'>What's going well</div><div class='gd-wins'>" + wins.map(w => "<span>" + w + "</span>").join("") + "</div>";
+  const kv = [];
+  const row = (k, v) => kv.push("<div class='kv'><span class='k'>" + k + "</span><span class='v'>" + v + "</span></div>");
+  if (gdPos(a.takehome)) row("Take-home pay", money(a.takehome) + "/mo");
+  if (gdPos(a.spend)) row("Spending", money(a.spend) + "/mo");
+  if (gdOk(a.cash)) row("Emergency fund", money(a.cash));
+  if (a.debtHas === "yes" && gdOk(a.debtTotal)) row("Debt, not counting a mortgage", money(a.debtTotal));
+  if (gdOk(a.saved)) row("Retirement savings", money(a.saved));
+  if (gdOk(a.contrib)) row("Saving for retirement", money(gdSaveMo()) + "/mo");
+  if (S){ row("Projected at " + fmtNum(S.retire), money(S.fv)); row("Historical success rate", pctStr(S.success, 0)); }
+  if (a.fiAge) row(escapeHtml(a.fiLabel || "FIRE age"), escapeHtml(a.fiAge));
+  if (kv.length) s += "<div class='gd-h3'>Your numbers</div><div class='gd-kvs'>" + kv.join("") + "</div>";
+  s += "<div class='gd-h3'>Ready for more detail?</div>" +
+    "<p class='hint' style='margin:-4px 0 10px'>Advanced, Stages and Portfolio Backtest open with your numbers and the guide panel beside them, walking you through what's there.</p><div class='gd-more'>" +
+    "<button type='button' class='btn mini' data-trip='advanced' data-from='results'>Advanced: taxes and account types ›</button>" +
+    "<button type='button' class='btn mini' data-trip='stages' data-from='results'>Stages: plans that change over time ›</button>" +
+    "<button type='button' class='btn mini' data-trip='backtest' data-from='results'>Portfolio Backtest: what your mix has earned ›</button></div>" +
+    "<p class='hint'>This score is a rule-of-thumb check, not financial advice. It leaves out taxes in retirement, pensions and home equity.</p>";
+  return s;
+}
+
+/* ---------- drawing the guide ---------- */
+function gdCur(){
+  let st = gdStep(gd.cur);
+  if (!st){ gd.cur = "intro"; st = GD_STEPS[0]; }
+  if (!gdApplies(st)){
+    const i = GD_STEPS.indexOf(st);
+    st = GD_STEPS.slice(i).find(gdApplies) || GD_STEPS[GD_STEPS.length - 1];
+    gd.cur = st.id;
+  }
+  return st;
+}
+function gdRender(focus){
+  gdSimCacheTrim();
+  const st = gdCur(), L = gdNumbered(), idx = L.indexOf(st);
+  const ch = st.ch >= 0 ? GD_CH[st.ch] : "Start";
+  $("gdCount").textContent = idx >= 0 ? "Step " + (idx + 1) + " of " + L.length : "";
+  let foot = st.foot ? st.foot() : null;
+  if (!foot){
+    const ok = !st.ok || st.ok(gd.a);
+    foot = "<button type='button' class='btn' data-gd='prev'>‹ Back</button><span class='sp'></span>" +
+      "<span class='gd-why' data-why" + (ok ? " hidden" : "") + ">" + (st.why ? st.why(gd.a) : "") + "</span>" +
+      "<button type='button' class='btn primary' data-gd='next'" + (ok ? "" : " disabled") + ">" + (idx === L.length - 2 ? "See my score" : "Continue") + " ›</button>";
+  }
+  $("gdCard").innerHTML = "<div class='gd-eyebrow'><span>" + ch + "</span>" + (idx >= 0 && st.title !== ch ? "<span>" + st.title + "</span>" : "") + "</div>" +
+    st.body() + "<div class='gd-foot'>" + foot + "</div>";
+  initFields($("gdCard"));
+  gdRenderSide();
+  gdCardSync();
+  if (focus){
+    const h = $("gdCard").querySelector(".gd-q");
+    try { (h || $("gdCard")).focus({preventScroll:true}); } catch(e){}
+    // Stay put unless the new question's top is scrolled out of view above
+    // the tab rail; then bring just the card's top back, not the whole page.
+    const top = $("gdCard").getBoundingClientRect().top;
+    const rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 12;
+    if (top < rail){
+      try { window.scrollBy({top: top - rail, behavior:"auto"}); } catch(e){ window.scrollBy(0, top - rail); }
+    }
+  }
+}
+function gdSimCacheTrim(){
+  const k = Object.keys(gdSimCache);
+  if (k.length > 400) k.forEach(x => delete gdSimCache[x]);
+}
+function gdRenderSide(){
+  const R = gdScore(), rt = gdRating(R.score);
+  $("gdScore").innerHTML = "<div class='gd-score-top'>" + gdRing(R.score) + "<div class='gd-score-t'><div class='r' style='color:" + rt.color + "'>" + rt.label + "</div>" +
+    "<div class='n'>" + (R.score == null ? (R.n ? "Your score appears once two areas are answered." : "Your score appears as you answer.") : R.n < GD_FACTORS.length ? "From " + R.n + " of " + GD_FACTORS.length + " areas so far" : "All five areas answered") + "</div></div></div>" +
+    "<div class='gd-facs'>" + GD_FACTORS.map(f => {
+      const p = R.P[f.id];
+      return "<button type='button' class='gd-fac" + (p ? "" : " na") + "' data-go='" + f.step + "'><div class='top'><span>" + f.name + "</span><em>" +
+        (p ? Math.round(p.p * f.w) + " / " + f.w : "—") + "</em></div>" +
+        "<div class='bar'><i style='width:" + (p ? p.p * 100 : 0).toFixed(0) + "%;background:" + (p ? gdBarColor(p.p) : "transparent") + "'></i></div>" +
+        "<div class='sub'>" + (p ? p.txt : "Not answered yet") + "</div></button>";
+    }).join("") + "</div>";
+  $("gdMini").innerHTML = R.score == null ? "" : "Score <b style='color:" + rt.color + "'>" + R.score + "</b>";
+  const cur = gdCur();
+  let map = "";
+  GD_CH.forEach((c, ci) => {
+    const st = GD_STEPS.filter(s => s.ch === ci);
+    map += "<div class='gd-map-ch'>" + c + "</div>" + st.map(s => {
+      const na = !gdApplies(s);
+      const cls = na ? "na" : s.id === cur.id ? "cur" : gd.done[s.id] ? "done" : "";
+      return "<button type='button' class='gd-map-st " + cls + "'" + (na ? " disabled" : " data-go='" + s.id + "'") + "><i aria-hidden='true'></i>" + s.title +
+        (na ? "<span class='tag'>not needed</span>" : "") + "</button>";
+    }).join("");
+  });
+  map += "<div class='gd-map-foot'><button type='button' class='gd-link' data-gd='restart'>Start over</button></div>";
+  $("gdMap").innerHTML = map;
+  const L = gdRoute();
+  $("gdProg").innerHTML = GD_CH.map((c, ci) => {
+    const st = L.filter(s => s.ch === ci);
+    const d = st.filter(s => gd.done[s.id]).length;
+    const on = cur.ch === ci;
+    return "<button type='button' class='gd-seg" + (on ? " on" : "") + "' data-go='" + (st[0] ? st[0].id : "intro") + "' aria-label='" + c + ": " + d + " of " + st.length + " done'>" +
+      "<i><b style='width:" + (st.length ? d / st.length * 100 : 0).toFixed(0) + "%'></b></i><span>" + c + "</span></button>";
+  }).join("");
+}
+/* Typing redraws only the live notes, the score and the Continue button. */
+function gdRefresh(){
+  const st = gdCur();
+  $("gdCard").querySelectorAll("[data-live]").forEach(el => {
+    const f = GD_LIVE[el.getAttribute("data-live")];
+    if (f) el.innerHTML = f();
+  });
+  if (st.ok){
+    const ok = st.ok(gd.a), b = $("gdCard").querySelector("[data-gd='next']"), w = $("gdCard").querySelector("[data-why]");
+    if (b) b.disabled = !ok;
+    if (w){ w.hidden = ok; w.textContent = st.why ? st.why(gd.a) : ""; }
+  }
+  gdRenderSide();
+}
+function gdGoStep(id){
+  const st = gdStep(id);
+  if (!st || !gdApplies(st)) return;
+  if (gd.back && gd.back.step !== id) gd.back = null;
+  gd.cur = id;
+  gdSave();
+  gdRender(true);
+}
+function gdNext(){
+  const st = gdCur();
+  if (st.ok && !st.ok(gd.a)) return;
+  if (st.commit) st.commit();
+  if (st.id !== "intro") gd.done[st.id] = true;
+  const L = gdRoute(), i = L.indexOf(st);
+  gd.back = null;
+  gd.cur = (L[i + 1] || L[L.length - 1]).id;
+  gdSave();
+  gdRender(true);
+}
+function gdPrev(){
+  const L = gdRoute(), i = L.indexOf(gdCur());
+  gd.back = null;
+  gd.cur = (L[Math.max(0, i - 1)]).id;
+  gdSave();
+  gdRender(true);
+}
+function gdCardSync(){
+  const el = $("gdCardProg");
+  if (!el) return;
+  const n = Object.keys(gd.done).length;
+  if (!n){ el.textContent = ""; return; }
+  const R = gdScore(), L = gdNumbered(), all = L.every(s => gd.done[s.id] || s.id === "results");
+  el.textContent = (all ? "Finished" : "In progress, " + L.filter(s => gd.done[s.id]).length + " of " + L.length + " steps") +
+    (R.score != null ? " · score " + R.score : "");
+}
+
+/* ---------- moving between the guide and the tools ---------- */
+function gdLoc(){
+  const t = chartMode.tab;
+  if (t === "tools") return toolSub;
+  if (t === "simple") return "basic";
+  return t;
+}
+function gdNavTool(tool, dir){
+  paneDir = dir || "fwd";
+  if (tool === "basic") showTab("simple");
+  else if (tool === "single" || tool === "series") showTab(tool);
+  else { toolSub = tool; showTab("tools"); }
+  pushNav();
+}
+function gdTrip(id, from){
+  const T = GD_TRIPS[id];
+  if (!T) return;
+  const st = gdCur();
+  if (st.commit && (!st.ok || st.ok(gd.a))) st.commit();
+  gd.trip = {id, from: from || gd.cur};
+  gd.coachMin = false;
+  try { T.prefill(); } catch(e){}
+  gdSave();
+  gdNavTool(T.tool);
+}
+/* However you get back to the guide (its button, the phone's back gesture,
+   or the Tools card) the tool's result comes with you. */
+function gdCapture(){
+  const t = gd.trip;
+  if (!t) return;
+  const T = GD_TRIPS[t.id];
+  let got = null;
+  try { got = T.capture ? T.capture() : null; } catch(e){}
+  const back = typeof got === "string" ? {msg:got} : got;
+  gd.back = back && back.msg ? {step:t.from, msg:back.msg, undo:back.undo || null} : null;
+  if (gdStep(t.from)) gd.cur = t.from;
+  gd.trip = null;
+  gdSave();
+}
+function gdShow(){
+  gdCapture();
+  gdRender(true);
+}
+function gdReturn(){ gdNavTool("guide", "back"); }
+function gdEndTrip(){
+  gd.trip = null;
+  gdSave();
+  gdCoachSync();
+  toast("Guide closed. It's saved under Tools whenever you want to pick it back up.");
+}
+
+/* ---------- the coach ---------- */
+let gdCoachTimer = null, gdBooted = false;
+function gdRerenderTool(tool){
+  if (tool === "tax") renderTax();
+  else if (tool === "budget"){ buildBudget(); renderBudget(); }
+  else if (tool === "debt") renderDebt();
+  else if (tool === "mortgage") renderMort();
+  else if (tool === "college") renderCollege();
+  else if (tool === "basic") renderBasic();
+  else if (tool === "drawdown") renderDrawdown();
+  else if (tool === "healthcare"){ if (hcReady) renderHealthcare(); }
+  else if (tool === "fire") $("fiTarget").dispatchEvent(new Event("input", {bubbles:true}));
+  else if (tool === "single") renderAll();
+  else if (tool === "series") renderSeries();
+  else if (tool === "backtest") renderBacktest();
+}
+function gdCoachSync(){
+  const el = $("gdCoach");
+  const t = gd.trip, T = t && GD_TRIPS[t.id];
+  const onGuide = chartMode.tab === "tools" && toolSub === "guide";
+  // A reload mid-trip clears what the tool held, so the page opening on
+  // that tool gets the guide's numbers put back in.
+  if (!gdBooted){
+    gdBooted = true;
+    if (T && gdLoc() === T.tool){
+      try { T.prefill(); gdRerenderTool(T.tool); } catch(e){}
+      setTimeout(gdCoachFill, 400);
+    }
+  }
+  if (!T || onGuide){
+    el.hidden = true;
+    document.body.classList.remove("gd-on");
+    return;
+  }
+  el.hidden = false;
+  document.body.classList.add("gd-on");
+  gdCoachFill();
+}
+function gdCoachFill(){
+  const el = $("gdCoach"), t = gd.trip, T = t && GD_TRIPS[t.id];
+  if (!T || el.hidden) return;
+  const here = gdLoc() === T.tool;
+  const from = gdStep(t.from), L = gdNumbered(), i = from ? L.indexOf(from) : -1;
+  $("gdCoachSub").textContent = "Guide" + (i >= 0 ? " · step " + (i + 1) + " of " + L.length : "");
+  $("gdCoachTitle").textContent = T.title;
+  let body, chip = "", next = "";
+  if (here){
+    let tasks = [];
+    try { tasks = T.tasks(); } catch(e){}
+    body = "<ol class='gd-steps'>" + tasks.map(k => "<li" + (k.ok === true ? " class='ok'" : k.ok === false ? " class='todo'" : "") + ">" + k.h + "</li>").join("") + "</ol>";
+    try { chip = T.chip() || ""; } catch(e){}
+    // Collapsed, the panel still names the next thing left to do.
+    const n = tasks.findIndex(k => k.ok === false);
+    if (n >= 0) next = "<span>Next</span>" + tasks[n].h.replace(/<em>.*?<\/em>/g, "");
+  } else {
+    body = "<p>You've stepped away from the " + T.name + ". Head back to finish this step, or return to the guide.</p>" +
+      "<p><button type='button' class='btn mini' id='gdCoachGo'>Open " + T.name + "</button></p>";
+    chip = "";
+  }
+  $("gdCoachBody").innerHTML = body;
+  $("gdCoachNext").innerHTML = next;
+  $("gdCoachNext").hidden = !next;
+  $("gdCoachChip").innerHTML = chip || (here ? "When you're done here:" : "");
+  el.classList.toggle("min", !!gd.coachMin);
+  const tog = $("gdCoachTog");
+  tog.setAttribute("aria-expanded", String(!gd.coachMin));
+  const lbl = gd.coachMin ? "Show the steps" : "Hide the steps";
+  tog.setAttribute("aria-label", lbl); tog.setAttribute("title", lbl);
+  document.body.style.setProperty("--gdh", el.offsetHeight + "px");
+}
+/* Tools redraw on their own input handlers, and their headline figures
+   count up over TWEEN_MS, so fill once they've drawn and again once any
+   count-up has landed. */
+let gdCoachTimer2 = null;
+function gdCoachLater(){
+  if ($("gdCoach").hidden) return;
+  clearTimeout(gdCoachTimer); clearTimeout(gdCoachTimer2);
+  gdCoachTimer = setTimeout(gdCoachFill, 120);
+  gdCoachTimer2 = setTimeout(gdCoachFill, TWEEN_MS + 160);
+}
+document.addEventListener("input", gdCoachLater, true);
+document.addEventListener("change", gdCoachLater, true);
+document.addEventListener("click", e => {
+  if (e.target.closest && e.target.closest("#gdCoach")) return;
+  gdCoachLater();
+}, true);
+window.addEventListener("resize", () => {
+  if (!$("gdCoach").hidden) document.body.style.setProperty("--gdh", $("gdCoach").offsetHeight + "px");
+});
+$("gdCoachBack").addEventListener("click", gdReturn);
+/* On a phone the open panel and the keyboard together would bury the field
+   being typed in, so starting to type in the tool folds the panel down. */
+document.addEventListener("focusin", e => {
+  const el = e.target;
+  if ($("gdCoach").hidden || gd.coachMin || !el.matches || !el.matches("input,select,textarea")) return;
+  if (el.closest("#gdCoach") || !window.matchMedia("(max-width:640px)").matches) return;
+  gd.coachMin = true;
+  gdSave();
+  gdCoachFill();
+});
+$("gdCoachX").addEventListener("click", gdEndTrip);
+$("gdCoachTog").addEventListener("click", () => {
+  gd.coachMin = !gd.coachMin;
+  gdSave();
+  gdCoachFill();
+});
+$("gdCoachBody").addEventListener("click", e => {
+  if (e.target.closest && e.target.closest("#gdCoachGo") && gd.trip) gdNavTool(GD_TRIPS[gd.trip.id].tool);
+});
+
+/* ---------- the guide's own controls ---------- */
+$("tab-guide").addEventListener("click", e => {
+  const el = e.target.closest ? e.target.closest("[data-set],[data-gd],[data-go],[data-trip],[data-fill],[data-nav]") : null;
+  if (!el || el.disabled) return;
+  if (el.hasAttribute("data-set")){
+    gd.a[el.getAttribute("data-set")] = el.getAttribute("data-val");
+    gdSave();
+    gdRender(false);
+    return;
+  }
+  if (el.hasAttribute("data-fill")){
+    const k = el.getAttribute("data-fill"), v = parseFloat(el.getAttribute("data-v"));
+    gd.a[k] = v;
+    gdSave();
+    const f = $("gdf-" + k);
+    if (f){ f.value = gdM(v); gdRefresh(); }
+    else gdRender(false);
+    return;
+  }
+  if (el.hasAttribute("data-trip")){ gdTrip(el.getAttribute("data-trip"), el.getAttribute("data-from")); return; }
+  if (el.hasAttribute("data-go")){ gdGoStep(el.getAttribute("data-go")); return; }
+  if (el.hasAttribute("data-nav")){
+    const n = el.getAttribute("data-nav");
+    paneDir = "fwd";
+    if (n === "single" || n === "series") showTab(n); else { toolSub = n; showTab("tools"); }
+    pushNav();
+    return;
+  }
+  const g = el.getAttribute("data-gd");
+  if (g === "next") gdNext();
+  else if (g === "prev") gdPrev();
+  else if (g === "resume") gdGoStep(gdFirstOpen());
+  else if (g === "addhc" && gdPos(gd.a.hcPrem) && gdPos(gd.a.retSpend)){
+    gd.a.retSpend = Math.round((gd.a.retSpend + gd.a.hcPrem * 12) / 100) * 100;
+    gd.a.hcAdded = true; gd.a.hcIncl = "yes";
+    gdHouseholdSync();
+    gdSave();
+    gdRender(false);
+  } else if (g === "undo" && gd.back && gd.back.undo){
+    Object.assign(gd.a, gd.back.undo);
+    gd.back = {step:gd.back.step, msg:"Undone. Your answers are back to what they were."};
+    gdHouseholdSync();
+    gdSave();
+    gdRender(false);
+  } else if (g === "restart"){
+    if (!confirm("Start the guide over? Your answers here are cleared. The household bar and the tools keep their numbers.")) return;
+    gd = gdFresh();
+    gdSeedFromHousehold();
+    gdSave();
+    gdRender(true);
+  }
+});
+$("tab-guide").addEventListener("input", e => {
+  const el = e.target, k = el.getAttribute && el.getAttribute("data-a");
+  if (!k || el.tagName === "SELECT") return;
+  const t = el.value.trim();
+  gd.a[k] = t === "" ? null : parseNum(t);
+  gdSave();
+  gdRefresh();
+});
+$("tab-guide").addEventListener("change", e => {
+  const el = e.target, k = el.getAttribute && el.getAttribute("data-a");
+  if (!k || el.tagName !== "SELECT") return;
+  gd.a[k] = el.getAttribute("data-kind") === "num" ? parseFloat(el.value) : (el.value || null);
+  gdSave();
+  if (el.hasAttribute("data-rerender")) gdRender(false); else gdRefresh();
+});
+$("tab-guide").addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
+  const b = $("gdCard").querySelector("[data-gd='next']");
+  if (b && !b.disabled){ e.preventDefault(); b.click(); }
+});
+if (!Object.keys(gd.a).length) gdSeedFromHousehold();
+gdCardSync();
 
 let fromLink = false;
 if (location.hash && location.hash.indexOf("#p=") === 0){
