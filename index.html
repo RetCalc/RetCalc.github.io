@@ -16491,6 +16491,8 @@ function currentState(){
     // glide, stock mix and name
     ag: p.glide && p.glide.on ? p.glide : undefined,
     cx: stages.map(st => ({g:st.glide, m:st.mix, n:st.name})),
+    // the historical charts' stock mix and glide-to mix, Advanced then Stages
+    hm: [num("histMix"), num("histMixEnd"), num("histMixS"), num("histMixEndS")],
     // the open tool's own inputs, whichever tool that is
     ts: chartMode.tab === "tools" && TOOL_PATHS[toolSub]
       ? {k:toolSub, d:buildToolData(toolSub)} : undefined,
@@ -16500,6 +16502,10 @@ function currentState(){
 }
 function applyState(o){
   if (!o || o.v !== 1) return false;
+  if (Array.isArray(o.hm))
+    ["histMix", "histMixEnd", "histMixS", "histMixEndS"].forEach((id, i) => {
+      if (o.hm[i] != null && isFinite(o.hm[i])) $(id).value = o.hm[i];
+    });
   if (o.a){
     const a = o.a;
     writeInputs({initial:a[0], contrib:a[1], period:a[2], growth:a[3], gross:a[4],
@@ -17879,21 +17885,29 @@ function readBasicState(){
   return {age:b.age, retire:b.retire, saved:b.initial, contrib:b.contrib,
           period:b.period, risk:b.real};
 }
+/* The historical chart's stock mix (and the mix a glide ends at) belong
+   to the scenario too, alongside Monte Carlo's volatility in the inputs. */
 function readAdvancedState(){
   return Object.assign({}, readInputs(),
-    {solveFor:$("solveFor").value, target:num("target")});
+    {solveFor:$("solveFor").value, target:num("target"),
+     histMix:num("histMix"), histMixEnd:num("histMixEnd")});
 }
 function writeAdvancedState(d){
   writeInputs(d);
+  if (d.histMix != null) $("histMix").value = d.histMix;
+  if (d.histMixEnd != null) $("histMixEnd").value = d.histMixEnd;
   if (d.solveFor) $("solveFor").value = d.solveFor;
   if (d.target != null) $("target").value = groupDigits(d.target, true);
 }
 function readStagesState(){
   return {globals: readGlobals(), stages: stages.map(x => Object.assign({}, x)),
-          solveForS: $("solveForS").value, targetS: num("targetS")};
+          solveForS: $("solveForS").value, targetS: num("targetS"),
+          histMix: num("histMixS"), histMixEnd: num("histMixEndS")};
 }
 function writeStagesState(d){
   if (d.globals) writeGlobals(d.globals);
+  if (d.histMix != null) $("histMixS").value = d.histMix;
+  if (d.histMixEnd != null) $("histMixEndS").value = d.histMixEnd;
   if (Array.isArray(d.stages)) stages = d.stages.map(x => Object.assign({}, x));
   buildStages();
   if (d.solveForS) $("solveForS").value = d.solveForS;
