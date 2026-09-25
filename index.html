@@ -1966,6 +1966,110 @@ html[data-theme="light"] .gd-choice:hover{border-color:#9fc4b4}
   .gd-foot .btn.primary{flex:1 1 auto}
 }
 
+/* Adjust your plan: the target, the option cards, and the before/after. */
+.gd-target{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 14px;font-size:13px;color:var(--dim)}
+.gd-target .hint{margin:0}
+.gd-pick.on{border-color:var(--jade);color:var(--text);background:rgba(79,191,149,.10)}
+.gd-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px;margin:0 0 16px}
+.gd-opt{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;
+  padding:13px 15px;border-radius:12px;border:1px solid var(--line);background:var(--panel-2);
+  color:var(--text);cursor:pointer;font:inherit;box-shadow:var(--edge-up);
+  transition:border-color .14s ease,background .14s ease}
+.gd-opt:hover{border-color:#3a5a6e}
+html[data-theme="light"] .gd-opt:hover{border-color:#9fc4b4}
+.gd-opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gd-opt.on{border-color:var(--jade);background:rgba(79,191,149,.10)}
+.gd-opt b{font-size:14.5px;font-weight:600;line-height:1.3}
+.gd-opt span{font-size:12.5px;color:var(--dim);line-height:1.4}
+.gd-opt em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--dimmer);margin-top:4px}
+.gd-opt em:empty{display:none}
+.gd-draft{margin:-4px 0 10px;padding:14px 16px 4px;border:1px solid var(--line-soft);border-radius:12px;max-width:none}
+.gd-cmp{margin:0 0 6px}
+.gd-cmp-t{width:100%;max-width:640px;border-collapse:collapse;font-size:13px;margin:14px 0 12px}
+.gd-cmp-t th,.gd-cmp-t td{padding:7px 10px;border-bottom:1px solid var(--line-soft);text-align:right}
+.gd-cmp-t thead th{font-size:11.5px;font-weight:600;color:var(--dimmer)}
+.gd-cmp-t tbody th{text-align:left;font-weight:400;color:var(--dim)}
+.gd-cmp-t td{font-family:var(--mono);font-size:12.5px;color:var(--dim);white-space:nowrap}
+.gd-cmp-t td.chg{color:var(--text);font-weight:600}
+.gd-notes{margin:0 0 14px;padding:0 0 0 18px;max-width:66ch}
+.gd-notes li{font-size:13px;color:var(--dim);line-height:1.55;margin:0 0 6px}
+.gd-apply{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.gd-apply .btn.primary{padding:10px 20px;font-size:13.5px}
+.gd-apply .hint{margin:0}
+.gd-callout .btn.mini + .btn.mini{margin-left:6px}
+
+/* The plan chart */
+.gd-chfig{margin:6px 0 14px;max-width:760px}
+.gd-chart{position:relative;min-height:210px;border-radius:10px}
+.gd-chart:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.gd-chart svg{display:block;overflow:visible}
+.gd-chart .grid{stroke:var(--line-soft);stroke-width:1}
+.gd-chart .ax{fill:var(--dimmer);font-family:var(--mono);font-size:11px}
+.gd-chart .mark{stroke:var(--line);stroke-width:1}
+.gd-chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.gd-chart .ln.p{stroke:var(--jade)}
+.gd-chart .ln.b{stroke:var(--steel)}
+.gd-chart .band.p{fill:var(--jade);fill-opacity:.11}
+.gd-chart .band.b{fill:var(--steel);fill-opacity:.11}
+.gd-chart .dot{stroke:var(--panel);stroke-width:2}
+.gd-chart .dot.p{fill:var(--jade)}
+.gd-chart .dot.b{fill:var(--steel)}
+.gd-chart .lab{fill:var(--dim);font-family:var(--sans);font-size:11.5px;font-weight:600;
+  paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
+.gd-chart .xh{stroke:var(--dimmer);stroke-width:1}
+.gd-tip{position:absolute;top:6px;min-width:160px;padding:8px 11px;border-radius:10px;pointer-events:none;
+  background:var(--pop);border:1px solid var(--line);box-shadow:var(--lift-2);font-size:12px;z-index:2}
+.gd-tip .h{font-weight:600;color:var(--text);margin-bottom:4px}
+.gd-tip .r{display:flex;align-items:center;gap:7px;white-space:nowrap;line-height:1.6}
+.gd-tip b{font-family:var(--mono);font-weight:600;color:var(--text)}
+.gd-tip span{color:var(--dimmer)}
+.gd-tip s,.gd-ch-legend s{display:inline-block;width:14px;height:2px;border-radius:1px;text-decoration:none;flex:none}
+.gd-tip s.p,.gd-ch-legend s.p{background:var(--jade)}
+.gd-tip s.b,.gd-ch-legend s.b{background:var(--steel)}
+.gd-ch-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--dim);margin:0 0 6px}
+.gd-ch-legend span{display:inline-flex;align-items:center;gap:7px}
+.gd-ch-cap{font-size:11.5px;color:var(--dimmer);margin-top:4px}
+.gd-ch-over{font-size:12px;color:var(--dim);margin-top:6px}
+.gd-ch-table{margin-top:6px;font-size:12px;color:var(--dim)}
+.gd-ch-table summary{cursor:pointer;color:var(--dimmer);width:max-content}
+.gd-ch-table table{border-collapse:collapse;margin-top:6px}
+.gd-ch-table th,.gd-ch-table td{padding:3px 12px 3px 0;text-align:right;font-family:var(--mono);font-size:11.5px}
+.gd-ch-table th:first-child,.gd-ch-table td:first-child{text-align:left}
+
+/* Drawing it down: every strategy on the plan's own numbers */
+.gd-strat{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:0 0 14px}
+.gd-strat-h,.gd-strat-r{display:grid;grid-template-columns:minmax(0,1fr) 108px 100px 128px;gap:12px;align-items:start;padding:11px 14px}
+.gd-strat-h{font-size:11px;font-weight:600;color:var(--dimmer);background:var(--panel-2);padding-top:9px;padding-bottom:9px}
+.gd-strat-h span:not(:first-child),.gd-strat-r .c{text-align:right}
+.gd-strat-r{border-top:1px solid var(--line-soft)}
+.gd-strat-r.on{background:rgba(79,191,149,.07);box-shadow:inset 3px 0 0 var(--jade)}
+.gd-strat-r .nm b{display:block;font-size:13.5px;font-weight:600}
+.gd-strat-r .nm span{display:block;font-size:12px;color:var(--dim);line-height:1.45;margin-top:2px}
+.gd-strat-r .c{font-family:var(--mono);font-size:12.5px;color:var(--text);padding-top:1px}
+.gd-strat-r .c i{display:none}
+.gd-strat-r .c small{display:block;font-family:var(--sans);font-size:11px;color:var(--dimmer);margin-top:2px}
+
+/* The coach's parts, for a tour in several parts */
+.gd-cpage{margin:2px 0 6px}
+.gd-cpage span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
+.gd-cpage b{display:block;font-size:14px;font-weight:600;margin-top:2px}
+.gd-cnav{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
+.gd-cnav .btn:disabled{opacity:.4;cursor:default}
+.gd-cdots{flex:1 1 auto;display:flex;gap:5px;justify-content:center}
+.gd-cdots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.gd-cdots i.on{background:var(--jade)}
+
+@media (max-width:640px){
+  .gd-opts{grid-template-columns:minmax(0,1fr)}
+  .gd-strat-h{display:none}
+  .gd-strat-r{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px}
+  .gd-strat-r .nm{grid-column:1 / -1}
+  .gd-strat-r .c{text-align:left}
+  .gd-strat-r .c i{display:block;font-style:normal;font-family:var(--sans);font-size:11px;color:var(--dimmer);margin-bottom:2px}
+  .gd-cmp-t th,.gd-cmp-t td{padding:7px 6px}
+  .gd-cmp-t td{white-space:normal}
+}
+
 /* The coach: the guide's current step, docked over whichever tool it sent
    you to. Bottom-right card on a wide screen, a bottom sheet on a phone. */
 .gd-coach{position:fixed;z-index:30;right:max(20px,env(safe-area-inset-right,0px));
@@ -18924,7 +19028,12 @@ function gdLoadState(){
     const raw = localStorage.getItem(GD_KEY);
     if (raw){
       const v = JSON.parse(raw);
-      if (v && v.v === 1 && v.a && typeof v.a === "object") return Object.assign(gdFresh(), v);
+      if (v && v.v === 1 && v.a && typeof v.a === "object"){
+        // The Retiring early step became Adjust your plan.
+        if (v.cur === "fire") v.cur = "tune";
+        if (v.back && v.back.step === "fire") v.back = null;
+        return Object.assign(gdFresh(), v);
+      }
     }
   } catch(e){}
   return gdMem ? JSON.parse(JSON.stringify(gdMem)) : gdFresh();
@@ -18941,6 +19050,9 @@ const gdM = v => gdOk(v) ? groupDigits(Math.round(v), true) : "";
 function gdMar(){ return gd.a.status === "m"; }
 function gdGross(){ const a = gd.a; return (a.income || 0) + (gdMar() ? (a.income2 || 0) : 0); }
 function gdSaveMo(){ return (gd.a.contrib || 0) + (gd.a.employer || 0); }
+/* What's going in today: nothing on a plan that coasts from now. */
+function gdCoastNow(){ const a = gd.a; return gdOk(a.stopAge) && gdOk(a.age) && a.stopAge <= a.age && !(gdOk(a.retire) && a.stopAge >= a.retire); }
+function gdSaveNow(){ return gdCoastNow() ? 0 : gdSaveMo(); }
 function gdInterp(x, pts){
   if (x <= pts[0][0]) return pts[0][1];
   for (let i = 1; i < pts.length; i++){
@@ -18967,67 +19079,165 @@ function gdTaxEst(){
   return T.net / 12;
 }
 
-/* Social Security in today's dollars. Claimed at 67 (full retirement age),
-   or at retirement if that's later, up to 70. Both spouses start together,
-   the same timing the Drawdown Simulator uses for a couple with one
-   retirement age, so the guide's success rate matches the tool's. A lower
-   earner is lifted to half the higher earner's full benefit, the spousal
-   rule, which matters for a one-income household. */
+/* The share of historical retirements a plan has to survive to count as on
+   track. 90% unless the person asks for more margin on the Adjust step. */
+function gdTarget(){ const t = gd.a.target; return t === .95 || t === 1 ? t : .9; }
+/* Stock share of the portfolio in retirement: 60% unless changed in the
+   Drawdown Simulator and brought back. */
+function gdRetMix(){ const m = gd.a.retMix; return gdOk(m) && m >= 0 && m <= 100 ? m : 60; }
+
+/* When Social Security starts. The age chosen on the Spending in retirement
+   step, or by default 67 (full retirement age), or retirement if that's
+   later, up to 70. Never before retirement in this plan: a benefit claimed
+   while still working is mostly withheld by the earnings test. */
+function gdClaim(retire){
+  const r = Math.min(70, Math.round(retire)), c = gd.a.ssClaim;
+  if (gdOk(c)) return Math.max(62, Math.min(70, Math.max(c, r)));
+  return Math.max(67, r);
+}
+/* Social Security in today's dollars. Both spouses start together, the same
+   timing the Drawdown Simulator uses for a couple with one retirement age,
+   so the guide's success rate matches the tool's. The estimate counts the
+   years worked by retirement, from 22: Social Security averages the best 35,
+   so retiring at 45 averages in 12 years of zeros. A lower earner is lifted
+   to half the higher earner's full benefit, the spousal rule, which matters
+   for a one-income household. A statement's figure is at 67 and is scaled
+   for the claiming age the same way. */
 function gdSS(retire){
   const a = gd.a;
-  const claim = Math.max(67, Math.min(70, Math.round(retire)));
+  const claim = gdClaim(retire);
   const delay = Math.max(0, claim - Math.round(retire));
-  if (gdPos(a.ssOwn)) return {a1:a.ssOwn * 12, a2:0, total:a.ssOwn * 12, delay, claim, own:true, spousal:false};
-  const s1 = ssEstimate(a.income || 0, 40, claim);
+  const adj = ssEstimate(0, 35, claim).adjustment;
+  if (gdPos(a.ssOwn)){
+    const t = a.ssOwn * 12 * adj;
+    return {a1:t, a2:0, total:t, delay, claim, own:true, spousal:false, career:null};
+  }
+  const yrs1 = Math.max(1, Math.min(35, Math.round(retire) - 22));
+  const s1 = ssEstimate(a.income || 0, yrs1, claim);
   let a1 = s1.annual, a2 = 0, spousal = false;
   if (gdMar()){
-    const s2 = ssEstimate(a.income2 || 0, 40, claim);
+    // The spouse stops working at the same time, at whatever age they are then.
+    const spAt = gdOk(a.spouseAge) && gdOk(a.age) ? a.spouseAge + (retire - a.age) : retire;
+    const s2 = ssEstimate(a.income2 || 0, Math.max(1, Math.min(35, Math.round(spAt) - 22)), claim);
     a2 = s2.annual;
-    // Spousal benefits earn no delay credits, so it's half the full benefit.
-    if (s1.atFRA * .5 > a2){ a2 = s1.atFRA * .5; spousal = true; }
-    if (s2.atFRA * .5 > a1){ a1 = s2.atFRA * .5; spousal = true; }
+    // Spousal benefits earn no delay credits, so it's half the full benefit,
+    // reduced the same way for an early claim.
+    const half = x => x * .5 * Math.min(1, adj);
+    if (half(s1.atFRA) > a2){ a2 = half(s1.atFRA); spousal = true; }
+    if (half(s2.atFRA) > a1){ a1 = half(s2.atFRA); spousal = true; }
   }
-  return {a1, a2, total:a1 + a2, delay, claim, own:false, spousal};
+  return {a1, a2, total:a1 + a2, delay, claim, own:false, spousal, career:yrs1};
+}
+/* A pension or other steady retirement income, in the Drawdown Simulator's
+   own custom-income form so both run it the same way. */
+function gdPensionItems(retire){
+  const a = gd.a;
+  if (!gdPos(a.pension)) return [];
+  const from = gdOk(a.pensionAge) ? a.pensionAge : retire;
+  return [{name:"Pension", on:true, annual:a.pension * 12, inflate:a.pensionCola === "yes",
+    startYear:Math.max(1, Math.round(from - retire) + 1), duration:{type:"forever"}}];
+}
+/* How long the money has to last: to 95, or to the younger spouse's 95. */
+function gdYearsFor(retire){
+  const a = gd.a;
+  let end = 95 - Math.round(retire);
+  if (gdMar() && gdOk(a.spouseAge) && gdOk(a.age))
+    end = Math.max(end, 95 - Math.round(a.spouseAge + (retire - a.age)));
+  return Math.max(20, Math.min(60, end));
+}
+
+/* Basic's projection, month by month, with contributions stopping after
+   saveYears (a coast plan). With saving all the way to retirement it's
+   exactly projectBasic's figure. Keeps each year-end balance for the chart. */
+function gdGrow(initial, monthly, real, years, saveYears){
+  const n = Math.floor(years * 12), sN = Math.max(0, Math.min(n, Math.floor(saveYears * 12 + 1e-9)));
+  const pr = Math.pow(1 + real, 1 / 12) - 1;
+  let bal = initial;
+  const path = [initial];
+  for (let i = 1; i <= n; i++){
+    const j = i - (Math.ceil(i / 12) - 1) * 12;
+    bal = bal * (1 + pr) + (i <= sN ? monthly / Math.pow(1 + BASIC_INFL, j / 12) : 0);
+    if (i % 12 === 0) path.push(bal);
+  }
+  if (n % 12) path.push(bal);
+  return {fv:bal, path};
+}
+/* The Drawdown Simulator's options for a plan, with any withdrawal strategy.
+   Every strategy starts from the plan's own spending rate; VPW uses the
+   Bogleheads return for the mix, since it sets its own spending. */
+function gdDDOpts(S, strategy){
+  const rate = S.spend / Math.max(1, S.fv) * 100;
+  return {initial:S.fv, years:S.years, stockPct:S.mix, stockPctEnd:null, fee:0,
+    strategy:strategy || "fixed", initialPct:rate, guardBand:20, adjustPct:10,
+    floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:rate, spendFloor:0, spendCeil:0,
+    vpwRate:(S.mix * 5 + (100 - S.mix) * 1.9) / 100, vpwFV:0,
+    ssAnnual:S.ss.a1, ssDelayYears:S.ss.delay, ssAnnual2:S.ss.a2, ssDelayYears2:S.ss.delay,
+    legacyGoal:0, retireAge:S.retire, fromYear:HIST_START, incomeItems:S.inc, expenseItems:[]};
 }
 
 /* The retirement engine behind the score: Basic's projection to the
-   retirement age, then that balance run through every historical retirement
-   since 1926 by the Drawdown Simulator's own engine, spending a fixed amount
-   that rises with inflation, to age 95. `over` swaps in a different monthly
-   saving, retirement age or spending, which is how the fixes are found. */
+   retirement age (stopping contributions early for a coast plan), then that
+   balance run through every historical retirement since 1926 by the Drawdown
+   Simulator's own engine, spending a fixed amount that rises with inflation.
+   `over` swaps in a different monthly saving, retirement age, stop age or
+   spending, which is how the options on the Adjust step are found. */
 const gdSimCache = {};
 function gdSim(over){
   over = over || {};
-  const a = gd.a;
+  const a = gd.a, has = k => Object.prototype.hasOwnProperty.call(over, k);
   if (!gdOk(a.age) || !gdOk(a.retire) || !gdOk(a.saved) || !gdOk(a.contrib) || !gdPos(a.retSpend)) return null;
-  const retire = over.retire != null ? over.retire : a.retire;
+  const retire = has("retire") ? over.retire : a.retire;
   if (!(retire > a.age)) return null;
-  const monthly = over.monthly != null ? over.monthly : gdSaveMo();
-  const spend = over.spend != null ? over.spend : a.retSpend;
+  const monthly = has("monthly") ? over.monthly : gdSaveMo();
+  const spend = has("spend") ? over.spend : a.retSpend;
+  if (!(spend > 0)) return null;
+  let stop = has("stopAge") ? over.stopAge : a.stopAge;
+  if (!gdOk(stop) || stop >= retire) stop = null;
+  if (stop != null) stop = Math.max(a.age, stop);
   const real = a.risk || .045;
-  const ss = gdSS(retire);
-  const key = [a.age, retire, a.saved, monthly, real, spend, ss.a1, ss.a2, ss.delay].join("|");
+  const ss = gdSS(retire), years = gdYearsFor(retire), mix = gdRetMix(), inc = gdPensionItems(retire);
+  const saveYears = stop == null ? retire - a.age : stop - a.age;
+  const key = [a.age, retire, a.saved, monthly, real, spend, saveYears, ss.a1, ss.a2, ss.delay, years, mix,
+    inc.length ? JSON.stringify(inc) : ""].join("|");
   if (gdSimCache[key]) return gdSimCache[key];
-  const R = projectBasic({age:a.age, retire, years:Math.min(100, retire - a.age), real,
-    initial:a.saved, contrib:monthly, period:"Monthly", withdrawal:.04});
-  const fv = R.fv;
-  const years = Math.max(20, Math.min(60, 95 - Math.round(retire)));
-  let H = null, success;
-  if (fv < 1000){
-    success = ss.total >= spend ? 1 : 0;
-  } else {
-    H = historicalBacktest({initial:fv, years, stockPct:60, stockPctEnd:null, fee:0,
-      strategy:"fixed", initialPct: spend / fv * 100, guardBand:20, adjustPct:10,
-      floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:5, spendFloor:0, spendCeil:0,
-      vpwRate:0, vpwFV:0, ssAnnual:ss.a1, ssDelayYears:ss.delay, ssAnnual2:ss.a2,
-      ssDelayYears2:ss.delay, legacyGoal:0, retireAge:retire, fromYear:HIST_START,
-      incomeItems:[], expenseItems:[]});
-    success = H.successRate;
+  const G = gdGrow(a.saved, monthly, real, retire - a.age, saveYears);
+  const fv = G.fv, pension = gdPos(a.pension) ? a.pension * 12 : 0;
+  const out = {fv, years, ss, spend, retire, monthly, real, stop, saveYears, mix, inc, pension,
+    path:G.path, H:null, success:0,
+    portIncome: fv * .04, coverage: (fv * .04 + ss.total + pension) / spend};
+  if (fv < 1000) out.success = ss.total + pension >= spend ? 1 : 0;
+  else {
+    out.H = historicalBacktest(gdDDOpts(out, "fixed"));
+    out.success = out.H.successRate;
   }
-  const out = {fv, years, ss, spend, success, retire, monthly, real, H,
-    portIncome: fv * .04, coverage: (fv * .04 + ss.total) / spend};
   gdSimCache[key] = out;
   return out;
+}
+/* What a plan has to have saved by retirement to last in the target share of
+   history: the same test, solved for the starting balance. */
+function gdNeed(S){
+  const goal = gdTarget(), key = "need|" + goal + "|" + S.fv + "|" + S.retire + "|" + S.spend + "|" + S.ss.total + "|" + S.years + "|" + S.mix + "|" + S.pension;
+  if (gdSimCache[key] != null) return gdSimCache[key];
+  const lasts = fv => fv < 1000 ? (S.ss.total + S.pension >= S.spend) :
+    historicalBacktest(gdDDOpts(Object.assign({}, S, {fv}), "fixed")).successRate >= goal - 1e-9;
+  let lo = 0, hi = Math.max(S.spend * 60, S.fv * 2);
+  if (lasts(0)) return (gdSimCache[key] = 0);
+  for (let i = 0; i < 22; i++){ const m = (lo + hi) / 2; if (lasts(m)) hi = m; else lo = m; }
+  return (gdSimCache[key] = Math.ceil(hi / 1000) * 1000);
+}
+/* The median balance through retirement, with the 10th and 90th percentile,
+   in today's dollars, for the chart. */
+function gdRetPath(S){
+  if (S.retPath) return S.retPath;
+  const out = [];
+  if (S.H && S.H.runs.length){
+    for (let y = 0; y < S.years; y++){
+      const col = S.H.runs.map(r => r.rows[y] ? r.rows[y].realEnd : 0).sort((x, z) => x - z);
+      const at = q => col[Math.min(col.length - 1, Math.floor(col.length * q))];
+      out.push({p10:at(.1), p50:at(.5), p90:at(.9)});
+    }
+  } else for (let y = 0; y < S.years; y++) out.push({p10:0, p50:0, p90:0});
+  return (S.retPath = out);
 }
 
 /* ---------- the score ---------- */
@@ -19044,11 +19254,16 @@ function gdParts(){
   if (S) P.outlook = {p: gdInterp(S.success, [[.25,0],[.5,.35],[.7,.6],[.85,.85],[.95,1]]),
     txt: pctStr(S.success, 0) + " of historical retirements lasted"};
   if (inc > 0 && gdOk(a.contrib) && a.match){
-    const r = gdSaveMo() * 12 / inc;
+    const r = gdSaveNow() * 12 / inc;
     let p = gdInterp(r, [[0,0],[.05,.35],[.10,.7],[.15,1]]);
+    // 15% is a rule of thumb for people who don't know what they need. Once
+    // the projection shows what's saved is enough, it has done its job, so a
+    // plan that has chosen to coast or save less isn't marked down for it.
+    const enough = S && S.success >= gdTarget() - 1e-9;
+    if (enough) p = 1;
     if (a.match === "partial") p *= .75;
-    P.rate = {p, r, txt: pctStr(r, 1) + " of gross income" +
-      (a.match === "partial" ? ", missing some match" : "")};
+    P.rate = {p, r, txt: gdCoastNow() && enough ? "Coasting: what you have is enough" : pctStr(r, 1) + " of gross income" +
+      (a.match === "partial" ? ", missing some match" : enough && r < .15 ? ", enough for your plan" : "")};
   }
   if (gdOk(a.cash) && gdPos(a.spend)){
     const m = a.cash / a.spend;
@@ -19100,36 +19315,264 @@ function gdRing(score, size){
     (score == null ? "—" : score) + "</text></svg>";
 }
 
-/* The cheapest ways to reach a 90% historical success rate: save more each
-   month, retire later, or spend less. Each is solved on its own. */
-function gdFixes(){
+/* The ways to change the plan, each solved on its own against the target
+   share of historical retirements. A plan short of the target gets the ways
+   to close the gap: save more, retire later, spend less, keep saving to
+   retirement if it coasts, or a mix. A plan past it gets the ways to use the
+   surplus: retire sooner, stop saving at some age and let growth carry it
+   (coasting), save less, or spend more. Each option carries the change to
+   the answers (`set`) and the plan it produces (`T`). */
+const gdOptCache = {};
+function gdOverFrom(set){
+  const o = {};
+  if ("retire" in set) o.retire = set.retire;
+  if ("contrib" in set) o.monthly = set.contrib + (gd.a.employer || 0);
+  if ("retSpend" in set) o.spend = set.retSpend;
+  if ("stopAge" in set) o.stopAge = set.stopAge;
+  return o;
+}
+function gdOptions(){
   const S = gdSim();
   if (!S) return null;
-  const goal = .9, out = {};
-  if (S.success >= goal) return out;
-  const base = gdSaveMo();
-  let hi = Math.max(1000, base * 3 + 3000);
-  const top = gdSim({monthly: base + hi});
-  if (top && top.success >= goal){
-    let lo = 0;
-    for (let i = 0; i < 18; i++){
-      const mid = (lo + hi) / 2, T = gdSim({monthly: base + mid});
-      if (T && T.success >= goal) hi = mid; else lo = mid;
+  const a = gd.a, goal = gdTarget();
+  const key = [JSON.stringify(a), goal].join("|");
+  if (gdOptCache.key === key) return gdOptCache.val;
+  const ok = T => !!T && T.success >= goal - 1e-9;
+  const emp = a.employer || 0, mine = a.contrib || 0, age = Math.round(a.age), ret = Math.round(S.retire);
+  const list = [], add = (id, set) => {
+    const T = gdSim(gdOverFrom(set));
+    if (T) list.push({id, set, T});
+  };
+  const ahead = ok(S);
+  if (ahead){
+    // Retire sooner: the earliest age that still passes, stepping down a year
+    // at a time (Social Security and the length of retirement move with it).
+    let r = null;
+    for (let x = ret - 1; x > age; x--){ if (ok(gdSim({retire:x}))) r = x; else break; }
+    if (r != null) add("earlier", {retire:r});
+    // Coast: the earliest age contributions could stop, still retiring on time.
+    if (S.monthly > 0){
+      const last = S.stop != null ? S.stop : ret;
+      for (let x = age; x < last; x++){ if (ok(gdSim({stopAge:x}))){ add("coast", {stopAge:x}); break; } }
     }
-    out.extra = Math.ceil(hi / 25) * 25;
+    // Save less: the least you could put in yourself (your employer's share
+    // stays). Skipped when stopping altogether already works.
+    const coastNow = list.some(o => o.id === "coast" && o.set.stopAge <= age);
+    if (mine > 0 && !coastNow){
+      let lo = 0, hi = mine;
+      if (!ok(gdSim({monthly:emp}))){
+        for (let i = 0; i < 18; i++){ const m = (lo + hi) / 2; if (ok(gdSim({monthly:emp + m}))) hi = m; else lo = m; }
+      } else hi = 0;
+      const v = Math.min(mine, Math.ceil(hi / 25) * 25);
+      if (mine - v >= 50) add("less", {contrib:v});
+    }
+    // Spend more in retirement.
+    let lo = S.spend, hi = S.spend * 4;
+    if (!ok(gdSim({spend:hi}))){
+      for (let i = 0; i < 18; i++){ const m = (lo + hi) / 2; if (ok(gdSim({spend:m}))) lo = m; else hi = m; }
+    } else lo = hi;
+    const v = Math.floor(lo / 500) * 500;
+    if (v >= S.spend + 1000) add("more", {retSpend:v});
+  } else {
+    // A coast plan that falls short may only need to keep saving.
+    if (S.stop != null && ok(gdSim({stopAge:null}))) add("keepsaving", {stopAge:null});
+    // Save more: the smallest extra that gets there, up to a generous cap.
+    const cap = Math.max(1000, S.monthly * 3 + 3000);
+    if (ok(gdSim({monthly:S.monthly + cap}))){
+      let lo = 0, hi = cap;
+      for (let i = 0; i < 18; i++){ const m = (lo + hi) / 2; if (ok(gdSim({monthly:S.monthly + m}))) hi = m; else lo = m; }
+      add("extra", {contrib:mine + Math.ceil(hi / 25) * 25});
+    }
+    // Retire later, up to 75.
+    let later = null;
+    for (let x = ret + 1; x <= Math.min(75, ret + 15); x++){ if (ok(gdSim({retire:x}))){ later = x; break; } }
+    if (later != null) add("later", {retire:later});
+    // Spend less.
+    let lo = 0, hs = S.spend;
+    for (let i = 0; i < 18; i++){ const m = (lo + hs) / 2; if (ok(gdSim({spend:Math.max(1, m)}))) lo = m; else hs = m; }
+    const v = Math.floor(lo / 500) * 500;
+    if (v > 0) add("less-spend", {retSpend:v});
+    // A mix: retire about halfway to the later age, and save the difference.
+    const mid = later != null ? Math.round((ret + later) / 2) : Math.min(75, ret + 3);
+    if (mid > ret && mid < (later != null ? later : 76)){
+      const base = gdSim({retire:mid});
+      if (base && !ok(base)){
+        let lo2 = 0, hi2 = Math.max(1000, S.monthly * 3 + 3000);
+        if (ok(gdSim({retire:mid, monthly:S.monthly + hi2}))){
+          for (let i = 0; i < 18; i++){ const m = (lo2 + hi2) / 2; if (ok(gdSim({retire:mid, monthly:S.monthly + m}))) hi2 = m; else lo2 = m; }
+          add("mix", {retire:mid, contrib:mine + Math.ceil(hi2 / 25) * 25});
+        }
+      }
+    }
   }
-  for (let r = Math.round(S.retire) + 1; r <= Math.min(75, Math.round(S.retire) + 15); r++){
-    const T = gdSim({retire:r});
-    if (T && T.success >= goal){ out.retire = r; break; }
-  }
-  let lo = 0, hs = S.spend;
-  for (let i = 0; i < 18; i++){
-    const mid = (lo + hs) / 2, T = gdSim({spend: Math.max(1, mid)});
-    if (T && T.success >= goal) lo = mid; else hs = mid;
-  }
-  if (lo > 0) out.spend = Math.floor(lo / 500) * 500;
+  const val = {S, goal, ahead, list};
+  gdOptCache.key = key; gdOptCache.val = val;
+  return val;
+}
+/* The cheapest ways to close a gap, for the plan's to-do list. */
+function gdFixes(){
+  const O = gdOptions();
+  if (!O || O.ahead) return O ? {} : null;
+  const out = {};
+  O.list.forEach(o => {
+    if (o.id === "extra") out.extra = o.set.contrib - (gd.a.contrib || 0);
+    if (o.id === "later") out.retire = o.set.retire;
+    if (o.id === "less-spend") out.spend = o.set.retSpend;
+  });
   return out;
 }
+
+/* ---------- the plan chart ----------
+   Savings over time in today's dollars: the projection while saving, then
+   the median of every historical retirement, with the middle 80% of them
+   shaded for the plan being looked at. One series in jade, or the plan as
+   it is (steel) against a proposed change (jade). Drawn after the card is on
+   the page, at the width it actually has, so labels stay legible on a phone. */
+const gdCharts = {};
+function gdCompact(v){
+  const x = Math.abs(v);
+  if (x >= 1e6) return "$" + (Math.round(v / 1e5) / 10).toString().replace(/\.0$/, "") + "M";
+  if (x >= 1e3) return "$" + Math.round(v / 1e3) + "k";
+  return "$" + Math.round(v);
+}
+function gdSeries(S, name, cls){
+  const a0 = Math.round(gd.a.age), pts = [];
+  S.path.forEach((v, i) => pts.push({x:a0 + i, y:v, save:true}));
+  const R = gdRetPath(S), r0 = Math.round(S.retire);
+  R.forEach((r, i) => pts.push({x:r0 + i + 1, y:r.p50, lo:r.p10, hi:r.p90}));
+  pts[S.path.length - 1].lo = pts[S.path.length - 1].hi = S.fv;
+  return {name, cls, S, pts, retire:r0, stop:S.stop != null ? Math.round(S.stop) : null};
+}
+/* A placeholder the card can carry; gdChartsDraw fills it once it's laid out. */
+function gdChartSlot(id, series, caption){
+  gdCharts[id] = series;
+  const L = series.length > 1 ? "<div class='gd-ch-legend'>" + series.map(x =>
+    "<span><s class='" + x.cls + "'></s>" + x.name + "</span>").join("") + "</div>" : "";
+  const step = 5, first = series[0].pts[0].x, last = Math.max.apply(null, series.map(x => x.pts[x.pts.length - 1].x));
+  let rows = "";
+  for (let age = first; age <= last; age += step){
+    rows += "<tr><td>" + age + "</td>" + series.map(x => {
+      const p = x.pts.find(q => q.x === age);
+      return "<td>" + (p ? money(p.y) : "—") + "</td>";
+    }).join("") + "</tr>";
+  }
+  return "<figure class='gd-chfig'>" + L +
+    "<div class='gd-chart' data-chart='" + id + "' tabindex='0' role='img' aria-label='" + escapeHtml(caption) + ". Use the arrow keys to read values by age.'></div>" +
+    "<figcaption class='gd-ch-cap'>" + caption + ". The shaded band is the middle 80% of historical retirements.</figcaption>" +
+    "<details class='gd-ch-table'><summary>Show as a table</summary><table><thead><tr><th>Age</th>" +
+    series.map(x => "<th>" + x.name + "</th>").join("") + "</tr></thead><tbody>" + rows + "</tbody></table></details></figure>";
+}
+function gdChartsDraw(root){
+  (root || document).querySelectorAll(".gd-chart[data-chart]").forEach(el => {
+    const series = gdCharts[el.getAttribute("data-chart")];
+    if (series) gdChartDraw(el, series);
+  });
+}
+function gdChartDraw(el, series){
+  const W = Math.max(280, el.clientWidth || 600), H = W < 480 ? 210 : 250;
+  const pl = W < 480 ? 44 : 54, pr = 14, pt = 22, pb = 28;
+  const all = [].concat.apply([], series.map(x => x.pts));
+  const x0 = Math.min.apply(null, all.map(p => p.x)), x1 = Math.max.apply(null, all.map(p => p.x));
+  // A plan with far more than it needs keeps compounding through retirement,
+  // and drawn to scale that would flatten the years that matter. The scale
+  // stops at a little over twice the largest balance at retirement; anything
+  // past it is clipped and said in words underneath.
+  const most = Math.max.apply(null, series.map(x => x.S.fv)), high = Math.max(1, Math.max.apply(null, all.map(p => p.y)));
+  const capped = high > most * 2.4;
+  const top = (capped ? most * 2.2 : high) * 1.12;
+  const mag = Math.pow(10, Math.floor(Math.log10(top / 4)));
+  const stepY = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => top / v <= 4.5) || mag * 10;
+  const yMax = Math.ceil(top / stepY) * stepY;
+  const X = v => pl + (v - x0) / Math.max(1, x1 - x0) * (W - pl - pr);
+  const Y = v => pt + (1 - Math.max(0, v) / yMax) * (H - pt - pb);
+  let g = "";
+  for (let v = 0; v <= yMax + 1e-6; v += stepY)
+    g += "<line class='grid' x1='" + pl + "' x2='" + (W - pr) + "' y1='" + Y(v).toFixed(1) + "' y2='" + Y(v).toFixed(1) + "'/>" +
+      "<text class='ax' x='" + (pl - 8) + "' y='" + (Y(v) + 4).toFixed(1) + "' text-anchor='end'>" + gdCompact(v) + "</text>";
+  const xStep = (x1 - x0) > 45 ? 10 : 5;
+  for (let v = Math.ceil(x0 / xStep) * xStep; v <= x1; v += xStep)
+    g += "<text class='ax' x='" + X(v).toFixed(1) + "' y='" + (H - 8) + "' text-anchor='middle'>" + v + "</text>";
+  const main = series[series.length - 1];
+  // The band, for the plan being looked at only, clipped to the plot.
+  const bp = main.pts.filter(p => p.lo != null);
+  const clip = "gdclip-" + el.getAttribute("data-chart");
+  g += "<defs><clipPath id='" + clip + "'><rect x='" + pl + "' y='" + pt + "' width='" + (W - pl - pr) + "' height='" + (H - pt - pb) + "'/></clipPath></defs>";
+  if (bp.length > 1)
+    g += "<path class='band " + main.cls + "' clip-path='url(#" + clip + ")' d='M" + bp.map(p => X(p.x).toFixed(1) + "," + Y(p.hi).toFixed(1)).join("L") +
+      "L" + bp.slice().reverse().map(p => X(p.x).toFixed(1) + "," + Y(p.lo).toFixed(1)).join("L") + "Z'/>";
+  series.forEach(x => {
+    g += "<line class='mark' x1='" + X(x.retire).toFixed(1) + "' x2='" + X(x.retire).toFixed(1) + "' y1='" + pt + "' y2='" + (H - pb) + "'/>";
+  });
+  series.forEach(x => {
+    g += "<path class='ln " + x.cls + "' clip-path='url(#" + clip + ")' d='M" + x.pts.map(p => X(p.x).toFixed(1) + "," + Y(Math.min(p.y, yMax * 1.05)).toFixed(1)).join("L") + "'/>";
+  });
+  // Direct labels for the plan being looked at: the retirement peak, and the
+  // age saving stops on a coast plan.
+  const peak = main.pts.find(p => p.x === main.retire);
+  let lab = "";
+  if (peak){
+    const px = X(peak.x), py = Y(peak.y), right = px < W * .62;
+    lab += "<circle class='dot " + main.cls + "' cx='" + px.toFixed(1) + "' cy='" + py.toFixed(1) + "' r='4.5'/>" +
+      "<text class='lab' x='" + (px + (right ? 9 : -9)).toFixed(1) + "' y='" + Math.max(pt + 4, py - 8).toFixed(1) + "' text-anchor='" + (right ? "start" : "end") + "'>" +
+      "Retire at " + main.retire + ": " + gdCompact(peak.y) + "</text>";
+  }
+  if (main.stop != null && main.stop > main.pts[0].x){
+    const sp = main.pts.find(p => p.x === main.stop);
+    if (sp) lab += "<circle class='dot " + main.cls + "' cx='" + X(sp.x).toFixed(1) + "' cy='" + Y(sp.y).toFixed(1) + "' r='4'/>" +
+      "<text class='lab' x='" + X(sp.x).toFixed(1) + "' y='" + (Y(sp.y) + 18).toFixed(1) + "' text-anchor='middle'>Stop saving at " + main.stop + "</text>";
+  }
+  const over = capped ? series.filter(x => x.pts.some(p => p.y > yMax)).map(x => {
+    const endP = x.pts[x.pts.length - 1];
+    return (series.length > 1 ? x.name : "Your savings") + " keep" + (series.length > 1 ? "s" : "") + " growing past the top of the chart, to a median of " + gdCompact(endP.y) + " by " + endP.x + ".";
+  }) : [];
+  el.innerHTML = "<svg viewBox='0 0 " + W + " " + H + "' width='" + W + "' height='" + H + "' aria-hidden='true'>" + g +
+    "<line class='xh' y1='" + pt + "' y2='" + (H - pb) + "' x1='0' x2='0' visibility='hidden'/>" + lab + "</svg><div class='gd-tip' hidden></div>" +
+    (over.length ? "<div class='gd-ch-over'>" + over.join(" ") + "</div>" : "");
+  const svg = el.querySelector("svg"), xh = svg.querySelector(".xh"), tip = el.querySelector(".gd-tip");
+  let cur = null;
+  const show = age => {
+    age = Math.max(x0, Math.min(x1, Math.round(age)));
+    cur = age;
+    xh.setAttribute("x1", X(age)); xh.setAttribute("x2", X(age)); xh.setAttribute("visibility", "visible");
+    tip.textContent = "";
+    const h = document.createElement("div"); h.className = "h";
+    h.textContent = "Age " + age;
+    tip.appendChild(h);
+    series.slice().reverse().forEach(x => {
+      const p = x.pts.find(q => q.x === age);
+      const r = document.createElement("div"); r.className = "r";
+      const k = document.createElement("s"); k.className = x.cls;
+      const v = document.createElement("b"); v.textContent = p ? money(p.y) : "—";
+      const n = document.createElement("span");
+      const state = p && p.save && age < x.retire ? "saving" : age > x.retire ? "retired, median" : "at retirement";
+      n.textContent = series.length > 1 ? (W < 480 ? x.name : x.name + ", " + state) : state;
+      r.appendChild(k); r.appendChild(v); r.appendChild(n);
+      tip.appendChild(r);
+    });
+    tip.hidden = false;
+    const tx = X(age), tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(W - tw, tx > W / 2 ? tx - tw - 12 : tx + 12)) + "px";
+  };
+  const hide = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); cur = null; };
+  svg.addEventListener("pointermove", e => {
+    const b = svg.getBoundingClientRect();
+    show(x0 + (e.clientX - b.left - pl) / Math.max(1, W - pl - pr) * (x1 - x0));
+  });
+  svg.addEventListener("pointerleave", hide);
+  el.onkeydown = e => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault();
+    if (e.key === "Home") show(x0);
+    else if (e.key === "End") show(x1);
+    else show((cur == null ? main.retire : cur) + (e.key === "ArrowRight" ? 1 : -1));
+  };
+  el.onblur = hide;
+}
+let gdChartTimer = null;
+window.addEventListener("resize", () => {
+  clearTimeout(gdChartTimer);
+  gdChartTimer = setTimeout(() => { if (!$("tab-guide").hidden) gdChartsDraw($("gdCard")); }, 150);
+});
 
 /* ---------- shared bits of markup ---------- */
 function gdChoice(key, val, title, sub){
@@ -19228,7 +19671,8 @@ const GD_LIVE = {
     if (!(inc > 0) || !gdOk(a.contrib)) return "";
     const r = gdSaveMo() * 12 / inc;
     const cls = r >= .15 ? "ok" : r >= .1 ? "warn" : "bad";
-    let s = "<div class='gd-callout " + cls + "'>You're saving <b>" + pctStr(r, 1) + "</b> of your gross income for retirement, counting your employer's share. ";
+    let s = "<div class='gd-callout " + cls + "'>" + (gdCoastNow() ? "Your plan has you coasting from now (set on <b>Adjust your plan</b>), so these are what you were putting in. " : "") +
+      "You're saving <b>" + pctStr(r, 1) + "</b> of your gross income for retirement, counting your employer's share. ";
     s += r >= .15 ? "That meets the common 15% target." : "A common target is 15%: about " + money(inc * .15 / 12) + "/mo in all for you, <b>" +
       money(inc * .15 / 12 - gdSaveMo()) + "/mo more</b> than now.";
     if (a.match === "partial") s += " You're also leaving employer match on the table: raising your contribution to get all of it is the best return available anywhere.";
@@ -19239,19 +19683,30 @@ const GD_LIVE = {
     if (!gdOk(a.retire)) return "";
     const ss = gdSS(a.retire);
     let s = "<div class='gd-callout'>";
-    s += ss.own ? "Using your statement: <b>" + money(ss.total / 12) + "/mo</b>"
+    s += ss.own ? "Using your statement: <b>" + money(ss.total / 12) + "/mo</b>" + (ss.claim !== 67 ? ", adjusted for claiming at " + ss.claim : "")
       : "We estimate Social Security at about <b>" + money(ss.total / 12) + "/mo</b>" + (gdMar() ? " for the two of you" : "") +
-        " in today's dollars, from your income over a full career" + (ss.spousal ? ", including the spousal benefit" : "");
+        " in today's dollars, from your income " + (ss.career < 35 ? "over the " + ss.career + " years you'll have worked by " + fmtNum(a.retire) + ", from 22"
+          : "over a full career") + (ss.spousal ? ", including the spousal benefit" : "");
     s += ", starting at " + ss.claim + ".";
+    if (!ss.own && ss.career < 35) s += " Social Security averages your best 35 years, so retiring this early counts the missing years as zeros.";
     if (gdPos(a.retSpend)){
-      const share = ss.total / a.retSpend, early = Math.max(0, ss.claim - Math.round(a.retire));
-      if (share >= 1) s += " Once it starts, that alone covers the spending you entered" +
+      const pen = gdPos(a.pension) ? a.pension * 12 : 0, got = ss.total + pen;
+      const share = got / a.retSpend, early = Math.max(0, ss.claim - Math.round(a.retire));
+      const that = pen ? " Together with your pension, that" : " That";
+      if (share >= 1) s += (pen ? " Once it starts, it and your pension cover the spending you entered" : " Once it starts, that alone covers the spending you entered") +
         (early ? "; your savings carry the " + early + (early === 1 ? " year" : " years") + " before it." : ".");
-      else s += " That covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings need to cover the other " +
-        money(a.retSpend - ss.total) + " a year" + (early ? ", and all of it for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
+      else s += that + " covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings need to cover the other " +
+        money(a.retSpend - got) + " a year" + (early ? ", and more for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
     }
     if (!ss.own) s += " The program's trust fund is projected to run short in the 2030s; for a cautious plan, enter a lower figure below.";
     return s + "</div>";
+  },
+  pensionNote(){
+    const a = gd.a;
+    if (!gdPos(a.pension)) return "";
+    const from = gdOk(a.pensionAge) ? a.pensionAge : a.retire;
+    return "<div class='gd-callout'>Counted from " + (gdOk(from) ? "age " + fmtNum(from) : "retirement") + ": <b>" + money(a.pension * 12) + " a year</b>" +
+      (a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year as prices rise.") + "</div>";
   },
   hcNote(){
     const a = gd.a;
@@ -19302,9 +19757,14 @@ function gdFireMode(){
   const on = $("segFireMode").querySelector("button.on");
   return on ? on.getAttribute("data-firemode") : "fire";
 }
-/* Advanced and Stages are filled from the guide once per visit, so a second
-   tour keeps whatever you changed there. */
+/* Advanced and Stages are filled from the guide once per version of the
+   plan, so a second tour keeps whatever you changed there, but a plan
+   adjusted in the guide since then comes through. */
 const gdFilled = {};
+function gdPlanSig(){
+  const a = gd.a;
+  return [a.age, a.retire, a.saved, gdSaveMo(), a.stopAge, a.risk, a.retSpend, a.debtMonths, a.debtMin, a.collegeMo, a.kidAge].join("|");
+}
 let gdStagesFrom = "", gdStagesN = 1;
 const GD_TRIPS = {
   tax: {tool:"tax", name:"Income Tax", mins:3, title:"Find your take-home pay",
@@ -19528,7 +19988,7 @@ const GD_TRIPS = {
       if (gdOk(a.age)) $("qAge").value = String(Math.round(a.age));
       if (gdOk(a.retire)) $("qRetire").value = String(Math.round(a.retire));
       if (gdOk(a.saved)) $("qSaved").value = gdM(a.saved);
-      $("qContrib").value = gdM(gdSaveMo());
+      $("qContrib").value = gdM(gdSaveNow());
       $("qPeriod").value = "Monthly";
       if (a.risk && $("qRisk").querySelector("option[value='" + a.risk + "']")) $("qRisk").value = String(a.risk);
       gd.trip.base = gdBasicNow();
@@ -19537,7 +19997,8 @@ const GD_TRIPS = {
       const b = gd.trip && gd.trip.base, n = gdBasicNow();
       const tried = b && (Math.round(n.monthly) !== Math.round(b.monthly) || n.retire !== b.retire);
       return [
-        {h:"Your age, retirement age, savings and monthly saving (yours plus your employer's) are filled in on the left."},
+        {h:"Your age, retirement age, savings and monthly saving (yours plus your employer's) are filled in on the left." +
+          (gdOk(gd.a.stopAge) && gd.a.stopAge < gd.a.retire && !gdCoastNow() ? " Basic saves right up to retirement, so it doesn't show your plan to stop at " + fmtNum(gd.a.stopAge) + ": its figure runs higher. The <b>Stages</b> calculator shows the coast." : "")},
         {h:"<b>Value at retirement</b> is what your savings could grow to, in today's dollars, so you can compare it with prices now."},
         {h:"Raise <b>How much do you save</b> by $100 or $200 and watch it move. Then try retiring a year or two later.", ok: tried},
         {h:"The shaded band on the chart is the same plan in better and worse markets."},
@@ -19556,8 +20017,13 @@ const GD_TRIPS = {
       if (Math.round(n.monthly) !== Math.round(b.monthly)){
         ch.push("saving <b>" + money(n.monthly) + "/mo</b> (was " + money(b.monthly) + ")");
         a.contrib = Math.max(0, Math.round(n.monthly - (a.employer || 0)));
+        // Saving again ends a plan to coast from now.
+        if (gdCoastNow() && n.monthly > 0){ undo.stopAge = a.stopAge; a.stopAge = null; }
       }
-      if (n.retire !== b.retire && n.retire > a.age){ ch.push("retiring at <b>" + fmtNum(n.retire) + "</b> (was " + fmtNum(b.retire) + ")"); a.retire = n.retire; }
+      if (n.retire !== b.retire && n.retire > a.age){
+        ch.push("retiring at <b>" + fmtNum(n.retire) + "</b> (was " + fmtNum(b.retire) + ")"); a.retire = n.retire; undo.stopAge = a.stopAge == null ? null : a.stopAge;
+        if (gdOk(a.stopAge) && a.stopAge >= a.retire) a.stopAge = null;
+      }
       if (Math.round(n.saved) !== Math.round(b.saved)){ ch.push("<b>" + money(n.saved) + "</b> saved (was " + money(b.saved) + ")"); a.saved = Math.round(n.saved); }
       if (Math.abs(n.risk - b.risk) > 1e-9){ ch.push("a " + gdRiskLabel(n.risk) + " mix"); a.risk = n.risk; }
       if (!ch.length) return "Back from the Basic calculator. Nothing changed there, so your answers stand.";
@@ -19565,44 +20031,132 @@ const GD_TRIPS = {
       return {msg: "You changed your plan in Basic: " + ch.join(", ") + ". Your answers and score now use the new numbers.", undo};
     }},
 
-  drawdown: {tool:"drawdown", name:"Drawdown Simulator", mins:5, title:"Test your plan against history",
-    preview:["Your projected savings, spending and Social Security are loaded.",
-      "You see how the plan did in every retirement since 1926.",
-      "You try a flexible withdrawal strategy and see what it changes."],
+  drawdown: {tool:"drawdown", name:"Drawdown Simulator", mins:10, title:"Tour the Drawdown Simulator",
+    preview:["Your projected savings, spending, Social Security, any pension and your withdrawal approach are loaded.",
+      "Seven short parts walk through each option, with the panel ticking off what you've tried.",
+      "A different strategy, stock mix or claiming age can come back into your plan."],
     prefill(){
       const a = gd.a, S = gdSim();
       if (!S) return;
-      const d = {initial: Math.round(S.fv), years: S.years, strategy:"fixed", stock:60, stockEnd:"", fee:0,
-        rate: Math.max(0.01, Math.round(S.spend / Math.max(1, S.fv) * 10000) / 100), retireAge: String(Math.round(S.retire))};
-      if (S.ss.own || S.ss.spousal){
-        d.ssMode = "manual"; d.ssWho = "single"; d.ssAmount = Math.round(S.ss.total); d.ssDelay = S.ss.claim;
-      } else {
+      const st = a.strategy || "fixed", o = gdDDOpts(S, st);
+      const d = {initial: Math.round(S.fv), years: S.years, strategy: st, stock: S.mix, stockEnd:"", fee:0,
+        rate: Math.max(0.01, Math.round(o.initialPct * 100) / 100), retireAge: String(Math.round(S.retire)),
+        guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate: Math.round(o.initialPct * 100) / 100,
+        vpwRate: Math.round(o.vpwRate * 100) / 100, vpwFV:0, spendFloor:0, spendCeil:0, legacyGoal:0};
+      // The simulator's own estimate assumes a full career and no spousal
+      // top-up, so it's only used when the guide's figure is the same; then
+      // its claiming-age comparison works too. Otherwise the guide's own
+      // amounts go in as known benefits.
+      const est = !S.ss.own && !S.ss.spousal && S.ss.career >= 35 && (!gdMar() || !gdOk(a.spouseAge) ||
+        Math.round(a.spouseAge + (S.retire - a.age)) - 22 >= 35);
+      if (est){
         d.ssMode = "est"; d.ssWho = gdMar() ? "couple" : "single";
         d.ssIncome = a.income || 0; d.ssClaim = S.ss.claim;
         if (gdMar()){ d.ssIncome2 = a.income2 || 0; d.ssClaim2 = S.ss.claim; }
+      } else {
+        d.ssMode = "manual"; d.ssWho = S.ss.a2 > 0 ? "couple" : "single";
+        d.ssAmount = Math.round(S.ss.a1); d.ssAmount2 = Math.round(S.ss.a2); d.ssDelay = S.ss.claim;
       }
+      // The guide's pension joins whatever other income is already listed.
+      const keep = ddIncomeItems.filter(x => x.name !== "Pension (from the guide)");
+      d.incomeItems = keep.concat(S.inc.map(x => Object.assign({}, x, {name:"Pension (from the guide)"})));
       writeDDState(d);
+      if (typeof renderItemLists === "function") renderItemLists();
+      gd.trip.base = {strategy:st, stock:S.mix, claim:S.ss.claim, est};
+      gd.trip.seen = {}; gd.trip.seen[st] = 1;
+      gd.trip.page = 0;
     },
-    tasks(){
-      return [
-        {h:"Your projected savings, retirement age, spending (shown as a <b>Withdrawal rate</b>) and Social Security are loaded on the left."},
-        {h:"<b>Success rate</b> is the share of real retirements since 1926 where this plan never ran out. Around 85% or more is solid; near 100% can mean room to spend more."},
-        {h:"In <b>How each starting year fared</b>, click a year that went badly, like 1966, to watch it play out year by year."},
-        {h:"Change <b>Withdrawal strategy</b> to <b>Guyton-Klinger Guardrails</b>. Trimming spending a little in bad years often lifts the success rate a lot.", ok: $("ddStrategy").value !== "fixed"},
-        {h:"<b>How the strategies compare</b>, under the strategy picker, explains each one."}
-      ];
-    },
+    /* One part at a time; focus scrolls the tool to what the part is about. */
+    pages:[
+      {title:"Your result", focus:"#ddSuccess", tasks(){
+        const S = gdSim(), b = gd.trip && gd.trip.base;
+        return [
+          {h:"Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year (a <b>Starting withdrawal rate</b> of " + pctStr(S.spend / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
+            ", Social Security" + (b && !b.est ? " as a known benefit" : "") + " and " + (gdPos(gd.a.pension) ? "your pension under <b>Other income</b>." : "no other income yet.")},
+          {h:"<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid; close to 100% can mean room to spend more."},
+          {h:"<b>Median ending balance</b> is what's typically left at the end, in today's dollars. <b>Worst case</b> is the leanest ending on record."},
+          {h:"The sentence under the headline names the starting years that failed, if any. They're where the rest of this tour looks."}
+        ];
+      }},
+      {title:"A bad start", focus:"#ddYearsPanel", tasks(){
+        return [
+          {h:"<b>How each starting year fared</b> lists every retirement tested. Tap a hard one, like <b>1966</b> or <b>1929</b>, or sort by <b>Ending balance</b> to find the worst."},
+          {h:"Above the chart, switch to <b>Selected year</b> to watch that retirement play out.", ok: ddView === "year"},
+          {h:"<b>What your income looked like</b> and <b>Year by year</b> show what you'd have lived on, and where the balance went, each year."},
+          {h:"Retiring into a falling market early on does the most damage: it's called sequence risk, and it's why averages alone mislead."}
+        ];
+      }},
+      {title:"Withdrawal strategies", focus:"#ddStrategy", tasks(){
+        const seen = (gd.trip && gd.trip.seen) || {}, cur = $("ddStrategy").value;
+        seen[cur] = 1;
+        const n = Object.keys(seen).length;
+        const row = (id, txt) => ({h:txt, ok: seen[id] ? true : undefined});
+        return [
+          {h:"Change <b>Withdrawal strategy</b> and watch the <b>Success rate</b> and the spending columns in the table. Try at least three." + (n > 1 ? "<em>" + n + " tried</em>" : ""), ok: n >= 3},
+          row("guardrails", "<b>Guardrails</b>: steady spending, cut 10% when the withdrawal rate runs 20% high. Try widening <b>Guardrail width</b>."),
+          row("floorceil", "<b>Floor &amp; ceiling</b>: follows the market, but never moves spending more than the <b>Max cut</b> or <b>Max raise</b> in a year."),
+          row("yale", "<b>Yale Endowment</b>: blends last year's spending with a share of today's balance."),
+          row("pct", "<b>Fixed %</b>: can't run out, but look at <b>Lowest year's spending</b> in the table."),
+          row("vpw", "<b>VPW</b>: spends down on purpose, like an annuity, ending near zero."),
+          {h:"For flexible strategies, <b>Minimum spending</b> sets a line spending never drops below. <b>How the strategies compare</b>, under the picker, explains them side by side."}
+        ];
+      }},
+      {title:"Your stock mix", focus:"#ddStock", tasks(){
+        const b = gd.trip && gd.trip.base;
+        return [
+          {h:"<b>Stocks</b> is " + (b ? b.stock : 60) + "%, the rest in bonds. Try 40% and 80%: more stocks usually lifts the median, and can cut either way on the worst case.", ok: b && num("ddStock") !== b.stock ? true : undefined},
+          {h:"<b>Glide to</b> moves the mix gradually over retirement, for example from 60% down to 40% stocks, or up, which some research favors."},
+          {h:"<b>Fees</b> come off every year. Try 0.5% or 1% to see what an advisor or pricier funds would cost over a whole retirement."}
+        ];
+      }},
+      {title:"Social Security timing", focus:"#ddSSMode", tasks(){
+        const b = gd.trip && gd.trip.base;
+        if (b && b.est) return [
+          {h:"<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% a year from 67 to 70; claiming at 62 cuts it about 30%, for life."},
+          {h:"Scroll to <b>Social Security claiming age comparison</b>, near the bottom, for your success rate claiming at 62, 64, 67 and 70."},
+          {h:"Later claiming means drawing more from savings first, but a bigger check for the rest of your life, and for a surviving spouse.", ok: num("ddSSClaim") !== b.claim ? true : undefined}
+        ];
+        return [
+          {h:"Your benefit is entered as a known amount" + (gd.a.ssOwn ? ", from your statement" : ", from the guide's estimate") + ", starting at " + (b ? b.claim : 67) + "."},
+          {h:"Waiting raises a benefit about 8% a year from 67 to 70, and claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Spending in retirement step: the guide works out the new amount."}
+        ];
+      }},
+      {title:"Life events", focus:"#ddAddIncome", tasks(){
+        return [
+          {h:"<b>+ Add income source</b> for part-time work in early retirement, rental income, a pension or an inheritance. Each has a start year and a length.", ok: ddIncomeItems.some(x => x.name !== "Pension (from the guide)") ? true : undefined},
+          {h:"<b>+ Add future expense</b> for the big one-time costs: a new roof, a car every ten years, helping a child with a wedding or a home.", ok: ddExpenseItems.length ? true : undefined},
+          {h:"<b>Legacy goal</b> tests how often you'd also leave a set amount behind.", ok: num("ddLegacyGoal") > 0 ? true : undefined}
+        ];
+      }},
+      {title:"Stress tests", focus:"#segDD", tasks(){
+        return [
+          {h:"Switch <b>Historical</b> to <b>Monte Carlo</b> at the top: 5,000 retirements drawn at random from the same record, including sequences history never produced.", ok: ddMode === "mc" ? true : undefined},
+          {h:"<b>Return sensitivity</b>, further down, shows your success rate if every year earns a little less than history."},
+          {h:"Done? <b>Back to guide</b> brings your strategy, stock mix" + ((gd.trip && gd.trip.base && gd.trip.base.est) ? ", claiming age" : "") + " and success rate with you."}
+        ];
+      }}
+    ],
     chip(){
       const t = $("ddSuccess").textContent.trim();
       return t && t !== "—" ? "Success rate<br><b>" + t + "</b>" : "";
     },
     capture(){
-      const t = $("ddSuccess").textContent.trim(), sel = $("ddStrategy");
-      if (!t || t === "—") return null;
-      gd.a.ddTool = {rate:t, strat:sel.value};
-      const nm = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : "";
-      return "Back from the Drawdown Simulator: <b>" + escapeHtml(nm) + "</b> reached a <b>" + t + "</b> success rate." +
-        (sel.value !== "fixed" ? " Your score still uses a fixed, inflation-adjusted withdrawal, the cautious case." : "");
+      const t = $("ddSuccess").textContent.trim(), sel = $("ddStrategy"), a = gd.a, b = gd.trip && gd.trip.base;
+      if (!t || t === "—" || !b) return null;
+      a.ddTool = {rate:t, strat:sel.value};
+      const ch = [], undo = {strategy:a.strategy == null ? null : a.strategy, retMix:a.retMix == null ? null : a.retMix, ssClaim:a.ssClaim == null ? null : a.ssClaim};
+      if (sel.value !== b.strategy){ a.strategy = sel.value; ch.push("the <b>" + escapeHtml(gdStratName(sel.value)) + "</b> approach"); }
+      const mix = Math.round(num("ddStock"));
+      if (mix !== b.stock && mix >= 0 && mix <= 100){ a.retMix = mix; ch.push("<b>" + mix + "%</b> in stocks in retirement"); }
+      if (b.est && $("ddSSMode").value === "est"){
+        const c = Math.round(num("ddSSClaim"));
+        if (c !== b.claim && c >= 62 && c <= 70){ a.ssClaim = c; ch.push("claiming Social Security at <b>" + c + "</b>"); }
+      }
+      const head = "Back from the Drawdown Simulator, where it reached a <b>" + t + "</b> success rate.";
+      if (!ch.length) return head + " Nothing in your plan changed.";
+      gdHouseholdSync();
+      return {msg: head + " Your plan now uses " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") + "." +
+        (a.retMix != null && mix !== b.stock ? " Your score's historical test uses the new mix." : ""), undo};
     }},
 
   healthcare: {tool:"healthcare", name:"Healthcare Cost Planner", mins:4, title:"Price healthcare before Medicare",
@@ -19646,7 +20200,7 @@ const GD_TRIPS = {
       if (gdOk(a.age)) $("fiCurAge").value = String(Math.max(18, Math.min(70, Math.round(a.age))));
       if (gdOk(a.retire)) $("fiRetireAge").value = String(Math.round(a.retire));
       if (gdOk(a.saved)) $("fiInitial").value = gdM(a.saved);
-      $("fiContrib").value = gdM(gdSaveMo()); $("fiPeriod").value = "Monthly";
+      $("fiContrib").value = gdM(gdSaveNow()); $("fiPeriod").value = "Monthly";
       if (gdPos(a.retSpend)){
         $("fiTarget").value = gdM(a.retSpend);
         if ($("fiSolveFor").value !== "withdrawal"){
@@ -19678,8 +20232,8 @@ const GD_TRIPS = {
       const a = gd.a;
       // Only the first time per visit, so going back to tweak it keeps your
       // changes; and never over an account-type split you've set up.
-      if (gdFilled.single || acOn() || !gdOk(a.age) || !gdOk(a.retire) || !(a.retire > a.age)) return;
-      gdFilled.single = true;
+      if (gdFilled.single === gdPlanSig() || acOn() || !gdOk(a.age) || !gdOk(a.retire) || !(a.retire > a.age)) return;
+      gdFilled.single = gdPlanSig();
       const infl = BASIC_INFL, gross = (1 + (a.risk || .045)) * (1 + infl) - 1;
       writeInputs({initial:a.saved || 0, contrib:Math.round(gdSaveMo()), period:"Monthly", growth:infl,
         gross, nominal:gross, inflation:infl, years:Math.round(a.retire - a.age), withdrawal:.04,
@@ -19696,7 +20250,8 @@ const GD_TRIPS = {
         {h:"Set <b>Fees</b> to your funds' expense ratio (about 0.05% for index funds, 0.5% to 1% for managed ones) to see what they cost over decades.", ok: num("fees") > 0 ? true : undefined},
         {h:"<b>Work backwards from a target</b> starts at your retirement spending. It shows the contribution, or the timeline, that gets you there; <b>Use this contribution</b> applies it."},
         {h:"Above the chart, switch <b>Rate band</b> to <b>Historical</b> or <b>Monte Carlo</b> to see the plan in real and random markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined},
-        {h:"Unlike the guide, Advanced leaves out Social Security, so its numbers are for your savings alone."}
+        {h:"Unlike the guide, Advanced leaves out Social Security, so its numbers are for your savings alone." +
+          (gdOk(gd.a.stopAge) && gd.a.stopAge < gd.a.retire ? " It also saves right up to retirement; your plan to stop at " + fmtNum(gd.a.stopAge) + " shows in <b>Stages</b>." : "")}
       ];
     },
     chip(){
@@ -19711,10 +20266,10 @@ const GD_TRIPS = {
   stages: {tool:"series", name:"Stages calculator", mins:10, title:"Tour the Stages calculator",
     prefill(){
       const a = gd.a;
-      if (gdFilled.series) return;
+      if (gdFilled.series === gdPlanSig()) return;
       gdStagesFrom = "";
       if (saOn() || !gdOk(a.age) || !gdOk(a.retire) || !(a.retire > a.age)) return;
-      gdFilled.series = true;
+      gdFilled.series = gdPlanSig();
       const yrs = Math.round(a.retire - a.age), mo = Math.round(gdSaveMo()), infl = BASIC_INFL;
       const gross = (1 + (a.risk || .045)) * (1 + infl) - 1;
       const st = (name, years, contrib, adj) => ({name, years, contrib, period:"Monthly", growth:infl,
@@ -19722,9 +20277,17 @@ const GD_TRIPS = {
       let list;
       const dy = gdPos(a.debtMonths) ? Math.ceil(a.debtMonths / 12) : 0;
       const cy = a.college === "yes" && gdOk(a.kidAge) && gdPos(a.collegeMo) ? Math.max(1, Math.round(22 - a.kidAge)) : 0;
+      const sy = gdOk(a.stopAge) && a.stopAge < a.retire ? Math.max(0, Math.round(a.stopAge - a.age)) : null;
       // Start from a real turning point in their answers when there is one:
-      // the debt paid off frees its minimums, college ending frees that saving.
-      if (dy && dy < yrs && gdPos(a.debtMin)){
+      // a plan to stop saving, the debt paid off freeing its minimums, or
+      // college ending freeing that saving.
+      if (sy === 0){
+        list = [st("Coasting", yrs, 0)];
+        gdStagesFrom = "one stage with no new saving, since your plan is to coast from here";
+      } else if (sy != null){
+        list = [st("Saving", sy, mo), st("Coasting", yrs - sy, 0)];
+        gdStagesFrom = "two stages: saving " + money(mo) + "/mo until " + fmtNum(a.stopAge) + ", then coasting with no new saving until you retire at " + fmtNum(a.retire);
+      } else if (dy && dy < yrs && gdPos(a.debtMin)){
         list = [st("Paying off debt", dy, mo), st("Debt-free", yrs - dy, mo + Math.round(a.debtMin), true)];
         gdStagesFrom = "two stages: saving " + money(mo) + "/mo while you pay off debt, then adding the " + money(a.debtMin) + "/mo of minimums once it's gone";
       } else if (cy && cy < yrs){
@@ -19817,7 +20380,7 @@ function gdHouseholdSync(){
   if (gdOk(a.income)) H.income = a.income;
   H.income2 = gdMar() && gdOk(a.income2) ? a.income2 : (gdMar() ? H.income2 : null);
   if (gdOk(a.saved)) H.saved = a.saved;
-  if (gdOk(a.contrib)) H.monthly = gdSaveMo();
+  if (gdOk(a.contrib)) H.monthly = gdSaveNow();
   if (gdPos(a.retSpend)) H.spend = a.retSpend;
   storeWrite("household", H);
   if ($("hhBody").hidden) hhWriteForm(H);
@@ -19845,7 +20408,8 @@ const GD_STEPS = [
         "<ul class='gd-perks'>" +
         "<li><i>1</i><span><b>A readiness score out of 100</b> that updates as you answer, and shows what's pulling it down.</span></li>" +
         "<li><i>2</i><span><b>A tour of the tools that apply to you.</b> No mortgage? No kids? Those get skipped.</span></li>" +
-        "<li><i>3</i><span><b>A short, ordered plan</b> of what to do next, with the tool for each step.</span></li></ul>" +
+        "<li><i>3</i><span><b>A plan you can adjust.</b> Ahead of schedule? See what retiring sooner, coasting or spending more would look like, and apply it. Behind? Pick the fix that suits you.</span></li>" +
+        "<li><i>4</i><span><b>A short, ordered list</b> of what to do next, with the tool for each step.</span></li></ul>" +
         "<div class='gd-callout'>Plan on 20 to 40 minutes, depending on how many tools you open. Stop whenever you like: your answers are kept in this browser only and never leave it.</div>";
     },
     foot(){
@@ -20042,7 +20606,15 @@ const GD_STEPS = [
         "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, before income tax."}) + "</div>" +
         gdLive("ssNote") +
         "<div class='gd-fields'>" + gdMoneyF("ssOwn", "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:true,
-          ph:"optional", hint:"From ssa.gov/myaccount, at 67" + (gdMar() ? ", both of you added together" : "") + ". It reflects your real earnings, so it beats our estimate."}) + "</div>";
+          ph:"optional", hint:"From ssa.gov/myaccount, at 67" + (gdMar() ? ", both of you added together" : "") + ". It reflects your real earnings, so it beats our estimate."}) +
+        gdSelF("ssClaim", "When will you claim it?", [["", "At 67, or when I retire if that's later"]].concat([62, 63, 64, 65, 66, 67, 68, 69, 70].map(x =>
+          [x, "At " + x + (x === 62 ? ", the earliest" : x === 67 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")])),
+          {kind:"num", full:true, hint:"Each year you wait past 62 raises the benefit for life, up to 70. In this plan it never starts before you retire."}) + "</div>" +
+        "<div class='gd-h3'>A pension, or other steady income in retirement?</div>" +
+        "<div class='gd-fields'>" + gdMoneyF("pension", "Pension, annuity or part-time pay", {per:"/mo", ph:"optional", hint:"In today's dollars. Leave blank if none."}) +
+        gdNumF("pensionAge", "Starting at", "age", {hint:"Blank means when you retire."}) +
+        gdSelF("pensionCola", "Does it rise with inflation?", [["no", "No, it's a fixed amount"], ["yes", "Yes, it has cost-of-living raises"]], {full:true}) + "</div>" +
+        gdLive("pensionNote");
     },
     ok(a){ return gdPos(a.retSpend); },
     why(){ return "Enter your yearly spending in retirement"; },
@@ -20054,22 +20626,37 @@ const GD_STEPS = [
       let s = "<h2 class='gd-q' tabindex='-1'>Your retirement projection</h2>";
       if (!S) return s + "<div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
         "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
-      const need = S.spend, port = S.portIncome, ss = S.ss.total;
-      const sc = Math.max(need, port + ss) || 1;
+      const need = S.spend, port = S.portIncome, ss = S.ss.total, pen = S.pension;
+      const sc = Math.max(need, port + ss + pen) || 1;
       s += "<p class='gd-lead'>Where your current path leads by " + fmtNum(S.retire) + ", in today's dollars, if a " + gdRiskLabel(S.real) +
-        " mix earns about " + pctStr(S.real, 1) + " a year after inflation and your saving keeps pace with inflation.</p>" + gdBack("outlook") +
+        " mix earns about " + pctStr(S.real, 1) + " a year after inflation and your saving keeps pace with inflation" +
+        (S.stop != null ? (S.stop <= a.age ? ". You've stopped saving, so it grows on its own from here" : " until you stop saving at " + fmtNum(S.stop)) : "") + ".</p>" + gdBack("outlook") +
         "<div class='gd-stats'>" +
-        "<div><div class='k'>Savings at " + fmtNum(S.retire) + "</div><div class='v gold'>" + money(S.fv) + "</div><div class='n'>What " + money(gdSaveMo()) + "/mo grows to</div></div>" +
+        "<div><div class='k'>Savings at " + fmtNum(S.retire) + "</div><div class='v gold'>" + money(S.fv) + "</div><div class='n'>" +
+          (S.stop != null && S.stop <= a.age ? "What you have grows to" : "What " + money(gdSaveMo()) + "/mo grows to") + "</div></div>" +
         "<div><div class='k'>Income it supports</div><div class='v'>" + money(port) + "</div><div class='n'>A year, taking 4%</div></div>" +
-        "<div><div class='k'>Social Security</div><div class='v'>" + money(ss) + "</div><div class='n'>A year, from " + S.ss.claim + "</div></div></div>" +
+        "<div><div class='k'>" + (pen ? "Social Security + pension" : "Social Security") + "</div><div class='v'>" + money(ss + pen) + "</div><div class='n'>A year, Social Security from " + S.ss.claim + "</div></div></div>" +
         "<div class='gd-cover'><div class='gd-cover-bar' role='img' aria-label='Income covers " + pctStr(Math.min(9.99, S.coverage), 0) + " of planned spending'>" +
         "<i style='width:" + (port / sc * 100).toFixed(1) + "%;background:var(--jade)'></i>" +
         "<i style='width:" + (ss / sc * 100).toFixed(1) + "%;background:var(--steel)'></i>" +
+        (pen ? "<i style='width:" + (pen / sc * 100).toFixed(1) + "%;background:var(--gold)'></i>" : "") +
         "<span class='need' style='left:calc(" + (need / sc * 100).toFixed(1) + "% - 1px)'></span></div>" +
         "<div class='gd-cover-key'><span><s style='background:var(--jade)'></s>From savings</span><span><s style='background:var(--steel)'></s>Social Security</span>" +
+        (pen ? "<span><s style='background:var(--gold)'></s>Pension</span>" : "") +
         "<span><s style='background:var(--text);width:2px'></s>Your spending: " + money(need) + "/yr</span></div></div>";
-      if (S.coverage >= 1) s += "<div class='gd-callout ok'>On this path, savings and Social Security together cover <b>" + pctStr(Math.min(S.coverage, 9.99), 0) + "</b> of the retirement you described.</div>";
-      else s += "<div class='gd-callout warn'>That covers <b>" + pctStr(S.coverage, 0) + "</b> of the " + money(need) + " a year you plan to spend, a gap of about <b>" + money(need - port - ss) + " a year</b>. The last step shows the quickest ways to close it.</div>";
+      s += gdChartSlot("outlook", [gdSeries(S, "Your plan", "p")], "Your retirement savings over time, in today's dollars");
+      // Size the plan against what it needs: the balance at retirement that
+      // lasts in the target share of history. This is what a plan with twice
+      // what it needs gets told, rather than only "you're covered."
+      const want = gdNeed(S), goal = gdTarget();
+      if (S.success >= goal - 1e-9 && want > 0 && S.fv >= want * 1.2)
+        s += "<div class='gd-callout ok'>You're on course for <b>" + money(S.fv) + "</b>. To last in " + (goal >= 1 ? "every" : pctStr(goal, 0) + " of") +
+          " historical retirements, this plan needs about <b>" + money(want) + "</b>, so you're " +
+          (S.fv >= want * 9.5 ? "<b>covered many times over</b>" : S.fv >= want * 1.9 ? "at about <b>" + (Math.round(S.fv / want * 10) / 10).toString().replace(/\.0$/, "") + " times</b> that" : "<b>" + money(S.fv - want) + "</b> ahead") +
+          ". Two steps on, <b>Adjust your plan</b> shows what that extra could buy: retiring sooner, coasting, saving less or spending more.</div>";
+      else if (S.coverage >= 1) s += "<div class='gd-callout ok'>On this path, savings" + (pen ? ", Social Security and your pension" : " and Social Security") + " together cover <b>" + pctStr(Math.min(S.coverage, 9.99), 0) + "</b> of the retirement you described.</div>";
+      else s += "<div class='gd-callout warn'>That covers <b>" + pctStr(S.coverage, 0) + "</b> of the " + money(need) + " a year you plan to spend, a gap of about <b>" + money(need - port - ss - pen) + " a year</b>" +
+        (want > S.fv ? ": you'd want about <b>" + money(want) + "</b> saved by " + fmtNum(S.retire) : "") + ". <b>Adjust your plan</b>, two steps on, shows the quickest ways to close it and applies the one you pick.</div>";
       if (S.retire < S.ss.claim) s += "<div class='gd-callout'>Social Security starts at " + S.ss.claim + ", so for the first " + (S.ss.claim - Math.round(S.retire)) + " years of retirement your savings carry everything. The next step tests exactly that.</div>";
       s += gdTask("basic", "See it in the Basic calculator", {after:"<div style='margin-top:10px' class='hint'>Optional. Any change you make there can come back with you.</div>"});
       return s;
@@ -20084,7 +20671,7 @@ const GD_STEPS = [
       const r = S.success;
       s += "<p class='gd-lead'>Averages hide the real risk: retiring into a bad market. We replayed your plan through every retirement since 1926: " +
         money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year rising with inflation for " + S.years + " years, " +
-        "with Social Security from " + S.ss.claim + " and 60% in stocks.</p>" + gdBack("lasting") +
+        "with Social Security from " + S.ss.claim + (S.pension ? ", your pension" : "") + " and " + S.mix + "% in stocks.</p>" + gdBack("lasting") +
         "<div class='gd-stats'><div><div class='k'>Success rate</div><div class='v " + (r >= .85 ? "jade" : "gold") + "'>" + pctStr(r, 0) + "</div>" +
         "<div class='n'>" + (S.H ? S.H.survived + " of " + S.H.total + " starting years" : "Of historical retirements") + "</div></div>" +
         "<div><div class='k'>Length tested</div><div class='v'>" + S.years + " years</div><div class='n'>To age " + (Math.round(S.retire) + S.years) + "</div></div>" +
@@ -20093,12 +20680,18 @@ const GD_STEPS = [
       s += r >= .95 ? "<div class='gd-callout ok'><b>Very solid.</b> The plan survived " + (r >= 1 ? "every" : "nearly every") + " market in history, which can mean you have room to spend more or retire sooner.</div>"
         : r >= .85 ? "<div class='gd-callout ok'><b>A solid plan.</b> The few failures came from the worst starting years, and small spending cuts during a bad stretch usually fix those.</div>"
         : r >= .7 ? "<div class='gd-callout warn'><b>Borderline.</b> It works in most markets but fails in enough of them to take seriously. A flexible withdrawal strategy, or the fixes in your plan, would firm it up.</div>"
-        : "<div class='gd-callout bad'><b>At risk.</b> This plan runs short in too many historical markets. The fixes in your plan show what closes the gap.</div>";
-      s += gdTask("drawdown", "Test it yourself in the Drawdown Simulator", {after:"<div style='margin-top:10px' class='hint'>Optional, and well worth the five minutes.</div>"});
+        : "<div class='gd-callout bad'><b>At risk.</b> This plan runs short in too many historical markets. The next step shows what closes the gap.</div>";
+      s += "<p class='hint'>Next: adjust your plan, then choose how you'd spend it down, with a guided tour of the Drawdown Simulator.</p>";
       return s;
     }},
 
-  {id:"health", ch:4, title:"Healthcare before 65", when: a => gdOk(a.retire) && a.retire < 65,
+  {id:"tune", ch:5, title:"Adjust your plan",
+    body(){ return gdTuneHTML(); }},
+
+  {id:"strategy", ch:5, title:"Drawing it down",
+    body(){ return gdStratHTML(); }},
+
+  {id:"health", ch:5, title:"Healthcare before 65", when: a => gdOk(a.retire) && a.retire < 65,
     body(){
       const a = gd.a, gap = 65 - Math.round(a.retire);
       return "<h2 class='gd-q' tabindex='-1'>Healthcare before Medicare</h2>" +
@@ -20108,18 +20701,6 @@ const GD_STEPS = [
         "<div class='gd-fields'>" + gdMoneyF("hcPrem", "Monthly premium you found", {per:"/mo", ph:"optional", full:true,
           hint:"The planner fills this in."}) + "</div>" + gdLive("hcNote");
     }},
-
-  {id:"fire", ch:4, title:"Retiring early",
-    body(){
-      const a = gd.a;
-      return "<h2 class='gd-q' tabindex='-1'>Curious how soon you could stop working?</h2>" +
-        "<p class='gd-lead'>Financial independence is the point where your savings could cover your spending on their own, so work becomes a choice. " +
-        "The FIRE Calculator finds that age, and its Coast FIRE mode shows when you could stop contributing and let growth carry you the rest of the way.</p>" +
-        "<div class='gd-choices two'>" + gdChoice("fire", "yes", "Yes, show me") + gdChoice("fire", "no", "No thanks, skip this") + "</div>" +
-        gdBack("fire") + (a.fire === "yes" ? gdTask("fire", "Find it in the FIRE Calculator") : "");
-    },
-    ok(a){ return !!a.fire; },
-    why(){ return "Choose an answer"; }},
 
   {id:"results", ch:5, title:"Score and plan",
     body(){ return gdResultsHTML(); },
@@ -20140,6 +20721,263 @@ function gdNumbered(){ return gdRoute().filter(s => s.id !== "intro"); }
 function gdFirstOpen(){
   const L = gdNumbered();
   return (L.find(s => !gd.done[s.id]) || L[L.length - 1]).id;
+}
+
+/* ---------- adjusting the plan ----------
+   The options gdOptions finds, as cards. Picking one draws it against the
+   plan as it stands (chart and a before/after table); "Apply to my plan"
+   writes it into the answers, and so into the household bar, the score and
+   every step after. "Try your own numbers" is the same, with fields. */
+let gdSel = null, gdDraft = null;
+function gdOptTitle(o, S){
+  const a = gd.a, v = o.set, ret = Math.round(S.retire), emp = a.employer || 0;
+  switch (o.id){
+    case "earlier": return {t:"Retire at " + v.retire, d:(ret - v.retire) + (ret - v.retire === 1 ? " year" : " years") + " sooner"};
+    case "coast": return v.stopAge <= a.age
+      ? {t:"Stop saving now", d:"What you have grows on its own to " + ret}
+      : {t:"Stop saving at " + v.stopAge, d:"Then coast the last " + (ret - v.stopAge) + " years to " + ret};
+    case "less": return {t:"Save " + money(v.contrib + emp) + "/mo", d:money(a.contrib - v.contrib) + "/mo back in your budget"};
+    case "more": return {t:"Spend " + money(v.retSpend) + " a year", d:money(v.retSpend - a.retSpend) + " a year more in retirement"};
+    case "keepsaving": return {t:"Keep saving until " + ret, d:"Instead of stopping at " + fmtNum(S.stop)};
+    case "extra": return {t:"Save " + money(v.contrib - a.contrib) + "/mo more", d:money(v.contrib + emp) + "/mo in all"};
+    case "later": return {t:"Retire at " + v.retire, d:(v.retire - ret) + (v.retire - ret === 1 ? " year" : " years") + " later"};
+    case "less-spend": return {t:"Spend " + money(v.retSpend) + " a year", d:money(a.retSpend - v.retSpend) + " a year less in retirement"};
+    case "mix": return {t:"Retire at " + v.retire + ", save " + money(v.contrib - a.contrib) + "/mo more", d:"A smaller change to each"};
+    case "custom": return {t:"Try your own numbers", d:"Any retirement age, saving, stop age and spending"};
+  }
+  return {t:"", d:""};
+}
+/* The draft behind "Try your own numbers": the plan as it stands, until
+   changed. */
+function gdDraftSet(){
+  const a = gd.a, d = gdDraft || {};
+  const set = {};
+  if (gdOk(d.retire) && d.retire !== a.retire) set.retire = d.retire;
+  if (gdOk(d.contrib) && d.contrib !== a.contrib) set.contrib = d.contrib;
+  const stop = gdOk(d.stopAge) ? d.stopAge : null, was = gdOk(a.stopAge) ? a.stopAge : null;
+  if (stop !== was) set.stopAge = stop;
+  if (gdPos(d.retSpend) && d.retSpend !== a.retSpend) set.retSpend = d.retSpend;
+  return set;
+}
+function gdDraftProblem(){
+  const a = gd.a, d = gdDraft || {};
+  if (gdOk(d.retire) && (d.retire <= a.age || d.retire > 90)) return "Pick a retirement age after your age today, up to 90.";
+  const r = gdOk(d.retire) ? d.retire : a.retire;
+  if (gdOk(d.stopAge) && (d.stopAge < a.age || d.stopAge >= r)) return "The age you stop saving has to be between now and retirement. Leave it blank to save until you retire.";
+  return "";
+}
+function gdCurOpt(){
+  const O = gdOptions();
+  if (!O) return null;
+  if (gdSel === "custom"){
+    if (gdDraftProblem()) return {id:"custom", set:{}, T:null};
+    const set = gdDraftSet();
+    return {id:"custom", set, T:gdSim(gdOverFrom(set))};
+  }
+  return O.list.find(o => o.id === gdSel) || null;
+}
+/* Before and after, side by side, and what a change like this means
+   beyond the numbers: early withdrawals, healthcare, Social Security. */
+function gdCmpHTML(){
+  const a = gd.a, O = gdOptions(), o = gdCurOpt();
+  if (!O || !o) return "";
+  const S = O.S, T = o.T;
+  if (o.id === "custom" && gdDraftProblem()) return "<div class='gd-callout warn'>" + gdDraftProblem() + "</div>";
+  if (!T) return "";
+  if (o.id === "custom" && !Object.keys(o.set).length)
+    return "<div class='gd-callout'>Change any of the numbers above to see it here.</div>" + gdChartSlot("tune", [gdSeries(S, "Your plan", "p")], "Your plan now, in today's dollars");
+  const saveTxt = X => money(X.monthly) + "/mo" + (X.stop != null ? (X.stop <= a.age ? ", stopping now" : " until " + fmtNum(X.stop)) : "");
+  const lastTo = X => {
+    if (!X.H) return "—";
+    const f = X.H.runs.filter(r => r.depleted);
+    return f.length ? (X.success >= .995 ? "Always lasted" : "Ran short " + f.length + " of " + X.H.total + " times") : "Always lasted";
+  };
+  const rows = [
+    ["Retire at", fmtNum(S.retire), fmtNum(T.retire)],
+    ["You save", saveTxt(S), saveTxt(T)],
+    ["Spending in retirement", money(S.spend) + "/yr", money(T.spend) + "/yr"],
+    ["Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim, money(T.ss.total / 12) + "/mo from " + T.ss.claim],
+    ["Savings at retirement", money(S.fv), money(T.fv)],
+    ["Lasted in", pctStr(S.success, 0) + " of retirements", pctStr(T.success, 0) + " of retirements"],
+    ["Median left at the end", S.H ? money(S.H.medianEnd) : "—", T.H ? money(T.H.medianEnd) : "—"]
+  ];
+  let s = gdChartSlot("tune", [gdSeries(S, "Your plan now", "b"), gdSeries(T, "With this change", "p")], "Your plan now and with this change, in today's dollars");
+  s += "<table class='gd-cmp-t'><thead><tr><th></th><th>Now</th><th>With this change</th></tr></thead><tbody>" +
+    rows.map(r => "<tr><th scope='row'>" + r[0] + "</th><td>" + r[1] + "</td><td" + (r[1] !== r[2] ? " class='chg'" : "") + ">" + r[2] + "</td></tr>").join("") + "</tbody></table>";
+  const notes = [];
+  if (T.retire < 60 && T.retire < S.retire)
+    notes.push("Retiring at " + fmtNum(T.retire) + " means living on savings before 59½, when most 401(k) and IRA withdrawals carry a 10% penalty. The rule of 55, Roth contributions, a taxable brokerage account or 72(t) payments can bridge those years.");
+  if (T.retire < 65 && S.retire >= 65)
+    notes.push("Before 65 you'll need health insurance until Medicare starts. A healthcare step joins your plan to price it.");
+  if (!T.ss.own && T.ss.total < S.ss.total - 1)
+    notes.push("Fewer working years also lower your Social Security estimate, from " + money(S.ss.total / 12) + " to " + money(T.ss.total / 12) + " a month. That's already counted above.");
+  if (T.stop != null && (a.employer || 0) > 0)
+    notes.push("Coasting here means no new money at all from " + (T.stop <= a.age ? "now" : fmtNum(T.stop)) + ", so your employer's " + money(a.employer) + "/mo stops too. If you keep working, it's worth still contributing enough to get any match.");
+  if (T.stop != null)
+    notes.push("Coasting leans on the " + pctStr(a.risk || .045, 1) + " a year your mix is assumed to earn. If markets lag, you can always start saving again.");
+  if (o.id === "less" && (a.employer || 0) > 0)
+    notes.push("Your employer's " + money(a.employer) + "/mo stays in. If it's a match, keep contributing at least enough to get all of it.");
+  if (T.spend > S.spend && T.success < 1)
+    notes.push("Spending more uses up your margin: in the worst historical starting years, this spending needed trimming to last.");
+  if (notes.length) s += "<ul class='gd-notes'>" + notes.map(n => "<li>" + n + "</li>").join("") + "</ul>";
+  s += "<div class='gd-apply'><button type='button' class='btn primary' data-gd='apply'>Apply to my plan</button>" +
+    "<span class='hint'>Updates your answers, score and household bar. You can undo it.</span></div>";
+  return s;
+}
+function gdOptCards(){
+  const O = gdOptions(), a = gd.a;
+  if (!O) return "";
+  const card = (o, extra) => {
+    const t = gdOptTitle(o, O.S), on = gdSel === o.id;
+    const figs = o.T ? pctStr(o.T.success, 0) + " lasted · " + money(o.T.fv) + " at " + fmtNum(o.T.retire) : "";
+    return "<button type='button' class='gd-opt" + (on ? " on" : "") + "' data-opt='" + o.id + "' aria-pressed='" + on + "'>" +
+      "<b>" + t.t + "</b><span>" + t.d + "</span><em data-optfig='" + o.id + "'>" + figs + "</em>" + (extra || "") + "</button>";
+  };
+  const custom = gdCurOpt() && gdSel === "custom" ? gdCurOpt() : {id:"custom", set:{}, T:null};
+  let s = "<div class='gd-opts'>" + O.list.map(o => card(o)).join("") + card(custom) + "</div>";
+  if (gdSel === "custom"){
+    const d = gdDraft;
+    const f = (k, label, affix, money_, hint) => "<div class='field'><label for='gdd-" + k + "'>" + label + "</label><div class='inputwrap'>" +
+      (money_ ? "<span class='affix'>$</span>" : "") + "<input id='gdd-" + k + "' type='text' inputmode='decimal' " + (money_ ? "data-money " : "data-num data-step='1' ") +
+      "data-nonneg data-d='" + k + "' value='" + (gdOk(d[k]) ? (money_ ? gdM(d[k]) : String(d[k])) : "") + "'" + (k === "stopAge" ? " placeholder='at retirement'" : "") + ">" +
+      (affix ? "<span class='affix'>" + affix + "</span>" : "") + "</div>" + (hint ? "<div class='hint'>" + hint + "</div>" : "") + "</div>";
+    s += "<div class='gd-fields gd-draft'>" + f("retire", "Retire at", "age") + f("contrib", "You contribute", "/mo", true, (a.employer ? "Plus your employer's " + money(a.employer) + "/mo." : "")) +
+      f("stopAge", "Stop contributing at", "age", false, "Blank means until you retire.") + f("retSpend", "Spending in retirement", "/yr", true) + "</div>";
+  }
+  return s;
+}
+function gdTuneHTML(){
+  const a = gd.a, O = gdOptions();
+  let s = "";
+  if (!O) return "<h2 class='gd-q' tabindex='-1'>Adjust your plan</h2><div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
+    "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
+  const S = O.S, goal = O.goal, want = gdNeed(S);
+  if (gdSel && gdSel !== "custom" && !O.list.some(o => o.id === gdSel)) gdSel = null;
+  if (!gdSel) gdSel = O.list.length ? O.list[0].id : "custom";
+  if (gdSel === "custom" && !gdDraft) gdDraft = {retire:a.retire, contrib:a.contrib, stopAge:gdOk(a.stopAge) ? a.stopAge : null, retSpend:a.retSpend};
+  const big = O.ahead && want > 0 && S.fv >= want * 1.2;
+  s += "<h2 class='gd-q' tabindex='-1'>" + (!O.ahead ? "Close the gap" : big ? "You're ahead. Put it to work?" : "Fine-tune your plan") + "</h2>";
+  s += "<p class='gd-lead'>Your plan now: retire at <b>" + fmtNum(S.retire) + "</b>, " +
+    (S.stop != null && S.stop <= a.age ? "<b>coast</b> with no new saving" : "save <b>" + money(S.monthly) + "/mo</b>" + (S.stop != null ? " until " + fmtNum(S.stop) : "")) +
+    ", then spend <b>" + money(S.spend) + " a year</b>. " +
+    "It reaches " + money(S.fv) + " and lasted in " + pctStr(S.success, 0) + " of historical retirements" +
+    (want > 0 ? "; lasting in " + (goal >= 1 ? "every one" : pctStr(goal, 0)) + " takes about " + money(want) : "") + ". " +
+    (!O.ahead ? "Each option below closes the gap on its own." : big ? "That's more than it needs, and there's more than one way to use the extra." : "It's close to its target, so the options are small.") + "</p>";
+  s += gdBack("tune");
+  s += "<div class='gd-target'><span>Aim for plans that lasted in</span>" + [[.9, "90%"], [.95, "95%"], [1, "every one"]].map(x =>
+    "<button type='button' class='gd-pick" + (goal === x[0] ? " on" : "") + "' data-target='" + x[0] + "' aria-pressed='" + (goal === x[0]) + "'>" + x[1] + "</button>").join("") +
+    "<span class='hint'>of historical retirements</span></div>";
+  if (!O.list.length) s += "<div class='gd-callout'>" + (O.ahead ? "Your plan sits right at its target, so there's no spare room to spend without adding risk. Try your own numbers to explore." :
+    "None of the single changes reach the target within reason. Try your own numbers, or work on the rest of your plan first.") + "</div>";
+  s += "<div class='gd-optwrap'>" + gdOptCards() + "</div>";
+  s += "<div class='gd-cmp' id='gdCmp'>" + gdCmpHTML() + "</div>";
+  s += "<p class='hint' style='margin-top:14px'>Prefer the classic FIRE math, with a 4% rule instead of market history? <button type='button' class='gd-link' data-trip='fire' data-from='tune'>Open the FIRE Calculator</button></p>";
+  return s;
+}
+function gdApplyOpt(){
+  const o = gdCurOpt(), a = gd.a;
+  if (!o || !o.T || !Object.keys(o.set).length) return;
+  const undo = {}, ch = [];
+  Object.keys(o.set).forEach(k => { undo[k] = a[k] == null ? null : a[k]; });
+  const v = o.set;
+  if ("retire" in v){ ch.push("retire at <b>" + fmtNum(v.retire) + "</b>"); a.retire = v.retire; }
+  if ("contrib" in v){ ch.push("save <b>" + money(v.contrib + (a.employer || 0)) + "/mo</b>"); a.contrib = v.contrib; }
+  if ("stopAge" in v){
+    ch.push(v.stopAge == null ? "save until you retire" : v.stopAge <= a.age ? "<b>stop saving now</b>" : "<b>stop saving at " + fmtNum(v.stopAge) + "</b>");
+    a.stopAge = v.stopAge;
+  }
+  if ("retSpend" in v){ ch.push("spend <b>" + money(v.retSpend) + " a year</b>"); a.retSpend = v.retSpend; }
+  if (gdOk(a.stopAge) && a.stopAge >= a.retire){ undo.stopAge = undo.stopAge === undefined ? a.stopAge : undo.stopAge; a.stopAge = null; }
+  gdHouseholdSync();
+  const see = gdOk(a.stopAge) ? "<button type='button' class='btn mini' data-trip='stages' data-from='tune'>See it in Stages ›</button>"
+    : "<button type='button' class='btn mini' data-trip='basic' data-from='tune'>See it in Basic ›</button>";
+  gd.back = {step:"tune", undo, msg:"Applied. Your plan now has you " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") +
+    ". Your projection, success rate, score and household bar all use it now, and it lasted in <b>" + pctStr(o.T.success, 0) + "</b> of historical retirements.<br>" + see};
+  gdSel = null; gdDraft = null;
+  gdSave();
+  gdRender(false);
+  const c = $("gdCard").querySelector(".gd-callout.ok");
+  if (c) try { c.scrollIntoView({block:"nearest"}); } catch(e){}
+}
+
+/* ---------- drawing it down ----------
+   Every withdrawal strategy the Drawdown Simulator offers, run on the
+   plan's own numbers through the same history, so the choice is made on
+   what each would have meant for this person. */
+const GD_STRATS = [
+  {id:"fixed", name:"Fixed, rising with inflation", d:"The same spending every year, raised with prices. Steady and simple, but it never reacts to markets, so a bad start can drain it."},
+  {id:"guardrails", name:"Guardrails (Guyton-Klinger)", d:"Steady spending that follows inflation, with a 10% cut when your withdrawal rate climbs 20% past where it started, and a 10% raise when it falls 20% below."},
+  {id:"floorceil", name:"Floor and ceiling", d:"Aims at a set share of the portfolio each year, but never moves spending more than 10% up or down from last year."},
+  {id:"yale", name:"Yale endowment rule", d:"70% of last year's spending, plus 30% of your starting rate applied to today's balance. Smooths the swings while still following the market."},
+  {id:"pct", name:"Fixed percentage", d:"The same share of whatever the portfolio is worth each year. It can't run out, but spending rises and falls with every market move."},
+  {id:"vpw", name:"Variable percentage (VPW)", d:"Spends down on purpose: each year's share rises as the years left shrink, like an annuity. Starts higher, varies the most, and ends near zero."}
+];
+function gdStratName(id){ const x = GD_STRATS.find(q => q.id === id); return x ? x.name : "Fixed, rising with inflation"; }
+/* What was actually lived on in a year: the planned spending, unless the
+   money ran out and only Social Security and any pension were left. Never
+   less than those two, which arrive whatever a strategy asks for. */
+function gdRunSpend(run){
+  return run.rows.map(r => {
+    const act = Math.max(Math.min(r.spend, r.withdrawal + r.ss + r.customIncome), r.ss + r.customIncome);
+    const defl = r.spend > 0 ? r.realSpend / r.spend : r.end > 0 ? r.realEnd / r.end : 1;
+    return act * defl;
+  });
+}
+function gdStrats(S){
+  if (S.strats) return S.strats;
+  const med = arr => { const x = arr.slice().sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : 0; };
+  S.strats = GD_STRATS.map(st => {
+    if (!S.H) return {st, H:null};
+    const H = historicalBacktest(gdDDOpts(S, st.id));
+    let lean = Infinity, leanYear = null, leanAge = null;
+    const typ = [];
+    H.runs.forEach(run => {
+      const sp = gdRunSpend(run);
+      typ.push(med(sp));
+      // Ties (every run that ran dry falls to the same Social Security) name
+      // the youngest age it happened, the one that matters.
+      sp.forEach((v, i) => {
+        const age = Math.round(S.retire) + i;
+        if (v < lean - 1 || (Math.abs(v - lean) <= 1 && age < leanAge)){ lean = Math.min(lean, v); leanYear = run.startYear; leanAge = age; }
+      });
+    });
+    return {st, H, success:H.successRate, typical:med(typ), lean, leanYear, leanAge, end:H.medianEnd,
+      canFail: st.id !== "pct" && st.id !== "vpw"};
+  });
+  return S.strats;
+}
+function gdStratHTML(){
+  const a = gd.a, S = gdSim();
+  let s = "<h2 class='gd-q' tabindex='-1'>How will you spend it down?</h2>";
+  if (!S || !S.H) return s + "<div class='gd-callout warn'>This needs a projection first: your age, savings and retirement spending.</div>" +
+    "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
+  const R = gdStrats(S), cur = a.strategy || "fixed";
+  s += "<p class='gd-lead'>So far your plan spends the same amount every year, raised with inflation, whatever markets do. It's the simplest approach and the most cautious test. " +
+    "Most retirees flex a little instead. Here's how six common approaches would have handled your plan (" + money(S.fv) + " at " + fmtNum(S.retire) + ", aiming to spend " + money(S.spend) +
+    " a year) in every retirement since " + S.H.first + ".</p>" + gdBack("strategy");
+  s += "<div class='gd-strat'><div class='gd-strat-h' aria-hidden='true'><span>Approach</span><span>Lasted</span><span>Typical year</span><span>Leanest year</span></div>" +
+    R.map(r => "<div class='gd-strat-r" + (r.st.id === cur ? " on" : "") + "'><div class='nm'><b>" + r.st.name + "</b><span>" + r.st.d + "</span></div>" +
+      "<div class='c'><i>Lasted</i>" + (r.canFail ? pctStr(r.success, 0) : "Can't run out") + "</div>" +
+      "<div class='c'><i>Typical year</i>" + money(r.typical) + "</div>" +
+      "<div class='c'><i>Leanest year</i>" + money(r.lean) + (r.lean >= S.spend * .995 ? "<small>never below your plan</small>" : r.leanYear ? "<small>retiring in " + r.leanYear + ", at " + r.leanAge + "</small>" : "") + "</div></div>").join("") + "</div>" +
+    "<p class='hint' style='margin:-6px 0 14px'>Spending in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone.</p>";
+  s += "<div class='gd-h3'>Which would you follow?</div><div class='gd-choices two'>" +
+    GD_STRATS.map(x => gdChoice("strategy", x.id, x.name)).join("") + "</div>";
+  const r = R.find(q => q.st.id === cur);
+  if (r && a.strategy){
+    const cut = r.lean < S.spend - 1 ? Math.round((1 - r.lean / S.spend) * 100) : 0;
+    let t = "";
+    if (cur === "fixed") t = r.success >= .995 ? "You'd never cut back, and it lasted in every retirement on record. Simple, and it held up."
+      : "You'd never cut back, but retiring in " + gdYears(r.H.failYears) + " the money ran out, leaving " + money(r.lean) + " a year from Social Security" + (S.pension ? " and your pension" : "") + ". Being willing to trim in a bad stretch is what the other approaches add.";
+    else t = "In a typical retirement you'd have spent about " + money(r.typical) + " a year. " +
+      (cut ? "The hardest case was retiring in " + r.leanYear + ": at " + r.leanAge + " spending would have been " + money(r.lean) + ", " + cut + "% under your plan." : "Spending never had to drop below your plan.") +
+      (r.canFail ? " It lasted in " + pctStr(r.success, 0) + " of retirements, against " + pctStr(S.success, 0) + " spending a fixed amount." : " It can't run out, because spending follows the balance down.") +
+      " Ask yourself whether you could live on the lean year; if not, a steadier approach or a larger cushion suits you better.";
+    s += "<div class='gd-callout " + (cur === "fixed" && r.success < .9 ? "warn" : "ok") + "'>" + t + "</div>";
+  }
+  s += "<div class='gd-callout'>Your score keeps testing the fixed approach, the cautious case. A flexible approach only adds safety if you'd really cut back when it says to.</div>";
+  s += gdTask("drawdown", "Walk through the Drawdown Simulator", {label:"Start the tour", after:"<div style='margin-top:10px' class='hint'>Optional. Seven short parts: your result, a bad start, strategies, your mix, Social Security timing, life events and stress tests. Anything you change there can come back into your plan.</div>"});
+  return s;
 }
 
 /* ---------- the plan ---------- */
@@ -20165,11 +21003,12 @@ function gdActions(){
   if (P.cushion && P.cushion.m >= 1 && P.cushion.m < 3)
     A.push({t:"Grow your emergency fund to 3 months or more",
       d:"You have " + gdMonths(P.cushion.m) + " months. The target is " + money(a.spend * 3) + " to " + money(a.spend * 6) + ". Automate a transfer each payday until you're there."});
-  if (P.rate && P.rate.r < .15 && inc > 0)
+  const goal = gdTarget(), ahead = S && S.success >= goal - 1e-9;
+  if (P.rate && P.rate.r < .15 && inc > 0 && !ahead)
     A.push({t:"Raise your savings rate toward 15%",
       d:"You save " + pctStr(P.rate.r, 1) + " of your income. Reaching 15% means about " + money(Math.max(0, inc * .15 / 12 - gdSaveMo())) + "/mo more. Raising it 1% each year, or at every raise, gets you there without feeling it.",
       trip:"basic", btn:"Try it in Basic"});
-  if (S && S.success < .85){
+  if (S && !ahead){
     const F = gdFixes() || {};
     const opts = [];
     if (F.extra) opts.push("save <b>" + money(F.extra) + "/mo more</b>");
@@ -20177,8 +21016,22 @@ function gdActions(){
     if (F.spend) opts.push("plan on <b>" + money(F.spend) + " a year</b> in retirement");
     A.push({t:"Close your retirement gap",
       d:"Your plan lasted in " + pctStr(S.success, 0) + " of historical retirements. " +
-        (opts.length ? "Any one of these gets it to 90%: " + opts.join(", or ").replace(/, or ([^,]*)$/, ", or $1") + ". A mix of smaller changes works too." : "Saving more, retiring later and spending less all help; try them in the Basic calculator."),
-      trip:"basic", btn:"Try it in Basic"});
+        (opts.length ? "Any one of these gets it to " + pctStr(goal, 0) + ": " + opts.join(", or ").replace(/, or ([^,]*)$/, ", or $1") + ". A mix of smaller changes works too." : "Saving more, retiring later and spending less all help."),
+      go:"tune", btn:"See the options and apply one"});
+  } else if (S){
+    // Ahead of target: say what the surplus could buy, not just "you're fine".
+    const O = gdOptions(), pick = id => O && O.list.find(o => o.id === id);
+    const bits = [];
+    const e = pick("earlier"), c = pick("coast"), m = pick("more");
+    if (e) bits.push("retire at <b>" + e.set.retire + "</b>");
+    if (c) bits.push(c.set.stopAge <= a.age ? "<b>stop saving now</b>" : "stop saving at <b>" + c.set.stopAge + "</b>");
+    if (m) bits.push("spend <b>" + money(m.set.retSpend) + " a year</b>");
+    const want = gdNeed(S);
+    if (bits.length && want > 0 && S.fv >= want * 1.2)
+      A.push({t:"Decide what to do with your surplus",
+        d:"You're on course for " + money(S.fv) + " against the " + money(want) + " your plan needs. You could " + bits.join(", or ").replace(/, or ([^,]*)$/, ", or $1") +
+          " and still last in " + (goal >= 1 ? "every" : pctStr(goal, 0) + " of") + " historical retirements. Or keep the margin: that's a fine choice too.",
+        go:"tune", btn:"Compare and apply"});
   }
   if (gdOk(a.retire) && a.retire < 65 && !a.hcSeen)
     A.push({t:"Price out healthcare before Medicare",
@@ -20191,8 +21044,8 @@ function gdActions(){
   if (!gdPos(a.ssOwn) && S)
     A.push({t:"Check your Social Security estimate",
       d:"We estimated it from today's income. Your statement at ssa.gov/myaccount uses your real earnings record and takes five minutes to get.", go:"retspend", btn:"Add it to your answers"});
-  if (S && S.success >= .85 && !(a.ddTool))
-    A.push({t:"Stress-test your plan", d:"Your plan looks solid. The Drawdown Simulator shows how it did through 1929, 1966 and 2000, and how a flexible withdrawal strategy helps.", trip:"drawdown", btn:"Open Drawdown Simulator"});
+  if (S && S.success >= .85 && !a.ddTool)
+    A.push({t:"Stress-test how you'll spend it", d:"The Drawdown Simulator tour replays your plan through 1929, 1966 and 2000, and walks through each withdrawal strategy, your stock mix, when to claim Social Security, and big one-time costs.", trip:"drawdown", btn:"Start the tour"});
   return A.slice(0, 6);
 }
 function gdResultsHTML(){
@@ -20213,6 +21066,19 @@ function gdResultsHTML(){
       (x.trip ? "<button type='button' class='btn mini' data-trip='" + x.trip + "' data-from='results'>" + x.btn + " ›</button>" : "") +
       (x.go ? "<button type='button' class='btn mini' data-go='" + x.go + "'>" + x.btn + "</button>" : "") + "</div></li>").join("") + "</ol>";
   }
+  if (S){
+    const pv = [];
+    const prow = (k, v) => pv.push("<div class='kv'><span class='k'>" + k + "</span><span class='v'>" + v + "</span></div>");
+    prow("Retire at", fmtNum(S.retire));
+    prow("Saving", S.stop != null ? (S.stop <= a.age ? "Coasting: no new savings" : money(S.monthly) + "/mo until " + fmtNum(S.stop) + ", then coasting") : money(S.monthly) + "/mo until you retire");
+    prow("Spending in retirement", money(S.spend) + " a year");
+    prow("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
+    if (S.pension) prow("Pension", money(S.pension / 12) + "/mo");
+    prow("Withdrawal approach", gdStratName(a.strategy || "fixed"));
+    prow("Lasted, spending a fixed amount", pctStr(S.success, 0) + " of historical retirements");
+    s += "<div class='gd-h3'>Your plan</div><div class='gd-kvs'>" + pv.join("") + "</div>" +
+      "<button type='button' class='btn mini' data-go='tune' style='margin:-2px 0 16px'>Adjust your plan</button>";
+  }
   const wins = GD_FACTORS.filter(f => R.P[f.id] && R.P[f.id].p >= .9).map(f => f.name + ": " + R.P[f.id].txt);
   if (wins.length) s += "<div class='gd-h3'>What's going well</div><div class='gd-wins'>" + wins.map(w => "<span>" + w + "</span>").join("") + "</div>";
   const kv = [];
@@ -20222,8 +21088,8 @@ function gdResultsHTML(){
   if (gdOk(a.cash)) row("Emergency fund", money(a.cash));
   if (a.debtHas === "yes" && gdOk(a.debtTotal)) row("Debt, not counting a mortgage", money(a.debtTotal));
   if (gdOk(a.saved)) row("Retirement savings", money(a.saved));
-  if (gdOk(a.contrib)) row("Saving for retirement", money(gdSaveMo()) + "/mo");
-  if (S){ row("Projected at " + fmtNum(S.retire), money(S.fv)); row("Historical success rate", pctStr(S.success, 0)); }
+  if (gdOk(a.contrib)) row("Saving for retirement", gdCoastNow() ? "Nothing new: coasting" : money(gdSaveMo()) + "/mo");
+  if (S){ row("Projected at " + fmtNum(S.retire), money(S.fv)); const w = gdNeed(S); if (w > 0) row("Needed at " + fmtNum(S.retire), money(w)); }
   if (a.fiAge) row(escapeHtml(a.fiLabel || "FIRE age"), escapeHtml(a.fiAge));
   if (kv.length) s += "<div class='gd-h3'>Your numbers</div><div class='gd-kvs'>" + kv.join("") + "</div>";
   s += "<div class='gd-h3'>Ready for more detail?</div>" +
@@ -20231,7 +21097,7 @@ function gdResultsHTML(){
     "<button type='button' class='btn mini' data-trip='advanced' data-from='results'>Advanced: taxes and account types ›</button>" +
     "<button type='button' class='btn mini' data-trip='stages' data-from='results'>Stages: plans that change over time ›</button>" +
     "<button type='button' class='btn mini' data-trip='backtest' data-from='results'>Portfolio Backtest: what your mix has earned ›</button></div>" +
-    "<p class='hint'>This score is a rule-of-thumb check, not financial advice. It leaves out taxes in retirement, pensions and home equity.</p>";
+    "<p class='hint'>This score is a rule-of-thumb check, not financial advice. It leaves out taxes in retirement and home equity.</p>";
   return s;
 }
 
@@ -20261,6 +21127,7 @@ function gdRender(focus){
   $("gdCard").innerHTML = "<div class='gd-eyebrow'><span>" + ch + "</span>" + (idx >= 0 && st.title !== ch ? "<span>" + st.title + "</span>" : "") + "</div>" +
     st.body() + "<div class='gd-foot'>" + foot + "</div>";
   initFields($("gdCard"));
+  gdChartsDraw($("gdCard"));
   gdRenderSide();
   if (focus){
     const h = $("gdCard").querySelector(".gd-q");
@@ -20452,8 +21319,13 @@ function gdCoachFill(){
   let body, chip = "", next = "";
   if (here){
     let tasks = [];
-    try { tasks = T.tasks(); } catch(e){}
-    body = "<ol class='gd-steps'>" + tasks.map(k => "<li" + (k.ok === true ? " class='ok'" : k.ok === false ? " class='todo'" : "") + ">" + k.h + "</li>").join("") + "</ol>";
+    const pages = T.pages, pi = pages ? Math.max(0, Math.min(pages.length - 1, t.page || 0)) : 0;
+    try { tasks = pages ? pages[pi].tasks() : T.tasks(); } catch(e){}
+    body = (pages ? "<div class='gd-cpage'><span>Part " + (pi + 1) + " of " + pages.length + "</span><b>" + pages[pi].title + "</b></div>" : "") +
+      "<ol class='gd-steps'>" + tasks.map(k => "<li" + (k.ok === true ? " class='ok'" : k.ok === false ? " class='todo'" : "") + ">" + k.h + "</li>").join("") + "</ol>" +
+      (pages ? "<div class='gd-cnav'><button type='button' class='btn mini' data-cp='-1'" + (pi ? "" : " disabled") + ">‹ Back</button>" +
+        "<span class='gd-cdots' aria-hidden='true'>" + pages.map((x, i) => "<i" + (i === pi ? " class='on'" : "") + "></i>").join("") + "</span>" +
+        (pi < pages.length - 1 ? "<button type='button' class='btn mini primary' data-cp='1'>Next: " + pages[pi + 1].title + " ›</button>" : "") + "</div>" : "");
     try { chip = T.chip() || ""; } catch(e){}
     // Collapsed, the panel still names the next thing left to do.
     const n = tasks.findIndex(k => k.ok === false);
@@ -20512,12 +21384,50 @@ $("gdCoachTog").addEventListener("click", () => {
 });
 $("gdCoachBody").addEventListener("click", e => {
   if (e.target.closest && e.target.closest("#gdCoachGo") && gd.trip) gdNavTool(GD_TRIPS[gd.trip.id].tool);
+  const cp = e.target.closest ? e.target.closest("[data-cp]") : null;
+  if (cp && gd.trip && GD_TRIPS[gd.trip.id].pages){
+    const P = GD_TRIPS[gd.trip.id].pages;
+    gd.trip.page = Math.max(0, Math.min(P.length - 1, (gd.trip.page || 0) + parseInt(cp.getAttribute("data-cp"), 10)));
+    gdSave();
+    gdCoachFill();
+    $("gdCoachBody").scrollTop = 0;
+    // Bring the part of the tool this part is about into view, clear of the
+    // tab rail at the top and the panel itself at the bottom.
+    const f = document.querySelector(P[gd.trip.page].focus);
+    if (f){
+      const r = f.getBoundingClientRect(), rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 16;
+      if (r.top < rail || r.bottom > window.innerHeight - $("gdCoach").offsetHeight - 16){
+        let smooth = true;
+        try { smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e2){}
+        try { window.scrollBy({top:r.top - rail, behavior:smooth ? "smooth" : "auto"}); } catch(e2){ window.scrollBy(0, r.top - rail); }
+      }
+    }
+    const nb = $("gdCoachBody").querySelector("[data-cp='1']") || $("gdCoachBody").querySelector("[data-cp='-1']");
+    if (nb) try { nb.focus({preventScroll:true}); } catch(e2){}
+  }
 });
 
 /* ---------- the guide's own controls ---------- */
 $("tab-guide").addEventListener("click", e => {
-  const el = e.target.closest ? e.target.closest("[data-set],[data-gd],[data-go],[data-trip],[data-fill],[data-nav]") : null;
+  const el = e.target.closest ? e.target.closest("[data-set],[data-gd],[data-go],[data-trip],[data-fill],[data-nav],[data-opt],[data-target]") : null;
   if (!el || el.disabled) return;
+  if (el.hasAttribute("data-opt")){
+    gdSel = el.getAttribute("data-opt");
+    if (gdSel === "custom" && !gdDraft){
+      const a = gd.a;
+      gdDraft = {retire:a.retire, contrib:a.contrib, stopAge:gdOk(a.stopAge) ? a.stopAge : null, retSpend:a.retSpend};
+    }
+    gdRender(false);
+    const f = gdSel === "custom" ? $("gdd-retire") : null;
+    if (f) try { f.focus({preventScroll:true}); } catch(e2){}
+    return;
+  }
+  if (el.hasAttribute("data-target")){
+    gd.a.target = parseFloat(el.getAttribute("data-target"));
+    gdSave();
+    gdRender(false);
+    return;
+  }
   if (el.hasAttribute("data-set")){
     gd.a[el.getAttribute("data-set")] = el.getAttribute("data-val");
     gdSave();
@@ -20543,6 +21453,7 @@ $("tab-guide").addEventListener("click", e => {
     return;
   }
   const g = el.getAttribute("data-gd");
+  if (g === "apply"){ gdApplyOpt(); return; }
   if (g === "next") gdNext();
   else if (g === "prev") gdPrev();
   else if (g === "resume") gdGoStep(gdFirstOpen());
@@ -20567,6 +21478,16 @@ $("tab-guide").addEventListener("click", e => {
   }
 });
 $("tab-guide").addEventListener("input", e => {
+  const d = e.target.getAttribute && e.target.getAttribute("data-d");
+  if (d && gdDraft){
+    const t = e.target.value.trim();
+    gdDraft[d] = t === "" ? null : parseNum(t);
+    const o = gdCurOpt(), fig = $("gdCard").querySelector("[data-optfig='custom']");
+    if (fig) fig.textContent = o && o.T && Object.keys(o.set).length ? pctStr(o.T.success, 0) + " lasted · " + money(o.T.fv) + " at " + fmtNum(o.T.retire) : "";
+    $("gdCmp").innerHTML = gdCmpHTML();
+    gdChartsDraw($("gdCmp"));
+    return;
+  }
   const el = e.target, k = el.getAttribute && el.getAttribute("data-a");
   if (!k || el.tagName === "SELECT") return;
   const t = el.value.trim();
@@ -20577,12 +21498,12 @@ $("tab-guide").addEventListener("input", e => {
 $("tab-guide").addEventListener("change", e => {
   const el = e.target, k = el.getAttribute && el.getAttribute("data-a");
   if (!k || el.tagName !== "SELECT") return;
-  gd.a[k] = el.getAttribute("data-kind") === "num" ? parseFloat(el.value) : (el.value || null);
+  gd.a[k] = el.getAttribute("data-kind") === "num" ? (el.value === "" ? null : parseFloat(el.value)) : (el.value || null);
   gdSave();
   if (el.hasAttribute("data-rerender")) gdRender(false); else gdRefresh();
 });
 $("tab-guide").addEventListener("keydown", e => {
-  if (e.key !== "Enter" || e.target.tagName !== "INPUT") return;
+  if (e.key !== "Enter" || e.target.tagName !== "INPUT" || e.target.hasAttribute("data-d")) return;
   const b = $("gdCard").querySelector("[data-gd='next']");
   if (b && !b.disabled){ e.preventDefault(); b.click(); }
 });
