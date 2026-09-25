@@ -439,6 +439,60 @@ nav[role=tablist] button[aria-selected="true"]{color:var(--text)}
 nav[role=tablist] button[aria-selected="true"]::after{transform:scaleX(1)}
 nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 
+/* ---------- Calculator tab: a mode menu ----------
+   Basic, Advanced and Stages share one tab. The tab carries the open mode
+   beside its name, so the rail still says which one you're on, and opens a
+   menu to switch. On a desktop the menu drops from the tab; on a phone it
+   spans the screen with finger-sized rows over a dimmed page; in the
+   home-screen web app it rises from the bottom bar instead (see the
+   html.pwa block below). */
+.calcbtn{display:inline-flex;align-items:center;gap:7px}
+.calc-mode{display:inline-flex;align-items:center;gap:3px;
+  font-size:12.5px;font-weight:600;color:var(--dimmer);transition:color .15s ease}
+nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
+.calc-chev{width:12px;height:12px;flex:none;transition:transform .2s ease}
+.calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
+.navbar.menu-open{z-index:45}
+.calcmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:310px;
+  padding:6px;background:var(--pop);border:1px solid var(--line);border-radius:12px;
+  box-shadow:var(--lift-2);transform-origin:top left;
+  animation:calcmenu-in .16s cubic-bezier(.2,.7,.3,1)}
+.calcmenu[hidden]{display:none}
+@keyframes calcmenu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.calcmenu-h{display:none}
+.calcmenu button{display:grid;grid-template-columns:1fr auto;align-items:center;
+  column-gap:12px;width:100%;text-align:left;font-family:var(--sans);
+  background:transparent;border:0;border-radius:8px;padding:10px 12px;
+  color:var(--text);cursor:pointer;transition:background .12s ease}
+.calcmenu button + button{margin-top:2px}
+.calcmenu button:hover,.calcmenu button:focus-visible{background:var(--panel-2)}
+.calcmenu button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.cm-name{grid-column:1;font-size:14.5px;font-weight:600}
+.cm-desc{grid-column:1;font-size:12.5px;color:var(--dimmer);line-height:1.4;margin-top:2px}
+/* the open mode gets a check, and its name in the tab's jade */
+.calcmenu button::after{content:"";grid-column:2;grid-row:1 / span 2;width:14px;height:8px;
+  border-left:2px solid var(--jade);border-bottom:2px solid var(--jade);
+  transform:translateY(-2px) rotate(-45deg);opacity:0}
+.calcmenu button[aria-checked="true"] .cm-name{color:var(--jade)}
+.calcmenu button[aria-checked="true"]::after{opacity:1}
+.calcscrim{display:none}
+@media (max-width:640px){
+  /* Full width under the rail, with rows tall enough to hit with a thumb. */
+  .calcmenu{left:10px !important;right:10px;width:auto;
+    padding:8px;border-radius:16px;transform-origin:top center}
+  .calcmenu button{min-height:58px;padding:11px 14px}
+  .cm-name{font-size:16px}
+  .cm-desc{font-size:13px}
+  /* above the guide's coach panel (30), below the open navbar (45) */
+  .calcscrim:not([hidden]){display:block;position:fixed;inset:0;z-index:35;
+    background:rgba(3,5,12,.5);animation:calcscrim-in .16s ease}
+  @keyframes calcscrim-in{from{opacity:0}to{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){
+  .calcmenu,.calcscrim:not([hidden]){animation:none}
+  .calc-chev{transition:none}
+}
+
 /* ---------- tool cards: a rail, not a lift ---------- */
 .toolcards{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;
   max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
@@ -1606,6 +1660,18 @@ svg{display:block;width:100%;height:auto}
   html.pwa nav[role=tablist] button[aria-selected="true"]{color:var(--jade);font-weight:700}
   /* The active indicator rides the top edge of the button in a bottom bar. */
   html.pwa nav[role=tablist] button::after{top:0;bottom:auto}
+  /* Calculator stacks its open mode under its name, and its chevron points
+     up, since the menu rises out of the bar. The menu is a sheet sitting just
+     above the bar, where the thumb already is. */
+  html.pwa nav[role=tablist] .calcbtn{flex-direction:column;gap:1px;padding-top:7px;padding-bottom:6px}
+  html.pwa .calc-mode{font-size:11.5px;letter-spacing:0}
+  html.pwa .calc-chev{transform:rotate(180deg)}
+  html.pwa .calcbtn[aria-expanded="true"] .calc-chev{transform:none}
+  html.pwa .calcmenu{top:auto !important;bottom:calc(100% + 8px);
+    transform-origin:bottom center;animation-name:calcmenu-up}
+  @keyframes calcmenu-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  html.pwa .calcmenu-h{display:block;padding:6px 14px 8px;font-size:12px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--dimmer)}
   /* Room so the fixed (taller) bar never covers the last panel, and lift
      toasts above it. */
   html.pwa main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
@@ -1633,6 +1699,9 @@ html.pwa .popup-overlay{
    stack them instead — normal phones keep the two-column layout above. */
 @media (max-width:400px){
   .two{grid-template-columns:1fr}
+}
+@media (max-width:360px){
+  html.pwa nav[role=tablist] button{font-size:14px}
 }
 /* iOS zooms the page when a focused field is under 16px. Keyed to touch
    devices rather than width, so landscape phones are covered too. */
@@ -1937,16 +2006,6 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 }
 @media print{ .gd-coach{display:none !important} }
 
-/* The picker card for the guide shows where you left off. */
-.toolcard-prog{font-size:12px;color:var(--jade);margin-top:6px;font-weight:600}
-.toolcard-prog:empty{display:none}
-@media (hover:hover) and (pointer:fine){
-  @keyframes gd-walk{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}
-  @keyframes gd-wave{0%,100%{transform:skewY(0)}40%{transform:skewY(-12deg)}70%{transform:skewY(6deg)}}
-  .gd-flag{transform-box:fill-box;transform-origin:0 50%}
-  .toolcard:hover .gd-route{animation:gd-walk .6s linear}
-  .toolcard:hover .gd-flag{animation:gd-wave .6s ease-in-out}
-}
 </style>
 </head>
 <body>
@@ -2006,14 +2065,23 @@ window.onerror = function(msg){
 </header>
 
 <div class="sbcover" id="sbCover" aria-hidden="true"></div>
+<div class="calcscrim" id="calcScrim" hidden></div>
 <div class="navbar">
-  <nav role="tablist" aria-label="Calculator mode">
-    <button role="tab" id="tabbtn-simple" data-tab="simple" aria-controls="tab-simple" aria-selected="true">Basic</button>
-    <button role="tab" id="tabbtn-single" data-tab="single" aria-controls="tab-single" aria-selected="false" tabindex="-1">Advanced</button>
-    <button role="tab" id="tabbtn-series" data-tab="series" aria-controls="tab-series" aria-selected="false" tabindex="-1">Stages</button>
+  <nav role="tablist" aria-label="Sections">
+    <button role="tab" id="tabbtn-guide" data-tab="guide" aria-controls="tab-guide" aria-selected="false" tabindex="-1">Guide</button>
+    <button role="tab" id="tabbtn-calc" class="calcbtn" data-tab="calc" aria-controls="tab-simple" aria-selected="true" aria-haspopup="menu" aria-expanded="false"><span class="calc-lbl">Calculator</span><span class="calc-mode"><span id="calcMode">Basic</span><svg class="calc-chev" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.6L6 7.6l3-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button>
     <button role="tab" id="tabbtn-tools" data-tab="tools" aria-controls="tab-toolpicker" aria-selected="false" tabindex="-1">Tools</button>
     <button role="tab" id="tabbtn-about" data-tab="about" aria-controls="tab-about" aria-selected="false" tabindex="-1">About</button>
   </nav>
+  <!-- The Calculator tab's mode menu. It sits outside the nav so the phone
+       rail's horizontal scroll can't clip it. Its phone scrim (#calcScrim) sits
+       outside the navbar, under it, so the tabs stay lit and tappable. -->
+  <div class="calcmenu" id="calcMenu" role="menu" aria-labelledby="tabbtn-calc" hidden>
+    <div class="calcmenu-h" aria-hidden="true">Calculator</div>
+    <button type="button" role="menuitemradio" data-mode="simple" aria-checked="true" tabindex="-1"><span class="cm-name">Basic</span><span class="cm-desc">Five questions for a quick answer</span></button>
+    <button type="button" role="menuitemradio" data-mode="single" aria-checked="false" tabindex="-1"><span class="cm-name">Advanced</span><span class="cm-desc">Every assumption, taxes and fees, one timeline</span></button>
+    <button type="button" role="menuitemradio" data-mode="series" aria-checked="false" tabindex="-1"><span class="cm-name">Stages</span><span class="cm-desc">Chain periods together as your plans change</span></button>
+  </div>
 </div>
 
 <div id="srLive" class="srlive" aria-live="polite" aria-atomic="true"></div>
@@ -2423,7 +2491,7 @@ window.onerror = function(msg){
 
   <!-- ========== RESULTS ========== -->
   <!-- ========== SIMPLE PANE ========== -->
-  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-simple" id="tab-simple">
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-simple">
 
     <div class="panel" id="qWarn" hidden>
       <div class="body"><div class="hint" id="qWarnText"></div></div>
@@ -2503,7 +2571,7 @@ window.onerror = function(msg){
 
   </div>
 
-  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-single" id="tab-single" hidden>
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single" hidden>
 
     <div class="panel">
       <div class="headline">
@@ -2707,7 +2775,7 @@ window.onerror = function(msg){
   </div>
 
   <!-- ========== SERIES PANE ========== -->
-  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-series" id="tab-series" hidden>
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-series" hidden>
 
     <div class="panel">
       <h2>Stages
@@ -3641,8 +3709,12 @@ window.onerror = function(msg){
         You describe your savings, contributions, and expected returns, and it projects
         where you land at retirement, how long that money lasts, and what it all means
         in today's dollars. Everything runs in your browser; nothing is sent anywhere.</p>
-        <p>The core retirement planner has three modes for different levels of detail,
-        from a five-question starting point to a full multi-stage model. The Tools tab
+        <p>The Guide tab is the place to start if you're not sure where you stand: it
+        asks about your money one question at a time, gives you a readiness score, and
+        walks you through whichever tool finds an answer you don't know.</p>
+        <p>The core retirement planner, under the Calculator tab, has three modes for
+        different levels of detail, from a five-question starting point (Basic) to a
+        full multi-stage model (Stages). The Tools tab
         extends that with calculators for taxes, mortgage, college savings, rent vs.
         buy, drawdown, FIRE planning, budget, and more. Each tool is described in
         its own section below.</p>
@@ -5229,23 +5301,6 @@ window.onerror = function(msg){
   <!-- ========== TOOL PICKER ========== -->
   <div class="stack solo" role="tabpanel" aria-labelledby="tabbtn-tools" id="tab-toolpicker" hidden>
     <div class="toolcards">
-      <div class="toolcard" role="button" tabindex="0" data-pick="guide">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path class="gd-route" d="M8 33 C8 25 21 27 21 19 S31 14 31 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"/>
-            <circle cx="8" cy="33" r="3" stroke="currentColor" stroke-width="2"/>
-            <circle cx="21" cy="19" r="2.2" fill="currentColor"/>
-            <path d="M31 13 V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path class="gd-flag" d="M31 3.5 h7 l-2.2 2.6 2.2 2.6 h-7" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Retirement Readiness Guide<span class="beta">Beta</span></div>
-          <div class="toolcard-desc">Answer questions about your money one at a time and get a readiness score. When you don't know an answer, the guide walks you through the tool that finds it.</div>
-          <div class="toolcard-prog" id="gdCardProg"></div>
-        </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
       <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
         <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
         <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1926.</div></div>
@@ -5402,10 +5457,10 @@ window.onerror = function(msg){
   </div>
 
   <!-- ========== RETIREMENT READINESS GUIDE ========== -->
-  <div class="stack solo" id="tab-guide" hidden>
+  <div class="stack solo" role="tabpanel" aria-labelledby="tabbtn-guide" id="tab-guide" hidden>
     <div class="panel gd-top">
       <div class="gd-top-row">
-        <div class="gd-title">Retirement Readiness Guide<span class="beta">Beta</span></div>
+        <div class="gd-title">Retirement Readiness Guide</div>
         <div class="gd-mini" id="gdMini"></div>
         <div class="gd-count" id="gdCount"></div>
       </div>
@@ -8955,7 +9010,7 @@ let loadedSnapshot = {};
 /* which tool the top-bar buttons act on, driven by the visible tab */
 function activeTool(){
   const t = chartMode.tab;
-  if (t === "tools" && toolSub !== "picker" && toolSub !== "guide") return toolSub;
+  if (t === "tools" && toolSub !== "picker") return toolSub;
   if (t === "simple") return "basic";
   if (t === "series") return "stages";
   if (t === "single") return "advanced";
@@ -11832,6 +11887,85 @@ document.addEventListener("click", e => {
   el.dispatchEvent(new Event("change", {bubbles:true}));
 });
 
+/* ---------- the Calculator tab's mode menu ----------
+   Basic, Advanced and Stages live behind one tab. The tab shows the open
+   mode, and remembers it: the menu is how you switch. Its layout (dropdown,
+   full-width phone sheet, or a sheet rising from the web app's bottom bar)
+   is all CSS; the script only places it under the tab on a wide screen. */
+const CALC_MODES = {simple:"Basic", single:"Advanced", series:"Stages"};
+const CALCBTN = $("tabbtn-calc");
+const CALCITEMS = Array.prototype.slice.call(
+  document.querySelectorAll("#calcMenu [role=menuitemradio]"));
+function calcModeSync(t){
+  if (CALC_MODES[t] == null) return;
+  $("calcMode").textContent = CALC_MODES[t];
+  CALCBTN.setAttribute("aria-controls", "tab-" + t);
+  CALCITEMS.forEach(x => x.setAttribute("aria-checked", String(x.getAttribute("data-mode") === t)));
+}
+function calcMenuPlace(){
+  const m = $("calcMenu"), nb = CALCBTN.closest(".navbar");
+  const bl = CALCBTN.getBoundingClientRect().left - nb.getBoundingClientRect().left;
+  // Line the menu's text up with the tab's, but never past the right edge.
+  const max = nb.clientWidth - m.offsetWidth - 10;
+  m.style.left = Math.max(10, Math.min(bl - 12, max)) + "px";
+}
+function calcMenuOpen(focusItem){
+  const m = $("calcMenu");
+  m.hidden = false;
+  $("calcScrim").hidden = false;
+  CALCBTN.closest(".navbar").classList.add("menu-open");
+  CALCBTN.setAttribute("aria-expanded", "true");
+  calcMenuPlace();
+  if (focusItem){
+    const cur = CALCITEMS.find(x => x.getAttribute("aria-checked") === "true") || CALCITEMS[0];
+    cur.focus();
+  }
+}
+function calcMenuClose(refocus){
+  const m = $("calcMenu");
+  if (m.hidden) return;
+  m.hidden = true;
+  $("calcScrim").hidden = true;
+  CALCBTN.closest(".navbar").classList.remove("menu-open");
+  CALCBTN.setAttribute("aria-expanded", "false");
+  if (refocus) CALCBTN.focus();
+}
+CALCITEMS.forEach((it, i) => {
+  it.addEventListener("click", e => {
+    const t = it.getAttribute("data-mode");
+    calcMenuClose(e.detail === 0);
+    if (t !== chartMode.tab){
+      paneDir = "tab";
+      showTab(t);
+      pushNav();
+    }
+  });
+  it.addEventListener("keydown", e => {
+    let j = -1;
+    if (e.key === "ArrowDown") j = (i + 1) % CALCITEMS.length;
+    else if (e.key === "ArrowUp") j = (i - 1 + CALCITEMS.length) % CALCITEMS.length;
+    else if (e.key === "Home") j = 0;
+    else if (e.key === "End") j = CALCITEMS.length - 1;
+    else if (e.key === "Escape"){ e.preventDefault(); calcMenuClose(true); return; }
+    else if (e.key === "Tab"){ calcMenuClose(false); return; }
+    if (j < 0) return;
+    e.preventDefault();
+    CALCITEMS[j].focus();
+  });
+});
+$("calcScrim").addEventListener("click", () => calcMenuClose(false));
+// A press anywhere outside the menu and its tab closes it. pointerdown rather
+// than click, so the press that starts a scroll on a phone counts too.
+document.addEventListener("pointerdown", e => {
+  if ($("calcMenu").hidden || !e.target.closest) return;
+  if (e.target.closest("#calcMenu") || e.target.closest("#tabbtn-calc")) return;
+  calcMenuClose(false);
+}, true);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("calcMenu").hidden) calcMenuClose(true);
+});
+window.addEventListener("resize", () => { if (!$("calcMenu").hidden) calcMenuPlace(); });
+
 /* Direction of the next pane swap, consumed by playPaneEnter. Set by whichever
    control initiated the move; defaults back to a plain tab change so a stray
    programmatic showTab can't inherit a stale direction. */
@@ -11884,16 +12018,16 @@ let navSuspended = false;
 const TOOL_PATHS = {
   tax:"incometax", mortgage:"mortgage", budget:"budget", college:"college",
   rentbuy:"rentbuy", drawdown:"drawdown", roth:"roth", debt:"debt",
-  backtest:"backtest", healthcare:"healthcare", fire:"fire", guide:"guide"
+  backtest:"backtest", healthcare:"healthcare", fire:"fire"
 };
 const SUB_BY_PATH = {};
 Object.keys(TOOL_PATHS).forEach(sub => { SUB_BY_PATH[TOOL_PATHS[sub]] = sub; });
 /* Tab ids are "single" and "series" inside the code, but the address shows
    the names on the tabs. The old /single and /series addresses still open
    the right tab, so bookmarks and links shared before the rename keep working. */
-const TAB_PATHS = {single:"advanced", series:"stages", about:"about"};
+const TAB_PATHS = {single:"advanced", series:"stages", about:"about", guide:"guide"};
 const TAB_BY_PATH = {advanced:"single", stages:"series", about:"about",
-                     single:"single", series:"series"};
+                     single:"single", series:"series", guide:"guide"};
 function pathForRoute(t, s){
   if (t === "simple") return "/";
   if (TAB_PATHS[t]) return "/" + TAB_PATHS[t];
@@ -11937,7 +12071,9 @@ window.addEventListener("popstate", e => {
   if (chartMode.tab === "compare") chartMode.tab = cmpPrevTab;
   if (chartMode.tab === "dd-compare") chartMode.tab = ddCmpPrevTab;
   paneDir = (st.t === "tools" && st.s === "picker") ? "back" : "tab";
-  if (st.t === "tools"){ toolSub = st.s || "picker"; showTab("tools"); }
+  // The guide used to be a tool, so an older entry can still say so.
+  if (st.t === "tools" && st.s === "guide") showTab("guide");
+  else if (st.t === "tools"){ toolSub = st.s || "picker"; showTab("tools"); }
   else showTab(st.t);
   navSuspended = false;
 });
@@ -11960,6 +12096,7 @@ function setDocTitle(){
   if (t === "single") name = "Advanced";
   else if (t === "series") name = "Stages";
   else if (t === "about") name = "About";
+  else if (t === "guide") name = "Retirement Readiness Guide";
   else if (t === "tools"){
     const card = document.querySelector('.toolcard[data-pick="' + toolSub + '"] .toolcard-name');
     name = toolSub === "picker" ? "Tools" : (toolName(card) || "Tools");
@@ -11982,7 +12119,6 @@ function showTool(sub){
   $("tab-backtest").hidden = (sub !== "backtest");
   $("tab-healthcare").hidden = (sub !== "healthcare");
   $("tab-fire").hidden = (sub !== "fire");
-  $("tab-guide").hidden = (sub !== "guide");
   $("asideBT").hidden = (sub !== "backtest");
   $("asideHC").hidden = (sub !== "healthcare");
   $("asideFire").hidden = (sub !== "fire");
@@ -11994,7 +12130,7 @@ function showTool(sub){
   $("asideRC").hidden = (sub !== "roth");
   // Budget has no sidebar inputs, so it earns the same full-width layout
   // as the tool picker rather than sitting narrow with empty space beside it.
-  $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt" || sub === "guide");
+  $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt");
   refreshScenarioList(currentScenario[activeTool()] || "");
   initCSVButtons();
   if (sub === "tax") renderTax();
@@ -12011,8 +12147,6 @@ function showTool(sub){
     var fiEl = $("fiTarget");
     if (fiEl) fiEl.dispatchEvent(new Event("input", {bubbles:true}));
   }
-  else if (sub === "guide") gdShow();
-  else if (sub === "picker") gdCardSync();
   gdCoachSync();
   setDocTitle();
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
@@ -12036,11 +12170,15 @@ function showTab(t){
   chartMode.tab = t;
   $("tab-compare").hidden = true;
   $("tab-dd-compare").hidden = true;
+  calcMenuClose(false);
   document.querySelectorAll("nav[role=tablist] button").forEach(x => {
-    const on = x.getAttribute("data-tab") === t;
+    const k = x.getAttribute("data-tab");
+    const on = k === t || (k === "calc" && CALC_MODES[t] != null);
     x.setAttribute("aria-selected", String(on));
     if (on) x.removeAttribute("tabindex"); else x.setAttribute("tabindex", "-1");
   });
+  calcModeSync(t);
+  $("tab-guide").hidden = (t !== "guide");
   $("tab-simple").hidden = (t !== "simple");
   $("tab-single").hidden = (t !== "single");
   $("tab-series").hidden = (t !== "series");
@@ -12066,7 +12204,6 @@ function showTab(t){
     $("tab-backtest").hidden = true;
     $("tab-healthcare").hidden = true;
     $("tab-fire").hidden = true;
-    $("tab-guide").hidden = true;
     $("asideBT").hidden = true;
     $("asideHC").hidden = true;
     $("asideFire").hidden = true;
@@ -12076,11 +12213,12 @@ function showTab(t){
   $("asideSimple").hidden = (t !== "simple");
   $("asideSingle").hidden = (t !== "single");
   $("asideSeries").hidden = (t !== "series");
-  $("main").classList.toggle("solo", t === "about");
+  $("main").classList.toggle("solo", t === "about" || t === "guide");
   refreshScenarioList(currentScenario[activeTool()] || "");
   if (t === "simple") renderBasic();
   else if (t === "single"){ if (lastRun) drawChart(lastRun, readInputs()); renderTools(); }
   else if (t === "series") renderSeries();
+  else if (t === "guide") gdShow();
   else if (t === "tools") showTool(toolSub);
   if (t !== "tools"){ setDocTitle(); gdCoachSync(); }
   try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
@@ -12089,8 +12227,14 @@ function showTab(t){
 const TABBTNS = Array.prototype.slice.call(
   document.querySelectorAll("nav[role=tablist] button"));
 TABBTNS.forEach((b, i) => {
-  b.addEventListener("click", () => {
+  b.addEventListener("click", e => {
     const t = b.getAttribute("data-tab");
+    // Calculator doesn't switch on its own; it opens the mode menu.
+    if (t === "calc"){
+      if ($("calcMenu").hidden) calcMenuOpen(e.detail === 0);
+      else calcMenuClose(false);
+      return;
+    }
     // Clicking Tools while a tool is open → return to picker
     if (t === "tools" && chartMode.tab === "tools" && toolSub !== "picker"){
       paneDir = "back";
@@ -12104,6 +12248,11 @@ TABBTNS.forEach((b, i) => {
      order for the whole rail rather than one per tab. showTab keeps the
      tabindex roving as the selection changes. */
   b.addEventListener("keydown", e => {
+    if (b === CALCBTN && (e.key === "ArrowDown" || e.key === "ArrowUp")){
+      e.preventDefault();
+      calcMenuOpen(true);
+      return;
+    }
     let j = -1;
     if (e.key === "ArrowRight") j = (i + 1) % TABBTNS.length;
     else if (e.key === "ArrowLeft") j = (i - 1 + TABBTNS.length) % TABBTNS.length;
@@ -12111,8 +12260,11 @@ TABBTNS.forEach((b, i) => {
     else if (e.key === "End") j = TABBTNS.length - 1;
     if (j < 0) return;
     e.preventDefault();
+    calcMenuClose(false);
     TABBTNS[j].focus();
-    TABBTNS[j].click();
+    // Arrowing onto Calculator only lands there; opening its menu on the way
+    // past would get in the way of reaching Tools.
+    if (TABBTNS[j] !== CALCBTN) TABBTNS[j].click();
   });
 });
 document.querySelectorAll(".toolcard[data-pick]").forEach(card => {
@@ -16905,7 +17057,9 @@ function applyState(o){
   if (o.ts && o.ts.d && TOOL_PATHS[o.ts.k]) linkToolData(o.ts.k, o.ts.d);
   toolSub = TOOL_PATHS[o.sub] ? o.sub : "picker";
   linkTab = (o.t === "single" || o.t === "series" || o.t === "about" ||
-             o.t === "tools" || o.t === "simple") ? o.t : "simple";
+             o.t === "tools" || o.t === "simple" || o.t === "guide") ? o.t : "simple";
+  // Links made while the guide was still a tool open it as its own tab.
+  if (o.t === "tools" && o.sub === "guide") linkTab = "guide";
   return true;
 }
 /* A shared link's copy of one tool's inputs, written into its fields. Only the
@@ -18269,7 +18423,8 @@ function writeStagesState(d){
   renderSeries();
 }
 $("btnReset").addEventListener("click", () => {
-  if (chartMode.tab === "about") return; // nothing to reset on the About tab
+  // nothing to reset on About; the guide has its own Start over
+  if (chartMode.tab === "about" || chartMode.tab === "guide") return;
   if (chartMode.tab === "compare"){ toast("Nothing to reset here"); return; }
   // the tool picker has no inputs of its own
   if (chartMode.tab === "tools" && toolSub === "picker") return;
@@ -20106,7 +20261,6 @@ function gdRender(focus){
     st.body() + "<div class='gd-foot'>" + foot + "</div>";
   initFields($("gdCard"));
   gdRenderSide();
-  gdCardSync();
   if (focus){
     const h = $("gdCard").querySelector(".gd-q");
     try { (h || $("gdCard")).focus({preventScroll:true}); } catch(e){}
@@ -20197,15 +20351,6 @@ function gdPrev(){
   gdSave();
   gdRender(true);
 }
-function gdCardSync(){
-  const el = $("gdCardProg");
-  if (!el) return;
-  const n = Object.keys(gd.done).length;
-  if (!n){ el.textContent = ""; return; }
-  const R = gdScore(), L = gdNumbered(), all = L.every(s => gd.done[s.id] || s.id === "results");
-  el.textContent = (all ? "Finished" : "In progress, " + L.filter(s => gd.done[s.id]).length + " of " + L.length + " steps") +
-    (R.score != null ? " · score " + R.score : "");
-}
 
 /* ---------- moving between the guide and the tools ---------- */
 function gdLoc(){
@@ -20217,7 +20362,7 @@ function gdLoc(){
 function gdNavTool(tool, dir){
   paneDir = dir || "fwd";
   if (tool === "basic") showTab("simple");
-  else if (tool === "single" || tool === "series") showTab(tool);
+  else if (tool === "single" || tool === "series" || tool === "guide") showTab(tool);
   else { toolSub = tool; showTab("tools"); }
   pushNav();
 }
@@ -20255,7 +20400,7 @@ function gdEndTrip(){
   gd.trip = null;
   gdSave();
   gdCoachSync();
-  toast("Guide closed. It's saved under Tools whenever you want to pick it back up.");
+  toast("Guide closed. It's saved under the Guide tab whenever you want to pick it back up.");
 }
 
 /* ---------- the coach ---------- */
@@ -20277,7 +20422,7 @@ function gdRerenderTool(tool){
 function gdCoachSync(){
   const el = $("gdCoach");
   const t = gd.trip, T = t && GD_TRIPS[t.id];
-  const onGuide = chartMode.tab === "tools" && toolSub === "guide";
+  const onGuide = chartMode.tab === "guide";
   // A reload mid-trip clears what the tool held, so the page opening on
   // that tool gets the guide's numbers put back in.
   if (!gdBooted){
@@ -20392,7 +20537,7 @@ $("tab-guide").addEventListener("click", e => {
   if (el.hasAttribute("data-nav")){
     const n = el.getAttribute("data-nav");
     paneDir = "fwd";
-    if (n === "single" || n === "series") showTab(n); else { toolSub = n; showTab("tools"); }
+    if (n === "single" || n === "series" || n === "guide") showTab(n); else { toolSub = n; showTab("tools"); }
     pushNav();
     return;
   }
@@ -20441,7 +20586,6 @@ $("tab-guide").addEventListener("keydown", e => {
   if (b && !b.disabled){ e.preventDefault(); b.click(); }
 });
 if (!Object.keys(gd.a).length) gdSeedFromHousehold();
-gdCardSync();
 
 let fromLink = false;
 if (location.hash && location.hash.indexOf("#p=") === 0){
