@@ -1023,7 +1023,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   /* The three headline numbers. This is the only oversized text on the page
      on purpose — everything else is reference detail underneath it. */
   .sh-big{display:flex;gap:10px;margin-bottom:10px}
-  .sh-big div{flex:1;border:1px solid #ccc;border-radius:5px;padding:7px 9px}
+  .sh-big > div{flex:1;border:1px solid #ccc;border-radius:5px;padding:7px 9px}
   .sh-big .k{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#666;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sh-big .v{font-family:var(--mono);font-size:15.5px;font-weight:700;margin-top:2px;
@@ -1065,6 +1065,17 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   .sh-table td{font-family:var(--mono);font-size:8px;text-align:right;
     padding:1.5px 5px;border-bottom:1px solid #eee;white-space:nowrap}
   .sh-table tr:nth-child(even) td{background:#fafafa}
+
+  /* The guide's plan: its chart in print ink, and the to-do list. */
+  #sheet .gd-chart .grid{stroke:#e2e5e3} #sheet .gd-chart .ax{fill:#666e73}
+  #sheet .gd-chart .mark{stroke:#bbb} #sheet .gd-chart .ln.p{stroke:#16855c}
+  #sheet .gd-chart .band.p{fill:#16855c;fill-opacity:.12}
+  #sheet .gd-chart .dot{stroke:#fff} #sheet .gd-chart .dot.p{fill:#16855c}
+  #sheet .gd-chart .lab{fill:#333;stroke:#fff;font-size:12px} #sheet .gd-chart .xh{display:none}
+  .sh-moves{margin-bottom:10px}
+  .sh-moves ol{margin:0;padding-left:16px}
+  .sh-moves li{font-size:9px;line-height:1.4;margin:0 0 4px;color:#333}
+  .sh-moves li b{color:#111}
 
   /* Footer disclaimer: present, legible, and unmistakably the least important
      text on the page. */
@@ -1997,6 +2008,8 @@ html[data-theme="light"] .gd-opt:hover{border-color:#9fc4b4}
 .gd-apply .btn.primary{padding:10px 20px;font-size:13.5px}
 .gd-apply .hint{margin:0}
 .gd-callout .btn.mini + .btn.mini{margin-left:6px}
+.gd-share{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:4px 0 18px}
+.gd-share .hint{margin:0;flex:1 1 220px}
 
 /* The plan chart */
 .gd-chfig{margin:6px 0 14px;max-width:760px}
@@ -12420,6 +12433,7 @@ function acSheetRows(a, total){
     row("Brokerage balance", money(a.brokBal));
 }
 function buildSheet(){
+  if (!$("tab-guide").hidden) return gdGuideSheet();
   if (!$("tab-tax").hidden) return buildTaxSheet();
   if (!$("tab-mortgage").hidden) return buildMortSheet();
   if (!$("tab-budget").hidden) return buildBudgetSheet();
@@ -18308,6 +18322,15 @@ function copyCard(){
 }
 
 $("btnShareMenu").addEventListener("click", async () => {
+  if (chartMode.tab === "guide"){
+    const c = await showPopup("Share your plan", [
+      {label:"Copy link", desc:"Opens your answers and plan in the guide"},
+      {label:"Print or save as PDF", desc:"Your score, plan and next moves on one page"}
+    ]);
+    if (c === 0) gdSharePlan();
+    else if (c === 1) gdPrintPlan();
+    return;
+  }
   const choice = await showPopup("Share", [
     {label:"Copy link", desc:"Copy a shareable URL with all your inputs"},
     {label:"Summary", desc:"One-page printable overview (Save as PDF)"},
@@ -19085,6 +19108,11 @@ function gdTarget(){ const t = gd.a.target; return t === .95 || t === 1 ? t : .9
 /* Stock share of the portfolio in retirement: 60% unless changed in the
    Drawdown Simulator and brought back. */
 function gdRetMix(){ const m = gd.a.retMix; return gdOk(m) && m >= 0 && m <= 100 ? m : 60; }
+/* The least the household could live on in a bad stretch, in today's
+   dollars: a hard floor for the flexible withdrawal strategies, the same
+   Minimum spending the Drawdown Simulator has. The fixed approach never
+   cuts, so it doesn't apply there. */
+function gdMinSpend(){ const m = gd.a.minSpend; return gdPos(m) ? m : 0; }
 
 /* When Social Security starts. The age chosen on the Spending in retirement
    step, or by default 67 (full retirement age), or retirement if that's
@@ -19169,7 +19197,7 @@ function gdDDOpts(S, strategy){
   const rate = S.spend / Math.max(1, S.fv) * 100;
   return {initial:S.fv, years:S.years, stockPct:S.mix, stockPctEnd:null, fee:0,
     strategy:strategy || "fixed", initialPct:rate, guardBand:20, adjustPct:10,
-    floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:rate, spendFloor:0, spendCeil:0,
+    floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:rate, spendFloor:gdMinSpend(), spendCeil:0,
     vpwRate:(S.mix * 5 + (100 - S.mix) * 1.9) / 100, vpwFV:0,
     ssAnnual:S.ss.a1, ssDelayYears:S.ss.delay, ssAnnual2:S.ss.a2, ssDelayYears2:S.ss.delay,
     legacyGoal:0, retireAge:S.retire, fromYear:HIST_START, incomeItems:S.inc, expenseItems:[]};
@@ -19335,7 +19363,7 @@ function gdOptions(){
   const S = gdSim();
   if (!S) return null;
   const a = gd.a, goal = gdTarget();
-  const key = [JSON.stringify(a), goal].join("|");
+  const key = [JSON.stringify(a), goal, JSON.stringify(gdLevers)].join("|");
   if (gdOptCache.key === key) return gdOptCache.val;
   const ok = T => !!T && T.success >= goal - 1e-9;
   const emp = a.employer || 0, mine = a.contrib || 0, age = Math.round(a.age), ret = Math.round(S.retire);
@@ -19392,22 +19420,58 @@ function gdOptions(){
     for (let i = 0; i < 18; i++){ const m = (lo + hs) / 2; if (ok(gdSim({spend:Math.max(1, m)}))) lo = m; else hs = m; }
     const v = Math.floor(lo / 500) * 500;
     if (v > 0) add("less-spend", {retSpend:v});
-    // A mix: retire about halfway to the later age, and save the difference.
-    const mid = later != null ? Math.round((ret + later) / 2) : Math.min(75, ret + 3);
-    if (mid > ret && mid < (later != null ? later : 76)){
-      const base = gdSim({retire:mid});
-      if (base && !ok(base)){
-        let lo2 = 0, hi2 = Math.max(1000, S.monthly * 3 + 3000);
-        if (ok(gdSim({retire:mid, monthly:S.monthly + hi2}))){
-          for (let i = 0; i < 18; i++){ const m = (lo2 + hi2) / 2; if (ok(gdSim({retire:mid, monthly:S.monthly + m}))) hi2 = m; else lo2 = m; }
-          add("mix", {retire:mid, contrib:mine + Math.ceil(hi2 / 25) * 25});
-        }
-      }
-    }
   }
+  gdBalance(S, ahead, list, ok, add);
   const val = {S, goal, ahead, list};
   gdOptCache.key = key; gdOptCache.val = val;
   return val;
+}
+/* Balance several changes: every lever the person allows moves the same
+   share of the way to its own single-lever answer, and that share is solved
+   for. Behind, it's the smallest share that reaches the target, so no one
+   change has to be big; ahead, the largest share the plan can afford, so the
+   surplus is spread across retiring sooner, saving less and spending more. */
+let gdLevers = {retire:true, save:true, spend:true};
+function gdBalance(S, ahead, list, ok, add){
+  const a = gd.a, mine = a.contrib || 0, ret = Math.round(S.retire), age = Math.round(a.age);
+  const find = id => list.find(o => o.id === id);
+  const d = {};
+  if (ahead){
+    const e = find("earlier"), l = find("less"), c = find("coast"), m = find("more");
+    if (gdLevers.retire && e) d.retire = ret - e.set.retire;
+    if (gdLevers.save && mine > 0) d.save = l ? mine - l.set.contrib : c && c.set.stopAge <= age ? mine : 0;
+    if (gdLevers.spend && m) d.spend = m.set.retSpend - S.spend;
+  } else {
+    const x = find("extra"), l = find("later"), s2 = find("less-spend");
+    if (gdLevers.retire) d.retire = (l ? l.set.retire : Math.min(75, ret + 10)) - ret;
+    if (gdLevers.save) d.save = x ? x.set.contrib - mine : Math.max(1000, S.monthly * 3 + 3000);
+    if (gdLevers.spend) d.spend = S.spend - (s2 ? s2.set.retSpend : S.spend * .6);
+  }
+  const keys = Object.keys(d).filter(k => d[k] > 0);
+  if (keys.length < 2) return;
+  const sign = ahead ? -1 : 1;
+  const setAt = f => {
+    const set = {};
+    if (d.retire) set.retire = ret + sign * (ahead ? Math.floor(f * d.retire) : Math.ceil(f * d.retire));
+    if (d.save) set.contrib = Math.max(0, mine + sign * (ahead ? Math.floor(f * d.save / 25) : Math.ceil(f * d.save / 25)) * 25);
+    if (d.spend) set.retSpend = Math.floor((S.spend - sign * f * d.spend) / 500) * 500;
+    Object.keys(set).forEach(k => { if ((k === "retire" && set[k] === ret) || (k === "contrib" && set[k] === mine) || (k === "retSpend" && set[k] === S.spend)) delete set[k]; });
+    return set;
+  };
+  const pass = f => ok(gdSim(gdOverFrom(setAt(f))));
+  let lo = 0, hi = 1;
+  if (ahead){
+    if (!pass(lo)) return;
+    if (pass(1)) lo = 1;
+    else for (let i = 0; i < 16; i++){ const m = (lo + hi) / 2; if (pass(m)) lo = m; else hi = m; }
+    const set = setAt(lo);
+    if (Object.keys(set).length >= 2) add("balance", set);
+  } else {
+    if (!pass(1)) return;
+    for (let i = 0; i < 16; i++){ const m = (lo + hi) / 2; if (pass(m)) hi = m; else lo = m; }
+    const set = setAt(hi);
+    if (Object.keys(set).length >= 2) add("balance", set);
+  }
 }
 /* The cheapest ways to close a gap, for the plan's to-do list. */
 function gdFixes(){
@@ -19700,6 +19764,31 @@ const GD_LIVE = {
     }
     if (!ss.own) s += " The program's trust fund is projected to run short in the 2030s; for a cautious plan, enter a lower figure below.";
     return s + "</div>";
+  },
+  minNote(){
+    const a = gd.a, S = gdSim(), m = gdMinSpend();
+    if (!m || !S) return "";
+    if (m >= S.spend) return "<div class='gd-callout warn'>That's at or above the " + money(S.spend) + " a year you plan to spend, so no approach can flex: they'd all behave like the fixed one.</div>";
+    const base = S.ss.total + S.pension;
+    return "<div class='gd-callout'>" + pctStr(m / S.spend, 0) + " of your planned spending. " +
+      (base >= m ? "Social Security" + (S.pension ? " and your pension" : "") + " cover it on their own once they start, so the floor mostly matters in the years before."
+        : (S.pension ? "Social Security and your pension cover " : "Social Security covers ") + money(base) + " of it; the other " + money(m - base) + " a year has to come from savings even in the worst markets.") + "</div>";
+  },
+  stratTable(){ return gdStratTableHTML(); },
+  stratPick(){ return gdStratPickHTML(); },
+  inflNote(){
+    const m = gdSaveMo();
+    return "<p class='hint' style='margin:-2px 0 16px;max-width:60ch'>Every projection in this guide raises both amounts with inflation each year, so they stay the same in today's dollars. " +
+      "At the " + pctStr(BASIC_INFL, 2) + " inflation it assumes, next year's " + (m > 0 ? money(m) + "/mo becomes about " + money(m * (1 + BASIC_INFL)) + "/mo" : "contribution rises " + pctStr(BASIC_INFL, 2) + " too") +
+      ". The Basic calculator works the same way.</p>";
+  },
+  taxNote(){
+    const a = gd.a;
+    return "<div class='gd-callout'><b>This is spending before income tax.</b> Withdrawals from a traditional 401(k) or IRA, a pension and part of Social Security are taxable, so the plan needs a little more than this to cover the tax. " +
+      (gdPos(a.retTax) ? "Your estimate from Income Tax was about <b>" + money(a.retTax) + " a year</b>" + (a.retTaxAdded ? ", and it's been added." : ".") + " " : "") +
+      "The Income Tax tool's <b>Retirement income</b> mode estimates it." +
+      "<div style='margin-top:8px'><button type='button' class='btn mini' data-trip='taxret' data-from='retspend'>" + (gdPos(a.retTax) ? "Estimate it again" : "Estimate my tax in retirement") + " ›</button>" +
+      (gdPos(a.retTax) && !a.retTaxAdded && gdPos(a.retSpend) ? " <button type='button' class='btn mini' data-gd='addtax'>Add " + money(a.retTax) + " a year to my spending</button>" : "") + "</div></div>";
   },
   pensionNote(){
     const a = gd.a;
@@ -20042,7 +20131,7 @@ const GD_TRIPS = {
       const d = {initial: Math.round(S.fv), years: S.years, strategy: st, stock: S.mix, stockEnd:"", fee:0,
         rate: Math.max(0.01, Math.round(o.initialPct * 100) / 100), retireAge: String(Math.round(S.retire)),
         guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate: Math.round(o.initialPct * 100) / 100,
-        vpwRate: Math.round(o.vpwRate * 100) / 100, vpwFV:0, spendFloor:0, spendCeil:0, legacyGoal:0};
+        vpwRate: Math.round(o.vpwRate * 100) / 100, vpwFV:0, spendFloor:gdMinSpend(), spendCeil:0, legacyGoal:0};
       // The simulator's own estimate assumes a full career and no spousal
       // top-up, so it's only used when the guide's figure is the same; then
       // its claiming-age comparison works too. Otherwise the guide's own
@@ -20062,7 +20151,7 @@ const GD_TRIPS = {
       d.incomeItems = keep.concat(S.inc.map(x => Object.assign({}, x, {name:"Pension (from the guide)"})));
       writeDDState(d);
       if (typeof renderItemLists === "function") renderItemLists();
-      gd.trip.base = {strategy:st, stock:S.mix, claim:S.ss.claim, est};
+      gd.trip.base = {strategy:st, stock:S.mix, claim:S.ss.claim, est, floor:gdMinSpend()};
       gd.trip.seen = {}; gd.trip.seen[st] = 1;
       gd.trip.page = 0;
     },
@@ -20098,7 +20187,8 @@ const GD_TRIPS = {
           row("yale", "<b>Yale Endowment</b>: blends last year's spending with a share of today's balance."),
           row("pct", "<b>Fixed %</b>: can't run out, but look at <b>Lowest year's spending</b> in the table."),
           row("vpw", "<b>VPW</b>: spends down on purpose, like an annuity, ending near zero."),
-          {h:"For flexible strategies, <b>Minimum spending</b> sets a line spending never drops below. <b>How the strategies compare</b>, under the picker, explains them side by side."}
+          {h:"For flexible strategies, <b>Minimum spending</b> sets a line spending never drops below" + (gdMinSpend() ? ": yours, " + money(gdMinSpend()) + ", is filled in. Try raising or lowering it and watch the success rate." : ". Try the least you could live on and watch the success rate.") +
+            " <b>How the strategies compare</b>, under the picker, explains them side by side.", ok: gd.trip && gd.trip.base && num("ddSpendFloor") !== gd.trip.base.floor ? true : undefined}
         ];
       }},
       {title:"Your stock mix", focus:"#ddStock", tasks(){
@@ -20144,7 +20234,10 @@ const GD_TRIPS = {
       const t = $("ddSuccess").textContent.trim(), sel = $("ddStrategy"), a = gd.a, b = gd.trip && gd.trip.base;
       if (!t || t === "—" || !b) return null;
       a.ddTool = {rate:t, strat:sel.value};
-      const ch = [], undo = {strategy:a.strategy == null ? null : a.strategy, retMix:a.retMix == null ? null : a.retMix, ssClaim:a.ssClaim == null ? null : a.ssClaim};
+      const ch = [], undo = {strategy:a.strategy == null ? null : a.strategy, retMix:a.retMix == null ? null : a.retMix, ssClaim:a.ssClaim == null ? null : a.ssClaim,
+        minSpend:a.minSpend == null ? null : a.minSpend};
+      const fl = Math.round(num("ddSpendFloor"));
+      if (fl !== Math.round(b.floor || 0)){ a.minSpend = fl > 0 ? fl : null; ch.push(fl > 0 ? "a minimum of <b>" + money(fl) + " a year</b>" : "no minimum spending"); }
       if (sel.value !== b.strategy){ a.strategy = sel.value; ch.push("the <b>" + escapeHtml(gdStratName(sel.value)) + "</b> approach"); }
       const mix = Math.round(num("ddStock"));
       if (mix !== b.stock && mix >= 0 && mix <= 100){ a.retMix = mix; ch.push("<b>" + mix + "%</b> in stocks in retirement"); }
@@ -20157,6 +20250,36 @@ const GD_TRIPS = {
       gdHouseholdSync();
       return {msg: head + " Your plan now uses " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") + "." +
         (a.retMix != null && mix !== b.stock ? " Your score's historical test uses the new mix." : ""), undo};
+    }},
+
+  taxret: {tool:"tax", name:"Income Tax", mins:3, title:"Estimate your tax in retirement",
+    prefill(){
+      const a = gd.a, S = gdSim();
+      const ss = S ? Math.round(S.ss.total) : 0, pen = S ? Math.round(S.pension) : 0;
+      const need = gdPos(a.retSpend) ? Math.max(0, Math.round(a.retSpend - ss - pen)) : 0;
+      const old = S ? (S.retire >= 65 ? (gdMar() ? 2 : 1) : 0) : 0;
+      writeTaxState({mode:"retire", status: gdMar() ? "m" : "s", state: a.state || $("txState").value,
+        trad:need, roth:0, brok:0, gainPct:50, ss, pension:pen, other:0, seniors:old, pre:0, dedType:"std", item:0});
+      gd.trip.base = {need};
+    },
+    tasks(){
+      const b = gd.trip && gd.trip.base;
+      return [
+        {h:"We switched to <b>Retirement income</b> and filled in a first year of retirement: " + (b ? money(b.need) + " from savings" : "your withdrawals") + " under <b>Traditional</b>, plus your Social Security" + (gdPos(gd.a.pension) ? " and pension" : "") + "."},
+        {h:"If some of your savings are in a Roth or a taxable brokerage account, move that share of the withdrawal to <b>Roth</b> or <b>Brokerage</b>. Roth withdrawals are tax-free, and brokerage sales are taxed only on the gain."},
+        {h:"Check <b>Filing status</b>, <b>State</b> and how many of you are 65 or older."},
+        {h:"<b>Total tax</b> is the yearly bill. Tap <b>Back to guide</b> and it comes with you, ready to add to your spending."}
+      ];
+    },
+    chip(){
+      const R = runTax(readTax());
+      return R.gross > 0 ? "Tax in retirement<br><b>" + money(R.total) + "/yr</b>" : "";
+    },
+    capture(){
+      const R = runTax(readTax());
+      if (txMode !== "retire" || !(R.gross > 0)) return null;
+      gd.a.retTax = Math.round(R.total / 100) * 100; gd.a.retTaxAdded = false;
+      return "From Income Tax: about <b>" + money(gd.a.retTax) + " a year</b> in tax on that retirement income, " + pctStr(R.total / R.gross, 1) + " of it. Add it to your spending below so the plan covers it.";
     }},
 
   healthcare: {tool:"healthcare", name:"Healthcare Cost Planner", mins:4, title:"Price healthcare before Medicare",
@@ -20577,6 +20700,7 @@ const GD_STEPS = [
         gdMoneyF("contrib", "You contribute", {per:"/mo", hint: gdPos(a.bgSave) ? "Your budget shows " + money(a.bgSave) + "/mo going to savings." : "From your paycheck and on your own."}) +
         gdMoneyF("employer", "Your employer adds", {per:"/mo", hint:"Matching or profit sharing. 0 if none."}) +
         "</div>" +
+        gdLive("inflNote") +
         "<div class='gd-h3'>Does your employer match what you put in?</div><div class='gd-choices two'>" +
         gdChoice("match", "full", "Yes, and I get all of it") + gdChoice("match", "partial", "Yes, but I'm not getting all of it") +
         gdChoice("match", "none", "No match, or I'm self-employed") + gdChoice("match", "unsure", "Not sure") + "</div>" +
@@ -20604,6 +20728,7 @@ const GD_STEPS = [
         (picks.length ? "<div class='gd-picks'>" + picks.map(p => "<button type='button' class='gd-pick' data-fill='retSpend' data-v='" + Math.round(p[1] / 100) * 100 + "'>" +
           p[0] + ": <b>" + money(Math.round(p[1] / 100) * 100) + "/yr</b></button>").join("") + "</div>" : "") +
         "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, before income tax."}) + "</div>" +
+        gdBack("retspend") + gdLive("taxNote") +
         gdLive("ssNote") +
         "<div class='gd-fields'>" + gdMoneyF("ssOwn", "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:true,
           ph:"optional", hint:"From ssa.gov/myaccount, at 67" + (gdMar() ? ", both of you added together" : "") + ". It reflects your real earnings, so it beats our estimate."}) +
@@ -20742,7 +20867,14 @@ function gdOptTitle(o, S){
     case "extra": return {t:"Save " + money(v.contrib - a.contrib) + "/mo more", d:money(v.contrib + emp) + "/mo in all"};
     case "later": return {t:"Retire at " + v.retire, d:(v.retire - ret) + (v.retire - ret === 1 ? " year" : " years") + " later"};
     case "less-spend": return {t:"Spend " + money(v.retSpend) + " a year", d:money(a.retSpend - v.retSpend) + " a year less in retirement"};
-    case "mix": return {t:"Retire at " + v.retire + ", save " + money(v.contrib - a.contrib) + "/mo more", d:"A smaller change to each"};
+    case "balance": {
+      const bits = [];
+      if ("retire" in v) bits.push("retire at " + v.retire);
+      if ("contrib" in v) bits.push(v.contrib > a.contrib ? "save " + money(v.contrib - a.contrib) + "/mo more" : v.contrib === 0 && !emp ? "stop saving" : "save " + money(a.contrib - v.contrib) + "/mo less");
+      if ("retSpend" in v) bits.push(v.retSpend < a.retSpend ? "spend " + money(a.retSpend - v.retSpend) + " less" : "spend " + money(v.retSpend - a.retSpend) + " more");
+      const t = bits.join(", ");
+      return {t:t.charAt(0).toUpperCase() + t.slice(1), d:S.success >= gdTarget() - 1e-9 ? "A bit of each, as much as the plan can afford" : "A smaller change to each, found for you"};
+    }
     case "custom": return {t:"Try your own numbers", d:"Any retirement age, saving, stop age and spending"};
   }
   return {t:"", d:""};
@@ -20835,6 +20967,11 @@ function gdOptCards(){
   };
   const custom = gdCurOpt() && gdSel === "custom" ? gdCurOpt() : {id:"custom", set:{}, T:null};
   let s = "<div class='gd-opts'>" + O.list.map(o => card(o)).join("") + card(custom) + "</div>";
+  if (gdSel === "balance"){
+    s += "<div class='gd-target gd-levers'><span>Balance across</span>" + [["retire", "Retirement age"], ["save", "Monthly saving"], ["spend", "Retirement spending"]].map(x =>
+      "<button type='button' class='gd-pick" + (gdLevers[x[0]] ? " on" : "") + "' data-lever='" + x[0] + "' aria-pressed='" + !!gdLevers[x[0]] + "'>" + x[1] + "</button>").join("") +
+      "<span class='hint'>Pick at least two.</span></div>";
+  }
   if (gdSel === "custom"){
     const d = gdDraft;
     const f = (k, label, affix, money_, hint) => "<div class='field'><label for='gdd-" + k + "'>" + label + "</label><div class='inputwrap'>" +
@@ -20842,7 +20979,8 @@ function gdOptCards(){
       "data-nonneg data-d='" + k + "' value='" + (gdOk(d[k]) ? (money_ ? gdM(d[k]) : String(d[k])) : "") + "'" + (k === "stopAge" ? " placeholder='at retirement'" : "") + ">" +
       (affix ? "<span class='affix'>" + affix + "</span>" : "") + "</div>" + (hint ? "<div class='hint'>" + hint + "</div>" : "") + "</div>";
     s += "<div class='gd-fields gd-draft'>" + f("retire", "Retire at", "age") + f("contrib", "You contribute", "/mo", true, (a.employer ? "Plus your employer's " + money(a.employer) + "/mo." : "")) +
-      f("stopAge", "Stop contributing at", "age", false, "Blank means until you retire.") + f("retSpend", "Spending in retirement", "/yr", true) + "</div>";
+      f("stopAge", "Stop contributing at", "age", false, "Blank means until you retire.") + f("retSpend", "Spending in retirement", "/yr", true) +
+      "<p class='hint full' style='margin:0 0 10px'>Contributions rise with inflation each year, so they stay the same in today's dollars.</p></div>";
   }
   return s;
 }
@@ -20924,7 +21062,9 @@ function gdRunSpend(run){
   });
 }
 function gdStrats(S){
-  if (S.strats) return S.strats;
+  const fl = gdMinSpend();
+  if (S.strats && S.stratsFloor === fl) return S.strats;
+  S.stratsFloor = fl;
   const med = arr => { const x = arr.slice().sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : 0; };
   S.strats = GD_STRATS.map(st => {
     if (!S.H) return {st, H:null};
@@ -20941,40 +21081,63 @@ function gdStrats(S){
         if (v < lean - 1 || (Math.abs(v - lean) <= 1 && age < leanAge)){ lean = Math.min(lean, v); leanYear = run.startYear; leanAge = age; }
       });
     });
+    // A minimum makes every flexible approach able to run dry: holding
+    // spending up in a bad market is exactly what drains it.
     return {st, H, success:H.successRate, typical:med(typ), lean, leanYear, leanAge, end:H.medianEnd,
-      canFail: st.id !== "pct" && st.id !== "vpw"};
+      canFail: fl > 0 || (st.id !== "pct" && st.id !== "vpw")};
   });
   return S.strats;
+}
+function gdStratTableHTML(){
+  const a = gd.a, S = gdSim();
+  if (!S || !S.H) return "";
+  const R = gdStrats(S), cur = a.strategy || "fixed", fl = gdMinSpend();
+  return "<div class='gd-strat'><div class='gd-strat-h' aria-hidden='true'><span>Approach</span><span>Lasted</span><span>Typical year</span><span>Leanest year</span></div>" +
+    R.map(r => "<div class='gd-strat-r" + (r.st.id === cur ? " on" : "") + "'><div class='nm'><b>" + r.st.name + "</b><span>" + r.st.d + "</span></div>" +
+      "<div class='c'><i>Lasted</i>" + (r.canFail ? pctStr(r.success, 0) : "Can't run out") + "</div>" +
+      "<div class='c'><i>Typical year</i>" + money(r.typical) + "</div>" +
+      "<div class='c'><i>Leanest year</i>" + money(r.lean) + (r.lean >= S.spend * .995 ? "<small>never below your plan</small>" : r.leanYear ? "<small>retiring in " + r.leanYear + ", at " + r.leanAge + "</small>" : "") + "</div></div>").join("") + "</div>" +
+    "<p class='hint' style='margin:-6px 0 14px'>Spending in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone." +
+    (fl ? " Flexible approaches never go below your " + money(fl) + " minimum while money remains, so each can now run out; <b>Lasted</b> counts how often it held." : "") + "</p>";
+}
+function gdStratPickHTML(){
+  const a = gd.a, S = gdSim();
+  if (!S || !S.H || !a.strategy) return "";
+  const R = gdStrats(S), cur = a.strategy, r = R.find(q => q.st.id === cur), fl = gdMinSpend();
+  if (!r) return "";
+  const cut = r.lean < S.spend - 1 ? Math.round((1 - r.lean / S.spend) * 100) : 0;
+  let t = "";
+  if (cur === "fixed") t = r.success >= .995 ? "You'd never cut back, and it lasted in every retirement on record. Simple, and it held up."
+    : "You'd never cut back, but retiring in " + gdYears(r.H.failYears) + " the money ran out, leaving " + money(r.lean) + " a year from Social Security" + (S.pension ? " and your pension" : "") + ". Being willing to trim in a bad stretch is what the other approaches add.";
+  else t = "In a typical retirement you'd have spent about " + money(r.typical) + " a year. " +
+    (cut ? "The hardest case was retiring in " + r.leanYear + ": at " + r.leanAge + " spending would have been " + money(r.lean) + ", " + cut + "% under your plan." : "Spending never had to drop below your plan.") +
+    (r.canFail ? " It lasted in " + pctStr(r.success, 0) + " of retirements, against " + pctStr(S.success, 0) + " spending a fixed amount." : " It can't run out, because spending follows the balance down.") +
+    (fl ? (r.success < gdTarget() - 1e-9 ? " Your " + money(fl) + " minimum is what costs it here: holding spending up through a bad market drains the portfolio, so a lower minimum, or a bigger cushion, buys safety."
+      : " Your " + money(fl) + " minimum held in " + pctStr(r.success, 0) + " of retirements, enough for your target.")
+      : " Ask yourself whether you could live on the lean year; if not, set a minimum above and see what it costs.");
+  return "<div class='gd-callout " + (r.success < .9 && r.canFail ? "warn" : "ok") + "'>" + t + "</div>";
 }
 function gdStratHTML(){
   const a = gd.a, S = gdSim();
   let s = "<h2 class='gd-q' tabindex='-1'>How will you spend it down?</h2>";
   if (!S || !S.H) return s + "<div class='gd-callout warn'>This needs a projection first: your age, savings and retirement spending.</div>" +
     "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
-  const R = gdStrats(S), cur = a.strategy || "fixed";
   s += "<p class='gd-lead'>So far your plan spends the same amount every year, raised with inflation, whatever markets do. It's the simplest approach and the most cautious test. " +
     "Most retirees flex a little instead. Here's how six common approaches would have handled your plan (" + money(S.fv) + " at " + fmtNum(S.retire) + ", aiming to spend " + money(S.spend) +
     " a year) in every retirement since " + S.H.first + ".</p>" + gdBack("strategy");
-  s += "<div class='gd-strat'><div class='gd-strat-h' aria-hidden='true'><span>Approach</span><span>Lasted</span><span>Typical year</span><span>Leanest year</span></div>" +
-    R.map(r => "<div class='gd-strat-r" + (r.st.id === cur ? " on" : "") + "'><div class='nm'><b>" + r.st.name + "</b><span>" + r.st.d + "</span></div>" +
-      "<div class='c'><i>Lasted</i>" + (r.canFail ? pctStr(r.success, 0) : "Can't run out") + "</div>" +
-      "<div class='c'><i>Typical year</i>" + money(r.typical) + "</div>" +
-      "<div class='c'><i>Leanest year</i>" + money(r.lean) + (r.lean >= S.spend * .995 ? "<small>never below your plan</small>" : r.leanYear ? "<small>retiring in " + r.leanYear + ", at " + r.leanAge + "</small>" : "") + "</div></div>").join("") + "</div>" +
-    "<p class='hint' style='margin:-6px 0 14px'>Spending in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone.</p>";
+  // The floor under the flexible approaches, before the comparison it changes.
+  const base = S.ss.total + S.pension, picks = [];
+  if (base > 0 && base < S.spend) picks.push(["Social Security" + (S.pension ? " and pension" : "") + " alone", base]);
+  picks.push(["80% of your plan", S.spend * .8]);
+  if (gdPos(a.spend)) picks.push(["Today's spending, less 20%", a.spend * 12 * .8]);
+  s += "<div class='gd-h3'>What's the least you could live on?</div>" +
+    "<p class='hint' style='margin:-4px 0 10px;max-width:64ch'>Flexible approaches cut spending in bad markets, and some cut deep. A minimum stops them going lower: housing, food, insurance, utilities and the other essentials, in today's dollars. Leave it blank for no minimum.</p>" +
+    "<div class='gd-picks'>" + picks.filter(p => p[1] < S.spend).map(p => "<button type='button' class='gd-pick' data-fill='minSpend' data-v='" + Math.round(p[1] / 500) * 500 + "'>" +
+      p[0] + ": <b>" + money(Math.round(p[1] / 500) * 500) + "/yr</b></button>").join("") + "</div>" +
+    "<div class='gd-fields'>" + gdMoneyF("minSpend", "Minimum yearly spending", {per:"/yr", ph:"no minimum", full:true}) + "</div>" + gdLive("minNote");
+  s += gdLive("stratTable");
   s += "<div class='gd-h3'>Which would you follow?</div><div class='gd-choices two'>" +
-    GD_STRATS.map(x => gdChoice("strategy", x.id, x.name)).join("") + "</div>";
-  const r = R.find(q => q.st.id === cur);
-  if (r && a.strategy){
-    const cut = r.lean < S.spend - 1 ? Math.round((1 - r.lean / S.spend) * 100) : 0;
-    let t = "";
-    if (cur === "fixed") t = r.success >= .995 ? "You'd never cut back, and it lasted in every retirement on record. Simple, and it held up."
-      : "You'd never cut back, but retiring in " + gdYears(r.H.failYears) + " the money ran out, leaving " + money(r.lean) + " a year from Social Security" + (S.pension ? " and your pension" : "") + ". Being willing to trim in a bad stretch is what the other approaches add.";
-    else t = "In a typical retirement you'd have spent about " + money(r.typical) + " a year. " +
-      (cut ? "The hardest case was retiring in " + r.leanYear + ": at " + r.leanAge + " spending would have been " + money(r.lean) + ", " + cut + "% under your plan." : "Spending never had to drop below your plan.") +
-      (r.canFail ? " It lasted in " + pctStr(r.success, 0) + " of retirements, against " + pctStr(S.success, 0) + " spending a fixed amount." : " It can't run out, because spending follows the balance down.") +
-      " Ask yourself whether you could live on the lean year; if not, a steadier approach or a larger cushion suits you better.";
-    s += "<div class='gd-callout " + (cur === "fixed" && r.success < .9 ? "warn" : "ok") + "'>" + t + "</div>";
-  }
+    GD_STRATS.map(x => gdChoice("strategy", x.id, x.name)).join("") + "</div>" + gdLive("stratPick");
   s += "<div class='gd-callout'>Your score keeps testing the fixed approach, the cautious case. A flexible approach only adds safety if you'd really cut back when it says to.</div>";
   s += gdTask("drawdown", "Walk through the Drawdown Simulator", {label:"Start the tour", after:"<div style='margin-top:10px' class='hint'>Optional. Seven short parts: your result, a bad start, strategies, your mix, Social Security timing, life events and stress tests. Anything you change there can come back into your plan.</div>"});
   return s;
@@ -21075,6 +21238,7 @@ function gdResultsHTML(){
     prow("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
     if (S.pension) prow("Pension", money(S.pension / 12) + "/mo");
     prow("Withdrawal approach", gdStratName(a.strategy || "fixed"));
+    if (gdMinSpend()) prow("Minimum spending", money(gdMinSpend()) + " a year");
     prow("Lasted, spending a fixed amount", pctStr(S.success, 0) + " of historical retirements");
     s += "<div class='gd-h3'>Your plan</div><div class='gd-kvs'>" + pv.join("") + "</div>" +
       "<button type='button' class='btn mini' data-go='tune' style='margin:-2px 0 16px'>Adjust your plan</button>";
@@ -21092,12 +21256,16 @@ function gdResultsHTML(){
   if (S){ row("Projected at " + fmtNum(S.retire), money(S.fv)); const w = gdNeed(S); if (w > 0) row("Needed at " + fmtNum(S.retire), money(w)); }
   if (a.fiAge) row(escapeHtml(a.fiLabel || "FIRE age"), escapeHtml(a.fiAge));
   if (kv.length) s += "<div class='gd-h3'>Your numbers</div><div class='gd-kvs'>" + kv.join("") + "</div>";
+  s += "<div class='gd-share'><button type='button' class='btn' data-gd='print'>Print or save as PDF</button>" +
+    "<button type='button' class='btn' data-gd='share'>Copy a link to this plan</button>" +
+    "<span class='hint'>The link carries your answers, so share it only with people you'd show your finances to.</span></div>";
   s += "<div class='gd-h3'>Ready for more detail?</div>" +
     "<p class='hint' style='margin:-4px 0 10px'>Advanced, Stages and Portfolio Backtest open with your numbers and the guide panel beside them, walking you through what's there.</p><div class='gd-more'>" +
     "<button type='button' class='btn mini' data-trip='advanced' data-from='results'>Advanced: taxes and account types ›</button>" +
     "<button type='button' class='btn mini' data-trip='stages' data-from='results'>Stages: plans that change over time ›</button>" +
     "<button type='button' class='btn mini' data-trip='backtest' data-from='results'>Portfolio Backtest: what your mix has earned ›</button></div>" +
-    "<p class='hint'>This score is a rule-of-thumb check, not financial advice. It leaves out taxes in retirement and home equity.</p>";
+    "<p class='hint'>Retirement spending here is before income tax" + (a.retTaxAdded ? ", plus the tax estimate you added" : "") + ". The Income Tax tool's Retirement income mode estimates what withdrawals, Social Security and a pension will owe. " +
+    "This score is a rule-of-thumb check, not financial advice, and it leaves out home equity.</p>";
   return s;
 }
 
@@ -21407,9 +21575,89 @@ $("gdCoachBody").addEventListener("click", e => {
   }
 });
 
+/* ---------- sharing and printing the plan ----------
+   A link carries the answers (not the budget or debt lists, which can be
+   long and are the most personal) and opens on the results. Printing uses
+   the site's one-page summary sheet. */
+function gdSharePlan(){
+  const a = {};
+  Object.keys(gd.a).forEach(k => {
+    if (["bgRows", "debtRows", "moState", "clState", "ddTool"].indexOf(k) < 0) a[k] = gd.a[k];
+  });
+  const url = location.origin + "/guide#g=" + encodeState({v:1, a});
+  copyText(url).then(() => toast("Link copied. It opens this plan in the guide, with your numbers."))
+    .catch(() => { prompt("Copy this link:", url); });
+}
+/* Only plain values come in from a link: numbers, true/false, and short
+   strings of letters, digits and spaces. Nothing that could be markup. */
+function gdCleanShared(o){
+  if (!o || o.v !== 1 || !o.a || typeof o.a !== "object") return null;
+  const a = {};
+  Object.keys(o.a).forEach(k => {
+    const v = o.a[k];
+    if (!/^[A-Za-z0-9]{1,24}$/.test(k)) return;
+    if ((typeof v === "number" && isFinite(v)) || typeof v === "boolean" || v === null) a[k] = v;
+    else if (typeof v === "string" && /^[A-Za-z0-9 .,%\-]{0,40}$/.test(v)) a[k] = v;
+  });
+  return a;
+}
+function gdPrintPlan(){
+  if (gdGuideSheet() === false) return;
+  setTimeout(() => window.print(), 60);
+}
+function gdGuideSheet(){
+  const a = gd.a, R = gdScore(), S = gdSim();
+  if (R.score == null || !S){ toast("Answer more of the guide to print a plan"); $("sheet").innerHTML = ""; return false; }
+  const rt = gdRating(R.score), want = gdNeed(S);
+  const tmp = document.createElement("div");
+  tmp.className = "gd-chart";
+  gdChartDraw(tmp, [gdSeries(S, "Your plan", "p")]);
+  const svg = tmp.querySelector("svg");
+  const over = tmp.querySelector(".gd-ch-over");
+  const chart = svg ? "<div class='sh-chart gd-chart'>" + svg.outerHTML + "</div>" + (over ? "<div class='sh-more' style='margin:-6px 0 10px'>" + over.textContent + "</div>" : "") : "";
+  let plan = row("Retire at", fmtNum(S.retire));
+  plan += row("Saving", S.stop != null ? (S.stop <= a.age ? "Coasting, nothing new" : money(S.monthly) + "/mo to " + fmtNum(S.stop)) : money(S.monthly) + "/mo to retirement");
+  plan += row("Spending in retirement", money(S.spend) + "/yr");
+  if (gdMinSpend()) plan += row("Minimum spending", money(gdMinSpend()) + "/yr");
+  plan += row("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
+  if (S.pension) plan += row("Pension", money(S.pension / 12) + "/mo");
+  plan += row("Withdrawal approach", gdStratName(a.strategy || "fixed"));
+  plan += row("Stocks in retirement", S.mix + "%");
+  let nums = "";
+  if (gdPos(a.takehome)) nums += row("Take-home pay", money(a.takehome) + "/mo");
+  if (gdPos(a.spend)) nums += row("Spending today", money(a.spend) + "/mo");
+  if (gdOk(a.cash)) nums += row("Emergency fund", money(a.cash));
+  if (a.debtHas === "yes" && gdOk(a.debtTotal)) nums += row("Debt, excluding mortgage", money(a.debtTotal));
+  if (gdOk(a.saved)) nums += row("Retirement savings", money(a.saved));
+  nums += row("Projected at " + fmtNum(S.retire), money(S.fv));
+  if (want > 0) nums += row("Needed at " + fmtNum(S.retire), money(want));
+  const areas = GD_FACTORS.map(f => R.P[f.id] ? row(f.name, Math.round(R.P[f.id].p * f.w) + " / " + f.w) : "").join("");
+  const A = gdActions();
+  const moves = A.length ? "<div class='sh-moves'><div class='sh-t'>Your next moves, in order</div><ol>" +
+    A.map(x => "<li><b>" + x.t + "</b> " + x.d + "</li>").join("") + "</ol></div>" : "";
+  const d = new Date();
+  $("sheet").innerHTML =
+    "<div class='sh-h'><h1>Retirement Readiness Plan</h1><span>" + d.toLocaleDateString("en-US", {month:"long", day:"numeric", year:"numeric"}) +
+      " &middot; every figure in today's dollars</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Readiness score</div><div class='v'>" + R.score + " / 100</div><div class='n'>" + rt.label + "</div></div>" +
+      "<div><div class='k'>Savings at " + fmtNum(S.retire) + "</div><div class='v'>" + money(S.fv) + "</div><div class='n'>" + (want > 0 ? "needs about " + money(want) : "projected") + "</div></div>" +
+      "<div><div class='k'>Lasted in</div><div class='v'>" + pctStr(S.success, 0) + "</div><div class='n'>of retirements since " + (S.H ? S.H.first : 1926) + "</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Your plan</div>" + plan + "</section>" +
+      "<section><div class='sh-t'>Your numbers</div>" + nums + "</section>" +
+      "<section><div class='sh-t'>Score by area</div>" + areas + "</section>" +
+    "</div>" + moves +
+    "<div class='sh-foot'>Savings grow at " + pctStr(S.real, 1) + " a year after inflation for a " + gdRiskLabel(S.real) + " mix, with contributions rising with inflation. " +
+    "Retirement is tested against every historical retirement since " + (S.H ? S.H.first : 1926) + " with " + S.mix + "% in stocks, spending a fixed amount that rises with inflation. " +
+    "Spending is before income tax" + (a.retTaxAdded ? ", plus the tax estimate added from the Income Tax tool" : "; the Income Tax tool's Retirement income mode estimates it") + ". " +
+    "Social Security is an estimate. This is a rule-of-thumb plan, not financial advice.</div>";
+}
+
 /* ---------- the guide's own controls ---------- */
 $("tab-guide").addEventListener("click", e => {
-  const el = e.target.closest ? e.target.closest("[data-set],[data-gd],[data-go],[data-trip],[data-fill],[data-nav],[data-opt],[data-target]") : null;
+  const el = e.target.closest ? e.target.closest("[data-set],[data-gd],[data-go],[data-trip],[data-fill],[data-nav],[data-opt],[data-target],[data-lever]") : null;
   if (!el || el.disabled) return;
   if (el.hasAttribute("data-opt")){
     gdSel = el.getAttribute("data-opt");
@@ -21420,6 +21668,14 @@ $("tab-guide").addEventListener("click", e => {
     gdRender(false);
     const f = gdSel === "custom" ? $("gdd-retire") : null;
     if (f) try { f.focus({preventScroll:true}); } catch(e2){}
+    return;
+  }
+  if (el.hasAttribute("data-lever")){
+    const k = el.getAttribute("data-lever"), on = Object.keys(gdLevers).filter(x => gdLevers[x]);
+    if (gdLevers[k] && on.length <= 2){ toast("Balancing needs at least two"); return; }
+    gdLevers[k] = !gdLevers[k];
+    gdSel = "balance";
+    gdRender(false);
     return;
   }
   if (el.hasAttribute("data-target")){
@@ -21454,12 +21710,22 @@ $("tab-guide").addEventListener("click", e => {
   }
   const g = el.getAttribute("data-gd");
   if (g === "apply"){ gdApplyOpt(); return; }
+  if (g === "print"){ gdPrintPlan(); return; }
+  if (g === "share"){ gdSharePlan(); return; }
   if (g === "next") gdNext();
   else if (g === "prev") gdPrev();
   else if (g === "resume") gdGoStep(gdFirstOpen());
   else if (g === "addhc" && gdPos(gd.a.hcPrem) && gdPos(gd.a.retSpend)){
     gd.a.retSpend = Math.round((gd.a.retSpend + gd.a.hcPrem * 12) / 100) * 100;
     gd.a.hcAdded = true; gd.a.hcIncl = "yes";
+    gdHouseholdSync();
+    gdSave();
+    gdRender(false);
+  } else if (g === "addtax" && gdPos(gd.a.retTax) && gdPos(gd.a.retSpend) && !gd.a.retTaxAdded){
+    gd.back = {step:gd.cur, msg:"Added " + money(gd.a.retTax) + " a year for income tax. Your retirement spending is now " + money(gd.a.retSpend + gd.a.retTax) + ".",
+      undo:{retSpend:gd.a.retSpend, retTaxAdded:false}};
+    gd.a.retSpend = Math.round(gd.a.retSpend + gd.a.retTax);
+    gd.a.retTaxAdded = true;
     gdHouseholdSync();
     gdSave();
     gdRender(false);
@@ -21507,6 +21773,21 @@ $("tab-guide").addEventListener("keydown", e => {
   const b = $("gdCard").querySelector("[data-gd='next']");
   if (b && !b.disabled){ e.preventDefault(); b.click(); }
 });
+/* A shared plan (#g=) opens in the guide on its results. Someone who has
+   their own answers is asked first; the household bar and tools are left
+   alone either way. */
+(function(){
+  if (!location.hash || location.hash.indexOf("#g=") !== 0) return;
+  const a = gdCleanShared(decodeState(location.hash.slice(3)));
+  try { history.replaceState(history.state, "", location.pathname + location.search); } catch(e){}
+  if (!a || !Object.keys(a).length) return;
+  if (Object.keys(gd.done).length && !confirm("This link opens a shared retirement plan in the guide. Replace your own guide answers with it? Your household bar and tools won't change.")) return;
+  gd = gdFresh();
+  gd.a = a;
+  gdNumbered().forEach(st => { if (st.id !== "results") gd.done[st.id] = true; });
+  gd.cur = "results";
+  gdSave();
+})();
 if (!Object.keys(gd.a).length) gdSeedFromHousehold();
 
 let fromLink = false;
