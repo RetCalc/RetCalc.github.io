@@ -4147,8 +4147,11 @@ window.onerror = function(msg){
           with your plan's first year, and can add the estimate to your spending. Home
           equity isn't counted.</dd>
 
-          <dt>Share and print</dt>
-          <dd>From the results, or the Share button while on the Guide tab, print the
+          <dt>Save, share and print</dt>
+          <dd>With the Guide tab open, <b>Save/Delete</b> saves your answers and plan
+          under a name, like any other tool's scenario, and picking it from the list
+          later loads the whole plan back, household bar included. From the results,
+          or the Share button while on the Guide tab, print the
           finished plan on one page or copy a link that opens it in the guide. The link
           carries your answers (not your budget or debt lists), so share it only with
           people you'd show your finances to. Someone opening it who has guide answers
@@ -9132,8 +9135,28 @@ const KEYS = {basic:"investment-calculator.basic.v3",
               roth:"finance-tools.roth.v1",
               debt:"finance-tools.debt.v1",
               backtest:"finance-tools.backtest.v1",
+              healthcare:"finance-tools.healthcare.v1",
+              fire:"finance-tools.fire.v1",
+              // saved guide plans; the guide's own progress is guide.v1
+              guide:"finance-tools.guideplans.v1",
               household:"finance-tools.household.v1"};
 const memory = {};
+/* Healthcare and FIRE once had no key here, so both lists were written to
+   one slot named "undefined" and each overwrote the other. Sort whatever is
+   there into its own list by which tool's fields it holds, once. */
+try {
+  const raw = localStorage.getItem("undefined");
+  if (raw && !localStorage.getItem(KEYS.healthcare) && !localStorage.getItem(KEYS.fire)){
+    const list = JSON.parse(raw);
+    if (Array.isArray(list)){
+      const isHC = x => x && x.data && Object.keys(x.data).some(k => /^hc/.test(k));
+      const hc = list.filter(isHC), fi = list.filter(x => !isHC(x));
+      if (hc.length) localStorage.setItem(KEYS.healthcare, JSON.stringify(hc));
+      if (fi.length) localStorage.setItem(KEYS.fire, JSON.stringify(fi));
+      localStorage.removeItem("undefined");
+    }
+  }
+} catch(e){}
 function storeRead(which){
   try { const raw = localStorage.getItem(KEYS[which]); if (raw) return JSON.parse(raw); }
   catch(e){}
@@ -9153,7 +9176,8 @@ const SC = {basic: storeRead("basic") || [], advanced: storeRead("advanced") || 
             debt: storeRead("debt") || [],
             backtest: storeRead("backtest") || [],
             healthcare: storeRead("healthcare") || [],
-            fire: storeRead("fire") || []};
+            fire: storeRead("fire") || [],
+            guide: storeRead("guide") || []};
 /* One-time move: scenarios saved before the v3 split lived under a single
    "retire" bundle key holding Basic + Advanced + Stages together. Split each
    into its own list under the same name so nothing saved before this update
@@ -9201,7 +9225,8 @@ migrateBundledRetireScenarios();
    so switching tabs and coming back still shows the name instead of
    "Unsaved". Cleared on Reset or when the loaded scenario is deleted. */
 let currentScenario = {basic:"", advanced:"", stages:"", tax:"", mortgage:"",
-  budget:"", college:"", rentbuy:"", drawdown:"", roth:"", debt:"", backtest:""};
+  budget:"", college:"", rentbuy:"", drawdown:"", roth:"", debt:"", backtest:"",
+  healthcare:"", fire:"", guide:""};
 /* JSON snapshot of the data as it was last saved/loaded for each tool, so the
    dropdown can flag "(edited)" once the on-screen inputs drift from it. */
 let loadedSnapshot = {};
@@ -9212,6 +9237,7 @@ function activeTool(){
   if (t === "simple") return "basic";
   if (t === "series") return "stages";
   if (t === "single") return "advanced";
+  if (t === "guide") return "guide";
   return "advanced";
 }
 
@@ -17670,7 +17696,7 @@ const TOOL_LABEL = {basic:"scenario", advanced:"scenario", stages:"scenario",
                     drawdown:"drawdown plan", roth:"conversion plan",
                     debt:"debt plan", backtest:"backtest",
                     healthcare:"healthcare plan",
-                    fire:"FIRE plan"};
+                    fire:"FIRE plan", guide:"readiness plan"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
   const list = SC[activeTool()];
@@ -17733,6 +17759,7 @@ $("scenarioPick").addEventListener("change", e => {
   else if (tool === "backtest"){ writeBTState(s.data); renderBacktest(); }
   else if (tool === "healthcare"){ writeAsideState("asideHC", s.data); renderHealthcare(); }
   else if (tool === "fire"){ writeFireState(s.data); }
+  else if (tool === "guide"){ gdLoadPlan(s.data); }
   currentScenario[tool] = s.name;
   loadedSnapshot[tool] = JSON.stringify(buildToolData(tool));
   updateScenarioDirtyUI();
@@ -18048,6 +18075,15 @@ wireItemList("ddExpenseList", ddExpenseItems);
 
 
 $("btnScenario").addEventListener("click", async () => {
+  if (activeTool() === "guide"){
+    const c = await showPopup("Readiness plan", [
+      {label:"Save", desc:"Save your answers and plan under a name"},
+      {label:"Delete", desc:"Remove the selected saved plan"}
+    ]);
+    if (c === 0) doSave();
+    else if (c === 1) doDelete();
+    return;
+  }
   const choice = await showPopup("Scenario", [
     {label:"Save", desc:"Save the current inputs under a name"},
     {label:"Delete", desc:"Remove the selected saved scenario"},
@@ -18438,6 +18474,7 @@ function buildToolData(tool){
   if (tool === "roth") return readRCState();
   if (tool === "debt") return readDebtState();
   if (tool === "backtest") return readBTState();
+  if (tool === "guide") return gdPlanData();
   if (tool === "healthcare") return readAsideState("asideHC");
   if (tool === "fire") return Object.assign(readAsideState("asideFire"), {
     mode: $("segFireMode").querySelector('button[data-firemode="coast"].on') ? "coast" : "fire"});
@@ -19145,6 +19182,27 @@ let gd = gdLoadState();
 function gdSave(){
   gdMem = gd;
   try { localStorage.setItem(GD_KEY, JSON.stringify(gd)); } catch(e){}
+  // Choices and applied changes aren't typing, so the saved-plan picker's
+  // "(edited)" flag is checked here too.
+  try { if (chartMode.tab === "guide") scheduleDirtyCheck(); } catch(e){}
+}
+/* A saved plan, for the scenario picker: every answer and which steps are
+   done. Where you were and any open trip into a tool are left out. */
+function gdPlanData(){
+  return {v:1, a:JSON.parse(JSON.stringify(gd.a)), done:Object.assign({}, gd.done)};
+}
+function gdLoadPlan(d){
+  if (!d || !d.a || typeof d.a !== "object") return;
+  gd = gdFresh();
+  gd.a = JSON.parse(JSON.stringify(d.a));
+  gd.done = Object.assign({}, d.done || {});
+  const L = gdNumbered();
+  gd.cur = L.every(st => st.id === "results" || gd.done[st.id]) ? "results" : gdFirstOpen();
+  gdSel = null; gdDraft = null;
+  gdHouseholdSync();
+  gdSave();
+  gdCoachSync();
+  if (!$("tab-guide").hidden) gdRender(true);
 }
 
 const gdOk = v => typeof v === "number" && isFinite(v);
