@@ -446,11 +446,11 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-off
    spans the screen with finger-sized rows over a dimmed page; in the
    home-screen web app it rises from the bottom bar instead (see the
    html.pwa block below). */
-.calcbtn{display:inline-flex;align-items:center;gap:7px}
-.calc-mode{display:inline-flex;align-items:center;gap:3px;
+.calcbtn{display:inline-flex;align-items:baseline;gap:7px}
+.calc-mode{display:inline-flex;align-items:baseline;gap:3px;
   font-size:12.5px;font-weight:600;color:var(--dimmer);transition:color .15s ease}
 nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
-.calc-chev{width:12px;height:12px;flex:none;transition:transform .2s ease}
+.calc-chev{width:12px;height:12px;flex:none;align-self:center;transition:transform .2s ease}
 .calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
 .navbar.menu-open{z-index:45}
 .calcmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:310px;
@@ -1654,7 +1654,7 @@ svg{display:block;width:100%;height:auto}
     padding-left:env(safe-area-inset-left,0px);
     padding-right:env(safe-area-inset-right,0px)}
   html.pwa nav[role=tablist] button{
-    flex:1 1 0;margin-right:0;min-height:62px;padding:10px 1px 9px;
+    flex:1 1 0;margin-right:0;min-height:70px;padding:10px 1px 9px;
     display:flex;align-items:center;justify-content:center;
     font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
   html.pwa nav[role=tablist] button[aria-selected="true"]{color:var(--jade);font-weight:700}
@@ -1663,8 +1663,9 @@ svg{display:block;width:100%;height:auto}
   /* Calculator stacks its open mode under its name, and its chevron points
      up, since the menu rises out of the bar. The menu is a sheet sitting just
      above the bar, where the thumb already is. */
-  html.pwa nav[role=tablist] .calcbtn{flex-direction:column;gap:1px;padding-top:7px;padding-bottom:6px}
-  html.pwa .calc-mode{font-size:11.5px;letter-spacing:0}
+  html.pwa nav[role=tablist] .calcbtn{align-items:center}
+  html.pwa .calc-mode{position:absolute;left:0;right:0;top:calc(50% + 13px);
+    justify-content:center;align-items:center;font-size:11.5px;line-height:1;letter-spacing:0}
   html.pwa .calc-chev{transform:rotate(180deg)}
   html.pwa .calcbtn[aria-expanded="true"] .calc-chev{transform:none}
   html.pwa .calcmenu{top:auto !important;bottom:calc(100% + 8px);
@@ -1674,8 +1675,8 @@ svg{display:block;width:100%;height:auto}
     letter-spacing:.06em;text-transform:uppercase;color:var(--dimmer)}
   /* Room so the fixed (taller) bar never covers the last panel, and lift
      toasts above it. */
-  html.pwa main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
-  html.pwa .toast{bottom:calc(82px + env(safe-area-inset-bottom,0px))}
+  html.pwa main{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  html.pwa .toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
   /* The status-bar cover strip masks behind a TOP rail; there's no top rail in
      the web app, and the sticky-rail script mis-reads a fixed-bottom bar as
      "stuck," switching this opaque strip (height 2x inset) on and letting it
@@ -2000,9 +2001,9 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 @media (max-width:640px){
   .gd-coach{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:62vh;border-radius:16px 16px 0 0;
     border-left:0;border-right:0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
-  html.pwa .gd-coach{bottom:calc(62px + env(safe-area-inset-bottom,0px));padding-bottom:0}
-  html.pwa body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 96px + env(safe-area-inset-bottom,0px))}
-  html.pwa body.gd-on .toast{bottom:calc(var(--gdh,140px) + 90px + env(safe-area-inset-bottom,0px))}
+  html.pwa .gd-coach{bottom:calc(70px + env(safe-area-inset-bottom,0px));padding-bottom:0}
+  html.pwa body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 104px + env(safe-area-inset-bottom,0px))}
+  html.pwa body.gd-on .toast{bottom:calc(var(--gdh,140px) + 98px + env(safe-area-inset-bottom,0px))}
 }
 @media print{ .gd-coach{display:none !important} }
 
