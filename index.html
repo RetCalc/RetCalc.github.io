@@ -18508,7 +18508,7 @@ function showItemForm(kind, existing){
         (isIncome ? "e.g. Pension" : "e.g. New car") + "' value='" + cardEscape(d.name) + "'></div>" +
       "<div class='formfield'><label>Annual amount, today's dollars</label>" +
         "<div class='formwrap'><span class='affix'>$</span>" +
-        "<input id='itAmount' type='text' inputmode='decimal' value='" + (d.annual ? groupDigits(d.annual, true) : "") + "'></div></div>" +
+        "<input id='itAmount' type='text' inputmode='decimal' data-money data-nonneg value='" + (d.annual ? groupDigits(d.annual, true) : "") + "'></div></div>" +
       "<label class='formcheck'><input type='checkbox' id='itInflate'" + (d.inflate ? " checked" : "") + "> " +
         "Adjust for inflation over time</label>" +
       "<div class='formtwo'>" +
@@ -18557,6 +18557,7 @@ function showItemForm(kind, existing){
       if (e.target.classList.contains("cancel") || e.target === ov){ shut(); resolve(null); }
     });
     document.body.appendChild(ov);
+    initFields(ov);
     wireModal(ov, () => { shut(); resolve(null); });
     ov.querySelector("#itName").focus();
   });
