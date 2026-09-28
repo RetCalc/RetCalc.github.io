@@ -12704,12 +12704,12 @@ $("btnToolBack").addEventListener("click", () => {
 
 /* Tab and tool moves are pushed as history entries so the phone's back
    gesture steps back through the app instead of leaving it. The state lives
-   in the entry object, not the URL, so the "#p=" share link is untouched. */
+   in the entry object, not the URL, so a share link's hash is untouched. */
 let navSuspended = false;
 /* Clean paths for the tools that have one (e.g. /incometax), built from a
    single table so the two directions can't drift apart. Tabs/states with no
    entry here (compare views, the picker's own url) just don't rewrite the
-   address bar. The "#p=" share-link hash still wins on load when present,
+   address bar. A share link's hash (#s= or #p=) still wins on load when present,
    since it carries full input state, not just which tab is open. */
 const TOOL_PATHS = {
   tax:"incometax", mortgage:"mortgage", budget:"budget", college:"college",
@@ -18012,9 +18012,79 @@ function copyText(txt){
   document.body.removeChild(ta);
   return Promise.resolve();
 }
+/* Short links. A full state runs to several thousand characters, nearly all
+   of it defaults (the whole starter budget, every tool's untouched fields).
+   So a #s= link carries only what differs from the page as it first loads,
+   captured before any link or household profile is applied, and the page
+   that opens it rebuilds the rest from its own identical copy. Objects are
+   diffed key by key, same-length arrays index by index ({"~":length, i:...});
+   "~x" marks a key that's gone. The open tool's data is diffed against that
+   tool's own defaults, or sent as "=" when it's just a copy of one of the
+   four tool states every link carries anyway. Old #p= links still open as
+   before. */
+let SHARE_BASE = null, SHARE_TOOLS = {};
+const SHARE_DUP = {tax:"tx", mortgage:"mo", budget:"bg", roth:"rc"};
+function shareBase(){
+  try { SHARE_BASE = JSON.parse(JSON.stringify(currentState())); } catch(e){ SHARE_BASE = null; }
+  Object.keys(TOOL_PATHS).forEach(k => {
+    // The guide's data is the visitor's own answers, not a default.
+    if (k === "guide") return;
+    try { SHARE_TOOLS[k] = JSON.parse(JSON.stringify(buildToolData(k))); } catch(e){}
+  });
+}
+const isObj = x => x !== null && typeof x === "object" && !Array.isArray(x);
+function shareDiff(b, c){
+  if (JSON.stringify(b) === JSON.stringify(c)) return undefined;
+  if (isObj(b) && isObj(c)){
+    const o = {};
+    Object.keys(c).forEach(k => { const d = shareDiff(b[k], c[k]); if (d !== undefined) o[k] = d; });
+    Object.keys(b).forEach(k => { if (!(k in c) && b[k] !== undefined) o[k] = "~x"; });
+    return o;
+  }
+  if (Array.isArray(b) && Array.isArray(c) && b.length === c.length){
+    const o = {"~": c.length};
+    c.forEach((v, i) => { const d = shareDiff(b[i], v); if (d !== undefined) o[i] = d; });
+    return o;
+  }
+  return c === undefined ? "~x" : c;
+}
+function sharePatch(b, d){
+  if (d === undefined) return b;
+  if (Array.isArray(b) && isObj(d) && "~" in d){
+    const o = b.slice(0, d["~"]);
+    Object.keys(d).forEach(k => { if (k !== "~") o[+k] = sharePatch(b[+k], d[k]); });
+    return o;
+  }
+  if (isObj(b) && isObj(d)){
+    const o = Object.assign({}, b);
+    Object.keys(d).forEach(k => { if (d[k] === "~x") delete o[k]; else o[k] = sharePatch(b[k], d[k]); });
+    return o;
+  }
+  return d;
+}
+function shareLink(){
+  const cur = JSON.parse(JSON.stringify(currentState()));
+  if (!SHARE_BASE) return "#p=" + encodeState(cur);
+  const ts = cur.ts;
+  delete cur.ts;
+  const d = shareDiff(Object.assign({}, SHARE_BASE, {ts: undefined}), cur) || {};
+  delete d.ts;
+  if (ts) d.ts = {k: ts.k, d: SHARE_DUP[ts.k] && JSON.stringify(ts.d) === JSON.stringify(cur[SHARE_DUP[ts.k]]) ? "="
+    : SHARE_TOOLS[ts.k] ? shareDiff(SHARE_TOOLS[ts.k], ts.d) || {} : ts.d};
+  return "#s=" + encodeState(d).replace(/\+/g, "-").replace(/\//g, "_");
+}
+function shareOpen(str){
+  const d = decodeState(str);
+  if (!d || !SHARE_BASE) return null;
+  const o = sharePatch(Object.assign({}, SHARE_BASE, {ts: undefined}), Object.assign({}, d, {ts: undefined}));
+  delete o.ts;
+  if (d.ts && d.ts.k) o.ts = {k: d.ts.k, d: d.ts.d === "=" ? o[SHARE_DUP[d.ts.k]]
+    : SHARE_TOOLS[d.ts.k] ? sharePatch(SHARE_TOOLS[d.ts.k], d.ts.d) : d.ts.d};
+  return o;
+}
 function doShare(){
-  const url = location.origin + location.pathname + "#p=" + encodeState(currentState());
-  history.replaceState({t:chartMode.tab, s:toolSub}, "", "#p=" + encodeState(currentState()));
+  const link = shareLink(), url = location.origin + location.pathname + link;
+  history.replaceState({t:chartMode.tab, s:toolSub}, "", link);
   copyText(url).then(() => toast("Link copied; it opens with these exact numbers"))
                .catch(() => toast("Couldn't copy. The link is in your address bar."));
 }
@@ -22819,9 +22889,10 @@ $("tab-guide").addEventListener("keydown", e => {
 })();
 if (!Object.keys(gd.a).length) gdSeedFromHousehold();
 
+shareBase();
 let fromLink = false;
-if (location.hash && location.hash.indexOf("#p=") === 0){
-  const st = decodeState(location.hash.slice(3));
+if (location.hash && (location.hash.indexOf("#p=") === 0 || location.hash.indexOf("#s=") === 0)){
+  const st = location.hash[1] === "s" ? shareOpen(location.hash.slice(3)) : decodeState(location.hash.slice(3));
   fromLink = !!(st && applyState(st));
 }
 // A shared link carries someone's exact numbers; the profile fills in
