@@ -458,6 +458,9 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
   box-shadow:var(--lift-2);transform-origin:top left;
   animation:calcmenu-in .16s cubic-bezier(.2,.7,.3,1)}
 .calcmenu[hidden]{display:none}
+@media (hover:hover) and (pointer:fine){
+  .calcmenu::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
+}
 @keyframes calcmenu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
 .calcmenu-h{display:none}
 .calcmenu button{display:grid;grid-template-columns:1fr auto;align-items:center;
@@ -12473,7 +12476,8 @@ document.addEventListener("click", e => {
 
 /* ---------- the Calculator tab's mode menu ----------
    Basic, Advanced and Stages live behind one tab. The tab shows the open
-   mode, and remembers it: the menu is how you switch. Its layout (dropdown,
+   mode, and remembers it: the menu is how you switch. With a mouse it opens
+   on hover, and clicking the tab returns to the remembered mode. Its layout (dropdown,
    full-width phone sheet, or a sheet rising from the web app's bottom bar)
    is all CSS; the script only places it under the tab on a wide screen. */
 const CALC_MODES = {simple:"Basic", single:"Advanced", series:"Stages"};
@@ -12493,10 +12497,10 @@ function calcMenuPlace(){
   const max = nb.clientWidth - m.offsetWidth - 10;
   m.style.left = Math.max(10, Math.min(bl - 12, max)) + "px";
 }
-function calcMenuOpen(focusItem){
+function calcMenuOpen(focusItem, hover){
   const m = $("calcMenu");
   m.hidden = false;
-  $("calcScrim").hidden = false;
+  $("calcScrim").hidden = !!hover;
   CALCBTN.closest(".navbar").classList.add("menu-open");
   CALCBTN.setAttribute("aria-expanded", "true");
   calcMenuPlace();
@@ -12538,6 +12542,32 @@ CALCITEMS.forEach((it, i) => {
   });
 });
 $("calcScrim").addEventListener("click", () => calcMenuClose(false));
+/* With a mouse, the menu opens on hover and the tab itself goes straight to
+   the mode you were last on. Touch screens have no hover, so there a tap on
+   the tab still opens the menu. A short delay on leaving lets the pointer
+   cross from the tab to the menu, and the menu's ::before covers the gap. */
+const CALC_HOVER = window.matchMedia ? window.matchMedia("(hover:hover) and (pointer:fine)") : null;
+function calcHover(){ return !!(CALC_HOVER && CALC_HOVER.matches); }
+let calcHoverTimer = null;
+[CALCBTN, $("calcMenu")].forEach(el => {
+  el.addEventListener("mouseenter", () => {
+    if (!calcHover()) return;
+    clearTimeout(calcHoverTimer);
+    if ($("calcMenu").hidden) calcMenuOpen(false, true);
+  });
+  el.addEventListener("mouseleave", () => {
+    if (!calcHover()) return;
+    clearTimeout(calcHoverTimer);
+    calcHoverTimer = setTimeout(() => {
+      // keep it open while a keyboard user is inside it
+      if (!$("calcMenu").contains(document.activeElement)) calcMenuClose(false);
+    }, 220);
+  });
+});
+function calcLastMode(){
+  const cur = CALCITEMS.find(x => x.getAttribute("aria-checked") === "true");
+  return cur ? cur.getAttribute("data-mode") : "simple";
+}
 // A press anywhere outside the menu and its tab closes it. pointerdown rather
 // than click, so the press that starts a scroll on a phone counts too.
 document.addEventListener("pointerdown", e => {
@@ -12818,8 +12848,16 @@ const TABBTNS = Array.prototype.slice.call(
 TABBTNS.forEach((b, i) => {
   b.addEventListener("click", e => {
     const t = b.getAttribute("data-tab");
-    // Calculator doesn't switch on its own; it opens the mode menu.
+    // With a mouse, Calculator goes to the mode last used (the menu opens
+    // on hover); on a touch screen, a tap opens the mode menu.
     if (t === "calc"){
+      if (calcHover() && e.detail !== 0){
+        clearTimeout(calcHoverTimer);
+        calcMenuClose(false);
+        const m = calcLastMode();
+        if (chartMode.tab !== m){ paneDir = "tab"; showTab(m); pushNav(); }
+        return;
+      }
       if ($("calcMenu").hidden) calcMenuOpen(e.detail === 0);
       else calcMenuClose(false);
       return;
