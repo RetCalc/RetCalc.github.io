@@ -826,6 +826,9 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
   border-radius:var(--r-well);padding:14px;margin-bottom:12px;
   background:var(--field);box-shadow:var(--well)}
 .stagecard:last-child{margin-bottom:0}
+#ddWdStagesWrap{margin-bottom:14px}
+#ddWdStageList .stagecard{margin-bottom:10px}
+#ddWdStageList .hint:empty{display:none}
 .stagehead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .stagenum{font-size:13px;font-weight:600;cursor:text;border-radius:4px;
   padding:2px 5px;margin:-2px -5px;border:1px dashed transparent;max-width:220px;
@@ -2555,6 +2558,7 @@ window.onerror = function(msg){
                 <div class="inputwrap"><input id="saMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
               </div>
             </div>
+            <div class="hint" id="saMatchNote" aria-live="polite"></div>
             <div class="acsep"></div>
             <div class="two">
               <div class="field">
@@ -3526,6 +3530,10 @@ window.onerror = function(msg){
           <label for="ddRate" id="ddRateLabel">Withdrawal rate</label>
           <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
           <div class="hint" id="ddRateNote"></div>
+        </div>
+        <div id="ddWdStagesWrap" hidden>
+          <div id="ddWdStageList"></div>
+          <button class="btn mini" type="button" id="ddAddWdStage">+ Add spending stage</button>
         </div>
         <div class="two" id="ddGuardWrap" hidden>
           <div class="field">
@@ -8554,6 +8562,18 @@ function pmtStart(r, n, pv, fv){
   const g = Math.pow(1 + r, n);
   return (pv * g - fv) * r / ((g - 1) * (1 + r));
 }
+/* The fixed strategy's rate for a 1-based year: the starting rate, or the
+   latest spending stage to have begun by then. Stages can be listed in any
+   order; year 1 always belongs to the starting rate, and when two begin the
+   same year the one further down the list wins. */
+function ddFixedRateAt(o, year) {
+  var r = o.initialPct, from = 1;
+  (o.wdStages || []).forEach(function (st) {
+    var s = Math.max(2, Math.round(st.start || 0));
+    if (s <= year && s >= from) { from = s; r = st.rate || 0; }
+  });
+  return r;
+}
 function runDrawdown(o, seq) {
   var bal = o.initial;
   var stockW = o.stockPct / 100;
@@ -8581,7 +8601,9 @@ function runDrawdown(o, seq) {
       // Uses THIS year's price level (cumInfl folded forward) so it lines up
       // with how realSpend is computed below \u2014 otherwise the withdrawal
       // is a year behind its own inflation adjustment and real spend drifts.
-      w = baseW * cumInfl * (1 + infl);
+      // A spending stage swaps in its own rate of the starting portfolio
+      // from the year it begins, in today's dollars like the first.
+      w = o.initial * ddFixedRateAt(o, y + 1) / 100 * cumInfl * (1 + infl);
 
     } else if (o.strategy === "pct") {
       // constant percentage of whatever the portfolio is worth now
@@ -10739,7 +10761,9 @@ function ddStateToOpts(data) {
     ssAnnual2: ssAnnual2, ssDelayYears2: ssDelay2,
     retireAge: retireAge, fromYear: HIST_START,
     incomeItems: Array.isArray(data.incomeItems) ? data.incomeItems.map(function(x){ return Object.assign({},x); }) : [],
-    expenseItems: Array.isArray(data.expenseItems) ? data.expenseItems.map(function(x){ return Object.assign({},x); }) : []
+    expenseItems: Array.isArray(data.expenseItems) ? data.expenseItems.map(function(x){ return Object.assign({},x); }) : [],
+    wdStages: (data.strategy || "fixed") === "fixed" && Array.isArray(data.wdStages)
+      ? data.wdStages.map(function(x){ return Object.assign({},x); }) : []
   };
 }
 
@@ -11406,6 +11430,16 @@ function stMatchFactor(g, st, mine, salary){
   const eligible = Math.min(mine * (s.t + s.r), salary * (a.matchCap || 0) / 100 / ppy);
   return 1 + Math.max(0, eligible * a.matchPct / 100) / mine;
 }
+/* The match stage 1 earns in its first year, restated biweekly, beside the
+   most the salary allows, for the note under the match inputs. */
+function stMatchNow(a){
+  const st = stages[0];
+  if (!a || !st || !(a.salary > 0) || !(a.matchPct > 0)) return null;
+  const s = stSplit(st), ppy = PPY[st.period];
+  const capPer = a.salary * (a.matchCap || 0) / 100 / ppy;
+  const per = Math.min(Math.max(0, st.contrib) * (s.t + s.r), capPer) * a.matchPct / 100;
+  return {bi: per * ppy / 26, full: capPer * a.matchPct / 100 * ppy / 26};
+}
 /* A stage with per-account growth (st.gRates) runs on the blend of them,
    weighted by that stage's split, at the stage's own return net of fees. */
 function stageGrowthBlend(st, fee){
@@ -11462,6 +11496,11 @@ function renderStageAcct(g){
   const B = lastStageAcct;
   $("saTaxOut").value = pctStr(B.effRate, 1);
   $("saTotBal").textContent = money(g.initial);
+  const M = stMatchNow(g.acct);
+  $("saMatchNote").textContent = !M ? ""
+    : "Stage 1 match: " + money(M.bi, 2) + " biweekly"
+      + (M.bi < M.full - 0.005 ? " (the full match is " + money(M.full, 2) + ")" : "")
+      + ".";
   acRenderTable("saResults", "saResultsNote", B, B.matchTotal > 0
     ? "Your employer puts in <b>" + money(B.matchTotal) + "</b> over the " +
       fmtNum(B.years) + " years, before growth." : "");
@@ -13021,6 +13060,11 @@ function buildDrawdownSheet(){
     inputs += row("Expected return, real", pctStr((o.vpwRate || 0) / 100, 2));
     inputs += row("PMT future value", money(o.vpwFV || 0));
   } else inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
+  if (o.strategy === "fixed") ddWdOrder(o.wdStages).forEach(function (x) {
+    inputs += row(escapeHtml(x.st.name || ("Stage " + (x.i + 2))),
+      pctStr((x.st.rate || 0) / 100, 1) + " from " +
+      (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
+  });
   if (o.strategy === "guardrails") inputs += row("Guardrail width", num("ddGuardBand") + "%");
   if (o.strategy === "yale"){
     inputs += row("Weight on last year", num("ddYaleWeight") + "%");
@@ -14954,6 +14998,154 @@ function ddRetireAgeVal() {
   return v === "" ? null : parseNum(v);
 }
 
+/* Spending stages for the fixed strategy: from the year each one begins,
+   spending moves to its own rate of the starting portfolio, still in today's
+   dollars and still rising with inflation. The starting rate above is the
+   first stage. Each stage keeps the year of retirement it begins (1-based,
+   like CustomItem.startYear); with an age entered it's shown and typed as an
+   age instead. Mutated in place, like the item lists. */
+let ddWdStages = [];
+let ddWdAgeMode = null;
+/* Stages in the order they take effect, with each one's working start year;
+   ties keep list order, matching ddFixedRateAt. */
+function ddWdOrder(list) {
+  return (list || []).map(function (st, i) {
+    return {st: st, i: i, start: Math.max(2, Math.round(st.start || 0))};
+  }).sort(function (a, b) { return a.start - b.start || a.i - b.i; });
+}
+function ddWdBaseEnd(years) {
+  var first = ddWdOrder(ddWdStages)[0];
+  return {from: 1, to: first ? Math.min(years, first.start - 1) : years};
+}
+function ddWdSpanText(sp) {
+  var ageOn = ddRetireAge != null;
+  var a = ageOn ? ddAgeVal(sp.from) : sp.from, b = ageOn ? ddAgeVal(sp.to) : sp.to;
+  var unit = ageOn ? "age" : "year";
+  return sp.from === sp.to ? unit + " " + fmtNum(a)
+    : (sp.from === 1 && !ageOn ? "through year " + fmtNum(b) : unit + "s " + fmtNum(a) + "\u2013" + fmtNum(b));
+}
+function buildWdStages() {
+  var ageOn = ddRetireAgeVal() != null;
+  ddWdAgeMode = ageOn;
+  var list = $("ddWdStageList");
+  list.innerHTML = ddWdStages.map(function (st, i) {
+    var startShown = ageOn ? (ddRetireAgeVal() + st.start - 1) : st.start;
+    return "<div class='stagecard'>" +
+      "<div class='stagehead'><span class='stagenum' contenteditable='true' spellcheck='false'" +
+        " data-wdname='" + i + "' title='Click to rename' aria-label='Stage " + (i + 2) + " name'>" +
+        escapeHtml(st.name || ("Stage " + (i + 2))) + "</span>" +
+      "<span class='stagespan' data-wdspan='" + i + "'></span>" +
+      "<button class='btn mini' type='button' data-wddel='" + i + "'>Remove</button></div>" +
+      "<div class='two'>" +
+        "<div class='field' style='margin-bottom:0'><label data-wdstartlbl='" + i + "'>" +
+          (ageOn ? "Starts at age" : "Starts in year") + "</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='1' data-nonneg data-wf='start' data-wi='" + i +
+          "' value='" + fmtNum(startShown) + "' aria-label='Stage " + (i + 2) + " start'>" +
+          "<span class='affix'>" + (ageOn ? "age" : "yr") + "</span></div></div>" +
+        "<div class='field' style='margin-bottom:0'><label>Withdrawal rate</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='0.25' min='0' data-nonneg data-wf='rate' data-wi='" + i +
+          "' value='" + fmtNum(st.rate || 0) + "' aria-label='Stage " + (i + 2) + " withdrawal rate'>" +
+          "<span class='affix'>%</span></div></div>" +
+      "</div>" +
+      "<div class='hint' data-wdnote='" + i + "'></div>" +
+    "</div>";
+  }).join("");
+  initFields(list);
+}
+/* Refreshes each card's span and dollar note without rebuilding, so a field
+   being typed in keeps its focus; a switch between years and ages rebuilds. */
+function syncWdStages(o) {
+  if ((ddRetireAge != null) !== ddWdAgeMode) buildWdStages();
+  var order = ddWdOrder(ddWdStages);
+  order.forEach(function (x, k) {
+    var span = $("ddWdStageList").querySelector("[data-wdspan='" + x.i + "']");
+    var note = $("ddWdStageList").querySelector("[data-wdnote='" + x.i + "']");
+    var next = order[k + 1];
+    var to = Math.min(o.years, next ? next.start - 1 : o.years);
+    var live = x.start <= o.years && to >= x.start;
+    var ageOn = ddRetireAge != null;
+    if (span) span.textContent = !live ? "" : (ageOn ? "Age " : "Year ") +
+      fmtNum(ageOn ? ddAgeVal(x.start) : x.start) + " \u2013 " + fmtNum(ageOn ? ddAgeVal(to) : to);
+    // a new retirement age moves the age a stage shows, not the year it starts
+    var inp = $("ddWdStageList").querySelector("[data-wf='start'][data-wi='" + x.i + "']");
+    if (inp && document.activeElement !== inp)
+      inp.value = fmtNum(ageOn ? ddAgeVal(x.st.start) : x.st.start);
+    if (!note) return;
+    var w = o.initial * (x.st.rate || 0) / 100;
+    note.className = "hint" + (live ? "" : " acwarn");
+    note.textContent = x.start > o.years
+      ? "This starts after the " + fmtNum(o.years) + " years of retirement above, so it has no effect."
+      : !live ? "Another stage starts the same year and takes its place."
+      : o.initial > 0 ? "That\u0027s " + money(w) + " a year (" + money(w / 12) + "/mo) in today\u0027s dollars."
+      : "";
+  });
+}
+function readWdStart(v) {
+  var n = parseNum(v), age = ddRetireAgeVal();
+  if (!isFinite(n)) return null;
+  return Math.max(1, Math.round(age != null ? n - age + 1 : n));
+}
+$("ddAddWdStage").addEventListener("click", function () {
+  var years = Math.min(60, Math.max(1, Math.round(num("ddYears"))));
+  var order = ddWdOrder(ddWdStages), last = order[order.length - 1];
+  var start = Math.min(years, (last ? last.start : 1) + 10);
+  ddWdStages.push({start: Math.max(2, start), rate: last ? last.st.rate : num("ddRate")});
+  buildWdStages();
+  renderDrawdown();
+  var el = $("ddWdStageList").querySelector("[data-wf='rate'][data-wi='" + (ddWdStages.length - 1) + "']");
+  if (el) el.focus();
+});
+$("ddWdStageList").addEventListener("input", function (e) {
+  var el = e.target, f = el.getAttribute && el.getAttribute("data-wf");
+  if (!f) return;
+  var st = ddWdStages[parseInt(el.getAttribute("data-wi"), 10)];
+  if (!st) return;
+  if (f === "start") { var y = readWdStart(el.value); if (y != null) st.start = y; }
+  else st.rate = Math.max(0, parseNum(el.value) || 0);
+  renderDrawdownTyping();
+});
+$("ddWdStageList").addEventListener("click", function (e) {
+  var del = e.target.closest ? e.target.closest("[data-wddel]") : null;
+  if (!del) return;
+  var i = parseInt(del.getAttribute("data-wddel"), 10);
+  if (!ddWdStages[i]) return;
+  var name = ddWdStages[i].name || ("Stage " + (i + 2));
+  ddWdStages.splice(i, 1);
+  buildWdStages();
+  renderDrawdown();
+  toast("Removed " + name);
+});
+/* Renaming works as on the Stages cards: click selects the name, Enter
+   commits, and an empty or default entry goes back to "Stage N". */
+$("ddWdStageList").addEventListener("focusin", function (e) {
+  var el = e.target;
+  if (!el.getAttribute || el.getAttribute("data-wdname") === null) return;
+  var range = document.createRange();
+  range.selectNodeContents(el);
+  var sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+});
+$("ddWdStageList").addEventListener("keydown", function (e) {
+  var el = e.target;
+  if (el.getAttribute && el.getAttribute("data-wdname") !== null && e.key === "Enter") {
+    e.preventDefault();
+    el.blur();
+  }
+});
+$("ddWdStageList").addEventListener("focusout", function (e) {
+  var el = e.target;
+  var attr = el.getAttribute && el.getAttribute("data-wdname");
+  if (attr === null || attr === undefined) return;
+  var i = parseInt(attr, 10);
+  if (!ddWdStages[i]) return;
+  var raw = el.textContent.replace(/\s+/g, " ").trim().slice(0, 40);
+  var def = "Stage " + (i + 2);
+  if (raw && raw !== def) ddWdStages[i].name = raw;
+  else delete ddWdStages[i].name;
+  el.textContent = ddWdStages[i].name || def;
+});
+
 /* Resolves the Social Security mode/inputs into up to two independent
    {annual, delay} streams (primary + spouse). Without a retirement age this
    collapses to exactly the old behavior: one combined amount, one shared
@@ -15007,6 +15199,7 @@ function readDD() {
     fee: num("ddFee"),
     strategy: strat,
     initialPct: num("ddRate"),
+    wdStages: strat === "fixed" ? ddWdStages.map(function (x) { return Object.assign({}, x); }) : [],
     guardBand: num("ddGuardBand"),
     adjustPct: num("ddAdjust"),
     floorPct: num("ddFloor"),
@@ -15059,7 +15252,8 @@ function readDDState(){
     ssAmount:num("ddSSAmount"), ssAmount2:num("ddSSAmount2"), ssDelay:num("ddSSDelay"),
     retireAge: $("ddRetireAge").value.trim(),
     incomeItems: ddIncomeItems.map(x => Object.assign({}, x)),
-    expenseItems: ddExpenseItems.map(x => Object.assign({}, x))
+    expenseItems: ddExpenseItems.map(x => Object.assign({}, x)),
+    wdStages: ddWdStages.map(x => Object.assign({}, x))
   };
 }
 function writeDDState(d){
@@ -15096,6 +15290,13 @@ function writeDDState(d){
     ddIncomeItems.splice(0, ddIncomeItems.length, ...d.incomeItems.map(x => Object.assign({}, x)));
   if (Array.isArray(d.expenseItems))
     ddExpenseItems.splice(0, ddExpenseItems.length, ...d.expenseItems.map(x => Object.assign({}, x)));
+  // A full set of inputs (a load, Reset, the guide) replaces the spending
+  // stages, clearing them when it has none; a partial fill leaves them be.
+  if (Array.isArray(d.wdStages) || d.rate != null){
+    ddWdStages.splice(0, ddWdStages.length,
+      ...(Array.isArray(d.wdStages) ? d.wdStages : []).map(x => Object.assign({}, x)));
+    buildWdStages();
+  }
 }
 function ddSSAnnual() {
   var mode = $("ddSSMode").value;
@@ -15174,6 +15375,7 @@ function renderDrawdown() {
   $("ddVpwWrap").hidden = (strat !== "vpw");
   $("ddVpwNote").hidden = (strat !== "vpw");
   $("ddRateWrap").hidden = (strat === "vpw");
+  $("ddWdStagesWrap").hidden = (strat !== "fixed");
   var clash = strat !== "fixed" && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
   $("ddSpendNote2").hidden = !clash;
   if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
@@ -15216,8 +15418,10 @@ function renderDrawdown() {
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
-    ? "That\u0027s " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above."
+    ? "That\u0027s " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above" +
+      (strat === "fixed" && ddWdStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") + "."
     : "Enter your portfolio value above to see this in dollars.";
+  if (strat === "fixed") syncWdStages(o);
 
   if (o.initial <= 0) {
     setBig("ddSuccess", "\u2014"); setBig("ddMedian", "\u2014"); setBig("ddWorst", "\u2014");
@@ -18590,7 +18794,7 @@ function toolIsDirty(tool){
         d.apr !== x.apr || d.min !== x.min;
     });
   if (tool === "backtest") return !sameShallow(readBTState(), BT_DEFAULTS);
-  if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) ||
+  if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) || ddWdStages.length > 0 ||
     ddIncomeItems.some(it => it.on !== false) || ddExpenseItems.some(it => it.on !== false);
   if (tool === "basic"){
     const b = readBasic();
