@@ -5154,6 +5154,8 @@ window.onerror = function(msg){
           address itself, so anyone opening it sees exactly your numbers;
           nothing is uploaded, the whole scenario travels inside the URL, and it's
           also the most reliable way to move a setup between your own devices.
+          On a phone it's <b>Share link</b> and opens your share sheet, so a
+          text shows the site's preview card rather than a long address.
           <b>Summary</b> builds a clean one-page version and opens your print dialog,
           where you can choose Save as PDF; on iPhone use Share then Print. <b>Save
           image card</b> and <b>Copy image card</b> generate a shareable square image
@@ -18082,11 +18084,25 @@ function shareOpen(str){
     : SHARE_TOOLS[d.ts.k] ? sharePatch(SHARE_TOOLS[d.ts.k], d.ts.d) : d.ts.d};
   return o;
 }
+/* On a phone, a link goes out through the system share sheet rather than the
+   clipboard. Sent that way, on its own, Messages and most chat apps show it
+   as the site's preview card instead of a bare URL. The hash that carries
+   the numbers never reaches the server, so the preview is always the same
+   card. Cancelling the sheet does nothing; any other failure falls back to
+   copying. */
+function shareSheet(){
+  try { return !!navigator.share && window.matchMedia("(pointer: coarse)").matches; } catch(e){ return false; }
+}
+function sendLink(url, copied){
+  const copy = () => copyText(url).then(() => toast(copied))
+    .catch(() => { prompt("Copy this link:", url); });
+  if (!shareSheet()) return copy();
+  navigator.share({url}).catch(err => { if (!err || err.name !== "AbortError") copy(); });
+}
 function doShare(){
   const link = shareLink(), url = location.origin + location.pathname + link;
   history.replaceState({t:chartMode.tab, s:toolSub}, "", link);
-  copyText(url).then(() => toast("Link copied; it opens with these exact numbers"))
-               .catch(() => toast("Couldn't copy. The link is in your address bar."));
+  sendLink(url, "Link copied; it opens with these exact numbers");
 }
 
 /* ---------- portfolio backtest ---------- */
@@ -19219,7 +19235,8 @@ function copyCard(){
 $("btnShareMenu").addEventListener("click", async () => {
   if (chartMode.tab === "guide"){
     const c = await showPopup("Share your plan", [
-      {label:"Copy link", desc:"Opens your answers and plan in the guide"},
+      shareSheet() ? {label:"Share link", desc:"Text or send your answers and plan"}
+        : {label:"Copy link", desc:"Opens your answers and plan in the guide"},
       {label:"Print or save as PDF", desc:"Your score, plan and next moves on one page"}
     ]);
     if (c === 0) gdSharePlan();
@@ -19227,7 +19244,8 @@ $("btnShareMenu").addEventListener("click", async () => {
     return;
   }
   const choice = await showPopup("Share", [
-    {label:"Copy link", desc:"Copy a shareable URL with all your inputs"},
+    shareSheet() ? {label:"Share link", desc:"Text or send a link with all your inputs"}
+      : {label:"Copy link", desc:"Copy a shareable URL with all your inputs"},
     {label:"Summary", desc:"One-page printable overview (Save as PDF)"},
     {label:"Save image card", desc:"A square PNG of your headline numbers"},
     {label:"Copy image card", desc:"Put that image straight on the clipboard"}
@@ -22684,8 +22702,7 @@ function gdSharePlan(){
     if (["bgRows", "debtRows", "moState", "clState", "ddTool"].indexOf(k) < 0) a[k] = gd.a[k];
   });
   const url = location.origin + "/guide#g=" + encodeState({v:1, a});
-  copyText(url).then(() => toast("Link copied. It opens this plan in the guide, with your numbers."))
-    .catch(() => { prompt("Copy this link:", url); });
+  sendLink(url, "Link copied. It opens this plan in the guide, with your numbers.");
 }
 /* Only plain values come in from a link: numbers, true/false, and short
    strings of letters, digits and spaces. Nothing that could be markup. */
