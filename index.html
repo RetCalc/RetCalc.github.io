@@ -1708,6 +1708,8 @@ svg{display:block;width:100%;height:auto}
     padding-bottom:env(safe-area-inset-bottom,0px);
     box-shadow:0 -12px 30px -22px rgba(0,0,0,.9)}
   html.pwa[data-theme="light"] .navbar{box-shadow:0 -12px 30px -24px rgba(22,32,55,.45)}
+  /* With the rail at the bottom, the Guide's progress card pins to the top. */
+  html.pwa .gd-top{top:calc(var(--sb-clear) + 10px)}
   /* On a fixed-bottom bar the scroll shadow shouldn't change, so keep it. */
   html.pwa .navbar.stuck{box-shadow:0 -12px 30px -22px rgba(0,0,0,.9)}
   html.pwa nav[role=tablist]{overflow-x:visible;gap:0;
@@ -1821,13 +1823,73 @@ header{padding-top:var(--sb-clear)}
    route beside it. Choices are full-width rows rather than the small .seg
    switches, since each carries a sentence of its own. */
 #tab-guide{max-width:1120px;margin:0 auto;width:100%}
-.gd-top{padding:18px 22px 16px}
+/* The progress card pins under the tab rail like the rail itself. Once it's
+   parked, a solid shadow of page colour, lifted the rail's height plus the
+   gap, blanks everything above it up to the top of the screen, corners
+   included, so questions never show through between the two. --gd-stick (its height plus that
+   gap, set from script) keeps the side column and focus scrolling clear.
+   --rail-h is the rail's measured height, which can differ from --navh. */
+.gd-top{padding:18px 22px 16px;position:sticky;top:calc(var(--sb-clear) + var(--rail-h,var(--navh)) + 10px);z-index:25}
+.gd-top.stuck{box-shadow:0 calc(-12px - var(--sb-clear) - var(--rail-h,var(--navh))) 0 var(--bg),0 14px 30px -22px rgba(0,0,0,.9)}
+[data-theme="light"] .gd-top.stuck{box-shadow:0 calc(-12px - var(--sb-clear) - var(--rail-h,var(--navh))) 0 var(--bg),0 14px 30px -24px rgba(22,32,55,.45)}
+html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var(--navh) + var(--gd-stick,0px) + 10px)}
 .gd-top-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .gd-title{font-size:16px;font-weight:600;letter-spacing:-.012em;display:flex;align-items:center}
 .gd-count{margin-left:auto;font-size:12px;color:var(--dimmer);font-family:var(--mono)}
 .gd-mini{display:none;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .gd-mini b{font-family:var(--mono);font-size:15px;color:var(--text)}
-.gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:14px}
+.gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+/* The logo's arrow rides the bar, its tip at the furthest point reached, and
+   finishes in the target past the last chapter. The track spans the bars
+   only, so the same arithmetic as the grid places the tip. */
+.gd-prog-wrap{position:relative;margin-top:14px;padding-right:30px}
+.gd-track{position:absolute;left:0;right:30px;top:2.5px;height:0;pointer-events:none}
+.gd-seg i b{transition:width .7s cubic-bezier(.3,.6,.3,1)}
+/* The bow sits in the card's left padding. Until the first answer the
+   string is drawn back with the arrow nocked on it; after that it hangs
+   straight, and twangs once on the release. */
+.gd-track{--nock:27px}
+.gd-bow{position:absolute;top:0;left:-21px;width:20px;height:34px;transform:translateY(-50%)}
+.gd-bow svg{display:block;width:100%;height:100%;overflow:visible}
+.gd-bow .limb{fill:none;stroke:var(--jade);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.gd-bow .str{fill:none;stroke:var(--steel);stroke-width:2.2;transition:opacity .12s}
+.gd-bow .str.drawn{opacity:0}
+.gd-track.nocked .gd-bow .str.drawn{opacity:1}
+.gd-track.nocked .gd-bow .str.rest{opacity:0}
+.gd-track.loose .gd-bow .str.rest{transform-origin:33px 32px;animation:gdTwang .45s ease-out}
+@keyframes gdTwang{20%{transform:translateX(4px)}45%{transform:translateX(-2.5px)}70%{transform:translateX(1.2px)}}
+.gd-arrow{position:absolute;top:0;width:46px;height:12px;transform:translate(-100%,-50%);
+  transition:left .7s cubic-bezier(.3,.6,.3,1)}
+.gd-arrow svg,.gd-target svg{display:block;width:100%;height:100%;overflow:visible}
+.gd-arrow .sh{stroke:var(--gold);stroke-width:3.2;stroke-linecap:round}
+.gd-arrow .hd{fill:var(--gold)}
+/* In flight it rises and dips on a small arc, tipping with it, and leaves
+   a streak behind. */
+.gd-arrow::before{content:"";position:absolute;right:100%;top:50%;width:56px;height:2px;margin-top:-1px;
+  border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold));opacity:0}
+.gd-arrow.fly svg{animation:gdArc .7s cubic-bezier(.3,.6,.3,1)}
+.gd-arrow.fly::before{animation:gdStreak .7s ease-out}
+@keyframes gdArc{0%{transform:none}35%{transform:translateY(-4px) rotate(-5deg)}75%{transform:translateY(-1px) rotate(3deg)}100%{transform:none}}
+@keyframes gdStreak{15%{opacity:.75}100%{opacity:0}}
+.gd-target{position:absolute;top:0;left:calc(100% + 17px);width:18px;height:18px;transform:translate(-50%,-50%)}
+.gd-target .rg{fill:none;stroke:var(--dimmer);stroke-width:1.6;transition:stroke .3s .6s}
+.gd-target .eye{fill:var(--dimmer);transition:fill .3s .6s}
+.gd-target::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--gold);opacity:0}
+.gd-track.hit .gd-target .rg{stroke:var(--gold)}
+.gd-track.hit .gd-target .eye{fill:var(--gold)}
+/* On impact the target jolts back, a ring bursts out of it, and the arrow
+   quivers where it stuck. */
+.gd-track.hit.fresh .gd-target{animation:gdJolt .5s .65s ease-out}
+.gd-track.hit.fresh .gd-target::after{animation:gdBurst .7s .65s ease-out}
+.gd-track.hit.fresh .gd-arrow svg{transform-origin:100% 50%;animation:gdArc .7s cubic-bezier(.3,.6,.3,1),gdQuiver .5s .7s ease-out}
+@keyframes gdJolt{25%{transform:translate(-50%,-50%) translateX(3px) scale(1.25)}60%{transform:translate(-50%,-50%) translateX(-1px) scale(.95)}}
+@keyframes gdBurst{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
+@keyframes gdQuiver{20%{transform:rotate(-7deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(1.5deg)}}
+@media (prefers-reduced-motion:reduce){
+  .gd-arrow,.gd-seg i b{transition:none}
+  .gd-arrow.fly svg,.gd-arrow.fly::before,.gd-track.loose .gd-bow .str.rest,
+  .gd-track.hit.fresh .gd-target,.gd-track.hit.fresh .gd-target::after,.gd-track.hit.fresh .gd-arrow svg{animation:none}
+}
 .gd-seg{min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
 .gd-seg i{display:block;height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden;position:relative}
 .gd-seg i b{position:absolute;left:0;top:0;bottom:0;background:var(--jade);border-radius:3px;
@@ -1837,7 +1899,7 @@ header{padding-top:var(--sb-clear)}
 .gd-seg.on span{color:var(--text);font-weight:600}
 .gd-seg:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
 .gd-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
-.gd-side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(var(--navh) + 16px)}
+.gd-side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(var(--navh) + var(--gd-stick,0px) + 16px)}
 @media (max-width:899px){
   .gd-grid{grid-template-columns:minmax(0,1fr)}
   .gd-side{position:static}
@@ -2014,6 +2076,8 @@ html[data-theme="light"] .gd-choice:hover{border-color:#9fc4b4}
 @media (max-width:640px){
   .gd-top{padding:15px 16px 14px}
   .gd-seg span{display:none}
+  .gd-track{--nock:31px}
+  .gd-bow{transform:translateY(-50%) scale(.75);transform-origin:100% 50%}
   .gd-card{padding:20px 18px 18px}
   .gd-q,.panel > h2.gd-q{font-size:20px}
   .gd-lead{font-size:14px}
@@ -6006,7 +6070,14 @@ window.onerror = function(msg){
         <div class="gd-mini" id="gdMini"></div>
         <div class="gd-count" id="gdCount"></div>
       </div>
-      <div class="gd-prog" id="gdProg"></div>
+      <div class="gd-prog-wrap">
+        <div class="gd-prog" id="gdProg"></div>
+        <div class="gd-track" id="gdTrack" aria-hidden="true">
+          <span class="gd-bow"><svg viewBox="18 5 32 54"><path class="str rest" d="M33 7 L33 57"/><path class="str drawn" d="M33 7 L21 32 L33 57"/><path class="limb" d="M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57"/></svg></span>
+          <span class="gd-arrow" id="gdArrow"><svg viewBox="5 25.5 56 13"><path class="sh" d="M7 32 H51"/><path class="hd" d="M60 32 L48 25.5 L50.5 32 L48 38.5 Z M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z"/></svg></span>
+          <span class="gd-target"><svg viewBox="0 0 18 18"><circle class="rg" cx="9" cy="9" r="7.5"/><circle class="rg" cx="9" cy="9" r="4"/><circle class="eye" cx="9" cy="9" r="1.6"/></svg></span>
+        </div>
+      </div>
     </div>
     <div class="gd-grid">
       <div class="panel gd-card" id="gdCard" tabindex="-1"></div>
@@ -17448,6 +17519,36 @@ function initStickyRail(){
   check();
 }
 
+/* The Guide's pinned progress card: the same parked check as the rail, and
+   its height published as --gd-stick for whatever has to clear it. */
+function initGuideStick(){
+  const el = document.querySelector(".gd-top");
+  if (!el) return;
+  const root = document.documentElement, nb = document.querySelector(".navbar");
+  const size = () => {
+    root.style.setProperty("--gd-stick", el.offsetHeight ? el.offsetHeight + 10 + "px" : "0px");
+    if (nb && nb.offsetHeight) root.style.setProperty("--rail-h", nb.offsetHeight + "px");
+  };
+  if (typeof ResizeObserver !== "undefined"){
+    const ro = new ResizeObserver(size);
+    ro.observe(el);
+    if (nb) ro.observe(nb);
+  }
+  size();
+  let queued = false;
+  const check = () => {
+    queued = false;
+    const off = parseFloat(getComputedStyle(el).top) || 0;
+    el.classList.toggle("stuck", !!el.offsetHeight && el.getBoundingClientRect().top <= off + 1);
+  };
+  window.addEventListener("scroll", () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(check);
+  }, {passive:true});
+  check();
+}
+
 function initLiveRegion(){
   if (typeof MutationObserver === "undefined") return;
   const obs = new MutationObserver(scheduleAnnounce);
@@ -22194,7 +22295,8 @@ function gdRender(focus){
     // Stay put unless the new question's top is scrolled out of view above
     // the tab rail; then bring just the card's top back, not the whole page.
     const top = $("gdCard").getBoundingClientRect().top;
-    const rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 12;
+    const css = getComputedStyle(document.documentElement);
+    const rail = (parseFloat(css.getPropertyValue("--navh")) || 44) + (parseFloat(css.getPropertyValue("--gd-stick")) || 0) + 12;
     if (top < rail){
       try { window.scrollBy({top: top - rail, behavior:"auto"}); } catch(e){ window.scrollBy(0, top - rail); }
     }
@@ -22230,13 +22332,48 @@ function gdRenderSide(){
   map += "<div class='gd-map-foot'><button type='button' class='gd-link' data-gd='restart'>Start over</button></div>";
   $("gdMap").innerHTML = map;
   const L = gdRoute();
+  const hit = cur.id === "results" || L.every(s => s.id === "results" || s.id === "intro" || gd.done[s.id]);
+  /* Bars are redrawn at their old widths, then grown to the new ones in
+     step with the arrow, so the fill never runs out ahead of it. */
+  const was = [...$("gdProg").querySelectorAll(".gd-seg i b")].map(b => b.style.width), fill = [];
   $("gdProg").innerHTML = GD_CH.map((c, ci) => {
     const st = L.filter(s => s.ch === ci);
     const d = st.filter(s => gd.done[s.id]).length;
     const on = cur.ch === ci;
+    // Once the arrow is in the target, the last bar runs up to its tail.
+    fill.push(hit && ci === GD_CH.length - 1 ? "calc(100% - 28px)" : (st.length ? d / st.length * 100 : 0).toFixed(0) + "%");
     return "<button type='button' class='gd-seg" + (on ? " on" : "") + "' data-go='" + (st[0] ? st[0].id : "intro") + "' aria-label='" + c + ": " + d + " of " + st.length + " done'>" +
-      "<i><b style='width:" + (st.length ? d / st.length * 100 : 0).toFixed(0) + "%'></b></i><span>" + c + "</span></button>";
+      "<i><b style='width:" + (was[ci] || fill[ci]) + "'></b></i><span>" + c + "</span></button>";
   }).join("");
+  if (was.length){
+    void $("gdProg").offsetWidth;
+    $("gdProg").querySelectorAll(".gd-seg i b").forEach((b, ci) => { b.style.width = fill[ci]; });
+  }
+  /* The arrow flies just ahead of the fill: its tail sits on the far edge of
+     the last chapter with anything done, where each bar is (track - 5 gaps)
+     / 6 wide, and its 46px length runs on from there. Before any answer it
+     sits nocked on the drawn string, --nock from the left. */
+  let far = 0;
+  GD_CH.forEach((c, ci) => {
+    const st = L.filter(s => s.ch === ci), d = st.filter(s => gd.done[s.id]).length;
+    if (d) far = { ci: ci, f: d / st.length };
+  });
+  const pos = hit ? 7 : far ? far.ci + far.f : 0, tr = $("gdTrack"), ar = $("gdArrow");
+  const prev = tr.dataset.pos == null ? null : +tr.dataset.pos;
+  tr.dataset.pos = pos;
+  ar.style.left = hit ? "calc(100% + 18px)"
+    : far ? "calc((100% - 30px) * " + (pos / 6).toFixed(4) + " + " + (far.ci * 6 + 46) + "px)" : "var(--nock)";
+  tr.classList.toggle("nocked", !far && !hit);
+  tr.classList.toggle("hit", hit);
+  // Motion only for moves made on this page, not for the state it loads in.
+  if (prev != null && pos > prev){
+    const again = (el, c) => { el.classList.remove(c); void el.offsetWidth; el.classList.add(c); };
+    again(ar, "fly");
+    if (prev === 0) again(tr, "loose");
+    if (hit) again(tr, "fresh");
+    clearTimeout(gdRenderSide.t);
+    gdRenderSide.t = setTimeout(() => { ar.classList.remove("fly"); tr.classList.remove("loose", "fresh"); }, 1400);
+  }
 }
 /* Typing redraws only the live notes, the score and the Continue button. */
 function gdRefresh(){
@@ -22714,6 +22851,7 @@ try {
   else history.replaceState({t:chartMode.tab, s:toolSub}, "");
 } catch(e){}
 initStickyRail();
+initGuideStick();
 let tweening = false;
 try { tweening = !window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
 if (tweening) initValueTween(); else initLiveRegion();
