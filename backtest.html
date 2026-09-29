@@ -382,8 +382,12 @@ aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
    no sidebar (the solo layouts, and phones, where the grid is one column). */
 .seo{grid-column:2;min-width:0}
 main.solo .seo{grid-column:1 / -1}
-.seo-a{max-width:78ch;margin:14px auto 0;padding:22px 26px 18px;background:var(--panel);
+/* The tile spans the column like the results panels above it (the grid's
+   20px gap is the same spacing the panels have between them); the text
+   inside keeps a readable line length rather than stretching with it. */
+.seo-a{margin:0;padding:22px 26px 18px;background:var(--panel);
   border:1px solid var(--line);border-radius:var(--r-panel);box-shadow:var(--lift-1)}
+.seo-a > *{max-width:78ch}
 .seo-a h2{margin:0 0 10px;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.3;color:var(--text)}
 .seo-a h3{margin:18px 0 6px;font-size:14px;font-weight:600;color:var(--text)}
 .seo-a p,.seo-a li{font-size:13.5px;line-height:1.7;color:var(--dim)}
