@@ -11,20 +11,24 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<meta name="apple-mobile-web-app-title" content="Retirement">
-<title>Retirement Calculator</title>
-<meta name="description" content="Free retirement calculator and planning tools: project your savings, test withdrawals against every market since 1926, estimate 2026 taxes, plan Roth conversions, healthcare, FIRE and more. Runs entirely in your browser.">
+<meta name="apple-mobile-web-app-title" content="RetCalc">
+<!--PAGE-HEAD-->
+<title>Free Retirement Calculator: Will Your Savings Last? | RetCalc</title>
+<meta name="description" content="Free retirement calculator: see what your savings grow to by retirement in today&#x27;s dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Nothing leaves your browser.">
+<link rel="canonical" href="https://retcalc.app/">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Retirement Calculator">
-<meta property="og:title" content="Retirement Calculator">
-<meta property="og:description" content="Project your savings, test withdrawals against every market since 1926, and plan taxes, Roth conversions, healthcare and FIRE. Free, and nothing leaves your browser.">
+<meta property="og:site_name" content="RetCalc">
+<meta property="og:title" content="Free Retirement Calculator: Will Your Savings Last? | RetCalc">
+<meta property="og:description" content="Free retirement calculator: see what your savings grow to by retirement in today&#x27;s dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Nothing leaves your browser.">
 <meta property="og:url" content="https://retcalc.app/">
 <meta property="og:image" content="https://retcalc.app/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Calculator: know your number.">
+<meta property="og:image:alt" content="RetCalc: know your number.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://retcalc.app/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Free Retirement Calculator: Will Your Savings Last?", "url": "https://retcalc.app/", "description": "Free retirement calculator: see what your savings grow to by retirement in today's dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Nothing leaves your browser.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How much do I need to retire?", "acceptedAnswer": {"@type": "Answer", "text": "A common starting point is 25 times the yearly spending your savings must cover, after Social Security and any pension. That's the 4% rule turned around: 4% of 25 times your spending is one year of it."}}, {"@type": "Question", "name": "What return should I assume?", "acceptedAnswer": {"@type": "Answer", "text": "After inflation, a mostly-stock portfolio has historically earned around 6% to 7% a year, and a balanced one around 4% to 5%. Planning with the lower end leaves room for bad decades."}}, {"@type": "Question", "name": "Is my information stored anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "No. Every calculation runs in your browser; nothing you type is sent anywhere."}}]}]}</script>
+<!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
      like /incometax 404s and is redirected here by 404.html, which packs the
@@ -53,6 +57,93 @@
       document.documentElement.classList.add("pwa");
     }
   } catch (e) {}
+</script>
+<script type="application/json" id="pageMeta">
+{
+"brand": " | RetCalc",
+"pages": {
+"home": {
+"title": "Free Retirement Calculator: Will Your Savings Last? | RetCalc",
+"desc": "Free retirement calculator: see what your savings grow to by retirement in today's dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Nothing leaves your browser."
+},
+"advanced": {
+"title": "Advanced Retirement Calculator: Taxes, Fees & Market History | RetCalc",
+"desc": "Project retirement savings with contribution growth, fees, account types, employer match and 2026 taxes, then run the plan through every market since 1926 or 5,000 random ones."
+},
+"stages": {
+"title": "Multi-Stage Retirement Savings Calculator | RetCalc",
+"desc": "Plan retirement savings in stages, each with its own contribution, raises, return and investment mix, chained into one projection and tested against real market history."
+},
+"guide": {
+"title": "Retirement Readiness Check: Are You on Track? | RetCalc",
+"desc": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track."
+},
+"tools": {
+"title": "Free Financial Planning Calculators | RetCalc",
+"desc": "Free calculators for retirement withdrawals, early retirement, Roth conversions, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt."
+},
+"about": {
+"title": "About RetCalc: How the Calculators Work",
+"desc": "How RetCalc's calculators work, where the tax rules and historical market data come from, and what each tool assumes."
+},
+"drawdown": {
+"title": "Retirement Withdrawal Calculator: Will My Money Last? | RetCalc",
+"desc": "How much can you safely spend in retirement? Test the 4% rule and five flexible withdrawal strategies against every retirement since 1926, with Social Security and pensions."
+},
+"bridge": {
+"title": "Early Retirement Calculator: Reach 59½ Penalty-Free | RetCalc",
+"desc": "Retiring before 59½? Compare a Roth conversion ladder, 72(t) payments, the rule of 55 and your brokerage, with 2026 taxes, penalties and ACA premiums, tested since 1926."
+},
+"72t": {
+"title": "72(t) Calculator: SEPP Payments Before 59½ | RetCalc",
+"desc": "Size 72(t) substantially equal periodic payments from an IRA before 59½ without the 10% penalty, and see if they carry you there in every market since 1926."
+},
+"roth": {
+"title": "Roth Conversion Calculator: Should You Convert? | RetCalc",
+"desc": "Test Roth conversion strategies year by year to age 100 with 2026 federal and state taxes, Social Security, RMDs and Medicare IRMAA. See lifetime tax and after-tax wealth."
+},
+"rmd": {
+"title": "RMD Calculator: Required Minimum Distributions by Age | RetCalc",
+"desc": "Project your required minimum distributions every year to age 100 with the IRS Uniform Lifetime Table, and test whether Roth conversions before RMDs would lower your lifetime tax."
+},
+"healthcare": {
+"title": "Retirement Healthcare Cost Calculator: ACA & Medicare | RetCalc",
+"desc": "Estimate retirement health costs: 2026 ACA marketplace premiums and subsidies before 65, then Medicare Part B, Part D, Medigap and IRMAA surcharges by income."
+},
+"fire": {
+"title": "FIRE Calculator & Coast FIRE Calculator | RetCalc",
+"desc": "Find your FIRE number and the age you could reach financial independence, or when you could stop saving with Coast FIRE, with steady returns or every market since 1926."
+},
+"backtest": {
+"title": "Portfolio Backtest: Stock & Bond Returns Since 1926 | RetCalc",
+"desc": "See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
+},
+"incometax": {
+"title": "2026 Income Tax Calculator: Federal, State & FICA | RetCalc",
+"desc": "Estimate 2026 take-home pay with federal brackets, all 50 states and FICA, or the tax on retirement income from IRAs, Roth, brokerage, pensions and Social Security."
+},
+"mortgage": {
+"title": "Mortgage Calculator with Taxes, PMI & Extra Payments | RetCalc",
+"desc": "Calculate your full monthly mortgage payment with property tax, insurance, PMI and HOA, see amortization year by year, and test extra payments, recasting and refinancing."
+},
+"rentbuy": {
+"title": "Rent vs. Buy Calculator | RetCalc",
+"desc": "Should you rent or buy? Compare buyer and renter net worth year by year, counting the invested down payment, all costs of owning, appreciation, selling costs and taxes."
+},
+"college": {
+"title": "College Savings Calculator: How Much to Save Monthly | RetCalc",
+"desc": "How much to save each month for college, from public in-state to private and elite schools, with tuition inflation, current savings and 529 growth."
+},
+"budget": {
+"title": "Budget Calculator: Income, Spending & Savings | RetCalc",
+"desc": "Build a monthly budget from your take-home pay, see what's left for saving and debt, and size your emergency fund. Export it as a spreadsheet."
+},
+"debt": {
+"title": "Debt Payoff Calculator: Avalanche vs. Snowball | RetCalc",
+"desc": "List your debts and see your debt-free date, total interest and what you save over minimum payments, with the avalanche and snowball methods compared month by month."
+}
+}
+}
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -282,6 +373,29 @@ aside::-webkit-scrollbar{width:8px}
 aside::-webkit-scrollbar-track{background:transparent}
 aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:0}
 aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
+
+/* ---------- about this tool (the page's written explanation) ---------- */
+/* Under the tool, in the results column: the sidebar is sticky and runs the
+   height of the page, so the article can't span it. Full width where there's
+   no sidebar (the solo layouts, and phones, where the grid is one column). */
+.seo{grid-column:2;min-width:0}
+main.solo .seo{grid-column:1 / -1}
+.seo-a{max-width:78ch;margin:14px auto 0;padding:22px 26px 18px;background:var(--panel);
+  border:1px solid var(--line);border-radius:var(--r-panel);box-shadow:var(--lift-1)}
+.seo-a h2{margin:0 0 10px;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.3;color:var(--text)}
+.seo-a h3{margin:18px 0 6px;font-size:14px;font-weight:600;color:var(--text)}
+.seo-a p,.seo-a li{font-size:13.5px;line-height:1.7;color:var(--dim)}
+.seo-a p{margin:0 0 10px}
+.seo-a ul{margin:0 0 10px;padding-left:18px}
+.seo-a li{margin-bottom:6px}
+.seo-a b{color:var(--text);font-weight:600}
+.seo-a a{color:var(--jade)}
+.seo-a details{border-top:1px solid var(--line-soft);padding:9px 0}
+.seo-a details:last-child{border-bottom:1px solid var(--line-soft)}
+.seo-a summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text);list-style-position:outside}
+.seo-a details p{margin:7px 0 2px}
+@media (max-width:640px){ .seo-a{padding:18px 16px 14px} .seo-a h2{font-size:17px} }
+@media print{ .seo{display:none} }
 
 /* ---------- fields: recessed wells ---------- */
 .field{margin-bottom:13px}
@@ -1190,7 +1304,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
      text on the page. */
   .sh-foot{font-size:7.5px;color:#666;line-height:1.45;border-top:1px solid #ccc;
     padding-top:5px}
-  .sh-foot::after{content:"Retirement Calculator \00b7  retcalc.app \00b7  Know your number.";
+  .sh-foot::after{content:"RetCalc \00b7  retcalc.app \00b7  Know your number.";
     display:block;margin-top:4px;color:#9a7a3a;font-weight:600;letter-spacing:.01em}
 }
 
@@ -1693,6 +1807,7 @@ svg{display:block;width:100%;height:auto}
   main{grid-template-columns:minmax(0,1fr);
     padding:18px var(--gr) 36px var(--gl)}
   aside{position:static;max-height:none;overflow-y:visible}
+  .seo{grid-column:1 / -1}
   .masthead{padding:18px var(--gr) 16px var(--gl)}
 }
 /* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
@@ -2612,7 +2727,7 @@ window.onerror = function(msg){
         </g>
       </svg>
       <div class="wordmark">
-        <h1>Retirement Calculator</h1>
+        <h1>RetCalc</h1>
         <div class="tagline">Know your number.</div>
       </div>
     </div>
@@ -7067,6 +7182,251 @@ window.onerror = function(msg){
     </div>
   </div>
 
+  <!-- ========== ABOUT THIS TOOL ==========
+       One article per page, shown under whichever tool the address names
+       (seoSync). They're what a search engine reads for that page, and the
+       plain explanation a first-time visitor needs. og/build.py copies this
+       page to each address and un-hides that address's article in the copy. -->
+  <section class="seo" id="seoArticles" aria-label="About this tool">
+
+  <article class="seo-a" data-page="home" hidden>
+    <h2>Free retirement calculator</h2>
+    <p>Answer six questions and see what your savings could grow to by the age you want to retire, in today's dollars, with a range for better and worse markets. It's the quickest way to answer the first retirement question: am I roughly on track?</p>
+    <h3>How it works</h3>
+    <p>Enter your age, when you'd like to retire, what you've saved and what you add each month, then pick an investment mix. The calculator grows your savings at a return after inflation, raising your contribution with prices each year, so every figure reads in today's money. The yearly income shown uses the 4% rule: about 4% of savings a year is what has historically lasted a 30-year retirement.</p>
+    <h3>Go further</h3>
+    <ul>
+      <li><a href="/advanced">Advanced</a> adds taxes, fees, account types, employer match and historical or random markets.</li>
+      <li><a href="/drawdown">Drawdown Simulator</a> tests whether the money lasts once you start spending it.</li>
+      <li><a href="/guide">Retirement Readiness Guide</a> puts it all together into a score and a plan.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>How much do I need to retire?</summary><p>A common starting point is 25 times the yearly spending your savings must cover, after Social Security and any pension. That's the 4% rule turned around: 4% of 25 times your spending is one year of it.</p></details>
+    <details><summary>What return should I assume?</summary><p>After inflation, a mostly-stock portfolio has historically earned around 6% to 7% a year, and a balanced one around 4% to 5%. Planning with the lower end leaves room for bad decades.</p></details>
+    <details><summary>Is my information stored anywhere?</summary><p>No. Every calculation runs in your browser; nothing you type is sent anywhere.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="advanced" hidden>
+    <h2>Retirement savings calculator with taxes, fees and market history</h2>
+    <p>Project a retirement portfolio the way a planner would: contributions that rise with your pay, a return before inflation, fees, a glide path toward bonds, and the tax you'll owe when you withdraw. Then see the same plan through every market since 1926, or 5,000 random ones.</p>
+    <h3>What you can model</h3>
+    <ul>
+      <li><b>Account types:</b> split savings into traditional 401(k)/IRA, Roth and taxable brokerage, with your employer match, and see the 2026 federal and state tax on what you'd withdraw.</li>
+      <li><b>Fees:</b> an expense ratio of 1% can cost a quarter of a portfolio over a career. The tool shows the dollar cost.</li>
+      <li><b>Work backwards:</b> set a target income or balance and it solves for the contribution, or the number of years, that reaches it.</li>
+      <li><b>Coast FIRE:</b> finds the point where you could stop contributing and still reach the target.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>Why show "inflation adjusted" figures?</summary><p>A million dollars in 30 years buys what about $410,000 buys today at 3% inflation. Today's-dollar figures let you compare the result with prices you know.</p></details>
+    <details><summary>What's the difference between historical and Monte Carlo?</summary><p>Historical runs your plan through every real stretch of markets since 1926, month by month. Monte Carlo draws thousands of random return sequences with the volatility you set, including ones history never produced.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="stages" hidden>
+    <h2>Multi-stage retirement savings calculator</h2>
+    <p>Real careers aren't one straight line. Stages splits your working years into chapters, like the early years, after the car loan is gone, and after the kids leave, each with its own contribution, raises, return and investment mix, and chains them together into one projection.</p>
+    <h3>How to use it</h3>
+    <p>Add a stage for each change you expect, give it a length and a contribution, and tick <b>Inflation adjusted</b> to type a future contribution in today's dollars. The chart marks each boundary, and <b>Stage by stage</b> shows what every chapter adds. Switch to Historical to run the whole plan through real markets.</p>
+    <h3>Questions</h3>
+    <details><summary>When would I use Stages instead of Advanced?</summary><p>Whenever your saving will change in a planned way: a debt paid off, a promotion, part-time years, or a coast phase where you stop contributing and let the balance grow.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="guide" hidden>
+    <h2>Retirement readiness check: are you on track?</h2>
+    <p>A guided check-up, one question at a time, that turns your answers into a retirement readiness score out of 100 and a plan you can adjust. It covers cash flow, emergency savings, debt, big goals like a home or college, and retirement itself.</p>
+    <h3>What you get</h3>
+    <ul>
+      <li>A score built from your retirement outlook, savings rate, emergency fund, debt and monthly cash flow.</li>
+      <li>Your plan tested against every retirement since 1926, with Social Security estimated for you.</li>
+      <li>Specific changes that would put you on track, such as saving more, retiring later or spending less, sized for you.</li>
+      <li>Short trips into the other tools, with your numbers filled in.</li>
+    </ul>
+    <p>It takes about 15 minutes, saves as you go, and nothing leaves your browser.</p>
+  </article>
+
+  <article class="seo-a" data-page="tools" hidden>
+    <h2>Free financial planning calculators</h2>
+    <p>Twelve tools for the money decisions around retirement and everyday life, each explained in plain language, with no sign-up and nothing stored on a server.</p>
+    <ul>
+      <li><a href="/drawdown">Retirement withdrawal calculator</a>: will your money last?</li>
+      <li><a href="/bridge">Early retirement calculator</a>: getting to 59½ without penalties, including <a href="/72t">72(t) payments</a>.</li>
+      <li><a href="/roth">Roth conversion calculator</a> and <a href="/rmd">RMD calculator</a>.</li>
+      <li><a href="/healthcare">Healthcare costs</a> before and after Medicare.</li>
+      <li><a href="/fire">FIRE calculator</a>, <a href="/backtest">portfolio backtest</a>, <a href="/incometax">income tax</a>, <a href="/mortgage">mortgage</a>, <a href="/rentbuy">rent vs. buy</a>, <a href="/college">college savings</a>, <a href="/budget">budget</a> and <a href="/debt">debt payoff</a>.</li>
+    </ul>
+  </article>
+
+  <article class="seo-a" data-page="drawdown" hidden>
+    <h2>Retirement withdrawal calculator: will your money last?</h2>
+    <p>Test how much you can safely spend in retirement. The Drawdown Simulator runs your savings, spending, Social Security and investment mix through every real retirement since 1926, and 5,000 random ones, and shows how often the money lasted.</p>
+    <h3>How to use it</h3>
+    <p>Enter what you'll have at retirement, how many years it has to last, and a withdrawal rate. Add Social Security (estimated for you, or from your statement), pensions and big future expenses. The <b>Success rate</b> is the share of retirements where the money never ran out.</p>
+    <h3>The 4% rule, and alternatives</h3>
+    <p>The 4% rule says you can withdraw 4% of your starting balance, raise it with inflation every year, and last 30 years in almost every historical market. The simulator tests it, and five flexible strategies that adjust to markets: Guyton-Klinger guardrails, floor and ceiling, the Yale endowment rule, a fixed percentage, and variable percentage withdrawal (VPW).</p>
+    <h3>Questions</h3>
+    <details><summary>What is a safe withdrawal rate?</summary><p>For a 30-year retirement with a mix of stocks and bonds, 4% has survived about 95% of historical starts. Longer retirements, like one beginning at 50, call for something closer to 3.25% to 3.5%, or a strategy that trims spending after bad years.</p></details>
+    <details><summary>What is sequence of returns risk?</summary><p>Losses early in retirement hurt far more than the same losses later, because you're selling investments at low prices to live on. Two retirees with the same average return can end very differently. It's why the simulator tests real sequences, like retiring in 1966 or 1929.</p></details>
+    <details><summary>Are the amounts before or after tax?</summary><p>Before tax. Withdrawals from traditional accounts and part of Social Security are taxed, so use the <a href="/incometax">Income Tax</a> tool's retirement mode to see what you'd keep.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="bridge" hidden>
+    <h2>Early retirement calculator: getting to 59½ without penalties</h2>
+    <p>Withdrawals from a 401(k) or IRA before age 59½ usually cost a 10% penalty on top of income tax. Retire earlier and you need a plan for the years in between. This calculator runs every legal route side by side, with the real 2026 tax, penalties and ACA health premiums, and tests each against every market since 1926.</p>
+    <h3>The routes it compares</h3>
+    <ul>
+      <li><b>Taxable brokerage and Roth contributions:</b> money you can reach any time.</li>
+      <li><b>Roth conversion ladder:</b> convert a year's spending to a Roth each year and spend it five years later, penalty-free.</li>
+      <li><b>72(t) payments:</b> fixed yearly withdrawals from an IRA with no penalty. See the <a href="/72t">72(t) calculator</a>.</li>
+      <li><b>Rule of 55:</b> leave your job in or after the year you turn 55 and that employer's 401(k) opens up penalty-free.</li>
+      <li><b>Governmental 457(b)</b> plans, which never carry the penalty, and simply paying the 10% as a comparison.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>How much do I need to retire early?</summary><p>Enough to cover your spending for longer, typically 28 to 33 times a year's spending instead of 25, and enough outside traditional accounts, or reachable through the routes above, to cover the years before 59½.</p></details>
+    <details><summary>Why do health premiums matter so much?</summary><p>Before Medicare at 65, marketplace subsidies depend on your income. The way you draw money, from a brokerage account or a Roth versus a traditional IRA, changes that income and can move premiums by thousands a year. The tool prices each plan's premiums for you.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="72t" hidden>
+    <h2>72(t) calculator: SEPP payments before 59½</h2>
+    <p>Section 72(t) of the tax code lets you take <b>substantially equal periodic payments</b> (SEPP) from an IRA before 59½ without the 10% early-withdrawal penalty. This calculator sizes the payment, splits off an IRA just big enough to make it, and shows whether the plan carries you to 59½ in every market since 1926, next to the other ways of reaching retirement money early.</p>
+    <h3>How 72(t) payments work</h3>
+    <ul>
+      <li><b>Three methods:</b> required minimum distribution (recalculated each year, the smallest payment), fixed amortization (a level payment, usually the largest) and fixed annuitization.</li>
+      <li><b>Interest rate:</b> up to the greater of 5% or 120% of the federal mid-term rate.</li>
+      <li><b>The lock-in:</b> payments must continue for five years or until 59½, whichever is later. Changing them early brings back the penalty on everything already taken, plus interest.</li>
+      <li>Payments are still taxed as ordinary income.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>Can I use only part of my IRA?</summary><p>Yes. Split off a separate IRA sized for the payment you need, and the rest stays flexible. This tool does exactly that.</p></details>
+    <details><summary>Is 72(t) better than a Roth ladder?</summary><p>Neither always wins. 72(t) pays from day one; a ladder needs five years of other money first but can be more flexible. The comparison table shows the tax, penalties and premiums of each for your numbers.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="roth" hidden>
+    <h2>Roth conversion calculator</h2>
+    <p>Should you convert traditional IRA or 401(k) money to a Roth? This calculator projects your household year by year to age 100, with and without conversions, using 2026 federal and state tax rules, Social Security taxation, required minimum distributions and Medicare IRMAA surcharges, and shows which comes out ahead.</p>
+    <h3>When converting pays off</h3>
+    <p>A conversion means paying income tax now so the money grows and comes out tax-free later. It wins when your rate now is lower than it would be later, often in the years between retiring and starting Social Security and RMDs. It also shrinks future RMDs, and helps a surviving spouse, who files single on similar income.</p>
+    <h3>Strategies you can test</h3>
+    <p>Fill to the top of a tax bracket, stay under an IRMAA threshold, convert a fixed amount, or a share of the balance, over any span of ages, paying the tax from a taxable account or out of the conversion.</p>
+    <h3>Questions</h3>
+    <details><summary>How much should I convert each year?</summary><p>A common approach is to fill the 12% or 22% bracket each year, stopping below the next IRMAA threshold after 63 (Medicare looks back two years). The tool shows lifetime tax and after-tax net worth for each choice.</p></details>
+    <details><summary>Is there a five-year rule on conversions?</summary><p>Yes. Before 59½, each conversion has its own five-year clock before it can be withdrawn without the 10% penalty. After 59½ it doesn't apply to conversions.</p></details>
+    <details><summary>Should I pay the tax from the conversion?</summary><p>Usually not. Paying from a taxable account moves the whole amount into the Roth; having tax withheld leaves less there, and before 59½ the withheld part is penalized too.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="rmd" hidden>
+    <h2>RMD calculator: required minimum distributions by age</h2>
+    <p>Project your required minimum distributions every year to age 100, see your largest one, and test whether Roth conversions before RMDs begin would lower your lifetime tax. Set <b>Strategy</b> to <b>No conversions</b> to see your RMDs on their own.</p>
+    <h3>How RMDs work</h3>
+    <ul>
+      <li><b>When they start:</b> age 73 if you were born from 1951 through 1959, and 75 if born in 1960 or later (SECURE 2.0).</li>
+      <li><b>How much:</b> each year's RMD is your traditional balance on December 31 of the prior year divided by the IRS Uniform Lifetime Table factor for your age: 26.5 at 73, so about 3.8% of the balance, rising to about 6.3% at 85 and 11% at 95.</li>
+      <li><b>Which accounts:</b> traditional IRAs, 401(k)s, 403(b)s and similar. Roth IRAs have no RMDs for the owner, and neither do Roth 401(k)s from 2024.</li>
+      <li><b>Missing one:</b> costs a 25% excise tax on the shortfall, cut to 10% if corrected promptly.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>Can I reduce my RMDs?</summary><p>Yes: Roth conversions in the years before RMDs start shrink the traditional balance they're figured on. From 70½ you can also give up to the annual limit directly to charity as a qualified charitable distribution, which counts toward the RMD and isn't taxed.</p></details>
+    <details><summary>Why do large RMDs matter?</summary><p>They're taxed as ordinary income, can make more of your Social Security taxable, and can push you over Medicare IRMAA thresholds, raising premiums two years later.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="healthcare" hidden>
+    <h2>Retirement healthcare cost calculator: ACA and Medicare</h2>
+    <p>Estimate what health coverage costs in retirement: ACA marketplace premiums and subsidies if you retire before 65, and Medicare Part B, Part D, Medigap and IRMAA surcharges after. Uses 2026 figures and scales premiums by your state and age.</p>
+    <h3>Before 65: ACA subsidies</h3>
+    <p>The premium tax credit caps what you pay for the benchmark Silver plan at a share of your income, from about 2% at low incomes to 9.96% in 2026. Above 400% of the federal poverty level the credit stops entirely, so a dollar over the line can cost thousands. Retirees can often keep income low by living on cash, Roth money or brokerage principal.</p>
+    <h3>From 65: Medicare and IRMAA</h3>
+    <p>The standard Part B premium is $202.90 a month in 2026. Above $109,000 of income single or $218,000 joint, IRMAA surcharges raise Part B and Part D, in tiers, based on your income from two years earlier.</p>
+    <h3>Questions</h3>
+    <details><summary>What income counts for ACA subsidies?</summary><p>Modified adjusted gross income: traditional IRA and 401(k) withdrawals, pensions, interest, dividends, realized capital gains and all of your Social Security, including the untaxed part. Roth withdrawals and spending cash savings don't count.</p></details>
+    <details><summary>Do Roth conversions affect Medicare premiums?</summary><p>Yes. A conversion is income, and Medicare uses your income from two years before. Large conversions after 63 can trigger IRMAA surcharges.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="fire" hidden>
+    <h2>FIRE calculator and Coast FIRE calculator</h2>
+    <p>Find the age your investments could pay for your life, the FIRE number, and when you could stop saving altogether and let growth carry you to a normal retirement: Coast FIRE. See it with a steady return, a range, or every real market since 1926.</p>
+    <h3>How it works</h3>
+    <p>Enter your savings, what you add each month, your expected return and the yearly spending you'd need. At a 4% withdrawal rate your FIRE number is 25 times that spending; at 3.5%, about 29 times. The calculator shows when you'd get there, and how much sooner saving a little more gets you there.</p>
+    <h3>Questions</h3>
+    <details><summary>What is my FIRE number?</summary><p>Your yearly spending divided by your withdrawal rate. $50,000 a year at 4% is $1.25 million.</p></details>
+    <details><summary>What is Coast FIRE?</summary><p>The point where what you've already saved would grow to your full retirement target by a normal retirement age without another contribution. After it, you only need to earn enough to cover today's spending.</p></details>
+    <details><summary>Is 4% safe for early retirement?</summary><p>It was built for 30-year retirements. For 40 to 50 years, many plan on 3.25% to 3.5%. The <a href="/drawdown">Drawdown Simulator</a> tests your exact plan.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="backtest" hidden>
+    <h2>Portfolio backtest: stock and bond returns since 1926</h2>
+    <p>Pick a mix of stocks and bonds and see what it actually earned, year by year back to 1926: average return, return after inflation, volatility, the worst year, the deepest fall, and the best and worst of every 1, 5, 10, 20 and 30-year stretch.</p>
+    <h3>The data</h3>
+    <p>Stocks are the S&amp;P 500 (and its predecessor index) with dividends reinvested; bonds are 10-year U.S. Treasuries; inflation is the Consumer Price Index. The portfolio is rebalanced to your mix once a year.</p>
+    <h3>Questions</h3>
+    <details><summary>What has the stock market returned historically?</summary><p>U.S. stocks have returned about 10% a year since 1926, or about 7% after inflation, with individual years ranging from about +50% to −40%.</p></details>
+    <details><summary>What is a 60/40 portfolio?</summary><p>60% stocks and 40% bonds, a classic balanced mix. Historically it has earned somewhat less than all stocks with much smaller falls. Set Stocks to 60 to see it.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="incometax" hidden>
+    <h2>2026 income tax calculator: federal, state and FICA</h2>
+    <p>Estimate your 2026 take-home pay, or the tax on a year of retirement income. Uses the 2026 federal brackets and standard deduction, Social Security and Medicare tax, and the income tax rules of all 50 states and DC.</p>
+    <h3>Two modes</h3>
+    <ul>
+      <li><b>Normal income:</b> a salary, with 401(k) and HSA deductions, for net and take-home pay per month and per paycheck.</li>
+      <li><b>Retirement income:</b> traditional, Roth and brokerage withdrawals, Social Security and pensions, each taxed its own way, with capital-gain stacking, the 3.8% investment income tax and each state's retirement exclusions.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>What is the 2026 standard deduction?</summary><p>$16,100 single and $32,200 married filing jointly. At 65 and over, an extra $2,050 single or $1,650 per spouse, plus the temporary $6,000 senior deduction for 2025 through 2028, which phases out above $75,000 single or $150,000 joint.</p></details>
+    <details><summary>What's the difference between my bracket and my tax rate?</summary><p>Your bracket is the rate on your last dollars; your effective rate is total tax divided by income, which is always lower because the first dollars are taxed at 10% or not at all.</p></details>
+    <details><summary>How much of Social Security is taxable?</summary><p>None, half or up to 85%, depending on your other income. Most states don't tax it at all.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="mortgage" hidden>
+    <h2>Mortgage calculator with taxes, insurance, PMI and extra payments</h2>
+    <p>See the full monthly cost of a home, including principal, interest, property tax, insurance, PMI, HOA and upkeep, how the loan balance falls, and the amortization year by year. Then test extra payments, a lump-sum recast or a refinance.</p>
+    <h3>How to use it</h3>
+    <p>Enter the price, down payment, rate and length. Under 20% down adds PMI until you reach 20% equity. For a loan you already have, enter the current balance and years left, then turn on the options for extra payments and refinancing to see the interest saved and the break-even on closing costs.</p>
+    <h3>Questions</h3>
+    <details><summary>How much house can I afford?</summary><p>A common guideline keeps the house payment, including tax, insurance and PMI, under about 28% of gross income, and all debt payments under about 36%.</p></details>
+    <details><summary>Is a 15-year or 30-year mortgage better?</summary><p>A 15-year loan has a higher payment but usually a lower rate and far less total interest. A 30-year loan keeps the payment low and flexible; you can still pay extra.</p></details>
+    <details><summary>When does PMI go away?</summary><p>You can ask the lender to drop it at 20% equity, and it ends automatically at 22% based on the original schedule.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="rentbuy" hidden>
+    <h2>Rent vs. buy calculator</h2>
+    <p>Is it better to rent or buy? This calculator runs a fair race: both households spend the same each month, and whichever side's costs are lower invests the difference. It then compares net worth year by year, after selling costs and taxes on the gains.</p>
+    <h3>What it counts</h3>
+    <p>The down payment and closing costs the renter invests instead, mortgage interest, property tax, insurance, maintenance and PMI, rent increases, home appreciation, selling costs, capital-gains tax on investments, and the tax-free exclusion on a home sale ($250,000 single, $500,000 married).</p>
+    <h3>Questions</h3>
+    <details><summary>How long do you need to stay for buying to pay off?</summary><p>Often five to seven years or more, since buying and selling costs together run 7% to 10% of the price. The break-even year for your numbers is shown under the chart.</p></details>
+    <details><summary>Is renting throwing money away?</summary><p>No more than mortgage interest, property tax and upkeep are. Renting wins when rents are low relative to prices and the renter actually invests the difference.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="college" hidden>
+    <h2>College savings calculator</h2>
+    <p>Find how much to save each month for college, from a public in-state school to a private or elite one. Costs grow with tuition inflation to the year your child starts, and savings keep earning while earlier years are paid.</p>
+    <h3>How to use it</h3>
+    <p>Pick a school type or enter a yearly cost, set the years until college, and add what you've already saved. The monthly figure is what covers the full cost; many families aim for part of it and cover the rest with income, aid and scholarships.</p>
+    <h3>Questions</h3>
+    <details><summary>What is a 529 plan?</summary><p>A college savings account whose investments grow tax-free when spent on qualified education. Many states add a tax deduction for contributions.</p></details>
+    <details><summary>How fast does college cost rise?</summary><p>Tuition has long outpaced general inflation; 4% to 5% a year is a common planning assumption.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="budget" hidden>
+    <h2>Budget calculator</h2>
+    <p>Lay out your take-home pay and spending, line by line, and see what's left each month for saving and debt. Monthly and yearly bills sit side by side, savings are counted as saving rather than spending, and your emergency fund target is sized from what you spend.</p>
+    <h3>How to use it</h3>
+    <p>Start with your income after taxes, or copy it from the <a href="/incometax">Income Tax</a> tool. Work down the categories with a few months of statements, entering annual bills as yearly amounts. Export the result as a spreadsheet.</p>
+    <h3>Questions</h3>
+    <details><summary>What is the 50/30/20 rule?</summary><p>About half of take-home pay on needs, 30% on wants and 20% on saving and paying down debt. It's a rough guide, not a rule.</p></details>
+    <details><summary>How big should an emergency fund be?</summary><p>Three to six months of spending is typical; more if your income is irregular or you're the only earner.</p></details>
+  </article>
+
+  <article class="seo-a" data-page="debt" hidden>
+    <h2>Debt payoff calculator: avalanche vs. snowball</h2>
+    <p>List your debts and see your debt-free date, the total interest you'll pay, and how much a payoff plan saves over paying only the minimums. Compare the avalanche and snowball methods side by side, month by month.</p>
+    <h3>Avalanche or snowball?</h3>
+    <p>Both put every spare dollar on one debt at a time and roll each paid-off minimum into the next. <b>Avalanche</b> targets the highest interest rate first and costs the least. <b>Snowball</b> clears the smallest balance first, for quicker wins that help many people stick with it.</p>
+    <h3>Questions</h3>
+    <details><summary>How much faster does an extra payment get me out of debt?</summary><p>Often by years. Enter an amount in Extra payment and the tool shows the new date and the interest it saves.</p></details>
+    <details><summary>Should I pay off debt or invest?</summary><p>Debt above about 7% to 8% interest, like most credit cards, is usually worth paying off first; it's a guaranteed return at that rate. Always keep getting any employer 401(k) match.</p></details>
+  </article>
+
+  </section>
+
 </main>
 
 <footer class="sitefoot">
@@ -7081,7 +7441,7 @@ window.onerror = function(msg){
           <path d="M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z" fill="#e9b872"/>
         </g>
       </svg>
-      <div><b>Retirement Calculator</b><span>Know your number.</span></div>
+      <div><b>RetCalc</b><span>Know your number.</span></div>
     </div>
     <div class="sitefoot-txt">
       <p>An educational tool, not financial or tax advice. Past returns don't predict future ones, and tax figures are estimates.
@@ -13276,9 +13636,15 @@ function pathForRoute(t, s){
   if (t === "tools") return "/" + (TOOL_PATHS[s] || "tools");
   return null;
 }
+/* Search landing pages that open an existing tool under their own address:
+   /rmd is the Roth tool, /72t the Bridge. The address stays as it came in
+   (see the boot's canonical swap) and the page shows its own article. */
+const PATH_ALIAS = {rmd:"roth", "72t":"bridge"};
+function pathSeg(path){ return path.replace(/^\/+|\/+$/g, "").replace(/\.html$/, ""); }
 function routeFromPath(path){
-  const seg = path.replace(/^\/+|\/+$/g, "");
+  const seg = pathSeg(path);
   if (!seg) return null;
+  if (PATH_ALIAS[seg]) return {t:"tools", s:PATH_ALIAS[seg]};
   if (TAB_BY_PATH[seg]) return {t:TAB_BY_PATH[seg]};
   if (seg === "tools") return {t:"tools", s:"picker"};
   if (SUB_BY_PATH[seg]) return {t:"tools", s:SUB_BY_PATH[seg]};
@@ -13331,8 +13697,30 @@ function toolName(card){
 }
 /* The tab title follows the view, so a row of open tabs or the history list
    says which tool each one is. */
+/* Titles and descriptions for every page, in the JSON block in <head>. The
+   same table writes each address's static <head> (og/build.py), so the
+   title a search engine reads and the one the app sets can't drift apart. */
+let PAGE_META = null;
+try { PAGE_META = JSON.parse($("pageMeta").textContent); } catch(e){}
+/* Which page's article and title go with where the app is now: the tab or
+   tool, or a landing alias like /rmd while you're still on its tool. */
+function pageSlug(){
+  const t = chartMode.tab;
+  let slug = t === "simple" ? "home" : t === "single" ? "advanced" : t === "series" ? "stages"
+    : t === "guide" ? "guide" : t === "about" ? "about"
+    : t === "tools" ? (toolSub === "picker" ? "tools" : TOOL_PATHS[toolSub] || null) : null;
+  const here = pathSeg(location.pathname);
+  if (PATH_ALIAS[here] && slug && SUB_BY_PATH[slug] === PATH_ALIAS[here]) slug = here;
+  return slug;
+}
+function seoSync(){
+  const slug = pageSlug();
+  document.querySelectorAll(".seo-a").forEach(a => { a.hidden = a.getAttribute("data-page") !== slug; });
+}
 function setDocTitle(){
-  const base = "Retirement Calculator";
+  const P = PAGE_META && PAGE_META.pages[pageSlug()];
+  if (P){ document.title = P.title; return; }
+  const base = "RetCalc";
   const t = chartMode.tab;
   let name = "";
   if (t === "single") name = "Advanced";
@@ -23484,6 +23872,7 @@ function gdCoachSync(){
   const el = $("gdCoach");
   const t = gd.trip, T = t && GD_TRIPS[t.id];
   const onGuide = chartMode.tab === "guide";
+  seoSync();
   // Tool help belongs to the tool it was opened on: leaving closes it.
   if (th && (chartMode.tab !== "tools" || toolSub !== th.tool)){
     th = null;
@@ -24435,7 +24824,7 @@ initAboutCollapse();
 // Seed an entry so the first back press has somewhere defined to land. An
 // old address (/single, /series) is swapped for its current name while at it.
 try {
-  const canon = pathRoute ? pathForRoute(chartMode.tab, toolSub) : null;
+  const canon = pathRoute && !PATH_ALIAS[pathSeg(location.pathname)] ? pathForRoute(chartMode.tab, toolSub) : null;
   if (canon && canon !== location.pathname)
     history.replaceState({t:chartMode.tab, s:toolSub}, "", canon + location.search + location.hash);
   else history.replaceState({t:chartMode.tab, s:toolSub}, "");

@@ -1,6 +1,6 @@
 {
-  "name": "Retirement Calculator",
-  "short_name": "Retirement",
+  "name": "RetCalc",
+  "short_name": "RetCalc",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#080b16",

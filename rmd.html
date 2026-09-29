@@ -14,21 +14,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Advanced Retirement Calculator: Taxes, Fees &amp; Market History | RetCalc</title>
-<meta name="description" content="Project retirement savings with contribution growth, fees, account types, employer match and 2026 taxes, then run the plan through every market since 1926 or 5,000 random ones.">
-<link rel="canonical" href="https://retcalc.app/advanced">
+<title>RMD Calculator: Required Minimum Distributions by Age | RetCalc</title>
+<meta name="description" content="Project your required minimum distributions every year to age 100 with the IRS Uniform Lifetime Table, and test whether Roth conversions before RMDs would lower your lifetime tax.">
+<link rel="canonical" href="https://retcalc.app/rmd">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Advanced Retirement Calculator: Taxes, Fees &amp; Market History | RetCalc">
-<meta property="og:description" content="Project retirement savings with contribution growth, fees, account types, employer match and 2026 taxes, then run the plan through every market since 1926 or 5,000 random ones.">
-<meta property="og:url" content="https://retcalc.app/advanced">
-<meta property="og:image" content="https://retcalc.app/og/advanced.jpg">
+<meta property="og:title" content="RMD Calculator: Required Minimum Distributions by Age | RetCalc">
+<meta property="og:description" content="Project your required minimum distributions every year to age 100 with the IRS Uniform Lifetime Table, and test whether Roth conversions before RMDs would lower your lifetime tax.">
+<meta property="og:url" content="https://retcalc.app/rmd">
+<meta property="og:image" content="https://retcalc.app/og/rmd.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Advanced Calculator: Growth, inflation, taxes, fees and market swings, with account types and a glide path.">
+<meta property="og:image:alt" content="RMD Calculator: Your required minimum distributions every year to 100, and what converting first would save.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/advanced.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Advanced Retirement Calculator: Taxes, Fees & Market History", "url": "https://retcalc.app/advanced", "description": "Project retirement savings with contribution growth, fees, account types, employer match and 2026 taxes, then run the plan through every market since 1926 or 5,000 random ones.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why show \"inflation adjusted\" figures?", "acceptedAnswer": {"@type": "Answer", "text": "A million dollars in 30 years buys what about $410,000 buys today at 3% inflation. Today's-dollar figures let you compare the result with prices you know."}}, {"@type": "Question", "name": "What's the difference between historical and Monte Carlo?", "acceptedAnswer": {"@type": "Answer", "text": "Historical runs your plan through every real stretch of markets since 1926, month by month. Monte Carlo draws thousands of random return sequences with the volatility you set, including ones history never produced."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/rmd.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "RMD Calculator: Required Minimum Distributions by Age", "url": "https://retcalc.app/rmd", "description": "Project your required minimum distributions every year to age 100 with the IRS Uniform Lifetime Table, and test whether Roth conversions before RMDs would lower your lifetime tax.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I reduce my RMDs?", "acceptedAnswer": {"@type": "Answer", "text": "Yes: Roth conversions in the years before RMDs start shrink the traditional balance they're figured on. From 70½ you can also give up to the annual limit directly to charity as a qualified charitable distribution, which counts toward the RMD and isn't taxed."}}, {"@type": "Question", "name": "Why do large RMDs matter?", "acceptedAnswer": {"@type": "Answer", "text": "They're taxed as ordinary income, can make more of your Social Security taxable, and can push you over Medicare IRMAA thresholds, raising premiums two years later."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -7207,7 +7207,7 @@ window.onerror = function(msg){
     <details><summary>Is my information stored anywhere?</summary><p>No. Every calculation runs in your browser; nothing you type is sent anywhere.</p></details>
   </article>
 
-  <article class="seo-a" data-page="advanced">
+  <article class="seo-a" data-page="advanced" hidden>
     <h2>Retirement savings calculator with taxes, fees and market history</h2>
     <p>Project a retirement portfolio the way a planner would: contributions that rise with your pay, a return before inflation, fees, a glide path toward bonds, and the tax you'll owe when you withdraw. Then see the same plan through every market since 1926, or 5,000 random ones.</p>
     <h3>What you can model</h3>
@@ -7313,7 +7313,7 @@ window.onerror = function(msg){
     <details><summary>Should I pay the tax from the conversion?</summary><p>Usually not. Paying from a taxable account moves the whole amount into the Roth; having tax withheld leaves less there, and before 59½ the withheld part is penalized too.</p></details>
   </article>
 
-  <article class="seo-a" data-page="rmd" hidden>
+  <article class="seo-a" data-page="rmd">
     <h2>RMD calculator: required minimum distributions by age</h2>
     <p>Project your required minimum distributions every year to age 100, see your largest one, and test whether Roth conversions before RMDs begin would lower your lifetime tax. Set <b>Strategy</b> to <b>No conversions</b> to see your RMDs on their own.</p>
     <h3>How RMDs work</h3>
