@@ -17939,7 +17939,7 @@ function initSelectMenus(){
     if (top < m.scrollTop + 40) m.scrollTop = Math.max(0, top - 40);
     else if (bot > m.scrollTop + m.clientHeight - 6) m.scrollTop = bot - m.clientHeight + 6;
   }
-  function open(sel){
+  function open(sel, touched){
     if (cur){ const same = cur.sel === sel; close(false); if (same) return; }
     const m = build(sel), sheet = m.classList.contains("sheet");
     let scrim = null;
@@ -17949,7 +17949,7 @@ function initSelectMenus(){
       document.body.appendChild(scrim);
     }
     document.body.appendChild(m);
-    cur = {sel, menu:m, scrim, sheet};
+    cur = {sel, menu:m, scrim, sheet, touched:!!touched};
     sel.setAttribute("aria-expanded", "true");
     place();
     const on = m.querySelector('.selmenu-i[aria-selected="true"]') || m.querySelector(".selmenu-i:not(:disabled)");
@@ -17966,7 +17966,9 @@ function initSelectMenus(){
     c.sel.removeAttribute("aria-expanded");
     c.menu.remove();
     if (c.scrim) c.scrim.remove();
-    if (refocus) hold(c.sel);
+    // Focus goes back to the field for keyboard users. Not after a tap: on
+    // iOS, focusing a <select> opens the system picker right after ours.
+    if (refocus && !c.touched) hold(c.sel);
   }
   function choose(i){
     const sel = cur.sel;
@@ -18018,7 +18020,7 @@ function initSelectMenus(){
     const t = e.changedTouches[0];
     if (!t || Math.abs(t.clientX - t0.x) > 10 || Math.abs(t.clientY - t0.y) > 10 || Date.now() - t0.at > 800) return;
     e.preventDefault();
-    open(sel);
+    open(sel, true);
   }, {passive:false});
   document.addEventListener("keydown", e => {
     if (cur || !usable(e.target) || e.ctrlKey || e.metaKey) return;
