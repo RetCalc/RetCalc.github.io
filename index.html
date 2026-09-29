@@ -6102,7 +6102,7 @@ window.onerror = function(msg){
         <div class="br-send">
           <button class="btn" type="button" id="brToDD">Send to Drawdown Simulator</button>
           <button class="btn" type="button" id="brToTax">Send to Income Tax</button>
-          <span class="tipdot" data-tip="brhandoff" role="button" tabindex="0" aria-label="What is this?">?</span>
+          <span class="tipdot" data-tip="brhandoff" data-tip-title="Sending this to another tool" role="button" tabindex="0" aria-label="What is this?">?</span>
         </div>
       </div>
     </div>
@@ -17766,13 +17766,25 @@ function tipFor(key){ return GLOSS[key] || ""; }
      scrollable if it's long, and closed with the button, the dimmed page or
      Escape. The hover box stays for a mouse. */
   const phone = () => { try { return window.matchMedia("(max-width:640px)").matches; } catch(e){ return false; } };
+  /* The sheet's title is the label the "?" belongs to: only the text that
+     comes before the dot in its label, heading or row name, so a note or
+     figure printed after it (Coast FIRE's status line, say) stays out, and
+     the "optional" pill is dropped. */
   function titleOf(dot){
-    let p = dot.parentElement;
-    if (p && p.classList.contains("tipglue")) p = p.parentElement;
-    if (!p) return "";
-    const c = p.cloneNode(true);
-    c.querySelectorAll(".tipdot,.opt,.beta,.about-chevron").forEach(x => x.remove());
-    return c.textContent.replace(/\s+/g, " ").trim().slice(0, 80);
+    // A "?" with no label of its own (after a row of buttons) names itself.
+    if (dot.getAttribute("data-tip-title")) return dot.getAttribute("data-tip-title");
+    let box = dot.closest("label, h2, h3, h4, th, dt, .k, .optlabel, .gd-h3, .acgroup") || dot.parentElement;
+    if (box && box.classList.contains("tipglue")) box = box.parentElement;
+    if (!box) return "";
+    let t = "";
+    try {
+      const r = document.createRange();
+      r.setStart(box, 0); r.setEndBefore(dot);
+      const f = r.cloneContents();
+      f.querySelectorAll(".tipdot,.opt,.beta,.about-chevron,.mssub,.h2note").forEach(x => x.remove());
+      t = f.textContent;
+    } catch(e){ t = ""; }
+    return t.replace(/\s+/g, " ").replace(/[\s:]+$/, "").trim().slice(0, 80);
   }
   function closeSheet(){
     if (!sheet) return;
