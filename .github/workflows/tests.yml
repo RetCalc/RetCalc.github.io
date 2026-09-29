@@ -1,0 +1,14 @@
+# Runs the calculation tests on every push and pull request, as a second
+# line of defense behind the local pre-commit hook (which isn't copied when
+# the repo is cloned). A red check here means a number on the site changed.
+name: Calculation tests
+on: [push, pull_request]
+jobs:
+  math:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: python3 tests/run.py
