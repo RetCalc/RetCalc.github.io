@@ -1178,6 +1178,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   #sheet .gd-chart .grid{stroke:#e2e5e3} #sheet .gd-chart .ax{fill:#666e73}
   #sheet .gd-chart .mark{stroke:#bbb} #sheet .gd-chart .ln.p{stroke:#16855c}
   #sheet .gd-chart .band.p{fill:#16855c;fill-opacity:.12}
+  #sheet .gd-chart .tr path{stroke:#8a9aa6;stroke-opacity:.18}
   #sheet .gd-chart .dot{stroke:#fff} #sheet .gd-chart .dot.p{fill:#16855c}
   #sheet .gd-chart .lab{fill:#333;stroke:#fff;font-size:12px} #sheet .gd-chart .xh{display:none}
   .sh-moves{margin-bottom:10px}
@@ -2228,6 +2229,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-chart .ln.b{stroke:var(--steel)}
 .gd-chart .band.p{fill:var(--jade);fill-opacity:.11}
 .gd-chart .band.b{fill:var(--steel);fill-opacity:.11}
+.gd-chart .tr path{fill:none;stroke:#7d9fd6;stroke-opacity:.14;stroke-width:1;stroke-linejoin:round}
 .gd-chart .dot{stroke:var(--panel);stroke-width:2}
 .gd-chart .dot.p{fill:var(--jade)}
 .gd-chart .dot.b{fill:var(--steel)}
@@ -9801,7 +9803,8 @@ function ssDrawdownStreams(inc1, claim1, inc2, claim2, couple, retireAge, shared
  * @param {Object} g - {initial, fees}
  * @param {StageParams[]} stages - each may carry .mix (stock share, 0-1) and
  *   .glide {on, years, endMix}
- * @returns {Object} bands (percentiles per year), windows, finals, count
+ * @returns {Object} bands (percentiles per year), traces (one path per starting
+ *   year, aligned with bands), windows, finals, count
  */
 function historicalRuns(g, stages){
   const avail = HIST_M_STOCK.length;            // months of real data
@@ -9886,12 +9889,21 @@ function historicalRuns(g, stages){
                 p50: pctl(sorted, .50), p75: pctl(sorted, .75),
                 p90: pctl(sorted, .90)});
   }
+  /* One path per starting year (the January start) for the charts' faint
+     every-start lines. A start every month would be twelve times as many,
+     too dense to read as lines; the percentiles above still use them all. */
+  const traces = [];
+  for (let wi = 0; wi < count; wi += 12){
+    const t = new Array(marks.length);
+    for (let j = 0; j < marks.length; j++) t[j] = paths[j][wi];
+    traces.push(t);
+  }
   const sortedFinals = finals.slice().sort(asc);
   let worst = windows[0], best = windows[0];
   windows.forEach(w => { if (w.final < worst.final) worst = w;
                          if (w.final > best.final) best = w; });
 
-  return {bands, windows, finals:sortedFinals, totalYears, N, count,
+  return {bands, traces, windows, finals:sortedFinals, totalYears, N, count,
           median: pctl(sortedFinals, .5), worst, best,
           first: HIST_START, last: HIST_START + Math.floor(avail / 12) - 1,
           span: Math.floor(avail / 12), tooLong:false};
@@ -10904,6 +10916,32 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
     pts.map((a, i) => (i ? "L" : "M") + X(a.year) + " " + Y(top(a))).join(" ") + " " +
     pts.slice().reverse().map(a => "L" + X(a.year) + " " + Y(bot(a))).join(" ") + " Z";
 
+  /* Every starting year as its own faint line, beneath the percentile
+     shading: the individual retirements the bands summarize. Drawing only;
+     the axis still fits the bands, so a lucky start that runs off the top is
+     clipped rather than squashing everything else. o.traces is {xs, lines},
+     each line one value per x. */
+  if (o.traces && o.traces.lines && o.traces.lines.length){
+    const cid = "trc" + svgId;
+    const cp = svgEl("clipPath", {id:cid});
+    cp.appendChild(svgEl("rect", {x:L, y:T, width:pw, height:ph}));
+    defs.appendChild(cp);
+    const tg = svgEl("g", {"clip-path":"url(#" + cid + ")", fill:"none", stroke:"#7d9fd6",
+      "stroke-opacity":o.traces.lines.length > 60 ? .13 : .18, "stroke-width":.9 * sw,
+      "stroke-linejoin":"round", class:"traces"});
+    const xs = o.traces.xs;
+    o.traces.lines.forEach(ln => {
+      let d = "";
+      for (let i = 0; i < xs.length && i < ln.length; i++){
+        const v = ln[i];
+        if (v == null || !isFinite(v)) continue;
+        d += (d ? "L" : "M") + X(xs[i]).toFixed(1) + " " + Y(v).toFixed(1);
+      }
+      if (d) tg.appendChild(svgEl("path", {d}));
+    });
+    svg.appendChild(tg);
+  }
+
   if (mode === "mc"){
     svg.appendChild(svgEl("path", {d:ribbon(a => a.hi, a => a.lo), fill:"url(#fanOuter" + svgId + ")"}));
     svg.appendChild(svgEl("path", {d:ribbon(a => a.p75, a => a.p25), fill:"url(#fanInner" + svgId + ")"}));
@@ -11037,11 +11075,12 @@ function paintMulti(svgId, series, maxX, opt){
   return {pts, X, Y, hover, dot, maxX, W, names: live.map(x => x.name), colors};
 }
 
-function mcLegend(elId, extra){
+function mcLegend(elId, extra, noDet){
   const parts = [swatch("#4fbf95", "10th\u201390th percentile"),
                  swatch("#3f9a78", "25th\u201375th"),
-                 swatch("#e9b872", "Median"),
-                 swatch("#7d9fd6", "Without volatility")];
+                 swatch("#e9b872", "Median")];
+  // The dashed no-volatility line only exists where there's a plan to draw it from.
+  if (!noDet) parts.push(swatch("#7d9fd6", "Without volatility"));
   if (extra) parts.push(swatch(cssVar("--stageline"), extra));
   $(elId).innerHTML = parts.join("");
 }
@@ -11051,7 +11090,8 @@ function mcLegend(elId, extra){
 function histLegend(elId, extra){
   const parts = [swatch("#4fbf95", "10th\u201390th percentile of windows"),
                  swatch("#3f9a78", "25th\u201375th"),
-                 swatch("#e9b872", "Median window")];
+                 swatch("#e9b872", "Median window"),
+                 swatch("#7d9fd6", "Each starting year")];
   if (extra) parts.push(swatch(cssVar("--stageline"), extra));
   $(elId).innerHTML = parts.join("");
 }
@@ -11153,7 +11193,8 @@ function drawChart(R, p){
                   p25:p.initial, p75:p.initial}];
     H.bands.forEach(b => pts.push({year:b.year, base:b.p50, hi:b.p90, lo:b.p10,
                                    p25:b.p25, p75:b.p75}));
-    chartPoints = paintChart("chart", pts, p.years, "mc", [], 0, {enhanced:true});
+    chartPoints = paintChart("chart", pts, p.years, "mc", [], 0, {enhanced:true,
+      traces:{xs:pts.map(a => a.year), lines:H.traces.map(t => [p.initial].concat(t))}});
     histLegend("legend");
     const S = goalSolve(acSolveP(p), $("solveFor").value, num("target"));
     histSummary("mcNote", H, S.portToday, "(the portfolio behind your target above)");
@@ -12918,7 +12959,8 @@ function drawSeriesChart(g, R){
                   p25:g.initial, p75:g.initial}];
     H.bands.forEach(b => pts.push({year:b.year, stage:b.stage, base:b.p50,
                                    hi:b.p90, lo:b.p10, p25:b.p25, p75:b.p75}));
-    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks, 0, {enhanced:true});
+    seriesPoints = paintChart("chartS", pts, R.totalYears, "mc", marks, 0, {enhanced:true,
+      traces:{xs:pts.map(a => a.year), lines:H.traces.map(t => [g.initial].concat(t))}});
     histLegend("legendS", "Stage boundary");
     histSummary("mcNoteS", H, seriesTarget || 0, "(your target above)");
     return;
@@ -16518,8 +16560,14 @@ function renderDrawdown() {
         var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
         pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
       }
-      ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
-      mcLegend("legendDD");
+      var ddTraces = H.runs.map(function (r) {
+        var ln = [o.initial];
+        for (var y2 = 1; y2 <= maxY; y2++) ln.push(r.rows[y2 - 1] ? r.rows[y2 - 1].realEnd : 0);
+        return ln;
+      });
+      ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0,
+        {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:ddTraces}});
+      histLegend("legendDD");
       $("ddChartNote").hidden = false;
       $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
         " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
@@ -16666,7 +16714,7 @@ function renderDrawdown() {
       mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
     });
     ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
-    mcLegend("legendDD");
+    mcLegend("legendDD", null, true);
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
       " simulated retirements.";
@@ -16839,8 +16887,15 @@ function renderIncomeChartAll(H, o) {
     var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
     pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
   }
+  var lines = H.runs.map(function (r) {
+    return pts.map(function (a) {
+      var row = r.rows[a.year - 1];
+      return row ? (row.realSpend != null ? row.realSpend : row.realWithdrawal) : 0;
+    });
+  });
   ddIncomeChartAgg = true;
-  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge - 1 : 0, {enhanced:true});
+  ddiPoints = paintChart("chartDDI", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge - 1 : 0,
+    {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:lines}});
   histLegend("legendDDI");
 }
 
@@ -21296,7 +21351,14 @@ function gdSeries(S, name, cls){
   const R = gdRetPath(S), r0 = Math.round(S.retire);
   R.forEach((r, i) => pts.push({x:r0 + i + 1, y:r.p50, lo:r.p10, hi:r.p90}));
   pts[S.path.length - 1].lo = pts[S.path.length - 1].hi = S.fv;
-  return {name, cls, S, pts, retire:r0, stop:S.stop != null ? Math.round(S.stop) : null};
+  // Each historical retirement's own path, from the balance at retirement,
+  // drawn faintly under the band.
+  const traces = S.H && S.H.runs ? S.H.runs.map(run => {
+    const ln = [{x:r0, y:S.fv}];
+    for (let i = 0; i < S.years; i++) ln.push({x:r0 + i + 1, y:run.rows[i] ? run.rows[i].realEnd : 0});
+    return ln;
+  }) : [];
+  return {name, cls, S, pts, traces, retire:r0, stop:S.stop != null ? Math.round(S.stop) : null};
 }
 /* A placeholder the card can carry; gdChartsDraw fills it once it's laid out. */
 function gdChartSlot(id, series, caption){
@@ -21352,6 +21414,9 @@ function gdChartDraw(el, series){
   const bp = main.pts.filter(p => p.lo != null);
   const clip = "gdclip-" + el.getAttribute("data-chart");
   g += "<defs><clipPath id='" + clip + "'><rect x='" + pl + "' y='" + pt + "' width='" + (W - pl - pr) + "' height='" + (H - pt - pb) + "'/></clipPath></defs>";
+  if (main.traces && main.traces.length)
+    g += "<g class='tr' clip-path='url(#" + clip + ")'>" + main.traces.map(ln =>
+      "<path d='M" + ln.map(p => X(p.x).toFixed(1) + "," + Y(Math.min(p.y, yMax * 1.05)).toFixed(1)).join("L") + "'/>").join("") + "</g>";
   if (bp.length > 1)
     g += "<path class='band " + main.cls + "' clip-path='url(#" + clip + ")' d='M" + bp.map(p => X(p.x).toFixed(1) + "," + Y(p.hi).toFixed(1)).join("L") +
       "L" + bp.slice().reverse().map(p => X(p.x).toFixed(1) + "," + Y(p.lo).toFixed(1)).join("L") + "Z'/>";
@@ -24992,7 +25057,8 @@ function drawFireChart(p, displayYear, maxYears){
     }
     if (!pts.length){ svg.innerHTML = ""; return; }
     drawMaxX = pts[pts.length - 1].year;
-    var R = paintChart(svgId, pts, drawMaxX, "mc", null, p.curAge, {});
+    var R = paintChart(svgId, pts, drawMaxX, "mc", null, p.curAge,
+      {traces:{xs:pts.map(function(a){ return a.year; }), lines:fiHistRunsCache.traces || []}});
     fiChartPoints = R;
     histLegend("legendFire");
     $("fiChartNote").textContent = "";
@@ -26195,7 +26261,9 @@ function brBalHist(ctx){
     var at = function(q){ return v[Math.min(v.length - 1, Math.floor(v.length * q))]; };
     pts.push({year:y, base:at(0.5), hi:at(0.9), lo:at(0.1), p25:at(0.25), p75:at(0.75)});
   }
-  brBalPts = paintChart("chartBRB", pts, n, "mc", [], ctx.age, {enhanced:true});
+  brBalPts = paintChart("chartBRB", pts, n, "mc", [], ctx.age, {enhanced:true,
+    traces:{xs:pts.map(function(a){ return a.year; }),
+            lines:runs.map(function(r){ return Array.prototype.slice.call(r.path, 0, n + 1); })}});
   histLegend("legendBRB");
 }
 function brLadder(rows, ctx){
