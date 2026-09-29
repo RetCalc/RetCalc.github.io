@@ -15,7 +15,7 @@ Run from the repo root after adding a tool or renaming one:
 """
 import html, os, subprocess, sys, tempfile, time, urllib.parse
 
-SITE = "https://retcalc.github.io"
+SITE = "https://retcalc.app"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
 # path: (name on the card, card subtitle, meta description)
