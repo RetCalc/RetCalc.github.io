@@ -1,0 +1,93 @@
+  <div class="stack" id="tab-fire" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k" id="fiAgeLabel">FIRE age</div>
+          <div class="v gold" id="fiAge">—</div>
+          <div class="note" id="fiAgeNote">At your current pace</div>
+        </div>
+        <div>
+          <div class="k" id="fiPortfolioLabel">Portfolio at FIRE</div>
+          <div class="v" id="fiPortfolio">—</div>
+          <div class="note">In today's dollars</div>
+        </div>
+        <div>
+          <div class="k" id="fiYearsLabel">Years until FIRE</div>
+          <div class="v" id="fiYears">—</div>
+          <div class="note" id="fiYearsNote">&nbsp;</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Target portfolio</span><span class="v" id="fiKVTarget">—</span></div>
+            <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="fiKVWithdrawal">—</span></div>
+            <div class="kv"><span class="k">Contributions, future dollars</span><span class="v" id="fiKVContribs">—</span></div>
+            <div class="kv"><span class="k">Investment gains, future dollars</span><span class="v pos" id="fiKVGains">—</span></div>
+          </div>
+          <div>
+            <div id="fiCoastExtra" hidden>
+              <div class="kv"><span class="k">Portfolio if you kept saving</span><span class="v" id="fiKeepSaving">—</span></div>
+              <div class="kv"><span class="k">Extra vs. coasting</span><span class="v" id="fiCoastGap">—</span></div>
+            </div>
+            <div class="kv"><span class="k">Nominal return</span><span class="v" id="fiKVNominal">—</span></div>
+            <div class="kv"><span class="k">Real return</span><span class="v" id="fiKVRealReturn">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Portfolio growth
+        <span class="h2note" id="fiChartNote"></span>
+        <span style="float:right;display:inline-flex;align-items:center;gap:8px;margin-top:-2px">
+          <span class="seg" id="segFireChart">
+            <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="hist">Historical</button>
+          </span>
+          <span id="fiOptBand" style="display:inline-flex;align-items:center">
+            <span class="inputwrap" style="width:96px"><span class="affix">&plusmn;</span><input id="fiBand" type="text" inputmode="decimal" data-num data-step="0.5" min="0" value="2" data-nonneg aria-label="Return band"><span class="affix">%</span></span>
+          </span>
+        </span>
+      </h2>
+      <div class="mcbar" id="fiHistBar" hidden>
+        <div class="field">
+          <label for="fiHistMix">Stock mix</label>
+          <div class="inputwrap"><input id="fiHistMix" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+        </div>
+        <div class="hint" id="fiHistNote" style="margin:0"></div>
+      </div>
+      <div class="chartwrap" id="chartWrapFire">
+        <svg id="chartFire" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Portfolio growth to FIRE"></svg>
+        <div class="tip" id="tipFire"></div>
+      </div>
+      <div class="legend" id="legendFire"></div>
+      <div id="fiSliderWrap" class="body" style="padding-top:0;padding-bottom:14px" hidden>
+        <div class="fire-slider-section">
+          <div class="fire-slider-row">
+            <span class="fire-slider-lbl">Historical success rate</span>
+            <span class="fire-slider-val"><b id="fiSuccessPct">50%</b></span>
+          </div>
+          <input type="range" id="fiSuccessSlider" class="fire-slider" min="1" max="99" value="50">
+          <div class="fire-slider-ends"><span>1% (aggressive)</span><span>99% (conservative)</span></div>
+          <div class="fire-slider-result" id="fiSuccessAge">—</div>
+          <div class="hint mcnote" id="fiSliderNote" style="padding:4px 0 0">The success rate slider shows how your FIRE age shifts across historical market cycles. At 50% you get the median historical outcome; at 75% you need a later date so 75% of periods succeed.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="fiTable">
+          <thead><tr>
+            <th>Age</th><th>Start balance</th><th>Contributions</th><th>Growth</th>
+            <th>End balance</th><th>Inflation adj.</th>
+          </tr></thead>
+          <tbody id="fiTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+

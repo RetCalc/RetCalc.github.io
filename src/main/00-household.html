@@ -1,0 +1,70 @@
+  <!-- ========== HOUSEHOLD PROFILE ========== -->
+  <section class="hh" id="hhCard" aria-label="Your household">
+    <div class="hh-bar">
+      <span class="hh-ic" aria-hidden="true">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+      <div class="hh-sum" id="hhSummary"></div>
+      <button class="btn mini" type="button" id="hhEdit" aria-expanded="false" aria-controls="hhBody">Set up</button>
+      <button class="hh-x" type="button" id="hhHide" aria-label="Hide your household bar" title="Hide">
+        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="hh-body" id="hhBody" hidden>
+      <div class="hh-grid">
+        <div class="field">
+          <label for="hhStatus">Household</label>
+          <select id="hhStatus">
+            <option value="s">Just me</option>
+            <option value="m">Me and a spouse</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="hhAge">Your age</label>
+          <div class="inputwrap"><input id="hhAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field hh-sp">
+          <label for="hhSpouseAge">Spouse's age</label>
+          <div class="inputwrap"><input id="hhSpouseAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="hhRetire">Retire at</label>
+          <div class="inputwrap"><input id="hhRetire" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="hhState">State</label>
+          <select id="hhState"></select>
+        </div>
+        <div class="field">
+          <label for="hhSaved">Retirement savings</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhSaved" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="hhMonthly">You save each month</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhMonthly" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="hhIncome">Your gross income</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhIncome" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+        </div>
+        <div class="field hh-sp">
+          <label for="hhIncome2">Spouse's gross income</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhIncome2" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+        </div>
+        <div class="field">
+          <label for="hhSpend">Spending in retirement</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hhSpend" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+        </div>
+      </div>
+      <div class="hh-foot">
+        <div class="hint">Any field can stay blank. Filling in replaces those numbers in
+          Basic, Advanced, Stages and the tools that use them. You can still change any
+          tool afterwards without touching this. Stored in this browser only.</div>
+        <div class="hh-btns">
+          <button class="btn" type="button" id="hhClear">Clear</button>
+          <button class="btn" type="button" id="hhCancel">Close</button>
+          <button class="btn primary" type="button" id="hhFill">Save and fill in tools</button>
+        </div>
+      </div>
+    </div>
+  </section>

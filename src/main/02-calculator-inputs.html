@@ -1,0 +1,326 @@
+  <!-- ========== INPUTS ========== -->
+  <!-- ========== SIMPLE INPUTS ========== -->
+  <aside id="asideSimple">
+    <div class="panel inputs">
+      <h2>A few questions</h2>
+      <div class="body">
+        <div class="field">
+          <label for="qAge">How old are you?</label>
+          <div class="inputwrap"><input id="qAge" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="qRetire">When do you plan to retire?</label>
+          <div class="inputwrap"><input id="qRetire" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="qSaved">How much have you saved so far?</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="qSaved" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="qContrib">How much do you save for retirement?</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="qContrib" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="qPeriod">How often?</label>
+          <select id="qPeriod">
+            <option>Weekly</option><option>Bi-Weekly</option><option selected>Monthly</option>
+            <option>Quarterly</option><option>Annually</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="qRisk">How is it invested?</label>
+          <select id="qRisk"></select>
+        </div>
+        <div class="derived">
+          <div><span>Years until retirement</span><span class="num" id="qYears"></span></div>
+          <div><span>Growth after inflation<span class="tipdot" data-tip="realreturn" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="qReal"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <aside id="asideSingle" hidden>
+    <div class="panel inputs">
+      <h2>Your inputs</h2>
+      <div class="body">
+        <div class="glidewrap acwrap" id="acWrap">
+          <button type="button" class="glidebtn" id="acToggle" aria-expanded="false" aria-controls="acFields">
+            <span class="glidebtn-check" aria-hidden="true"></span>
+            <span class="glidebtn-txt">Split by account type<span class="tipdot" data-tip="accttypes" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+          </button>
+          <div class="acfields" id="acFields" hidden>
+            <div class="acgroup">Traditional 401(k) / IRA <span>pre-tax</span></div>
+            <div class="two">
+              <div class="field">
+                <label for="acTradBal">Balance</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acTradBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="acTradC">You add</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acTradC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
+              </div>
+            </div>
+            <div class="acgroup">Roth 401(k) / IRA <span>after-tax, grows tax-free</span></div>
+            <div class="two">
+              <div class="field">
+                <label for="acRothBal">Balance</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acRothBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="acRothC">You add</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acRothC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
+              </div>
+            </div>
+            <div class="acgroup">Taxable brokerage <span>gains taxed when sold</span></div>
+            <div class="two">
+              <div class="field">
+                <label for="acBrokBal">Balance</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acBrokBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="acBrokC">You add</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="acBrokC" type="text" inputmode="decimal" data-money data-nonneg><span class="affix acper">/mo</span></div>
+              </div>
+            </div>
+            <div class="two actotals" aria-live="polite">
+              <div class="actot"><span class="k">Total balance</span><span class="v" id="acTotBal"></span></div>
+              <div class="actot"><span class="k">Total added</span><span class="v" id="acTotAdd"></span>
+                <span class="actsub" id="acTotSub"></span></div>
+            </div>
+            <div class="field">
+              <label for="acBrokBasis">Cost basis<span class="tipdot" data-tip="acbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="acBrokBasis" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="acsep"></div>
+            <div class="two" id="acSchedule"></div>
+            <div class="acsep"></div>
+            <div class="acgroup">Employer match <span>paid into traditional</span></div>
+            <div class="field">
+              <label for="acSalary">Your salary</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="acSalary" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+            </div>
+            <div class="two bottomalign">
+              <div class="field">
+                <label for="acMatchPct">Match rate</label>
+                <div class="inputwrap"><input id="acMatchPct" type="text" inputmode="decimal" data-num data-step="10" min="0" data-nonneg><span class="affix">%</span></div>
+              </div>
+              <div class="field">
+                <label for="acMatchCap">On the first</label>
+                <div class="inputwrap"><input id="acMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
+              </div>
+            </div>
+            <div class="acsep"></div>
+            <div class="acgroup">Taxes in retirement</div>
+            <div class="two">
+              <div class="field">
+                <label for="acStatus">Filing status</label>
+                <select id="acStatus">
+                  <option value="s">Single</option>
+                  <option value="m">Married filing jointly</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="acState">State</label>
+                <select id="acState"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field" id="initialField">
+          <label for="initial">Starting value</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="initial" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field" id="contribField">
+          <label for="contrib">Contribution each period</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="contrib" type="text" inputmode="decimal" data-money></div>
+        </div>
+        <span id="periodHome" hidden></span>
+        <div class="field" id="periodField">
+          <label for="period">Contribution period</label>
+          <select id="period">
+            <option>Weekly</option><option>Bi-Weekly</option><option>Monthly</option>
+            <option>Quarterly</option><option>Annually</option>
+          </select>
+          <button type="button" class="linkbtn" id="convOpen">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Convert frequency
+          </button>
+        </div>
+        <div class="two">
+          <span id="growthHome" hidden></span>
+          <div class="field" id="growthField">
+            <label for="growth">Contribution growth<span class="tipdot" data-tip="contribgrowth" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="growth" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%/yr</span></div>
+            <button type="button" class="linkbtn" id="acGrowthBtn" hidden>Set by account</button>
+          </div>
+          <div class="field">
+            <label for="years">Time period</label>
+            <div class="inputwrap"><input id="years" type="text" inputmode="decimal" data-num data-step="1" max="100"><span class="affix">yrs</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="nominal">Rate of return<span class="tipdot" data-tip="nominalreturn" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><button type="button" class="signflip" data-sign="nominal" title="Flip sign" aria-label="Flip sign">&plusmn;</button><input id="nominal" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="inflation">Inflation<span class="tipdot" data-tip="inflation" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="inflation" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="glidewrap" id="glideWrap">
+          <button type="button" class="glidebtn" id="glideToggle" aria-expanded="false">
+            <span class="glidebtn-check" aria-hidden="true"></span>
+            <span class="glidebtn-txt">Glide path<span class="tipdot" data-tip="glide" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+          </button>
+          <div class="glidefields" id="glideFields" hidden>
+            <div class="two">
+              <div class="field">
+                <label for="glideEnd">End at</label>
+                <div class="inputwrap"><input id="glideEnd" type="text" inputmode="decimal" data-num data-step="1"><span class="affix">%</span></div>
+              </div>
+              <div class="field">
+                <label for="glideYears">Over final</label>
+                <div class="inputwrap"><input id="glideYears" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg><span class="affix">yrs</span></div>
+              </div>
+            </div>
+            <div class="hint" id="glideNote" style="margin:0"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fees">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="fees" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="withdrawal">Withdrawal rate<span class="tipdot" data-tip="withdrawal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="withdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+            <button class="btn mini" type="button" id="toDrawdown" style="margin-top:6px">Test withdrawals</button>
+          </div>
+          <div class="field" id="taxrateField">
+            <label for="taxrate">Effective tax rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="taxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field" id="acTaxField" hidden>
+            <label>Tax on withdrawals<span class="tipdot" data-tip="actax" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap" style="box-shadow:none;background:transparent"><input id="acTaxOut" type="text" readonly tabindex="-1" aria-label="Tax on withdrawals, calculated"><span class="affix">calc</span></div>
+          </div>
+        </div>
+        <div class="derived">
+          <div><span>Return net of fees</span><span class="num" id="dNetRate"></span></div>
+          <div><span>Real rate of return<span class="tipdot" data-tip="realreturn" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="dRealRate"></span></div>
+          <details class="calcdetails">
+            <summary>Calculation details</summary>
+            <div><span>Periods per year</span><span class="num" id="dPPY"></span></div>
+            <div><span>Rate per period</span><span class="num" id="dPeriodic"></span></div>
+            <div><span>Periods modeled</span><span class="num" id="dPeriods"></span></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========== SERIES GLOBALS ========== -->
+  <aside id="asideSeries" hidden>
+    <div class="panel inputs">
+      <h2>Your inputs <span class="h2note">whole run</span></h2>
+      <div class="body">
+        <div class="glidewrap acwrap">
+          <button type="button" class="glidebtn" id="saToggle" aria-expanded="false" aria-controls="saFields">
+            <span class="glidebtn-check" aria-hidden="true"></span>
+            <span class="glidebtn-txt">Split by account type<span class="tipdot" data-tip="staccttypes" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+          </button>
+          <div class="acfields" id="saFields" hidden>
+            <div class="acgroup">Starting balances</div>
+            <div class="two">
+              <div class="field">
+                <label for="saTradBal">Traditional</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="saTradBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="saRothBal">Roth</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="saRothBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+            </div>
+            <div class="two bottomalign">
+              <div class="field">
+                <label for="saBrokBal">Brokerage</label>
+                <div class="inputwrap"><span class="affix">$</span><input id="saBrokBal" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+              <div class="field">
+                <label for="saBrokBasis">Cost basis<span class="tipdot" data-tip="acbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+                <div class="inputwrap"><span class="affix">$</span><input id="saBrokBasis" type="text" inputmode="decimal" data-money data-nonneg></div>
+              </div>
+            </div>
+            <div class="actotals" aria-live="polite">
+              <div class="actot"><span class="k">Total starting balance</span><span class="v" id="saTotBal"></span></div>
+            </div>
+            <div class="acsep"></div>
+            <div class="acgroup">Employer match <span>paid into traditional</span></div>
+            <div class="field">
+              <label for="saSalary">Your salary today<span class="tipdot" data-tip="stsalary" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="saSalary" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+            </div>
+            <div class="two bottomalign">
+              <div class="field">
+                <label for="saMatchPct">Match rate</label>
+                <div class="inputwrap"><input id="saMatchPct" type="text" inputmode="decimal" data-num data-step="10" min="0" data-nonneg><span class="affix">%</span></div>
+              </div>
+              <div class="field">
+                <label for="saMatchCap">On the first</label>
+                <div class="inputwrap"><input id="saMatchCap" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">% of salary</span></div>
+              </div>
+            </div>
+            <div class="hint" id="saMatchNote" aria-live="polite"></div>
+            <div class="acsep"></div>
+            <div class="two">
+              <div class="field">
+                <label for="saStatus">Filing status</label>
+                <select id="saStatus">
+                  <option value="s">Single</option>
+                  <option value="m">Married filing jointly</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="saState">State</label>
+                <select id="saState"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field" id="gInitialField">
+          <label for="gInitial">Starting value</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="gInitial" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="gInflation">Inflation</label>
+            <div class="inputwrap"><input id="gInflation" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="gWithdrawal">Withdrawal rate</label>
+            <div class="inputwrap"><input id="gWithdrawal" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="field" id="gTaxrateField">
+          <label for="gTaxrate">Effective tax rate<span class="tipdot" data-tip="efftaxrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="gTaxrate" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+        </div>
+        <div class="field" id="saTaxField" hidden>
+          <label>Tax on withdrawals<span class="tipdot" data-tip="actax" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap" style="box-shadow:none;background:transparent"><input id="saTaxOut" type="text" readonly tabindex="-1" aria-label="Tax on withdrawals, calculated"><span class="affix">calc</span></div>
+        </div>
+        <div class="field">
+          <label for="gFees">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="gFees" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+        </div>
+        <div class="derived">
+          <div><span>Stages</span><span class="num" id="gStages"></span></div>
+          <div><span>Fees</span><span class="num" id="gFeeNote"></span></div>
+          <div><span>Total horizon</span><span class="num" id="gTotalYears"></span></div>
+          <div><span>Total contributed</span><span class="num" id="gTotalContrib"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+

@@ -1,0 +1,69 @@
+  <aside id="asideFire" hidden>
+    <div class="panel inputs">
+      <h2>Your plan</h2>
+      <div class="body">
+        <div class="field" style="margin-bottom:14px">
+          <span class="seg" id="segFireMode">
+            <button type="button" data-firemode="fire" class="on">FIRE</button>
+            <button type="button" data-firemode="coast">Coast FIRE</button>
+          </span>
+        </div>
+        <div class="field">
+          <label for="fiCurAge">Current age</label>
+          <div class="inputwrap"><input id="fiCurAge" type="text" inputmode="decimal" data-num min="18" max="70" value="30"><span class="affix">age</span></div>
+        </div>
+        <div class="field" id="fiRetireAgeWrap" hidden>
+          <label for="fiRetireAge">Planned retirement age</label>
+          <div class="inputwrap"><input id="fiRetireAge" type="text" inputmode="decimal" data-num min="40" max="100" value="65"><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="fiInitial">Current savings</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="fiInitial" type="text" inputmode="decimal" data-money data-nonneg value="10000"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="fiContrib">Contribution</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="fiContrib" type="text" inputmode="decimal" data-money data-nonneg value="1000"></div>
+          </div>
+          <div class="field">
+            <label for="fiPeriod">Frequency</label>
+            <select id="fiPeriod">
+              <option>Monthly</option>
+              <option>Quarterly</option>
+              <option>Annually</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fiGrowth">Contribution growth<span class="tipdot" data-tip="figrowth" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="fiGrowth" type="text" inputmode="decimal" data-num data-step="0.5" value="0"><span class="affix">%/yr</span></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="fiNominal">Rate of return</label>
+            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="8.5"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="fiInflation">Inflation</label>
+            <div class="inputwrap"><input id="fiInflation" type="text" inputmode="decimal" data-num data-step="0.5" value="3"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="fiSolveFor">Target type</label>
+          <select id="fiSolveFor">
+            <option value="withdrawal">Annual withdrawal</option>
+            <option value="portfolio">Portfolio value</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fiTarget">Target (today's dollars)<span class="tipdot" data-tip="fitarget" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="fiTarget" type="text" inputmode="decimal" data-money data-nonneg value="40000"></div>
+        </div>
+        <div class="field">
+          <label for="fiWithdrawal">Withdrawal rate<span class="tipdot" data-tip="withdrawal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="fiWithdrawal" type="text" inputmode="decimal" data-num data-step="0.25" value="4"><span class="affix">%</span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+

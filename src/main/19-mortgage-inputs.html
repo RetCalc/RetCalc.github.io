@@ -1,0 +1,132 @@
+  <!-- ========== MORTGAGE ========== -->
+  <aside id="asideMort" hidden>
+    <div class="panel inputs">
+      <h2>The home and loan</h2>
+      <div class="body">
+        <div class="field">
+          <label for="moPrice">Home price</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="moPrice" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moDownPct">Down payment</label>
+            <div class="inputwrap"><input id="moDownPct" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="moDownAmt">or amount</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moDownAmt" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moRate">Interest rate</label>
+            <div class="inputwrap"><input id="moRate" type="text" inputmode="decimal" data-num data-step="0.125" min="0" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="moTerm">Length</label>
+            <select id="moTerm">
+              <option value="30" selected>30 years</option>
+              <option value="20">20 years</option>
+              <option value="15">15 years</option>
+              <option value="10">10 years</option>
+            </select>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moTax">Property tax<span class="tipdot" data-tip="proptax" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="moTax" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="moIns">Insurance<span class="tipdot" data-tip="homeinsurance" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moIns" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moPmi">PMI<span class="tipdot" data-tip="pmi" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="moPmi" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="moHoa">HOA</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moHoa" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="moMaint">Maintenance<span class="tipdot" data-tip="maintenance" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="moMaint" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="moUtil">Utilities<span class="tipdot" data-tip="utilities" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moUtil" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+          </div>
+        </div>
+        <div class="hint" id="moPmiNote"></div>
+        <div class="derived">
+          <div><span>Loan amount</span><span class="num" id="moLoan"></span></div>
+          <div><span>Down payment</span><span class="num" id="moDownShow"></span></div>
+          <div><span>Total interest paid</span><span class="num" id="moTotInt"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel inputs">
+      <h2>Already have this loan?</h2>
+      <div class="body">
+        <div class="field">
+          <label for="moExtrasOn">Extra payments, recasting, or refinancing<span class="tipdot" data-tip="moextras" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="moExtrasOn">
+            <option value="0">No, just the basics</option>
+            <option value="1">Yes, show these options</option>
+          </select>
+        </div>
+        <div id="moExtrasWrap" hidden>
+          <div class="field" style="margin-top:2px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Extra payments</div></div>
+          <div class="field">
+            <label for="moExtraMo">Extra toward principal</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moExtraMo" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/mo</span></div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="moExtraOnce">One-time extra payment</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="moExtraOnce" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="moExtraWhen">In month</label>
+              <div class="inputwrap"><input id="moExtraWhen" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg></div>
+            </div>
+          </div>
+          <div class="field" id="moRecastWrap">
+            <label for="moRecast">After that payment<span class="tipdot" data-tip="recast" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <select id="moRecast">
+              <option value="0">Keep the same payment, finish early</option>
+              <option value="1">Recast &mdash; lower the payment instead</option>
+            </select>
+          </div>
+
+          <div class="field" style="margin-top:12px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Compare a refinance</div></div>
+          <div class="two">
+            <div class="field">
+              <label for="moRefiRate">New rate</label>
+              <div class="inputwrap"><input id="moRefiRate" type="text" inputmode="decimal" data-num data-step="0.125" min="0" data-nonneg><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="moRefiTerm">New length</label>
+              <select id="moRefiTerm">
+                <option value="30">30 years</option>
+                <option value="20">20 years</option>
+                <option value="15">15 years</option>
+                <option value="10">10 years</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="moRefiCost">Closing costs<span class="tipdot" data-tip="reficost" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="moRefiCost" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+

@@ -1,0 +1,85 @@
+  <div class="stack" id="tab-tax" hidden>
+    <div class="panel">
+      <div class="readout">
+        <div class="txhead">
+          <span class="seg" id="segTxView">
+            <button type="button" data-view="net" class="on">Net pay</button>
+            <button type="button" data-view="take">Take-home pay</button>
+          </span>
+          <span class="txmodelbl" id="txRetLbl" hidden>Retirement income</span>
+          <span class="txbadge">2026 rates</span>
+        </div>
+        <div class="headline">
+          <div><div class="k" id="txNetLabel">Net pay</div><div class="v gold" id="txNet">—</div>
+            <div class="note" id="txNetNote"></div></div>
+          <div><div class="k">Per month</div><div class="v" id="txMonth">—</div>
+            <div class="note" id="txMonthNote">After all taxes</div></div>
+          <div><div class="k" id="txThirdLabel">Every two weeks</div><div class="v" id="txBiweek">—</div>
+            <div class="note" id="txThirdNote">26 paychecks a year</div></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div id="txBars"></div>
+          <div class="piewrap"><svg id="txPie" viewBox="0 0 220 220" role="img" aria-label="Share of income by tax and take-home"></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Tax breakdown</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="txTable">
+          <thead><tr><th>Item</th><th>Amount</th><th>Effective rate<span class="tipdot" data-tip="effrate" role="button" tabindex="0" aria-label="What is this?">?</span></th><th>Share of income</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="txBucketPanel" hidden>
+      <h2>Where each dollar came from, and how it was taxed</h2>
+      <div class="body">
+        <div id="txBucketBars"></div>
+      </div>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="txBucketTable">
+          <thead><tr><th>Source</th><th>Withdrawn</th><th>Taxable</th><th>Federal</th><th>State</th><th>Total tax</th><th>Effective rate<span class="tipdot" data-tip="effrate" role="button" tabindex="0" aria-label="What is this?">?</span></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="mcnote" id="txBucketNote"></div>
+    </div>
+
+    <div class="panel" id="txGainPanel" hidden>
+      <h2>Your capital gain, and which band it landed in<span class="tipdot" data-tip="ltcgstack" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <div class="body">
+        <div id="txStackWrap"><svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"></svg></div>
+        <div id="txStackLegend" class="stacklegend"></div>
+      </div>
+      <div class="mcnote" id="txGainNote"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Federal brackets, and what you pay in each</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="txBrackets">
+          <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>State rules, and what went into the figure above<span class="h2note" id="txStateRuleName"></span></h2>
+      <div id="txStateRuleWrap">
+        <table id="txStateRules">
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="mcnote" id="txStateGaps"></div>
+    </div>
+  </div>
+

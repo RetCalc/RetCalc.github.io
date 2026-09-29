@@ -1,0 +1,181 @@
+  <aside id="asideRC" hidden>
+    <div class="panel inputs">
+      <h2>Your situation</h2>
+      <div class="body">
+        <div class="two">
+          <div class="field">
+            <label for="rcAge">Your age</label>
+            <div class="inputwrap"><input id="rcAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="95" data-nonneg><span class="affix">age</span></div>
+          </div>
+          <div class="field">
+            <label for="rcEndAge">Plan through</label>
+            <div class="inputwrap"><input id="rcEndAge" type="text" inputmode="decimal" data-num data-step="1" min="60" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="rcStatus">Filing status</label>
+          <select id="rcStatus">
+            <option value="m">Married filing jointly</option>
+            <option value="s">Single</option>
+          </select>
+        </div>
+        <div class="field" id="rcSpouseWrap">
+          <label for="rcSpouseAge">Spouse's age</label>
+          <div class="inputwrap"><input id="rcSpouseAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="105" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="field">
+          <label for="rcState">State</label>
+          <select id="rcState"></select>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">What you have</div></div>
+        <div class="field">
+          <label for="rcTrad">Traditional 401(k) / IRA<span class="tipdot" data-tip="rctrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="rcTrad" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <button class="btn mini" type="button" id="rcCopyDD" style="margin-top:6px">Copy from Drawdown</button>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcRoth">Roth</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcRoth" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field">
+            <label for="rcBrok">Brokerage</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcBrok" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcBasis">Cost basis<span class="tipdot" data-tip="rcbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcBasis" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">% of balance</span></div>
+          </div>
+          <div class="field">
+            <label for="rcReturn">Real return<span class="tipdot" data-tip="realreturn" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcReturn" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg><span class="affix">%/yr</span></div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Income and spending</div></div>
+        <div class="field">
+          <label for="rcSpend">Annual spending<span class="tipdot" data-tip="rcspend" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="rcSpend" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcSS">Your Social Security</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcSS" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="rcSSAge">Claim at</label>
+            <div class="inputwrap"><input id="rcSSAge" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="two" id="rcSpouseSSWrap">
+          <div class="field">
+            <label for="rcSpSS">Spouse's benefit</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcSpSS" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="rcSpSSAge">Claim at</label>
+            <div class="inputwrap"><input id="rcSpSSAge" type="text" inputmode="decimal" data-num data-step="1" min="62" max="70" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcOther">Other income<span class="tipdot" data-tip="rcother" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="rcOther" type="text" inputmode="decimal" data-money data-nonneg><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="rcOtherStart">Starting at</label>
+            <div class="inputwrap"><input id="rcOtherStart" type="text" inputmode="decimal" data-num data-step="1" min="30" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field" id="rcDeathWrap">
+          <label for="rcDeath">Survivor transition<span class="tipdot" data-tip="rcwidow" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="rcDeath" type="text" inputmode="decimal" data-num data-step="1" min="0" max="45" data-nonneg><span class="affix">yrs from now</span></div>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">The conversion plan</div></div>
+        <div class="field">
+          <label for="rcStrategy">Strategy<span class="tipdot" data-tip="rcstrategy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcStrategy">
+            <option value="brk">Fill to the top of a bracket</option>
+            <option value="irm">Fill to an IRMAA threshold</option>
+            <option value="fix">A fixed amount each year</option>
+            <option value="pct">A share of the balance each year</option>
+            <option value="none">No conversions</option>
+          </select>
+        </div>
+        <div class="field" id="rcBracketWrap">
+          <label for="rcBracket">Fill to the top of</label>
+          <select id="rcBracket">
+            <option value="0.12">the 12% bracket</option>
+            <option value="0.22" selected>the 22% bracket</option>
+            <option value="0.24">the 24% bracket</option>
+            <option value="0.32">the 32% bracket</option>
+          </select>
+        </div>
+        <div class="field" id="rcIrmaaTierWrap" hidden>
+          <label for="rcIrmaaTier">Stay within<span class="tipdot" data-tip="irmaa" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcIrmaaTier">
+            <option value="0">No surcharge at all</option>
+            <option value="1">The first surcharge tier</option>
+            <option value="2">The second tier</option>
+            <option value="3">The third tier</option>
+          </select>
+        </div>
+        <div class="field" id="rcFixedWrap" hidden>
+          <label for="rcFixed">Convert each year</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="rcFixed" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field" id="rcPctWrap" hidden>
+          <label for="rcPct">Convert each year</label>
+          <div class="inputwrap"><input id="rcPct" type="text" inputmode="decimal" data-num data-step="1" min="0" max="100" data-nonneg><span class="affix">% of the balance</span></div>
+        </div>
+        <div class="two" id="rcWindowWrap">
+          <div class="field">
+            <label for="rcStartAge">Convert from</label>
+            <div class="inputwrap"><input id="rcStartAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+          <div class="field">
+            <label for="rcStopAge">Through</label>
+            <div class="inputwrap"><input id="rcStopAge" type="text" inputmode="decimal" data-num data-step="1" min="30" max="100" data-nonneg><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field" id="rcPayWrap">
+          <label for="rcPayFrom">Conversion tax paid from<span class="tipdot" data-tip="rcpayfrom" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcPayFrom">
+            <option value="taxable">Taxable account</option>
+            <option value="withhold">Withheld from the conversion</option>
+          </select>
+        </div>
+
+        <div class="field" style="margin-top:8px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">How to score it</div></div>
+        <div class="field">
+          <label for="rcIrmaaOn">Medicare IRMAA<span class="tipdot" data-tip="irmaa" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="rcIrmaaOn">
+            <option value="1">Include the surcharge</option>
+            <option value="0">Ignore it</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="rcHeir">Rate on what's left<span class="tipdot" data-tip="rcheir" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcHeir" type="text" inputmode="decimal" data-num data-step="1" min="0" max="60" data-nonneg><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="rcDisc">Discount rate<span class="tipdot" data-tip="rcdisc" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rcDisc" type="text" inputmode="decimal" data-num data-step="0.5" min="0" max="15" data-nonneg><span class="affix">%</span></div>
+          </div>
+        </div>
+
+        <div class="derived">
+          <div><span>RMDs begin<span class="tipdot" data-tip="rcrmdage" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="rcRmdAge"></span></div>
+          <div><span>First RMD</span><span class="num" id="rcFirstRMD"></span></div>
+          <div><span>Years converting</span><span class="num" id="rcConvYears"></span></div>
+          <div><span>Average conversion</span><span class="num" id="rcAvgConv"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+

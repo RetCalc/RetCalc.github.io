@@ -1,0 +1,205 @@
+/* ---------- tax ---------- */
+.efrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.efrow>span{font-size:13.5px;color:var(--dim)}
+.txhead{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:14px 18px 0;flex-wrap:wrap}
+.txbadge{font-size:11px;color:var(--dim);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px;background:var(--field)}
+.txmodelbl{font-size:12px;color:var(--dim);letter-spacing:-.005em}
+/* The four withdrawal buckets total to gross income, so the total gets the
+   weight of a sum line rather than another ordinary derived row. */
+.derived.txtotal{margin-top:2px;margin-bottom:16px;border-top:1px solid var(--line);padding-top:8px}
+.derived.txtotal div{padding:2px 0}
+.derived.txtotal span{font-size:12.5px;color:var(--text);font-weight:600}
+.derived.txtotal .num{font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:13px;color:var(--gold)}
+#txStackWrap{width:100%;overflow:hidden}
+#txStack{width:100%;height:auto;display:block}
+.stacklegend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;
+  font-size:12px;color:var(--dim)}
+.stacklegend span{display:inline-flex;align-items:center;gap:7px}
+.stacklegend i{width:10px;height:10px;border-radius:2px;flex:none;font-style:normal}
+.stacklegend b{color:var(--text);font-family:var(--mono);font-weight:600;
+  font-variant-numeric:tabular-nums}
+#txTable td:first-child,#moTable td:first-child{font-family:var(--sans);
+  font-variant-numeric:normal}
+/* Prose, not figures. The global td rule is right-aligned tabular monospace,
+   which is right for every other table in the app and wrong for this one --
+   these cells are sentences, so they take the same sans the rest of the site
+   reads in. */
+#txStateRules td{text-align:left;vertical-align:top;font-family:var(--sans);
+  font-variant-numeric:normal;letter-spacing:normal;font-size:12.5px;
+  line-height:1.55;padding:11px 10px;color:var(--text)}
+#txStateRules td:first-child{width:158px;color:var(--dim);font-weight:600}
+#txStateRules tbody tr:last-child td{border-bottom:0}
+#txStateRules tbody tr:hover{background:transparent;box-shadow:none}
+#txStateRuleWrap{padding:4px 8px 0}
+/* The donut caps at 220px, so an even 1:1 split left it floating in a
+   half-empty column while the bars beside it were cramped. */
+.grid2:has(.piewrap){grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)}
+.piewrap{display:flex;align-items:center;justify-content:center;padding:4px}
+.piewrap svg{max-width:220px;width:100%;height:auto}
+.bar{margin-bottom:11px;cursor:pointer;transition:opacity .15s}
+.bar .lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:10px}
+.bar .lbl b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+.bar .track{height:9px;border-radius:5px;background:var(--field);overflow:hidden;
+  box-shadow:var(--well)}
+.bar .fill{height:100%;border-radius:5px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.themerow{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.themerow > span:first-child{font-size:13.5px;color:var(--dim)}
+
+/* ---------- monte carlo bar ---------- */
+.mcbar{display:flex;align-items:flex-end;gap:12px;padding:14px 18px 0;flex-wrap:wrap}
+.mcbar .field{margin-bottom:0}
+.mcbar .inputwrap,.mcbar select{width:104px}
+.mcbar .hint{flex:1 1 160px;min-width:0}
+.signflip{background:transparent;border:0;color:var(--dimmer);font-size:14px;
+  padding:0 8px;cursor:pointer;flex:none;line-height:1;box-shadow:none;
+  transition:color .14s ease}
+.signflip:hover{color:var(--gold)}
+.signflip.on{color:var(--coral)}
+
+/* ---------- optional toggles ---------- */
+.adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
+  color:var(--dim);cursor:pointer;white-space:nowrap;
+  background:rgba(79,191,149,.05);border:1px solid var(--jade-line);border-radius:var(--r-well);
+  padding:6px 8px;transition:border-color .14s ease,background .14s ease}
+.adjrow:hover{border-color:var(--jade-line-hi);background:rgba(79,191,149,.09)}
+.adjrow-top{display:flex;align-items:center;min-width:0;flex:1 1 auto}
+.adjrow input{accent-color:var(--jade);width:15px;height:15px;flex:none;
+  margin:0 6px 0 0;cursor:pointer}
+.adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adjnote{font-family:var(--mono);color:var(--gold);font-size:11.5px;
+  letter-spacing:-.02em;margin-left:auto;flex:none}
+.adjnote:empty{display:none}
+
+/* Glide toggle: a compact button that expands into two fields when active,
+   so the collapsed state stays out of the way for anyone not using it. */
+.glidewrap{margin-top:13px;margin-bottom:13px}
+/* Inside a stage card the card's own padding already supplies the bottom
+   gap, and the grid above doesn't carry its own margin, so only the top
+   needs setting here. */
+.stagecard .glidewrap{margin-top:13px;margin-bottom:0}
+/* Phones get the glide toggle in the field grid (see stageGlideBtn). */
+.stagegrid > .stageglide{display:none}
+.stageglide .glidebtn{align-self:stretch}
+.glidebtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:rgba(79,191,149,.05);border:1px solid var(--jade-line);border-radius:var(--r-well);
+  padding:9px 10px;cursor:pointer;font-family:var(--sans);font-size:12.5px;
+  color:var(--dim);box-shadow:none;
+  transition:border-color .14s ease,background .14s ease}
+.glidebtn:hover{border-color:var(--jade-line-hi);background:rgba(79,191,149,.09)}
+.glidebtn-check{width:16px;height:16px;flex:none;border-radius:5px;
+  border:1.5px solid var(--dimmer);position:relative;
+  transition:background .16s ease,border-color .16s ease}
+.glidebtn.on .glidebtn-check{background:var(--jade);border-color:var(--jade);
+  box-shadow:0 0 12px -2px rgba(79,191,149,.7)}
+.glidebtn.on .glidebtn-check::after{content:"";position:absolute;left:4.5px;top:1.5px;
+  width:4px;height:8px;border:solid #04211a;border-width:0 2px 2px 0;
+  transform:rotate(40deg)}
+.glidebtn-txt{flex:1 1 auto;min-width:0;display:flex;align-items:center}
+.glidefields{margin-top:8px;padding:10px 10px 2px;background:rgba(79,191,149,.04);
+  border:1px solid var(--jade-line);border-radius:var(--r-well);
+  display:flex;flex-direction:column;gap:8px}
+/* Desktop stage cards: a compact glide toggle with its settings in line
+   beside it, labels to the left of each input, instead of a full-width
+   button over a stacked panel. Phones keep the stacked layout. */
+@media (min-width:641px){
+  .stagecard .glidewrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .stagecard .glidewrap > .glidebtn{width:auto;flex:none;padding-right:14px}
+  .stagecard .glidefields{margin:0;padding:0;background:none;border:0;
+    flex:1 1 420px;min-width:0;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 14px}
+  .stagecard .glidefields .two{display:flex;gap:14px;flex:none;margin:0}
+  .stagecard .glidefields .two > .field{display:flex;align-items:center;gap:8px;margin:0}
+  .stagecard .glidefields .two > .field > label{margin:0;white-space:nowrap;align-self:center}
+  .stagecard .glidefields .inputwrap{width:96px}
+  .stagecard .glidefields [data-glidenote]{flex:1 1 220px;min-width:0}
+}
+.coastrow .k{color:var(--text)}
+.coastrow .v{font-weight:600}
+#sCoastAction{margin-top:10px}
+/* Advanced's solve panel: Coast FIRE runs the full width under both
+   columns, with its button beside it on desktop, so neither column is left
+   with a gap. Phones stack it as before. */
+.solvecoast{margin-top:14px;border-top:1px solid var(--line-soft)}
+.solvecoast .coastrow{border-bottom:0}
+@media (min-width:641px){
+  .solvecoast{display:flex;align-items:center;gap:20px}
+  .solvecoast .coastrow{flex:1 1 auto;min-width:0}
+  .solvecoast #sCoastAction{margin-top:0;flex:none}
+  .solvecoast #sCoastAction .btn{width:auto;padding-left:22px;padding-right:22px}
+  .solvecoast #sCoastAction:empty{display:none}
+}
+#sCoastAction .btn{width:100%}
+
+/* ---------- debt payoff ---------- */
+.dtrow{display:flex;gap:8px;align-items:center;padding:5px 0}
+.dthead{display:flex;gap:8px;align-items:center;padding:0 0 4px;font-size:11px;
+  color:var(--dimmer);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.dtrow .desc,.dthead .desc{flex:1 1 auto;min-width:0}
+.dtrow input.desc{background:var(--field);border:1px solid var(--line);
+  border-radius:7px;color:var(--text);font:inherit;font-size:13.5px;padding:7px 9px;
+  width:100%;min-width:0}
+.dtrow input.desc:focus{outline:none;border-color:var(--jade);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
+.dtrow .c1,.dthead .c1{flex:0 0 120px;width:120px}
+.dtrow .c2,.dthead .c2{flex:0 0 88px;width:88px}
+.dtrow .c3,.dthead .c3{flex:0 0 110px;width:110px}
+.dthead .c1,.dthead .c2,.dthead .c3{text-align:right;padding-right:10px}
+.dtrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
+  font-size:19px;line-height:1;width:26px;flex:none}
+.dtrow .del:hover{color:var(--coral)}
+.dtrow .delspace,.dthead .delspace{width:26px;flex:none}
+.dtstrat{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.dtwarn{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:12.5px;
+  line-height:1.5;color:var(--text);background:rgba(226,121,95,.12);
+  border:1px solid rgba(226,121,95,.4)}
+@media (max-width:720px){
+  .dtrow{flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+  .dtrow input.desc{flex:1 1 100%}
+  .dtrow .c1{flex:1 1 40%;width:auto}
+  .dtrow .c2{flex:1 1 22%;width:auto}
+  .dtrow .c3{flex:1 1 28%;width:auto}
+  .dthead{display:none}
+}
+
+/* ---------- csv export ---------- */
+.csvbtn{font-size:11px;padding:3px 9px;letter-spacing:.04em}
+.csvbar{display:flex;justify-content:flex-end;padding:0 16px 8px}
+
+/* ---------- roth conversion ---------- */
+.beta{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:4px;
+  font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--bg);background:var(--gold);vertical-align:2px}
+/* The year the survivor starts filing single is the hinge of the whole
+   comparison, so it gets a rule of its own in the table. */
+tr.rc-widow > td{border-top:1px solid var(--gold);background:rgba(233,184,114,.06)}
+/* ---------- early retirement bridge ---------- */
+#brCompare td:first-child{font-family:var(--sans);letter-spacing:0;min-width:210px}
+#brCompare .br-name{display:block;font-size:13px;font-weight:600;color:var(--text)}
+#brCompare .br-desc{display:block;font-size:11.5px;color:var(--dimmer);font-weight:400;margin-top:2px}
+#brCompare .ddrow.sel .br-name{color:var(--jade)}
+.br-tag{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:4px;font-size:10px;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--bg);
+  background:var(--jade);vertical-align:1px}
+tr.br-off td{color:var(--dimmer)}
+tr.br-off .br-name{color:var(--dim)}
+#brTable tr.br-open > td{color:var(--dim)}
+#brTable td{white-space:nowrap}
+#brTable .br-fpl{font-size:11px;color:var(--dimmer)}
+#brAtTable td:first-child{font-family:var(--sans);letter-spacing:0}
+#brAtTable th.on,#brAtTable td.on{color:var(--jade)}
+#brAtTable td.on{background:rgba(79,191,149,.07)}
+#brAtTable tr.br-tot td{font-weight:600;border-top:1px solid var(--line)}
+#brAtTable th .br-yr{display:block;font-size:10.5px;color:var(--dimmer);font-weight:400}
+#brAtOut .br-sub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:1px}
+.br-send{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
+.rc-tier{display:inline-block;margin-left:4px;padding:1px 5px;border-radius:4px;
+  font-size:11px;font-weight:600;color:var(--bg);background:#e2795f;
+  vertical-align:1px}
+html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
+.opt{color:var(--dimmer);font-size:11px;border:1px solid var(--line);
+  border-radius:999px;padding:1px 8px;margin-left:5px}
+#msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
+.convrow .btn.mini{width:50px;padding:5px 0}
+

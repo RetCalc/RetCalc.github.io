@@ -1,0 +1,472 @@
+  <!-- ========== RESULTS ========== -->
+  <!-- ========== SIMPLE PANE ========== -->
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-simple">
+
+    <div class="panel" id="qWarn" hidden>
+      <div class="body"><div class="hint" id="qWarnText"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Value at retirement</div>
+          <div class="v gold" id="qFV">—</div>
+          <div class="note" id="qFVnote"></div>
+        </div>
+        <div>
+          <div class="k">Income, per year</div>
+          <div class="v" id="qYear">—</div>
+          <div class="note">Taking 4% a year</div>
+        </div>
+        <div>
+          <div class="k">Income, per month</div>
+          <div class="v" id="qMonth">—</div>
+          <div class="note">The same, spread monthly</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">You put in</span><span class="v" id="qIn"></span></div>
+            <div class="kv"><span class="k">Growth adds</span><span class="v pos" id="qGrowth"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Starting from</span><span class="v" id="qStart"></span></div>
+            <div class="kv"><span class="k">You add</span><span class="v" id="qSpan"></span></div>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:14px">Every figure here is in today's dollars,
+          so you can compare it to what money is worth now. It assumes you nudge your
+          contribution up a little each year to keep pace with inflation.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Balance over time<span class="h2note">in today's dollars</span></h2>
+      <div class="chartwrap" id="chartWrapQ">
+        <svg id="chartQ" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected balance in today's dollars"></svg>
+        <div class="tip" id="tipQ"></div>
+      </div>
+      <div class="legend" id="legendQ"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="qYearTable">
+          <thead><tr>
+            <th>Age</th><th>Year</th><th>Start</th><th>You added</th><th>Growth</th><th>Balance</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Milestones</h2>
+      <div class="body" id="msBodyQ"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Want more detail?</h2>
+      <div class="body">
+        <p class="hint" style="margin-top:0">The Advanced tab does everything this does
+          plus taxes, fees, contribution growth, and a simulation of good and bad market
+          runs. This will carry your answers over so you don't have to retype them.</p>
+        <button class="btn primary" type="button" id="btnUpgrade">Open these numbers in Advanced</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single" hidden>
+
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Future value</div>
+          <div class="v" id="rFV">—</div>
+          <div class="note" id="rFVnote"></div>
+        </div>
+        <div>
+          <div class="k">Inflation adjusted</div>
+          <div class="v" id="rFVreal">—</div>
+          <div class="note" id="rFVrealnote"></div>
+        </div>
+        <div>
+          <div class="k">After-tax income, per year</div>
+          <div class="v gold" id="rMonthly">—</div>
+          <div class="note">Inflation adjusted, first year of retirement</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Amount invested</span><span class="v" id="rInvested"></span></div>
+            <div class="kv"><span class="k">Growth</span><span class="v pos" id="rGrowth"></span></div>
+            <div class="kv"><span class="k">Total contributions</span><span class="v" id="rContribs"></span></div>
+            <div class="kv"><span class="k">Final contribution, inflation adjusted</span><span class="v" id="rLastContrib"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="rWd"></span></div>
+            <div class="kv"><span class="k">Annual withdrawal, inflation adjusted</span><span class="v" id="rWdReal"></span></div>
+            <div class="kv"><span class="k">After tax, per year</span><span class="v" id="rAfterTax"></span></div>
+            <div class="kv"><span class="k">After tax, per month</span><span class="v" id="rAfterTaxMo"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== BY ACCOUNT TYPE ========== -->
+    <div class="panel" id="acPanel" hidden>
+      <h2>By account type <span class="h2note">at retirement, in today's dollars</span></h2>
+      <div class="scroll" style="max-height:none">
+        <table id="acResults">
+          <thead><tr><th>Account</th><th>Balance</th><th>Share</th><th>First-year withdrawal</th><th>Tax</th><th>After tax</th></tr></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+      <div class="mcnote" id="acResultsNote" style="padding-top:12px"></div>
+    </div>
+
+    <!-- ========== GOAL SOLVE ========== -->
+    <div class="panel">
+      <h2>Work backwards from a target</h2>
+      <div class="body">
+        <div class="grid2" id="solveGrid">
+          <div>
+            <div class="field">
+              <label for="solveFor">Solve for</label>
+              <select id="solveFor">
+                <option value="After-Tax Withdrawal">After-tax income</option>
+                <option value="Portfolio Value">Portfolio value</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="target">Target, inflation adjusted</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="target" type="text" inputmode="decimal" data-money></div>
+              <div class="hint" id="targetHint"></div>
+            </div>
+          </div>
+          <div class="solvekv">
+            <div class="kv"><span class="k">Portfolio needed, inflation adjusted</span><span class="v" id="sPortToday"></span></div>
+            <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="sPays"></span></div>
+            <div class="kv"><span class="k">Portfolio needed at retirement</span><span class="v" id="sPortFuture"></span></div>
+            <div class="kv"><span class="k">Your starting value grows to</span><span class="v" id="sInitGrows"></span></div>
+          </div>
+        </div>
+        <div class="solvecoast">
+          <div class="kv coastrow"><span class="k">Coast FIRE<span class="tipdot" data-tip="coast" role="button" tabindex="0" aria-label="What is this?">?</span><span class="mssub" id="sCoastNote"></span></span><span class="v" id="sCoast"></span></div>
+          <div id="sCoastAction"></div>
+        </div>
+      </div>
+      <div class="solveopts">
+        <div class="solveopt">
+          <div class="optlabel">Option 1 &middot; Change your contribution</div>
+          <div class="v gold" id="sPerPeriod">—</div>
+          <div class="note" id="sPerPeriodNote"></div>
+          <div class="kv"><span class="k">Per year</span><span class="v" id="sPerYear"></span></div>
+          <div class="kv"><span class="k">Change from current</span><span class="v" id="sChange"></span></div>
+          <button class="btn primary" id="btnApply">Use this contribution</button>
+        </div>
+        <div class="solveopt">
+          <div class="optlabel">Option 2 &middot; Change your timeline</div>
+          <div class="v gold" id="sYears">—</div>
+          <div class="note" id="sYearsNote"></div>
+          <div class="kv"><span class="k">Your plan now</span><span class="v" id="sYearsNow"></span></div>
+          <div class="kv"><span class="k">Difference</span><span class="v" id="sYearsDiff"></span></div>
+          <button class="btn primary" id="btnApplyYears">Use this timeline</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CHART ========== -->
+    <div class="panel">
+      <h2>Balance over time, inflation adjusted
+        <span class="h2ctrl">
+          <span class="seg" id="segSingle">
+            <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="hist">Historical</button>
+            <button type="button" data-mode="mc">Monte Carlo</button>
+          </span>
+          <span class="modeopt" id="optBand">
+            <span class="inputwrap" style="width:96px"><span class="affix">±</span><input id="band" type="text" inputmode="decimal" data-num data-step="0.5" min="0" value="2" data-nonneg aria-label="Return comparison band, percent"><span class="affix">%</span></span>
+          </span>
+
+        </span>
+      </h2>
+      <div class="mcbar" id="histBar" hidden>
+        <div class="field">
+          <label for="histMix">Stock mix<span class="tipdot" data-tip="histmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMix" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+        </div>
+        <div class="field" id="histGlideWrap" hidden>
+          <label for="histMixEnd">Glides to<span class="tipdot" data-tip="histglidemix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMixEnd" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="40"><span class="affix">%</span></div>
+        </div>
+        <div class="hint" id="histNote" style="margin:0"></div>
+      </div>
+      <div class="mcbar" id="mcBar" hidden>
+        <div class="field">
+          <label for="volatility">Volatility<span class="tipdot" data-tip="volatility" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="volatility" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+        </div>
+        <button class="btn" type="button" id="btnReroll">Re-roll</button>
+        <div class="hint" style="margin:0">Each redraw runs 5,000 simulations.</div>
+      </div>
+      <div class="chartwrap" id="chartWrap">
+        <svg id="chart" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected inflation-adjusted balance at three rates of return"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="mcnote" id="mcNote" hidden></div>
+    </div>
+
+    <!-- ========== YEAR TABLE ========== -->
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="yearTable">
+          <thead><tr>
+            <th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th>
+            <th>End balance</th><th>Inflation adj.</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ========== INFLATION CALCULATOR ==========
+         Hidden from the Advanced tab -- didn't earn its spot there. Left
+         wired up (markup, ids, and the segInfl JS below are
+         all untouched) so it can be dropped back in here or moved elsewhere
+         later with just this `hidden` removed. -->
+    <div class="panel" hidden>
+      <h2>Inflation calculator<span class="h2note" id="inflNote"></span></h2>
+      <div class="body">
+        <div class="seg" id="segInfl" style="margin-bottom:14px">
+          <button type="button" data-dir="fwd" class="on">Today &rarr; Future</button>
+          <button type="button" data-dir="back">Future &rarr; Today</button>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="inflAmt" id="inflAmtLabel">Amount today</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="inflAmt" type="text" inputmode="decimal" data-money data-nonneg value="1000"></div>
+          </div>
+          <div class="field">
+            <label for="inflYrs">Years</label>
+            <div class="inputwrap"><input id="inflYrs" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="30"><span class="affix">yrs</span></div>
+          </div>
+        </div>
+        <div class="kv total"><span class="k" id="inflOutLabel"></span><span class="v" id="inflOut"></span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Milestones</h2>
+      <div class="body" id="msBody"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Want to model this in stages?</h2>
+      <div class="body">
+        <p class="hint" style="margin-top:0">The Stages tab lets you change your
+          contribution, return, or timeline partway through the plan. This will carry
+          your current numbers over as the first stage, then add a second stage with
+          the same numbers running 10 years longer.</p>
+        <button class="btn primary" type="button" id="btnToStages">Model these numbers in Stages</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== SERIES PANE ========== -->
+  <div class="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-series" hidden>
+
+    <div class="panel">
+      <h2>Stages
+        <span class="h2ctrl">
+          <button class="btn" id="btnAddStage" type="button">Add stage</button>
+        </span>
+      </h2>
+      <div class="body">
+        <div id="stageList"></div>
+        <div class="hint" id="stageEmpty" style="display:none">
+          No stages yet. Add one to start building a run.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Future value</div>
+          <div class="v" id="xFV">—</div>
+          <div class="note" id="xFVnote"></div>
+        </div>
+        <div>
+          <div class="k">Inflation adjusted</div>
+          <div class="v" id="xFVreal">—</div>
+          <div class="note" id="xFVrealnote"></div>
+        </div>
+        <div>
+          <div class="k">After-tax income, per year</div>
+          <div class="v gold" id="xMonthly">—</div>
+          <div class="note">Inflation adjusted, first year of retirement</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Amount invested</span><span class="v" id="xInvested"></span></div>
+            <div class="kv"><span class="k">Growth</span><span class="v pos" id="xGrowth"></span></div>
+            <div class="kv"><span class="k">Total contributions</span><span class="v" id="xContribs"></span></div>
+            <div class="kv"><span class="k">Final contribution, inflation adjusted</span><span class="v" id="xLastContrib"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Annual withdrawal</span><span class="v" id="xWd"></span></div>
+            <div class="kv"><span class="k">Annual withdrawal, inflation adjusted</span><span class="v" id="xWdReal"></span></div>
+            <div class="kv"><span class="k">After tax, per year</span><span class="v" id="xAfterTax"></span></div>
+            <div class="kv"><span class="k">After tax, per month</span><span class="v" id="xAfterTaxMo"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="saPanel" hidden>
+      <h2>By account type <span class="h2note">at retirement, in today's dollars</span></h2>
+      <div class="scroll" style="max-height:none">
+        <table id="saResults">
+          <thead><tr><th>Account</th><th>Balance</th><th>Share</th><th>First-year withdrawal</th><th>Tax</th><th>After tax</th></tr></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+      <div class="mcnote" id="saResultsNote" style="padding-top:12px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Work backwards from a target<span class="h2note">changes the final stage only</span></h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="field">
+              <label for="solveForS">Solve for</label>
+              <select id="solveForS">
+                <option value="After-Tax Withdrawal">After-tax income</option>
+                <option value="Portfolio Value">Portfolio value</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="targetS">Target, inflation adjusted</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="targetS" type="text" inputmode="decimal" data-money data-nonneg></div>
+              <div class="hint" id="targetHintS"></div>
+            </div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Portfolio needed, inflation adjusted</span><span class="v" id="tPortToday"></span></div>
+            <div class="kv"><span class="k">That pays, after tax</span><span class="v" id="tPays"></span></div>
+            <div class="kv"><span class="k">Portfolio needed at retirement</span><span class="v" id="tPortFuture"></span></div>
+            <div class="kv"><span class="k">Balance entering the final stage</span><span class="v" id="tStartBal"></span></div>
+            <div class="kv"><span class="k">That alone grows to</span><span class="v" id="tGrown"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="solveopts">
+        <div class="solveopt">
+          <div class="optlabel">Option 1 &middot; Final stage contribution</div>
+          <div class="v gold" id="tPerPeriod">—</div>
+          <div class="note" id="tPerPeriodNote"></div>
+          <div class="kv"><span class="k">Per year</span><span class="v" id="tPerYear"></span></div>
+          <div class="kv"><span class="k">Change from current</span><span class="v" id="tChange"></span></div>
+          <button class="btn primary" id="btnApplyS">Use this contribution</button>
+        </div>
+        <div class="solveopt">
+          <div class="optlabel">Option 2 &middot; Final stage length</div>
+          <div class="v gold" id="tYears">—</div>
+          <div class="note" id="tYearsNote"></div>
+          <div class="kv"><span class="k">Final stage now</span><span class="v" id="tYearsNow"></span></div>
+          <div class="kv"><span class="k">Whole run becomes</span><span class="v" id="tYearsTotal"></span></div>
+          <button class="btn primary" id="btnApplyYearsS">Use this length</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Balance over time, inflation adjusted
+        <span class="h2ctrl">
+          <span class="seg" id="segSeries">
+            <button type="button" data-mode="band" class="on">Rate band</button>
+            <button type="button" data-mode="hist">Historical</button>
+            <button type="button" data-mode="mc">Monte Carlo</button>
+          </span>
+          <span class="modeopt" id="optBandS">
+            <span class="inputwrap" style="width:96px"><span class="affix">±</span><input id="bandS" type="text" inputmode="decimal" data-num data-step="0.5" min="0" value="2" data-nonneg aria-label="Return comparison band, percent"><span class="affix">%</span></span>
+          </span>
+
+        </span>
+      </h2>
+      <div class="mcbar" id="histBarS" hidden>
+        <div class="field">
+          <label for="histMixS">Stock mix<span class="tipdot" data-tip="histmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMixS" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+        </div>
+        <div class="field" id="histGlideWrapS" hidden>
+          <label for="histMixEndS">Glides to<span class="tipdot" data-tip="histglidemix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="histMixEndS" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="40"><span class="affix">%</span></div>
+        </div>
+        <div class="hint" id="histNoteS" style="margin:0"></div>
+      </div>
+      <div class="mcbar" id="mcBarS" hidden>
+        <button class="btn" type="button" id="btnRerollS">Re-roll</button>
+        <div class="hint" style="margin:0">5,000 simulations per redraw. Volatility is
+          set per stage, in the cards above.</div>
+      </div>
+      <div class="chartwrap" id="chartWrapS">
+        <svg id="chartS" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Projected inflation-adjusted balance across stages"></svg>
+        <div class="tip" id="tipS"></div>
+      </div>
+      <div class="legend" id="legendS"></div>
+      <div class="mcnote" id="mcNoteS" hidden></div>
+    </div>
+
+    <div class="panel">
+      <h2>Stage by stage</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="stageTable">
+          <thead><tr>
+            <th>Stage</th><th>Years</th><th>Return</th><th>Start balance</th>
+            <th>Contributions</th><th>Growth</th><th>End balance</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="xYearTable">
+          <thead><tr>
+            <th>Year</th><th>Stage</th><th>Start balance</th><th>Contributions</th>
+            <th>Growth</th><th>End balance</th><th>Inflation adj.</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Milestones</h2>
+      <div class="body" id="msBodyS"></div>
+    </div>
+
+  </div>
+
+
+

@@ -1,0 +1,150 @@
+  <!-- ========== PORTFOLIO BACKTEST ========== -->
+  <aside id="asideBT" hidden>
+    <div class="panel inputs">
+      <h2>The mix<span class="tipdot" data-tip="btdata" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <div class="body">
+        <div class="field">
+          <label for="btStock">Stocks<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="btStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
+          <div class="seg" id="segBTMix" style="margin-top:8px">
+            <button type="button" data-mix="100">100</button>
+            <button type="button" data-mix="80" class="on">80</button>
+            <button type="button" data-mix="60">60</button>
+            <button type="button" data-mix="40">40</button>
+            <button type="button" data-mix="0">0</button>
+          </div>
+          <div class="hint" id="btMixNote"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="btFrom">From<span class="tipdot" data-tip="bthistory" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="btFrom" type="text" inputmode="decimal" data-num data-step="1" min="1926" data-nonneg value="1926"></div>
+          </div>
+          <div class="field">
+            <label for="btTo">Through</label>
+            <div class="inputwrap"><input id="btTo" type="text" inputmode="decimal" data-num data-step="1" min="1926" data-nonneg value="2025"></div>
+          </div>
+        </div>
+        <div class="seg" id="segBTEra" style="margin-bottom:12px">
+          <button type="button" data-era="all" class="on">All</button>
+          <button type="button" data-era="50">Last 50</button>
+          <button type="button" data-era="30">Last 30</button>
+        </div>
+        <div class="derived">
+          <div><span>Years covered</span><span class="num" id="btYears"></span></div>
+          <div><span>Rebalanced</span><span class="num">Annually</span></div>
+          <div><span>Dividends</span><span class="num">Reinvested</span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-backtest" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div>
+          <div class="k">Return, per year</div>
+          <div class="v gold" id="btCagr">&mdash;</div>
+          <div class="note" id="btCagrNote"></div>
+        </div>
+        <div>
+          <div class="k">After inflation<span class="tipdot" data-tip="btreal" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="btReal">&mdash;</div>
+          <div class="note" id="btRealNote"></div>
+        </div>
+        <div>
+          <div class="k">Volatility<span class="tipdot" data-tip="btvol" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="btVol">&mdash;</div>
+          <div class="note">Standard deviation of annual returns</div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Best year</span><span class="v pos" id="btBest"></span></div>
+            <div class="kv"><span class="k">Worst year</span><span class="v neg" id="btWorst"></span></div>
+            <div class="kv"><span class="k">Deepest fall<span class="tipdot" data-tip="btdd" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="v" id="btDD"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Up years</span><span class="v" id="btUp"></span></div>
+            <div class="kv"><span class="k">Grew to</span><span class="v" id="btEnd"></span></div>
+            <div class="kv"><span class="k">In today's dollars</span><span class="v" id="btEndReal"></span></div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <button class="btn primary" type="button" id="btUseRate">Use these figures in Advanced</button>
+          <div class="hint" id="btUseNote" style="margin-top:6px"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Growth of $10,000</h2>
+      <div class="chartwrap" id="chartWrapBT">
+        <svg id="chartBT" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Historical growth of the chosen mix"></svg>
+        <div class="tip" id="tipBT"></div>
+      </div>
+      <div class="legend" id="legendBT"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Inflation<span class="h2note" id="btInflSpan"></span></h2>
+      <div class="body">
+        <div class="grid2">
+          <div>
+            <div class="kv"><span class="k">Average, per year</span><span class="v gold" id="btInfl"></span></div>
+            <div class="kv"><span class="k">Highest year</span><span class="v neg" id="btInflHigh"></span></div>
+            <div class="kv"><span class="k">Lowest year</span><span class="v pos" id="btInflLow"></span></div>
+          </div>
+          <div>
+            <div class="kv"><span class="k">Falling-price years</span><span class="v" id="btDefl"></span></div>
+            <div class="kv"><span class="k">Prices multiplied by<span class="tipdot" data-tip="btpricelevel" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="v" id="btPriceLevel"></span></div>
+            <div class="kv"><span class="k">$100 then is worth</span><span class="v" id="btPriceNow"></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chartwrap" id="chartWrapBTI">
+        <svg id="chartBTI" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Annual inflation over the selected period"></svg>
+        <div class="tip" id="tipBTI"></div>
+      </div>
+      <div class="legend" id="legendBTI"></div>
+      <div class="body"><div class="hint" style="margin:0">A high return in a high-inflation
+        year buys less than a modest one in a quiet year, which is why the headline above
+        shows both. The ten-year line is the one that matters for a plan: single years
+        swing hard, but it is the sustained stretches that reprice a retirement.</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Rolling returns<span class="h2note" id="btRollNote"></span>
+        <span class="h2ctrl">
+          <span class="seg" id="segBTRoll">
+            <button type="button" data-roll="nom" class="on">Nominal</button>
+            <button type="button" data-roll="real">Real</button>
+          </span>
+        </span>
+      </h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="btRollTable">
+          <thead><tr><th>Window</th><th>Periods</th><th>Worst</th><th>Median</th><th>Best</th><th>Positive</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="body"><div class="hint" style="margin:0">Annualized, every overlapping
+        window in the range. The worst column is the one that matters: it is the return
+        someone actually lived through.</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="btTable">
+          <thead><tr><th class="sortcol" data-sort="year">Year</th><th class="sortcol" data-sort="stock">Stocks</th><th class="sortcol" data-sort="bond">Bonds</th><th class="sortcol" data-sort="ret">Your mix</th><th class="sortcol" data-sort="infl">Inflation</th><th class="sortcol" data-sort="real">Real</th><th class="sortcol" data-sort="end">Balance</th><th class="sortcol" data-sort="endReal">In today's $</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- COLLEGE SAVINGS -->

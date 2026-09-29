@@ -1,6 +1,8 @@
-# Runs the calculation tests on every push and pull request, as a second
-# line of defense behind the local pre-commit hook (which isn't copied when
-# the repo is cloned). A red check here means a number on the site changed.
+# Runs on every push and pull request, as a second line of defense behind
+# the local pre-commit hook (which isn't copied when the repo is cloned):
+# the calculation tests, and a check that the built index.html matches src/.
+# A red check here means a number on the site changed, or index.html was
+# edited directly instead of through src/.
 name: Calculation tests
 on: [push, pull_request]
 jobs:
@@ -12,3 +14,4 @@ jobs:
         with:
           node-version: 22
       - run: python3 tests/run.py
+      - run: python3 build.py --check

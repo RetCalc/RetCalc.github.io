@@ -1,0 +1,45 @@
+  <div class="stack" id="tab-mortgage" hidden>
+    <div class="panel">
+
+      <div class="headline">
+        <div><div class="k">Monthly payment</div><div class="v gold" id="moTotal">—</div>
+          <div class="note">Everything included</div></div>
+        <div><div class="k">Principal &amp; interest</div><div class="v" id="moPI">—</div>
+          <div class="note">The loan itself</div></div>
+        <div><div class="k">Everything else</div><div class="v" id="moEsc">—</div>
+          <div class="note" id="moEscNote">Tax and insurance</div></div>
+      </div>
+      <div class="body"><div id="moBars"></div></div>
+    </div>
+
+    <div class="panel" id="moExtraPanel" hidden>
+      <h2>Extra payments &amp; refinancing</h2>
+      <div class="body">
+        <div id="moExtraStats"></div>
+        <div id="moRefiBlock" hidden>
+          <div class="field" style="margin-top:4px"><div class="hint" style="margin:0;font-weight:600;color:var(--text)">Refinancing to <span id="moRefiHead"></span></div></div>
+          <div id="moRefiStats"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Loan balance and what you've paid</h2>
+      <div class="chartwrap" id="chartWrapMo">
+        <svg id="chartMo" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Mortgage balance over time"></svg>
+        <div class="tip" id="tipMo"></div>
+      </div>
+      <div class="legend" id="legendMo"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Amortization by year<span class="tipdot" data-tip="amort" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="moTable">
+          <thead><tr><th>Year</th><th>Interest</th><th>Principal</th><th>Total paid</th><th>Balance</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>

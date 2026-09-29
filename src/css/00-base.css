@@ -1,0 +1,157 @@
+/* While Instrument Sans is still downloading, text shows in this stand-in:
+   Arial resized and re-spaced to Instrument Sans's measured width, ascent
+   and descent, so the swap when the real face lands barely moves a line. */
+@font-face{font-family:"Instrument Sans Fallback";src:local("Arial"),local("ArialMT"),local("Helvetica");
+  size-adjust:102.3%;ascent-override:94.8%;descent-override:24.4%;line-gap-override:0%}
+/* ============================================================
+   "The Instrument" — visual system
+   Depth encodes editability: recessed wells are where you type,
+   raised plateaus are what the machine computed. One light
+   source, from above, everywhere.
+   Data hues (jade/gold/steel/coral) are referenced by the chart
+   code and are deliberately unchanged.
+   ============================================================ */
+:root{
+  /* ground: deep indigo ink, not neutral near-black */
+  --bg:#080b16;
+  --sunk:#05070f;          /* below the ground plane */
+  --panel:#151e33;         /* raised plateau */
+  --panel-2:#1e2a44;       /* raised, one step up */
+  --field:#05070e;         /* recessed well */
+  --line:#26314b;
+  --line-soft:#1a2338;
+  --text:#e8edf7;
+  --dim:#bbc8db;
+  --dimmer:#94a6bf;
+
+  /* data hues — fixed, mirrored by the chart renderer */
+  --gold:#e9b872;
+  --jade:#4fbf95;
+  --steel:#7d9fd6;
+  --coral:#e2795f;
+
+  --grid:#1c2740;
+  /* axis labels: light enough to read at 11px on a panel (about 4.5:1) */
+  --axis:#7f8eaa;
+  --stageline:#4a5a7b;
+  --dotstroke:#080b16;
+  --shadow:rgba(0,0,0,.75);
+  --pop:#0d1322;
+
+  /* role-encoded geometry. The readout's bezel sits just inside its panel,
+     so it takes the panel's radius less the 1px border, and the two curves
+     run parallel instead of the inner one bulging past the outer. Cards
+     inside a panel (choices, options, callouts) share one radius of their own. */
+  --r-well:10px;
+  --r-panel:16px;
+  --r-bezel:calc(var(--r-panel) - 1px);
+  --r-card:14px;
+
+  /* Borders that answer the pointer. --line-hi is the hover edge on any
+     well or key; the jade lines tint the edge of anything you can pick or
+     switch on, so "choosable" reads the same everywhere. */
+  --line-hi:#3a4a6c;
+  --jade-line:rgba(79,191,149,.24);
+  --jade-line-hi:rgba(79,191,149,.5);
+
+  /* One page gutter per breakpoint, widened by the notch inset on devices
+     that have one. The masthead, the tab rail and the content column all
+     read from it, so they sit on the same edge instead of drifting apart.
+     --gl/--gr resolve --gut at use time, so the breakpoint overrides below
+     flow through without redeclaring the max(). */
+  --gut:26px;
+  --gl:max(var(--gut),env(safe-area-inset-left,0px));
+  --gr:max(var(--gut),env(safe-area-inset-right,0px));
+  /* Height of the sticky tab rail, so sticky things below it can clear it. */
+  --navh:44px;
+  /* iOS's status-bar blur material in the home-screen webapp turned out to
+     run taller than the official safe-area-inset-top value, leaving the
+     masthead and tab rail rendered right under the frost instead of clear of
+     it. This pads past the reported inset rather than trusting it exactly.
+     The *1.35 is a multiply, not an add, so it's still exactly 0 wherever
+     there's no inset to begin with (a normal Safari tab, or desktop). */
+  --sb-clear:calc(env(safe-area-inset-top,0px) * 2);
+
+  /* one light source, from above */
+  --edge-up:inset 0 1px 0 rgba(255,255,255,.055);
+  --lift-1:0 1px 0 rgba(255,255,255,.05) inset, 0 8px 24px -14px rgba(0,0,0,.9);
+  --lift-2:0 24px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.05) inset;
+  --well:inset 0 2px 5px -2px rgba(0,0,0,.85), inset 0 1px 0 rgba(0,0,0,.4);
+
+  --sans:"Instrument Sans","Instrument Sans Fallback","Segoe UI Variable Text","SF Pro Text",
+    -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono","JetBrains Mono",
+    "Cascadia Mono",Menlo,Consolas,monospace;
+}
+
+/* light theme: the instrument under daylight — paper-pale body,
+   same accents, depth inverted to match an overhead source */
+html[data-theme="light"]{
+  --bg:#eceef4;
+  --sunk:#dfe3ec;
+  --panel:#ffffff;
+  --panel-2:#f3f5fa;
+  --field:#f4f6fb;
+  --line:#ccd3e2;
+  --line-soft:#e3e7f0;
+  --text:#111827;
+  --dim:#404d64;
+  --dimmer:#5f6e87;
+  --gold:#a97516;
+  --jade:#16855c;
+  --steel:#3a63a8;
+  --coral:#bc4227;
+  --grid:#e0e4ee;
+  --axis:#66728a;
+  --stageline:#9aa5bb;
+  --dotstroke:#ffffff;
+  --shadow:rgba(22,32,55,.20);
+  --pop:#ffffff;
+  --line-hi:#aeb9cd;
+  --jade-line:rgba(22,133,92,.22);
+  --jade-line-hi:rgba(22,133,92,.5);
+  --edge-up:inset 0 1px 0 rgba(255,255,255,.9);
+  --lift-1:0 1px 0 rgba(255,255,255,.9) inset, 0 8px 22px -16px rgba(22,32,55,.5);
+  --lift-2:0 24px 60px -22px rgba(22,32,55,.35), 0 0 0 1px rgba(22,32,55,.05);
+  --well:inset 0 2px 4px -2px rgba(22,32,55,.18);
+}
+
+*{box-sizing:border-box}
+.srlive{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);
+  clip-path:inset(50%);white-space:nowrap;border:0;padding:0;margin:-1px}
+a,button,select,.toolcard,.popbtn,[role=button]{-webkit-tap-highlight-color:transparent}
+/* .stack sets display:flex, which outranks the browser's [hidden] rule and left
+   the inactive tab pane laid out under the sticky sidebar. */
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;
+  /* Leave room for the sticky tab rail (and the status-bar clearance in the
+     home-screen web app) so a field scrolled into view on focus never lands
+     hidden underneath it. */
+  scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 10px)}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--sans);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  letter-spacing:-.005em;
+}
+/* A faint overhead wash, so the page reads as lit from a source rather
+   than as a flat fill. One gradient, not a decoration on every element. */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(120% 60% at 50% -10%,rgba(125,159,214,.10),transparent 60%),
+    radial-gradient(80% 50% at 85% 0%,rgba(79,191,149,.06),transparent 70%);
+}
+html[data-theme="light"] body::before{
+  background:radial-gradient(120% 60% at 50% -10%,rgba(125,159,214,.16),transparent 65%);
+}
+header,main,.toast{position:relative;z-index:1}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+::selection{background:rgba(233,184,114,.3)}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background:var(--sunk)}
+::-webkit-scrollbar-thumb{background:#2b3854;border-radius:7px;border:3px solid var(--sunk)}
+::-webkit-scrollbar-thumb:hover{background:#3a4a6e}
+html[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c2cadb;border-color:var(--sunk)}
+

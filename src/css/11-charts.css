@@ -1,0 +1,269 @@
+/* ---------- chart ---------- */
+.chartwrap{padding:16px 18px 6px;position:relative}
+@keyframes chartFadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+svg{display:block;width:100%;height:auto}
+/* These charts use preserveAspectRatio="none", so the drawing stretches to
+   whatever box it lands in — including the axis text. Capping at the 900-unit
+   viewBox width keeps type undistorted on wide screens instead of smearing it. */
+.chartwrap > svg{max-width:900px;margin-left:auto;margin-right:auto}
+.legend{display:flex;gap:18px;font-size:11.5px;color:var(--dim);padding:0 18px 15px;
+  flex-wrap:wrap}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;
+  vertical-align:0}
+.tip{position:absolute;pointer-events:none;background:var(--pop);color:var(--text);
+  border:1px solid var(--line);padding:10px 13px;border-radius:var(--r-card);font-size:11.5px;
+  line-height:1.65;white-space:nowrap;opacity:0;transition:opacity .12s ease;
+  box-shadow:var(--lift-2);z-index:5}
+.tip b{font-size:12px;letter-spacing:-.005em}
+.tip .n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.note-list{font-size:12px;color:var(--dim);line-height:1.75;margin:0;padding-left:17px}
+.note-list li{margin-bottom:6px}
+.note-list li::marker{color:var(--dimmer)}
+.stack{display:flex;flex-direction:column;gap:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.toast{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(8px);
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--pop);color:var(--text);border:1px solid var(--line);
+  border-left:3px solid var(--line);
+  padding:12px 18px;border-radius:var(--r-card);font-size:13px;
+  box-shadow:var(--lift-2);
+  opacity:0;transition:opacity .22s ease,transform .22s cubic-bezier(.2,.8,.3,1);
+  pointer-events:none;z-index:20}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* A glyph and a colored left edge say at a glance whether it worked (jade
+   check) or is a nudge to set something up first (gold info). */
+.toast .toast-ic{width:17px;height:17px;flex:none}
+.toast .toast-msg{min-width:0}
+.toast.ok{border-left-color:var(--jade);box-shadow:var(--lift-2),0 0 0 1px rgba(79,191,149,.12)}
+.toast.ok .toast-ic{color:var(--jade)}
+.toast.warn{border-left-color:var(--gold)}
+.toast.warn .toast-ic{color:var(--gold)}
+
+/* Tablet and below: the sidebar moves above the results. */
+@media (max-width:900px){
+  :root{--gut:20px}
+  main{grid-template-columns:minmax(0,1fr);
+    padding:18px var(--gr) 36px var(--gl)}
+  aside{position:static;max-height:none;overflow-y:visible}
+  .seo{grid-column:1 / -1}
+  .masthead{padding:18px var(--gr) 16px var(--gl)}
+}
+/* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
+   smaller than that, and the zoom never fully reverses. */
+@media (max-width:640px){
+  :root{--gut:14px;--navh:43px}
+  main{padding:14px var(--gr) 30px var(--gl);gap:14px}
+  .stack{gap:14px}
+  .masthead{padding:16px var(--gr) 14px var(--gl);gap:14px}
+  .brandmark{width:46px;height:46px}
+  .brand{gap:12px}
+  .tagline{font-size:12.5px;margin-top:3px}
+  .toolhead{gap:12px}
+  .toolhead-icon{width:44px;height:44px;padding:7px}
+  .toolhead-name{font-size:19px}
+  .toolhead-desc{font-size:13px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  h1{font-size:17px}
+  .wordmark h1{font-size:21px}
+  :root{--r-panel:14px}
+  .panel > h2{padding:13px 14px}
+  .panel .body{padding:14px}
+
+  .headline{grid-template-columns:1fr}
+  .readout > .headline{border-radius:0}
+  .headline > div{padding:16px 14px}
+  .headline > div + div{border-left:0;border-top:1px solid var(--line-soft)}
+  .headline .v{font-size:28px}
+  .grid2{grid-template-columns:1fr;gap:16px}
+
+  nav[role=tablist]{overflow-x:auto}
+  nav[role=tablist] button{margin-right:14px;font-size:14px;white-space:nowrap}
+  .toolcards{margin:20px auto}
+  .toolcard{padding:16px 16px;gap:14px}
+  .toolcard-icon{width:48px;height:48px;padding:8px}
+  .toolcard-name{font-size:14px}
+  .stagegrid{grid-template-columns:1fr 1fr}
+  .stagegrid > .stageglide:not(.even){display:grid}
+  .stagecard:has(.stageglide:not(.even)) .glidewrap > .glidebtn{display:none}
+  .stagecard:has(.stageglide:not(.even)) .glidewrap:has(> .glidefields[hidden]){display:none}
+  .stagecard{padding:12px}
+  #stageTable{min-width:640px}
+  #xYearTable{min-width:660px}
+  #qYearTable{min-width:560px}
+  #clTable{min-width:560px}
+  #rbTable{min-width:640px}
+  #ddStartTable{min-width:640px}
+  #ddTable{min-width:760px}
+  #brCompare{min-width:720px}
+  #brTable{min-width:1000px}
+  #txTable{min-width:520px}
+  #txBrackets{min-width:520px}
+  #txStateRules td:first-child{width:118px}
+  #moTable{min-width:560px}
+
+  .solveopts{grid-template-columns:1fr}
+  .solveopt{padding:16px 14px}
+  .solveopt + .solveopt{border-left:0;border-top:1px solid var(--line-soft)}
+  .solveopt .btn{align-self:stretch;text-align:center}
+
+  .inputwrap input,select,.btn,.h2ctrl input{font-size:16px}
+  .btn.mini{font-size:13px;padding:9px 12px}
+  .convrow .btn.mini{width:56px;padding:9px 0}
+  .convrow .spacer{width:56px}
+  .inputwrap input{padding:11px 10px}
+  select{padding:11px 12px}
+  .btn{padding:11px 12px}
+  .field label{font-size:12.5px}
+
+  .scenariobar{width:100%}
+  .scgroup{flex:1;min-width:0}
+  .scgroup select{min-width:0;flex:1}
+  .scgroup .btn{width:40px;padding:8px}
+  .scenariobar .btn.iconbtn{width:40px;padding:8px}
+
+  .h2ctrl{margin-left:0;width:100%;justify-content:space-between;gap:10px}
+  .h2ctrl .inputwrap{width:110px}
+
+  .chartwrap{padding:12px 12px 4px}
+  .legend{padding:0 14px 14px;gap:12px;font-size:12px}
+  .mcnote{padding:0 14px 14px}
+
+  /* six money columns can't fit a phone; scroll them sideways instead of
+     letting the text wrap into an unreadable stack */
+  .scroll{overflow:auto;-webkit-overflow-scrolling:touch;max-height:340px}
+  #yearTable,#fiTable{min-width:580px}
+  th,td{padding:8px 9px;font-size:12.5px}
+  .swipehint{display:block}
+}
+/* ===== phone bottom tab bar (home-screen web app only) =====
+   In the installed iOS web app the tab rail leaves the top of the page and
+   docks at the bottom edge, within thumb reach on tall iPhones. Gated on the
+   html.pwa class (set at load from navigator.standalone / display-mode), so a
+   plain Safari tab — which has its own bottom toolbar — keeps the top rail.
+   No sticky-rail script change is needed: that code reads "stuck" from the
+   bar's top offset, and a fixed-bottom bar never reads as stuck. Left/right
+   insets keep the buttons clear of the notch in landscape; the bottom inset
+   lifts them off the home indicator. */
+@media (max-width:640px){
+  html.pwa .navbar{
+    position:fixed;top:auto;bottom:0;left:0;right:0;z-index:40;
+    border-top:1px solid var(--line);border-bottom:0;
+    background:var(--bg);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    box-shadow:0 -12px 30px -22px rgba(0,0,0,.9)}
+  html.pwa[data-theme="light"] .navbar{box-shadow:0 -12px 30px -24px rgba(22,32,55,.45)}
+  /* With the rail at the bottom, the Guide's progress card pins to the top. */
+  html.pwa .gd-top{top:calc(var(--sb-clear) + 10px)}
+  /* On a fixed-bottom bar the scroll shadow shouldn't change, so keep it. */
+  html.pwa .navbar.stuck{box-shadow:0 -12px 30px -22px rgba(0,0,0,.9)}
+  html.pwa nav[role=tablist]{overflow-x:visible;gap:0;
+    padding-left:env(safe-area-inset-left,0px);
+    padding-right:env(safe-area-inset-right,0px)}
+  html.pwa nav[role=tablist] button{
+    flex:1 1 0;margin-right:0;min-height:70px;padding:10px 1px 9px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+  html.pwa nav[role=tablist] button[aria-selected="true"]{color:var(--jade);font-weight:700}
+  /* The active indicator rides the top edge of the button in a bottom bar. */
+  html.pwa nav[role=tablist] button::after{top:0;bottom:auto;left:0;right:0;width:auto;height:2px;
+    -webkit-mask:none;mask:none;background:var(--jade);border-radius:2px;
+    transform:scaleX(0);transition:transform .22s cubic-bezier(.2,.7,.3,1)}
+  html.pwa nav[role=tablist] button[aria-selected="true"]::after{opacity:1;transform:scaleX(1)}
+  html.pwa nav[role=tablist] button:not([aria-selected="true"]):hover::after{opacity:0}
+  /* Calculator stacks its open mode under its name, and its chevron points
+     up, since the menu rises out of the bar. The menu is a sheet sitting just
+     above the bar, where the thumb already is. */
+  html.pwa nav[role=tablist] .calcbtn{align-items:center}
+  html.pwa .calc-mode{position:absolute;left:0;right:0;top:calc(50% + 13px);
+    justify-content:center;align-items:center;font-size:11.5px;line-height:1;letter-spacing:0}
+  html.pwa .calc-chev{transform:rotate(180deg)}
+  html.pwa .calcbtn[aria-expanded="true"] .calc-chev{transform:none}
+  html.pwa .calcmenu{top:auto !important;bottom:calc(100% + 8px);
+    transform-origin:bottom center;animation-name:calcmenu-up}
+  @keyframes calcmenu-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  html.pwa .calcmenu-h{display:block;padding:6px 14px 8px;font-size:11px;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
+  /* Room so the fixed (taller) bar never covers the last panel, and lift
+     toasts above it. */
+  html.pwa main{padding-bottom:30px}
+  html.pwa .toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))}
+  /* The status-bar cover strip masks behind a TOP rail; there's no top rail in
+     the web app, and the sticky-rail script mis-reads a fixed-bottom bar as
+     "stuck," switching this opaque strip (height 2x inset) on and letting it
+     clip the masthead once the top padding is under 2x. It has no job here, so
+     turn it off. */
+  html.pwa .sbcover{display:none !important}
+  /* With the tabs moved to the bottom, the tall top clearance that keeps the
+     masthead out of the iOS status-bar blur can come down ~30% (2x -> 1.4x the
+     safe-area inset). Web app only. If the logo/title dips back into the blur,
+     nudge the 1.4 up toward 2; if there's still too much dead space, down. */
+  html.pwa header{padding-top:calc(env(safe-area-inset-top,0px) * 1.55)}
+}
+/* The same status-bar blur covers the top of a pop-up tall enough to reach
+   it (the strategy guide), hiding its first lines and close button. Start
+   pop-ups below it, and clear the home indicator at the bottom. Web app only. */
+html.pwa .popup-overlay{
+  padding-top:calc(env(safe-area-inset-top,0px) * 1.55 + 20px);
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)}
+/* Small phones (SE, mini) leave each half of a two-column field row under
+   170px, cramped for anything longer than a short label. Below this width,
+   stack them instead — normal phones keep the two-column layout above. */
+@media (max-width:400px){
+  .two{grid-template-columns:1fr}
+}
+@media (max-width:360px){
+  html.pwa nav[role=tablist] button{font-size:14px}
+}
+/* iOS zooms the page when a focused field is under 16px. Keyed to touch
+   devices rather than width, so landscape phones are covered too. */
+@media (hover:none) and (pointer:coarse){
+  input,select,textarea{font-size:16px !important}
+  /* Tapping a control shouldn't offer to select its label or pop the iOS
+     text-callout. Scoped to touch so desktop text selection is untouched, and
+     kept off readouts/tables so figures stay copyable. */
+  nav[role=tablist] button,.seg button,.bgseg button,.btn,.toolcard,
+  .toolback .backbtn,.tipdot{
+    -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  .btn.mini{font-size:14px}
+  .seg button{font-size:14px}
+  /* Tooltip dots stay visually small but get a much bigger invisible tap
+     area on touch, since 16px is well under a comfortable touch target. */
+  .tipdot{position:relative;width:17px;height:17px}
+  .tipdot::after{content:"";position:absolute;top:50%;left:50%;
+    width:40px;height:40px;transform:translate(-50%,-50%)}
+  /* Everything below was under 40px on a touch screen. These grow for real
+     rather than overflowing an invisible pad, which would have sat on top of
+     the field beside them and stolen taps meant for it. */
+  .seg button{font-size:14px;padding:10px 14px}
+  .bgseg button{font-size:14px;padding:9px 12px}
+  .bgrow .del,.itemrow .itemdel,.dtrow .del{width:40px;height:40px;padding:0;
+    display:flex;align-items:center;justify-content:center}
+  .bgrow .delspace,.dtrow .delspace,.dthead .delspace{width:40px}
+  .signflip{padding:0 13px}
+  .toolcard:hover::before{transform:scaleY(0)}
+}
+/* Home-screen web app runs under the clock and battery, so reserve that space.
+   The horizontal insets are folded into --gl/--gr at the top of the sheet, so
+   the masthead and the tab rail get them too rather than main alone. */
+header{padding-top:var(--sb-clear)}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+}
+
+/* ---------- compare screen ---------- */
+.cmpgrid{display:flex;gap:12px;flex-wrap:wrap}
+.cmpslot{flex:1 1 200px;min-width:0}
+.cmpslot .field{margin-bottom:8px}
+.cmpkey{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;
+  letter-spacing:.02em;color:var(--dim);margin-bottom:6px}
+.cmpkey i{width:11px;height:11px;border-radius:3px;display:inline-block}
+#cmpOutTable tbody tr td:first-child,#cmpInTable tbody tr td:first-child{
+  text-align:left;white-space:normal;color:var(--dim)}
+#cmpOutTable tbody tr.cmphead td,#cmpInTable tbody tr.cmphead td{
+  color:var(--text);font-weight:650;background:var(--line-soft)}
+#cmpInTable tbody tr.cmpdiff td{background:rgba(233,184,114,.10)}
+#cmpInTable tbody tr.cmpdiff td:first-child{
+  box-shadow:inset 2px 0 0 var(--gold);color:var(--text)}
+.cmpna{color:var(--dimmer)}
+

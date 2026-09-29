@@ -1,0 +1,242 @@
+/* ---------- tabs: a lit rail ---------- */
+/* The rail sticks to the top of the viewport for the whole page, so switching
+   tools never means scrolling back up first. It lives outside <header> in the
+   markup: sticky positions against the nearest scrolling ancestor, and inside
+   the header it would have scrolled away with it. .navbar carries the full
+   width background so the rail doesn't end at the 1330px measure on a wide
+   screen, and nav keeps the measure. */
+/* Sticking to the literal top:0 works in a Safari tab, where the address bar
+   already occupies the notch/status-bar strip. It breaks in a home-screen
+   webapp: there's no browser chrome there, so top:0 pins the rail directly
+   under the status bar instead of below it -- it's not "not sticking", it's
+   stuck in a spot the translucent status bar paints over. env() resolves to
+   0 in a normal tab, so this offset is a no-op there and only does anything
+   once the page is actually running full-screen. */
+.navbar{position:sticky;top:var(--sb-clear);z-index:30;
+  background:var(--bg);border-bottom:1px solid var(--line);
+  box-shadow:0 12px 30px -24px #000;transition:box-shadow .12s ease}
+.navbar.stuck{box-shadow:0 14px 30px -22px rgba(0,0,0,.9)}
+/* Until it's pinned the rail is see-through, so the glow behind the logo
+   fades out across it rather than stopping at the header's bottom edge. */
+.navbar:not(.stuck){background:transparent}
+
+/* Once the rail is pinned below the status-bar clearance zone, the strip
+   above it (screen top down to --sb-clear) is no longer covered by the
+   header, which has scrolled out of view -- so whatever's scrolling past
+   underneath was showing through the blur. This paints that strip solid.
+   pointer-events:none from the start, not toggled with opacity, since that
+   was exactly the earlier bug (an invisible element that still ate taps). */
+.sbcover{position:fixed;top:0;left:0;right:0;height:var(--sb-clear);
+  background:var(--bg);z-index:29;pointer-events:none;
+  opacity:0;transition:opacity .12s ease}
+.sbcover.stuck{opacity:1}
+nav[role=tablist]{max-width:1330px;margin:0 auto;
+  padding:0 var(--gr) 0 var(--gl);display:flex;gap:4px}
+nav[role=tablist] button{
+  position:relative;font-family:var(--sans);font-size:14.5px;background:transparent;
+  color:var(--dim);border:0;padding:10px 4px 15px;margin-right:22px;
+  cursor:pointer;transition:color .15s ease}
+/* The picked tab is marked by the logo's arrow, which flies in from the left
+   under its name. A faint one previews it on hover. The gold comes through a
+   mask so it follows the theme. */
+nav[role=tablist] button::after{
+  content:"";position:absolute;left:50%;bottom:1px;width:38px;height:10px;
+  background:var(--gold);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  opacity:0;transform:translateX(calc(-50% - 16px));
+  transition:transform .32s cubic-bezier(.2,.7,.3,1),opacity .2s ease}
+nav[role=tablist] button:hover{color:var(--text)}
+nav[role=tablist] button:not([aria-selected="true"]):hover::after{
+  opacity:.3;transform:translateX(-50%);background:var(--dimmer)}
+nav[role=tablist] button[aria-selected="true"]{color:var(--text)}
+nav[role=tablist] button[aria-selected="true"]::after{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:reduce){nav[role=tablist] button::after{transition:none}}
+nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- Calculator tab: a mode menu ----------
+   Basic, Advanced and Stages share one tab. The tab carries the open mode
+   beside its name, so the rail still says which one you're on, and opens a
+   menu to switch. On a desktop the menu drops from the tab; on a phone it
+   spans the screen with finger-sized rows over a dimmed page; in the
+   home-screen web app it rises from the bottom bar instead (see the
+   html.pwa block below). */
+.calcbtn{display:inline-flex;align-items:baseline;gap:7px}
+.calc-mode{display:inline-flex;align-items:baseline;gap:3px;
+  font-size:12.5px;font-weight:600;color:var(--dimmer);transition:color .15s ease}
+nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
+.calc-chev{width:12px;height:12px;flex:none;align-self:center;transition:transform .2s ease}
+.calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
+.navbar.menu-open{z-index:45}
+.calcmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:310px;
+  padding:6px;background:var(--pop);border:1px solid var(--line);border-radius:var(--r-card);
+  box-shadow:var(--lift-2);transform-origin:top left;
+  animation:calcmenu-in .16s cubic-bezier(.2,.7,.3,1)}
+.calcmenu[hidden]{display:none}
+@media (hover:hover) and (pointer:fine){
+  .calcmenu::before{content:"";position:absolute;left:0;right:0;top:-10px;height:10px}
+}
+@keyframes calcmenu-in{from{opacity:0;transform:translateY(-4px) scale(.98)}to{opacity:1;transform:none}}
+.calcmenu-h{display:none}
+.calcmenu button{display:grid;grid-template-columns:1fr auto;align-items:center;
+  column-gap:12px;width:100%;text-align:left;font-family:var(--sans);
+  background:transparent;border:0;border-radius:8px;padding:10px 12px;
+  color:var(--text);cursor:pointer;transition:background .12s ease}
+.calcmenu button + button{margin-top:2px}
+.calcmenu button:hover,.calcmenu button:focus-visible{background:var(--panel-2)}
+.calcmenu button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.cm-name{grid-column:1;font-size:14.5px;font-weight:600}
+.cm-desc{grid-column:1;font-size:12.5px;color:var(--dimmer);line-height:1.4;margin-top:2px}
+/* the open mode gets a check, and its name in the tab's jade */
+.calcmenu button::after{content:"";grid-column:2;grid-row:1 / span 2;width:14px;height:8px;
+  border-left:2px solid var(--jade);border-bottom:2px solid var(--jade);
+  transform:translateY(-2px) rotate(-45deg);opacity:0}
+.calcmenu button[aria-checked="true"] .cm-name{color:var(--jade)}
+.calcmenu button[aria-checked="true"]::after{opacity:1}
+.calcscrim{display:none}
+@media (max-width:640px){
+  /* Full width under the rail, with rows tall enough to hit with a thumb. */
+  .calcmenu{left:10px !important;right:10px;width:auto;
+    padding:8px;border-radius:16px;transform-origin:top center}
+  .calcmenu button{min-height:58px;padding:11px 14px}
+  .cm-name{font-size:16px}
+  .cm-desc{font-size:13px}
+  /* above the guide's coach panel (30), below the open navbar (45) */
+  .calcscrim:not([hidden]){display:block;position:fixed;inset:0;z-index:35;
+    background:rgba(3,5,12,.5);animation:calcscrim-in .16s ease}
+  @keyframes calcscrim-in{from{opacity:0}to{opacity:1}}
+}
+@media (prefers-reduced-motion:reduce){
+  .calcmenu,.calcscrim:not([hidden]){animation:none}
+  .calc-chev{transition:none}
+}
+
+/* ---------- tool cards: a rail, not a lift ---------- */
+/* Grouped into three short sections, each a heading over its own grid, so
+   twelve tools scan as three kinds of question. */
+.toolcards{max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
+.toolgroup + .toolgroup{margin-top:30px}
+.toolgroup-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px 2px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--jade)}
+.toolgroup-h em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;font-size:13px;color:var(--dimmer)}
+.toolgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+/* Eight cards in one column ran past the fold on a laptop, which left the
+   last two tools effectively hidden on the landing view. Two columns fit the
+   whole set on screen at once. */
+@media (min-width:900px){
+  .toolcards{max-width:1060px}
+  .toolgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+}
+/* Budget has no sidebar, so in solo mode it gets a centered, generously
+   wide column instead of stretching a form edge-to-edge or sitting narrow
+   with blank space beside it like a sidebar-shaped tool would. Desktop
+   only — mobile's existing layout for this already works well. */
+@media (min-width:641px){
+  #tab-budget{max-width:820px;margin:0 auto;width:100%}
+  #tab-budget .bgrow .desc{font-size:14px}
+  #tab-budget .bgrow .inputwrap{flex:0 0 150px;width:150px}
+}
+/* A single column of 21 budget lines ran very long, and stranded each amount
+   far to the right of the label it belongs to. Two columns halves the page and
+   shortens that eye-trip; the category heading still spans both. */
+@media (min-width:900px){
+  #tab-budget{max-width:1040px}
+  .bggroup{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;align-items:start}
+  .bggroup-h{grid-column:1 / -1}
+  #tab-budget .bgrow .inputwrap{flex:0 0 140px;width:140px}
+  /* The totals and emergency-fund panels are single label/amount pairs. Left
+     at full width they strand each amount a screen away from its label, so
+     they keep a readable measure while the entry grid above uses the space. */
+  #tab-budget .kv,#tab-budget .efrow{max-width:620px}
+}
+.toolcard{position:relative;display:flex;align-items:center;gap:18px;
+  padding:20px 22px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-panel);box-shadow:var(--lift-1);cursor:pointer;
+  text-decoration:none;overflow:hidden;
+  transition:border-color .16s ease,background .16s ease,
+    transform .16s cubic-bezier(.2,.7,.3,1),box-shadow .16s ease}
+.toolcard::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--jade);
+  transform:scaleY(0);transform-origin:50% 50%;
+  transition:transform .2s cubic-bezier(.2,.7,.3,1)}
+.toolcard:hover{border-color:var(--jade-line-hi);background:var(--panel-2);
+  transform:translateY(-2px);box-shadow:var(--lift-1),0 18px 34px -22px rgba(0,0,0,.75)}
+.toolcard:hover::before{transform:scaleY(1)}
+/* Each icon sits on a jade tile, the same treatment as the household mark,
+   and the tile warms on hover while the icon acts out its tool. */
+.toolcard-icon{flex:none;width:54px;height:54px;padding:9px;color:var(--jade);
+  display:flex;align-items:center;justify-content:center;border-radius:var(--r-card);
+  background:linear-gradient(160deg,rgba(79,191,149,.13),rgba(79,191,149,.03));
+  border:1px solid var(--jade-line);
+  transition:transform .2s cubic-bezier(.2,.7,.3,1),border-color .2s ease,box-shadow .2s ease}
+.toolcard:hover .toolcard-icon{transform:scale(1.04);border-color:var(--jade-line-hi);
+  box-shadow:0 0 24px -8px rgba(79,191,149,.55)}
+.toolcard-icon svg{width:100%;height:100%}
+.toolcard-body{flex:1 1 auto;min-width:0}
+.toolcard-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.toolcard-desc{font-size:13px;color:var(--dim);line-height:1.5}
+/* The go-arrow is the logo's own arrow (the "›" in the markup is hidden). It
+   rests dim, and on hover turns gold and flies forward a step, as if loosed. */
+.toolcard-arrow{flex:none;width:38px;height:10px;font-size:0;line-height:0;position:relative}
+.toolcard-arrow::before{content:"";position:absolute;right:7px;top:0;width:30px;height:8px;margin-top:1px;
+  background:var(--dimmer);opacity:.7;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  transition:transform .28s cubic-bezier(.2,.7,.3,1),background .2s ease,opacity .2s ease}
+.toolcard:hover .toolcard-arrow::before{transform:translateX(7px);background:var(--gold);opacity:1}
+
+/* ---------- pane transitions ----------
+   Navigation swaps panes by toggling [hidden], which is instantaneous and
+   leaves no sense of where you came from. After each swap the newly visible
+   panes get a one-shot enter animation whose direction encodes the move:
+   rising for a plain tab change, a deeper rise + settle for drilling into a
+   tool, dropping from above for backing out to the picker. Short on purpose
+   — this is orientation, not a transition people should have to wait on. */
+@keyframes pane-in{from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}}
+@keyframes pane-in-fwd{from{opacity:0;transform:translateY(13px) scale(.988)}
+  to{opacity:1;transform:none}}
+@keyframes pane-in-back{from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:none}}
+@keyframes pane-fade{from{opacity:0}to{opacity:1}}
+@keyframes card-in{from{opacity:0;transform:translateY(11px)}
+  to{opacity:1;transform:none}}
+.pane-in{animation:pane-in .26s cubic-bezier(.2,.7,.3,1)}
+.pane-in-fwd{animation:pane-in-fwd .3s cubic-bezier(.2,.8,.3,1)}
+.pane-in-back{animation:pane-in-back .26s cubic-bezier(.2,.7,.3,1)}
+/* The picker is a list, so it reads better as cards arriving in sequence than
+   as one block sliding; the container only fades so the two don't compound. */
+.pane-in-cards{animation:pane-fade .18s ease-out}
+.pane-in-cards .toolcard{animation:card-in .3s cubic-bezier(.2,.7,.3,1) both;
+  animation-delay:calc(var(--i,0) * .03s + .01s)}
+.pane-in-cards .toolgroup-h{animation:pane-fade .3s ease-out both}
+/* A card that was just clicked shouldn't animate back out from under the
+   pointer, so the press state is its own quick acknowledgement. */
+.toolcard:active{transform:scale(.988);transition-duration:.08s}
+@media (prefers-reduced-motion:reduce){
+  .about-collapse > .body{transition:none}
+  .pane-in,.pane-in-fwd,.pane-in-back,.pane-in-cards,
+  .pane-in-cards .toolcard{animation:none}
+  .toolcard:active{transform:none}
+}
+
+/* ---------- FIRE calculator ---------- */
+.fire-slider-section{margin:8px 0 4px}
+.fire-slider-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:13px}
+.fire-slider-lbl{color:var(--dim)}
+.fire-slider-val{font-family:var(--mono)}
+/* A recessed track like every other well, and a gold thumb that grows under
+   the pointer. */
+.fire-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;
+  background:var(--field);box-shadow:var(--well);outline:none;cursor:pointer;margin:0}
+.fire-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--gold);cursor:pointer;border:3px solid var(--panel);
+  box-shadow:0 0 0 1px rgba(233,184,114,.5),0 3px 10px -2px rgba(0,0,0,.6);transition:transform .15s ease}
+.fire-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;
+  border:3px solid var(--panel);box-shadow:0 0 0 1px rgba(233,184,114,.5)}
+.fire-slider:hover::-webkit-slider-thumb,.fire-slider:active::-webkit-slider-thumb{transform:scale(1.15)}
+.fire-slider:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px rgba(233,184,114,.45)}
+.fire-slider-ends{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--dimmer)}
+.fire-slider-result{font-size:14px;font-family:var(--mono);color:var(--gold);margin-top:6px;font-weight:600}
+.firow-fire td{background:color-mix(in srgb,var(--gold) 7%,transparent)}
+

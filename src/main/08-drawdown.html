@@ -1,0 +1,333 @@
+  <aside id="asideDD" hidden>
+    <div class="panel inputs">
+      <h2>Your retirement</h2>
+      <div class="body">
+        <div class="field">
+          <label for="ddInitial">Portfolio at retirement</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="ddInitial" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <button class="btn mini" type="button" id="ddCopy" style="margin-top:6px">Copy from your plan</button>
+        </div>
+        <div class="field">
+          <label for="ddRetireAge">Age at retirement <span class="opt">optional</span><span class="tipdot" data-tip="retireage" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddRetireAge" type="text" inputmode="decimal" data-num data-step="1" min="0" max="120" data-nonneg><span class="affix">age</span></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="ddYears">Years in retirement</label>
+            <div class="inputwrap"><input id="ddYears" type="text" inputmode="decimal" data-num data-step="1" min="1" max="60" data-nonneg><span class="affix">yrs</span></div>
+            <div class="hint" id="ddFromNote" style="margin-top:6px"></div>
+          </div>
+          <div class="field">
+            <label for="ddStock">Stocks<span class="tipdot" data-tip="ddstocks" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">%</span></div>
+            <div class="hint" id="ddMixNote" style="margin-top:6px"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="ddStockEnd">Glide to <span class="opt">optional</span><span class="tipdot" data-tip="ddglide" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddStockEnd" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value=""><span class="affix">% stocks at end</span></div>
+        </div>
+        <div class="field">
+          <label for="ddFee">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+        </div>
+
+        <div class="field">
+          <label for="ddStrategy">Withdrawal strategy<span class="tipdot" data-tip="strategy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="ddStrategy">
+            <option value="fixed">Fixed amount, rising with inflation</option>
+            <option value="pct">Fixed % of portfolio each year</option>
+            <option value="guardrails">Guyton-Klinger Guardrails</option>
+            <option value="floorceil">Floor &amp; ceiling</option>
+            <option value="yale">Yale Endowment</option>
+            <option value="vpw">Variable percentage withdrawal (VPW)</option>
+          </select>
+          <button type="button" class="linkbtn" id="ddStratGuide">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg>
+            How the strategies compare
+          </button>
+        </div>
+        <div class="field" id="ddRateWrap">
+          <label for="ddRate" id="ddRateLabel">Withdrawal rate</label>
+          <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
+          <div class="hint" id="ddRateNote"></div>
+        </div>
+        <div id="ddWdStagesWrap" hidden>
+          <div id="ddWdStageList"></div>
+          <button class="btn mini" type="button" id="ddAddWdStage">+ Add spending stage</button>
+        </div>
+        <div class="two" id="ddGuardWrap" hidden>
+          <div class="field">
+            <label for="ddGuardBand">Guardrail width<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddAdjust">Size of the cut or raise</label>
+            <div class="inputwrap"><input id="ddAdjust" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg value="10"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="hint" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="two" id="ddFloorWrap" hidden>
+          <div class="field">
+            <label for="ddFloor">Max cut<span class="tipdot" data-tip="maxcut" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddFloor" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddCeil">Max raise<span class="tipdot" data-tip="maxraise" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddCeil" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="two" id="ddYaleWrap" hidden>
+          <div class="field">
+            <label for="ddYaleWeight">Weight on last year<span class="tipdot" data-tip="yale" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddYaleWeight" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="70"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddYaleRate">Target spending rate</label>
+            <div class="inputwrap"><input id="ddYaleRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg value="5"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="hint" id="ddYaleNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div id="ddVpwWrap" hidden>
+          <div class="field">
+            <label for="ddVpwRate">Expected rate of return<span class="tipdot" data-tip="vpwrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddVpwRate" type="text" inputmode="decimal" data-num data-step="0.25" value="3.8"><span class="affix">% after inflation</span></div>
+          </div>
+          <div class="field">
+            <label for="ddVpwFV">PMT future value<span class="tipdot" data-tip="vpwfv" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddVpwFV" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
+          </div>
+        </div>
+        <div class="hint" id="ddVpwNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="two" id="ddSpendFloorWrap" hidden>
+          <div class="field">
+            <label for="ddSpendFloor">Minimum spending<span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendFloor" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
+          </div>
+          <div class="field">
+            <label for="ddSpendCeil">Maximum spending<span class="tipdot" data-tip="spendceil" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSpendCeil" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
+          </div>
+        </div>
+        <div class="hint acwarn" id="ddSpendNote2" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="field" style="margin-top:14px">
+          <label for="ddSSMode">Social Security</label>
+          <select id="ddSSMode">
+            <option value="none">Not included</option>
+            <option value="est">Estimate it for me</option>
+            <option value="manual">I know my benefit</option>
+          </select>
+        </div>
+        <div class="field" id="ddSSWhoWrap" hidden>
+          <label for="ddSSWho">Whose benefit<span class="tipdot" data-tip="sswho" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="ddSSWho">
+            <option value="single">Just me</option>
+            <option value="couple">Me and a spouse</option>
+          </select>
+        </div>
+        <div id="ddSSEst" hidden>
+          <div class="two">
+            <div class="field">
+              <label for="ddSSIncome" id="ddSSIncomeLabel">Current income</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
+            </div>
+            <div class="field">
+              <label for="ddSSClaim">Claim at age<span class="tipdot" data-tip="ssclaim" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><select id="ddSSClaim"><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67" selected>67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option></select><span class="affix">yrs</span></div>
+            </div>
+          </div>
+          <div class="two" id="ddSSEst2Wrap" hidden>
+            <div class="field">
+              <label for="ddSSIncome2">Spouse's income</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="ddSSIncome2" type="text" inputmode="decimal" data-money data-nonneg value="85,000"></div>
+            </div>
+            <div class="field">
+              <label for="ddSSClaim2">Claim at age<span class="tipdot" data-tip="ssclaim" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><select id="ddSSClaim2"><option value="62">62</option><option value="63">63</option><option value="64">64</option><option value="65">65</option><option value="66">66</option><option value="67" selected>67</option><option value="68">68</option><option value="69">69</option><option value="70">70</option></select><span class="affix">yrs</span></div>
+            </div>
+          </div>
+          <div class="hint" id="ddSSEstNote"></div>
+        </div>
+        <div id="ddSSManual" hidden>
+          <div class="field">
+            <label for="ddSSAmount"><span id="ddSSAmountLabel">Annual benefit, today's dollars</span><span class="tipdot" data-tip="ssbenefit" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
+          </div>
+          <div class="field" id="ddSSAmount2Wrap" hidden>
+            <label for="ddSSAmount2">Spouse's annual benefit, today's dollars<span class="tipdot" data-tip="ssbenefit" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="ddSSAmount2" type="text" inputmode="decimal" data-money data-nonneg value="33,000"></div>
+          </div>
+        </div>
+        <div class="field" id="ddSSDelayWrap" hidden>
+          <label for="ddSSDelay"><span id="ddSSDelayLabel">Starts after</span><span class="tipdot" id="ddSSDelayTip" data-tip="ssdelay" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddSSDelay" type="text" inputmode="decimal" data-num data-step="1" min="0" max="30" data-nonneg value="0"><span class="affix" id="ddSSDelayAffix">yrs</span></div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label>Other income<span class="tipdot" data-tip="customincome" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div id="ddIncomeList"></div>
+          <button class="btn mini" type="button" id="ddAddIncome">+ Add income source</button>
+        </div>
+        <div class="field">
+          <label>Future expenses<span class="tipdot" data-tip="customexpense" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div id="ddExpenseList"></div>
+          <button class="btn mini" type="button" id="ddAddExpense">+ Add future expense</button>
+        </div>
+        <div class="field">
+          <label for="ddLegacyGoal">Legacy goal <span class="opt">optional</span><span class="tipdot" data-tip="legacy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="ddLegacyGoal" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
+        </div>
+        <div class="derived">
+          <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
+          <div><span>First-year withdrawal, before tax</span><span class="num" id="ddFirstW"></span></div>
+          <div><span>Per month</span><span class="num" id="ddFirstMo"></span></div>
+          <div><span>Periods tested</span><span class="num" id="ddPeriods"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="stack" id="tab-drawdown" hidden>
+    <div class="panel" id="ddIntro" hidden>
+      <div class="body" style="display:flex;gap:14px;align-items:flex-start">
+        <div style="flex:1 1 auto;min-width:0">
+          <div style="font-weight:600;color:var(--text);margin-bottom:6px">
+            New here? Here's the idea.
+          </div>
+          <div class="hint" style="margin:0">
+            Every other tool answers "how much will I have?" This one answers the
+            harder question: once you start spending it, <b>will it last?</b> Set a
+            portfolio value and a withdrawal strategy, then test it against every
+            real retirement since 1926: not a guess, actual market history.
+            Click any row in the table below to see exactly what that year looked
+            like, year by year.
+          </div>
+        </div>
+        <button class="btn mini" type="button" id="ddIntroClose" aria-label="Dismiss">&times;</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="readout">
+        <div class="txhead">
+          <span class="seg" id="segDD">
+            <button type="button" data-dd="hist" class="on">Historical</button>
+            <button type="button" data-dd="mc">Monte Carlo</button>
+          </span>
+          <span class="txbadge" id="ddBadge">1926&ndash;2025</span>
+        </div>
+        <div class="headline">
+          <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">—</div>
+            <div class="note" id="ddSuccessNote"></div></div>
+          <div><div class="k">Median ending balance</div><div class="v" id="ddMedian">—</div>
+            <div class="note">In today's dollars</div></div>
+          <div><div class="k">Worst case</div><div class="v" id="ddWorst">—</div>
+            <div class="note" id="ddWorstNote"></div></div>
+          <div id="ddLegacyWrap" hidden><div class="k">Meet legacy goal</div><div class="v" id="ddLegacy">—</div><div class="note" id="ddLegacyNote"></div></div>
+        </div>
+      </div>
+      <div class="body"><div id="ddVerdict"></div></div>
+    </div>
+
+    <div class="panel" id="ddYearsPanel">
+      <h2>How each starting year fared</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="ddStartTable">
+          <thead><tr>
+            <th class="sortcol" data-sort="year">Retired in</th>
+            <th class="sortcol" data-sort="outcome">Outcome</th>
+            <th class="sortcol" data-sort="end">Ending balance</th>
+            <th class="sortcol" data-sort="med">Median year spending</th>
+            <th class="sortcol" data-sort="low">Lowest year's spending</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddChartTitle">Every historical starting year<span class="h2ctrl" id="ddViewWrap" hidden>
+          <span class="seg" id="segDDView">
+            <button type="button" data-ddview="year">Selected year</button>
+            <button type="button" data-ddview="all" class="on">All years</button>
+          </span>
+        </span></h2>
+      <div class="chartwrap" id="chartWrapDD">
+        <svg id="chartDD" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Portfolio balance through retirement"></svg>
+        <div class="tip" id="tipDD"></div>
+      </div>
+      <div class="legend" id="legendDD"></div>
+      <div class="mcnote" id="ddChartNote"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddIncomeSectionTitle">What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2note">in today's dollars</span></h2>
+      <div class="body">
+        <div id="ddSpendYearView" hidden>
+          <div class="grid2">
+            <div>
+              <div class="kv"><span class="k">Highest year</span><span class="v pos" id="ddSpendHigh"></span></div>
+              <div class="kv"><span class="k">Lowest year</span><span class="v neg" id="ddSpendLow"></span></div>
+              <div class="kv"><span class="k">Median year</span><span class="v" id="ddSpendMed"></span></div>
+            </div>
+            <div>
+              <div class="kv"><span class="k">Years spending was cut</span><span class="v" id="ddSpendCuts"></span></div>
+              <div class="kv"><span class="k">Biggest single-year cut</span><span class="v" id="ddSpendMaxCut"></span></div>
+              <div class="kv"><span class="k">Total spent over retirement</span><span class="v" id="ddSpendTotal"></span></div>
+            </div>
+          </div>
+        </div>
+        <div id="ddSpendAllView">
+          <div class="grid2">
+            <div>
+              <div class="kv"><span class="k">Best single year</span><span class="v pos" id="ddAggHigh"></span></div>
+              <div class="kv"><span class="k">Worst single year</span><span class="v neg" id="ddAggLow"></span></div>
+              <div class="kv"><span class="k">Median single year</span><span class="v" id="ddAggMed"></span></div>
+              <div class="kv"><span class="k">Average single year</span><span class="v" id="ddAggAvg"></span></div>
+            </div>
+            <div>
+              <div class="kv"><span class="k">Median total spent over retirement</span><span class="v" id="ddAggTotalMed"></span></div>
+              <div class="kv"><span class="k">Total spent, lowest to highest scenario</span><span class="v" id="ddAggTotalRange"></span></div>
+              <div class="kv"><span class="k">Years spending was cut, on average</span><span class="v" id="ddAggCutsAvg"></span></div>
+              <div class="kv"><span class="k">Biggest single-year cut, ever</span><span class="v neg" id="ddAggMaxCut"></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="hint" id="ddSpendNote" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddIncomeChartTitle">Spending through retirement</h2>
+      <div class="chartwrap" id="chartWrapDDI">
+        <svg id="chartDDI" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Withdrawal amount over time"></svg>
+        <div class="tip" id="tipDDI"></div>
+      </div>
+      <div class="legend" id="legendDDI"></div>
+      <div class="hint" id="ddIncomeNote" style="padding:0 18px 14px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="ddDetailTitle">Year by year</h2>
+      <div class="hint" style="padding:0 18px" id="ddDetailNote"></div>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="ddTable">
+          <thead><tr><th id="ddTableYearHeader">Year</th><th>Start, today's $</th><th>Social Security</th><th id="ddOtherIncomeHeader" hidden>Other Income</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" id="ddSensPanel" hidden>
+      <h2>Return sensitivity</h2>
+      <div style="padding:0 18px 10px" class="hint">How your plan holds up if returns run higher or lower than history suggests.</div>
+      <div style="padding:0 18px 14px" id="ddSensTable"></div>
+    </div>
+
+    <div class="panel" id="ddSSBreakEvenPanel" hidden>
+      <h2>Social Security claiming age comparison</h2>
+      <div style="padding:0 18px 10px" class="hint">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
+      <div style="padding:0 18px 14px" id="ddSSBreakEvenTable"></div>
+    </div>
+  </div>
+

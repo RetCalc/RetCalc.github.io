@@ -1,0 +1,119 @@
+  <!-- ========== INCOME TAX ========== -->
+  <aside id="asideTax" hidden>
+    <div class="panel inputs">
+      <h2>Your situation
+        <span class="h2ctrl">
+          <span class="seg" id="segTxMode">
+            <button type="button" data-txmode="normal" class="on">Normal income</button>
+            <button type="button" data-txmode="retire">Retirement income</button>
+          </span>
+        </span>
+      </h2>
+      <div class="body">
+        <div id="txGrossWrap">
+          <div class="field">
+            <label for="txGross" id="txGrossLabel">Gross income</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txGross" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field" id="txGross2Wrap" hidden>
+            <label for="txGross2">Spouse's gross income</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txGross2" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+        </div>
+        <div class="derived txtotal" id="txGrossTotalWrap" hidden>
+          <div><span>Household gross income</span><span class="num" id="txGrossTotalShow"></span></div>
+        </div>
+
+        <div id="txRetSources" hidden>
+          <div class="field">
+            <label for="txTrad">Traditional 401(k) / IRA withdrawal<span class="tipdot" data-tip="bkttrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txTrad" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="field">
+            <label for="txRoth">Roth withdrawal<span class="tipdot" data-tip="bktroth" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txRoth" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="two bottomalign">
+            <div class="field">
+              <label for="txBrok">Brokerage<span class="tipdot" data-tip="bktbrok" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="txBrok" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="txGainPct">Gain portion<span class="tipdot" data-tip="bktgain" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><input id="txGainPct" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg><span class="affix">%</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="txSS">Social Security benefits<span class="tipdot" data-tip="bktss" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txSS" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="two bottomalign">
+            <div class="field">
+              <label for="txPension">Pension / annuity<span class="tipdot" data-tip="bktpen" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="txPension" type="text" inputmode="decimal" data-money data-nonneg></div>
+            </div>
+            <div class="field">
+              <label for="txPenType">Payer</label>
+              <select id="txPenType">
+                <option value="priv">Private employer</option>
+                <option value="pub">Government / public</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="txOther">Other ordinary income<span class="tipdot" data-tip="bktother" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="txOther" type="text" inputmode="decimal" data-money data-nonneg></div>
+          </div>
+          <div class="derived txtotal">
+            <div><span>Gross retirement income</span><span class="num" id="txRetGross"></span></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="txStatus">Filing status</label>
+          <select id="txStatus">
+            <option value="s">Single</option>
+            <option value="m">Married filing jointly</option>
+          </select>
+        </div>
+        <div class="field" id="txSeniorWrap" hidden>
+          <label for="txSeniors">Age 65 or older<span class="tipdot" data-tip="senior" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="txSeniors">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+            <option value="2">Both spouses</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="txState">State</label>
+          <select id="txState"></select>
+        </div>
+        <div class="field">
+          <label for="txPre">Pre-tax deductions<span class="tipdot" id="txPreTip" data-tip="txpre" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="txPre" type="text" inputmode="decimal" data-money data-nonneg></div>
+        </div>
+        <div class="field">
+          <label for="txDedType">Deduction<span class="tipdot" data-tip="deduction" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="txDedType">
+            <option value="std">Standard deduction</option>
+            <option value="item">Itemized</option>
+          </select>
+        </div>
+        <div class="field" id="txItemWrap" hidden>
+          <label for="txItem">Itemized total</label>
+          <div class="inputwrap"><span class="affix">$</span><input id="txItem" type="text" inputmode="decimal" data-money data-nonneg></div>
+          <div class="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
+        </div>
+        <div class="derived">
+          <div id="txSSRow" hidden><span>Taxable Social Security<span class="tipdot" data-tip="ss86" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txSSShow"></span></div>
+          <div><span id="txStdLabel">Standard deduction</span><span class="num" id="txStdShow"></span></div>
+          <div><span>Taxable income</span><span class="num" id="txTaxable"></span></div>
+          <div><span id="txMarginalLabel">Marginal federal rate<span class="tipdot" data-tip="marginal" role="button" tabindex="0" aria-label="What is this?">?</span></span><span class="num" id="txMarginal"></span></div>
+          <div><span id="txRoomLabel">Room before next bracket</span><span class="num" id="txRoomShow"></span></div>
+          <div id="txZeroRoomRow" hidden><span>Room in the 0% gains rate</span><span class="num" id="txZeroRoomShow"></span></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ROTH CONVERSION & RMD -->

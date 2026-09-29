@@ -1,0 +1,103 @@
+/* ---------- charts: brand type and theme-aware ink ----------
+   Every painter labels its axes in a system monospace; this puts them in the
+   site's own number face, IBM Plex Mono, like every other figure on the page.
+   (CSS outranks an SVG presentation attribute, so no painter has to change.) */
+svg text[font-family*="monospace"]{font-family:var(--mono);font-variant-numeric:tabular-nums}
+/* The plan's gold line glows faintly on the dark theme, like the readouts. */
+html:not([data-theme="light"]) .chartwrap path[stroke="#e9b872"]{filter:drop-shadow(0 0 5px rgba(233,184,114,.4))}
+/* The painters write the dark theme's data hues as literal hex, which run
+   pale on white. On the light theme those same four hues are swapped for the
+   theme's deeper ones wherever they appear: chart strokes and fills, legend
+   swatches, and the coloured labels in tooltips. The logo keeps its own. */
+html[data-theme="light"] svg:not(.brandmark) [stroke="#e9b872"]{stroke:var(--gold)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#e9b872"]{fill:var(--gold)}
+html[data-theme="light"] [style*="color:#e9b872"]{color:var(--gold) !important}
+html[data-theme="light"] [style*="background:#e9b872"]{background:var(--gold) !important}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#4fbf95"]{stroke:var(--jade)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#4fbf95"]{fill:var(--jade)}
+html[data-theme="light"] [style*="color:#4fbf95"]{color:var(--jade) !important}
+html[data-theme="light"] [style*="background:#4fbf95"]{background:var(--jade) !important}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#7d9fd6"]{stroke:var(--steel)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#7d9fd6"]{fill:var(--steel)}
+html[data-theme="light"] [style*="color:#7d9fd6"]{color:var(--steel) !important}
+html[data-theme="light"] [style*="background:#7d9fd6"]{background:var(--steel) !important}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#e2795f"]{stroke:var(--coral)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#e2795f"]{fill:var(--coral)}
+html[data-theme="light"] [style*="color:#e2795f"]{color:var(--coral) !important}
+html[data-theme="light"] [style*="background:#e2795f"]{background:var(--coral) !important}
+
+
+/* Painters read theme colours with cssVar() and write the hex into each
+   drawing, so a chart drawn under one theme kept that theme's ink after a
+   switch (only the three calculator charts redraw), and a tool opened on a
+   light-theme visit was drawn before the stored theme applied, leaving its
+   labels near-white on white. Each theme token's hex from the other theme is
+   mapped back to the live token here, so every chart follows the theme
+   without being redrawn. */
+html[data-theme="light"] svg:not(.brandmark) [fill="#e8edf7"]{fill:var(--text)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#e8edf7"]{stroke:var(--text)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#bbc8db"]{fill:var(--dim)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#bbc8db"]{stroke:var(--dim)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#94a6bf"]{fill:var(--dimmer)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#94a6bf"]{stroke:var(--dimmer)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#1c2740"]{fill:var(--grid)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#1c2740"]{stroke:var(--grid)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#7f8eaa"]{fill:var(--axis)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#7f8eaa"]{stroke:var(--axis)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#4a5a7b"]{fill:var(--stageline)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#4a5a7b"]{stroke:var(--stageline)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#26314b"]{fill:var(--line)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#26314b"]{stroke:var(--line)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#1a2338"]{fill:var(--line-soft)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#1a2338"]{stroke:var(--line-soft)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#151e33"]{fill:var(--panel)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#151e33"]{stroke:var(--panel)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#1e2a44"]{fill:var(--panel-2)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#1e2a44"]{stroke:var(--panel-2)}
+html[data-theme="light"] svg:not(.brandmark) [fill="#0d1322"]{fill:var(--pop)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#0d1322"]{stroke:var(--pop)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#111827"]{fill:var(--text)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#111827"]{stroke:var(--text)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#404d64"]{fill:var(--dim)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#404d64"]{stroke:var(--dim)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#5f6e87"]{fill:var(--dimmer)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#5f6e87"]{stroke:var(--dimmer)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#e0e4ee"]{fill:var(--grid)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#e0e4ee"]{stroke:var(--grid)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#66728a"]{fill:var(--axis)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#66728a"]{stroke:var(--axis)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#9aa5bb"]{fill:var(--stageline)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#9aa5bb"]{stroke:var(--stageline)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#ccd3e2"]{fill:var(--line)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#ccd3e2"]{stroke:var(--line)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#e3e7f0"]{fill:var(--line-soft)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#e3e7f0"]{stroke:var(--line-soft)}
+html:not([data-theme="light"]) svg:not(.brandmark) [fill="#f3f5fa"]{fill:var(--panel-2)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#f3f5fa"]{stroke:var(--panel-2)}
+html[data-theme="light"] svg:not(.brandmark) [stroke="#080b16"]{stroke:var(--dotstroke)}
+html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#ffffff"]{stroke:var(--dotstroke)}
+
+
+/* ---------- the logo's arrow as a button glyph ----------
+   Replaces the "›" and "‹" text arrows in buttons. It nudges the way it
+   points when the button is hovered. */
+.arw{display:inline-block;width:19px;height:8px;margin-left:8px;vertical-align:1px;flex:none;
+  background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
+  transition:transform .22s cubic-bezier(.2,.7,.3,1)}
+.arw.back{margin-left:0;margin-right:8px;transform:scaleX(-1)}
+.backbtn .arw.back{margin-right:0}
+@media (hover:hover){
+  .btn:hover > .arw:not(.back){transform:translateX(3px)}
+  .btn:hover > .arw.back,.backbtn:hover > .arw.back{transform:scaleX(-1) translateX(3px)}
+}
+
+/* ---------- the logo on the light theme ----------
+   Its gold and jade are tuned for the dark ground and run pale on white, so
+   on the light theme they deepen a step, as the data hues do. */
+html[data-theme="light"] .brandmark [stroke="#e9b872"]{stroke:#c1861e}
+html[data-theme="light"] .brandmark [fill="#e9b872"]{fill:#c1861e}
+html[data-theme="light"] .brandmark [stroke="#4fbf95"]{stroke:#2a9e73}
+html[data-theme="light"] .brandmark [stroke="#7d9fd6"]{stroke:#5a81c3}
+

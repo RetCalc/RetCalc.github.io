@@ -1,0 +1,85 @@
+/* ---------- printable one-page summary ---------- */
+#sheet{display:none}
+@media print{
+  html,body{background:#fff !important;color:#111 !important}
+  body::before{display:none !important}
+  header,main,.toast,nav,.navbar,#srLive{display:none !important}
+  #sheet{display:block !important;font-family:var(--sans);color:#111;
+    max-width:7.5in;margin:0 auto}
+  @page{size:letter portrait;margin:0.45in}
+
+  /* Masthead: name of the report, a right-aligned context line, and a thin
+     rule underneath. Deliberately small — this is a header, not a title
+     page — so it costs almost no vertical space. */
+  .sh-h{display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid #111;
+    padding-bottom:6px;margin-bottom:10px}
+  .sh-h h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .sh-mark{width:20px;height:20px;flex:none;align-self:center;margin-right:-2px}
+  .sh-h span{font-size:9.5px;color:#666;margin-left:auto}
+
+  /* The three headline numbers. This is the only oversized text on the page
+     on purpose — everything else is reference detail underneath it. */
+  .sh-big{display:flex;gap:10px;margin-bottom:10px}
+  .sh-big > div{flex:1;border:1px solid #ccc;border-radius:5px;padding:7px 9px}
+  .sh-big .k{font-size:8px;text-transform:uppercase;letter-spacing:.06em;color:#666;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh-big .v{font-family:var(--mono);font-size:15.5px;font-weight:700;margin-top:2px;
+    letter-spacing:-.02em;white-space:nowrap}
+  .sh-big .n{font-size:8px;color:#777;margin-top:1px}
+
+  /* Chart: a fixed, deliberately compact height rather than width:100% at the
+     source aspect ratio, which was the main reason sheets ran long. Capped
+     at 1.35in regardless of the underlying viewBox — tall enough to read
+     the shape of a curve, short enough to leave room for the data below it,
+     which is the part people actually reference. */
+  .sh-chart{border:1px solid #ccc;border-radius:5px;padding:5px 7px 3px;
+    margin-bottom:10px;height:1.35in;display:flex;align-items:center}
+  .sh-chart svg{width:100%;height:100%;display:block}
+
+  /* Detail columns: the dense reference material. Tightened line height and
+     a smaller type size than the old sheet, since a printed page is read up
+     close and doesn't need the same size as an on-screen panel. */
+  .sh-cols{display:flex;gap:16px;margin-bottom:10px}
+  .sh-cols section{flex:1;min-width:0}
+  .sh-t{font-size:8.5px;text-transform:uppercase;letter-spacing:.07em;color:#444;
+    border-bottom:1px solid #bbb;padding-bottom:3px;margin-bottom:4px;font-weight:700}
+  .sh-r{display:flex;justify-content:space-between;gap:8px;font-size:9px;
+    padding:2px 0;border-bottom:1px solid #f0f0f0;line-height:1.3}
+  .sh-r span{color:#333}
+  .sh-r b{font-family:var(--mono);font-weight:600;white-space:nowrap}
+  .sh-more{font-size:8px;color:#999;font-style:italic;padding-top:2px}
+
+  /* A compact data table — amortization, tax brackets, year-by-year —
+     for sheets that have real tabular detail worth including. Deliberately
+     denser than the on-screen version: a printed page is read up close, and
+     someone asked for a PDF specifically wants the numbers, not the polish. */
+  .sh-table{margin-bottom:10px}
+  .sh-table table{width:100%;border-collapse:collapse}
+  .sh-table th{font-size:7.5px;text-transform:uppercase;letter-spacing:.05em;
+    color:#555;text-align:right;font-weight:700;padding:2px 5px;
+    border-bottom:1px solid #999}
+  .sh-table th:first-child,.sh-table td:first-child{text-align:left}
+  .sh-table td{font-family:var(--mono);font-size:8px;text-align:right;
+    padding:1.5px 5px;border-bottom:1px solid #eee;white-space:nowrap}
+  .sh-table tr:nth-child(even) td{background:#fafafa}
+
+  /* The guide's plan: its chart in print ink, and the to-do list. */
+  #sheet .gd-chart .grid{stroke:#e2e5e3} #sheet .gd-chart .ax{fill:#666e73}
+  #sheet .gd-chart .mark{stroke:#bbb} #sheet .gd-chart .ln.p{stroke:#16855c}
+  #sheet .gd-chart .band.p{fill:#16855c;fill-opacity:.12}
+  #sheet .gd-chart .tr path{stroke:#8a9aa6;stroke-opacity:.18}
+  #sheet .gd-chart .dot{stroke:#fff} #sheet .gd-chart .dot.p{fill:#16855c}
+  #sheet .gd-chart .lab{fill:#333;stroke:#fff;font-size:12px} #sheet .gd-chart .xh{display:none}
+  .sh-moves{margin-bottom:10px}
+  .sh-moves ol{margin:0;padding-left:16px}
+  .sh-moves li{font-size:9px;line-height:1.4;margin:0 0 4px;color:#333}
+  .sh-moves li b{color:#111}
+
+  /* Footer disclaimer: present, legible, and unmistakably the least important
+     text on the page. */
+  .sh-foot{font-size:7.5px;color:#666;line-height:1.45;border-top:1px solid #ccc;
+    padding-top:5px}
+  .sh-foot::after{content:"RetCalc \00b7  retcalc.app \00b7  Know your number.";
+    display:block;margin-top:4px;color:#9a7a3a;font-weight:600;letter-spacing:.01em}
+}
+

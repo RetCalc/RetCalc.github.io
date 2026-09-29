@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Run the calculation tests against the math in index.html.
+"""Run the calculation tests against the math in src/.
 
-The engine lives inside index.html (between the ===MATH START=== and
-===MATH END=== markers), and a few calculators live further down in the app
-script. This pulls the engine block and the named extras out of the page,
-puts them in one script with tests/math.test.js, and runs it with whichever
+The engine is src/js/math.js (between its ===MATH START=== and ===MATH END===
+markers), and a few calculators live in the app script, src/js/app/*.js.
+This takes the engine block and the named extras, puts them in one script
+with tests/math.test.js, and runs it with whichever
 JavaScript engine is here: jsc (built into macOS) or node (CI). The exit
 code is nonzero when any test fails, which is what the pre-commit hook and
 the GitHub workflow check.
 
     python3 tests/run.py
 """
-import os, re, shutil, subprocess, sys, tempfile
+import glob, os, re, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc"
@@ -40,7 +40,7 @@ def balanced(src, start, open_ch, close_ch):
 def function(src, name):
     m = re.search(r"\nfunction %s\(" % re.escape(name), src)
     if not m:
-        sys.exit("tests/run.py: function %s not found in index.html" % name)
+        sys.exit("tests/run.py: function %s not found in src/js/app/" % name)
     body = src.index("{", m.end())
     return src[m.start() + 1:balanced(src, body, "{", "}")]
 
@@ -48,7 +48,7 @@ def function(src, name):
 def constant(src, name):
     m = re.search(r"\n(?:const|let|var) %s\s*=\s*" % re.escape(name), src)
     if not m:
-        sys.exit("tests/run.py: constant %s not found in index.html" % name)
+        sys.exit("tests/run.py: constant %s not found in src/js/app/" % name)
     i = m.end()
     if src[i] in "[{":
         end = balanced(src, i, src[i], "]" if src[i] == "[" else "}")
@@ -58,9 +58,11 @@ def constant(src, name):
 
 
 def main():
-    src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
-    a, b = src.index("// ===MATH START==="), src.index("// ===MATH END===")
-    parts = [src[a:b]]
+    math = open(os.path.join(ROOT, "src", "js", "math.js"), encoding="utf-8").read()
+    src = "".join(open(p, encoding="utf-8").read()
+                  for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))
+    a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
+    parts = [math[a:b]]
     parts += [constant(src, c) for c in CONSTANTS]
     parts += [function(src, f) for f in FUNCTIONS]
     parts.append(open(os.path.join(ROOT, "tests", "math.test.js"), encoding="utf-8").read())

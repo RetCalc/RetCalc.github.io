@@ -1,0 +1,88 @@
+  <div class="stack" id="tab-bridge" hidden>
+    <div class="panel">
+      <div class="headline">
+        <div><div class="k">Best way to 59½</div>
+          <div class="v gold" id="brBest">—</div>
+          <div class="note" id="brBestNote"></div></div>
+        <div><div class="k">Holds up in<span class="tipdot" data-tip="brholds" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="brHold">—</div>
+          <div class="note" id="brHoldNote"></div></div>
+        <div><div class="k">Cost of the bridge<span class="tipdot" data-tip="brcost" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="v" id="brCost">—</div>
+          <div class="note" id="brCostNote"></div></div>
+      </div>
+      <div class="body"><div id="brVerdict"></div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Ways to 59½<span class="h2note">click one to see it year by year</span>
+        <span class="h2ctrl">
+          <span class="seg" id="segBR">
+            <button type="button" data-brmode="hist" class="on">Historical</button>
+            <button type="button" data-brmode="mc">Monte Carlo</button>
+          </span>
+        </span>
+      </h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll" style="max-height:none"><table id="brCompare"><thead><tr><th>Plan</th><th>Holds to 59½</th><th>Tax</th><th>Penalties</th><th>Health premiums</th><th>At 59½</th></tr></thead><tbody></tbody></table></div>
+      <div class="hint" id="brCompareNote" style="padding:0 18px 14px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="brAtTitle">What you'll have at 59½<span class="h2note">today's dollars</span>
+        <span class="h2ctrl">
+          <span class="seg" id="segBRPath">
+            <button type="button" data-brpath="above">Above average</button>
+            <button type="button" data-brpath="avg" class="on">Average</button>
+            <button type="button" data-brpath="below">Below average</button>
+          </span>
+        </span>
+      </h2>
+      <div class="body">
+        <div id="brAtOut"></div>
+        <div class="br-send">
+          <button class="btn" type="button" id="brToDD">Send to Drawdown Simulator</button>
+          <button class="btn" type="button" id="brToTax">Send to Income Tax</button>
+          <span class="tipdot" data-tip="brhandoff" data-tip-title="Sending this to another tool" role="button" tabindex="0" aria-label="What is this?">?</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="brFlowTitle">Where each year's money comes from<span class="h2note">today's dollars</span></h2>
+      <div class="chartwrap" id="chartWrapBR"><svg id="chartBR" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Where each year's spending comes from"></svg><div class="tip" id="tipBR"></div></div>
+      <div class="legend" id="legendBR"></div>
+      <div class="hint" id="brFlowNote" style="padding:0 18px 14px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="brBalTitle">Account balances<span class="h2note">today's dollars</span>
+        <span class="h2ctrl">
+          <span class="seg" id="segBRBal">
+            <button type="button" data-brbal="acct" class="on">By account</button>
+            <button type="button" data-brbal="hist">Across history</button>
+          </span>
+        </span>
+      </h2>
+      <div class="chartwrap" id="chartWrapBRB"><svg id="chartBRB" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Account balances by age"></svg><div class="tip" id="tipBRB"></div></div>
+      <div class="legend" id="legendBRB"></div>
+    </div>
+
+    <div class="panel" id="brLadderPanel" hidden>
+      <h2>The conversion ladder<span class="h2note">each rung waits five years</span></h2>
+      <div class="scroll"><table id="brLadder"><thead><tr><th>Converted at</th><th>Amount</th><th>Tax that year</th><th>Penalty-free from</th></tr></thead><tbody></tbody></table></div>
+      <div class="hint" id="brLadderNote" style="padding:0 18px 14px"></div>
+    </div>
+
+    <div class="panel">
+      <h2 id="brTableTitle">Year by year</h2>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll"><table id="brTable"><thead><tr><th>Age</th><th>Spending</th><th>Health</th><th>Tax</th><th>Penalty</th><th>Brokerage</th><th>Roth</th><th>72(t)</th><th>55 / 457(b)</th><th>Penalized</th><th>Work</th><th>Converted</th><th>MAGI</th><th>Balance</th></tr></thead><tbody></tbody></table></div>
+    </div>
+
+    <div class="panel">
+      <h2>The rules that shape this</h2>
+      <div class="body"><dl class="gloss" id="brRules"></dl></div>
+    </div>
+  </div>
+
