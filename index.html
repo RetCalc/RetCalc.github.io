@@ -374,6 +374,7 @@ aside::-webkit-scrollbar-track{background:transparent}
 aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:0}
 aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
 
+.about a.mailme{color:var(--jade)}
 /* ---------- about this tool (the page's written explanation) ---------- */
 /* Under the tool, in the results column: the sidebar is sticky and runs the
    height of the page, so the article can't span it. Full width where there's
@@ -5656,6 +5657,19 @@ window.onerror = function(msg){
       </div>
     </div>
 
+    <div class="panel about no-collapse">
+      <h2>Contact</h2>
+      <div class="body">
+        <p>Found a bug, a number that looks off, or have an idea for a tool? Email
+        <a class="mailme" href="#" data-u="contact" data-d="retcalc.app">contact [at] retcalc.app</a>.
+        Every message is read, and reports of anything that looks wrong are the most
+        useful of all.</p>
+        <p>One thing it can't do: give personal financial or tax advice. For decisions
+        about your own money, a fee-only financial planner or a tax professional can
+        look at your whole situation.</p>
+      </div>
+    </div>
+
     <div class="panel about disclaimer">
       <h2>Disclaimer</h2>
       <div class="body">
@@ -7436,6 +7450,7 @@ window.onerror = function(msg){
     <div class="sitefoot-txt">
       <p>An educational tool, not financial or tax advice. Past returns don't predict future ones, and tax figures are estimates.
         <button type="button" class="sitefoot-link" id="footDisclaimer">Read the full disclaimer</button></p>
+      <p>Found a bug, or a number that looks off? <a class="sitefoot-link mailme" href="#" data-u="contact" data-d="retcalc.app">contact [at] retcalc.app</a></p>
       <p class="src">Market history: Robert Shiller's dataset (Yale) and the US Bureau of Labor Statistics, 1926 to 2025. Taxes: 2026 federal and state rules. Healthcare: KFF's 2026 averages.</p>
     </div>
     <nav class="sitefoot-nav" aria-label="Site">
@@ -23985,6 +24000,14 @@ $("gdCoachBody").addEventListener("click", e => {
     const nb = $("gdCoachBody").querySelector("[data-cp='1']") || $("gdCoachBody").querySelector("[data-cp='-1']");
     if (nb) try { nb.focus({preventScroll:true}); } catch(e2){}
   }
+});
+
+/* The contact address is put together here rather than written into the
+   page, so it isn't sitting in the HTML for address-harvesting bots. */
+document.querySelectorAll("a.mailme").forEach(a => {
+  const addr = a.getAttribute("data-u") + "@" + a.getAttribute("data-d");
+  a.href = "mailto:" + addr;
+  a.textContent = addr;
 });
 
 /* ---------- tool help ----------
