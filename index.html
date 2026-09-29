@@ -3881,6 +3881,16 @@ window.onerror = function(msg){
           <label for="rbHorizon">Time horizon</label>
           <div class="inputwrap"><input id="rbHorizon" type="text" inputmode="decimal" data-num data-step="1" min="1" max="40" data-nonneg><span class="affix">yrs</span></div>
         </div>
+        <div class="two">
+          <div class="field">
+            <label for="rbGainTax">Tax on gains<span class="tipdot" data-tip="rbgaintax" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="rbGainTax" type="text" inputmode="decimal" data-num data-step="1" min="0" max="50" data-nonneg value="15"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="rbStatus">Filing status<span class="tipdot" data-tip="rbstatus" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <select id="rbStatus"><option value="s">Single</option><option value="m" selected>Married, joint</option></select>
+          </div>
+        </div>
         <div class="derived">
           <div><span>Loan amount</span><span class="num" id="rbLoan"></span></div>
           <div><span>Principal &amp; interest</span><span class="num" id="rbPI"></span></div>
@@ -4095,7 +4105,7 @@ window.onerror = function(msg){
         </div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
-          <div><span>First-year withdrawal</span><span class="num" id="ddFirstW"></span></div>
+          <div><span>First-year withdrawal, before tax</span><span class="num" id="ddFirstW"></span></div>
           <div><span>Per month</span><span class="num" id="ddFirstMo"></span></div>
           <div><span>Periods tested</span><span class="num" id="ddPeriods"></span></div>
         </div>
@@ -4346,7 +4356,7 @@ window.onerror = function(msg){
         or worse, because no one earns an identical return every year. When you want
         tax, fees, volatility or changing assumptions, <b>Open these numbers in
         Advanced</b> carries your answers to the Advanced tab, splitting the real
-        rate back into a return and 2.94% inflation (Advanced's own default), with contributions set to rise
+        rate back into a return and 3% inflation (Advanced's own default), with contributions set to rise
         alongside it. Basic's own contribution already steps up once a year behind
         the scenes, the same way Advanced's does, so the inflation-adjusted total
         should land on the Basic figure almost exactly. Advanced does apply a 10%
@@ -6786,6 +6796,10 @@ window.onerror = function(msg){
             </select>
           </div>
         </div>
+        <div class="field" id="hcSpouseAgeWrap" hidden>
+          <label for="hcSpouseAge">Spouse's age then<span class="tipdot" data-tip="hcspouseage" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="hcSpouseAge" type="text" inputmode="decimal" data-num min="21" max="90" value="62"><span class="affix">age</span></div>
+        </div>
         <div class="field">
           <label for="hcState">State</label>
           <select id="hcState">
@@ -6849,6 +6863,10 @@ window.onerror = function(msg){
           <button class="btn mini" type="button" id="hcGoTax" style="margin-top:4px">Open Income Tax</button>
         </div>
         <div class="field">
+          <label for="hcSS">Social Security received <span class="opt">optional</span><span class="tipdot" data-tip="hcss" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="hcSS" type="text" inputmode="decimal" data-money data-nonneg value=""><span class="affix">/yr</span></div>
+        </div>
+        <div class="field">
           <label for="hcManualPremium">ACA benchmark premium<span class="tipdot" data-tip="hcbenchmark" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="hcManualPremium" type="text" inputmode="decimal" data-money data-nonneg placeholder="state est. if blank"></div>
         </div>
@@ -6899,11 +6917,11 @@ window.onerror = function(msg){
         <div class="two">
           <div class="field">
             <label for="fiNominal">Rate of return</label>
-            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="9.65"><span class="affix">%</span></div>
+            <div class="inputwrap"><input id="fiNominal" type="text" inputmode="decimal" data-num data-step="0.5" value="8.5"><span class="affix">%</span></div>
           </div>
           <div class="field">
             <label for="fiInflation">Inflation</label>
-            <div class="inputwrap"><input id="fiInflation" type="text" inputmode="decimal" data-num data-step="0.5" value="2.94"><span class="affix">%</span></div>
+            <div class="inputwrap"><input id="fiInflation" type="text" inputmode="decimal" data-num data-step="0.5" value="3"><span class="affix">%</span></div>
           </div>
         </div>
         <div class="field">
@@ -7178,6 +7196,8 @@ window.onerror = function(msg){
  * @property {number} [ssDelayYears] - years into retirement before the primary benefit starts
  * @property {number} [ssAnnual2] - spouse's Social Security benefit, in today's dollars (only ever set apart from ssAnnual when retireAge lets each spouse's benefit start at their own claiming age)
  * @property {number} [ssDelayYears2] - years into retirement before the spouse's benefit starts
+ * @property {number} [ssAnnual3] - a spousal top-up, in today's dollars, which starts only once both spouses have claimed
+ * @property {number} [ssDelayYears3] - years into retirement before the spousal top-up starts
  * @property {number|null} [retireAge] - age at retirement; when set, tables/charts show age instead of years into retirement, and Social Security timing is driven by claiming age(s) instead of ssDelayYears
  * @property {CustomItem[]} [expenseItems]
  * @property {CustomItem[]} [incomeItems]
@@ -8355,10 +8375,12 @@ function computeRetireTax(inp){
   let ded = inp.dedType === "item" ? Math.max(0, inp.item) : FED_STD[st];
   const ageAddl = inp.dedType === "item" ? 0 : SENIOR_ADDL[st] * seniors;
   ded += ageAddl;
+  // The 6% reduction comes off each qualifying person's own $6,000 (Schedule
+  // 1-A works it once and claims the result per spouse), so a couple who both
+  // qualify lose it twice as fast and it is gone by $250,000 joint either way.
   let bonus = 0;
   if (seniors > 0){
-    const full = SENIOR_BONUS.amount * seniors;
-    bonus = Math.max(0, full - SENIOR_BONUS.rate *
+    bonus = seniors * Math.max(0, SENIOR_BONUS.amount - SENIOR_BONUS.rate *
       Math.max(0, agi - SENIOR_BONUS.start[st]));
   }
   const fedDed = ded + bonus;
@@ -8655,7 +8677,12 @@ function runRoth(inp, doConvert){
       age >= inp.startAge && age <= inp.stopAge;
 
     let conv = 0, extraTrad = 0, sale = 0, rothW = 0, surplus = 0;
-    let T = null, irm = 0, taxDue = 0, rothCredit = 0;
+    let T = null, irm = 0, taxDue = 0, rothCredit = 0, penalty = 0;
+    // A year that starts before 59 ends before 59 1/2, so traditional dollars
+    // taken out that year for spending or withheld tax carry the 10%
+    // additional tax (IRC sec. 72(t)). Converted dollars that reach the Roth
+    // do not.
+    const early = age < 59;
 
     // Conversion size and the funding waterfall depend on each other: a bigger
     // conversion means a bigger tax bill, which may force another withdrawal,
@@ -8693,14 +8720,25 @@ function runRoth(inp, doConvert){
           gainPct:gp, ss, other, state:inp.state, seniors});
         irm = (medicare > 0)
           ? irmaaAnnual(lookback == null ? T.agi : lookback, status, medicare) : 0;
-        taxDue = T.total + irm;
 
         // Withholding mode pays the conversion's tax out of the conversion
         // itself, so fewer dollars actually land in the Roth. That is the
-        // single largest lever in the whole decision.
+        // single largest lever in the whole decision. Only the tax the
+        // conversion adds is withheld: the bill the year would have had
+        // anyway is paid the way every other year's is.
         let fromConv = 0;
-        if (inp.payFrom === "withhold" && conv > 0)
-          fromConv = Math.min(conv, taxDue);
+        if (inp.payFrom === "withhold" && conv > 0){
+          const T0 = rcTax({status, trad:rmd + extraTrad, roth:rothW, brok:sale,
+            gainPct:gp, ss, other, state:inp.state, seniors});
+          const irm0 = (medicare > 0)
+            ? irmaaAnnual(lookback == null ? T0.agi : lookback, status, medicare) : 0;
+          const added = Math.max(0, T.total + irm - T0.total - irm0);
+          // Under 59 1/2 the withheld dollars are themselves penalized, so
+          // covering the bill takes added / 0.9.
+          fromConv = Math.min(conv, early ? added / .9 : added);
+        }
+        penalty = early ? .10 * (fromConv + extraTrad) : 0;
+        taxDue = T.total + irm + penalty;
         rothCredit = conv - fromConv;
 
         const cashIn = rmd + ss + other;
@@ -8735,15 +8773,15 @@ function runRoth(inp, doConvert){
     basis = Math.max(0, basis - sale * (1 - gp) + surplus);
     brok = Math.max(0, brok - sale + surplus);
 
-    lifeTax += T.total;
+    lifeTax += T.total + penalty;
     lifeIrmaa += irm;
     lifeTaxPV += taxDue / Math.pow(1 + inp.disc, i);
     totalConv += conv;
 
     const afterTax = roth + brok + trad * (1 - inp.heirRate);
     rows.push({i, age, spAge, status, widowed, rmd, conv, extraTrad, sale, rothW,
-      ss, other, ordinary:T.ordinaryAgi, magi, fed:T.federal, state:T.state,
-      tax:T.total, irmaa:irm, irmaaTier:medicare > 0
+      ss, other, ordinary:T.ordinaryAgi, magi, fed:T.federal + penalty, state:T.state,
+      tax:T.total + penalty, penalty, irmaa:irm, irmaaTier:medicare > 0
         ? irmaaTier(lookback == null ? magi : lookback, status) : 0,
       marginal:T.marginal, trad, roth, brok, afterTax, tradBegin});
 
@@ -8897,6 +8935,15 @@ function mortgage(m){
   let yi = 0, yp = 0, ypmi = 0, curYear = 1;
 
   for (let i = 1; i <= n && bal > 0.005; i++){
+    // Close out the previous year before this month's payment is counted, so
+    // each year holds exactly its own twelve months and its closing balance
+    // is the one after month 12, 24, 36...
+    const yearNo = Math.ceil(i / 12);
+    if (yearNo !== curYear){
+      years.push({year:curYear, interest:yi, principal:yp, paid:yi + yp,
+                  balance:bal, pmi:ypmi});
+      yi = 0; yp = 0; ypmi = 0; curYear = yearNo;
+    }
     const interest = bal * r;
     let extra = extraMo + (i === lumpMonth ? lumpAmt : 0);
     let principal = curPI - interest + extra;
@@ -8920,12 +8967,6 @@ function mortgage(m){
       recastPI = curPI;
     }
 
-    const yearNo = Math.ceil(i / 12);
-    if (yearNo !== curYear){
-      years.push({year:curYear, interest:yi, principal:yp, paid:yi + yp,
-                  balance:bal, pmi:ypmi});
-      yi = 0; yp = 0; ypmi = 0; curYear = yearNo;
-    }
     if (bal <= 0.005) payoffMonth = i;
   }
   if (yi > 0 || yp > 0 || !years.length)
@@ -9313,13 +9354,12 @@ function itemsActiveThisYear(items, year) {
  * already reflects however many years have passed by then.
  * @param {CustomItem} it
  * @param {number} year - 1-based year this amount is being paid
- * @param {number} cumInfl - cumulative inflation multiplier through the start of this year
- * @param {number} infl - this year's own inflation rate, as a decimal
+ * @param {number} cumInfl - price level at the start of this year (1 in year 1)
  * @returns {number} this item's dollar amount for this year
  */
-function itemAmount(it, year, cumInfl, infl) {
+function itemAmount(it, year, cumInfl) {
   if (!it.inflate) return it.annual;
-  return it.annual * cumInfl * (1 + infl);
+  return it.annual * cumInfl;
 }
 
 /**
@@ -9353,8 +9393,14 @@ function runDrawdown(o, seq) {
   var stockW = o.stockPct / 100;
   var bondW = 1 - stockW;
   var useGlide = o.stockPctEnd != null;
+  /* Withdrawals come out on the first day of each year, so they are priced
+     at that day's price level: today's dollars in year 1, then raised by the
+     inflation of each year just finished -- the Bengen / Trinity convention.
+     cumInfl is that start-of-year level; the year's own inflation only lands
+     by its end, where it deflates the closing balance. */
   var cumInfl = 1;
-  var baseW = o.initial * o.initialPct / 100;   // year-1 withdrawal, nominal
+  var lastInfl = 0;
+  var baseW = o.initial * o.initialPct / 100;   // year-1 withdrawal, nominal = real
   var prevW = baseW;
   var rows = [];
   var depletedYear = null;
@@ -9372,12 +9418,9 @@ function runDrawdown(o, seq) {
 
     if (o.strategy === "fixed") {
       // 4%-rule style: first-year amount, then follow inflation regardless.
-      // Uses THIS year's price level (cumInfl folded forward) so it lines up
-      // with how realSpend is computed below \u2014 otherwise the withdrawal
-      // is a year behind its own inflation adjustment and real spend drifts.
       // A spending stage swaps in its own rate of the starting portfolio
       // from the year it begins, in today's dollars like the first.
-      w = o.initial * ddFixedRateAt(o, y + 1) / 100 * cumInfl * (1 + infl);
+      w = o.initial * ddFixedRateAt(o, y + 1) / 100 * cumInfl;
 
     } else if (o.strategy === "pct") {
       // constant percentage of whatever the portfolio is worth now
@@ -9386,7 +9429,7 @@ function runDrawdown(o, seq) {
     } else if (o.strategy === "guardrails") {
       // Guyton-Klinger style: follow inflation, but cut or raise spending
       // when the withdrawal rate drifts outside a band around the target
-      w = (y === 0) ? baseW : prevW * (1 + infl);
+      w = (y === 0) ? baseW : prevW * (1 + lastInfl);
       if (bal > 0) {
         var curRate = w / bal * 100;
         var hi = o.initialPct * (1 + o.guardBand / 100);
@@ -9399,7 +9442,7 @@ function runDrawdown(o, seq) {
       // floor & ceiling: aim at a fixed % of the current balance, but never
       // change spending by more than the allowed step from last year
       var target = bal * o.initialPct / 100;
-      var infAdj = (y === 0) ? baseW : prevW * (1 + infl);
+      var infAdj = (y === 0) ? baseW : prevW * (1 + lastInfl);
       var floor = infAdj * (1 - o.floorPct / 100);
       var ceil = infAdj * (1 + o.ceilPct / 100);
       w = Math.min(Math.max(target, floor), ceil);
@@ -9412,8 +9455,7 @@ function runDrawdown(o, seq) {
       // real terms, so the future value is in today's dollars; this year's
       // price level converts it. The share rises every year as the horizon
       // shortens, and the final year takes whatever is left above the target.
-      var pLevel = cumInfl * (1 + infl);
-      w = Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years - y, bal, (o.vpwFV || 0) * pLevel));
+      w = Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years - y, bal, (o.vpwFV || 0) * cumInfl));
 
     } else {
       // Yale endowment rule: year 1 is a plain percentage of the starting
@@ -9424,7 +9466,7 @@ function runDrawdown(o, seq) {
       if (y === 0) {
         w = baseW;
       } else {
-        var priorAdj = prevW * (1 + infl);
+        var priorAdj = prevW * (1 + lastInfl);
         var pctOfBal = bal * o.yaleRate / 100;
         w = (o.yaleWeight / 100) * priorAdj + (1 - o.yaleWeight / 100) * pctOfBal;
       }
@@ -9437,10 +9479,8 @@ function runDrawdown(o, seq) {
     // For floor & ceiling, this is a different thing from that strategy's own
     // "max cut" limit: max cut bounds how much spending can drop from last
     // year, while this sets an absolute dollar amount it can never go under.
-    // Uses THIS year's price level (cumInfl folded forward), matching how
-    // realSpend is computed below, so the floor lands where it's meant to.
     if (o.spendFloor > 0 && o.strategy !== "fixed") {
-      var floorNominal = o.spendFloor * cumInfl * (1 + infl);
+      var floorNominal = o.spendFloor * cumInfl;
       if (w < floorNominal) w = floorNominal;
     }
     // Optional hard cap, the mirror of the floor: however much the strategy
@@ -9449,7 +9489,7 @@ function runDrawdown(o, seq) {
     // strategy's own spending only; a custom future expense is added below,
     // after it, so that year can go past the cap by the expense.
     if (o.spendCeil > 0 && o.strategy !== "fixed") {
-      var ceilNominal = o.spendCeil * cumInfl * (1 + infl);
+      var ceilNominal = o.spendCeil * cumInfl;
       if (w > ceilNominal) w = ceilNominal;
     }
 
@@ -9464,21 +9504,19 @@ function runDrawdown(o, seq) {
     // above already decided to spend, entirely independent of its logic —
     // a $30k boat in year 5 means $30k more comes out that year, full stop.
     var customExpense = itemsActiveThisYear(o.expenseItems, y + 1)
-      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl, infl); }, 0);
+      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
     w = w + customExpense;
 
     // Social Security covers part of the spending once it starts, so the
-    // portfolio only has to provide the remainder.
-    // Uses THIS year's price level (cumInfl folded forward), the same way the
-    // withdrawal, the spending floor and custom items do. Deflating by cumInfl
-    // alone leaves the benefit a full year of inflation behind the spending it
-    // is offsetting, so a figure entered in today's dollars arrives permanently
-    // short in real terms.
+    // portfolio only has to provide the remainder. Priced at the same
+    // start-of-year level as the spending it offsets.
     var ssThisYear = 0;
     if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0))
-      ssThisYear = o.ssAnnual * cumInfl * (1 + infl);
+      ssThisYear = o.ssAnnual * cumInfl;
     if (o.ssAnnual2 > 0 && y >= (o.ssDelayYears2 || 0))
-      ssThisYear += o.ssAnnual2 * cumInfl * (1 + infl);
+      ssThisYear += o.ssAnnual2 * cumInfl;
+    if (o.ssAnnual3 > 0 && y >= (o.ssDelayYears3 || 0))
+      ssThisYear += o.ssAnnual3 * cumInfl;
     var spend = w;
     w = Math.max(0, w - ssThisYear);
 
@@ -9488,7 +9526,7 @@ function runDrawdown(o, seq) {
     // is withdrawn and the extra is invested straight into the portfolio
     // instead of being wasted or reducing next year's number.
     var customIncomeTotal = itemsActiveThisYear(o.incomeItems, y + 1)
-      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl, infl); }, 0);
+      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
     var incomeInvested = Math.max(0, customIncomeTotal - w);
     w = Math.max(0, w - customIncomeTotal);
 
@@ -9502,14 +9540,18 @@ function runDrawdown(o, seq) {
     bal = bal + growth;
     if (bal < 0) bal = 0;
 
-    cumInfl = cumInfl * (1 + infl);
+    // Flows are deflated by the level they were paid at; the closing balance
+    // by the level once this year's inflation has landed.
     var realW = w / cumInfl;
+    var realSp = spend / cumInfl;
     totalReal += realW;
+    cumInfl = cumInfl * (1 + infl);
+    lastInfl = infl;
 
     rows.push({
       year: y + 1, start: start, withdrawal: w, realWithdrawal: realW,
       growth: growth, end: bal, realEnd: bal / cumInfl, infl: s.infl,
-      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: spend / cumInfl,
+      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: realSp,
       customIncome: customIncomeTotal
     });
 
@@ -9631,8 +9673,8 @@ function monteCarloDrawdown(o, trials, seed) {
    career at the income entered. A statement from ssa.gov reflects your actual
    35-year earnings record, so the manual figure is always more accurate.
    2026 bend points; taxable maximum matches the FICA wage base. */
-var SS_BEND1 = 1226;
-var SS_BEND2 = 7391;
+var SS_BEND1 = 1286;
+var SS_BEND2 = 7749;
 var SS_CAP = 184500;
 var SS_FRA = 67;
 
@@ -9671,6 +9713,50 @@ function ssEstimate(income, careerYears, claimAge) {
     monthly: pia * adj, annual: pia * adj * 12,
     atFRA: pia * 12, fra: SS_FRA
   };
+}
+/* A spousal benefit's own claiming adjustment: it is cut more steeply than a
+   worker's for an early claim (25/36 of 1% a month for the first 36 months,
+   5/12 of 1% after, so 35% at 62 rather than 30%) and earns no delayed
+   retirement credits past full retirement age. */
+function ssSpousalAdj(claimAge) {
+  var age = Math.min(70, Math.max(62, claimAge || SS_FRA));
+  if (age >= SS_FRA) return 1;
+  var early = (SS_FRA - age) * 12;
+  return 1 - Math.min(36, early) * (25 / 36) / 100 - Math.max(0, early - 36) * (5 / 12) / 100;
+}
+/* Estimate-mode Social Security for the Drawdown tool, as the streams
+   runDrawdown takes. In a couple, a spouse whose own full benefit is less
+   than half the other's gets the difference as a spousal top-up. It can only
+   start once both have claimed (the worker has to file first), it is reduced
+   on the spousal schedule for the age it starts at, and both spouses are
+   taken to be the same age, as everywhere else in the tool. Without a
+   retirement age the tool runs one shared delay, so everything folds into
+   the first stream. */
+function ssDrawdownStreams(inc1, claim1, inc2, claim2, couple, retireAge, sharedDelay) {
+  claim1 = Math.min(70, Math.max(62, claim1 || SS_FRA));
+  claim2 = Math.min(70, Math.max(62, claim2 || SS_FRA));
+  var delayFor = function (c) {
+    return retireAge != null ? Math.max(0, Math.round(c - retireAge))
+                             : Math.max(0, Math.round(sharedDelay || 0));
+  };
+  var e1 = ssEstimate(inc1, 40, claim1);
+  var out = {annual: e1.annual, delay: delayFor(claim1), annual2: 0, delay2: 0,
+             annual3: 0, delay3: 0, own1: e1.annual, own2: 0, top1: 0, top2: 0};
+  if (couple) {
+    var e2 = ssEstimate(inc2, 40, claim2);
+    var both = Math.max(claim1, claim2), adj = ssSpousalAdj(both);
+    out.own2 = e2.annual;
+    out.top1 = Math.max(0, 0.5 * e2.pia - e1.pia) * adj * 12;
+    out.top2 = Math.max(0, 0.5 * e1.pia - e2.pia) * adj * 12;
+    if (retireAge != null) {
+      out.annual2 = e2.annual; out.delay2 = delayFor(claim2);
+      out.annual3 = out.top1 + out.top2; out.delay3 = delayFor(both);
+    } else {
+      out.annual += e2.annual + out.top1 + out.top2;
+    }
+  }
+  out.total = out.own1 + out.own2 + out.top1 + out.top2;
+  return out;
 }
 
 /* ---------- Historical sequences ---------- */
@@ -9914,8 +10000,8 @@ function setBig(id, text){
 }
 
 // Starting point when nothing is saved.
-const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.0965,
-  inflation:.0294, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
+const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.085,
+  inflation:.03, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
 const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, period:"Monthly", risk:.045};
 
 // v2: a fresh key, so an earlier version's saved scenarios don't reappear here.
@@ -11504,16 +11590,12 @@ attachChart("chartWrapC", "chartC", "tipC", () => cmpPoints, best => {
 function ddStateToOpts(data) {
   var retireAge = data.retireAge ? parseFloat(data.retireAge) : null;
   if (!isFinite(retireAge) || retireAge <= 0) retireAge = null;
-  var ssAnnual = 0, ssDelay = 0, ssAnnual2 = 0, ssDelay2 = 0;
+  var ssAnnual = 0, ssDelay = 0, ssAnnual2 = 0, ssDelay2 = 0, ssAnnual3 = 0, ssDelay3 = 0;
   if (data.ssMode === "est") {
-    var claim1 = Math.min(70, Math.max(62, +data.ssClaim || 67));
-    ssAnnual = ssEstimate(+data.ssIncome || 0, 40, claim1).annual;
-    ssDelay = retireAge != null ? Math.max(0, Math.round(claim1 - retireAge)) : 0;
-    if (data.ssWho === "couple") {
-      var claim2 = Math.min(70, Math.max(62, +data.ssClaim2 || 67));
-      ssAnnual2 = ssEstimate(+data.ssIncome2 || 0, 40, claim2).annual;
-      ssDelay2 = retireAge != null ? Math.max(0, Math.round(claim2 - retireAge)) : 0;
-    }
+    var st = ssDrawdownStreams(+data.ssIncome || 0, +data.ssClaim || 67, +data.ssIncome2 || 0,
+      +data.ssClaim2 || 67, data.ssWho === "couple", retireAge, +data.ssDelay || 0);
+    ssAnnual = st.annual; ssDelay = st.delay; ssAnnual2 = st.annual2; ssDelay2 = st.delay2;
+    ssAnnual3 = st.annual3; ssDelay3 = st.delay3;
   } else if (data.ssMode === "manual") {
     ssAnnual = +data.ssAmount || 0;
     if (data.ssWho === "couple") ssAnnual2 = +data.ssAmount2 || 0;
@@ -11542,6 +11624,7 @@ function ddStateToOpts(data) {
     legacyGoal: +data.legacyGoal || 0,
     ssAnnual: ssAnnual, ssDelayYears: ssDelay,
     ssAnnual2: ssAnnual2, ssDelayYears2: ssDelay2,
+    ssAnnual3: ssAnnual3, ssDelayYears3: ssDelay3,
     retireAge: retireAge, fromYear: HIST_START,
     incomeItems: Array.isArray(data.incomeItems) ? data.incomeItems.map(function(x){ return Object.assign({},x); }) : [],
     expenseItems: Array.isArray(data.expenseItems) ? data.expenseItems.map(function(x){ return Object.assign({},x); }) : [],
@@ -12076,11 +12159,11 @@ function renderAll(){ renderProjection(); renderTools(); }
 /* ---------- series of stages ---------- */
 let seriesPoints = [], seriesRun = null, seriesTarget = 0;
 
-const SERIES_GLOBALS = {initial:10000, inflation:.0294, withdrawal:.04, taxRate:.10,
+const SERIES_GLOBALS = {initial:10000, inflation:.03, withdrawal:.04, taxRate:.10,
   target:100000, fees:0};
 const SERIES_STAGES = [
-  {years:10, contrib:500,  period:"Bi-Weekly", growth:.04, nominal:.0965, vol:.17},
-  {years:20, contrib:1200, period:"Monthly",   growth:.03, nominal:.0965, vol:.09, adj:true}
+  {years:10, contrib:500,  period:"Bi-Weekly", growth:.04, nominal:.085, vol:.17},
+  {years:20, contrib:1200, period:"Monthly",   growth:.03, nominal:.085, vol:.09, adj:true}
 ];
 let stages = SERIES_STAGES.map(x => Object.assign({}, x));
 
@@ -13704,7 +13787,7 @@ function buildMortSheet(){
   inputs += row("Loan amount", money(R.loan));
   inputs += row("Interest rate", pctStr(m.rate, 2));
   inputs += row("Term", fmtNum(m.term) + " years");
-  if (R.pmi > 0) inputs += row("PMI", money(R.pmi) + "/mo until 80% equity");
+  if (R.pmi > 0) inputs += row("PMI", money(R.pmi) + "/mo until 20% equity");
 
   let pay = row("Principal & interest", money(R.pi));
   pay += row("Property tax", money(R.tax));
@@ -15049,7 +15132,7 @@ function renderMort(){
     $("moPmiNote").textContent = R.pmiEndMonth
       ? "PMI applies below 20% down. At this pace it ends around " + moWhen(R.pmiEndMonth) +
         " (federal law requires automatic removal at 22% equity either way)."
-      : "PMI applies below 20% down and drops off automatically once you reach 20% equity.";
+      : "PMI applies below 20% down. You can have it removed once you reach 20% equity, and federal law ends it automatically at 22%.";
   } else {
     $("moPmiNote").textContent = "No PMI; you're at or above 20% down.";
   }
@@ -15184,10 +15267,11 @@ function buildBudget(){
   initFields($("bgList"));
 }
 
-/* "Savings & investments" and any "Retirement contribution" line (added via
-   the handoff button) are money being set aside, not spent \u2014 they're kept
-   out of total spending and the emergency fund, and shown as saving instead. */
-const SAVINGS_DESCS = ["Savings & investments", "Retirement contribution"];
+/* "Savings & investments" and the "Retirement contribution" and "College
+   savings" lines (added via the handoff buttons) are money being set aside,
+   not spent \u2014 they're kept out of total spending and the emergency fund,
+   and shown as saving instead. */
+const SAVINGS_DESCS = ["Savings & investments", "Retirement contribution", "College savings"];
 function isSavingsRow(r){ return SAVINGS_DESCS.includes(r.desc); }
 
 function renderBudget(){
@@ -15516,7 +15600,9 @@ function readRB() {
     rentInc:  num("rbRentInc"),
     appr:     num("rbAppr"),
     invest:   num("rbInvest"),
-    horizon:  Math.min(40, Math.max(1, Math.round(num("rbHorizon"))))
+    horizon:  Math.min(40, Math.max(1, Math.round(num("rbHorizon")))),
+    gainTax:  Math.min(50, Math.max(0, num("rbGainTax") || 0)),
+    status:   $("rbStatus").value === "s" ? "s" : "m"
   };
 }
 
@@ -15536,9 +15622,9 @@ function renderRentBuy() {
   $("rbWinner").className = "v gold";
   $("rbWinNote").textContent = "by " + money(Math.abs(last.buyerNW - last.renterNW));
   setBig("rbBuyerNW", money(last.buyerNW));
-  $("rbBuyerNote").textContent = "Home equity after selling, plus whatever's invested in months buying costs less than renting";
+  $("rbBuyerNote").textContent = "Home equity after selling, plus whatever's invested in months buying costs less than renting, after tax on the gains";
   setBig("rbRenterNW", money(last.renterNW));
-  $("rbRenterNote").textContent = "Down payment invested from day one, plus whatever's invested in months renting costs less than buying";
+  $("rbRenterNote").textContent = "Down payment invested from day one, plus whatever's invested in months renting costs less than buying, after tax on the gains";
 
   $("rbBreakEven").textContent = R.breakEven ? "Year " + fmtNum(R.breakEven) + " -- buying pulls ahead" : "Renting stays ahead throughout";
   $("rbRenterInvests").textContent = money(R.initialInvest) + " (down payment + closing costs)";
@@ -15569,10 +15655,11 @@ function renderRentBuy() {
         "</span><br><span style='color:#4fbf95'>Renter</span> <span class='n'>" + money(best.hi) + "</span>";
     });
 }
-["rbPrice","rbDown","rbRate","rbPropTax","rbIns","rbMaint","rbClose","rbSell","rbRent","rbRentInc","rbAppr","rbInvest","rbHorizon"].forEach(function(id) {
+["rbPrice","rbDown","rbRate","rbPropTax","rbIns","rbMaint","rbClose","rbSell","rbRent","rbRentInc","rbAppr","rbInvest","rbHorizon","rbGainTax"].forEach(function(id) {
   $(id).addEventListener("input", renderRentBuy);
 });
 $("rbTerm").addEventListener("change", renderRentBuy);
+$("rbStatus").addEventListener("change", renderRentBuy);
 
 /* ---------- EF + budget wiring ---------- */
 
@@ -15697,6 +15784,12 @@ function rentBuyCalc(inp) {
   var appr     = inp.appr;
   var invest   = inp.invest;
   var horizon  = inp.horizon;
+  // Both sides are valued as if cashed out at each year's end, so each pays
+  // tax on its gains then: the portfolios on growth above what went in, the
+  // home on gain above the sec. 121 exclusion. Older saved inputs without a
+  // rate fall back to 15%, the long-term rate most households pay.
+  var gainTax  = (inp.gainTax == null ? 15 : inp.gainTax) / 100;
+  var exclusion = inp.status === "s" ? 250000 : 500000;
 
   var down       = price * downPct / 100;
   var closeAmt   = price * closePct / 100;
@@ -15706,8 +15799,11 @@ function rentBuyCalc(inp) {
   var pi         = (r > 0 && loan > 0)
     ? loan * r / (1 - Math.pow(1 + r, -totalMo))
     : (totalMo > 0 ? loan / totalMo : 0);
-  var ir         = invest / 100 / 12;
-  var apprMo     = appr / 100 / 12;
+  // Geometric monthly rates, as everywhere else in the app: the inputs are
+  // effective annual rates, and dividing by 12 would quietly compound both
+  // the home and the portfolio a little faster than stated.
+  var ir         = Math.pow(1 + invest / 100, 1 / 12) - 1;
+  var apprMo     = Math.pow(1 + appr / 100, 1 / 12) - 1;
 
   // Property tax, insurance and maintenance were held flat at their entered,
   // today's-dollar amount for the whole horizon while rent climbed every
@@ -15723,7 +15819,9 @@ function rentBuyCalc(inp) {
   var maintRate  = maint / 100 / 12;
 
   var renterPort  = down + closeAmt;
+  var renterBasis = renterPort;
   var buyerSavings = 0;
+  var buyerBasis  = 0;
   var balance     = loan;
   var homeVal     = price;
   var monthRent   = rent;
@@ -15739,8 +15837,11 @@ function rentBuyCalc(inp) {
   for (var yr = 1; yr <= horizon; yr++) {
     var taxMo = 0, insMo = 0, maintMo = 0, pmiMo = 0;
     for (var mo = 0; mo < 12; mo++) {
+      // Once the loan is paid off (a 15-year loan on a 30-year horizon) the
+      // payment stops, and so does the cost of owning that it stood for.
       var interest  = balance * r;
-      var principal = Math.min(pi - interest, balance);
+      var payment   = Math.min(pi, balance + interest);
+      var principal = payment - interest;
       balance = Math.max(0, balance - principal);
 
       homeVal *= (1 + apprMo);
@@ -15751,23 +15852,27 @@ function rentBuyCalc(inp) {
       maintMo = homeVal * maintRate;
       var fixedBuyCost = taxMo + insMo + maintMo + pmiMo;
 
-      var buyCostMo  = pi + fixedBuyCost;
+      var buyCostMo  = payment + fixedBuyCost;
       var rentCostMo = monthRent;
       var diff       = rentCostMo - buyCostMo;
 
       if (diff > 0) {
-        buyerSavings += diff;
+        buyerSavings += diff; buyerBasis += diff;
       } else {
-        renterPort += (-diff);
+        renterPort += (-diff); renterBasis += (-diff);
       }
       renterPort   *= (1 + ir);
       buyerSavings *= (1 + ir);
     }
     monthRent *= (1 + rentInc / 100);
 
-    var saleNet  = homeVal * (1 - sellPct / 100) - balance;
-    var buyerNW  = saleNet + buyerSavings;
-    var renterNW = renterPort;
+    // Closing costs paid at purchase and selling costs both come off the
+    // taxable gain on the home.
+    var homeGain = homeVal * (1 - sellPct / 100) - price - closeAmt;
+    var homeTax  = Math.max(0, homeGain - exclusion) * gainTax;
+    var saleNet  = homeVal * (1 - sellPct / 100) - balance - homeTax;
+    var buyerNW  = saleNet + buyerSavings - Math.max(0, buyerSavings - buyerBasis) * gainTax;
+    var renterNW = renterPort - Math.max(0, renterPort - renterBasis) * gainTax;
 
     years.push({
       year: yr,
@@ -15775,7 +15880,7 @@ function rentBuyCalc(inp) {
       renterNW: renterNW,
       homeVal: homeVal,
       balance: balance,
-      monthBuy: pi + taxMo + insMo + maintMo + pmiMo,
+      monthBuy: payment + taxMo + insMo + maintMo + pmiMo,
       monthRent: monthRent / (1 + rentInc / 100)
     });
   }
@@ -16037,22 +16142,9 @@ function ddSSTiming(retireAge) {
     return out;
   }
 
-  // Estimate mode
-  var claim1 = Math.min(70, Math.max(62, num("ddSSClaim")));
-  out.annual = ssEstimate(num("ddSSIncome"), 40, claim1).annual;
-  out.delay = retireAge != null ? Math.max(0, Math.round(claim1 - retireAge))
-                                 : Math.max(0, Math.round(num("ddSSDelay")));
-  if (couple) {
-    var claim2 = Math.min(70, Math.max(62, num("ddSSClaim2")));
-    var annual2 = ssEstimate(num("ddSSIncome2"), 40, claim2).annual;
-    if (retireAge != null) {
-      out.annual2 = annual2;
-      out.delay2 = Math.max(0, Math.round(claim2 - retireAge));
-    } else {
-      out.annual += annual2; // old behavior: combined into one stream, one shared delay
-    }
-  }
-  return out;
+  // Estimate mode, with any spousal top-up as its own stream
+  return ssDrawdownStreams(num("ddSSIncome"), num("ddSSClaim"), num("ddSSIncome2"),
+    num("ddSSClaim2"), couple, retireAge, num("ddSSDelay"));
 }
 
 function readDD() {
@@ -16082,6 +16174,8 @@ function readDD() {
     ssDelayYears: ssTiming.delay,
     ssAnnual2: ssTiming.annual2,
     ssDelayYears2: ssTiming.delay2,
+    ssAnnual3: ssTiming.annual3 || 0,
+    ssDelayYears3: ssTiming.delay3 || 0,
     ssAnnualTotal: ddSSAnnual(),
     legacyGoal: num("ddLegacyGoal") || 0,
     retireAge: retireAge,
@@ -16176,13 +16270,8 @@ function ddSSAnnual() {
     return amt;
   }
   if (mode === "est") {
-    var r = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
-    var total = r.annual;
-    if (couple) {
-      var r2 = ssEstimate(num("ddSSIncome2"), 40, Math.min(70, Math.max(62, num("ddSSClaim2"))));
-      total += r2.annual;
-    }
-    return total;
+    return ssDrawdownStreams(num("ddSSIncome"), num("ddSSClaim"), num("ddSSIncome2"),
+      num("ddSSClaim2"), couple, null, 0).total;
   }
   return 0;
 }
@@ -16226,9 +16315,13 @@ function renderDrawdown() {
   if (ssMode === "est"){
     var e = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
     if (ssCouple) {
-      var e2 = ssEstimate(num("ddSSIncome2"), 40, Math.min(70, Math.max(62, num("ddSSClaim2"))));
-      $("ddSSEstNote").textContent = "About " + money(e.monthly) + "/mo for you and " + money(e2.monthly) +
-        "/mo for your spouse, " + money(e.monthly + e2.monthly) + "/mo combined, in today's dollars.";
+      var st = ssDrawdownStreams(num("ddSSIncome"), num("ddSSClaim"), num("ddSSIncome2"),
+        num("ddSSClaim2"), true, null, 0);
+      var m1 = (st.own1 + st.top1) / 12, m2 = (st.own2 + st.top2) / 12;
+      $("ddSSEstNote").textContent = "About " + money(m1) + "/mo for you and " + money(m2) +
+        "/mo for your spouse, " + money(m1 + m2) + "/mo combined, in today's dollars" +
+        (st.top1 + st.top2 > 0 ? ", including a spousal benefit of " + money((st.top1 + st.top2) / 12) +
+          "/mo once you've both claimed" : "") + ".";
     } else {
       $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month in today's dollars, claiming at " +
         Math.round(num("ddSSClaim")) + ".";
@@ -16287,7 +16380,8 @@ function renderDrawdown() {
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
     ? "That\u0027s " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above" +
-      (strat === "fixed" && ddWdStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") + "."
+      (strat === "fixed" && ddWdStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
+      ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
     : "Enter your portfolio value above to see this in dollars.";
   if (strat === "fixed") syncWdStages(o);
 
@@ -16477,20 +16571,24 @@ function renderDrawdown() {
           }).join("") + "</tbody></table>";
       };
       var ssIncome1 = num("ddSSIncome"), curAge1 = num("ddSSClaim");
+      var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
+      var ssWho = $("ddSSWho").value, ssBoth = ssWho === "couple";
+      // Every stream is rebuilt for each row: moving one spouse's claim can
+      // also move when the spousal top-up starts and how much it is.
+      var ssOpts = function(st) {
+        return {ssAnnual: st.annual, ssDelayYears: st.delay, ssAnnual2: st.annual2,
+                ssDelayYears2: st.delay2, ssAnnual3: st.annual3, ssDelayYears3: st.delay3};
+      };
       var ssRows1 = testAges.map(function(a) {
-        var ann = ssEstimate(ssIncome1, 40, a).annual;
-        var del = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
-        var S = historicalBacktest(Object.assign({}, o, {ssAnnual: ann, ssDelayYears: del}));
-        return {age:a, annual:ann, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
+        var st = ssDrawdownStreams(ssIncome1, a, ssIncome2, curAge2, ssBoth, o.retireAge, num("ddSSDelay"));
+        var S = historicalBacktest(Object.assign({}, o, ssOpts(st)));
+        return {age:a, annual:st.own1 + st.top1, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
       });
-      var ssWho = $("ddSSWho").value;
-      if (ssWho === "couple" && num("ddSSIncome2") > 0) {
-        var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
+      if (ssBoth) {
         var ssRows2 = testAges.map(function(a) {
-          var ann2 = ssEstimate(ssIncome2, 40, a).annual;
-          var del2 = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
-          var S = historicalBacktest(Object.assign({}, o, {ssAnnual2: ann2, ssDelayYears2: del2}));
-          return {age:a, annual:ann2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
+          var st = ssDrawdownStreams(ssIncome1, curAge1, ssIncome2, a, true, o.retireAge, num("ddSSDelay"));
+          var S = historicalBacktest(Object.assign({}, o, ssOpts(st)));
+          return {age:a, annual:st.own2 + st.top2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
         });
         $("ddSSBreakEvenTable").innerHTML =
           "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + buildSSTable(ssRows1) +
@@ -16596,20 +16694,24 @@ function renderDrawdown() {
           }).join("") + "</tbody></table>";
       };
       var ssIncome1 = num("ddSSIncome"), curAge1 = num("ddSSClaim");
+      var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
+      var ssWho = $("ddSSWho").value, ssBoth = ssWho === "couple";
+      // Every stream is rebuilt for each row: moving one spouse's claim can
+      // also move when the spousal top-up starts and how much it is.
+      var ssOpts = function(st) {
+        return {ssAnnual: st.annual, ssDelayYears: st.delay, ssAnnual2: st.annual2,
+                ssDelayYears2: st.delay2, ssAnnual3: st.annual3, ssDelayYears3: st.delay3};
+      };
       var ssRows1 = testAges.map(function(a) {
-        var ann = ssEstimate(ssIncome1, 40, a).annual;
-        var del = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
-        var S = monteCarloDrawdown(Object.assign({}, o, {ssAnnual: ann, ssDelayYears: del}), 500, mcSeed);
-        return {age:a, annual:ann, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
+        var st = ssDrawdownStreams(ssIncome1, a, ssIncome2, curAge2, ssBoth, o.retireAge, num("ddSSDelay"));
+        var S = monteCarloDrawdown(Object.assign({}, o, ssOpts(st)), 500, mcSeed);
+        return {age:a, annual:st.own1 + st.top1, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
       });
-      var ssWho = $("ddSSWho").value;
-      if (ssWho === "couple" && num("ddSSIncome2") > 0) {
-        var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
+      if (ssBoth) {
         var ssRows2 = testAges.map(function(a) {
-          var ann2 = ssEstimate(ssIncome2, 40, a).annual;
-          var del2 = o.retireAge != null ? Math.max(0, Math.round(a - o.retireAge)) : 0;
-          var S = monteCarloDrawdown(Object.assign({}, o, {ssAnnual2: ann2, ssDelayYears2: del2}), 500, mcSeed);
-          return {age:a, annual:ann2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
+          var st = ssDrawdownStreams(ssIncome1, curAge1, ssIncome2, a, true, o.retireAge, num("ddSSDelay"));
+          var S = monteCarloDrawdown(Object.assign({}, o, ssOpts(st)), 500, mcSeed);
+          return {age:a, annual:st.own2 + st.top2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
         });
         $("ddSSBreakEvenTable").innerHTML =
           "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + buildSSTable(ssRows1) +
@@ -16914,7 +17016,7 @@ const GLOSS = {
   crossover: "The year your portfolio's growth first exceeds what you contribute that year. After it, the account is doing more work than you are.",
   fees: "Expense ratios plus any advisory fee, taken off your return every year. Index funds often charge under 0.10%; advisors commonly around 1%. Leave at 0 to ignore fees.",
   ltv: "Loan divided by home value. Above 80% (less than 20% down), lenders usually require mortgage insurance.",
-  pmi: "Private mortgage insurance, charged when you put down less than 20%. It falls away once you reach 20% equity.",
+  pmi: "Private mortgage insurance, charged when you put down less than 20%. You can ask for it to be removed once you reach 20% equity, and it ends automatically at 22%. The estimate here assumes you ask.",
   amort: "How each payment splits between interest and principal. Early on almost all of it is interest; the crossover comes later than most expect.",
   proptax: "Varies a lot by location: roughly 0.5% to 1.5% of the home's value a year is typical nationally, with some states well under that and others over 2%. Check a recent listing or comparable homes nearby for a more precise number.",
   homeinsurance: "A typical policy runs somewhere around $1,500 to $2,500 a year for an average-priced home, though it depends heavily on location, home value and coverage. Coastal, wildfire-prone and severe-weather areas often run well above that.",
@@ -16946,6 +17048,8 @@ const GLOSS = {
   aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one.",
   closingcost: "One-time fees to finalize a home purchase: lender fees, title insurance, appraisal, and more. Typically 2\u20135% of the price, paid by the buyer.",
   sellingcost: "What it costs to sell a home, mostly real estate agent commission. Typically 5\u20136% of the sale price, split between both agents.",
+  rbgaintax: "The tax rate on investment gains when they're sold: 15% for most households, 0% at low incomes, 20% plus 3.8% at high ones, plus any state income tax. Both sides are valued as if cashed out at each year's end, so the renter's portfolio pays this on its growth, and so does the home on any gain above the home-sale exclusion.",
+  rbstatus: "Sets the home-sale exclusion: up to $250,000 of gain single, or $500,000 married filing jointly, is tax-free on a home you've lived in for two of the last five years.",
   appreciation: "How fast a home's value is assumed to grow each year. Home prices have historically risen more slowly than the stock market over long periods, though it varies a lot by location.",
   tuitioninfl: "How fast college costs specifically rise, which has historically outpaced general inflation, often 3\u20135% a year versus 2\u20133% for prices generally.",
   maxcut: "The most spending can drop from one year to the next, no matter what the target percentage would otherwise call for. Protects against a sudden, jarring cut in a single bad year.",
@@ -16981,8 +17085,10 @@ const GLOSS = {
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
   customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top.",
   bgsavings: "Money being set aside rather than spent, so it's kept out of the spending total above and shown as savings instead.",
-  hcincome: "The ACA uses your annual Modified Adjusted Gross Income (MAGI) to calculate your premium subsidy. Medicare IRMAA surcharges are also income-based, using your MAGI from two years earlier. For most retirees, MAGI is close to AGI. Roth withdrawals are excluded from MAGI; Roth conversions and traditional IRA or 401(k) withdrawals are included. Use the Copy from Income Tax button to pull your estimated retirement MAGI from the Income Tax tool when it is set to Retirement Income mode.",
-  hcbenchmark: "The ACA premium tax credit is calculated using the premium for the benchmark plan, defined as the second-lowest-cost Silver plan available in your county. The credit is the difference between that premium and a capped percentage of your income. This cap (not a flat dollar amount) is what the subsidy system targets. Enter your actual benchmark Silver premium from healthcare.gov for precision; otherwise a state-level estimate is used.",
+  hcspouseage: "Your spouse's age in the year you retire. Premiums rise with age, so each of you is priced at your own age; a spouse already 65 is on Medicare and needs no marketplace plan.",
+  hcss: "Yearly Social Security benefits, if you'll be collecting before 65. The ACA counts all of it in the income that sets your subsidy, including the part that isn't taxed, while Medicare's IRMAA counts only the taxed part. Your MAGI above should include just the taxable part, as the Income Tax tool reports it.",
+  hcincome: "Your AGI in retirement, which is the MAGI Medicare's IRMAA uses. The ACA uses the same figure plus any untaxed Social Security, entered below, to calculate your premium subsidy. Medicare IRMAA surcharges are also income-based, using your MAGI from two years earlier. For most retirees, MAGI is close to AGI. Roth withdrawals are excluded from MAGI; Roth conversions and traditional IRA or 401(k) withdrawals are included. Use the Copy from Income Tax button to pull your estimated retirement MAGI from the Income Tax tool when it is set to Retirement Income mode.",
+  hcbenchmark: "The ACA premium tax credit is calculated using the premium for the benchmark plan, defined as the second-lowest-cost Silver plan available in your county. The credit is the difference between that premium and a capped percentage of your income. This cap (not a flat dollar amount) is what the subsidy system targets. Enter your household's monthly benchmark Silver premium from healthcare.gov for precision (both spouses, for a couple); otherwise a state-level estimate is used.",
   figrowth: "Your contribution grows at this rate each year. A 3% annual increase approximates inflation-pacing raises and keeps real savings effort roughly constant over time. Leave at 0 to keep a fixed contribution."
 };
 
@@ -19066,12 +19172,14 @@ function writeCollegeState(d){
   if (d.infl != null) $("clInfl").value = String(d.infl);
 }
 const RB_DEFAULTS = {price:450000, down:20, rate:MORT_RATE_30, term:"30", propTax:1.1,
-  ins:1800, maint:1, close:3, sell:3, rent:1800, rentInc:3.2, appr:4, invest:7, horizon:30};
+  ins:1800, maint:1, close:3, sell:3, rent:1800, rentInc:3.2, appr:4, invest:7, horizon:30,
+  gainTax:15, status:"m"};
 function readRBState(){
   return {price:num("rbPrice"), down:num("rbDown"), rate:num("rbRate"), term:$("rbTerm").value,
           propTax:num("rbPropTax"), ins:num("rbIns"), maint:num("rbMaint"), close:num("rbClose"),
           sell:num("rbSell"), rent:num("rbRent"), rentInc:num("rbRentInc"), appr:num("rbAppr"),
-          invest:num("rbInvest"), horizon:num("rbHorizon")};
+          invest:num("rbInvest"), horizon:num("rbHorizon"), gainTax:num("rbGainTax"),
+          status:$("rbStatus").value};
 }
 function writeRBState(d){
   if (d.price != null) $("rbPrice").value = groupDigits(d.price, true);
@@ -19088,6 +19196,8 @@ function writeRBState(d){
   if (d.appr != null) $("rbAppr").value = String(d.appr);
   if (d.invest != null) $("rbInvest").value = String(d.invest);
   if (d.horizon != null) $("rbHorizon").value = String(d.horizon);
+  if (d.gainTax != null) $("rbGainTax").value = String(d.gainTax);
+  if (d.status) $("rbStatus").value = d.status;
 }
 function readMortState(){
   return {price:num("moPrice"), downPct:num("moDownPct"), downAmt:num("moDownAmt"),
@@ -20356,6 +20466,8 @@ $("rbRentInc").value = "3.2";
 $("rbAppr").value = "4";
 $("rbInvest").value = "7";
 $("rbHorizon").value = "30";
+$("rbGainTax").value = "15";
+$("rbStatus").value = "m";
 writeRCState(RC_DEFAULTS);
 $("dtExtra").value = groupDigits(300, true);
 buildDebtList();
@@ -20530,6 +20642,8 @@ function hhApply(H, only){
     if (retire && retire >= 40 && retire <= 75) $("hcRetireAge").value = String(retire);
     $("hcStatus").value = married ? "m" : "s";
     if (!married || num("hcHousehold") <= 2) $("hcHousehold").value = married ? "2" : "1";
+    if (married && H.spouseAge > 0 && H.age > 0 && retire)
+      $("hcSpouseAge").value = String(Math.round(H.spouseAge + (retire - H.age)));
     if (H.state && $("hcState").querySelector("option[value='" + H.state + "']"))
       $("hcState").value = H.state;
     done.push("Healthcare");
@@ -20791,8 +20905,8 @@ function gdSS(retire){
     const s2 = ssEstimate(a.income2 || 0, Math.max(1, Math.min(35, Math.round(spAt) - 22)), claim);
     a2 = s2.annual;
     // Spousal benefits earn no delay credits, so it's half the full benefit,
-    // reduced the same way for an early claim.
-    const half = x => x * .5 * Math.min(1, adj);
+    // reduced on the spousal schedule for an early claim.
+    const half = x => x * .5 * ssSpousalAdj(claim);
     if (half(s1.atFRA) > a2){ a2 = half(s1.atFRA); spousal = true; }
     if (half(s2.atFRA) > a1){ a1 = half(s2.atFRA); spousal = true; }
   }
@@ -22022,6 +22136,8 @@ const GD_TRIPS = {
       if (gdOk(a.retire)) $("hcRetireAge").value = String(Math.max(40, Math.min(75, Math.round(a.retire))));
       $("hcStatus").value = gdMar() ? "m" : "s";
       $("hcHousehold").value = gdMar() ? "2" : "1";
+      if (gdMar() && gdOk(a.spouseAge) && gdOk(a.age) && gdOk(a.retire))
+        $("hcSpouseAge").value = String(Math.round(a.spouseAge + (a.retire - a.age)));
       if (a.state && $("hcState").querySelector("option[value='" + a.state + "']")) $("hcState").value = a.state;
       if (gdPos(a.retSpend)) $("hcIncome").value = gdM(a.retSpend);
     },
@@ -23653,21 +23769,24 @@ var hcReady = false;
 var HC_FPL_BASE = [0,15650,21150,26650,32150,37650,43150,48650,54150];
 var HC_FPL_PER_ADDL = 5500;
 
-// Official HHS ACA age-rating multipliers (ages 21–64; 21 = 1.000, 64 = 3.000)
+// Federal default standard age curve, ages 21-64 (21 = 1.000, 64+ = 3.000).
+// CMS, "Final Guidance Regarding Age Curves and State Reporting", 16 Dec 2016,
+// Appendix I; in force for plan years 2018 on. A handful of states (and DC)
+// set their own curve, which runs somewhat flatter.
 var HC_AGE_MULT = [
   1.000,1.000,1.000,1.000, // 21-24
-  1.034,1.068,1.102,1.160, // 25-28
-  1.197,1.221,1.245,1.269, // 29-32
-  1.289,1.310,1.330,1.352, // 33-36
-  1.371,1.395,1.420,1.445, // 37-40
-  1.477,1.508,1.541,1.574, // 41-44
-  1.626,1.677,1.716,1.756, // 45-48
-  1.824,1.893,1.942,1.991, // 49-52
-  2.043,2.097,2.148,2.201, // 53-56
-  2.255,2.310,2.339,2.370, // 57-60
-  2.450,2.491,2.539,3.000  // 61-64
+  1.004,1.024,1.048,1.087, // 25-28
+  1.119,1.135,1.159,1.183, // 29-32
+  1.198,1.214,1.222,1.230, // 33-36
+  1.238,1.246,1.262,1.278, // 37-40
+  1.302,1.325,1.357,1.397, // 41-44
+  1.444,1.500,1.563,1.635, // 45-48
+  1.706,1.786,1.865,1.952, // 49-52
+  2.040,2.135,2.230,2.333, // 53-56
+  2.437,2.548,2.603,2.714, // 57-60
+  2.810,2.873,2.952,3.000  // 61-64
 ];
-var HC_AGE40_MULT = 1.445; // index 19 = age 40 - 21
+var HC_AGE40_MULT = 1.278; // index 19 = age 40 - 21
 
 // 2026 average benchmark premium (second-lowest-cost Silver) for a 40-year-old,
 // monthly, by state. Source: KFF, Marketplace Average Benchmark Premiums, 2026
@@ -23762,17 +23881,45 @@ function renderHealthcare(){
   var state = $("hcState").value || "IL";
   var manualPremium = num("hcManualPremium") || 0;
 
+  $("hcSpouseAgeWrap").hidden = !joint;
+
   // ── income ───────────────────────────────────────────────────────────────
+  // The field is AGI, which is also the MAGI Medicare's IRMAA uses. The ACA
+  // adds back the untaxed part of Social Security, so that figure is found
+  // from the benefit entered: the taxable part depends on the other income,
+  // which is AGI less the taxable part, so repeated passes settle it.
   var magi = num("hcIncome") || 0;
+  var ssGross = num("hcSS") || 0, ssTaxed = 0;
+  // The step shrinks by at most 0.85 each pass, so 150 passes is exact to
+  // well under a cent.
+  for (var it = 0; it < 150 && ssGross > 0; it++)
+    ssTaxed = ssTaxable(ssGross, Math.max(0, magi - ssTaxed), joint ? "m" : "s").taxable;
+  var acaMagi = magi + Math.max(0, ssGross - ssTaxed);
 
   // ── ACA Bridge ───────────────────────────────────────────────────────────
   var acaBridgeYears = Math.max(0, 65 - retireAge);
   var fpl = hcFPL(household);
-  var pctFPL = magi > 0 ? magi / fpl : 0;
+  var pctFPL = acaMagi > 0 ? acaMagi / fpl : 0;
   var acaAge = Math.min(64, Math.max(21, retireAge));
-  var grossMonthly = hcGrossPremium(state, acaAge, manualPremium);
-  var stdResult = hcCalcACA(magi, grossMonthly, pctFPL, false);
-  var enhResult = hcCalcACA(magi, grossMonthly, pctFPL, true);
+  /* The credit is figured for the household, not per person: the benchmark
+     for everyone enrolling, less ONE contribution based on the household's
+     income. So the benchmark is each adult at their own age (a spouse
+     already 65 is on Medicare instead), plus any children in the household,
+     priced at the under-15 rate with at most three counted, as the ACA
+     does. A premium typed in is the household's own figure from
+     healthcare.gov, as on the Bridge tool. */
+  var spouseAge = Math.round(num("hcSpouseAge")) || retireAge;
+  var spouseOn = joint && spouseAge < 65;
+  var acaAge2 = Math.min(64, Math.max(21, spouseAge));
+  var adults = joint ? 2 : 1;
+  var kids = Math.min(3, Math.max(0, household - adults));
+  var childPrem = (HC_STATE_PREMIUM_40[state] || 500) / HC_AGE40_MULT * 0.765;
+  var grossMonthly = manualPremium > 0 ? manualPremium
+    : hcGrossPremium(state, acaAge, 0) + (spouseOn ? hcGrossPremium(state, acaAge2, 0) : 0) + kids * childPrem;
+  var coveredDesc = (spouseOn ? (acaAge2 === acaAge ? "two adults age " + acaAge : "ages " + acaAge + " and " + acaAge2)
+      : "age " + acaAge) + (kids ? " + " + kids + (kids === 1 ? " child" : " children") : "");
+  var stdResult = hcCalcACA(acaMagi, grossMonthly, pctFPL, false);
+  var enhResult = hcCalcACA(acaMagi, grossMonthly, pctFPL, true);
   var bronzeGross = grossMonthly * 0.75;
   var goldGross = grossMonthly * 1.25;
   var usingStateEst = manualPremium <= 0;
@@ -23780,32 +23927,33 @@ function renderHealthcare(){
   var acaHTML = "";
   if (acaBridgeYears <= 0){
     acaHTML = "<p style='color:var(--dim);font-size:14px'>Retiring at 65 or later: no ACA bridge needed. Medicare coverage begins at 65.</p>";
-  } else if (magi <= 0){
+  } else if (acaMagi <= 0){
     acaHTML = "<p style='color:var(--dim);font-size:14px'>Enter your expected retirement MAGI to see your ACA premium estimate.</p>";
   } else {
     var pctFPLStr = (pctFPL * 100).toFixed(0) + "%";
+    var incNote = acaMagi > magi + 0.5 ? " (your MAGI plus " + money(acaMagi - magi) + " of untaxed Social Security, which the ACA counts)" : "";
     var medicaid = pctFPL < 1.0;
 
     // The headline is what 2026 actually costs; the enhanced figure is only a what-if.
     var netForStat = stdResult.eligible ? stdResult.net : grossMonthly;
     acaHTML += "<div class='hc-stats'>";
     acaHTML += "<div class='hc-stat'><div class='v'>" + acaBridgeYears + " yr" + (acaBridgeYears !== 1 ? "s" : "") + "</div><div class='optlabel'>years on ACA bridge</div></div>";
-    acaHTML += "<div class='hc-stat'><div class='v'>$" + Math.round(netForStat) + "/mo</div><div class='optlabel'>est. net Silver premium</div></div>";
+    acaHTML += "<div class='hc-stat'><div class='v'>$" + Math.round(netForStat) + "/mo</div><div class='optlabel'>est. net Silver premium" + (spouseOn || kids ? ", whole household" : "") + "</div></div>";
     acaHTML += "</div>";
 
     if (medicaid){
-      acaHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>Your income of " + money(magi) + " is <b>" + pctFPLStr + " of the federal poverty level</b> for a " + household + "-person household. Premium tax credits only begin at 100% FPL, so ACA subsidies do not apply here.</p>";
+      acaHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>Your income of " + money(acaMagi) + incNote + " is <b>" + pctFPLStr + " of the federal poverty level</b> for a " + household + "-person household. Premium tax credits only begin at 100% FPL, so ACA subsidies do not apply here.</p>";
       acaHTML += "<div class='hc-insight'>In the 40 states (plus DC) that expanded Medicaid under the ACA, an income this low typically qualifies you for Medicaid at little or no monthly premium. In the remaining non-expansion states there is a coverage gap: income is too high for Medicaid but too low for ACA subsidies, leaving limited options for subsidized coverage. Check your state's Medicaid eligibility rules.</div>";
     } else {
       // Context paragraph explaining what they're looking at
-      acaHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>Your income of " + money(magi) + " is <b>" + pctFPLStr + " of the federal poverty level</b> for a " + household + "-person household — this ratio drives your subsidy. " +
+      acaHTML += "<p style='font-size:13px;color:var(--dim);margin:0 0 12px'>Your income of " + money(acaMagi) + incNote + " is <b>" + pctFPLStr + " of the federal poverty level</b> for a " + household + "-person household — this ratio drives your subsidy. " +
         (stdResult.eligible
           ? "The ACA sets what you're expected to contribute toward health coverage at " + (stdResult.pct * 100).toFixed(2) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment."
           : "That income is above the 400% FPL cutoff, so there is no credit and you would pay the Silver plan's full list price. The enhanced credits that removed this cutoff (capping your share at 8.5% of income) expired after 2025.") +
         "</p>";
       // Standard rules
       acaHTML += "<div class='hc-section-label'>2026 ACA rules</div>";
-      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver plan" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est., age " + acaAge + ") — the reference used to price your credit</span>" : " <span style='color:var(--dimmer);font-size:11px'>your entered premium</span>") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
+      acaHTML += "<div class='kv'><span class='k'>Benchmark Silver plan" + (usingStateEst ? " <span style='color:var(--dimmer);font-size:11px'>(" + state + " est., " + coveredDesc + ") — the reference used to price your credit</span>" : " <span style='color:var(--dimmer);font-size:11px'>your entered premium</span>") + "</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
       if (!stdResult.eligible){
         acaHTML += "<div class='kv'><span class='k'>Premium tax credit</span><span class='v' style='color:var(--dimmer)'>none (income above 400% FPL)</span></div>";
         acaHTML += "<div class='kv total'><span class='k'>Your net premium</span><span class='v'>$" + Math.round(grossMonthly) + "/mo</span></div>";
@@ -23835,14 +23983,15 @@ function renderHealthcare(){
       acaHTML += "</div>";
 
       // Income insights
-      if (joint){
-        acaHTML += "<div class='hc-insight'>For a couple, <b>both spouses need their own plan</b>. The per-person premium above applies to each. If both spouses are the same age the household ACA cost is roughly double.</div>";
+      if (spouseOn){
+        acaHTML += "<div class='hc-insight'>For a couple, <b>both spouses need their own plan</b>, and the figures above cover both of you. The credit is worked out for the household as a whole: the benchmark for both plans, less one contribution based on your combined income. " +
+          (stdResult.eligible ? "That's why a subsidized couple pays about what one person at the same income would, not double." : "Above the 400% cliff there is no credit, so you pay both full premiums.") + "</div>";
       }
 
       // 400% cliff warning if near it (standard rules)
       if (stdResult.eligible && pctFPL > 3.5){
         var cliff400 = fpl * 4.0;
-        var overCliff = magi - cliff400;
+        var overCliff = acaMagi - cliff400;
         if (overCliff < 0){
           var toCliff = -overCliff;
           acaHTML += "<div class='hc-insight'>⚠️ Your income is <b>" + money(toCliff) + " below</b> the 400% FPL cliff. Every dollar above $" + Math.round(cliff400).toLocaleString() + " eliminates the entire subsidy, adding $" + Math.round(stdResult.credit) + "/mo instantly. Roth conversions or portfolio decisions that push income over this line have an outsized cost.</div>";
@@ -23852,7 +24001,7 @@ function renderHealthcare(){
 
     // Premium estimate note
     acaHTML += "<div class='hc-note'>" +
-      (usingStateEst ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled to age " + acaAge + ". " : "Using your entered benchmark premium. ") +
+      (usingStateEst ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled by age, for " + coveredDesc + ". " + (kids ? "Children are priced as under-15 enrollees; at lower incomes many qualify for CHIP or Medicaid instead. " : "") : "Using your entered benchmark premium. ") +
       "Enter your actual quote from <a href='https://healthcare.gov' target='_blank'>healthcare.gov</a> in the sidebar for precision. " +
       "Credits for 2026 use the IRS's 2026 contribution percentages and the 2025 poverty guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025; the House passed an extension in January 2026, but it has not become law." +
       "</div>";
@@ -23930,7 +24079,7 @@ function renderHealthcare(){
 // ── HC sidebar event wiring ──────────────────────────────────────────────────
 (function(){
   function hcListen(id){ var el = $(id); if (el) el.addEventListener("input", renderHealthcare); }
-  ["hcRetireAge","hcIncome","hcManualPremium"].forEach(hcListen);
+  ["hcRetireAge","hcIncome","hcManualPremium","hcSpouseAge","hcSS"].forEach(hcListen);
   ["hcStatus","hcHousehold","hcState"].forEach(function(id){
     var el = $(id); if (el) el.addEventListener("change", renderHealthcare);
   });
@@ -23945,6 +24094,8 @@ function renderHealthcare(){
       var agi = runTax(txInp).agi || 0;
       if (!agi){ toast("Enter income in the Income Tax tool first"); return; }
       $("hcIncome").value = groupDigits(Math.round(agi), true);
+      var ssR = runTax(txInp).ssGross || 0;
+      $("hcSS").value = ssR > 0 ? groupDigits(Math.round(ssR), true) : "";
       renderHealthcare();
       toast("Copied " + money(agi) + " MAGI from Income Tax");
     } catch(e){ toast("Couldn't read from the Income Tax tool"); }
@@ -23996,8 +24147,8 @@ function readFire(){
     contrib: Math.max(0, num("fiContrib") || 0),
     period: $("fiPeriod").value || "Monthly",
     growth: (num("fiGrowth") || 0) / 100,
-    nominal: Math.max(0, (num("fiNominal") || 9.65)) / 100,
-    inflation: Math.max(0, (num("fiInflation") || 2.94)) / 100,
+    nominal: Math.max(0, (num("fiNominal") || 8.5)) / 100,
+    inflation: Math.max(0, (num("fiInflation") || 3)) / 100,
     target: targetPortfolio,
     withdrawal: wr,
     solveFor: solveFor,
