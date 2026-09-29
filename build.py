@@ -5,26 +5,32 @@ The site is one page. Its source is split across src/ so each part can be
 read and changed on its own; this puts it back together:
 
   1. src/page.html is the page skeleton. Each line of the form
-         <!-- @include css/*.css -->
+         <!-- @include main/*.html -->
      is replaced by the files it names (relative to src/), in filename order,
-     so the numeric prefixes (00-, 01-...) set the order. The result is
-     index.html: one self-contained page, exactly as the site has always
-     shipped, so nothing about how it loads or runs depends on the split.
-  2. index.html's <head> is filled in from src/page-meta.json (title,
-     description, canonical URL, preview tags, structured data).
-  3. Every clean URL gets its own copy of the page (drawdown.html, rmd.html,
-     ...) with that page's own <head>, since GitHub Pages serves
-     drawdown.html for /drawdown. Plus sitemap.xml and robots.txt.
+     so the numeric prefixes (00-, 01-...) set the order.
+  2. The styles (src/css/) and the script (src/js/math.js, then the app in
+     src/js/app/ wrapped in one function) become two shared files,
+     assets/app.<hash>.css and assets/app.<hash>.js, which the page's
+     <!-- @asset --> and <!-- @preload --> lines link to. Every page uses the
+     same two files, so a visitor downloads them once; the hash in the name
+     changes whenever their content does, so no browser keeps an old copy.
+  3. Each address gets its own page: index.html for /, and a copy per clean
+     URL (drawdown.html, rmd.html, ...) since GitHub Pages serves
+     drawdown.html for /drawdown. Each has its own <head> from
+     src/page-meta.json (title, description, canonical URL, preview tags,
+     structured data), its own main heading, and only its own "about this
+     tool" article. Plus sitemap.xml and robots.txt.
   4. With --cards, each page's 1200x630 link-preview card is rendered from
      og/template.html with headless Chrome.
 
-index.html and the page copies are generated: edit src/, never them. The
-build refuses to overwrite an index.html that was changed by hand since it
-last wrote it (.build-stamp), so an edit made there can't be silently lost.
+index.html, the page copies and assets/ are generated: edit src/, never
+them. The build refuses to overwrite an index.html that was changed by hand
+since it last wrote it (.build-stamp), so an edit made there can't be
+silently lost.
 
-    python3 build.py            # index.html, page copies, sitemap, robots
+    python3 build.py            # pages, assets, sitemap, robots
     python3 build.py --cards    # the same, plus preview cards
-    python3 build.py --check    # exit 1 if index.html doesn't match src/
+    python3 build.py --check    # exit 1 if the built site doesn't match src/
     python3 build.py --force    # overwrite a hand-edited index.html
 
 The pre-commit hook runs it, and the tests, whenever src/ is committed.
@@ -37,7 +43,9 @@ INDEX = os.path.join(ROOT, "index.html")
 STAMP = os.path.join(ROOT, ".build-stamp")
 SITE = "https://retcalc.app"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+ASSETS = os.path.join(ROOT, "assets")
 INCLUDE = re.compile(r"^<!-- @include (\S+) -->$")
+ASSET = re.compile(r"^<!-- @(asset|preload) (app\.(?:css|js)) -->$", re.M)
 
 # path: (name on the card, card subtitle). Page titles and descriptions live
 # in src/page-meta.json, which the app also reads for its own titles.
@@ -84,27 +92,59 @@ CARDS = {
 ALIASES = {"single": "advanced", "series": "stages"}
 # Pages that use the site's own card.
 PLAIN = {"home", "about"}
+# Pages that open a tool, and the tool (the picker card's data-pick) where
+# the address differs from it. Their main heading is the tool's title.
+TOOL_SUB = {"drawdown": "drawdown", "bridge": "bridge", "72t": "bridge", "roth": "roth", "rmd": "roth",
+            "healthcare": "healthcare", "fire": "fire", "backtest": "backtest", "incometax": "tax",
+            "mortgage": "mortgage", "rentbuy": "rentbuy", "college": "college", "budget": "budget",
+            "debt": "debt"}
 
 
 # ---------------------------------------------------------------- assembly
-def assemble():
-    """src/page.html with every @include line replaced by its files."""
+def files(pattern):
+    found = sorted(glob.glob(os.path.join(SRC, pattern)))
+    if not found:
+        sys.exit("build.py: %s matched no files" % pattern)
+    out = []
+    for p in found:
+        text = open(p, encoding="utf-8").read()
+        out.append(text if text.endswith("\n") else text + "\n")
+    return "".join(out)
+
+
+def bundles():
+    """The two shared files, by name. The app files are the body of one
+    function, so they share a scope but leave nothing global; the engine
+    before them is global, for the app to use. The page is shown once the
+    app has run, even if it threw (see page.html)."""
+    js = (files("js/math.js") + ";\n"
+          "try {\n(function(){\n\"use strict\";\n" + files("js/app/*.js") + "})();\n"
+          "} finally { document.documentElement.classList.remove(\"booting\"); }\n")
+    out = {}
+    for name, text in (("app.css", files("css/*.css")), ("app.js", js)):
+        base, ext = name.split(".")
+        out["%s.%s.%s" % (base, sha(text)[:10], ext)] = text
+    return out
+
+
+def assemble(names):
+    """src/page.html with every @include line replaced by its files, and the
+    @asset and @preload lines pointing at the shared files."""
     out = []
     with open(os.path.join(SRC, "page.html"), encoding="utf-8") as f:
         for ln in f:
             m = INCLUDE.match(ln.rstrip("\n"))
-            if not m:
-                out.append(ln)
-                continue
-            files = sorted(glob.glob(os.path.join(SRC, m.group(1))))
-            if not files:
-                sys.exit("build.py: @include %s matched no files" % m.group(1))
-            for p in files:
-                text = open(p, encoding="utf-8").read()
-                if not text.endswith("\n"):
-                    text += "\n"
-                out.append(text)
-    return "".join(out)
+            out.append(files(m.group(1)) if m else ln)
+    page = "".join(out)
+    href = {n.split(".")[0] + "." + n.split(".")[-1]: "/assets/" + n for n in names}
+    def link(m):
+        kind, name = m.group(1), m.group(2)
+        if kind == "preload":
+            return '<link rel="preload" href="%s" as="script">' % href[name]
+        if name.endswith(".css"):
+            return '<link rel="stylesheet" href="%s">' % href[name]
+        return '<script src="%s"></script>' % href[name]
+    return ASSET.sub(link, page)
 
 
 def meta_of(page):
@@ -166,19 +206,48 @@ def with_head(page, slug, meta, canon_slug):
                   lambda m: head(page, slug, meta, canon_slug), page, count=1, flags=re.S)
 
 
-def build_index():
-    """The finished home page, exactly as it should be on disk."""
-    page = assemble()
-    return with_head(page, "home", meta_of(page)["home"], "home")
+def only_article(page, slug):
+    """The page with just this address's article, shown without script. The
+    others would be hidden anyway; leaving them out keeps each page about
+    one thing, and lighter."""
+    def keep(m):
+        if m.group(1) != slug:
+            return ""
+        return m.group(0).replace(" hidden>", ">", 1)
+    return re.sub(r'\n  <article class="seo-a[^"]*" data-page="([^"]+)" hidden>.*?</article>', keep, page, flags=re.S)
 
 
-def copy_for(index, slug, meta):
-    """The page at /slug: its own head, and its article showing without script."""
-    out = with_head(index, slug, meta, slug)
-    tag = re.search(r'<article class="seo-a[^"]*" data-page="%s" hidden>' % re.escape(slug), out)
-    if not tag:
-        return out  # /about is the About screen itself, with no article
-    return out.replace(tag.group(0), tag.group(0).replace(" hidden>", ">"), 1)
+def card_text(page, sub, part):
+    """A tool card's name or description, as the picker has it."""
+    at = page.index('data-pick="%s"' % sub)
+    m = re.compile(r'<div class="toolcard-%s">(.*?)</div>' % part, re.S).search(page, at)
+    return re.sub(r"<span.*", "", m.group(1)).strip()
+
+
+def headings(page, slug, meta):
+    """The page's one h1: the tool's title in its header on a tool's page,
+    the hidden #pageH1 everywhere else. The app keeps both current as you
+    move around; this puts them in the page for anything that reads it
+    without running the script."""
+    sub = TOOL_SUB.get(slug)
+    if not sub:
+        return page.replace('<h1 class="srlive" id="pageH1"></h1>',
+                            '<h1 class="srlive" id="pageH1">%s</h1>' % html.escape(meta.get("h1", "RetCalc")), 1)
+    name = html.escape(meta["h1"]) if "h1" in meta else card_text(page, sub, "name")
+    for a, b in (('<h1 class="srlive" id="pageH1"></h1>', '<h1 class="srlive" id="pageH1" hidden></h1>'),
+                 ('<div class="toolback" id="toolBack" hidden>', '<div class="toolback" id="toolBack">'),
+                 ('<h1 class="toolhead-name" id="toolCrumb"></h1>', '<h1 class="toolhead-name" id="toolCrumb">%s</h1>' % name),
+                 ('<p class="toolhead-desc" id="toolHeadDesc"></p>',
+                  '<p class="toolhead-desc" id="toolHeadDesc">%s</p>' % card_text(page, sub, "desc"))):
+        if a not in page:
+            sys.exit("build.py: page.html no longer has " + a)
+        page = page.replace(a, b, 1)
+    return page
+
+
+def page_for(base, slug, meta, canon_slug):
+    """The finished page at an address, from the assembled page."""
+    return headings(only_article(with_head(base, slug, meta, canon_slug), slug), slug, meta)
 
 
 # ---------------------------------------------------------------- cards
@@ -226,13 +295,17 @@ def write_if_changed(path, text):
 
 def main():
     args = set(sys.argv[1:])
-    index = build_index()
+    assets = bundles()
+    base = assemble(assets)
+    meta = meta_of(base)
+    index = page_for(base, "home", meta["home"], "home")
 
     if "--check" in args:
-        current = open(INDEX, encoding="utf-8").read()
-        if current != index:
-            sys.exit("build.py --check: index.html doesn't match src/. Run python3 build.py.")
-        print("index.html matches src/")
+        stale = [n for n, t in assets.items()
+                 if not os.path.exists(os.path.join(ASSETS, n)) or open(os.path.join(ASSETS, n), encoding="utf-8").read() != t]
+        if open(INDEX, encoding="utf-8").read() != index or stale:
+            sys.exit("build.py --check: the built site doesn't match src/. Run python3 build.py.")
+        print("index.html and assets/ match src/")
         return
 
     if os.path.exists(INDEX) and os.path.exists(STAMP) and "--force" not in args:
@@ -240,19 +313,24 @@ def main():
         if sha(current) != open(STAMP).read().strip() and current != index:
             sys.exit("build.py: index.html was edited directly since the last build, and the build would\n"
                      "overwrite that edit. Make the change in src/ instead, or run with --force to discard it.")
+    os.makedirs(ASSETS, exist_ok=True)
+    for old in glob.glob(os.path.join(ASSETS, "app.*")):
+        if os.path.basename(old) not in assets:
+            os.remove(old)
+    for n, t in assets.items():
+        write_if_changed(os.path.join(ASSETS, n), t)
     write_if_changed(INDEX, index)
     with open(STAMP, "w") as f:
         f.write(sha(index) + "\n")
 
-    meta = meta_of(index)
     n = 0
     for slug, m in meta.items():
         if slug == "home":
             continue
-        write_if_changed(os.path.join(ROOT, slug + ".html"), copy_for(index, slug, m))
+        write_if_changed(os.path.join(ROOT, slug + ".html"), page_for(base, slug, m, slug))
         n += 1
     for old, slug in ALIASES.items():
-        write_if_changed(os.path.join(ROOT, old + ".html"), copy_for(index, slug, meta[slug]))
+        write_if_changed(os.path.join(ROOT, old + ".html"), page_for(base, slug, meta[slug], slug))
         n += 1
     write_if_changed(os.path.join(ROOT, "sitemap.xml"),
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
@@ -265,7 +343,7 @@ def main():
             if slug not in PLAIN:
                 render_card(slug, *CARDS[slug])
                 print("card", slug)
-    print("built index.html and %d page copies, sitemap.xml, robots.txt" % n)
+    print("built index.html, %d page copies, %s, sitemap.xml, robots.txt" % (n, " and ".join("assets/" + a for a in sorted(assets))))
 
 
 if __name__ == "__main__":

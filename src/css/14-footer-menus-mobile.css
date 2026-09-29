@@ -113,7 +113,7 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   .scenariobar{display:contents}
   .brand{grid-column:1;grid-row:1;min-width:0}
   .wordmark{min-width:0}
-  .wordmark h1{font-size:clamp(16px,5vw,20px);white-space:nowrap}
+  .wordmark .brandname{font-size:clamp(16px,5vw,20px);white-space:nowrap}
   #btnHousehold{grid-column:2;grid-row:1}
   #btnTheme{grid-column:3;grid-row:1}
   .scgroup{grid-column:1 / -1;grid-row:2}

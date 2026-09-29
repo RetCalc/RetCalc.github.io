@@ -310,9 +310,19 @@ function pageSlug(){
   if (PATH_ALIAS[here] && slug && SUB_BY_PATH[slug] === PATH_ALIAS[here]) slug = here;
   return slug;
 }
+/* Each page ships with only its own article (build.py), so moving to another
+   tool inside the app shows none rather than the wrong one. The page's one
+   h1 is the tool's title in its header; elsewhere it's #pageH1, read by
+   screen readers and search engines. A landing alias names the tool its
+   own way (/72t is "72(t) Calculator"). Runs after setToolBack(). */
 function seoSync(){
   const slug = pageSlug();
   document.querySelectorAll(".seo-a").forEach(a => { a.hidden = a.getAttribute("data-page") !== slug; });
+  const P = PAGE_META && PAGE_META.pages[slug];
+  const onTool = chartMode.tab === "tools" && toolSub !== "picker";
+  $("pageH1").hidden = onTool;
+  if (!onTool) $("pageH1").textContent = P && P.h1 ? P.h1 : "RetCalc";
+  else if (P && P.h1) $("toolCrumb").textContent = P.h1;
 }
 function setDocTitle(){
   const P = PAGE_META && PAGE_META.pages[pageSlug()];

@@ -50,9 +50,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<style>
-<!-- @include css/*.css -->
-</style>
+<!-- @asset app.css -->
+<!-- @preload app.js -->
+<script>
+  /* Until the app script (a separate, cached file) has run, the page holds
+     the Basic calculator's static layout whatever the address. Keeping the
+     tool area invisible until then means /mortgage never flashes Basic on a
+     first visit; if the script fails to arrive, it shows anyway after a few
+     seconds. Without JavaScript this never runs, so nothing is hidden. */
+  document.documentElement.classList.add("booting");
+  setTimeout(function(){ document.documentElement.classList.remove("booting"); }, 6000);
+</script>
 </head>
 <body>
 
@@ -99,7 +107,7 @@ window.onerror = function(msg){
         </g>
       </svg>
       <div class="wordmark">
-        <h1>RetCalc</h1>
+        <div class="brandname">RetCalc</div>
         <div class="tagline">Know your number.</div>
       </div>
     </div>
@@ -139,6 +147,9 @@ window.onerror = function(msg){
 <div id="srLive" class="srlive" aria-live="polite" aria-atomic="true"></div>
 
 <main id="main">
+<!-- The page's main heading. A tool's page uses the tool's own title in its
+     header instead (#toolCrumb); the build fills both in for each address. -->
+<h1 class="srlive" id="pageH1"></h1>
 <!-- @include main/*.html -->
 </main>
 
@@ -212,16 +223,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script>
-<!-- @include js/math.js -->
-</script>
-
-<script>
-(function(){
-"use strict";
-<!-- @include js/app/*.js -->
-})();
-</script>
+<!-- @asset app.js -->
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

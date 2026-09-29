@@ -1,12 +1,14 @@
 # RetCalc source
 
-The site is one page, `index.html`, but it's written here in pieces so each
-part can be found and changed on its own. `build.py` (in the repo root) puts
-the pieces back together into `index.html`, exactly as the site ships, and
-makes the per-tool copies (`drawdown.html`, `rmd.html`, ...), `sitemap.xml`
-and `robots.txt` from it.
+The site is one page, but it's written here in pieces so each part can be
+found and changed on its own. `build.py` (in the repo root) puts the pieces
+back together: the styles and the script into two shared files,
+`assets/app.<hash>.css` and `assets/app.<hash>.js`, and the page itself into
+`index.html` plus a copy for each clean URL (`drawdown.html`, `rmd.html`,
+...), each with its own title, main heading and "about this tool" article.
+It also writes `sitemap.xml` and `robots.txt`.
 
-**Edit the files here, never `index.html` or the page copies.** The build
+**Edit the files here, never `index.html`, the page copies or `assets/`.** The build
 overwrites those, and refuses to run if `index.html` was edited by hand, so
 the edit isn't silently lost.
 
@@ -15,9 +17,9 @@ the edit isn't silently lost.
 | Path | What it is |
 |---|---|
 | `page.html` | The page skeleton: `<head>`, masthead, footer, the pop-up panels, and `<!-- @include ... -->` lines where each piece below goes |
-| `page-meta.json` | Every page's title and description. The build writes each page's `<head>` from it, and the app uses it for the browser-tab title |
+| `page-meta.json` | Every page's title, description and (where it isn't the tool's own name) main heading. The build writes each page's `<head>` from it, and the app uses it for the browser-tab title and heading |
 | `css/*.css` | The styles, by area: base tokens, layout, fields, navigation, each tool, the guide, charts, footer and phone rules |
-| `main/*.html` | Everything inside `<main>`: the household bar, each tool's inputs and results, About, the tool picker, the guide, and the "about this tool" articles |
+| `main/*.html` | Everything inside `<main>`: the household bar, each tool's inputs and results, About, the tool picker, the guide, and the "about this tool" articles (each page ships with only its own) |
 | `js/math.js` | The calculation engine: projections, Monte Carlo, taxes, Social Security, RMDs and Roth conversions, mortgages, debt, drawdown and the historical data. Tested by `tests/math.test.js` |
 | `js/app/*.js` | Everything else the page does, by area: inputs, charts, each tool's screen, navigation, sharing, saved scenarios, the readiness guide, tool help |
 
@@ -34,9 +36,9 @@ on their own.
 ## Building
 
 ```
-python3 build.py            # index.html, page copies, sitemap.xml, robots.txt
+python3 build.py            # pages, assets/, sitemap.xml, robots.txt
 python3 build.py --cards    # the same, plus the link-preview images
-python3 build.py --check    # does index.html match src/? (CI runs this)
+python3 build.py --check    # does the built site match src/? (CI runs this)
 python3 tests/run.py        # the calculation tests
 ```
 

@@ -65,7 +65,7 @@ svg{display:block;width:100%;height:auto}
   .toolhead-name{font-size:19px}
   .toolhead-desc{font-size:13px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
   h1{font-size:17px}
-  .wordmark h1{font-size:21px}
+  .wordmark .brandname{font-size:21px}
   :root{--r-panel:14px}
   .panel > h2{padding:13px 14px}
   .panel .body{padding:14px}
