@@ -58,6 +58,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <style>
+/* While Instrument Sans is still downloading, text shows in this stand-in:
+   Arial resized and re-spaced to Instrument Sans's measured width, ascent
+   and descent, so the swap when the real face lands barely moves a line. */
+@font-face{font-family:"Instrument Sans Fallback";src:local("Arial"),local("ArialMT"),local("Helvetica");
+  size-adjust:102.3%;ascent-override:94.8%;descent-override:24.4%;line-gap-override:0%}
 /* ============================================================
    "The Instrument" — visual system
    Depth encodes editability: recessed wells are where you type,
@@ -133,7 +138,7 @@
   --lift-2:0 24px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.05) inset;
   --well:inset 0 2px 5px -2px rgba(0,0,0,.85), inset 0 1px 0 rgba(0,0,0,.4);
 
-  --sans:"Instrument Sans","Segoe UI Variable Text","SF Pro Text",
+  --sans:"Instrument Sans","Instrument Sans Fallback","Segoe UI Variable Text","SF Pro Text",
     -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,"SF Mono","JetBrains Mono",
     "Cascadia Mono",Menlo,Consolas,monospace;
@@ -551,13 +556,20 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
 }
 
 /* ---------- tool cards: a rail, not a lift ---------- */
-.toolcards{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;
-  max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
+/* Grouped into three short sections, each a heading over its own grid, so
+   twelve tools scan as three kinds of question. */
+.toolcards{max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
+.toolgroup + .toolgroup{margin-top:30px}
+.toolgroup-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px 2px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--jade)}
+.toolgroup-h em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;font-size:13px;color:var(--dimmer)}
+.toolgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 /* Eight cards in one column ran past the fold on a laptop, which left the
    last two tools effectively hidden on the landing view. Two columns fit the
    whole set on screen at once. */
 @media (min-width:900px){
-  .toolcards{grid-template-columns:repeat(2,minmax(0,1fr));max-width:1060px;gap:14px}
+  .toolcards{max-width:1060px}
+  .toolgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 }
 /* Budget has no sidebar, so in solo mode it gets a centered, generously
    wide column instead of stretching a form edge-to-edge or sitting narrow
@@ -639,18 +651,9 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
 /* The picker is a list, so it reads better as cards arriving in sequence than
    as one block sliding; the container only fades so the two don't compound. */
 .pane-in-cards{animation:pane-fade .18s ease-out}
-.pane-in-cards .toolcard{animation:card-in .3s cubic-bezier(.2,.7,.3,1) both}
-.pane-in-cards .toolcard:nth-child(1){animation-delay:.01s}
-.pane-in-cards .toolcard:nth-child(2){animation-delay:.04s}
-.pane-in-cards .toolcard:nth-child(3){animation-delay:.07s}
-.pane-in-cards .toolcard:nth-child(4){animation-delay:.10s}
-.pane-in-cards .toolcard:nth-child(5){animation-delay:.13s}
-.pane-in-cards .toolcard:nth-child(6){animation-delay:.16s}
-.pane-in-cards .toolcard:nth-child(7){animation-delay:.19s}
-.pane-in-cards .toolcard:nth-child(8){animation-delay:.22s}
-.pane-in-cards .toolcard:nth-child(9){animation-delay:.25s}
-.pane-in-cards .toolcard:nth-child(10){animation-delay:.28s}
-.pane-in-cards .toolcard:nth-child(11){animation-delay:.31s}
+.pane-in-cards .toolcard{animation:card-in .3s cubic-bezier(.2,.7,.3,1) both;
+  animation-delay:calc(var(--i,0) * .03s + .01s)}
+.pane-in-cards .toolgroup-h{animation:pane-fade .3s ease-out both}
 /* A card that was just clicked shouldn't animate back out from under the
    pointer, so the press state is its own quick acknowledgement. */
 .toolcard:active{transform:scale(.988);transition-duration:.08s}
@@ -805,9 +808,19 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
   .toolcard:hover .br-arch,.toolcard:hover .br-cable,.toolcard:hover .br-walker{animation:none;stroke-dasharray:none;transition:none}
 }
 
-/* ---------- back to the tool picker ---------- */
-.toolback{grid-column:1 / -1;display:flex;align-items:center;gap:11px;
-  min-width:0;margin:-2px 0 -6px}
+/* ---------- back to the tool picker, and the tool's header ---------- */
+.toolback{grid-column:1 / -1;display:flex;align-items:center;flex-wrap:wrap;gap:11px;
+  min-width:0;margin:-2px 0 0}
+.toolhead{flex:1 0 100%;display:flex;align-items:center;gap:15px;min-width:0;margin-top:4px}
+.toolhead-icon{width:52px;height:52px;padding:9px}
+.toolhead-t{min-width:0}
+.toolhead-name{margin:0;font-size:23px;font-weight:700;letter-spacing:-.024em;line-height:1.15;color:var(--text)}
+.toolhead-name .beta{vertical-align:4px}
+.toolhead-desc{margin:4px 0 0;font-size:13.5px;line-height:1.5;color:var(--dim);max-width:80ch}
+.toolhead-desc:empty{display:none}
+/* the glide from the picker card into this header */
+::view-transition-group(toolicon){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
 .toolback .backbtn{display:inline-flex;align-items:center;gap:7px;flex:none;
   background:transparent;border:0;box-shadow:none;cursor:pointer;
   padding:6px 10px 6px 7px;margin-left:-7px;border-radius:var(--r-well);
@@ -1112,6 +1125,7 @@ main.solo{grid-template-columns:minmax(0,1fr)}
   .sh-h{display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid #111;
     padding-bottom:6px;margin-bottom:10px}
   .sh-h h1{font-size:15px;margin:0;font-weight:700;letter-spacing:-.01em}
+  .sh-mark{width:20px;height:20px;flex:none;align-self:center;margin-right:-2px}
   .sh-h span{font-size:9.5px;color:#666;margin-left:auto}
 
   /* The three headline numbers. This is the only oversized text on the page
@@ -1175,6 +1189,8 @@ main.solo{grid-template-columns:minmax(0,1fr)}
      text on the page. */
   .sh-foot{font-size:7.5px;color:#666;line-height:1.45;border-top:1px solid #ccc;
     padding-top:5px}
+  .sh-foot::after{content:"Retirement Calculator \00b7  retcalc.github.io \00b7  Know your number.";
+    display:block;margin-top:4px;color:#9a7a3a;font-weight:600;letter-spacing:.01em}
 }
 
 /* ---------- about ---------- */
@@ -1688,8 +1704,10 @@ svg{display:block;width:100%;height:auto}
   .brandmark{width:46px;height:46px}
   .brand{gap:12px}
   .tagline{font-size:12.5px;margin-top:3px}
-  /* the panel heading right below already names the tool */
-  .toolback .crumb{display:none}
+  .toolhead{gap:12px}
+  .toolhead-icon{width:44px;height:44px;padding:7px}
+  .toolhead-name{font-size:19px}
+  .toolhead-desc{font-size:13px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
   h1{font-size:17px}
   .wordmark h1{font-size:21px}
   :root{--r-panel:14px}
@@ -2482,8 +2500,32 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .selmenu-h::before{content:"";display:block;width:38px;height:4px;border-radius:2px;
   background:var(--line);margin:0 auto 12px}
+/* the "?" explanations use the same sheet on a phone */
+.tipsheet .selmenu-h{display:flex;align-items:center;gap:12px;padding:26px 6px 8px;
+  font-size:16px;font-weight:600;letter-spacing:-.012em;text-transform:none;color:var(--text)}
+.tipsheet .selmenu-h::before{position:absolute;left:50%;top:9px;margin:0;transform:translateX(-50%)}
+.tipsheet .selmenu-h span{flex:1 1 auto;min-width:0}
+.tipsheet-x{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--dim);cursor:pointer}
+.tipsheet-x svg{width:14px;height:14px}
+.tipsheet-x:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tipsheet-b{margin:0;padding:2px 6px 14px;font-size:15.5px;line-height:1.65;color:var(--dim)}
 .selmenu.sheet .selmenu-i{min-height:52px;padding:12px 14px;font-size:16px;border-radius:12px}
 .selmenu.sheet .selmenu-i .d{font-size:13px}
+
+/* ---------- wide tables on phones ----------
+   A table wider than the screen scrolls sideways inside its panel. Its first
+   column (the age, year or item each row is about) stays pinned while the
+   figures slide under it, with a hairline marking the edge. The pinned cells
+   need their own fill, so they follow the row's hover and selected tints. */
+@media (max-width:640px){
+  .scroll th:first-child,.scroll td:first-child{position:sticky;left:0;z-index:1;
+    background:var(--panel);box-shadow:inset -1px 0 0 var(--line-soft)}
+  .scroll thead th:first-child{z-index:3}
+  .scroll tbody tr:hover td:first-child{background:var(--panel-2)}
+  .scroll .ddrow.sel td:first-child{background:color-mix(in srgb,var(--jade) 11%,var(--panel))}
+  .scroll tr.rc-widow > td:first-child{background:color-mix(in srgb,var(--gold) 8%,var(--panel))}
+}
 
 /* ---------- touch: no hover lifts ----------
    A tap leaves :hover set until the next touch, so on a phone the cards
@@ -2673,7 +2715,13 @@ window.onerror = function(msg){
       <i class="arw back" aria-hidden="true"></i>
       All tools
     </button>
-    <span class="crumb" id="toolCrumb"></span>
+    <div class="toolhead">
+      <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
+      <div class="toolhead-t">
+        <h2 class="toolhead-name" id="toolCrumb"></h2>
+        <p class="toolhead-desc" id="toolHeadDesc"></p>
+      </div>
+    </div>
   </div>
   <!-- ========== INPUTS ========== -->
   <!-- ========== SIMPLE INPUTS ========== -->
@@ -6181,163 +6229,178 @@ window.onerror = function(msg){
   <!-- ========== TOOL PICKER ========== -->
   <div class="stack solo" role="tabpanel" aria-labelledby="tabbtn-tools" id="tab-toolpicker" hidden>
     <div class="toolcards">
-      <div class="toolcard" role="button" tabindex="0" data-pick="drawdown">
-        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
-        <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1926.</div></div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="bridge">
-        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 30 V21 M34 30 V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="br-arch" pathLength="100" d="M4 21 Q20 6 36 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path class="br-cable br-cable1" d="M13 30 V15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><path class="br-cable br-cable2" d="M20 30 V13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><path class="br-cable br-cable3" d="M27 30 V15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><circle class="br-walker" cx="7" cy="26.6" r="1.8" fill="currentColor" opacity="0"/></svg></div>
-        <div class="toolcard-body"><div class="toolcard-name">Early Retirement Bridge</div><div class="toolcard-desc">Retiring before 59½? Compare a Roth ladder, 72(t) payments, the rule of 55 and your brokerage, with the tax, penalties and ACA premiums each costs, and see what's left at 59½.</div></div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="backtest">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 32h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <rect class="bt-bar bt-bar1" x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="2"/>
-            <rect class="bt-bar bt-bar2" x="17.5" y="13" width="5" height="19" rx="1.2" stroke="currentColor" stroke-width="2"/>
-            <rect class="bt-bar bt-bar3" x="28" y="7" width="5" height="25" rx="1.2" stroke="currentColor" stroke-width="2"/>
-          </svg>
+      <section class="toolgroup" aria-label="Retirement income">
+        <h2 class="toolgroup-h"><span>Retirement income</span><em>Turning savings into a paycheck</em></h2>
+        <div class="toolgrid">
+        <div class="toolcard" style="--i:0" role="button" tabindex="0" data-pick="drawdown">
+          <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
+          <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1926.</div></div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Portfolio Backtest</div>
-          <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
+        <div class="toolcard" style="--i:1" role="button" tabindex="0" data-pick="bridge">
+          <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 30 V21 M34 30 V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="br-arch" pathLength="100" d="M4 21 Q20 6 36 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path class="br-cable br-cable1" d="M13 30 V15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><path class="br-cable br-cable2" d="M20 30 V13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><path class="br-cable br-cable3" d="M27 30 V15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><circle class="br-walker" cx="7" cy="26.6" r="1.8" fill="currentColor" opacity="0"/></svg></div>
+          <div class="toolcard-body"><div class="toolcard-name">Early Retirement Bridge</div><div class="toolcard-desc">Retiring before 59½? Compare a Roth ladder, 72(t) payments, the rule of 55 and your brokerage, with the tax, penalties and ACA premiums each costs, and see what's left at 59½.</div></div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="tax">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="6" y="4" width="22" height="32" rx="3" stroke="currentColor" stroke-width="2"/>
-            <line x1="11" y1="14" x2="23" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="11" y1="20" x2="23" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <line x1="11" y1="26" x2="18" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <g class="tx-glass">
-              <circle cx="31" cy="31" r="7" fill="var(--bg)" stroke="currentColor" stroke-width="2"/>
-              <line x1="28" y1="31" x2="34" y2="31" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="31" y1="28" x2="31" y2="34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </g>
-          </svg>
+        <div class="toolcard" style="--i:2" role="button" tabindex="0" data-pick="roth">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="12" width="13" height="22" rx="2.5" stroke="currentColor" stroke-width="2"/>
+              <rect class="roth-dest" x="23" y="18" width="13" height="16" rx="2.5" stroke="currentColor" stroke-width="2"/>
+              <path class="roth-path" pathLength="100" d="M10.5 9 V8 a3 3 0 0 1 3 -3 h13 a3 3 0 0 1 3 3 V14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path class="roth-head" d="M26.5 11.5 l3 3 3 -3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Roth Conversion &amp; RMDs<span class="beta">Beta</span></div>
+            <div class="toolcard-desc">Project required distributions to age 100, then test a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor's bracket.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Income Tax</div>
-          <div class="toolcard-desc">Estimate your 2026 federal, state and FICA tax on a salary, or switch to retirement mode and see what a year of withdrawals costs across traditional, Roth, brokerage and Social Security.</div>
+        <div class="toolcard" style="--i:3" role="button" tabindex="0" data-pick="healthcare">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle class="hc-ring" cx="18" cy="18" r="14" stroke="currentColor" stroke-width="1.8"/>
+              <path class="hc-cross" d="M18 10v16M10 18h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Healthcare Cost Planner</div>
+            <div class="toolcard-desc">ACA marketplace premiums and subsidies for the gap before Medicare, then Medicare Part B, Part D, and IRMAA surcharges by income.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="roth">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="12" width="13" height="22" rx="2.5" stroke="currentColor" stroke-width="2"/>
-            <rect class="roth-dest" x="23" y="18" width="13" height="16" rx="2.5" stroke="currentColor" stroke-width="2"/>
-            <path class="roth-path" pathLength="100" d="M10.5 9 V8 a3 3 0 0 1 3 -3 h13 a3 3 0 0 1 3 3 V14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path class="roth-head" d="M26.5 11.5 l3 3 3 -3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Roth Conversion &amp; RMDs<span class="beta">Beta</span></div>
-          <div class="toolcard-desc">Project required distributions to age 100, then test a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor's bracket.</div>
+      </section>
+      <section class="toolgroup" aria-label="Saving and investing">
+        <h2 class="toolgroup-h"><span>Saving and investing</span><em>Growing wealth, and weighing the big choices</em></h2>
+        <div class="toolgrid">
+        <div class="toolcard" style="--i:4" role="button" tabindex="0" data-pick="fire">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path class="fi-flame" d="M20 36 C27 36 31 26 28.5 18 C26.5 12 22 9 20.5 4 C20.2 2 20 2 20 2 C20 2 19.8 2 19.5 4 C18 9 13.5 12 11.5 18 C9 26 13 36 20 36Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path class="fi-core" d="M20 32 C17.5 32 15.5 27 17 22 C18 18 19.5 17 20 13 C20.5 17 22 18 23 22 C24.5 27 22.5 32 20 32Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">FIRE Calculator</div>
+            <div class="toolcard-desc">Find when your portfolio reaches financial independence. Toggle to Coast FIRE mode to see the moment you can stop contributing and let compound growth carry you the rest of the way.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="mortgage">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path class="mg-roof" d="M6 20 L20 8 L34 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="10" y="20" width="20" height="16" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="16" y="28" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
-          </svg>
+        <div class="toolcard" style="--i:5" role="button" tabindex="0" data-pick="backtest">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 32h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <rect class="bt-bar bt-bar1" x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" stroke-width="2"/>
+              <rect class="bt-bar bt-bar2" x="17.5" y="13" width="5" height="19" rx="1.2" stroke="currentColor" stroke-width="2"/>
+              <rect class="bt-bar bt-bar3" x="28" y="7" width="5" height="25" rx="1.2" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Portfolio Backtest</div>
+            <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Mortgage Calculator</div>
-          <div class="toolcard-desc">Calculate your monthly payment, see how the balance falls, and explore amortization year by year.</div>
+        <div class="toolcard" style="--i:6" role="button" tabindex="0" data-pick="college">
+          <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon class="cl-cap" points="20,8 38,17 20,26 2,17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 21v8c0 3.3 5.4 6 12 6s12-2.7 12-6v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line class="cl-tassel" x1="38" y1="17" x2="38" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="toolcard-body"><div class="toolcard-name">College Savings</div><div class="toolcard-desc">How much to save each month to cover tuition, with presets for state school, private, and elite colleges.</div></div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="college">
-        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon class="cl-cap" points="20,8 38,17 20,26 2,17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8 21v8c0 3.3 5.4 6 12 6s12-2.7 12-6v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line class="cl-tassel" x1="38" y1="17" x2="38" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div class="toolcard-body"><div class="toolcard-name">College Savings</div><div class="toolcard-desc">How much to save each month to cover tuition, with presets for state school, private, and elite colleges.</div></div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="rentbuy">
-        <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="20" cy="6" r="1.6" fill="currentColor"/>
-            <line x1="20" y1="7.5" x2="20" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <g class="rb-beam">
-              <line x1="8" y1="9" x2="32" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="8" y1="9" x2="8" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <line x1="32" y1="9" x2="32" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-              <path d="M3 18 Q8 24 13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-              <path d="M27 18 Q32 24 37 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </g>
-            <rect x="14" y="30" width="12" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
-          </svg></div>
-        <div class="toolcard-body"><div class="toolcard-name">Rent vs. Buy</div><div class="toolcard-desc">Compare buyer and renter net worth over any horizon, counting what the down payment could have earned and what the home gains in value.</div></div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="budget">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="10" width="32" height="22" rx="3" stroke="currentColor" stroke-width="2"/>
-            <line x1="4" y1="16" x2="36" y2="16" stroke="currentColor" stroke-width="2"/>
-            <line x1="14" y1="10" x2="14" y2="32" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
-            <g class="bg-coin">
-              <circle cx="22" cy="24" r="4" stroke="currentColor" stroke-width="2"/>
-              <line x1="22" y1="20" x2="22" y2="28" stroke="currentColor" stroke-width="1.5"/>
-              <line x1="18" y1="24" x2="26" y2="24" stroke="currentColor" stroke-width="1.5"/>
-            </g>
-          </svg>
+        <div class="toolcard" style="--i:7" role="button" tabindex="0" data-pick="rentbuy">
+          <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="6" r="1.6" fill="currentColor"/>
+              <line x1="20" y1="7.5" x2="20" y2="30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <g class="rb-beam">
+                <line x1="8" y1="9" x2="32" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="8" y1="9" x2="8" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <line x1="32" y1="9" x2="32" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M3 18 Q8 24 13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <path d="M27 18 Q32 24 37 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+              </g>
+              <rect x="14" y="30" width="12" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
+            </svg></div>
+          <div class="toolcard-body"><div class="toolcard-name">Rent vs. Buy</div><div class="toolcard-desc">Compare buyer and renter net worth over any horizon, counting what the down payment could have earned and what the home gains in value.</div></div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Budget</div>
-          <div class="toolcard-desc">Lay out your income and expenses, see what's left, and find out where your money goes.</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="debt">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path class="db-bar db-b1" d="M6 32 V24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path class="db-bar db-b2" d="M14 32 V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path class="db-bar db-b3" d="M22 32 V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path class="db-bar db-b4" d="M30 32 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M4 36 h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            <path d="M8 10 L34 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3.5"/>
-          </svg>
+      </section>
+      <section class="toolgroup" aria-label="Everyday money">
+        <h2 class="toolgroup-h"><span>Everyday money</span><em>Taxes, budgets, debts and the mortgage</em></h2>
+        <div class="toolgrid">
+        <div class="toolcard" style="--i:8" role="button" tabindex="0" data-pick="tax">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="4" width="22" height="32" rx="3" stroke="currentColor" stroke-width="2"/>
+              <line x1="11" y1="14" x2="23" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="11" y1="20" x2="23" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="11" y1="26" x2="18" y2="26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <g class="tx-glass">
+                <circle cx="31" cy="31" r="7" fill="var(--bg)" stroke="currentColor" stroke-width="2"/>
+                <line x1="28" y1="31" x2="34" y2="31" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="31" y1="28" x2="31" y2="34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Income Tax</div>
+            <div class="toolcard-desc">Estimate your 2026 federal, state and FICA tax on a salary, or switch to retirement mode and see what a year of withdrawals costs across traditional, Roth, brokerage and Social Security.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Debt Payoff</div>
-          <div class="toolcard-desc">List what you owe, then watch avalanche and snowball race each other: payoff date, total interest, and exactly what ordering by motivation instead of rate costs you.</div>
+        <div class="toolcard" style="--i:9" role="button" tabindex="0" data-pick="budget">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="10" width="32" height="22" rx="3" stroke="currentColor" stroke-width="2"/>
+              <line x1="4" y1="16" x2="36" y2="16" stroke="currentColor" stroke-width="2"/>
+              <line x1="14" y1="10" x2="14" y2="32" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/>
+              <g class="bg-coin">
+                <circle cx="22" cy="24" r="4" stroke="currentColor" stroke-width="2"/>
+                <line x1="22" y1="20" x2="22" y2="28" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="18" y1="24" x2="26" y2="24" stroke="currentColor" stroke-width="1.5"/>
+              </g>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Budget</div>
+            <div class="toolcard-desc">Lay out your income and expenses, see what's left, and find out where your money goes.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="healthcare">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle class="hc-ring" cx="18" cy="18" r="14" stroke="currentColor" stroke-width="1.8"/>
-            <path class="hc-cross" d="M18 10v16M10 18h16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
+        <div class="toolcard" style="--i:10" role="button" tabindex="0" data-pick="debt">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path class="db-bar db-b1" d="M6 32 V24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path class="db-bar db-b2" d="M14 32 V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path class="db-bar db-b3" d="M22 32 V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path class="db-bar db-b4" d="M30 32 V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M4 36 h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 10 L34 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3.5"/>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Debt Payoff</div>
+            <div class="toolcard-desc">List what you owe, then watch avalanche and snowball race each other: payoff date, total interest, and exactly what ordering by motivation instead of rate costs you.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">Healthcare Cost Planner</div>
-          <div class="toolcard-desc">ACA marketplace premiums and subsidies for the gap before Medicare, then Medicare Part B, Part D, and IRMAA surcharges by income.</div>
+        <div class="toolcard" style="--i:11" role="button" tabindex="0" data-pick="mortgage">
+          <div class="toolcard-icon">
+            <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path class="mg-roof" d="M6 20 L20 8 L34 20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="10" y="20" width="20" height="16" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="16" y="28" width="8" height="8" rx="1" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="toolcard-body">
+            <div class="toolcard-name">Mortgage Calculator</div>
+            <div class="toolcard-desc">Calculate your monthly payment, see how the balance falls, and explore amortization year by year.</div>
+          </div>
+          <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
-      <div class="toolcard" role="button" tabindex="0" data-pick="fire">
-        <div class="toolcard-icon">
-          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path class="fi-flame" d="M20 36 C27 36 31 26 28.5 18 C26.5 12 22 9 20.5 4 C20.2 2 20 2 20 2 C20 2 19.8 2 19.5 4 C18 9 13.5 12 11.5 18 C9 26 13 36 20 36Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-            <path class="fi-core" d="M20 32 C17.5 32 15.5 27 17 22 C18 18 19.5 17 20 13 C20.5 17 22 18 23 22 C24.5 27 22.5 32 20 32Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
-          </svg>
         </div>
-        <div class="toolcard-body">
-          <div class="toolcard-name">FIRE Calculator</div>
-          <div class="toolcard-desc">Find when your portfolio reaches financial independence. Toggle to Coast FIRE mode to see the moment you can stop contributing and let compound growth carry you the rest of the way.</div>
-        </div>
-        <div class="toolcard-arrow">&#8250;</div>
-      </div>
+      </section>
     </div>
   </div>
 
@@ -13007,8 +13070,17 @@ function setToolBack(sub){
   const row = $("toolBack"), onPicker = (sub === "picker");
   row.hidden = onPicker;
   if (onPicker) return;
-  const card = document.querySelector('.toolcard[data-pick="' + sub + '"] .toolcard-name');
-  $("toolCrumb").textContent = toolName(card);
+  const card = document.querySelector('.toolcard[data-pick="' + sub + '"]');
+  if (!card) return;
+  // The header repeats the card you picked: its icon tile, name (and badge)
+  // and one-line description.
+  const name = card.querySelector(".toolcard-name"), badge = name && name.querySelector(".beta");
+  $("toolCrumb").textContent = toolName(name);
+  if (badge) $("toolCrumb").appendChild(badge.cloneNode(true));
+  const ic = card.querySelector(".toolcard-icon");
+  $("toolHeadIcon").innerHTML = ic ? ic.innerHTML : "";
+  const d = card.querySelector(".toolcard-desc");
+  $("toolHeadDesc").textContent = d ? d.textContent.trim() : "";
 }
 $("btnToolBack").addEventListener("click", () => {
   paneDir = "back";
@@ -13291,11 +13363,35 @@ TABBTNS.forEach((b, i) => {
   });
 });
 document.querySelectorAll(".toolcard[data-pick]").forEach(card => {
-  const activate = () => {
+  const go = () => {
     if (chartMode.tab !== "tools") showTab("tools");
     paneDir = "fwd";
     showTool(card.getAttribute("data-pick"));
     pushNav();
+  };
+  /* Where the browser can, the card's icon tile glides up into the tool's
+     header as the page changes (a view transition naming the one tile on
+     each side); elsewhere, or with reduced motion, the page just changes. */
+  const activate = () => {
+    const ic = card.querySelector(".toolcard-icon");
+    let motion = true;
+    try { motion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch(e){}
+    if (!document.startViewTransition || !motion || !ic){ go(); return; }
+    ic.style.viewTransitionName = "toolicon";
+    let vt;
+    try {
+      vt = document.startViewTransition(() => {
+        ic.style.viewTransitionName = "";
+        go();
+        $("toolHeadIcon").style.viewTransitionName = "toolicon";
+      });
+    } catch(e){ ic.style.viewTransitionName = ""; go(); return; }
+    const done = () => { $("toolHeadIcon").style.viewTransitionName = ""; ic.style.viewTransitionName = ""; };
+    // A transition the browser skips (a hidden tab, say) still runs the
+    // update; its promises just reject, which is expected, not an error.
+    vt.ready.catch(() => {});
+    vt.updateCallbackDone.catch(() => {});
+    vt.finished.then(done, done);
   };
   card.addEventListener("click", activate);
   card.addEventListener("keydown", e => {
@@ -13337,6 +13433,14 @@ function acSheetRows(a, total){
   return row("Traditional balance", money(a.tradBal)) + row("Roth balance", money(a.rothBal)) +
     row("Brokerage balance", money(a.brokBal));
 }
+/* The printed summaries carry the logo beside their title, in the deeper
+   light-theme hues so it holds up on paper. */
+const SHEET_MARK = "<svg class='sh-mark' viewBox='4 4 56 56' aria-hidden='true'><g transform='rotate(-45 32 32)'>" +
+  "<path d='M33 7 L11.5 28.5 M33 57 L11.5 35.5' fill='none' stroke='#5a81c3' stroke-width='2'/>" +
+  "<path d='M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57' fill='none' stroke='#2a9e73' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/>" +
+  "<path d='M7 32 H51' stroke='#c1861e' stroke-width='3.2' stroke-linecap='round'/>" +
+  "<path d='M60 32 L48 25.5 L50.5 32 L48 38.5 Z M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z' fill='#c1861e'/></g></svg>";
+
 function buildSheet(){
   if (!$("tab-guide").hidden) return gdGuideSheet();
   if (!$("tab-tax").hidden) return buildTaxSheet();
@@ -13453,7 +13557,7 @@ function buildSheet(){
     : "Projection";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Investment Projection</h1>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Investment Projection</h1>" +
       "<span>" + (series ? "Stages" : "Advanced") + " &middot; " +
       fmtNum(years) + " years &middot; " + mode + "</span></div>" +
     "<div class='sh-big'>" +
@@ -13568,7 +13672,7 @@ function buildTaxSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>" + (ret ? "Retirement Tax Summary" : "Income Tax Summary") +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>" + (ret ? "Retirement Tax Summary" : "Income Tax Summary") +
       "</h1><span>Tax year 2026</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>" + (ret ? "Income after tax" : "Take-home pay") +
@@ -13655,7 +13759,7 @@ function buildMortSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Mortgage Summary</h1><span>" + fmtNum(m.term) + " year term</span></div>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Mortgage Summary</h1><span>" + fmtNum(m.term) + " year term</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Monthly payment</div><div class='v'>" + money(R.total) +
         "</div><div class='n'>all in</div></div>" +
@@ -13715,7 +13819,7 @@ function buildCollegeSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>College Savings Plan</h1><span>" + fmtNum(inp.yearsUntil) + " years to go</span></div>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>College Savings Plan</h1><span>" + fmtNum(inp.yearsUntil) + " years to go</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Save per month</div><div class='v'>" + money(R.monthly) +
         "</div><div class='n'>to close the gap</div></div>" +
@@ -13786,7 +13890,7 @@ function buildRentBuySheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Rent vs. Buy</h1><span>After " + fmtNum(inp.horizon) + " years</span></div>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Rent vs. Buy</h1><span>After " + fmtNum(inp.horizon) + " years</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Better choice</div><div class='v'>" + (buyWins ? "Buying" : "Renting") +
         "</div><div class='n'>by " + money(Math.abs(last.buyerNW - last.renterNW)) + "</div></div>" +
@@ -13895,7 +13999,7 @@ function buildDrawdownSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement &middot; tested since " + H.first + "</span></div>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Will My Money Last?</h1><span>" + fmtNum(o.years) + " year retirement &middot; tested since " + H.first + "</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Success rate</div><div class='v'>" + pctStr(H.successRate, 0) +
         "</div><div class='n'>" + H.survived + " of " + H.total + " periods</div></div>" +
@@ -13957,7 +14061,7 @@ function buildBudgetSheet(){
   const efTarget = (spentYr / 12) * efMonths;
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Monthly Budget</h1><span>Per month, unless noted</span></div>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Monthly Budget</h1><span>Per month, unless noted</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Income</div><div class='v'>" + money(incomeYr / 12) +
         "</div><div class='n'>per month</div></div>" +
@@ -14027,7 +14131,7 @@ function buildBasicSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Retirement Projection</h1><span>" +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Retirement Projection</h1><span>" +
       fmtYears(p.years) + " of saving &middot; every figure in today's dollars</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Value at retirement</div><div class='v'>" + money(R.fv) +
@@ -17214,7 +17318,7 @@ function buildRothSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Roth Conversion &amp; RMDs</h1><span>Ages " +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Roth Conversion &amp; RMDs</h1><span>Ages " +
       fmtNum(inp.age) + "\u2013" + fmtNum(inp.endAge) + " &middot; today's dollars</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Lifetime tax saved</div><div class='v'>" + money(taxSaved) +
@@ -17541,7 +17645,7 @@ function buildDebtSheet(){
   table += "</tbody></table>";
 
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Debt Payoff</h1><span>" + money(owed) + " across " +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Debt Payoff</h1><span>" + money(owed) + " across " +
       live.length + (live.length === 1 ? " debt" : " debts") + "</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Debt-free</div><div class='v'>" +
@@ -17655,8 +17759,49 @@ initCSVButtons();
 
 function tipFor(key){ return GLOSS[key] || ""; }
 (function(){
-  let openDot = null;
+  let openDot = null, sheet = null;
   const box = () => $("tipbox");
+  /* On a phone the explanation opens as a sheet from the bottom, like the
+     dropdowns: the field's name on top, the whole text at a readable size,
+     scrollable if it's long, and closed with the button, the dimmed page or
+     Escape. The hover box stays for a mouse. */
+  const phone = () => { try { return window.matchMedia("(max-width:640px)").matches; } catch(e){ return false; } };
+  function titleOf(dot){
+    let p = dot.parentElement;
+    if (p && p.classList.contains("tipglue")) p = p.parentElement;
+    if (!p) return "";
+    const c = p.cloneNode(true);
+    c.querySelectorAll(".tipdot,.opt,.beta,.about-chevron").forEach(x => x.remove());
+    return c.textContent.replace(/\s+/g, " ").trim().slice(0, 80);
+  }
+  function closeSheet(){
+    if (!sheet) return;
+    sheet.m.remove(); sheet.scrim.remove(); sheet.dot.classList.remove("on");
+    sheet = null;
+  }
+  function openSheet(dot, txt){
+    closeSheet();
+    const scrim = document.createElement("div"); scrim.className = "selscrim";
+    const m = document.createElement("div");
+    m.className = "selmenu sheet tipsheet";
+    m.setAttribute("role", "dialog"); m.setAttribute("aria-modal", "true");
+    const h = document.createElement("div"); h.className = "selmenu-h";
+    const t = document.createElement("span"); t.textContent = titleOf(dot) || "What this means";
+    const x = document.createElement("button");
+    x.type = "button"; x.className = "tipsheet-x"; x.setAttribute("aria-label", "Close");
+    x.innerHTML = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+    h.appendChild(t); h.appendChild(x);
+    const b = document.createElement("p"); b.className = "tipsheet-b"; b.textContent = txt;
+    m.setAttribute("aria-label", t.textContent);
+    m.appendChild(h); m.appendChild(b);
+    document.body.appendChild(scrim); document.body.appendChild(m);
+    scrim.addEventListener("click", closeSheet);
+    x.addEventListener("click", closeSheet);
+    dot.classList.add("on");
+    sheet = {m, scrim, dot};
+    try { x.focus({preventScroll:true}); } catch(e){}
+  }
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && sheet) closeSheet(); });
   function place(dot){
     const b = box(), r = dot.getBoundingClientRect();
     b.classList.add("on");
@@ -17684,7 +17829,7 @@ function tipFor(key){ return GLOSS[key] || ""; }
   }
   document.addEventListener("mouseover", e => {
     const d = e.target.closest ? e.target.closest(".tipdot") : null;
-    if (d) show(d);
+    if (d && !phone()) show(d);
   });
   document.addEventListener("mouseout", e => {
     const d = e.target.closest ? e.target.closest(".tipdot") : null;
@@ -17693,6 +17838,12 @@ function tipFor(key){ return GLOSS[key] || ""; }
   // touch: tap to open, tap anywhere to close
   document.addEventListener("click", e => {
     const d = e.target.closest ? e.target.closest(".tipdot") : null;
+    if (d && phone()){
+      e.preventDefault(); hide();
+      const txt = tipFor(d.getAttribute("data-tip"));
+      if (txt) openSheet(d, txt);
+      return;
+    }
     if (d){ if (d === openDot) hide(); else show(d); e.preventDefault(); }
     else if (openDot) hide();
   });
@@ -18076,7 +18227,7 @@ const THEME_ICON = {
   sun:'<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3.6" stroke="currentColor" stroke-width="1.7"/><g stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M10 1.6v2.2M10 16.2v2.2M18.4 10h-2.2M3.8 10H1.6M15.94 4.06l-1.56 1.56M5.62 14.38l-1.56 1.56M15.94 15.94l-1.56-1.56M5.62 5.62L4.06 4.06"/></g></svg>',
   moon:'<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 12.4A7 7 0 017.6 3.5a7 7 0 108.9 8.9z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>'
 };
-const THEME_META = {dark:"#0c1114", light:"#f4f6f5"};
+const THEME_META = {dark:"#080b16", light:"#eceef4"};
 function resolvedTheme(stored){
   if (stored !== "system") return stored;
   return (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches)
@@ -19391,11 +19542,11 @@ function cardEscape(t){
    dark panel \u2014 the counterpart to lighten() used for the light PDF page. */
 function darkenForCard(node){
   var swap = {};
-  swap[cssVar("--grid").toLowerCase()] = "#22303a";
-  swap[cssVar("--axis").toLowerCase()] = "#7c93a0";
-  swap[cssVar("--stageline").toLowerCase()] = "#4a5f6b";
-  swap[cssVar("--dotstroke").toLowerCase()] = "#0c1114";
-  swap[cssVar("--bg").toLowerCase()] = "#131b20";
+  swap[cssVar("--grid").toLowerCase()] = "#1c2740";
+  swap[cssVar("--axis").toLowerCase()] = "#7f8eaa";
+  swap[cssVar("--stageline").toLowerCase()] = "#4a5a7b";
+  swap[cssVar("--dotstroke").toLowerCase()] = "#080b16";
+  swap[cssVar("--bg").toLowerCase()] = "#151e33";
   var walk = function(nd){
     ["stroke","fill"].forEach(function(a){
       var v = nd.getAttribute && nd.getAttribute(a);
@@ -19636,10 +19787,20 @@ function buildCardSVG(){
     chartSvg = embedChart(series ? "chartS" : "chart", 900, 300); chartW = 900; chartH = 300;
   }
 
-  var bg = "#0c1114", panel = "#131b20", line = "#22303a";
-  var text = "#e9f0f3", dim = "#8ba0ac", gold = "#e9b872", jade = "#4fbf95";
-  var mono = "ui-monospace, Menlo, monospace";
-  var sans = "Inter, Helvetica, Arial, sans-serif";
+  // The site's own dark palette, so a shared card looks like the site. (Web
+  // fonts can't load inside an SVG drawn as an image, so the faces are the
+  // closest system ones.)
+  var bg = "#080b16", panel = "#151e33", line = "#26314b";
+  var text = "#e8edf7", dim = "#94a6bf", gold = "#e9b872", jade = "#4fbf95", steel = "#7d9fd6";
+  var mono = "ui-monospace, SF Mono, Menlo, monospace";
+  var sans = "Helvetica Neue, Helvetica, Arial, sans-serif";
+  // The bow and arrow, 64px, in the header's top-right corner.
+  var logo = '<g transform="translate(926 90) scale(1.1429) translate(-4 -4)"><g transform="rotate(-45 32 32)">' +
+    '<path d="M33 7 L11.5 28.5 M33 57 L11.5 35.5" fill="none" stroke="' + steel + '" stroke-width="2"/>' +
+    '<path d="M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57" fill="none" stroke="' + jade + '" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path d="M7 32 H51" stroke="' + gold + '" stroke-width="3.2" stroke-linecap="round"/>' +
+    '<path d="M60 32 L48 25.5 L50.5 32 L48 38.5 Z" fill="' + gold + '"/>' +
+    '<path d="M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z" fill="' + gold + '"/></g></g>';
 
   // Layout flows top to bottom: header, headline number, chart (if any),
   // then the row list, then the footer \u2014 so a tool with no chart (Budget)
@@ -19671,8 +19832,13 @@ function buildCardSVG(){
   var footY = H - 60;
 
   return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
+    '<defs><radialGradient id="cg" cx="12%" cy="4%" r="70%"><stop offset="0" stop-color="' + jade + '" stop-opacity=".14"/><stop offset="1" stop-color="' + jade + '" stop-opacity="0"/></radialGradient>' +
+    '<linearGradient id="ce" x1="0" x2="1"><stop offset="0" stop-color="' + jade + '" stop-opacity="0"/><stop offset=".35" stop-color="' + jade + '" stop-opacity=".7"/><stop offset=".65" stop-color="' + gold + '" stop-opacity=".7"/><stop offset="1" stop-color="' + gold + '" stop-opacity="0"/></linearGradient></defs>' +
     '<rect width="' + W + '" height="' + H + '" fill="' + bg + '"/>' +
     '<rect x="40" y="40" width="1000" height="' + (H - 80) + '" rx="28" fill="' + panel + '" stroke="' + line + '"/>' +
+    '<rect x="40" y="40" width="1000" height="' + (H - 80) + '" rx="28" fill="url(#cg)"/>' +
+    '<rect x="100" y="40" width="880" height="2" fill="url(#ce)"/>' +
+    logo +
     '<text x="90" y="140" font-family="' + sans + '" font-size="34" font-weight="600" fill="' + text + '">' + cardEscape(title) + '</text>' +
     '<text x="90" y="182" font-family="' + sans + '" font-size="24" fill="' + dim + '">' + cardEscape(sub) + '</text>' +
     '<text x="90" y="243" font-family="' + sans + '" font-size="22" fill="' + dim + '">' + cardEscape(bigLabel) + '</text>' +
@@ -19682,7 +19848,7 @@ function buildCardSVG(){
     verdictBlock +
     '<line x1="90" y1="' + (footY - 20) + '" x2="990" y2="' + (footY - 20) + '" stroke="' + line + '" stroke-width="1"/>' +
     '<text x="90" y="' + footY + '" font-family="' + sans + '" font-size="20" fill="' + dim + '">Projections, not predictions. Not financial advice.</text>' +
-    '<text x="990" y="' + footY + '" font-family="' + sans + '" font-size="22" font-weight="600" fill="' + jade + '" text-anchor="end">retcalc.github.io</text>' +
+    '<text x="990" y="' + (footY - 1) + '" font-family="' + sans + '" font-size="22" text-anchor="end"><tspan fill="' + gold + '">Know your number.</tspan><tspan dx="12" font-weight="600" fill="' + jade + '">retcalc.github.io</tspan></text>' +
     '</svg>';
 }
 
@@ -23267,7 +23433,7 @@ function gdGuideSheet(){
     A.map(x => "<li><b>" + x.t + "</b> " + x.d + "</li>").join("") + "</ol></div>" : "";
   const d = new Date();
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Retirement Readiness Plan</h1><span>" + d.toLocaleDateString("en-US", {month:"long", day:"numeric", year:"numeric"}) +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Retirement Readiness Plan</h1><span>" + d.toLocaleDateString("en-US", {month:"long", day:"numeric", year:"numeric"}) +
       " &middot; every figure in today's dollars</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Readiness score</div><div class='v'>" + R.score + " / 100</div><div class='n'>" + rt.label + "</div></div>" +
@@ -25399,7 +25565,7 @@ function buildBridgeSheet(){
         m(r.sp) + "</td><td>" + m(d.r55) + "</td><td>" + m(r.C) + "</td><td>" + money(r.end.total) + "</td></tr>";
     }).join("") + "</tbody></table>";
   $("sheet").innerHTML =
-    "<div class='sh-h'><h1>Early Retirement Bridge</h1><span>Ages " + fmtNum(ctx.age) +
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>Early Retirement Bridge</h1><span>Ages " + fmtNum(ctx.age) +
       "–59½ &middot; today's dollars</span></div>" +
     "<div class='sh-big'>" +
       "<div><div class='k'>Best way to 59½</div><div class='v'>" + escapeHtml(b.name) + "</div><div class='n'>" +
