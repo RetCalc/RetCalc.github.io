@@ -9125,13 +9125,13 @@ function runRoth(inp, doConvert){
         // single largest lever in the whole decision. Only the tax the
         // conversion adds is withheld: the bill the year would have had
         // anyway is paid the way every other year's is.
+        // Withholding is income tax only: any Medicare surcharge the
+        // conversion triggers is billed separately and paid like other costs.
         let fromConv = 0;
         if (inp.payFrom === "withhold" && conv > 0){
           const T0 = rcTax({status, trad:rmd + extraTrad, roth:rothW, brok:sale,
             gainPct:gp, ss, other, state:inp.state, seniors});
-          const irm0 = (medicare > 0)
-            ? irmaaAnnual(lookback == null ? T0.agi : lookback, status, medicare) : 0;
-          const added = Math.max(0, T.total + irm - T0.total - irm0);
+          const added = Math.max(0, T.total - T0.total);
           // Under 59 1/2 the withheld dollars are themselves penalized, so
           // covering the bill takes added / 0.9.
           fromConv = Math.min(conv, early ? added / .9 : added);
