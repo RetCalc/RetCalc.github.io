@@ -10,6 +10,24 @@ function cssVar(name){
 const svgEl = (n, at) => { const e = document.createElementNS(NS, n);
   for (const k in at) e.setAttribute(k, at[k]); return e; };
 const swatch = (c, t) => "<span><i style='background:" + c + "'></i>" + t + "</span>";
+/* A legend entry that shows or hides its layer of the chart: the faint
+   line per starting year ("traces").
+   The choice is a class on the chart's panel, so it survives the chart being
+   redrawn as inputs change; lgSync() puts each fresh legend in step with it. */
+const lgToggle = (c, t, layer) => "<button type='button' class='lgtoggle' data-layer='" + layer +
+  "' aria-pressed='true' title='Show or hide on the chart'><i style='background:" + c + "'></i>" + t + "</button>";
+function lgSync(elId){
+  const el = $(elId), panel = el && el.closest(".panel");
+  if (!panel) return;
+  el.querySelectorAll(".lgtoggle").forEach(b =>
+    b.setAttribute("aria-pressed", String(!panel.classList.contains("hide-" + b.dataset.layer))));
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest(".lgtoggle"), panel = b && b.closest(".panel");
+  if (!panel) return;
+  const off = panel.classList.toggle("hide-" + b.dataset.layer);
+  b.setAttribute("aria-pressed", String(!off));
+});
 
 /* Shared painter. Both tabs hand it the same shape of data, so the rate band
    and the Monte Carlo fan render through one code path. */
@@ -276,9 +294,10 @@ function histLegend(elId, extra){
   const parts = [swatch("#4fbf95", "10th\u201390th percentile of windows"),
                  swatch("#3f9a78", "25th\u201375th"),
                  swatch("#e9b872", "Median window"),
-                 swatch("#7d9fd6", "Each starting year")];
+                 lgToggle("#7d9fd6", "Each starting year", "traces")];
   if (extra) parts.push(swatch(cssVar("--stageline"), extra));
   $(elId).innerHTML = parts.join("");
+  lgSync(elId);
 }
 function histSummary(noteId, H, target, label){
   const el = $(noteId);
