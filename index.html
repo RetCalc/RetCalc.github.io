@@ -1723,9 +1723,6 @@ a.txlink:hover{text-decoration-color:currentColor}
 .beta{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:4px;
   font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
   color:var(--bg);background:var(--gold);vertical-align:2px}
-.rc-beta .body{display:flex;align-items:baseline;gap:9px;font-size:13px;
-  color:var(--dimmer);line-height:1.5}
-.rc-beta .beta{margin-left:0;flex:none}
 /* The year the survivor starts filing single is the hinge of the whole
    comparison, so it gets a rule of its own in the table. */
 tr.rc-widow > td{border-top:1px solid var(--gold);background:rgba(233,184,114,.06)}
@@ -6120,13 +6117,6 @@ window.onerror = function(msg){
   </aside>
 
   <div class="stack" id="tab-roth" hidden>
-    <div class="panel rc-beta">
-      <div class="body">
-        <span class="beta">Beta</span>
-        <span>Newest tool, still being checked over. The math is tested, but treat the
-        numbers as a starting point rather than a finished answer.</span>
-      </div>
-    </div>
     <div class="panel">
       <div class="headline">
         <div><div class="k">Lifetime tax saved<span class="tipdot" data-tip="rcpv" role="button" tabindex="0" aria-label="What is this?">?</span></div>
@@ -6393,7 +6383,7 @@ window.onerror = function(msg){
             </svg>
           </div>
           <div class="toolcard-body">
-            <div class="toolcard-name">Roth Conversion &amp; RMDs<span class="beta">Beta</span></div>
+            <div class="toolcard-name">Roth Conversion &amp; RMDs</div>
             <div class="toolcard-desc">Project required distributions to age 100, then test a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor's bracket.</div>
           </div>
           <div class="toolcard-arrow">&#8250;</div>
