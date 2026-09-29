@@ -33,6 +33,14 @@ function seqFrom(start, years) {
   return s;
 }
 
+/* Each page's "about this tool" article works an example through the
+   calculator. The figures it quotes are computed in the article groups at
+   the end and must appear in its text, so an example can't drift from what
+   the calculator shows. */
+function dollars(x) { return "$" + String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function pct1(x) { return (Math.round(x * 1000) / 10).toFixed(1) + "%"; }
+function says(page, s) { ok(ARTICLES[page].indexOf(s) >= 0, "/" + page + " article says " + s); }
+
 out("RetCalc calculation tests");
 
 /* ---------------- accumulation engine ---------------- */
@@ -320,6 +328,308 @@ group("Healthcare: CMS age curve and ACA credits");
   eq(hcContribPctStd(4.01), null, "no credit above 400% FPL");
   var gross = 2 * hcGrossPremium("IL", 62, 0), R = hcCalcACA(60000, gross, 60000 / hcFPL(2), false);
   near(R.net, 60000 * R.pct / 12, .01, "a couple pays one contribution for both");
+})();
+
+group("72(t): payment formulas and the /72t worked example");
+(function () {
+  eq(brLE(52), 34.3, "IRS Single Life Table, age 52");
+  eq(brLE(50), 36.2, "IRS Single Life Table, age 50");
+  var n = brLE(52), f = brAmortFactor(.05, 52);
+  near(f, .05 / (1 - Math.pow(1.05, -n)), 1e-12, "amortization is the loan-payment formula over life expectancy");
+  // The level payment pays the balance off exactly after n years at 5%.
+  var b = 900000;
+  for (var y = 0; y < 34; y++) b = b * 1.05 - 900000 * f;
+  near(b * Math.pow(1.05, n - 34) - 900000 * f * (Math.pow(1.05, n - 34) - 1) / .05, 0, 1, "payments exhaust the balance at life expectancy");
+  var split = 40000 / f, tax = 0, taxable = 40000 - FED_STD.s, br = FED_2026.s;
+  for (var i = 0; i < br.length; i++) {
+    var top = i + 1 < br.length ? br[i + 1][0] : Infinity;
+    if (taxable > br[i][0]) tax += (Math.min(taxable, top) - br[i][0]) * br[i][1];
+  }
+  says("72t", "is " + n + " years");
+  says("72t", "at 5%: " + dollars(900000 * f));
+  says("72t", "shows " + dollars(900000 * f));
+  says("72t", dollars(900000 / n) + " the first year");
+  says("72t", "move " + dollars(split));
+  says("72t", "The other " + dollars(900000 - split));
+  says("72t", "about " + dollars(tax) + " of federal income tax");
+  says("72t", "would otherwise have added " + dollars(40000 * .10));
+  says("72t", "about " + dollars(Math.round(40000 / Math.pow(1.03, 7) / 100) * 100) + " in today's dollars");
+  says("72t", "she'd owe " + dollars(4 * 40000 * .10));
+})();
+
+/* ---------------- the articles' worked examples ---------------- */
+group("Articles: home and Advanced");
+(function () {
+  var bal = RISK_LEVELS[2].real;
+  eq(bal, .045, "Balanced is 4.5% after inflation");
+  function basic(o) { return projectBasic(Object.assign({ years: 35, real: bal, initial: 10000, contrib: 500, period: "Monthly", withdrawal: .04 }, o)); }
+  var R = basic({});
+  says("home", "At 65: " + dollars(R.fv) + " in today's dollars");
+  says("home", "4% of that is " + dollars(R.fv * .04) + " a year, or " + dollars(R.fv * .04 / 12) + " a month");
+  says("home", "Sam puts in the $10,000 plus " + dollars(R.contribTotal) + " of contributions");
+  says("home", "growth supplies the other " + dollars(R.growth));
+  says("home", "$750 a month instead of $500: " + dollars(basic({ contrib: 750 }).fv));
+  eq(RISK_LEVELS[3].real, .0575, "Growth is 5.75% after inflation");
+  says("home", "instead of balanced: " + dollars(basic({ real: RISK_LEVELS[3].real }).fv));
+  var r60 = basic({ years: 30 }).fv;
+  says("home", "Retire at 60 instead of 65: " + dollars(r60) + ", about " + Math.round((1 - r60 / R.fv) * 100) + "% less");
+  says("home", "savings need to cover $26,000: about " + dollars(26000 * 25));
+  says("home", "buys what about " + dollars(Math.round(1e6 / Math.pow(1.03, 35) / 1000) * 1000) + " buys today");
+
+  var p = { period: "Monthly", years: 35, initial: 10000, contrib: 500, growth: .03, nominal: .085, inflation: .03, withdrawal: .04, taxRate: .1 };
+  var a = project(p).fvReal, b = project(Object.assign({}, p, { nominal: .085 - .01 })).fvReal;   // fees come off the return
+  says("advanced", "With no fees: " + dollars(a));
+  says("advanced", "actively managed fund: " + dollars(b));
+  says("advanced", "The difference: " + dollars(a - b) + ", or " + Math.round((1 - b / a) * 100) + "%");
+  var B60 = backtest({ stockPct: 60, fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 });
+  var B100 = backtest({ stockPct: 100, fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 });
+  says("advanced", "the " + pct1(B60.cagr) + " a year that 60% stocks and 40% bonds earned");
+  says("advanced", "All stocks earned " + pct1(B100.cagr));
+})();
+
+group("Articles: Stages");
+(function () {
+  var g = { initial: 10000, inflation: .03, withdrawal: .04, taxRate: .1, fees: 0 };
+  function st(c) { return { years: 10, contrib: c, period: "Monthly", growth: 0, nominal: .085, vol: .15 }; }
+  var up = projectSeries(g, [st(400), st(900), st(1500)]).fvReal;
+  var down = projectSeries(g, [st(1500), st(900), st(400)]).fvReal;
+  var flat = projectSeries(g, [{ years: 30, contrib: 336000 / 360, period: "Monthly", growth: 0, nominal: .085, vol: .15 }]).fvReal;
+  eq(400 * 120 + 900 * 120 + 1500 * 120, 336000, "the three patterns save the same total");
+  says("stages", "ends with " + dollars(up) + " in today's dollars");
+  says("stages", "$933 a month for 30 years ends with " + dollars(flat));
+  says("stages", dollars(down) + ", " + Math.round((down / up - 1) * 100) + "% more");
+  says("stages", "anywhere from " + dollars(up) + " to " + dollars(down));
+})();
+
+group("Articles: Drawdown");
+(function () {
+  var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, strategy: "fixed", fee: 0, guardBand: 20, adjustPct: 10,
+            floorPct: 10, ceilPct: 10, yaleRate: 5, yaleWeight: 70, vpwRate: 3.8, vpwFV: 0 };
+  var H = historicalBacktest(o);
+  says("drawdown", "survived " + pct1(H.successRate) + " of the 30-year retirements");
+  says("drawdown", "began in " + H.failYears.slice(0, 3).join(", ") + " and " + H.failYears[3]);
+  var y66 = runDrawdown(o, seqFrom(1966, 30));
+  says("drawdown", "Retiring in 1966, the money ran out in year " + y66.depletedYear);
+  says("drawdown", "about $" + (Math.round(H.medianEnd / 1e5) / 10) + " million left after 30 years");
+  var H35 = historicalBacktest(Object.assign({}, o, { initialPct: 3.5 }));
+  eq(H35.successRate, 1, "3.5% never failed");
+  says("drawdown", "At 3.5%: $35,000 a year, and the plan survived 100%");
+  says("drawdown", "4% survived " + pct1(historicalBacktest(Object.assign({}, o, { years: 40 })).successRate));
+  var G = Object.assign({}, o, { strategy: "guardrails", initialPct: 5 });
+  eq(historicalBacktest(G).successRate, 1, "5% guardrails lasted every time");
+  var g66 = runDrawdown(G, seqFrom(1966, 30));
+  says("drawdown", "cut as low as " + dollars(Math.min.apply(null, g66.rows.map(function (r) { return r.realSpend; }))) + " a year");
+})();
+
+group("Articles: Bridge");
+(function () {
+  says("bridge", "$540,000 in all");
+  says("bridge", "five years of spending from other sources first, " + dollars(5 * 60000));
+  says("bridge", "from the whole $1,000,000 is " + dollars(1e6 * brAmortFactor(.05, 50)) + " a year");
+  says("bridge", "taxable income stays under " + dollars(LTCG_2026.m[0]));
+  says("bridge", "ACA credits stop above " + dollars(hcFPL(2) * 4) + " for a household of two");
+})();
+
+group("Articles: Roth conversions and RMDs");
+(function () {
+  var d = RC_DEFAULTS, inp = { age: d.age, spouseAge: d.spouseAge, status: d.status, state: d.state, endAge: d.endAge,
+    trad: d.trad, roth: d.roth, brokerage: d.brok, basisPct: d.basis / 100, ret: d.ret / 100, spend: d.spend,
+    ss: d.ss, ssAge: d.ssAge, spSS: d.spSS, spSSAge: d.spSSAge, other: d.other, otherStart: d.otherStart,
+    deathYear: d.death, strategy: d.strategy, bracket: parseFloat(d.bracket), irmaaTarget: 0, fixedAmt: d.fixed,
+    pctAmt: d.pct / 100, startAge: d.startAge, stopAge: d.stopAge, payFrom: d.payFrom, heirRate: d.heir / 100,
+    disc: d.disc / 100, irmaaOn: true };
+  var P = runRoth(inp, true), B = runRoth(inp, false);
+  says("roth", "that's " + dollars(P.rows[0].conv) + " in the first year");
+  near(P.rows[0].conv, FED_2026.m[3][0] + FED_STD.m, .01, "fills the 22% bracket: its top plus the standard deduction");
+  says("roth", "22% bracket for a couple (" + dollars(FED_2026.m[3][0]) + ") plus the " + dollars(FED_STD.m));
+  var lastConv = P.rows.filter(function (r) { return r.conv > 0; }).pop();
+  says("roth", "By " + lastConv.age + " the traditional accounts are empty, " + dollars(P.totalConv) + " converted");
+  eq(P.peakRMD, 0, "no RMDs with conversions");
+  says("roth", "would have peaked at " + dollars(B.peakRMD) + " a year");
+  says("roth", dollars(P.lifeTax) + " with conversions against " + dollars(B.lifeTax) + " without");
+  says("roth", "converting saves " + dollars(B.lifeTaxPV - P.lifeTaxPV));
+  says("roth", "IRMAA totals " + dollars(P.lifeIrmaa) + " instead of " + dollars(B.lifeIrmaa));
+  says("roth", "at " + P.rows.filter(function (r) { return r.irmaa > 0; }).map(function (r) { return r.age; }).join(", ").replace(/, (\d+)$/, " and $1") + ",");
+  says("roth", "What's left at " + d.endAge + ": " + dollars(P.endAfterTax - B.endAfterTax) + " more");
+  says("roth", "at " + Math.round((1 - d.heir / 100) * 100) + " cents");
+
+  var first = B.rows.filter(function (r) { return r.rmd > 0; })[0];
+  eq(first.age, 75, "RMDs start at 75 for someone 62 in 2026");
+  says("rmd", "reaches " + dollars(first.tradBegin) + " by 75");
+  says("rmd", dollars(first.tradBegin) + " ÷ " + ultDivisor(75) + ", the IRS factor at 75, is " + dollars(first.rmd));
+  says("rmd", "about " + dollars(d.ss + d.spSS) + " of Social Security");
+  says("rmd", "peak at " + dollars(B.peakRMD) + " in a single year");
+  says("rmd", "a $1,000,000 balance means an RMD of about " + dollars(1e6 / ultDivisor(75)));
+  says("rmd", "IRMAA line (" + dollars(IRMAA.tiers[0].m) + " joint)");
+})();
+
+group("Articles: Healthcare");
+(function () {
+  var gross = 2 * hcGrossPremium("IL", 62, 0), fpl = hcFPL(2);
+  function aca(m) { return hcCalcACA(m, gross, m / fpl, false); }
+  says("healthcare", "lists at " + dollars(gross) + " a month");
+  var lo = aca(40000);
+  says("healthcare", "they pay " + (lo.pct * 100).toFixed(2) + "% of it, " + dollars(lo.net) + " a month");
+  var under = aca(84000), over = aca(85000);
+  eq(over.eligible, false, "no credit over the cliff");
+  says("healthcare", dollars(under.net) + " a month or " + dollars(under.net * 12) + " a year");
+  says("healthcare", "pay the full " + dollars(over.net) + " a month, " + dollars(over.net * 12) + " a year");
+  says("healthcare", "costs them " + dollars((over.net - under.net) * 12) + " in premiums");
+  says("healthcare", dollars(hcFPL(1) * 4) + " for one person and " + dollars(fpl * 4) + " for a household of two");
+  says("healthcare", "$" + (IRMAA.tiers[1].b - IRMAA.partB).toFixed(2) + " a month more per person");
+  says("healthcare", "$" + IRMAA.partB.toFixed(2) + " a month in 2026");
+})();
+
+group("Articles: FIRE");
+(function () {
+  // The FIRE tool's steady path: project() in today's dollars, the crossing
+  // interpolated within its year.
+  var real = (1.085 / 1.03) - 1;
+  function cross(contrib, coast) {
+    var pp = project({ initial: 10000, contrib: contrib, period: "Monthly", growth: 0, nominal: .085, inflation: .03,
+                       years: 70, withdrawal: 0, taxRate: 0 });
+    var prev = 10000, prevCn = 1e6 / Math.pow(1 + real, 35);
+    for (var i = 0; i < pp.years.length; i++) {
+      var y = pp.years[i], rb = y.end / Math.pow(1.03, y.year);
+      if (!coast) { if (rb >= 1e6) return (y.year - 1) + (1e6 - prev) / (rb - prev); prev = rb; continue; }
+      var cn = 1e6 / Math.pow(1 + real, 35 - y.year);
+      if (rb >= cn) { var pd = prev - prevCn, cd = rb - cn; return (y.year - 1) - pd / (cd - pd); }
+      prev = rb; prevCn = cn;
+    }
+  }
+  function f1(x) { return x.toFixed(1); }
+  says("fire", "about " + pct1(real) + " a year after inflation");
+  [[1000, "in "], [2000, ""], [2500, ""]].forEach(function (c) {
+    var y = cross(c[0], false);
+    says("fire", c[1] + f1(y) + " years, at " + f1(30 + y));
+  });
+  says("fire", "stop saving entirely at " + f1(30 + cross(2000, true)));
+})();
+
+group("Articles: Backtest");
+(function () {
+  function bt(s) { return backtest({ stockPct: s, fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 }); }
+  function roll(B, len) { return B.rolling.filter(function (r) { return r.len === len; })[0]; }
+  var S = bt(100), M = bt(60), N = bt(0);
+  says("backtest", "All stocks: " + pct1(S.cagr) + " a year, or " + pct1(S.realCagr) + " after inflation");
+  says("backtest", "rose in " + S.upYears + " of the 100 years");
+  says("backtest", "worst single year was " + pct1(roll(S, 1).nomWorst).replace("-", "−"));
+  says("backtest", "from the " + S.ddFrom + " peak to the " + S.ddTo + " bottom the portfolio lost " + Math.round(-S.maxDD * 100) + "%");
+  says("backtest", pct1(M.cagr) + " a year, " + pct1(M.realCagr) + " after inflation. The worst year was " + pct1(roll(M, 1).nomWorst).replace("-", "−"));
+  says("backtest", "the deepest fall " + Math.round(-M.maxDD * 100) + "%");
+  says("backtest", "Giving up " + pct1(S.cagr - M.cagr).replace("%", "") + " points");
+  says("backtest", "about " + Math.round((1 - M.maxDD / S.maxDD) * 10) * 10 + "%");
+  says("backtest", "All bonds: " + pct1(N.cagr) + " a year, but only " + pct1(N.realCagr) + " after inflation");
+  says("backtest", Math.round(-N.maxDD * 100) + "% from " + N.ddFrom + " to " + N.ddTo);
+  says("backtest", "still earned " + pct1(roll(S, 20).realWorst) + " a year after inflation, and the worst 30-year stretch earned " + pct1(roll(S, 30).realWorst));
+  near(roll(M, 20).realWorst, 0, .001, "60/40's worst 20 years roughly broke even after inflation");
+  says("backtest", "worst 30 years earned " + pct1(roll(M, 30).realWorst));
+  eq(HIST_STOCK.indexOf(Math.min.apply(null, HIST_STOCK)) + 1926, 1931, "the worst year is 1931");
+  says("backtest", "2008 came close, at about −" + Math.round(-HIST_STOCK[2008 - 1926]) + "%");
+})();
+
+group("Articles: Income tax");
+(function () {
+  var T = computeTax({ status: "s", gross: 100000, pre: 0, dedType: "std", item: 0, state: "IL" });
+  says("incometax", "less the " + dollars(FED_STD.s) + " standard deduction leaves " + dollars(100000 - FED_STD.s) + " taxable");
+  says("incometax", "comes to " + dollars(T.federal));
+  says("incometax", "7.65% of wages, " + dollars(T.fica));
+  says("incometax", "a small exemption, " + dollars(T.state));
+  says("incometax", "Take-home: " + dollars(T.takeHome) + " a year, after " + dollars(T.total) + " in total tax");
+  eq(T.marginal, .22, "22% bracket");
+  says("incometax", "federal income tax is only " + pct1(T.federal / 100000) + " of pay");
+  var K = computeTax({ status: "s", gross: 100000, pre: 10000, dedType: "std", item: 0, state: "IL" });
+  says("incometax", "drops Taylor's federal tax to " + dollars(K.federal) + " and Illinois tax to " + dollars(K.state));
+  says("incometax", "Take-home falls by only " + dollars(T.takeHome - K.takeHome));
+  eq(K.fica, T.fica, "FICA unchanged by a 401(k) contribution");
+  var R = computeRetireTax({ status: "m", seniors: 2, trad: 60000, roth: 0, brok: 0, gainPct: 0, ss: 48000, pension: 0,
+    penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, state: "IL", _noMarginal: true });
+  says("incometax", "pays " + dollars(R.federal) + " of federal tax");
+  eq(R.state, 0, "Illinois taxes none of it");
+  var b = FED_2026.s, m = FED_2026.m;
+  says("incometax", "10% to " + dollars(b[1][0]) + ", 12% to " + dollars(b[2][0]) + ", 22% to " + dollars(b[3][0]) + ", 24% to " + dollars(b[4][0]) +
+    ", 32% to " + dollars(b[5][0]) + ", 35% to " + dollars(b[6][0]));
+  says("incometax", "10% to " + dollars(m[1][0]) + ", 12% to " + dollars(m[2][0]) + ", 22% to " + dollars(m[3][0]) + ", 24% to " + dollars(m[4][0]) +
+    ", 32% to " + dollars(m[5][0]) + ", 35% to " + dollars(m[6][0]));
+  says("incometax", "under " + dollars(LTCG_2026.s[0]) + " single or " + dollars(LTCG_2026.m[0]) + " joint");
+  says("incometax", "wages up to " + dollars(FICA.ssCap));
+})();
+
+group("Articles: Mortgage and rent vs. buy");
+(function () {
+  var m = { price: 450000, down: 90000, rate: .065, term: 30, taxPct: .011, ins: 1800, pmiPct: 0, hoa: 0, maintPct: .01, util: 300 };
+  var M = mortgage(m);
+  says("mortgage", "Principal and interest: " + dollars(M.pi) + " a month");
+  says("mortgage", "(" + dollars(M.tax) + " a month) and $1,800 a year of insurance (" + dollars(M.ins) + "), the housing payment is " + dollars(M.pi + M.tax + M.ins));
+  says("mortgage", dollars(M.totalInterest) + " over 30 years");
+  var X = mortgage(Object.assign({}, m, { extraMonthly: 200 }));
+  says("mortgage", "gone in " + X.payoffMonth + " months");
+  says("mortgage", "saves " + dollars(M.totalInterest - X.totalInterest) + " of interest");
+  var F = mortgage(Object.assign({}, m, { rate: .0575, term: 15 }));
+  says("mortgage", dollars(F.pi) + " a month, " + dollars(F.pi - M.pi) + " more, but total interest of " + dollars(F.totalInterest));
+  ok(F.totalInterest < .4 * M.totalInterest, "15-year interest under 40% of the 30-year's");
+  var P = mortgage(Object.assign({}, m, { down: 45000, pmiPct: .006 }));
+  says("mortgage", "adds " + dollars(P.pmi) + " a month");
+  says("mortgage", "in month " + P.pmiEndMonth + ", " + dollars(P.pmiPaid) + " in all");
+
+  var rb = { price: 450000, downPct: 20, rate: 6.5, term: 30, propTax: 1.1, ins: 1800, maint: 1, closePct: 3, sellPct: 3,
+             rent: 1800, rentInc: 3.2, appr: 4, invest: 7, horizon: 30, gainTax: 15, status: "m" };
+  var R = rentBuyCalc(rb), L = R.years[29];
+  says("rentbuy", dollars(R.monthlyBuy) + " a month in the first year: " + dollars(R.pi) + " of principal and interest");
+  says("rentbuy", "also spends " + dollars(R.initialInvest) + " on the down payment");
+  eq(R.breakEven, null, "at $1,800 rent, renting stays ahead");
+  says("rentbuy", "worth " + dollars(L.renterNW) + " against the buyer's " + dollars(L.buyerNW) + " in home equity and savings, a " + dollars(L.renterNW - L.buyerNW) + " lead");
+  var R2 = rentBuyCalc(Object.assign({}, rb, { rent: 2400 }));
+  says("rentbuy", "buying pulls ahead in year " + R2.breakEven + " and leads by " + dollars(R2.years[29].buyerNW - R2.years[29].renterNW));
+  says("rentbuy", "At $1,800 a month it's about " + Math.round(450000 / 21600) + "; at $2,400 it's about " + Math.round(450000 / 28800));
+})();
+
+group("Articles: College, budget and debt");
+(function () {
+  function cs(o) { return collegeSavingsCalc(Object.assign({ yearsUntil: 18, annualCost: 27000, tuitionInfl: .04, investRet: .06, saved: 0, collegeYrs: 4 }, o)); }
+  var C = cs({});
+  says("college", "make the first year " + dollars(C.yearCosts[0]));
+  says("college", dollars(C.monthly) + " a month from birth covers all four years");
+  says("college", "hold " + dollars(C.targetAtStart) + " on the first day");
+  says("college", "it's " + dollars(cs({ yearsUntil: 10 }).monthly) + " a month for the same school");
+  says("college", "would take " + dollars(cs({ annualCost: 59000 }).monthly) + " a month from birth");
+  says("college", "about $" + Math.round(C.monthly / 10) * 10 + " a month from birth");
+  says("college", "closer to $" + Math.round(cs({ yearsUntil: 10 }).monthly / 10) * 10);
+
+  says("budget", "would put " + dollars(6000 * .5) + " toward needs");
+  says("budget", dollars(6000 * .3) + " toward wants");
+  says("budget", "and " + dollars(6000 * .2) + " toward saving");
+  says("budget", "six months of spending is " + dollars(6 * 4000));
+
+  var D = DEBT_DEFAULTS;
+  var tot = D.reduce(function (a, x) { return a + x.balance; }, 0), mins = D.reduce(function (a, x) { return a + x.min; }, 0);
+  says("debt", "owes " + dollars(tot) + " across four debts");
+  says("debt", "add up to " + dollars(mins) + " a month");
+  var av = debtRun(D, 300, "avalanche"), sn = debtRun(D, 300, "snowball"), mn = debtRun(D, 0, "min"), av4 = debtRun(D, 400, "avalanche");
+  says("debt", "Minimums only: " + mn.monthsTotal + " months");
+  says("debt", "and " + dollars(mn.totalInterest) + " of interest");
+  says("debt", "debt-free in " + av.monthsTotal + " months");
+  says("debt", "paying " + dollars(av.totalInterest) + " of interest. That's " + dollars(mn.totalInterest - av.totalInterest) + " less");
+  says("debt", "Debt-free in " + sn.monthsTotal + " months with " + dollars(sn.totalInterest) + " of interest");
+  says("debt", dollars(sn.totalInterest - av.totalInterest) + " more than avalanche");
+  says("debt", "finishes in " + av4.monthsTotal + " months with " + dollars(av4.totalInterest));
+  eq(av.order[0].desc, "Credit card", "avalanche starts with the card");
+  eq(sn.order[0].desc, "Store card", "snowball starts with the store card");
+})();
+
+group("Articles: the readiness guide's score");
+(function () {
+  var w = {};
+  GD_FACTORS.forEach(function (f) { w[f.id] = f.w; });
+  says("guide", "Retirement outlook, " + w.outlook + " points");
+  says("guide", "Savings rate, " + w.rate + " points");
+  says("guide", "Emergency fund, " + w.cushion + " points");
+  says("guide", "Debt, " + w.debt + " points");
+  says("guide", "Monthly cash flow, " + w.flow + " points");
+  eq(gdRating(85).label, "On track", "85 is on track"); eq(gdRating(84).label, "Nearly there", "84 is nearly there");
+  eq(gdRating(70).label, "Nearly there", "70"); eq(gdRating(69).label, "Getting there", "69");
+  eq(gdRating(50).label, "Getting there", "50"); eq(gdRating(49).label, "Needs work", "49");
+  eq(gdRating(30).label, "Needs work", "30"); eq(gdRating(29).label, "Needs attention", "29");
 })();
 
 endGroup();

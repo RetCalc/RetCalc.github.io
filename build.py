@@ -119,7 +119,7 @@ def url_for(slug):
 
 def faq(page, slug):
     """The article's questions, for FAQPage structured data."""
-    m = re.search(r'<article class="seo-a" data-page="%s"[^>]*>(.*?)</article>' % re.escape(slug), page, re.S)
+    m = re.search(r'<article class="seo-a[^"]*" data-page="%s"[^>]*>(.*?)</article>' % re.escape(slug), page, re.S)
     if not m:
         return []
     text = lambda t: html.unescape(re.sub(r"<[^>]+>", "", t)).strip()
@@ -175,8 +175,10 @@ def build_index():
 def copy_for(index, slug, meta):
     """The page at /slug: its own head, and its article showing without script."""
     out = with_head(index, slug, meta, slug)
-    return out.replace('<article class="seo-a" data-page="%s" hidden>' % slug,
-                       '<article class="seo-a" data-page="%s">' % slug, 1)
+    tag = re.search(r'<article class="seo-a[^"]*" data-page="%s" hidden>' % re.escape(slug), out)
+    if not tag:
+        return out  # /about is the About screen itself, with no article
+    return out.replace(tag.group(0), tag.group(0).replace(" hidden>", ">"), 1)
 
 
 # ---------------------------------------------------------------- cards

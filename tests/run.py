@@ -3,15 +3,16 @@
 
 The engine is src/js/math.js (between its ===MATH START=== and ===MATH END===
 markers), and a few calculators live in the app script, src/js/app/*.js.
-This takes the engine block and the named extras, puts them in one script
-with tests/math.test.js, and runs it with whichever
+This takes the engine block, the named extras and the text of the "about
+this tool" articles (whose worked examples the tests check), puts them in
+one script with tests/math.test.js, and runs it with whichever
 JavaScript engine is here: jsc (built into macOS) or node (CI). The exit
 code is nonzero when any test fails, which is what the pre-commit hook and
 the GitHub workflow check.
 
     python3 tests/run.py
 """
-import glob, os, re, shutil, subprocess, sys, tempfile
+import glob, json, os, re, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc"
@@ -19,9 +20,13 @@ JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Help
 # Calculators outside the engine block that the tests cover, and the
 # constants they read.
 FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "hcFPL", "hcAgeMultiplier",
-             "hcGrossPremium", "hcContribPctStd", "hcCalcACA"]
+             "hcGrossPremium", "hcContribPctStd", "hcCalcACA", "brLE", "brAmortFactor", "projectBasic",
+             "gdRating"]
 CONSTANTS = ["PMI_DEFAULT", "HC_FPL_BASE", "HC_FPL_PER_ADDL", "HC_AGE_MULT",
-             "HC_AGE40_MULT", "HC_STATE_PREMIUM_40"]
+             "HC_AGE40_MULT", "HC_STATE_PREMIUM_40", "BR_SLT",
+             "DEFAULTS", "BASIC_INFL", "GD_FACTORS", "RC_DEFAULTS",
+             "DEBT_DEFAULTS", "RISK_LEVELS"]
+ARTICLES = os.path.join(ROOT, "src", "main", "26-about-this-tool.html")
 
 
 def balanced(src, start, open_ch, close_ch):
@@ -57,6 +62,18 @@ def constant(src, name):
     return "var %s = %s;" % (name, src[i:end].rstrip(";"))
 
 
+def articles():
+    """Each page's "about this tool" article as plain text, keyed by page, so
+    the tests can check that a worked example's figures are what the
+    calculator gives."""
+    html = open(ARTICLES, encoding="utf-8").read()
+    out = {}
+    for m in re.finditer(r'<article[^>]*data-page="([^"]+)"[^>]*>(.*?)</article>', html, re.S):
+        text = re.sub(r"<[^>]+>", " ", m.group(2)).replace("&amp;", "&")
+        out[m.group(1)] = re.sub(r"\s+", " ", text)
+    return "var ARTICLES = %s;" % json.dumps(out)
+
+
 def main():
     math = open(os.path.join(ROOT, "src", "js", "math.js"), encoding="utf-8").read()
     src = "".join(open(p, encoding="utf-8").read()
@@ -65,6 +82,7 @@ def main():
     parts = [math[a:b]]
     parts += [constant(src, c) for c in CONSTANTS]
     parts += [function(src, f) for f in FUNCTIONS]
+    parts.append(articles())
     parts.append(open(os.path.join(ROOT, "tests", "math.test.js"), encoding="utf-8").read())
 
     fd, path = tempfile.mkstemp(suffix=".js", prefix="retcalc-tests-")

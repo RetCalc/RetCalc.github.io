@@ -28,7 +28,7 @@
 <meta property="og:image:alt" content="72(t) Calculator: Penalty-free IRA payments before 59½, sized and tested against every market since 1926.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://retcalc.app/og/72t.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "72(t) Calculator: SEPP Payments Before 59½", "url": "https://retcalc.app/72t", "description": "Size 72(t) substantially equal periodic payments from an IRA before 59½ without the 10% penalty, and see if they carry you there in every market since 1926.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use only part of my IRA?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Split off a separate IRA sized for the payment you need, and the rest stays flexible. This tool does exactly that."}}, {"@type": "Question", "name": "Is 72(t) better than a Roth ladder?", "acceptedAnswer": {"@type": "Answer", "text": "Neither always wins. 72(t) pays from day one; a ladder needs five years of other money first but can be more flexible. The comparison table shows the tax, penalties and premiums of each for your numbers."}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "72(t) Calculator: SEPP Payments Before 59½", "url": "https://retcalc.app/72t", "description": "Size 72(t) substantially equal periodic payments from an IRA before 59½ without the 10% penalty, and see if they carry you there in every market since 1926.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Can I use only part of my IRA?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Split off a separate IRA sized for the payment you need, and the rest stays flexible. This tool does exactly that."}}, {"@type": "Question", "name": "Is 72(t) better than a Roth ladder?", "acceptedAnswer": {"@type": "Answer", "text": "Neither always wins. 72(t) pays from day one; a ladder needs five years of other money first but can be more flexible. The comparison table shows the tax, penalties and premiums of each for your numbers."}}, {"@type": "Question", "name": "Can I stop 72(t) payments early?", "acceptedAnswer": {"@type": "Answer", "text": "Only by paying the 10% on everything taken so far, plus interest. You can switch once from a fixed payment to the RMD method, which usually lowers it, without breaking the plan."}}, {"@type": "Question", "name": "Does 72(t) work with a 401(k)?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, but only after you've left that employer. Rolling the 401(k) into an IRA first is more common, since you can then split off exactly the balance the payment needs."}}, {"@type": "Question", "name": "What interest rate should I use?", "acceptedAnswer": {"@type": "Answer", "text": "Any rate up to the greater of 5% or 120% of the federal mid-term rate for either of the two months before the first payment. The IRS publishes the mid-term rate monthly. Use the highest rate allowed for the largest payment, or a lower one for a smaller payment from the same balance."}}, {"@type": "Question", "name": "What happens if the market crashes during a 72(t) plan?", "acceptedAnswer": {"@type": "Answer", "text": "A fixed payment keeps coming out of a shrinking balance, which can drain the plan's IRA early. The one-time switch to the RMD method cuts the payment to match the new balance. The historical test above runs the plan through every market since 1926, including the ones that began in 1929, 1966 and 2000."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -382,25 +382,22 @@ aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
    no sidebar (the solo layouts, and phones, where the grid is one column). */
 .seo{grid-column:2;min-width:0}
 main.solo .seo{grid-column:1 / -1}
-/* The tile spans the column like the results panels above it (the grid's
-   20px gap is the same spacing the panels have between them); the text
-   inside keeps a readable line length rather than stretching with it. */
-.seo-a{margin:0;padding:22px 26px 18px;background:var(--panel);
-  border:1px solid var(--line);border-radius:var(--r-panel);box-shadow:var(--lift-1)}
-.seo-a > *{max-width:78ch}
-.seo-a h2{margin:0 0 10px;font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.3;color:var(--text)}
-.seo-a h3{margin:18px 0 6px;font-size:14px;font-weight:600;color:var(--text)}
-.seo-a p,.seo-a li{font-size:13.5px;line-height:1.7;color:var(--dim)}
-.seo-a p{margin:0 0 10px}
-.seo-a ul{margin:0 0 10px;padding-left:18px}
-.seo-a li{margin-bottom:6px}
-.seo-a b{color:var(--text);font-weight:600}
+/* Each article is an About card (.panel.about): folded to its heading until
+   clicked, with the same chevron and sweep (initAboutCollapse). The text is
+   in the page either way, so search engines read it in full. The card spans
+   the column like the results panels above it; the text inside keeps a
+   readable line length rather than stretching with it. */
+.seo-a .body > *{max-width:78ch}
+/* About's gold headings, in sentence case: long articles read more easily
+   without capitals, and "72(t)" stays lowercase. */
+.seo-a.about h3{text-transform:none;letter-spacing:0;font-size:13.5px}
+.seo-a .body li{font-size:13.5px;line-height:1.7;color:var(--dim);margin-bottom:6px}
+.seo-a .body ul{margin:0 0 12px}
 .seo-a a{color:var(--jade)}
 .seo-a details{border-top:1px solid var(--line-soft);padding:9px 0}
 .seo-a details:last-child{border-bottom:1px solid var(--line-soft)}
 .seo-a summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text);list-style-position:outside}
 .seo-a details p{margin:7px 0 2px}
-@media (max-width:640px){ .seo-a{padding:18px 16px 14px} .seo-a h2{font-size:17px} }
 @media print{ .seo{display:none} }
 
 /* ---------- fields: recessed wells ---------- */
@@ -7198,49 +7195,164 @@ window.onerror = function(msg){
        page to each address and un-hides that address's article in the copy. -->
   <section class="seo" id="seoArticles" aria-label="About this tool">
 
-  <article class="seo-a" data-page="home" hidden>
+  <article class="seo-a panel about" data-page="home" hidden>
     <h2>Free retirement calculator</h2>
+    <div class="body">
     <p>Answer six questions and see what your savings could grow to by the age you want to retire, in today's dollars, with a range for better and worse markets. It's the quickest way to answer the first retirement question: am I roughly on track?</p>
     <h3>How it works</h3>
     <p>Enter your age, when you'd like to retire, what you've saved and what you add each month, then pick an investment mix. The calculator grows your savings at a return after inflation, raising your contribution with prices each year, so every figure reads in today's money. The yearly income shown uses the 4% rule: about 4% of savings a year is what has historically lasted a 30-year retirement.</p>
+    <h3>A worked example</h3>
+    <p>Sam is 30, has $10,000 saved, puts $500 a month toward retirement, and wants to retire at 65. With a balanced mix of stocks and bonds, the calculator assumes 4.5% a year after inflation. These are its starting numbers.</p>
+    <ul>
+      <li><b>At 65:</b> $537,803 in today's dollars.</li>
+      <li><b>Income it could support:</b> 4% of that is $21,512 a year, or $1,793 a month, on top of Social Security.</li>
+      <li><b>Where it comes from:</b> Sam puts in the $10,000 plus $206,672 of contributions, in today's dollars; growth supplies the other $321,131. Over 35 years, the investments do most of the work.</li>
+    </ul>
+    <p>Three changes Sam could make, one at a time:</p>
+    <ul>
+      <li><b>Save $750 a month instead of $500:</b> $783,368 at 65.</li>
+      <li><b>Invest for growth</b> (mostly stocks, 5.75% after inflation) instead of balanced: $711,143.</li>
+      <li><b>Retire at 60 instead of 65:</b> $405,105, about 25% less. The last five years add a quarter of the total, because they're when the balance is largest.</li>
+    </ul>
+    <h3>How much do you need?</h3>
+    <p>A common starting point is 25 times the yearly spending your savings must cover, after Social Security and any pension. If Sam expects to spend $50,000 a year and Social Security covers $24,000, savings need to cover $26,000: about $650,000. Sam's $537,803 is short of that, and the $750-a-month plan clears it.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Today's dollars:</b> everything is shown in what money buys now, so you can compare it with prices you know.</li>
+      <li><b>The range:</b> the shaded band shows better and worse markets. Plan around the middle, and check that the low end is survivable.</li>
+      <li><b>Year by year:</b> the table shows what you put in and what growth added each year.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Reading a future balance in future dollars. A million dollars in 35 years buys what about $355,000 buys today, at 3% inflation.</li>
+      <li>Leaving out an employer match. Add it to what you save each month.</li>
+      <li>Assuming stock-market returns for a portfolio that's mostly cash.</li>
+      <li>Forgetting Social Security when judging whether the income is enough.</li>
+    </ul>
     <h3>Go further</h3>
     <ul>
       <li><a href="/advanced">Advanced</a> adds taxes, fees, account types, employer match and historical or random markets.</li>
       <li><a href="/drawdown">Drawdown Simulator</a> tests whether the money lasts once you start spending it.</li>
       <li><a href="/guide">Retirement Readiness Guide</a> puts it all together into a score and a plan.</li>
+      <li><a href="/fire">FIRE calculator</a> finds the age your savings could let you stop working.</li>
     </ul>
     <h3>Questions</h3>
     <details><summary>How much do I need to retire?</summary><p>A common starting point is 25 times the yearly spending your savings must cover, after Social Security and any pension. That's the 4% rule turned around: 4% of 25 times your spending is one year of it.</p></details>
     <details><summary>What return should I assume?</summary><p>After inflation, a mostly-stock portfolio has historically earned around 6% to 7% a year, and a balanced one around 4% to 5%. Planning with the lower end leaves room for bad decades.</p></details>
     <details><summary>Is my information stored anywhere?</summary><p>No. Every calculation runs in your browser; nothing you type is sent anywhere.</p></details>
+    <details><summary>Am I on track for retirement?</summary><p>A rough benchmark is to have about one year's salary saved by 30, three times by 40, six times by 50, eight times by 60 and ten times by 67. The <a href="/guide">readiness guide</a> gives a fuller answer, including Social Security.</p></details>
+    <details><summary>How much should I save each month?</summary><p>For someone starting in their 20s or early 30s, about 15% of pay, including any employer match, usually leads to a comfortable retirement. Starting later calls for more. Change the monthly amount to see its effect.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="advanced" hidden>
+  <article class="seo-a panel about" data-page="advanced" hidden>
     <h2>Retirement savings calculator with taxes, fees and market history</h2>
+    <div class="body">
     <p>Project a retirement portfolio the way a planner would: contributions that rise with your pay, a return before inflation, fees, a glide path toward bonds, and the tax you'll owe when you withdraw. Then see the same plan through every market since 1926, or 5,000 random ones.</p>
     <h3>What you can model</h3>
     <ul>
       <li><b>Account types:</b> split savings into traditional 401(k)/IRA, Roth and taxable brokerage, with your employer match, and see the 2026 federal and state tax on what you'd withdraw.</li>
-      <li><b>Fees:</b> an expense ratio of 1% can cost a quarter of a portfolio over a career. The tool shows the dollar cost.</li>
+      <li><b>Fees:</b> an expense ratio of 1% can cost a fifth of a portfolio over a career. The tool shows the dollar cost.</li>
       <li><b>Work backwards:</b> set a target income or balance and it solves for the contribution, or the number of years, that reaches it.</li>
       <li><b>Coast FIRE:</b> finds the point where you could stop contributing and still reach the target.</li>
+      <li><b>A glide path:</b> shift from stocks toward bonds over the last years before retirement, as target-date funds do.</li>
+    </ul>
+    <h3>A worked example: what a 1% fee costs</h3>
+    <p>Jesse starts with $10,000, saves $500 a month, raises that 3% a year, and invests for 35 years at 8.5% a year before fees, with 3% inflation.</p>
+    <ul>
+      <li><b>With no fees:</b> $648,142 in today's dollars.</li>
+      <li><b>With a 1% annual fee,</b> typical of an advisor or an actively managed fund: $522,585.</li>
+      <li><b>The difference:</b> $125,557, or 19% of what Jesse would otherwise have. The fee is charged on the whole balance every year, so its cost compounds just like the returns do.</li>
+    </ul>
+    <p>A broad index fund charging 0.05% would cost a small fraction of that. To try it, set <b>Starting value</b> to $10,000, <b>Contribution each period</b> to $500 monthly, <b>Contribution growth</b> to 3%, <b>Time period</b> to 35 years and <b>Rate of return</b> to 8.5%, then change <b>Fees</b> from 0 to 1.</p>
+    <h3>Steady returns, history, or random markets</h3>
+    <ul>
+      <li><b>Steady</b> grows your savings at one fixed return: the clearest way to compare plans.</li>
+      <li><b>Historical</b> runs your plan through every real stretch of markets since 1926, month by month, and shows the range of outcomes, with each starting year as a faint line.</li>
+      <li><b>Monte Carlo</b> draws thousands of random return sequences with the volatility you set, including ones history never produced.</li>
+    </ul>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Nominal and today's dollars:</b> the nominal figure is the number on your future statement; today's dollars is what it will buy.</li>
+      <li><b>After-tax income</b> estimates what you'd keep from withdrawals, given how your savings are split between account types.</li>
+      <li><b>Percentiles</b> in the historical and random modes show a bad case (10th), a typical case (50th) and a good case (90th).</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Entering a return after inflation in the nominal field, which counts inflation twice.</li>
+      <li>Ignoring fees because they look small as a percentage.</li>
+      <li>Treating a traditional 401(k) balance as all yours. Part of it is future income tax.</li>
+      <li>Planning on the median outcome with no margin for a bad decade.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/stages">Stages</a>: savings that change over a career.</li>
+      <li><a href="/backtest">Portfolio backtest</a>: how a stock and bond mix actually behaved.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: spending the balance in retirement.</li>
+      <li><a href="/">Basic calculator</a>: the six-question version.</li>
     </ul>
     <h3>Questions</h3>
     <details><summary>Why show "inflation adjusted" figures?</summary><p>A million dollars in 30 years buys what about $410,000 buys today at 3% inflation. Today's-dollar figures let you compare the result with prices you know.</p></details>
     <details><summary>What's the difference between historical and Monte Carlo?</summary><p>Historical runs your plan through every real stretch of markets since 1926, month by month. Monte Carlo draws thousands of random return sequences with the volatility you set, including ones history never produced.</p></details>
+    <details><summary>What rate of return should I use?</summary><p>The calculator starts at 8.5% before inflation, a little under the 8.7% a year that 60% stocks and 40% bonds earned from 1926 through 2025. All stocks earned 10.4%. Use less for a more conservative mix, and remember that history is a guide, not a promise.</p></details>
+    <details><summary>Should I use a traditional or Roth 401(k)?</summary><p>Traditional saves tax now and is taxed later; Roth is taxed now and tax-free later. Traditional usually wins if your tax rate will be lower in retirement, Roth if it will be the same or higher. Many people split contributions between the two.</p></details>
+    <details><summary>What is a glide path?</summary><p>A gradual shift from stocks toward bonds as retirement approaches, so a crash just before you retire does less damage. Target-date funds follow one automatically.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="stages" hidden>
+  <article class="seo-a panel about" data-page="stages" hidden>
     <h2>Multi-stage retirement savings calculator</h2>
+    <div class="body">
     <p>Real careers aren't one straight line. Stages splits your working years into chapters, like the early years, after the car loan is gone, and after the kids leave, each with its own contribution, raises, return and investment mix, and chains them together into one projection.</p>
     <h3>How to use it</h3>
     <p>Add a stage for each change you expect, give it a length and a contribution, and tick <b>Inflation adjusted</b> to type a future contribution in today's dollars. The chart marks each boundary, and <b>Stage by stage</b> shows what every chapter adds. Switch to Historical to run the whole plan through real markets.</p>
+    <h3>A worked example: when you save matters</h3>
+    <p>Three savers each put away $336,000 over 30 years, starting from $10,000 and earning 8.5% a year with 3% inflation. Only the timing differs.</p>
+    <ul>
+      <li><b>Saving more as income grows:</b> $400 a month for ten years, $900 for the next ten, $1,500 for the last ten. The most common real-life pattern ends with $472,555 in today's dollars.</li>
+      <li><b>The same amount every month:</b> $933 a month for 30 years ends with $642,777.</li>
+      <li><b>Front-loaded:</b> $1,500 a month for the first ten years, then $900, then $400. $817,035, 73% more than the rising pattern from the same total.</li>
+    </ul>
+    <p>Money saved in the first decade has 20 or more years to compound; money saved in the last decade has ten or fewer. Few people can save most when they earn least, but the example shows why even a little extra early, or a coast phase after a strong start, changes the outcome so much.</p>
+    <p>To try it, set up three 10-year stages at 8.5% with monthly contributions of $400, $900 and $1,500, then reverse the order.</p>
+    <h3>Ideas for stages</h3>
+    <ul>
+      <li><b>Early career:</b> small contributions that rise quickly with raises.</li>
+      <li><b>After a debt is paid off:</b> the old payment becomes a contribution.</li>
+      <li><b>Kids at home, then gone:</b> lower saving through the expensive years, much higher after.</li>
+      <li><b>Part-time or a sabbatical:</b> a stage with no contributions.</li>
+      <li><b>Coast:</b> stop contributing and let the balance grow to retirement.</li>
+      <li><b>A shift to bonds:</b> a lower return and a safer mix for the final stage.</li>
+    </ul>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Stage by stage</b> shows what each chapter contributed and what growth added during it.</li>
+      <li><b>The chart</b> marks each boundary, so you can see where the balance speeds up.</li>
+      <li><b>Historical</b> runs the whole multi-stage plan through every market since 1926.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Typing future contributions in future dollars without ticking <b>Inflation adjusted</b>, which overstates them.</li>
+      <li>Planning big increases later that never happen. Build a version where the later stages are smaller too.</li>
+      <li>Leaving the investment mix aggressive right up to retirement.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/advanced">Advanced</a>: a single-stage plan with taxes and account types.</li>
+      <li><a href="/fire">FIRE calculator</a>: Coast FIRE, the point where you could stop contributing.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: what the final balance can pay each year.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>When would I use Stages instead of Advanced?</summary><p>Whenever your saving will change in a planned way: a debt paid off, a promotion, part-time years, or a coast phase where you stop contributing and let the balance grow.</p></details>
+    <details><summary>Does it matter when I save, if the total is the same?</summary><p>A lot. Money saved early has decades longer to grow. In the example above, the same $336,000 of contributions ends anywhere from $472,555 to $817,035 depending only on the order.</p></details>
+    <details><summary>Can each stage have its own investment mix?</summary><p>Yes. Each stage has its own return and volatility, so a final stage can shift toward bonds, the way a target-date fund does.</p></details>
+    <details><summary>How do I model a career break?</summary><p>Add a stage with a contribution of zero for the years you expect to be out of work. The balance keeps growing during it.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="guide" hidden>
+  <article class="seo-a panel about" data-page="guide" hidden>
     <h2>Retirement readiness check: are you on track?</h2>
+    <div class="body">
     <p>A guided check-up, one question at a time, that turns your answers into a retirement readiness score out of 100 and a plan you can adjust. It covers cash flow, emergency savings, debt, big goals like a home or college, and retirement itself.</p>
     <h3>What you get</h3>
     <ul>
@@ -7250,10 +7362,49 @@ window.onerror = function(msg){
       <li>Short trips into the other tools, with your numbers filled in.</li>
     </ul>
     <p>It takes about 15 minutes, saves as you go, and nothing leaves your browser.</p>
+    <h3>How the score works</h3>
+    <p>The score weighs five areas. Each earns full marks at a clear, common-sense target, and partial marks on the way there:</p>
+    <ul>
+      <li><b>Retirement outlook, 40 points:</b> how often your plan's money lasted through retirement in the historical record, with Social Security included. Full marks when it lasted in 95% of retirements.</li>
+      <li><b>Savings rate, 20 points:</b> full marks at 15% of gross income, counting any employer match. If your plan already has enough, you get full marks at a lower rate, so choosing to coast isn't penalized. Missing part of an employer match costs a quarter of this area.</li>
+      <li><b>Emergency fund, 15 points:</b> full marks at six months of spending in cash.</li>
+      <li><b>Debt, 15 points:</b> full marks with nothing owed besides a mortgage. Debt at 8% or more counts far more heavily than low-rate loans.</li>
+      <li><b>Monthly cash flow, 10 points:</b> full marks when you spend no more than 80% of take-home pay.</li>
+    </ul>
+    <p>Scores of 85 and up read as <b>On track</b>, 70 to 84 <b>Nearly there</b>, 50 to 69 <b>Getting there</b>, 30 to 49 <b>Needs work</b>, and below 30 <b>Needs attention</b>. You get a score as soon as two areas are answered, and it sharpens as you go.</p>
+    <h3>How it works, step by step</h3>
+    <ul>
+      <li><b>About you:</b> your age and household.</li>
+      <li><b>Your money today:</b> income, take-home pay and monthly spending.</li>
+      <li><b>Safety net:</b> your emergency fund and any debt.</li>
+      <li><b>Big goals:</b> housing and college.</li>
+      <li><b>Retirement:</b> what you've saved, what you'll spend, your projection, and whether it lasts.</li>
+      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, then see your score and next steps.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Guessing spending instead of checking statements. It's the number the whole plan rests on.</li>
+      <li>Leaving out an employer match, which counts toward your savings rate.</li>
+      <li>Treating a low score as a verdict. It's a map of which area to work on first.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/">Retirement calculator</a>: the quick six-question projection.</li>
+      <li><a href="/budget">Budget</a>: the spending figure the guide asks for.</li>
+      <li><a href="/debt">Debt payoff</a>: a plan for the debt area.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: the retirement outlook in full detail.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>What is a good retirement readiness score?</summary><p>85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most.</p></details>
+    <details><summary>Does it estimate Social Security?</summary><p>Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer.</p></details>
+    <details><summary>Can I stop and come back later?</summary><p>Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off.</p></details>
+    <details><summary>Is it financial advice?</summary><p>No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="tools" hidden>
+  <article class="seo-a panel about" data-page="tools" hidden>
     <h2>Free financial planning calculators</h2>
+    <div class="body">
     <p>Twelve tools for the money decisions around retirement and everyday life, each explained in plain language, with no sign-up and nothing stored on a server.</p>
     <ul>
       <li><a href="/drawdown">Retirement withdrawal calculator</a>: will your money last?</li>
@@ -7262,23 +7413,90 @@ window.onerror = function(msg){
       <li><a href="/healthcare">Healthcare costs</a> before and after Medicare.</li>
       <li><a href="/fire">FIRE calculator</a>, <a href="/backtest">portfolio backtest</a>, <a href="/incometax">income tax</a>, <a href="/mortgage">mortgage</a>, <a href="/rentbuy">rent vs. buy</a>, <a href="/college">college savings</a>, <a href="/budget">budget</a> and <a href="/debt">debt payoff</a>.</li>
     </ul>
+    <h3>Which tool answers your question</h3>
+    <ul>
+      <li><b>"Am I saving enough?"</b> Start with the <a href="/">retirement calculator</a>, or the <a href="/guide">readiness guide</a> for a full check-up with a score.</li>
+      <li><b>"When could I stop working?"</b> The <a href="/fire">FIRE calculator</a> finds the age, and when you could stop saving altogether.</li>
+      <li><b>"How much can I spend once I retire?"</b> The <a href="/drawdown">Drawdown Simulator</a> tests a withdrawal rate against every retirement since 1926.</li>
+      <li><b>"I want to retire before 59½."</b> The <a href="/bridge">early retirement bridge</a> compares every penalty-free route, and the <a href="/72t">72(t) calculator</a> sizes SEPP payments.</li>
+      <li><b>"Should I convert to a Roth?"</b> The <a href="/roth">Roth conversion calculator</a> projects your tax to 100 both ways; the <a href="/rmd">RMD calculator</a> shows the required withdrawals it could shrink.</li>
+      <li><b>"What will health insurance cost?"</b> <a href="/healthcare">Healthcare costs</a> covers ACA premiums before 65 and Medicare after.</li>
+      <li><b>"What will I take home?"</b> <a href="/incometax">Income tax</a> for a paycheck or a year of retirement income, in all 50 states.</li>
+      <li><b>"Should I buy a home?"</b> <a href="/rentbuy">Rent vs. buy</a> for the decision, then the <a href="/mortgage">mortgage calculator</a> for the payment.</li>
+      <li><b>"How do I get out of debt?"</b> <a href="/debt">Debt payoff</a> compares avalanche and snowball.</li>
+      <li><b>"Where does my money go?"</b> The <a href="/budget">budget</a>, then <a href="/college">college savings</a> if there's a child to plan for.</li>
+      <li><b>"What do markets really do?"</b> The <a href="/backtest">portfolio backtest</a> shows any stock and bond mix since 1926.</li>
+    </ul>
+    <h3>How the tools work together</h3>
+    <p>Save <b>Your household</b> once, in the bar above every tool, and your ages, state, savings, income and retirement spending fill in across the calculators. Results can move between tools too: the Budget can take your take-home pay from Income Tax, and the bridge hands what's left at 59½ to the Drawdown Simulator.</p>
+    <h3>What they have in common</h3>
+    <ul>
+      <li><b>Current rules:</b> 2026 federal brackets, standard deductions, Social Security and Medicare figures, and each state's income tax.</li>
+      <li><b>Real market history:</b> stock, bond and inflation data from 1926 through 2025, used to test plans against what actually happened.</li>
+      <li><b>Today's dollars:</b> projections are shown in what money buys now, so they're easy to judge.</li>
+      <li><b>Private:</b> every calculation runs in your browser. There's no account, and nothing you type is sent anywhere.</li>
+      <li><b>Checked:</b> the math is covered by automated tests against IRS, SSA and CMS figures and independent calculations.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>Are these calculators free?</summary><p>Yes, all of them, with no sign-up, no ads and no limits.</p></details>
+    <details><summary>Where should I start?</summary><p>If you're not sure where you stand, the <a href="/guide">readiness guide</a> asks about your money one question at a time and sends you to the tool that answers what you don't know.</p></details>
+    <details><summary>Is my information saved?</summary><p>Only in your own browser, if you save a scenario or your household. Nothing is sent to a server.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="drawdown" hidden>
+  <article class="seo-a panel about" data-page="drawdown" hidden>
     <h2>Retirement withdrawal calculator: will your money last?</h2>
+    <div class="body">
     <p>Test how much you can safely spend in retirement. The Drawdown Simulator runs your savings, spending, Social Security and investment mix through every real retirement since 1926, and 5,000 random ones, and shows how often the money lasted.</p>
     <h3>How to use it</h3>
     <p>Enter what you'll have at retirement, how many years it has to last, and a withdrawal rate. Add Social Security (estimated for you, or from your statement), pensions and big future expenses. The <b>Success rate</b> is the share of retirements where the money never ran out.</p>
-    <h3>The 4% rule, and alternatives</h3>
-    <p>The 4% rule says you can withdraw 4% of your starting balance, raise it with inflation every year, and last 30 years in almost every historical market. The simulator tests it, and five flexible strategies that adjust to markets: Guyton-Klinger guardrails, floor and ceiling, the Yale endowment rule, a fixed percentage, and variable percentage withdrawal (VPW).</p>
+    <h3>The 4% rule, and where it comes from</h3>
+    <p>In 1994 the financial planner William Bengen asked a simple question: what's the most a retiree could have taken from a stock and bond portfolio in the first year, raising it with inflation every year after, and never run out in 30 years, in any period he had data for? The answer was about 4%. On $1,000,000 that's $40,000 in the first year, then a raise each year to keep up with prices, no matter what markets do.</p>
+    <p>The rule is a starting point, not a promise. It assumes you never cut spending, never earn another dollar, and hold a fixed mix of stocks and bonds. Real retirees adjust, which is why the simulator also tests five flexible strategies: Guyton-Klinger guardrails, floor and ceiling, the Yale endowment rule, a fixed percentage, and variable percentage withdrawal (VPW).</p>
+    <h3>A worked example</h3>
+    <p>Pat retires at 65 with $1,000,000 in a 60/40 mix of stocks and bonds and wants the money to last 30 years. These are the calculator's starting numbers, so this is what you see when you open it.</p>
+    <ul>
+      <li><b>At 4%:</b> the plan survived 94.4% of the 30-year retirements since 1926. The four that failed began in 1965, 1966, 1968 and 1969, when high inflation met a flat stock market. Retiring in 1966, the money ran out in year 27.</li>
+      <li><b>The typical outcome:</b> in the middle retirement, Pat still had about $1.6 million left after 30 years, in today's dollars. The 4% rule is sized for the worst cases, so most retirees following it end with more than they started with.</li>
+      <li><b>At 3.5%:</b> $35,000 a year, and the plan survived 100% of the historical retirements.</li>
+      <li><b>For 40 years instead of 30:</b> 4% survived 86.9% of them. That's why people retiring at 50 usually plan on 3.25% to 3.5%.</li>
+    </ul>
+    <p>Flexible strategies trade certainty of income for certainty of lasting. With guardrails starting at 5% ($50,000), every historical retirement lasted 30 years, but the 1966 retiree's spending was cut as low as $17,434 a year in today's dollars along the way. The simulator shows the lowest spending each strategy would have required, not just whether the money lasted.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Success rate:</b> above about 90% is a common comfort level for a fixed withdrawal. 100% isn't necessary if you'd be willing to trim spending in a bad decade.</li>
+      <li><b>The chart:</b> the shaded band is the range of historical outcomes, and each faint line is one starting year. The lines that dive toward zero show what a bad sequence looks like.</li>
+      <li><b>Worst starting years:</b> check whether you could live with the path your plan takes in 1929, 1937 or 1966. That's more useful than the average.</li>
+      <li><b>Monte Carlo:</b> random sequences built from history, including ones that never happened. A lower success rate here than in the historical test is normal.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Treating the withdrawal as take-home money. The amounts are before tax; traditional IRA and 401(k) withdrawals are taxed as income.</li>
+      <li>Leaving out Social Security. It covers a large share of spending for most retirees and changes the safe rate a lot.</li>
+      <li>Using 30 years for an early retirement, or forgetting that one spouse may live into their late 90s.</li>
+      <li>Holding too little in stocks. Very conservative portfolios fail more often over 30 years because they don't keep up with inflation.</li>
+      <li>Forgetting big one-time costs: a new roof, a car every ten years, helping a child. Add them as future expenses.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/incometax">Income tax</a>: what you keep from each withdrawal, in retirement mode.</li>
+      <li><a href="/roth">Roth conversions</a>: lowering the tax on future withdrawals.</li>
+      <li><a href="/healthcare">Healthcare costs</a>: premiums before and after Medicare, which belong in your spending.</li>
+      <li><a href="/backtest">Portfolio backtest</a>: how a stock and bond mix behaved in every period since 1926.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What is a safe withdrawal rate?</summary><p>For a 30-year retirement with a mix of stocks and bonds, 4% has survived about 95% of historical starts. Longer retirements, like one beginning at 50, call for something closer to 3.25% to 3.5%, or a strategy that trims spending after bad years.</p></details>
     <details><summary>What is sequence of returns risk?</summary><p>Losses early in retirement hurt far more than the same losses later, because you're selling investments at low prices to live on. Two retirees with the same average return can end very differently. It's why the simulator tests real sequences, like retiring in 1966 or 1929.</p></details>
     <details><summary>Are the amounts before or after tax?</summary><p>Before tax. Withdrawals from traditional accounts and part of Social Security are taxed, so use the <a href="/incometax">Income Tax</a> tool's retirement mode to see what you'd keep.</p></details>
+    <details><summary>Does the 4% rule still work today?</summary><p>It survived about 95% of the 30-year retirements since 1926, and every one that failed began in the late 1960s. Some researchers suggest a lower rate when stock prices are high relative to earnings or bond yields are low. The simulator lets you start the record later, or test 3.5%, to see how much margin you'd gain.</p></details>
+    <details><summary>What mix of stocks and bonds should I use in retirement?</summary><p>Historically, 50% to 75% in stocks has supported the highest safe withdrawal rates over 30 years. Much less, and the portfolio struggles to outpace inflation; much more, and early crashes do more harm. Try a few mixes and compare the success rate and the worst years.</p></details>
+    <details><summary>When should I cut spending?</summary><p>Guardrail strategies cut spending by a set amount, often 10%, when the withdrawal rate rises too far above where it started, and give a raise when markets do well. Choose Guardrails as the strategy to see how often cuts would have happened and how deep they went.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="bridge" hidden>
+  <article class="seo-a panel about" data-page="bridge" hidden>
     <h2>Early retirement calculator: getting to 59½ without penalties</h2>
+    <div class="body">
     <p>Withdrawals from a 401(k) or IRA before age 59½ usually cost a 10% penalty on top of income tax. Retire earlier and you need a plan for the years in between. This calculator runs every legal route side by side, with the real 2026 tax, penalties and ACA health premiums, and tests each against every market since 1926.</p>
     <h3>The routes it compares</h3>
     <ul>
@@ -7288,150 +7506,635 @@ window.onerror = function(msg){
       <li><b>Rule of 55:</b> leave your job in or after the year you turn 55 and that employer's 401(k) opens up penalty-free.</li>
       <li><b>Governmental 457(b)</b> plans, which never carry the penalty, and simply paying the 10% as a comparison.</li>
     </ul>
+    <p>The calculator also builds a blended plan that mixes these, since the best answer usually uses more than one.</p>
+    <h3>A worked example</h3>
+    <p>Robin and Chris retire at 50 and spend $60,000 a year. They have $1,000,000 in traditional 401(k)s and IRAs, $150,000 in Roth IRAs ($90,000 of it their own contributions), and $450,000 in a brokerage account. These are the calculator's starting numbers. They have 9½ years to cover before 59½.</p>
+    <ul>
+      <li><b>What they can reach today:</b> the brokerage account and their Roth contributions, $540,000 in all. That's the key figure for any early retirement.</li>
+      <li><b>A conversion ladder needs a runway:</b> money converted this year can't be spent for five years, so they need five years of spending from other sources first, $300,000. Their $540,000 covers it, which makes the ladder workable.</li>
+      <li><b>72(t) is the alternative:</b> at 50, the most amortization at 5% could pay from the whole $1,000,000 is $60,312 a year, locked in until 59½. Enough to live on, but inflexible, and it adds taxable income every year.</li>
+      <li><b>Taxes can be close to zero:</b> for a couple, long-term gains are taxed at 0% while taxable income stays under $98,900. Selling brokerage shares to live on, with only part of each sale counted as a gain, often means no federal income tax at all.</li>
+      <li><b>Health premiums hinge on income:</b> ACA credits stop above $84,600 for a household of two. Conversions and gains both count, so the ladder's size is a trade-off between tax later and premiums now. In states that expanded Medicaid, very low income moves you to Medicaid instead.</li>
+    </ul>
+    <p>The comparison table shows each plan's total tax, penalties and health premiums through 59½, how often it held up in history, and what's left in each account at 59½.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Holds to 59½</b> is the share of historical markets in which the plan paid every year's spending without running dry.</li>
+      <li><b>Tax, penalties and premiums</b> are totals over the bridge years, in today's dollars. The lowest total isn't always best if it leaves little in the accounts.</li>
+      <li><b>At 59½</b> is what each plan hands to the rest of retirement. Hand it to the <a href="/drawdown">Drawdown Simulator</a> to test the decades after.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Retiring with nearly everything in pre-tax accounts and nothing to live on for the first five years.</li>
+      <li>Rolling a 401(k) into an IRA at 55 or later, which gives up the rule of 55.</li>
+      <li>Forgetting the five-year clock applies to each conversion separately.</li>
+      <li>Planning taxes without planning health insurance. Before Medicare, the two are linked through income.</li>
+      <li>Treating the 10% penalty as unthinkable. For a short gap it can be the cheapest route.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/72t">72(t) calculator</a>: sizing SEPP payments in detail.</li>
+      <li><a href="/healthcare">Healthcare costs</a>: ACA premiums and the subsidy cliff.</li>
+      <li><a href="/roth">Roth conversions</a>: conversions after 59½ and before RMDs.</li>
+      <li><a href="/fire">FIRE calculator</a>: when you could retire early in the first place.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>How much do I need to retire early?</summary><p>Enough to cover your spending for longer, typically 28 to 33 times a year's spending instead of 25, and enough outside traditional accounts, or reachable through the routes above, to cover the years before 59½.</p></details>
     <details><summary>Why do health premiums matter so much?</summary><p>Before Medicare at 65, marketplace subsidies depend on your income. The way you draw money, from a brokerage account or a Roth versus a traditional IRA, changes that income and can move premiums by thousands a year. The tool prices each plan's premiums for you.</p></details>
+    <details><summary>How does a Roth conversion ladder work?</summary><p>Each year you convert about a year's spending from a traditional IRA to a Roth, paying income tax on it. Five years later that conversion can be withdrawn with no tax and no penalty. After the first five years, each year's conversion is ready just as you need it, like rungs on a ladder.</p></details>
+    <details><summary>Can I withdraw Roth IRA contributions early?</summary><p>Yes. What you contributed yourself, not earnings or conversions, can come out at any age with no tax or penalty. That's why Roth contributions count as reachable money here.</p></details>
+    <details><summary>What is the rule of 55?</summary><p>If you leave your employer in or after the calendar year you turn 55 (50 for many public-safety workers), withdrawals from that employer's 401(k) or 403(b) have no 10% penalty. It doesn't apply to IRAs or to plans from earlier jobs.</p></details>
+    <details><summary>Is a 457(b) different?</summary><p>A governmental 457(b), common for state and local government workers, has no 10% early-withdrawal penalty at all once you leave the job, at any age. That makes it the most flexible pre-tax money for an early retiree.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="72t">
+  <article class="seo-a panel about" data-page="72t">
     <h2>72(t) calculator: SEPP payments before 59½</h2>
+    <div class="body">
     <p>Section 72(t) of the tax code lets you take <b>substantially equal periodic payments</b> (SEPP) from an IRA before 59½ without the 10% early-withdrawal penalty. This calculator sizes the payment, splits off an IRA just big enough to make it, and shows whether the plan carries you to 59½ in every market since 1926, next to the other ways of reaching retirement money early.</p>
     <h3>How 72(t) payments work</h3>
+    <p>Normally, taking money out of an IRA or 401(k) before 59½ costs an extra 10% on top of the income tax. A 72(t) plan is a deal with the IRS: you pick a yearly payment using one of the IRS's formulas, take exactly that every year, and in return the 10% doesn't apply.</p>
     <ul>
-      <li><b>Three methods:</b> required minimum distribution (recalculated each year, the smallest payment), fixed amortization (a level payment, usually the largest) and fixed annuitization.</li>
-      <li><b>Interest rate:</b> up to the greater of 5% or 120% of the federal mid-term rate.</li>
-      <li><b>The lock-in:</b> payments must continue for five years or until 59½, whichever is later. Changing them early brings back the penalty on everything already taken, plus interest.</li>
-      <li>Payments are still taxed as ordinary income.</li>
+      <li><b>You're locked in:</b> the payments must continue for five years or until 59½, whichever comes later. Start at 50 and you're committed until 59½; start at 57 and you're committed until 62.</li>
+      <li><b>It's still taxable:</b> each payment is ordinary income, taxed like a paycheck. Only the 10% goes away.</li>
+      <li><b>From a 401(k):</b> it only works after you've left that employer. Most people roll the money into an IRA first, which also lets them choose how much goes into the plan.</li>
+    </ul>
+    <h3>The three ways to set the payment</h3>
+    <ul>
+      <li><b>Amortization:</b> the balance is paid out like a mortgage in reverse, over your IRS life expectancy at an interest rate you choose. The payment is the same number of dollars every year and is usually the largest of the three. This is what most people use.</li>
+      <li><b>Annuitization:</b> uses an annuity factor instead of a loan formula. It lands within a few dollars of amortization, so this calculator uses amortization for both.</li>
+      <li><b>RMD method:</b> each year's balance divided by your life expectancy. It starts much lower and changes every year with the market.</li>
+    </ul>
+    <p>Two choices set the size. <b>Life expectancy:</b> the IRS allows three tables; the Single Life table gives the shortest life expectancy, so the largest payment, and it's the one this calculator uses. <b>Interest rate:</b> for amortization, anything up to the greater of 5% or 120% of the federal mid-term rate for either of the two months before your first payment (IRS Notice 2022-6). A lower rate gives a smaller payment, which is a way to take less without splitting the IRA.</p>
+    <h3>A worked example</h3>
+    <p>Dana retires at 52 with $900,000 in a rollover IRA and wants $40,000 a year from it, before tax, to live on until 59½. The IRS life expectancy for a 52-year-old is 34.3 years.</p>
+    <ul>
+      <li><b>The whole IRA, amortization at 5%:</b> $55,391 a year. More than Dana needs, and she'd be locked into taking all of it.</li>
+      <li><b>The whole IRA, RMD method:</b> $26,239 the first year ($900,000 ÷ 34.3), then recalculated each year. Not enough.</li>
+      <li><b>Split the IRA:</b> move $649,929 into a separate IRA and run amortization at 5% on that alone. It pays exactly $40,000 a year. The other $250,071 stays in its own IRA, outside the plan, for emergencies or later.</li>
+    </ul>
+    <p>Dana is now committed to $40,000 every year through age 59. If it's her only income and she files single, that's about $2,620 of federal income tax after the standard deduction, and no 10% penalty, which would otherwise have added $4,000 a year.</p>
+    <p>One catch: an amortization payment is a fixed number of dollars, so it buys less each year. At 3% inflation, the eighth payment is worth about $32,500 in today's dollars. The calculator counts this, so a plan that looks tight in year one shows up as tight later.</p>
+    <p>To try it, set <b>Retire at</b> to 52, <b>Traditional 401(k) / IRA</b> to $900,000, and the 72(t) method to amortization at 5%. <b>Most 72(t) could pay</b> shows $55,391. The 72(t) plan in the comparison table sizes the split for your spending on its own.</p>
+    <h3>What breaking the plan costs</h3>
+    <p>Changing the payment before the lock ends is called a <b>modification</b>. That includes stopping early, taking extra, taking less, adding money to the plan's IRA, or rolling it elsewhere. The penalty is retroactive: the 10% comes back on every payment taken so far, plus interest, all due in the year of the change. If Dana stopped after four years, she'd owe $16,000 plus interest on top of her normal tax.</p>
+    <ul>
+      <li><b>Allowed exceptions:</b> death, disability, and a one-time switch from amortization or annuitization to the RMD method. The switch is the escape hatch if markets fall hard: the payment drops with the balance, and the plan stays intact.</li>
+      <li><b>Running out:</b> if the plan's IRA is used up, the payments simply stop. That isn't a modification.</li>
+      <li><b>After the lock:</b> once you pass 59½ and five years, you can take any amount, stop, or merge the IRAs again.</li>
+    </ul>
+    <h3>When 72(t) fits, and when something else is better</h3>
+    <ul>
+      <li><b>72(t) fits</b> when most of your savings is pre-tax, you have little in a brokerage account or Roth, and you're retiring well before 55. It pays from day one, with no waiting period.</li>
+      <li><b>Rule of 55:</b> leave your job in or after the year you turn 55 (50 for public-safety workers) and that employer's 401(k) opens penalty-free, with no lock-in at all. Rolling it into an IRA first gives this up.</li>
+      <li><b>Roth conversion ladder:</b> converted money can be withdrawn penalty-free five years later. It's more flexible, but you need five years of other money to live on first.</li>
+      <li><b>A brokerage account:</b> no rules or ages, and gains can be taxed at 0% at lower incomes. Often the cheapest money to spend first.</li>
+      <li><b>Just paying the 10%:</b> for a gap of a year or two, the penalty can cost less than committing to years of fixed payments.</li>
+    </ul>
+    <p>The comparison table above runs each of these on your numbers, with the tax, penalties and health premiums of each. The <a href="/bridge">early retirement bridge</a> page explains how they combine.</p>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Running the plan on the whole IRA when you only need part of it.</li>
+      <li>Starting payments from a 401(k) while still working for that employer.</li>
+      <li>Nudging the amount "just a little" in a later year. Even small changes can count as a modification, so keep it to the dollar.</li>
+      <li>Depositing new contributions or rollovers into the plan's IRA.</li>
+      <li>Starting late and forgetting the five-year rule: start at 57 and you're locked in until 62, not 59½.</li>
+      <li>Leaving the tax forms wrong. Your 1099-R should show distribution code 2. If it shows code 1, file Form 5329 with exception number 02 so you aren't charged the 10%.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/healthcare">Health insurance before Medicare</a>: 72(t) payments count as income for ACA premium credits, so the payment size moves your premium.</li>
+      <li><a href="/roth">Roth conversions and RMDs</a>: what happens to the rest of your pre-tax money after 59½.</li>
+      <li><a href="/incometax">Income tax</a>: the full federal and state tax on a year's income.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: how long the savings last from 59½ on.</li>
     </ul>
     <h3>Questions</h3>
     <details><summary>Can I use only part of my IRA?</summary><p>Yes. Split off a separate IRA sized for the payment you need, and the rest stays flexible. This tool does exactly that.</p></details>
     <details><summary>Is 72(t) better than a Roth ladder?</summary><p>Neither always wins. 72(t) pays from day one; a ladder needs five years of other money first but can be more flexible. The comparison table shows the tax, penalties and premiums of each for your numbers.</p></details>
+    <details><summary>Can I stop 72(t) payments early?</summary><p>Only by paying the 10% on everything taken so far, plus interest. You can switch once from a fixed payment to the RMD method, which usually lowers it, without breaking the plan.</p></details>
+    <details><summary>Does 72(t) work with a 401(k)?</summary><p>Yes, but only after you've left that employer. Rolling the 401(k) into an IRA first is more common, since you can then split off exactly the balance the payment needs.</p></details>
+    <details><summary>What interest rate should I use?</summary><p>Any rate up to the greater of 5% or 120% of the federal mid-term rate for either of the two months before the first payment. The IRS publishes the mid-term rate monthly. Use the highest rate allowed for the largest payment, or a lower one for a smaller payment from the same balance.</p></details>
+    <details><summary>What happens if the market crashes during a 72(t) plan?</summary><p>A fixed payment keeps coming out of a shrinking balance, which can drain the plan's IRA early. The one-time switch to the RMD method cuts the payment to match the new balance. The historical test above runs the plan through every market since 1926, including the ones that began in 1929, 1966 and 2000.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="roth" hidden>
+  <article class="seo-a panel about" data-page="roth" hidden>
     <h2>Roth conversion calculator</h2>
+    <div class="body">
     <p>Should you convert traditional IRA or 401(k) money to a Roth? This calculator projects your household year by year to age 100, with and without conversions, using 2026 federal and state tax rules, Social Security taxation, required minimum distributions and Medicare IRMAA surcharges, and shows which comes out ahead.</p>
     <h3>When converting pays off</h3>
     <p>A conversion means paying income tax now so the money grows and comes out tax-free later. It wins when your rate now is lower than it would be later, often in the years between retiring and starting Social Security and RMDs. It also shrinks future RMDs, and helps a surviving spouse, who files single on similar income.</p>
+    <p>It loses when your tax rate later will be lower than now: a modest traditional balance, a move to a no-income-tax state, or heirs in a low bracket. The calculator doesn't assume either answer; it runs both and compares.</p>
+    <h3>A worked example</h3>
+    <p>Sam and Jo are both 62 and retired, with $1,500,000 in traditional IRAs, $150,000 in Roth IRAs and $400,000 in a brokerage account. They spend $100,000 a year and will claim Social Security at 67. These are the calculator's starting numbers, so this is what opens.</p>
+    <ul>
+      <li><b>The plan:</b> each year, convert enough to fill the 22% bracket. With no other income, that's $243,600 in the first year: the top of the 22% bracket for a couple ($211,400) plus the $32,200 standard deduction. The tax is paid from the brokerage account, so the full amount lands in the Roth.</li>
+      <li><b>How long it runs:</b> the amount changes from year to year as the brokerage money paying the tax runs down and Social Security begins. By 70 the traditional accounts are empty, $1,288,352 converted in all. RMDs, which would have peaked at $169,099 a year, never happen.</li>
+      <li><b>Lifetime tax:</b> $305,186 with conversions against $503,928 without. Without conversions, much of that tax comes decades later, on RMDs in their 80s and 90s, so the calculator also discounts each year's tax to today's value. Measured that way, converting saves $6,839.</li>
+      <li><b>Medicare surcharges:</b> IRMAA totals $13,836 instead of $51,360. Big conversion years raise premiums two years later, at 65, 66 and 72, but there are no large RMDs pushing income over the IRMAA lines for the rest of their lives.</li>
+      <li><b>What's left at 92:</b> $223,304 more after-tax wealth with conversions, counting traditional dollars at 68 cents, since they still owe tax on the way out.</li>
+    </ul>
+    <p>Both measures favor converting here, but by very different margins. That's typical: the lifetime tax saving often looks small once discounted, while the after-tax wealth gap is large, because Roth money compounds with no tax owed on it.</p>
     <h3>Strategies you can test</h3>
     <p>Fill to the top of a tax bracket, stay under an IRMAA threshold, convert a fixed amount, or a share of the balance, over any span of ages, paying the tax from a taxable account or out of the conversion.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Tax saved</b> is lifetime tax plus IRMAA, discounted to today. Positive means converting costs less over your lifetime.</li>
+      <li><b>After-tax net worth</b> compares what's left at the end, with traditional balances reduced by your heirs' tax rate.</li>
+      <li><b>When they disagree,</b> the answer depends on what you care about more: taxes you pay, or money you leave.</li>
+      <li><b>The year-by-year table</b> shows each year's conversion, tax, marginal rate and IRMAA tier, so you can spot a year that crosses a line.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Converting so much in one year that it lands in the 32% or 35% bracket, when spreading it over more years would be cheaper.</li>
+      <li>Forgetting IRMAA. A conversion at 63 or later raises Medicare premiums two years later.</li>
+      <li>Converting while on ACA health insurance before 65. Conversions count as income and can cost thousands in lost premium credits.</li>
+      <li>Paying the tax out of the conversion before 59½, which makes the withheld part a penalized early withdrawal.</li>
+      <li>Expecting to undo it. Since 2018 a conversion can't be reversed.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/rmd">RMD calculator</a>: the same projection, focused on required distributions.</li>
+      <li><a href="/healthcare">Healthcare costs</a>: how conversions move ACA premiums and IRMAA.</li>
+      <li><a href="/bridge">Early retirement bridge</a>: using a Roth conversion ladder before 59½.</li>
+      <li><a href="/incometax">Income tax</a>: the tax on a single year's conversion.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>How much should I convert each year?</summary><p>A common approach is to fill the 12% or 22% bracket each year, stopping below the next IRMAA threshold after 63 (Medicare looks back two years). The tool shows lifetime tax and after-tax net worth for each choice.</p></details>
     <details><summary>Is there a five-year rule on conversions?</summary><p>Yes. Before 59½, each conversion has its own five-year clock before it can be withdrawn without the 10% penalty. After 59½ it doesn't apply to conversions.</p></details>
     <details><summary>Should I pay the tax from the conversion?</summary><p>Usually not. Paying from a taxable account moves the whole amount into the Roth; having tax withheld leaves less there, and before 59½ the withheld part is penalized too.</p></details>
+    <details><summary>What is the widow's penalty?</summary><p>After one spouse dies, the survivor files single from the following year, with brackets about half as wide, while income from RMDs and the larger Social Security benefit stays much the same. Conversions while both are alive move money out of reach of those higher rates. Set the year of the first death to see its effect.</p></details>
+    <details><summary>Is it too late to convert after RMDs start?</summary><p>No, but each year's RMD has to be taken first and can't itself be converted. Conversions after 73 or 75 still shrink later RMDs and the tax heirs pay, at the cost of a higher income that year.</p></details>
+    <details><summary>Do Roth conversions affect Social Security taxes?</summary><p>Yes. A conversion is income, so in a year you also collect Social Security it can make more of your benefit taxable. That's one reason conversions often work best before benefits start.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="rmd" hidden>
+  <article class="seo-a panel about" data-page="rmd" hidden>
     <h2>RMD calculator: required minimum distributions by age</h2>
+    <div class="body">
     <p>Project your required minimum distributions every year to age 100, see your largest one, and test whether Roth conversions before RMDs begin would lower your lifetime tax. Set <b>Strategy</b> to <b>No conversions</b> to see your RMDs on their own.</p>
     <h3>How RMDs work</h3>
+    <p>A traditional IRA or 401(k) lets money grow untaxed for decades, but not forever. From a set age, the IRS requires you to take out a minimum amount each year, and that withdrawal is taxed as ordinary income whether you need the money or not.</p>
     <ul>
       <li><b>When they start:</b> age 73 if you were born from 1951 through 1959, and 75 if born in 1960 or later (SECURE 2.0).</li>
       <li><b>How much:</b> each year's RMD is your traditional balance on December 31 of the prior year divided by the IRS Uniform Lifetime Table factor for your age: 26.5 at 73, so about 3.8% of the balance, rising to about 6.3% at 85 and 11% at 95.</li>
       <li><b>Which accounts:</b> traditional IRAs, 401(k)s, 403(b)s and similar. Roth IRAs have no RMDs for the owner, and neither do Roth 401(k)s from 2024.</li>
       <li><b>Missing one:</b> costs a 25% excise tax on the shortfall, cut to 10% if corrected promptly.</li>
     </ul>
+    <h3>A worked example</h3>
+    <p>Sam and Jo are both 62, married, with $1,500,000 in traditional IRAs, and they expect their investments to earn 5% a year after inflation. These are the calculator's starting numbers. Born in 1964, their RMDs start at 75.</p>
+    <ul>
+      <li><b>The balance keeps growing first:</b> even with part of their spending coming out of it along the way, the traditional balance reaches $2,255,808 by 75, in today's dollars.</li>
+      <li><b>The first RMD:</b> $2,255,808 ÷ 24.6, the IRS factor at 75, is $91,700, all of it taxable, on top of about $58,000 of Social Security.</li>
+      <li><b>The largest one:</b> the factor shrinks every year, so the required share rises. Their RMDs peak at $169,099 in a single year.</li>
+      <li><b>With conversions:</b> converting enough each year to fill the 22% bracket from 62 empties the traditional accounts before RMDs begin, so the peak RMD falls to nothing. The <a href="/roth">Roth conversion calculator</a> page walks through what that costs and saves.</li>
+    </ul>
+    <p>Why it matters: an RMD that size, plus Social Security, can push a couple into a higher bracket, make 85% of their benefits taxable, and cross the Medicare IRMAA line ($218,000 joint), raising premiums two years later. After one spouse dies, the survivor files single on nearly the same income, with half-size brackets.</p>
+    <h3>Ways to manage RMDs</h3>
+    <ul>
+      <li><b>Roth conversions</b> in the low-income years between retiring and 73 or 75 shrink the balance RMDs are figured on.</li>
+      <li><b>Qualified charitable distributions:</b> from 70½ you can send IRA money straight to charity. It counts toward your RMD and isn't taxed.</li>
+      <li><b>Still working:</b> if you're still employed and don't own 5% or more of the company, you can usually delay RMDs from that employer's 401(k) until you retire. IRAs get no such delay.</li>
+      <li><b>Spending from the IRA first</b> in your 60s, instead of from a brokerage account, lowers the balance too, though conversions usually do it more tax-efficiently.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Delaying the first RMD to April 1 of the next year, then taking two in one year and paying a higher bracket on both.</li>
+      <li>Taking the RMD from a Roth, or from the wrong account. You can combine IRA RMDs and take them from any IRA, but each 401(k) must pay its own.</li>
+      <li>Forgetting that RMDs raise the tax on Social Security and can trigger IRMAA.</li>
+      <li>Planning as if the balance will shrink. At typical returns it often keeps growing into your 80s despite the RMDs.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/roth">Roth conversion calculator</a>: the same projection, focused on the conversion decision.</li>
+      <li><a href="/incometax">Income tax</a>: the tax on a year with an RMD, Social Security and other income.</li>
+      <li><a href="/healthcare">Healthcare costs</a>: how income moves Medicare premiums.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: whether your total savings last.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>Can I reduce my RMDs?</summary><p>Yes: Roth conversions in the years before RMDs start shrink the traditional balance they're figured on. From 70½ you can also give up to the annual limit directly to charity as a qualified charitable distribution, which counts toward the RMD and isn't taxed.</p></details>
     <details><summary>Why do large RMDs matter?</summary><p>They're taxed as ordinary income, can make more of your Social Security taxable, and can push you over Medicare IRMAA thresholds, raising premiums two years later.</p></details>
+    <details><summary>At what age do RMDs start?</summary><p>73 if you were born from 1951 through 1959, and 75 if you were born in 1960 or later. The calculator works it out from your age.</p></details>
+    <details><summary>How is my RMD calculated?</summary><p>Your traditional balance on December 31 of the prior year divided by the IRS Uniform Lifetime Table factor for your age that year. At 75 the factor is 24.6, so a $1,000,000 balance means an RMD of about $40,650. If your spouse is your only beneficiary and more than ten years younger, a different table gives a smaller RMD.</p></details>
+    <details><summary>Do Roth IRAs have RMDs?</summary><p>Not for the original owner, and since 2024 neither do Roth 401(k)s. Heirs who inherit a Roth generally must empty it within ten years, but the withdrawals are tax-free.</p></details>
+    <details><summary>Can I reinvest my RMD?</summary><p>Yes, in a regular brokerage account, or in a Roth IRA if you have earned income for a contribution. You can't put it back into a traditional IRA or roll it over.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="healthcare" hidden>
+  <article class="seo-a panel about" data-page="healthcare" hidden>
     <h2>Retirement healthcare cost calculator: ACA and Medicare</h2>
+    <div class="body">
     <p>Estimate what health coverage costs in retirement: ACA marketplace premiums and subsidies if you retire before 65, and Medicare Part B, Part D, Medigap and IRMAA surcharges after. Uses 2026 figures and scales premiums by your state and age.</p>
     <h3>Before 65: ACA subsidies</h3>
     <p>The premium tax credit caps what you pay for the benchmark Silver plan at a share of your income, from about 2% at low incomes to 9.96% in 2026. Above 400% of the federal poverty level the credit stops entirely, so a dollar over the line can cost thousands. Retirees can often keep income low by living on cash, Roth money or brokerage principal.</p>
+    <p>For 2026 coverage, 400% of the poverty level is $62,600 for one person and $84,600 for a household of two. The enhanced credits that removed this cliff from 2021 through 2025 have expired; the calculator also shows what you'd pay if they were restored.</p>
+    <h3>A worked example</h3>
+    <p>Lee and Kim retire at 62 in Illinois. At their age, the benchmark Silver plan for the two of them lists at $2,904 a month, about $34,850 a year. What they actually pay depends almost entirely on their income.</p>
+    <ul>
+      <li><b>$40,000 of income:</b> they pay 6.08% of it, $203 a month. The credit covers the rest.</li>
+      <li><b>$84,000 of income:</b> just under the cliff, they pay the maximum 9.96% of income, $697 a month or $8,366 a year.</li>
+      <li><b>$85,000 of income:</b> $400 over the line, the credit disappears and they pay the full $2,904 a month, $34,854 a year.</li>
+    </ul>
+    <p>That extra $1,000 of income costs them $26,487 in premiums. It's why early retirees watch every source of income: a Roth conversion, a large capital gain or one extra IRA withdrawal can cross the line. Spending from savings or Roth contributions doesn't count as income, so a couple with a brokerage account can often live on $100,000 a year while reporting income well under $84,600.</p>
+    <p>To try it, set <b>Retirement age</b> to 62, <b>Filing status</b> to married, <b>Spouse's age then</b> to 62, <b>State</b> to Illinois, and <b>Retirement MAGI</b> to $84,000, then $85,000.</p>
     <h3>From 65: Medicare and IRMAA</h3>
     <p>The standard Part B premium is $202.90 a month in 2026. Above $109,000 of income single or $218,000 joint, IRMAA surcharges raise Part B and Part D, in tiers, based on your income from two years earlier.</p>
+    <ul>
+      <li><b>Part B</b> covers doctors and outpatient care; <b>Part D</b> covers prescriptions; a <b>Medigap</b> policy (like Plan G) fills most of the gaps in Original Medicare. <b>Medicare Advantage</b> plans bundle these, often with lower premiums but networks and different cost-sharing.</li>
+      <li><b>IRMAA is a cliff too:</b> a couple one dollar over $218,000 pays $81.20 a month more per person for Part B, plus a Part D surcharge.</li>
+      <li><b>Enroll on time:</b> signing up late for Part B, without other employer coverage, adds 10% to the premium for each full year you waited, for life.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Forgetting that all of your Social Security counts toward ACA income, including the untaxed part.</li>
+      <li>Doing a Roth conversion in a year you're on the ACA without checking the cliff.</li>
+      <li>Budgeting only premiums. Deductibles and out-of-pocket costs can add several thousand dollars a year.</li>
+      <li>Missing the income two years back: a big conversion at 63 raises Medicare premiums at 65.</li>
+      <li>Assuming you can sign up for an ACA plan any time. You need a qualifying event, like losing job coverage, or the open enrollment window each fall.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/bridge">Early retirement bridge</a>: plans the years before 59½ with ACA premiums priced in.</li>
+      <li><a href="/roth">Roth conversions</a>: shows IRMAA year by year.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: add your healthcare costs to retirement spending.</li>
+      <li><a href="/incometax">Income tax</a>: your adjusted gross income, the starting point for both.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What income counts for ACA subsidies?</summary><p>Modified adjusted gross income: traditional IRA and 401(k) withdrawals, pensions, interest, dividends, realized capital gains and all of your Social Security, including the untaxed part. Roth withdrawals and spending cash savings don't count.</p></details>
     <details><summary>Do Roth conversions affect Medicare premiums?</summary><p>Yes. A conversion is income, and Medicare uses your income from two years before. Large conversions after 63 can trigger IRMAA surcharges.</p></details>
+    <details><summary>What is the ACA subsidy cliff?</summary><p>For 2026, premium tax credits stop completely above 400% of the federal poverty level: $62,600 for a single person and $84,600 for a couple. Just below it you pay at most 9.96% of income for the benchmark plan; just above it, the full price.</p></details>
+    <details><summary>How much does health insurance cost before Medicare?</summary><p>It depends mostly on your income, age and state. Without a subsidy, a Silver plan for a 62-year-old often runs $1,200 to $1,700 a month. With one, many early retirees pay a few hundred dollars a month or less.</p></details>
+    <details><summary>Is COBRA better than an ACA plan?</summary><p>COBRA keeps your employer plan, usually for up to 18 months, but you pay the full cost plus 2% with no subsidy. It can make sense to finish a year where you've met the deductible; otherwise an ACA plan with a credit is usually far cheaper.</p></details>
+    <details><summary>Can I appeal IRMAA if my income dropped?</summary><p>Yes. If income fell because you retired or stopped working, file Form SSA-44 to ask Social Security to use your current income instead of the figure from two years ago.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="fire" hidden>
+  <article class="seo-a panel about" data-page="fire" hidden>
     <h2>FIRE calculator and Coast FIRE calculator</h2>
+    <div class="body">
     <p>Find the age your investments could pay for your life, the FIRE number, and when you could stop saving altogether and let growth carry you to a normal retirement: Coast FIRE. See it with a steady return, a range, or every real market since 1926.</p>
     <h3>How it works</h3>
     <p>Enter your savings, what you add each month, your expected return and the yearly spending you'd need. At a 4% withdrawal rate your FIRE number is 25 times that spending; at 3.5%, about 29 times. The calculator shows when you'd get there, and how much sooner saving a little more gets you there.</p>
+    <p>FIRE stands for financial independence, retire early. Independence is the part that matters: the point where work becomes optional because your investments could cover your spending. Many people who reach it keep working, just on their own terms.</p>
+    <h3>A worked example</h3>
+    <p>Alex is 30, has $10,000 invested, and spends $40,000 a year. At a 4% withdrawal rate, Alex's FIRE number is $1,000,000 in today's dollars. The calculator's starting numbers assume an 8.5% return and 3% inflation, about 5.3% a year after inflation.</p>
+    <ul>
+      <li><b>Saving $1,000 a month:</b> Alex reaches $1,000,000 in 36.6 years, at 66.6. That's a normal retirement, not an early one.</li>
+      <li><b>Saving $2,000 a month:</b> 25.4 years, at 55.4. Doubling the savings cuts eleven years off.</li>
+      <li><b>Saving $2,500 a month:</b> 22.1 years, at 52.1.</li>
+    </ul>
+    <p>The pattern holds for everyone: early on, what you save matters far more than what the market does. Each extra dollar saved also tends to be a dollar not spent, which lowers the FIRE number itself, so the effect of a higher savings rate is even larger than these figures show.</p>
+    <p><b>Coast FIRE:</b> at $2,000 a month, Alex could stop saving entirely at 38.9. What's invested by then would grow to $1,000,000 by 65 on its own, so from 38.9 Alex only needs to earn enough to cover current spending.</p>
+    <p>To try it, set <b>Current age</b> to 30, <b>Current savings</b> to $10,000, <b>Contribution</b> to $2,000 monthly, and <b>Target</b> to $40,000 of annual withdrawal at 4%. Switch to Coast FIRE for the coast age.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>FIRE age</b> on a steady return is the middle-of-the-road answer. Historical mode shows the range: the same plan reached the target years earlier in good decades and years later in bad ones.</li>
+      <li><b>The success slider</b> picks how cautious to be: at 90%, the age by which 9 in 10 historical paths had arrived.</li>
+      <li><b>Contributions against growth:</b> in the first decade, your own savings do most of the work; later, growth takes over.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Using 4% for a retirement that may last 50 years. Many early retirees plan on 3.25% to 3.5%.</li>
+      <li>Forgetting health insurance before Medicare, which can be one of the largest costs of retiring early.</li>
+      <li>Leaving out taxes. Your FIRE number should cover spending plus the tax on withdrawals.</li>
+      <li>Counting home equity. A paid-off home lowers your spending, but it doesn't pay the bills.</li>
+      <li>Ignoring how you'll reach retirement accounts before 59½.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/bridge">Early retirement bridge</a>: reaching your 401(k) and IRA before 59½.</li>
+      <li><a href="/healthcare">Healthcare costs</a>: ACA premiums before 65.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: whether your number lasts 40 or 50 years.</li>
+      <li><a href="/budget">Budget</a>: finding the spending figure your number is built on.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What is my FIRE number?</summary><p>Your yearly spending divided by your withdrawal rate. $50,000 a year at 4% is $1.25 million.</p></details>
     <details><summary>What is Coast FIRE?</summary><p>The point where what you've already saved would grow to your full retirement target by a normal retirement age without another contribution. After it, you only need to earn enough to cover today's spending.</p></details>
     <details><summary>Is 4% safe for early retirement?</summary><p>It was built for 30-year retirements. For 40 to 50 years, many plan on 3.25% to 3.5%. The <a href="/drawdown">Drawdown Simulator</a> tests your exact plan.</p></details>
+    <details><summary>What are Lean FIRE and Fat FIRE?</summary><p>Lean FIRE means reaching independence on a small budget, often under $40,000 a year. Fat FIRE means a larger one, often $100,000 or more. The math is the same; only the spending figure changes.</p></details>
+    <details><summary>What savings rate do I need to retire early?</summary><p>Starting from nothing, with a 5% return after inflation and a 4% withdrawal rate, saving half of take-home pay reaches independence in about 17 years, and saving a quarter in about 32. What you've already saved shortens that. Enter your own numbers to see yours.</p></details>
+    <details><summary>Should I count Social Security?</summary><p>Many early retirees leave it out of the FIRE number as a safety margin, then treat it as a raise at 62 to 70. If you count it, the portfolio only has to cover spending until benefits start plus the part they don't cover.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="backtest" hidden>
+  <article class="seo-a panel about" data-page="backtest" hidden>
     <h2>Portfolio backtest: stock and bond returns since 1926</h2>
+    <div class="body">
     <p>Pick a mix of stocks and bonds and see what it actually earned, year by year back to 1926: average return, return after inflation, volatility, the worst year, the deepest fall, and the best and worst of every 1, 5, 10, 20 and 30-year stretch.</p>
     <h3>The data</h3>
     <p>Stocks are the S&amp;P 500 (and its predecessor index) with dividends reinvested; bonds are 10-year U.S. Treasuries; inflation is the Consumer Price Index. The portfolio is rebalanced to your mix once a year.</p>
+    <h3>What 100 years of markets show</h3>
+    <p>Here are three mixes over the full record, 1926 through 2025, with no fees. Set <b>Stocks</b> to 100, 60 or 0 to see each.</p>
+    <ul>
+      <li><b>All stocks:</b> 10.4% a year, or 7.3% after inflation. Stocks rose in 74 of the 100 years. The worst single year was −41.8%, and from the 1928 peak to the 1932 bottom the portfolio lost 62% of its value.</li>
+      <li><b>60% stocks, 40% bonds:</b> 8.7% a year, 5.6% after inflation. The worst year was −24.7%, and the deepest fall 37%, over the same Depression years. Giving up 1.8 points of return a year cut the worst losses by about 40%.</li>
+      <li><b>All bonds:</b> 4.8% a year, but only 1.8% after inflation, and its deepest fall came recently: 18% from 2020 to 2022, as interest rates rose.</li>
+    </ul>
+    <p>Time is what makes stocks safer. Over single years they're wild, but the worst 20-year stretch for all stocks still earned 0.8% a year after inflation, and the worst 30-year stretch earned 4.3% a year. For 60/40, the worst 20 years roughly broke even after inflation, and the worst 30 years earned 3.0% a year.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Annual return</b> is the compound growth rate, what a dollar actually grew at. It's lower than the simple average of yearly returns.</li>
+      <li><b>After inflation</b> is the number that matters for spending power. A 3% return with 3% inflation leaves you where you started.</li>
+      <li><b>Volatility</b> is how much returns swing year to year. Higher volatility means deeper falls on the way.</li>
+      <li><b>Deepest fall</b> (maximum drawdown) is the largest drop from a peak to a later low. Ask yourself whether you'd have held on through it.</li>
+      <li><b>Rolling periods</b> show the best, median and worst result for every stretch of a given length, which says more about a plan than one start date.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Planning on the full-history average as if it were guaranteed. Future returns may be lower.</li>
+      <li>Looking only at nominal returns. The 1970s looked fine before inflation and poor after it.</li>
+      <li>Picking a start date that flatters the answer. Compare the rolling worst cases, not one window.</li>
+      <li>Forgetting fees. A 1% fee takes about 1 point off every return shown.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/drawdown">Drawdown simulator</a>: the same history with withdrawals coming out.</li>
+      <li><a href="/advanced">Advanced calculator</a>: savings growth through every historical period.</li>
+      <li><a href="/fire">FIRE calculator</a>: when the historical paths reach your number.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What has the stock market returned historically?</summary><p>U.S. stocks have returned about 10% a year since 1926, or about 7% after inflation, with individual years ranging from about +50% to −40%.</p></details>
     <details><summary>What is a 60/40 portfolio?</summary><p>60% stocks and 40% bonds, a classic balanced mix. Historically it has earned somewhat less than all stocks with much smaller falls. Set Stocks to 60 to see it.</p></details>
+    <details><summary>What was the worst year for the stock market?</summary><p>In this data, 1931, at about −42%. 2008 came close, at about −39%. After the 1929 crash, stocks with dividends reinvested didn't climb back above their 1928 peak until the end of 1936, and fell again the next year.</p></details>
+    <details><summary>Are bonds safe?</summary><p>Safer than stocks, not risk-free. Bonds lose value when interest rates rise, as in 2022, and inflation can erode them for years, as in the 1970s. Their main job in a portfolio is to fall less when stocks fall.</p></details>
+    <details><summary>Does past performance predict future returns?</summary><p>No. History shows the range of things that have happened, which is useful for testing a plan, but the next 30 years may look different. Plan with a margin, like a lower return or a lower withdrawal rate.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="incometax" hidden>
+  <article class="seo-a panel about" data-page="incometax" hidden>
     <h2>2026 income tax calculator: federal, state and FICA</h2>
+    <div class="body">
     <p>Estimate your 2026 take-home pay, or the tax on a year of retirement income. Uses the 2026 federal brackets and standard deduction, Social Security and Medicare tax, and the income tax rules of all 50 states and DC.</p>
     <h3>Two modes</h3>
     <ul>
       <li><b>Normal income:</b> a salary, with 401(k) and HSA deductions, for net and take-home pay per month and per paycheck.</li>
       <li><b>Retirement income:</b> traditional, Roth and brokerage withdrawals, Social Security and pensions, each taxed its own way, with capital-gain stacking, the 3.8% investment income tax and each state's retirement exclusions.</li>
     </ul>
+    <h3>How the 2026 federal brackets work</h3>
+    <p>Income tax is charged in layers. For a single filer in 2026, the first $12,400 of taxable income is taxed at 10%, the next $38,000 (up to $50,400) at 12%, then 22% up to $105,700, and higher rates above that. Taxable income is what's left after the standard deduction of $16,100 single or $32,200 for a married couple. Moving into a higher bracket only raises the rate on the dollars inside it.</p>
+    <h3>A worked example</h3>
+    <p>Taylor is single, lives in Illinois and earns $100,000. These are the calculator's starting numbers.</p>
+    <ul>
+      <li><b>Federal income tax:</b> $100,000 less the $16,100 standard deduction leaves $83,900 taxable. 10% of the first $12,400, 12% of the next $38,000 and 22% of the remaining $33,500 comes to $13,170.</li>
+      <li><b>Social Security and Medicare (FICA):</b> 7.65% of wages, $7,650.</li>
+      <li><b>Illinois:</b> a flat 4.95% after a small exemption, $4,805.</li>
+      <li><b>Take-home:</b> $74,375 a year, after $25,625 in total tax. Taylor is in the 22% bracket, but federal income tax is only 13.2% of pay.</li>
+    </ul>
+    <p><b>Saving $10,000 in a traditional 401(k)</b> drops Taylor's federal tax to $10,970 and Illinois tax to $4,310. Take-home falls by only $7,305, so the $10,000 saved costs $7,305 of spending money. FICA doesn't change, because it's charged on wages before 401(k) contributions.</p>
+    <p><b>In retirement mode:</b> a married couple, both over 65, with $60,000 of traditional IRA withdrawals and $48,000 of Social Security pays $5,804 of federal tax, helped by the extra deductions for age 65 and the new senior deduction. Illinois taxes none of it, since it exempts retirement income.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Marginal rate</b> is the rate on your next dollar. Use it to judge a raise, a 401(k) contribution or a Roth conversion.</li>
+      <li><b>Effective rate</b> is total tax divided by income, always lower. Use it to compare with other years or other people.</li>
+      <li><b>The bracket bars</b> show how much of your income falls in each layer.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Thinking a raise into a higher bracket lowers take-home pay. It never does; only the dollars above the line pay the higher rate.</li>
+      <li>Forgetting FICA, which is 7.65% of wages up to $184,500, on top of income tax.</li>
+      <li>Assuming Social Security is tax-free, or fully taxed. Between none and 85% of it is taxable, depending on other income.</li>
+      <li>Ignoring state rules. Some states tax retirement income heavily; others exempt it entirely.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/budget">Budget</a>: carry your take-home pay into a monthly budget.</li>
+      <li><a href="/roth">Roth conversions</a>: the tax on conversions over many years.</li>
+      <li><a href="/drawdown">Drawdown simulator</a>: how much you can withdraw before tax.</li>
+      <li><a href="/healthcare">Healthcare costs</a>: how your income sets ACA and Medicare premiums.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What is the 2026 standard deduction?</summary><p>$16,100 single and $32,200 married filing jointly. At 65 and over, an extra $2,050 single or $1,650 per spouse, plus the temporary $6,000 senior deduction for 2025 through 2028, which phases out above $75,000 single or $150,000 joint.</p></details>
     <details><summary>What's the difference between my bracket and my tax rate?</summary><p>Your bracket is the rate on your last dollars; your effective rate is total tax divided by income, which is always lower because the first dollars are taxed at 10% or not at all.</p></details>
     <details><summary>How much of Social Security is taxable?</summary><p>None, half or up to 85%, depending on your other income. Most states don't tax it at all.</p></details>
+    <details><summary>What are the 2026 federal tax brackets?</summary><p>For single filers: 10% to $12,400, 12% to $50,400, 22% to $105,700, 24% to $201,775, 32% to $256,225, 35% to $640,600, and 37% above. For married couples filing jointly the thresholds are about double: 10% to $24,800, 12% to $100,800, 22% to $211,400, 24% to $403,550, 32% to $512,450, 35% to $768,700.</p></details>
+    <details><summary>How are capital gains taxed?</summary><p>Long-term gains, on investments held over a year, are taxed at 0%, 15% or 20%, stacked on top of your other income. In 2026 the 0% rate applies while taxable income is under $49,450 single or $98,900 joint. Short-term gains are taxed like wages.</p></details>
+    <details><summary>Should I use the standard deduction or itemize?</summary><p>Itemize only if your mortgage interest, state and local taxes, and charitable gifts add up to more than the standard deduction. Most households now take the standard deduction. Enter an itemized total to compare.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="mortgage" hidden>
+  <article class="seo-a panel about" data-page="mortgage" hidden>
     <h2>Mortgage calculator with taxes, insurance, PMI and extra payments</h2>
+    <div class="body">
     <p>See the full monthly cost of a home, including principal, interest, property tax, insurance, PMI, HOA and upkeep, how the loan balance falls, and the amortization year by year. Then test extra payments, a lump-sum recast or a refinance.</p>
     <h3>How to use it</h3>
     <p>Enter the price, down payment, rate and length. Under 20% down adds PMI until you reach 20% equity. For a loan you already have, enter the current balance and years left, then turn on the options for extra payments and refinancing to see the interest saved and the break-even on closing costs.</p>
+    <h3>A worked example</h3>
+    <p>Morgan buys a $450,000 home with 20% down, $90,000, and borrows $360,000 for 30 years at 6.5%.</p>
+    <ul>
+      <li><b>Principal and interest:</b> $2,275 a month. With property tax at 1.1% of the price ($413 a month) and $1,800 a year of insurance ($150), the housing payment is $2,838.</li>
+      <li><b>Total interest:</b> $459,160 over 30 years, more than the amount borrowed. In the first years, most of each payment is interest; the balance falls slowly at first and quickly at the end.</li>
+      <li><b>Paying $200 a month extra:</b> the loan is gone in 287 months, just under 24 years, and saves $108,917 of interest.</li>
+      <li><b>A 15-year loan at 5.75% instead:</b> $2,989 a month, $714 more, but total interest of $178,106, less than 40% of the 30-year loan's.</li>
+      <li><b>With only 10% down:</b> PMI at 0.6% of the loan adds $203 a month until the balance reaches 80% of the price, in month 95, $19,035 in all.</li>
+    </ul>
+    <p>To try it, set <b>Home price</b> to $450,000, <b>Down payment</b> to 20% and <b>Interest rate</b> to 6.5%. The calculator's own rate starts at the latest weekly national average.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Monthly cost</b> includes upkeep and utilities, which lenders ignore but you'll pay. Maintenance of about 1% of the price a year is a common rule of thumb.</li>
+      <li><b>The balance chart</b> shows principal against interest over time.</li>
+      <li><b>The amortization table</b> gives each year's interest, principal and closing balance.</li>
+      <li><b>For a refinance,</b> the break-even month is when the monthly saving has repaid the closing costs. Staying past it means refinancing paid off.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Budgeting only principal and interest. Tax, insurance, PMI, HOA and upkeep often add 30% or more.</li>
+      <li>Comparing loans by payment alone. A longer term lowers the payment and raises the total cost.</li>
+      <li>Refinancing without counting closing costs, or restarting a 30-year clock late in a loan.</li>
+      <li>Keeping PMI longer than needed. Ask the lender to remove it once you reach 20% equity.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/rentbuy">Rent vs. buy</a>: whether buying beats renting and investing.</li>
+      <li><a href="/budget">Budget</a>: fitting the payment into your monthly spending.</li>
+      <li><a href="/debt">Debt payoff</a>: whether extra payments should go to other debts first.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>How much house can I afford?</summary><p>A common guideline keeps the house payment, including tax, insurance and PMI, under about 28% of gross income, and all debt payments under about 36%.</p></details>
     <details><summary>Is a 15-year or 30-year mortgage better?</summary><p>A 15-year loan has a higher payment but usually a lower rate and far less total interest. A 30-year loan keeps the payment low and flexible; you can still pay extra.</p></details>
     <details><summary>When does PMI go away?</summary><p>You can ask the lender to drop it at 20% equity, and it ends automatically at 22% based on the original schedule.</p></details>
+    <details><summary>Should I pay extra on my mortgage or invest?</summary><p>Extra payments earn exactly your mortgage rate, guaranteed. Investing may earn more over long periods but with risk. Many people pay down loans above about 6% and invest when the rate is lower, after getting any employer 401(k) match.</p></details>
+    <details><summary>What is a mortgage recast?</summary><p>After a large lump-sum payment, some lenders will re-figure your payment on the lower balance for a small fee, keeping the rate and end date. The payment drops; without a recast, it stays the same and the loan ends sooner.</p></details>
+    <details><summary>When is refinancing worth it?</summary><p>When you'll keep the loan past the break-even month, the point where the lower payment has repaid the closing costs. A rate drop of about 1 point or more often clears that bar within a few years.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="rentbuy" hidden>
+  <article class="seo-a panel about" data-page="rentbuy" hidden>
     <h2>Rent vs. buy calculator</h2>
+    <div class="body">
     <p>Is it better to rent or buy? This calculator runs a fair race: both households spend the same each month, and whichever side's costs are lower invests the difference. It then compares net worth year by year, after selling costs and taxes on the gains.</p>
     <h3>What it counts</h3>
     <p>The down payment and closing costs the renter invests instead, mortgage interest, property tax, insurance, maintenance and PMI, rent increases, home appreciation, selling costs, capital-gains tax on investments, and the tax-free exclusion on a home sale ($250,000 single, $500,000 married).</p>
+    <h3>A worked example</h3>
+    <p>Casey and Drew can buy a $450,000 home with 20% down at 6.5% for 30 years, or keep renting a similar place. They expect the home to appreciate 4% a year, rent to rise 3.2% a year, and investments to earn 7%.</p>
+    <ul>
+      <li><b>The cost of owning:</b> $3,213 a month in the first year: $2,275 of principal and interest, plus property tax, insurance and 1% a year of upkeep. On day one, the buyer also spends $103,500 on the down payment and closing costs, which the renter invests instead.</li>
+      <li><b>If rent is $1,800 a month:</b> renting stays ahead the whole time. After 30 years, the renter's investments are worth $1,969,550 against the buyer's $1,347,907 in home equity and savings, a $621,643 lead.</li>
+      <li><b>If rent is $2,400 a month:</b> buying pulls ahead in year 5 and leads by $273,524 after 30 years.</li>
+    </ul>
+    <p>The same house, the same loan, and opposite answers. What changed is the price-to-rent ratio: the home price divided by a year's rent. At $1,800 a month it's about 21; at $2,400 it's about 16. As a rough guide, below about 15 buying tends to win, and above about 20 renting tends to win, if the renter really invests the difference.</p>
+    <p>To try it, enter a <b>Home price</b> of $450,000, <b>Down payment</b> of 20%, <b>Interest rate</b> of 6.5% and a <b>Monthly rent</b> of $1,800, then $2,400.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>The winner</b> is whoever has more net worth at the end of the time horizon, after selling the home and paying tax on gains.</li>
+      <li><b>The break-even year</b> is when buying first pulls ahead. If you might move before then, renting is likely cheaper.</li>
+      <li><b>The chart</b> shows both net worths year by year. Early on, buying and selling costs put the buyer behind.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Comparing rent to the mortgage payment alone, leaving out tax, insurance, maintenance and the cost of the down payment.</li>
+      <li>Assuming the renter invests the difference without checking that they would.</li>
+      <li>Expecting high appreciation. Over long periods, U.S. home prices have risen only a little faster than inflation.</li>
+      <li>Forgetting selling costs, often 3% to 6% of the price with agent commissions, and closing costs when buying.</li>
+      <li>Ignoring how long you'll stay. Buying rarely pays off within three to five years.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/mortgage">Mortgage calculator</a>: the full monthly cost and amortization.</li>
+      <li><a href="/budget">Budget</a>: whether the payment fits.</li>
+      <li><a href="/backtest">Portfolio backtest</a>: what the renter's investments might earn.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>How long do you need to stay for buying to pay off?</summary><p>Often five to seven years or more, since buying and selling costs together run 7% to 10% of the price. The break-even year for your numbers is shown under the chart.</p></details>
     <details><summary>Is renting throwing money away?</summary><p>No more than mortgage interest, property tax and upkeep are. Renting wins when rents are low relative to prices and the renter actually invests the difference.</p></details>
+    <details><summary>What is the price-to-rent ratio?</summary><p>A home's price divided by a year's rent for a similar place. A $450,000 home that would rent for $2,000 a month has a ratio of about 19. Lower ratios favor buying; higher ratios favor renting.</p></details>
+    <details><summary>Is a house a good investment?</summary><p>It's forced saving and a hedge against rising rents, and the gain on a main home is largely tax-free. As an investment alone, though, it has usually earned less than a stock portfolio, and it costs money every year to own.</p></details>
+    <details><summary>Does the calculator include the mortgage interest deduction?</summary><p>No. Since 2018 the standard deduction is large enough that most homeowners don't itemize, so mortgage interest saves them no tax. If you itemize, buying looks slightly better than shown.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="college" hidden>
+  <article class="seo-a panel about" data-page="college" hidden>
     <h2>College savings calculator</h2>
+    <div class="body">
     <p>Find how much to save each month for college, from a public in-state school to a private or elite one. Costs grow with tuition inflation to the year your child starts, and savings keep earning while earlier years are paid.</p>
     <h3>How to use it</h3>
     <p>Pick a school type or enter a yearly cost, set the years until college, and add what you've already saved. The monthly figure is what covers the full cost; many families aim for part of it and cover the rest with income, aid and scholarships.</p>
+    <h3>A worked example</h3>
+    <p>Jamie's parents start saving at birth for four years at a public in-state school that costs $27,000 a year today, including room and board. They expect costs to rise 4% a year and their savings to earn 6%. These are the calculator's starting numbers.</p>
+    <ul>
+      <li><b>The cost when Jamie starts:</b> 18 years of 4% increases make the first year $54,697, about double today's price.</li>
+      <li><b>What they need to save:</b> $558 a month from birth covers all four years. The money keeps earning during college, so the account only needs to hold $212,674 on the first day, not the full cost of all four years.</li>
+      <li><b>Starting later:</b> with 10 years to go instead of 18, it's $956 a month for the same school.</li>
+      <li><b>A private non-profit college</b> at $59,000 a year today, the calculator's second choice, would take $1,220 a month from birth.</li>
+    </ul>
+    <p>Many families don't aim for 100%. Covering half or two-thirds with savings, and the rest from income during the college years, aid and scholarships, is a common and reasonable plan. Saving something early does more than saving more later.</p>
+    <h3>Where to save: the 529 plan</h3>
+    <ul>
+      <li><b>Tax-free growth</b> when the money is spent on qualified education: tuition, fees, books, and room and board for students enrolled at least half time.</li>
+      <li><b>State tax breaks:</b> many states deduct contributions to their own plan from state income tax.</li>
+      <li><b>Financial aid:</b> a parent-owned 529 counts as a parental asset, reducing aid by at most 5.64% of its value.</li>
+      <li><b>If there's money left over:</b> change the beneficiary to a sibling or yourself, or roll up to $35,000 over a lifetime into the student's Roth IRA once the account is 15 years old, subject to the yearly Roth limit.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Using today's cost without inflation. College prices have long risen faster than general prices.</li>
+      <li>Saving for college instead of retirement. Students can borrow for college; you can't borrow for retirement.</li>
+      <li>Holding all stocks right up to the first tuition bill. Shift toward safer investments as college gets close.</li>
+      <li>Forgetting that sticker price isn't what most families pay after grants and scholarships.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/budget">Budget</a>: finding room for a monthly contribution.</li>
+      <li><a href="/advanced">Advanced calculator</a>: balancing college and retirement saving.</li>
+      <li><a href="/guide">Retirement readiness guide</a>: college as one goal in a full plan.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What is a 529 plan?</summary><p>A college savings account whose investments grow tax-free when spent on qualified education. Many states add a tax deduction for contributions.</p></details>
     <details><summary>How fast does college cost rise?</summary><p>Tuition has long outpaced general inflation; 4% to 5% a year is a common planning assumption.</p></details>
+    <details><summary>How much should I save for college each month?</summary><p>For a public in-state school at today's average price of about $27,000 a year, saving about $560 a month from birth covers four years, at 6% returns and 4% cost growth. Starting at 8 years old, it's closer to $960.</p></details>
+    <details><summary>Should I save for college or retirement first?</summary><p>Retirement, at least up to any employer match. There are loans, grants and scholarships for college but none for retirement, and retirement savings generally don't count against financial aid.</p></details>
+    <details><summary>What if my child doesn't go to college?</summary><p>You can change the 529's beneficiary to another family member, use it for trade school or apprenticeship programs that qualify, or roll part of it into the child's Roth IRA. Otherwise, earnings withdrawn for other uses are taxed plus a 10% penalty; your contributions come back tax-free.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="budget" hidden>
+  <article class="seo-a panel about" data-page="budget" hidden>
     <h2>Budget calculator</h2>
+    <div class="body">
     <p>Lay out your take-home pay and spending, line by line, and see what's left each month for saving and debt. Monthly and yearly bills sit side by side, savings are counted as saving rather than spending, and your emergency fund target is sized from what you spend.</p>
     <h3>How to use it</h3>
     <p>Start with your income after taxes, or copy it from the <a href="/incometax">Income Tax</a> tool. Work down the categories with a few months of statements, entering annual bills as yearly amounts. Export the result as a spreadsheet.</p>
+    <h3>A worked example</h3>
+    <p>Riley takes home $6,000 a month after taxes and a 401(k) contribution.</p>
+    <ul>
+      <li><b>The 50/30/20 guide</b> would put $3,000 toward needs (housing, utilities, groceries, insurance, minimum debt payments), $1,800 toward wants (dining out, travel, subscriptions), and $1,200 toward saving and extra debt payments.</li>
+      <li><b>Riley's actual spending</b> comes to $4,000 a month once yearly bills are spread out: car insurance, holiday gifts and a vacation add more than most people expect.</li>
+      <li><b>What's left:</b> $2,000 a month, a third of take-home pay. Entering $1,000 of it on the <b>Savings &amp; investments</b> line counts it as saving, not spending, and leaves $1,000 for other goals.</li>
+      <li><b>The emergency fund:</b> six months of spending is $24,000. It's sized from the $4,000 Riley spends, not the $6,000 Riley earns, since that's what it would need to cover.</li>
+    </ul>
+    <p>The most useful number is usually the gap between what you think you spend and what the statements say. Irregular bills entered as yearly amounts are where most budgets leak.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Spending</b> is everything except savings lines, per month and per year.</li>
+      <li><b>Left over</b> is what's unassigned. Negative means you're spending more than you take home.</li>
+      <li><b>Emergency fund</b> is your monthly spending times the months you choose.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Forgetting annual and irregular costs: insurance premiums, car repairs, gifts, subscriptions billed yearly.</li>
+      <li>Budgeting from gross pay instead of take-home pay.</li>
+      <li>Counting savings as spending, which makes a healthy budget look tight.</li>
+      <li>Making it so strict you abandon it. A line for fun money keeps a budget realistic.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/incometax">Income tax</a>: your take-home pay per month and per paycheck.</li>
+      <li><a href="/debt">Debt payoff</a>: where to aim what's left over.</li>
+      <li><a href="/">Retirement calculator</a>: what your monthly saving grows to.</li>
+      <li><a href="/college">College savings</a>: how much to set aside for a child.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>What is the 50/30/20 rule?</summary><p>About half of take-home pay on needs, 30% on wants and 20% on saving and paying down debt. It's a rough guide, not a rule.</p></details>
     <details><summary>How big should an emergency fund be?</summary><p>Three to six months of spending is typical; more if your income is irregular or you're the only earner.</p></details>
+    <details><summary>How much of my income should I save?</summary><p>For retirement, 15% of gross pay, including any employer match, is a common target for someone starting in their 20s or 30s. Starting later, or aiming to retire early, calls for more.</p></details>
+    <details><summary>How much should I spend on housing?</summary><p>A common guideline is under 28% of gross income for rent or a mortgage payment with tax and insurance, which is often 30% to 35% of take-home pay.</p></details>
+    <details><summary>Where should my emergency fund be kept?</summary><p>Somewhere safe and quick to reach, like a high-yield savings or money market account. Not in stocks, which can be down just when you need the money.</p></details>
+    </div>
   </article>
 
-  <article class="seo-a" data-page="debt" hidden>
+  <article class="seo-a panel about" data-page="debt" hidden>
     <h2>Debt payoff calculator: avalanche vs. snowball</h2>
+    <div class="body">
     <p>List your debts and see your debt-free date, the total interest you'll pay, and how much a payoff plan saves over paying only the minimums. Compare the avalanche and snowball methods side by side, month by month.</p>
     <h3>Avalanche or snowball?</h3>
     <p>Both put every spare dollar on one debt at a time and roll each paid-off minimum into the next. <b>Avalanche</b> targets the highest interest rate first and costs the least. <b>Snowball</b> clears the smallest balance first, for quicker wins that help many people stick with it.</p>
+    <p>The rollover is what makes either one work. When a debt is paid off, its minimum payment doesn't go back into your budget; it joins the extra payment on the next debt, so the amount aimed at each debt keeps growing.</p>
+    <h3>A worked example</h3>
+    <p>Jordan owes $49,400 across four debts, the calculator's starting list: a $9,800 credit card at 22.9%, a $1,900 store card at 8.9%, a $16,200 car loan at 7.4% and a $21,500 student loan at 5.5%. The minimum payments add up to $930 a month.</p>
+    <ul>
+      <li><b>Minimums only:</b> 123 months, over ten years, and $18,321 of interest.</li>
+      <li><b>Avalanche with $300 a month extra:</b> the credit card goes first, and Jordan is debt-free in 47 months, just under four years, paying $8,155 of interest. That's $10,167 less than minimums alone.</li>
+      <li><b>Snowball with $300 extra:</b> the store card goes first and is gone within months. Debt-free in 48 months with $8,578 of interest: one month longer and $424 more than avalanche.</li>
+      <li><b>$400 extra instead of $300:</b> avalanche finishes in 43 months with $7,226 of interest.</li>
+    </ul>
+    <p>Here the two methods end up close, because the smallest debt is small. The gap grows when the smallest balance also has the lowest rate, and a large card at a high rate waits its turn. Either way, the extra payment matters far more than the order.</p>
+    <p>To try it, set <b>Extra payment, on top of the minimums</b> to $300 with the starting list of debts.</p>
+    <h3>How to read your results</h3>
+    <ul>
+      <li><b>Debt-free date</b> and <b>total interest</b> for each method, next to minimums only.</li>
+      <li><b>The payoff order</b> shows which debt each method targets, and the month each one is cleared.</li>
+      <li><b>The chart</b> shows the total balance falling; each bend is a debt cleared and its minimum rolled over.</li>
+      <li><b>The next $100:</b> the calculator also shows how much sooner an extra $100 a month would get you there.</li>
+    </ul>
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Spending a paid-off debt's minimum instead of rolling it into the next one.</li>
+      <li>Adding new charges to a card you're paying off.</li>
+      <li>Emptying savings to pay debt. Keep a small emergency fund so a surprise doesn't go back on a card.</li>
+      <li>Stopping 401(k) contributions and losing an employer match, which is worth more than paying off most debts.</li>
+      <li>Ignoring a 0% promotional rate's end date, when the full rate applies.</li>
+    </ul>
+    <h3>Related tools</h3>
+    <ul>
+      <li><a href="/budget">Budget</a>: finding the extra payment each month.</li>
+      <li><a href="/mortgage">Mortgage calculator</a>: extra payments on a home loan.</li>
+      <li><a href="/guide">Retirement readiness guide</a>: debt as part of your overall plan.</li>
+    </ul>
     <h3>Questions</h3>
     <details><summary>How much faster does an extra payment get me out of debt?</summary><p>Often by years. Enter an amount in Extra payment and the tool shows the new date and the interest it saves.</p></details>
     <details><summary>Should I pay off debt or invest?</summary><p>Debt above about 7% to 8% interest, like most credit cards, is usually worth paying off first; it's a guaranteed return at that rate. Always keep getting any employer 401(k) match.</p></details>
+    <details><summary>Is the debt avalanche or snowball better?</summary><p>Avalanche always costs the same or less in interest. Snowball can be worth the small extra cost if early wins keep you going. The best method is the one you'll stick with.</p></details>
+    <details><summary>Should I consolidate my debt?</summary><p>A consolidation loan or 0% balance transfer helps if it cuts your rate and you stop adding new debt. Count the fees, usually 3% to 5% for a balance transfer, and check what rate applies when a promotion ends.</p></details>
+    <details><summary>Does paying off debt improve my credit score?</summary><p>Usually. Lower credit card balances relative to your limits help most. Closing a paid-off card can lower your score slightly by reducing your available credit.</p></details>
+    </div>
   </article>
 
   </section>
