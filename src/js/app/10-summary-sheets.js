@@ -377,6 +377,7 @@ function buildMortSheet(){
 
 function buildCollegeSheet(){
   const inp = readCollege();
+  if (inp.kids.length > 1) return buildCollegeFamilySheet(inp);
   if (!(inp.annualCost > 0)){ $("sheet").innerHTML = ""; toast("Set an annual cost first"); return false; }
   const R = collegeSavingsCalc(inp);
   let inputs = row("Annual cost today", money(inp.annualCost));
@@ -431,6 +432,64 @@ function buildCollegeSheet(){
       "<section><div class='sh-t'>Cost by college year</div>" + costs + "</section>" +
     "</div>" +
     "<div class='sh-table'><div class='sh-t'>Savings accumulation</div>" + table + "</div>" +
+    "<div class='sh-foot'>Excludes financial aid, scholarships and 529 tax advantages. " +
+    "Tuition inflation is an assumption, not a guarantee.</div>";
+}
+
+function buildCollegeFamilySheet(inp){
+  const P = collegePlanCalc(inp);
+  if (!P){ $("sheet").innerHTML = ""; toast("Set an annual cost first"); return false; }
+  const n = P.kids.length;
+  let kids = "";
+  inp.kids.forEach((k, i) => {
+    kids += row("Child " + (i + 1), k.annualCost > 0 && k.yearsUntil > 0
+      ? money(k.annualCost) + "/yr today, in " + fmtNum(k.yearsUntil) + " yrs, for " + fmtNum(k.collegeYrs)
+      : "left out");
+  });
+  let inputs = row("Currently saved", money(inp.saved));
+  inputs += row("Investment return", pctStr(inp.investRet, 1));
+  inputs += row("Tuition inflation", pctStr(inp.tuitionInfl, 1));
+
+  let out = row("Total cost, all children", money(P.totalFuture));
+  out += row("Needed today", money(P.pvToday));
+  P.phases.forEach((x, i) => {
+    out += row(i ? "Then, from year " + fmtNum(Math.round(x.from / 12 * 10) / 10) : "Monthly savings needed", money(x.monthly) + "/mo");
+  });
+  P.kids.forEach(k => { out += row("Child " + (k.index + 1) + ", all years", money(k.total)); });
+
+  const src = $("chartCl");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  const step = P.rows.length <= 15 ? 1 : P.rows.length <= 30 ? 2 : 3;
+  const tableRows = P.rows.filter((r, i) => i === 0 || i === P.rows.length - 1 || i % step === 0 || r.paid > 0);
+  let table = "<table><thead><tr><th>Year</th><th>Contributed</th><th>Growth</th>" +
+    "<th>Paid for college</th><th>Balance</th></tr></thead><tbody>";
+  tableRows.forEach(r => {
+    table += "<tr><td>" + r.year + "</td><td>" + money(r.contribs) + "</td><td>" +
+      money(r.growth) + "</td><td>" + (r.paid > 0 ? money(r.paid) : "\u2014") + "</td><td>" + money(r.balance) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
+  $("sheet").innerHTML =
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>College Savings Plan</h1><span>" + fmtNum(n) + " children</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Save per month</div><div class='v'>" + money(P.monthly) +
+        "</div><div class='n'>" + collegePhaseNote(P) + "</div></div>" +
+      "<div><div class='k'>Total cost, all children</div><div class='v'>" + money(P.totalFuture) +
+        "</div><div class='n'>at future prices</div></div>" +
+      "<div><div class='k'>Needed today</div><div class='v'>" + money(P.pvToday) +
+        "</div><div class='n'>present value</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Children</div>" + kids + "</section>" +
+      "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-table'><div class='sh-t'>One account for all of them</div>" + table + "</div>" +
     "<div class='sh-foot'>Excludes financial aid, scholarships and 529 tax advantages. " +
     "Tuition inflation is an assumption, not a guarantee.</div>";
 }

@@ -230,10 +230,10 @@ function applyBudgetRetireCopy(source){
 
 $("bgCopyCollege").addEventListener("click", () => {
   const inp = readCollege();
-  if (!(inp.annualCost > 0)){ toast("Set up the College Savings tool first"); return; }
-  const R = collegeSavingsCalc(inp);
-  if (!(R.monthly > 0)){ toast("No monthly amount needed there yet"); return; }
-  const monthly = Math.round(R.monthly);
+  if (!inp.kids.some(k => k.annualCost > 0)){ toast("Set up the College Savings tool first"); return; }
+  const mo = collegeMonthly(inp);
+  if (!(mo > 0)){ toast("No monthly amount needed there yet"); return; }
+  const monthly = Math.round(mo);
   upsertBudgetLine("College savings", monthly);
   toast("Added " + money(monthly) + "/mo from College Savings");
 });

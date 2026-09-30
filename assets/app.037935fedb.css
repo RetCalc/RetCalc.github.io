@@ -1538,6 +1538,10 @@ a.txlink:hover{text-decoration-color:currentColor}
 #sCoastAction .btn{width:100%}
 
 /* ---------- debt payoff ---------- */
+/* College: one card per child once there's more than one */
+.clkid-name{font-size:13px;font-weight:600}
+.clkid .field:last-child,.clkid .two:last-child .field{margin-bottom:0}
+#clAddKid{margin:10px 0 16px}
 .dtrow{display:flex;gap:8px;align-items:center;padding:5px 0}
 .dthead{display:flex;gap:8px;align-items:center;padding:0 0 4px;font-size:11px;
   color:var(--dimmer);text-transform:uppercase;letter-spacing:.08em;font-weight:700}

@@ -132,7 +132,8 @@ var TH_TOURS = {
       {title:"Your plan", focus:"#asideCollege", tasks(){
         return [
           {h:"<b>School type</b> fills in a typical yearly cost, tuition plus room and board. Choose <b>Custom</b> to type a particular school's price."},
-          {h:"<b>Annual cost today</b> is in today's prices; the tool raises it for you. <b>Years until college</b> is 18 minus your child's age."},
+          {h:"<b>Annual cost today</b> is in today's prices; the tool raises it for you. <b>Years until college</b> is 18 minus your child's age: 16 for a two-year-old, 20 for a child due in two years."},
+          {h:"More than one child? <b>Add a child</b> for each. They share one account, and the monthly amount covers them all."},
           {h:"<b>Currently saved</b> is what's already set aside, in a 529 plan or anywhere else."}
         ];
       }},
@@ -147,13 +148,14 @@ var TH_TOURS = {
           {h:"<b>Save per month</b> is what to set aside from now until college starts."},
           {h:"<b>Total projected cost</b> is every year of college at future prices, which is why it looks so large. <b>Needed when college starts</b> is less, because the money still in the account keeps growing while earlier years are paid."},
           {h:"You don't have to cover all of it. Grants, scholarships, what you can pay from income at the time and modest loans usually fill part. Saving even half makes a real difference."},
-          {h:"A 529 plan grows tax-free when spent on school, and many states add a tax deduction. More than one child? Run each separately and add the monthly amounts."}
+          {h:"With more than one child, the amount runs until the youngest starts college. If an older child starts soon, it can be higher at first and step down once that child is in college; the note under it says when."},
+          {h:"A 529 plan grows tax-free when spent on school, and many states add a tax deduction. Each child usually has their own 529, but you can change a 529's beneficiary to a sibling, so saving in one pot and splitting it later works."}
         ];
       }}
     ],
     chip(){
-      const R = collegeSavingsCalc(readCollege());
-      return R.monthly > 0 ? "Save<br><b>" + money(R.monthly) + "/mo</b>" : "";
+      const mo = collegeMonthly(readCollege());
+      return mo > 0 ? "Save<br><b>" + money(mo) + "/mo</b>" : "";
     }},
 
   rentbuy: {name:"Rent vs. Buy", title:"Is buying better than renting?",

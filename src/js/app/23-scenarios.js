@@ -30,17 +30,28 @@ function writeTaxState(d){
   if (d.seniors != null) $("txSeniors").value = String(d.seniors);
   applyTaxMode();
 }
-const CL_DEFAULTS = {preset:"27000", cost:27000, years:18, collegeYrs:4, saved:0, ret:6, infl:4};
+/* The first child's fields, as when the tool planned for one; any more
+   children are in `more`, each [preset, cost, years, collegeYrs]. */
+const CL_DEFAULTS = {preset:"27000", cost:27000, years:18, collegeYrs:4, saved:0, ret:6, infl:4, more:[]};
 function readCollegeState(){
-  return {preset:$("clPreset").value, cost:num("clCost"), years:num("clYears"),
-          collegeYrs:num("clCollegeYrs"), saved:num("clSaved"), ret:num("clReturn"),
-          infl:num("clInfl")};
+  const k = clKids[0];
+  return {preset:String(k.preset), cost:k.cost, years:k.years,
+          collegeYrs:k.collegeYrs, saved:num("clSaved"), ret:num("clReturn"),
+          infl:num("clInfl"), more:clKids.slice(1).map(x => [String(x.preset), x.cost, x.years, x.collegeYrs])};
 }
+/* A whole saved state (it always has `saved`) replaces the children; a
+   partial one, like the guide setting the years from a child's age, only
+   changes the first child. */
 function writeCollegeState(d){
-  if (d.preset != null) $("clPreset").value = d.preset;
-  if (d.cost != null) $("clCost").value = groupDigits(d.cost, true);
-  if (d.years != null) $("clYears").value = d.years;
-  if (d.collegeYrs != null) $("clCollegeYrs").value = d.collegeYrs;
+  const k = clKids[0];
+  if (d.preset != null) k.preset = String(d.preset);
+  if (d.cost != null) k.cost = +d.cost || 0;
+  if (d.years != null) k.years = +d.years || 0;
+  if (d.collegeYrs != null) k.collegeYrs = +d.collegeYrs || 0;
+  if (Array.isArray(d.more) || d.saved != null)
+    clKids = [k].concat((Array.isArray(d.more) ? d.more : []).filter(Array.isArray).map(x =>
+      ({preset:String(x[0] != null ? x[0] : "0"), cost:+x[1] || 0, years:+x[2] || 0, collegeYrs:+x[3] || 4})));
+  buildCollegeKids();
   if (d.saved != null) $("clSaved").value = groupDigits(d.saved, true);
   if (d.ret != null) $("clReturn").value = String(d.ret);
   if (d.infl != null) $("clInfl").value = String(d.infl);

@@ -173,8 +173,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.9e7ee9d84f.css">
-<link rel="preload" href="/assets/app.b503e7036a.js" as="script">
+<link rel="stylesheet" href="/assets/app.037935fedb.css">
+<link rel="preload" href="/assets/app.c3622d89b2.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1378,31 +1378,10 @@ window.onerror = function(msg){
     <div class="panel inputs">
       <h2>College plan</h2>
       <div class="body">
+        <div id="clKids"></div>
+        <button class="btn" type="button" id="clAddKid">Add a child</button>
         <div class="field">
-          <label for="clPreset">School type<span class="tipdot" data-tip="schooltype" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-          <select id="clPreset">
-            <option value="27000">Public in-state · ~$27,000/yr</option>
-            <option value="59000">Private non-profit · ~$59,000/yr</option>
-            <option value="82000">Elite / Ivy · ~$82,000/yr</option>
-            <option value="0">Custom</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="clCost">Annual cost today</label>
-          <div class="inputwrap"><span class="affix">$</span><input id="clCost" type="text" inputmode="decimal" data-money data-nonneg value="27000"></div>
-        </div>
-        <div class="two">
-          <div class="field">
-            <label for="clYears">Years until college</label>
-            <div class="inputwrap"><input id="clYears" type="text" inputmode="decimal" data-num data-step="1" min="0" max="25" data-nonneg value="18"><span class="affix">yrs</span></div>
-          </div>
-          <div class="field">
-            <label for="clCollegeYrs">Years of college</label>
-            <div class="inputwrap"><input id="clCollegeYrs" type="text" inputmode="decimal" data-num data-step="1" min="1" max="8" data-nonneg value="4"><span class="affix">yrs</span></div>
-          </div>
-        </div>
-        <div class="field">
-          <label for="clSaved">Currently saved</label>
+          <label for="clSaved" id="clSavedLbl">Currently saved</label>
           <div class="inputwrap"><span class="affix">$</span><input id="clSaved" type="text" inputmode="decimal" data-money data-nonneg value="0"></div>
         </div>
         <div class="two">
@@ -1416,7 +1395,7 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="derived">
-          <div><span>What you've saved grows to</span><span class="num" id="clSavGrow"></span></div>
+          <div><span id="clSavGrowK">What you've saved grows to</span><span class="num" id="clSavGrow"></span></div>
         </div>
       </div>
     </div>
@@ -1426,8 +1405,12 @@ window.onerror = function(msg){
       <div class="headline">
         <div><div class="k">Save per month</div><div class="v gold" id="clMonthly">—</div><div class="note" id="clMonthlyNote"></div></div>
         <div><div class="k">Total projected cost</div><div class="v" id="clTotalOut">—</div><div class="note" id="clTotalNote"></div></div>
-        <div><div class="k">Needed when college starts<span class="tipdot" data-tip="collegepv" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v" id="clShortOut">—</div><div class="note" id="clShortNote"></div></div>
+        <div><div class="k"><span id="clShortK">Needed when college starts</span><span class="tipdot" id="clShortTip" data-tip="collegepv" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v" id="clShortOut">—</div><div class="note" id="clShortNote"></div></div>
       </div>
+    </div>
+    <div class="panel" id="clEachPanel" hidden>
+      <h2>Each child</h2>
+      <div class="body"><div class="gd-kvs" id="clEach"></div></div>
     </div>
     <div class="panel">
       <h2>Savings over time</h2>
@@ -1437,7 +1420,7 @@ window.onerror = function(msg){
     <div class="panel">
       <h2>Year by year</h2>
       <div class="swipehint">Swipe the table sideways to see every column.</div>
-      <div class="scroll"><table id="clTable"><thead><tr><th>Year</th><th>Balance</th><th>You added</th><th>Growth</th><th>Projected cost</th></tr></thead><tbody></tbody></table></div>
+      <div class="scroll"><table id="clTable"><thead></thead><tbody></tbody></table></div>
     </div>
   </div>
 
@@ -5148,7 +5131,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.b503e7036a.js"></script>
+<script src="/assets/app.c3622d89b2.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

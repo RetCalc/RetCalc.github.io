@@ -428,18 +428,19 @@ const GD_TRIPS = {
         {h:"<b>Years until college</b> is set from your child's age.", ok: gdOk(gd.a.kidAge) ? true : undefined},
         {h:"Pick a <b>School type</b>, or choose <b>Custom</b> and type a yearly cost."},
         {h:"Enter what's already in a 529 or other college account in <b>Currently saved</b>."},
-        {h:"The monthly figure at the top is what to set aside. More than one child? Run it for each and add them up."}
+        {h:"The monthly figure at the top is what to set aside. More than one child? <b>Add a child</b> for each, and the figure covers them all."}
       ];
     },
     chip(){
-      const R = collegeSavingsCalc(readCollege());
-      return R.monthly > 0 ? "Save<br><b>" + money(R.monthly) + "/mo</b>" : "";
+      const mo = collegeMonthly(readCollege());
+      return mo > 0 ? "Save<br><b>" + money(mo) + "/mo</b>" : "";
     },
     capture(){
-      const R = collegeSavingsCalc(readCollege());
-      if (!(R.monthly >= 0)) return null;
-      gd.a.collegeMo = Math.round(R.monthly); gd.a.clState = readCollegeState();
-      return "From College Savings: set aside about <b>" + money(R.monthly) + "/mo</b>. Change the figure below if you have more than one child.";
+      const inp = readCollege(), mo = collegeMonthly(inp);
+      if (!(mo >= 0)) return null;
+      gd.a.collegeMo = Math.round(mo); gd.a.clState = readCollegeState();
+      return "From College Savings: set aside about <b>" + money(mo) + "/mo</b>" +
+        (inp.kids.length > 1 ? " for all " + inp.kids.length + " children." : ". Change the figure below if you have more than one child.");
     }},
 
   basic: {tool:"basic", name:"Basic calculator", mins:3, title:"Explore your projection",

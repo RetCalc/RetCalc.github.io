@@ -21,7 +21,7 @@ JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Help
 
 # Calculators outside the engine block that the tests cover, and the
 # constants they read.
-FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "brLE", "brAmortFactor", "projectBasic",
+FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "collegePlanCalc", "collegeWalk", "brLE", "brAmortFactor", "projectBasic",
              "gdRating"]
 CONSTANTS = ["PMI_DEFAULT", "BR_SLT",
              "DEFAULTS", "BASIC_INFL", "GD_FACTORS", "RC_DEFAULTS",

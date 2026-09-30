@@ -134,6 +134,18 @@ function buildCardSVG(){
     ];
     chartSvg = embedChart("chartMo", 900, 300); chartW = 900; chartH = 300;
 
+  } else if (t === "tools" && toolSub === "college" && readCollege().kids.length > 1){
+    var icf = readCollege(), Pf = collegePlanCalc(icf);
+    title = "College savings plan";
+    bigLabel = "Save per month";
+    big = Pf ? money(Pf.monthly) : "\u2014";
+    sub = Pf ? fmtNum(Pf.kids.length) + " children \u00b7 " + collegePhaseNote(Pf) : "";
+    rows = Pf ? [["Total cost, all children", money(Pf.totalFuture)], ["Needed today", money(Pf.pvToday)]]
+      .concat(Pf.kids.map(k => ["Child " + (k.index + 1) + ", in " + fmtNum(k.yearsUntil) + " yrs", money(k.total)]))
+      .concat([["Currently saved", money(icf.saved)], ["Investment return", pctStr(icf.investRet, 1)],
+        ["Tuition inflation", pctStr(icf.tuitionInfl, 1)]]) : [];
+    chartSvg = embedChart("chartCl", 900, 300); chartW = 900; chartH = 300;
+
   } else if (t === "tools" && toolSub === "college"){
     var ic = readCollege();
     var Rc = collegeSavingsCalc(ic);

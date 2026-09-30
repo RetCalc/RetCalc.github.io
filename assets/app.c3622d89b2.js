@@ -7784,6 +7784,7 @@ function buildMortSheet(){
 
 function buildCollegeSheet(){
   const inp = readCollege();
+  if (inp.kids.length > 1) return buildCollegeFamilySheet(inp);
   if (!(inp.annualCost > 0)){ $("sheet").innerHTML = ""; toast("Set an annual cost first"); return false; }
   const R = collegeSavingsCalc(inp);
   let inputs = row("Annual cost today", money(inp.annualCost));
@@ -7838,6 +7839,64 @@ function buildCollegeSheet(){
       "<section><div class='sh-t'>Cost by college year</div>" + costs + "</section>" +
     "</div>" +
     "<div class='sh-table'><div class='sh-t'>Savings accumulation</div>" + table + "</div>" +
+    "<div class='sh-foot'>Excludes financial aid, scholarships and 529 tax advantages. " +
+    "Tuition inflation is an assumption, not a guarantee.</div>";
+}
+
+function buildCollegeFamilySheet(inp){
+  const P = collegePlanCalc(inp);
+  if (!P){ $("sheet").innerHTML = ""; toast("Set an annual cost first"); return false; }
+  const n = P.kids.length;
+  let kids = "";
+  inp.kids.forEach((k, i) => {
+    kids += row("Child " + (i + 1), k.annualCost > 0 && k.yearsUntil > 0
+      ? money(k.annualCost) + "/yr today, in " + fmtNum(k.yearsUntil) + " yrs, for " + fmtNum(k.collegeYrs)
+      : "left out");
+  });
+  let inputs = row("Currently saved", money(inp.saved));
+  inputs += row("Investment return", pctStr(inp.investRet, 1));
+  inputs += row("Tuition inflation", pctStr(inp.tuitionInfl, 1));
+
+  let out = row("Total cost, all children", money(P.totalFuture));
+  out += row("Needed today", money(P.pvToday));
+  P.phases.forEach((x, i) => {
+    out += row(i ? "Then, from year " + fmtNum(Math.round(x.from / 12 * 10) / 10) : "Monthly savings needed", money(x.monthly) + "/mo");
+  });
+  P.kids.forEach(k => { out += row("Child " + (k.index + 1) + ", all years", money(k.total)); });
+
+  const src = $("chartCl");
+  let chart = "";
+  if (src && src.childNodes.length){
+    const clone = src.cloneNode(true);
+    lighten(clone); clone.removeAttribute("style");
+    chart = "<div class='sh-chart'>" + clone.outerHTML + "</div>";
+  }
+  const step = P.rows.length <= 15 ? 1 : P.rows.length <= 30 ? 2 : 3;
+  const tableRows = P.rows.filter((r, i) => i === 0 || i === P.rows.length - 1 || i % step === 0 || r.paid > 0);
+  let table = "<table><thead><tr><th>Year</th><th>Contributed</th><th>Growth</th>" +
+    "<th>Paid for college</th><th>Balance</th></tr></thead><tbody>";
+  tableRows.forEach(r => {
+    table += "<tr><td>" + r.year + "</td><td>" + money(r.contribs) + "</td><td>" +
+      money(r.growth) + "</td><td>" + (r.paid > 0 ? money(r.paid) : "\u2014") + "</td><td>" + money(r.balance) + "</td></tr>";
+  });
+  table += "</tbody></table>";
+
+  $("sheet").innerHTML =
+    "<div class='sh-h'>" + SHEET_MARK + "<h1>College Savings Plan</h1><span>" + fmtNum(n) + " children</span></div>" +
+    "<div class='sh-big'>" +
+      "<div><div class='k'>Save per month</div><div class='v'>" + money(P.monthly) +
+        "</div><div class='n'>" + collegePhaseNote(P) + "</div></div>" +
+      "<div><div class='k'>Total cost, all children</div><div class='v'>" + money(P.totalFuture) +
+        "</div><div class='n'>at future prices</div></div>" +
+      "<div><div class='k'>Needed today</div><div class='v'>" + money(P.pvToday) +
+        "</div><div class='n'>present value</div></div>" +
+    "</div>" + chart +
+    "<div class='sh-cols'>" +
+      "<section><div class='sh-t'>Children</div>" + kids + "</section>" +
+      "<section><div class='sh-t'>Assumptions</div>" + inputs + "</section>" +
+      "<section><div class='sh-t'>Results</div>" + out + "</section>" +
+    "</div>" +
+    "<div class='sh-table'><div class='sh-t'>One account for all of them</div>" + table + "</div>" +
     "<div class='sh-foot'>Excludes financial aid, scholarships and 529 tax advantages. " +
     "Tuition inflation is an assumption, not a guarantee.</div>";
 }
@@ -9346,10 +9405,10 @@ function applyBudgetRetireCopy(source){
 
 $("bgCopyCollege").addEventListener("click", () => {
   const inp = readCollege();
-  if (!(inp.annualCost > 0)){ toast("Set up the College Savings tool first"); return; }
-  const R = collegeSavingsCalc(inp);
-  if (!(R.monthly > 0)){ toast("No monthly amount needed there yet"); return; }
-  const monthly = Math.round(R.monthly);
+  if (!inp.kids.some(k => k.annualCost > 0)){ toast("Set up the College Savings tool first"); return; }
+  const mo = collegeMonthly(inp);
+  if (!(mo > 0)){ toast("No monthly amount needed there yet"); return; }
+  const monthly = Math.round(mo);
   upsertBudgetLine("College savings", monthly);
   toast("Added " + money(monthly) + "/mo from College Savings");
 });
@@ -9424,25 +9483,84 @@ function exportBudgetCSV(){
 }
 $("bgCsv").addEventListener("click", exportBudgetCSV);
 /* ---------- college UI ---------- */
-var collegePoints = [];
+var collegePoints = [], clMulti = false;
+
+/* The children being saved for. The first child's fields keep the ids the
+   tool had when it planned for one (clPreset, clCost, clYears,
+   clCollegeYrs); the rest are drawn after it. */
+const CL_PRESETS = [["27000", "Public in-state · ~$27,000/yr"],
+  ["59000", "Private non-profit · ~$59,000/yr"], ["82000", "Elite / Ivy · ~$82,000/yr"],
+  ["0", "Custom"]];
+let clKids = [{preset:"27000", cost:27000, years:18, collegeYrs:4}];
+
+function buildCollegeKids(){
+  const many = clKids.length > 1;
+  $("clKids").innerHTML = clKids.map((k, i) => {
+    const id = f => i ? "" : " id='" + f + "'", lab = f => i ? "" : " for='" + f + "'";
+    const fields =
+      "<div class='field'><label" + lab("clPreset") + ">School type" + (i ? "" :
+        "<span class='tipdot' data-tip='schooltype' role='button' tabindex='0' aria-label='What is this?'>?</span>") + "</label>" +
+        "<select" + id("clPreset") + " data-f='preset' data-i='" + i + "' aria-label='Child " + (i + 1) + " school type'>" +
+        CL_PRESETS.map(o => "<option value='" + o[0] + "'" + (o[0] === String(k.preset) ? " selected" : "") + ">" + o[1] + "</option>").join("") +
+        "</select></div>" +
+      "<div class='field'><label" + lab("clCost") + ">Annual cost today</label>" +
+        "<div class='inputwrap'><span class='affix'>$</span><input" + id("clCost") + " type='text' inputmode='decimal' data-money data-nonneg" +
+        " data-f='cost' data-i='" + i + "' value='" + groupDigits(k.cost, true) + "' aria-label='Child " + (i + 1) + " annual cost today'></div></div>" +
+      "<div class='two'>" +
+        "<div class='field'><label" + lab("clYears") + ">Years until college</label>" +
+          "<div class='inputwrap'><input" + id("clYears") + " type='text' inputmode='decimal' data-num data-step='1' min='0' max='25' data-nonneg" +
+          " data-f='years' data-i='" + i + "' value='" + k.years + "' aria-label='Child " + (i + 1) + " years until college'><span class='affix'>yrs</span></div></div>" +
+        "<div class='field'><label" + lab("clCollegeYrs") + ">Years of college</label>" +
+          "<div class='inputwrap'><input" + id("clCollegeYrs") + " type='text' inputmode='decimal' data-num data-step='1' min='1' max='8' data-nonneg" +
+          " data-f='collegeYrs' data-i='" + i + "' value='" + k.collegeYrs + "' aria-label='Child " + (i + 1) + " years of college'><span class='affix'>yrs</span></div></div>" +
+      "</div>";
+    return many
+      ? "<div class='stagecard clkid'><div class='stagehead'><span class='clkid-name'>Child " + (i + 1) + "</span>" +
+          "<button class='btn mini' type='button' data-del='" + i + "'>Remove</button></div>" + fields + "</div>"
+      : fields;
+  }).join("");
+  $("clAddKid").textContent = many ? "Add another child" : "Add a child";
+  $("clSavedLbl").firstChild.textContent = many ? "Currently saved, for all of them" : "Currently saved";
+  initFields($("clKids"));
+}
 
 function readCollege() {
+  const kids = clKids.map(k => ({
+    yearsUntil: Math.min(25, +k.years || 0),
+    annualCost: +k.cost || 0,
+    collegeYrs: Math.max(1, Math.round(+k.collegeYrs || 0))
+  }));
   return {
-    yearsUntil:  Math.min(25, num("clYears")),
-    annualCost:  num("clCost"),
+    yearsUntil:  kids[0].yearsUntil,
+    annualCost:  kids[0].annualCost,
     tuitionInfl: rate("clInfl"),
     investRet:   rate("clReturn"),
     saved:       num("clSaved"),
-    collegeYrs:  Math.max(1, Math.round(num("clCollegeYrs")))
+    collegeYrs:  kids[0].collegeYrs,
+    kids:        kids
   };
+}
+/* The monthly amount to save now, for however many children: what the
+   budget, guide and tool help carry. */
+function collegeMonthly(inp){
+  if (inp.kids && inp.kids.length > 1){ const P = collegePlanCalc(inp); return P ? P.monthly : 0; }
+  return inp.annualCost > 0 && inp.yearsUntil > 0 ? collegeSavingsCalc(inp).monthly : 0;
 }
 
 function renderCollege() {
   var inp = readCollege();
+  clMulti = inp.kids.length > 1;
+  $("clEachPanel").hidden = !clMulti;
+  $("clShortK").textContent = clMulti ? "Needed today" : "Needed when college starts";
+  $("clShortTip").setAttribute("data-tip", clMulti ? "collegepvall" : "collegepv");
+  $("clSavGrowK").textContent = clMulti ? "What you've saved covers" : "What you've saved grows to";
+  $("clTable").querySelector("thead").innerHTML = "<tr><th>Year</th><th>Balance</th><th>You added</th><th>Growth</th><th>" +
+    (clMulti ? "Paid for college" : "Projected cost") + "</th></tr>";
+  if (clMulti) return renderCollegeFamily(inp);
   if (inp.annualCost <= 0 || inp.yearsUntil <= 0) {
-    setBig("clMonthly", "\u2014");
-    setBig("clTotalOut", "\u2014");
-    setBig("clShortOut", "\u2014");
+    setBig("clMonthly", "—");
+    setBig("clTotalOut", "—");
+    setBig("clShortOut", "—");
     return;
   }
   var R = collegeSavingsCalc(inp);
@@ -9459,7 +9577,7 @@ function renderCollege() {
     " while later years' tuition is paid";
 
   // The comparison line is what the full 4-year cost would be if college
-  // started in that year \u2014 rising with tuition inflation, landing on the
+  // started in that year — rising with tuition inflation, landing on the
   // real total by the time college actually starts. Year 0 uses the same
   // formula rather than defaulting to zero, so the line starts at a real cost.
   function costIfStartingAt(t){
@@ -9485,22 +9603,101 @@ function renderCollege() {
   }).join("");
 }
 
-$("clPreset").addEventListener("change", function() {
-  var v = parseFloat($("clPreset").value);
-  if (v > 0) {
-    $("clCost").value = groupDigits(v, true);
-    renderCollege();
+/* How the monthly amount runs: one figure, or one that steps down once an
+   older child's college has started. */
+function collegePhaseNote(P){
+  const yrs = m => fmtNum(Math.round(m / 12 * 10) / 10);
+  const ph = P.phases, first = ph[0];
+  let s = "for " + yrs(first.to) + " years";
+  ph.slice(1).forEach(x => {
+    s += x.monthly > 0 ? ", then " + money(x.monthly, 0) + "/mo for " + yrs(x.to - x.from) + " more" : ", then nothing more";
+  });
+  return s;
+}
+function renderCollegeFamily(inp){
+  const P = collegePlanCalc(inp);
+  if (!P){
+    ["clMonthly", "clTotalOut", "clShortOut"].forEach(id => setBig(id, "—"));
+    ["clMonthlyNote", "clTotalNote", "clShortNote", "clSavGrow"].forEach(id => { $(id).textContent = ""; });
+    $("clEach").innerHTML = ""; $("clTable").querySelector("tbody").innerHTML = "";
+    collegePoints = paintChart("chartCl", [], 0, "band", [], 0, {});
+    return;
   }
+  const n = P.kids.length;
+  $("clSavGrow").textContent = P.pvToday > 0 ? pctStr(Math.min(1, inp.saved / P.pvToday), 0) + " of it" : "—";
+  setBig("clMonthly", money(P.monthly, 0));
+  $("clMonthlyNote").textContent = (n === 2 ? "for both children, " : "for all " + n + " children, ") + collegePhaseNote(P);
+  setBig("clTotalOut", money(P.totalFuture));
+  $("clTotalNote").textContent = fmtNum(P.kids.reduce((a, k) => a + k.yearCosts.length, 0)) +
+    " years of college in all, at " + pctStr(inp.tuitionInfl, 1) + " tuition inflation";
+  setBig("clShortOut", money(P.pvToday));
+  $("clShortNote").textContent = "A lump sum today that, earning " + pctStr(inp.investRet, 1) +
+    ", would pay every bill as it comes";
+
+  $("clEach").innerHTML = P.kids.map(k =>
+    "<div class='kv'><span class='k'>Child " + (k.index + 1) + ": " + fmtNum(k.yearCosts.length) + " years, starting in " +
+      fmtNum(k.yearsUntil) + (k.yearsUntil === 1 ? " year" : " years") + "</span><span class='v'>" + money(k.total) +
+    "</span></div>").join("") +
+    (P.skipped ? "<div class='kv'><span class='k'>Left out</span><span class='v'>" + P.skipped +
+      (P.skipped === 1 ? " child" : " children") + " with no cost or no years until college</span></div>" : "");
+
+  const pts = [{year:0, base:inp.saved, hi:P.pvToday, lo:0}];
+  P.rows.forEach(r => pts.push({year:r.year, base:r.balance, hi:r.needed, lo:0}));
+  collegePoints = paintChart("chartCl", pts, P.rows.length, "band", [], 0, {enhanced:true, noLoLine:true});
+  $("legendCl").innerHTML =
+    swatch("#e9b872", "Your savings") +
+    swatch("#4fbf95", "Needed then for the bills still ahead");
+
+  $("clTable").querySelector("tbody").innerHTML = P.rows.map(r =>
+    "<tr><td>" + fmtNum(r.year) + "</td><td>" + money(r.balance) +
+      "</td><td class='pos'>" + money(r.contribs) + "</td><td class='pos'>" +
+      money(r.growth) + "</td><td>" + (r.paid > 0 ? money(r.paid) : "—") + "</td></tr>").join("");
+}
+
+$("clKids").addEventListener("input", e => {
+  const el = e.target, f = el.getAttribute("data-f"), i = parseInt(el.getAttribute("data-i"), 10);
+  if (!f || isNaN(i) || !clKids[i] || f === "preset") return;
+  clKids[i][f] = parseNum(el.value);
+  renderCollege();
 });
-["clCost","clYears","clCollegeYrs","clSaved","clReturn","clInfl"].forEach(function(id) {
+$("clKids").addEventListener("change", e => {
+  const el = e.target, i = parseInt(el.getAttribute("data-i"), 10);
+  if (el.getAttribute("data-f") !== "preset" || !clKids[i]) return;
+  clKids[i].preset = el.value;
+  const v = parseFloat(el.value);
+  if (v > 0){
+    clKids[i].cost = v;
+    const c = $("clKids").querySelector("input[data-f='cost'][data-i='" + i + "']");
+    if (c) c.value = groupDigits(v, true);
+  }
+  renderCollege();
+});
+$("clKids").addEventListener("click", e => {
+  const b = e.target.closest ? e.target.closest("[data-del]") : null;
+  if (!b) return;
+  const i = parseInt(b.getAttribute("data-del"), 10);
+  if (isNaN(i) || clKids.length < 2) return;
+  clKids.splice(i, 1);
+  buildCollegeKids(); renderCollege();
+});
+/* A new child starts like the last one, two years behind. */
+$("clAddKid").addEventListener("click", () => {
+  const last = clKids[clKids.length - 1];
+  clKids.push({preset:last.preset, cost:last.cost, years:Math.min(25, (+last.years || 0) + 2), collegeYrs:last.collegeYrs});
+  buildCollegeKids(); renderCollege();
+  const f = $("clKids").querySelectorAll("input[data-f='years']");
+  if (f.length) f[f.length - 1].focus();
+});
+buildCollegeKids();
+["clSaved","clReturn","clInfl"].forEach(function(id) {
   $(id).addEventListener("input", renderCollege);
 });
 attachChart("chartWrapCl", "chartCl", "tipCl", function() { return collegePoints; },
   function(best) {
     return "<b>Year " + fmtNum(best.year) + "</b>" +
       "<br><span style='color:#e9b872'>Savings</span> <span class='n'>" + money(best.base) + "</span>" +
-      (best.hi != null ? "<br><span style='color:#4fbf95'>Cost of college</span> <span class='n'>" +
-        money(best.hi) + "</span>" : "");
+      (best.hi != null ? "<br><span style='color:#4fbf95'>" + (clMulti ? "Still needed" : "Cost of college") +
+        "</span> <span class='n'>" + money(best.hi) + "</span>" : "");
   });
 
 /* ---------- rent vs buy UI ---------- */
@@ -9682,6 +9879,103 @@ function collegeSavingsCalc(inp) {
     yearCosts: yearCosts,
     rows: rows
   };
+}
+
+/* College savings for several children from one shared account. Each
+   child's bills (one a year, at tuition inflation, the first when that child
+   starts) are paid from the account as they fall due, and the account takes
+   one monthly amount from now until the youngest starts college.
+   One level amount for that whole stretch doesn't always fit: a child
+   starting soon needs money much faster than a newborn, and a level amount
+   big enough for that would keep over-saving for years afterwards. So the
+   amount is the smallest level one that never leaves the account short when
+   a bill is paid. If the bill that sets it isn't the last one, the account is
+   exactly empty just after that bill, and the rest is solved again from
+   there, so the amount can step down but never up. With one child this is
+   collegeSavingsCalc's answer: the last bill always sets it.
+   Same month-by-month arithmetic as collegeSavingsCalc: the return compounds
+   geometrically, a contribution lands at each month's end, and a bill due
+   that month is paid after it. */
+function collegePlanCalc(inp) {
+  var g = Math.pow(1 + inp.investRet, 1 / 12), rm = g - 1;
+  var kids = [], bills = [], skipped = 0;
+  inp.kids.forEach(function(k, index) {
+    if (!(k.annualCost > 0 && k.yearsUntil > 0)) { skipped++; return; }
+    var start = Math.max(1, Math.round(k.yearsUntil * 12)), costs = [];
+    for (var y = 0; y < k.collegeYrs; y++) {
+      var amt = k.annualCost * Math.pow(1 + inp.tuitionInfl, k.yearsUntil + y);
+      costs.push(amt);
+      bills.push({m: start + 12 * y, amt: amt});
+    }
+    kids.push({index: index, yearsUntil: k.yearsUntil, start: start, yearCosts: costs,
+      total: costs.reduce(function(a, v) { return a + v; }, 0),
+      targetAtStart: costs.reduce(function(a, v, j) { return a + v / Math.pow(g, 12 * j); }, 0)});
+  });
+  if (!kids.length) return null;
+  bills.sort(function(a, b) { return a.m - b.m; });
+  var endC = Math.max.apply(null, kids.map(function(k) { return k.start; }));
+  var endM = bills[bills.length - 1].m;
+
+  // A level contribution c from month s+1 to endC, on a balance b0 at month s,
+  // leaves b0*g^(m-s) + c*A(m) - (bills since s, grown) just after month m's
+  // bill. Each bill's need for that to be >= 0 is linear in c.
+  var phases = [], s = 0, b0 = inp.saved;
+  while (s < endC) {
+    var best = 0, at = -1;
+    for (var i = 0, owed = 0, prevM = s; i < bills.length; i++) {
+      var b = bills[i];
+      if (b.m <= s) continue;
+      owed = owed * Math.pow(g, b.m - prevM) + b.amt; prevM = b.m;
+      var k = Math.min(b.m, endC) - s;
+      var A = k > 0 ? (rm > 0 ? (Math.pow(g, k) - 1) / rm : k) * Math.pow(g, b.m - s - k) : 0;
+      var need = owed - b0 * Math.pow(g, b.m - s);
+      if (A <= 0) continue;
+      var c = need / A;
+      // the latest bill that sets the amount, so a tie doesn't split a phase
+      if (c >= best * (1 - 1e-12) && c > 0) { best = Math.max(best, c); at = b.m; }
+    }
+    if (at < 0 || at >= endC) { phases.push({from: s, to: endC, monthly: Math.max(0, best)}); break; }
+    phases.push({from: s, to: at, monthly: best});
+    // walk the account to month `at` so the next phase starts from what's
+    // really there (zero, up to rounding)
+    b0 = collegeWalk(inp.saved, phases, bills, g, at).bal;
+    s = at;
+  }
+  if (!phases.length) phases.push({from: 0, to: endC, monthly: 0});
+
+  // Year by year to the last bill, with what the bills still ahead need
+  // at each year's end.
+  var rows = [], W = {bal: inp.saved, m: 0};
+  for (var yr = 1; yr * 12 - 12 < endM; yr++) {
+    var y0 = W.bal, w = collegeWalk(W.bal, phases, bills, g, yr * 12, W.m);
+    var needed = 0;
+    bills.forEach(function(x) { if (x.m > yr * 12) needed += x.amt / Math.pow(g, x.m - yr * 12); });
+    rows.push({year: yr, balance: w.bal, contribs: w.added, paid: w.paid,
+      growth: w.bal - y0 - w.added + w.paid, needed: needed});
+    W = {bal: w.bal, m: yr * 12};
+  }
+  var pvToday = bills.reduce(function(a, x) { return a + x.amt / Math.pow(g, x.m); }, 0);
+  return {
+    monthly: phases[0].monthly,
+    phases: phases,
+    kids: kids,
+    skipped: skipped,
+    totalFuture: bills.reduce(function(a, x) { return a + x.amt; }, 0),
+    pvToday: pvToday,
+    rows: rows
+  };
+}
+/* The shared account from month `from` (default 0) to month `to`, on the
+   contribution schedule `phases`. */
+function collegeWalk(bal, phases, bills, g, to, from) {
+  var added = 0, paid = 0;
+  for (var m = (from || 0) + 1; m <= to; m++) {
+    bal *= g;
+    for (var p = 0; p < phases.length; p++)
+      if (m > phases[p].from && m <= phases[p].to) { bal += phases[p].monthly; added += phases[p].monthly; break; }
+    for (var i = 0; i < bills.length; i++) if (bills[i].m === m) { bal -= bills[i].amt; paid += bills[i].amt; }
+  }
+  return {bal: bal, added: added, paid: paid};
 }
 
 /* Rent-vs-buy engine.
@@ -11003,6 +11297,7 @@ const GLOSS = {
   ssdelay: "How many years into retirement Social Security starts; use 0 if it starts right away. Delaying it increases the monthly benefit, up to age 70; this input just controls when the modeled income begins. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
   ssdelayage: "The age Social Security starts; use your retirement age if it starts right away. Delaying it increases the monthly benefit, up to age 70. The benefit is set in today's dollars and grows with inflation every year once it starts, the same way the rest of the plan does.",
   retireage: "Optional. Once set, every table and chart in this tool switches from counting years into retirement to showing your actual age. It also replaces the separate Social Security start-delay input: benefits begin at the claiming age(s) set above instead.",
+  collegepvall: "Every child's college bills, valued today: the lump sum that, invested now at your return, would pay each bill as it comes. It's much less than the total because money waiting for a later bill keeps growing in the meantime.",
   collegepv: "The total tuition bill spread across multiple years is worth less today than its sticker price, because money you haven't spent yet keeps earning a return. This is that bill's value on day one of college, smaller than the total cost, because your balance keeps growing while you draw it down year by year to cover each year's tuition.",
   glide: "Many people shift toward more conservative investments, and lower expected returns, as they approach retirement. Turning this on holds your rate steady, then blends it down in a straight line to the end rate you set, over however many final years you choose. It shapes the projection, the chart, Coast FIRE, and both routes in Work backwards from a target. The glide always covers the final years you set, counted back from the end of the plan \u2014 so if a solve moves your finish line, the glide moves with it rather than staying where it was.",
   contribgrowth: "The percentage your contribution amount itself increases each year, a standalone rate, not stacked on top of the inflation input. At 0%, your contribution stays the same dollar amount every year, which buys a little less as prices rise. Set it to match your inflation rate to keep contributions flat in today's dollars, or higher to model real income growth, like raises over a career.",
@@ -13091,17 +13386,28 @@ function writeTaxState(d){
   if (d.seniors != null) $("txSeniors").value = String(d.seniors);
   applyTaxMode();
 }
-const CL_DEFAULTS = {preset:"27000", cost:27000, years:18, collegeYrs:4, saved:0, ret:6, infl:4};
+/* The first child's fields, as when the tool planned for one; any more
+   children are in `more`, each [preset, cost, years, collegeYrs]. */
+const CL_DEFAULTS = {preset:"27000", cost:27000, years:18, collegeYrs:4, saved:0, ret:6, infl:4, more:[]};
 function readCollegeState(){
-  return {preset:$("clPreset").value, cost:num("clCost"), years:num("clYears"),
-          collegeYrs:num("clCollegeYrs"), saved:num("clSaved"), ret:num("clReturn"),
-          infl:num("clInfl")};
+  const k = clKids[0];
+  return {preset:String(k.preset), cost:k.cost, years:k.years,
+          collegeYrs:k.collegeYrs, saved:num("clSaved"), ret:num("clReturn"),
+          infl:num("clInfl"), more:clKids.slice(1).map(x => [String(x.preset), x.cost, x.years, x.collegeYrs])};
 }
+/* A whole saved state (it always has `saved`) replaces the children; a
+   partial one, like the guide setting the years from a child's age, only
+   changes the first child. */
 function writeCollegeState(d){
-  if (d.preset != null) $("clPreset").value = d.preset;
-  if (d.cost != null) $("clCost").value = groupDigits(d.cost, true);
-  if (d.years != null) $("clYears").value = d.years;
-  if (d.collegeYrs != null) $("clCollegeYrs").value = d.collegeYrs;
+  const k = clKids[0];
+  if (d.preset != null) k.preset = String(d.preset);
+  if (d.cost != null) k.cost = +d.cost || 0;
+  if (d.years != null) k.years = +d.years || 0;
+  if (d.collegeYrs != null) k.collegeYrs = +d.collegeYrs || 0;
+  if (Array.isArray(d.more) || d.saved != null)
+    clKids = [k].concat((Array.isArray(d.more) ? d.more : []).filter(Array.isArray).map(x =>
+      ({preset:String(x[0] != null ? x[0] : "0"), cost:+x[1] || 0, years:+x[2] || 0, collegeYrs:+x[3] || 4})));
+  buildCollegeKids();
   if (d.saved != null) $("clSaved").value = groupDigits(d.saved, true);
   if (d.ret != null) $("clReturn").value = String(d.ret);
   if (d.infl != null) $("clInfl").value = String(d.infl);
@@ -13724,6 +14030,18 @@ function buildCardSVG(){
       ["Payoff", "Year " + Rm.years.length]
     ];
     chartSvg = embedChart("chartMo", 900, 300); chartW = 900; chartH = 300;
+
+  } else if (t === "tools" && toolSub === "college" && readCollege().kids.length > 1){
+    var icf = readCollege(), Pf = collegePlanCalc(icf);
+    title = "College savings plan";
+    bigLabel = "Save per month";
+    big = Pf ? money(Pf.monthly) : "\u2014";
+    sub = Pf ? fmtNum(Pf.kids.length) + " children \u00b7 " + collegePhaseNote(Pf) : "";
+    rows = Pf ? [["Total cost, all children", money(Pf.totalFuture)], ["Needed today", money(Pf.pvToday)]]
+      .concat(Pf.kids.map(k => ["Child " + (k.index + 1) + ", in " + fmtNum(k.yearsUntil) + " yrs", money(k.total)]))
+      .concat([["Currently saved", money(icf.saved)], ["Investment return", pctStr(icf.investRet, 1)],
+        ["Tuition inflation", pctStr(icf.tuitionInfl, 1)]]) : [];
+    chartSvg = embedChart("chartCl", 900, 300); chartW = 900; chartH = 300;
 
   } else if (t === "tools" && toolSub === "college"){
     var ic = readCollege();
@@ -15883,18 +16201,19 @@ const GD_TRIPS = {
         {h:"<b>Years until college</b> is set from your child's age.", ok: gdOk(gd.a.kidAge) ? true : undefined},
         {h:"Pick a <b>School type</b>, or choose <b>Custom</b> and type a yearly cost."},
         {h:"Enter what's already in a 529 or other college account in <b>Currently saved</b>."},
-        {h:"The monthly figure at the top is what to set aside. More than one child? Run it for each and add them up."}
+        {h:"The monthly figure at the top is what to set aside. More than one child? <b>Add a child</b> for each, and the figure covers them all."}
       ];
     },
     chip(){
-      const R = collegeSavingsCalc(readCollege());
-      return R.monthly > 0 ? "Save<br><b>" + money(R.monthly) + "/mo</b>" : "";
+      const mo = collegeMonthly(readCollege());
+      return mo > 0 ? "Save<br><b>" + money(mo) + "/mo</b>" : "";
     },
     capture(){
-      const R = collegeSavingsCalc(readCollege());
-      if (!(R.monthly >= 0)) return null;
-      gd.a.collegeMo = Math.round(R.monthly); gd.a.clState = readCollegeState();
-      return "From College Savings: set aside about <b>" + money(R.monthly) + "/mo</b>. Change the figure below if you have more than one child.";
+      const inp = readCollege(), mo = collegeMonthly(inp);
+      if (!(mo >= 0)) return null;
+      gd.a.collegeMo = Math.round(mo); gd.a.clState = readCollegeState();
+      return "From College Savings: set aside about <b>" + money(mo) + "/mo</b>" +
+        (inp.kids.length > 1 ? " for all " + inp.kids.length + " children." : ". Change the figure below if you have more than one child.");
     }},
 
   basic: {tool:"basic", name:"Basic calculator", mins:3, title:"Explore your projection",
@@ -18619,7 +18938,8 @@ var TH_TOURS = {
       {title:"Your plan", focus:"#asideCollege", tasks(){
         return [
           {h:"<b>School type</b> fills in a typical yearly cost, tuition plus room and board. Choose <b>Custom</b> to type a particular school's price."},
-          {h:"<b>Annual cost today</b> is in today's prices; the tool raises it for you. <b>Years until college</b> is 18 minus your child's age."},
+          {h:"<b>Annual cost today</b> is in today's prices; the tool raises it for you. <b>Years until college</b> is 18 minus your child's age: 16 for a two-year-old, 20 for a child due in two years."},
+          {h:"More than one child? <b>Add a child</b> for each. They share one account, and the monthly amount covers them all."},
           {h:"<b>Currently saved</b> is what's already set aside, in a 529 plan or anywhere else."}
         ];
       }},
@@ -18634,13 +18954,14 @@ var TH_TOURS = {
           {h:"<b>Save per month</b> is what to set aside from now until college starts."},
           {h:"<b>Total projected cost</b> is every year of college at future prices, which is why it looks so large. <b>Needed when college starts</b> is less, because the money still in the account keeps growing while earlier years are paid."},
           {h:"You don't have to cover all of it. Grants, scholarships, what you can pay from income at the time and modest loans usually fill part. Saving even half makes a real difference."},
-          {h:"A 529 plan grows tax-free when spent on school, and many states add a tax deduction. More than one child? Run each separately and add the monthly amounts."}
+          {h:"With more than one child, the amount runs until the youngest starts college. If an older child starts soon, it can be higher at first and step down once that child is in college; the note under it says when."},
+          {h:"A 529 plan grows tax-free when spent on school, and many states add a tax deduction. Each child usually has their own 529, but you can change a 529's beneficiary to a sibling, so saving in one pot and splitting it later works."}
         ];
       }}
     ],
     chip(){
-      const R = collegeSavingsCalc(readCollege());
-      return R.monthly > 0 ? "Save<br><b>" + money(R.monthly) + "/mo</b>" : "";
+      const mo = collegeMonthly(readCollege());
+      return mo > 0 ? "Save<br><b>" + money(mo) + "/mo</b>" : "";
     }},
 
   rentbuy: {name:"Rent vs. Buy", title:"Is buying better than renting?",

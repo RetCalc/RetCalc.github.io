@@ -320,6 +320,44 @@ group("College savings: the saved balance lands on the target");
   near(C.rows[17].balance, C.targetAtStart, .01, "final balance equals what's needed");
 })();
 
+group("College savings: several children from one account");
+(function () {
+  var base = { tuitionInfl: .04, investRet: .06, saved: 5000 };
+  function plan(kids) { return collegePlanCalc(Object.assign({ kids: kids }, base)); }
+  function kid(y, cost) { return { yearsUntil: y, annualCost: cost || 27000, collegeYrs: 4 }; }
+  // Month by month, the lowest the account gets and where it ends.
+  function lowest(P) {
+    var g = Math.pow(1.06, 1 / 12), bills = [], low = Infinity, bal = 5000;
+    P.kids.forEach(function (k) { k.yearCosts.forEach(function (c, j) { bills.push({ m: k.start + 12 * j, amt: c }); }); });
+    var end = Math.max.apply(null, bills.map(function (b) { return b.m; }));
+    for (var m = 1; m <= end; m++) { bal = collegeWalk(bal, P.phases, bills, g, m, m - 1).bal; low = Math.min(low, bal); }
+    return { low: low, end: bal };
+  }
+  var one = collegeSavingsCalc({ yearsUntil: 18, annualCost: 27000, tuitionInfl: .04, investRet: .06, saved: 5000, collegeYrs: 4 });
+  var P1 = plan([kid(18)]);
+  near(P1.monthly, one.monthly, 1e-6, "one child: same amount as the single-child plan");
+  eq(P1.phases.length, 1, "one child: one level amount");
+  var twin = collegeSavingsCalc({ yearsUntil: 18, annualCost: 27000, tuitionInfl: .04, investRet: .06, saved: 2500, collegeYrs: 4 });
+  near(plan([kid(18), kid(18)]).monthly, 2 * twin.monthly, 1e-6, "twins: twice one child with half the savings each");
+
+  var P2 = plan([kid(18), kid(20)]), L2 = lowest(P2);
+  eq(P2.phases.length, 1, "two years apart: one level amount");
+  ok(L2.low > -0.01, "two years apart: the account never runs short");
+  near(L2.end, 0, .01, "two years apart: the account ends empty");
+  near(P2.rows[P2.rows.length - 1].balance, 0, .01, "the year-by-year table ends empty too");
+  near(P2.totalFuture, P2.kids[0].total + P2.kids[1].total, 1e-6, "total is both children's bills");
+
+  var P3 = plan([kid(2), kid(18)]), L3 = lowest(P3);
+  ok(P3.phases.length === 2 && P3.phases[1].monthly < P3.phases[0].monthly, "one starting in 2 years: the amount steps down after");
+  eq(P3.phases[0].to, 24 + 36, "the step comes after the older child's last bill");
+  ok(L3.low > -0.01, "stepped plan: the account never runs short");
+  near(L3.end, 0, .01, "stepped plan: the account ends empty");
+
+  eq(collegePlanCalc({ kids: [kid(18), kid(20)], tuitionInfl: .04, investRet: .06, saved: 1e7 }).monthly, 0, "enough saved: nothing more to add");
+  var P4 = plan([kid(18), { yearsUntil: 0, annualCost: 27000, collegeYrs: 4 }]);
+  ok(P4.kids.length === 1 && P4.skipped === 1, "a child with no years until college is left out");
+})();
+
 group("Healthcare: CMS age curve and ACA credits");
 (function () {
   near(hcAgeMultiplier(40), 1.278, 1e-9, "age 40"); near(hcAgeMultiplier(60), 2.714, 1e-9, "age 60");
