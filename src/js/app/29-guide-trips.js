@@ -557,7 +557,7 @@ const GD_TRIPS = {
         const row = (id, txt) => ({h:txt, ok: seen[id] ? true : undefined});
         return [
           {h:"Change <b>Withdrawal strategy</b> and watch the <b>Success rate</b> and the spending columns in the table. Try at least three." + (n > 1 ? "<em>" + n + " tried</em>" : ""), ok: n >= 3},
-          row("guardrails", "<b>Guardrails</b>: steady spending, cut 10% when the withdrawal rate runs 20% high. Try widening <b>Guardrail width</b>."),
+          row("guardrails", "<b>Guardrails</b>: steady spending, cut 10% when the withdrawal rate runs 20% high. Try moving the <b>Upper guardrail</b> further out, or ticking <b>No cuts in the final</b> 15 years."),
           row("floorceil", "<b>Floor &amp; ceiling</b>: follows the market, but never moves spending more than the <b>Max cut</b> or <b>Max raise</b> in a year."),
           row("yale", "<b>Yale Endowment</b>: blends last year's spending with a share of today's balance."),
           row("pct", "<b>Fixed %</b>: can't run out, but look at <b>Lowest year's spending</b> in the table."),

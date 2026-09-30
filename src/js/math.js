@@ -74,8 +74,11 @@
  * @property {number} stockPct - stock allocation, 0-100 (not a decimal)
  * @property {number} initialPct - starting withdrawal rate, 0-100 (not a decimal)
  * @property {"fixed"|"pct"|"guardrails"|"floorceil"|"yale"|"vpw"} strategy
- * @property {number} [guardBand] - guardrails band width, percent
- * @property {number} [adjustPct] - guardrails cut/raise size, percent
+ * @property {number} [guardBand] - guardrails: how far above the starting rate the upper guardrail sits, percent
+ * @property {number} [adjustPct] - guardrails: the cut when the upper guardrail is crossed, percent
+ * @property {number} [guardBandLo] - guardrails: how far below the starting rate the lower guardrail sits, percent (defaults to guardBand)
+ * @property {number} [raisePct] - guardrails: the raise when the lower guardrail is crossed, percent (defaults to adjustPct)
+ * @property {number} [gkFinalYears] - guardrails: no cuts in this many final years of the plan (0 or missing: cuts all the way)
  * @property {number} [floorPct] - floor-and-ceiling max cut, percent
  * @property {number} [ceilPct] - floor-and-ceiling max raise, percent
  * @property {number} [yaleRate] - Yale rule target percentage of current balance
@@ -2321,14 +2324,21 @@ function runDrawdown(o, seq) {
 
     } else if (o.strategy === "guardrails") {
       // Guyton-Klinger style: follow inflation, but cut or raise spending
-      // when the withdrawal rate drifts outside a band around the target
+      // when the withdrawal rate drifts past a guardrail around the target.
+      // The two guardrails and their steps can differ. Guyton and Klinger
+      // drop the cut (their capital preservation rule) in the final years,
+      // when there's too little time left for a bad run to empty the
+      // portfolio; gkFinalYears turns that on.
       w = (y === 0) ? baseW : prevW * (1 + lastInfl);
       if (bal > 0) {
         var curRate = w / bal * 100;
+        var bandLo = o.guardBandLo != null ? o.guardBandLo : o.guardBand;
+        var raise = o.raisePct != null ? o.raisePct : o.adjustPct;
         var hi = o.initialPct * (1 + o.guardBand / 100);
-        var lo = o.initialPct * (1 - o.guardBand / 100);
-        if (curRate > hi) w = w * (1 - o.adjustPct / 100);
-        else if (curRate < lo) w = w * (1 + o.adjustPct / 100);
+        var lo = o.initialPct * (1 - bandLo / 100);
+        var noCut = o.gkFinalYears > 0 && o.years - y <= o.gkFinalYears;
+        if (curRate > hi) { if (!noCut) w = w * (1 - Math.min(100, o.adjustPct) / 100); }
+        else if (curRate < lo) w = w * (1 + raise / 100);
       }
 
     } else if (o.strategy === "floorceil") {

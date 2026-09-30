@@ -74,8 +74,11 @@
  * @property {number} stockPct - stock allocation, 0-100 (not a decimal)
  * @property {number} initialPct - starting withdrawal rate, 0-100 (not a decimal)
  * @property {"fixed"|"pct"|"guardrails"|"floorceil"|"yale"|"vpw"} strategy
- * @property {number} [guardBand] - guardrails band width, percent
- * @property {number} [adjustPct] - guardrails cut/raise size, percent
+ * @property {number} [guardBand] - guardrails: how far above the starting rate the upper guardrail sits, percent
+ * @property {number} [adjustPct] - guardrails: the cut when the upper guardrail is crossed, percent
+ * @property {number} [guardBandLo] - guardrails: how far below the starting rate the lower guardrail sits, percent (defaults to guardBand)
+ * @property {number} [raisePct] - guardrails: the raise when the lower guardrail is crossed, percent (defaults to adjustPct)
+ * @property {number} [gkFinalYears] - guardrails: no cuts in this many final years of the plan (0 or missing: cuts all the way)
  * @property {number} [floorPct] - floor-and-ceiling max cut, percent
  * @property {number} [ceilPct] - floor-and-ceiling max raise, percent
  * @property {number} [yaleRate] - Yale rule target percentage of current balance
@@ -2321,14 +2324,21 @@ function runDrawdown(o, seq) {
 
     } else if (o.strategy === "guardrails") {
       // Guyton-Klinger style: follow inflation, but cut or raise spending
-      // when the withdrawal rate drifts outside a band around the target
+      // when the withdrawal rate drifts past a guardrail around the target.
+      // The two guardrails and their steps can differ. Guyton and Klinger
+      // drop the cut (their capital preservation rule) in the final years,
+      // when there's too little time left for a bad run to empty the
+      // portfolio; gkFinalYears turns that on.
       w = (y === 0) ? baseW : prevW * (1 + lastInfl);
       if (bal > 0) {
         var curRate = w / bal * 100;
+        var bandLo = o.guardBandLo != null ? o.guardBandLo : o.guardBand;
+        var raise = o.raisePct != null ? o.raisePct : o.adjustPct;
         var hi = o.initialPct * (1 + o.guardBand / 100);
-        var lo = o.initialPct * (1 - o.guardBand / 100);
-        if (curRate > hi) w = w * (1 - o.adjustPct / 100);
-        else if (curRate < lo) w = w * (1 + o.adjustPct / 100);
+        var lo = o.initialPct * (1 - bandLo / 100);
+        var noCut = o.gkFinalYears > 0 && o.years - y <= o.gkFinalYears;
+        if (curRate > hi) { if (!noCut) w = w * (1 - Math.min(100, o.adjustPct) / 100); }
+        else if (curRate < lo) w = w * (1 + raise / 100);
       }
 
     } else if (o.strategy === "floorceil") {
@@ -5487,6 +5497,9 @@ function ddStateToOpts(data) {
     initialPct: +data.rate || 4,
     guardBand: +data.guardBand || 20,
     adjustPct: +data.adjust || 10,
+    guardBandLo: +(data.guardBandLo != null ? data.guardBandLo : data.guardBand) || 20,
+    raisePct: +(data.adjustLo != null ? data.adjustLo : data.adjust) || 10,
+    gkFinalYears: data.gkFinal ? Math.max(0, Math.round(+data.gkFinalYrs || 0)) : 0,
     floorPct: +data.floor || 10,
     ceilPct: +data.ceil || 10,
     yaleWeight: Math.min(100, Math.max(0, +data.yaleWeight || 70)),
@@ -7993,7 +8006,11 @@ function buildDrawdownSheet(){
       pctStr((x.st.rate || 0) / 100, 1) + " from " +
       (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
   });
-  if (o.strategy === "guardrails") inputs += row("Guardrail width", num("ddGuardBand") + "%");
+  if (o.strategy === "guardrails"){
+    inputs += row("Upper guardrail", fmtNum(o.guardBand) + "% above, cut " + fmtNum(o.adjustPct) + "%");
+    inputs += row("Lower guardrail", fmtNum(o.guardBandLo) + "% below, raise " + fmtNum(o.raisePct) + "%");
+    if (o.gkFinalYears > 0) inputs += row("No cuts in the final", fmtNum(o.gkFinalYears) + " years");
+  }
   if (o.strategy === "yale"){
     inputs += row("Weight on last year", num("ddYaleWeight") + "%");
     inputs += row("Target spending rate", num("ddYaleRate") + "%");
@@ -10377,6 +10394,9 @@ function readDD() {
     wdStages: strat === "fixed" ? ddWdStages.map(function (x) { return Object.assign({}, x); }) : [],
     guardBand: num("ddGuardBand"),
     adjustPct: num("ddAdjust"),
+    guardBandLo: num("ddGuardBandLo"),
+    raisePct: num("ddAdjustLo"),
+    gkFinalYears: $("ddGkFinal").checked ? Math.max(0, Math.round(num("ddGkFinalYrs"))) : 0,
     floorPct: num("ddFloor"),
     ceilPct: num("ddCeil"),
     yaleWeight: Math.min(100, Math.max(0, num("ddYaleWeight"))),
@@ -10401,7 +10421,7 @@ function readDD() {
 }
 
 const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
-  guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
+  guardBand:20, adjust:10, guardBandLo:20, adjustLo:10, gkFinal:false, gkFinalYrs:15, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
   spendCeil:0, vpwRate:3.8, vpwFV:0,
   stockEnd:"", legacyGoal:0,
   ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
@@ -10416,6 +10436,8 @@ function readDDState(){
     initial:num("ddInitial"), years:num("ddYears"), stock:num("ddStock"), fee:num("ddFee"),
     strategy:$("ddStrategy").value, rate:num("ddRate"),
     guardBand:num("ddGuardBand"), adjust:num("ddAdjust"),
+    guardBandLo:num("ddGuardBandLo"), adjustLo:num("ddAdjustLo"),
+    gkFinal:$("ddGkFinal").checked, gkFinalYrs:num("ddGkFinalYrs"),
     floor:num("ddFloor"), ceil:num("ddCeil"),
     yaleWeight:num("ddYaleWeight"), yaleRate:num("ddYaleRate"),
     spendFloor:num("ddSpendFloor"),
@@ -10442,6 +10464,15 @@ function writeDDState(d){
   if (d.rate != null) $("ddRate").value = d.rate;
   if (d.guardBand != null) $("ddGuardBand").value = d.guardBand;
   if (d.adjust != null) $("ddAdjust").value = d.adjust;
+  // Saved before the two guardrails were split: the lower one matches the
+  // upper, as it did then, and the final-years rule is off.
+  const lo = d.guardBandLo != null ? d.guardBandLo : d.guardBand;
+  const raise = d.adjustLo != null ? d.adjustLo : d.adjust;
+  if (lo != null) $("ddGuardBandLo").value = lo;
+  if (raise != null) $("ddAdjustLo").value = raise;
+  if (d.gkFinal != null || d.strategy) $("ddGkFinal").checked = !!d.gkFinal;
+  if (d.gkFinalYrs != null) $("ddGkFinalYrs").value = d.gkFinalYrs;
+  ddGkFinalSync();
   if (d.floor != null) $("ddFloor").value = d.floor;
   if (d.ceil != null) $("ddCeil").value = d.ceil;
   if (d.yaleWeight != null) $("ddYaleWeight").value = d.yaleWeight;
@@ -10575,14 +10606,16 @@ function renderDrawdown() {
 
   if (strat === "guardrails") {
     var target = o.initialPct;
-    var bandV = Math.max(0, num("ddGuardBand"));
-    var adjV = Math.max(0, num("ddAdjust"));
-    var hiRate = target * (1 + bandV / 100);
-    var loRate = target * (1 - bandV / 100);
+    var hiRate = target * (1 + Math.max(0, o.guardBand) / 100);
+    var loRate = target * (1 - Math.min(100, Math.max(0, o.guardBandLo)) / 100);
     $("ddGuardExample").hidden = false;
     $("ddGuardExample").innerHTML = "With a " + pctStr(target / 100, 1) + " target: if your withdrawal " +
       "ever climbs above <b>" + pctStr(hiRate / 100, 1) + "</b> of the portfolio, spending is cut " +
-      adjV + "%. If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + adjV + "% raise.";
+      fmtNum(Math.min(100, Math.max(0, o.adjustPct))) + "%" +
+      (o.gkFinalYears > 0 ? (o.gkFinalYears >= o.years ? ", except that with no cuts in the final " + fmtNum(o.gkFinalYears) +
+          " years, it never is in a " + fmtNum(o.years) + "-year plan"
+        : " (but not in the final " + fmtNum(o.gkFinalYears) + " years)") : "") +
+      ". If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + fmtNum(Math.max(0, o.raisePct)) + "% raise.";
   } else {
     $("ddGuardExample").hidden = true;
   }
@@ -11148,6 +11181,7 @@ $("segDD").addEventListener("click", function (e) {
   renderDrawdown();
 });
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
+ "ddGuardBandLo", "ddAdjustLo", "ddGkFinalYrs",
  "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor", "ddSpendCeil",
  "ddVpwRate", "ddVpwFV",
  "ddSSIncome", "ddSSIncome2", "ddSSAmount", "ddSSAmount2", "ddSSDelay",
@@ -11179,6 +11213,10 @@ $("segDDView").addEventListener("click", function (e) {
   renderDrawdown();
 });
 $("ddStrategy").addEventListener("change", renderDrawdown);
+/* The years box only means something with its box ticked. */
+function ddGkFinalSync(){ $("ddGkFinalYrs").disabled = !$("ddGkFinal").checked; }
+$("ddGkFinal").addEventListener("change", function(){ ddGkFinalSync(); renderDrawdown(); });
+ddGkFinalSync();
 /* All three retirement modes keep their last computed result in the
    background regardless of which tab is currently open, so every source
    that has a real number is offered \u2014 not just whichever one happens to
@@ -11252,7 +11290,8 @@ const GLOSS = {
   utilities: "Electricity, gas, water, trash and similar typically run around $200 to $400 a month for an average-sized home, depending on climate, home size and usage.",
   successrate: "The share of tested retirements where the money lasted the full period without running out.",
   sequence: "The order returns arrive in. A bad decade early does far more damage than the same decade late, even at an identical average.",
-  guardrails: "Each year, this compares what you\u0027re about to withdraw to your portfolio\u0027s current value. If that percentage has drifted too far from where you started (up because markets fell, or down because they rose), spending is cut or raised to bring it back toward target.",
+  guardrails: "Each year, this compares what you\u0027re about to withdraw to your portfolio\u0027s current value. If that percentage climbs too far above where you started (because markets fell), it crosses the upper guardrail and spending is cut. If it falls too far below (because markets rose), it crosses the lower guardrail and you get a raise. Each guardrail has its own distance and step, so you can, say, cut sooner than you raise.",
+  gkfinal: "Guyton and Klinger stop the spending cuts in the last years of retirement, 15 in their paper. With that little time left, a bad stretch is less likely to empty the portfolio before the end, so a cut would give up income you could safely spend. Raises from the lower guardrail still happen. The final years are counted back from the end of the years in retirement you set.",
   strategy: "The rule you follow for how much to take out each year. Different rules trade off steadier income against protecting the portfolio. How the strategies compare, below, walks through each one with its pros and cons.",
   txpre: "Money taken out of your pay before income tax: traditional 401(k) contributions, HSA contributions, a traditional IRA if deductible, and health premiums paid through work. It lowers income tax but not Social Security or Medicare tax.",
   txpreret: "Deductions that still come off before income tax in retirement: HSA contributions, self-employed health premiums and deductible IRA contributions.",
@@ -13609,8 +13648,8 @@ var DD_GUIDE = [
    cons:["Income swings as much as the portfolio does","A long bear market can push spending well below what you need","Tends to leave a sizable balance at the end"],
    fit:"Social Security, a pension or other income covers your essentials, and the portfolio pays for flexible spending. Pair it with a minimum spending amount."},
   {k:"guardrails", name:"Guyton-Klinger guardrails", tag:"Rules-based adjustments",
-   how:"Start like the fixed-amount method and raise spending with inflation. Each year, compare what you're about to take with the portfolio's value. If that rate has drifted too far above where you started (the upper guardrail, often 20% above), cut spending by a set step, often 10%. If it falls too far below, take a raise of the same size. Jonathan Guyton and William Klinger published the rules in 2006; this tool uses those two guardrails without the paper's extra rules.",
-   pros:["Supports a higher starting rate than the 4% rule, often 5% or more","Income stays steady most years and changes only when a guardrail is hit","Reacts to a bad market before it becomes a crisis"],
+   how:"Start like the fixed-amount method and raise spending with inflation. Each year, compare what you're about to take with the portfolio's value. If that rate has drifted too far above where you started (the upper guardrail, often 20% above), cut spending by a set step, often 10%. If it falls too far below (the lower guardrail), take a raise, often also 10%. The two guardrails can be set differently, for example to cut sooner than you raise. Jonathan Guyton and William Klinger published the rules in 2006, and their paper skips cuts in the final 15 years, when too little time is left for a bad run to empty the portfolio; tick <b>No cuts in the final</b> to use that rule too. The paper's other rules, like skipping the inflation raise after a losing year, aren't modeled here.",
+   pros:["Supports a higher starting rate than the 4% rule, often 5% or more","Income stays steady most years and changes only when a guardrail is hit","Reacts to a bad market before it becomes a crisis","Cuts and raises can be tuned separately, and cuts can stop late in retirement"],
    cons:["Cuts arrive as sudden 10% steps, and a long downturn can bring several","More rules to track each year","The historical record behind it is shorter than for the 4% rule"],
    fit:"You'd accept an occasional real pay cut in exchange for more income to start with."},
   {k:"floorceil", name:"Floor and ceiling", tag:"Vanguard's dynamic spending",
@@ -16330,7 +16369,7 @@ const GD_TRIPS = {
         const row = (id, txt) => ({h:txt, ok: seen[id] ? true : undefined});
         return [
           {h:"Change <b>Withdrawal strategy</b> and watch the <b>Success rate</b> and the spending columns in the table. Try at least three." + (n > 1 ? "<em>" + n + " tried</em>" : ""), ok: n >= 3},
-          row("guardrails", "<b>Guardrails</b>: steady spending, cut 10% when the withdrawal rate runs 20% high. Try widening <b>Guardrail width</b>."),
+          row("guardrails", "<b>Guardrails</b>: steady spending, cut 10% when the withdrawal rate runs 20% high. Try moving the <b>Upper guardrail</b> further out, or ticking <b>No cuts in the final</b> 15 years."),
           row("floorceil", "<b>Floor &amp; ceiling</b>: follows the market, but never moves spending more than the <b>Max cut</b> or <b>Max raise</b> in a year."),
           row("yale", "<b>Yale Endowment</b>: blends last year's spending with a share of today's balance."),
           row("pct", "<b>Fixed %</b>: can't run out, but look at <b>Lowest year's spending</b> in the table."),
@@ -17910,7 +17949,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.a689db3b91.js";
+var OP_WORKER_URL = "/assets/plan.a0749b2fbf.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

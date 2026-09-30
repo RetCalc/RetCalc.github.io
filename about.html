@@ -173,8 +173,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.037935fedb.css">
-<link rel="preload" href="/assets/app.c3622d89b2.js" as="script">
+<link rel="stylesheet" href="/assets/app.d839e2de6b.css">
+<link rel="preload" href="/assets/app.b11e08cc65.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1603,14 +1603,33 @@ window.onerror = function(msg){
           <div id="ddWdStageList"></div>
           <button class="btn mini" type="button" id="ddAddWdStage">+ Add spending stage</button>
         </div>
-        <div class="two" id="ddGuardWrap" hidden>
-          <div class="field">
-            <label for="ddGuardBand">Guardrail width<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-            <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
+        <div id="ddGuardWrap" hidden>
+          <div class="ddgk-h">Upper guardrail: cut spending<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="two">
+            <div class="field">
+              <label for="ddGuardBand">Rate above target</label>
+              <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="ddAdjust">Cut spending by</label>
+              <div class="inputwrap"><input id="ddAdjust" type="text" inputmode="decimal" data-num data-step="1" min="1" max="100" data-nonneg value="10"><span class="affix">%</span></div>
+            </div>
           </div>
-          <div class="field">
-            <label for="ddAdjust">Size of the cut or raise</label>
-            <div class="inputwrap"><input id="ddAdjust" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg value="10"><span class="affix">%</span></div>
+          <div class="ddgk-final">
+            <label class="ddgk-check"><input type="checkbox" id="ddGkFinal"><span>No cuts in the final</span></label>
+            <div class="inputwrap"><input id="ddGkFinalYrs" type="text" inputmode="decimal" data-num data-step="1" min="1" max="60" data-nonneg value="15" aria-label="Final years without cuts"><span class="affix">yrs</span></div>
+            <span class="tipdot" data-tip="gkfinal" role="button" tabindex="0" aria-label="What is this?">?</span>
+          </div>
+          <div class="ddgk-h">Lower guardrail: raise spending</div>
+          <div class="two">
+            <div class="field">
+              <label for="ddGuardBandLo">Rate below target</label>
+              <div class="inputwrap"><input id="ddGuardBandLo" type="text" inputmode="decimal" data-num data-step="5" min="1" max="100" data-nonneg value="20"><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="ddAdjustLo">Raise spending by</label>
+              <div class="inputwrap"><input id="ddAdjustLo" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg value="10"><span class="affix">%</span></div>
+            </div>
           </div>
         </div>
         <div class="hint" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>
@@ -2362,8 +2381,10 @@ window.onerror = function(msg){
           markets do: the classic 4% rule. <b>Percentage of portfolio</b> takes
           the same share of whatever the account is worth, so it can never run dry but
           income swings with the market. <b>Guyton-Klinger Guardrails</b> follows
-          inflation but cuts or raises spending if the withdrawal rate drifts too far
-          from target. <b>Floor &amp; ceiling</b> aims at a percentage of the balance
+          inflation but cuts spending if the withdrawal rate climbs past an upper
+          guardrail and raises it if the rate falls past a lower one; each guardrail
+          has its own distance and step, and cuts can optionally stop in the final
+          years of retirement (15 in Guyton and Klinger's paper). <b>Floor &amp; ceiling</b> aims at a percentage of the balance
           but limits how much spending can change from one year to the next.
           <b>Yale Endowment</b> blends last year's spending with a fresh percentage of
           the current balance, smoothing swings while still tracking the market.
@@ -5082,7 +5103,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.c3622d89b2.js"></script>
+<script src="/assets/app.b11e08cc65.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

@@ -56,14 +56,33 @@
           <div id="ddWdStageList"></div>
           <button class="btn mini" type="button" id="ddAddWdStage">+ Add spending stage</button>
         </div>
-        <div class="two" id="ddGuardWrap" hidden>
-          <div class="field">
-            <label for="ddGuardBand">Guardrail width<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-            <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
+        <div id="ddGuardWrap" hidden>
+          <div class="ddgk-h">Upper guardrail: cut spending<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></div>
+          <div class="two">
+            <div class="field">
+              <label for="ddGuardBand">Rate above target</label>
+              <div class="inputwrap"><input id="ddGuardBand" type="text" inputmode="decimal" data-num data-step="5" min="1" data-nonneg value="20"><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="ddAdjust">Cut spending by</label>
+              <div class="inputwrap"><input id="ddAdjust" type="text" inputmode="decimal" data-num data-step="1" min="1" max="100" data-nonneg value="10"><span class="affix">%</span></div>
+            </div>
           </div>
-          <div class="field">
-            <label for="ddAdjust">Size of the cut or raise</label>
-            <div class="inputwrap"><input id="ddAdjust" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg value="10"><span class="affix">%</span></div>
+          <div class="ddgk-final">
+            <label class="ddgk-check"><input type="checkbox" id="ddGkFinal"><span>No cuts in the final</span></label>
+            <div class="inputwrap"><input id="ddGkFinalYrs" type="text" inputmode="decimal" data-num data-step="1" min="1" max="60" data-nonneg value="15" aria-label="Final years without cuts"><span class="affix">yrs</span></div>
+            <span class="tipdot" data-tip="gkfinal" role="button" tabindex="0" aria-label="What is this?">?</span>
+          </div>
+          <div class="ddgk-h">Lower guardrail: raise spending</div>
+          <div class="two">
+            <div class="field">
+              <label for="ddGuardBandLo">Rate below target</label>
+              <div class="inputwrap"><input id="ddGuardBandLo" type="text" inputmode="decimal" data-num data-step="5" min="1" max="100" data-nonneg value="20"><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="ddAdjustLo">Raise spending by</label>
+              <div class="inputwrap"><input id="ddAdjustLo" type="text" inputmode="decimal" data-num data-step="1" min="1" data-nonneg value="10"><span class="affix">%</span></div>
+            </div>
           </div>
         </div>
         <div class="hint" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>

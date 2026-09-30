@@ -586,7 +586,11 @@ function buildDrawdownSheet(){
       pctStr((x.st.rate || 0) / 100, 1) + " from " +
       (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
   });
-  if (o.strategy === "guardrails") inputs += row("Guardrail width", num("ddGuardBand") + "%");
+  if (o.strategy === "guardrails"){
+    inputs += row("Upper guardrail", fmtNum(o.guardBand) + "% above, cut " + fmtNum(o.adjustPct) + "%");
+    inputs += row("Lower guardrail", fmtNum(o.guardBandLo) + "% below, raise " + fmtNum(o.raisePct) + "%");
+    if (o.gkFinalYears > 0) inputs += row("No cuts in the final", fmtNum(o.gkFinalYears) + " years");
+  }
   if (o.strategy === "yale"){
     inputs += row("Weight on last year", num("ddYaleWeight") + "%");
     inputs += row("Target spending rate", num("ddYaleRate") + "%");

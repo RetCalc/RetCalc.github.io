@@ -288,6 +288,29 @@ group("Drawdown: every strategy starts at its stated spending; income offsets it
   eq(M1.successRate, M2.successRate, "Monte Carlo is repeatable with the same seed");
 })();
 
+group("Drawdown: guardrails set apart, and no cuts in the final years");
+(function () {
+  var base = { initial: 1e6, years: 30, stockPct: 60, initialPct: 5, fee: 0, strategy: "guardrails", guardBand: 20, adjustPct: 10 };
+  function run(x, from) { return runDrawdown(Object.assign({}, base, x), seqFrom(from, 30)).rows; }
+  function steps(rows) { return rows.map(function (r, i) { return i ? r.realSpend / rows[i - 1].realSpend : 1; }); }
+  var S = run({}, 1966), E = run({ guardBandLo: 20, raisePct: 10 }, 1966);
+  ok(S.every(function (r, i) { return Math.abs(r.realSpend - E[i].realSpend) < 1e-6; }), "a lower guardrail left unset matches the upper one");
+
+  var cutsLate = steps(S).slice(15).filter(function (x) { return x < .999; }).length;
+  ok(cutsLate > 0, "1966: without the rule, spending is cut in the final 15 years", cutsLate + " cuts");
+  var F = run({ gkFinalYears: 15 }, 1966), fs = steps(F);
+  ok(fs.slice(15).every(function (x) { return x > .999; }), "with it, no cut in the final 15 years");
+  ok(F.slice(0, 15).every(function (r, i) { return Math.abs(r.realSpend - S[i].realSpend) < 1e-6; }), "the first 15 years are unchanged");
+  ok(run({ gkFinalYears: 30 }, 1966).every(function (r, i, a) { return !i || r.realSpend >= a[i - 1].realSpend - 1e-6; }), "final years covering the whole plan: never a cut");
+
+  var up = steps(run({}, 1982)), i = up.findIndex(function (x) { return x > 1.001; });
+  near(up[i], 1.10, 1e-9, "1982: the first raise is 10%");
+  var up5 = steps(run({ raisePct: 5 }, 1982));
+  near(up5[i], 1.05, 1e-9, "a 5% raise when the lower guardrail says so");
+  var wide = steps(run({ guardBandLo: 60 }, 1982));
+  ok(wide.findIndex(function (x) { return x > 1.001; }) > i || wide.every(function (x) { return x <= 1.001; }), "a wider lower guardrail raises later");
+})();
+
 group("Historical accumulation: every monthly window, one trace per year");
 (function () {
   var H = historicalRuns({ initial: 10000, fees: 0 }, [{ years: 30, contrib: 500, period: "Monthly", growth: .03, nominal: .085, mix: .8, glide: { on: false } }]);

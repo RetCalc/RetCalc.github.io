@@ -260,6 +260,9 @@ function readDD() {
     wdStages: strat === "fixed" ? ddWdStages.map(function (x) { return Object.assign({}, x); }) : [],
     guardBand: num("ddGuardBand"),
     adjustPct: num("ddAdjust"),
+    guardBandLo: num("ddGuardBandLo"),
+    raisePct: num("ddAdjustLo"),
+    gkFinalYears: $("ddGkFinal").checked ? Math.max(0, Math.round(num("ddGkFinalYrs"))) : 0,
     floorPct: num("ddFloor"),
     ceilPct: num("ddCeil"),
     yaleWeight: Math.min(100, Math.max(0, num("ddYaleWeight"))),
@@ -284,7 +287,7 @@ function readDD() {
 }
 
 const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
-  guardBand:20, adjust:10, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
+  guardBand:20, adjust:10, guardBandLo:20, adjustLo:10, gkFinal:false, gkFinalYrs:15, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
   spendCeil:0, vpwRate:3.8, vpwFV:0,
   stockEnd:"", legacyGoal:0,
   ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
@@ -299,6 +302,8 @@ function readDDState(){
     initial:num("ddInitial"), years:num("ddYears"), stock:num("ddStock"), fee:num("ddFee"),
     strategy:$("ddStrategy").value, rate:num("ddRate"),
     guardBand:num("ddGuardBand"), adjust:num("ddAdjust"),
+    guardBandLo:num("ddGuardBandLo"), adjustLo:num("ddAdjustLo"),
+    gkFinal:$("ddGkFinal").checked, gkFinalYrs:num("ddGkFinalYrs"),
     floor:num("ddFloor"), ceil:num("ddCeil"),
     yaleWeight:num("ddYaleWeight"), yaleRate:num("ddYaleRate"),
     spendFloor:num("ddSpendFloor"),
@@ -325,6 +330,15 @@ function writeDDState(d){
   if (d.rate != null) $("ddRate").value = d.rate;
   if (d.guardBand != null) $("ddGuardBand").value = d.guardBand;
   if (d.adjust != null) $("ddAdjust").value = d.adjust;
+  // Saved before the two guardrails were split: the lower one matches the
+  // upper, as it did then, and the final-years rule is off.
+  const lo = d.guardBandLo != null ? d.guardBandLo : d.guardBand;
+  const raise = d.adjustLo != null ? d.adjustLo : d.adjust;
+  if (lo != null) $("ddGuardBandLo").value = lo;
+  if (raise != null) $("ddAdjustLo").value = raise;
+  if (d.gkFinal != null || d.strategy) $("ddGkFinal").checked = !!d.gkFinal;
+  if (d.gkFinalYrs != null) $("ddGkFinalYrs").value = d.gkFinalYrs;
+  ddGkFinalSync();
   if (d.floor != null) $("ddFloor").value = d.floor;
   if (d.ceil != null) $("ddCeil").value = d.ceil;
   if (d.yaleWeight != null) $("ddYaleWeight").value = d.yaleWeight;
@@ -458,14 +472,16 @@ function renderDrawdown() {
 
   if (strat === "guardrails") {
     var target = o.initialPct;
-    var bandV = Math.max(0, num("ddGuardBand"));
-    var adjV = Math.max(0, num("ddAdjust"));
-    var hiRate = target * (1 + bandV / 100);
-    var loRate = target * (1 - bandV / 100);
+    var hiRate = target * (1 + Math.max(0, o.guardBand) / 100);
+    var loRate = target * (1 - Math.min(100, Math.max(0, o.guardBandLo)) / 100);
     $("ddGuardExample").hidden = false;
     $("ddGuardExample").innerHTML = "With a " + pctStr(target / 100, 1) + " target: if your withdrawal " +
       "ever climbs above <b>" + pctStr(hiRate / 100, 1) + "</b> of the portfolio, spending is cut " +
-      adjV + "%. If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + adjV + "% raise.";
+      fmtNum(Math.min(100, Math.max(0, o.adjustPct))) + "%" +
+      (o.gkFinalYears > 0 ? (o.gkFinalYears >= o.years ? ", except that with no cuts in the final " + fmtNum(o.gkFinalYears) +
+          " years, it never is in a " + fmtNum(o.years) + "-year plan"
+        : " (but not in the final " + fmtNum(o.gkFinalYears) + " years)") : "") +
+      ". If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + fmtNum(Math.max(0, o.raisePct)) + "% raise.";
   } else {
     $("ddGuardExample").hidden = true;
   }
@@ -1031,6 +1047,7 @@ $("segDD").addEventListener("click", function (e) {
   renderDrawdown();
 });
 ["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
+ "ddGuardBandLo", "ddAdjustLo", "ddGkFinalYrs",
  "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor", "ddSpendCeil",
  "ddVpwRate", "ddVpwFV",
  "ddSSIncome", "ddSSIncome2", "ddSSAmount", "ddSSAmount2", "ddSSDelay",
@@ -1062,6 +1079,10 @@ $("segDDView").addEventListener("click", function (e) {
   renderDrawdown();
 });
 $("ddStrategy").addEventListener("change", renderDrawdown);
+/* The years box only means something with its box ticked. */
+function ddGkFinalSync(){ $("ddGkFinalYrs").disabled = !$("ddGkFinal").checked; }
+$("ddGkFinal").addEventListener("change", function(){ ddGkFinalSync(); renderDrawdown(); });
+ddGkFinalSync();
 /* All three retirement modes keep their last computed result in the
    background regardless of which tab is currently open, so every source
    that has a real number is offered \u2014 not just whichever one happens to
