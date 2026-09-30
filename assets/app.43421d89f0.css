@@ -1838,10 +1838,11 @@ html.pwa .popup-overlay{
 @media (hover:none) and (pointer:coarse){
   input,select,textarea{font-size:16px !important}
   /* Tapping a control shouldn't offer to select its label or pop the iOS
-     text-callout. Scoped to touch so desktop text selection is untouched, and
-     kept off readouts/tables so figures stay copyable. */
+     text-callout, and neither should pressing on a chart to read a point.
+     Scoped to touch so desktop text selection is untouched, and kept off
+     readouts/tables so figures stay copyable. */
   nav[role=tablist] button,.seg button,.bgseg button,.btn,.toolcard,
-  .toolback .backbtn,.tipdot{
+  .toolback .backbtn,.tipdot,.chartwrap,.gd-chart{
     -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
   .btn.mini{font-size:14px}
   .seg button{font-size:14px}

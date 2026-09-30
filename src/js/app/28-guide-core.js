@@ -678,11 +678,10 @@ function gdChartDraw(el, series){
     tip.style.left = Math.max(0, Math.min(W - tw, tx > W / 2 ? tx - tw - 12 : tx + 12)) + "px";
   };
   const hide = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); cur = null; };
-  svg.addEventListener("pointermove", e => {
-    const b = svg.getBoundingClientRect();
-    show(x0 + (e.clientX - b.left - pl) / Math.max(1, W - pl - pr) * (x1 - x0));
-  });
-  svg.addEventListener("pointerleave", hide);
+  const at = cx => { const b = svg.getBoundingClientRect(); show(x0 + (cx - b.left - pl) / Math.max(1, W - pl - pr) * (x1 - x0)); };
+  svg.addEventListener("pointermove", e => { if (e.pointerType !== "touch") at(e.clientX); });
+  svg.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") hide(); });
+  chartTouch(svg, at, hide);
   el.onkeydown = e => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") return;
     e.preventDefault();

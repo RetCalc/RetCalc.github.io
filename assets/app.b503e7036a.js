@@ -5082,18 +5082,26 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
   }
   wrap.addEventListener("mousemove", e => probe(e.clientX, e.clientY));
   wrap.addEventListener("mouseleave", clear);
-  /* Scrubbing sideways along the chart shouldn't scroll the page, but the
-     chart is a full-width block on a phone and swallowing every gesture that
-     started on it made it a dead zone for ordinary scrolling. The first move
-     decides: mostly vertical hands the gesture back to the page, mostly
-     horizontal keeps it here for the rest of the touch. */
-  let t0x = 0, t0y = 0, axis = "";
-  wrap.addEventListener("touchstart", e => {
+  chartTouch(wrap, probe, clear);
+}
+
+/* Touch scrubbing for a chart: a touch shows the point under the finger and
+   the tooltip stays up briefly after it lifts. Scrubbing sideways shouldn't
+   scroll the page, but the chart is a full-width block on a phone and
+   swallowing every gesture that started on it made it a dead zone for
+   ordinary scrolling. The first move decides: mostly vertical hands the
+   gesture back to the page, mostly horizontal keeps it here for the rest of
+   the touch. (Charts also get -webkit-touch-callout/user-select:none on touch
+   devices, so a press-and-hold doesn't start a text selection.) */
+function chartTouch(el, probe, clear){
+  let t0x = 0, t0y = 0, axis = "", timer = null;
+  el.addEventListener("touchstart", e => {
     const t = e.touches[0]; if (!t) return;
+    clearTimeout(timer);
     t0x = t.clientX; t0y = t.clientY; axis = "";
     probe(t.clientX, t.clientY);
   }, {passive:true});
-  wrap.addEventListener("touchmove", e => {
+  el.addEventListener("touchmove", e => {
     const t = e.touches[0]; if (!t) return;
     if (!axis){
       const dx = Math.abs(t.clientX - t0x), dy = Math.abs(t.clientY - t0y);
@@ -5105,7 +5113,7 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
     e.preventDefault();
     probe(t.clientX, t.clientY);
   }, {passive:false});
-  wrap.addEventListener("touchend", () => setTimeout(clear, 2500), {passive:true});
+  el.addEventListener("touchend", () => { clearTimeout(timer); timer = setTimeout(clear, 2500); }, {passive:true});
 }
 
 function tipRows(best, mode){
@@ -15426,11 +15434,10 @@ function gdChartDraw(el, series){
     tip.style.left = Math.max(0, Math.min(W - tw, tx > W / 2 ? tx - tw - 12 : tx + 12)) + "px";
   };
   const hide = () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); cur = null; };
-  svg.addEventListener("pointermove", e => {
-    const b = svg.getBoundingClientRect();
-    show(x0 + (e.clientX - b.left - pl) / Math.max(1, W - pl - pr) * (x1 - x0));
-  });
-  svg.addEventListener("pointerleave", hide);
+  const at = cx => { const b = svg.getBoundingClientRect(); show(x0 + (cx - b.left - pl) / Math.max(1, W - pl - pr) * (x1 - x0)); };
+  svg.addEventListener("pointermove", e => { if (e.pointerType !== "touch") at(e.clientX); });
+  svg.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") hide(); });
+  chartTouch(svg, at, hide);
   el.onkeydown = e => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "Home" && e.key !== "End") return;
     e.preventDefault();
@@ -18077,11 +18084,10 @@ function opHover(el, n, xAt, slot, tipFor){
     for (let i = 0; i < n; i++){ const d = Math.abs(xAt(i) - cx); if (d < bd){ bd = d; best = i; } }
     return best;
   };
-  svg.addEventListener("pointermove", e => {
-    const b = svg.getBoundingClientRect();
-    show(nearest((e.clientX - b.left) / b.width * W));
-  });
-  svg.addEventListener("pointerleave", hide);
+  const at = cx => { const b = svg.getBoundingClientRect(); show(nearest((cx - b.left) / b.width * W)); };
+  svg.addEventListener("pointermove", e => { if (e.pointerType !== "touch") at(e.clientX); });
+  svg.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") hide(); });
+  chartTouch(svg, at, hide);
   el.tabIndex = 0;
   el.onkeydown = e => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;

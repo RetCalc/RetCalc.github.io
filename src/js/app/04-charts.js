@@ -496,18 +496,26 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
   }
   wrap.addEventListener("mousemove", e => probe(e.clientX, e.clientY));
   wrap.addEventListener("mouseleave", clear);
-  /* Scrubbing sideways along the chart shouldn't scroll the page, but the
-     chart is a full-width block on a phone and swallowing every gesture that
-     started on it made it a dead zone for ordinary scrolling. The first move
-     decides: mostly vertical hands the gesture back to the page, mostly
-     horizontal keeps it here for the rest of the touch. */
-  let t0x = 0, t0y = 0, axis = "";
-  wrap.addEventListener("touchstart", e => {
+  chartTouch(wrap, probe, clear);
+}
+
+/* Touch scrubbing for a chart: a touch shows the point under the finger and
+   the tooltip stays up briefly after it lifts. Scrubbing sideways shouldn't
+   scroll the page, but the chart is a full-width block on a phone and
+   swallowing every gesture that started on it made it a dead zone for
+   ordinary scrolling. The first move decides: mostly vertical hands the
+   gesture back to the page, mostly horizontal keeps it here for the rest of
+   the touch. (Charts also get -webkit-touch-callout/user-select:none on touch
+   devices, so a press-and-hold doesn't start a text selection.) */
+function chartTouch(el, probe, clear){
+  let t0x = 0, t0y = 0, axis = "", timer = null;
+  el.addEventListener("touchstart", e => {
     const t = e.touches[0]; if (!t) return;
+    clearTimeout(timer);
     t0x = t.clientX; t0y = t.clientY; axis = "";
     probe(t.clientX, t.clientY);
   }, {passive:true});
-  wrap.addEventListener("touchmove", e => {
+  el.addEventListener("touchmove", e => {
     const t = e.touches[0]; if (!t) return;
     if (!axis){
       const dx = Math.abs(t.clientX - t0x), dy = Math.abs(t.clientY - t0y);
@@ -519,7 +527,7 @@ function attachChart(wrapId, svgId, tipId, getState, tipHtml){
     e.preventDefault();
     probe(t.clientX, t.clientY);
   }, {passive:false});
-  wrap.addEventListener("touchend", () => setTimeout(clear, 2500), {passive:true});
+  el.addEventListener("touchend", () => { clearTimeout(timer); timer = setTimeout(clear, 2500); }, {passive:true});
 }
 
 function tipRows(best, mode){

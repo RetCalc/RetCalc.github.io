@@ -505,11 +505,10 @@ function opHover(el, n, xAt, slot, tipFor){
     for (let i = 0; i < n; i++){ const d = Math.abs(xAt(i) - cx); if (d < bd){ bd = d; best = i; } }
     return best;
   };
-  svg.addEventListener("pointermove", e => {
-    const b = svg.getBoundingClientRect();
-    show(nearest((e.clientX - b.left) / b.width * W));
-  });
-  svg.addEventListener("pointerleave", hide);
+  const at = cx => { const b = svg.getBoundingClientRect(); show(nearest((cx - b.left) / b.width * W)); };
+  svg.addEventListener("pointermove", e => { if (e.pointerType !== "touch") at(e.clientX); });
+  svg.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") hide(); });
+  chartTouch(svg, at, hide);
   el.tabIndex = 0;
   el.onkeydown = e => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
