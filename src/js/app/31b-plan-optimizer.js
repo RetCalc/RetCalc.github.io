@@ -584,7 +584,9 @@ function opResultHTML(host, res){
       "<li><b>Social Security at " + opClaims(a.T, C, true) + "</b> · " + opTacticsLine(a.T, C).replace(/^./, c => c.toLowerCase()) +
       "<span>" + opCompact(a.medLegacy) + " left · lasted in " + pctStr(a.successRate, 0) + "</span></li>").join("") + "</ul>");
   }
-  s += "<p class='op-fine'>Every plan lives on the same " + money(res.P.spend) + " a year after tax and runs to age " + (res.age1 + res.years) +
+  s += "<p class='op-fine'>" + (res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " a year after tax and the usual way on " + money(res.base.spend) +
+    ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
+    : "Every plan lives on the same " + money(res.P.spend) + " a year after tax") + " and runs to age " + (res.age1 + res.years) +
     ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
     "Left after tax counts traditional money at " + pctStr(1 - (res.P.heirRate == null ? PL_HEIR : res.P.heirRate), 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
     "Tax is 2026 federal and " + (STATES[res.P.state] ? STATES[res.P.state].n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice.</p>";
@@ -889,6 +891,7 @@ document.addEventListener("click", e => {
   $("asideOP").addEventListener("change", later);
 })();
 Object.assign(GLOSS, {
+  opinc: "Don't have your Social Security statement? Leave the benefit blank and enter your salary instead: the optimizer estimates the benefit at 67 from it, with the 2026 formula, assuming you work at about this pay until you retire. A statement from ssa.gov/myaccount is more accurate.",
   opmode: "Retirement day: enter the balances you'll have when you retire (or copy them from Advanced or Stages, which project them with every detail), and the optimizer starts there. Today: enter what you have now and what you save each month, and it grows them to retirement at a steady return first.",
   opretire: "The age you stop working. Your spouse stops at the same time, at whatever age they are then. Already retired? Enter your age today.",
   optrad: "Pre-tax money: traditional 401(k), 403(b), 457(b) and IRA balances. Every dollar is taxed as income when it comes out, and from 73 or 75 the IRS makes you take some out each year.",
@@ -897,7 +900,7 @@ Object.assign(GLOSS, {
   opsavetrad: "What goes in each month until you retire, in today's dollars, rising with inflation. Put any employer match here: it always lands in a traditional account.",
   opspend: "What you want to live on each year after every tax is paid, in today's dollars. Each plan works out its own tax, Medicare surcharge and health premiums and pays them on top.",
   opmix: "Your stock share in retirement; the rest is bonds. Every plan is tested on this mix's real history since 1926.",
-  opss: "Your monthly benefit at 67, full retirement age, from your statement at ssa.gov/myaccount. Leave it blank and enter your salary to estimate it instead. The optimizer tries every claiming age from 62 to 70.",
+  opss: "Your monthly Social Security benefit at 67, full retirement age, from your statement at ssa.gov/myaccount. Leave it blank and enter your salary beside it to estimate it instead. The optimizer tries every claiming age from 62 to 70.",
   opclaim: "The plan to beat: when you'd claim if you didn't optimize it. Every result is measured against this plan, run the usual way: brokerage first, then traditional, then Roth, with no conversions.",
   opaca: "Before Medicare at 65, each plan buys the benchmark Silver marketplace plan for your state and ages, less the premium tax credit that year's income earns. Above 400% of the poverty line the credit disappears all at once.",
   oprule55: "Leave your job in or after the year you turn 55 and that employer's 401(k) can pay out without the 10% early-withdrawal penalty. Roll it into an IRA and you lose that.",

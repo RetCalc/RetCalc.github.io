@@ -759,7 +759,15 @@ function* plOptimize(P, goal){
   yield prog("finish");
 
   // The detail: both plans on the steady path, and across history for charts.
-  var HBest = plHistory(C, bT, {paths:true});
+  // For Spend the most, each plan is drawn at its own highest safe spending,
+  // so the roadmap, charts and table show the answer, not the spending typed in.
+  var Cb = C, C0 = C, HB0 = HB;
+  if (goal === "spend"){
+    if (best.maxSpend > 0) Cb = plWith(C, {spend:best.maxSpend});
+    if (base.maxSpend > 0){ C0 = plWith(C, {spend:base.maxSpend}); HB0 = plHistory(C0, T0, {paths:true}); }
+    base = Object.assign(plStats(HB0), {maxSpend:base.maxSpend});
+  }
+  var HBest = plHistory(Cb, bT, {paths:true});
   var bestStats = plStats(HBest);
   if (goal === "spend"){ bestStats.maxSpend = best.maxSpend; }
   // The runners-up that do something different, for "other good plans".
@@ -778,8 +786,8 @@ function* plOptimize(P, goal){
   yield {type:"done", goal:goal, target:target, tried:N, of:N, windows:W, runs:N * W,
     first:HIST_START + starts[0], ms:Date.now() - t0, floor:floor, years:C.years,
     age1:C.age1, age2:C.age2, rmdAge:C.rmdAge, married:C.married,
-    base:{T:T0, stats:base, detail:plDetail(C, T0), bands:plBands(HB, C.years)},
-    best:{T:bT, stats:bestStats, detail:plDetail(C, bT), bands:plBands(HBest, C.years)},
+    base:{T:T0, stats:base, detail:plDetail(C0, T0), bands:plBands(HB0, C.years), spend:C0.spend},
+    best:{T:bT, stats:bestStats, detail:plDetail(Cb, bT), bands:plBands(HBest, C.years), spend:Cb.spend},
     steps:steps, alts:alts, same:plKey(bT) === plKey(T0)};
 }
 /* The 10th, 50th and 90th percentile of the total balance, year by year. */

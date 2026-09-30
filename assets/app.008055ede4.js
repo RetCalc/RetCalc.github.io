@@ -3728,7 +3728,15 @@ function* plOptimize(P, goal){
   yield prog("finish");
 
   // The detail: both plans on the steady path, and across history for charts.
-  var HBest = plHistory(C, bT, {paths:true});
+  // For Spend the most, each plan is drawn at its own highest safe spending,
+  // so the roadmap, charts and table show the answer, not the spending typed in.
+  var Cb = C, C0 = C, HB0 = HB;
+  if (goal === "spend"){
+    if (best.maxSpend > 0) Cb = plWith(C, {spend:best.maxSpend});
+    if (base.maxSpend > 0){ C0 = plWith(C, {spend:base.maxSpend}); HB0 = plHistory(C0, T0, {paths:true}); }
+    base = Object.assign(plStats(HB0), {maxSpend:base.maxSpend});
+  }
+  var HBest = plHistory(Cb, bT, {paths:true});
   var bestStats = plStats(HBest);
   if (goal === "spend"){ bestStats.maxSpend = best.maxSpend; }
   // The runners-up that do something different, for "other good plans".
@@ -3747,8 +3755,8 @@ function* plOptimize(P, goal){
   yield {type:"done", goal:goal, target:target, tried:N, of:N, windows:W, runs:N * W,
     first:HIST_START + starts[0], ms:Date.now() - t0, floor:floor, years:C.years,
     age1:C.age1, age2:C.age2, rmdAge:C.rmdAge, married:C.married,
-    base:{T:T0, stats:base, detail:plDetail(C, T0), bands:plBands(HB, C.years)},
-    best:{T:bT, stats:bestStats, detail:plDetail(C, bT), bands:plBands(HBest, C.years)},
+    base:{T:T0, stats:base, detail:plDetail(C0, T0), bands:plBands(HB0, C.years), spend:C0.spend},
+    best:{T:bT, stats:bestStats, detail:plDetail(Cb, bT), bands:plBands(HBest, C.years), spend:Cb.spend},
     steps:steps, alts:alts, same:plKey(bT) === plKey(T0)};
 }
 /* The 10th, 50th and 90th percentile of the total balance, year by year. */
@@ -17576,7 +17584,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.8991714ba6.js";
+var OP_WORKER_URL = "/assets/plan.a689db3b91.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;
@@ -18148,7 +18156,9 @@ function opResultHTML(host, res){
       "<li><b>Social Security at " + opClaims(a.T, C, true) + "</b> · " + opTacticsLine(a.T, C).replace(/^./, c => c.toLowerCase()) +
       "<span>" + opCompact(a.medLegacy) + " left · lasted in " + pctStr(a.successRate, 0) + "</span></li>").join("") + "</ul>");
   }
-  s += "<p class='op-fine'>Every plan lives on the same " + money(res.P.spend) + " a year after tax and runs to age " + (res.age1 + res.years) +
+  s += "<p class='op-fine'>" + (res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " a year after tax and the usual way on " + money(res.base.spend) +
+    ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
+    : "Every plan lives on the same " + money(res.P.spend) + " a year after tax") + " and runs to age " + (res.age1 + res.years) +
     ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
     "Left after tax counts traditional money at " + pctStr(1 - (res.P.heirRate == null ? PL_HEIR : res.P.heirRate), 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
     "Tax is 2026 federal and " + (STATES[res.P.state] ? STATES[res.P.state].n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice.</p>";
@@ -18453,6 +18463,7 @@ document.addEventListener("click", e => {
   $("asideOP").addEventListener("change", later);
 })();
 Object.assign(GLOSS, {
+  opinc: "Don't have your Social Security statement? Leave the benefit blank and enter your salary instead: the optimizer estimates the benefit at 67 from it, with the 2026 formula, assuming you work at about this pay until you retire. A statement from ssa.gov/myaccount is more accurate.",
   opmode: "Retirement day: enter the balances you'll have when you retire (or copy them from Advanced or Stages, which project them with every detail), and the optimizer starts there. Today: enter what you have now and what you save each month, and it grows them to retirement at a steady return first.",
   opretire: "The age you stop working. Your spouse stops at the same time, at whatever age they are then. Already retired? Enter your age today.",
   optrad: "Pre-tax money: traditional 401(k), 403(b), 457(b) and IRA balances. Every dollar is taxed as income when it comes out, and from 73 or 75 the IRS makes you take some out each year.",
@@ -18461,7 +18472,7 @@ Object.assign(GLOSS, {
   opsavetrad: "What goes in each month until you retire, in today's dollars, rising with inflation. Put any employer match here: it always lands in a traditional account.",
   opspend: "What you want to live on each year after every tax is paid, in today's dollars. Each plan works out its own tax, Medicare surcharge and health premiums and pays them on top.",
   opmix: "Your stock share in retirement; the rest is bonds. Every plan is tested on this mix's real history since 1926.",
-  opss: "Your monthly benefit at 67, full retirement age, from your statement at ssa.gov/myaccount. Leave it blank and enter your salary to estimate it instead. The optimizer tries every claiming age from 62 to 70.",
+  opss: "Your monthly Social Security benefit at 67, full retirement age, from your statement at ssa.gov/myaccount. Leave it blank and enter your salary beside it to estimate it instead. The optimizer tries every claiming age from 62 to 70.",
   opclaim: "The plan to beat: when you'd claim if you didn't optimize it. Every result is measured against this plan, run the usual way: brokerage first, then traditional, then Roth, with no conversions.",
   opaca: "Before Medicare at 65, each plan buys the benchmark Silver marketplace plan for your state and ages, less the premium tax credit that year's income earns. Above 400% of the poverty line the credit disappears all at once.",
   oprule55: "Leave your job in or after the year you turn 55 and that employer's 401(k) can pay out without the 10% early-withdrawal penalty. Roll it into an IRA and you lose that.",
