@@ -298,7 +298,7 @@ function exportBudgetCSV(){
   rows.push(["Left over", money(leftYr), "Per year"]);
 
   const csv = rows.map(cols => cols.map(c => csvEscape(String(c))).join(",")).join("\r\n");
-  const blob = new Blob(["﻿" + csv], {type:"text/csv;charset=utf-8"});
+  const blob = new Blob([csvFile(csv)], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "retcalc-budget.csv";

@@ -1,7 +1,7 @@
 /* ---------- CSV export ---------- */
 /* Every on-screen table gets a download button in its panel heading. The tables
    are already the full dataset -- only the print sheet samples rows -- so what
-   downloads is exactly what is on screen. */
+   downloads is exactly what is on screen, under a link back to it. */
 function cellText(el){
   const c = el.cloneNode(true);
   // Tooltip dots are interface, not data.
@@ -43,6 +43,18 @@ function tableToCSV(tbl){
   });
   return lines.join("\r\n");
 }
+/* Every CSV opens with the link that reopens the page with the inputs that
+   made it, alone in the first cell, and the table starts on the row after:
+   the same link Share copies, or the guide's plan link on the guide. */
+function csvLink(){
+  try {
+    if (chartMode.tab === "guide") return gdPlanUrl();
+    return location.origin + location.pathname + shareLink();
+  } catch(e){ return location.origin + location.pathname; }
+}
+function csvFile(csv){
+  return "\ufeff" + csvEscape(csvLink()) + "\r\n" + csv;
+}
 function slugify(t){
   return (t || "table").toLowerCase().replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "").slice(0, 48) || "table";
@@ -51,7 +63,7 @@ function downloadCSV(tbl, name){
   const body = tbl.querySelector("tbody");
   if (body && !body.querySelector("tr")){ toast("Nothing to export yet"); return; }
   // The BOM is what makes Excel open UTF-8 correctly on Windows.
-  const blob = new Blob(["\ufeff" + tableToCSV(tbl)], {type:"text/csv;charset=utf-8"});
+  const blob = new Blob([csvFile(tableToCSV(tbl))], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "retcalc-" + slugify(csvScope()) + "-" + slugify(name) + ".csv";

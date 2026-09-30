@@ -2,13 +2,15 @@
    A link carries the answers (not the budget or debt lists, which can be
    long and are the most personal) and opens on the results. Printing uses
    the site's one-page summary sheet. */
-function gdSharePlan(){
+function gdPlanUrl(){
   const a = {};
   Object.keys(gd.a).forEach(k => {
     if (["bgRows", "debtRows", "moState", "clState", "ddTool"].indexOf(k) < 0) a[k] = gd.a[k];
   });
-  const url = location.origin + "/guide#g=" + encodeState({v:1, a});
-  sendLink(url, "Link copied. It opens this plan in the guide, with your numbers.");
+  return location.origin + "/guide#g=" + encodeState({v:1, a});
+}
+function gdSharePlan(){
+  sendLink(gdPlanUrl(), "Link copied. It opens this plan in the guide, with your numbers.");
 }
 /* Only plain values come in from a link: numbers, true/false, and short
    strings of letters, digits and spaces. Nothing that could be markup. */

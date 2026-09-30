@@ -9490,7 +9490,7 @@ function exportBudgetCSV(){
   rows.push(["Left over", money(leftYr), "Per year"]);
 
   const csv = rows.map(cols => cols.map(c => csvEscape(String(c))).join(",")).join("\r\n");
-  const blob = new Blob(["﻿" + csv], {type:"text/csv;charset=utf-8"});
+  const blob = new Blob([csvFile(csv)], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "retcalc-budget.csv";
@@ -12045,7 +12045,7 @@ function buildDebtSheet(){
 /* ---------- CSV export ---------- */
 /* Every on-screen table gets a download button in its panel heading. The tables
    are already the full dataset -- only the print sheet samples rows -- so what
-   downloads is exactly what is on screen. */
+   downloads is exactly what is on screen, under a link back to it. */
 function cellText(el){
   const c = el.cloneNode(true);
   // Tooltip dots are interface, not data.
@@ -12087,6 +12087,18 @@ function tableToCSV(tbl){
   });
   return lines.join("\r\n");
 }
+/* Every CSV opens with the link that reopens the page with the inputs that
+   made it, alone in the first cell, and the table starts on the row after:
+   the same link Share copies, or the guide's plan link on the guide. */
+function csvLink(){
+  try {
+    if (chartMode.tab === "guide") return gdPlanUrl();
+    return location.origin + location.pathname + shareLink();
+  } catch(e){ return location.origin + location.pathname; }
+}
+function csvFile(csv){
+  return "\ufeff" + csvEscape(csvLink()) + "\r\n" + csv;
+}
 function slugify(t){
   return (t || "table").toLowerCase().replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "").slice(0, 48) || "table";
@@ -12095,7 +12107,7 @@ function downloadCSV(tbl, name){
   const body = tbl.querySelector("tbody");
   if (body && !body.querySelector("tr")){ toast("Nothing to export yet"); return; }
   // The BOM is what makes Excel open UTF-8 correctly on Windows.
-  const blob = new Blob(["\ufeff" + tableToCSV(tbl)], {type:"text/csv;charset=utf-8"});
+  const blob = new Blob([csvFile(tableToCSV(tbl))], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = "retcalc-" + slugify(csvScope()) + "-" + slugify(name) + ".csv";
@@ -19435,13 +19447,15 @@ document.addEventListener("keydown", e => {
    A link carries the answers (not the budget or debt lists, which can be
    long and are the most personal) and opens on the results. Printing uses
    the site's one-page summary sheet. */
-function gdSharePlan(){
+function gdPlanUrl(){
   const a = {};
   Object.keys(gd.a).forEach(k => {
     if (["bgRows", "debtRows", "moState", "clState", "ddTool"].indexOf(k) < 0) a[k] = gd.a[k];
   });
-  const url = location.origin + "/guide#g=" + encodeState({v:1, a});
-  sendLink(url, "Link copied. It opens this plan in the guide, with your numbers.");
+  return location.origin + "/guide#g=" + encodeState({v:1, a});
+}
+function gdSharePlan(){
+  sendLink(gdPlanUrl(), "Link copied. It opens this plan in the guide, with your numbers.");
 }
 /* Only plain values come in from a link: numbers, true/false, and short
    strings of letters, digits and spaces. Nothing that could be markup. */
