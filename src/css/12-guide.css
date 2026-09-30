@@ -210,6 +210,10 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-more{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
 .gd-kvs{max-width:560px;margin:0 0 10px}
 .gd-kvs .kv{font-size:13.5px}
+/* Some values here are whole sentences (the withdrawal order), so let them
+   wrap under themselves instead of running over the label and off a phone. */
+.gd-kvs .kv .k{flex:0 0 auto;max-width:45%}
+.gd-kvs .kv .v{flex:0 1 auto;min-width:0;white-space:normal;text-align:right}
 
 /* Score card */
 .gd-score .body{padding:18px}
