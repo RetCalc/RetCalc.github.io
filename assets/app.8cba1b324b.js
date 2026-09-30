@@ -2853,6 +2853,106 @@ function backtest(o){
           inflHigh, inflLow, deflationYears, priceLevel: cum};
 }
 
+/* ---------- ACA marketplace premiums ----------
+   The Healthcare Cost Planner's 2026 tables, here in the engine because the
+   Early Retirement Bridge and the retirement plan engine price health
+   insurance before Medicare with them too. */
+// Federal poverty level for 2026 coverage. Premium tax credits run a year
+// behind, so 2026 plans are priced against the 2025 HHS poverty guidelines:
+// $15,650 for one person plus $5,500 for each additional person, contiguous
+// 48 states and DC. Alaska and Hawaii are higher; this uses the 48-state line.
+var HC_FPL_BASE = [0,15650,21150,26650,32150,37650,43150,48650,54150];
+var HC_FPL_PER_ADDL = 5500;
+
+// Federal default standard age curve, ages 21-64 (21 = 1.000, 64+ = 3.000).
+// CMS, "Final Guidance Regarding Age Curves and State Reporting", 16 Dec 2016,
+// Appendix I; in force for plan years 2018 on. A handful of states (and DC)
+// set their own curve, which runs somewhat flatter.
+var HC_AGE_MULT = [
+  1.000,1.000,1.000,1.000, // 21-24
+  1.004,1.024,1.048,1.087, // 25-28
+  1.119,1.135,1.159,1.183, // 29-32
+  1.198,1.214,1.222,1.230, // 33-36
+  1.238,1.246,1.262,1.278, // 37-40
+  1.302,1.325,1.357,1.397, // 41-44
+  1.444,1.500,1.563,1.635, // 45-48
+  1.706,1.786,1.865,1.952, // 49-52
+  2.040,2.135,2.230,2.333, // 53-56
+  2.437,2.548,2.603,2.714, // 57-60
+  2.810,2.873,2.952,3.000  // 61-64
+];
+var HC_AGE40_MULT = 1.278; // index 19 = age 40 - 21
+
+// 2026 average benchmark premium (second-lowest-cost Silver) for a 40-year-old,
+// monthly, by state. Source: KFF, Marketplace Average Benchmark Premiums, 2026
+// (US average $625, up from $497 in 2025). Averages across each state's rating
+// areas; a county quote can differ a lot. Scaled by the HHS age multiplier.
+var HC_STATE_PREMIUM_40 = {
+  AL:645,AK:1032,AZ:532,AR:774,CA:570,CO:557,CT:870,DC:610,
+  DE:691,FL:683,GA:615,HI:541,ID:490,IL:646,IN:474,IA:501,
+  KS:670,KY:590,LA:646,ME:709,MD:414,MA:494,MI:523,MN:448,
+  MS:662,MO:605,MT:692,NE:710,NV:497,NH:401,NJ:545,NM:623,
+  NY:817,NC:638,ND:570,OH:513,OK:604,OR:543,PA:572,RI:506,
+  SC:564,SD:655,TN:711,TX:661,UT:640,VT:1299,VA:455,WA:612,
+  WV:1073,WI:611,WY:1090
+};
+
+function hcFPL(size){
+  size = Math.max(1, Math.round(size));
+  if (size <= 8) return HC_FPL_BASE[size];
+  return HC_FPL_BASE[8] + (size - 8) * HC_FPL_PER_ADDL;
+}
+
+function hcAgeMultiplier(age){
+  age = Math.max(21, Math.min(64, Math.round(age)));
+  return HC_AGE_MULT[age - 21];
+}
+
+// Gross monthly benchmark Silver premium for given state & age
+function hcGrossPremium(state, age, manualOverride){
+  if (manualOverride > 0) return manualOverride;
+  var base = HC_STATE_PREMIUM_40[state] || 500;
+  return base / HC_AGE40_MULT * hcAgeMultiplier(age);
+}
+
+// Standard ACA contribution % of income for 2026: the applicable percentage
+// table in Rev. Proc. 2025-25, with the 400% FPL cliff. These are the rules in
+// force for 2026, since the enhanced credits expired at the end of 2025.
+// Returns null when income is too high for subsidy.
+function hcContribPctStd(pctFPL){
+  if (pctFPL < 1.0) return 0;
+  if (pctFPL > 4.0) return null;
+  if (pctFPL < 1.33) return 0.0210;
+  if (pctFPL < 1.50) return 0.0314 + (pctFPL - 1.33) / 0.17 * (0.0419 - 0.0314);
+  if (pctFPL < 2.00) return 0.0419 + (pctFPL - 1.50) / 0.50 * (0.0660 - 0.0419);
+  if (pctFPL < 2.50) return 0.0660 + (pctFPL - 2.00) / 0.50 * (0.0844 - 0.0660);
+  if (pctFPL < 3.00) return 0.0844 + (pctFPL - 2.50) / 0.50 * (0.0996 - 0.0844);
+  return 0.0996;
+}
+
+// Enhanced contribution % (ARP/IRA rules, 2021-2025: 8.5% cap, no cliff above
+// 400% FPL). Expired after 2025; kept to show what a restoration would mean.
+function hcContribPctEnhanced(pctFPL){
+  if (pctFPL < 1.0) return 0;
+  if (pctFPL < 1.50) return 0;
+  if (pctFPL < 2.00) return (pctFPL - 1.50) / 0.50 * 0.020;
+  if (pctFPL < 2.50) return 0.020 + (pctFPL - 2.00) / 0.50 * 0.020;
+  if (pctFPL < 3.00) return 0.040 + (pctFPL - 2.50) / 0.50 * 0.020;
+  if (pctFPL < 4.00) return 0.060 + (pctFPL - 3.00) / 1.00 * 0.025;
+  return 0.085;
+}
+
+// Returns {credit, net, eligible, pct} — monthly figures
+function hcCalcACA(income, grossPremium, pctFPL, enhanced){
+  var pct = enhanced ? hcContribPctEnhanced(pctFPL) : hcContribPctStd(pctFPL);
+  if (pct === null) return {credit:0, net:grossPremium, eligible:false, pct:0};
+  var maxContrib = income * pct / 12;
+  var credit = Math.max(0, grossPremium - maxContrib);
+  var net = Math.max(0, grossPremium - credit);
+  return {credit:credit, net:net, eligible:true, pct:pct};
+}
+
+
 // ===MATH END===
 
 if (typeof module !== "undefined")
@@ -2866,6 +2966,808 @@ if (typeof module !== "undefined")
                     historicalRuns, backtest, historicalBacktest, runDrawdown,
                     HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START,
                     HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL};
+;
+// ===PLAN START===
+/* ---------- the retirement plan engine ----------
+   One household's retirement, year by year and account by account: what
+   comes out of the traditional 401(k)/IRA, the Roth and the taxable
+   brokerage each year, what that does to the tax bill, and what's left.
+   The readiness guide tests every plan with it, and the Plan Optimizer
+   searches the ways of running it (when each of you claims Social Security,
+   which account to draw first, how much to convert to Roth, and which income
+   lines to stay under) for the one that does best.
+
+   Everything is in today's dollars. Returns are real (after inflation), and
+   the brackets, deductions and thresholds are held fixed in real terms, the
+   same assumption every other tool on the site makes. The figures that don't
+   index -- brokerage cost basis, Roth contributions, a pension without a
+   cost-of-living raise -- lose value to each year's inflation.
+
+   The tax each year is the Income Tax tool's whole retirement return,
+   computeRetireTax(): Social Security's provisional-income formula, capital
+   gains stacked on ordinary income, the 3.8% investment income tax, the
+   senior deductions and every state's retirement rules. Medicare's income
+   surcharge (IRMAA) runs on a two-year lookback, the 10% additional tax
+   applies to traditional money taken before 59½, Roth conversions wait five
+   years before they can be spent early, required minimum distributions start
+   at 73 or 75, and ACA marketplace premiums before 65 follow each year's
+   income, cliff included.
+
+   A couple is one household: one pool of each account type, with the 59½
+   line and required distributions following your age, and both of you
+   living to the end of the plan. */
+
+var PL_EARLY = 59;          // a year that starts before 59 ends before 59½
+var PL_HEIR = 0.24;         // default tax rate heirs pay on inherited traditional money
+
+/* Real returns of a stock/bond mix by calendar year from 1926, inflation
+   alongside, and their long-run averages: the steady path runs at the
+   geometric mean. */
+var plMixMemo = {};
+function plMix(stock){
+  var key = String(stock);
+  if (plMixMemo[key]) return plMixMemo[key];
+  var w = stock / 100, n = HIST_STOCK.length;
+  var r = new Float64Array(n), pi = new Float64Array(n), sl = 0, si = 0;
+  for (var i = 0; i < n; i++){
+    var nom = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100, inf = HIST_INFL[i] / 100;
+    r[i] = (1 + nom) / (1 + inf) - 1; pi[i] = inf;
+    sl += Math.log(1 + r[i]); si += Math.log(1 + inf);
+  }
+  return (plMixMemo[key] = {r:r, pi:pi, n:n, real:Math.exp(sl / n) - 1, infl:Math.exp(si / n) - 1});
+}
+
+/* Saving until retirement, month by month: the Basic calculator's projection
+   (contributions rise once a year with inflation, so they hold their value
+   in today's dollars), stopping after saveYears for a plan that coasts.
+   Returns the balance and each year-end balance. */
+function plGrow(initial, monthly, real, years, saveYears, infl){
+  var n = Math.floor(years * 12), sN = Math.max(0, Math.min(n, Math.floor(saveYears * 12 + 1e-9)));
+  var pr = Math.pow(1 + real, 1 / 12) - 1;
+  var bal = initial, path = [initial];
+  for (var i = 1; i <= n; i++){
+    var j = i - (Math.ceil(i / 12) - 1) * 12;
+    bal = bal * (1 + pr) + (i <= sN ? monthly / Math.pow(1 + infl, j / 12) : 0);
+    if (i % 12 === 0) path.push(bal);
+  }
+  if (n % 12) path.push(bal);
+  return {fv:bal, path:path};
+}
+
+/* ---- tax, cached ----
+   The whole return is too slow to run thousands of times a second, so its
+   answer is cached on a $500 grid of ordinary income and capital gain, one
+   grid per Social Security amount and number of people 65 or older, and read
+   back by bilinear interpolation: exact inside a bracket, a few dollars off
+   at a kink. A pension is taxed as ordinary income alongside traditional
+   withdrawals. */
+var PL_STEP = 500, PL_GRID = 4096;
+var plTaxCaches = {}, plTaxCacheN = 0;
+function plTaxCache(status, state){
+  var k = status + state;
+  if (!plTaxCaches[k]){
+    if (++plTaxCacheN > 6){ plTaxCaches = {}; plTaxCacheN = 1; }
+    plTaxCaches[k] = {status:status, state:state, maps:new Map()};
+  }
+  return plTaxCaches[k];
+}
+function plTaxRaw(c, seniors, ss, ord, gain){
+  return computeRetireTax({status:c.status, state:c.state, trad:ord, roth:0, brok:gain,
+    gainPct:1, ss:ss, pension:0, penPublic:false, other:0, pre:0, dedType:"std", item:0,
+    seniors:seniors, _noMarginal:true}).total;
+}
+function plTax(c, seniors, ss, ord, gain){
+  if (!(ord > 0)) ord = 0;
+  if (!(gain > 0)) gain = 0;
+  var fi = ord / PL_STEP, fj = gain / PL_STEP;
+  if (fi >= PL_GRID - 2 || fj >= PL_GRID - 2) return plTaxRaw(c, seniors, ss, ord, gain);
+  var key = seniors * 1e8 + Math.round(ss), m = c.maps.get(key);
+  if (!m){
+    if (c.maps.size > 600) c.maps.clear();
+    m = new Map(); c.maps.set(key, m);
+  }
+  var i = Math.floor(fi), j = Math.floor(fj), di = fi - i, dj = fj - j;
+  var k = i * PL_GRID + j, v00 = m.get(k), v10 = m.get(k + PL_GRID),
+      v01 = m.get(k + 1), v11 = m.get(k + PL_GRID + 1);
+  if (v00 === undefined){ v00 = plTaxRaw(c, seniors, ss, i * PL_STEP, j * PL_STEP); m.set(k, v00); }
+  if (v10 === undefined){ v10 = plTaxRaw(c, seniors, ss, (i + 1) * PL_STEP, j * PL_STEP); m.set(k + PL_GRID, v10); }
+  if (v01 === undefined){ v01 = plTaxRaw(c, seniors, ss, i * PL_STEP, (j + 1) * PL_STEP); m.set(k + 1, v01); }
+  if (v11 === undefined){ v11 = plTaxRaw(c, seniors, ss, (i + 1) * PL_STEP, (j + 1) * PL_STEP); m.set(k + PL_GRID + 1, v11); }
+  return v00 * (1 - di) * (1 - dj) + v10 * di * (1 - dj) + v01 * (1 - di) * dj + v11 * di * dj;
+}
+/* The federal pieces a plan steers by, worked directly (the same formulas
+   computeRetireTax uses, on the standard deduction): taxable Social Security,
+   AGI and ordinary taxable income. `ord` is ordinary income before any
+   Social Security. */
+function plSSTax(ss, otherAgi, st){
+  if (!(ss > 0)) return 0;
+  var t1 = SS_PROV.t1[st], t2 = SS_PROV.t2[st], prov = Math.max(0, otherAgi) + ss / 2;
+  if (prov <= t1) return 0;
+  if (prov <= t2) return Math.min(.5 * (prov - t1), .5 * ss);
+  return Math.min(.85 * (prov - t2) + Math.min(.5 * (t2 - t1), .5 * ss), .85 * ss);
+}
+function plAgi(ord, gain, ss, st){ return ord + gain + plSSTax(ss, ord + gain, st); }
+function plOrdTaxable(ord, gain, ss, st, seniors){
+  var tss = plSSTax(ss, ord + gain, st), oa = ord + tss, agi = oa + gain;
+  var ded = FED_STD[st] + SENIOR_ADDL[st] * seniors;
+  if (seniors > 0) ded += seniors * Math.max(0, SENIOR_BONUS.amount - SENIOR_BONUS.rate * Math.max(0, agi - SENIOR_BONUS.start[st]));
+  return Math.max(0, oa - ded);
+}
+/* Largest x in [0, max] with f(x) <= 0, for an f that only rises. */
+function plLargest(f, max){
+  if (!(max > 0) || f(0) > 0) return 0;
+  if (f(max) <= 0) return max;
+  var lo = 0, hi = max;
+  for (var i = 0; i < 30 && hi - lo > 5; i++){
+    var mid = (lo + hi) / 2;
+    if (f(mid) <= 0) lo = mid; else hi = mid;
+  }
+  return lo;
+}
+
+/* ---- health insurance before 65 ----
+   The benchmark Silver premium for each of you still under 65, less the
+   premium tax credit the year's income earns (2026 rules: the 400% cliff is
+   back). Below 138% of the poverty line an expansion state moves you to
+   Medicaid; below 100% in a state that didn't expand there's no help at all.
+   ACA income counts all of Social Security, taxable or not. */
+var PL_NOEXP = {AL:1, FL:1, GA:1, KS:1, MS:1, SC:1, TN:1, TX:1, WI:1, WY:1};
+function plHealth(C, y, magi){
+  var gross = C.acaGross[y];
+  if (!(gross > 0)) return 0;
+  var pct = magi / C.fpl;
+  if (pct < 1.38 && !PL_NOEXP[C.state]) return 0;
+  if (pct < 1) return gross * 12;
+  return hcCalcACA(magi, gross, pct, false).net * 12;
+}
+
+/* ---- the household, ready to run ----
+   `P` is the plan at retirement (plAtRetire builds it from today's numbers):
+     status "s"|"m", state, age1 (yours at retirement), age2 (spouse's then),
+     years, trad, roth, rothBasis, brok, brokBasis, spend (a year's living
+     costs after tax), strategy and its settings, minSpend, pia1 and pia2
+     (monthly benefits at full retirement age), pension (a year) from
+     pensionAge, pensionCola, aca, household, premium (optional monthly
+     benchmark for the household), rule55, heirRate, mix (stock %), rmdAge,
+     fromYear.
+   Everything that doesn't depend on the tactics is worked out once here. */
+function plPrep(P){
+  var n = Math.max(1, Math.round(P.years)), st = P.status === "m" ? "m" : "s";
+  var C = {P:P, years:n, status:st, state:P.state || "IL", married:st === "m",
+    age1:Math.round(P.age1), age2:st === "m" && isFinite(P.age2) ? Math.round(P.age2) : null,
+    trad:Math.max(0, P.trad || 0), roth:Math.max(0, P.roth || 0), brok:Math.max(0, P.brok || 0),
+    spend:Math.max(0, P.spend || 0), heir:P.heirRate == null ? PL_HEIR : P.heirRate,
+    pension:Math.max(0, P.pension || 0), cola:!!P.pensionCola,
+    rule55:!!P.rule55 && Math.round(P.age1) >= 55,
+    penRate:0.10 + (P.state === "CA" ? 0.025 : 0),
+    mix:plMix(P.mix == null ? 60 : P.mix), cache:plTaxCache(st, P.state || "IL"),
+    pend:new Float64Array(5)};
+  C.rothBasis = Math.min(C.roth, Math.max(0, P.rothBasis == null ? C.roth * .5 : P.rothBasis));
+  C.brokBasis = Math.min(C.brok, Math.max(0, P.brokBasis == null ? C.brok : P.brokBasis));
+  C.pensionAge = P.pensionAge == null ? C.age1 : Math.round(P.pensionAge);
+  C.rmdAge = P.rmdAge || 75;
+  C.fpl = hcFPL(Math.max(P.household || (C.married ? 2 : 1), C.married ? 2 : 1));
+  C.total0 = C.trad + C.roth + C.brok;
+  C.rate = C.total0 > 0 ? C.spend / C.total0 : 0;
+  C.early = new Uint8Array(n); C.seniors = new Uint8Array(n);
+  C.rmdDiv = new Float64Array(n); C.acaGross = new Float64Array(n);
+  var d = C.age2 == null ? 0 : C.age2 - C.age1;
+  C.gap = d;
+  // A benchmark premium the household found is for the ages at retirement;
+  // later years scale by each person's own step on the age curve.
+  var m0 = 0;
+  if (P.premium > 0){
+    if (C.age1 < 65) m0 += hcAgeMultiplier(C.age1);
+    if (C.age2 != null && C.age2 < 65) m0 += hcAgeMultiplier(C.age2);
+  }
+  for (var y = 0; y < n; y++){
+    var a1 = C.age1 + y, a2 = C.age2 == null ? null : C.age2 + y;
+    C.early[y] = a1 < PL_EARLY ? 1 : 0;
+    C.seniors[y] = (a1 >= 65 ? 1 : 0) + (a2 != null && a2 >= 65 ? 1 : 0);
+    C.rmdDiv[y] = a1 >= C.rmdAge ? ultDivisor(Math.min(100, a1)) : 0;
+    if (P.aca){
+      var g = 0;
+      if (P.premium > 0 && m0 > 0){
+        if (a1 < 65) g += P.premium * hcAgeMultiplier(a1) / m0;
+        if (a2 != null && a2 < 65) g += P.premium * hcAgeMultiplier(a2) / m0;
+      } else {
+        if (a1 < 65) g += hcGrossPremium(C.state, a1, 0);
+        if (a2 != null && a2 < 65) g += hcGrossPremium(C.state, a2, 0);
+      }
+      C.acaGross[y] = g;
+    }
+  }
+  return C;
+}
+
+/* ---- tactics ----
+   The choices the optimizer makes. c1 and c2: the age each of you claims
+   Social Security. f: how far each year's traditional withdrawals fill the
+   tax brackets before the brokerage or Roth is touched (PL_FILLS). u: how
+   long the unspent part of that fill is converted to Roth (0 never, 1 until
+   Social Security starts, 2 until required distributions start). im: keep
+   income under Medicare's first surcharge line from 63. ac: keep income
+   under the ACA subsidy cliff before 65. */
+var PL_FILLS = ["none", "zero", "b10", "b12", "b22", "b24"];
+function plFillLevel(st, f){
+  if (!(f > 0)) return -1;
+  if (f === 1) return 0;
+  var b = FED_2026[st];
+  return b[f - 1][0];     // zero-based: f 2 -> top of 10% (start of 12%), ...
+}
+function plClaimMin(age){ return Math.max(62, Math.min(70, Math.round(age))); }
+/* Each of you's own benefit at the age you claim it, a year, and any
+   spousal top-up: that starts once both have claimed, reduced for the age of
+   the one receiving it then. both1 is your age when it starts. */
+function plSSParts(C, T){
+  var P = C.P, c1 = T.c1, c2 = T.c2, pia1 = Math.max(0, P.pia1 || 0), pia2 = C.married ? Math.max(0, P.pia2 || 0) : 0;
+  var o = {own1:pia1 * 12 * ssEstimate(0, 35, c1).adjustment,
+    own2:C.married ? pia2 * 12 * ssEstimate(0, 35, c2).adjustment : 0, top1:0, top2:0, both1:c1};
+  if (C.married){
+    var d = C.gap;                         // spouse's age minus yours
+    o.both1 = Math.max(c1, c2 - d);
+    o.top1 = Math.max(0, .5 * pia2 - pia1) * 12 * ssSpousalAdj(Math.min(70, o.both1));
+    o.top2 = Math.max(0, .5 * pia1 - pia2) * 12 * ssSpousalAdj(Math.min(70, o.both1 + d));
+  }
+  o.total = o.own1 + o.own2 + o.top1 + o.top2;
+  return o;
+}
+function plTactics(C, T){
+  var n = C.years, st = C.status;
+  var K = {T:T, ss:new Float64Array(n), fill:new Float64Array(n), conv:new Uint8Array(n),
+    capIr:new Uint8Array(n), capAca:new Uint8Array(n)};
+  var c1 = T.c1, c2 = T.c2, S = plSSParts(C, T);
+  var own1 = S.own1, own2 = S.own2, top1 = S.top1, top2 = S.top2, both1 = S.both1;
+  var lvl = plFillLevel(st, T.f);
+  var until = T.u === 1 ? Math.max(c1, C.married ? c2 - C.gap : c1) - 1 : T.u === 2 ? C.rmdAge - 1 : -1;
+  for (var y = 0; y < n; y++){
+    var a1 = C.age1 + y, a2 = C.age2 == null ? null : C.age2 + y, ss = 0;
+    if (a1 >= c1) ss += own1;
+    if (a2 != null && a2 >= c2) ss += own2;
+    if (C.married && a1 >= both1) ss += top1 + top2;
+    K.ss[y] = ss;
+    K.fill[y] = lvl;
+    K.conv[y] = lvl >= 0 && T.u > 0 && a1 <= until ? 1 : 0;
+    K.capIr[y] = T.im && a1 >= 63 ? 1 : 0;
+    K.capAca[y] = T.ac && C.acaGross[y] > 0 ? 1 : 0;
+  }
+  return K;
+}
+function plBaseTactics(C){
+  var P = C.P, pickFor = function(c, age){
+    var lo = plClaimMin(age);
+    return c != null && isFinite(c) ? Math.max(lo, Math.min(70, Math.round(c))) : Math.max(67, lo);
+  };
+  var c1 = pickFor(P.claim1, C.age1);
+  var c2 = C.married ? pickFor(P.claim2, C.age2) : c1;
+  return {c1:c1, c2:c2, f:0, u:0, im:0, ac:0};
+}
+function plKey(T){ return T.c1 + "," + T.c2 + "," + T.f + "," + T.u + "," + T.im + "," + T.ac; }
+
+/* ---- spending ----
+   How much there is to live on this year, after tax, in today's dollars:
+   the Drawdown Simulator's six withdrawal strategies, worked in real terms
+   on the whole portfolio. Every strategy starts at the plan's own spending;
+   the flexible ones then follow the balance, never going under the minimum
+   while money remains. */
+function plSpend(C, y, bal, prev){
+  var P = C.P, s = P.strategy || "fixed", w;
+  if (s === "fixed") return C.spend;
+  var rate = C.rate;
+  if (s === "pct") w = bal * rate;
+  else if (s === "guardrails"){
+    w = y === 0 ? C.spend : prev;
+    if (bal > 0){
+      var cur = w / bal, band = (P.guardBand == null ? 20 : P.guardBand) / 100, adj = (P.adjustPct == null ? 10 : P.adjustPct) / 100;
+      if (cur > rate * (1 + band)) w *= 1 - adj;
+      else if (cur < rate * (1 - band)) w *= 1 + adj;
+    }
+  } else if (s === "floorceil"){
+    var base = y === 0 ? C.spend : prev;
+    w = Math.min(Math.max(bal * rate, base * (1 - (P.floorPct == null ? 10 : P.floorPct) / 100)),
+      base * (1 + (P.ceilPct == null ? 10 : P.ceilPct) / 100));
+  } else if (s === "vpw"){
+    w = Math.max(0, pmtStart((P.vpwRate == null ? 4 : P.vpwRate) / 100, C.years - y, bal, P.vpwFV || 0));
+  } else {
+    var wt = (P.yaleWeight == null ? 70 : P.yaleWeight) / 100;
+    w = y === 0 ? C.spend : wt * prev + (1 - wt) * bal * rate;
+  }
+  if (P.minSpend > 0 && w < P.minSpend) w = P.minSpend;
+  return w;
+}
+
+/* ---- one year ----
+   The sources a year can draw on, in the order it draws them:
+     FLEX  traditional money already planned for this year by a bracket
+           fill (its tax is counted whether it's spent or converted)
+     BROK  the brokerage: only the gain is taxed
+     TRAD  more traditional money: ordinary income, and before 59½ the
+           10% additional tax unless the rule of 55 opens it
+     ROTH  Roth money that can come out free: all of it after 59½, before
+           then contributions and conversions at least five years old
+     ROTHE the rest of the Roth before 59½: taxed and penalized, last resort
+   A plan with no fill draws brokerage, then traditional, then Roth. */
+var PL_SRC_N = 5;
+var PL_ORDER_DEF = [1, 2, 3, 4], PL_ORDER_FILL = [0, 1, 3, 2, 4];
+var plAv = new Float64Array(PL_SRC_N), plTk = new Float64Array(PL_SRC_N);
+// scratch results of plEv
+var plE = {net:0, tax:0, pen:0, health:0, irm:0, ord:0, gain:0, agi:0, magi:0};
+function plEv(C, Y, x){
+  var o = Y.order, rem = x, ordAdd = 0, gain = 0, penBase = 0;
+  for (var k = 0; k < o.length; k++){
+    var s = o[k], a = plAv[s], t = a < rem ? a : rem;
+    if (!(t > 0)){ continue; }
+    rem -= t;
+    if (s === 0){ if (!Y.conv) ordAdd += t; }
+    else if (s === 1) gain += t * Y.gs;
+    else if (s === 2){ ordAdd += t; if (Y.pen) penBase += t; }
+    else if (s === 4){ ordAdd += t; penBase += t; }
+    if (rem <= 0) break;
+  }
+  var ord = Y.baseOrd + ordAdd;
+  var tax = plTax(C.cache, Y.seniors, Y.ss, ord, gain);
+  var agi = plAgi(ord, gain, Y.ss, C.status);
+  var magi = ord + gain + Y.ss;
+  var hl = Y.aca ? plHealth(C, Y.y, magi) : 0;
+  var irm = Y.people > 0 ? irmaaAnnual(Y.look >= 0 ? Y.look : agi, C.status, Y.people) : 0;
+  var pen = penBase * C.penRate;
+  plE.net = Y.cash + x - Y.w - tax - hl - irm - pen;
+  plE.tax = tax; plE.pen = pen; plE.health = hl; plE.irm = irm;
+  plE.ord = ord; plE.gain = gain; plE.agi = agi; plE.magi = magi;
+  return plE.net;
+}
+/* The smallest draw down the source list that pays for spending plus the
+   tax, penalty and premiums that draw itself causes. Health premiums can
+   jump at the subsidy cliff, so net isn't always monotonic: a bracketing
+   search with secant steps, as the Bridge tool uses. Leaves the answer in
+   plE and returns the draw. */
+function plSolve(C, Y, total){
+  var n0 = plEv(C, Y, 0);
+  if (n0 >= 0 || !(total > 0)) return 0;
+  var lo = 0, nlo = n0, hi = -1, nhi = 0, x = Math.min(total, -n0 * 1.15), r;
+  for (var it = 0; it < 40; it++){
+    r = plEv(C, Y, x);
+    if (r >= 0){ hi = x; nhi = r; if (r < 1) break; }
+    else { lo = x; nlo = r; if (x >= total) break; }
+    var nx;
+    if (hi < 0) nx = Math.min(total, x - r * 1.25 + 1);
+    else {
+      if (hi - lo < 0.5){ x = hi; plEv(C, Y, hi); break; }
+      nx = lo + (hi - lo) * (-nlo) / (nhi - nlo);
+      if (!(nx > lo && nx < hi) || it % 3 === 2) nx = (lo + hi) / 2;
+    }
+    x = nx;
+  }
+  if (plE.net < 0 && hi >= 0){ x = hi; plEv(C, Y, hi); }
+  return x;
+}
+
+/* ---- one retirement along one market path ----
+   R and PI are real returns and inflation by calendar year, read from
+   `off`. `out` asks for detail: out.path (end-of-year total, real),
+   out.lived (what was actually lived on), out.rows (everything, for the
+   year-by-year table). Returns the run's summary. */
+var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, ss:0, aca:0, people:0,
+  look:-1, cash:0, w:0};
+function plRun(C, K, R, PI, off, out){
+  var n = C.years, st = C.status, P = C.P;
+  var trad = C.trad, roth = C.roth, rAcc = C.rothBasis, brok = C.brok, bBasis = C.brokBasis;
+  var pend = C.pend; pend.fill(0);
+  var m1 = -1, m2 = -1;               // AGI one and two years back, for IRMAA
+  var cum = 1, prev = C.spend, lastGain = 0;
+  var tax = 0, pen = 0, health = 0, irm = 0, conv = 0, shortSum = 0, depleted = 0, lived = 0;
+  var path = out && out.path, livedArr = out && out.lived, rows = out && out.rows;
+  var Y = plY;
+  for (var y = 0; y < n; y++){
+    var a1 = C.age1 + y, early = C.early[y] === 1;
+    var slot = y % 5;
+    rAcc += pend[slot]; pend[slot] = 0;          // a rung five years old opens up
+    var ss = K.ss[y];
+    var pension = C.pension > 0 && a1 >= C.pensionAge ? (C.cola ? C.pension : C.pension / cum) : 0;
+    var bal = trad + roth + brok;
+    var w = plSpend(C, y, bal, prev);
+    prev = w;
+    var M = C.rmdDiv[y] > 0 && trad > 0 ? Math.min(trad, trad / C.rmdDiv[y]) : 0;
+    var seniors = C.seniors[y];
+    var pn = early && !C.rule55;
+    // The fill: traditional income planned for the year, up to the target
+    // level of taxable income and under any income line being guarded.
+    var D = M, lvl = K.fill[y], convY = K.conv[y] === 1;
+    var fillOn = lvl >= 0 && trad > M && (convY || !pn);
+    // The gain this year's brokerage sales will realize isn't known until
+    // the year is solved; last year's stands in, and the guards below
+    // correct for any difference.
+    var gs0 = brok > 0 ? Math.max(0, 1 - bBasis / brok) : 0;
+    var g0 = y > 0 ? lastGain : Math.min(brok, Math.max(0, w - ss - pension - M)) * gs0;
+    if (fillOn){
+      D = M + plLargest(function(t){ return plOrdTaxable(pension + M + t, g0, ss, st, seniors) - lvl; }, trad - M);
+      if (K.capIr[y]){
+        var lim = IRMAA.tiers[0][st] - 2000;
+        D = Math.min(D, M + plLargest(function(t){ return plAgi(pension + M + t, g0, ss, st) - lim; }, trad - M));
+      }
+      if (K.capAca[y]) D = Math.min(D, Math.max(M, C.fpl * 4 - 1500 - pension - ss - g0));
+      if (D < M) D = M;
+    }
+    var flex = D - M;
+    // What each source can give this year.
+    plAv[0] = pn ? 0 : flex;
+    plAv[1] = brok;
+    plAv[2] = Math.max(0, trad - D);
+    var rOpen = early ? Math.min(roth, rAcc) : roth;
+    plAv[3] = rOpen;
+    plAv[4] = early ? Math.max(0, roth - rOpen) : 0;
+    var total = plAv[0] + plAv[1] + plAv[2] + plAv[3] + plAv[4];
+    Y.y = y; Y.order = (fillOn || pn) ? PL_ORDER_FILL : PL_ORDER_DEF;
+    Y.conv = convY && flex > 0 ? 1 : 0;
+    Y.pen = pn ? 1 : 0;
+    Y.gs = brok > 0 ? Math.max(0, 1 - bBasis / brok) : 0;
+    Y.baseOrd = pension + (Y.conv ? D : M);
+    Y.seniors = seniors; Y.ss = ss;
+    Y.aca = C.acaGross[y] > 0 ? 1 : 0;
+    Y.people = seniors;
+    Y.look = m2;
+    Y.cash = ss + pension + M;
+    Y.w = w;
+    var x = plSolve(C, Y, total);
+    // A guarded line crossed anyway (the brokerage's gain came in higher than
+    // expected): pull the fill back by the overshoot and solve again.
+    if (fillOn && flex > 0 && (K.capAca[y] || K.capIr[y])){
+      for (var it = 0; it < 3; it++){
+        var over = 0;
+        if (K.capAca[y] && Y.aca) over = Math.max(over, plE.magi - (C.fpl * 4 - 1500));
+        if (K.capIr[y]) over = Math.max(over, plE.agi - (IRMAA.tiers[0][st] - 2000));
+        if (!(over > 1)) break;
+        var cut = Math.min(flex, over + 250);
+        D -= cut; flex -= cut;
+        plAv[0] = pn ? 0 : flex;
+        plAv[2] = Math.max(0, trad - D);
+        Y.conv = convY && flex > 0 ? 1 : 0;
+        Y.baseOrd = pension + (Y.conv ? D : M);
+        total = plAv[0] + plAv[1] + plAv[2] + plAv[3] + plAv[4];
+        x = plSolve(C, Y, total);
+        if (!(flex > 0)) break;
+      }
+    }
+    var net = plE.net, short = net < -1 ? -net : 0, surplus = net > 0 ? net : 0;
+    // Where it came from.
+    var rem = x, o = Y.order;
+    for (var k = 0; k < PL_SRC_N; k++) plTk[k] = 0;
+    for (k = 0; k < o.length && rem > 0; k++){
+      var s = o[k], t = plAv[s] < rem ? plAv[s] : rem;
+      if (t > 0){ plTk[s] = t; rem -= t; }
+    }
+    var Cv = Y.conv ? flex - plTk[0] : 0;
+    // Move the money.
+    trad -= M + plTk[0] + Cv + plTk[2];
+    var gs = Y.gs;
+    bBasis -= plTk[1] * (1 - gs); brok -= plTk[1];
+    if (early){ rAcc -= plTk[3]; if (rAcc < 0) rAcc = 0; }
+    roth += Cv - plTk[3] - plTk[4];
+    if (Cv > 0) pend[slot] = Cv;
+    if (surplus > 0){ brok += surplus; bBasis += surplus; }
+    if (trad < 0) trad = 0;
+    if (roth < 0) roth = 0;
+    if (brok < 0) brok = 0;
+    if (bBasis < 0) bBasis = 0;
+    tax += plE.tax + plE.pen; pen += plE.pen; health += plE.health; irm += plE.irm; conv += Cv;
+    // VPW spends down to nothing on purpose; its last year coming up short
+    // is the plan, not a failure.
+    if (short > 0 && !(P.strategy === "vpw" && y === n - 1)){ shortSum += short; if (!depleted) depleted = y + 1; }
+    var livedY = Math.max(0, w - short);
+    lived += livedY;
+    lastGain = plE.gain;
+    m2 = m1; m1 = plE.agi;
+    if (rows){
+      rows.push({y:y, age:a1, age2:C.age2 == null ? null : C.age2 + y, spend:w, lived:livedY,
+        ss:ss, pension:pension, rmd:M, trad:M + plTk[0] + plTk[2], conv:Cv, brok:plTk[1],
+        roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, health:plE.health, irmaa:plE.irm,
+        agi:plE.agi, magi:plE.magi, ord:plE.ord, gain:plE.gain,
+        taxable:plOrdTaxable(plE.ord, plE.gain, ss, st, seniors),
+        fplPct:Y.aca ? plE.magi / C.fpl : null, short:short, surplus:surplus,
+        startTrad:0, endTrad:0, endRoth:0, endBrok:0, end:0});
+    }
+    // A year of markets.
+    var g = 1 + R[off + y], d = 1 + PI[off + y];
+    trad *= g; roth *= g; brok *= g;
+    bBasis /= d; rAcc /= d; cum *= d;
+    for (var q = 0; q < 5; q++) pend[q] /= d;
+    if (bBasis > brok) bBasis = brok;
+    if (path) path[y] = trad + roth + brok;
+    if (livedArr) livedArr[y] = livedY;
+    if (rows){ var rr = rows[rows.length - 1]; rr.endTrad = trad; rr.endRoth = roth; rr.endBrok = brok; rr.end = trad + roth + brok; }
+  }
+  return {ok:!depleted, depleted:depleted, short:shortSum, tax:tax, pen:pen, health:health,
+    irmaa:irm, conv:conv, lived:lived, end:trad + roth + brok, trad:trad, roth:roth, brok:brok,
+    legacy:roth + brok + trad * (1 - C.heir)};
+}
+
+/* ---- testing a plan ----
+   The steady path: every year at the mix's long-run average. */
+function plSteady(C){
+  if (C.steady) return C.steady;
+  var n = C.years, r = new Float64Array(n), pi = new Float64Array(n);
+  r.fill(C.mix.real); pi.fill(C.mix.infl);
+  return (C.steady = {r:r, pi:pi});
+}
+/* The historical starting years with enough record to run the whole plan. */
+function plStarts(C){
+  var n = C.mix.n, from = Math.max(0, Math.min(n - 1, Math.round((C.P.fromYear || HIST_START) - HIST_START)));
+  var out = [];
+  for (var s = from; s + C.years <= n; s++) out.push(s);
+  if (!out.length) out.push(Math.max(0, n - C.years));
+  return out;
+}
+function plDetail(C, T){
+  var K = plTactics(C, T), S = plSteady(C), out = {rows:[], path:new Float64Array(C.years)};
+  var r = plRun(C, K, S.r, S.pi, 0, out);
+  r.rows = out.rows; r.path = out.path;
+  return r;
+}
+function plMedian(a){
+  if (!a.length) return 0;
+  var s = Array.prototype.slice.call(a).sort(function(p, q){ return p - q; });
+  return s[Math.floor(s.length / 2)];
+}
+function plQuant(sorted, q){ return sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * q))] : 0; }
+/* Every historical start. opts.paths keeps each run's balances and what was
+   lived on (for charts); opts.stopAfter gives up once that many runs have
+   failed, for searches that only need to know whether a plan clears a bar. */
+function plHistory(C, T, opts){
+  opts = opts || {};
+  var K = plTactics(C, T), M = C.mix, starts = plStarts(C), runs = [], fails = [];
+  var legs = [], taxes = [], survived = 0;
+  for (var i = 0; i < starts.length; i++){
+    var out = opts.paths ? {path:new Float64Array(C.years), lived:new Float64Array(C.years)} : null;
+    var r = plRun(C, K, M.r, M.pi, starts[i], out);
+    r.startYear = HIST_START + starts[i];
+    if (out){ r.path = out.path; r.livedPath = out.lived; }
+    runs.push(r);
+    if (r.ok) survived++; else fails.push(r.startYear);
+    legs.push(r.legacy); taxes.push(r.tax);
+    if (opts.stopAfter != null && fails.length > opts.stopAfter) break;
+  }
+  legs.sort(function(p, q){ return p - q; });
+  var ends = runs.map(function(r){ return r.end; }).sort(function(p, q){ return p - q; });
+  return {T:T, runs:runs, total:runs.length, survived:survived,
+    successRate:runs.length ? survived / runs.length : 0, failYears:fails,
+    first:HIST_START + starts[0], medLegacy:plQuant(legs, .5), p10Legacy:plQuant(legs, .1),
+    medTax:plMedian(taxes), medianEnd:plQuant(ends, .5), worstEnd:ends[0] || 0,
+    partial:runs.length < starts.length};
+}
+
+/* ---- from today to retirement ----
+   Today's balances and saving, grown to the retirement age at a steady real
+   return (each account on the same schedule, so the total is exactly the
+   Basic projection), and turned into the plan plRun takes. `I`:
+     status, state, age, spouseAge, retire, stopAge (null = save to the end),
+     trad, roth, rothBasis, brok, brokBasis, saveTrad, saveRoth, saveBrok
+     (monthly, today's dollars; an employer's match belongs in saveTrad),
+     real, infl, and everything else plPrep reads, passed straight through. */
+function plAtRetire(I){
+  var age = I.age, retire = Math.max(age, I.retire), yrs = retire - age;
+  var stop = I.stopAge != null && I.stopAge < retire ? Math.max(age, I.stopAge) : retire;
+  var sy = stop - age, infl = I.infl == null ? 0.03 : I.infl;
+  var A = plGrow(1, 0, I.real, yrs, sy, infl), B = plGrow(0, 1, I.real, yrs, sy, infl);
+  var at = function(bal, mo){ return bal * A.fv + mo * B.fv; };
+  var P = Object.assign({}, I);
+  P.trad = at(I.trad || 0, I.saveTrad || 0);
+  P.roth = at(I.roth || 0, I.saveRoth || 0);
+  P.brok = at(I.brok || 0, I.saveBrok || 0);
+  // Basis and Roth contributions are dollars in, which inflation erodes.
+  var dfl = Math.pow(1 + infl, yrs), inYrs = 0;
+  for (var k = 0; k < Math.floor(sy + 1e-9); k++) inYrs += 12 / Math.pow(1 + infl, yrs - k - 0.5);
+  var bb0 = I.brokBasis == null ? (I.brok || 0) : I.brokBasis;
+  var rb0 = I.rothBasis == null ? (I.roth || 0) * .5 : I.rothBasis;
+  P.brokBasis = Math.min(P.brok, bb0 / dfl + (I.saveBrok || 0) * inYrs);
+  P.rothBasis = Math.min(P.roth, rb0 / dfl + (I.saveRoth || 0) * inYrs);
+  P.age1 = Math.round(retire);
+  P.age2 = I.status === "m" && isFinite(I.spouseAge) ? Math.round(I.spouseAge + yrs) : null;
+  P.rmdAge = rmdStartAge(Math.round(age));
+  P.grow = {A:A, B:B, years:yrs};
+  P.path = A.path.map(function(v, i){
+    return v * ((I.trad || 0) + (I.roth || 0) + (I.brok || 0)) +
+      B.path[i] * ((I.saveTrad || 0) + (I.saveRoth || 0) + (I.saveBrok || 0));
+  });
+  P.fv = P.trad + P.roth + P.brok;
+  return P;
+}
+
+/* ---------- the Plan Optimizer ----------
+   Every combination of tactics -- each claiming age for each of you, each
+   bracket fill, conversion window and income guard -- run through every
+   historical start since 1926. For a couple that is a few thousand plans and
+   a few hundred thousand retirements, which is why it reports its progress:
+   it's a generator, and the last value it yields is the answer. For the
+   Spend the most goal, the strongest finalists then have their highest safe
+   spending found. `goal` is "legacy", "last" or "spend". */
+var PL_GOALS = {legacy:"Leave the most", last:"Make it last", spend:"Spend the most"};
+function plCombos(C, T0){
+  var P = C.P, out = [], seen = {};
+  var lo1 = plClaimMin(C.age1), lo2 = C.married ? plClaimMin(C.age2) : lo1;
+  var claims = [];
+  if (!(P.pia1 > 0) && !(C.married && P.pia2 > 0)) claims = [[T0.c1, T0.c2]];
+  else for (var c1 = lo1; c1 <= 70; c1++){
+    if (!C.married) claims.push([c1, c1]);
+    else for (var c2 = lo2; c2 <= 70; c2++) claims.push([c1, c2]);
+  }
+  var hasAca = false, hasIr = C.age1 + C.years > 63;
+  for (var y = 0; y < C.years; y++) if (C.acaGross[y] > 0) hasAca = true;
+  var add = function(T){ var k = plKey(T); if (!seen[k]){ seen[k] = 1; out.push(T); } };
+  add(T0);
+  claims.forEach(function(cl){
+    add({c1:cl[0], c2:cl[1], f:0, u:0, im:0, ac:0});
+    if (!(C.trad > 0)) return;
+    for (var f = 1; f < PL_FILLS.length; f++) for (var u = 0; u < 3; u++)
+      for (var im = 0; im < (hasIr ? 2 : 1); im++) for (var ac = 0; ac < (hasAca ? 2 : 1); ac++)
+        add({c1:cl[0], c2:cl[1], f:f, u:u, im:im, ac:ac});
+  });
+  return out;
+}
+/* Positive when plan a beats plan b for the goal. Leave the most never
+   trades away safety: a plan has to last in at least as many markets as the
+   default (or the target, if that's lower) before what it leaves counts. */
+function plBetter(goal, a, b, floor){
+  if (goal === "spend"){
+    if (Math.abs((a.maxSpend || 0) - (b.maxSpend || 0)) > 1) return (a.maxSpend || 0) - (b.maxSpend || 0);
+    return a.medLegacy - b.medLegacy;
+  }
+  if (goal === "last"){
+    var d = a.survived - b.survived;
+    if (d) return d;
+    return (a.p10Legacy - b.p10Legacy) + (a.medLegacy - b.medLegacy) * 0.2;
+  }
+  var okA = a.successRate >= floor - 1e-9, okB = b.successRate >= floor - 1e-9;
+  if (okA !== okB) return okA ? 1 : -1;
+  if (!okA) return (a.survived - b.survived) || (a.medLegacy - b.medLegacy);
+  return a.medLegacy - b.medLegacy;
+}
+/* The same household with a few plan numbers changed (the tax cache and
+   the per-year tables carry over). */
+function plWith(C, over){
+  var C2 = Object.assign({}, C);
+  C2.P = Object.assign({}, C.P, over);
+  if ("spend" in over){
+    C2.spend = over.spend;
+    C2.rate = C2.total0 > 0 ? over.spend / C2.total0 : 0;
+  }
+  C2.pend = new Float64Array(5);
+  return C2;
+}
+/* Highest spending, to $250, that lasts in the target share of history. */
+function plMaxSpend(C, T, target){
+  var maxFail = Math.floor(plStarts(C).length * (1 - target) + 1e-9);
+  var ok = function(sp){
+    var H = plHistory(plWith(C, {spend:sp}), T, {stopAfter:maxFail});
+    return !H.partial && H.total - H.survived <= maxFail;
+  };
+  if (!ok(1)) return 0;
+  var lo = 1, hi = Math.max(C.spend * 1.5, 1000), guard = 0;
+  while (ok(hi) && guard++ < 8){ lo = hi; hi *= 1.6; }
+  for (var i = 0; i < 16 && hi - lo > 250; i++){
+    var m = (lo + hi) / 2;
+    if (ok(m)) lo = m; else hi = m;
+  }
+  return Math.floor(lo / 250) * 250;
+}
+function plStats(H){
+  return {successRate:H.successRate, survived:H.survived, total:H.total,
+    medLegacy:H.medLegacy, p10Legacy:H.p10Legacy, medTax:H.medTax, failYears:H.failYears};
+}
+function* plOptimize(P, goal){
+  goal = PL_GOALS[goal] ? goal : "legacy";
+  var target = P.target || 0.9;
+  P = Object.assign({}, P, {strategy:"fixed"});
+  var C = plPrep(P), T0 = plBaseTactics(C);
+  var starts = plStarts(C), W = starts.length, t0 = Date.now();
+  var combos = plCombos(C, T0), N = combos.length;
+  var nSpend = goal === "spend" ? 12 : 0;
+  var all = N + 4 + nSpend * 10, done = 0;
+  var best = null, floor = 1;
+  var prog = function(phase, T){
+    var o = {type:"progress", phase:phase, frac:Math.min(0.995, done / all), tried:Math.min(done, N), of:N,
+      windows:W, first:HIST_START + starts[0], ms:Date.now() - t0};
+    if (T) o.T = T;
+    if (best) o.best = {medLegacy:best.medLegacy, successRate:best.successRate, T:best.T};
+    return o;
+  };
+  yield prog("start");
+
+  var HB = plHistory(C, T0, {paths:true}), base = plStats(HB);
+  floor = Math.min(base.successRate, target);
+  var rank = function(a, b){ return plBetter(goal, b, a, floor); };
+  var rec = [];
+  for (var i = 0; i < N; i++){
+    var T = combos[i], r = Object.assign({T:T}, plKey(T) === plKey(T0) ? base : plStats(plHistory(C, T, {})));
+    rec.push(r);
+    if (goal !== "spend" && (!best || plBetter(goal, r, best, floor) > 0)) best = r;
+    else if (goal === "spend" && (!best || plBetter("last", r, best, floor) > 0)) best = r;
+    done++;
+    if (i % 24 === 23) yield prog("search", T);
+  }
+  rec.sort(goal === "spend" ? function(a, b){ return plBetter("last", b, a, floor); } : rank);
+
+  if (goal === "spend"){
+    // The finalists: the plans that hold up best in bad markets, and the
+    // ones that leave the most, which usually have room to spend too.
+    var byLeg = rec.slice().sort(function(a, b){ return b.medLegacy - a.medLegacy; });
+    var cands = [], seenF = {};
+    var take = function(r){ var k = plKey(r.T); if (!seenF[k] && cands.length < nSpend){ seenF[k] = 1; cands.push(r); } };
+    take(rec.find(function(r){ return plKey(r.T) === plKey(T0); }) || Object.assign({T:T0}, base));
+    for (i = 0; cands.length < 8 && i < rec.length; i++) take(rec[i]);
+    for (i = 0; cands.length < nSpend && i < byLeg.length; i++) take(byLeg[i]);
+    for (i = 0; i < cands.length; i++){
+      cands[i].maxSpend = plMaxSpend(C, cands[i].T, target);
+      if (plKey(cands[i].T) === plKey(T0)) base.maxSpend = cands[i].maxSpend;
+      done += 10;
+      yield prog("spend", cands[i].T);
+    }
+    cands.sort(rank);
+    best = cands[0];
+  } else best = rec[0];
+
+  // How much of the gain each kind of change brings: Social Security timing
+  // alone, then the withdrawal order and conversions on top, then the income
+  // guards. Every step is tested through all of history.
+  var bT = best.T, steps = [];
+  var find = function(T){
+    var k = plKey(T), r = rec.find(function(x){ return plKey(x.T) === k; });
+    if (!r) r = Object.assign({T:T}, plStats(plHistory(C, T, {})));
+    if (goal === "spend" && r.maxSpend == null) r.maxSpend = plMaxSpend(C, T, target);
+    return r;
+  };
+  var chain = [["ss", {c1:bT.c1, c2:bT.c2, f:0, u:0, im:0, ac:0}], ["draw", bT]];
+  var prevS = Object.assign({T:T0}, base), prevK = plKey(T0);
+  chain.forEach(function(c){
+    var k = plKey(c[1]);
+    if (k === prevK) return;
+    var s = k === plKey(bT) ? best : find(c[1]);
+    steps.push({key:c[0], T:c[1], from:prevS, to:s});
+    prevS = s; prevK = k;
+  });
+  done = all - 2;
+  yield prog("finish");
+
+  // The detail: both plans on the steady path, and across history for charts.
+  var HBest = plHistory(C, bT, {paths:true});
+  var bestStats = plStats(HBest);
+  if (goal === "spend"){ bestStats.maxSpend = best.maxSpend; }
+  // The runners-up that do something different, for "other good plans".
+  // Same claiming ages and the same kind of withdrawals, or the same result,
+  // count as the same plan.
+  var alts = [], seenA = {}, sig = function(r){ return Math.round(r.medLegacy) + "|" + r.survived; };
+  var mark = function(r){ var t = r.T; seenA[t.c1 + "," + t.c2 + "," + (t.f > 0 ? 1 : 0)] = 1; seenA[sig(r)] = 1; };
+  mark(best);
+  var sorted = goal === "spend" ? [] : rec;
+  for (i = 0; i < sorted.length && alts.length < 3; i++){
+    var t = sorted[i].T;
+    if (seenA[t.c1 + "," + t.c2 + "," + (t.f > 0 ? 1 : 0)] || seenA[sig(sorted[i])]) continue;
+    mark(sorted[i]);
+    alts.push(sorted[i]);
+  }
+  yield {type:"done", goal:goal, target:target, tried:N, of:N, windows:W, runs:N * W,
+    first:HIST_START + starts[0], ms:Date.now() - t0, floor:floor, years:C.years,
+    age1:C.age1, age2:C.age2, rmdAge:C.rmdAge, married:C.married,
+    base:{T:T0, stats:base, detail:plDetail(C, T0), bands:plBands(HB, C.years)},
+    best:{T:bT, stats:bestStats, detail:plDetail(C, bT), bands:plBands(HBest, C.years)},
+    steps:steps, alts:alts, same:plKey(bT) === plKey(T0)};
+}
+/* The 10th, 50th and 90th percentile of the total balance, year by year. */
+function plBands(H, n){
+  var out = [];
+  for (var y = 0; y < n; y++){
+    var col = H.runs.map(function(r){ return r.path ? r.path[y] : 0; }).sort(function(a, b){ return a - b; });
+    out.push({p10:plQuant(col, .1), p50:plQuant(col, .5), p90:plQuant(col, .9)});
+  }
+  return out;
+}
+/* Runs the optimizer to the end in one go (tests, and the fallback when a
+   worker isn't available and the caller doesn't need progress). */
+function plOptimizeNow(P, goal){
+  var g = plOptimize(P, goal), last = null, s;
+  while (!(s = g.next()).done) last = s.value;
+  return last;
+}
+// ===PLAN END===
 ;
 try {
 (function(){
@@ -2962,6 +3864,7 @@ const SC = {basic: storeRead("basic") || [], advanced: storeRead("advanced") || 
             backtest: storeRead("backtest") || [],
             healthcare: storeRead("healthcare") || [],
             bridge: storeRead("bridge") || [],
+            optimizer: storeRead("optimizer") || [],
             fire: storeRead("fire") || [],
             guide: storeRead("guide") || []};
 /* One-time move: scenarios saved before the v3 split lived under a single
@@ -3393,7 +4296,9 @@ function acctBreakdown(p, a){
                     ? p.years : p.inflYears;
   return Object.assign(acFinish(a, {trad:fvT, roth:fvR, brok:fvB}, basis0 + a.brokC * dollarsIn(gr.b),
       Math.pow(1 + p.inflation, inflYears), p.withdrawal, acSeniors(a, p.years)),
-    {match, matchTotal: match * perDollar, perDollar});
+    {match, matchTotal: match * perDollar, perDollar,
+     // dollars put into the Roth, for the Plan Optimizer's contribution basis
+     rothIn: a.rothC * dollarsIn(gr.r)});
 }
 /* Shared by Advanced and Stages once each has its accounts' ending balances:
    today's dollars, the first year's withdrawal split pro rata, and the tax on
@@ -5299,6 +6204,7 @@ function applyStageAcct(g){
   const B = acFinish(a, {trad:T.fv + Mt.fv, roth:Ro.fv, brok:Br.fv}, basis0 + Br.contribTotal,
     Math.pow(1 + g.inflation, years), g.withdrawal, acSeniors(a, years));
   B.matchTotal = Mt.contribTotal;
+  B.rothIn = Ro.contribTotal;
   B.years = years;
   g.taxRate = B.effRate;
   lastStageAcct = B;
@@ -6137,7 +7043,8 @@ let navSuspended = false;
 const TOOL_PATHS = {
   tax:"incometax", mortgage:"mortgage", budget:"budget", college:"college",
   rentbuy:"rentbuy", drawdown:"drawdown", roth:"roth", debt:"debt",
-  backtest:"backtest", healthcare:"healthcare", fire:"fire", bridge:"bridge"
+  backtest:"backtest", healthcare:"healthcare", fire:"fire", bridge:"bridge",
+  optimizer:"optimizer"
 };
 const SUB_BY_PATH = {};
 Object.keys(TOOL_PATHS).forEach(sub => { SUB_BY_PATH[TOOL_PATHS[sub]] = sub; });
@@ -6280,6 +7187,8 @@ function showTool(sub){
   $("asideBT").hidden = (sub !== "backtest");
   $("tab-bridge").hidden = (sub !== "bridge");
   $("asideBR").hidden = (sub !== "bridge");
+  $("tab-optimizer").hidden = (sub !== "optimizer");
+  $("asideOP").hidden = (sub !== "optimizer");
   $("asideHC").hidden = (sub !== "healthcare");
   $("asideFire").hidden = (sub !== "fire");
   $("asideTax").hidden = (sub !== "tax");
@@ -6304,6 +7213,7 @@ function showTool(sub){
   else if (sub === "backtest") renderBacktest();
   else if (sub === "healthcare"){ if (hcReady) renderHealthcare(); }
   else if (sub === "bridge"){ if (brReady) renderBridge(); }
+  else if (sub === "optimizer") renderOptimizer();
   else if (sub === "fire") {
     var fiEl = $("fiTarget");
     if (fiEl) fiEl.dispatchEvent(new Event("input", {bubbles:true}));
@@ -6368,6 +7278,8 @@ function showTab(t){
     $("asideBT").hidden = true;
     $("tab-bridge").hidden = true;
     $("asideBR").hidden = true;
+    $("tab-optimizer").hidden = true;
+    $("asideOP").hidden = true;
     $("asideHC").hidden = true;
     $("asideFire").hidden = true;
     $("main").classList.remove("solo");
@@ -11779,6 +12691,7 @@ function linkToolData(tool, d){
   else if (tool === "backtest") writeBTState(d);
   else if (tool === "healthcare") writeAsideState("asideHC", d);
   else if (tool === "bridge") writeAsideState("asideBR", d);
+  else if (tool === "optimizer") writeAsideState("asideOP", d);
   else if (tool === "fire"){ writeAsideState("asideFire", d); linkFireMode = d.mode || null; }
 }
 /* UTF-8 first, so a stage or debt named with an accent or an emoji still
@@ -12259,7 +13172,7 @@ const TOOL_LABEL = {basic:"scenario", advanced:"scenario", stages:"scenario",
                     college:"college plan", rentbuy:"rent-vs-buy scenario",
                     drawdown:"drawdown plan", roth:"conversion plan",
                     debt:"debt plan", backtest:"backtest",
-                    healthcare:"healthcare plan", bridge:"bridge plan",
+                    healthcare:"healthcare plan", bridge:"bridge plan", optimizer:"optimizer plan",
                     fire:"FIRE plan", guide:"readiness plan"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
@@ -12323,6 +13236,7 @@ $("scenarioPick").addEventListener("change", e => {
   else if (tool === "backtest"){ writeBTState(s.data); renderBacktest(); }
   else if (tool === "healthcare"){ writeAsideState("asideHC", s.data); renderHealthcare(); }
   else if (tool === "bridge"){ writeAsideState("asideBR", s.data); renderBridge(); }
+  else if (tool === "optimizer"){ writeAsideState("asideOP", s.data); renderOptimizer(); }
   else if (tool === "fire"){ writeFireState(s.data); }
   else if (tool === "guide"){ gdLoadPlan(s.data); }
   currentScenario[tool] = s.name;
@@ -12881,6 +13795,25 @@ function buildCardSVG(){
       bigLabel = "Enter your balances"; big = "—"; sub = ""; rows = [];
     }
 
+  } else if (t === "tools" && toolSub === "optimizer"){
+    var OR = OP.tool.res;
+    title = "My retirement roadmap";
+    if (OR){
+      var ob = OR.best.stats, oa = OR.base.stats, oc = {married:OR.married, gap:OR.age2 == null ? 0 : OR.age2 - OR.age1, rmdAge:OR.rmdAge};
+      bigLabel = "Left after tax, typical market";
+      big = opCompact(ob.medLegacy);
+      sub = "Best of " + groupDigits(OR.of, true) + " plans, tested in every market since " + OR.first;
+      rows = [
+        ["Social Security at", opClaims(OR.best.T, oc, true)],
+        ["Lifetime tax", money(oa.medTax) + " \u2192 " + money(ob.medTax)],
+        ["Lasted in", pctStr(ob.successRate, 0) + " of markets"],
+        ["Left after tax", opCompact(oa.medLegacy) + " \u2192 " + opCompact(ob.medLegacy)]
+      ];
+      verdict = opTacticsLine(OR.best.T, oc);
+    } else {
+      bigLabel = "Run the optimizer first"; big = "—"; sub = ""; rows = [];
+    }
+
   } else if (t === "simple"){
     var p = readBasic();
     var R = projectBasic(p);
@@ -13082,6 +14015,7 @@ function buildToolData(tool){
   if (tool === "guide") return gdPlanData();
   if (tool === "healthcare") return readAsideState("asideHC");
   if (tool === "bridge") return readAsideState("asideBR");
+  if (tool === "optimizer") return readAsideState("asideOP");
   if (tool === "fire") return Object.assign(readAsideState("asideFire"), {
     mode: $("segFireMode").querySelector('button[data-firemode="coast"].on') ? "coast" : "fire"});
   return readBudgetState();
@@ -13180,6 +14114,7 @@ function asideIsDirty(id){
 function toolIsDirty(tool){
   if (tool === "healthcare") return asideIsDirty("asideHC");
   if (tool === "bridge") return asideIsDirty("asideBR");
+  if (tool === "optimizer") return asideIsDirty("asideOP");
   if (tool === "fire") return asideIsDirty("asideFire") ||
     !!$("segFireMode").querySelector('button[data-firemode="coast"].on');
   if (tool === "tax") return !sameShallow(readTaxState(), TAX_DEFAULTS);
@@ -13288,7 +14223,7 @@ $("btnReset").addEventListener("click", () => {
     tool === "roth" ? "Roth Conversion" :
     tool === "debt" ? "Debt Payoff" :
     tool === "healthcare" ? "Healthcare" : tool === "fire" ? "FIRE Calculator" :
-    tool === "bridge" ? "Early Retirement Bridge" :
+    tool === "bridge" ? "Early Retirement Bridge" : tool === "optimizer" ? "Plan Optimizer" :
     tool === "backtest" ? "Portfolio Backtest" : "Budget";
   if (toolIsDirty(tool) &&
       !confirm("Reset the " + label +
@@ -13333,6 +14268,9 @@ $("btnReset").addEventListener("click", () => {
   } else if (tool === "bridge"){
     resetAsideDefaults("asideBR");
     renderBridge();
+  } else if (tool === "optimizer"){
+    resetAsideDefaults("asideOP");
+    renderOptimizer();
   } else if (tool === "healthcare"){
     resetAsideDefaults("asideHC");
     renderHealthcare();
@@ -13644,6 +14582,34 @@ function hhApply(H, only){
     if (spend) $("brSpend").value = m(spend);
     done.push("Early Retirement Bridge");
   }
+  if (want("optimizer") && (age || retire || has(H.saved) || spend || H.state)){
+    $("opStatus").value = married ? "m" : "s";
+    if (age) $("opAge").value = String(age);
+    if (married && has(H.spouseAge) && H.spouseAge > 0) $("opSpAge").value = String(Math.round(H.spouseAge));
+    if (retire && (!age || retire >= age)) $("opRetire").value = String(retire);
+    if (married && retire && age && has(H.spouseAge) && H.spouseAge > 0)
+      $("opSpRet").value = String(Math.round(H.spouseAge + (retire - age)));
+    // In Retirement day mode the balances are what you'll have then, so
+    // today's total from the profile doesn't belong in them.
+    const opNow = $("opMode").value === "now";
+    if (H.state && $("opState").querySelector("option[value='" + H.state + "']")) $("opState").value = H.state;
+    if (spend) $("opSpend").value = m(spend);
+    // The profile has one total; spread it over the accounts in the shares
+    // the tool already holds, so the split stays the tool's own.
+    const scale = (ids, total) => {
+      const now = ids.map(id => num(id)), sum = now.reduce((x, y) => x + y, 0);
+      ids.forEach((id, i) => { $(id).value = m(sum > 0 ? total * now[i] / sum : (i === 0 ? total : 0)); });
+    };
+    if (opNow && has(H.saved)){
+      const rb = num("opRothBasis"), r0 = num("opRoth");
+      scale(["opTrad", "opRoth", "opBrok"], H.saved);
+      $("opRothBasis").value = m(r0 > 0 ? rb * num("opRoth") / r0 : 0);
+    }
+    if (opNow && has(H.monthly)) scale(["opSaveTrad", "opSaveRoth", "opSaveBrok"], H.monthly);
+    if (has(inc1)){ $("opInc1").value = m(inc1); $("opSS1").value = ""; }
+    if (has(inc2)){ $("opInc2").value = m(inc2); $("opSS2").value = ""; }
+    done.push("Plan Optimizer");
+  }
   if (want("healthcare")){
     if (retire && retire >= 40 && retire <= 75) $("hcRetireAge").value = String(retire);
     $("hcStatus").value = married ? "m" : "s";
@@ -13683,6 +14649,7 @@ function hhRerender(){
   else if (sub === "roth") renderRoth();
   else if (sub === "healthcare"){ if (hcReady) renderHealthcare(); }
   else if (sub === "bridge") renderBridge();
+  else if (sub === "optimizer") renderOptimizer();
   else if (sub === "fire") $("fiTarget").dispatchEvent(new Event("input", {bubbles:true}));
 }
 function hhOpen(open){
@@ -13796,11 +14763,24 @@ function gdLoadState(){
         // The Retiring early step became Adjust your plan.
         if (v.cur === "fire") v.cur = "tune";
         if (v.back && v.back.step === "fire") v.back = null;
+        gdMigrate(v.a);
         return Object.assign(gdFresh(), v);
       }
     }
   } catch(e){}
   return gdMem ? JSON.parse(JSON.stringify(gdMem)) : gdFresh();
+}
+/* Answers saved before income tax was built in. The Roth and brokerage split
+   used to be asked only on the Getting to 59½ step; and a tax estimate added
+   to retirement spending by hand would now be counted twice. */
+function gdMigrate(a){
+  if (!a) return;
+  if (a.rothNow == null && a.brRothNow != null) a.rothNow = a.brRothNow;
+  if (a.brokNow == null && a.brBrokNow != null) a.brokNow = a.brBrokNow;
+  delete a.brRothNow; delete a.brBrokNow;
+  // (runs before gdPos exists, so the checks are spelled out)
+  if (a.retTaxAdded && a.retTax > 0 && a.retSpend > 0) a.retSpend = Math.max(0, a.retSpend - a.retTax);
+  delete a.retTaxAdded; delete a.retTax;
 }
 let gd = gdLoadState();
 function gdSave(){
@@ -13819,6 +14799,7 @@ function gdLoadPlan(d){
   if (!d || !d.a || typeof d.a !== "object") return;
   gd = gdFresh();
   gd.a = JSON.parse(JSON.stringify(d.a));
+  gdMigrate(gd.a);
   gd.done = Object.assign({}, d.done || {});
   const L = gdNumbered();
   gd.cur = L.every(st => st.id === "results" || gd.done[st.id]) ? "results" : gdFirstOpen();
@@ -13879,47 +14860,45 @@ function gdMinSpend(){ const m = gd.a.minSpend; return gdPos(m) ? m : 0; }
 /* When Social Security starts. The age chosen on the Spending in retirement
    step, or by default 67 (full retirement age), or retirement if that's
    later, up to 70. Never before retirement in this plan: a benefit claimed
-   while still working is mostly withheld by the earnings test. */
+   while still working is mostly withheld by the earnings test. This is the
+   plan as you'd run it yourself; the Plan Optimizer can pick other ages. */
 function gdClaim(retire){
   const r = Math.min(70, Math.round(retire)), c = gd.a.ssClaim;
   if (gdOk(c)) return Math.max(62, Math.min(70, Math.max(c, r)));
   return Math.max(67, r);
 }
-/* Social Security in today's dollars. Both spouses start together, the same
-   timing the Drawdown Simulator uses for a couple with one retirement age,
-   so the guide's success rate matches the tool's. The estimate counts the
-   years worked by retirement, from 22: Social Security averages the best 35,
-   so retiring at 45 averages in 12 years of zeros. A lower earner is lifted
-   to half the higher earner's full benefit, the spousal rule, which matters
-   for a one-income household. A statement's figure is at 67 and is scaled
-   for the claiming age the same way. */
-function gdSS(retire){
+/* Each of you's Social Security at full retirement age, a month, in today's
+   dollars: from a statement when there is one, or estimated from income over
+   the years worked by retirement, from 22. Social Security averages the best
+   35, so retiring at 45 averages in 12 years of zeros. A lower earner gets a
+   spousal top-up to half the higher earner's benefit; the plan engine works
+   that out for the ages each of you claims. */
+function gdPias(retire){
   const a = gd.a;
-  const claim = gdClaim(retire);
-  const delay = Math.max(0, claim - Math.round(retire));
-  const adj = ssEstimate(0, 35, claim).adjustment;
-  if (gdPos(a.ssOwn)){
-    const t = a.ssOwn * 12 * adj;
-    return {a1:t, a2:0, total:t, delay, claim, own:true, spousal:false, career:null};
-  }
   const yrs1 = Math.max(1, Math.min(35, Math.round(retire) - 22));
-  const s1 = ssEstimate(a.income || 0, yrs1, claim);
-  let a1 = s1.annual, a2 = 0, spousal = false;
-  if (gdMar()){
-    // The spouse stops working at the same time, at whatever age they are then.
-    const spAt = gdOk(a.spouseAge) && gdOk(a.age) ? a.spouseAge + (retire - a.age) : retire;
-    const s2 = ssEstimate(a.income2 || 0, Math.max(1, Math.min(35, Math.round(spAt) - 22)), claim);
-    a2 = s2.annual;
-    // Spousal benefits earn no delay credits, so it's half the full benefit,
-    // reduced on the spousal schedule for an early claim.
-    const half = x => x * .5 * ssSpousalAdj(claim);
-    if (half(s1.atFRA) > a2){ a2 = half(s1.atFRA); spousal = true; }
-    if (half(s2.atFRA) > a1){ a1 = half(s2.atFRA); spousal = true; }
-  }
-  return {a1, a2, total:a1 + a2, delay, claim, own:false, spousal, career:yrs1};
+  const spAt = gdMar() && gdOk(a.spouseAge) && gdOk(a.age) ? a.spouseAge + (retire - a.age) : retire;
+  const yrs2 = Math.max(1, Math.min(35, Math.round(spAt) - 22));
+  const own = gdPos(a.ssOwn), own2 = gdMar() && gdPos(a.ssOwn2);
+  return {pia1: own ? a.ssOwn : ssEstimate(a.income || 0, yrs1, 67).pia,
+    pia2: !gdMar() ? 0 : own2 ? a.ssOwn2 : ssEstimate(a.income2 || 0, yrs2, 67).pia,
+    own, own2, career:yrs1, career2:yrs2};
+}
+/* Social Security for a retirement age, while typing: each of you's yearly
+   benefit once claimed, at the ages the plan uses (the Plan Optimizer's, if
+   applied). */
+function gdSS(retire){
+  const a = gd.a, pia = gdPias(retire), Tq = gdTactics(), claim = gdClaim(retire);
+  const age1 = Math.round(retire);
+  const age2 = gdMar() && gdOk(a.spouseAge) && gdOk(a.age) ? Math.round(a.spouseAge + (retire - a.age)) : null;
+  const c1 = Math.max(plClaimMin(age1), Math.min(70, Tq ? Tq.c1 : claim));
+  const c2 = age2 == null ? c1 : Math.max(plClaimMin(age2), Math.min(70, Tq ? Tq.c2 : claim));
+  const S = plSSParts({P:{pia1:pia.pia1, pia2:pia.pia2}, married:gdMar(), gap:age2 == null ? 0 : age2 - age1}, {c1, c2});
+  return {a1:S.own1 + S.top1, a2:S.own2 + S.top2, total:S.total, claim:c1, claim2:c2,
+    delay:Math.max(0, c1 - age1), own:pia.own, own2:pia.own2, spousal:S.top1 + S.top2 > 0,
+    career:pia.career, tactics:!!Tq};
 }
 /* A pension or other steady retirement income, in the Drawdown Simulator's
-   own custom-income form so both run it the same way. */
+   own custom-income form so a trip there carries it. */
 function gdPensionItems(retire){
   const a = gd.a;
   if (!gdPos(a.pension)) return [];
@@ -13936,27 +14915,43 @@ function gdYearsFor(retire){
   return Math.max(20, Math.min(60, end));
 }
 
-/* Basic's projection, month by month, with contributions stopping after
-   saveYears (a coast plan). With saving all the way to retirement it's
-   exactly projectBasic's figure. Keeps each year-end balance for the chart. */
-function gdGrow(initial, monthly, real, years, saveYears){
-  const n = Math.floor(years * 12), sN = Math.max(0, Math.min(n, Math.floor(saveYears * 12 + 1e-9)));
-  const pr = Math.pow(1 + real, 1 / 12) - 1;
-  let bal = initial;
-  const path = [initial];
-  for (let i = 1; i <= n; i++){
-    const j = i - (Math.ceil(i / 12) - 1) * 12;
-    bal = bal * (1 + pr) + (i <= sN ? monthly / Math.pow(1 + BASIC_INFL, j / 12) : 0);
-    if (i % 12 === 0) path.push(bal);
-  }
-  if (n % 12) path.push(bal);
-  return {fv:bal, path};
+/* Where the money sits. Today's balances: the Roth and brokerage amounts
+   from the Retirement savings step, the rest traditional. New saving goes
+   where the person says it does; an employer's match always lands in a
+   traditional account. */
+const GD_SAVE_TO = [["trad", "Mostly pre-tax", "A traditional 401(k), 403(b) or IRA"],
+  ["roth", "Mostly Roth", "A Roth 401(k) or Roth IRA"],
+  ["half", "About half and half", "Some of each"],
+  ["brok", "Mostly a taxable account", "A brokerage account outside a retirement plan"]];
+function gdAccts(){
+  const a = gd.a, saved = Math.max(0, a.saved || 0);
+  const roth = Math.min(saved, gdPos(a.rothNow) ? a.rothNow : 0);
+  const brok = Math.min(saved - roth, gdPos(a.brokNow) ? a.brokNow : 0);
+  return {trad:saved - roth - brok, roth, brok};
 }
-/* The Drawdown Simulator's options for a plan, with any withdrawal strategy.
-   Every strategy starts from the plan's own spending rate; VPW uses the
-   Bogleheads return for the mix, since it sets its own spending. */
+function gdSaveSplit(mine){
+  const to = gd.a.saveTo || "trad";
+  if (to === "roth") return {t:0, r:mine, b:0};
+  if (to === "half") return {t:mine / 2, r:mine / 2, b:0};
+  if (to === "brok") return {t:0, r:0, b:mine};
+  return {t:mine, r:0, b:0};
+}
+/* The Plan Optimizer's choices, once applied: stored as plain numbers so a
+   shared link carries them. */
+function gdTactics(){
+  const a = gd.a;
+  if (!gdOk(a.optC1)) return null;
+  return {c1:a.optC1, c2:gdOk(a.optC2) ? a.optC2 : a.optC1, f:a.optF || 0, u:a.optU || 0,
+    im:a.optIm || 0, ac:a.optAc || 0};
+}
+
+/* The Drawdown Simulator's options for a plan, with any withdrawal strategy,
+   for a trip there. The simulator doesn't work out tax, so the plan's
+   typical yearly tax rides along with its spending. Every strategy starts
+   from that rate; VPW uses the Bogleheads return for the mix, since it sets
+   its own spending. */
 function gdDDOpts(S, strategy){
-  const rate = S.spend / Math.max(1, S.fv) * 100;
+  const rate = (S.spend + (S.taxYr || 0)) / Math.max(1, S.fv) * 100;
   return {initial:S.fv, years:S.years, stockPct:S.mix, stockPctEnd:null, fee:0,
     strategy:strategy || "fixed", initialPct:rate, guardBand:20, adjustPct:10,
     floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:rate, spendFloor:gdMinSpend(), spendCeil:0,
@@ -13965,14 +14960,10 @@ function gdDDOpts(S, strategy){
     legacyGoal:0, retireAge:S.retire, fromYear:HIST_START, incomeItems:S.inc, expenseItems:[]};
 }
 
-/* The retirement engine behind the score: Basic's projection to the
-   retirement age (stopping contributions early for a coast plan), then that
-   balance run through every historical retirement since 1926 by the Drawdown
-   Simulator's own engine, spending a fixed amount that rises with inflation.
-   `over` swaps in a different monthly saving, retirement age, stop age or
-   spending, which is how the options on the Adjust step are found. */
-const gdSimCache = {};
-function gdSim(over){
+/* The plan engine's inputs from the answers. `over` swaps in a different
+   retirement age, monthly saving (yours and your employer's together), stop
+   age or spending, which is how the options on the Adjust step are found. */
+function gdPlanIn(over){
   over = over || {};
   const a = gd.a, has = k => Object.prototype.hasOwnProperty.call(over, k);
   if (!gdOk(a.age) || !gdOk(a.retire) || !gdOk(a.saved) || !gdOk(a.contrib) || !gdPos(a.retSpend)) return null;
@@ -13984,32 +14975,77 @@ function gdSim(over){
   let stop = has("stopAge") ? over.stopAge : a.stopAge;
   if (!gdOk(stop) || stop >= retire) stop = null;
   if (stop != null) stop = Math.max(a.age, stop);
-  const real = a.risk || .045;
-  const ss = gdSS(retire), years = gdYearsFor(retire), mix = gdRetMix(), inc = gdPensionItems(retire);
-  const saveYears = stop == null ? retire - a.age : stop - a.age;
-  const key = [a.age, retire, a.saved, monthly, real, spend, saveYears, ss.a1, ss.a2, ss.delay, years, mix,
-    inc.length ? JSON.stringify(inc) : ""].join("|");
+  const emp = Math.min(Math.max(0, monthly), a.employer || 0), sp = gdSaveSplit(Math.max(0, monthly - emp));
+  const A = gdAccts(), pia = gdPias(retire), claim = gdClaim(retire);
+  return {status:gdMar() ? "m" : "s", state:a.state || $("txState").value || "IL", age:a.age,
+    spouseAge:gdMar() && gdOk(a.spouseAge) ? a.spouseAge : null, retire, stopAge:stop,
+    trad:A.trad, roth:A.roth, brok:A.brok, rothBasis:A.roth * .5, brokBasis:A.brok * .6,
+    saveTrad:sp.t + emp, saveRoth:sp.r, saveBrok:sp.b, real:a.risk || .045, infl:BASIC_INFL,
+    spend, pia1:pia.pia1, pia2:pia.pia2, claim1:claim, claim2:claim,
+    pension:gdPos(a.pension) ? a.pension * 12 : 0, pensionAge:gdOk(a.pensionAge) ? a.pensionAge : null,
+    pensionCola:a.pensionCola === "yes", aca:retire < 65 && a.hcIncl !== "yes",
+    household:gdMar() ? 2 : 1, rule55:a.rule55 === "yes", heirRate:PL_HEIR, mix:gdRetMix(),
+    years:gdYearsFor(retire), target:gdTarget(), strategy:"fixed", minSpend:0, fromYear:HIST_START,
+    monthly};
+}
+/* Social Security as the plan runs it, for the page: each of you's yearly
+   benefit once claimed (spousal top-up included) and the ages. */
+function gdSSOf(C, T, retire){
+  const pia = gdPias(retire), S = plSSParts(C, T);
+  return {a1:S.own1 + S.top1, a2:S.own2 + S.top2, total:S.total, claim:T.c1, claim2:T.c2,
+    delay:Math.max(0, T.c1 - Math.round(retire)), own:pia.own, own2:pia.own2,
+    spousal:S.top1 + S.top2 > 0, career:pia.career};
+}
+
+/* The retirement engine behind the score: today's balances and saving,
+   account by account, grown to the retirement age at the mix's steady
+   return (Basic's projection), then that retirement run through every
+   historical retirement since 1926 by the plan engine, spending a fixed
+   amount that rises with inflation, with the year's income tax, Medicare
+   surcharge and pre-65 marketplace premiums paid on top. Social Security is
+   claimed at the age answered, and withdrawals come from the brokerage,
+   then traditional, then Roth, unless the Plan Optimizer's choices have
+   been applied. `over` swaps in a different monthly saving, retirement age,
+   stop age or spending; `base` ignores any applied optimizer choices. */
+const gdSimCache = {};
+function gdSim(over, base){
+  const I = gdPlanIn(over);
+  if (!I) return null;
+  const Tq = base ? null : gdTactics();
+  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "");
   if (gdSimCache[key]) return gdSimCache[key];
-  const G = gdGrow(a.saved, monthly, real, retire - a.age, saveYears);
-  const fv = G.fv, pension = gdPos(a.pension) ? a.pension * 12 : 0;
-  const out = {fv, years, ss, spend, retire, monthly, real, stop, saveYears, mix, inc, pension,
-    path:G.path, H:null, success:0,
-    portIncome: fv * .04, coverage: (fv * .04 + ss.total + pension) / spend};
-  if (fv < 1000) out.success = ss.total + pension >= spend ? 1 : 0;
-  else {
-    out.H = historicalBacktest(gdDDOpts(out, "fixed"));
-    out.success = out.H.successRate;
-  }
+  const P = plAtRetire(I), C = plPrep(P);
+  let T = plBaseTactics(C);
+  if (Tq) T = Object.assign({}, Tq, {c1:Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1)),
+    c2:C.married ? Math.max(plClaimMin(C.age2), Math.min(70, Tq.c2)) : Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1))});
+  const H = plHistory(C, T, {paths:true}), D = plDetail(C, T);
+  const ss = gdSSOf(C, T, I.retire);
+  // Tax and health premiums in a typical year, from the steady path.
+  let tx = 0, hc = 0, hn = 0;
+  D.rows.forEach(r => { tx += r.tax + r.irmaa; if (r.health > 0){ hc += r.health; hn++; } });
+  const out = {key, I, P, C, T, tactics:!!Tq, fv:P.fv, years:C.years, ss, spend:I.spend, retire:I.retire,
+    monthly:I.monthly, real:I.real, stop:I.stopAge, saveYears:(I.stopAge == null ? I.retire : I.stopAge) - I.age,
+    mix:I.mix, inc:gdPensionItems(I.retire), pension:I.pension, path:P.path, H, D,
+    success:H.successRate, taxYr:D.rows.length ? tx / D.rows.length : 0, hcYr:hn ? hc / hn : 0, hcYears:hn,
+    lifeTax:H.medTax, portIncome:P.fv * .04};
+  out.coverage = (out.portIncome + ss.total + I.pension) / (I.spend + out.taxYr);
   gdSimCache[key] = out;
   return out;
 }
 /* What a plan has to have saved by retirement to last in the target share of
-   history: the same test, solved for the starting balance. */
+   history: the same test, solved for the balance at retirement, every
+   account scaled together. */
 function gdNeed(S){
-  const goal = gdTarget(), key = "need|" + goal + "|" + S.fv + "|" + S.retire + "|" + S.spend + "|" + S.ss.total + "|" + S.years + "|" + S.mix + "|" + S.pension;
+  const goal = gdTarget(), key = "need|" + goal + "|" + S.key;
   if (gdSimCache[key] != null) return gdSimCache[key];
-  const lasts = fv => fv < 1000 ? (S.ss.total + S.pension >= S.spend) :
-    historicalBacktest(gdDDOpts(Object.assign({}, S, {fv}), "fixed")).successRate >= goal - 1e-9;
+  const P = S.P, n = S.H.total, maxFail = Math.floor(n * (1 - goal) + 1e-9);
+  const lasts = fv => {
+    const k = S.fv >= 1000 ? fv / S.fv : 0;
+    const Q = S.fv >= 1000 ? Object.assign({}, P, {trad:P.trad * k, roth:P.roth * k, rothBasis:P.rothBasis * k,
+      brok:P.brok * k, brokBasis:P.brokBasis * k}) : Object.assign({}, P, {trad:fv, roth:0, rothBasis:0, brok:0, brokBasis:0});
+    const H = plHistory(plPrep(Q), S.T, {stopAfter:maxFail});
+    return !H.partial && H.total - H.survived <= maxFail;
+  };
   let lo = 0, hi = Math.max(S.spend * 60, S.fv * 2);
   if (lasts(0)) return (gdSimCache[key] = 0);
   for (let i = 0; i < 22; i++){ const m = (lo + hi) / 2; if (lasts(m)) hi = m; else lo = m; }
@@ -14018,16 +15054,8 @@ function gdNeed(S){
 /* The median balance through retirement, with the 10th and 90th percentile,
    in today's dollars, for the chart. */
 function gdRetPath(S){
-  if (S.retPath) return S.retPath;
-  const out = [];
-  if (S.H && S.H.runs.length){
-    for (let y = 0; y < S.years; y++){
-      const col = S.H.runs.map(r => r.rows[y] ? r.rows[y].realEnd : 0).sort((x, z) => x - z);
-      const at = q => col[Math.min(col.length - 1, Math.floor(col.length * q))];
-      out.push({p10:at(.1), p50:at(.5), p90:at(.9)});
-    }
-  } else for (let y = 0; y < S.years; y++) out.push({p10:0, p50:0, p90:0});
-  return (S.retPath = out);
+  if (!S.retPath) S.retPath = plBands(S.H, S.years);
+  return S.retPath;
 }
 
 /* ---------- the score ---------- */
@@ -14271,7 +15299,7 @@ function gdSeries(S, name, cls){
   // drawn faintly under the band.
   const traces = S.H && S.H.runs ? S.H.runs.map(run => {
     const ln = [{x:r0, y:S.fv}];
-    for (let i = 0; i < S.years; i++) ln.push({x:r0 + i + 1, y:run.rows[i] ? run.rows[i].realEnd : 0});
+    for (let i = 0; i < S.years; i++) ln.push({x:r0 + i + 1, y:run.path ? run.path[i] : 0});
     return ln;
   }) : [];
   return {name, cls, S, pts, traces, retire:r0, stop:S.stop != null ? Math.round(S.stop) : null};
@@ -14517,13 +15545,16 @@ const GD_LIVE = {
   ssNote(){
     const a = gd.a;
     if (!gdOk(a.retire)) return "";
-    const ss = gdSS(a.retire);
+    const ss = gdSS(a.retire), both = gdMar() && ss.a2 > 0;
+    const src = (own, who) => own ? "from " + who + " statement" : "estimated from " + who + " income";
     let s = "<div class='gd-callout'>";
-    s += ss.own ? "Using your statement: <b>" + money(ss.total / 12) + "/mo</b>" + (ss.claim !== 67 ? ", adjusted for claiming at " + ss.claim : "")
-      : "We estimate Social Security at about <b>" + money(ss.total / 12) + "/mo</b>" + (gdMar() ? " for the two of you" : "") +
-        " in today's dollars, from your income " + (ss.career < 35 ? "over the " + ss.career + " years you'll have worked by " + fmtNum(a.retire) + ", from 22"
-          : "over a full career") + (ss.spousal ? ", including the spousal benefit" : "");
-    s += ", starting at " + ss.claim + ".";
+    if (both) s += "Social Security: about <b>" + money(ss.a1 / 12) + "/mo</b> for you from " + ss.claim + " (" + src(ss.own, "your") + ") and <b>" +
+      money(ss.a2 / 12) + "/mo</b> for your spouse from " + ss.claim2 + " (" + src(ss.own2, "their") + ")" + (ss.spousal ? ", including the spousal benefit" : "") + ", in today's dollars.";
+    else s += (ss.own ? "Using your statement: <b>" : "We estimate Social Security at about <b>") + money(ss.total / 12) + "/mo</b>" +
+      (ss.own ? (ss.claim !== 67 ? ", adjusted for claiming at " + ss.claim : "") : " in today's dollars, from your income " +
+        (ss.career < 35 ? "over the " + ss.career + " years you'll have worked by " + fmtNum(a.retire) + ", from 22" : "over a full career")) +
+      ", starting at " + ss.claim + ".";
+    if (ss.tactics) s += " These are the Plan Optimizer's claiming ages, which your plan now uses.";
     if (!ss.own && ss.career < 35) s += " Social Security averages your best 35 years, so retiring this early counts the missing years as zeros.";
     if (gdPos(a.retSpend)){
       const pen = gdPos(a.pension) ? a.pension * 12 : 0, got = ss.total + pen;
@@ -14531,8 +15562,8 @@ const GD_LIVE = {
       const that = pen ? " Together with your pension, that" : " That";
       if (share >= 1) s += (pen ? " Once it starts, it and your pension cover the spending you entered" : " Once it starts, that alone covers the spending you entered") +
         (early ? "; your savings carry the " + early + (early === 1 ? " year" : " years") + " before it." : ".");
-      else s += that + " covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings need to cover the other " +
-        money(a.retSpend - got) + " a year" + (early ? ", and more for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
+      else s += that + " covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings cover the other " +
+        money(a.retSpend - got) + " a year and its tax" + (early ? ", and more for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
     }
     if (!ss.own) s += " The program's trust fund is projected to run short in the 2030s; for a cautious plan, enter a lower figure below.";
     return s + "</div>";
@@ -14555,12 +15586,18 @@ const GD_LIVE = {
       ". The Basic calculator works the same way.</p>";
   },
   taxNote(){
+    return "<div class='gd-callout'><b>You don't need to add tax.</b> Your plan works out each year's federal and state income tax from where the money comes from: " +
+      "traditional 401(k) and IRA withdrawals are taxed as income, Roth withdrawals aren't, a brokerage account is taxed only on its gains, and part of Social Security can be taxed too. " +
+      "Medicare's income surcharge and health insurance before 65 are counted the same way.</div>";
+  },
+  acctNote(){
     const a = gd.a;
-    return "<div class='gd-callout'><b>This is spending before income tax.</b> Withdrawals from a traditional 401(k) or IRA, a pension and part of Social Security are taxable, so the plan needs a little more than this to cover the tax. " +
-      (gdPos(a.retTax) ? "Your estimate from Income Tax was about <b>" + money(a.retTax) + " a year</b>" + (a.retTaxAdded ? ", and it's been added." : ".") + " " : "") +
-      "The Income Tax tool's <b>Retirement income</b> mode estimates it." +
-      "<div style='margin-top:8px'><button type='button' class='btn mini' data-trip='taxret' data-from='retspend'>" + (gdPos(a.retTax) ? "Estimate it again" : "Estimate my tax in retirement") + "<i class='arw' aria-hidden='true'></i></button>" +
-      (gdPos(a.retTax) && !a.retTaxAdded && gdPos(a.retSpend) ? " <button type='button' class='btn mini' data-gd='addtax'>Add " + money(a.retTax) + " a year to my spending</button>" : "") + "</div></div>";
+    if (!gdPos(a.saved)) return "";
+    const A = gdAccts(), over = (gdPos(a.rothNow) ? a.rothNow : 0) + (gdPos(a.brokNow) ? a.brokNow : 0) > a.saved + 0.5;
+    if (over) return "<div class='gd-callout warn'>Those add up to more than the " + money(a.saved) + " you have saved. Count each dollar once.</div>";
+    if (!(A.roth > 0) && !(A.brok > 0)) return "";
+    return "<div class='gd-callout'>So <b>" + money(A.trad) + "</b> traditional, taxed when it comes out; <b>" + money(A.roth) + "</b> Roth, tax-free; and <b>" +
+      money(A.brok) + "</b> in a brokerage account, taxed only on its gains.</div>";
   },
   pensionNote(){
     const a = gd.a;
@@ -14573,18 +15610,16 @@ const GD_LIVE = {
     const a = gd.a, B = gdBridgeSplit();
     if (!(B.total > 0)) return "";
     return "<div class='gd-callout'>At " + fmtNum(a.retire) + " that's about <b>" + money(B.total) + "</b>: " + money(B.trad) + " traditional, " +
-      money(B.roth) + " Roth and " + money(B.brok) + " in a brokerage account, in today's dollars." +
+      money(B.roth) + " Roth (" + money(B.basis) + " of it contributions, which can come out any time) and " + money(B.brok) + " in a brokerage account, in today's dollars." +
       (a.bridge ? " Last time, the bridge tool picked <b>" + escapeHtml(a.bridge) + "</b>, holding up in <b>" + a.bridgeHold + "%</b> of markets." : "") + "</div>";
   },
   hcNote(){
-    const a = gd.a;
-    if (!gdPos(a.hcPrem) || !gdPos(a.retSpend)) return "";
-    if (a.hcAdded) return "<div class='gd-callout ok'>Added. Your retirement spending is now <b>" + money(a.retSpend) + " a year</b>.</div>";
-    const add = Math.round(a.hcPrem * 12 / 100) * 100;
-    return "<div class='gd-h3'>Is that already in the " + money(a.retSpend) + " a year you plan to spend?</div><div class='gd-choices two'>" +
-      gdChoice("hcIncl", "yes", "Yes, it's included") + gdChoice("hcIncl", "no", "No, it isn't") + "</div>" +
-      (a.hcIncl === "no" ? "<button type='button' class='btn' data-gd='addhc'>Add " + money(add) + " a year to my retirement spending</button>" +
-        "<div class='hint' style='margin-top:6px'>Medicare premiums after 65 run about the same, so it's fair to keep it for the whole retirement.</div>" : "");
+    const a = gd.a, S = gdSim();
+    if (!S) return "";
+    if (a.hcIncl === "yes") return "<div class='gd-callout'>Your plan won't add premiums before 65. Make sure the " + money(S.spend) + " a year you entered really covers them: marketplace plans can run hundreds a month each without a subsidy.</div>";
+    if (!(S.hcYr > 0)) return "<div class='gd-callout ok'>In your plan, income stays low enough before 65 that coverage comes through Medicaid or a full subsidy.</div>";
+    return "<div class='gd-callout'>In your plan: about <b>" + money(S.hcYr) + " a year</b> for " + S.hcYears + (S.hcYears === 1 ? " year" : " years") +
+      ", after the subsidy its income earns. Above 400% of the poverty line the subsidy disappears all at once; the Plan Optimizer can keep income under that line.</div>";
   },
   houseNote(){
     const a = gd.a, inc = gdGross();
@@ -14939,7 +15974,7 @@ const GD_TRIPS = {
       {title:"Your result", focus:"#ddSuccess", tasks(){
         const S = gdSim(), b = gd.trip && gd.trip.base;
         return [
-          {h:"Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year (a <b>Starting withdrawal rate</b> of " + pctStr(S.spend / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
+          {h:"Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year plus about " + money(S.taxYr) + " for tax, since the simulator doesn't work tax out itself (a <b>Starting withdrawal rate</b> of " + pctStr((S.spend + S.taxYr) / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
             ", Social Security" + (b && !b.est ? " as a known benefit" : "") + " and " + (gdPos(gd.a.pension) ? "your pension under <b>Other income</b>." : "no other income yet.")},
           {h:"<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid; close to 100% can mean room to spend more."},
           {h:"<b>Median ending balance</b> is what's typically left at the end, in today's dollars. <b>Worst case</b> is the leanest ending on record."},
@@ -15029,36 +16064,6 @@ const GD_TRIPS = {
       gdHouseholdSync();
       return {msg: head + " Your plan now uses " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") + "." +
         (a.retMix != null && mix !== b.stock ? " Your score's historical test uses the new mix." : ""), undo};
-    }},
-
-  taxret: {tool:"tax", name:"Income Tax", mins:3, title:"Estimate your tax in retirement",
-    prefill(){
-      const a = gd.a, S = gdSim();
-      const ss = S ? Math.round(S.ss.total) : 0, pen = S ? Math.round(S.pension) : 0;
-      const need = gdPos(a.retSpend) ? Math.max(0, Math.round(a.retSpend - ss - pen)) : 0;
-      const old = S ? (S.retire >= 65 ? (gdMar() ? 2 : 1) : 0) : 0;
-      writeTaxState({mode:"retire", status: gdMar() ? "m" : "s", state: a.state || $("txState").value,
-        trad:need, roth:0, brok:0, gainPct:50, ss, pension:pen, other:0, seniors:old, pre:0, dedType:"std", item:0});
-      gd.trip.base = {need};
-    },
-    tasks(){
-      const b = gd.trip && gd.trip.base;
-      return [
-        {h:"We switched to <b>Retirement income</b> and filled in a first year of retirement: " + (b ? money(b.need) + " from savings" : "your withdrawals") + " under <b>Traditional</b>, plus your Social Security" + (gdPos(gd.a.pension) ? " and pension" : "") + "."},
-        {h:"If some of your savings are in a Roth or a taxable brokerage account, move that share of the withdrawal to <b>Roth</b> or <b>Brokerage</b>. Roth withdrawals are tax-free, and brokerage sales are taxed only on the gain."},
-        {h:"Check <b>Filing status</b>, <b>State</b> and how many of you are 65 or older."},
-        {h:"<b>Total tax</b> is the yearly bill. Tap <b>Back to guide</b> and it comes with you, ready to add to your spending."}
-      ];
-    },
-    chip(){
-      const R = runTax(readTax());
-      return R.gross > 0 ? "Tax in retirement<br><b>" + money(R.total) + "/yr</b>" : "";
-    },
-    capture(){
-      const R = runTax(readTax());
-      if (txMode !== "retire" || !(R.gross > 0)) return null;
-      gd.a.retTax = Math.round(R.total / 100) * 100; gd.a.retTaxAdded = false;
-      return "From Income Tax: about <b>" + money(gd.a.retTax) + " a year</b> in tax on that retirement income, " + pctStr(R.total / R.gross, 1) + " of it. Add it to your spending below so the plan covers it.";
     }},
 
   bridge: {tool:"bridge", name:"Early Retirement Bridge", mins:6, title:"Plan the years before 59½",
@@ -15337,15 +16342,16 @@ const GD_TRIPS = {
 };
 /* The planner's headline pre-65 premium, the first net figure it shows
    (current law), read off the page since it's drawn as text. */
-/* The guide's projected savings at retirement, split in the shares of today's
-   balances the Getting to 59½ step asked about; the rest is traditional. */
+/* The guide's projected savings at retirement, account by account, as the
+   plan engine grows them. */
 function gdBridgeSplit(){
-  const a = gd.a, S = gdSim(), total = S ? S.fv : (a.saved || 0), saved = Math.max(1, a.saved || 0);
-  const rNow = gdPos(a.brRothNow) ? a.brRothNow : 0, bNow = gdPos(a.brBrokNow) ? a.brBrokNow : 0;
-  const rs = Math.min(1, rNow / saved), bs = Math.min(1 - rs, bNow / saved);
-  const roth = total * rs, brok = total * bs;
-  return {total, roth, brok, trad:Math.max(0, total - roth - brok), basis:Math.min(roth, rNow),
-    mix: S ? S.mix : 70};
+  const a = gd.a, S = gdSim();
+  if (!S){
+    const A = gdAccts();
+    return {total:a.saved || 0, trad:A.trad, roth:A.roth, brok:A.brok, basis:A.roth * .5, mix:70};
+  }
+  const P = S.P;
+  return {total:P.fv, trad:P.trad, roth:P.roth, brok:P.brok, basis:P.rothBasis, mix:S.mix};
 }
 /* Retirement spending without the marketplace premium, when the guide has
    already added it: the bridge tool prices coverage itself. */
@@ -15412,7 +16418,7 @@ const GD_STEPS = [
         "<ul class='gd-perks'>" +
         "<li><i>1</i><span><b>A readiness score out of 100</b> that updates as you answer, and shows what's pulling it down.</span></li>" +
         "<li><i>2</i><span><b>A tour of the tools that apply to you.</b> No mortgage? No kids? Those get skipped.</span></li>" +
-        "<li><i>3</i><span><b>A plan you can adjust.</b> Ahead of schedule? See what retiring sooner, coasting or spending more would look like, and apply it. Behind? Pick the fix that suits you.</span></li>" +
+        "<li><i>3</i><span><b>A plan you can adjust, with taxes built in.</b> Ahead of schedule? See what retiring sooner, coasting or spending more would look like, and apply it. Behind? Pick the fix that suits you. Then the Plan Optimizer finds the best way to claim Social Security, draw down your accounts and convert to Roth.</span></li>" +
         "<li><i>4</i><span><b>A short, ordered list</b> of what to do next, with the tool for each step.</span></li></ul>" +
         "<div class='gd-callout'>Plan on 20 to 40 minutes, depending on how many tools you open. Stop whenever you like: your answers are kept in this browser only and never leave it.</div>";
     },
@@ -15574,6 +16580,7 @@ const GD_STEPS = [
     body(){
       const a = gd.a;
       if (a.risk == null) a.risk = .045;
+      if (!a.saveTo) a.saveTo = "trad";
       return "<h2 class='gd-q' tabindex='-1'>Where do your retirement savings stand?</h2>" +
         "<p class='gd-lead'>Add up everything set aside for retirement: 401(k), 403(b), IRAs, Roth accounts and any investments you've earmarked for it. Your account websites show the balances.</p>" +
         "<div class='gd-fields'>" +
@@ -15587,7 +16594,16 @@ const GD_STEPS = [
         gdChoice("match", "none", "No match, or I'm self-employed") + gdChoice("match", "unsure", "Not sure") + "</div>" +
         "<div class='gd-fields'>" + gdSelF("risk", "How is it invested?", RISK_LEVELS.map(r => [r.real, r.label + " · " + r.sub]),
           {kind:"num", full:true, hint:"Target-date funds are usually Balanced or Growth until the last decade before retirement."}) + "</div>" +
-        gdLive("rateNote");
+        gdLive("rateNote") +
+        "<div class='gd-h3'>What kind of accounts is it in?</div>" +
+        "<p class='hint' style='margin:-4px 0 10px;max-width:64ch'>It changes the tax you'll pay in retirement: traditional money is taxed when it comes out, Roth money isn't, and a brokerage account is taxed only on its gains. Leave these blank if it's all in a regular 401(k) or IRA.</p>" +
+        "<div class='gd-fields'>" +
+        gdMoneyF("rothNow", "Of that, in Roth accounts", {ph:"0", hint:"Roth 401(k) and Roth IRA."}) +
+        gdMoneyF("brokNow", "In a taxable brokerage account", {ph:"0", hint:"Only money meant for retirement."}) +
+        "</div>" + gdLive("acctNote") +
+        "<div class='gd-h3'>Where does your monthly saving go?</div><div class='gd-choices two'>" +
+        GD_SAVE_TO.map(x => gdChoice("saveTo", x[0], x[1], x[2])).join("") + "</div>" +
+        "<p class='hint' style='margin:-4px 0 0'>Your employer's share goes into a traditional account either way.</p>";
     },
     ok(a){ return gdOk(a.saved) && gdOk(a.contrib) && !!a.match; },
     why(){ return "Fill in your savings and contributions, and answer the match question"; },
@@ -15605,17 +16621,18 @@ const GD_STEPS = [
           picks.push(["Today, less the loan payment", (a.spend - loan) * 12]);
       }
       return "<h2 class='gd-q' tabindex='-1'>What will you spend in retirement?</h2>" +
-        "<p class='gd-lead'>A year of the retirement you want, priced at today's prices. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel and healthcare can push it back up.</p>" +
+        "<p class='gd-lead'>A year of the retirement you want, priced at today's prices: what you'll live on, <b>after</b> income tax. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel can push it back up.</p>" +
         (picks.length ? "<div class='gd-picks'>" + picks.map(p => "<button type='button' class='gd-pick' data-fill='retSpend' data-v='" + Math.round(p[1] / 100) * 100 + "'>" +
           p[0] + ": <b>" + money(Math.round(p[1] / 100) * 100) + "/yr</b></button>").join("") + "</div>" : "") +
-        "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, before income tax."}) + "</div>" +
+        "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, after tax. Leave out health insurance before 65 too: the plan prices it."}) + "</div>" +
         gdBack("retspend") + gdLive("taxNote") +
         gdLive("ssNote") +
-        "<div class='gd-fields'>" + gdMoneyF("ssOwn", "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:true,
-          ph:"optional", hint:"From ssa.gov/myaccount, at 67" + (gdMar() ? ", both of you added together" : "") + ". It reflects your real earnings, so it beats our estimate."}) +
-        gdSelF("ssClaim", "When will you claim it?", [["", "At 67, or when I retire if that's later"]].concat([62, 63, 64, 65, 66, 67, 68, 69, 70].map(x =>
+        "<div class='gd-fields'>" + gdMoneyF("ssOwn", gdMar() ? "Have a Social Security statement? Your benefit" : "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:!gdMar(),
+          ph:"optional", hint:"From ssa.gov/myaccount, at 67. It reflects your real earnings, so it beats our estimate."}) +
+        (gdMar() ? gdMoneyF("ssOwn2", "Your spouse's benefit", {per:"/mo", ph:"optional", hint:"From their own statement, at 67."}) : "") +
+        gdSelF("ssClaim", gdMar() ? "When would you each claim it?" : "When would you claim it?", [["", "At 67, or when I retire if that's later"]].concat([62, 63, 64, 65, 66, 67, 68, 69, 70].map(x =>
           [x, "At " + x + (x === 62 ? ", the earliest" : x === 67 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")])),
-          {kind:"num", full:true, hint:"Each year you wait past 62 raises the benefit for life, up to 70. In this plan it never starts before you retire."}) + "</div>" +
+          {kind:"num", full:true, hint:"Each year you wait past 62 raises the benefit for life, up to 70. In this plan it never starts before you retire. The Plan Optimizer, near the end, tries every age for " + (gdMar() ? "each of you." : "you.")}) + "</div>" +
         "<div class='gd-h3'>A pension, or other steady income in retirement?</div>" +
         "<div class='gd-fields'>" + gdMoneyF("pension", "Pension, annuity or part-time pay", {per:"/mo", ph:"optional", hint:"In today's dollars. Leave blank if none."}) +
         gdNumF("pensionAge", "Starting at", "age", {hint:"Blank means when you retire."}) +
@@ -15632,7 +16649,7 @@ const GD_STEPS = [
       let s = "<h2 class='gd-q' tabindex='-1'>Your retirement projection</h2>";
       if (!S) return s + "<div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
         "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
-      const need = S.spend, port = S.portIncome, ss = S.ss.total, pen = S.pension;
+      const need = S.spend + S.taxYr, port = S.portIncome, ss = S.ss.total, pen = S.pension;
       const sc = Math.max(need, port + ss + pen) || 1;
       s += "<p class='gd-lead'>Where your current path leads by " + fmtNum(S.retire) + ", in today's dollars, if a " + gdRiskLabel(S.real) +
         " mix earns about " + pctStr(S.real, 1) + " a year after inflation and your saving keeps pace with inflation" +
@@ -15649,7 +16666,11 @@ const GD_STEPS = [
         "<span class='need' style='left:calc(" + (need / sc * 100).toFixed(1) + "% - 1px)'></span></div>" +
         "<div class='gd-cover-key'><span><s style='background:var(--jade)'></s>From savings</span><span><s style='background:var(--steel)'></s>Social Security</span>" +
         (pen ? "<span><s style='background:var(--gold)'></s>Pension</span>" : "") +
-        "<span><s style='background:var(--text);width:2px'></s>Your spending: " + money(need) + "/yr</span></div></div>";
+        "<span><s style='background:var(--text);width:2px'></s>Your spending and its tax: " + money(need) + "/yr</span></div></div>";
+      s += "<div class='gd-callout'><b>Taxes are built in.</b> In a typical year this plan pays about <b>" + money(S.taxYr) + "</b> in income tax" +
+        (S.hcYr > 0 ? ", and about <b>" + money(S.hcYr) + "</b> a year for health insurance before Medicare, after the subsidy your income earns" : "") +
+        ", on top of the " + money(S.spend) + " you live on. Across the whole retirement that comes to about <b>" + money(S.lifeTax) + "</b> in tax, in today's dollars" +
+        (S.tactics ? ", with the Plan Optimizer's choices applied." : ". The Plan Optimizer, near the end, looks for ways to pay less of it.") + "</div>";
       s += gdChartSlot("outlook", [gdSeries(S, "Your plan", "p")], "Your retirement savings over time, in today's dollars");
       // Size the plan against what it needs: the balance at retirement that
       // lasts in the target share of history. This is what a plan with twice
@@ -15676,8 +16697,8 @@ const GD_STEPS = [
         "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
       const r = S.success;
       s += "<p class='gd-lead'>Averages hide the real risk: retiring into a bad market. We replayed your plan through every retirement since 1926: " +
-        money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year rising with inflation for " + S.years + " years, " +
-        "with Social Security from " + S.ss.claim + (S.pension ? ", your pension" : "") + " and " + S.mix + "% in stocks.</p>" + gdBack("lasting") +
+        money(S.fv) + " at " + fmtNum(S.retire) + ", living on " + money(S.spend) + " a year after tax, rising with inflation, for " + S.years + " years, " +
+        "with each year's income tax" + (S.hcYears ? ", health insurance before Medicare" : "") + " and any Medicare surcharge paid on top, Social Security from " + S.ss.claim + (S.pension ? ", your pension" : "") + " and " + S.mix + "% in stocks.</p>" + gdBack("lasting") +
         "<div class='gd-stats'><div><div class='k'>Success rate</div><div class='v " + (r >= .85 ? "jade" : "gold") + "'>" + pctStr(r, 0) + "</div>" +
         "<div class='n'>" + (S.H ? S.H.survived + " of " + S.H.total + " starting years" : "Of historical retirements") + "</div></div>" +
         "<div><div class='k'>Length tested</div><div class='v'>" + S.years + " years</div><div class='n'>To age " + (Math.round(S.retire) + S.years) + "</div></div>" +
@@ -15700,12 +16721,15 @@ const GD_STEPS = [
   {id:"health", ch:5, title:"Healthcare before 65", when: a => gdOk(a.retire) && a.retire < 65,
     body(){
       const a = gd.a, gap = 65 - Math.round(a.retire);
+      if (!a.hcIncl) a.hcIncl = "no";
       return "<h2 class='gd-q' tabindex='-1'>Healthcare before Medicare</h2>" +
         "<p class='gd-lead'>Retiring at " + fmtNum(a.retire) + " leaves <b>" + gap + (gap === 1 ? " year" : " years") + "</b> before Medicare starts at 65. " +
-        "Until then you'll buy coverage on the ACA marketplace, where the price depends heavily on your income in retirement: keeping it low can earn a large subsidy.</p>" +
-        gdBack("health") + gdTask("healthcare", "Price it in the Healthcare Cost Planner") +
-        "<div class='gd-fields'>" + gdMoneyF("hcPrem", "Monthly premium you found", {per:"/mo", ph:"optional", full:true,
-          hint:"The planner fills this in."}) + "</div>" + gdLive("hcNote");
+        "Until then you'll buy coverage on the ACA marketplace, where the price depends heavily on your income in retirement: keeping it low can earn a large subsidy. " +
+        "Your plan prices it for you, year by year: the benchmark Silver plan for your state and age, less the subsidy that year's income earns.</p>" +
+        gdBack("health") +
+        "<div class='gd-h3'>Is health insurance already in your retirement spending?</div><div class='gd-choices two'>" +
+        gdChoice("hcIncl", "no", "No, price it for me", "The usual answer") + gdChoice("hcIncl", "yes", "Yes, it's included", "Your plan won't add premiums") + "</div>" +
+        gdLive("hcNote") + gdTask("healthcare", "Explore it in the Healthcare Cost Planner", {after:"<div style='margin-top:10px' class='hint'>Optional. It shows how the subsidy moves with income, and Medicare's costs after 65.</div>"});
     }},
 
   {id:"bridge", ch:5, title:"Getting to 59½", when: a => gdOk(a.retire) && a.retire < 59.5,
@@ -15715,13 +16739,16 @@ const GD_STEPS = [
         "<p class='gd-lead'>Retiring at " + fmtNum(a.retire) + " means about <b>" + gap + (gap === 1 ? " year" : " years") + "</b> before a 401(k) or IRA " +
         "opens up without a 10% penalty. There are several legal ways across: living off a taxable account and your Roth contributions, " +
         (a.retire >= 55 ? "72(t) payments and the rule of 55" : "a Roth conversion ladder and 72(t) payments") + ". Which works best depends on where your money sits.</p>" +
-        "<div class='gd-h3'>Of the " + (gdPos(a.saved) ? money(a.saved) : "savings") + " you have today, how much is in:</div>" +
-        "<div class='gd-fields'>" +
-        gdMoneyF("brRothNow", "Roth 401(k) and Roth IRA", {ph:"0", hint:"Contributions can come out any time."}) +
-        gdMoneyF("brBrokNow", "A taxable brokerage account", {ph:"0", hint:"Only if it's meant for retirement."}) +
-        "</div>" + gdLive("bridgeNote") +
-        gdBack("bridge") + gdTask("bridge", "Plan it in the Early Retirement Bridge", {after:"<div style='margin-top:10px' class='hint'>Optional, but worth it if you're counting on reaching this money early.</div>"});
+        gdLive("bridgeNote") +
+        "<p class='hint' style='margin:-6px 0 14px'>The split comes from your Retirement savings step. <button type='button' class='gd-link' data-go='savings'>Change it</button></p>" +
+        "<div class='gd-callout'>Your plan already follows the rules: before 59½ it lives on the brokerage account and Roth contributions first, and only pays the 10% penalty if nothing else is left. The Plan Optimizer, next, can build a Roth conversion ladder to open up traditional money early.</div>" +
+        (a.retire >= 55 ? "<div class='gd-h3'>Will you leave a job with a 401(k) at 55 or later?</div><div class='gd-choices two'>" +
+          gdChoice("rule55", "yes", "Yes", "The rule of 55 lets that 401(k) pay out without the penalty") + gdChoice("rule55", "no", "No, or not sure") + "</div>" : "") +
+        gdBack("bridge") + gdTask("bridge", "Plan it in the Early Retirement Bridge", {after:"<div style='margin-top:10px' class='hint'>Optional: it also compares 72(t) payments, which this plan doesn't use.</div>"});
     }},
+
+  {id:"optimize", ch:5, title:"Plan Optimizer",
+    body(){ return opGuideHTML(); }},
 
   {id:"results", ch:5, title:"Score and plan",
     body(){ return gdResultsHTML(); },
@@ -15947,16 +16974,10 @@ const GD_STRATS = [
   {id:"vpw", name:"Variable percentage (VPW)", d:"Spends down on purpose: each year's share rises as the years left shrink, like an annuity. Starts higher, varies the most, and ends near zero."}
 ];
 function gdStratName(id){ const x = GD_STRATS.find(q => q.id === id); return x ? x.name : "Fixed, rising with inflation"; }
-/* What was actually lived on in a year: the planned spending, unless the
-   money ran out and only Social Security and any pension were left. Never
-   less than those two, which arrive whatever a strategy asks for. */
-function gdRunSpend(run){
-  return run.rows.map(r => {
-    const act = Math.max(Math.min(r.spend, r.withdrawal + r.ss + r.customIncome), r.ss + r.customIncome);
-    const defl = r.spend > 0 ? r.realSpend / r.spend : r.end > 0 ? r.realEnd / r.end : 1;
-    return act * defl;
-  });
-}
+/* Each approach run on the plan's own numbers through the same history, by
+   the plan engine: what was actually lived on each year (the approach's
+   spending, unless the money ran out and only Social Security and any
+   pension were left), after tax, in today's dollars. */
 function gdStrats(S){
   const fl = gdMinSpend();
   if (S.strats && S.stratsFloor === fl) return S.strats;
@@ -15964,11 +16985,13 @@ function gdStrats(S){
   const med = arr => { const x = arr.slice().sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : 0; };
   S.strats = GD_STRATS.map(st => {
     if (!S.H) return {st, H:null};
-    const H = historicalBacktest(gdDDOpts(S, st.id));
+    const C = plPrep(Object.assign({}, S.P, {strategy:st.id, minSpend:fl, guardBand:20, adjustPct:10,
+      floorPct:10, ceilPct:10, yaleWeight:70, vpwRate:(S.mix * 5 + (100 - S.mix) * 1.9) / 100, vpwFV:0}));
+    const H = st.id === "fixed" && !fl ? S.H : plHistory(C, S.T, {paths:true});
     let lean = Infinity, leanYear = null, leanAge = null;
     const typ = [];
     H.runs.forEach(run => {
-      const sp = gdRunSpend(run);
+      const sp = Array.prototype.slice.call(run.livedPath || []);
       typ.push(med(sp));
       // Ties (every run that ran dry falls to the same Social Security) name
       // the youngest age it happened, the one that matters.
@@ -15993,7 +17016,7 @@ function gdStratTableHTML(){
       "<div class='c'><i>Lasted</i>" + (r.canFail ? pctStr(r.success, 0) : "Can't run out") + "</div>" +
       "<div class='c'><i>Typical year</i>" + money(r.typical) + "</div>" +
       "<div class='c'><i>Leanest year</i>" + money(r.lean) + (r.lean >= S.spend * .995 ? "<small>never below your plan</small>" : r.leanYear ? "<small>retiring in " + r.leanYear + ", at " + r.leanAge + "</small>" : "") + "</div></div>").join("") + "</div>" +
-    "<p class='hint' style='margin:-6px 0 14px'>Spending in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone." +
+    "<p class='hint' style='margin:-6px 0 14px'>Spending after tax, in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone." +
     (fl ? " Flexible approaches never go below your " + money(fl) + " minimum while money remains, so each can now run out; <b>Lasted</b> counts how often it held." : "") + "</p>";
 }
 function gdStratPickHTML(){
@@ -16100,12 +17123,13 @@ function gdActions(){
     A.push({t:"Shore up the bridge to 59½",
       d:"Your best plan in the Early Retirement Bridge held up in only " + a.bridgeHold + "% of markets. More savings in a Roth or taxable account, a later retirement or lower spending in the early years would widen the margin.",
       trip:"bridge", btn:"Revisit the bridge"});
-  if (gdOk(a.retire) && a.retire < 65 && !a.hcSeen)
-    A.push({t:"Price out healthcare before Medicare",
-      d:"You plan to retire " + (65 - Math.round(a.retire)) + " years before Medicare. Marketplace premiums can run hundreds a month, so make sure they're in your retirement spending.", trip:"healthcare", btn:"Open Healthcare Cost Planner"});
-  if (gdPos(a.hcPrem) && gdPos(a.retSpend) && a.hcIncl !== "yes" && !a.hcAdded)
-    A.push({t:"Make sure healthcare is in your retirement spending",
-      d:"You found premiums of about " + money(a.hcPrem) + "/mo before Medicare. If your " + money(a.retSpend) + " a year doesn't include them, add them.", go:"health", btn:"Review healthcare"});
+  if (S && !gdTactics())
+    A.push({t:"Let the Plan Optimizer tune your withdrawals",
+      d:"It tries every age from 62 to 70 for " + (gdMar() ? "each of you to claim" : "claiming") + " Social Security, every order for drawing down your accounts and every Roth conversion level, through every market since 1926, and keeps the plan that does best. " +
+        "Your plan now pays about " + money(S.lifeTax) + " in tax over retirement.", go:"optimize", btn:"Open the Plan Optimizer"});
+  if (gdOk(a.retire) && a.retire < 65 && !a.hcSeen && S && S.hcYr > 0)
+    A.push({t:"Get to know your health insurance costs before Medicare",
+      d:"Your plan prices marketplace coverage at about " + money(S.hcYr) + " a year until 65, after the subsidy its income earns. The Healthcare Cost Planner shows how that subsidy moves with income, and what Medicare costs after.", trip:"healthcare", btn:"Open Healthcare Cost Planner"});
   if (a.college === "yes" && !gdPos(a.collegeMo))
     A.push({t:"Set a monthly college number", d:"Find out what to put aside each month, and consider a 529 plan for the tax break.", trip:"college", btn:"Open College Savings"});
   if (!gdPos(a.ssOwn) && S)
@@ -16139,13 +17163,17 @@ function gdResultsHTML(){
     prow("Retire at", fmtNum(S.retire));
     prow("Saving", S.stop != null ? (S.stop <= a.age ? "Coasting: no new savings" : money(S.monthly) + "/mo until " + fmtNum(S.stop) + ", then coasting") : money(S.monthly) + "/mo until you retire");
     prow("Spending in retirement", money(S.spend) + " a year");
-    prow("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
+    prow("Social Security", gdMar() && S.ss.a2 > 0 ? money(S.ss.a1 / 12) + "/mo from " + S.ss.claim + ", spouse " + money(S.ss.a2 / 12) + "/mo from " + S.ss.claim2
+      : money(S.ss.total / 12) + "/mo from " + S.ss.claim);
     if (S.pension) prow("Pension", money(S.pension / 12) + "/mo");
+    prow("Withdrawals", S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth");
+    prow("Income tax", "About " + money(S.taxYr) + " a year, " + money(S.lifeTax) + " in all");
     prow("Withdrawal approach", gdStratName(a.strategy || "fixed"));
     if (gdMinSpend()) prow("Minimum spending", money(gdMinSpend()) + " a year");
     prow("Lasted, spending a fixed amount", pctStr(S.success, 0) + " of historical retirements");
     s += "<div class='gd-h3'>Your plan</div><div class='gd-kvs'>" + pv.join("") + "</div>" +
-      "<button type='button' class='btn mini' data-go='tune' style='margin:-2px 0 16px'>Adjust your plan</button>";
+      "<button type='button' class='btn mini' data-go='tune' style='margin:-2px 8px 16px 0'>Adjust your plan</button>" +
+      "<button type='button' class='btn mini' data-go='optimize' style='margin:-2px 0 16px'>" + (S.tactics ? "Your roadmap" : "Plan Optimizer") + "</button>";
   }
   const wins = GD_FACTORS.filter(f => R.P[f.id] && R.P[f.id].p >= .9).map(f => f.name + ": " + R.P[f.id].txt);
   if (wins.length) s += "<div class='gd-h3'>What's going well</div><div class='gd-wins'>" + wins.map(w => "<span>" + w + "</span>").join("") + "</div>";
@@ -16168,7 +17196,7 @@ function gdResultsHTML(){
     "<button type='button' class='btn mini' data-trip='advanced' data-from='results'>Advanced: taxes and account types<i class='arw' aria-hidden='true'></i></button>" +
     "<button type='button' class='btn mini' data-trip='stages' data-from='results'>Stages: plans that change over time<i class='arw' aria-hidden='true'></i></button>" +
     "<button type='button' class='btn mini' data-trip='backtest' data-from='results'>Portfolio Backtest: what your mix has earned<i class='arw' aria-hidden='true'></i></button></div>" +
-    "<p class='hint'>Retirement spending here is before income tax" + (a.retTaxAdded ? ", plus the tax estimate you added" : "") + ". The Income Tax tool's Retirement income mode estimates what withdrawals, Social Security and a pension will owe. " +
+    "<p class='hint'>Retirement spending here is what you live on after tax. Each year's federal and state income tax, Medicare's income surcharge and health insurance before 65 are worked out from where the money comes from, and paid on top. " +
     "This score is a rule-of-thumb check, not financial advice, and it leaves out home equity.</p>";
   return s;
 }
@@ -16200,6 +17228,7 @@ function gdRender(focus){
     st.body() + "<div class='gd-foot'>" + foot + "</div>";
   initFields($("gdCard"));
   gdChartsDraw($("gdCard"));
+  opDrawAll($("gdCard"));
   gdRenderSide();
   if (focus){
     const h = $("gdCard").querySelector(".gd-q");
@@ -16533,6 +17562,912 @@ document.querySelectorAll("a.mailme").forEach(a => {
   a.textContent = addr;
 });
 
+/* ---------- the Plan Optimizer ----------
+   The page side of plOptimize() in src/js/plan.js. The search runs in a
+   worker (assets/plan.<hash>.js, which build.py writes and names here) so
+   the page keeps drawing while it tries a few thousand plans in every
+   historical market; where a worker can't start, it runs here in short
+   slices instead. It lives in two places: its own tool page, and the
+   readiness guide's Plan Optimizer step. Each is a "host" with its own run
+   and result, and one renderer draws both.
+
+   While it runs, the guide's bow and arrow, bigger: the string draws back
+   with the arrow on it, holds, and lets go; the arrow leaves fast and rides
+   the progress with the fill behind it, and lands in the target when the
+   answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
+   search still gets its flight. */
+var OP_WORKER_URL = "/assets/plan.8991714ba6.js";
+var OP_MIN_MS = 5000;
+var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
+var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;
+var opWorker = null, opWorkerDead = false, opJobs = {}, opNextId = 0;
+var OP = {tool:{goal:"legacy", run:null, res:null}, guide:{run:null, res:null}};
+var OP_COLORS = {ss:"#7d9fd6", pension:"#e9b872", trad:"#e2795f", brok:"#a98fd6", roth:"#4fbf95"};
+
+/* ---- running it ---- */
+function opGetWorker(){
+  if (opWorker || opWorkerDead) return opWorker;
+  try {
+    opWorker = new Worker(OP_WORKER_URL);
+    opWorker.onmessage = e => opOnMsg(e.data);
+    opWorker.onerror = e => {
+      if (e && e.preventDefault) e.preventDefault();
+      opWorkerDead = true;
+      try { opWorker.terminate(); } catch(x){}
+      opWorker = null;
+      // Whatever it was working on, finish here instead.
+      Object.keys(OP).forEach(h => { const R = OP[h].run; if (R && !R.done) opRunHere(R.id, R.P, R.goal); });
+    };
+  } catch(e){ opWorkerDead = true; opWorker = null; }
+  return opWorker;
+}
+function opRunHere(id, P, goal){
+  const g = plOptimize(P, goal);
+  const step = () => {
+    if (!opJobs[id]) return;
+    const until = performance.now() + 12;
+    do {
+      const s = g.next();
+      if (s.done) return;
+      s.value.id = id;
+      opOnMsg(s.value);
+      if (s.value.type === "done") return;
+    } while (performance.now() < until);
+    setTimeout(step, 0);
+  };
+  setTimeout(step, 40);
+}
+function opStart(host, P, goal){
+  const H = OP[host];
+  // One search at a time: a new one replaces any other still running.
+  Object.keys(OP).forEach(h => { if (OP[h].run) opStop(h, h === host); });
+  const id = ++opNextId;
+  opJobs[id] = host;
+  H.res = null;
+  H.run = {id, P, goal, sig:opSig(P, goal), t0:performance.now(), prog:null, done:null, shown:0,
+    hitAt:0, nowAt:0, log:[], combos:null};
+  // Every plan the search will try, in its order, for the running commentary.
+  try { const C = plPrep(Object.assign({}, P, {strategy:"fixed"})); H.run.combos = plCombos(C, plBaseTactics(C)); } catch(e){}
+  const w = opGetWorker();
+  if (w){
+    try { w.postMessage({type:"run", id, P, goal}); } catch(e){ opRunHere(id, P, goal); }
+  } else opRunHere(id, P, goal);
+  opPaint(host);
+  opLoop(host);
+}
+function opStop(host, quiet){
+  const H = OP[host], R = H.run;
+  if (!R) return;
+  delete opJobs[R.id];
+  H.run = null;
+  if (opWorker){ try { opWorker.postMessage({type:"stop"}); } catch(e){} }
+  if (!quiet) opPaint(host);
+}
+function opOnMsg(v){
+  const host = v && opJobs[v.id];
+  if (!host) return;
+  const R = OP[host].run;
+  if (!R || R.id !== v.id) return;
+  if (v.type === "done"){ R.done = v; delete opJobs[v.id]; }
+  else {
+    R.prog = v;
+    // How the best plan so far improved, so the counters can replay it in
+    // step with the arrow when the search finishes before the flight does.
+    if (v.best) R.log.push({frac:v.frac, best:v.best});
+  }
+}
+/* What identifies a result: the inputs and the goal. A result for other
+   inputs is kept, marked as out of date. */
+function opSig(P, goal){
+  const k = ["status", "state", "age1", "age2", "years", "trad", "roth", "rothBasis", "brok", "brokBasis",
+    "spend", "pia1", "pia2", "claim1", "claim2", "pension", "pensionAge", "pensionCola", "aca", "household",
+    "premium", "rule55", "heirRate", "mix", "target"];
+  return goal + "|" + k.map(x => { const v = P[x]; return typeof v === "number" ? Math.round(v) : String(v); }).join("|");
+}
+/* How big the search is: plans, markets, and so roughly how long. */
+function opEstimate(P){
+  const C = plPrep(Object.assign({}, P, {strategy:"fixed"})), n = plCombos(C, plBaseTactics(C)).length, w = plStarts(C).length;
+  return {n, w, runs:n * w, secs:Math.max(Math.round(OP_MIN_MS / 1000) + 1, Math.round(n * w * C.years / 1.6e6))};
+}
+
+/* ---- the flight ---- */
+function opRoot(host){ return document.querySelector("[data-op-host='" + host + "']"); }
+function opLoop(host){
+  const H = OP[host], R = H.run;
+  if (!R || R.looping) return;
+  R.looping = true;
+  const last = {};
+  const set = (el, k, v) => { if (el && last[k] !== v){ last[k] = v; el.textContent = v; } };
+  const tick = () => {
+    if (H.run !== R) return;
+    const now = performance.now(), root = opRoot(host), el = now - R.t0;
+    if (!root && R.done){ opFinish(host); return; }
+    const actual = R.done ? 1 : (R.prog ? R.prog.frac : 0);
+    // The flight can't outrun its clock, which starts at the release and runs
+    // fast off the bow, easing in toward the target.
+    const t = Math.max(0, Math.min(1, (el - OP_LOOSE_MS) / (OP_MIN_MS - OP_LOOSE_MS)));
+    const want = el < OP_LOOSE_MS ? 0 : Math.min(actual, 1 - Math.pow(1 - t, 1.6));
+    R.shown += (want - R.shown) * (R.done ? 0.2 : 0.12);
+    if (want - R.shown < 0.002) R.shown = want;
+    if (root){
+      const lane = root.querySelector(".op-lane");
+      if (lane) lane.style.setProperty("--p", Math.max(0, Math.min(1, R.shown)).toFixed(4));
+      // Drawing back: the string's middle comes back 12 units with the arrow
+      // on it, eased, then held under tension until the release.
+      const d = el < OP_DRAW_MS ? el / OP_DRAW_MS : 1, pull = el < OP_LOOSE_MS ? d * d * (3 - 2 * d) : 0;
+      root.style.setProperty("--pull", pull.toFixed(3));
+      const str = root.querySelector(".op-bow .str.drawn");
+      // The limbs flex as it comes back (CSS scales them by --pull), so the
+      // string's ends follow their tips.
+      const tip = 25 * (1 - .07 * pull);
+      if (str && el < OP_LOOSE_MS) str.setAttribute("d", "M33 " + (32 - tip).toFixed(2) + " L" + (33 - 12 * pull).toFixed(2) + " 32 L33 " + (32 + tip).toFixed(2));
+      root.classList.toggle("op-full", el >= OP_DRAW_MS && el < OP_LOOSE_MS);
+      root.classList.toggle("op-loosed", el >= OP_LOOSE_MS);
+      const P = R.prog || R.done;
+      if (P){
+        // The counters follow the arrow, not the search, so they never run
+        // ahead of what's on screen.
+        const f = R.shown, N = P.of, tried = Math.round(N * Math.min(f, actual));
+        set(root.querySelector("[data-opn='tried']"), "tried", groupDigits(tried, true));
+        set(root.querySelector("[data-opn='of']"), "of", "of " + groupDigits(N, true) + " plans tried");
+        set(root.querySelector("[data-opn='runs']"), "runs", groupDigits(tried * P.windows, true));
+        let b = null;
+        for (let i = 0; i < R.log.length && R.log[i].frac <= f + 1e-9; i++) b = R.log[i].best;
+        if (R.hitAt && R.done) b = R.done.best.stats;
+        if (b) set(root.querySelector("[data-opn='best']"), "best",
+          R.goal === "legacy" ? opCompact(b.medLegacy) : pctStr(b.successRate, 0) + " lasted");
+        if (!R.hitAt && el >= OP_LOOSE_MS && now - R.nowAt > 420){
+          R.nowAt = now;
+          const L = R.combos, T = L && L.length ? L[Math.min(L.length - 1, Math.floor(f * L.length))] : P.T;
+          if (T) set(root.querySelector("[data-opn='now']"), "now", "Trying: " + opTacticsShort(T, R.P));
+        }
+        if (R.hitAt && R.done) set(root.querySelector("[data-opn='now']"), "now", "Found it. Tested " +
+          groupDigits(R.done.runs, true) + " retirements.");
+      }
+      if (R.done && R.shown >= 0.999 && !R.hitAt){ R.hitAt = now; root.classList.add("op-hit"); }
+    }
+    if (R.hitAt && now - R.hitAt > 1150){ opFinish(host); return; }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+function opFinish(host){
+  const H = OP[host], R = H.run;
+  if (!R || !R.done) return;
+  H.res = R.done;
+  H.res.sig = R.sig;
+  H.res.P = R.P;
+  H.run = null;
+  H.fresh = true;
+  opPaint(host);
+}
+function opPaint(host){
+  if (host === "guide"){ if (!$("tab-guide").hidden && gd.cur === "optimize") gdRender(false); return; }
+  renderOptimizer();
+}
+
+/* ---- words ---- */
+function opCompact(v){
+  const x = Math.abs(v);
+  if (x >= 1e6) return "$" + (Math.round(v / 1e4) / 100).toFixed(2) + "M";
+  if (x >= 1e4) return "$" + Math.round(v / 1e3) + "k";
+  return money(v);
+}
+function opSigned(v, f){
+  const s = (f || money)(Math.abs(v));
+  return (v >= 0 ? "+" : "−") + s;
+}
+function opFillName(f){
+  return ["", "the standard deduction, so it's tax-free", "the top of the 10% bracket", "the top of the 12% bracket",
+    "the top of the 22% bracket", "the top of the 24% bracket"][f] || "";
+}
+function opFillShort(f){ return ["", "0%", "10%", "12%", "22%", "24%"][f] || ""; }
+/* The age conversions stop at, as plTactics works it. */
+function opConvUntil(T, C){
+  if (!(T.f > 0) || !T.u) return null;
+  if (T.u === 1) return Math.max(T.c1, C.married ? T.c2 - C.gap : T.c1) - 1;
+  return C.rmdAge - 1;
+}
+function opClaims(T, C, short){
+  if (!C.married) return String(T.c1);
+  if (T.c1 === T.c2) return short ? T.c1 + " & " + T.c2 : T.c1 + " for both of you";
+  return short ? T.c1 + " & " + T.c2 : T.c1 + " for you, " + T.c2 + " for your spouse";
+}
+function opTacticsShort(T, P){
+  const married = P.status === "m";
+  let s = married ? "you claim at " + T.c1 + ", your spouse at " + T.c2 : "claim at " + T.c1;
+  if (T.f > 0){
+    s += " · traditional first, to " + (T.f === 1 ? "the standard deduction" : "the " + opFillShort(T.f) + " bracket");
+    if (T.u) s += " · convert the rest " + (T.u === 1 ? "until Social Security" : "until RMDs");
+  } else s += " · brokerage, traditional, then Roth";
+  if (T.ac) s += " · under the ACA cliff";
+  if (T.im) s += " · under IRMAA";
+  return s;
+}
+/* One line for the guide's plan summary. */
+function opTacticsLine(T, C){
+  if (!(T.f > 0)) return "Brokerage, then traditional, then Roth";
+  const until = opConvUntil(T, C);
+  let s = "Traditional first, up to " + (T.f === 1 ? "the standard deduction" : "the " + opFillShort(T.f) + " bracket");
+  s += until != null ? ", converting the rest to Roth until " + until : "";
+  const g = [];
+  if (T.ac) g.push("the ACA subsidy cliff");
+  if (T.im) g.push("Medicare's surcharge");
+  if (g.length) s += ", staying under " + g.join(" and ");
+  return s;
+}
+function opGoalWords(goal){
+  return {legacy:["Leave the most", "Most money left after tax, for you and your heirs"],
+    last:["Make it last", "Lasts in the most historical markets, then leaves the most in the worst"],
+    spend:["Spend the most", "The highest yearly spending that still lasts"]}[goal];
+}
+
+/* ---- markup: goal picker, run button, progress ---- */
+function opGoalsHTML(host, goal){
+  return "<div class='op-goals' role='radiogroup' aria-label='What should the best plan do?'>" +
+    ["legacy", "last", "spend"].map(g => {
+      const w = opGoalWords(g), on = g === goal;
+      return "<button type='button' class='op-goal" + (on ? " on" : "") + "' role='radio' aria-checked='" + on + "' data-op='goal' data-host='" + host + "' data-goal='" + g + "'>" +
+        "<i class='dot' aria-hidden='true'></i><b>" + w[0] + "</b><span>" + w[1] + "</span></button>";
+    }).join("") + "</div>";
+}
+function opProgHTML(host){
+  const R = OP[host].run;
+  const loosed = R && performance.now() - R.t0 >= OP_LOOSE_MS;
+  return "<div class='op-run" + (loosed ? " op-loosed" : "") + "' data-op-host='" + host + "' aria-live='polite'>" +
+    "<div class='op-shot' aria-hidden='true'>" +
+      "<span class='op-bow'><svg viewBox='18 5 32 54'><path class='str rest' d='M33 7 L33 57'/><path class='str drawn' d='M33 7 L33 32 L33 57'/><path class='limb' d='M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57'/></svg></span>" +
+      "<div class='op-lane' style='--p:" + (R ? R.shown.toFixed(4) : 0) + "'><i class='op-fill'></i><i class='op-trail'></i>" +
+        "<span class='op-arrow'><svg viewBox='5 25.5 56 13'><path class='sh' d='M7 32 H51'/><path class='hd' d='M60 32 L48 25.5 L50.5 32 L48 38.5 Z M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z'/></svg></span></div>" +
+      "<span class='op-target'><svg viewBox='0 0 44 44'><circle class='rg r1' cx='22' cy='22' r='20'/><circle class='rg r2' cx='22' cy='22' r='13.5'/><circle class='rg r3' cx='22' cy='22' r='7'/><circle class='eye' cx='22' cy='22' r='2.6'/></svg></span>" +
+    "</div>" +
+    "<div class='op-stats'>" +
+      "<div><b data-opn='tried'>0</b><span data-opn='of'>plans tried</span></div>" +
+      "<div><b data-opn='runs'>0</b><span>retirements simulated</span></div>" +
+      "<div><b data-opn='best'>—</b><span>" + (R && R.goal === "legacy" ? "best so far, left after tax" : "best so far") + "</span></div>" +
+    "</div>" +
+    "<div class='op-now' data-opn='now'>Setting up every combination…</div>" +
+    "<button type='button' class='gd-link op-stop' data-op='stop' data-host='" + host + "'>Stop</button></div>";
+}
+
+/* ---- the roadmap ---- */
+/* The years grouped into stretches where the plan does the same things:
+   before 59½, before Medicare, converting, each Social Security start,
+   required distributions. */
+function opPhases(res){
+  const rows = res.best.detail.rows, T = res.best.T;
+  const sig = r => [r.age < 59 ? 1 : 0, r.fplPct != null ? 1 : 0, r.conv > 50 ? 1 : 0, r.rmd > 50 ? 1 : 0,
+    Math.round(r.ss / 100), r.age >= 65 ? 1 : 0].join(",");
+  const out = [];
+  rows.forEach(r => {
+    const k = sig(r), cur = out[out.length - 1];
+    if (cur && cur.k === k) cur.rows.push(r); else out.push({k, rows:[r]});
+  });
+  // A stretch of a single year that only differs by Social Security's
+  // amount (the second claim) folds into the next one.
+  return out;
+}
+function opAvg(rows, f){ let s = 0; rows.forEach(r => { s += f(r); }); return rows.length ? s / rows.length : 0; }
+function opRoadmapHTML(res){
+  const C = {married:res.married, gap:res.age2 == null ? 0 : res.age2 - res.age1, rmdAge:res.rmdAge};
+  const T = res.best.T, phases = opPhases(res), rows = res.best.detail.rows;
+  const first = rows[0], last = rows[rows.length - 1];
+  const claimAge2 = C.married ? T.c2 : null;
+  let s = "<ol class='op-road'>";
+  phases.forEach((ph, i) => {
+    const R = ph.rows, a0 = R[0].age, a1 = R[R.length - 1].age, r0 = R[0];
+    const conv = opAvg(R, r => r.conv), ss = opAvg(R, r => r.ss), pen = opAvg(R, r => r.pension);
+    const tr = opAvg(R, r => r.trad), bk = opAvg(R, r => r.brok), ro = opAvg(R, r => r.roth);
+    const tax = opAvg(R, r => r.tax + r.pen), hl = opAvg(R, r => r.health), ir = opAvg(R, r => r.irmaa);
+    const early = r0.age < 59, aca = r0.fplPct != null, rmd = r0.rmd > 50;
+    const spouseOnly = aca && r0.age >= 65;
+    let tag = conv > 50 ? (aca ? "Convert, and keep the subsidy" : "Roth conversion years")
+      : early ? "Before 59½" : aca ? (spouseOnly ? "Until your spouse's Medicare" : "Before Medicare") : rmd ? "Required distributions" : ss > 0 ? "Social Security years" : "Living on savings";
+    // What happens as this stretch begins.
+    const ev = [], prevRow = rows[rows.indexOf(r0) - 1], rise = r0.ss - (prevRow ? prevRow.ss : 0);
+    if (i === 0) ev.push("You retire at " + a0);
+    if (rise > 1){
+      const mine = a0 === T.c1, theirs = C.married && a0 + C.gap === claimAge2;
+      ev.push((mine && theirs ? "Social Security starts for both of you" : mine ? "Your Social Security starts" : theirs ? "Your spouse's Social Security starts" : "The spousal benefit starts") +
+        ": +" + money(rise / 12) + "/mo");
+    }
+    const me65 = a0 === 65 && i > 0, sp65 = C.married && res.age2 != null && i > 0 && a0 + C.gap === 65;
+    if (me65 && sp65) ev.push("Medicare starts for both of you");
+    else if (me65) ev.push(C.married ? "Your Medicare starts" : "Medicare starts");
+    else if (sp65) ev.push("Your spouse's Medicare starts");
+    if (a0 === 59 && i > 0) ev.push("59½: traditional money opens up penalty-free");
+    if (rmd && (i === 0 || !(phases[i - 1].rows[0].rmd > 50))) ev.push("Required distributions begin");
+    if (i > 0 && phases[i - 1].rows.some(r => r.conv > 50) && !(conv > 50)) ev.push("Conversions stop");
+    const items = [];
+    if (ss > 0 || pen > 0) items.push(["Income", (ss > 0 ? "Social Security " + money(ss) + "/yr" : "") + (pen > 0 ? (ss > 0 ? ", pension " : "Pension ") + money(pen) + "/yr" : "")]);
+    const draws = [];
+    if (tr > 50) draws.push(money(tr) + " traditional" + (rmd ? " (the required distribution" + (tr > opAvg(R, r => r.rmd) + 50 ? " and more" : "") + ")" : ""));
+    if (bk > 50) draws.push(money(bk) + " brokerage");
+    if (ro > 50) draws.push(money(ro) + " Roth");
+    items.push(["Spend from", draws.length ? draws.join(", ") + " a year" : "Nothing: income covers it"]);
+    if (conv > 50) items.push(["Convert", money(conv) + " a year to Roth" + (T.f > 0 ? ", filling " + opFillName(T.f) : "")]);
+    items.push(["Tax", "About " + money(tax) + " a year" + (ir > 50 ? ", plus " + money(ir) + " Medicare surcharge" : "")]);
+    if (aca) items.push(["Health", "About " + money(hl) + " a year after the subsidy" + (r0.fplPct != null ? " (income at " + Math.round(opAvg(R, r => r.fplPct) * 100) + "% of the poverty line)" : "")]);
+    s += "<li class='op-ph" + (conv > 50 ? " conv" : "") + "'><div class='op-ph-age'>" + (a0 === a1 ? "Age " + a0 : a0 + "–" + a1) + "</div>" +
+      "<div class='op-ph-body'><div class='op-ph-tag'>" + tag + "</div>" +
+      (ev.length ? "<div class='op-ph-ev'>" + ev.map(e => "<span>" + e + "</span>").join("") + "</div>" : "") +
+      "<dl>" + items.map(x => "<dt>" + x[0] + "</dt><dd>" + x[1] + "</dd>").join("") + "</dl></div></li>";
+  });
+  s += "<li class='op-ph end'><div class='op-ph-age'>" + (last.age + 1) + "</div><div class='op-ph-body'><div class='op-ph-tag'>The plan's end" +
+    (C.married && res.age2 != null ? ", when your spouse is " + (last.age + 1 + C.gap) : "") + "</div>" +
+    "<dl><dt>Left</dt><dd>" + money(last.endTrad) + " traditional, " + money(last.endRoth) + " Roth, " + money(last.endBrok) + " brokerage, on the average path</dd></dl></div></li>";
+  return s + "</ol>";
+}
+
+/* ---- what makes the difference ---- */
+function opMovesHTML(res){
+  const C = {married:res.married, gap:res.age2 == null ? 0 : res.age2 - res.age1, rmdAge:res.rmdAge};
+  const T0 = res.base.T, T = res.best.T, goal = res.goal;
+  const val = s => goal === "spend" ? s.maxSpend || 0 : goal === "last" ? s.survived : s.medLegacy;
+  const fmt = d => goal === "spend" ? opSigned(d) + " a year" : goal === "last" ? (d >= 0 ? "+" : "−") + Math.abs(d) + " more " + (Math.abs(d) === 1 ? "market" : "markets") + " lasted" : opSigned(d, opCompact) + " left";
+  const total = val(res.best.stats) - val(res.base.stats);
+  const big = Math.max(1, Math.abs(total), ...res.steps.map(x => Math.abs(val(x.to) - val(x.from))));
+  let s = "<div class='op-moves'>";
+  res.steps.forEach(st => {
+    const d = val(st.to) - val(st.from), t = st.T;
+    let h, p;
+    if (st.key === "ss"){
+      h = "Claim Social Security at " + opClaims(t, C) + (C.married ? "" : "") + ", instead of " + opClaims(T0, C);
+      const later = t.c1 > T0.c1 || t.c2 > T0.c2;
+      p = d < 0 && total > 0
+        ? "On its own this leaves less. It earns its place alongside the next change: " + (later
+          ? "with the check starting later, the years before it have low income, and that's where the conversions below get done cheaply."
+          : "with the check covering more of each year's spending, more of the low tax brackets are free for the conversions below.")
+        : later
+        ? "Every year you wait past 67 adds 8% to the check, for life, and it rises with inflation. Your savings carry the years in between, which usually costs less than the bigger check pays back over a long retirement."
+        : "Claiming sooner means drawing less from savings early on, so more of it stays invested. In your plan that outweighs the bigger check waiting would bring.";
+    } else {
+      const until = opConvUntil(t, C);
+      h = t.f > 0 ? "Draw traditional money first, up to " + opFillName(t.f) + (until != null ? ", and convert what you don't spend to Roth until " + until : "")
+        : "Brokerage first, then traditional, then Roth";
+      const g = [];
+      if (t.ac) g.push("keep income under the ACA subsidy cliff before 65");
+      if (t.im) g.push("stay under Medicare's first income surcharge line");
+      if (g.length) h += ", and " + g.join(" and ");
+      p = t.f > 0 ? "Traditional money is taxed whenever it comes out. Taking it in the lower-income years, at " + (t.f === 1 ? "0%" : opFillShort(t.f)) +
+        ", beats taking it later, when required distributions and Social Security stack up and push it into higher brackets. Roth money then grows tax-free for you and your heirs." : "";
+    }
+    const w = Math.round(Math.abs(d) / big * 100);
+    s += "<div class='op-move'><div class='op-move-t'><b>" + h + "</b>" + (p ? "<p>" + p + "</p>" : "") + "</div>" +
+      "<div class='op-move-v'><em class='" + (d >= 0 ? "pos" : "neg") + "'>" + fmt(d) + "</em><i class='op-bar'><b class='" + (d >= 0 ? "pos" : "neg") + "' style='width:" + w + "%'></b></i></div></div>";
+  });
+  s += "</div>";
+  return s;
+}
+
+/* ---- the headline ---- */
+function opHeroHTML(res){
+  const b = res.base.stats, x = res.best.stats, goal = res.goal;
+  const C = {married:res.married};
+  let big, lab, was, delta;
+  if (goal === "spend"){
+    big = money(x.maxSpend) + "<small>/yr</small>"; lab = "You can spend, after tax, and still last in " + pctStr(res.target, 0) + " of markets";
+    was = money(b.maxSpend) + "/yr the usual way"; delta = opSigned((x.maxSpend || 0) - (b.maxSpend || 0)) + " a year";
+  } else if (goal === "last"){
+    big = x.survived + "<small> of " + x.total + "</small>"; lab = "Historical retirements where the money lasted";
+    was = b.survived + " of " + b.total + " the usual way";
+    delta = x.survived > b.survived ? "+" + (x.survived - b.survived) + " more" : "Worst 10%: " + opSigned(x.p10Legacy - b.p10Legacy, opCompact) + " left";
+  } else {
+    big = opCompact(x.medLegacy); lab = "Left for you and your heirs after tax, in a typical market";
+    was = opCompact(b.medLegacy) + " the usual way"; delta = opSigned(x.medLegacy - b.medLegacy, opCompact);
+  }
+  const tile = (k, v0, v1, good) => "<div class='op-tile'><div class='k'>" + k + "</div><div class='v'>" + v1 + "</div><div class='n" + (good == null ? "" : good ? " pos" : " neg") + "'>was " + v0 + "</div></div>";
+  const T0 = res.base.T, T = res.best.T;
+  return "<div class='op-hero'><div class='op-big'><div class='k'>" + lab + "</div><div class='v'>" + big + "</div>" +
+    "<div class='op-delta'><em>" + delta + "</em><span>vs. " + was + "</span></div></div>" +
+    "<div class='op-tiles'>" +
+      tile("Lifetime tax", money(b.medTax), money(x.medTax), x.medTax < b.medTax - 1 ? true : x.medTax > b.medTax + 1 ? false : null) +
+      tile("Lasted in", pctStr(b.successRate, 0), pctStr(x.successRate, 0), x.survived > b.survived ? true : x.survived < b.survived ? false : null) +
+      (goal !== "legacy" ? tile("Left after tax", opCompact(b.medLegacy), opCompact(x.medLegacy), x.medLegacy > b.medLegacy + 1 ? true : x.medLegacy < b.medLegacy - 1 ? false : null)
+        : tile("Social Security at", opClaims(T0, C, true), opClaims(T, C, true), null)) +
+    "</div></div>";
+}
+
+/* ---- charts ---- */
+/* Where each year's money comes from, stacked, with what's converted to
+   Roth drawn hollow on top and what you live on as a line: the gap between
+   the bars and the line is the year's tax and premiums. */
+function opBarsDraw(el, rows){
+  const W = Math.max(300, el.clientWidth || 700), H = W < 520 ? 230 : 280;
+  const pl = W < 520 ? 46 : 56, pr = 10, pt = 14, pb = 26;
+  const keys = ["ss", "pension", "trad", "brok", "roth"];
+  // Income or a required distribution beyond the year's needs is reinvested
+  // in the brokerage: drawn apart, so the bars stop at what was used.
+  rows = rows.map(r => {
+    const o = Object.assign({}, r);
+    let extra = r.surplus > 1 ? r.surplus : 0;
+    ["trad", "pension", "ss"].forEach(k => { const t = Math.min(extra, o[k]); o[k] -= t; extra -= t; });
+    o.reinv = r.surplus > 1 ? r.surplus - extra : 0;
+    return o;
+  });
+  const tot = rows.map(r => r.ss + r.pension + r.trad + r.brok + r.roth + r.reinv);
+  const top = Math.max(1, ...rows.map((r, i) => tot[i] + r.conv), ...rows.map(r => r.spend)) * 1.08;
+  const mag = Math.pow(10, Math.floor(Math.log10(top / 4)));
+  const stepY = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => top / v <= 4.5) || mag * 10;
+  const yMax = Math.ceil(top / stepY) * stepY, n = rows.length, slot = (W - pl - pr) / n;
+  const X = i => pl + slot * (i + .5), Y = v => pt + (1 - v / yMax) * (H - pt - pb);
+  const bw = Math.max(2, Math.min(slot * .74, 26));
+  let g = "";
+  for (let v = 0; v <= yMax + 1e-6; v += stepY)
+    g += "<line class='grid' x1='" + pl + "' x2='" + (W - pr) + "' y1='" + Y(v).toFixed(1) + "' y2='" + Y(v).toFixed(1) + "'/>" +
+      "<text class='ax' x='" + (pl - 7) + "' y='" + (Y(v) + 4).toFixed(1) + "' text-anchor='end'>" + gdCompact(v) + "</text>";
+  const every = Math.max(1, Math.ceil(n / (W < 520 ? 6 : 12)));
+  rows.forEach((r, i) => { if (i % every === 0) g += "<text class='ax' x='" + X(i).toFixed(1) + "' y='" + (H - 7) + "' text-anchor='middle'>" + r.age + "</text>"; });
+  rows.forEach((r, i) => {
+    let acc = 0;
+    keys.forEach(k => {
+      const v = r[k];
+      if (!(v > 1)) return;
+      g += "<rect x='" + (X(i) - bw / 2).toFixed(1) + "' y='" + Y(acc + v).toFixed(1) + "' width='" + bw.toFixed(1) + "' height='" + Math.max(.6, Y(acc) - Y(acc + v)).toFixed(1) + "' fill='" + OP_COLORS[k] + "'/>";
+      acc += v;
+    });
+    if (r.reinv > 1){
+      g += "<rect class='op-reinv' x='" + (X(i) - bw / 2 + .75).toFixed(1) + "' y='" + Y(acc + r.reinv).toFixed(1) + "' width='" + (bw - 1.5).toFixed(1) + "' height='" + Math.max(.6, Y(acc) - Y(acc + r.reinv) - .75).toFixed(1) + "'/>";
+      acc += r.reinv;
+    }
+    if (r.conv > 1) g += "<rect class='op-conv' x='" + (X(i) - bw / 2 + .75).toFixed(1) + "' y='" + Y(acc + r.conv).toFixed(1) + "' width='" + (bw - 1.5).toFixed(1) + "' height='" + Math.max(.6, Y(acc) - Y(acc + r.conv) - .75).toFixed(1) + "'/>";
+  });
+  g += "<path class='op-live' d='M" + rows.map((r, i) => (X(i) - slot / 2).toFixed(1) + "," + Y(r.spend).toFixed(1) + "L" + (X(i) + slot / 2).toFixed(1) + "," + Y(r.spend).toFixed(1)).join("L") + "'/>";
+  el.innerHTML = "<svg viewBox='0 0 " + W + " " + H + "' width='" + W + "' height='" + H + "' aria-hidden='true'>" + g +
+    "<rect class='op-hl' y='" + pt + "' height='" + (H - pt - pb) + "' width='" + slot.toFixed(1) + "' x='0' visibility='hidden'/></svg><div class='gd-tip' hidden></div>";
+  opHover(el, n, i => X(i), slot, i => {
+    const r = rows[i], L = [["ss", "Social Security"], ["pension", "Pension"], ["trad", "Traditional"], ["brok", "Brokerage"], ["roth", "Roth"]];
+    return "<div class='h'>Age " + r.age + "</div>" + L.filter(x => r[x[0]] > 1).map(x => "<div class='r'><s style='background:" + OP_COLORS[x[0]] + "'></s><b>" + money(r[x[0]]) + "</b><span>" + x[1] + "</span></div>").join("") +
+      (r.reinv > 1 ? "<div class='r'><s class='rei'></s><b>" + money(r.reinv) + "</b><span>not needed, reinvested</span></div>" : "") +
+      (r.conv > 1 ? "<div class='r'><s class='hol'></s><b>" + money(r.conv) + "</b><span>converted to Roth</span></div>" : "") +
+      "<div class='r'><s class='liv'></s><b>" + money(r.spend) + "</b><span>lived on</span></div>" +
+      "<div class='r'><s style='background:transparent'></s><b>" + money(r.tax + r.pen + r.health + r.irmaa) + "</b><span>tax" + (r.health > 1 ? " and premiums" : "") + "</span></div>";
+  });
+}
+/* Lines, one per series, with a shared tooltip. */
+function opLinesDraw(el, series, fmtY){
+  const W = Math.max(300, el.clientWidth || 700), H = W < 520 ? 210 : 250;
+  const pl = W < 520 ? 46 : 56, pr = 12, pt = 16, pb = 26;
+  const xs = series[0].pts.map(p => p.x), x0 = xs[0], x1 = xs[xs.length - 1];
+  const top = Math.max(1, ...series.map(s => Math.max(...s.pts.map(p => p.y)))) * 1.1;
+  const mag = Math.pow(10, Math.floor(Math.log10(top / 4)));
+  const stepY = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => top / v <= 4.5) || mag * 10;
+  const yMax = Math.ceil(top / stepY) * stepY;
+  const X = v => pl + (v - x0) / Math.max(1, x1 - x0) * (W - pl - pr), Y = v => pt + (1 - Math.max(0, v) / yMax) * (H - pt - pb);
+  let g = "";
+  for (let v = 0; v <= yMax + 1e-6; v += stepY)
+    g += "<line class='grid' x1='" + pl + "' x2='" + (W - pr) + "' y1='" + Y(v).toFixed(1) + "' y2='" + Y(v).toFixed(1) + "'/>" +
+      "<text class='ax' x='" + (pl - 7) + "' y='" + (Y(v) + 4).toFixed(1) + "' text-anchor='end'>" + gdCompact(v) + "</text>";
+  const xStep = (x1 - x0) > 40 ? 10 : 5;
+  for (let v = Math.ceil(x0 / xStep) * xStep; v <= x1; v += xStep)
+    g += "<text class='ax' x='" + X(v).toFixed(1) + "' y='" + (H - 7) + "' text-anchor='middle'>" + v + "</text>";
+  series.forEach(s => {
+    g += "<path fill='none' stroke='" + s.color + "' stroke-width='" + (s.w || 2) + "' stroke-linejoin='round' stroke-linecap='round'" + (s.dash ? " stroke-dasharray='" + s.dash + "'" : "") +
+      " d='M" + s.pts.map(p => X(p.x).toFixed(1) + "," + Y(p.y).toFixed(1)).join("L") + "'/>";
+  });
+  el.innerHTML = "<svg viewBox='0 0 " + W + " " + H + "' width='" + W + "' height='" + H + "' aria-hidden='true'>" + g +
+    "<line class='xh' y1='" + pt + "' y2='" + (H - pb) + "' x1='0' x2='0' visibility='hidden'/></svg><div class='gd-tip' hidden></div>";
+  opHover(el, xs.length, i => X(xs[i]), 0, i => "<div class='h'>Age " + xs[i] + "</div>" +
+    series.map(s => "<div class='r'><s style='background:" + s.color + "'></s><b>" + (fmtY || money)(s.pts[i].y) + "</b><span>" + s.name + "</span></div>").join(""));
+}
+function opHover(el, n, xAt, slot, tipFor){
+  const svg = el.querySelector("svg"), tip = el.querySelector(".gd-tip"), hl = svg.querySelector(".op-hl"), xh = svg.querySelector(".xh");
+  const W = +svg.getAttribute("width");
+  let cur = null;
+  const show = i => {
+    i = Math.max(0, Math.min(n - 1, i)); cur = i;
+    const x = xAt(i);
+    if (hl){ hl.setAttribute("x", (x - slot / 2).toFixed(1)); hl.setAttribute("visibility", "visible"); }
+    if (xh){ xh.setAttribute("x1", x); xh.setAttribute("x2", x); xh.setAttribute("visibility", "visible"); }
+    tip.innerHTML = tipFor(i); tip.hidden = false;
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(W - tw, x > W / 2 ? x - tw - 14 : x + 14)) + "px";
+  };
+  const hide = () => { tip.hidden = true; if (hl) hl.setAttribute("visibility", "hidden"); if (xh) xh.setAttribute("visibility", "hidden"); cur = null; };
+  const nearest = cx => {
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < n; i++){ const d = Math.abs(xAt(i) - cx); if (d < bd){ bd = d; best = i; } }
+    return best;
+  };
+  svg.addEventListener("pointermove", e => {
+    const b = svg.getBoundingClientRect();
+    show(nearest((e.clientX - b.left) / b.width * W));
+  });
+  svg.addEventListener("pointerleave", hide);
+  el.tabIndex = 0;
+  el.onkeydown = e => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    show((cur == null ? 0 : cur) + (e.key === "ArrowRight" ? 1 : -1));
+  };
+  el.onblur = hide;
+}
+/* Draws every optimizer chart inside root, from its host's result. */
+function opDrawAll(root){
+  (root || document).querySelectorAll(".op-chart[data-opchart]").forEach(el => {
+    const host = el.getAttribute("data-host"), res = OP[host] && OP[host].res;
+    if (!res) return;
+    const kind = el.getAttribute("data-opchart"), rb = res.best.detail.rows, r0 = res.base.detail.rows;
+    if (kind === "flow") opBarsDraw(el, rb);
+    else if (kind === "tax") opLinesDraw(el, [
+      {name:"The usual way", color:"#7d9fd6", dash:"5 4", pts:r0.map(r => ({x:r.age, y:r.tax + r.pen + r.irmaa + r.health}))},
+      {name:"Your roadmap", color:"#4fbf95", w:2.4, pts:rb.map(r => ({x:r.age, y:r.tax + r.pen + r.irmaa + r.health}))}]);
+    else if (kind === "bal"){
+      const h = res.P.heirRate == null ? PL_HEIR : res.P.heirRate, net = r => r.endRoth + r.endBrok + r.endTrad * (1 - h);
+      opLinesDraw(el, [
+        {name:"Traditional", color:OP_COLORS.trad, w:1.6, pts:rb.map(r => ({x:r.age, y:r.endTrad}))},
+        {name:"Roth", color:OP_COLORS.roth, w:1.6, pts:rb.map(r => ({x:r.age, y:r.endRoth}))},
+        {name:"Brokerage", color:OP_COLORS.brok, w:1.6, pts:rb.map(r => ({x:r.age, y:r.endBrok}))},
+        {name:"After tax, the usual way", color:"#94a6bf", dash:"5 4", w:2, pts:r0.map(r => ({x:r.age, y:net(r)}))},
+        {name:"After tax, your roadmap", color:"#e9b872", w:2.8, pts:rb.map(r => ({x:r.age, y:net(r)}))}]);
+    }
+  });
+}
+let opResizeT = null;
+window.addEventListener("resize", () => {
+  clearTimeout(opResizeT);
+  opResizeT = setTimeout(() => opDrawAll(document), 160);
+});
+
+/* ---- the whole result ---- */
+function opResultHTML(host, res){
+  const wrap = (title, note, inner, cls) => host === "tool"
+    ? "<div class='panel op-p " + (cls || "") + "'><h2>" + title + (note ? "<span class='h2note'>" + note + "</span>" : "") + "</h2><div class='body'>" + inner + "</div></div>"
+    : "<section class='op-sec " + (cls || "") + "'><div class='gd-h3'>" + title + (note ? " <span class='op-note'>" + note + "</span>" : "") + "</div>" + inner + "</section>";
+  const legend = keys => "<div class='gd-ch-legend'>" + keys.map(k => k === "conv" ? "<span><s class='hol'></s>Converted to Roth</span>" : k === "live" ? "<span><s class='liv'></s>What you live on</span>"
+    : k === "reinv" ? "<span><s class='rei'></s>Not needed, reinvested</span>"
+    : "<span><s style='background:" + OP_COLORS[k] + "'></s>" + {ss:"Social Security", pension:"Pension", trad:"Traditional", brok:"Brokerage", roth:"Roth"}[k] + "</span>").join("") + "</div>";
+  const rb = res.best.detail.rows, used = ["ss", "pension", "trad", "brok", "roth"].filter(k => rb.some(r => r[k] > 1));
+  let s = "<div class='op-res" + (OP[host].fresh ? " op-reveal" : "") + "'>";
+  s += "<p class='op-brag'>Tried <b>every one of " + groupDigits(res.of, true) + " plans</b> in all <b>" + res.windows + " historical retirements</b> since " + res.first +
+    ": " + groupDigits(res.runs, true) + " retirements simulated.</p>";
+  if (res.same){
+    s += "<div class='gd-callout ok'><b>The way you'd run it is already the best plan we found</b> for this goal. Nothing we tried did better, which usually means Social Security" +
+      (res.married ? " at " + opClaims(res.base.T, {married:true}) : "") + " and drawing brokerage, then traditional, then Roth already suits your numbers.</div>";
+    s += opHeroHTML(res);
+  } else {
+    s += opHeroHTML(res);
+    s += wrap("Your roadmap", "on the average path, in today's dollars", opRoadmapHTML(res), "op-roadsec");
+    s += wrap("What makes the difference", {legacy:"median left after tax", last:"markets lasted", spend:"safe spending"}[res.goal], opMovesHTML(res));
+  }
+  s += wrap("Where each year's money comes from", "your roadmap, average path",
+    legend(used.concat(rb.some(r => r.surplus > 1) ? ["reinv"] : [], rb.some(r => r.conv > 1) ? ["conv"] : [], ["live"])) + "<div class='gd-chart op-chart' data-opchart='flow' data-host='" + host + "' role='img' aria-label=\"Where each year's money comes from, by age\"></div>" +
+    "<p class='op-cap'>The space between the bars and the line is each year's tax" + (rb.some(r => r.health > 1) ? " and health premiums" : "") + ".</p>");
+  if (!res.same) s += wrap("Tax and premiums each year", "the usual way against your roadmap",
+    "<div class='gd-ch-legend'><span><s style='background:#7d9fd6'></s>The usual way</span><span><s style='background:#4fbf95'></s>Your roadmap</span></div>" +
+    "<div class='gd-chart op-chart' data-opchart='tax' data-host='" + host + "' role='img' aria-label='Tax and premiums each year, the usual way and with the roadmap'></div>" +
+    "<p class='op-cap'>Paying some tax early, in the low-income years, to pay much less later is usually the whole trick.</p>");
+  s += wrap("Your accounts over time", "average path",
+    "<div class='gd-ch-legend'><span><s style='background:#e9b872'></s>After tax, your roadmap</span><span><s style='background:#94a6bf'></s>After tax, the usual way</span><span><s style='background:" + OP_COLORS.trad + "'></s>Traditional</span><span><s style='background:" + OP_COLORS.roth + "'></s>Roth</span><span><s style='background:" + OP_COLORS.brok + "'></s>Brokerage</span></div>" +
+    "<div class='gd-chart op-chart' data-opchart='bal' data-host='" + host + "' role='img' aria-label='Account balances by age, and what they are worth after tax'></div>" +
+    "<p class='op-cap'>After tax counts traditional money at " + pctStr(1 - (res.P.heirRate == null ? PL_HEIR : res.P.heirRate), 0) + " of its value: it still owes income tax, whoever takes it out.</p>");
+  s += wrap("Year by year", "average path, today's dollars", opTableHTML(res), "op-tablesec");
+  if (res.alts && res.alts.length && !res.same){
+    const C = {married:res.married, gap:res.age2 == null ? 0 : res.age2 - res.age1, rmdAge:res.rmdAge};
+    s += wrap("Other strong plans", "close behind, and different", "<ul class='op-alts'>" + res.alts.map(a =>
+      "<li><b>Social Security at " + opClaims(a.T, C, true) + "</b> · " + opTacticsLine(a.T, C).replace(/^./, c => c.toLowerCase()) +
+      "<span>" + opCompact(a.medLegacy) + " left · lasted in " + pctStr(a.successRate, 0) + "</span></li>").join("") + "</ul>");
+  }
+  s += "<p class='op-fine'>Every plan lives on the same " + money(res.P.spend) + " a year after tax and runs to age " + (res.age1 + res.years) +
+    ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
+    "Left after tax counts traditional money at " + pctStr(1 - (res.P.heirRate == null ? PL_HEIR : res.P.heirRate), 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
+    "Tax is 2026 federal and " + (STATES[res.P.state] ? STATES[res.P.state].n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice.</p>";
+  return s + "</div>";
+}
+function opTableHTML(res){
+  const rows = res.best.detail.rows, m = v => v > 1 ? money(v) : "—";
+  return "<details class='op-table'><summary>Show every year</summary><div class='scroll'><table><thead><tr><th>Age</th><th>Live on</th><th>Social Security</th>" +
+    (rows.some(r => r.pension > 1) ? "<th>Pension</th>" : "") + "<th>Traditional</th><th>Converted</th><th>Brokerage</th><th>Roth</th><th>Tax</th>" +
+    (rows.some(r => r.health > 1 || r.irmaa > 1) ? "<th>Health / IRMAA</th>" : "") + "<th>Taxable income</th><th>Left, all accounts</th></tr></thead><tbody>" +
+    rows.map(r => "<tr" + (r.short > 1 ? " class='short'" : "") + "><td>" + r.age + "</td><td>" + money(r.spend) + "</td><td>" + m(r.ss) + "</td>" +
+      (rows.some(x => x.pension > 1) ? "<td>" + m(r.pension) + "</td>" : "") + "<td>" + m(r.trad) + "</td><td>" + m(r.conv) + "</td><td>" + m(r.brok) + "</td><td>" + m(r.roth) +
+      "</td><td>" + m(r.tax + r.pen) + "</td>" + (rows.some(x => x.health > 1 || x.irmaa > 1) ? "<td>" + m(r.health + r.irmaa) + "</td>" : "") +
+      "<td>" + money(r.taxable) + "</td><td>" + money(r.end) + "</td></tr>").join("") + "</tbody></table></div></details>";
+}
+
+/* ---------- in the readiness guide ---------- */
+function opGuideGoal(){ const g = gd.a.optGoal; return PL_GOALS[g] ? g : "legacy"; }
+function opGuideP(){
+  const S = gdSim(null, true);
+  return S ? S.P : null;
+}
+function opGuideHTML(){
+  const S = gdSim(null, true), a = gd.a, H = OP.guide, goal = opGuideGoal();
+  let s = "<h2 class='gd-q' tabindex='-1'>Find the best way to run your retirement</h2>";
+  if (!S) return s + "<div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
+    "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
+  const E = opEstimate(S.P), A = gdAccts();
+  s += "<p class='gd-lead'>Your plan so far claims Social Security at " + opClaims(S.T, S.C) + " and draws from the brokerage, then traditional, then Roth. " +
+    "The Plan Optimizer tries every other way: each claiming age from 62 to 70" + (S.C.married ? " for each of you" : "") + ", drawing traditional money first up to each tax bracket, " +
+    "converting to Roth for different stretches, and staying under the ACA and Medicare income lines. It runs all <b>" + groupDigits(E.n, true) + "</b> plans through every market since " + HIST_START +
+    " and keeps the best.</p>" + gdBack("optimize");
+  s += "<div class='op-acct'><span>Starting from <b>" + money(A.trad) + "</b> traditional, <b>" + money(A.roth) + "</b> Roth and <b>" + money(A.brok) + "</b> brokerage today" +
+    ", growing to " + money(S.fv) + " by " + fmtNum(S.retire) + ".</span><button type='button' class='gd-link' data-go='savings'>Change the split</button></div>";
+  const T = gdTactics(), SA = T ? gdSim() : null;
+  if (SA && !H.run) s += "<div class='gd-callout ok'><b>Your plan uses a roadmap:</b> Social Security at " + opClaims(SA.T, SA.C) + "; " +
+    opTacticsLine(SA.T, SA.C).replace(/^./, c => c.toLowerCase()) + ". Your score and every step use it." +
+    "<div style='margin-top:8px'><button type='button' class='btn mini' data-gd='optclear'>Go back to the usual way</button></div></div>";
+  s += "<div class='gd-h3'>What should the best plan do?</div>" + opGoalsHTML("guide", goal);
+  const stale = H.res && H.res.sig !== opSig(S.P, goal);
+  s += "<div class='op-go'><button type='button' class='btn primary op-go-btn' data-op='run' data-host='guide'" + (H.run ? " disabled" : "") + ">" +
+    (H.res && !stale ? "Run it again" : "Find my best plan") + "<i class='arw' aria-hidden='true'></i></button>" +
+    "<span class='hint'>" + groupDigits(E.runs, true) + " retirements to simulate, about " + E.secs + " seconds. Nothing leaves your browser.</span></div>";
+  if (H.run) s += opProgHTML("guide");
+  else if (H.res){
+    if (stale) s += "<div class='gd-callout warn'>Your answers or the goal changed since this ran. Run it again to see the best plan for them now.</div>";
+    s += opResultHTML("guide", H.res);
+    if (!stale && !H.res.same){
+      const applied = T && plKey(T) === plKey(H.res.best.T);
+      s += "<div class='gd-apply op-apply'>" + (applied ? "<span class='gd-callout ok' style='margin:0'>Your plan uses this roadmap.</span>"
+        : "<button type='button' class='btn primary' data-gd='optapply'>Use this plan</button><span class='hint'>Your projection, score and every step after use it. You can undo it.</span>") + "</div>";
+    }
+    H.fresh = false;
+  }
+  return s;
+}
+function opApplyToGuide(){
+  const res = OP.guide.res;
+  if (!res || res.same) return;
+  const a = gd.a, T = res.best.T, undo = {};
+  ["optC1", "optC2", "optF", "optU", "optIm", "optAc"].forEach(k => { undo[k] = a[k] == null ? null : a[k]; });
+  a.optC1 = T.c1; a.optC2 = T.c2; a.optF = T.f; a.optU = T.u; a.optIm = T.im; a.optAc = T.ac;
+  const S = gdSim();
+  gd.back = {step:"optimize", undo, msg:"Applied. Your plan now claims Social Security at " + opClaims(T, S ? S.C : {married:gdMar()}) +
+    " and " + opTacticsLine(T, S ? S.C : {married:gdMar(), rmdAge:75, gap:0}).replace(/^./, c => c.toLowerCase()) +
+    ". Your projection, score and plan use it" + (S ? ": it lasted in <b>" + pctStr(S.success, 0) + "</b> of historical retirements, paying about " + money(S.lifeTax) + " in tax over retirement." : ".")};
+  gdSave();
+  gdRender(false);
+}
+function opClearGuide(){
+  const a = gd.a, undo = {};
+  ["optC1", "optC2", "optF", "optU", "optIm", "optAc"].forEach(k => { undo[k] = a[k] == null ? null : a[k]; a[k] = null; });
+  gd.back = {step:"optimize", undo, msg:"Back to the usual way: Social Security at the age you chose, and brokerage, then traditional, then Roth."};
+  gdSave();
+  gdRender(false);
+}
+
+/* ---------- the tool page ---------- */
+function opNum(id, lo, hi, d){
+  const raw = $(id).value.trim();
+  if (raw === "") return d;
+  const v = num(id);
+  return Math.max(lo, Math.min(hi, isFinite(v) ? v : d));
+}
+/* Two ways to start. Retirement day: the balances you'll have when you retire
+   (typed in, or copied from Advanced or Stages, which project them account
+   by account with all their own detail), and nothing modeled before then.
+   Today: today's balances and saving, grown to retirement at a steady return
+   here. The mode lives in a hidden field so saved scenarios, links and Reset
+   carry it like any other input. */
+function opMode(){ return $("opMode").value === "now" ? "now" : "ret"; }
+function opToolIn(){
+  const m = $("opStatus").value === "m", now = opMode() === "now";
+  const age = Math.round(now ? opNum("opAge", 18, 90, 58) : opNum("opRetire", 30, 90, 62));
+  const retire = now ? Math.max(age, Math.round(opNum("opRetire", 30, 90, 62))) : age;
+  const spAge = !m ? null : now ? Math.round(opNum("opSpAge", 18, 95, age)) : Math.round(opNum("opSpRet", 18, 95, retire));
+  const yrs1 = Math.max(1, Math.min(35, retire - 22));
+  const spRet = m ? spAge + (retire - age) : retire;
+  const ss1 = opNum("opSS1", 0, 1e5, 0), ss2 = m ? opNum("opSS2", 0, 1e5, 0) : 0;
+  const pia1 = ss1 > 0 ? ss1 : ssEstimate(opNum("opInc1", 0, 1e8, 0), yrs1, 67).pia;
+  const pia2 = !m ? 0 : ss2 > 0 ? ss2 : ssEstimate(opNum("opInc2", 0, 1e8, 0), Math.max(1, Math.min(35, spRet - 22)), 67).pia;
+  const roth = opNum("opRoth", 0, 1e10, 0), brok = opNum("opBrok", 0, 1e10, 0);
+  const claim = Math.round(opNum("opClaim", 62, 70, 67));
+  const years = Math.max(20, Math.min(60, Math.max(95 - retire, m ? 95 - spRet : 0)));
+  const save = id => now ? opNum(id, 0, 1e7, 0) : 0;
+  return {status:m ? "m" : "s", state:$("opState").value || "IL", age, spouseAge:spAge, retire, stopAge:null,
+    trad:opNum("opTrad", 0, 1e10, 0), roth, rothBasis:Math.min(roth, opNum("opRothBasis", 0, 1e10, roth * .5)),
+    brok, brokBasis:brok * opNum("opBasis", 0, 100, 60) / 100,
+    saveTrad:save("opSaveTrad"), saveRoth:save("opSaveRoth"), saveBrok:save("opSaveBrok"),
+    real:parseFloat($("opRisk").value) || .045, infl:BASIC_INFL,
+    spend:opNum("opSpend", 0, 1e8, 0), pia1, pia2, claim1:claim, claim2:claim,
+    pension:opNum("opPension", 0, 1e8, 0), pensionAge:$("opPenAge").value.trim() === "" ? null : Math.round(opNum("opPenAge", 40, 90, retire)),
+    pensionCola:$("opPenCola").value === "1", aca:$("opAca").value === "1" && retire < 65, household:m ? 2 : 1,
+    rule55:$("opRule55").value === "1", heirRate:opNum("opHeir", 0, 50, 24) / 100, mix:opNum("opMix", 0, 100, 60),
+    years, target:parseFloat($("opTarget").value) || .9, strategy:"fixed", minSpend:0, fromYear:HIST_START};
+}
+function opSyncFields(){
+  const m = $("opStatus").value === "m", now = opMode() === "now";
+  const retire = Math.round(opNum("opRetire", 30, 90, 62)), age = now ? Math.round(opNum("opAge", 18, 90, 58)) : retire;
+  $("opModeSeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.getAttribute("data-opmode") === (now ? "now" : "ret")));
+  document.querySelectorAll("#asideOP .op-sp").forEach(el => { el.hidden = !m; });
+  document.querySelectorAll("#asideOP .op-nowonly").forEach(el => { el.hidden = !now; });
+  document.querySelectorAll("#asideOP .op-retonly").forEach(el => { el.hidden = now || !m; });
+  $("opRetRow").classList.toggle("one", now || !m);
+  $("opRetireLbl").textContent = now ? "Retire at" : "Your age at retirement";
+  $("opBalHead").textContent = now ? "Saved for retirement today" : "Saved on the day you retire";
+  $("opBalNote").textContent = now ? "Today's balances. Advanced or Stages can fill these in, with what you save each month."
+    : "In today's dollars. Advanced or Stages can project these for you, account by account.";
+  $("opRule55Wrap").hidden = !(retire >= 55 && retire < 60);
+  $("opAcaWrap").hidden = !(retire < 65);
+  if (now) $("opSaveWrap").hidden = !(retire > age);
+}
+/* Switching modes keeps the balances as typed (their meaning changes, and
+   the heading says so) and carries the spouse's age across. */
+function opSetMode(to){
+  if (to === opMode()) return;
+  const age = num("opAge"), r = num("opRetire");
+  if (to === "ret" && age > 0 && r > 0 && num("opSpAge") > 0) $("opSpRet").value = String(Math.round(num("opSpAge") + (r - age)));
+  if (to === "now" && age > 0 && r > 0 && num("opSpRet") > 0) $("opSpAge").value = String(Math.round(num("opSpRet") - (r - age)));
+  $("opMode").value = to;
+  renderOptimizer();
+  toast(to === "ret" ? "Enter what you'll have on the day you retire, or copy it from Advanced or Stages"
+    : "Enter what you have today and what you save each month, or copy them from Advanced or Stages");
+}
+/* Advanced or Stages, whichever has its savings split by account type. Each
+   is re-run first, so the numbers are the ones on its screen now. */
+function opSources(){
+  const out = [];
+  if (acOn()){
+    const p = readInputs();
+    if (lastAcct) out.push({label:"Advanced", B:lastAcct, a:lastAcct.a, years:p.years, p,
+      defl:Math.pow(1 + p.inflation, p.inflYears == null || p.inflYears === "" ? p.years : p.inflYears)});
+  }
+  if (saOn()){
+    const g = readGlobals();
+    if (lastStageAcct) out.push({label:"Stages", B:lastStageAcct, a:lastStageAcct.a, years:lastStageAcct.years, g,
+      defl:Math.pow(1 + g.inflation, lastStageAcct.years)});
+  }
+  return out;
+}
+/* What each source would put in each month, today, with any match. */
+function opSourceSaving(src){
+  const a = src.a;
+  if (src.p){
+    const ppy = PPY[src.p.period], mo = v => v * ppy / 12;
+    return {t:mo(a.tradC + acMatchPer(a, ppy)), r:mo(a.rothC), b:mo(a.brokC),
+      real:(1 + src.p.nominal) / (1 + src.p.inflation) - 1};
+  }
+  const st = stages[0], g = src.g;
+  if (!st) return {t:0, r:0, b:0, real:.045};
+  const ppy = PPY[st.period], sp = stSplit(st), mine = Math.max(0, st.contrib), mo = v => v * ppy / 12;
+  const mf = stMatchFactor(g, st, mine, a.salary);
+  return {t:mo(mine * sp.t + mine * (mf - 1)), r:mo(mine * sp.r), b:mo(mine * sp.b),
+    real:(1 + st.nominal - (g.fees || 0)) / (1 + g.inflation) - 1};
+}
+function opRiskSet(real, from){
+  const sel = $("opRisk"), hit = RISK_LEVELS.find(r => Math.abs(r.real - real) < 5e-4);
+  let o = sel.querySelector("option[data-custom]");
+  if (hit){ if (o) o.remove(); sel.value = String(hit.real); return; }
+  if (!o){ o = document.createElement("option"); o.setAttribute("data-custom", "1"); sel.appendChild(o); }
+  o.value = String(Math.round(real * 1e5) / 1e5);
+  o.textContent = "From " + from + " · " + pctStr(real, 1) + " after inflation";
+  sel.value = o.value;
+}
+async function opCopy(){
+  const now = opMode() === "now", src = opSources();
+  if (!src.length){
+    toast("Turn on Split by account type in Advanced or Stages first, then copy it here", "warn");
+    return;
+  }
+  let pick = src[0];
+  if (src.length > 1){
+    const i = await showPopup(now ? "Copy today's savings from which plan?" : "Copy your balances at retirement from which plan?", src.map(x => {
+      if (now){
+        const v = opSourceSaving(x);
+        return {label:x.label, desc:opCompact(x.a.tradBal + x.a.rothBal + x.a.brokBal) + " today, saving " + money(v.t + v.r + v.b) + "/mo", money:true};
+      }
+      return {label:x.label, desc:opCompact(x.B.totalReal) + " at retirement, in " + fmtNum(x.years) + " years", money:true};
+    }));
+    if (i < 0) return;
+    pick = src[i];
+  }
+  const B = pick.B, a = pick.a, put = (id, v) => { $(id).value = groupDigits(Math.round(Math.max(0, v)), true); };
+  const notes = [];
+  if (a.status) $("opStatus").value = a.status;
+  if (a.state && $("opState").querySelector("option[value='" + a.state + "']")) $("opState").value = a.state;
+  const H = hhLoad();
+  if (now){
+    put("opTrad", a.tradBal); put("opRoth", a.rothBal); put("opBrok", a.brokBal);
+    put("opRothBasis", a.rothBal * .5);
+    $("opBasis").value = String(a.brokBal > 0 ? Math.round(Math.min(1, (a.brokBasis == null ? a.brokBal : a.brokBasis) / a.brokBal) * 100) : 100);
+    const v = opSourceSaving(pick);
+    put("opSaveTrad", v.t); put("opSaveRoth", v.r); put("opSaveBrok", v.b);
+    opRiskSet(v.real, pick.label);
+    const age = num("opAge");
+    if (age > 0) $("opRetire").value = String(Math.round(age + pick.years));
+    if (pick.p && Math.abs(pick.p.growth - pick.p.inflation) > .0025)
+      notes.push("Advanced raises your saving " + pctStr(pick.p.growth, 1) + " a year; here it keeps pace with inflation");
+    if (pick.p && pick.p.glide && pick.p.glide.on) notes.push("the glide path isn't carried over");
+    if (pick.g && stages.length > 1) notes.push("only stage 1's saving comes across; Retirement day mode keeps every stage");
+  } else {
+    put("opTrad", B.real.trad); put("opRoth", B.real.roth); put("opBrok", B.real.brok);
+    // Roth contributions: half of today's Roth (the part that's growth isn't
+    // known), plus everything put in along the way, in today's dollars.
+    put("opRothBasis", Math.min(B.real.roth, (a.rothBal * .5 + (B.rothIn || 0)) / pick.defl));
+    $("opBasis").value = String(Math.round(Math.max(0, Math.min(1, 1 - B.gainPct)) * 100));
+    if (H && H.age > 0){
+      $("opRetire").value = String(Math.round(H.age + pick.years));
+      if (a.status === "m" && H.spouseAge > 0) $("opSpRet").value = String(Math.round(H.spouseAge + pick.years));
+    } else notes.push("check your age at retirement: " + pick.label + " counts years, not ages");
+  }
+  renderOptimizer();
+  const tot = now ? a.tradBal + a.rothBal + a.brokBal : B.totalReal;
+  toast("Copied " + opCompact(tot) + (now ? " today" : " at retirement") + " from " + pick.label +
+    (notes.length ? ". Note: " + notes.join("; ") + "." : ""));
+}
+function renderOptimizer(){
+  const root = $("opOut");
+  if (!root) return;
+  opSyncFields();
+  const I = opToolIn(), P = plAtRetire(I), H = OP.tool, goal = H.goal, now = opMode() === "now";
+  const E = opEstimate(P);
+  $("opGoals").innerHTML = opGoalsHTML("tool", goal);
+  $("opEst").textContent = groupDigits(E.n, true) + " plans × " + E.w + " historical markets = " + groupDigits(E.runs, true) + " retirements, about " + E.secs + " seconds.";
+  $("opRunBtn").disabled = !!H.run || !(I.spend > 0);
+  $("opRunBtn").firstChild.textContent = H.res && H.res.sig === opSig(P, goal) ? "Run it again" : "Find my best plan";
+  let s = "";
+  if (!(I.spend > 0)) s = "<div class='panel'><div class='body'><div class='gd-callout warn'>Enter what you'll spend each year in retirement to find your plan.</div></div></div>";
+  else if (H.run) s = "<div class='panel'><div class='body'>" + opProgHTML("tool") + "</div></div>";
+  else if (H.res){
+    if (H.res.sig !== opSig(P, goal)) s += "<div class='panel'><div class='body'><div class='gd-callout warn' style='margin:0'>Your numbers or the goal changed since this ran. <button type='button' class='btn mini' data-op='run' data-host='tool'>Run it again</button></div></div></div>";
+    s += opResultHTML("tool", H.res);
+    H.fresh = false;
+  } else {
+    const at = P.fv;
+    s = "<div class='panel op-ready'><div class='body'><div class='op-ready-in'>" +
+      "<div><div class='k'>" + (now ? "At " + P.age1 + " you'll have about" : "On the day you retire, at " + P.age1) + "</div><div class='v'>" + money(at) + "</div><div class='n'>" + money(P.trad) + " traditional · " + money(P.roth) + " Roth · " + money(P.brok) + " brokerage, in today's dollars</div></div>" +
+      "<div><div class='k'>Social Security at 67</div><div class='v'>" + money((I.pia1 + I.pia2)) + "<small>/mo</small></div><div class='n'>" + (I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later") + "</div></div>" +
+      "</div><p class='hint' style='margin:12px 0 0'>Pick a goal above and press <b>Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p></div></div>";
+  }
+  root.innerHTML = s;
+  opDrawAll(root);
+}
+function opToolRun(){
+  const I = opToolIn();
+  if (!(I.spend > 0)){ toast("Enter your spending in retirement first", "warn"); return; }
+  opStart("tool", plAtRetire(I), OP.tool.goal);
+  try { $("opOut").scrollIntoView({behavior:"smooth", block:"start"}); } catch(e){}
+}
+function opFillStates(){
+  $("opState").innerHTML = $("txState").innerHTML;
+  // Illinois is the default, so Reset and the "edited" check come back to it.
+  Array.prototype.forEach.call($("opState").options, o => { o.defaultSelected = o.value === "IL"; });
+  $("opState").value = "IL";
+}
+
+/* ---- controls, both hosts ---- */
+document.addEventListener("click", e => {
+  const el = e.target.closest ? e.target.closest("[data-op]") : null;
+  if (!el || el.disabled) return;
+  const op = el.getAttribute("data-op"), host = el.getAttribute("data-host") || "tool";
+  if (op === "goal"){
+    const g = el.getAttribute("data-goal");
+    if (host === "guide"){ gd.a.optGoal = g; gdSave(); gdRender(false); }
+    else { OP.tool.goal = g; renderOptimizer(); }
+  } else if (op === "run"){
+    if (host === "guide"){ const P = opGuideP(); if (P) opStart("guide", P, opGuideGoal()); }
+    else opToolRun();
+  } else if (op === "stop") opStop(host);
+});
+(function(){
+  opFillStates();
+  $("opRisk").innerHTML = RISK_LEVELS.map(r => "<option value='" + r.real + "'" + (r.real === .045 ? " selected" : "") + ">" + r.label + " · " + pctStr(r.real, 1) + " after inflation</option>").join("");
+  let t = null;
+  const later = () => { clearTimeout(t); t = setTimeout(renderOptimizer, 120); };
+  $("opModeSeg").addEventListener("click", e => {
+    const b = e.target.closest ? e.target.closest("button[data-opmode]") : null;
+    if (b) opSetMode(b.getAttribute("data-opmode"));
+  });
+  $("opCopy").addEventListener("click", opCopy);
+  $("asideOP").addEventListener("input", later);
+  $("asideOP").addEventListener("change", later);
+})();
+Object.assign(GLOSS, {
+  opmode: "Retirement day: enter the balances you'll have when you retire (or copy them from Advanced or Stages, which project them with every detail), and the optimizer starts there. Today: enter what you have now and what you save each month, and it grows them to retirement at a steady return first.",
+  opretire: "The age you stop working. Your spouse stops at the same time, at whatever age they are then. Already retired? Enter your age today.",
+  optrad: "Pre-tax money: traditional 401(k), 403(b), 457(b) and IRA balances. Every dollar is taxed as income when it comes out, and from 73 or 75 the IRS makes you take some out each year.",
+  oprothbasis: "What you've put into Roth accounts yourself, as opposed to growth. Contributions can come out at any age, tax- and penalty-free, which matters before 59½. A guess is fine.",
+  opbasis: "How much of the brokerage balance is money you put in. Only the rest, the gain, is taxed when you sell, usually at 0% or 15%.",
+  opsavetrad: "What goes in each month until you retire, in today's dollars, rising with inflation. Put any employer match here: it always lands in a traditional account.",
+  opspend: "What you want to live on each year after every tax is paid, in today's dollars. Each plan works out its own tax, Medicare surcharge and health premiums and pays them on top.",
+  opmix: "Your stock share in retirement; the rest is bonds. Every plan is tested on this mix's real history since 1926.",
+  opss: "Your monthly benefit at 67, full retirement age, from your statement at ssa.gov/myaccount. Leave it blank and enter your salary to estimate it instead. The optimizer tries every claiming age from 62 to 70.",
+  opclaim: "The plan to beat: when you'd claim if you didn't optimize it. Every result is measured against this plan, run the usual way: brokerage first, then traditional, then Roth, with no conversions.",
+  opaca: "Before Medicare at 65, each plan buys the benchmark Silver marketplace plan for your state and ages, less the premium tax credit that year's income earns. Above 400% of the poverty line the credit disappears all at once.",
+  oprule55: "Leave your job in or after the year you turn 55 and that employer's 401(k) can pay out without the 10% early-withdrawal penalty. Roll it into an IRA and you lose that.",
+  opheir: "The income tax whoever inherits your traditional accounts will likely pay on them. It's what makes a Roth dollar worth more than a traditional one at the end. Roth and brokerage money passes on without income tax.",
+  optarget: "How often a plan has to last to count as safe, across every historical market. Leave the most never picks a plan that lasts less often than the usual way; Spend the most finds the highest spending that clears this bar."
+});
 /* ---------- tool help ----------
    The guide's coach panel on its own: the Help button in each tool's header
    opens a short walkthrough of that tool, a few parts long, written for
@@ -17164,6 +19099,8 @@ function gdGuideSheet(){
   if (gdMinSpend()) plan += row("Minimum spending", money(gdMinSpend()) + "/yr");
   plan += row("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
   if (S.pension) plan += row("Pension", money(S.pension / 12) + "/mo");
+  plan += row("Withdrawals", S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth");
+  plan += row("Income tax", "About " + money(S.taxYr) + "/yr");
   plan += row("Withdrawal approach", gdStratName(a.strategy || "fixed"));
   plan += row("Stocks in retirement", S.mix + "%");
   let nums = "";
@@ -17194,7 +19131,8 @@ function gdGuideSheet(){
     "</div>" + moves +
     "<div class='sh-foot'>Savings grow at " + pctStr(S.real, 1) + " a year after inflation for a " + gdRiskLabel(S.real) + " mix, with contributions rising with inflation. " +
     "Retirement is tested against every historical retirement since " + (S.H ? S.H.first : 1926) + " with " + S.mix + "% in stocks, spending a fixed amount that rises with inflation. " +
-    "Spending is before income tax" + (a.retTaxAdded ? ", plus the tax estimate added from the Income Tax tool" : "; the Income Tax tool's Retirement income mode estimates it") + ". " +
+    "Spending is after tax: each year's income tax, Medicare surcharge and health insurance before 65 are worked out from where the money comes from and paid on top" +
+    (S.tactics ? ", with the Plan Optimizer's roadmap applied (" + opTacticsLine(S.T, S.C).toLowerCase() + ")" : "") + ". " +
     "Social Security is an estimate. This is a rule-of-thumb plan, not financial advice.</div>";
 }
 
@@ -17258,21 +19196,9 @@ $("tab-guide").addEventListener("click", e => {
   if (g === "next") gdNext();
   else if (g === "prev") gdPrev();
   else if (g === "resume") gdGoStep(gdFirstOpen());
-  else if (g === "addhc" && gdPos(gd.a.hcPrem) && gdPos(gd.a.retSpend)){
-    gd.a.retSpend = Math.round((gd.a.retSpend + gd.a.hcPrem * 12) / 100) * 100;
-    gd.a.hcAdded = true; gd.a.hcIncl = "yes";
-    gdHouseholdSync();
-    gdSave();
-    gdRender(false);
-  } else if (g === "addtax" && gdPos(gd.a.retTax) && gdPos(gd.a.retSpend) && !gd.a.retTaxAdded){
-    gd.back = {step:gd.cur, msg:"Added " + money(gd.a.retTax) + " a year for income tax. Your retirement spending is now " + money(gd.a.retSpend + gd.a.retTax) + ".",
-      undo:{retSpend:gd.a.retSpend, retTaxAdded:false}};
-    gd.a.retSpend = Math.round(gd.a.retSpend + gd.a.retTax);
-    gd.a.retTaxAdded = true;
-    gdHouseholdSync();
-    gdSave();
-    gdRender(false);
-  } else if (g === "undo" && gd.back && gd.back.undo){
+  else if (g === "optapply") opApplyToGuide();
+  else if (g === "optclear") opClearGuide();
+  else if (g === "undo" && gd.back && gd.back.undo){
     Object.assign(gd.a, gd.back.undo);
     gd.back = {step:gd.back.step, msg:"Undone. Your answers are back to what they were."};
     gdHouseholdSync();
@@ -17327,6 +19253,7 @@ $("tab-guide").addEventListener("keydown", e => {
   if (Object.keys(gd.done).length && !confirm("This link opens a shared retirement plan in the guide. Replace your own guide answers with it? Your household bar and tools won't change.")) return;
   gd = gdFresh();
   gd.a = a;
+  gdMigrate(gd.a);
   gdNumbered().forEach(st => { if (st.id !== "results") gd.done[st.id] = true; });
   gd.cur = "results";
   gdSave();
@@ -17381,46 +19308,6 @@ if (fromLink) toast("Loaded from a shared link");
    for this flag, and the end of the section draws the tool if it's on screen. */
 var hcReady = false;
 
-// Federal poverty level for 2026 coverage. Premium tax credits run a year
-// behind, so 2026 plans are priced against the 2025 HHS poverty guidelines:
-// $15,650 for one person plus $5,500 for each additional person, contiguous
-// 48 states and DC. Alaska and Hawaii are higher; this uses the 48-state line.
-var HC_FPL_BASE = [0,15650,21150,26650,32150,37650,43150,48650,54150];
-var HC_FPL_PER_ADDL = 5500;
-
-// Federal default standard age curve, ages 21-64 (21 = 1.000, 64+ = 3.000).
-// CMS, "Final Guidance Regarding Age Curves and State Reporting", 16 Dec 2016,
-// Appendix I; in force for plan years 2018 on. A handful of states (and DC)
-// set their own curve, which runs somewhat flatter.
-var HC_AGE_MULT = [
-  1.000,1.000,1.000,1.000, // 21-24
-  1.004,1.024,1.048,1.087, // 25-28
-  1.119,1.135,1.159,1.183, // 29-32
-  1.198,1.214,1.222,1.230, // 33-36
-  1.238,1.246,1.262,1.278, // 37-40
-  1.302,1.325,1.357,1.397, // 41-44
-  1.444,1.500,1.563,1.635, // 45-48
-  1.706,1.786,1.865,1.952, // 49-52
-  2.040,2.135,2.230,2.333, // 53-56
-  2.437,2.548,2.603,2.714, // 57-60
-  2.810,2.873,2.952,3.000  // 61-64
-];
-var HC_AGE40_MULT = 1.278; // index 19 = age 40 - 21
-
-// 2026 average benchmark premium (second-lowest-cost Silver) for a 40-year-old,
-// monthly, by state. Source: KFF, Marketplace Average Benchmark Premiums, 2026
-// (US average $625, up from $497 in 2025). Averages across each state's rating
-// areas; a county quote can differ a lot. Scaled by the HHS age multiplier.
-var HC_STATE_PREMIUM_40 = {
-  AL:645,AK:1032,AZ:532,AR:774,CA:570,CO:557,CT:870,DC:610,
-  DE:691,FL:683,GA:615,HI:541,ID:490,IL:646,IN:474,IA:501,
-  KS:670,KY:590,LA:646,ME:709,MD:414,MA:494,MI:523,MN:448,
-  MS:662,MO:605,MT:692,NE:710,NV:497,NH:401,NJ:545,NM:623,
-  NY:817,NC:638,ND:570,OH:513,OK:604,OR:543,PA:572,RI:506,
-  SC:564,SD:655,TN:711,TX:661,UT:640,VT:1299,VA:455,WA:612,
-  WV:1073,WI:611,WY:1090
-};
-
 // Medicare IRMAA, 2026: the same CMS table the Roth tool uses.
 // [individual_magi_max, joint_magi_max, partB_monthly, partD_irmaa_monthly]
 var HC_IRMAA = IRMAA.tiers.map(function(t){ return [t.s, t.m, t.b, t.partD]; });
@@ -17428,61 +19315,6 @@ var HC_IRMAA = IRMAA.tiers.map(function(t){ return [t.s, t.m, t.b, t.partD]; });
 var HC_PARTD_BASE = 35;
 // Medigap Plan G rough range at 65 (low/high, national)
 var HC_MEDIGAP_LOW = 120, HC_MEDIGAP_HIGH = 200;
-
-function hcFPL(size){
-  size = Math.max(1, Math.round(size));
-  if (size <= 8) return HC_FPL_BASE[size];
-  return HC_FPL_BASE[8] + (size - 8) * HC_FPL_PER_ADDL;
-}
-
-function hcAgeMultiplier(age){
-  age = Math.max(21, Math.min(64, Math.round(age)));
-  return HC_AGE_MULT[age - 21];
-}
-
-// Gross monthly benchmark Silver premium for given state & age
-function hcGrossPremium(state, age, manualOverride){
-  if (manualOverride > 0) return manualOverride;
-  var base = HC_STATE_PREMIUM_40[state] || 500;
-  return base / HC_AGE40_MULT * hcAgeMultiplier(age);
-}
-
-// Standard ACA contribution % of income for 2026: the applicable percentage
-// table in Rev. Proc. 2025-25, with the 400% FPL cliff. These are the rules in
-// force for 2026, since the enhanced credits expired at the end of 2025.
-// Returns null when income is too high for subsidy.
-function hcContribPctStd(pctFPL){
-  if (pctFPL < 1.0) return 0;
-  if (pctFPL > 4.0) return null;
-  if (pctFPL < 1.33) return 0.0210;
-  if (pctFPL < 1.50) return 0.0314 + (pctFPL - 1.33) / 0.17 * (0.0419 - 0.0314);
-  if (pctFPL < 2.00) return 0.0419 + (pctFPL - 1.50) / 0.50 * (0.0660 - 0.0419);
-  if (pctFPL < 2.50) return 0.0660 + (pctFPL - 2.00) / 0.50 * (0.0844 - 0.0660);
-  if (pctFPL < 3.00) return 0.0844 + (pctFPL - 2.50) / 0.50 * (0.0996 - 0.0844);
-  return 0.0996;
-}
-
-// Enhanced contribution % (ARP/IRA rules, 2021-2025: 8.5% cap, no cliff above
-// 400% FPL). Expired after 2025; kept to show what a restoration would mean.
-function hcContribPctEnhanced(pctFPL){
-  if (pctFPL < 1.0) return 0;
-  if (pctFPL < 1.50) return 0;
-  if (pctFPL < 2.00) return (pctFPL - 1.50) / 0.50 * 0.020;
-  if (pctFPL < 2.50) return 0.020 + (pctFPL - 2.00) / 0.50 * 0.020;
-  if (pctFPL < 3.00) return 0.040 + (pctFPL - 2.50) / 0.50 * 0.020;
-  if (pctFPL < 4.00) return 0.060 + (pctFPL - 3.00) / 1.00 * 0.025;
-  return 0.085;
-}
-
-// Returns {credit, net, eligible, pct} — monthly figures
-function hcCalcACA(income, grossPremium, pctFPL, enhanced){
-  var pct = enhanced ? hcContribPctEnhanced(pctFPL) : hcContribPctStd(pctFPL);
-  if (pct === null) return {credit:0, net:grossPremium, eligible:false, pct:0};
-  var maxContrib = income * pct / 12;
-  var credit = Math.max(0, grossPremium - maxContrib);
-  var net = Math.max(0, grossPremium - credit);
-  return {credit:credit, net:net, eligible:true, pct:pct};
-}
 
 function hcIRMAATier(magi, joint){
   var col = joint ? 1 : 0;
@@ -18400,10 +20232,9 @@ var BR_SLT = {30:55.3, 31:54.4, 32:53.4, 33:52.5, 34:51.5, 35:50.5, 36:49.6, 37:
   47:39.0, 48:38.1, 49:37.1, 50:36.2, 51:35.3, 52:34.3, 53:33.4, 54:32.5, 55:31.6,
   56:30.6, 57:29.8, 58:28.9, 59:28.0};
 function brLE(age){ return BR_SLT[Math.max(30, Math.min(59, Math.round(age)))]; }
-/* States that have not expanded Medicaid to 138% of the poverty line
-   (Wisconsin covers adults only to 100%, through a waiver). Below 100% in
-   these there is no subsidy at all: the coverage gap. */
-var BR_NOEXP = {AL:1, FL:1, GA:1, KS:1, MS:1, SC:1, TN:1, TX:1, WI:1, WY:1};
+/* States that have not expanded Medicaid to 138% of the poverty line: the
+   plan engine's table (below 100% in these there is no subsidy at all). */
+var BR_NOEXP = PL_NOEXP;
 var BR_UNLOCK = 59.5, BR_FICA = 0.0765, BR_CUSHION = 0.03, BR_TRIALS = 300;
 /* Where a plan can draw from before 59½, the penalized sources last. */
 var BR_PEN = ["tradPen", "rungEarly", "rothEarn"];
@@ -18428,20 +20259,8 @@ function brAmortFactor(rate, age){
   return rate > 0 ? rate / (1 - Math.pow(1 + rate, -n)) : 1 / n;
 }
 /* Real returns of the chosen mix, year by year from 1926, and their
-   long-run averages: the steady path runs at the geometric mean. */
-var brMixMemo = {};
-function brMix(stock){
-  var key = String(stock);
-  if (brMixMemo[key]) return brMixMemo[key];
-  var w = stock / 100, n = HIST_STOCK.length;
-  var r = new Float64Array(n), pi = new Float64Array(n), sl = 0, si = 0;
-  for (var i = 0; i < n; i++){
-    var nom = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100, inf = HIST_INFL[i] / 100;
-    r[i] = (1 + nom) / (1 + inf) - 1; pi[i] = inf;
-    sl += Math.log(1 + r[i]); si += Math.log(1 + inf);
-  }
-  return (brMixMemo[key] = {r:r, pi:pi, n:n, real:Math.exp(sl / n) - 1, infl:Math.exp(si / n) - 1});
-}
+   long-run averages: the plan engine's own table. */
+function brMix(stock){ return plMix(stock); }
 function brFlatSeq(len, r, pi){
   var a = new Float64Array(len), b = new Float64Array(len);
   a.fill(r); b.fill(pi);

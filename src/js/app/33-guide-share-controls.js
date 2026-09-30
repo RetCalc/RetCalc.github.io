@@ -43,6 +43,8 @@ function gdGuideSheet(){
   if (gdMinSpend()) plan += row("Minimum spending", money(gdMinSpend()) + "/yr");
   plan += row("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
   if (S.pension) plan += row("Pension", money(S.pension / 12) + "/mo");
+  plan += row("Withdrawals", S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth");
+  plan += row("Income tax", "About " + money(S.taxYr) + "/yr");
   plan += row("Withdrawal approach", gdStratName(a.strategy || "fixed"));
   plan += row("Stocks in retirement", S.mix + "%");
   let nums = "";
@@ -73,7 +75,8 @@ function gdGuideSheet(){
     "</div>" + moves +
     "<div class='sh-foot'>Savings grow at " + pctStr(S.real, 1) + " a year after inflation for a " + gdRiskLabel(S.real) + " mix, with contributions rising with inflation. " +
     "Retirement is tested against every historical retirement since " + (S.H ? S.H.first : 1926) + " with " + S.mix + "% in stocks, spending a fixed amount that rises with inflation. " +
-    "Spending is before income tax" + (a.retTaxAdded ? ", plus the tax estimate added from the Income Tax tool" : "; the Income Tax tool's Retirement income mode estimates it") + ". " +
+    "Spending is after tax: each year's income tax, Medicare surcharge and health insurance before 65 are worked out from where the money comes from and paid on top" +
+    (S.tactics ? ", with the Plan Optimizer's roadmap applied (" + opTacticsLine(S.T, S.C).toLowerCase() + ")" : "") + ". " +
     "Social Security is an estimate. This is a rule-of-thumb plan, not financial advice.</div>";
 }
 
@@ -137,21 +140,9 @@ $("tab-guide").addEventListener("click", e => {
   if (g === "next") gdNext();
   else if (g === "prev") gdPrev();
   else if (g === "resume") gdGoStep(gdFirstOpen());
-  else if (g === "addhc" && gdPos(gd.a.hcPrem) && gdPos(gd.a.retSpend)){
-    gd.a.retSpend = Math.round((gd.a.retSpend + gd.a.hcPrem * 12) / 100) * 100;
-    gd.a.hcAdded = true; gd.a.hcIncl = "yes";
-    gdHouseholdSync();
-    gdSave();
-    gdRender(false);
-  } else if (g === "addtax" && gdPos(gd.a.retTax) && gdPos(gd.a.retSpend) && !gd.a.retTaxAdded){
-    gd.back = {step:gd.cur, msg:"Added " + money(gd.a.retTax) + " a year for income tax. Your retirement spending is now " + money(gd.a.retSpend + gd.a.retTax) + ".",
-      undo:{retSpend:gd.a.retSpend, retTaxAdded:false}};
-    gd.a.retSpend = Math.round(gd.a.retSpend + gd.a.retTax);
-    gd.a.retTaxAdded = true;
-    gdHouseholdSync();
-    gdSave();
-    gdRender(false);
-  } else if (g === "undo" && gd.back && gd.back.undo){
+  else if (g === "optapply") opApplyToGuide();
+  else if (g === "optclear") opClearGuide();
+  else if (g === "undo" && gd.back && gd.back.undo){
     Object.assign(gd.a, gd.back.undo);
     gd.back = {step:gd.back.step, msg:"Undone. Your answers are back to what they were."};
     gdHouseholdSync();
@@ -206,6 +197,7 @@ $("tab-guide").addEventListener("keydown", e => {
   if (Object.keys(gd.done).length && !confirm("This link opens a shared retirement plan in the guide. Replace your own guide answers with it? Your household bar and tools won't change.")) return;
   gd = gdFresh();
   gd.a = a;
+  gdMigrate(gd.a);
   gdNumbered().forEach(st => { if (st.id !== "results") gd.done[st.id] = true; });
   gd.cur = "results";
   gdSave();

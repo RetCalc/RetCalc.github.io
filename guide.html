@@ -28,7 +28,7 @@
 <meta property="og:image:alt" content="Retirement Readiness Guide: One question at a time: a readiness score out of 100, a plan, and what to do next.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://retcalc.app/og/guide.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Retirement Readiness Check: Are You on Track?", "url": "https://retcalc.app/guide", "description": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good retirement readiness score?", "acceptedAnswer": {"@type": "Answer", "text": "85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most."}}, {"@type": "Question", "name": "Does it estimate Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer."}}, {"@type": "Question", "name": "Can I stop and come back later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off."}}, {"@type": "Question", "name": "Is it financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional."}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Retirement Readiness Check: Are You on Track?", "url": "https://retcalc.app/guide", "description": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good retirement readiness score?", "acceptedAnswer": {"@type": "Answer", "text": "85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most."}}, {"@type": "Question", "name": "Does it estimate Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer."}}, {"@type": "Question", "name": "Does it include taxes?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy."}}, {"@type": "Question", "name": "Can I stop and come back later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off."}}, {"@type": "Question", "name": "Is it financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -86,7 +86,7 @@
 "tools": {
 "h1": "Financial Planning Calculators",
 "title": "Free Financial Planning Calculators | RetCalc",
-"desc": "Free calculators for retirement withdrawals, early retirement, Roth conversions, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt."
+"desc": "Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt."
 },
 "about": {
 "h1": "About RetCalc",
@@ -97,6 +97,11 @@
 "h1": "Retirement Withdrawal Calculator",
 "title": "Retirement Withdrawal Calculator: Will My Money Last? | RetCalc",
 "desc": "How much can you safely spend in retirement? Test the 4% rule and five flexible withdrawal strategies against every retirement since 1926, with Social Security and pensions."
+},
+"optimizer": {
+"h1": "Retirement Plan Optimizer",
+"title": "Retirement Plan Optimizer: Social Security, Withdrawals & Roth Conversions | RetCalc",
+"desc": "When should each of you claim Social Security, which account should you draw first, and how much should you convert to Roth? It tests thousands of plans in every market since 1926, with 2026 taxes, and finds your best."
 },
 "bridge": {
 "h1": "Early Retirement Bridge Calculator",
@@ -167,8 +172,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.119b6b5100.css">
-<link rel="preload" href="/assets/app.7e58eeb8be.js" as="script">
+<link rel="stylesheet" href="/assets/app.b9bf7d91b7.css">
+<link rel="preload" href="/assets/app.8cba1b324b.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -2184,12 +2189,15 @@ window.onerror = function(msg){
           <dd>Your savings are projected to your retirement age the same way the Basic
           tab does it: a steady return after inflation for the mix you pick, with
           contributions (yours and your employer's) raised with inflation each year so
-          they stay the same in today's dollars. That balance is then run through every
-          historical retirement since 1926 with the Drawdown Simulator's engine, spending
-          a fixed amount that rises with inflation until you, or the younger of you and
-          a spouse, reach 95. The outlook is the share of those retirements where the
-          money lasted, and the guide also solves for what you'd need saved by
-          retirement to last in 90% of them.</dd>
+          they stay the same in today's dollars. Each account type grows on its own:
+          traditional, Roth and a taxable brokerage account, split the way you answer,
+          with new saving going where you say and any employer match into traditional.
+          The retirement is then run year by year through every historical market since
+          1926 by the plan engine the Plan Optimizer uses, living on a fixed amount after
+          tax that rises with inflation until you, or the younger of you and a spouse,
+          reach 95. The outlook is the share of those retirements where the money
+          lasted, and the guide also solves for what you'd need saved by retirement to
+          last in 90% of them.</dd>
 
           <dt>Social Security and pensions</dt>
           <dd>Estimated from your income and the years you'll have worked by
@@ -2227,12 +2235,23 @@ window.onerror = function(msg){
           income, and stress tests; a strategy, mix, claiming age or minimum you
           change there comes back into your plan.</dd>
 
-          <dt>Taxes <span class="opt">not included</span></dt>
-          <dd>Retirement spending is before income tax. Withdrawals from traditional
-          accounts, a pension and part of Social Security are taxable, so the guide
-          offers a trip into the Income Tax tool's Retirement income mode, filled in
-          with your plan's first year, and can add the estimate to your spending. Home
-          equity isn't counted.</dd>
+          <dt>Taxes and health insurance</dt>
+          <dd>Retirement spending is what you live on after tax. Every year, the plan
+          works out the 2026 federal and state income tax on where that year's money
+          came from (traditional withdrawals as income, Roth withdrawals free, brokerage
+          sales on their gain, part of Social Security by its own formula), Medicare's
+          income surcharge on a two-year lookback, the 10% additional tax on traditional
+          money taken before 59½, required minimum distributions from 73 or 75, and,
+          before 65, a marketplace health plan less the subsidy that year's income earns.
+          Unless you apply the Plan Optimizer's roadmap, withdrawals come from the
+          brokerage first, then traditional, then Roth. Home equity isn't counted.</dd>
+
+          <dt>Plan Optimizer</dt>
+          <dd>Near the end, the guide hands your plan to the Plan Optimizer (below),
+          which searches every claiming age, withdrawal order, Roth conversion level and
+          income guard for the best way to run it. <b>Use this plan</b> makes its
+          roadmap your plan's own, with Undo: the score, the projection and every step
+          then test it.</dd>
 
           <dt>Save, share and print</dt>
           <dd>With the Guide tab open, <b>Save/Delete</b> saves your answers and plan
@@ -2243,6 +2262,80 @@ window.onerror = function(msg){
           carries your answers (not your budget or debt lists), so share it only with
           people you'd show your finances to. Someone opening it who has guide answers
           of their own is asked before theirs are replaced.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Plan Optimizer</h2>
+      <div class="body">
+        <p>Once you know when you'll retire and what you'll spend, the rest is tactics,
+        and they're worth a lot: when each of you claims Social Security, which account
+        each year's money comes from, and how much to move from traditional to Roth
+        while your income is low. The Plan Optimizer tries every combination and keeps
+        the best, for the goal you pick.</p>
+        <dl class="gloss">
+          <dt>Where it starts</dt>
+          <dd><b>Retirement day</b>, the default, starts from the balances you'll have
+          when you retire, by account type, in today's dollars. Type them in, or use
+          <b>Copy from Advanced or Stages</b> once either has <b>Split by account
+          type</b> turned on: they project each account to retirement with their own
+          contribution growth, fees, employer match, glide path and stages, and the
+          optimizer takes it from there. <b>Today</b> starts from what you have now and
+          what you save each month, and grows each account to retirement at a steady
+          return after inflation first; its copy button brings over Advanced's or
+          Stages' current balances, monthly saving and return.</dd>
+
+          <dt>What it tries</dt>
+          <dd>Every claiming age from 62 to 70 for each of you (never before you
+          retire). Six ways to draw down: the usual order (brokerage, then traditional,
+          then Roth), or traditional money first each year up to the standard deduction
+          or the top of the 10%, 12%, 22% or 24% bracket, then brokerage, then Roth. For
+          each fill, three conversion windows: never convert, convert what you don't
+          spend until Social Security starts, or until required distributions start. And
+          two income guards, on or off: staying under Medicare's first surcharge line
+          from 63, and under the ACA subsidy cliff before 65. For a couple that's a few
+          thousand plans.</dd>
+
+          <dt>How each plan is tested</dt>
+          <dd>Year by year, account by account, through every historical starting year
+          since 1926 with the stock mix you choose, by the same engine the readiness
+          guide uses. Each year it finds the smallest withdrawal, down the plan's list
+          of accounts, that pays for your spending plus the income tax, early-withdrawal
+          penalty, Medicare surcharge and health premiums that withdrawal itself causes.
+          The tax is the Income Tax tool's whole 2026 federal and state retirement
+          return, read from a cache so thousands of plans run in seconds. Conversions
+          before 59½ can be spent after five years, as a conversion ladder. The search
+          runs in your browser, off the page's main thread, and nothing you enter is
+          sent anywhere.</dd>
+
+          <dt>The three goals</dt>
+          <dd><b>Leave the most</b> picks the plan with the most left after tax in the
+          median historical market, among plans that last at least as often as the
+          usual way (or your target, if that's lower). Traditional money left at the end
+          counts at 76% of its value by default, for the income tax whoever inherits it
+          will owe. <b>Make it last</b> picks the plan that lasted in the most historical
+          markets, then the one that leaves the most in the worst tenth of them.
+          <b>Spend the most</b> finds, for the strongest finalists, the highest yearly
+          spending that still lasts in your target share of markets, and keeps the
+          highest.</dd>
+
+          <dt>Reading the answer</dt>
+          <dd>The headline compares the best plan with the usual way, run on the same
+          numbers. <b>Your roadmap</b> lays the best plan out as stretches of years,
+          on the average path: where the money comes from, what's converted, the tax
+          and the health premiums. <b>What makes the difference</b> splits the gain
+          between claiming Social Security at different ages and changing how the
+          accounts are drawn and converted, each tested through all of history.</dd>
+
+          <dt>What it assumes</dt>
+          <dd>A couple is one household with one pool of each account type; the 59½ line
+          and required distributions follow your age, and both of you live to the end of
+          the plan, which favors claiming later (a survivor keeping the larger benefit
+          isn't modeled). Brackets and thresholds are held at 2026 levels in today's
+          dollars. It doesn't use 72(t) payments or 457(b) plans (the Early Retirement
+          Bridge compares those), and it doesn't change your retirement age, saving or
+          spending: the readiness guide's Adjust your plan step does that.</dd>
         </dl>
       </div>
     </div>
@@ -3879,17 +3972,22 @@ window.onerror = function(msg){
       <section class="toolgroup" aria-label="Retirement income">
         <h2 class="toolgroup-h"><span>Retirement income</span><em>Turning savings into a paycheck</em></h2>
         <div class="toolgrid">
-        <div class="toolcard" style="--i:0" role="button" tabindex="0" data-pick="drawdown">
+        <div class="toolcard" style="--i:0" role="button" tabindex="0" data-pick="optimizer">
+          <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="18" r="12" stroke="currentColor" stroke-width="2"/><circle class="op-ic-ring" cx="24" cy="18" r="6.5" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="18" r="1.8" fill="currentColor"/><g class="op-ic-arrow"><path d="M5.5 34.5 L19.3 22.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M23 19 L20.98 24.27 L17.54 20.37 Z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/><path d="M9.02 34.78 L9.24 31.19 L5.65 30.97 M6.78 36.76 L7 33.17 L3.41 32.95" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></g></svg></div>
+          <div class="toolcard-body"><div class="toolcard-name">Plan Optimizer<span class="beta">New</span></div><div class="toolcard-desc">Tries thousands of ways to claim Social Security, draw down your accounts and convert to Roth, in every market since 1926, and finds the one that leaves you the most.</div></div>
+          <div class="toolcard-arrow">&#8250;</div>
+        </div>
+        <div class="toolcard" style="--i:1" role="button" tabindex="0" data-pick="drawdown">
           <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 30 h30" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle class="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor"/><circle class="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor"/></svg></div>
           <div class="toolcard-body"><div class="toolcard-name">Drawdown Simulator</div><div class="toolcard-desc">Will your money last? Test withdrawal strategies against every retirement since 1926.</div></div>
           <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard" style="--i:1" role="button" tabindex="0" data-pick="bridge">
+        <div class="toolcard" style="--i:2" role="button" tabindex="0" data-pick="bridge">
           <div class="toolcard-icon"><svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M6 30 V21 M34 30 V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="br-arch" pathLength="100" d="M4 21 Q20 6 36 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/><path class="br-cable br-cable1" d="M13 30 V15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><path class="br-cable br-cable2" d="M20 30 V13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><path class="br-cable br-cable3" d="M27 30 V15.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".7"/><circle class="br-walker" cx="7" cy="26.6" r="1.8" fill="currentColor" opacity="0"/></svg></div>
           <div class="toolcard-body"><div class="toolcard-name">Early Retirement Bridge</div><div class="toolcard-desc">Retiring before 59½? Compare a Roth ladder, 72(t) payments, the rule of 55 and your brokerage, with the tax, penalties and ACA premiums each costs, and see what's left at 59½.</div></div>
           <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard" style="--i:2" role="button" tabindex="0" data-pick="roth">
+        <div class="toolcard" style="--i:3" role="button" tabindex="0" data-pick="roth">
           <div class="toolcard-icon">
             <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="4" y="12" width="13" height="22" rx="2.5" stroke="currentColor" stroke-width="2"/>
@@ -3904,7 +4002,7 @@ window.onerror = function(msg){
           </div>
           <div class="toolcard-arrow">&#8250;</div>
         </div>
-        <div class="toolcard" style="--i:3" role="button" tabindex="0" data-pick="healthcare">
+        <div class="toolcard" style="--i:4" role="button" tabindex="0" data-pick="healthcare">
           <div class="toolcard-icon">
             <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle class="hc-ring" cx="18" cy="18" r="14" stroke="currentColor" stroke-width="1.8"/>
@@ -4688,6 +4786,217 @@ window.onerror = function(msg){
     </div>
   </div>
 
+  <aside id="asideOP" hidden>
+    <div class="panel inputs">
+      <h2>Your situation</h2>
+      <div class="body">
+        <div class="field op-modefield">
+          <label>Start from<span class="tipdot" data-tip="opmode" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <span class="seg op-modeseg" id="opModeSeg">
+            <button type="button" data-opmode="ret" class="on">Retirement day</button>
+            <button type="button" data-opmode="now">Today</button>
+          </span>
+          <input type="hidden" id="opMode" value="ret">
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opStatus">Filing status</label>
+            <select id="opStatus">
+              <option value="m" selected>Married filing jointly</option>
+              <option value="s">Single</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="opState">State</label>
+            <select id="opState"></select>
+          </div>
+        </div>
+        <div class="two op-nowonly">
+          <div class="field">
+            <label for="opAge">Your age</label>
+            <div class="inputwrap"><input id="opAge" type="text" inputmode="decimal" data-num data-step="1" min="18" max="90" data-nonneg value="58"><span class="affix">age</span></div>
+          </div>
+          <div class="field op-sp">
+            <label for="opSpAge">Spouse's age</label>
+            <div class="inputwrap"><input id="opSpAge" type="text" inputmode="decimal" data-num data-step="1" min="18" max="95" data-nonneg value="56"><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="two" id="opRetRow">
+          <div class="field">
+            <label for="opRetire"><span id="opRetireLbl">Your age at retirement</span><span class="tipdot" data-tip="opretire" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opRetire" type="text" inputmode="decimal" data-num data-step="1" min="30" max="90" data-nonneg value="62"><span class="affix">age</span></div>
+          </div>
+          <div class="field op-sp op-retonly">
+            <label for="opSpRet">Spouse's age then</label>
+            <div class="inputwrap"><input id="opSpRet" type="text" inputmode="decimal" data-num data-step="1" min="18" max="95" data-nonneg value="60"><span class="affix">age</span></div>
+          </div>
+        </div>
+
+        <div class="field op-sub op-balhead"><div class="hint" id="opBalHead">Saved on the day you retire</div>
+          <button type="button" class="btn mini" id="opCopy">Copy from Advanced or Stages</button>
+          <div class="hint op-balnote" id="opBalNote">In today's dollars. Advanced or Stages can project these for you, account by account.</div>
+        </div>
+        <div class="field">
+          <label for="opTrad">Traditional 401(k) / IRA<span class="tipdot" data-tip="optrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="opTrad" type="text" inputmode="decimal" data-money data-nonneg value="1,200,000"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opRoth">Roth 401(k) / IRA</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opRoth" type="text" inputmode="decimal" data-money data-nonneg value="250,000"></div>
+          </div>
+          <div class="field">
+            <label for="opRothBasis">Of that, contributions<span class="tipdot" data-tip="oprothbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opRothBasis" type="text" inputmode="decimal" data-money data-nonneg value="120,000"></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opBrok">Brokerage and cash</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opBrok" type="text" inputmode="decimal" data-money data-nonneg value="350,000"></div>
+          </div>
+          <div class="field">
+            <label for="opBasis">Cost basis<span class="tipdot" data-tip="opbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opBasis" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="60"><span class="affix">% of it</span></div>
+          </div>
+        </div>
+
+        <div id="opSaveWrap" class="op-nowonly">
+          <div class="field op-sub"><div class="hint">Saving until you retire, a month</div></div>
+          <div class="two">
+            <div class="field">
+              <label for="opSaveTrad">Traditional<span class="tipdot" data-tip="opsavetrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="opSaveTrad" type="text" inputmode="decimal" data-money data-nonneg value="2,000"><span class="affix">/mo</span></div>
+            </div>
+            <div class="field">
+              <label for="opSaveRoth">Roth</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="opSaveRoth" type="text" inputmode="decimal" data-money data-nonneg value="500"><span class="affix">/mo</span></div>
+            </div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="opSaveBrok">Brokerage</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="opSaveBrok" type="text" inputmode="decimal" data-money data-nonneg value="0"><span class="affix">/mo</span></div>
+            </div>
+            <div class="field">
+              <label for="opRisk">Invested</label>
+              <select id="opRisk"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field op-sub"><div class="hint">In retirement</div></div>
+        <div class="two">
+          <div class="field">
+            <label for="opSpend">Spending, after tax<span class="tipdot" data-tip="opspend" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opSpend" type="text" inputmode="decimal" data-money data-nonneg value="90,000"><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="opMix">Stocks<span class="tipdot" data-tip="opmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opMix" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="60"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opSS1">Your Social Security<span class="tipdot" data-tip="opss" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opSS1" type="text" inputmode="decimal" data-money data-nonneg value="3,000"><span class="affix">/mo at 67</span></div>
+          </div>
+          <div class="field">
+            <label for="opInc1">Or your salary <span class="opt">to estimate it</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opInc1" type="text" inputmode="decimal" data-money data-nonneg value="" placeholder="optional"><span class="affix">/yr</span></div>
+          </div>
+        </div>
+        <div class="two op-sp">
+          <div class="field">
+            <label for="opSS2">Spouse's Social Security</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opSS2" type="text" inputmode="decimal" data-money data-nonneg value="1,800"><span class="affix">/mo at 67</span></div>
+          </div>
+          <div class="field">
+            <label for="opInc2">Or their salary</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opInc2" type="text" inputmode="decimal" data-money data-nonneg value="" placeholder="optional"><span class="affix">/yr</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="opClaim">You'd claim it at<span class="tipdot" data-tip="opclaim" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="opClaim">
+            <option value="62">62, the earliest</option>
+            <option value="63">63</option>
+            <option value="64">64</option>
+            <option value="65">65</option>
+            <option value="66">66</option>
+            <option value="67" selected>67, full retirement age</option>
+            <option value="68">68</option>
+            <option value="69">69</option>
+            <option value="70">70, the most it pays</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opPension">Pension <span class="opt">optional</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opPension" type="text" inputmode="decimal" data-money data-nonneg value="0"><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="opPenAge">Starting at</label>
+            <div class="inputwrap"><input id="opPenAge" type="text" inputmode="decimal" data-num data-step="1" min="40" max="90" data-nonneg value="" placeholder="retiring"><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="opPenCola">Pension raises</label>
+          <select id="opPenCola">
+            <option value="0" selected>Fixed amount</option>
+            <option value="1">Rises with inflation</option>
+          </select>
+        </div>
+
+        <div class="field op-sub"><div class="hint">Health, heirs and safety</div></div>
+        <div class="field" id="opAcaWrap">
+          <label for="opAca">Health insurance before 65<span class="tipdot" data-tip="opaca" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="opAca">
+            <option value="1" selected>ACA plan, with the subsidy income earns</option>
+            <option value="0">Already in my spending</option>
+          </select>
+        </div>
+        <div class="field" id="opRule55Wrap" hidden>
+          <label for="opRule55">Leaving a job with a 401(k)<span class="tipdot" data-tip="oprule55" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="opRule55">
+            <option value="0" selected>No, or it's rolled over</option>
+            <option value="1">Yes, at 55 or later: rule of 55</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opHeir">Heirs' tax rate<span class="tipdot" data-tip="opheir" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opHeir" type="text" inputmode="decimal" data-num data-step="1" min="0" max="50" data-nonneg value="24"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="opTarget">Must last in<span class="tipdot" data-tip="optarget" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <select id="opTarget">
+              <option value="0.9" selected>90% of markets</option>
+              <option value="0.95">95% of markets</option>
+              <option value="1">Every market</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  <!-- ========== PLAN OPTIMIZER ========== -->
+  <div class="stack" id="tab-optimizer" hidden>
+    <div class="panel op-top">
+      <div class="body">
+        <p class="op-lede">Every age from 62 to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
+        <div class="op-goalrow">
+          <div class="op-q">What should the best plan do?</div>
+          <div id="opGoals"></div>
+        </div>
+        <div class="op-go">
+          <button type="button" class="btn primary op-go-btn" id="opRunBtn" data-op="run" data-host="tool">Find my best plan<i class="arw" aria-hidden="true"></i></button>
+          <span class="hint" id="opEst"></span>
+        </div>
+      </div>
+    </div>
+    <div id="opOut" class="op-out"></div>
+  </div>
   <!-- ========== ABOUT THIS TOOL ==========
        One article per page, shown under whichever tool the address names
        (seoSync). They're what a search engine reads for that page, and the
@@ -4705,7 +5014,7 @@ window.onerror = function(msg){
     <h3>What you get</h3>
     <ul>
       <li>A score built from your retirement outlook, savings rate, emergency fund, debt and monthly cash flow.</li>
-      <li>Your plan tested against every retirement since 1926, with Social Security estimated for you.</li>
+      <li>Your plan tested against every retirement since 1926, account by account, with Social Security estimated for you and each year's income tax and health insurance worked out.</li>
       <li>Specific changes that would put you on track, such as saving more, retiring later or spending less, sized for you.</li>
       <li>Short trips into the other tools, with your numbers filled in.</li>
     </ul>
@@ -4727,7 +5036,7 @@ window.onerror = function(msg){
       <li><b>Safety net:</b> your emergency fund and any debt.</li>
       <li><b>Big goals:</b> housing and college.</li>
       <li><b>Retirement:</b> what you've saved, what you'll spend, your projection, and whether it lasts.</li>
-      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, then see your score and next steps.</li>
+      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, let the <a href="/optimizer">Plan Optimizer</a> find the best way to claim Social Security and convert to Roth, then see your score and next steps.</li>
     </ul>
     <h3>Common mistakes</h3>
     <ul>
@@ -4745,10 +5054,12 @@ window.onerror = function(msg){
     <h3>Questions</h3>
     <details><summary>What is a good retirement readiness score?</summary><p>85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most.</p></details>
     <details><summary>Does it estimate Social Security?</summary><p>Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer.</p></details>
+    <details><summary>Does it include taxes?</summary><p>Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy.</p></details>
     <details><summary>Can I stop and come back later?</summary><p>Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off.</p></details>
     <details><summary>Is it financial advice?</summary><p>No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional.</p></details>
     </div>
   </article>
+
 
 
 
@@ -4839,7 +5150,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.7e58eeb8be.js"></script>
+<script src="/assets/app.8cba1b324b.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

@@ -2,7 +2,9 @@
 """Run the calculation tests against the math in src/.
 
 The engine is src/js/math.js (between its ===MATH START=== and ===MATH END===
-markers), and a few calculators live in the app script, src/js/app/*.js.
+markers) and the retirement plan engine, src/js/plan.js (between ===PLAN
+START=== and ===PLAN END===); a few calculators live in the app script,
+src/js/app/*.js.
 This takes the engine block, the named extras and the text of the "about
 this tool" articles (whose worked examples the tests check), puts them in
 one script with tests/math.test.js, and runs it with whichever
@@ -19,11 +21,9 @@ JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Help
 
 # Calculators outside the engine block that the tests cover, and the
 # constants they read.
-FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "hcFPL", "hcAgeMultiplier",
-             "hcGrossPremium", "hcContribPctStd", "hcCalcACA", "brLE", "brAmortFactor", "projectBasic",
+FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "brLE", "brAmortFactor", "projectBasic",
              "gdRating"]
-CONSTANTS = ["PMI_DEFAULT", "HC_FPL_BASE", "HC_FPL_PER_ADDL", "HC_AGE_MULT",
-             "HC_AGE40_MULT", "HC_STATE_PREMIUM_40", "BR_SLT",
+CONSTANTS = ["PMI_DEFAULT", "BR_SLT",
              "DEFAULTS", "BASIC_INFL", "GD_FACTORS", "RC_DEFAULTS",
              "DEBT_DEFAULTS", "RISK_LEVELS"]
 ARTICLES = os.path.join(ROOT, "src", "main", "26-about-this-tool.html")
@@ -79,7 +79,9 @@ def main():
     src = "".join(open(p, encoding="utf-8").read()
                   for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
-    parts = [math[a:b]]
+    plan = open(os.path.join(ROOT, "src", "js", "plan.js"), encoding="utf-8").read()
+    c, d = plan.index("// ===PLAN START==="), plan.index("// ===PLAN END===")
+    parts = [math[a:b], plan[c:d]]
     parts += [constant(src, c) for c in CONSTANTS]
     parts += [function(src, f) for f in FUNCTIONS]
     parts.append(articles())

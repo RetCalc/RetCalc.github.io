@@ -24,7 +24,7 @@
 "tools": {
 "h1": "Financial Planning Calculators",
 "title": "Free Financial Planning Calculators | RetCalc",
-"desc": "Free calculators for retirement withdrawals, early retirement, Roth conversions, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt."
+"desc": "Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt."
 },
 "about": {
 "h1": "About RetCalc",
@@ -35,6 +35,11 @@
 "h1": "Retirement Withdrawal Calculator",
 "title": "Retirement Withdrawal Calculator: Will My Money Last? | RetCalc",
 "desc": "How much can you safely spend in retirement? Test the 4% rule and five flexible withdrawal strategies against every retirement since 1926, with Social Security and pensions."
+},
+"optimizer": {
+"h1": "Retirement Plan Optimizer",
+"title": "Retirement Plan Optimizer: Social Security, Withdrawals & Roth Conversions | RetCalc",
+"desc": "When should each of you claim Social Security, which account should you draw first, and how much should you convert to Roth? It tests thousands of plans in every market since 1926, with 2026 taxes, and finds your best."
 },
 "bridge": {
 "h1": "Early Retirement Bridge Calculator",

@@ -5,46 +5,6 @@
    for this flag, and the end of the section draws the tool if it's on screen. */
 var hcReady = false;
 
-// Federal poverty level for 2026 coverage. Premium tax credits run a year
-// behind, so 2026 plans are priced against the 2025 HHS poverty guidelines:
-// $15,650 for one person plus $5,500 for each additional person, contiguous
-// 48 states and DC. Alaska and Hawaii are higher; this uses the 48-state line.
-var HC_FPL_BASE = [0,15650,21150,26650,32150,37650,43150,48650,54150];
-var HC_FPL_PER_ADDL = 5500;
-
-// Federal default standard age curve, ages 21-64 (21 = 1.000, 64+ = 3.000).
-// CMS, "Final Guidance Regarding Age Curves and State Reporting", 16 Dec 2016,
-// Appendix I; in force for plan years 2018 on. A handful of states (and DC)
-// set their own curve, which runs somewhat flatter.
-var HC_AGE_MULT = [
-  1.000,1.000,1.000,1.000, // 21-24
-  1.004,1.024,1.048,1.087, // 25-28
-  1.119,1.135,1.159,1.183, // 29-32
-  1.198,1.214,1.222,1.230, // 33-36
-  1.238,1.246,1.262,1.278, // 37-40
-  1.302,1.325,1.357,1.397, // 41-44
-  1.444,1.500,1.563,1.635, // 45-48
-  1.706,1.786,1.865,1.952, // 49-52
-  2.040,2.135,2.230,2.333, // 53-56
-  2.437,2.548,2.603,2.714, // 57-60
-  2.810,2.873,2.952,3.000  // 61-64
-];
-var HC_AGE40_MULT = 1.278; // index 19 = age 40 - 21
-
-// 2026 average benchmark premium (second-lowest-cost Silver) for a 40-year-old,
-// monthly, by state. Source: KFF, Marketplace Average Benchmark Premiums, 2026
-// (US average $625, up from $497 in 2025). Averages across each state's rating
-// areas; a county quote can differ a lot. Scaled by the HHS age multiplier.
-var HC_STATE_PREMIUM_40 = {
-  AL:645,AK:1032,AZ:532,AR:774,CA:570,CO:557,CT:870,DC:610,
-  DE:691,FL:683,GA:615,HI:541,ID:490,IL:646,IN:474,IA:501,
-  KS:670,KY:590,LA:646,ME:709,MD:414,MA:494,MI:523,MN:448,
-  MS:662,MO:605,MT:692,NE:710,NV:497,NH:401,NJ:545,NM:623,
-  NY:817,NC:638,ND:570,OH:513,OK:604,OR:543,PA:572,RI:506,
-  SC:564,SD:655,TN:711,TX:661,UT:640,VT:1299,VA:455,WA:612,
-  WV:1073,WI:611,WY:1090
-};
-
 // Medicare IRMAA, 2026: the same CMS table the Roth tool uses.
 // [individual_magi_max, joint_magi_max, partB_monthly, partD_irmaa_monthly]
 var HC_IRMAA = IRMAA.tiers.map(function(t){ return [t.s, t.m, t.b, t.partD]; });
@@ -52,61 +12,6 @@ var HC_IRMAA = IRMAA.tiers.map(function(t){ return [t.s, t.m, t.b, t.partD]; });
 var HC_PARTD_BASE = 35;
 // Medigap Plan G rough range at 65 (low/high, national)
 var HC_MEDIGAP_LOW = 120, HC_MEDIGAP_HIGH = 200;
-
-function hcFPL(size){
-  size = Math.max(1, Math.round(size));
-  if (size <= 8) return HC_FPL_BASE[size];
-  return HC_FPL_BASE[8] + (size - 8) * HC_FPL_PER_ADDL;
-}
-
-function hcAgeMultiplier(age){
-  age = Math.max(21, Math.min(64, Math.round(age)));
-  return HC_AGE_MULT[age - 21];
-}
-
-// Gross monthly benchmark Silver premium for given state & age
-function hcGrossPremium(state, age, manualOverride){
-  if (manualOverride > 0) return manualOverride;
-  var base = HC_STATE_PREMIUM_40[state] || 500;
-  return base / HC_AGE40_MULT * hcAgeMultiplier(age);
-}
-
-// Standard ACA contribution % of income for 2026: the applicable percentage
-// table in Rev. Proc. 2025-25, with the 400% FPL cliff. These are the rules in
-// force for 2026, since the enhanced credits expired at the end of 2025.
-// Returns null when income is too high for subsidy.
-function hcContribPctStd(pctFPL){
-  if (pctFPL < 1.0) return 0;
-  if (pctFPL > 4.0) return null;
-  if (pctFPL < 1.33) return 0.0210;
-  if (pctFPL < 1.50) return 0.0314 + (pctFPL - 1.33) / 0.17 * (0.0419 - 0.0314);
-  if (pctFPL < 2.00) return 0.0419 + (pctFPL - 1.50) / 0.50 * (0.0660 - 0.0419);
-  if (pctFPL < 2.50) return 0.0660 + (pctFPL - 2.00) / 0.50 * (0.0844 - 0.0660);
-  if (pctFPL < 3.00) return 0.0844 + (pctFPL - 2.50) / 0.50 * (0.0996 - 0.0844);
-  return 0.0996;
-}
-
-// Enhanced contribution % (ARP/IRA rules, 2021-2025: 8.5% cap, no cliff above
-// 400% FPL). Expired after 2025; kept to show what a restoration would mean.
-function hcContribPctEnhanced(pctFPL){
-  if (pctFPL < 1.0) return 0;
-  if (pctFPL < 1.50) return 0;
-  if (pctFPL < 2.00) return (pctFPL - 1.50) / 0.50 * 0.020;
-  if (pctFPL < 2.50) return 0.020 + (pctFPL - 2.00) / 0.50 * 0.020;
-  if (pctFPL < 3.00) return 0.040 + (pctFPL - 2.50) / 0.50 * 0.020;
-  if (pctFPL < 4.00) return 0.060 + (pctFPL - 3.00) / 1.00 * 0.025;
-  return 0.085;
-}
-
-// Returns {credit, net, eligible, pct} — monthly figures
-function hcCalcACA(income, grossPremium, pctFPL, enhanced){
-  var pct = enhanced ? hcContribPctEnhanced(pctFPL) : hcContribPctStd(pctFPL);
-  if (pct === null) return {credit:0, net:grossPremium, eligible:false, pct:0};
-  var maxContrib = income * pct / 12;
-  var credit = Math.max(0, grossPremium - maxContrib);
-  var net = Math.max(0, grossPremium - credit);
-  return {credit:credit, net:net, eligible:true, pct:pct};
-}
 
 function hcIRMAATier(magi, joint){
   var col = joint ? 1 : 0;

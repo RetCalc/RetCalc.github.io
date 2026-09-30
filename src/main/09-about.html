@@ -293,12 +293,15 @@
           <dd>Your savings are projected to your retirement age the same way the Basic
           tab does it: a steady return after inflation for the mix you pick, with
           contributions (yours and your employer's) raised with inflation each year so
-          they stay the same in today's dollars. That balance is then run through every
-          historical retirement since 1926 with the Drawdown Simulator's engine, spending
-          a fixed amount that rises with inflation until you, or the younger of you and
-          a spouse, reach 95. The outlook is the share of those retirements where the
-          money lasted, and the guide also solves for what you'd need saved by
-          retirement to last in 90% of them.</dd>
+          they stay the same in today's dollars. Each account type grows on its own:
+          traditional, Roth and a taxable brokerage account, split the way you answer,
+          with new saving going where you say and any employer match into traditional.
+          The retirement is then run year by year through every historical market since
+          1926 by the plan engine the Plan Optimizer uses, living on a fixed amount after
+          tax that rises with inflation until you, or the younger of you and a spouse,
+          reach 95. The outlook is the share of those retirements where the money
+          lasted, and the guide also solves for what you'd need saved by retirement to
+          last in 90% of them.</dd>
 
           <dt>Social Security and pensions</dt>
           <dd>Estimated from your income and the years you'll have worked by
@@ -336,12 +339,23 @@
           income, and stress tests; a strategy, mix, claiming age or minimum you
           change there comes back into your plan.</dd>
 
-          <dt>Taxes <span class="opt">not included</span></dt>
-          <dd>Retirement spending is before income tax. Withdrawals from traditional
-          accounts, a pension and part of Social Security are taxable, so the guide
-          offers a trip into the Income Tax tool's Retirement income mode, filled in
-          with your plan's first year, and can add the estimate to your spending. Home
-          equity isn't counted.</dd>
+          <dt>Taxes and health insurance</dt>
+          <dd>Retirement spending is what you live on after tax. Every year, the plan
+          works out the 2026 federal and state income tax on where that year's money
+          came from (traditional withdrawals as income, Roth withdrawals free, brokerage
+          sales on their gain, part of Social Security by its own formula), Medicare's
+          income surcharge on a two-year lookback, the 10% additional tax on traditional
+          money taken before 59½, required minimum distributions from 73 or 75, and,
+          before 65, a marketplace health plan less the subsidy that year's income earns.
+          Unless you apply the Plan Optimizer's roadmap, withdrawals come from the
+          brokerage first, then traditional, then Roth. Home equity isn't counted.</dd>
+
+          <dt>Plan Optimizer</dt>
+          <dd>Near the end, the guide hands your plan to the Plan Optimizer (below),
+          which searches every claiming age, withdrawal order, Roth conversion level and
+          income guard for the best way to run it. <b>Use this plan</b> makes its
+          roadmap your plan's own, with Undo: the score, the projection and every step
+          then test it.</dd>
 
           <dt>Save, share and print</dt>
           <dd>With the Guide tab open, <b>Save/Delete</b> saves your answers and plan
@@ -352,6 +366,80 @@
           carries your answers (not your budget or debt lists), so share it only with
           people you'd show your finances to. Someone opening it who has guide answers
           of their own is asked before theirs are replaced.</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="panel about">
+      <h2>Plan Optimizer</h2>
+      <div class="body">
+        <p>Once you know when you'll retire and what you'll spend, the rest is tactics,
+        and they're worth a lot: when each of you claims Social Security, which account
+        each year's money comes from, and how much to move from traditional to Roth
+        while your income is low. The Plan Optimizer tries every combination and keeps
+        the best, for the goal you pick.</p>
+        <dl class="gloss">
+          <dt>Where it starts</dt>
+          <dd><b>Retirement day</b>, the default, starts from the balances you'll have
+          when you retire, by account type, in today's dollars. Type them in, or use
+          <b>Copy from Advanced or Stages</b> once either has <b>Split by account
+          type</b> turned on: they project each account to retirement with their own
+          contribution growth, fees, employer match, glide path and stages, and the
+          optimizer takes it from there. <b>Today</b> starts from what you have now and
+          what you save each month, and grows each account to retirement at a steady
+          return after inflation first; its copy button brings over Advanced's or
+          Stages' current balances, monthly saving and return.</dd>
+
+          <dt>What it tries</dt>
+          <dd>Every claiming age from 62 to 70 for each of you (never before you
+          retire). Six ways to draw down: the usual order (brokerage, then traditional,
+          then Roth), or traditional money first each year up to the standard deduction
+          or the top of the 10%, 12%, 22% or 24% bracket, then brokerage, then Roth. For
+          each fill, three conversion windows: never convert, convert what you don't
+          spend until Social Security starts, or until required distributions start. And
+          two income guards, on or off: staying under Medicare's first surcharge line
+          from 63, and under the ACA subsidy cliff before 65. For a couple that's a few
+          thousand plans.</dd>
+
+          <dt>How each plan is tested</dt>
+          <dd>Year by year, account by account, through every historical starting year
+          since 1926 with the stock mix you choose, by the same engine the readiness
+          guide uses. Each year it finds the smallest withdrawal, down the plan's list
+          of accounts, that pays for your spending plus the income tax, early-withdrawal
+          penalty, Medicare surcharge and health premiums that withdrawal itself causes.
+          The tax is the Income Tax tool's whole 2026 federal and state retirement
+          return, read from a cache so thousands of plans run in seconds. Conversions
+          before 59½ can be spent after five years, as a conversion ladder. The search
+          runs in your browser, off the page's main thread, and nothing you enter is
+          sent anywhere.</dd>
+
+          <dt>The three goals</dt>
+          <dd><b>Leave the most</b> picks the plan with the most left after tax in the
+          median historical market, among plans that last at least as often as the
+          usual way (or your target, if that's lower). Traditional money left at the end
+          counts at 76% of its value by default, for the income tax whoever inherits it
+          will owe. <b>Make it last</b> picks the plan that lasted in the most historical
+          markets, then the one that leaves the most in the worst tenth of them.
+          <b>Spend the most</b> finds, for the strongest finalists, the highest yearly
+          spending that still lasts in your target share of markets, and keeps the
+          highest.</dd>
+
+          <dt>Reading the answer</dt>
+          <dd>The headline compares the best plan with the usual way, run on the same
+          numbers. <b>Your roadmap</b> lays the best plan out as stretches of years,
+          on the average path: where the money comes from, what's converted, the tax
+          and the health premiums. <b>What makes the difference</b> splits the gain
+          between claiming Social Security at different ages and changing how the
+          accounts are drawn and converted, each tested through all of history.</dd>
+
+          <dt>What it assumes</dt>
+          <dd>A couple is one household with one pool of each account type; the 59½ line
+          and required distributions follow your age, and both of you live to the end of
+          the plan, which favors claiming later (a survivor keeping the larger benefit
+          isn't modeled). Brackets and thresholds are held at 2026 levels in today's
+          dollars. It doesn't use 72(t) payments or 457(b) plans (the Early Retirement
+          Bridge compares those), and it doesn't change your retirement age, saving or
+          spending: the readiness guide's Adjust your plan step does that.</dd>
         </dl>
       </div>
     </div>

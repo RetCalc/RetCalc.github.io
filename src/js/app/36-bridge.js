@@ -27,10 +27,9 @@ var BR_SLT = {30:55.3, 31:54.4, 32:53.4, 33:52.5, 34:51.5, 35:50.5, 36:49.6, 37:
   47:39.0, 48:38.1, 49:37.1, 50:36.2, 51:35.3, 52:34.3, 53:33.4, 54:32.5, 55:31.6,
   56:30.6, 57:29.8, 58:28.9, 59:28.0};
 function brLE(age){ return BR_SLT[Math.max(30, Math.min(59, Math.round(age)))]; }
-/* States that have not expanded Medicaid to 138% of the poverty line
-   (Wisconsin covers adults only to 100%, through a waiver). Below 100% in
-   these there is no subsidy at all: the coverage gap. */
-var BR_NOEXP = {AL:1, FL:1, GA:1, KS:1, MS:1, SC:1, TN:1, TX:1, WI:1, WY:1};
+/* States that have not expanded Medicaid to 138% of the poverty line: the
+   plan engine's table (below 100% in these there is no subsidy at all). */
+var BR_NOEXP = PL_NOEXP;
 var BR_UNLOCK = 59.5, BR_FICA = 0.0765, BR_CUSHION = 0.03, BR_TRIALS = 300;
 /* Where a plan can draw from before 59½, the penalized sources last. */
 var BR_PEN = ["tradPen", "rungEarly", "rothEarn"];
@@ -55,20 +54,8 @@ function brAmortFactor(rate, age){
   return rate > 0 ? rate / (1 - Math.pow(1 + rate, -n)) : 1 / n;
 }
 /* Real returns of the chosen mix, year by year from 1926, and their
-   long-run averages: the steady path runs at the geometric mean. */
-var brMixMemo = {};
-function brMix(stock){
-  var key = String(stock);
-  if (brMixMemo[key]) return brMixMemo[key];
-  var w = stock / 100, n = HIST_STOCK.length;
-  var r = new Float64Array(n), pi = new Float64Array(n), sl = 0, si = 0;
-  for (var i = 0; i < n; i++){
-    var nom = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100, inf = HIST_INFL[i] / 100;
-    r[i] = (1 + nom) / (1 + inf) - 1; pi[i] = inf;
-    sl += Math.log(1 + r[i]); si += Math.log(1 + inf);
-  }
-  return (brMixMemo[key] = {r:r, pi:pi, n:n, real:Math.exp(sl / n) - 1, infl:Math.exp(si / n) - 1});
-}
+   long-run averages: the plan engine's own table. */
+function brMix(stock){ return plMix(stock); }
 function brFlatSeq(len, r, pi){
   var a = new Float64Array(len), b = new Float64Array(len);
   a.fill(r); b.fill(pi);

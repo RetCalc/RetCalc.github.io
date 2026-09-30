@@ -105,13 +105,16 @@ const GD_LIVE = {
   ssNote(){
     const a = gd.a;
     if (!gdOk(a.retire)) return "";
-    const ss = gdSS(a.retire);
+    const ss = gdSS(a.retire), both = gdMar() && ss.a2 > 0;
+    const src = (own, who) => own ? "from " + who + " statement" : "estimated from " + who + " income";
     let s = "<div class='gd-callout'>";
-    s += ss.own ? "Using your statement: <b>" + money(ss.total / 12) + "/mo</b>" + (ss.claim !== 67 ? ", adjusted for claiming at " + ss.claim : "")
-      : "We estimate Social Security at about <b>" + money(ss.total / 12) + "/mo</b>" + (gdMar() ? " for the two of you" : "") +
-        " in today's dollars, from your income " + (ss.career < 35 ? "over the " + ss.career + " years you'll have worked by " + fmtNum(a.retire) + ", from 22"
-          : "over a full career") + (ss.spousal ? ", including the spousal benefit" : "");
-    s += ", starting at " + ss.claim + ".";
+    if (both) s += "Social Security: about <b>" + money(ss.a1 / 12) + "/mo</b> for you from " + ss.claim + " (" + src(ss.own, "your") + ") and <b>" +
+      money(ss.a2 / 12) + "/mo</b> for your spouse from " + ss.claim2 + " (" + src(ss.own2, "their") + ")" + (ss.spousal ? ", including the spousal benefit" : "") + ", in today's dollars.";
+    else s += (ss.own ? "Using your statement: <b>" : "We estimate Social Security at about <b>") + money(ss.total / 12) + "/mo</b>" +
+      (ss.own ? (ss.claim !== 67 ? ", adjusted for claiming at " + ss.claim : "") : " in today's dollars, from your income " +
+        (ss.career < 35 ? "over the " + ss.career + " years you'll have worked by " + fmtNum(a.retire) + ", from 22" : "over a full career")) +
+      ", starting at " + ss.claim + ".";
+    if (ss.tactics) s += " These are the Plan Optimizer's claiming ages, which your plan now uses.";
     if (!ss.own && ss.career < 35) s += " Social Security averages your best 35 years, so retiring this early counts the missing years as zeros.";
     if (gdPos(a.retSpend)){
       const pen = gdPos(a.pension) ? a.pension * 12 : 0, got = ss.total + pen;
@@ -119,8 +122,8 @@ const GD_LIVE = {
       const that = pen ? " Together with your pension, that" : " That";
       if (share >= 1) s += (pen ? " Once it starts, it and your pension cover the spending you entered" : " Once it starts, that alone covers the spending you entered") +
         (early ? "; your savings carry the " + early + (early === 1 ? " year" : " years") + " before it." : ".");
-      else s += that + " covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings need to cover the other " +
-        money(a.retSpend - got) + " a year" + (early ? ", and more for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
+      else s += that + " covers about <b>" + pctStr(share, 0) + "</b> of your spending; your savings cover the other " +
+        money(a.retSpend - got) + " a year and its tax" + (early ? ", and more for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : "") + ".";
     }
     if (!ss.own) s += " The program's trust fund is projected to run short in the 2030s; for a cautious plan, enter a lower figure below.";
     return s + "</div>";
@@ -143,12 +146,18 @@ const GD_LIVE = {
       ". The Basic calculator works the same way.</p>";
   },
   taxNote(){
+    return "<div class='gd-callout'><b>You don't need to add tax.</b> Your plan works out each year's federal and state income tax from where the money comes from: " +
+      "traditional 401(k) and IRA withdrawals are taxed as income, Roth withdrawals aren't, a brokerage account is taxed only on its gains, and part of Social Security can be taxed too. " +
+      "Medicare's income surcharge and health insurance before 65 are counted the same way.</div>";
+  },
+  acctNote(){
     const a = gd.a;
-    return "<div class='gd-callout'><b>This is spending before income tax.</b> Withdrawals from a traditional 401(k) or IRA, a pension and part of Social Security are taxable, so the plan needs a little more than this to cover the tax. " +
-      (gdPos(a.retTax) ? "Your estimate from Income Tax was about <b>" + money(a.retTax) + " a year</b>" + (a.retTaxAdded ? ", and it's been added." : ".") + " " : "") +
-      "The Income Tax tool's <b>Retirement income</b> mode estimates it." +
-      "<div style='margin-top:8px'><button type='button' class='btn mini' data-trip='taxret' data-from='retspend'>" + (gdPos(a.retTax) ? "Estimate it again" : "Estimate my tax in retirement") + "<i class='arw' aria-hidden='true'></i></button>" +
-      (gdPos(a.retTax) && !a.retTaxAdded && gdPos(a.retSpend) ? " <button type='button' class='btn mini' data-gd='addtax'>Add " + money(a.retTax) + " a year to my spending</button>" : "") + "</div></div>";
+    if (!gdPos(a.saved)) return "";
+    const A = gdAccts(), over = (gdPos(a.rothNow) ? a.rothNow : 0) + (gdPos(a.brokNow) ? a.brokNow : 0) > a.saved + 0.5;
+    if (over) return "<div class='gd-callout warn'>Those add up to more than the " + money(a.saved) + " you have saved. Count each dollar once.</div>";
+    if (!(A.roth > 0) && !(A.brok > 0)) return "";
+    return "<div class='gd-callout'>So <b>" + money(A.trad) + "</b> traditional, taxed when it comes out; <b>" + money(A.roth) + "</b> Roth, tax-free; and <b>" +
+      money(A.brok) + "</b> in a brokerage account, taxed only on its gains.</div>";
   },
   pensionNote(){
     const a = gd.a;
@@ -161,18 +170,16 @@ const GD_LIVE = {
     const a = gd.a, B = gdBridgeSplit();
     if (!(B.total > 0)) return "";
     return "<div class='gd-callout'>At " + fmtNum(a.retire) + " that's about <b>" + money(B.total) + "</b>: " + money(B.trad) + " traditional, " +
-      money(B.roth) + " Roth and " + money(B.brok) + " in a brokerage account, in today's dollars." +
+      money(B.roth) + " Roth (" + money(B.basis) + " of it contributions, which can come out any time) and " + money(B.brok) + " in a brokerage account, in today's dollars." +
       (a.bridge ? " Last time, the bridge tool picked <b>" + escapeHtml(a.bridge) + "</b>, holding up in <b>" + a.bridgeHold + "%</b> of markets." : "") + "</div>";
   },
   hcNote(){
-    const a = gd.a;
-    if (!gdPos(a.hcPrem) || !gdPos(a.retSpend)) return "";
-    if (a.hcAdded) return "<div class='gd-callout ok'>Added. Your retirement spending is now <b>" + money(a.retSpend) + " a year</b>.</div>";
-    const add = Math.round(a.hcPrem * 12 / 100) * 100;
-    return "<div class='gd-h3'>Is that already in the " + money(a.retSpend) + " a year you plan to spend?</div><div class='gd-choices two'>" +
-      gdChoice("hcIncl", "yes", "Yes, it's included") + gdChoice("hcIncl", "no", "No, it isn't") + "</div>" +
-      (a.hcIncl === "no" ? "<button type='button' class='btn' data-gd='addhc'>Add " + money(add) + " a year to my retirement spending</button>" +
-        "<div class='hint' style='margin-top:6px'>Medicare premiums after 65 run about the same, so it's fair to keep it for the whole retirement.</div>" : "");
+    const a = gd.a, S = gdSim();
+    if (!S) return "";
+    if (a.hcIncl === "yes") return "<div class='gd-callout'>Your plan won't add premiums before 65. Make sure the " + money(S.spend) + " a year you entered really covers them: marketplace plans can run hundreds a month each without a subsidy.</div>";
+    if (!(S.hcYr > 0)) return "<div class='gd-callout ok'>In your plan, income stays low enough before 65 that coverage comes through Medicaid or a full subsidy.</div>";
+    return "<div class='gd-callout'>In your plan: about <b>" + money(S.hcYr) + " a year</b> for " + S.hcYears + (S.hcYears === 1 ? " year" : " years") +
+      ", after the subsidy its income earns. Above 400% of the poverty line the subsidy disappears all at once; the Plan Optimizer can keep income under that line.</div>";
   },
   houseNote(){
     const a = gd.a, inc = gdGross();
@@ -527,7 +534,7 @@ const GD_TRIPS = {
       {title:"Your result", focus:"#ddSuccess", tasks(){
         const S = gdSim(), b = gd.trip && gd.trip.base;
         return [
-          {h:"Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year (a <b>Starting withdrawal rate</b> of " + pctStr(S.spend / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
+          {h:"Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year plus about " + money(S.taxYr) + " for tax, since the simulator doesn't work tax out itself (a <b>Starting withdrawal rate</b> of " + pctStr((S.spend + S.taxYr) / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
             ", Social Security" + (b && !b.est ? " as a known benefit" : "") + " and " + (gdPos(gd.a.pension) ? "your pension under <b>Other income</b>." : "no other income yet.")},
           {h:"<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid; close to 100% can mean room to spend more."},
           {h:"<b>Median ending balance</b> is what's typically left at the end, in today's dollars. <b>Worst case</b> is the leanest ending on record."},
@@ -617,36 +624,6 @@ const GD_TRIPS = {
       gdHouseholdSync();
       return {msg: head + " Your plan now uses " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") + "." +
         (a.retMix != null && mix !== b.stock ? " Your score's historical test uses the new mix." : ""), undo};
-    }},
-
-  taxret: {tool:"tax", name:"Income Tax", mins:3, title:"Estimate your tax in retirement",
-    prefill(){
-      const a = gd.a, S = gdSim();
-      const ss = S ? Math.round(S.ss.total) : 0, pen = S ? Math.round(S.pension) : 0;
-      const need = gdPos(a.retSpend) ? Math.max(0, Math.round(a.retSpend - ss - pen)) : 0;
-      const old = S ? (S.retire >= 65 ? (gdMar() ? 2 : 1) : 0) : 0;
-      writeTaxState({mode:"retire", status: gdMar() ? "m" : "s", state: a.state || $("txState").value,
-        trad:need, roth:0, brok:0, gainPct:50, ss, pension:pen, other:0, seniors:old, pre:0, dedType:"std", item:0});
-      gd.trip.base = {need};
-    },
-    tasks(){
-      const b = gd.trip && gd.trip.base;
-      return [
-        {h:"We switched to <b>Retirement income</b> and filled in a first year of retirement: " + (b ? money(b.need) + " from savings" : "your withdrawals") + " under <b>Traditional</b>, plus your Social Security" + (gdPos(gd.a.pension) ? " and pension" : "") + "."},
-        {h:"If some of your savings are in a Roth or a taxable brokerage account, move that share of the withdrawal to <b>Roth</b> or <b>Brokerage</b>. Roth withdrawals are tax-free, and brokerage sales are taxed only on the gain."},
-        {h:"Check <b>Filing status</b>, <b>State</b> and how many of you are 65 or older."},
-        {h:"<b>Total tax</b> is the yearly bill. Tap <b>Back to guide</b> and it comes with you, ready to add to your spending."}
-      ];
-    },
-    chip(){
-      const R = runTax(readTax());
-      return R.gross > 0 ? "Tax in retirement<br><b>" + money(R.total) + "/yr</b>" : "";
-    },
-    capture(){
-      const R = runTax(readTax());
-      if (txMode !== "retire" || !(R.gross > 0)) return null;
-      gd.a.retTax = Math.round(R.total / 100) * 100; gd.a.retTaxAdded = false;
-      return "From Income Tax: about <b>" + money(gd.a.retTax) + " a year</b> in tax on that retirement income, " + pctStr(R.total / R.gross, 1) + " of it. Add it to your spending below so the plan covers it.";
     }},
 
   bridge: {tool:"bridge", name:"Early Retirement Bridge", mins:6, title:"Plan the years before 59½",
@@ -925,15 +902,16 @@ const GD_TRIPS = {
 };
 /* The planner's headline pre-65 premium, the first net figure it shows
    (current law), read off the page since it's drawn as text. */
-/* The guide's projected savings at retirement, split in the shares of today's
-   balances the Getting to 59½ step asked about; the rest is traditional. */
+/* The guide's projected savings at retirement, account by account, as the
+   plan engine grows them. */
 function gdBridgeSplit(){
-  const a = gd.a, S = gdSim(), total = S ? S.fv : (a.saved || 0), saved = Math.max(1, a.saved || 0);
-  const rNow = gdPos(a.brRothNow) ? a.brRothNow : 0, bNow = gdPos(a.brBrokNow) ? a.brBrokNow : 0;
-  const rs = Math.min(1, rNow / saved), bs = Math.min(1 - rs, bNow / saved);
-  const roth = total * rs, brok = total * bs;
-  return {total, roth, brok, trad:Math.max(0, total - roth - brok), basis:Math.min(roth, rNow),
-    mix: S ? S.mix : 70};
+  const a = gd.a, S = gdSim();
+  if (!S){
+    const A = gdAccts();
+    return {total:a.saved || 0, trad:A.trad, roth:A.roth, brok:A.brok, basis:A.roth * .5, mix:70};
+  }
+  const P = S.P;
+  return {total:P.fv, trad:P.trad, roth:P.roth, brok:P.brok, basis:P.rothBasis, mix:S.mix};
 }
 /* Retirement spending without the marketplace premium, when the guide has
    already added it: the bridge tool prices coverage itself. */

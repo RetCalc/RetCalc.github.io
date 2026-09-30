@@ -617,6 +617,96 @@ group("Articles: College, budget and debt");
   eq(sn.order[0].desc, "Store card", "snowball starts with the store card");
 })();
 
+group("Plan engine: taxes, accounts and the rules");
+(function () {
+  // The tax cache reads the whole return back within a few dollars.
+  var c = plTaxCache("m", "CA");
+  [[0, 0, 0, 0], [61234, 0, 0, 0], [84321, 23456, 0, 1], [150000, 40000, 42000, 2], [233210, 12000, 30000, 2]].forEach(function (t) {
+    var want = computeRetireTax({status: "m", state: "CA", trad: t[0], roth: 0, brok: t[1], gainPct: 1, ss: t[2], pension: 0,
+      penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, seniors: t[3], _noMarginal: true}).total;
+    near(plTax(c, t[3], t[2], t[0], t[1]), want, 6, "cached tax at " + t.join("/"));
+  });
+  // The fast federal pieces agree with the full return.
+  [[40000, 5000, 30000, 0], [70000, 0, 45000, 2], [20000, 10000, 60000, 1]].forEach(function (t) {
+    var R = computeRetireTax({status: "m", state: "TX", trad: t[0], roth: 0, brok: t[1], gainPct: 1, ss: t[2], pension: 0,
+      penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, seniors: t[3], _noMarginal: true});
+    near(plAgi(t[0], t[1], t[2], "m"), R.agi, 0.01, "AGI at " + t.join("/"));
+    near(plOrdTaxable(t[0], t[1], t[2], "m", t[3]), R.ordTaxable, 0.01, "ordinary taxable income at " + t.join("/"));
+  });
+  // Saving: the same projection the Basic tab makes (Sam, from the home article).
+  near(plGrow(10000, 500, .045, 35, 35, BASIC_INFL).fv, projectBasic({years: 35, real: .045, initial: 10000, contrib: 500, period: "Monthly", withdrawal: .04}).fv, 0.01, "plGrow is Basic's projection");
+
+  function flat(n, r, pi) { var a = new Float64Array(100), b = new Float64Array(100); a.fill(r); b.fill(pi); return {r: a, pi: b}; }
+  function run(P, T, r, pi, want) {
+    var C = plPrep(Object.assign({status: "s", state: "TX", years: 20, spend: 0, mix: 60, heirRate: .24, rmdAge: 75}, P));
+    var K = plTactics(C, Object.assign(plBaseTactics(C), T || {}));
+    var F = flat(C.years, r || 0, pi || 0), out = {rows: []};
+    var res = plRun(C, K, F.r, F.pi, 0, out);
+    res.rows = out.rows;
+    return res;
+  }
+  // Roth money only, no growth: $10,000 a year from $100,000 lasts ten years, tax-free.
+  var A = run({age1: 66, roth: 100000, rothBasis: 100000, spend: 10000, years: 15});
+  eq(A.depleted, 11, "a $100,000 Roth spending $10,000 a year runs short in year 11");
+  near(A.tax, 0, 0.01, "Roth withdrawals owe no tax");
+  // Before 59½ a traditional withdrawal carries the 10% additional tax, unless
+  // the rule of 55 opens the 401(k).
+  var B = run({age1: 56, trad: 400000, spend: 30000, years: 3});
+  ok(B.pen > 0 && Math.abs(B.rows[0].pen - B.rows[0].trad * .10) < 1, "10% on early traditional withdrawals", "pen " + B.rows[0].pen + " of " + B.rows[0].trad);
+  var B2 = run({age1: 56, trad: 400000, spend: 30000, years: 3, rule55: true});
+  near(B2.pen, 0, 0.01, "no penalty under the rule of 55");
+  // Required distributions: the Uniform Lifetime Table divisor, from the first year.
+  var D = run({age1: 76, trad: 1000000, spend: 0, years: 2});
+  near(D.rows[0].rmd, 1000000 / ultDivisor(76), 0.01, "RMD at 76 is the balance over " + ultDivisor(76));
+  near(D.rows[0].surplus, D.rows[0].rmd - D.rows[0].tax, 1, "an RMD you don't need, less its tax, is reinvested");
+  // A conversion made before 59½ can be spent five years later, not sooner.
+  var E = run({age1: 50, trad: 600000, roth: 0, rothBasis: 0, brok: 150000, brokBasis: 150000, spend: 40000, years: 12},
+    {f: 3, u: 2});
+  ok(E.rows[0].conv > 1000, "converts in the first year", "conv " + E.rows[0].conv);
+  var firstRoth = E.rows.findIndex(function (r) { return r.roth > 1; });
+  ok(firstRoth >= 5 || firstRoth < 0, "Roth money spent no sooner than five years on", "first Roth draw in year " + (firstRoth + 1));
+  // The ACA guard keeps a converting plan under the subsidy cliff.
+  var G = run({age1: 60, state: "IL", trad: 900000, brok: 100000, brokBasis: 80000, spend: 45000, years: 5, aca: true, household: 1},
+    {f: 5, u: 2, ac: 1});
+  ok(G.rows.every(function (r) { return r.fplPct == null || r.fplPct <= 4; }), "income stays under 400% of the poverty line",
+    G.rows.map(function (r) { return r.fplPct && r.fplPct.toFixed(2); }).join(" "));
+  var G2 = run({age1: 60, state: "IL", trad: 900000, brok: 100000, brokBasis: 80000, spend: 45000, years: 5, aca: true, household: 1},
+    {f: 5, u: 2, ac: 0});
+  ok(G2.health > G.health, "without the guard, filling the 24% bracket loses the subsidy", G2.health + " vs " + G.health);
+  // Social Security: own benefits by claiming age, and the spousal top-up.
+  var S = plSSParts({P: {pia1: 3000, pia2: 500}, married: true, gap: 0}, {c1: 67, c2: 67});
+  near(S.own1, 36000, 0.01, "full benefit at 67");
+  near(S.top2, 12000, 0.01, "spousal top-up to half the higher benefit");
+  var S2 = plSSParts({P: {pia1: 3000, pia2: 500}, married: true, gap: 0}, {c1: 70, c2: 62});
+  near(S2.own1, 36000 * 1.24, 0.01, "8% a year past 67");
+  near(S2.own2, 6000 * .7, 0.01, "30% less at 62");
+  near(S2.top2, 12000, 0.01, "the spousal top-up waits for both claims, and at 70 it's unreduced");
+})();
+
+group("Plan Optimizer");
+(function () {
+  var P = plAtRetire({status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
+    brok: 150000, brokBasis: 90000, saveTrad: 0, saveRoth: 0, saveBrok: 0, real: .045, infl: BASIC_INFL,
+    spend: 55000, pia1: 2400, claim1: 67, pension: 0, aca: true, household: 1, heirRate: .24, mix: 60, years: 33, target: .9});
+  var R = plOptimizeNow(P, "legacy");
+  eq(R.of, 9 * 61, "every claiming age and every way of drawing it down: " + R.of + " plans");
+  eq(R.windows, 100 - 33 + 1, "each through every historical start");
+  ok(R.best.stats.medLegacy >= R.base.stats.medLegacy, "the best plan leaves at least as much as the usual way");
+  ok(R.best.stats.successRate >= R.base.stats.successRate - 1e-9, "and lasts as often");
+  var T = R.best.T;
+  eq(T.c1 + "," + T.f + "," + T.u + "," + T.ac, "70,3,1,1", "Maria: claim at 70, fill the 12% bracket, convert until Social Security, under the ACA cliff");
+  says("optimizer", dollars(R.base.stats.medTax));
+  says("optimizer", dollars(R.base.stats.medLegacy));
+  says("optimizer", dollars(R.best.stats.medTax));
+  says("optimizer", dollars(R.best.stats.medLegacy));
+  says("optimizer", dollars(R.base.stats.medTax - R.best.stats.medTax) + " less");
+  says("optimizer", dollars(R.best.stats.medLegacy - R.base.stats.medLegacy) + " more");
+  eq(R.base.stats.successRate + R.best.stats.successRate, 2, "both last in every market, as the article says");
+  // The steps add up to the whole gain.
+  var sum = R.steps.reduce(function (a, s) { return a + s.to.medLegacy - s.from.medLegacy; }, 0);
+  near(sum, R.best.stats.medLegacy - R.base.stats.medLegacy, 0.01, "what each change is worth adds up to the total");
+})();
+
 group("Articles: the readiness guide's score");
 (function () {
   var w = {};

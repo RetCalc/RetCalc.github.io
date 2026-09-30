@@ -216,7 +216,8 @@ let navSuspended = false;
 const TOOL_PATHS = {
   tax:"incometax", mortgage:"mortgage", budget:"budget", college:"college",
   rentbuy:"rentbuy", drawdown:"drawdown", roth:"roth", debt:"debt",
-  backtest:"backtest", healthcare:"healthcare", fire:"fire", bridge:"bridge"
+  backtest:"backtest", healthcare:"healthcare", fire:"fire", bridge:"bridge",
+  optimizer:"optimizer"
 };
 const SUB_BY_PATH = {};
 Object.keys(TOOL_PATHS).forEach(sub => { SUB_BY_PATH[TOOL_PATHS[sub]] = sub; });
@@ -359,6 +360,8 @@ function showTool(sub){
   $("asideBT").hidden = (sub !== "backtest");
   $("tab-bridge").hidden = (sub !== "bridge");
   $("asideBR").hidden = (sub !== "bridge");
+  $("tab-optimizer").hidden = (sub !== "optimizer");
+  $("asideOP").hidden = (sub !== "optimizer");
   $("asideHC").hidden = (sub !== "healthcare");
   $("asideFire").hidden = (sub !== "fire");
   $("asideTax").hidden = (sub !== "tax");
@@ -383,6 +386,7 @@ function showTool(sub){
   else if (sub === "backtest") renderBacktest();
   else if (sub === "healthcare"){ if (hcReady) renderHealthcare(); }
   else if (sub === "bridge"){ if (brReady) renderBridge(); }
+  else if (sub === "optimizer") renderOptimizer();
   else if (sub === "fire") {
     var fiEl = $("fiTarget");
     if (fiEl) fiEl.dispatchEvent(new Event("input", {bubbles:true}));
@@ -447,6 +451,8 @@ function showTab(t){
     $("asideBT").hidden = true;
     $("tab-bridge").hidden = true;
     $("asideBR").hidden = true;
+    $("tab-optimizer").hidden = true;
+    $("asideOP").hidden = true;
     $("asideHC").hidden = true;
     $("asideFire").hidden = true;
     $("main").classList.remove("solo");

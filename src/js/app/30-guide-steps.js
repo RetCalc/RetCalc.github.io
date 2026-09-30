@@ -10,7 +10,7 @@ const GD_STEPS = [
         "<ul class='gd-perks'>" +
         "<li><i>1</i><span><b>A readiness score out of 100</b> that updates as you answer, and shows what's pulling it down.</span></li>" +
         "<li><i>2</i><span><b>A tour of the tools that apply to you.</b> No mortgage? No kids? Those get skipped.</span></li>" +
-        "<li><i>3</i><span><b>A plan you can adjust.</b> Ahead of schedule? See what retiring sooner, coasting or spending more would look like, and apply it. Behind? Pick the fix that suits you.</span></li>" +
+        "<li><i>3</i><span><b>A plan you can adjust, with taxes built in.</b> Ahead of schedule? See what retiring sooner, coasting or spending more would look like, and apply it. Behind? Pick the fix that suits you. Then the Plan Optimizer finds the best way to claim Social Security, draw down your accounts and convert to Roth.</span></li>" +
         "<li><i>4</i><span><b>A short, ordered list</b> of what to do next, with the tool for each step.</span></li></ul>" +
         "<div class='gd-callout'>Plan on 20 to 40 minutes, depending on how many tools you open. Stop whenever you like: your answers are kept in this browser only and never leave it.</div>";
     },
@@ -172,6 +172,7 @@ const GD_STEPS = [
     body(){
       const a = gd.a;
       if (a.risk == null) a.risk = .045;
+      if (!a.saveTo) a.saveTo = "trad";
       return "<h2 class='gd-q' tabindex='-1'>Where do your retirement savings stand?</h2>" +
         "<p class='gd-lead'>Add up everything set aside for retirement: 401(k), 403(b), IRAs, Roth accounts and any investments you've earmarked for it. Your account websites show the balances.</p>" +
         "<div class='gd-fields'>" +
@@ -185,7 +186,16 @@ const GD_STEPS = [
         gdChoice("match", "none", "No match, or I'm self-employed") + gdChoice("match", "unsure", "Not sure") + "</div>" +
         "<div class='gd-fields'>" + gdSelF("risk", "How is it invested?", RISK_LEVELS.map(r => [r.real, r.label + " · " + r.sub]),
           {kind:"num", full:true, hint:"Target-date funds are usually Balanced or Growth until the last decade before retirement."}) + "</div>" +
-        gdLive("rateNote");
+        gdLive("rateNote") +
+        "<div class='gd-h3'>What kind of accounts is it in?</div>" +
+        "<p class='hint' style='margin:-4px 0 10px;max-width:64ch'>It changes the tax you'll pay in retirement: traditional money is taxed when it comes out, Roth money isn't, and a brokerage account is taxed only on its gains. Leave these blank if it's all in a regular 401(k) or IRA.</p>" +
+        "<div class='gd-fields'>" +
+        gdMoneyF("rothNow", "Of that, in Roth accounts", {ph:"0", hint:"Roth 401(k) and Roth IRA."}) +
+        gdMoneyF("brokNow", "In a taxable brokerage account", {ph:"0", hint:"Only money meant for retirement."}) +
+        "</div>" + gdLive("acctNote") +
+        "<div class='gd-h3'>Where does your monthly saving go?</div><div class='gd-choices two'>" +
+        GD_SAVE_TO.map(x => gdChoice("saveTo", x[0], x[1], x[2])).join("") + "</div>" +
+        "<p class='hint' style='margin:-4px 0 0'>Your employer's share goes into a traditional account either way.</p>";
     },
     ok(a){ return gdOk(a.saved) && gdOk(a.contrib) && !!a.match; },
     why(){ return "Fill in your savings and contributions, and answer the match question"; },
@@ -203,17 +213,18 @@ const GD_STEPS = [
           picks.push(["Today, less the loan payment", (a.spend - loan) * 12]);
       }
       return "<h2 class='gd-q' tabindex='-1'>What will you spend in retirement?</h2>" +
-        "<p class='gd-lead'>A year of the retirement you want, priced at today's prices. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel and healthcare can push it back up.</p>" +
+        "<p class='gd-lead'>A year of the retirement you want, priced at today's prices: what you'll live on, <b>after</b> income tax. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel can push it back up.</p>" +
         (picks.length ? "<div class='gd-picks'>" + picks.map(p => "<button type='button' class='gd-pick' data-fill='retSpend' data-v='" + Math.round(p[1] / 100) * 100 + "'>" +
           p[0] + ": <b>" + money(Math.round(p[1] / 100) * 100) + "/yr</b></button>").join("") + "</div>" : "") +
-        "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, before income tax."}) + "</div>" +
+        "<div class='gd-fields'>" + gdMoneyF("retSpend", "Yearly spending in retirement", {per:"/yr", full:true, hint:"In today's dollars, after tax. Leave out health insurance before 65 too: the plan prices it."}) + "</div>" +
         gdBack("retspend") + gdLive("taxNote") +
         gdLive("ssNote") +
-        "<div class='gd-fields'>" + gdMoneyF("ssOwn", "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:true,
-          ph:"optional", hint:"From ssa.gov/myaccount, at 67" + (gdMar() ? ", both of you added together" : "") + ". It reflects your real earnings, so it beats our estimate."}) +
-        gdSelF("ssClaim", "When will you claim it?", [["", "At 67, or when I retire if that's later"]].concat([62, 63, 64, 65, 66, 67, 68, 69, 70].map(x =>
+        "<div class='gd-fields'>" + gdMoneyF("ssOwn", gdMar() ? "Have a Social Security statement? Your benefit" : "Have a Social Security statement? Your monthly benefit", {per:"/mo", full:!gdMar(),
+          ph:"optional", hint:"From ssa.gov/myaccount, at 67. It reflects your real earnings, so it beats our estimate."}) +
+        (gdMar() ? gdMoneyF("ssOwn2", "Your spouse's benefit", {per:"/mo", ph:"optional", hint:"From their own statement, at 67."}) : "") +
+        gdSelF("ssClaim", gdMar() ? "When would you each claim it?" : "When would you claim it?", [["", "At 67, or when I retire if that's later"]].concat([62, 63, 64, 65, 66, 67, 68, 69, 70].map(x =>
           [x, "At " + x + (x === 62 ? ", the earliest" : x === 67 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")])),
-          {kind:"num", full:true, hint:"Each year you wait past 62 raises the benefit for life, up to 70. In this plan it never starts before you retire."}) + "</div>" +
+          {kind:"num", full:true, hint:"Each year you wait past 62 raises the benefit for life, up to 70. In this plan it never starts before you retire. The Plan Optimizer, near the end, tries every age for " + (gdMar() ? "each of you." : "you.")}) + "</div>" +
         "<div class='gd-h3'>A pension, or other steady income in retirement?</div>" +
         "<div class='gd-fields'>" + gdMoneyF("pension", "Pension, annuity or part-time pay", {per:"/mo", ph:"optional", hint:"In today's dollars. Leave blank if none."}) +
         gdNumF("pensionAge", "Starting at", "age", {hint:"Blank means when you retire."}) +
@@ -230,7 +241,7 @@ const GD_STEPS = [
       let s = "<h2 class='gd-q' tabindex='-1'>Your retirement projection</h2>";
       if (!S) return s + "<div class='gd-callout warn'>This needs your age, savings and retirement spending first.</div>" +
         "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
-      const need = S.spend, port = S.portIncome, ss = S.ss.total, pen = S.pension;
+      const need = S.spend + S.taxYr, port = S.portIncome, ss = S.ss.total, pen = S.pension;
       const sc = Math.max(need, port + ss + pen) || 1;
       s += "<p class='gd-lead'>Where your current path leads by " + fmtNum(S.retire) + ", in today's dollars, if a " + gdRiskLabel(S.real) +
         " mix earns about " + pctStr(S.real, 1) + " a year after inflation and your saving keeps pace with inflation" +
@@ -247,7 +258,11 @@ const GD_STEPS = [
         "<span class='need' style='left:calc(" + (need / sc * 100).toFixed(1) + "% - 1px)'></span></div>" +
         "<div class='gd-cover-key'><span><s style='background:var(--jade)'></s>From savings</span><span><s style='background:var(--steel)'></s>Social Security</span>" +
         (pen ? "<span><s style='background:var(--gold)'></s>Pension</span>" : "") +
-        "<span><s style='background:var(--text);width:2px'></s>Your spending: " + money(need) + "/yr</span></div></div>";
+        "<span><s style='background:var(--text);width:2px'></s>Your spending and its tax: " + money(need) + "/yr</span></div></div>";
+      s += "<div class='gd-callout'><b>Taxes are built in.</b> In a typical year this plan pays about <b>" + money(S.taxYr) + "</b> in income tax" +
+        (S.hcYr > 0 ? ", and about <b>" + money(S.hcYr) + "</b> a year for health insurance before Medicare, after the subsidy your income earns" : "") +
+        ", on top of the " + money(S.spend) + " you live on. Across the whole retirement that comes to about <b>" + money(S.lifeTax) + "</b> in tax, in today's dollars" +
+        (S.tactics ? ", with the Plan Optimizer's choices applied." : ". The Plan Optimizer, near the end, looks for ways to pay less of it.") + "</div>";
       s += gdChartSlot("outlook", [gdSeries(S, "Your plan", "p")], "Your retirement savings over time, in today's dollars");
       // Size the plan against what it needs: the balance at retirement that
       // lasts in the target share of history. This is what a plan with twice
@@ -274,8 +289,8 @@ const GD_STEPS = [
         "<button type='button' class='btn' data-go='savings'>Go to Retirement savings</button>";
       const r = S.success;
       s += "<p class='gd-lead'>Averages hide the real risk: retiring into a bad market. We replayed your plan through every retirement since 1926: " +
-        money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year rising with inflation for " + S.years + " years, " +
-        "with Social Security from " + S.ss.claim + (S.pension ? ", your pension" : "") + " and " + S.mix + "% in stocks.</p>" + gdBack("lasting") +
+        money(S.fv) + " at " + fmtNum(S.retire) + ", living on " + money(S.spend) + " a year after tax, rising with inflation, for " + S.years + " years, " +
+        "with each year's income tax" + (S.hcYears ? ", health insurance before Medicare" : "") + " and any Medicare surcharge paid on top, Social Security from " + S.ss.claim + (S.pension ? ", your pension" : "") + " and " + S.mix + "% in stocks.</p>" + gdBack("lasting") +
         "<div class='gd-stats'><div><div class='k'>Success rate</div><div class='v " + (r >= .85 ? "jade" : "gold") + "'>" + pctStr(r, 0) + "</div>" +
         "<div class='n'>" + (S.H ? S.H.survived + " of " + S.H.total + " starting years" : "Of historical retirements") + "</div></div>" +
         "<div><div class='k'>Length tested</div><div class='v'>" + S.years + " years</div><div class='n'>To age " + (Math.round(S.retire) + S.years) + "</div></div>" +
@@ -298,12 +313,15 @@ const GD_STEPS = [
   {id:"health", ch:5, title:"Healthcare before 65", when: a => gdOk(a.retire) && a.retire < 65,
     body(){
       const a = gd.a, gap = 65 - Math.round(a.retire);
+      if (!a.hcIncl) a.hcIncl = "no";
       return "<h2 class='gd-q' tabindex='-1'>Healthcare before Medicare</h2>" +
         "<p class='gd-lead'>Retiring at " + fmtNum(a.retire) + " leaves <b>" + gap + (gap === 1 ? " year" : " years") + "</b> before Medicare starts at 65. " +
-        "Until then you'll buy coverage on the ACA marketplace, where the price depends heavily on your income in retirement: keeping it low can earn a large subsidy.</p>" +
-        gdBack("health") + gdTask("healthcare", "Price it in the Healthcare Cost Planner") +
-        "<div class='gd-fields'>" + gdMoneyF("hcPrem", "Monthly premium you found", {per:"/mo", ph:"optional", full:true,
-          hint:"The planner fills this in."}) + "</div>" + gdLive("hcNote");
+        "Until then you'll buy coverage on the ACA marketplace, where the price depends heavily on your income in retirement: keeping it low can earn a large subsidy. " +
+        "Your plan prices it for you, year by year: the benchmark Silver plan for your state and age, less the subsidy that year's income earns.</p>" +
+        gdBack("health") +
+        "<div class='gd-h3'>Is health insurance already in your retirement spending?</div><div class='gd-choices two'>" +
+        gdChoice("hcIncl", "no", "No, price it for me", "The usual answer") + gdChoice("hcIncl", "yes", "Yes, it's included", "Your plan won't add premiums") + "</div>" +
+        gdLive("hcNote") + gdTask("healthcare", "Explore it in the Healthcare Cost Planner", {after:"<div style='margin-top:10px' class='hint'>Optional. It shows how the subsidy moves with income, and Medicare's costs after 65.</div>"});
     }},
 
   {id:"bridge", ch:5, title:"Getting to 59½", when: a => gdOk(a.retire) && a.retire < 59.5,
@@ -313,13 +331,16 @@ const GD_STEPS = [
         "<p class='gd-lead'>Retiring at " + fmtNum(a.retire) + " means about <b>" + gap + (gap === 1 ? " year" : " years") + "</b> before a 401(k) or IRA " +
         "opens up without a 10% penalty. There are several legal ways across: living off a taxable account and your Roth contributions, " +
         (a.retire >= 55 ? "72(t) payments and the rule of 55" : "a Roth conversion ladder and 72(t) payments") + ". Which works best depends on where your money sits.</p>" +
-        "<div class='gd-h3'>Of the " + (gdPos(a.saved) ? money(a.saved) : "savings") + " you have today, how much is in:</div>" +
-        "<div class='gd-fields'>" +
-        gdMoneyF("brRothNow", "Roth 401(k) and Roth IRA", {ph:"0", hint:"Contributions can come out any time."}) +
-        gdMoneyF("brBrokNow", "A taxable brokerage account", {ph:"0", hint:"Only if it's meant for retirement."}) +
-        "</div>" + gdLive("bridgeNote") +
-        gdBack("bridge") + gdTask("bridge", "Plan it in the Early Retirement Bridge", {after:"<div style='margin-top:10px' class='hint'>Optional, but worth it if you're counting on reaching this money early.</div>"});
+        gdLive("bridgeNote") +
+        "<p class='hint' style='margin:-6px 0 14px'>The split comes from your Retirement savings step. <button type='button' class='gd-link' data-go='savings'>Change it</button></p>" +
+        "<div class='gd-callout'>Your plan already follows the rules: before 59½ it lives on the brokerage account and Roth contributions first, and only pays the 10% penalty if nothing else is left. The Plan Optimizer, next, can build a Roth conversion ladder to open up traditional money early.</div>" +
+        (a.retire >= 55 ? "<div class='gd-h3'>Will you leave a job with a 401(k) at 55 or later?</div><div class='gd-choices two'>" +
+          gdChoice("rule55", "yes", "Yes", "The rule of 55 lets that 401(k) pay out without the penalty") + gdChoice("rule55", "no", "No, or not sure") + "</div>" : "") +
+        gdBack("bridge") + gdTask("bridge", "Plan it in the Early Retirement Bridge", {after:"<div style='margin-top:10px' class='hint'>Optional: it also compares 72(t) payments, which this plan doesn't use.</div>"});
     }},
+
+  {id:"optimize", ch:5, title:"Plan Optimizer",
+    body(){ return opGuideHTML(); }},
 
   {id:"results", ch:5, title:"Score and plan",
     body(){ return gdResultsHTML(); },
@@ -545,16 +566,10 @@ const GD_STRATS = [
   {id:"vpw", name:"Variable percentage (VPW)", d:"Spends down on purpose: each year's share rises as the years left shrink, like an annuity. Starts higher, varies the most, and ends near zero."}
 ];
 function gdStratName(id){ const x = GD_STRATS.find(q => q.id === id); return x ? x.name : "Fixed, rising with inflation"; }
-/* What was actually lived on in a year: the planned spending, unless the
-   money ran out and only Social Security and any pension were left. Never
-   less than those two, which arrive whatever a strategy asks for. */
-function gdRunSpend(run){
-  return run.rows.map(r => {
-    const act = Math.max(Math.min(r.spend, r.withdrawal + r.ss + r.customIncome), r.ss + r.customIncome);
-    const defl = r.spend > 0 ? r.realSpend / r.spend : r.end > 0 ? r.realEnd / r.end : 1;
-    return act * defl;
-  });
-}
+/* Each approach run on the plan's own numbers through the same history, by
+   the plan engine: what was actually lived on each year (the approach's
+   spending, unless the money ran out and only Social Security and any
+   pension were left), after tax, in today's dollars. */
 function gdStrats(S){
   const fl = gdMinSpend();
   if (S.strats && S.stratsFloor === fl) return S.strats;
@@ -562,11 +577,13 @@ function gdStrats(S){
   const med = arr => { const x = arr.slice().sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : 0; };
   S.strats = GD_STRATS.map(st => {
     if (!S.H) return {st, H:null};
-    const H = historicalBacktest(gdDDOpts(S, st.id));
+    const C = plPrep(Object.assign({}, S.P, {strategy:st.id, minSpend:fl, guardBand:20, adjustPct:10,
+      floorPct:10, ceilPct:10, yaleWeight:70, vpwRate:(S.mix * 5 + (100 - S.mix) * 1.9) / 100, vpwFV:0}));
+    const H = st.id === "fixed" && !fl ? S.H : plHistory(C, S.T, {paths:true});
     let lean = Infinity, leanYear = null, leanAge = null;
     const typ = [];
     H.runs.forEach(run => {
-      const sp = gdRunSpend(run);
+      const sp = Array.prototype.slice.call(run.livedPath || []);
       typ.push(med(sp));
       // Ties (every run that ran dry falls to the same Social Security) name
       // the youngest age it happened, the one that matters.
@@ -591,7 +608,7 @@ function gdStratTableHTML(){
       "<div class='c'><i>Lasted</i>" + (r.canFail ? pctStr(r.success, 0) : "Can't run out") + "</div>" +
       "<div class='c'><i>Typical year</i>" + money(r.typical) + "</div>" +
       "<div class='c'><i>Leanest year</i>" + money(r.lean) + (r.lean >= S.spend * .995 ? "<small>never below your plan</small>" : r.leanYear ? "<small>retiring in " + r.leanYear + ", at " + r.leanAge + "</small>" : "") + "</div></div>").join("") + "</div>" +
-    "<p class='hint' style='margin:-6px 0 14px'>Spending in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone." +
+    "<p class='hint' style='margin:-6px 0 14px'>Spending after tax, in today's dollars, counting Social Security" + (S.pension ? " and your pension" : "") + ". The leanest year is the worst single year across all of history; when the money ran out, it's what Social Security" + (S.pension ? " and the pension" : "") + " paid alone." +
     (fl ? " Flexible approaches never go below your " + money(fl) + " minimum while money remains, so each can now run out; <b>Lasted</b> counts how often it held." : "") + "</p>";
 }
 function gdStratPickHTML(){
@@ -698,12 +715,13 @@ function gdActions(){
     A.push({t:"Shore up the bridge to 59½",
       d:"Your best plan in the Early Retirement Bridge held up in only " + a.bridgeHold + "% of markets. More savings in a Roth or taxable account, a later retirement or lower spending in the early years would widen the margin.",
       trip:"bridge", btn:"Revisit the bridge"});
-  if (gdOk(a.retire) && a.retire < 65 && !a.hcSeen)
-    A.push({t:"Price out healthcare before Medicare",
-      d:"You plan to retire " + (65 - Math.round(a.retire)) + " years before Medicare. Marketplace premiums can run hundreds a month, so make sure they're in your retirement spending.", trip:"healthcare", btn:"Open Healthcare Cost Planner"});
-  if (gdPos(a.hcPrem) && gdPos(a.retSpend) && a.hcIncl !== "yes" && !a.hcAdded)
-    A.push({t:"Make sure healthcare is in your retirement spending",
-      d:"You found premiums of about " + money(a.hcPrem) + "/mo before Medicare. If your " + money(a.retSpend) + " a year doesn't include them, add them.", go:"health", btn:"Review healthcare"});
+  if (S && !gdTactics())
+    A.push({t:"Let the Plan Optimizer tune your withdrawals",
+      d:"It tries every age from 62 to 70 for " + (gdMar() ? "each of you to claim" : "claiming") + " Social Security, every order for drawing down your accounts and every Roth conversion level, through every market since 1926, and keeps the plan that does best. " +
+        "Your plan now pays about " + money(S.lifeTax) + " in tax over retirement.", go:"optimize", btn:"Open the Plan Optimizer"});
+  if (gdOk(a.retire) && a.retire < 65 && !a.hcSeen && S && S.hcYr > 0)
+    A.push({t:"Get to know your health insurance costs before Medicare",
+      d:"Your plan prices marketplace coverage at about " + money(S.hcYr) + " a year until 65, after the subsidy its income earns. The Healthcare Cost Planner shows how that subsidy moves with income, and what Medicare costs after.", trip:"healthcare", btn:"Open Healthcare Cost Planner"});
   if (a.college === "yes" && !gdPos(a.collegeMo))
     A.push({t:"Set a monthly college number", d:"Find out what to put aside each month, and consider a 529 plan for the tax break.", trip:"college", btn:"Open College Savings"});
   if (!gdPos(a.ssOwn) && S)
@@ -737,13 +755,17 @@ function gdResultsHTML(){
     prow("Retire at", fmtNum(S.retire));
     prow("Saving", S.stop != null ? (S.stop <= a.age ? "Coasting: no new savings" : money(S.monthly) + "/mo until " + fmtNum(S.stop) + ", then coasting") : money(S.monthly) + "/mo until you retire");
     prow("Spending in retirement", money(S.spend) + " a year");
-    prow("Social Security", money(S.ss.total / 12) + "/mo from " + S.ss.claim);
+    prow("Social Security", gdMar() && S.ss.a2 > 0 ? money(S.ss.a1 / 12) + "/mo from " + S.ss.claim + ", spouse " + money(S.ss.a2 / 12) + "/mo from " + S.ss.claim2
+      : money(S.ss.total / 12) + "/mo from " + S.ss.claim);
     if (S.pension) prow("Pension", money(S.pension / 12) + "/mo");
+    prow("Withdrawals", S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth");
+    prow("Income tax", "About " + money(S.taxYr) + " a year, " + money(S.lifeTax) + " in all");
     prow("Withdrawal approach", gdStratName(a.strategy || "fixed"));
     if (gdMinSpend()) prow("Minimum spending", money(gdMinSpend()) + " a year");
     prow("Lasted, spending a fixed amount", pctStr(S.success, 0) + " of historical retirements");
     s += "<div class='gd-h3'>Your plan</div><div class='gd-kvs'>" + pv.join("") + "</div>" +
-      "<button type='button' class='btn mini' data-go='tune' style='margin:-2px 0 16px'>Adjust your plan</button>";
+      "<button type='button' class='btn mini' data-go='tune' style='margin:-2px 8px 16px 0'>Adjust your plan</button>" +
+      "<button type='button' class='btn mini' data-go='optimize' style='margin:-2px 0 16px'>" + (S.tactics ? "Your roadmap" : "Plan Optimizer") + "</button>";
   }
   const wins = GD_FACTORS.filter(f => R.P[f.id] && R.P[f.id].p >= .9).map(f => f.name + ": " + R.P[f.id].txt);
   if (wins.length) s += "<div class='gd-h3'>What's going well</div><div class='gd-wins'>" + wins.map(w => "<span>" + w + "</span>").join("") + "</div>";
@@ -766,7 +788,7 @@ function gdResultsHTML(){
     "<button type='button' class='btn mini' data-trip='advanced' data-from='results'>Advanced: taxes and account types<i class='arw' aria-hidden='true'></i></button>" +
     "<button type='button' class='btn mini' data-trip='stages' data-from='results'>Stages: plans that change over time<i class='arw' aria-hidden='true'></i></button>" +
     "<button type='button' class='btn mini' data-trip='backtest' data-from='results'>Portfolio Backtest: what your mix has earned<i class='arw' aria-hidden='true'></i></button></div>" +
-    "<p class='hint'>Retirement spending here is before income tax" + (a.retTaxAdded ? ", plus the tax estimate you added" : "") + ". The Income Tax tool's Retirement income mode estimates what withdrawals, Social Security and a pension will owe. " +
+    "<p class='hint'>Retirement spending here is what you live on after tax. Each year's federal and state income tax, Medicare's income surcharge and health insurance before 65 are worked out from where the money comes from, and paid on top. " +
     "This score is a rule-of-thumb check, not financial advice, and it leaves out home equity.</p>";
   return s;
 }
@@ -798,6 +820,7 @@ function gdRender(focus){
     st.body() + "<div class='gd-foot'>" + foot + "</div>";
   initFields($("gdCard"));
   gdChartsDraw($("gdCard"));
+  opDrawAll($("gdCard"));
   gdRenderSide();
   if (focus){
     const h = $("gdCard").querySelector(".gd-q");

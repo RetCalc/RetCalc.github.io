@@ -127,7 +127,7 @@ const TOOL_LABEL = {basic:"scenario", advanced:"scenario", stages:"scenario",
                     college:"college plan", rentbuy:"rent-vs-buy scenario",
                     drawdown:"drawdown plan", roth:"conversion plan",
                     debt:"debt plan", backtest:"backtest",
-                    healthcare:"healthcare plan", bridge:"bridge plan",
+                    healthcare:"healthcare plan", bridge:"bridge plan", optimizer:"optimizer plan",
                     fire:"FIRE plan", guide:"readiness plan"};
 function refreshScenarioList(selected){
   const sel = $("scenarioPick");
@@ -191,6 +191,7 @@ $("scenarioPick").addEventListener("change", e => {
   else if (tool === "backtest"){ writeBTState(s.data); renderBacktest(); }
   else if (tool === "healthcare"){ writeAsideState("asideHC", s.data); renderHealthcare(); }
   else if (tool === "bridge"){ writeAsideState("asideBR", s.data); renderBridge(); }
+  else if (tool === "optimizer"){ writeAsideState("asideOP", s.data); renderOptimizer(); }
   else if (tool === "fire"){ writeFireState(s.data); }
   else if (tool === "guide"){ gdLoadPlan(s.data); }
   currentScenario[tool] = s.name;

@@ -220,6 +220,25 @@ function buildCardSVG(){
       bigLabel = "Enter your balances"; big = "—"; sub = ""; rows = [];
     }
 
+  } else if (t === "tools" && toolSub === "optimizer"){
+    var OR = OP.tool.res;
+    title = "My retirement roadmap";
+    if (OR){
+      var ob = OR.best.stats, oa = OR.base.stats, oc = {married:OR.married, gap:OR.age2 == null ? 0 : OR.age2 - OR.age1, rmdAge:OR.rmdAge};
+      bigLabel = "Left after tax, typical market";
+      big = opCompact(ob.medLegacy);
+      sub = "Best of " + groupDigits(OR.of, true) + " plans, tested in every market since " + OR.first;
+      rows = [
+        ["Social Security at", opClaims(OR.best.T, oc, true)],
+        ["Lifetime tax", money(oa.medTax) + " \u2192 " + money(ob.medTax)],
+        ["Lasted in", pctStr(ob.successRate, 0) + " of markets"],
+        ["Left after tax", opCompact(oa.medLegacy) + " \u2192 " + opCompact(ob.medLegacy)]
+      ];
+      verdict = opTacticsLine(OR.best.T, oc);
+    } else {
+      bigLabel = "Run the optimizer first"; big = "—"; sub = ""; rows = [];
+    }
+
   } else if (t === "simple"){
     var p = readBasic();
     var R = projectBasic(p);
@@ -421,6 +440,7 @@ function buildToolData(tool){
   if (tool === "guide") return gdPlanData();
   if (tool === "healthcare") return readAsideState("asideHC");
   if (tool === "bridge") return readAsideState("asideBR");
+  if (tool === "optimizer") return readAsideState("asideOP");
   if (tool === "fire") return Object.assign(readAsideState("asideFire"), {
     mode: $("segFireMode").querySelector('button[data-firemode="coast"].on') ? "coast" : "fire"});
   return readBudgetState();
@@ -519,6 +539,7 @@ function asideIsDirty(id){
 function toolIsDirty(tool){
   if (tool === "healthcare") return asideIsDirty("asideHC");
   if (tool === "bridge") return asideIsDirty("asideBR");
+  if (tool === "optimizer") return asideIsDirty("asideOP");
   if (tool === "fire") return asideIsDirty("asideFire") ||
     !!$("segFireMode").querySelector('button[data-firemode="coast"].on');
   if (tool === "tax") return !sameShallow(readTaxState(), TAX_DEFAULTS);
@@ -627,7 +648,7 @@ $("btnReset").addEventListener("click", () => {
     tool === "roth" ? "Roth Conversion" :
     tool === "debt" ? "Debt Payoff" :
     tool === "healthcare" ? "Healthcare" : tool === "fire" ? "FIRE Calculator" :
-    tool === "bridge" ? "Early Retirement Bridge" :
+    tool === "bridge" ? "Early Retirement Bridge" : tool === "optimizer" ? "Plan Optimizer" :
     tool === "backtest" ? "Portfolio Backtest" : "Budget";
   if (toolIsDirty(tool) &&
       !confirm("Reset the " + label +
@@ -672,6 +693,9 @@ $("btnReset").addEventListener("click", () => {
   } else if (tool === "bridge"){
     resetAsideDefaults("asideBR");
     renderBridge();
+  } else if (tool === "optimizer"){
+    resetAsideDefaults("asideOP");
+    renderOptimizer();
   } else if (tool === "healthcare"){
     resetAsideDefaults("asideHC");
     renderHealthcare();

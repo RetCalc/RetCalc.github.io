@@ -90,6 +90,7 @@ const SC = {basic: storeRead("basic") || [], advanced: storeRead("advanced") || 
             backtest: storeRead("backtest") || [],
             healthcare: storeRead("healthcare") || [],
             bridge: storeRead("bridge") || [],
+            optimizer: storeRead("optimizer") || [],
             fire: storeRead("fire") || [],
             guide: storeRead("guide") || []};
 /* One-time move: scenarios saved before the v3 split lived under a single

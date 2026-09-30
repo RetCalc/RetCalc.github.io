@@ -99,6 +99,7 @@ function linkToolData(tool, d){
   else if (tool === "backtest") writeBTState(d);
   else if (tool === "healthcare") writeAsideState("asideHC", d);
   else if (tool === "bridge") writeAsideState("asideBR", d);
+  else if (tool === "optimizer") writeAsideState("asideOP", d);
   else if (tool === "fire"){ writeAsideState("asideFire", d); linkFireMode = d.mode || null; }
 }
 /* UTF-8 first, so a stage or debt named with an accent or an emoji still

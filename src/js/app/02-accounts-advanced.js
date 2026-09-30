@@ -118,7 +118,9 @@ function acctBreakdown(p, a){
                     ? p.years : p.inflYears;
   return Object.assign(acFinish(a, {trad:fvT, roth:fvR, brok:fvB}, basis0 + a.brokC * dollarsIn(gr.b),
       Math.pow(1 + p.inflation, inflYears), p.withdrawal, acSeniors(a, p.years)),
-    {match, matchTotal: match * perDollar, perDollar});
+    {match, matchTotal: match * perDollar, perDollar,
+     // dollars put into the Roth, for the Plan Optimizer's contribution basis
+     rothIn: a.rothC * dollarsIn(gr.r)});
 }
 /* Shared by Advanced and Stages once each has its accounts' ending balances:
    today's dollars, the first year's withdrawal split pro rata, and the tax on

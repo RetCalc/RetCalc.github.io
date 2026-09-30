@@ -1,0 +1,250 @@
+/* ---------- Plan Optimizer ----------
+   The same bow, arrow and target as the guide's progress bar, drawn large:
+   the string is drawn back until the search starts, then it looses and the
+   arrow rides the lane, the fill following it, until the answer lands in the
+   target. --p (0 to 1, set from script every frame) is how far it's flown. */
+.op-top .body{padding:20px 22px 18px}
+.op-lede{color:var(--dim);font-size:14px;line-height:1.6;margin:0 0 16px;max-width:78ch}
+.op-q{font-size:13px;font-weight:600;color:var(--text);margin:0 0 10px}
+.op-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 16px}
+.op-goal{display:grid;grid-template-columns:18px 1fr;column-gap:11px;row-gap:3px;align-items:start;text-align:left;
+  padding:12px 14px;border-radius:var(--r-card);border:1px solid var(--line);background:var(--panel-2);
+  color:var(--text);cursor:pointer;font:inherit;box-shadow:var(--edge-up);
+  transition:border-color .14s ease,background .14s ease,transform .08s ease}
+.op-goal:hover{border-color:var(--jade-line-hi)}
+.op-goal:active{transform:translateY(1px)}
+.op-goal:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.op-goal .dot{grid-row:1 / span 2;width:18px;height:18px;border-radius:50%;margin-top:1px;
+  border:1.5px solid var(--dimmer);position:relative}
+.op-goal b{font-weight:600;font-size:14px;line-height:1.35}
+.op-goal span{font-size:12px;color:var(--dimmer);line-height:1.45}
+.op-goal.on{border-color:var(--jade);background:rgba(79,191,149,.10)}
+.op-goal.on .dot{border-color:var(--jade)}
+.op-goal.on .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--jade)}
+.op-go{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 6px}
+.op-go .hint{margin:0}
+.op-go-btn{font-size:15px;padding:11px 20px}
+.op-out{display:flex;flex-direction:column;gap:20px;min-width:0}
+.op-out:empty{display:none}
+
+/* ---- the flight ---- */
+.op-run{position:relative;padding:18px 4px 6px;margin:6px 0 4px}
+/* Room on the left for the arrow's tail when the string is drawn back. */
+.op-shot{display:flex;align-items:center;gap:10px;height:72px;padding-left:46px}
+.op-bow{flex:none;width:40px;height:68px;position:relative}
+.op-bow svg{display:block;width:100%;height:100%;overflow:visible}
+.op-bow .limb{fill:none;stroke:var(--jade);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;
+  transform-box:fill-box;transform-origin:0 50%;transform:scale(calc(1 + var(--pull,0) * .06),calc(1 - var(--pull,0) * .07))}
+.op-bow .str{fill:none;stroke:var(--steel);stroke-width:2.2;transition:opacity .08s}
+/* Until the release only the drawn string shows (script bends it back); at
+   the release the straight one takes over and twangs, and the bow kicks. */
+.op-run .op-bow .str.rest{opacity:0}
+.op-run.op-loosed .op-bow .str.rest{opacity:1;transform-origin:33px 32px;animation:opTwang .5s ease-out}
+.op-run.op-loosed .op-bow .str.drawn{opacity:0}
+.op-run.op-loosed .op-bow{animation:opRecoil .4s ease-out}
+.op-run.op-loosed .op-bow .limb{transition:transform .12s cubic-bezier(.2,1.6,.4,1)}
+@keyframes opTwang{15%{transform:translateX(5px)}35%{transform:translateX(-3px)}60%{transform:translateX(1.5px)}80%{transform:translateX(-.6px)}}
+@keyframes opRecoil{20%{transform:translateX(-4px) rotate(-3deg)}55%{transform:translateX(1px) rotate(1deg)}}
+.op-lane{position:relative;flex:1;min-width:0;height:100%;--p:0}
+.op-lane::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;
+  background:repeating-linear-gradient(90deg,var(--line) 0 7px,transparent 7px 13px)}
+.op-fill{position:absolute;left:0;top:50%;height:4px;margin-top:-2px;border-radius:3px;
+  width:calc(var(--p) * 100%);background:linear-gradient(90deg,rgba(79,191,149,.15),var(--jade))}
+/* A streak just behind the arrow while it flies, brightest as it leaves. */
+.op-trail{position:absolute;top:50%;height:2px;margin-top:-1px;border-radius:2px;
+  width:clamp(0px,calc(var(--p) * 100% - 58px),90px);left:max(0px,calc(var(--p) * 100% - 148px));
+  background:linear-gradient(90deg,transparent,var(--gold));opacity:.7}
+.op-run.op-loosed .op-trail{animation:opStreak .6s ease-out}
+@keyframes opStreak{0%{opacity:0}15%{opacity:1}100%{opacity:.7}}
+.op-arrow{position:absolute;top:50%;left:calc(var(--p) * 100%);width:92px;height:24px;
+  transform:translate(-62px,-50%)}
+.op-arrow svg{display:block;width:100%;height:100%;overflow:visible;animation:opBob 1.1s ease-in-out infinite}
+.op-arrow .sh{stroke:var(--gold);stroke-width:3.2;stroke-linecap:round}
+.op-arrow .hd{fill:var(--gold)}
+/* Nocked: the arrow's tail sits on the string and comes back with it. */
+.op-run:not(.op-loosed) .op-arrow{left:0;transform:translate(calc(-78px - var(--pull,0) * 15px),-50%)}
+.op-run:not(.op-loosed) .op-arrow svg{animation:none}
+.op-run:not(.op-loosed) .op-trail{opacity:0}
+.op-run.op-full .op-arrow svg{animation:opTense .12s linear infinite}
+@keyframes opTense{0%,100%{transform:translateY(0)}50%{transform:translateY(-.6px)}}
+/* The release: off the string in a blink, then the flight. */
+.op-run.op-loosed .op-arrow{transition:transform .14s cubic-bezier(.1,.9,.3,1)}
+@keyframes opBob{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-3px) rotate(-2.5deg)}70%{transform:translateY(2px) rotate(1.5deg)}}
+.op-target{flex:none;width:52px;height:52px;position:relative}
+.op-target svg{display:block;width:100%;height:100%}
+.op-target .rg{fill:none;stroke:var(--dimmer);stroke-width:2.2;transition:stroke .3s}
+.op-target .eye{fill:var(--dimmer);transition:fill .3s}
+.op-target::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--gold);opacity:0}
+.op-target::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--jade);opacity:0}
+/* On impact: the arrow stops at the bullseye and quivers, the target jolts,
+   two rings burst out of it, and the rings light up. */
+.op-run.op-hit .op-arrow{left:calc(100% + 36px);transform:translate(-92px,-50%);transition:left .18s ease-out}
+.op-run.op-hit .op-arrow svg{transform-origin:100% 50%;animation:opQuiver .55s .05s ease-out}
+.op-run.op-hit .op-trail{opacity:0;transition:opacity .3s}
+.op-run.op-hit .op-target{animation:opJolt .5s .05s ease-out}
+.op-run.op-hit .op-target .rg,.op-run.op-hit .op-target .eye{stroke:var(--gold)}
+.op-run.op-hit .op-target .eye{fill:var(--gold)}
+.op-run.op-hit .op-target::after{animation:opBurst .8s .05s ease-out}
+.op-run.op-hit .op-target::before{animation:opBurst 1s .2s ease-out}
+.op-run.op-hit .op-fill{box-shadow:0 0 14px rgba(79,191,149,.55);transition:box-shadow .4s}
+@keyframes opQuiver{20%{transform:rotate(-7deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(1.5deg)}}
+@keyframes opJolt{25%{transform:translateX(5px) scale(1.18)}60%{transform:translateX(-1px) scale(.96)}}
+@keyframes opBurst{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
+.op-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:14px 0 10px;
+  border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;background:var(--line)}
+.op-stats > div{background:var(--panel-2);padding:11px 14px;min-width:0}
+.op-stats b{display:block;font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;color:var(--text);white-space:nowrap}
+.op-stats > div:last-child b{color:var(--gold)}
+.op-stats span{display:block;font-size:11.5px;color:var(--dimmer);margin-top:3px}
+.op-now{font-size:12.5px;color:var(--dim);min-height:2.9em;line-height:1.45;font-family:var(--mono)}
+.op-stop{position:absolute;top:0;right:0;font-size:12px}
+.op-run.op-hit .op-stop{visibility:hidden}
+@media (prefers-reduced-motion:reduce){
+  .op-arrow svg,.op-run.op-loosed .op-bow .str.rest,.op-run.op-hit .op-target,.op-run.op-loosed .op-bow,.op-run.op-full .op-arrow svg,
+  .op-run.op-hit .op-target::after,.op-run.op-hit .op-target::before,.op-run.op-hit .op-arrow svg{animation:none}
+  .op-trail{display:none}
+}
+
+/* ---- the answer ---- */
+.op-res{display:flex;flex-direction:column;gap:20px;min-width:0}
+#tab-guide .op-res{gap:6px;margin-top:10px}
+.op-reveal > *{animation:opUp .55s cubic-bezier(.2,.7,.3,1) both}
+.op-reveal > *:nth-child(2){animation-delay:.07s}
+.op-reveal > *:nth-child(3){animation-delay:.14s}
+.op-reveal > *:nth-child(4){animation-delay:.21s}
+.op-reveal > *:nth-child(5){animation-delay:.28s}
+.op-reveal > *:nth-child(n+6){animation-delay:.34s}
+@keyframes opUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .op-reveal > *{animation:none} }
+.op-brag{margin:0;font-size:12.5px;color:var(--dimmer)}
+.op-brag b{color:var(--dim);font-weight:600}
+#tab-optimizer .op-brag{padding:0 4px}
+.op-hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1px;border:1px solid var(--line);
+  border-radius:var(--r-panel);overflow:hidden;background:var(--line);box-shadow:var(--lift-1)}
+.op-big{background:linear-gradient(160deg,rgba(79,191,149,.13),rgba(79,191,149,0) 60%),var(--panel);padding:20px 22px}
+.op-big .k{font-size:12.5px;color:var(--dim);max-width:34ch;line-height:1.45}
+.op-big .v{font-family:var(--mono);font-size:44px;font-weight:700;letter-spacing:-.03em;color:var(--gold);
+  font-variant-numeric:tabular-nums;margin:8px 0 6px;line-height:1.05}
+.op-big .v small{font-size:18px;color:var(--dim);font-weight:600;letter-spacing:0}
+.op-delta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.op-delta em{font-style:normal;font-family:var(--mono);font-weight:700;font-size:16px;color:var(--jade);
+  background:rgba(79,191,149,.12);border:1px solid var(--jade-line);border-radius:999px;padding:2px 10px}
+.op-delta span{font-size:12.5px;color:var(--dimmer)}
+.op-tiles{display:grid;grid-template-rows:repeat(3,1fr);gap:1px;background:var(--line)}
+.op-tile{background:var(--panel-2);padding:11px 16px;display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:10px}
+.op-tile .k{font-size:12px;color:var(--dim);grid-column:1}
+.op-tile .v{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--text);grid-column:2;grid-row:1 / span 2;text-align:right;
+  font-variant-numeric:tabular-nums}
+.op-tile .n{font-size:11.5px;color:var(--dimmer);grid-column:1}
+.op-tile .n.pos::after{content:"\00a0\2193\00a0 better";color:var(--jade)}
+.op-tile:nth-child(2) .n.pos::after,.op-tile:nth-child(3) .n.pos::after{content:"\00a0\2191\00a0 better"}
+.op-tile .n.neg::after{content:" · a trade-off";color:var(--gold)}
+.op-sec{margin-top:6px}
+.op-note{font-weight:400;color:var(--dimmer);font-size:12px}
+.op-cap{font-size:11.5px;color:var(--dimmer);margin:6px 0 0}
+.op-p .body > .gd-chart{margin-top:4px}
+
+/* The roadmap: a timeline down the left, one stop per stretch of years. */
+.op-road{list-style:none;margin:2px 0 0;padding:0;position:relative;--agew:66px}
+.op-road::before{content:"";position:absolute;left:calc(var(--agew) + 10px);top:12px;bottom:18px;width:2px;
+  background:linear-gradient(180deg,var(--jade),var(--steel) 70%,var(--line))}
+.op-ph{display:grid;grid-template-columns:var(--agew) 22px minmax(0,1fr);padding:0 0 14px;position:relative}
+.op-ph::before{content:"";position:absolute;left:calc(var(--agew) + 5px);top:12px;width:12px;height:12px;border-radius:50%;
+  background:var(--panel);border:2px solid var(--steel);box-sizing:border-box}
+.op-ph.conv::before{border-color:var(--jade);background:var(--jade)}
+.op-ph.end::before{border-color:var(--gold);background:var(--gold)}
+.op-ph-age{grid-column:1;font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--text);
+  text-align:right;padding:9px 6px 0 0;white-space:nowrap}
+.op-ph-body{grid-column:3;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-card);padding:11px 14px}
+.op-ph.conv .op-ph-body{border-color:var(--jade-line-hi)}
+.op-ph-tag{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:6px}
+.op-ph-ev{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.op-ph-ev span{font-size:11.5px;color:var(--gold);background:rgba(233,184,114,.10);border:1px solid rgba(233,184,114,.28);
+  border-radius:999px;padding:2px 9px}
+.op-ph dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;margin:0;font-size:12.5px;line-height:1.5}
+.op-ph dt{color:var(--dimmer)}
+.op-ph dd{margin:0;color:var(--dim)}
+
+/* What makes the difference: each change, what it's worth, and a bar. */
+.op-moves{display:flex;flex-direction:column;gap:10px}
+.op-move{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:18px;align-items:start;
+  padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel-2)}
+.op-move-t b{display:block;font-size:13.5px;font-weight:600;color:var(--text);line-height:1.45}
+.op-move-t p{margin:5px 0 0;font-size:12.5px;color:var(--dim);line-height:1.55}
+.op-move-v em{display:block;font-style:normal;font-family:var(--mono);font-weight:700;font-size:16px;text-align:right}
+.op-move-v em.pos{color:var(--jade)}
+.op-move-v em.neg{color:var(--coral)}
+.op-bar{display:block;height:6px;border-radius:3px;background:var(--line-soft);margin-top:8px;overflow:hidden}
+.op-bar b{display:block;height:100%;border-radius:3px;background:var(--jade)}
+.op-bar b.neg{background:var(--coral)}
+
+/* Charts: what's converted is drawn hollow, what's lived on is a line. */
+.op-chart .op-conv{fill:rgba(79,191,149,.10);stroke:var(--jade);stroke-width:1.2;stroke-dasharray:3 2}
+.op-chart .op-live{fill:none;stroke:var(--text);stroke-width:1.6;stroke-dasharray:5 3;opacity:.85}
+.op-chart .op-hl{fill:var(--text);fill-opacity:.06}
+.gd-ch-legend s.hol,.gd-tip s.hol{height:8px;width:12px;border:1.3px dashed var(--jade);background:rgba(79,191,149,.12);border-radius:2px}
+.gd-ch-legend s.liv,.gd-tip s.liv{height:0;border-top:2px dashed var(--text);background:none}
+.op-chart .op-reinv{fill:rgba(148,166,191,.10);stroke:var(--dimmer);stroke-width:1;stroke-dasharray:2 2}
+.gd-ch-legend s.rei,.gd-tip s.rei{height:8px;width:12px;border:1.2px dashed var(--dimmer);background:rgba(148,166,191,.12);border-radius:2px}
+.gd-tip s{flex:none}
+
+.op-table summary{cursor:pointer;color:var(--dimmer);font-size:12.5px;width:max-content}
+.op-table .scroll{margin-top:8px;max-height:420px}
+.op-table table{font-size:12px}
+.op-table td,.op-table th{white-space:nowrap}
+.op-table tr.short td{color:var(--coral)}
+.op-alts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.op-alts li{font-size:12.5px;color:var(--dim);line-height:1.5;padding:9px 12px;border:1px solid var(--line-soft);border-radius:10px}
+.op-alts li b{color:var(--text);font-weight:600}
+.op-alts li span{display:block;font-family:var(--mono);font-size:12px;color:var(--dimmer);margin-top:2px}
+.op-fine{font-size:11.5px;color:var(--dimmer);line-height:1.6;margin:4px 0 0;max-width:92ch}
+#tab-optimizer .op-fine{padding:0 4px}
+.op-acct{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--dim);
+  padding:10px 14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--panel-2);margin:0 0 6px}
+.op-acct b{color:var(--text);font-family:var(--mono);font-weight:600}
+.op-apply{margin-top:14px}
+.op-ready-in{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.op-ready .k{font-size:12px;color:var(--dim)}
+.op-ready .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--text);margin:4px 0}
+.op-ready .v small{font-size:14px;color:var(--dim)}
+.op-ready .n{font-size:12px;color:var(--dimmer)}
+#asideOP .op-sub{margin:12px 0 4px}
+#asideOP .op-sub .hint{margin:0;font-weight:600;color:var(--text)}
+#asideOP .op-modefield{margin-bottom:14px}
+#asideOP .op-modefield label{display:block}
+.op-modeseg{display:flex;width:100%}
+.op-modeseg button{flex:1;font-size:12.5px;padding:7px 10px}
+#asideOP .two.one{grid-template-columns:1fr}
+#asideOP .op-balhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+#asideOP .op-balhead .btn{margin-left:auto}
+#asideOP .op-sub .hint.op-balnote{flex-basis:100%;font-weight:400;color:var(--dimmer);font-size:11.5px}
+
+/* The picker's icon: the arrow flies in and the target rings. */
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  @keyframes op-ic-fly{0%{transform:translate(-9px,8px);opacity:0}45%{opacity:1}70%{transform:translate(1px,-1px)}100%{transform:none}}
+  @keyframes op-ic-ring{0%,55%{transform:scale(1)}75%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .op-ic-arrow,.op-ic-ring{transform-box:fill-box;transform-origin:center}
+  .toolcard:hover .op-ic-arrow{animation:op-ic-fly .5s cubic-bezier(.3,.7,.3,1)}
+  .toolcard:hover .op-ic-ring{animation:op-ic-ring .6s ease-out}
+}
+
+@media (max-width:860px){
+  .op-goals{grid-template-columns:1fr}
+  .op-hero{grid-template-columns:1fr}
+  .op-move{grid-template-columns:1fr}
+  .op-move-v em{text-align:left}
+}
+@media (max-width:560px){
+  .op-big .v{font-size:36px}
+  .op-stats b{font-size:16px}
+  .op-shot{height:58px;padding-left:34px}
+  .op-bow{width:30px;height:52px}
+  .op-arrow{width:70px;height:18px;transform:translate(-48px,-50%)}
+  .op-run:not(.op-loosed) .op-arrow{transform:translate(calc(-60px - var(--pull,0) * 11px),-50%)}
+  .op-target{width:40px;height:40px}
+  .op-ready-in{grid-template-columns:1fr}
+  .op-road{--agew:50px}
+  .op-ph dl{grid-template-columns:1fr}
+  .op-ph dt{margin-top:4px}
+}

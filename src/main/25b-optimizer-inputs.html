@@ -1,0 +1,194 @@
+  <aside id="asideOP" hidden>
+    <div class="panel inputs">
+      <h2>Your situation</h2>
+      <div class="body">
+        <div class="field op-modefield">
+          <label>Start from<span class="tipdot" data-tip="opmode" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <span class="seg op-modeseg" id="opModeSeg">
+            <button type="button" data-opmode="ret" class="on">Retirement day</button>
+            <button type="button" data-opmode="now">Today</button>
+          </span>
+          <input type="hidden" id="opMode" value="ret">
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opStatus">Filing status</label>
+            <select id="opStatus">
+              <option value="m" selected>Married filing jointly</option>
+              <option value="s">Single</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="opState">State</label>
+            <select id="opState"></select>
+          </div>
+        </div>
+        <div class="two op-nowonly">
+          <div class="field">
+            <label for="opAge">Your age</label>
+            <div class="inputwrap"><input id="opAge" type="text" inputmode="decimal" data-num data-step="1" min="18" max="90" data-nonneg value="58"><span class="affix">age</span></div>
+          </div>
+          <div class="field op-sp">
+            <label for="opSpAge">Spouse's age</label>
+            <div class="inputwrap"><input id="opSpAge" type="text" inputmode="decimal" data-num data-step="1" min="18" max="95" data-nonneg value="56"><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="two" id="opRetRow">
+          <div class="field">
+            <label for="opRetire"><span id="opRetireLbl">Your age at retirement</span><span class="tipdot" data-tip="opretire" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opRetire" type="text" inputmode="decimal" data-num data-step="1" min="30" max="90" data-nonneg value="62"><span class="affix">age</span></div>
+          </div>
+          <div class="field op-sp op-retonly">
+            <label for="opSpRet">Spouse's age then</label>
+            <div class="inputwrap"><input id="opSpRet" type="text" inputmode="decimal" data-num data-step="1" min="18" max="95" data-nonneg value="60"><span class="affix">age</span></div>
+          </div>
+        </div>
+
+        <div class="field op-sub op-balhead"><div class="hint" id="opBalHead">Saved on the day you retire</div>
+          <button type="button" class="btn mini" id="opCopy">Copy from Advanced or Stages</button>
+          <div class="hint op-balnote" id="opBalNote">In today's dollars. Advanced or Stages can project these for you, account by account.</div>
+        </div>
+        <div class="field">
+          <label for="opTrad">Traditional 401(k) / IRA<span class="tipdot" data-tip="optrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="opTrad" type="text" inputmode="decimal" data-money data-nonneg value="1,200,000"></div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opRoth">Roth 401(k) / IRA</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opRoth" type="text" inputmode="decimal" data-money data-nonneg value="250,000"></div>
+          </div>
+          <div class="field">
+            <label for="opRothBasis">Of that, contributions<span class="tipdot" data-tip="oprothbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opRothBasis" type="text" inputmode="decimal" data-money data-nonneg value="120,000"></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opBrok">Brokerage and cash</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opBrok" type="text" inputmode="decimal" data-money data-nonneg value="350,000"></div>
+          </div>
+          <div class="field">
+            <label for="opBasis">Cost basis<span class="tipdot" data-tip="opbasis" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opBasis" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="60"><span class="affix">% of it</span></div>
+          </div>
+        </div>
+
+        <div id="opSaveWrap" class="op-nowonly">
+          <div class="field op-sub"><div class="hint">Saving until you retire, a month</div></div>
+          <div class="two">
+            <div class="field">
+              <label for="opSaveTrad">Traditional<span class="tipdot" data-tip="opsavetrad" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><span class="affix">$</span><input id="opSaveTrad" type="text" inputmode="decimal" data-money data-nonneg value="2,000"><span class="affix">/mo</span></div>
+            </div>
+            <div class="field">
+              <label for="opSaveRoth">Roth</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="opSaveRoth" type="text" inputmode="decimal" data-money data-nonneg value="500"><span class="affix">/mo</span></div>
+            </div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="opSaveBrok">Brokerage</label>
+              <div class="inputwrap"><span class="affix">$</span><input id="opSaveBrok" type="text" inputmode="decimal" data-money data-nonneg value="0"><span class="affix">/mo</span></div>
+            </div>
+            <div class="field">
+              <label for="opRisk">Invested</label>
+              <select id="opRisk"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="field op-sub"><div class="hint">In retirement</div></div>
+        <div class="two">
+          <div class="field">
+            <label for="opSpend">Spending, after tax<span class="tipdot" data-tip="opspend" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opSpend" type="text" inputmode="decimal" data-money data-nonneg value="90,000"><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="opMix">Stocks<span class="tipdot" data-tip="opmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opMix" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="60"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opSS1">Your Social Security<span class="tipdot" data-tip="opss" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opSS1" type="text" inputmode="decimal" data-money data-nonneg value="3,000"><span class="affix">/mo at 67</span></div>
+          </div>
+          <div class="field">
+            <label for="opInc1">Or your salary <span class="opt">to estimate it</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opInc1" type="text" inputmode="decimal" data-money data-nonneg value="" placeholder="optional"><span class="affix">/yr</span></div>
+          </div>
+        </div>
+        <div class="two op-sp">
+          <div class="field">
+            <label for="opSS2">Spouse's Social Security</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opSS2" type="text" inputmode="decimal" data-money data-nonneg value="1,800"><span class="affix">/mo at 67</span></div>
+          </div>
+          <div class="field">
+            <label for="opInc2">Or their salary</label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opInc2" type="text" inputmode="decimal" data-money data-nonneg value="" placeholder="optional"><span class="affix">/yr</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="opClaim">You'd claim it at<span class="tipdot" data-tip="opclaim" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="opClaim">
+            <option value="62">62, the earliest</option>
+            <option value="63">63</option>
+            <option value="64">64</option>
+            <option value="65">65</option>
+            <option value="66">66</option>
+            <option value="67" selected>67, full retirement age</option>
+            <option value="68">68</option>
+            <option value="69">69</option>
+            <option value="70">70, the most it pays</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opPension">Pension <span class="opt">optional</span></label>
+            <div class="inputwrap"><span class="affix">$</span><input id="opPension" type="text" inputmode="decimal" data-money data-nonneg value="0"><span class="affix">/yr</span></div>
+          </div>
+          <div class="field">
+            <label for="opPenAge">Starting at</label>
+            <div class="inputwrap"><input id="opPenAge" type="text" inputmode="decimal" data-num data-step="1" min="40" max="90" data-nonneg value="" placeholder="retiring"><span class="affix">age</span></div>
+          </div>
+        </div>
+        <div class="field">
+          <label for="opPenCola">Pension raises</label>
+          <select id="opPenCola">
+            <option value="0" selected>Fixed amount</option>
+            <option value="1">Rises with inflation</option>
+          </select>
+        </div>
+
+        <div class="field op-sub"><div class="hint">Health, heirs and safety</div></div>
+        <div class="field" id="opAcaWrap">
+          <label for="opAca">Health insurance before 65<span class="tipdot" data-tip="opaca" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="opAca">
+            <option value="1" selected>ACA plan, with the subsidy income earns</option>
+            <option value="0">Already in my spending</option>
+          </select>
+        </div>
+        <div class="field" id="opRule55Wrap" hidden>
+          <label for="opRule55">Leaving a job with a 401(k)<span class="tipdot" data-tip="oprule55" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="opRule55">
+            <option value="0" selected>No, or it's rolled over</option>
+            <option value="1">Yes, at 55 or later: rule of 55</option>
+          </select>
+        </div>
+        <div class="two">
+          <div class="field">
+            <label for="opHeir">Heirs' tax rate<span class="tipdot" data-tip="opheir" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="opHeir" type="text" inputmode="decimal" data-num data-step="1" min="0" max="50" data-nonneg value="24"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="opTarget">Must last in<span class="tipdot" data-tip="optarget" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <select id="opTarget">
+              <option value="0.9" selected>90% of markets</option>
+              <option value="0.95">95% of markets</option>
+              <option value="1">Every market</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>

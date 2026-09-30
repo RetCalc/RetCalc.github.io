@@ -151,6 +151,34 @@ function hhApply(H, only){
     if (spend) $("brSpend").value = m(spend);
     done.push("Early Retirement Bridge");
   }
+  if (want("optimizer") && (age || retire || has(H.saved) || spend || H.state)){
+    $("opStatus").value = married ? "m" : "s";
+    if (age) $("opAge").value = String(age);
+    if (married && has(H.spouseAge) && H.spouseAge > 0) $("opSpAge").value = String(Math.round(H.spouseAge));
+    if (retire && (!age || retire >= age)) $("opRetire").value = String(retire);
+    if (married && retire && age && has(H.spouseAge) && H.spouseAge > 0)
+      $("opSpRet").value = String(Math.round(H.spouseAge + (retire - age)));
+    // In Retirement day mode the balances are what you'll have then, so
+    // today's total from the profile doesn't belong in them.
+    const opNow = $("opMode").value === "now";
+    if (H.state && $("opState").querySelector("option[value='" + H.state + "']")) $("opState").value = H.state;
+    if (spend) $("opSpend").value = m(spend);
+    // The profile has one total; spread it over the accounts in the shares
+    // the tool already holds, so the split stays the tool's own.
+    const scale = (ids, total) => {
+      const now = ids.map(id => num(id)), sum = now.reduce((x, y) => x + y, 0);
+      ids.forEach((id, i) => { $(id).value = m(sum > 0 ? total * now[i] / sum : (i === 0 ? total : 0)); });
+    };
+    if (opNow && has(H.saved)){
+      const rb = num("opRothBasis"), r0 = num("opRoth");
+      scale(["opTrad", "opRoth", "opBrok"], H.saved);
+      $("opRothBasis").value = m(r0 > 0 ? rb * num("opRoth") / r0 : 0);
+    }
+    if (opNow && has(H.monthly)) scale(["opSaveTrad", "opSaveRoth", "opSaveBrok"], H.monthly);
+    if (has(inc1)){ $("opInc1").value = m(inc1); $("opSS1").value = ""; }
+    if (has(inc2)){ $("opInc2").value = m(inc2); $("opSS2").value = ""; }
+    done.push("Plan Optimizer");
+  }
   if (want("healthcare")){
     if (retire && retire >= 40 && retire <= 75) $("hcRetireAge").value = String(retire);
     $("hcStatus").value = married ? "m" : "s";
@@ -190,6 +218,7 @@ function hhRerender(){
   else if (sub === "roth") renderRoth();
   else if (sub === "healthcare"){ if (hcReady) renderHealthcare(); }
   else if (sub === "bridge") renderBridge();
+  else if (sub === "optimizer") renderOptimizer();
   else if (sub === "fire") $("fiTarget").dispatchEvent(new Event("input", {bubbles:true}));
 }
 function hhOpen(open){

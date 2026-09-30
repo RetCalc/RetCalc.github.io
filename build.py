@@ -8,12 +8,13 @@ read and changed on its own; this puts it back together:
          <!-- @include main/*.html -->
      is replaced by the files it names (relative to src/), in filename order,
      so the numeric prefixes (00-, 01-...) set the order.
-  2. The styles (src/css/) and the script (src/js/math.js, then the app in
-     src/js/app/ wrapped in one function) become two shared files,
+  2. The styles (src/css/) and the script (src/js/math.js and plan.js, then
+     the app in src/js/app/ wrapped in one function) become two shared files,
      assets/app.<hash>.css and assets/app.<hash>.js, which the page's
      <!-- @asset --> and <!-- @preload --> lines link to. Every page uses the
      same two files, so a visitor downloads them once; the hash in the name
      changes whenever their content does, so no browser keeps an old copy.
+     The Plan Optimizer's worker, assets/plan.<hash>.js, is built alongside.
   3. Each address gets its own page: index.html for /, and a copy per clean
      URL (drawdown.html, rmd.html, ...) since GitHub Pages serves
      drawdown.html for /drawdown. Each has its own <head> from
@@ -52,6 +53,8 @@ ASSET = re.compile(r"^<!-- @(asset|preload) (app\.(?:css|js)) -->$", re.M)
 CARDS = {
     "drawdown": ("Drawdown Simulator",
         "Will your money last? Test withdrawal strategies against every retirement since 1926."),
+    "optimizer": ("Plan Optimizer",
+        "When to claim, what to withdraw, what to convert: thousands of plans, every market since 1926."),
     "bridge": ("Early Retirement Bridge",
         "Retiring before 59½? Compare a Roth ladder, 72(t), the rule of 55 and your brokerage."),
     "72t": ("72(t) Calculator",
@@ -97,7 +100,7 @@ PLAIN = {"home", "about"}
 TOOL_SUB = {"drawdown": "drawdown", "bridge": "bridge", "72t": "bridge", "roth": "roth", "rmd": "roth",
             "healthcare": "healthcare", "fire": "fire", "backtest": "backtest", "incometax": "tax",
             "mortgage": "mortgage", "rentbuy": "rentbuy", "college": "college", "budget": "budget",
-            "debt": "debt"}
+            "debt": "debt", "optimizer": "optimizer"}
 
 
 # ---------------------------------------------------------------- assembly
@@ -113,14 +116,25 @@ def files(pattern):
 
 
 def bundles():
-    """The two shared files, by name. The app files are the body of one
+    """The shared files, by name. The app files are the body of one
     function, so they share a scope but leave nothing global; the engine
-    before them is global, for the app to use. The page is shown once the
-    app has run, even if it threw (see page.html)."""
-    js = (files("js/math.js") + ";\n"
+    before them (math.js, plan.js) is global, for the app to use. The page is
+    shown once the app has run, even if it threw (see page.html).
+
+    The Plan Optimizer's search runs in a worker, which is the engine plus
+    js/plan-worker.js in a file of its own, plan.<hash>.js. The app finds it
+    through the @@PLAN_WORKER@@ placeholder, filled in before app.js is
+    hashed, so a change to the engine renames both."""
+    engine = files("js/math.js") + ";\n" + files("js/plan.js") + ";\n"
+    worker = engine + files("js/plan-worker.js")
+    worker_name = "plan.%s.js" % sha(worker)[:10]
+    js = (engine +
           "try {\n(function(){\n\"use strict\";\n" + files("js/app/*.js") + "})();\n"
           "} finally { document.documentElement.classList.remove(\"booting\"); }\n")
-    out = {}
+    if "@@PLAN_WORKER@@" not in js:
+        sys.exit("build.py: the app no longer refers to @@PLAN_WORKER@@")
+    js = js.replace("@@PLAN_WORKER@@", "/assets/" + worker_name)
+    out = {worker_name: worker}
     for name, text in (("app.css", files("css/*.css")), ("app.js", js)):
         base, ext = name.split(".")
         out["%s.%s.%s" % (base, sha(text)[:10], ext)] = text
@@ -136,7 +150,7 @@ def assemble(names):
             m = INCLUDE.match(ln.rstrip("\n"))
             out.append(files(m.group(1)) if m else ln)
     page = "".join(out)
-    href = {n.split(".")[0] + "." + n.split(".")[-1]: "/assets/" + n for n in names}
+    href = {n.split(".")[0] + "." + n.split(".")[-1]: "/assets/" + n for n in names if n.startswith("app.")}
     def link(m):
         kind, name = m.group(1), m.group(2)
         if kind == "preload":
@@ -314,7 +328,7 @@ def main():
             sys.exit("build.py: index.html was edited directly since the last build, and the build would\n"
                      "overwrite that edit. Make the change in src/ instead, or run with --force to discard it.")
     os.makedirs(ASSETS, exist_ok=True)
-    for old in glob.glob(os.path.join(ASSETS, "app.*")):
+    for old in glob.glob(os.path.join(ASSETS, "app.*")) + glob.glob(os.path.join(ASSETS, "plan.*")):
         if os.path.basename(old) not in assets:
             os.remove(old)
     for n, t in assets.items():

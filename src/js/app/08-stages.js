@@ -188,6 +188,7 @@ function applyStageAcct(g){
   const B = acFinish(a, {trad:T.fv + Mt.fv, roth:Ro.fv, brok:Br.fv}, basis0 + Br.contribTotal,
     Math.pow(1 + g.inflation, years), g.withdrawal, acSeniors(a, years));
   B.matchTotal = Mt.contribTotal;
+  B.rothIn = Ro.contribTotal;
   B.years = years;
   g.taxRate = B.effRate;
   lastStageAcct = B;

@@ -23,11 +23,24 @@ function gdLoadState(){
         // The Retiring early step became Adjust your plan.
         if (v.cur === "fire") v.cur = "tune";
         if (v.back && v.back.step === "fire") v.back = null;
+        gdMigrate(v.a);
         return Object.assign(gdFresh(), v);
       }
     }
   } catch(e){}
   return gdMem ? JSON.parse(JSON.stringify(gdMem)) : gdFresh();
+}
+/* Answers saved before income tax was built in. The Roth and brokerage split
+   used to be asked only on the Getting to 59½ step; and a tax estimate added
+   to retirement spending by hand would now be counted twice. */
+function gdMigrate(a){
+  if (!a) return;
+  if (a.rothNow == null && a.brRothNow != null) a.rothNow = a.brRothNow;
+  if (a.brokNow == null && a.brBrokNow != null) a.brokNow = a.brBrokNow;
+  delete a.brRothNow; delete a.brBrokNow;
+  // (runs before gdPos exists, so the checks are spelled out)
+  if (a.retTaxAdded && a.retTax > 0 && a.retSpend > 0) a.retSpend = Math.max(0, a.retSpend - a.retTax);
+  delete a.retTaxAdded; delete a.retTax;
 }
 let gd = gdLoadState();
 function gdSave(){
@@ -46,6 +59,7 @@ function gdLoadPlan(d){
   if (!d || !d.a || typeof d.a !== "object") return;
   gd = gdFresh();
   gd.a = JSON.parse(JSON.stringify(d.a));
+  gdMigrate(gd.a);
   gd.done = Object.assign({}, d.done || {});
   const L = gdNumbered();
   gd.cur = L.every(st => st.id === "results" || gd.done[st.id]) ? "results" : gdFirstOpen();
@@ -106,47 +120,45 @@ function gdMinSpend(){ const m = gd.a.minSpend; return gdPos(m) ? m : 0; }
 /* When Social Security starts. The age chosen on the Spending in retirement
    step, or by default 67 (full retirement age), or retirement if that's
    later, up to 70. Never before retirement in this plan: a benefit claimed
-   while still working is mostly withheld by the earnings test. */
+   while still working is mostly withheld by the earnings test. This is the
+   plan as you'd run it yourself; the Plan Optimizer can pick other ages. */
 function gdClaim(retire){
   const r = Math.min(70, Math.round(retire)), c = gd.a.ssClaim;
   if (gdOk(c)) return Math.max(62, Math.min(70, Math.max(c, r)));
   return Math.max(67, r);
 }
-/* Social Security in today's dollars. Both spouses start together, the same
-   timing the Drawdown Simulator uses for a couple with one retirement age,
-   so the guide's success rate matches the tool's. The estimate counts the
-   years worked by retirement, from 22: Social Security averages the best 35,
-   so retiring at 45 averages in 12 years of zeros. A lower earner is lifted
-   to half the higher earner's full benefit, the spousal rule, which matters
-   for a one-income household. A statement's figure is at 67 and is scaled
-   for the claiming age the same way. */
-function gdSS(retire){
+/* Each of you's Social Security at full retirement age, a month, in today's
+   dollars: from a statement when there is one, or estimated from income over
+   the years worked by retirement, from 22. Social Security averages the best
+   35, so retiring at 45 averages in 12 years of zeros. A lower earner gets a
+   spousal top-up to half the higher earner's benefit; the plan engine works
+   that out for the ages each of you claims. */
+function gdPias(retire){
   const a = gd.a;
-  const claim = gdClaim(retire);
-  const delay = Math.max(0, claim - Math.round(retire));
-  const adj = ssEstimate(0, 35, claim).adjustment;
-  if (gdPos(a.ssOwn)){
-    const t = a.ssOwn * 12 * adj;
-    return {a1:t, a2:0, total:t, delay, claim, own:true, spousal:false, career:null};
-  }
   const yrs1 = Math.max(1, Math.min(35, Math.round(retire) - 22));
-  const s1 = ssEstimate(a.income || 0, yrs1, claim);
-  let a1 = s1.annual, a2 = 0, spousal = false;
-  if (gdMar()){
-    // The spouse stops working at the same time, at whatever age they are then.
-    const spAt = gdOk(a.spouseAge) && gdOk(a.age) ? a.spouseAge + (retire - a.age) : retire;
-    const s2 = ssEstimate(a.income2 || 0, Math.max(1, Math.min(35, Math.round(spAt) - 22)), claim);
-    a2 = s2.annual;
-    // Spousal benefits earn no delay credits, so it's half the full benefit,
-    // reduced on the spousal schedule for an early claim.
-    const half = x => x * .5 * ssSpousalAdj(claim);
-    if (half(s1.atFRA) > a2){ a2 = half(s1.atFRA); spousal = true; }
-    if (half(s2.atFRA) > a1){ a1 = half(s2.atFRA); spousal = true; }
-  }
-  return {a1, a2, total:a1 + a2, delay, claim, own:false, spousal, career:yrs1};
+  const spAt = gdMar() && gdOk(a.spouseAge) && gdOk(a.age) ? a.spouseAge + (retire - a.age) : retire;
+  const yrs2 = Math.max(1, Math.min(35, Math.round(spAt) - 22));
+  const own = gdPos(a.ssOwn), own2 = gdMar() && gdPos(a.ssOwn2);
+  return {pia1: own ? a.ssOwn : ssEstimate(a.income || 0, yrs1, 67).pia,
+    pia2: !gdMar() ? 0 : own2 ? a.ssOwn2 : ssEstimate(a.income2 || 0, yrs2, 67).pia,
+    own, own2, career:yrs1, career2:yrs2};
+}
+/* Social Security for a retirement age, while typing: each of you's yearly
+   benefit once claimed, at the ages the plan uses (the Plan Optimizer's, if
+   applied). */
+function gdSS(retire){
+  const a = gd.a, pia = gdPias(retire), Tq = gdTactics(), claim = gdClaim(retire);
+  const age1 = Math.round(retire);
+  const age2 = gdMar() && gdOk(a.spouseAge) && gdOk(a.age) ? Math.round(a.spouseAge + (retire - a.age)) : null;
+  const c1 = Math.max(plClaimMin(age1), Math.min(70, Tq ? Tq.c1 : claim));
+  const c2 = age2 == null ? c1 : Math.max(plClaimMin(age2), Math.min(70, Tq ? Tq.c2 : claim));
+  const S = plSSParts({P:{pia1:pia.pia1, pia2:pia.pia2}, married:gdMar(), gap:age2 == null ? 0 : age2 - age1}, {c1, c2});
+  return {a1:S.own1 + S.top1, a2:S.own2 + S.top2, total:S.total, claim:c1, claim2:c2,
+    delay:Math.max(0, c1 - age1), own:pia.own, own2:pia.own2, spousal:S.top1 + S.top2 > 0,
+    career:pia.career, tactics:!!Tq};
 }
 /* A pension or other steady retirement income, in the Drawdown Simulator's
-   own custom-income form so both run it the same way. */
+   own custom-income form so a trip there carries it. */
 function gdPensionItems(retire){
   const a = gd.a;
   if (!gdPos(a.pension)) return [];
@@ -163,27 +175,43 @@ function gdYearsFor(retire){
   return Math.max(20, Math.min(60, end));
 }
 
-/* Basic's projection, month by month, with contributions stopping after
-   saveYears (a coast plan). With saving all the way to retirement it's
-   exactly projectBasic's figure. Keeps each year-end balance for the chart. */
-function gdGrow(initial, monthly, real, years, saveYears){
-  const n = Math.floor(years * 12), sN = Math.max(0, Math.min(n, Math.floor(saveYears * 12 + 1e-9)));
-  const pr = Math.pow(1 + real, 1 / 12) - 1;
-  let bal = initial;
-  const path = [initial];
-  for (let i = 1; i <= n; i++){
-    const j = i - (Math.ceil(i / 12) - 1) * 12;
-    bal = bal * (1 + pr) + (i <= sN ? monthly / Math.pow(1 + BASIC_INFL, j / 12) : 0);
-    if (i % 12 === 0) path.push(bal);
-  }
-  if (n % 12) path.push(bal);
-  return {fv:bal, path};
+/* Where the money sits. Today's balances: the Roth and brokerage amounts
+   from the Retirement savings step, the rest traditional. New saving goes
+   where the person says it does; an employer's match always lands in a
+   traditional account. */
+const GD_SAVE_TO = [["trad", "Mostly pre-tax", "A traditional 401(k), 403(b) or IRA"],
+  ["roth", "Mostly Roth", "A Roth 401(k) or Roth IRA"],
+  ["half", "About half and half", "Some of each"],
+  ["brok", "Mostly a taxable account", "A brokerage account outside a retirement plan"]];
+function gdAccts(){
+  const a = gd.a, saved = Math.max(0, a.saved || 0);
+  const roth = Math.min(saved, gdPos(a.rothNow) ? a.rothNow : 0);
+  const brok = Math.min(saved - roth, gdPos(a.brokNow) ? a.brokNow : 0);
+  return {trad:saved - roth - brok, roth, brok};
 }
-/* The Drawdown Simulator's options for a plan, with any withdrawal strategy.
-   Every strategy starts from the plan's own spending rate; VPW uses the
-   Bogleheads return for the mix, since it sets its own spending. */
+function gdSaveSplit(mine){
+  const to = gd.a.saveTo || "trad";
+  if (to === "roth") return {t:0, r:mine, b:0};
+  if (to === "half") return {t:mine / 2, r:mine / 2, b:0};
+  if (to === "brok") return {t:0, r:0, b:mine};
+  return {t:mine, r:0, b:0};
+}
+/* The Plan Optimizer's choices, once applied: stored as plain numbers so a
+   shared link carries them. */
+function gdTactics(){
+  const a = gd.a;
+  if (!gdOk(a.optC1)) return null;
+  return {c1:a.optC1, c2:gdOk(a.optC2) ? a.optC2 : a.optC1, f:a.optF || 0, u:a.optU || 0,
+    im:a.optIm || 0, ac:a.optAc || 0};
+}
+
+/* The Drawdown Simulator's options for a plan, with any withdrawal strategy,
+   for a trip there. The simulator doesn't work out tax, so the plan's
+   typical yearly tax rides along with its spending. Every strategy starts
+   from that rate; VPW uses the Bogleheads return for the mix, since it sets
+   its own spending. */
 function gdDDOpts(S, strategy){
-  const rate = S.spend / Math.max(1, S.fv) * 100;
+  const rate = (S.spend + (S.taxYr || 0)) / Math.max(1, S.fv) * 100;
   return {initial:S.fv, years:S.years, stockPct:S.mix, stockPctEnd:null, fee:0,
     strategy:strategy || "fixed", initialPct:rate, guardBand:20, adjustPct:10,
     floorPct:10, ceilPct:10, yaleWeight:70, yaleRate:rate, spendFloor:gdMinSpend(), spendCeil:0,
@@ -192,14 +220,10 @@ function gdDDOpts(S, strategy){
     legacyGoal:0, retireAge:S.retire, fromYear:HIST_START, incomeItems:S.inc, expenseItems:[]};
 }
 
-/* The retirement engine behind the score: Basic's projection to the
-   retirement age (stopping contributions early for a coast plan), then that
-   balance run through every historical retirement since 1926 by the Drawdown
-   Simulator's own engine, spending a fixed amount that rises with inflation.
-   `over` swaps in a different monthly saving, retirement age, stop age or
-   spending, which is how the options on the Adjust step are found. */
-const gdSimCache = {};
-function gdSim(over){
+/* The plan engine's inputs from the answers. `over` swaps in a different
+   retirement age, monthly saving (yours and your employer's together), stop
+   age or spending, which is how the options on the Adjust step are found. */
+function gdPlanIn(over){
   over = over || {};
   const a = gd.a, has = k => Object.prototype.hasOwnProperty.call(over, k);
   if (!gdOk(a.age) || !gdOk(a.retire) || !gdOk(a.saved) || !gdOk(a.contrib) || !gdPos(a.retSpend)) return null;
@@ -211,32 +235,77 @@ function gdSim(over){
   let stop = has("stopAge") ? over.stopAge : a.stopAge;
   if (!gdOk(stop) || stop >= retire) stop = null;
   if (stop != null) stop = Math.max(a.age, stop);
-  const real = a.risk || .045;
-  const ss = gdSS(retire), years = gdYearsFor(retire), mix = gdRetMix(), inc = gdPensionItems(retire);
-  const saveYears = stop == null ? retire - a.age : stop - a.age;
-  const key = [a.age, retire, a.saved, monthly, real, spend, saveYears, ss.a1, ss.a2, ss.delay, years, mix,
-    inc.length ? JSON.stringify(inc) : ""].join("|");
+  const emp = Math.min(Math.max(0, monthly), a.employer || 0), sp = gdSaveSplit(Math.max(0, monthly - emp));
+  const A = gdAccts(), pia = gdPias(retire), claim = gdClaim(retire);
+  return {status:gdMar() ? "m" : "s", state:a.state || $("txState").value || "IL", age:a.age,
+    spouseAge:gdMar() && gdOk(a.spouseAge) ? a.spouseAge : null, retire, stopAge:stop,
+    trad:A.trad, roth:A.roth, brok:A.brok, rothBasis:A.roth * .5, brokBasis:A.brok * .6,
+    saveTrad:sp.t + emp, saveRoth:sp.r, saveBrok:sp.b, real:a.risk || .045, infl:BASIC_INFL,
+    spend, pia1:pia.pia1, pia2:pia.pia2, claim1:claim, claim2:claim,
+    pension:gdPos(a.pension) ? a.pension * 12 : 0, pensionAge:gdOk(a.pensionAge) ? a.pensionAge : null,
+    pensionCola:a.pensionCola === "yes", aca:retire < 65 && a.hcIncl !== "yes",
+    household:gdMar() ? 2 : 1, rule55:a.rule55 === "yes", heirRate:PL_HEIR, mix:gdRetMix(),
+    years:gdYearsFor(retire), target:gdTarget(), strategy:"fixed", minSpend:0, fromYear:HIST_START,
+    monthly};
+}
+/* Social Security as the plan runs it, for the page: each of you's yearly
+   benefit once claimed (spousal top-up included) and the ages. */
+function gdSSOf(C, T, retire){
+  const pia = gdPias(retire), S = plSSParts(C, T);
+  return {a1:S.own1 + S.top1, a2:S.own2 + S.top2, total:S.total, claim:T.c1, claim2:T.c2,
+    delay:Math.max(0, T.c1 - Math.round(retire)), own:pia.own, own2:pia.own2,
+    spousal:S.top1 + S.top2 > 0, career:pia.career};
+}
+
+/* The retirement engine behind the score: today's balances and saving,
+   account by account, grown to the retirement age at the mix's steady
+   return (Basic's projection), then that retirement run through every
+   historical retirement since 1926 by the plan engine, spending a fixed
+   amount that rises with inflation, with the year's income tax, Medicare
+   surcharge and pre-65 marketplace premiums paid on top. Social Security is
+   claimed at the age answered, and withdrawals come from the brokerage,
+   then traditional, then Roth, unless the Plan Optimizer's choices have
+   been applied. `over` swaps in a different monthly saving, retirement age,
+   stop age or spending; `base` ignores any applied optimizer choices. */
+const gdSimCache = {};
+function gdSim(over, base){
+  const I = gdPlanIn(over);
+  if (!I) return null;
+  const Tq = base ? null : gdTactics();
+  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "");
   if (gdSimCache[key]) return gdSimCache[key];
-  const G = gdGrow(a.saved, monthly, real, retire - a.age, saveYears);
-  const fv = G.fv, pension = gdPos(a.pension) ? a.pension * 12 : 0;
-  const out = {fv, years, ss, spend, retire, monthly, real, stop, saveYears, mix, inc, pension,
-    path:G.path, H:null, success:0,
-    portIncome: fv * .04, coverage: (fv * .04 + ss.total + pension) / spend};
-  if (fv < 1000) out.success = ss.total + pension >= spend ? 1 : 0;
-  else {
-    out.H = historicalBacktest(gdDDOpts(out, "fixed"));
-    out.success = out.H.successRate;
-  }
+  const P = plAtRetire(I), C = plPrep(P);
+  let T = plBaseTactics(C);
+  if (Tq) T = Object.assign({}, Tq, {c1:Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1)),
+    c2:C.married ? Math.max(plClaimMin(C.age2), Math.min(70, Tq.c2)) : Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1))});
+  const H = plHistory(C, T, {paths:true}), D = plDetail(C, T);
+  const ss = gdSSOf(C, T, I.retire);
+  // Tax and health premiums in a typical year, from the steady path.
+  let tx = 0, hc = 0, hn = 0;
+  D.rows.forEach(r => { tx += r.tax + r.irmaa; if (r.health > 0){ hc += r.health; hn++; } });
+  const out = {key, I, P, C, T, tactics:!!Tq, fv:P.fv, years:C.years, ss, spend:I.spend, retire:I.retire,
+    monthly:I.monthly, real:I.real, stop:I.stopAge, saveYears:(I.stopAge == null ? I.retire : I.stopAge) - I.age,
+    mix:I.mix, inc:gdPensionItems(I.retire), pension:I.pension, path:P.path, H, D,
+    success:H.successRate, taxYr:D.rows.length ? tx / D.rows.length : 0, hcYr:hn ? hc / hn : 0, hcYears:hn,
+    lifeTax:H.medTax, portIncome:P.fv * .04};
+  out.coverage = (out.portIncome + ss.total + I.pension) / (I.spend + out.taxYr);
   gdSimCache[key] = out;
   return out;
 }
 /* What a plan has to have saved by retirement to last in the target share of
-   history: the same test, solved for the starting balance. */
+   history: the same test, solved for the balance at retirement, every
+   account scaled together. */
 function gdNeed(S){
-  const goal = gdTarget(), key = "need|" + goal + "|" + S.fv + "|" + S.retire + "|" + S.spend + "|" + S.ss.total + "|" + S.years + "|" + S.mix + "|" + S.pension;
+  const goal = gdTarget(), key = "need|" + goal + "|" + S.key;
   if (gdSimCache[key] != null) return gdSimCache[key];
-  const lasts = fv => fv < 1000 ? (S.ss.total + S.pension >= S.spend) :
-    historicalBacktest(gdDDOpts(Object.assign({}, S, {fv}), "fixed")).successRate >= goal - 1e-9;
+  const P = S.P, n = S.H.total, maxFail = Math.floor(n * (1 - goal) + 1e-9);
+  const lasts = fv => {
+    const k = S.fv >= 1000 ? fv / S.fv : 0;
+    const Q = S.fv >= 1000 ? Object.assign({}, P, {trad:P.trad * k, roth:P.roth * k, rothBasis:P.rothBasis * k,
+      brok:P.brok * k, brokBasis:P.brokBasis * k}) : Object.assign({}, P, {trad:fv, roth:0, rothBasis:0, brok:0, brokBasis:0});
+    const H = plHistory(plPrep(Q), S.T, {stopAfter:maxFail});
+    return !H.partial && H.total - H.survived <= maxFail;
+  };
   let lo = 0, hi = Math.max(S.spend * 60, S.fv * 2);
   if (lasts(0)) return (gdSimCache[key] = 0);
   for (let i = 0; i < 22; i++){ const m = (lo + hi) / 2; if (lasts(m)) hi = m; else lo = m; }
@@ -245,16 +314,8 @@ function gdNeed(S){
 /* The median balance through retirement, with the 10th and 90th percentile,
    in today's dollars, for the chart. */
 function gdRetPath(S){
-  if (S.retPath) return S.retPath;
-  const out = [];
-  if (S.H && S.H.runs.length){
-    for (let y = 0; y < S.years; y++){
-      const col = S.H.runs.map(r => r.rows[y] ? r.rows[y].realEnd : 0).sort((x, z) => x - z);
-      const at = q => col[Math.min(col.length - 1, Math.floor(col.length * q))];
-      out.push({p10:at(.1), p50:at(.5), p90:at(.9)});
-    }
-  } else for (let y = 0; y < S.years; y++) out.push({p10:0, p50:0, p90:0});
-  return (S.retPath = out);
+  if (!S.retPath) S.retPath = plBands(S.H, S.years);
+  return S.retPath;
 }
 
 /* ---------- the score ---------- */
@@ -498,7 +559,7 @@ function gdSeries(S, name, cls){
   // drawn faintly under the band.
   const traces = S.H && S.H.runs ? S.H.runs.map(run => {
     const ln = [{x:r0, y:S.fv}];
-    for (let i = 0; i < S.years; i++) ln.push({x:r0 + i + 1, y:run.rows[i] ? run.rows[i].realEnd : 0});
+    for (let i = 0; i < S.years; i++) ln.push({x:r0 + i + 1, y:run.path ? run.path[i] : 0});
     return ln;
   }) : [];
   return {name, cls, S, pts, traces, retire:r0, stop:S.stop != null ? Math.round(S.stop) : null};
