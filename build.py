@@ -190,6 +190,9 @@ def head(page, slug, meta, canon_slug):
               "description": desc, "applicationCategory": "FinanceApplication",
               "operatingSystem": "Any", "browserRequirements": "Requires JavaScript",
               "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}]
+    if url == SITE + "/":
+        # Google takes the name shown above the address in search results from this
+        graph.insert(0, {"@type": "WebSite", "name": "RetCalc", "url": url})
     q = faq(page, slug)
     if q:
         graph.append({"@type": "FAQPage", "mainEntity": q})
