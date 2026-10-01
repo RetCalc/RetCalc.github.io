@@ -59,6 +59,16 @@ CARDS = {
         "Guyton-Klinger guardrails: start higher, cut when markets fall. How deep did the cuts go?"),
     "vpw": ("VPW Calculator",
         "Variable percentage withdrawal: spend it all by the end, never run out. How low did it go?"),
+    "vanguard-dynamic-spending": ("Vanguard Dynamic Spending",
+        "A share of the portfolio, but spending moves at most +5% or −2.5% a year. Tested since 1926."),
+    "risk-based-guardrails": ("Risk-Based Guardrails",
+        "Change spending only when the odds of lasting leave a band. How often did it move, and how far?"),
+    "rmd-withdrawal-strategy": ("RMD Withdrawal Strategy",
+        "Spend the balance divided by the IRS life-expectancy divisor, every year. Tested since 1926."),
+    "ratcheting-withdrawal": ("Ratcheting Withdrawals",
+        "The 4% rule with raises: 10% more whenever the portfolio is up 50%. How often did they come?"),
+    "cape-withdrawal": ("CAPE-Based Withdrawals",
+        "Spend more when stocks are cheap, less when they're dear. Today's rate, and how it did since 1926."),
     "optimizer": ("Plan Optimizer",
         "When to claim, what to withdraw, what to convert: thousands of plans, every market since 1926."),
     "bridge": ("Early Retirement Bridge",
@@ -103,7 +113,9 @@ ALIASES = {"single": "advanced", "series": "stages"}
 PLAIN = {"home", "about"}
 # Pages that open a tool, and the tool (the picker card's data-pick) where
 # the address differs from it. Their main heading is the tool's title.
-TOOL_SUB = {"drawdown": "drawdown", "4-percent-rule": "drawdown", "guardrails": "drawdown", "vpw": "drawdown", "bridge": "bridge", "72t": "bridge", "roth": "roth", "rmd": "roth",
+TOOL_SUB = {"drawdown": "drawdown", "4-percent-rule": "drawdown", "guardrails": "drawdown", "vpw": "drawdown",
+            "vanguard-dynamic-spending": "drawdown", "risk-based-guardrails": "drawdown", "rmd-withdrawal-strategy": "drawdown",
+            "ratcheting-withdrawal": "drawdown", "cape-withdrawal": "drawdown", "bridge": "bridge", "72t": "bridge", "roth": "roth", "rmd": "roth",
             "healthcare": "healthcare", "fire": "fire", "backtest": "backtest", "incometax": "tax",
             "mortgage": "mortgage", "rentbuy": "rentbuy", "college": "college", "budget": "budget",
             "debt": "debt", "optimizer": "optimizer"}

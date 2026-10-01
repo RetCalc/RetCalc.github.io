@@ -843,6 +843,88 @@ group("Articles: the strategy landing pages");
     " of the " + V.total + " starts it fell more than a quarter below year one");
 })();
 
+group("Articles: five more strategy pages");
+(function () {
+  var O = function (slug, x) { return ddOptsFromState(Object.assign({ initial: 1e6 }, DD_LANDING[slug], x || {})); };
+  var mn = function (a) { return Math.min.apply(null, a); };
+  var real = function (r) { return r.rows.map(function (w) { return w.realSpend; }); };
+  var med = function (a) { a = a.slice().sort(function (p, q) { return p - q; }); return a[Math.floor(a.length / 2)]; };
+  var at = function (H, y) { return med(H.runs.map(function (r) { return r.rows[y - 1].realSpend; })); };
+  var start = function (H, yr) { return H.runs.filter(function (r) { return r.startYear === yr; })[0]; };
+  var lowest = function (H) { var m = { v: Infinity }; H.runs.forEach(function (r) { real(r).forEach(function (v, i) { if (v < m.v) m = { v: v, year: r.startYear, at: i + 1 }; }); }); return m; };
+  var pc0 = function (x) { return Math.round(x * 100) + "%"; };
+  Object.keys(DD_LANDING).forEach(function (k) { eq(DD_LANDING[k].starts, "year", k + " opens on each January, as its example is figured"); });
+
+  // Vanguard dynamic spending
+  var V = historicalBacktest(O("vanguard-dynamic-spending")), sw = ddSwings(V);
+  eq(V.successRate, 1, "Vanguard: lasted all 70");
+  near(sw.up, .05, 1e-9, "no rise over 5%"); near(sw.down, -.025, 1e-9, "no fall over 2.5%");
+  var Pv = historicalBacktest(O("vanguard-dynamic-spending", { strategy: "pct" })), ps = ddSwings(Pv);
+  says("vanguard-dynamic-spending", "swings of " + pc0(ps.up) + " up and " + pc0(-ps.down) + " down");
+  says("vanguard-dynamic-spending", "$50,000 in year one to " + dollars(at(V, 10)) + " in year ten and " + dollars(at(V, 30)) + " in year thirty");
+  var v66 = real(start(V, 1966));
+  says("vanguard-dynamic-spending", "to " + dollars(mn(v66)) + " by year 30"); eq(v66.indexOf(mn(v66)), 29, "the lowest is the last year");
+  says("vanguard-dynamic-spending", "fell further, to " + dollars(mn(real(start(Pv, 1966)))));
+  var V35 = historicalBacktest(O("vanguard-dynamic-spending", { years: 35 }));
+  says("vanguard-dynamic-spending", "over 35 years it ran out in " + (V35.total - V35.survived) + " of " + V35.total + " starts");
+
+  // Risk-based guardrails
+  var R = historicalBacktest(O("risk-based-guardrails")), Pr = ddPrep(O("risk-based-guardrails"));
+  says("risk-based-guardrails", dollars(Pr.first) + ", a " + (Pr.first / 1e4).toFixed(2) + "% rate");
+  eq(R.successRate, 1, "risk-based guardrails lasted every start");
+  var ch = R.runs.map(function (r) { var s = real(r), c = 0, d = 0; for (var i = 1; i < s.length; i++) if (Math.abs(s[i] / s[i - 1] - 1) > .001) { c++; if (s[i] < s[i - 1]) d++; } return { c: c, d: d }; });
+  says("risk-based-guardrails", "changed " + med(ch.map(function (x) { return x.c; })) + " times in 30 years, mostly raises, with " + med(ch.map(function (x) { return x.d; })) + " cuts");
+  says("risk-based-guardrails", ch.filter(function (x) { return x.d === 0; }).length + " of the 70 starts never had a cut");
+  var big = 0; R.runs.forEach(function (r) { var s = real(r); for (var i = 1; i < s.length; i++) big = Math.min(big, s[i] / s[i - 1] - 1); });
+  says("risk-based-guardrails", "largest single cut was " + pc0(-big));
+  var rl = lowest(R); eq(rl.year, 1969, "the leanest start was 1969");
+  says("risk-based-guardrails", "Retiring in 1969, spending fell to " + dollars(rl.v) + " a year by year " + rl.at);
+  says("risk-based-guardrails", "typical year was " + dollars(med(R.runs.map(function (r) { return r.medRealSpend; }))));
+
+  // RMD method
+  var M = historicalBacktest(O("rmd-withdrawal-strategy")), Pm = ddPrep(O("rmd-withdrawal-strategy"));
+  says("rmd-withdrawal-strategy", "27.4 at 72, 20.2 at 80, 12.2 at 90");
+  eq(ddRmdDivisor(72) + "," + ddRmdDivisor(80) + "," + ddRmdDivisor(90), "27.4,20.2,12.2", "the IRS Uniform Lifetime divisors");
+  says("rmd-withdrawal-strategy", [72, 80, 90].map(function (a) { return (100 / ddRmdDivisor(a)).toFixed(2) + "%"; }).join(", ").replace(/, ([^,]*)$/, " and $1"));
+  says("rmd-withdrawal-strategy", "which gives " + (100 / ddRmdDivisor(65)).toFixed(2) + "% at 65");
+  says("rmd-withdrawal-strategy", dollars(Pm.first) + ", less than the 4% rule's");
+  says("rmd-withdrawal-strategy", dollars(at(M, 10)) + " in year ten, " + dollars(at(M, 20)) + " in year twenty and " + dollars(at(M, 30)) + " in year thirty");
+  eq(M.successRate, 1, "the RMD method never ran out");
+  says("rmd-withdrawal-strategy", "left a typical " + dollars(M.medianEnd));
+  var ml = lowest(M); says("rmd-withdrawal-strategy", "retiring in " + ml.year + ", spending fell to " + dollars(ml.v) + " in year " + ml.at);
+
+  // Kitces ratchet
+  var K = historicalBacktest(O("ratcheting-withdrawal")), F = historicalBacktest(O("ratcheting-withdrawal", { strategy: "fixed" }));
+  says("ratcheting-withdrawal", "lasted in " + K.survived + " of " + K.total + " starts, " + pct1(K.successRate) + ", the same as the plain 4% rule");
+  eq(K.successRate, F.successRate, "the same as plain 4%");
+  says("ratcheting-withdrawal", "began in " + K.failYears.slice(0, 3).join(", ") + " and " + K.failYears[3]);
+  var raises = function (r) { var c = 0; for (var i = 1; i < r.rows.length; i++) if (r.rows[i].realPlanned > r.rows[i - 1].realPlanned * 1.001) c++; return c; };
+  ok(K.runs.filter(function (r) { return r.depleted; }).every(function (r) { return raises(r) === 0; }), "the failures never got a raise");
+  says("ratcheting-withdrawal", K.runs.filter(function (r) { return raises(r) > 0; }).length + " of the 70 starts got at least one");
+  var firstR = K.runs.map(function (r) { for (var i = 1; i < r.rows.length; i++) if (r.rows[i].realPlanned > r.rows[i - 1].realPlanned * 1.001) return i + 1; return 0; }).filter(Boolean);
+  says("ratcheting-withdrawal", "the first typically came in year " + med(firstR));
+  says("ratcheting-withdrawal", "spending " + dollars(med(K.runs.map(function (r) { return r.rows[29].realPlanned; }))) + " a year in today's dollars by year 30");
+  var k82 = start(K, 1982);
+  says("ratcheting-withdrawal", "reaching " + dollars(k82.rows[29].realPlanned));
+  eq(k82.rows.map(function (w, i) { return i > 0 && w.realPlanned > k82.rows[i - 1].realPlanned * 1.001 ? i + 1 : 0; }).filter(Boolean).join(","),
+    "5,8,11,14,17,20,23,26,29", "1982's raises every three years from year 5");
+  says("ratcheting-withdrawal", "ended with " + dollars(K.medianEnd) + ", against " + dollars(F.medianEnd));
+
+  // CAPE-based
+  var C = historicalBacktest(O("cape-withdrawal")), Pc = ddPrep(O("cape-withdrawal"));
+  says("cape-withdrawal", "CAPE is " + CAPE_NOW.toFixed(1));
+  says("cape-withdrawal", "starts at " + (Pc.first / 1e4).toFixed(2) + "%: " + dollars(Pc.first));
+  near(1.75 + .5 * 100 / 20, 4.25, 1e-9, "4.25% at a CAPE of 20"); near(1.75 + .5 * 100 / 10, 6.75, 1e-9, "6.75% at 10");
+  var y1 = C.runs.map(function (r) { return r.rows[0].realSpend; });
+  says("cape-withdrawal", "ranged from " + dollars(mn(y1)) + " (retiring in " + C.runs[y1.indexOf(mn(y1))].startYear);
+  var mx = Math.max.apply(null, y1), r82 = C.runs[y1.indexOf(mx)];
+  says("cape-withdrawal", "to " + dollars(mx) + " (retiring in " + r82.startYear + ", at a CAPE of " + r82.cape0.toFixed(1));
+  eq(C.successRate, 1, "CAPE-based lasted every start");
+  says("cape-withdrawal", "left a typical " + dollars(C.medianEnd));
+  says("cape-withdrawal", "spent " + dollars(med(C.runs.map(function (r) { return r.medRealSpend; }))) + " a year");
+  var c66 = real(start(C, 1966)); says("cape-withdrawal", "fell to " + dollars(mn(c66)) + " a year by year " + (c66.indexOf(mn(c66)) + 1));
+})();
+
 group("Articles: Bridge");
 (function () {
   says("bridge", "$540,000 in all");

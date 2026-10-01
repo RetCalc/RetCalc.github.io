@@ -294,7 +294,7 @@
       <li><a href="/roth">Roth conversions</a>: lowering the tax on future withdrawals.</li>
       <li><a href="/healthcare">Healthcare costs</a>: premiums before and after Medicare, which belong in your spending.</li>
       <li><a href="/backtest">Portfolio backtest</a>: how a stock and bond mix behaved in every period since 1926.</li>
-      <li>One strategy at a time: the <a href="/4-percent-rule">4% rule</a>, <a href="/guardrails">guardrails</a> and <a href="/vpw">VPW</a>, each with a worked example.</li>
+      <li>One strategy at a time, each with a worked example: the <a href="/4-percent-rule">4% rule</a>, <a href="/guardrails">guardrails</a>, <a href="/vpw">VPW</a>, <a href="/vanguard-dynamic-spending">Vanguard dynamic spending</a>, <a href="/risk-based-guardrails">risk-based guardrails</a>, <a href="/rmd-withdrawal-strategy">the RMD method</a>, <a href="/ratcheting-withdrawal">the Kitces ratchet</a> and <a href="/cape-withdrawal">CAPE-based withdrawals</a>.</li>
     </ul>
     <h3>Questions</h3>
     <details><summary>What is a safe withdrawal rate?</summary><p>For a 30-year retirement with a mix of stocks and bonds, 4% has survived about 95% of historical starts. Longer retirements, like one beginning at 50, call for something closer to 3.25% to 3.5%, or a strategy that trims spending after bad years.</p></details>
@@ -384,6 +384,136 @@
     <details><summary>Can VPW run out of money?</summary><p>Not before its final year: each payment is a share of what's left. What can happen is a long stretch of low payments after a bad start, which is the number to look at.</p></details>
     <details><summary>Why plan to 100?</summary><p>The Bogleheads' table runs to 100 so the payments stay sustainable for anyone who lives that long. Planning to a younger age raises the early payments but spends the money sooner.</p></details>
     <details><summary>What if I want something left at the end?</summary><p>Set a final value under VPW's settings. The payment is worked out to leave that much, in today's dollars, after the last year.</p></details>
+    </div>
+  </article>
+
+  <article class="seo-a panel about" data-page="vanguard-dynamic-spending" hidden>
+    <h2>Vanguard dynamic spending calculator: a ceiling and a floor on each year's change</h2>
+    <div class="body">
+    <p>Vanguard's dynamic spending rule sits between the 4% rule's fixed amount and taking a fixed percentage of the portfolio. Each year you aim at a share of what the portfolio is worth, but spending can't rise more than 5% or fall more than 2.5% from last year's, after inflation. This page opens the Drawdown Simulator set up for the rule and runs it through every retirement since 1926.</p>
+    <h3>How the rule works</h3>
+    <ul>
+      <li><b>The target:</b> a share of this year's balance, 5% in the example below.</li>
+      <li><b>The ceiling:</b> if the target is more than 5% above last year's spending, after inflation, you take last year's plus 5%.</li>
+      <li><b>The floor:</b> if it's more than 2.5% below, you take last year's less 2.5%.</li>
+    </ul>
+    <p>The ceiling keeps a few good years from setting a spending level a bad decade can't support; the floor keeps a crash from cutting your income in one step. Both limits are settings in the simulator, under Advanced.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds, targets 5% ($50,000 the first year) and plans for 30 years. These are the numbers this page opens with.</p>
+    <ul>
+      <li><b>It always lasted:</b> the money lasted 30 years in all 70 historical retirements.</li>
+      <li><b>Spending moved slowly:</b> no year rose more than 5% or fell more than 2.5%, against swings of 27% up and 28% down for a straight 5% of the portfolio.</li>
+      <li><b>The typical path:</b> the median spending across starts went from $50,000 in year one to $53,368 in year ten and $55,455 in year thirty, in today's dollars.</li>
+      <li><b>The worst case:</b> retiring in 1966, spending slid 2.5% almost every year, to $23,994 by year 30. A straight 5% of the portfolio fell further, to $17,674, but much sooner.</li>
+    </ul>
+    <h3>The catch</h3>
+    <p>Because a cut can't be bigger than 2.5% a year, spending can lag a falling market for a long time. Over 30 years at a 60/40 mix that didn't matter, but over 35 years it ran out in 4 of 65 starts, something a straight percentage of the portfolio can never do. <b>Reproduce a classic study</b>, under the strategy picker, shows the same with half in bonds.</p>
+    <h3>Questions</h3>
+    <details><summary>Is the 5% ceiling and 2.5% floor after inflation?</summary><p>Yes. Each year's limit applies to spending in today's dollars, so a 2.5% cut is 2.5% less purchasing power than last year.</p></details>
+    <details><summary>What target rate should I use?</summary><p>The target is the share of the portfolio you'd take with no limits. 4% to 5% is common; a higher target spends more early but leaves the floor more work to do in a bad decade. Compare a few on the Compare strategies view.</p></details>
+    <details><summary>How is this different from floor and ceiling?</summary><p>It's the same rule with Vanguard's limits. The simulator's floor and ceiling strategy lets you set any limits, 10% each way by default.</p></details>
+    </div>
+  </article>
+
+  <article class="seo-a panel about" data-page="risk-based-guardrails" hidden>
+    <h2>Risk-based guardrails calculator: spending set by the odds of success</h2>
+    <div class="body">
+    <p>Classic guardrails cut or raise spending when the withdrawal rate drifts too far. Risk-based guardrails, an approach many financial planners now use, watch something more direct: the chance, judged from history, that the plan lasts. Spending holds steady while that chance stays in a comfortable band and is reset only when it leaves. This page opens the Drawdown Simulator set up for them.</p>
+    <h3>How they work</h3>
+    <ul>
+      <li><b>Start:</b> spend the amount that history gives a 90% chance of lasting the years ahead, counting Social Security and other income still to come.</li>
+      <li><b>Hold:</b> keep that spending, raised with inflation, while the chance stays between 70% and 99%.</li>
+      <li><b>Reset:</b> if markets push the chance below 70%, cut spending back to where it's 90% again; if they push it above 99%, raise it to 90%.</li>
+    </ul>
+    <p>The chance is read from every historical start at your stock mix and fees, for however many years are left. The three numbers are settings in the simulator.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds and plans for 30 years. These are the numbers this page opens with.</p>
+    <ul>
+      <li><b>Year one:</b> $42,781, a 4.28% rate, the amount with a 90% historical chance of lasting 30 years.</li>
+      <li><b>Few cuts:</b> the typical start's spending changed 10 times in 30 years, mostly raises, with 2 cuts; 7 of the 70 starts never had a cut.</li>
+      <li><b>When cuts came, they were big:</b> the largest single cut was 40%. Retiring in 1969, spending fell to $23,777 a year by year 8.</li>
+      <li><b>Generous over a lifetime:</b> the middle start's typical year was $69,117 in today's dollars, and like VPW it spends the portfolio down by the final year.</li>
+    </ul>
+    <h3>Against classic guardrails</h3>
+    <p>Fewer, larger adjustments. Guyton-Klinger <a href="/guardrails">guardrails</a> move spending 10% at a time and often; risk-based ones leave it alone through ordinary swings and reset in one step when the odds really change. Whether that suits you depends on whether you'd rather take small cuts often or a bigger one rarely.</p>
+    <h3>Questions</h3>
+    <details><summary>Why does it spend everything by the end?</summary><p>With a year left, any balance has every chance of lasting it, so the rule raises spending toward the end. Set a <b>Legacy goal</b> or a <b>Maximum spending</b> if you want something left.</p></details>
+    <details><summary>Is the probability from Monte Carlo?</summary><p>Here it's from history: the share of past starts at your mix in which a given withdrawal would have lasted the years left. Planners' software often uses Monte Carlo for the same idea.</p></details>
+    <details><summary>What target should I use?</summary><p>90% with a 70%–99% band is a common setting. A lower target starts higher and resets more often; a narrower band means more frequent, smaller changes.</p></details>
+    </div>
+  </article>
+
+  <article class="seo-a panel about" data-page="rmd-withdrawal-strategy" hidden>
+    <h2>RMD withdrawal strategy: spending by the IRS life expectancy table</h2>
+    <div class="body">
+    <p>Required minimum distributions force you to take a share of a traditional IRA each year: the balance divided by a life-expectancy divisor from the IRS. Some retirees use the same math as their spending rule for the whole portfolio. It adjusts to markets, can't run out, and spends a little more each year as the horizon shortens. This page opens the Drawdown Simulator set up for it.</p>
+    <h3>How it works</h3>
+    <p>Each year, divide the portfolio by the divisor for your age from the IRS Uniform Lifetime Table: 27.4 at 72, 20.2 at 80, 12.2 at 90. That's 3.65%, 4.95% and 8.20% of the balance. The table starts at 72, so before then the simulator extends it by 0.9 a year, which gives 2.97% at 65.</p>
+    <p>For the required distributions themselves, and what converting to Roth first would save, see the <a href="/rmd">RMD calculator</a>.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires at 65 with $1,000,000 in a 60/40 mix of US stocks and bonds and plans for 30 years. These are the numbers this page opens with.</p>
+    <ul>
+      <li><b>Year one:</b> $29,674, less than the 4% rule's $40,000. The method starts cautiously.</li>
+      <li><b>Spending rises with age:</b> the median spending across starts was $49,306 in year ten, $78,848 in year twenty and $104,354 in year thirty, in today's dollars.</li>
+      <li><b>It never ran out</b> in any of the 70 historical retirements, and left a typical $935,660.</li>
+      <li><b>The worst case:</b> retiring in 1973, spending fell to $18,881 in year 3 before climbing.</li>
+    </ul>
+    <h3>Who it suits</h3>
+    <p>Retirees who want spending to follow markets, are comfortable starting low, and expect to spend more later, or who'd rather leave something behind. It spends less early than most strategies, which is when many retirees most want to spend.</p>
+    <h3>Questions</h3>
+    <details><summary>Is this the same as my required distributions?</summary><p>The math is the same, but this applies it to the whole portfolio as a spending rule. Your actual RMDs apply only to traditional accounts and start at 73 (75 for people born in 1960 or later).</p></details>
+    <details><summary>Can the RMD method run out?</summary><p>No. It always takes a share of what's left, so the balance never reaches zero, though spending falls when markets do.</p></details>
+    <details><summary>Why does spending rise so much late in retirement?</summary><p>The divisor shrinks every year, so the share taken grows: about 3% at 65, 5% at 80, 8% at 90. If the portfolio holds its value, spending climbs with it.</p></details>
+    </div>
+  </article>
+
+  <article class="seo-a panel about" data-page="ratcheting-withdrawal" hidden>
+    <h2>Ratcheting withdrawal calculator: the 4% rule with raises</h2>
+    <div class="body">
+    <p>The 4% rule sizes spending for the worst decade in history, so most retirees following it end up with far more than they started with. Michael Kitces proposed a fix in 2015: start at 4%, and give yourself a permanent 10% raise whenever the portfolio grows to 50% above where it began, at most once every three years. Spending never goes down. This page opens the Drawdown Simulator set up for the ratchet.</p>
+    <h3>How it works</h3>
+    <ul>
+      <li><b>Start:</b> 4% of the portfolio, raised with inflation each year, exactly like the 4% rule.</li>
+      <li><b>Ratchet:</b> when the portfolio, after inflation, is 50% above its starting value, raise spending 10% for good.</li>
+      <li><b>Wait:</b> at least three years between raises.</li>
+    </ul>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds, takes $40,000 the first year and plans for 30 years. These are the numbers this page opens with.</p>
+    <ul>
+      <li><b>No extra risk:</b> it lasted in 66 of 70 starts, 94.3%, the same as the plain 4% rule. The four failures began in 1965, 1966, 1968 and 1969, and none of them ever got a raise.</li>
+      <li><b>Raises for most:</b> 44 of the 70 starts got at least one; the first typically came in year 9.</li>
+      <li><b>The typical retiree</b> was spending $64,420 a year in today's dollars by year 30. Retiring in 1982, raises came every three years from year 5, reaching $94,318.</li>
+      <li><b>Still a cushion:</b> the middle start ended with $1,428,402, against $1,616,418 without the ratchet.</li>
+    </ul>
+    <h3>Why it doesn't add risk</h3>
+    <p>The raises come only after the portfolio has grown well beyond what the 4% rule needs, and the starts that test the rule, like 1966, never grow that much early. You can set the threshold, the size of each raise and the wait between them under Advanced.</p>
+    <h3>Questions</h3>
+    <details><summary>Does spending ever go down?</summary><p>No. Like the 4% rule, it never cuts; it only adds raises. That's why its failures are the same as the 4% rule's.</p></details>
+    <details><summary>Can I ratchet more aggressively?</summary><p>Yes: a lower threshold or bigger raises spend more, at some risk. The Safe spending view shows how the highest safe starting rate changes.</p></details>
+    <details><summary>How does it compare with guardrails?</summary><p>Guardrails start higher and cut when markets fall; the ratchet starts at 4% and only ever raises. See <a href="/guardrails">guardrails</a> and <a href="/4-percent-rule">the 4% rule</a>.</p></details>
+    </div>
+  </article>
+
+  <article class="seo-a panel about" data-page="cape-withdrawal" hidden>
+    <h2>CAPE-based withdrawal calculator: spend by market valuation</h2>
+    <div class="body">
+    <p>A CAPE-based rule sets each year's withdrawal from how expensive stocks are. Shiller's CAPE is the S&amp;P 500's price over ten years of its earnings, after inflation; its inverse, the earnings yield, has been a rough guide to future returns. The rule takes a base rate plus a share of that yield: more when stocks are cheap, less when they're dear. This page opens the Drawdown Simulator set up for it.</p>
+    <h3>How it works</h3>
+    <p>Each year: withdrawal rate = 1.75% + 0.5 × (100 ÷ CAPE), applied to that year's balance. At a CAPE of 20 that's 4.25%; at 10, 6.75%. Both numbers are settings in the simulator.</p>
+    <h3>What it says today</h3>
+    <p>Shiller's CAPE is 41.0, among the highest readings on record, so the rule starts at 2.97%: $29,695 a year on $1,000,000. That's the rule's way of saying today's prices leave less room than history's average start.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds and plans for 30 years. These are the numbers this page opens with.</p>
+    <ul>
+      <li><b>Year one in history</b> ranged from $35,964 (retiring in 1929, with stocks expensive) to $85,159 (retiring in 1982, at a CAPE of 7.4).</li>
+      <li><b>It never ran out:</b> as a share of each year's balance, it lasted in all 70 historical retirements and left a typical $1,000,813.</li>
+      <li><b>The typical retiree</b> spent $51,102 a year in today's dollars.</li>
+      <li><b>The worst case:</b> retiring in 1966, spending fell to $21,502 a year by year 30.</li>
+    </ul>
+    <h3>Questions</h3>
+    <details><summary>Where does the formula come from?</summary><p>Researchers including Michael Kitces and Karsten Jeske (Early Retirement Now) have proposed rules of this shape, a base plus a share of the earnings yield. The 1.75% and 0.5 here are a common starting point; change them to suit.</p></details>
+    <details><summary>Is a high CAPE a reason to retire later?</summary><p>Not by itself. High valuations have tended to mean lower returns over the following decade, but the link is loose. The Safe spending view shows how much each historical start allowed against its CAPE.</p></details>
+    <details><summary>Does it use today's CAPE for year one?</summary><p>Yes: the first year's figure uses today's reading. In the historical test, each start uses the CAPE of its own time.</p></details>
     </div>
   </article>
 

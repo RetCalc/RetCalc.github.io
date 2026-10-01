@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Retirement Readiness Check: Are You on Track? | RetCalc</title>
-<meta name="description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<link rel="canonical" href="https://retcalc.app/guide">
+<title>RMD Withdrawal Strategy: Spending by the IRS Life Expectancy Table | RetCalc</title>
+<meta name="description" content="Use required minimum distribution math as a spending rule: each year the balance divided by the IRS life-expectancy divisor. Tested against every retirement since 1926.">
+<link rel="canonical" href="https://retcalc.app/rmd-withdrawal-strategy">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Retirement Readiness Check: Are You on Track? | RetCalc">
-<meta property="og:description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<meta property="og:url" content="https://retcalc.app/guide">
-<meta property="og:image" content="https://retcalc.app/og/guide.jpg">
+<meta property="og:title" content="RMD Withdrawal Strategy: Spending by the IRS Life Expectancy Table | RetCalc">
+<meta property="og:description" content="Use required minimum distribution math as a spending rule: each year the balance divided by the IRS life-expectancy divisor. Tested against every retirement since 1926.">
+<meta property="og:url" content="https://retcalc.app/rmd-withdrawal-strategy">
+<meta property="og:image" content="https://retcalc.app/og/rmd-withdrawal-strategy.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Readiness Guide: One question at a time: a readiness score out of 100, a plan, and what to do next.">
+<meta property="og:image:alt" content="RMD Withdrawal Strategy: Spend the balance divided by the IRS life-expectancy divisor, every year. Tested since 1926.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/guide.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Retirement Readiness Check: Are You on Track?", "url": "https://retcalc.app/guide", "description": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good retirement readiness score?", "acceptedAnswer": {"@type": "Answer", "text": "85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most."}}, {"@type": "Question", "name": "Does it estimate Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer."}}, {"@type": "Question", "name": "Does it include taxes?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy."}}, {"@type": "Question", "name": "Can I stop and come back later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off."}}, {"@type": "Question", "name": "Is it financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/rmd-withdrawal-strategy.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "RMD Withdrawal Strategy: Spending by the IRS Life Expectancy Table", "url": "https://retcalc.app/rmd-withdrawal-strategy", "description": "Use required minimum distribution math as a spending rule: each year the balance divided by the IRS life-expectancy divisor. Tested against every retirement since 1926.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is this the same as my required distributions?", "acceptedAnswer": {"@type": "Answer", "text": "The math is the same, but this applies it to the whole portfolio as a spending rule. Your actual RMDs apply only to traditional accounts and start at 73 (75 for people born in 1960 or later)."}}, {"@type": "Question", "name": "Can the RMD method run out?", "acceptedAnswer": {"@type": "Answer", "text": "No. It always takes a share of what's left, so the balance never reaches zero, though spending falls when markets do."}}, {"@type": "Question", "name": "Why does spending rise so much late in retirement?", "acceptedAnswer": {"@type": "Answer", "text": "The divisor shrinks every year, so the share taken grows: about 3% at 65, 5% at 80, 8% at 90. If the portfolio holds its value, spending climbs with it."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -312,7 +312,7 @@ window.onerror = function(msg){
 <main id="main">
 <!-- The page's main heading. A tool's page uses the tool's own title in its
      header instead (#toolCrumb); the build fills both in for each address. -->
-<h1 class="srlive" id="pageH1">Retirement Readiness Guide</h1>
+<h1 class="srlive" id="pageH1" hidden></h1>
   <!-- ========== HOUSEHOLD PROFILE ========== -->
   <section class="hh" id="hhCard" aria-label="Your household">
     <div class="hh-bar">
@@ -383,7 +383,7 @@ window.onerror = function(msg){
       </div>
     </div>
   </section>
-  <div class="toolback" id="toolBack" hidden>
+  <div class="toolback" id="toolBack">
     <button type="button" class="backbtn" id="btnToolBack">
       <i class="arw back" aria-hidden="true"></i>
       All tools
@@ -391,8 +391,8 @@ window.onerror = function(msg){
     <div class="toolhead">
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
-        <h1 class="toolhead-name" id="toolCrumb"></h1>
-        <p class="toolhead-desc" id="toolHeadDesc"></p>
+        <h1 class="toolhead-name" id="toolCrumb">RMD Withdrawal Strategy Calculator</h1>
+        <p class="toolhead-desc" id="toolHeadDesc">Will your money last? Test withdrawal strategies against every retirement since 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -5470,66 +5470,37 @@ window.onerror = function(msg){
 
 
 
-  <article class="seo-a panel about" data-page="guide">
-    <h2>Retirement readiness check: are you on track?</h2>
+
+
+
+
+
+
+
+
+  <article class="seo-a panel about" data-page="rmd-withdrawal-strategy">
+    <h2>RMD withdrawal strategy: spending by the IRS life expectancy table</h2>
     <div class="body">
-    <p>A guided check-up, one question at a time, that turns your answers into a retirement readiness score out of 100 and a plan you can adjust. It covers cash flow, emergency savings, debt, big goals like a home or college, and retirement itself.</p>
-    <h3>What you get</h3>
+    <p>Required minimum distributions force you to take a share of a traditional IRA each year: the balance divided by a life-expectancy divisor from the IRS. Some retirees use the same math as their spending rule for the whole portfolio. It adjusts to markets, can't run out, and spends a little more each year as the horizon shortens. This page opens the Drawdown Simulator set up for it.</p>
+    <h3>How it works</h3>
+    <p>Each year, divide the portfolio by the divisor for your age from the IRS Uniform Lifetime Table: 27.4 at 72, 20.2 at 80, 12.2 at 90. That's 3.65%, 4.95% and 8.20% of the balance. The table starts at 72, so before then the simulator extends it by 0.9 a year, which gives 2.97% at 65.</p>
+    <p>For the required distributions themselves, and what converting to Roth first would save, see the <a href="/rmd">RMD calculator</a>.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires at 65 with $1,000,000 in a 60/40 mix of US stocks and bonds and plans for 30 years. These are the numbers this page opens with.</p>
     <ul>
-      <li>A score built from your retirement outlook, savings rate, emergency fund, debt and monthly cash flow.</li>
-      <li>Your plan tested against every retirement since 1926, account by account, with Social Security estimated for you and each year's income tax and health insurance worked out.</li>
-      <li>Specific changes that would put you on track, such as saving more, retiring later or spending less, sized for you.</li>
-      <li>Short trips into the other tools, with your numbers filled in.</li>
+      <li><b>Year one:</b> $29,674, less than the 4% rule's $40,000. The method starts cautiously.</li>
+      <li><b>Spending rises with age:</b> the median spending across starts was $49,306 in year ten, $78,848 in year twenty and $104,354 in year thirty, in today's dollars.</li>
+      <li><b>It never ran out</b> in any of the 70 historical retirements, and left a typical $935,660.</li>
+      <li><b>The worst case:</b> retiring in 1973, spending fell to $18,881 in year 3 before climbing.</li>
     </ul>
-    <p>It takes about 15 minutes, saves as you go, and nothing leaves your browser.</p>
-    <h3>How the score works</h3>
-    <p>The score weighs five areas. Each earns full marks at a clear, common-sense target, and partial marks on the way there:</p>
-    <ul>
-      <li><b>Retirement outlook, 40 points:</b> how often your plan's money lasted through retirement in the historical record, with Social Security included. Full marks when it lasted in 95% of retirements.</li>
-      <li><b>Savings rate, 20 points:</b> full marks at 15% of gross income, counting any employer match. If your plan already has enough, you get full marks at a lower rate, so choosing to coast isn't penalized. Missing part of an employer match costs a quarter of this area.</li>
-      <li><b>Emergency fund, 15 points:</b> full marks at six months of spending in cash.</li>
-      <li><b>Debt, 15 points:</b> full marks with nothing owed besides a mortgage. Debt at 8% or more counts far more heavily than low-rate loans.</li>
-      <li><b>Monthly cash flow, 10 points:</b> full marks when you spend no more than 80% of take-home pay.</li>
-    </ul>
-    <p>Scores of 85 and up read as <b>On track</b>, 70 to 84 <b>Nearly there</b>, 50 to 69 <b>Getting there</b>, 30 to 49 <b>Needs work</b>, and below 30 <b>Needs attention</b>. You get a score as soon as two areas are answered, and it sharpens as you go.</p>
-    <h3>How it works, step by step</h3>
-    <ul>
-      <li><b>About you:</b> your age and household.</li>
-      <li><b>Your money today:</b> income, take-home pay and monthly spending.</li>
-      <li><b>Safety net:</b> your emergency fund and any debt.</li>
-      <li><b>Big goals:</b> housing and college.</li>
-      <li><b>Retirement:</b> what you've saved, what you'll spend, your projection, and whether it lasts.</li>
-      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, let the <a href="/optimizer">Plan Optimizer</a> find the best way to claim Social Security and convert to Roth, then see your score and next steps.</li>
-    </ul>
-    <h3>Common mistakes</h3>
-    <ul>
-      <li>Guessing spending instead of checking statements. It's the number the whole plan rests on.</li>
-      <li>Leaving out an employer match, which counts toward your savings rate.</li>
-      <li>Treating a low score as a verdict. It's a map of which area to work on first.</li>
-    </ul>
-    <h3>Related tools</h3>
-    <ul>
-      <li><a href="/">Retirement calculator</a>: the quick six-question projection.</li>
-      <li><a href="/budget">Budget</a>: the spending figure the guide asks for.</li>
-      <li><a href="/debt">Debt payoff</a>: a plan for the debt area.</li>
-      <li><a href="/drawdown">Drawdown simulator</a>: the retirement outlook in full detail.</li>
-    </ul>
+    <h3>Who it suits</h3>
+    <p>Retirees who want spending to follow markets, are comfortable starting low, and expect to spend more later, or who'd rather leave something behind. It spends less early than most strategies, which is when many retirees most want to spend.</p>
     <h3>Questions</h3>
-    <details><summary>What is a good retirement readiness score?</summary><p>85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most.</p></details>
-    <details><summary>Does it estimate Social Security?</summary><p>Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer.</p></details>
-    <details><summary>Does it include taxes?</summary><p>Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy.</p></details>
-    <details><summary>Can I stop and come back later?</summary><p>Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off.</p></details>
-    <details><summary>Is it financial advice?</summary><p>No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional.</p></details>
+    <details><summary>Is this the same as my required distributions?</summary><p>The math is the same, but this applies it to the whole portfolio as a spending rule. Your actual RMDs apply only to traditional accounts and start at 73 (75 for people born in 1960 or later).</p></details>
+    <details><summary>Can the RMD method run out?</summary><p>No. It always takes a share of what's left, so the balance never reaches zero, though spending falls when markets do.</p></details>
+    <details><summary>Why does spending rise so much late in retirement?</summary><p>The divisor shrinks every year, so the share taken grows: about 3% at 65, 5% at 80, 8% at 90. If the portfolio holds its value, spending climbs with it.</p></details>
     </div>
   </article>
-
-
-
-
-
-
-
-
 
 
 

@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Retirement Readiness Check: Are You on Track? | RetCalc</title>
-<meta name="description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<link rel="canonical" href="https://retcalc.app/guide">
+<title>Risk-Based Guardrails Calculator: Spending Set by the Odds of Success | RetCalc</title>
+<meta name="description" content="Risk-based guardrails adjust spending only when the chance your plan lasts leaves a band. Test them against every retirement since 1926 and see how often, and how far, spending moved.">
+<link rel="canonical" href="https://retcalc.app/risk-based-guardrails">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Retirement Readiness Check: Are You on Track? | RetCalc">
-<meta property="og:description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<meta property="og:url" content="https://retcalc.app/guide">
-<meta property="og:image" content="https://retcalc.app/og/guide.jpg">
+<meta property="og:title" content="Risk-Based Guardrails Calculator: Spending Set by the Odds of Success | RetCalc">
+<meta property="og:description" content="Risk-based guardrails adjust spending only when the chance your plan lasts leaves a band. Test them against every retirement since 1926 and see how often, and how far, spending moved.">
+<meta property="og:url" content="https://retcalc.app/risk-based-guardrails">
+<meta property="og:image" content="https://retcalc.app/og/risk-based-guardrails.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Readiness Guide: One question at a time: a readiness score out of 100, a plan, and what to do next.">
+<meta property="og:image:alt" content="Risk-Based Guardrails: Change spending only when the odds of lasting leave a band. How often did it move, and how far?">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/guide.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Retirement Readiness Check: Are You on Track?", "url": "https://retcalc.app/guide", "description": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good retirement readiness score?", "acceptedAnswer": {"@type": "Answer", "text": "85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most."}}, {"@type": "Question", "name": "Does it estimate Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer."}}, {"@type": "Question", "name": "Does it include taxes?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy."}}, {"@type": "Question", "name": "Can I stop and come back later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off."}}, {"@type": "Question", "name": "Is it financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/risk-based-guardrails.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Risk-Based Guardrails Calculator: Spending Set by the Odds of Success", "url": "https://retcalc.app/risk-based-guardrails", "description": "Risk-based guardrails adjust spending only when the chance your plan lasts leaves a band. Test them against every retirement since 1926 and see how often, and how far, spending moved.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Why does it spend everything by the end?", "acceptedAnswer": {"@type": "Answer", "text": "With a year left, any balance has every chance of lasting it, so the rule raises spending toward the end. Set a Legacy goal or a Maximum spending if you want something left."}}, {"@type": "Question", "name": "Is the probability from Monte Carlo?", "acceptedAnswer": {"@type": "Answer", "text": "Here it's from history: the share of past starts at your mix in which a given withdrawal would have lasted the years left. Planners' software often uses Monte Carlo for the same idea."}}, {"@type": "Question", "name": "What target should I use?", "acceptedAnswer": {"@type": "Answer", "text": "90% with a 70%–99% band is a common setting. A lower target starts higher and resets more often; a narrower band means more frequent, smaller changes."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -312,7 +312,7 @@ window.onerror = function(msg){
 <main id="main">
 <!-- The page's main heading. A tool's page uses the tool's own title in its
      header instead (#toolCrumb); the build fills both in for each address. -->
-<h1 class="srlive" id="pageH1">Retirement Readiness Guide</h1>
+<h1 class="srlive" id="pageH1" hidden></h1>
   <!-- ========== HOUSEHOLD PROFILE ========== -->
   <section class="hh" id="hhCard" aria-label="Your household">
     <div class="hh-bar">
@@ -383,7 +383,7 @@ window.onerror = function(msg){
       </div>
     </div>
   </section>
-  <div class="toolback" id="toolBack" hidden>
+  <div class="toolback" id="toolBack">
     <button type="button" class="backbtn" id="btnToolBack">
       <i class="arw back" aria-hidden="true"></i>
       All tools
@@ -391,8 +391,8 @@ window.onerror = function(msg){
     <div class="toolhead">
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
-        <h1 class="toolhead-name" id="toolCrumb"></h1>
-        <p class="toolhead-desc" id="toolHeadDesc"></p>
+        <h1 class="toolhead-name" id="toolCrumb">Risk-Based Guardrails Calculator</h1>
+        <p class="toolhead-desc" id="toolHeadDesc">Will your money last? Test withdrawal strategies against every retirement since 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -5470,65 +5470,40 @@ window.onerror = function(msg){
 
 
 
-  <article class="seo-a panel about" data-page="guide">
-    <h2>Retirement readiness check: are you on track?</h2>
+
+
+
+
+
+
+
+  <article class="seo-a panel about" data-page="risk-based-guardrails">
+    <h2>Risk-based guardrails calculator: spending set by the odds of success</h2>
     <div class="body">
-    <p>A guided check-up, one question at a time, that turns your answers into a retirement readiness score out of 100 and a plan you can adjust. It covers cash flow, emergency savings, debt, big goals like a home or college, and retirement itself.</p>
-    <h3>What you get</h3>
+    <p>Classic guardrails cut or raise spending when the withdrawal rate drifts too far. Risk-based guardrails, an approach many financial planners now use, watch something more direct: the chance, judged from history, that the plan lasts. Spending holds steady while that chance stays in a comfortable band and is reset only when it leaves. This page opens the Drawdown Simulator set up for them.</p>
+    <h3>How they work</h3>
     <ul>
-      <li>A score built from your retirement outlook, savings rate, emergency fund, debt and monthly cash flow.</li>
-      <li>Your plan tested against every retirement since 1926, account by account, with Social Security estimated for you and each year's income tax and health insurance worked out.</li>
-      <li>Specific changes that would put you on track, such as saving more, retiring later or spending less, sized for you.</li>
-      <li>Short trips into the other tools, with your numbers filled in.</li>
+      <li><b>Start:</b> spend the amount that history gives a 90% chance of lasting the years ahead, counting Social Security and other income still to come.</li>
+      <li><b>Hold:</b> keep that spending, raised with inflation, while the chance stays between 70% and 99%.</li>
+      <li><b>Reset:</b> if markets push the chance below 70%, cut spending back to where it's 90% again; if they push it above 99%, raise it to 90%.</li>
     </ul>
-    <p>It takes about 15 minutes, saves as you go, and nothing leaves your browser.</p>
-    <h3>How the score works</h3>
-    <p>The score weighs five areas. Each earns full marks at a clear, common-sense target, and partial marks on the way there:</p>
+    <p>The chance is read from every historical start at your stock mix and fees, for however many years are left. The three numbers are settings in the simulator.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds and plans for 30 years. These are the numbers this page opens with.</p>
     <ul>
-      <li><b>Retirement outlook, 40 points:</b> how often your plan's money lasted through retirement in the historical record, with Social Security included. Full marks when it lasted in 95% of retirements.</li>
-      <li><b>Savings rate, 20 points:</b> full marks at 15% of gross income, counting any employer match. If your plan already has enough, you get full marks at a lower rate, so choosing to coast isn't penalized. Missing part of an employer match costs a quarter of this area.</li>
-      <li><b>Emergency fund, 15 points:</b> full marks at six months of spending in cash.</li>
-      <li><b>Debt, 15 points:</b> full marks with nothing owed besides a mortgage. Debt at 8% or more counts far more heavily than low-rate loans.</li>
-      <li><b>Monthly cash flow, 10 points:</b> full marks when you spend no more than 80% of take-home pay.</li>
+      <li><b>Year one:</b> $42,781, a 4.28% rate, the amount with a 90% historical chance of lasting 30 years.</li>
+      <li><b>Few cuts:</b> the typical start's spending changed 10 times in 30 years, mostly raises, with 2 cuts; 7 of the 70 starts never had a cut.</li>
+      <li><b>When cuts came, they were big:</b> the largest single cut was 40%. Retiring in 1969, spending fell to $23,777 a year by year 8.</li>
+      <li><b>Generous over a lifetime:</b> the middle start's typical year was $69,117 in today's dollars, and like VPW it spends the portfolio down by the final year.</li>
     </ul>
-    <p>Scores of 85 and up read as <b>On track</b>, 70 to 84 <b>Nearly there</b>, 50 to 69 <b>Getting there</b>, 30 to 49 <b>Needs work</b>, and below 30 <b>Needs attention</b>. You get a score as soon as two areas are answered, and it sharpens as you go.</p>
-    <h3>How it works, step by step</h3>
-    <ul>
-      <li><b>About you:</b> your age and household.</li>
-      <li><b>Your money today:</b> income, take-home pay and monthly spending.</li>
-      <li><b>Safety net:</b> your emergency fund and any debt.</li>
-      <li><b>Big goals:</b> housing and college.</li>
-      <li><b>Retirement:</b> what you've saved, what you'll spend, your projection, and whether it lasts.</li>
-      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, let the <a href="/optimizer">Plan Optimizer</a> find the best way to claim Social Security and convert to Roth, then see your score and next steps.</li>
-    </ul>
-    <h3>Common mistakes</h3>
-    <ul>
-      <li>Guessing spending instead of checking statements. It's the number the whole plan rests on.</li>
-      <li>Leaving out an employer match, which counts toward your savings rate.</li>
-      <li>Treating a low score as a verdict. It's a map of which area to work on first.</li>
-    </ul>
-    <h3>Related tools</h3>
-    <ul>
-      <li><a href="/">Retirement calculator</a>: the quick six-question projection.</li>
-      <li><a href="/budget">Budget</a>: the spending figure the guide asks for.</li>
-      <li><a href="/debt">Debt payoff</a>: a plan for the debt area.</li>
-      <li><a href="/drawdown">Drawdown simulator</a>: the retirement outlook in full detail.</li>
-    </ul>
+    <h3>Against classic guardrails</h3>
+    <p>Fewer, larger adjustments. Guyton-Klinger <a href="/guardrails">guardrails</a> move spending 10% at a time and often; risk-based ones leave it alone through ordinary swings and reset in one step when the odds really change. Whether that suits you depends on whether you'd rather take small cuts often or a bigger one rarely.</p>
     <h3>Questions</h3>
-    <details><summary>What is a good retirement readiness score?</summary><p>85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most.</p></details>
-    <details><summary>Does it estimate Social Security?</summary><p>Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer.</p></details>
-    <details><summary>Does it include taxes?</summary><p>Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy.</p></details>
-    <details><summary>Can I stop and come back later?</summary><p>Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off.</p></details>
-    <details><summary>Is it financial advice?</summary><p>No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional.</p></details>
+    <details><summary>Why does it spend everything by the end?</summary><p>With a year left, any balance has every chance of lasting it, so the rule raises spending toward the end. Set a <b>Legacy goal</b> or a <b>Maximum spending</b> if you want something left.</p></details>
+    <details><summary>Is the probability from Monte Carlo?</summary><p>Here it's from history: the share of past starts at your mix in which a given withdrawal would have lasted the years left. Planners' software often uses Monte Carlo for the same idea.</p></details>
+    <details><summary>What target should I use?</summary><p>90% with a 70%–99% band is a common setting. A lower target starts higher and resets more often; a narrower band means more frequent, smaller changes.</p></details>
     </div>
   </article>
-
-
-
-
-
-
-
 
 
 

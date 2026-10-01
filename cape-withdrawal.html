@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Retirement Readiness Check: Are You on Track? | RetCalc</title>
-<meta name="description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<link rel="canonical" href="https://retcalc.app/guide">
+<title>CAPE-Based Withdrawal Rate Calculator: Spend by Market Valuation | RetCalc</title>
+<meta name="description" content="Set your withdrawal rate from the stock market&#x27;s CAPE ratio: more when stocks are cheap, less when they&#x27;re dear. See today&#x27;s rate at a CAPE of 41 and how it did since 1926.">
+<link rel="canonical" href="https://retcalc.app/cape-withdrawal">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Retirement Readiness Check: Are You on Track? | RetCalc">
-<meta property="og:description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<meta property="og:url" content="https://retcalc.app/guide">
-<meta property="og:image" content="https://retcalc.app/og/guide.jpg">
+<meta property="og:title" content="CAPE-Based Withdrawal Rate Calculator: Spend by Market Valuation | RetCalc">
+<meta property="og:description" content="Set your withdrawal rate from the stock market&#x27;s CAPE ratio: more when stocks are cheap, less when they&#x27;re dear. See today&#x27;s rate at a CAPE of 41 and how it did since 1926.">
+<meta property="og:url" content="https://retcalc.app/cape-withdrawal">
+<meta property="og:image" content="https://retcalc.app/og/cape-withdrawal.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Readiness Guide: One question at a time: a readiness score out of 100, a plan, and what to do next.">
+<meta property="og:image:alt" content="CAPE-Based Withdrawals: Spend more when stocks are cheap, less when they&#x27;re dear. Today&#x27;s rate, and how it did since 1926.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/guide.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Retirement Readiness Check: Are You on Track?", "url": "https://retcalc.app/guide", "description": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good retirement readiness score?", "acceptedAnswer": {"@type": "Answer", "text": "85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most."}}, {"@type": "Question", "name": "Does it estimate Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer."}}, {"@type": "Question", "name": "Does it include taxes?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy."}}, {"@type": "Question", "name": "Can I stop and come back later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off."}}, {"@type": "Question", "name": "Is it financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/cape-withdrawal.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "CAPE-Based Withdrawal Rate Calculator: Spend by Market Valuation", "url": "https://retcalc.app/cape-withdrawal", "description": "Set your withdrawal rate from the stock market's CAPE ratio: more when stocks are cheap, less when they're dear. See today's rate at a CAPE of 41 and how it did since 1926.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Where does the formula come from?", "acceptedAnswer": {"@type": "Answer", "text": "Researchers including Michael Kitces and Karsten Jeske (Early Retirement Now) have proposed rules of this shape, a base plus a share of the earnings yield. The 1.75% and 0.5 here are a common starting point; change them to suit."}}, {"@type": "Question", "name": "Is a high CAPE a reason to retire later?", "acceptedAnswer": {"@type": "Answer", "text": "Not by itself. High valuations have tended to mean lower returns over the following decade, but the link is loose. The Safe spending view shows how much each historical start allowed against its CAPE."}}, {"@type": "Question", "name": "Does it use today's CAPE for year one?", "acceptedAnswer": {"@type": "Answer", "text": "Yes: the first year's figure uses today's reading. In the historical test, each start uses the CAPE of its own time."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -312,7 +312,7 @@ window.onerror = function(msg){
 <main id="main">
 <!-- The page's main heading. A tool's page uses the tool's own title in its
      header instead (#toolCrumb); the build fills both in for each address. -->
-<h1 class="srlive" id="pageH1">Retirement Readiness Guide</h1>
+<h1 class="srlive" id="pageH1" hidden></h1>
   <!-- ========== HOUSEHOLD PROFILE ========== -->
   <section class="hh" id="hhCard" aria-label="Your household">
     <div class="hh-bar">
@@ -383,7 +383,7 @@ window.onerror = function(msg){
       </div>
     </div>
   </section>
-  <div class="toolback" id="toolBack" hidden>
+  <div class="toolback" id="toolBack">
     <button type="button" class="backbtn" id="btnToolBack">
       <i class="arw back" aria-hidden="true"></i>
       All tools
@@ -391,8 +391,8 @@ window.onerror = function(msg){
     <div class="toolhead">
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
-        <h1 class="toolhead-name" id="toolCrumb"></h1>
-        <p class="toolhead-desc" id="toolHeadDesc"></p>
+        <h1 class="toolhead-name" id="toolCrumb">CAPE-Based Withdrawal Calculator</h1>
+        <p class="toolhead-desc" id="toolHeadDesc">Will your money last? Test withdrawal strategies against every retirement since 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -5470,68 +5470,38 @@ window.onerror = function(msg){
 
 
 
-  <article class="seo-a panel about" data-page="guide">
-    <h2>Retirement readiness check: are you on track?</h2>
+
+
+
+
+
+
+
+
+
+
+  <article class="seo-a panel about" data-page="cape-withdrawal">
+    <h2>CAPE-based withdrawal calculator: spend by market valuation</h2>
     <div class="body">
-    <p>A guided check-up, one question at a time, that turns your answers into a retirement readiness score out of 100 and a plan you can adjust. It covers cash flow, emergency savings, debt, big goals like a home or college, and retirement itself.</p>
-    <h3>What you get</h3>
+    <p>A CAPE-based rule sets each year's withdrawal from how expensive stocks are. Shiller's CAPE is the S&amp;P 500's price over ten years of its earnings, after inflation; its inverse, the earnings yield, has been a rough guide to future returns. The rule takes a base rate plus a share of that yield: more when stocks are cheap, less when they're dear. This page opens the Drawdown Simulator set up for it.</p>
+    <h3>How it works</h3>
+    <p>Each year: withdrawal rate = 1.75% + 0.5 × (100 ÷ CAPE), applied to that year's balance. At a CAPE of 20 that's 4.25%; at 10, 6.75%. Both numbers are settings in the simulator.</p>
+    <h3>What it says today</h3>
+    <p>Shiller's CAPE is 41.0, among the highest readings on record, so the rule starts at 2.97%: $29,695 a year on $1,000,000. That's the rule's way of saying today's prices leave less room than history's average start.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds and plans for 30 years. These are the numbers this page opens with.</p>
     <ul>
-      <li>A score built from your retirement outlook, savings rate, emergency fund, debt and monthly cash flow.</li>
-      <li>Your plan tested against every retirement since 1926, account by account, with Social Security estimated for you and each year's income tax and health insurance worked out.</li>
-      <li>Specific changes that would put you on track, such as saving more, retiring later or spending less, sized for you.</li>
-      <li>Short trips into the other tools, with your numbers filled in.</li>
-    </ul>
-    <p>It takes about 15 minutes, saves as you go, and nothing leaves your browser.</p>
-    <h3>How the score works</h3>
-    <p>The score weighs five areas. Each earns full marks at a clear, common-sense target, and partial marks on the way there:</p>
-    <ul>
-      <li><b>Retirement outlook, 40 points:</b> how often your plan's money lasted through retirement in the historical record, with Social Security included. Full marks when it lasted in 95% of retirements.</li>
-      <li><b>Savings rate, 20 points:</b> full marks at 15% of gross income, counting any employer match. If your plan already has enough, you get full marks at a lower rate, so choosing to coast isn't penalized. Missing part of an employer match costs a quarter of this area.</li>
-      <li><b>Emergency fund, 15 points:</b> full marks at six months of spending in cash.</li>
-      <li><b>Debt, 15 points:</b> full marks with nothing owed besides a mortgage. Debt at 8% or more counts far more heavily than low-rate loans.</li>
-      <li><b>Monthly cash flow, 10 points:</b> full marks when you spend no more than 80% of take-home pay.</li>
-    </ul>
-    <p>Scores of 85 and up read as <b>On track</b>, 70 to 84 <b>Nearly there</b>, 50 to 69 <b>Getting there</b>, 30 to 49 <b>Needs work</b>, and below 30 <b>Needs attention</b>. You get a score as soon as two areas are answered, and it sharpens as you go.</p>
-    <h3>How it works, step by step</h3>
-    <ul>
-      <li><b>About you:</b> your age and household.</li>
-      <li><b>Your money today:</b> income, take-home pay and monthly spending.</li>
-      <li><b>Safety net:</b> your emergency fund and any debt.</li>
-      <li><b>Big goals:</b> housing and college.</li>
-      <li><b>Retirement:</b> what you've saved, what you'll spend, your projection, and whether it lasts.</li>
-      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, let the <a href="/optimizer">Plan Optimizer</a> find the best way to claim Social Security and convert to Roth, then see your score and next steps.</li>
-    </ul>
-    <h3>Common mistakes</h3>
-    <ul>
-      <li>Guessing spending instead of checking statements. It's the number the whole plan rests on.</li>
-      <li>Leaving out an employer match, which counts toward your savings rate.</li>
-      <li>Treating a low score as a verdict. It's a map of which area to work on first.</li>
-    </ul>
-    <h3>Related tools</h3>
-    <ul>
-      <li><a href="/">Retirement calculator</a>: the quick six-question projection.</li>
-      <li><a href="/budget">Budget</a>: the spending figure the guide asks for.</li>
-      <li><a href="/debt">Debt payoff</a>: a plan for the debt area.</li>
-      <li><a href="/drawdown">Drawdown simulator</a>: the retirement outlook in full detail.</li>
+      <li><b>Year one in history</b> ranged from $35,964 (retiring in 1929, with stocks expensive) to $85,159 (retiring in 1982, at a CAPE of 7.4).</li>
+      <li><b>It never ran out:</b> as a share of each year's balance, it lasted in all 70 historical retirements and left a typical $1,000,813.</li>
+      <li><b>The typical retiree</b> spent $51,102 a year in today's dollars.</li>
+      <li><b>The worst case:</b> retiring in 1966, spending fell to $21,502 a year by year 30.</li>
     </ul>
     <h3>Questions</h3>
-    <details><summary>What is a good retirement readiness score?</summary><p>85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most.</p></details>
-    <details><summary>Does it estimate Social Security?</summary><p>Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer.</p></details>
-    <details><summary>Does it include taxes?</summary><p>Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy.</p></details>
-    <details><summary>Can I stop and come back later?</summary><p>Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off.</p></details>
-    <details><summary>Is it financial advice?</summary><p>No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional.</p></details>
+    <details><summary>Where does the formula come from?</summary><p>Researchers including Michael Kitces and Karsten Jeske (Early Retirement Now) have proposed rules of this shape, a base plus a share of the earnings yield. The 1.75% and 0.5 here are a common starting point; change them to suit.</p></details>
+    <details><summary>Is a high CAPE a reason to retire later?</summary><p>Not by itself. High valuations have tended to mean lower returns over the following decade, but the link is loose. The Safe spending view shows how much each historical start allowed against its CAPE.</p></details>
+    <details><summary>Does it use today's CAPE for year one?</summary><p>Yes: the first year's figure uses today's reading. In the historical test, each start uses the CAPE of its own time.</p></details>
     </div>
   </article>
-
-
-
-
-
-
-
-
-
-
 
 
 

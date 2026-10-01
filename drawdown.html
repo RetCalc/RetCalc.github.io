@@ -114,6 +114,31 @@
 "title": "VPW Calculator: Variable Percentage Withdrawal Tested Since 1926 | RetCalc",
 "desc": "The Bogleheads' variable percentage withdrawal (VPW), tested against every retirement since 1926: each year's payment, how it rises with age, and how low it fell in the worst starts."
 },
+"vanguard-dynamic-spending": {
+"h1": "Vanguard Dynamic Spending Calculator",
+"title": "Vanguard Dynamic Spending Calculator: Ceiling and Floor Rule Tested | RetCalc",
+"desc": "Test Vanguard's dynamic spending rule, a share of the portfolio with spending rising at most 5% and falling at most 2.5% a year, against every retirement since 1926."
+},
+"risk-based-guardrails": {
+"h1": "Risk-Based Guardrails Calculator",
+"title": "Risk-Based Guardrails Calculator: Spending Set by the Odds of Success | RetCalc",
+"desc": "Risk-based guardrails adjust spending only when the chance your plan lasts leaves a band. Test them against every retirement since 1926 and see how often, and how far, spending moved."
+},
+"rmd-withdrawal-strategy": {
+"h1": "RMD Withdrawal Strategy Calculator",
+"title": "RMD Withdrawal Strategy: Spending by the IRS Life Expectancy Table | RetCalc",
+"desc": "Use required minimum distribution math as a spending rule: each year the balance divided by the IRS life-expectancy divisor. Tested against every retirement since 1926."
+},
+"ratcheting-withdrawal": {
+"h1": "Ratcheting Withdrawal Calculator",
+"title": "Kitces Ratchet Calculator: The 4% Rule With Raises | RetCalc",
+"desc": "The Kitces ratchet: start at 4% and raise spending 10% whenever the portfolio grows 50% above where it began. See how often retirees since 1926 got raises, and what it cost."
+},
+"cape-withdrawal": {
+"h1": "CAPE-Based Withdrawal Calculator",
+"title": "CAPE-Based Withdrawal Rate Calculator: Spend by Market Valuation | RetCalc",
+"desc": "Set your withdrawal rate from the stock market's CAPE ratio: more when stocks are cheap, less when they're dear. See today's rate at a CAPE of 41 and how it did since 1926."
+},
 "optimizer": {
 "h1": "Retirement Plan Optimizer",
 "title": "Retirement Plan Optimizer: Social Security, Withdrawals & Roth Conversions | RetCalc",
@@ -189,7 +214,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.2ff58299c1.css">
-<link rel="preload" href="/assets/app.5af36b96af.js" as="script">
+<link rel="preload" href="/assets/app.bb94a8998f.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -5486,7 +5511,7 @@ window.onerror = function(msg){
       <li><a href="/roth">Roth conversions</a>: lowering the tax on future withdrawals.</li>
       <li><a href="/healthcare">Healthcare costs</a>: premiums before and after Medicare, which belong in your spending.</li>
       <li><a href="/backtest">Portfolio backtest</a>: how a stock and bond mix behaved in every period since 1926.</li>
-      <li>One strategy at a time: the <a href="/4-percent-rule">4% rule</a>, <a href="/guardrails">guardrails</a> and <a href="/vpw">VPW</a>, each with a worked example.</li>
+      <li>One strategy at a time, each with a worked example: the <a href="/4-percent-rule">4% rule</a>, <a href="/guardrails">guardrails</a>, <a href="/vpw">VPW</a>, <a href="/vanguard-dynamic-spending">Vanguard dynamic spending</a>, <a href="/risk-based-guardrails">risk-based guardrails</a>, <a href="/rmd-withdrawal-strategy">the RMD method</a>, <a href="/ratcheting-withdrawal">the Kitces ratchet</a> and <a href="/cape-withdrawal">CAPE-based withdrawals</a>.</li>
     </ul>
     <h3>Questions</h3>
     <details><summary>What is a safe withdrawal rate?</summary><p>For a 30-year retirement with a mix of stocks and bonds, 4% has survived about 95% of historical starts. Longer retirements, like one beginning at 50, call for something closer to 3.25% to 3.5%, or a strategy that trims spending after bad years.</p></details>
@@ -5497,6 +5522,11 @@ window.onerror = function(msg){
     <details><summary>When should I cut spending?</summary><p>Guardrail strategies cut spending by a set amount, often 10%, when the withdrawal rate rises too far above where it started, and give a raise when markets do well. Choose Guardrails as the strategy to see how often cuts would have happened and how deep they went.</p></details>
     </div>
   </article>
+
+
+
+
+
 
 
 
@@ -5589,7 +5619,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.5af36b96af.js"></script>
+<script src="/assets/app.bb94a8998f.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

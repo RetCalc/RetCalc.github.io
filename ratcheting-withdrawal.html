@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Retirement Readiness Check: Are You on Track? | RetCalc</title>
-<meta name="description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<link rel="canonical" href="https://retcalc.app/guide">
+<title>Kitces Ratchet Calculator: The 4% Rule With Raises | RetCalc</title>
+<meta name="description" content="The Kitces ratchet: start at 4% and raise spending 10% whenever the portfolio grows 50% above where it began. See how often retirees since 1926 got raises, and what it cost.">
+<link rel="canonical" href="https://retcalc.app/ratcheting-withdrawal">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Retirement Readiness Check: Are You on Track? | RetCalc">
-<meta property="og:description" content="A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.">
-<meta property="og:url" content="https://retcalc.app/guide">
-<meta property="og:image" content="https://retcalc.app/og/guide.jpg">
+<meta property="og:title" content="Kitces Ratchet Calculator: The 4% Rule With Raises | RetCalc">
+<meta property="og:description" content="The Kitces ratchet: start at 4% and raise spending 10% whenever the portfolio grows 50% above where it began. See how often retirees since 1926 got raises, and what it cost.">
+<meta property="og:url" content="https://retcalc.app/ratcheting-withdrawal">
+<meta property="og:image" content="https://retcalc.app/og/ratcheting-withdrawal.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Readiness Guide: One question at a time: a readiness score out of 100, a plan, and what to do next.">
+<meta property="og:image:alt" content="Ratcheting Withdrawals: The 4% rule with raises: 10% more whenever the portfolio is up 50%. How often did they come?">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/guide.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Retirement Readiness Check: Are You on Track?", "url": "https://retcalc.app/guide", "description": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is a good retirement readiness score?", "acceptedAnswer": {"@type": "Answer", "text": "85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most."}}, {"@type": "Question", "name": "Does it estimate Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer."}}, {"@type": "Question", "name": "Does it include taxes?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy."}}, {"@type": "Question", "name": "Can I stop and come back later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off."}}, {"@type": "Question", "name": "Is it financial advice?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/ratcheting-withdrawal.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Kitces Ratchet Calculator: The 4% Rule With Raises", "url": "https://retcalc.app/ratcheting-withdrawal", "description": "The Kitces ratchet: start at 4% and raise spending 10% whenever the portfolio grows 50% above where it began. See how often retirees since 1926 got raises, and what it cost.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does spending ever go down?", "acceptedAnswer": {"@type": "Answer", "text": "No. Like the 4% rule, it never cuts; it only adds raises. That's why its failures are the same as the 4% rule's."}}, {"@type": "Question", "name": "Can I ratchet more aggressively?", "acceptedAnswer": {"@type": "Answer", "text": "Yes: a lower threshold or bigger raises spend more, at some risk. The Safe spending view shows how the highest safe starting rate changes."}}, {"@type": "Question", "name": "How does it compare with guardrails?", "acceptedAnswer": {"@type": "Answer", "text": "Guardrails start higher and cut when markets fall; the ratchet starts at 4% and only ever raises. See guardrails and the 4% rule."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -312,7 +312,7 @@ window.onerror = function(msg){
 <main id="main">
 <!-- The page's main heading. A tool's page uses the tool's own title in its
      header instead (#toolCrumb); the build fills both in for each address. -->
-<h1 class="srlive" id="pageH1">Retirement Readiness Guide</h1>
+<h1 class="srlive" id="pageH1" hidden></h1>
   <!-- ========== HOUSEHOLD PROFILE ========== -->
   <section class="hh" id="hhCard" aria-label="Your household">
     <div class="hh-bar">
@@ -383,7 +383,7 @@ window.onerror = function(msg){
       </div>
     </div>
   </section>
-  <div class="toolback" id="toolBack" hidden>
+  <div class="toolback" id="toolBack">
     <button type="button" class="backbtn" id="btnToolBack">
       <i class="arw back" aria-hidden="true"></i>
       All tools
@@ -391,8 +391,8 @@ window.onerror = function(msg){
     <div class="toolhead">
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
-        <h1 class="toolhead-name" id="toolCrumb"></h1>
-        <p class="toolhead-desc" id="toolHeadDesc"></p>
+        <h1 class="toolhead-name" id="toolCrumb">Ratcheting Withdrawal Calculator</h1>
+        <p class="toolhead-desc" id="toolHeadDesc">Will your money last? Test withdrawal strategies against every retirement since 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -5470,67 +5470,41 @@ window.onerror = function(msg){
 
 
 
-  <article class="seo-a panel about" data-page="guide">
-    <h2>Retirement readiness check: are you on track?</h2>
+
+
+
+
+
+
+
+
+
+  <article class="seo-a panel about" data-page="ratcheting-withdrawal">
+    <h2>Ratcheting withdrawal calculator: the 4% rule with raises</h2>
     <div class="body">
-    <p>A guided check-up, one question at a time, that turns your answers into a retirement readiness score out of 100 and a plan you can adjust. It covers cash flow, emergency savings, debt, big goals like a home or college, and retirement itself.</p>
-    <h3>What you get</h3>
+    <p>The 4% rule sizes spending for the worst decade in history, so most retirees following it end up with far more than they started with. Michael Kitces proposed a fix in 2015: start at 4%, and give yourself a permanent 10% raise whenever the portfolio grows to 50% above where it began, at most once every three years. Spending never goes down. This page opens the Drawdown Simulator set up for the ratchet.</p>
+    <h3>How it works</h3>
     <ul>
-      <li>A score built from your retirement outlook, savings rate, emergency fund, debt and monthly cash flow.</li>
-      <li>Your plan tested against every retirement since 1926, account by account, with Social Security estimated for you and each year's income tax and health insurance worked out.</li>
-      <li>Specific changes that would put you on track, such as saving more, retiring later or spending less, sized for you.</li>
-      <li>Short trips into the other tools, with your numbers filled in.</li>
+      <li><b>Start:</b> 4% of the portfolio, raised with inflation each year, exactly like the 4% rule.</li>
+      <li><b>Ratchet:</b> when the portfolio, after inflation, is 50% above its starting value, raise spending 10% for good.</li>
+      <li><b>Wait:</b> at least three years between raises.</li>
     </ul>
-    <p>It takes about 15 minutes, saves as you go, and nothing leaves your browser.</p>
-    <h3>How the score works</h3>
-    <p>The score weighs five areas. Each earns full marks at a clear, common-sense target, and partial marks on the way there:</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds, takes $40,000 the first year and plans for 30 years. These are the numbers this page opens with.</p>
     <ul>
-      <li><b>Retirement outlook, 40 points:</b> how often your plan's money lasted through retirement in the historical record, with Social Security included. Full marks when it lasted in 95% of retirements.</li>
-      <li><b>Savings rate, 20 points:</b> full marks at 15% of gross income, counting any employer match. If your plan already has enough, you get full marks at a lower rate, so choosing to coast isn't penalized. Missing part of an employer match costs a quarter of this area.</li>
-      <li><b>Emergency fund, 15 points:</b> full marks at six months of spending in cash.</li>
-      <li><b>Debt, 15 points:</b> full marks with nothing owed besides a mortgage. Debt at 8% or more counts far more heavily than low-rate loans.</li>
-      <li><b>Monthly cash flow, 10 points:</b> full marks when you spend no more than 80% of take-home pay.</li>
+      <li><b>No extra risk:</b> it lasted in 66 of 70 starts, 94.3%, the same as the plain 4% rule. The four failures began in 1965, 1966, 1968 and 1969, and none of them ever got a raise.</li>
+      <li><b>Raises for most:</b> 44 of the 70 starts got at least one; the first typically came in year 9.</li>
+      <li><b>The typical retiree</b> was spending $64,420 a year in today's dollars by year 30. Retiring in 1982, raises came every three years from year 5, reaching $94,318.</li>
+      <li><b>Still a cushion:</b> the middle start ended with $1,428,402, against $1,616,418 without the ratchet.</li>
     </ul>
-    <p>Scores of 85 and up read as <b>On track</b>, 70 to 84 <b>Nearly there</b>, 50 to 69 <b>Getting there</b>, 30 to 49 <b>Needs work</b>, and below 30 <b>Needs attention</b>. You get a score as soon as two areas are answered, and it sharpens as you go.</p>
-    <h3>How it works, step by step</h3>
-    <ul>
-      <li><b>About you:</b> your age and household.</li>
-      <li><b>Your money today:</b> income, take-home pay and monthly spending.</li>
-      <li><b>Safety net:</b> your emergency fund and any debt.</li>
-      <li><b>Big goals:</b> housing and college.</li>
-      <li><b>Retirement:</b> what you've saved, what you'll spend, your projection, and whether it lasts.</li>
-      <li><b>Your plan:</b> adjust it, choose how to draw the money down, plan healthcare before 65 and the years before 59½ if you'll retire early, let the <a href="/optimizer">Plan Optimizer</a> find the best way to claim Social Security and convert to Roth, then see your score and next steps.</li>
-    </ul>
-    <h3>Common mistakes</h3>
-    <ul>
-      <li>Guessing spending instead of checking statements. It's the number the whole plan rests on.</li>
-      <li>Leaving out an employer match, which counts toward your savings rate.</li>
-      <li>Treating a low score as a verdict. It's a map of which area to work on first.</li>
-    </ul>
-    <h3>Related tools</h3>
-    <ul>
-      <li><a href="/">Retirement calculator</a>: the quick six-question projection.</li>
-      <li><a href="/budget">Budget</a>: the spending figure the guide asks for.</li>
-      <li><a href="/debt">Debt payoff</a>: a plan for the debt area.</li>
-      <li><a href="/drawdown">Drawdown simulator</a>: the retirement outlook in full detail.</li>
-    </ul>
+    <h3>Why it doesn't add risk</h3>
+    <p>The raises come only after the portfolio has grown well beyond what the 4% rule needs, and the starts that test the rule, like 1966, never grow that much early. You can set the threshold, the size of each raise and the wait between them under Advanced.</p>
     <h3>Questions</h3>
-    <details><summary>What is a good retirement readiness score?</summary><p>85 or above means you're on track. Most people starting out land somewhere in the middle, and the guide shows which change would raise the score most.</p></details>
-    <details><summary>Does it estimate Social Security?</summary><p>Yes, from your income and age using the 2026 benefit formula, or you can enter the figure from your Social Security statement for a more exact answer.</p></details>
-    <details><summary>Does it include taxes?</summary><p>Yes. The spending you enter is what you live on after tax, and every year of the plan pays the 2026 federal and state income tax on where its money came from, plus any Medicare surcharge and, before 65, a marketplace health plan less its subsidy.</p></details>
-    <details><summary>Can I stop and come back later?</summary><p>Yes. Your answers are saved in your browser as you go, and the guide picks up where you left off.</p></details>
-    <details><summary>Is it financial advice?</summary><p>No. It's an educational tool that shows where you stand by common rules of thumb and historical markets. For decisions with tax or legal consequences, talk to a professional.</p></details>
+    <details><summary>Does spending ever go down?</summary><p>No. Like the 4% rule, it never cuts; it only adds raises. That's why its failures are the same as the 4% rule's.</p></details>
+    <details><summary>Can I ratchet more aggressively?</summary><p>Yes: a lower threshold or bigger raises spend more, at some risk. The Safe spending view shows how the highest safe starting rate changes.</p></details>
+    <details><summary>How does it compare with guardrails?</summary><p>Guardrails start higher and cut when markets fall; the ratchet starts at 4% and only ever raises. See <a href="/guardrails">guardrails</a> and <a href="/4-percent-rule">the 4% rule</a>.</p></details>
     </div>
   </article>
-
-
-
-
-
-
-
-
-
 
 
 
