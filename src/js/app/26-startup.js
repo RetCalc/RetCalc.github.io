@@ -47,8 +47,11 @@ $("band").addEventListener("input", () => {
   if (chartMode.single === "band" && lastRun) drawChart(lastRun, readInputs());
 });
 /* Mobile browsers fire resize when the URL bar hides during scroll. Redraw only
-   when the width really changed, and debounce it. */
-let lastW = window.innerWidth, resizeTimer;
+   when the width really changed, and debounce it. The tools' charts are
+   drawn in one of two layouts, phone and wider, so an open tool redraws when
+   the window crosses from one to the other (a phone turned sideways, a window
+   dragged narrow) rather than keep the other layout stretched to fit. */
+let lastW = window.innerWidth, lastNarrow = window.innerWidth < 640, resizeTimer;
 window.addEventListener("resize", () => {
   if (window.innerWidth === lastW) return;
   lastW = window.innerWidth;
@@ -56,6 +59,11 @@ window.addEventListener("resize", () => {
   resizeTimer = setTimeout(() => {
     if (!$("tab-single").hidden && lastRun) drawChart(lastRun, readInputs());
     if (!$("tab-series").hidden) renderSeries();
+    const narrow = window.innerWidth < 640;
+    if (narrow !== lastNarrow){
+      lastNarrow = narrow;
+      if (chartMode.tab === "tools" && toolSub !== "picker") renderToolSub(toolSub);
+    }
   }, 120);
 });
 

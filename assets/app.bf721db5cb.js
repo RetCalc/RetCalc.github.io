@@ -8612,12 +8612,22 @@ function showTool(sub){
   $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt");
   refreshScenarioList(currentScenario[activeTool()] || "");
   initCSVButtons();
+  renderToolSub(sub);
+  if (sub === "drawdown") showDDIntro();
+  gdCoachSync();
+  setDocTitle();
+  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
+  playPaneEnter();
+}
+/* Draws a tool from its inputs: on opening it, and again when the window
+   crosses the phone breakpoint, where its charts change their layout. */
+function renderToolSub(sub){
   if (sub === "tax") renderTax();
   else if (sub === "mortgage") renderMort();
   else if (sub === "budget") renderBudget();
   else if (sub === "college") renderCollege();
   else if (sub === "rentbuy") renderRentBuy();
-  else if (sub === "drawdown"){ renderDrawdown(); showDDIntro(); }
+  else if (sub === "drawdown") renderDrawdown();
   else if (sub === "roth") renderRoth();
   else if (sub === "debt") renderDebt();
   else if (sub === "backtest") renderBacktest();
@@ -8628,10 +8638,6 @@ function showTool(sub){
     var fiEl = $("fiTarget");
     if (fiEl) fiEl.dispatchEvent(new Event("input", {bubbles:true}));
   }
-  gdCoachSync();
-  setDocTitle();
-  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
-  playPaneEnter();
 }
 /* Drawdown packs in more than any other tool, so first-time visitors get a
    one-line orientation. Dismissing it is remembered, same pattern as the
@@ -17957,8 +17963,11 @@ $("band").addEventListener("input", () => {
   if (chartMode.single === "band" && lastRun) drawChart(lastRun, readInputs());
 });
 /* Mobile browsers fire resize when the URL bar hides during scroll. Redraw only
-   when the width really changed, and debounce it. */
-let lastW = window.innerWidth, resizeTimer;
+   when the width really changed, and debounce it. The tools' charts are
+   drawn in one of two layouts, phone and wider, so an open tool redraws when
+   the window crosses from one to the other (a phone turned sideways, a window
+   dragged narrow) rather than keep the other layout stretched to fit. */
+let lastW = window.innerWidth, lastNarrow = window.innerWidth < 640, resizeTimer;
 window.addEventListener("resize", () => {
   if (window.innerWidth === lastW) return;
   lastW = window.innerWidth;
@@ -17966,6 +17975,11 @@ window.addEventListener("resize", () => {
   resizeTimer = setTimeout(() => {
     if (!$("tab-single").hidden && lastRun) drawChart(lastRun, readInputs());
     if (!$("tab-series").hidden) renderSeries();
+    const narrow = window.innerWidth < 640;
+    if (narrow !== lastNarrow){
+      lastNarrow = narrow;
+      if (chartMode.tab === "tools" && toolSub !== "picker") renderToolSub(toolSub);
+    }
   }, 120);
 });
 

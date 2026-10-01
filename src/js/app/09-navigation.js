@@ -377,12 +377,22 @@ function showTool(sub){
   $("main").classList.toggle("solo", onPicker || sub === "budget" || sub === "debt");
   refreshScenarioList(currentScenario[activeTool()] || "");
   initCSVButtons();
+  renderToolSub(sub);
+  if (sub === "drawdown") showDDIntro();
+  gdCoachSync();
+  setDocTitle();
+  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
+  playPaneEnter();
+}
+/* Draws a tool from its inputs: on opening it, and again when the window
+   crosses the phone breakpoint, where its charts change their layout. */
+function renderToolSub(sub){
   if (sub === "tax") renderTax();
   else if (sub === "mortgage") renderMort();
   else if (sub === "budget") renderBudget();
   else if (sub === "college") renderCollege();
   else if (sub === "rentbuy") renderRentBuy();
-  else if (sub === "drawdown"){ renderDrawdown(); showDDIntro(); }
+  else if (sub === "drawdown") renderDrawdown();
   else if (sub === "roth") renderRoth();
   else if (sub === "debt") renderDebt();
   else if (sub === "backtest") renderBacktest();
@@ -393,10 +403,6 @@ function showTool(sub){
     var fiEl = $("fiTarget");
     if (fiEl) fiEl.dispatchEvent(new Event("input", {bubbles:true}));
   }
-  gdCoachSync();
-  setDocTitle();
-  try { window.scrollTo({top:0, behavior:"auto"}); } catch(e){ window.scrollTo(0, 0); }
-  playPaneEnter();
 }
 /* Drawdown packs in more than any other tool, so first-time visitors get a
    one-line orientation. Dismissing it is remembered, same pattern as the
