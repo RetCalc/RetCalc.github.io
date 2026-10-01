@@ -1,6 +1,11 @@
   <aside id="asideDD" hidden>
     <div class="panel inputs">
-      <h2>Your plan</h2>
+      <h2>Your plan<span class="h2ctrl">
+          <span class="seg" id="segDDIn" aria-label="How many inputs">
+            <button type="button" data-ddin="simple">Simple</button>
+            <button type="button" data-ddin="adv" class="on">Advanced</button>
+          </span>
+        </span></h2>
       <div class="body">
         <div class="ddsec ddsec-first">Your portfolio at retirement</div>
         <div class="field">
@@ -15,6 +20,7 @@
           <input type="hidden" id="ddStock" value="60" data-num><input type="hidden" id="ddSV" value="0" data-num>
           <input type="hidden" id="ddCash" value="0" data-num><input type="hidden" id="ddStockEnd" value="">
         </div>
+        <div class="ddadv">
         <div class="field">
           <label for="ddRebal">Rebalancing<span class="tipdot" data-tip="ddrebal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="ddRebal">
@@ -36,6 +42,7 @@
         <div class="field">
           <label for="ddFee">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
+        </div>
         </div>
         <!-- Guaranteed income is set in the Asset mix pop-up; these hold it. -->
         <div id="ddGuarStore" hidden>
@@ -70,7 +77,7 @@
         </div>
         <div class="ddsec">Your retirement</div>
         <div class="two">
-          <div class="field">
+          <div class="field ddadv">
             <label for="ddRetireAge">Age at retirement <span class="opt">optional</span><span class="tipdot" data-tip="retireage" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddRetireAge" type="text" inputmode="decimal" data-num data-step="1" min="0" max="120" data-nonneg><span class="affix">age</span></div>
           </div>
@@ -125,11 +132,11 @@
           <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
           <div class="hint" id="ddRateNote"></div>
         </div>
-        <div class="ddgk-final ddskip" id="ddSkipWrap" hidden>
+        <div class="ddgk-final ddskip ddadv" id="ddSkipWrap" hidden>
           <label class="ddgk-check"><input type="checkbox" id="ddSkipRaise"><span>Skip the inflation raise after a losing year</span></label>
           <span class="tipdot" data-tip="skipraise" role="button" tabindex="0" aria-label="What is this?">?</span>
         </div>
-        <div id="ddGuardWrap" hidden>
+        <div class="ddadv" id="ddGuardWrap" hidden>
           <div class="ddgk-h">Upper guardrail: cut spending<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></div>
           <div class="two">
             <div class="field">
@@ -158,8 +165,8 @@
             </div>
           </div>
         </div>
-        <div class="hint" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>
-        <div class="two" id="ddFloorWrap" hidden>
+        <div class="hint ddadv" id="ddGuardExample" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="two ddadv" id="ddFloorWrap" hidden>
           <div class="field">
             <label for="ddFloor">Max cut<span class="tipdot" data-tip="maxcut" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddFloor" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
@@ -169,7 +176,7 @@
             <div class="inputwrap"><input id="ddCeil" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
           </div>
         </div>
-        <div class="two" id="ddVgWrap" hidden>
+        <div class="two ddadv" id="ddVgWrap" hidden>
           <div class="field">
             <label for="ddVgFloor">Max cut<span class="tipdot" data-tip="maxcut" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddVgFloor" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="2.5"><span class="affix">%</span></div>
@@ -179,7 +186,7 @@
             <div class="inputwrap"><input id="ddVgCeil" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="5"><span class="affix">%</span></div>
           </div>
         </div>
-        <div id="ddKitWrap" hidden>
+        <div class="ddadv" id="ddKitWrap" hidden>
           <div class="two">
             <div class="field">
               <label for="ddKitThresh">Raise when the portfolio is<span class="tipdot" data-tip="kitces" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -195,7 +202,7 @@
             <div class="inputwrap"><input id="ddKitGap" type="text" inputmode="decimal" data-num data-step="1" min="1" max="30" data-nonneg value="3"><span class="affix">years</span></div>
           </div>
         </div>
-        <div class="field" id="ddClyWrap" hidden>
+        <div class="field ddadv" id="ddClyWrap" hidden>
           <label for="ddClyFloor">Never less than<span class="tipdot" data-tip="clyatt" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddClyFloor" type="text" inputmode="decimal" data-num data-step="1" min="0" max="100" data-nonneg value="95"><span class="affix">% of last year's</span></div>
         </div>
@@ -209,7 +216,7 @@
             <div class="inputwrap"><input id="ddHebRate" type="text" inputmode="decimal" data-num data-step="0.25" value="3"><span class="affix">% real</span></div>
           </div>
         </div>
-        <div class="field" id="ddSensWrap" hidden>
+        <div class="field ddadv" id="ddSensWrap" hidden>
           <label for="ddSensExtra">Plus, of last year's real gains<span class="tipdot" data-tip="sensible" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddSensExtra" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="10"><span class="affix">%</span></div>
         </div>
@@ -262,6 +269,7 @@
         </div>
         <div class="hint" id="ddVpwNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
         <div class="hint" id="ddStratNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="ddadv">
         <div class="two" id="ddSpendFloorWrap" hidden>
           <div class="field">
             <label for="ddSpendFloor">Minimum spending<span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -425,6 +433,8 @@
           </div>
           <div class="hint" id="ddMcNote"></div>
         </div>
+        </div>
+        <div class="hint ddsimple" id="ddSimpleNote"></div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
           <div><span>First-year withdrawal, before tax</span><span class="num" id="ddFirstW"></span></div>

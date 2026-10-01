@@ -1723,6 +1723,10 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 .ddstudy-t th,.ddstudy-t td{padding:3px 12px 3px 0;text-align:right}
 .ddstudy-t th:first-child,.ddstudy-t td:first-child{text-align:left}
 .ddstudy-t th{color:var(--dim);font-weight:500}
+#asideDD[data-inputs="simple"] .ddadv{display:none!important}
+#asideDD:not([data-inputs="simple"]) .ddsimple{display:none}
+.ddsimple{margin:4px 0 14px}
+.ddsimple .linkbtn{display:inline;margin:0;padding:0;font-size:inherit}
 .ddleg-k{font-size:12px;color:var(--dim);margin-right:4px}
 .ddtip-era{color:var(--dim);font-style:italic}
 .ddwhy{display:block;margin-top:6px}

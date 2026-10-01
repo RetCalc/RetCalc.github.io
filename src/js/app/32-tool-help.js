@@ -505,6 +505,7 @@ function thClose(){
   gdCoachSync();          // and comes back, if a guide trip is under way
 }
 function thScrollTo(f){
+  ddReveal(f);
   const r = f.getBoundingClientRect(), rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 16;
   if (r.top < rail || r.bottom > window.innerHeight - $("thCoach").offsetHeight - 16){
     let smooth = true;

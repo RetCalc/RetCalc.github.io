@@ -659,6 +659,7 @@ function renderDrawdown() {
   $("ddStratNote").innerHTML = note;
   ddMixSync(o);
   ddMCSync(o);
+  if (typeof DD_ADV !== "undefined") ddInputsSync();
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0

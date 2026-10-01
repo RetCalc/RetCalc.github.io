@@ -182,6 +182,7 @@ $("gdCoachBody").addEventListener("click", e => {
     // Bring the part of the tool this part is about into view, clear of the
     // tab rail at the top and the panel itself at the bottom.
     const f = document.querySelector(P[gd.trip.page].focus);
+    ddReveal(f);
     if (f){
       const r = f.getBoundingClientRect(), rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 16;
       if (r.top < rail || r.bottom > window.innerHeight - $("gdCoach").offsetHeight - 16){
