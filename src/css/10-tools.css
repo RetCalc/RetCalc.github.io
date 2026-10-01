@@ -307,7 +307,7 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 .ddstudy-k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-top:8px}
 .ddstudy p,.ddstudy-sim{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--text)}
 .ddstudy-sim b{color:var(--gold)}
-#ddStudyBtn{margin-left:14px}
+#ddStratGuide,#ddStudyBtn{display:flex}
 .ddstudy-why{color:var(--dim)!important;font-size:12.5px!important;margin:8px 0 10px!important}
 .ddstudy-t{border-collapse:collapse;margin-top:4px;font-size:12.5px}
 .ddstudy-t th,.ddstudy-t td{padding:3px 12px 3px 0;text-align:right}
