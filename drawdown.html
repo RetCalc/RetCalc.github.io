@@ -189,7 +189,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.2ff58299c1.css">
-<link rel="preload" href="/assets/app.bf721db5cb.js" as="script">
+<link rel="preload" href="/assets/app.5af36b96af.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1945,7 +1945,7 @@ window.onerror = function(msg){
             <label for="ddStarts">Test a retirement<span class="tipdot" data-tip="ddstarts" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <select id="ddStarts">
               <option value="year">Each January</option>
-              <option value="month">Every month</option>
+              <option value="month" selected>Every month</option>
             </select>
           </div>
           <div class="field">
@@ -5457,7 +5457,7 @@ window.onerror = function(msg){
     <p>In 1994 the financial planner William Bengen asked a simple question: what's the most a retiree could have taken from a stock and bond portfolio in the first year, raising it with inflation every year after, and never run out in 30 years, in any period he had data for? The answer was about 4%. On $1,000,000 that's $40,000 in the first year, then a raise each year to keep up with prices, no matter what markets do.</p>
     <p>The rule is a starting point, not a promise. It assumes you never cut spending, never earn another dollar, and hold a fixed mix of stocks and bonds. Real retirees adjust, which is why the simulator also tests five flexible strategies: Guyton-Klinger guardrails, floor and ceiling, the Yale endowment rule, a fixed percentage, and variable percentage withdrawal (VPW).</p>
     <h3>A worked example</h3>
-    <p>Pat retires at 65 with $1,000,000 in a 60/40 mix of stocks and bonds and wants the money to last 30 years. These are the calculator's starting numbers, so this is what you see when you open it.</p>
+    <p>Pat retires at 65 with $1,000,000 in a 60/40 mix of stocks and bonds and wants the money to last 30 years. These are the calculator's starting numbers, tested the classic way, with a retirement starting each January. The calculator opens with one starting every month, which tests 835 retirements instead of 70 and gives 94.0%.</p>
     <ul>
       <li><b>At 4%:</b> the plan survived 94.3% of the 30-year retirements since 1926. The four that failed began in 1965, 1966, 1968 and 1969, when high inflation met a flat stock market. Retiring in 1966, the money ran out in year 27.</li>
       <li><b>The typical outcome:</b> in the middle retirement, Pat still had about $1.6 million left after 30 years, in today's dollars. The 4% rule is sized for the worst cases, so most retirees following it end with more than they started with.</li>
@@ -5589,7 +5589,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.bf721db5cb.js"></script>
+<script src="/assets/app.5af36b96af.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

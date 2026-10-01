@@ -762,6 +762,8 @@ group("Articles: Drawdown");
             floorPct: 10, ceilPct: 10, yaleRate: 5, yaleWeight: 70, vpwRate: 3.8, vpwFV: 0 };
   var H = historicalBacktest(o);
   says("drawdown", "survived " + pct1(H.successRate) + " of the 30-year retirements");
+  var Hm = historicalBacktest(Object.assign({}, o, { monthly: true }));
+  says("drawdown", "tests " + Hm.total + " retirements instead of " + H.total + " and gives " + pct1(Hm.successRate));
   says("drawdown", "began in " + H.failYears.slice(0, 3).join(", ") + " and " + H.failYears[3]);
   var y66 = runDrawdown(o, seqFrom(1966, 30));
   says("drawdown", "Retiring in 1966, the money ran out in year " + y66.depletedYear);

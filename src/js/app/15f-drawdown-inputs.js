@@ -14,7 +14,7 @@ var DD_ADV = [
   ["rebal", "rebalancing"], ["fee", "fees"], ["retireAge", "your age"],
   ["spendFloor", "minimum spending"], ["spendCeil", "maximum spending"], ["path", "a spending path"],
   ["ssMode", "Social Security"], ["legacyGoal", "a legacy goal"], ["comfort", "a comfort line"],
-  ["starts", "a start every month"], ["fromYear", "a later start year"],
+  ["starts", "a start each January only"], ["fromYear", "a later start year"],
   ["mcBlock", "Monte Carlo blocks"], ["mcRet", "your own returns"]
 ];
 var DD_ADV_STRAT = {

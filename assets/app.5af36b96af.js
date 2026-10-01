@@ -11825,7 +11825,7 @@ var DD_STATE = [
   ["ssAmount2", "ddSSAmount2", "money", 33000],
   ["ssDelay", "ddSSDelay", "num", 0],
   ["retireAge", "ddRetireAge", "text", ""],
-  ["starts", "ddStarts", "select", "year"],
+  ["starts", "ddStarts", "select", "month"],
   ["fromYear", "ddFromYear", "num", 1926],
   ["comfort", "ddComfort", "money0", 0],
   ["tCrit", "ddTCrit", "select", "comfort"],
@@ -14286,13 +14286,14 @@ function ddStudyForm(){
 $("ddStudyBtn").addEventListener("click", ddStudyForm);
 
 /* The strategy landing pages (/4-percent-rule, /guardrails, /vpw) open the
-   simulator on their strategy, with the article's worked example: the
-   portfolio stays whatever it already is. */
+   simulator on their strategy, with the article's worked example: a
+   retirement starting each January, as the research tested, and the
+   portfolio whatever it already is. */
 var DD_LANDING = {
-  "4-percent-rule": {strategy: "fixed", rate: 4, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30},
-  guardrails: {strategy: "guardrails", rate: 5, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30,
+  "4-percent-rule": {starts: "year", strategy: "fixed", rate: 4, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30},
+  guardrails: {starts: "year", strategy: "guardrails", rate: 5, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30,
     guardBand: 20, adjust: 10, guardBandLo: 20, adjustLo: 10, gkFinal: false, skipRaise: false},
-  vpw: {strategy: "vpw", stock: 60, sv: 0, cash: 0, stockEnd: "", years: 35, retireAge: "65", vpwRate: 3.8, vpwFV: 0}
+  vpw: {starts: "year", strategy: "vpw", stock: 60, sv: 0, cash: 0, stockEnd: "", years: 35, retireAge: "65", vpwRate: 3.8, vpwFV: 0}
 };
 function ddLanding(seg){
   if (!DD_LANDING[seg]) return;
@@ -14314,7 +14315,7 @@ var DD_ADV = [
   ["rebal", "rebalancing"], ["fee", "fees"], ["retireAge", "your age"],
   ["spendFloor", "minimum spending"], ["spendCeil", "maximum spending"], ["path", "a spending path"],
   ["ssMode", "Social Security"], ["legacyGoal", "a legacy goal"], ["comfort", "a comfort line"],
-  ["starts", "a start every month"], ["fromYear", "a later start year"],
+  ["starts", "a start each January only"], ["fromYear", "a later start year"],
   ["mcBlock", "Monte Carlo blocks"], ["mcRet", "your own returns"]
 ];
 var DD_ADV_STRAT = {

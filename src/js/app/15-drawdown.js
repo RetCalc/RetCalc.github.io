@@ -322,7 +322,7 @@ var DD_STATE = [
   ["ssAmount2", "ddSSAmount2", "money", 33000],
   ["ssDelay", "ddSSDelay", "num", 0],
   ["retireAge", "ddRetireAge", "text", ""],
-  ["starts", "ddStarts", "select", "year"],
+  ["starts", "ddStarts", "select", "month"],
   ["fromYear", "ddFromYear", "num", 1926],
   ["comfort", "ddComfort", "money0", 0],
   ["tCrit", "ddTCrit", "select", "comfort"],
