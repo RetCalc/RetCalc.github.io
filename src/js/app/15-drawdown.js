@@ -1147,13 +1147,18 @@ $("segDDView").addEventListener("click", function (e) {
   ddView = b.getAttribute("data-ddview");
   renderDrawdown();
 });
-/* The record runs 1926 to 2025: a start year outside it snaps back to the
-   nearest end once the field is left (not while it's being typed). */
-$("ddFromYear").addEventListener("change", function () {
-  var el = $("ddFromYear"), v = parseNum(el.value), last = HIST_START + HIST_STOCK.length - 1;
+/* The record runs 1926 to 2025, and a retirement has to finish inside it:
+   with 30 years, 1996 is the last January it can start. A start year
+   outside that snaps back to the nearest end once the field is left (not
+   while it's being typed), or when the years change. */
+function ddFromClamp(){
+  var el = $("ddFromYear"), years = Math.min(60, Math.max(1, Math.round(num("ddYears")))) || 1;
+  var last = HIST_START + HIST_STOCK.length - years, v = parseNum(el.value);
   var c = el.value.trim() === "" ? HIST_START : Math.min(last, Math.max(HIST_START, Math.round(v)));
   if (String(c) !== el.value.trim()) { el.value = String(c); renderDrawdown(); }
-});
+}
+$("ddFromYear").addEventListener("change", ddFromClamp);
+$("ddYears").addEventListener("change", ddFromClamp);
 /* The years box only means something with its box ticked. */
 function ddGkFinalSync(){ $("ddGkFinalYrs").disabled = !$("ddGkFinal").checked; }
 $("ddGkFinal").addEventListener("change", function(){ ddGkFinalSync(); renderDrawdown(); });
