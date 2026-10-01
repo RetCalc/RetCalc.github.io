@@ -348,7 +348,14 @@ var DD_STATE = [
   ["gType", "ddGType", "select", "tips"],
   ["gYield", "ddGYield", "num", 2],
   ["gPayout", "ddGPayout", "num", 6.5],
-  ["gInflate", "ddGInflate", "check", false]
+  ["gInflate", "ddGInflate", "check", false],
+  ["mcBlock", "ddMcBlock", "num", 1],
+  ["mcRet", "ddMcRet", "select", "hist"],
+  ["mcStock", "ddMcStock", "num", 10.4],
+  ["mcSV", "ddMcSV", "num", 14.2],
+  ["mcBond", "ddMcBond", "num", 4.8],
+  ["mcCash", "ddMcCash", "num", 3.3],
+  ["mcInfl", "ddMcInfl", "num", 3]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
@@ -356,7 +363,8 @@ var DD_STATE = [
    was on screen. */
 var DD_LATER = ["sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
   "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
-  "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate"];
+  "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate",
+  "mcBlock", "mcRet", "mcStock", "mcSV", "mcBond", "mcCash", "mcInfl"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -650,6 +658,7 @@ function renderDrawdown() {
   $("ddStratNote").hidden = !note;
   $("ddStratNote").innerHTML = note;
   ddMixSync(o);
+  ddMCSync(o);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
@@ -855,6 +864,50 @@ function ddPaintHist(o, d, H, P, comfort){
   }));
 }
 
+/* What the Monte Carlo runs draw, in words: the verdict under its results. */
+function ddMCWords(o){
+  var span = (HIST_START + 1) + "–" + (HIST_START + HIST_STOCK.length - 1);
+  var w = o.mcBlock > 1
+    ? "Each run strings together " + o.years + " years from the " + span + " record, " + o.mcBlock +
+      " consecutive years at a time, so the streaks history had, good and bad, stay together."
+    : "Each run draws " + o.years + " years at random from the " + span + " record. This captures the range " +
+      "of possible returns but not the way bad years clustered; drawing several years together, or the historical view, shows that.";
+  if (o.mcOwn) {
+    var H = ddMCHistory(), parts = [];
+    var add = function (k, name) {
+      if (Math.abs(o.mcRet[k] - H[k]) >= 0.05) parts.push(name + " " + ddN(o.mcRet[k]) + "% a year (history " + H[k].toFixed(1) + "%)");
+    };
+    add("stock", "US stocks");
+    if (o.svPct > 0) add("sv", "small value");
+    if (o.stockPct + o.svPct + o.cashPct < 100 || o.stockPctEnd != null) add("bond", "bonds");
+    if (o.cashPct > 0) add("cash", "cash");
+    add("infl", "inflation");
+    w += parts.length ? " Each year is shifted so the long run compounds to your figures: " + parts.join(", ") + "."
+      : " Your figures match history's, so each year runs as it happened.";
+  }
+  return w;
+}
+/* The Monte Carlo settings show in that mode, and your own returns only once
+   chosen, small value and cash only when the mix holds them. */
+function ddMCSync(o){
+  $("ddMCWrap").hidden = ddMode !== "mc";
+  $("ddMcOwnWrap").hidden = !o.mcOwn;
+  $("ddMcSVWrap").hidden = !(o.svPct > 0);
+  $("ddMcCashWrap").hidden = !(o.cashPct > 0);
+  var H = ddMCHistory();
+  $("ddMcNote").textContent = o.mcOwn
+    ? "Long-run returns, compounded, before inflation. History's since 1927: US stocks " + H.stock.toFixed(1) +
+      "%, small value " + H.sv.toFixed(1) + "%, bonds " + H.bond.toFixed(1) + "%, cash " + H.cash.toFixed(1) +
+      "%, inflation " + H.infl.toFixed(1) + "%."
+    : "";
+}
+$("ddMcReset").addEventListener("click", function () {
+  var H = ddMCHistory();
+  [["ddMcStock", "stock"], ["ddMcSV", "sv"], ["ddMcBond", "bond"], ["ddMcCash", "cash"], ["ddMcInfl", "infl"]]
+    .forEach(function (p) { $(p[0]).value = H[p[1]].toFixed(1); });
+  renderDrawdown();
+});
+
 var ddLastMC = null;
 function ddPaintMC(o, M, ssx, P, comfort){
   ddLastMC = {o: o, M: M, ssx: ssx, P: P, comfort: comfort};
@@ -868,10 +921,7 @@ function ddPaintMC(o, M, ssx, P, comfort){
   setBig("ddMedian", money(M.medianEnd));
   setBig("ddWorst", money(M.p10End));
   $("ddWorstNote").textContent = "10th percentile outcome";
-  $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>Each run draws " +
-    o.years + " years at random from the " + HIST_START + "–" +
-    (HIST_START + HIST_STOCK.length - 1) + " record. This captures the range of possible " +
-    "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
+  $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + ddMCWords(o) + "</div>";
 
   // Legacy goal
   if (o.legacyGoal > 0) ddLegacy(M.legacy, trials, M.legacy.toLocaleString() + " of " + trials.toLocaleString() + " simulations");

@@ -379,6 +379,48 @@
             <div class="inputwrap"><input id="ddFromYear" type="text" inputmode="decimal" data-num data-step="1" min="1926" max="2025" data-nonneg value="1926"></div>
           </div>
         </div>
+        <div id="ddMCWrap" hidden>
+          <div class="ddgk-h ddsub">Monte Carlo</div>
+          <div class="two">
+            <div class="field">
+              <label for="ddMcBlock">Years drawn together<span class="tipdot" data-tip="ddmcblock" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><input id="ddMcBlock" type="text" inputmode="decimal" data-num data-step="1" min="1" max="30" data-nonneg value="1"><span class="affix">yrs</span></div>
+            </div>
+            <div class="field">
+              <label for="ddMcRet">Returns<span class="tipdot" data-tip="ddmcret" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <select id="ddMcRet">
+                <option value="hist">History's</option>
+                <option value="own">Your own</option>
+              </select>
+            </div>
+          </div>
+          <div id="ddMcOwnWrap" hidden>
+            <div class="two">
+              <div class="field">
+                <label for="ddMcStock">US stocks</label>
+                <div class="inputwrap"><input id="ddMcStock" type="text" inputmode="decimal" data-num data-step="0.5" value="10.4"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field" id="ddMcSVWrap">
+                <label for="ddMcSV">Small value</label>
+                <div class="inputwrap"><input id="ddMcSV" type="text" inputmode="decimal" data-num data-step="0.5" value="14.2"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field">
+                <label for="ddMcBond">Bonds</label>
+                <div class="inputwrap"><input id="ddMcBond" type="text" inputmode="decimal" data-num data-step="0.5" value="4.8"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field" id="ddMcCashWrap">
+                <label for="ddMcCash">Cash</label>
+                <div class="inputwrap"><input id="ddMcCash" type="text" inputmode="decimal" data-num data-step="0.5" value="3.3"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field">
+                <label for="ddMcInfl">Inflation</label>
+                <div class="inputwrap"><input id="ddMcInfl" type="text" inputmode="decimal" data-num data-step="0.5" value="3"><span class="affix">%/yr</span></div>
+              </div>
+            </div>
+            <button class="btn mini" type="button" id="ddMcReset">Reset to history's</button>
+          </div>
+          <div class="hint" id="ddMcNote"></div>
+        </div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
           <div><span>First-year withdrawal, before tax</span><span class="num" id="ddFirstW"></span></div>

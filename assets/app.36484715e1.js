@@ -3722,27 +3722,88 @@ function ddQuick(o){
   return {successRate: W.length ? ok / W.length : 0, medianEnd: ends.length ? ends[Math.floor(ends.length / 2)] : 0};
 }
 
-/* Random sequences drawn from the same historical years, using the seeded
+/* ---- Monte Carlo's years ----
+   Each run strings together years drawn at random from the record, 1927 on
+   (1926 has no full year of cash or small value). o.mcBlock years are drawn
+   together, consecutive as they happened, so a longer block keeps the
+   streaks history had: the 1970s' run of high inflation, the 1930s' run of
+   losses. A block that reaches 2025 carries on from 1927. With blocks of
+   one, each year is its own draw. */
+var DD_MC_ASSETS = ["stock", "sv", "bond", "cash", "infl"];
+function ddMCPool(){
+  return {stock: HIST_STOCK, sv: HIST_SV, bond: HIST_BOND, cash: HIST_CASH, infl: HIST_INFL};
+}
+/* A series' long-run compound return over the drawn years, in percent. */
+function ddMCCompound(a, add){
+  var g = 0;
+  for (var i = 1; i < a.length; i++) g += Math.log(1 + (a[i] + (add || 0)) / 100);
+  return (Math.exp(g / (a.length - 1)) - 1) * 100;
+}
+/* History's long-run figures, which the page offers as the starting point
+   for your own. */
+function ddMCHistory(){
+  var H = ddMCPool(), out = {};
+  DD_MC_ASSETS.forEach(function (k) { out[k] = ddMCCompound(H[k]); });
+  return out;
+}
+/* With o.mcOwn, your own long-run return for each asset and inflation
+   (o.mcRet, compounded, in percent): each drawn year's figure moves by the
+   same amount, the one that makes the record compound to yours. The swings
+   from year to year, how the assets moved together and the streaks all stay
+   history's. The amount for each, in percentage points. */
+var ddShiftMemo = {};
+function ddMCShift(o){
+  var sh = {stock: 0, sv: 0, bond: 0, cash: 0, infl: 0};
+  if (!o.mcOwn || !o.mcRet) return sh;
+  var H = ddMCPool();
+  DD_MC_ASSETS.forEach(function (k) {
+    var t = o.mcRet[k];
+    if (t == null || !isFinite(t)) return;
+    var key = k + "|" + t;
+    if (ddShiftMemo[key] == null) {
+      var lo = -60, hi = 60, a = H[k], m = 1e9;
+      for (var i = 1; i < a.length; i++) m = Math.min(m, a[i]);
+      lo = Math.max(lo, -99 - m);    // no year can lose more than everything
+      for (var it = 0; it < 60; it++) {
+        var mid = (lo + hi) / 2;
+        if (ddMCCompound(a, mid) < t) lo = mid; else hi = mid;
+      }
+      ddShiftMemo[key] = (lo + hi) / 2;
+    }
+    sh[k] = ddShiftMemo[key];
+  });
+  return sh;
+}
+/* Fills seq (one {stock, bond, infl, cape, cash, sv} per year) with one
+   run's years, drawn with rng. */
+function ddMCFill(seq, years, block, rng, sh){
+  var n = HIST_STOCK.length - 1, L = Math.max(1, Math.min(n, block || 1)), k = 0;
+  while (k < years) {
+    var at = Math.floor(rng() * n);
+    for (var j = 0; j < L && k < years; j++, k++) {
+      var i = 1 + (at + j) % n, q = seq[k];
+      q.stock = HIST_STOCK[i] + sh.stock; q.bond = HIST_BOND[i] + sh.bond; q.infl = HIST_INFL[i] + sh.infl;
+      q.cape = HIST_M_CAPE[i * 12]; q.cash = HIST_CASH[i] + sh.cash; q.sv = HIST_SV[i] + sh.sv;
+    }
+  }
+  return seq;
+}
+
+/* Random sequences drawn from the historical years, using the seeded
    generator so a given set of inputs always produces the same chart. Each
    drawn year brings its stock and bond returns, inflation and January CAPE
    together. */
 function monteCarloDrawdown(o, trials, seed) {
   var rng = mulberry32(seed >>> 0);
-  var n = HIST_STOCK.length;
   var runs = [];
-  var P = ddPrep(o);
+  var P = ddPrep(o), sh = ddMCShift(o), block = Math.round(o.mcBlock || 1);
   /* runDrawdown only reads seq[y] during the call, so one buffer of year slots
      is refilled per trial rather than allocating a fresh array of objects each
      time. */
   var seq = [];
   for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0, cape: 0, cash: 0, sv: 0 });
   for (var t = 0; t < trials; t++) {
-    for (var k = 0; k < o.years; k++) {
-      // 1927 on: 1926 has no full year of cash or small value
-      var i = 1 + Math.floor(rng() * (n - 1));
-      seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
-      seq[k].cape = HIST_M_CAPE[i * 12]; seq[k].cash = HIST_CASH[i]; seq[k].sv = HIST_SV[i];
-    }
+    ddMCFill(seq, o.years, block, rng, sh);
     runs.push(runDrawdown(o, seq, null, P));
   }
   var survived = runs.filter(function (r) { return !r.depleted; }).length;
@@ -3857,6 +3918,9 @@ function ddOptsFromState(d){
     gYield: v("gYield", 2),
     gPayout: v("gPayout", 6.5),
     gInflate: !!d.gInflate,
+    mcBlock: Math.min(30, Math.max(1, Math.round(v("mcBlock", 1)))),
+    mcOwn: d.mcRet === "own",
+    mcRet: {stock: v("mcStock", 10.4), sv: v("mcSV", 14.2), bond: v("mcBond", 4.8), cash: v("mcCash", 3.3), infl: v("mcInfl", 3)},
     ssAnnual: ss.annual, ssDelayYears: ss.delay,
     ssAnnual2: ss.annual2 || 0, ssDelayYears2: ss.delay2 || 0,
     ssAnnual3: ss.annual3 || 0, ssDelayYears3: ss.delay3 || 0,
@@ -11629,7 +11693,14 @@ var DD_STATE = [
   ["gType", "ddGType", "select", "tips"],
   ["gYield", "ddGYield", "num", 2],
   ["gPayout", "ddGPayout", "num", 6.5],
-  ["gInflate", "ddGInflate", "check", false]
+  ["gInflate", "ddGInflate", "check", false],
+  ["mcBlock", "ddMcBlock", "num", 1],
+  ["mcRet", "ddMcRet", "select", "hist"],
+  ["mcStock", "ddMcStock", "num", 10.4],
+  ["mcSV", "ddMcSV", "num", 14.2],
+  ["mcBond", "ddMcBond", "num", 4.8],
+  ["mcCash", "ddMcCash", "num", 3.3],
+  ["mcInfl", "ddMcInfl", "num", 3]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
@@ -11637,7 +11708,8 @@ var DD_STATE = [
    was on screen. */
 var DD_LATER = ["sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
   "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
-  "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate"];
+  "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate",
+  "mcBlock", "mcRet", "mcStock", "mcSV", "mcBond", "mcCash", "mcInfl"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -11717,7 +11789,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.c57e5ba597.js";
+var DD_WORKER_URL = "/assets/plan.95065687bc.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -11931,6 +12003,7 @@ function renderDrawdown() {
   $("ddStratNote").hidden = !note;
   $("ddStratNote").innerHTML = note;
   ddMixSync(o);
+  ddMCSync(o);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
@@ -12136,6 +12209,50 @@ function ddPaintHist(o, d, H, P, comfort){
   }));
 }
 
+/* What the Monte Carlo runs draw, in words: the verdict under its results. */
+function ddMCWords(o){
+  var span = (HIST_START + 1) + "–" + (HIST_START + HIST_STOCK.length - 1);
+  var w = o.mcBlock > 1
+    ? "Each run strings together " + o.years + " years from the " + span + " record, " + o.mcBlock +
+      " consecutive years at a time, so the streaks history had, good and bad, stay together."
+    : "Each run draws " + o.years + " years at random from the " + span + " record. This captures the range " +
+      "of possible returns but not the way bad years clustered; drawing several years together, or the historical view, shows that.";
+  if (o.mcOwn) {
+    var H = ddMCHistory(), parts = [];
+    var add = function (k, name) {
+      if (Math.abs(o.mcRet[k] - H[k]) >= 0.05) parts.push(name + " " + ddN(o.mcRet[k]) + "% a year (history " + H[k].toFixed(1) + "%)");
+    };
+    add("stock", "US stocks");
+    if (o.svPct > 0) add("sv", "small value");
+    if (o.stockPct + o.svPct + o.cashPct < 100 || o.stockPctEnd != null) add("bond", "bonds");
+    if (o.cashPct > 0) add("cash", "cash");
+    add("infl", "inflation");
+    w += parts.length ? " Each year is shifted so the long run compounds to your figures: " + parts.join(", ") + "."
+      : " Your figures match history's, so each year runs as it happened.";
+  }
+  return w;
+}
+/* The Monte Carlo settings show in that mode, and your own returns only once
+   chosen, small value and cash only when the mix holds them. */
+function ddMCSync(o){
+  $("ddMCWrap").hidden = ddMode !== "mc";
+  $("ddMcOwnWrap").hidden = !o.mcOwn;
+  $("ddMcSVWrap").hidden = !(o.svPct > 0);
+  $("ddMcCashWrap").hidden = !(o.cashPct > 0);
+  var H = ddMCHistory();
+  $("ddMcNote").textContent = o.mcOwn
+    ? "Long-run returns, compounded, before inflation. History's since 1927: US stocks " + H.stock.toFixed(1) +
+      "%, small value " + H.sv.toFixed(1) + "%, bonds " + H.bond.toFixed(1) + "%, cash " + H.cash.toFixed(1) +
+      "%, inflation " + H.infl.toFixed(1) + "%."
+    : "";
+}
+$("ddMcReset").addEventListener("click", function () {
+  var H = ddMCHistory();
+  [["ddMcStock", "stock"], ["ddMcSV", "sv"], ["ddMcBond", "bond"], ["ddMcCash", "cash"], ["ddMcInfl", "infl"]]
+    .forEach(function (p) { $(p[0]).value = H[p[1]].toFixed(1); });
+  renderDrawdown();
+});
+
 var ddLastMC = null;
 function ddPaintMC(o, M, ssx, P, comfort){
   ddLastMC = {o: o, M: M, ssx: ssx, P: P, comfort: comfort};
@@ -12149,10 +12266,7 @@ function ddPaintMC(o, M, ssx, P, comfort){
   setBig("ddMedian", money(M.medianEnd));
   setBig("ddWorst", money(M.p10End));
   $("ddWorstNote").textContent = "10th percentile outcome";
-  $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>Each run draws " +
-    o.years + " years at random from the " + HIST_START + "–" +
-    (HIST_START + HIST_STOCK.length - 1) + " record. This captures the range of possible " +
-    "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
+  $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + ddMCWords(o) + "</div>";
 
   // Legacy goal
   if (o.legacyGoal > 0) ddLegacy(M.legacy, trials, M.legacy.toLocaleString() + " of " + trials.toLocaleString() + " simulations");
@@ -13870,6 +13984,8 @@ const GLOSS = {
   ddheat: "The share of historical starts meeting the risk target, for settings around yours and a range of stock shares or retirement lengths. Green holds in nearly every start; red fails often. Tap a cell to put its setting into your plan.",
   ddvalue: "Shiller's CAPE (cyclically adjusted price-to-earnings): the S&P 500's price over ten years of its earnings, after inflation. A high reading means stocks were expensive. Each dot is one start: its CAPE, and the most it could have started with. Expensive starts have tended to allow less, but the link is loose.",
   ddstarts: "When each tested retirement begins. Each January is the classic way (Bengen and the Trinity study tested a retirement starting every January). Every month tests twelve times as many, so the result no longer hangs on markets happening to turn at a year's end: retiring in September 1929, at the peak, left less than half of what retiring that January did. Each year still runs twelve months from the start.",
+  ddmcblock: "How many consecutive years each Monte Carlo draw takes from the record. At 1, every year is drawn on its own, so a crash is as likely to be followed by a boom as by another crash. Drawing 5 or 10 years together keeps the streaks history actually had, like the 1930s' losses or the 1970s' inflation, while still mixing up the order. Long blocks repeat history more, short ones invent more new paths.",
+  ddmcret: "History's uses each drawn year as it happened. Your own lets you set the long-run return, compounded, for each asset and for inflation: every drawn year moves up or down by the same amount, so the record averages out to your figures while keeping its ups and downs, how the assets moved together and its streaks. Lower figures than history's are a common way to test a plan against a future some expect to be leaner. Returns are before inflation.",
   ddfrom: "The first year a tested retirement can begin. The default, 1926, uses the whole record. A later start, like 1950, leaves out the Depression and tests a world more like today's, but on fewer retirements, and those overlap more.",
   ddstocks: "How the portfolio is split, among US stocks (the S&P 500), small-cap value stocks, 10-year Treasuries and cash (one-month Treasury bills), each with its actual returns since July 1926. Stocks have grown fastest but swing hardest, which matters more once you're withdrawing. Small value has beaten the S&P over the century, with long stretches behind it. Cash barely beats inflation but doesn't fall. Click to change the mix; it has to add up to 100%.",
   ddrebal: "Selling what's grown and buying what's lagged, to get back to your mix. Every year is the classic assumption (Bengen and the Trinity study). Every few years lets it drift in between. When it drifts rebalances only once a holding is more than a set number of points off its target, checked each year. Never lets the mix go where markets take it: usually toward more stocks, which raises both growth and risk. Withdrawals always come out of each holding in proportion.",
@@ -20559,7 +20675,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.c57e5ba597.js";
+var OP_WORKER_URL = "/assets/plan.95065687bc.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

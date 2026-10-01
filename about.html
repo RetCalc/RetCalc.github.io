@@ -174,7 +174,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.74ada7b2b3.css">
-<link rel="preload" href="/assets/app.9e49a958c9.js" as="script">
+<link rel="preload" href="/assets/app.36484715e1.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1925,6 +1925,48 @@ window.onerror = function(msg){
             <label for="ddFromYear">Starting from<span class="tipdot" data-tip="ddfrom" role="button" tabindex="0" aria-label="What is this?">?</span></label>
             <div class="inputwrap"><input id="ddFromYear" type="text" inputmode="decimal" data-num data-step="1" min="1926" max="2025" data-nonneg value="1926"></div>
           </div>
+        </div>
+        <div id="ddMCWrap" hidden>
+          <div class="ddgk-h ddsub">Monte Carlo</div>
+          <div class="two">
+            <div class="field">
+              <label for="ddMcBlock">Years drawn together<span class="tipdot" data-tip="ddmcblock" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><input id="ddMcBlock" type="text" inputmode="decimal" data-num data-step="1" min="1" max="30" data-nonneg value="1"><span class="affix">yrs</span></div>
+            </div>
+            <div class="field">
+              <label for="ddMcRet">Returns<span class="tipdot" data-tip="ddmcret" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <select id="ddMcRet">
+                <option value="hist">History's</option>
+                <option value="own">Your own</option>
+              </select>
+            </div>
+          </div>
+          <div id="ddMcOwnWrap" hidden>
+            <div class="two">
+              <div class="field">
+                <label for="ddMcStock">US stocks</label>
+                <div class="inputwrap"><input id="ddMcStock" type="text" inputmode="decimal" data-num data-step="0.5" value="10.4"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field" id="ddMcSVWrap">
+                <label for="ddMcSV">Small value</label>
+                <div class="inputwrap"><input id="ddMcSV" type="text" inputmode="decimal" data-num data-step="0.5" value="14.2"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field">
+                <label for="ddMcBond">Bonds</label>
+                <div class="inputwrap"><input id="ddMcBond" type="text" inputmode="decimal" data-num data-step="0.5" value="4.8"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field" id="ddMcCashWrap">
+                <label for="ddMcCash">Cash</label>
+                <div class="inputwrap"><input id="ddMcCash" type="text" inputmode="decimal" data-num data-step="0.5" value="3.3"><span class="affix">%/yr</span></div>
+              </div>
+              <div class="field">
+                <label for="ddMcInfl">Inflation</label>
+                <div class="inputwrap"><input id="ddMcInfl" type="text" inputmode="decimal" data-num data-step="0.5" value="3"><span class="affix">%/yr</span></div>
+              </div>
+            </div>
+            <button class="btn mini" type="button" id="ddMcReset">Reset to history's</button>
+          </div>
+          <div class="hint" id="ddMcNote"></div>
         </div>
         <div class="derived">
           <div><span>Social Security</span><span class="num" id="ddSSShow">Not included</span></div>
@@ -5449,7 +5491,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.9e49a958c9.js"></script>
+<script src="/assets/app.36484715e1.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

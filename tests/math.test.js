@@ -454,6 +454,44 @@ group("Drawdown: a minimum that changes with age");
   ok(Array.isArray(c) && c[0] === 200000 && c[39] === 175000, "the comfort line follows it");
 })();
 
+group("Drawdown: Monte Carlo draws years in blocks, and can take your own returns");
+(function () {
+  var o = ddOptsFromState({ initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed" });
+  ok(o.mcBlock === 1 && !o.mcOwn, "one year at a time, history's returns, unless asked");
+  // Pinned before blocks existed: one-year blocks draw exactly as they did.
+  var M = monteCarloDrawdown(o, 2000, 12345);
+  near(M.successRate, 0.9235, 1e-9, "blocks of one draw the same years as before");
+  near(M.medianEnd, 1905275.57, 0.01, "and end the same");
+  // Each block is consecutive years of the record, carrying on from 1927 past 2025.
+  var H = HIST_STOCK, n = H.length - 1, seq = [], rng = mulberry32(99);
+  for (var k = 0; k < 40; k++) seq.push({});
+  var sh = { stock: 0, sv: 0, bond: 0, cash: 0, infl: 0 };
+  ddMCFill(seq, 40, 10, rng, sh);
+  var idx = seq.map(function (q) { for (var i = 1; i <= n; i++) if (H[i] === q.stock && HIST_BOND[i] === q.bond && HIST_INFL[i] === q.infl) return i; return -1; });
+  ok(idx.every(function (i) { return i >= 1; }), "every drawn year is one from 1927 on");
+  ok([0, 10, 20, 30].every(function (b) {
+    for (var j = 1; j < 10; j++) if (idx[b + j] !== 1 + (idx[b + j - 1] % n)) return false;
+    return true;
+  }), "ten in a row, as they happened", JSON.stringify(idx));
+  var odd = []; ddMCFill(odd = [{}, {}, {}, {}, {}, {}, {}], 7, 5, mulberry32(3), sh);
+  ok(odd.every(function (q) { return q.stock != null; }), "a last block cut short still fills the run");
+  // Your own returns: the record compounds to them, its swings kept.
+  var own = Object.assign({}, o, { mcOwn: true, mcRet: { stock: 7, sv: 9, bond: 4, cash: 3, infl: 2.5 } });
+  var S = ddMCShift(own);
+  near(ddMCCompound(HIST_STOCK, S.stock), 7, 1e-6, "stocks compound to 7%");
+  near(ddMCCompound(HIST_BOND, S.bond), 4, 1e-6, "bonds to 4%");
+  near(ddMCCompound(HIST_INFL, S.infl), 2.5, 1e-6, "inflation to 2.5%");
+  var hist = ddMCHistory(), same = ddMCShift(Object.assign({}, o, { mcOwn: true, mcRet: hist }));
+  ok(Math.abs(same.stock) < 1e-6 && Math.abs(same.infl) < 1e-6, "history's own figures move nothing");
+  near(hist.stock, 10.4, 0.05, "US stocks compounded 10.4% a year, 1927-2025");
+  near(hist.infl, 3.0, 0.05, "inflation 3.0%");
+  var lean = monteCarloDrawdown(own, 2000, 12345);
+  ok(lean.successRate < M.successRate - 0.05, "a leaner future lasts less often", M.successRate + " -> " + lean.successRate);
+  eq(monteCarloDrawdown(Object.assign({}, o, { mcOwn: true, mcRet: hist }), 2000, 12345).successRate, M.successRate,
+    "history's figures as your own give history's result");
+  ok(ddOptsFromState({ mcBlock: 5, mcRet: "own", mcStock: 6 }).mcRet.stock === 6, "saved settings read back");
+})();
+
 group("Drawdown: saved inputs become options the same way everywhere");
 (function () {
   var o = ddOptsFromState({ initial: "1,000,000", years: 30, stock: 0, rate: 0, floor: 0, ceil: 0, yaleWeight: 0, strategy: "floorceil" });
