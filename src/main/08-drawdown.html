@@ -37,6 +37,8 @@
           <label for="ddFee">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
         </div>
+        <!-- Guaranteed income is set in the Asset mix pop-up; these hold it. -->
+        <div id="ddGuarStore" hidden>
         <div class="ddgk-h ddsub">Guaranteed income <span class="opt">optional</span></div>
         <div class="two">
           <div class="field">
@@ -64,6 +66,7 @@
             <label class="ddgk-check"><input type="checkbox" id="ddGInflate"><span>Payments rise with inflation</span></label>
           </div>
           <div class="hint" id="ddGNote" style="margin-top:-6px;margin-bottom:12px"></div>
+        </div>
         </div>
         <div class="ddsec">Your retirement</div>
         <div class="two">

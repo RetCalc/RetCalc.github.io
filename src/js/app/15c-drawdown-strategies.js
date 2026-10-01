@@ -308,6 +308,8 @@ function ddMixText(o){
   var m = ddMixParts(o), names = {stock: "US stocks", sv: "small value", bond: "bonds", cash: "cash"};
   var t = DD_ASSETS.map(function (a) { return m[a[0]] > 0 ? ddN(m[a[0]]) + "% " + names[a[0]] : ""; }).filter(Boolean).join(", ");
   if (o.stockPctEnd != null) t += ", gliding to " + ddN(o.stockPctEnd) + "% stocks";
+  if (o.gShare > 0) return ddN(o.gShare) + "% buys " + (o.gType === "annuity" ? "an annuity" : "a TIPS ladder") +
+    " \u00b7 the rest: " + (t || "nothing invested");
   return t || "Nothing invested";
 }
 function ddRebalText(o){
@@ -329,7 +331,7 @@ function ddMixForm(){
   var ov = document.createElement("div");
   ov.className = "popup-overlay";
   ov.innerHTML = "<div class='popup wide ddmixpop'><h3>Asset mix</h3>" +
-    "<div class='formhint'>How the portfolio is split at retirement. Returns are each asset's actual history from July 1926.</div>" +
+    "<div class='formhint' id='ddMixLead'></div>" +
     DD_ASSETS.map(function (a) {
       return "<div class='ddmixrow'><div><b>" + a[2] + "</b><small>" + a[3] + "</small></div>" +
         "<div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-mix='" + a[0] +
@@ -340,12 +342,34 @@ function ddMixForm(){
       "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg id='ddMixGlide' value='" +
       (o.stockPctEnd != null ? ddN(o.stockPctEnd) : "") + "' aria-label='Stocks at the end'><span class='affix'>% by the last year</span></div>" +
       "<div class='formhint'>Moves the stocks' total in a straight line, small value keeping its share of the stocks. What leaves stocks goes to bonds and cash in the proportions you hold them (and what joins them comes from both the same way). Leave blank to hold the mix.</div></div>" +
+    "<div class='ddmixg'><h4>Set aside for guaranteed income <span class='opt'>optional</span></h4>" +
+      "<div class='formhint'>Part of the portfolio can buy income that doesn't depend on markets. It isn't invested or rebalanced: it's spent once, at retirement, and pays you every year. The mix above applies to the rest.</div>" +
+      "<div class='ddmixrow'><div><b>Share of the portfolio</b></div><div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg id='ddMG' value='" + (o.gShare > 0 ? ddN(o.gShare) : "") + "' placeholder='0' aria-label='Share for guaranteed income'><span class='affix'>%</span></div></div>" +
+      "<div id='ddMGMore'><div class='ddmixrow'><div><b>To buy</b></div><select id='ddMGType' aria-label='What it buys'><option value='tips'>A TIPS ladder</option><option value='annuity'>An annuity</option></select></div>" +
+      "<div class='ddmixrow' id='ddMGYieldRow'><div><b>Real yield</b><small>What TIPS pay after inflation. Check today's.</small></div><div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='0.1' id='ddMGYield' value='" + ddN(o.gYield) + "' aria-label='Real yield'><span class='affix'>%</span></div></div>" +
+      "<div class='ddmixrow' id='ddMGPayRow' hidden><div><b>Payout rate</b><small>From a quote: depends on age and rates.</small></div><div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='0.25' data-nonneg id='ddMGPay' value='" + ddN(o.gPayout) + "' aria-label='Payout rate'><span class='affix'>%</span></div></div>" +
+      "<label class='ddgk-check' id='ddMGInflRow' hidden style='margin:8px 0'><input type='checkbox' id='ddMGInfl'" + (o.gInflate ? " checked" : "") + "><span>Payments rise with inflation</span></label>" +
+      "<div class='formhint' id='ddMGNote'></div></div></div>" +
     "<div class='formactions'><button type='button' class='btn' data-mixcancel>Cancel</button>" +
     "<button type='button' class='btn primary' data-mixok>Use this mix</button></div></div>";
   document.body.appendChild(ov);
   initFields(ov);
   var vals = function () { var r = {}; ov.querySelectorAll("[data-mix]").forEach(function (el) { r[el.getAttribute("data-mix")] = parseNum(el.value); }); return r; };
+  ov.querySelector("#ddMGType").value = o.gType === "annuity" ? "annuity" : "tips";
+  var guar = function () {
+    var g = Math.min(100, parseNum($("ddMG").value)), tips = $("ddMGType").value !== "annuity";
+    $("ddMGMore").hidden = !(g > 0);
+    $("ddMGYieldRow").hidden = !tips; $("ddMGPayRow").hidden = tips; $("ddMGInflRow").hidden = tips;
+    var x = Object.assign({}, o, {gShare: g, gType: tips ? "tips" : "annuity", gYield: parseNum($("ddMGYield").value),
+      gPayout: parseNum($("ddMGPay").value), gInflate: $("ddMGInfl").checked}), G = ddGuaranteed(x);
+    $("ddMGNote").textContent = g > 0 ? money(o.initial * G.share) + " buys " + money(G.income) + " a year" +
+      (tips ? " for " + o.years + " years, rising with inflation." : " for life" + (x.gInflate ? ", rising with inflation." : ", level in dollars.")) : "";
+    $("ddMixLead").textContent = (g > 0 ? "How the " + money(o.initial * (1 - G.share)) + " that stays invested is split."
+      : "How the portfolio is split at retirement.") + " Returns are each asset's actual history from July 1926.";
+    return {g: g, tips: tips};
+  };
   var check = function () {
+    guar();
     var v = vals(), t = v.stock + v.sv + v.bond + v.cash, ok = Math.abs(t - 100) < .01;
     $("ddMixTot").innerHTML = "Total: <b class='" + (ok ? "pos" : "neg") + "'>" + ddN(t) + "%</b>" +
       (ok ? "" : " — it needs to add up to 100%");
@@ -353,6 +377,7 @@ function ddMixForm(){
     return ok;
   };
   ov.addEventListener("input", check);
+  ov.addEventListener("change", check);
   check();
   var shut = function () { if (ov._modalDone) ov._modalDone(); ov.remove(); };
   ov.addEventListener("click", function (e) {
@@ -361,6 +386,12 @@ function ddMixForm(){
       var v = vals(), g = $("ddMixGlide").value.trim();
       $("ddStock").value = String(v.stock); $("ddSV").value = String(v.sv); $("ddCash").value = String(v.cash);
       $("ddStockEnd").value = g === "" ? "" : String(Math.min(100, parseNum(g)));
+      var gq = guar();
+      $("ddGShare").value = gq.g > 0 ? String(gq.g) : "";
+      $("ddGType").value = gq.tips ? "tips" : "annuity";
+      $("ddGYield").value = String(parseNum($("ddMGYield").value));
+      $("ddGPayout").value = String(parseNum($("ddMGPay").value));
+      $("ddGInflate").checked = $("ddMGInfl").checked;
       shut();
       renderDrawdown();
     }

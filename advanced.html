@@ -173,8 +173,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.5116d6ebf4.css">
-<link rel="preload" href="/assets/app.fcceabe276.js" as="script">
+<link rel="stylesheet" href="/assets/app.74ada7b2b3.css">
+<link rel="preload" href="/assets/app.58e70985e3.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1584,6 +1584,8 @@ window.onerror = function(msg){
           <label for="ddFee">Fees <span class="opt">optional</span><span class="tipdot" data-tip="fees" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddFee" type="text" inputmode="decimal" data-num data-step="0.1" min="0" data-nonneg><span class="affix">%/yr</span></div>
         </div>
+        <!-- Guaranteed income is set in the Asset mix pop-up; these hold it. -->
+        <div id="ddGuarStore" hidden>
         <div class="ddgk-h ddsub">Guaranteed income <span class="opt">optional</span></div>
         <div class="two">
           <div class="field">
@@ -1611,6 +1613,7 @@ window.onerror = function(msg){
             <label class="ddgk-check"><input type="checkbox" id="ddGInflate"><span>Payments rise with inflation</span></label>
           </div>
           <div class="hint" id="ddGNote" style="margin-top:-6px;margin-bottom:12px"></div>
+        </div>
         </div>
         <div class="ddsec">Your retirement</div>
         <div class="two">
@@ -5500,7 +5503,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.fcceabe276.js"></script>
+<script src="/assets/app.58e70985e3.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->
