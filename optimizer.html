@@ -173,8 +173,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.975a91ad96.css">
-<link rel="preload" href="/assets/app.1f6a5089a0.js" as="script">
+<link rel="stylesheet" href="/assets/app.bb1f7aeb6f.css">
+<link rel="preload" href="/assets/app.7f065740f2.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1742,6 +1742,11 @@ window.onerror = function(msg){
           <label for="ddLegacyGoal">Legacy goal <span class="opt">optional</span><span class="tipdot" data-tip="legacy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="ddLegacyGoal" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
         </div>
+        <div class="field">
+          <label for="ddComfort">Comfort line <span class="opt">optional</span><span class="tipdot" data-tip="ddcomfort" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><span class="affix">$</span><input id="ddComfort" type="text" inputmode="decimal" data-money data-nonneg value=""><span class="affix">/yr</span></div>
+          <div class="hint" id="ddComfortNote"></div>
+        </div>
         <div class="ddsec">Market history</div>
         <div class="two">
           <div class="field">
@@ -1766,7 +1771,7 @@ window.onerror = function(msg){
     </div>
   </aside>
 
-  <div class="stack" id="tab-drawdown" hidden>
+  <div class="stack" id="tab-drawdown" data-tab="plan" hidden>
     <div class="panel" id="ddIntro" hidden>
       <div class="body" style="display:flex;gap:14px;align-items:flex-start">
         <div style="flex:1 1 auto;min-width:0">
@@ -1793,21 +1798,64 @@ window.onerror = function(msg){
             <button type="button" data-dd="mc">Monte Carlo</button>
           </span>
           <span class="txbadge" id="ddBadge">1926&ndash;2025</span>
+          <button class="btn mini ddpin" type="button" id="ddPin" title="Keep these results to compare your next changes against">Pin as baseline</button>
         </div>
         <div class="headline">
-          <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">—</div>
+          <div><div class="k">Success rate<span class="tipdot" data-tip="successrate" role="button" tabindex="0" aria-label="What is this?">?</span></div><div class="v gold" id="ddSuccess">—</div><div class="dddelta" id="ddSuccessD" hidden></div>
             <div class="note" id="ddSuccessNote"></div></div>
-          <div><div class="k">Median ending balance</div><div class="v" id="ddMedian">—</div>
+          <div><div class="k">Median ending balance</div><div class="v" id="ddMedian">—</div><div class="dddelta" id="ddMedianD" hidden></div>
             <div class="note">In today's dollars</div></div>
-          <div><div class="k">Worst case</div><div class="v" id="ddWorst">—</div>
+          <div><div class="k">Worst case</div><div class="v" id="ddWorst">—</div><div class="dddelta" id="ddWorstD" hidden></div>
             <div class="note" id="ddWorstNote"></div></div>
-          <div id="ddLegacyWrap" hidden><div class="k">Meet legacy goal</div><div class="v" id="ddLegacy">—</div><div class="note" id="ddLegacyNote"></div></div>
+          <div id="ddLegacyWrap" hidden><div class="k">Meet legacy goal</div><div class="v" id="ddLegacy">—</div><div class="dddelta" id="ddLegacyD" hidden></div><div class="note" id="ddLegacyNote"></div></div>
         </div>
+      </div>
+      <div class="ddbase" id="ddBaseBar" hidden>
+        <span class="ddbase-k">Baseline</span><span class="ddbase-v" id="ddBaseLabel"></span>
+        <span class="ddbase-n">Changes since are marked <b class="pos">better</b> or <b class="neg">worse</b>; the charts draw it dashed.</span>
+        <button class="btn mini" type="button" id="ddBaseClear">Clear</button>
       </div>
       <div class="body"><div id="ddVerdict"></div></div>
     </div>
 
-    <div class="panel" id="ddYearsPanel">
+    <div class="ddtabs" id="ddTabs">
+      <span class="seg" id="segDDTab" aria-label="Results">
+        <button type="button" data-ddtab="plan" class="on">Your plan</button>
+        <button type="button" data-ddtab="compare">Compare strategies</button>
+        <button type="button" data-ddtab="safe">Safe spending</button>
+      </span>
+    </div>
+
+    <div class="panel ddtarget" id="ddTargetPanel" data-ddtabs="compare safe">
+      <div class="body">
+        <div class="ddtgt-row">
+          <span class="ddtgt-k">Risk target<span class="tipdot" data-tip="ddtarget" role="button" tabindex="0" aria-label="What is this?">?</span></span>
+          <select id="ddTCrit" aria-label="What the target asks">
+            <option value="comfort">Never below the comfort line</option>
+            <option value="lasts">The money lasts</option>
+          </select>
+          <span>in</span>
+          <select id="ddTConf" aria-label="How many historical starts">
+            <option value="100">every</option>
+            <option value="95">95% of</option>
+            <option value="90">90% of</option>
+            <option value="85">85% of</option>
+          </select>
+          <span id="ddTStarts">historical starts</span>
+        </div>
+        <div class="hint" id="ddTargetNote"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="ddScorePanel" data-ddtabs="plan">
+      <h2>Spending scorecard<span class="tipdot" data-tip="ddscore" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2note" id="ddScoreH2"></span></h2>
+      <div class="body">
+        <div class="ddtiles" id="ddScore"></div>
+        <div class="ddcounts" id="ddCounts"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="ddYearsPanel" data-ddtabs="plan">
       <h2 id="ddYearsTitle">How each starting year fared</h2>
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
@@ -1828,7 +1876,7 @@ window.onerror = function(msg){
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-ddtabs="plan">
       <h2 id="ddChartTitle">Every historical starting year<span class="h2ctrl" id="ddViewWrap" hidden>
           <span class="seg" id="segDDView">
             <button type="button" data-ddview="year">Selected year</button>
@@ -1843,7 +1891,7 @@ window.onerror = function(msg){
       <div class="mcnote" id="ddChartNote"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-ddtabs="plan">
       <h2 id="ddIncomeSectionTitle">What your income looked like<span class="tipdot" data-tip="sequence" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2note">in today's dollars</span></h2>
       <div class="body">
         <div id="ddSpendYearView" hidden>
@@ -1880,7 +1928,7 @@ window.onerror = function(msg){
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" data-ddtabs="plan">
       <h2 id="ddIncomeChartTitle">Spending through retirement</h2>
       <div class="chartwrap" id="chartWrapDDI">
         <svg id="chartDDI" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Withdrawal amount over time"></svg>
@@ -1890,7 +1938,22 @@ window.onerror = function(msg){
       <div class="hint" id="ddIncomeNote" style="padding:0 18px 14px"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="ddDistPanel" data-ddtabs="plan">
+      <h2 id="ddDistTitle">Spread of outcomes<span class="h2ctrl">
+          <span class="seg" id="segDDDist">
+            <button type="button" data-dddist="bal" class="on">Balance</button>
+            <button type="button" data-dddist="spend">Spending</button>
+          </span>
+          <select id="ddDistYear" aria-label="Which year"></select>
+        </span></h2>
+      <div class="chartwrap" id="chartWrapDDH">
+        <svg id="chartDDH" viewBox="0 0 900 300" preserveAspectRatio="none" role="img" aria-label="How the outcomes spread"></svg>
+        <div class="tip" id="tipDDH"></div>
+      </div>
+      <div class="ddstats" id="ddDistStats"></div>
+    </div>
+
+    <div class="panel" data-ddtabs="plan">
       <h2 id="ddDetailTitle">Year by year</h2>
       <div class="hint" style="padding:0 18px" id="ddDetailNote"></div>
       <div class="swipehint">Swipe the table sideways to see every column.</div>
@@ -1902,16 +1965,115 @@ window.onerror = function(msg){
       </div>
     </div>
 
-    <div class="panel" id="ddSensPanel" hidden>
+    <div class="panel" id="ddSensPanel" data-ddtabs="plan" hidden>
       <h2>Return sensitivity</h2>
       <div style="padding:0 18px 10px" class="hint">How your plan holds up if returns run higher or lower than history suggests.</div>
       <div style="padding:0 18px 14px" id="ddSensTable"></div>
     </div>
 
-    <div class="panel" id="ddSSBreakEvenPanel" hidden>
+    <div class="panel" id="ddSSBreakEvenPanel" data-ddtabs="plan" hidden>
       <h2>Social Security claiming age comparison</h2>
       <div style="padding:0 18px 10px" class="hint">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
       <div style="padding:0 18px 14px" id="ddSSBreakEvenTable"></div>
+    </div>
+
+    <div class="panel" id="ddShowPanel" data-ddtabs="compare">
+      <h2>Strategy showdown<span class="tipdot" data-tip="ddshowdown" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2note">each tuned to the same risk</span></h2>
+      <div class="body ddintro" id="ddShowIntro"></div>
+      <div class="ddchartbar">
+        <span>Typical lifetime spending against</span>
+        <span class="seg" id="segDDShowY">
+          <button type="button" data-showy="end" class="on">what's left</button>
+          <button type="button" data-showy="low">the leanest year</button>
+          <button type="button" data-showy="first">year one</button>
+        </span>
+      </div>
+      <div class="chartwrap" id="chartWrapDDS">
+        <svg id="chartDDS" viewBox="0 0 900 360" preserveAspectRatio="none" role="img" aria-label="Each strategy's typical lifetime spending against what it leaves, its leanest year or its year one"></svg>
+        <div class="tip" id="tipDDS"></div>
+      </div>
+      <div class="legend" id="legendDDS"></div>
+      <div class="swipehint">Swipe the table sideways to see every column.</div>
+      <div class="scroll">
+        <table id="ddShowTable">
+          <thead><tr>
+            <th class="sortcol" data-ssort="name">Strategy</th>
+            <th>Setting found</th>
+            <th class="sortcol" data-ssort="first">Year one</th>
+            <th class="sortcol" data-ssort="life">Typical lifetime spending</th>
+            <th class="sortcol" data-ssort="low">Leanest year</th>
+            <th class="sortcol" data-ssort="cuts">Cuts per retirement</th>
+            <th class="sortcol" data-ssort="end">Typically left</th>
+            <th>Chart</th>
+            <th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="hint ddpad" id="ddShowNote"></div>
+    </div>
+
+    <div class="panel" id="ddSpotPanel" data-ddtabs="compare">
+      <h2 id="ddSpotTitle">Through a hard start<span class="h2ctrl">
+          <span class="seg" id="segDDSpot">
+            <button type="button" data-spot="0" class="on">1966</button>
+            <button type="button" data-spot="1">1929</button>
+            <button type="button" data-spot="2">1973</button>
+          </span>
+        </span></h2>
+      <div class="chartwrap" id="chartWrapDDSP">
+        <svg id="chartDDSP" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Each charted strategy's spending through one hard start"></svg>
+        <div class="tip" id="tipDDSP"></div>
+      </div>
+      <div class="legend" id="legendDDSP"></div>
+      <div class="hint ddpad" id="ddSpotNote"></div>
+    </div>
+
+    <div class="panel" id="ddSafePanel" data-ddtabs="safe">
+      <h2 id="ddSafeTitle">The most you could have started with<span class="tipdot" data-tip="ddsafe" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
+      <div class="body ddintro" id="ddSafeIntro"></div>
+      <div class="chartwrap" id="chartWrapDDR">
+        <svg id="chartDDR" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="The highest first-year withdrawal that met the target, for each start"></svg>
+        <div class="tip" id="tipDDR"></div>
+      </div>
+      <div class="legend" id="legendDDR"></div>
+      <div class="solveopts" id="ddSolve">
+        <div class="solveopt">
+          <div class="optlabel" id="ddSolveDialK">Highest setting that meets the target</div>
+          <div class="v gold" id="ddSolveDial">&mdash;</div>
+          <div class="note" id="ddSolveDialN"></div>
+          <button class="btn mini" type="button" id="ddSolveDialUse" disabled>Use it</button>
+        </div>
+        <div class="solveopt">
+          <div class="optlabel" id="ddSolvePortK">Portfolio needed for this spending</div>
+          <div class="v gold" id="ddSolvePort">&mdash;</div>
+          <div class="note" id="ddSolvePortN"></div>
+          <button class="btn mini" type="button" id="ddSolvePortUse" disabled>Use it</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="ddHeatPanel" data-ddtabs="safe">
+      <h2>Success grid<span class="tipdot" data-tip="ddheat" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2ctrl">
+          <span class="seg" id="segDDHeat">
+            <button type="button" data-heat="stock" class="on">By stock share</button>
+            <button type="button" data-heat="years">By years</button>
+          </span>
+        </span></h2>
+      <div class="body ddintro" id="ddHeatIntro"></div>
+      <div class="scroll ddheatwrap"><table id="ddHeat" class="ddheat"></table></div>
+      <div class="hint ddpad" id="ddHeatNote"></div>
+    </div>
+
+    <div class="panel" id="ddValPanel" data-ddtabs="safe">
+      <h2>Valuations at the start<span class="tipdot" data-tip="ddvalue" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2note">Shiller CAPE</span></h2>
+      <div class="body ddintro" id="ddValIntro"></div>
+      <div class="chartwrap" id="chartWrapDDV">
+        <svg id="chartDDV" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Each start's CAPE against the most it could have started with"></svg>
+        <div class="tip" id="tipDDV"></div>
+      </div>
+      <div class="legend" id="legendDDV"></div>
+      <div class="hint ddpad" id="ddValNote"></div>
     </div>
   </div>
 
@@ -5168,7 +5330,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.1f6a5089a0.js"></script>
+<script src="/assets/app.7f065740f2.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

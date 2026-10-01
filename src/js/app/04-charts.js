@@ -75,6 +75,9 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
     if (a.lo != null) vals.push(a.lo);
     if (a.det != null) vals.push(a.det);
   });
+  // A comparison line (o.overlay: [{pts:[{year, value}], color, dash, width}])
+  // counts toward the axis, so it never runs off the top.
+  (o.overlay || []).forEach(ov => ov.pts.forEach(p => vals.push(p.value)));
   const AX = niceAxis(Math.min(0, Math.min.apply(null, vals)), Math.max.apply(null, vals));
   const maxY = AX.max, minY = AX.min;
   const span = (maxY - minY) || 1;
@@ -176,6 +179,13 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
     svg.appendChild(svgEl("path", {d:line(a => a.base), fill:"none", stroke:"#e9b872",
       "stroke-width":2.6 * sw, "stroke-linejoin":"round", "marker-end":"url(#tip" + svgId + ")"}));
   }
+
+  (o.overlay || []).forEach(ov => {
+    if (!ov.pts.length) return;
+    svg.appendChild(svgEl("path", {d:ov.pts.map((p, i) => (i ? "L" : "M") + X(p.year) + " " + Y(p.value)).join(" "),
+      fill:"none", stroke:ov.color || cssVar("--dim"), "stroke-width":(ov.width || 1.8) * sw,
+      "stroke-dasharray":ov.dash || "6 5", "stroke-linejoin":"round", opacity:.95}));
+  });
 
   const hover = svgEl("line", {x1:0, x2:0, y1:T, y2:T + ph, stroke:"#e9b872",
     "stroke-width":1 * sw, opacity:0}); svg.appendChild(hover);

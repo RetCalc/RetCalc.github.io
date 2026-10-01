@@ -3399,6 +3399,19 @@ function historicalBacktest(o) {
   };
 }
 
+/* The historical test's success rate and median ending balance alone, with
+   no year-by-year rows, for the tables that try many variations. */
+function ddQuick(o){
+  var W = ddWindows(o), P = ddPrep(o), ok = 0, ends = [];
+  for (var k = 0; k < W.length; k++) {
+    var r = runDrawdown(o, W[k].seq, {lite: true}, P);
+    if (!r.depleted) ok++;
+    ends.push(r.endReal);
+  }
+  ends.sort(function (a, b) { return a - b; });
+  return {successRate: W.length ? ok / W.length : 0, medianEnd: ends.length ? ends[Math.floor(ends.length / 2)] : 0};
+}
+
 /* Random sequences drawn from the same historical years, using the seeded
    generator so a given set of inputs always produces the same chart. Each
    drawn year brings its stock and bond returns, inflation and January CAPE
@@ -3744,7 +3757,14 @@ function ddHeatmap(o, T, axis){
       var x = Object.assign({}, o, axis === "years" ? {years: c} : {stockPct: c, stockPctEnd: null});
       x = ddWithDial(x, v);
       var W = ddWindows(x);
-      return W.length ? ddMeets(x, T, W, null, true).share : null;
+      if (!W.length) return null;
+      // A fixed amount that starts under the comfort line fails it from day
+      // one, which says nothing about risk: -1 marks it.
+      if (T.crit === "comfort" && S.limits === false) {
+        var P = ddPrep(x);
+        if (P.first + P.G.income < T.comfort - .5) return -1;
+      }
+      return ddMeets(x, T, W, null, true).share;
     });
   });
   return {rows: rows, cols: cols, grid: grid, axis: axis, cur: cur};
@@ -3752,16 +3772,18 @@ function ddHeatmap(o, T, axis){
 /* The starts the showdown draws each strategy through: the hard ones,
    1966 and 1929, then whichever of these the data reaches. */
 var DD_SPOTS = [1966, 1929, 2000, 1973, 1937, 2007];
-/* The strategy showdown: every strategy on the same plan, each with its dial
-   turned to the most it can spend while meeting the same target, then what
-   each delivers. One without a dial runs as it is. */
-function ddShowdown(o, T){
+/* The strategy showdown: every strategy (or those in ids) on the same plan,
+   each with its dial turned to the most it can spend while meeting the same
+   target, then what each delivers. One without a dial runs as it is. */
+function ddShowdown(o, T, ids){
   var W = ddWindows(o), spots = [];
   DD_SPOTS.forEach(function (yr) {
     if (spots.length >= 3) return;
     for (var k = 0; k < W.length; k++) if (W[k].year === yr && W[k].month === 1) { spots.push(W[k]); return; }
   });
-  return {spots: spots.map(function (w) { return w.year; }), list: DD_ORDER.map(function (id) {
+  return {spots: spots.map(function (w) { return w.year; }), list: (ids || DD_ORDER).filter(function (id) {
+    return DD_STRAT[id];
+  }).map(function (id) {
     var S = DD_STRAT[id], x = ddForTarget(Object.assign({}, o, {strategy: id}), T), cal = null;
     if (S.dial) {
       cal = ddCalibrate(x, T);
@@ -3821,7 +3843,7 @@ function ddMCSummary(o, trials, seed, comfort, extra){
 /* The jobs the page hands to a worker (or runs itself where it can't). */
 function ddJob(job, a){
   if (job === "mc") return ddMCSummary(a.o, a.trials, a.seed, a.comfort, a.extra);
-  if (job === "showdown") return ddShowdown(a.o, a.T);
+  if (job === "showdown") return ddShowdown(a.o, a.T, a.ids);
   if (job === "safe") return {safe: ddSafeByStart(a.o, a.T), dial: ddCalibrate(a.o, a.T), port: ddSolvePortfolio(a.o, a.T)};
   if (job === "heat") return ddHeatmap(a.o, a.T, a.axis);
   return null;

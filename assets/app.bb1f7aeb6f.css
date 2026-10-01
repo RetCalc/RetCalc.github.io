@@ -1627,6 +1627,92 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 #msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
 .convrow .btn.mini{width:50px;padding:5px 0}
 
+
+/* ---------- Drawdown Simulator: the three views ---------- */
+/* Each panel belongs to one view or more (data-ddtabs); the stack carries
+   the one showing. The headline and the view switch belong to all three. */
+#tab-drawdown[data-tab="plan"] [data-ddtabs]:not([data-ddtabs~="plan"]),
+#tab-drawdown[data-tab="compare"] [data-ddtabs]:not([data-ddtabs~="compare"]),
+#tab-drawdown[data-tab="safe"] [data-ddtabs]:not([data-ddtabs~="safe"]){display:none !important}
+.ddtabs{display:flex;justify-content:center;margin:-2px 0}
+.ddtabs .seg button{font-size:13px;padding:8px 16px}
+.ddpin{margin-left:8px}
+/* the pinned baseline, under the headline */
+.ddbase{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:10px 18px;
+  border-top:1px solid var(--line-soft);background:rgba(201,211,230,.05);font-size:12.5px}
+.ddbase-k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
+.ddbase-v{color:var(--text);font-weight:600}
+.ddbase-n{color:var(--dimmer);flex:1 1 auto;min-width:0}
+.dddelta{margin-top:7px}
+.dddelta-s{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:999px;
+  background:var(--panel-2);border:1px solid var(--line);white-space:nowrap}
+.dddelta-s.pos{color:var(--jade);border-color:var(--jade-line)}
+.dddelta-s.neg{color:var(--coral);border-color:rgba(226,121,95,.35)}
+.dddelta-s.same{color:var(--dimmer)}
+/* the risk target the showdown and safe spending share */
+.ddtarget .body{padding:12px 18px}
+.ddtgt-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--dim)}
+.ddtgt-k{font-weight:600;color:var(--text);margin-right:4px}
+.ddtgt-row select{width:auto;max-width:100%}
+/* the spending scorecard */
+.ddtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.ddtile{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--r-card);padding:12px 14px;min-width:0}
+.ddtile .k{font-size:11.5px;color:var(--dim)}
+.ddtile .v{font-family:var(--mono);font-size:22px;letter-spacing:-.03em;color:var(--text);margin-top:6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.ddtile .n{font-size:11px;color:var(--dimmer);margin-top:4px;line-height:1.4}
+.ddtile .dddelta-s{margin-top:5px}
+.ddcounts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font-size:12px;color:var(--dim)}
+.ddcount b{font-family:var(--mono);color:var(--text);margin-left:6px;font-weight:600}
+.ddcount-of{color:var(--dimmer)}
+/* the spread of outcomes */
+.ddstats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:0 18px 16px}
+.ddstats div{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--dimmer);min-width:0}
+.ddstats b{font-family:var(--mono);font-size:13px;color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
+#ddDistYear{width:auto;padding-top:5px;padding-bottom:5px;font-size:12.5px}
+/* the showdown and safe spending */
+.ddintro{font-size:12.5px;color:var(--dim);line-height:1.55;padding-bottom:4px}
+.ddintro b{color:var(--text)}
+.ddwork{color:var(--dimmer);font-style:italic}
+.ddpad{padding:4px 18px 16px}
+.ddchartbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:4px 18px 0;font-size:12.5px;color:var(--dim)}
+#ddShowTable{min-width:940px}
+#ddShowTable small{display:block;font-size:10.5px;color:var(--dimmer);font-family:var(--sans);margin-top:2px}
+#ddShowTable small.neg{color:var(--coral)}
+#ddShowTable td:first-child,#ddShowTable td.ddset{font-family:var(--sans);white-space:nowrap}
+#ddShowTable td.ddset{text-align:left}
+#ddShowTable tr.ddcur td:first-child{color:var(--gold);font-weight:600}
+#ddShowTable tr.ddmiss td{opacity:.78}
+#ddShowTable input[type=checkbox]{accent-color:var(--jade);width:15px;height:15px;cursor:pointer;margin:0}
+#ddShowTable th.sortcol{cursor:pointer;user-select:none}
+#ddShowTable th.sortcol:hover{color:var(--text)}
+#ddShowTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}
+#ddShowTable th.sortcol.sort-desc::after{content:"\2193";margin-left:4px;opacity:.7}
+.ddheatwrap{padding:0 18px 6px;max-height:none}
+.ddheat{border-collapse:separate;border-spacing:3px;min-width:560px}
+.ddheat td{text-align:center;font-size:12px;padding:7px 4px;border:0;border-radius:6px;cursor:pointer;color:var(--text)}
+.ddheat td:hover{outline:2px solid var(--gold);outline-offset:-2px}
+.ddheat th{text-align:center;border:0;position:static;background:none;padding:5px 4px;white-space:nowrap}
+.ddheat thead th:first-child{text-align:left}
+.ddheat tbody th{text-align:right;font-family:var(--mono);font-weight:500;color:var(--dim)}
+.ddheat thead th.ddh-cur,.ddheat tr.ddh-cur th{color:var(--gold)}
+.ddheat td.ddh-me{outline:2px solid var(--gold);outline-offset:-2px;font-weight:700}
+.ddheat td.ddh-na{cursor:default;color:var(--dimmer)}
+.ddempty .chartwrap,.ddempty .legend{display:none}
+@media (max-width:900px){
+  .ddtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ddstats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .ddtabs .seg{width:100%;display:flex}
+  .ddtabs .seg button{flex:1;padding:10px 6px;font-size:13px}
+  .ddtiles{gap:8px}
+  .ddtile{padding:10px 11px}
+  .ddtile .v{font-size:18px}
+  .ddtarget .body{padding:12px 14px}
+  .ddpad{padding:4px 14px 14px}
+  .ddstats{padding:0 14px 14px}
+}
 /* ---------- chart ---------- */
 .chartwrap{padding:16px 18px 6px;position:relative}
 @keyframes chartFadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}

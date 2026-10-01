@@ -53,10 +53,29 @@ function ddSortValue(r, col) {
   }
 }
 var ddIncomeChartAgg = false;
-/* Display names, shared by the summary sheet and the image card. */
-var DD_STRAT_NAMES = {fixed:"Fixed amount", pct:"% of portfolio",
-  guardrails:"Guyton-Klinger Guardrails", floorceil:"Floor & ceiling",
-  yale:"Yale Endowment", vpw:"Variable percentage (VPW)"};
+/* Each strategy as the page names it, and how its dial reads. The engine's
+   catalog (DD_STRAT in drawdown.js) has its rule; this has its words. dial
+   names the saved field the engine's dial lives in. */
+var DD_UI = {
+  fixed:     {name:"Fixed amount, rising with inflation", short:"Fixed", card:"Fixed amount", dial:"rate"},
+  kitces:    {name:"Kitces ratchet", short:"Ratchet", dial:"rate"},
+  pct:       {name:"Fixed % of portfolio each year", short:"Fixed %", card:"% of portfolio", dial:"rate"},
+  clyatt:    {name:"95% rule", short:"95% rule", dial:"rate"},
+  oneovern:  {name:"1/N: the balance over the years left", short:"1/N", card:"1/N"},
+  rmd:       {name:"RMD method", short:"RMD method"},
+  vpw:       {name:"Variable percentage withdrawal (VPW)", short:"VPW", card:"Variable percentage (VPW)", dial:"vpwRate"},
+  guardrails:{name:"Guyton-Klinger Guardrails", short:"Guardrails", dial:"rate"},
+  riskgr:    {name:"Risk-based guardrails", short:"Risk-based", dial:"rgTarget"},
+  floorceil: {name:"Floor & ceiling", short:"Floor & ceiling", dial:"rate"},
+  vanguard:  {name:"Vanguard dynamic spending", short:"Vanguard", dial:"rate"},
+  yale:      {name:"Yale Endowment", short:"Yale", dial:"yaleRate"},
+  hebeler:   {name:"Hebeler Autopilot II", short:"Autopilot II", dial:"hebRate"},
+  sensible:  {name:"Sensible withdrawals", short:"Sensible", dial:"rate"},
+  cape:      {name:"CAPE-based", short:"CAPE", dial:"capeA"}
+};
+/* Display names, shared by the summary sheet, the image card and compare. */
+var DD_STRAT_NAMES = {};
+Object.keys(DD_UI).forEach(function (k) { DD_STRAT_NAMES[k] = DD_UI[k].card || DD_UI[k].name; });
 /* Year one's spending under the chosen strategy, in today's dollars, with
    the same minimum and maximum runDrawdown applies. */
 function ddFirstSpend(o, P){
@@ -271,13 +290,16 @@ var DD_STATE = [
   ["ssDelay", "ddSSDelay", "num", 0],
   ["retireAge", "ddRetireAge", "text", ""],
   ["starts", "ddStarts", "select", "year"],
-  ["fromYear", "ddFromYear", "num", 1926]
+  ["fromYear", "ddFromYear", "num", 1926],
+  ["comfort", "ddComfort", "money0", 0],
+  ["tCrit", "ddTCrit", "select", "comfort"],
+  ["tConf", "ddTConf", "pick", 100]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear"];
+var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -395,13 +417,15 @@ function ddFinish(lane, id, res){
 }
 
 /* The historical view is cheap and renders on every keystroke as it always
-   has. The Monte Carlo view runs 5,000 retirements in the worker, so held
-   keys are coalesced -- the same 160ms treatment scheduleMC() already gives
-   the retirement chart. Every other entry point (tab switch, mode toggle,
+   has. The Monte Carlo view runs 5,000 retirements in the worker, and a
+   retirement every month is twelve times the historical work, so for those
+   held keys are coalesced -- the same 160ms treatment scheduleMC() already
+   gives the retirement chart. Every other entry point (tab switch, mode toggle,
    scenario load, table click) still calls renderDrawdown directly. */
 var ddTypeTimer = null;
 function renderDrawdownTyping(){
-  if (ddMode !== "mc"){ clearTimeout(ddTypeTimer); renderDrawdown(); return; }
+  // A retirement every month is twelve times the work: coalesce it too.
+  if (ddMode !== "mc" && $("ddStarts").value !== "month"){ clearTimeout(ddTypeTimer); renderDrawdown(); return; }
   clearTimeout(ddTypeTimer);
   ddTypeTimer = setTimeout(renderDrawdown, 160);
 }
@@ -575,24 +599,37 @@ function renderDrawdown() {
     : "Enter your portfolio value above to see this in dollars.";
   if (strat === "fixed") syncWdStages(o);
 
+  var comfort = ddComfortSync(o, P);
+  ddBaseSync();
   if (o.initial <= 0) {
     setBig("ddSuccess", "—"); setBig("ddMedian", "—"); setBig("ddWorst", "—");
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Enter your portfolio value to run the simulation.</div>";
     return;
   }
 
-  if (ddMode === "hist") ddPaintHist(o, d, historicalBacktest(o));
+  if (ddMode === "hist") ddPaintHist(o, d, historicalBacktest(o), P, comfort);
   else {
     $("ddBadge").textContent = "Running…";
     var ssx = ddSSRows(o, d);
-    ddRun("mc", "mc", {o: o, trials: MC_RUNS, seed: mcSeed, comfort: ddComfort(o, P),
+    ddRun("mc", "mc", {o: o, trials: MC_RUNS, seed: mcSeed, comfort: comfort,
         extra: {sens: DD_DRAGS, ss: ssx ? ssx.flat : null}},
-      function (M) { if (ddMode === "mc") ddPaintMC(o, M, ssx); });
+      function (M) { if (ddMode === "mc") ddPaintMC(o, M, ssx, P, comfort); });
+    // The baseline, run the same way, for the changes against it.
+    if (ddBase) {
+      var bo = ddOptsFromState(ddBase.state);
+      if (bo.initial > 0) ddRun("mcb", "mc", {o: bo, trials: MC_RUNS, seed: mcSeed, comfort: comfort},
+        function (Mb) {
+          ddBaseMC = Mb;
+          if (ddMode === "mc" && ddLastMC) ddPaintMC(ddLastMC.o, ddLastMC.M, ddLastMC.ssx, ddLastMC.P, ddLastMC.comfort);
+        });
+    }
   }
+  ddViewsRefresh(o, d, P, comfort);
 }
 
-function ddPaintHist(o, d, H){
+function ddPaintHist(o, d, H, P, comfort){
   ddLastH = H;
+  var B = ddBase ? ddBaseHist(comfort) : null;
   if (!H.total) {
     /* The start year has been pulled so far forward that no complete
        retirement of this length fits before the data ends. Say so rather than
@@ -691,8 +728,10 @@ function ddPaintHist(o, d, H){
       return ln;
     });
     ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0,
-      {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:ddTraces}});
+      {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:ddTraces},
+       overlay:ddBaseOverlay(B, "realEnd", true, null)});
     histLegend("legendDD");
+    if (B) $("legendDD").insertAdjacentHTML("beforeend", swatch("#c9d3e6", "Baseline median"));
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
       " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
@@ -702,8 +741,10 @@ function ddPaintHist(o, d, H){
     show.rows.forEach(function (r) {
       singlePts.push({ year: r.year, base: r.realEnd, hi: r.realEnd, lo: 0 });
     });
-    ddPoints = paintChart("chartDD", singlePts, maxY, "band", [], ddRetireAge != null ? ddRetireAge : 0, { enhanced: true, noLoLine: true });
-    $("legendDD").innerHTML = swatch("#e9b872", "Portfolio balance, in today’s dollars");
+    var bOv = ddBaseOverlay(B, "realEnd", true, show.startIdx);
+    ddPoints = paintChart("chartDD", singlePts, maxY, "band", [], ddRetireAge != null ? ddRetireAge : 0, { enhanced: true, noLoLine: true, overlay: bOv });
+    $("legendDD").innerHTML = swatch("#e9b872", "Portfolio balance, in today’s dollars") +
+      (bOv ? swatch("#c9d3e6", "Baseline, same start") : "");
     $("ddChartNote").hidden = false;
     $("ddChartNote").innerHTML = "Balance in today’s dollars, retiring in " + showLabel + ".";
   }
@@ -724,32 +765,36 @@ function ddPaintHist(o, d, H){
     setH2Text($("ddIncomeSectionTitle"), "What your income looked like");
     setH2Text($("ddIncomeChartTitle"), "Spending through retirement");
     renderSpendStatsAll(H, o);
-    renderIncomeChartAll(H, o);
+    renderIncomeChartAll(H, o, ddBaseOverlay(B, "realSpend", false, null));
     $("ddIncomeNote").textContent = "Median, 10th–90th and 25th–75th percentile spending by " +
       "year of retirement, across all " + H.total + " historical " + (H.monthly ? "starting months." : "starting years.");
   } else {
     setH2Text($("ddIncomeSectionTitle"), "What your income looked like starting in " + showLabel);
     setH2Text($("ddIncomeChartTitle"), "Spending through retirement, retiring in " + showLabel);
     renderSpendStats(show, "Showing the period selected above.");
-    renderIncomeChart(show);
+    renderIncomeChart(show, ddBaseOverlay(B, "realSpend", false, show.startIdx));
     $("ddIncomeNote").textContent = "";
   }
+  ddPlanExtras("hist", o, P, H, comfort, B);
 
   // Return sensitivity
   ddSensTable(DD_DRAGS.map(function (drag) {
-    var S = historicalBacktest(Object.assign({}, o, {returnDrag: drag}));
+    var S = ddQuick(Object.assign({}, o, {returnDrag: drag}));
     return {rate: S.successRate, median: S.medianEnd};
   }), "Baseline (historical)");
 
   // Social Security claiming ages, when they're estimated
   var ssx = ddSSRows(o, d);
   ddSSTables(ssx, ssx && ssx.flat.map(function (ov) {
-    var S = historicalBacktest(Object.assign({}, o, ov));
+    var S = ddQuick(Object.assign({}, o, ov));
     return {rate: S.successRate, median: S.medianEnd};
   }));
 }
 
-function ddPaintMC(o, M, ssx){
+var ddLastMC = null;
+function ddPaintMC(o, M, ssx, P, comfort){
+  ddLastMC = {o: o, M: M, ssx: ssx, P: P, comfort: comfort};
+  var Mb = ddBase ? ddBaseMC : null;
   var trials = M.trials;
   $("ddPeriods").textContent = trials.toLocaleString() + " runs";
   $("ddBadge").textContent = trials.toLocaleString() + " simulations";
@@ -773,8 +818,11 @@ function ddPaintMC(o, M, ssx){
   M.bands.forEach(function (b) {
     mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
   });
-  ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
+  var mOv = Mb ? [{pts: [{year: 0, value: ddOptsFromState(ddBase.state).initial}].concat(Mb.bands.map(function (b) { return {year: b.year, value: b.p50}; })),
+    color: "#c9d3e6", dash: "6 5", width: 1.6}] : null;
+  ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true, overlay: mOv});
   mcLegend("legendDD", null, true);
+  if (mOv) $("legendDD").insertAdjacentHTML("beforeend", swatch("#c9d3e6", "Baseline median"));
   $("ddChartNote").hidden = false;
   $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
     " simulated retirements.";
@@ -790,8 +838,10 @@ function ddPaintMC(o, M, ssx){
   $("ddSpendAllView").hidden = true;
   setH2Text($("ddIncomeChartTitle"), "Spending through retirement, a median run");
   renderSpendStats(med, "Showing the same run as the table below.");
-  renderIncomeChart(med);
+  renderIncomeChart(med, Mb ? [{pts: Mb.med.rows.map(function (w) { return {year: w.year, value: w.realSpend}; }),
+    color: "#c9d3e6", dash: "6 5", width: 1.6}] : null);
   $("ddIncomeNote").textContent = "";
+  ddPlanExtras("mc", o, P, M, comfort, null);
 
   ddSensTable(M.sens, "Baseline (sampled)");
   ddSSTables(ssx, M.ss);
@@ -849,7 +899,7 @@ function renderSpendStats(run, label) {
 
 /* Line chart of what was actually spent each year, in today's dollars, split
    into the Social Security portion and the portfolio portion. */
-function renderIncomeChart(run) {
+function renderIncomeChart(run, overlay) {
   var pts = run.rows.map(function (r) {
     var real = r.realSpend != null ? r.realSpend : r.realWithdrawal;
     return { year: r.year, base: real, hi: real, lo: real };
@@ -857,15 +907,16 @@ function renderIncomeChart(run) {
   ddIncomeChartAgg = false;
   var xOff = ddRetireAge != null ? ddRetireAge - 1 : 0;
   if (!pts.length) { paintChart("chartDDI", [], 1, "band", [], xOff, {enhanced:true}); return; }
-  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", [], xOff, {enhanced:true});
-  $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today's dollars");
+  ddiPoints = paintChart("chartDDI", pts, pts.length, "band", [], xOff, {enhanced:true, overlay: overlay});
+  $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today's dollars") +
+    (overlay ? swatch("#c9d3e6", "Baseline") : "");
 }
 
 /* Same idea as the "every historical starting year" balance chart above, but
    for spending: at each year of retirement (year 1, year 2, ...), collect
    that year's real spending across every historical starting-year run and
    take percentiles. This is what "All years" shows instead of one run. */
-function renderIncomeChartAll(H, o) {
+function renderIncomeChartAll(H, o, overlay) {
   var maxY = o.years;
   var pts = [];
   for (var y = 1; y <= maxY; y++) {
@@ -885,8 +936,9 @@ function renderIncomeChartAll(H, o) {
   });
   ddIncomeChartAgg = true;
   ddiPoints = paintChart("chartDDI", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge - 1 : 0,
-    {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:lines}});
+    {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:lines}, overlay: overlay});
   histLegend("legendDDI");
+  if (overlay) $("legendDDI").insertAdjacentHTML("beforeend", swatch("#c9d3e6", "Baseline median"));
 }
 
 /* Aggregate version of renderSpendStats: instead of one run's swings, this
