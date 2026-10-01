@@ -339,7 +339,7 @@ function ddMixForm(){
     "<div class='formfield'><label>Glide stocks to <span class='opt'>optional</span></label><div class='inputwrap'>" +
       "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg id='ddMixGlide' value='" +
       (o.stockPctEnd != null ? ddN(o.stockPctEnd) : "") + "' aria-label='Stocks at the end'><span class='affix'>% by the last year</span></div>" +
-      "<div class='formhint'>Moves the stocks' total in a straight line, small value keeping its share. Leave blank to hold the mix.</div></div>" +
+      "<div class='formhint'>Moves the stocks' total in a straight line, small value keeping its share of the stocks. What leaves stocks goes to bonds and cash in the proportions you hold them (and what joins them comes from both the same way). Leave blank to hold the mix.</div></div>" +
     "<div class='formactions'><button type='button' class='btn' data-mixcancel>Cancel</button>" +
     "<button type='button' class='btn primary' data-mixok>Use this mix</button></div></div>";
   document.body.appendChild(ov);
