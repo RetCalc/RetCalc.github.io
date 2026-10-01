@@ -90,10 +90,12 @@ function ddFromIdx(o){
 var ddWinMemo = {}, ddWinKeys = [];
 function ddWindows(o){
   var years = o.years, from = ddFromIdx(o), step = o.monthly ? 1 : 12;
-  var key = years + "|" + step + "|" + from;
+  // o.lastStart, a year, ends the starts early: a study's own period.
+  var M = HIST_M_STOCK.length, upto = o.lastStart ? Math.min(M, (o.lastStart - HIST_START) * 12 + 11 + 12 * years) : M;
+  var key = years + "|" + step + "|" + from + "|" + upto;
   if (ddWinMemo[key]) return ddWinMemo[key];
-  var M = HIST_M_STOCK.length, out = [];
-  for (var i = ddFirstStart(o, step); i + 12 * years <= M; i += step){
+  var out = [];
+  for (var i = ddFirstStart(o, step); i + 12 * years <= upto; i += step){
     var seq = [];
     for (var k = 0; k < years; k++){
       var j = i + 12 * k;
@@ -1311,6 +1313,101 @@ function ddMCSummary(o, trials, seed, comfort, extra){
     sc: sc, bal: bal, spend: spend, years: Y, n: n, path: P.path,
     sens: extra && extra.sens ? extra.sens.map(function (dr) { return small({returnDrag: dr}); }) : null,
     ss: extra && extra.ss ? extra.ss.map(small) : null};
+}
+
+/* ---- classic studies, reproduced ----
+   Each sets the simulator up as the paper did (setup, as saved fields) and
+   finds, in this record, what the paper reported. The page sets each
+   paper's own words beside these; the tests hold both. Starting rates are
+   shares of a $1,000,000 portfolio, which no result depends on. */
+function ddStudyOpts(setup, more){
+  var o = ddOptsFromState(Object.assign({initial: 1000000, years: 30, stock: 60, rate: 4, strategy: "fixed"}, setup));
+  return Object.assign(o, more || {});
+}
+/* The fewest years a plan lasted across its starts, and the start. */
+function ddShortest(H, years){
+  var m = {years: years + 1, year: null};
+  H.runs.forEach(function (r) { var L = r.depleted ? r.depletedYear - 1 : years; if (L < m.years) m = {years: L, year: r.startYear}; });
+  return m;
+}
+/* Real spending's steepest fall below year one, across starts: its share of
+   year one and the start. */
+function ddLowest(H){
+  var m = {share: Infinity, year: null};
+  H.runs.forEach(function (r) {
+    var f = r.rows[0].realSpend;
+    r.rows.forEach(function (w) { if (f > 0 && w.realSpend / f < m.share) m = {share: w.realSpend / f, year: r.startYear}; });
+  });
+  return m;
+}
+/* The largest one-year rise and fall in planned spending after inflation,
+   leaving out years the money had run short. */
+function ddSwings(H){
+  var up = 0, dn = 0;
+  H.runs.forEach(function (r) {
+    for (var i = 1; i < r.rows.length; i++) {
+      var a = r.rows[i - 1], b = r.rows[i];
+      if (a.short > 0 || b.short > 0 || !(a.realPlanned > 0)) continue;
+      var c = b.realPlanned / a.realPlanned - 1;
+      if (c > up) up = c; if (c < dn) dn = c;
+    }
+  });
+  return {up: up, down: dn};
+}
+var DD_LASTS = {crit: "lasts", conf: 1, comfort: 0};
+var DD_RESEARCH = [
+  {id: "bengen", setup: {years: 30, stock: 50, rate: 4, strategy: "fixed"},
+   find: function () {
+     var a = ddShortest(historicalBacktest(ddStudyOpts({years: 50, stock: 50}, {lastStart: 1976})), 50);
+     var b = ddShortest(historicalBacktest(ddStudyOpts({years: 50, stock: 75}, {lastStart: 1976})), 50);
+     var safe = ddSafeByStart(ddStudyOpts({stock: 50}, {lastStart: 1976}), DD_LASTS);
+     var w = safe.reduce(function (p, q) { return q.rate < p.rate ? q : p; });
+     return {short50: a, short75: b, safemax: w.rate, safeAt: w.year, starts: safe.length};
+   }},
+  {id: "trinity", setup: {years: 30, stock: 50, rate: 4, strategy: "fixed"},
+   find: function () {
+     var mixes = [100, 75, 50, 25, 0], same = {}, all = {}, n = 0, m = 0;
+     mixes.forEach(function (st) {
+       var H = historicalBacktest(ddStudyOpts({stock: st}, {lastStart: 1965}));
+       var A = historicalBacktest(ddStudyOpts({stock: st}));
+       same[st] = H.successRate; all[st] = A.successRate; n = H.total; m = A.total;
+     });
+     return {mixes: mixes, same: same, all: all, nSame: n, nAll: m};
+   }},
+  {id: "guyton", setup: {years: 40, stock: 65, rate: 5.4, strategy: "guardrails", guardBand: 20, adjust: 10,
+     guardBandLo: 20, adjustLo: 10, gkFinal: true, gkFinalYrs: 15, skipRaise: true},
+   find: function () {
+     var set = DD_RESEARCH[2].setup, H = historicalBacktest(ddStudyOpts(set));
+     var lo = historicalBacktest(ddStudyOpts(Object.assign({}, set, {rate: 5.2}))).successRate;
+     var hi = historicalBacktest(ddStudyOpts(Object.assign({}, set, {rate: 5.6}))).successRate;
+     var cal = ddCalibrate(ddStudyOpts(set), DD_LASTS);
+     return {success: H.successRate, lo: lo, hi: hi, starts: H.total, lowest: ddLowest(H), max: cal && cal.met ? cal.v : null};
+   }},
+  {id: "vanguard", setup: {years: 35, stock: 50, rate: 5, strategy: "vanguard", vgCeil: 5, vgFloor: 2.5},
+   find: function () {
+     var H = historicalBacktest(ddStudyOpts(DD_RESEARCH[3].setup));
+     var F = historicalBacktest(ddStudyOpts({years: 35, stock: 50, rate: 5, strategy: "pct"}));
+     return {success: H.successRate, starts: H.total, swing: ddSwings(H), pctSwing: ddSwings(F),
+       lowest: ddLowest(H), pctLowest: ddLowest(F)};
+   }},
+  {id: "vpw", setup: {years: 35, stock: 60, strategy: "vpw", retireAge: "65"},
+   find: function () {
+     var o = ddStudyOpts(DD_RESEARCH[4].setup), H = historicalBacktest(o);
+     return {success: H.successRate, starts: H.total, first: ddPrep(o).first / o.initial, lowest: ddLowest(H),
+       left: H.runs.reduce(function (a, r) { return Math.max(a, r.endReal); }, 0)};
+   }},
+  {id: "kitces", setup: {years: 30, stock: 60, rate: 4, strategy: "kitces", kitThresh: 50, kitRaise: 10, kitGap: 3},
+   find: function () {
+     var H = historicalBacktest(ddStudyOpts(DD_RESEARCH[5].setup)), F = historicalBacktest(ddStudyOpts({stock: 60}));
+     var raised = H.runs.filter(function (r) { return r.rows.some(function (w) { return w.realPlanned > r.rows[0].realPlanned * 1.001; }); }).length;
+     var gain = H.runs.map(function (r) { return r.rows[r.rows.length - 1].realPlanned / r.rows[0].realPlanned; }).sort(function (a, b) { return a - b; });
+     var newFails = H.runs.filter(function (r, i) { return r.depleted && !F.runs[i].depleted; }).length;
+     return {success: H.successRate, fixed: F.successRate, starts: H.total, raised: raised, medGain: gain[Math.floor(gain.length / 2)], newFails: newFails};
+   }}
+];
+function ddStudy(id){
+  for (var k = 0; k < DD_RESEARCH.length; k++) if (DD_RESEARCH[k].id === id) return DD_RESEARCH[k];
+  return null;
 }
 
 /* The jobs the page hands to a worker (or runs itself where it can't). */

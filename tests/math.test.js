@@ -531,6 +531,34 @@ group("Drawdown: the first decade, and the eras' figures match the record");
   ok(g8 > 1, "back above the 2007 level by the end of 2012");
 })();
 
+group("Drawdown: the classic studies, reproduced");
+(function () {
+  var f = ddStudy("bengen").find();
+  ok(f.short50.years === 25 && f.short50.year === 1966, "Bengen: 4% at 50/50 lasted at least 25 years from every start 1927-1976, 1966 the shortest", JSON.stringify(f.short50));
+  eq(f.short75.years, 26, "26 at 75/25");
+  near(f.safemax, .0375, .0002, "30 years from every start allowed 3.75%"); eq(f.safeAt, 1966, "set by 1966"); eq(f.starts, 50, "50 starts, 1927-1976");
+  var t = ddStudy("trinity").find();
+  eq(t.nSame, 39, "Trinity: starts 1927-1965"); eq(t.nAll, 70, "all 70 30-year starts");
+  var paper = {100: .95, 75: .98, 50: .95, 25: .71, 0: .20};
+  [100, 75, 50, 25].forEach(function (m) { near(t.same[m], paper[m], .04, "Trinity " + m + "% stocks within 4 points of the paper"); });
+  near(t.same[0], 5 / 39, 1e-9, "all bonds: 13% here against the paper's 20% (10-year Treasuries, not corporates)");
+  near(t.all[50], 66 / 70, 1e-9, "every start to 1996 at 50/50");
+  var g = ddStudy("guyton").find();
+  ok(g.success === 1 && g.lo === 1 && g.hi === 1, "Guyton-Klinger: 5.2-5.6% lasted from every 40-year start");
+  near(g.lowest.share, .334, .002, "but spending fell to a third of year one's"); eq(g.lowest.year, 1966, "retiring in 1966");
+  near(g.max, 6.25, .02, "and the money lasted from every start up to 6.25%");
+  var v = ddStudy("vanguard").find();
+  near(v.swing.up, .05, 1e-9, "Vanguard: spending rises at most 5% a year"); near(v.swing.down, -.025, 1e-9, "falls at most 2.5%");
+  ok(v.pctSwing.up > .2 && v.pctSwing.down < -.2, "a straight 5% swings over 20% either way");
+  eq(Math.round((1 - v.success) * v.starts), 5, "and it ran out in 5 starts"); eq(v.starts, 65, "of 65");
+  var w = ddStudy("vpw").find();
+  ok(w.success === 1 && w.left < 1, "VPW lasts every start and spends it all");
+  near(w.lowest.share, .442, .002, "spending fell to 44% of year one's"); eq(w.lowest.year, 1966, "retiring in 1966");
+  var k = ddStudy("kitces").find();
+  ok(k.success === k.fixed && k.newFails === 0, "Kitces: ratcheting kept the 4% rule's record");
+  eq(k.raised, 44, "44 of 70 starts got a raise"); near(k.medGain, 1.61, .01, "the typical last year spent 1.61 times year one");
+})();
+
 group("Drawdown: saved inputs become options the same way everywhere");
 (function () {
   var o = ddOptsFromState({ initial: "1,000,000", years: 30, stock: 0, rate: 0, floor: 0, ceil: 0, yaleWeight: 0, strategy: "floorceil" });

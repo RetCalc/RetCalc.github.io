@@ -30,6 +30,7 @@
 .popup.wide{max-width:420px}
 /* The strategy guide: a reading pop-up, wide enough for pros and cons side by side. */
 .popup.guide{max-width:780px;padding:22px 26px 20px}
+.popup.ddstudypop{max-width:640px}
 .sg-top{display:flex;align-items:flex-start;gap:12px}
 .sg-top h3{margin:0 0 8px;flex:1 1 auto;font-size:17px}
 .sg-close{flex:none;width:30px;height:30px;margin:-4px -8px 0 0;border:0;border-radius:var(--r-well);
