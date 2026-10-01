@@ -2221,353 +2221,124 @@ var HIST_STOCK = histAnnual(HIST_M_STOCK);
 var HIST_BOND = histAnnual(HIST_M_BOND);
 var HIST_INFL = histAnnual(HIST_M_INFL);
 
-/* ---------- drawdown engine ----------
-   One retirement run. Withdrawal happens at the start of each year, then the
-   remaining balance earns that year's blended stock/bond return less fees.
-   Sequence is an array of {stock, bond, infl} in percent. */
-/**
- * Only enabled items (item.on !== false) are ever considered active.
- * @param {CustomItem[]} items
- * @param {number} year - 1-based year, matching runDrawdown's row numbering
- * @returns {CustomItem[]} the items active in this year
- */
-function itemsActiveThisYear(items, year) {
-  if (!items || !items.length) return [];
-  return items.filter(function (it) {
-    if (it.on === false) return false;
-    var start = Math.max(1, Math.round(it.startYear || 1));
-    if (year < start) return false;
-    if (it.duration.type === "once") return year === start;
-    if (it.duration.type === "years") return year < start + Math.max(1, Math.round(it.duration.years));
-    return true; // forever
-  });
-}
-/**
- * Matches how the base withdrawal and Social Security are inflated: the
- * stated annual figure is in today's dollars, and gets the same amount of
- * inflation applied as everything else by the year it's actually paid —
- * whether that's year 1 or year 20 doesn't need special-casing, cumInfl
- * already reflects however many years have passed by then.
- * @param {CustomItem} it
- * @param {number} year - 1-based year this amount is being paid
- * @param {number} cumInfl - price level at the start of this year (1 in year 1)
- * @returns {number} this item's dollar amount for this year
- */
-function itemAmount(it, year, cumInfl) {
-  if (!it.inflate) return it.annual;
-  return it.annual * cumInfl;
-}
+/* Shiller's cyclically adjusted P/E (CAPE), January 1926 through December
+   2025, one per month in step with the returns above: the month's S&P 500
+   price over the average of the ten years of earnings before it, both after
+   inflation. A high reading means stocks are dear against their earnings.
+   Source: Robert Shiller (Yale), via multpl. */
+var HIST_M_CAPE = [
+  11.34,11.39,10.71,10.40,10.58,11.20,11.87,12.49,12.69,12.43,12.62,13.01,
+  13.19,13.63,14.03,14.49,15.00,15.12,15.82,16.86,17.82,17.54,18.13,18.65,
+  18.81,18.87,19.94,21.26,21.83,20.91,21.08,21.76,23.00,23.58,25.12,25.30,
+  27.08,27.13,27.68,27.57,27.70,27.94,29.93,31.48,32.56,28.96,21.17,22.01,
+  22.31,23.70,24.59,25.84,24.31,21.87,21.55,21.30,21.07,18.21,16.94,16.06,
+  16.71,18.16,18.58,16.87,15.40,15.06,15.52,15.01,12.82,11.15,11.42,9.31,
+  9.31,9.34,9.41,7.19,6.39,5.57,5.84,8.83,9.76,8.48,8.46,8.26,
+  8.73,7.83,7.87,8.72,11.25,13.10,13.75,13.00,12.92,11.70,12.01,12.28,
+  13.03,13.93,13.25,13.52,12.18,12.29,11.74,11.32,10.91,11.11,11.45,11.64,
+  11.50,11.09,10.40,11.10,11.99,12.54,13.20,14.11,14.42,14.83,16.13,16.16,
+  17.09,18.10,18.66,18.72,17.75,18.39,19.36,19.62,19.86,20.91,21.50,21.13,
+  21.62,22.24,22.04,20.56,19.47,18.71,19.65,19.81,16.85,14.36,13.16,13.01,
+  13.51,13.26,12.38,11.79,11.99,12.29,14.77,14.90,14.28,16.06,16.15,15.76,
+  15.60,15.66,15.73,13.92,14.50,14.83,15.27,15.12,16.45,16.82,16.60,16.28,
+  16.38,16.22,16.17,16.37,14.14,12.84,13.37,13.65,14.21,14.33,14.64,13.91,
+  13.90,13.00,12.96,12.43,12.04,12.16,12.74,12.46,12.28,11.58,10.91,10.09,
+  10.10,9.68,9.00,8.54,8.51,8.91,9.15,9.01,9.08,9.60,9.66,9.62,
+  10.15,10.71,10.85,11.04,11.36,11.52,11.77,11.21,11.34,11.19,10.63,10.74,
+  11.05,10.95,11.22,10.94,11.10,11.53,11.74,11.54,11.33,11.58,11.48,11.64,
+  11.96,12.34,12.32,12.63,13.04,13.13,12.87,12.92,13.80,14.37,14.85,15.02,
+  15.62,15.76,15.13,16.04,16.01,15.77,14.51,13.98,11.84,11.39,11.11,11.37,
+  11.47,11.95,11.29,10.90,10.73,11.08,11.70,11.34,10.83,11.13,10.98,10.68,
+  10.42,10.00,10.19,10.78,11.24,11.58,11.13,10.72,10.55,10.83,10.25,10.16,
+  10.25,9.87,9.90,9.78,9.69,9.07,9.61,9.85,9.88,10.17,10.22,10.53,
+  10.75,10.91,10.91,11.18,11.46,11.55,10.54,11.04,11.34,11.66,11.54,11.31,
+  11.90,12.14,11.84,11.95,11.86,11.62,11.78,12.26,12.44,12.31,11.85,12.15,
+  12.53,12.36,12.36,12.24,12.20,12.45,12.67,12.68,12.43,12.13,12.47,12.93,
+  13.01,12.86,12.83,12.16,12.14,11.62,11.75,11.72,11.14,11.39,11.64,11.75,
+  12.00,12.22,12.42,12.91,13.31,13.36,13.83,14.04,14.36,14.62,15.12,15.79,
+  15.99,16.44,16.22,16.69,16.52,17.37,18.45,18.22,18.84,17.77,18.84,18.94,
+  18.29,18.27,19.37,19.37,18.54,18.16,18.86,18.67,17.84,17.42,17.12,17.20,
+  16.72,15.84,15.90,16.12,16.60,16.73,16.87,15.87,15.16,14.15,13.74,13.67,
+  13.79,13.78,13.93,13.91,14.32,14.64,14.96,15.54,15.93,16.56,16.99,17.36,
+  17.98,17.76,18.20,18.43,18.69,18.45,19.09,18.96,18.12,18.02,18.07,18.62,
+  18.34,17.55,17.29,17.43,17.26,17.82,17.38,17.58,17.05,16.61,17.15,17.56,
+  18.47,19.23,19.84,20.38,20.60,20.33,20.15,20.94,20.71,20.92,21.86,22.04,
+  21.20,21.45,21.44,20.66,19.09,16.83,17.14,17.57,17.32,16.74,17.85,18.59,
+  19.26,19.47,19.29,20.15,20.51,20.38,19.97,20.47,20.96,20.89,20.72,21.04,
+  21.63,21.83,22.17,22.42,22.57,22.30,22.98,22.65,22.89,23.21,23.23,22.75,
+  23.27,23.37,23.25,23.42,23.71,22.39,22.30,22.67,23.37,23.78,23.93,23.69,
+  24.06,23.70,22.61,23.11,21.85,21.56,21.38,19.91,19.16,18.83,19.71,19.74,
+  20.43,21.07,21.44,21.69,21.95,21.55,21.80,22.03,22.22,22.07,21.26,21.75,
+  21.51,20.42,19.93,21.28,21.63,22.00,21.75,21.14,21.68,22.00,22.20,22.28,
+  21.19,20.90,20.20,20.43,20.97,19.71,18.68,18.43,18.40,18.45,18.44,17.33,
+  17.09,16.37,16.53,15.87,13.98,13.80,13.73,14.10,14.84,15.06,14.95,15.87,
+  16.46,17.03,17.40,17.92,17.56,17.08,16.89,16.52,16.86,16.43,15.64,16.60,
+  17.26,17.46,17.81,17.92,17.66,17.64,17.40,17.94,17.61,17.53,18.34,18.65,
+  18.71,17.89,17.41,16.94,16.31,15.81,15.89,15.28,15.48,15.91,14.65,13.49,
+  13.53,12.96,13.31,12.55,12.00,11.89,10.39,9.82,8.68,8.74,8.95,8.29,
+  8.92,9.76,10.16,10.23,10.82,11.01,10.90,10.09,9.92,10.33,10.44,10.25,
+  11.19,11.59,11.63,11.69,11.53,11.54,11.76,11.60,11.81,11.35,11.25,11.60,
+  11.44,11.01,10.90,10.64,10.55,10.53,10.57,10.27,10.07,9.77,9.77,9.68,
+  9.24,9.05,8.95,9.26,9.63,9.55,9.43,10.02,9.94,9.53,8.93,9.01,
+  9.26,9.00,9.07,9.13,8.79,8.85,8.83,9.13,9.11,8.68,8.52,8.75,
+  8.85,9.05,8.08,7.84,8.10,8.51,8.88,9.07,9.20,9.36,9.65,9.39,
+  9.26,8.83,9.08,9.09,8.82,8.77,8.45,8.40,7.58,7.65,7.81,7.83,
+  7.39,7.18,6.95,7.26,7.19,6.69,6.64,6.64,7.40,8.00,8.35,8.47,
+  8.76,8.91,9.23,9.53,9.87,10.00,10.01,9.73,9.98,10.00,9.85,9.82,
+  9.89,9.32,9.33,9.31,9.23,9.01,8.87,9.62,9.69,9.60,9.69,9.60,
+  10.00,10.49,10.37,10.40,10.61,10.81,11.00,10.74,10.47,10.55,11.16,11.69,
+  11.72,12.39,13.19,13.55,13.56,13.89,13.62,13.89,13.47,13.43,13.87,14.09,
+  14.92,15.82,16.43,16.20,16.16,16.83,17.31,18.33,17.68,15.53,13.59,13.39,
+  13.90,14.30,14.67,14.43,14.03,14.77,14.61,14.24,14.37,14.81,14.45,14.70,
+  15.09,15.47,15.30,15.69,16.19,16.64,17.01,17.73,17.71,17.64,17.24,17.65,
+  17.05,16.51,16.83,16.81,17.39,17.82,17.75,16.17,15.30,14.82,15.19,15.85,
+  15.61,17.36,17.82,18.16,18.03,18.01,18.10,18.51,18.36,18.35,18.29,18.44,
+  19.77,19.58,19.28,19.30,19.66,19.31,19.62,19.72,19.71,19.37,19.83,20.45,
+  20.32,20.54,20.85,20.46,20.52,20.61,20.56,20.81,20.99,21.11,21.04,21.16,
+  21.41,21.26,20.83,20.05,20.19,20.29,20.07,20.53,20.57,20.39,20.21,19.91,
+  20.22,20.80,21.15,21.64,22.19,22.72,23.37,23.28,23.94,23.93,24.35,25.03,
+  24.76,25.97,25.63,25.42,25.81,25.96,24.86,25.41,25.68,26.48,27.58,27.72,
+  28.33,29.26,28.80,27.58,29.93,31.25,32.76,32.58,32.66,32.90,32.33,33.03,
+  32.86,34.71,36.29,37.27,36.95,36.80,38.26,35.42,33.53,33.77,37.37,38.82,
+  40.57,40.40,41.35,42.70,42.55,42.18,43.83,41.93,41.32,40.55,43.21,44.19,
+  43.77,42.18,43.22,43.53,41.96,42.78,42.75,42.87,41.89,39.37,38.78,37.27,
+  36.98,35.83,32.32,32.17,34.07,33.07,32.16,31.40,27.67,28.58,30.01,30.50,
+  30.28,29.09,30.29,29.01,28.13,26.39,23.46,23.59,22.36,21.96,23.35,23.10,
+  22.90,21.21,21.31,22.43,23.59,24.83,24.87,24.64,25.24,25.68,25.95,26.64,
+  27.66,27.65,26.89,26.90,25.90,26.40,25.70,25.17,25.67,25.41,26.47,27.14,
+  26.59,26.74,26.34,25.41,25.65,26.07,26.29,26.10,25.73,24.88,25.93,26.44,
+  26.47,26.25,26.33,26.15,25.65,24.75,24.70,25.05,25.64,26.54,26.93,27.28,
+  27.21,27.32,26.23,26.98,27.55,27.42,27.41,26.15,26.73,27.32,25.73,25.96,
+  24.02,23.50,22.61,23.36,23.70,22.42,20.91,21.40,20.36,16.39,15.26,15.38,
+  15.17,14.12,13.32,14.98,16.00,16.38,16.69,18.09,18.83,19.36,19.81,20.32,
+  20.53,19.92,21.00,21.80,20.48,19.74,19.67,19.77,20.38,21.24,21.70,22.40,
+  22.98,23.49,22.90,23.14,23.06,22.10,22.61,20.05,19.70,20.16,20.35,20.52,
+  21.21,21.80,22.05,21.78,20.94,20.55,21.00,21.41,21.78,21.58,20.90,21.24,
+  21.90,22.05,22.42,22.60,23.41,22.93,23.49,23.36,23.44,23.83,24.64,24.86,
+  24.86,24.59,24.96,24.79,24.94,25.56,25.82,25.62,25.92,25.16,26.61,26.79,
+  26.49,27.00,26.73,26.79,26.81,26.50,26.38,25.69,24.50,25.49,26.23,25.97,
+  24.21,24.00,25.37,25.92,25.69,25.84,26.69,26.95,26.73,26.53,26.85,27.87,
+  28.06,28.66,29.09,28.90,29.31,29.75,30.00,29.91,30.17,30.92,31.30,32.09,
+  33.31,32.04,31.81,30.97,31.24,31.63,31.89,32.39,32.62,31.04,30.20,28.29,
+  28.38,29.54,29.58,30.13,29.24,29.28,29.99,28.71,29.23,28.84,29.84,30.33,
+  30.99,30.73,24.82,25.93,27.33,28.84,29.60,31.16,30.84,31.28,32.47,33.77,
+  34.51,35.10,35.04,36.72,36.55,36.70,37.44,37.97,37.62,37.25,38.58,38.31,
+  36.94,35.29,34.27,33.89,30.67,29.05,29.00,30.70,28.23,27.08,28.38,28.32,
+  28.34,28.92,27.94,28.77,28.76,29.94,30.89,30.09,29.80,28.70,30.01,31.45,
+  31.97,33.04,33.76,33.03,33.78,34.81,35.48,35.08,35.70,36.59,37.36,37.72,
+  37.14,37.19,34.79,32.63,35.08,36.12,37.48,37.85,38.59,39.31,39.16,39.59
+];
+/* The latest reading, to set today's market against the record. */
+var CAPE_NOW = 41.0, CAPE_NOW_ASOF = "30 September 2026";
 
-/**
- * Runs one retirement drawdown over a specific sequence of years.
- * @param {DrawdownOptions} o
- * @param {Array<{stock: number, bond: number, infl: number}>} seq - one year's stock/bond/inflation, in percent (not decimals), per row
- * @returns {Object} year-by-year rows plus depleted/endBalance/totalRealSpend summary
- */
 /* Spreadsheet PMT with payments at the start of each period (type 1): the
-   level payment that takes pv down to fv over n periods at rate r. */
+   level payment that takes pv down to fv over n periods at rate r. The
+   drawdown engine (drawdown.js) and the plan engine both use it. */
 function pmtStart(r, n, pv, fv){
   if (n <= 0) return 0;
   if (Math.abs(r) < 1e-12) return (pv - fv) / n;
   const g = Math.pow(1 + r, n);
   return (pv * g - fv) * r / ((g - 1) * (1 + r));
-}
-/* The fixed strategy's rate for a 1-based year: the starting rate, or the
-   latest spending stage to have begun by then. Stages can be listed in any
-   order; year 1 always belongs to the starting rate, and when two begin the
-   same year the one further down the list wins. */
-function ddFixedRateAt(o, year) {
-  var r = o.initialPct, from = 1;
-  (o.wdStages || []).forEach(function (st) {
-    var s = Math.max(2, Math.round(st.start || 0));
-    if (s <= year && s >= from) { from = s; r = st.rate || 0; }
-  });
-  return r;
-}
-function runDrawdown(o, seq) {
-  var bal = o.initial;
-  var stockW = o.stockPct / 100;
-  var bondW = 1 - stockW;
-  var useGlide = o.stockPctEnd != null;
-  /* Withdrawals come out on the first day of each year, so they are priced
-     at that day's price level: today's dollars in year 1, then raised by the
-     inflation of each year just finished -- the Bengen / Trinity convention.
-     cumInfl is that start-of-year level; the year's own inflation only lands
-     by its end, where it deflates the closing balance. */
-  var cumInfl = 1;
-  var lastInfl = 0;
-  var baseW = o.initial * o.initialPct / 100;   // year-1 withdrawal, nominal = real
-  var prevW = baseW;
-  var rows = [];
-  var depletedYear = null;
-  var totalReal = 0;
-
-  for (var y = 0; y < o.years; y++) {
-    var s = seq[y];
-    if (useGlide) {
-      var yPct = o.stockPct + (o.stockPctEnd - o.stockPct) * y / Math.max(1, o.years - 1);
-      stockW = Math.min(100, Math.max(0, yPct)) / 100;
-      bondW = 1 - stockW;
-    }
-    var infl = s.infl / 100;
-    var w;
-
-    if (o.strategy === "fixed") {
-      // 4%-rule style: first-year amount, then follow inflation regardless.
-      // A spending stage swaps in its own rate of the starting portfolio
-      // from the year it begins, in today's dollars like the first.
-      w = o.initial * ddFixedRateAt(o, y + 1) / 100 * cumInfl;
-
-    } else if (o.strategy === "pct") {
-      // constant percentage of whatever the portfolio is worth now
-      w = bal * o.initialPct / 100;
-
-    } else if (o.strategy === "guardrails") {
-      // Guyton-Klinger style: follow inflation, but cut or raise spending
-      // when the withdrawal rate drifts past a guardrail around the target.
-      // The two guardrails and their steps can differ. Guyton and Klinger
-      // drop the cut (their capital preservation rule) in the final years,
-      // when there's too little time left for a bad run to empty the
-      // portfolio; gkFinalYears turns that on.
-      w = (y === 0) ? baseW : prevW * (1 + lastInfl);
-      if (bal > 0) {
-        var curRate = w / bal * 100;
-        var bandLo = o.guardBandLo != null ? o.guardBandLo : o.guardBand;
-        var raise = o.raisePct != null ? o.raisePct : o.adjustPct;
-        var hi = o.initialPct * (1 + o.guardBand / 100);
-        var lo = o.initialPct * (1 - bandLo / 100);
-        var noCut = o.gkFinalYears > 0 && o.years - y <= o.gkFinalYears;
-        if (curRate > hi) { if (!noCut) w = w * (1 - Math.min(100, o.adjustPct) / 100); }
-        else if (curRate < lo) w = w * (1 + raise / 100);
-      }
-
-    } else if (o.strategy === "floorceil") {
-      // floor & ceiling: aim at a fixed % of the current balance, but never
-      // change spending by more than the allowed step from last year
-      var target = bal * o.initialPct / 100;
-      var infAdj = (y === 0) ? baseW : prevW * (1 + lastInfl);
-      var floor = infAdj * (1 - o.floorPct / 100);
-      var ceil = infAdj * (1 + o.ceilPct / 100);
-      w = Math.min(Math.max(target, floor), ceil);
-
-    } else if (o.strategy === "vpw") {
-      // Variable percentage withdrawal (Bogleheads): each year, the payment
-      // that would draw the current balance down to the future value over the
-      // years left, at the expected real return, paid at the start of the
-      // year -- =PMT(rate, years left, -balance, future value, 1). Worked in
-      // real terms, so the future value is in today's dollars; this year's
-      // price level converts it. The share rises every year as the horizon
-      // shortens, and the final year takes whatever is left above the target.
-      w = Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years - y, bal, (o.vpwFV || 0) * cumInfl));
-
-    } else {
-      // Yale endowment rule: year 1 is a plain percentage of the starting
-      // portfolio, since there's no prior year yet. From year 2 on, blend
-      // last year's inflation-adjusted spending with a fresh percentage of
-      // the current portfolio, smoothing swings while still tracking the
-      // market over time.
-      if (y === 0) {
-        w = baseW;
-      } else {
-        var priorAdj = prevW * (1 + lastInfl);
-        var pctOfBal = bal * o.yaleRate / 100;
-        w = (o.yaleWeight / 100) * priorAdj + (1 - o.yaleWeight / 100) * pctOfBal;
-      }
-    }
-
-    // Optional hard floor: spending in today's dollars never falls below this,
-    // regardless of what the strategy above would otherwise call for. Applies
-    // to strategies where spending can actually fall — fixed-inflation
-    // spending never needs it, since it never drops in real terms by design.
-    // For floor & ceiling, this is a different thing from that strategy's own
-    // "max cut" limit: max cut bounds how much spending can drop from last
-    // year, while this sets an absolute dollar amount it can never go under.
-    if (o.spendFloor > 0 && o.strategy !== "fixed") {
-      var floorNominal = o.spendFloor * cumInfl;
-      if (w < floorNominal) w = floorNominal;
-    }
-    // Optional hard cap, the mirror of the floor: however much the strategy
-    // allows, spending never goes above this in today's dollars. Applied after
-    // the floor, so if the two ever cross the cap wins. It limits the
-    // strategy's own spending only; a custom future expense is added below,
-    // after it, so that year can go past the cap by the expense.
-    if (o.spendCeil > 0 && o.strategy !== "fixed") {
-      var ceilNominal = o.spendCeil * cumInfl;
-      if (w > ceilNominal) w = ceilNominal;
-    }
-
-    // This is the strategy's own ongoing baseline, before one-off custom
-    // items are layered on \u2014 it's what next year's guardrails/floor-ceiling/
-    // Yale calculations should treat as "last year's spending." A one-time
-    // expense must not permanently inflate that baseline the way it would if
-    // prevW were set from the post-expense total.
-    var strategyW = w;
-
-    // Custom future expenses are layered on top of whatever the strategy
-    // above already decided to spend, entirely independent of its logic —
-    // a $30k boat in year 5 means $30k more comes out that year, full stop.
-    var customExpense = itemsActiveThisYear(o.expenseItems, y + 1)
-      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
-    w = w + customExpense;
-
-    // Social Security covers part of the spending once it starts, so the
-    // portfolio only has to provide the remainder. Priced at the same
-    // start-of-year level as the spending it offsets.
-    var ssThisYear = 0;
-    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0))
-      ssThisYear = o.ssAnnual * cumInfl;
-    if (o.ssAnnual2 > 0 && y >= (o.ssDelayYears2 || 0))
-      ssThisYear += o.ssAnnual2 * cumInfl;
-    if (o.ssAnnual3 > 0 && y >= (o.ssDelayYears3 || 0))
-      ssThisYear += o.ssAnnual3 * cumInfl;
-    var spend = w;
-    w = Math.max(0, w - ssThisYear);
-
-    // Custom future income (pension, rental, inheritance, etc.) works the
-    // same way Social Security does: it covers part of the year's planned
-    // spending first. If it covers more than the plan calls for, nothing
-    // is withdrawn and the extra is invested straight into the portfolio
-    // instead of being wasted or reducing next year's number.
-    var customIncomeTotal = itemsActiveThisYear(o.incomeItems, y + 1)
-      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
-    var incomeInvested = Math.max(0, customIncomeTotal - w);
-    w = Math.max(0, w - customIncomeTotal);
-
-    if (w > bal) w = bal;
-    if (w < 0) w = 0;
-
-    var start = bal;
-    bal = bal - w + incomeInvested;
-    var ret = (stockW * s.stock + bondW * s.bond) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
-    var growth = bal * ret;
-    bal = bal + growth;
-    if (bal < 0) bal = 0;
-
-    // Flows are deflated by the level they were paid at; the closing balance
-    // by the level once this year's inflation has landed.
-    var realW = w / cumInfl;
-    var realSp = spend / cumInfl;
-    totalReal += realW;
-    cumInfl = cumInfl * (1 + infl);
-    lastInfl = infl;
-
-    rows.push({
-      year: y + 1, start: start, withdrawal: w, realWithdrawal: realW,
-      growth: growth, end: bal, realEnd: bal / cumInfl, infl: s.infl,
-      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: realSp,
-      customIncome: customIncomeTotal
-    });
-
-    prevW = strategyW;
-    // VPW is built to spend down to its future value in the last year, so an
-    // empty portfolio after that final withdrawal is the plan, not a failure.
-    var plannedEnd = o.strategy === "vpw" && y === o.years - 1;
-    if (bal <= 0 && depletedYear === null && !plannedEnd) depletedYear = y + 1;
-  }
-
-  var realSpendsSorted = rows.map(function (r) { return r.realSpend; }).sort(function (a, b) { return a - b; });
-  var medRealSpend = realSpendsSorted.length ? realSpendsSorted[Math.floor(realSpendsSorted.length / 2)] : 0;
-
-  return {
-    rows: rows,
-    depleted: depletedYear !== null,
-    depletedYear: depletedYear,
-    endBalance: bal,
-    endReal: rows.length ? rows[rows.length - 1].realEnd : o.initial,
-    totalRealSpend: totalReal,
-    minRealSpend: rows.reduce(function (m, r) { return Math.min(m, r.realSpend); }, Infinity),
-    medRealSpend: medRealSpend
-  };
-}
-
-/* Every rolling historical start year that has enough data to run the full
-   retirement. This is the sequence-of-returns test: 1966 and 1929 fail plans
-   that a random-draw simulation would call safe. */
-/**
- * @param {DrawdownOptions} o
- * @returns {Object} one run per historical starting year, plus success rate and end-balance percentiles
- */
-function historicalBacktest(o) {
-  var n = HIST_STOCK.length;
-  /* The caller can pull the start of the record forward. Pre-1926 data does not
-     exist in this dataset, and starting later trades sample size for a world
-     that looks more like the present \u2014 the tooltip on that input explains the
-     trade. */
-  var from = Math.max(0, Math.min(n - 1, Math.round((o.fromYear || HIST_START) - HIST_START)));
-  var runs = [];
-  for (var start = from; start + o.years <= n; start++) {
-    var seq = [];
-    for (var k = 0; k < o.years; k++) {
-      seq.push({ stock: HIST_STOCK[start + k], bond: HIST_BOND[start + k], infl: HIST_INFL[start + k] });
-    }
-    var r = runDrawdown(o, seq);
-    r.startYear = HIST_START + start;
-    runs.push(r);
-  }
-  var survived = runs.filter(function (r) { return !r.depleted; }).length;
-  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
-  var fails = runs.filter(function (r) { return r.depleted; });
-  return {
-    first: HIST_START + from,
-    runs: runs,
-    total: runs.length,
-    survived: survived,
-    successRate: runs.length ? survived / runs.length : 0,
-    medianEnd: ends.length ? ends[Math.floor(ends.length / 2)] : 0,
-    worstEnd: ends.length ? ends[0] : 0,
-    bestEnd: ends.length ? ends[ends.length - 1] : 0,
-    failYears: fails.map(function (r) { return r.startYear; }),
-    firstFail: fails.length ? fails[0] : null
-  };
-}
-
-/* Random sequences drawn from the same historical distribution, using the
-   seeded generator so a given set of inputs always produces the same chart. */
-/**
- * @param {DrawdownOptions} o
- * @param {number} trials - number of random sequences to simulate
- * @param {number} seed - PRNG seed, so the same inputs always draw the same paths
- * @returns {Object} one run per trial, plus success rate and percentile bands over time
- */
-function monteCarloDrawdown(o, trials, seed) {
-  var rng = mulberry32(seed >>> 0);
-  var n = HIST_STOCK.length;
-  var runs = [];
-  /* runDrawdown only reads seq[y] during the call, so one buffer of year slots
-     is refilled per trial rather than allocating a fresh array of objects each
-     time. At 5,000 trials that is ~175,000 fewer short-lived objects per
-     render, which is most of what made this lurch on a phone. */
-  var seq = [];
-  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0 });
-  for (var t = 0; t < trials; t++) {
-    for (var k = 0; k < o.years; k++) {
-      var i = Math.floor(rng() * n);
-      seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
-    }
-    runs.push(runDrawdown(o, seq));
-  }
-  var survived = runs.filter(function (r) { return !r.depleted; }).length;
-  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
-  var pick = function (q) { return ends.length ? ends[Math.min(ends.length - 1, Math.floor(ends.length * q))] : 0; };
-
-  // percentile bands of the real balance path, for the fan chart
-  var bands = [];
-  var col = new Float64Array(runs.length);
-  for (var y = 0; y < o.years; y++) {
-    for (var c = 0; c < runs.length; c++) {
-      var rr = runs[c].rows[y];
-      col[c] = rr ? rr.realEnd : 0;
-    }
-    col.sort();   // typed arrays sort numerically, no comparator needed
-    var at = function (q) { return col[Math.min(col.length - 1, Math.floor(col.length * q))]; };
-    bands.push({ year: y + 1, p10: at(.10), p25: at(.25), p50: at(.50), p75: at(.75), p90: at(.90) });
-  }
-  return {
-    runs: runs, trials: trials, survived: survived,
-    successRate: runs.length ? survived / runs.length : 0,
-    medianEnd: pick(.5), p10End: pick(.10), p90End: pick(.90),
-    bands: bands
-  };
 }
 
 /* ---------- Social Security estimator ----------
@@ -2973,6 +2744,6 @@ if (typeof module !== "undefined")
                     SENIOR_ADDL, SENIOR_BONUS, SS_PROV, SS_TAX_STATES,
                     RET_STATE, stateRetireTax,
                     finalStageSolve, balanceBeforeLast,
-                    historicalRuns, backtest, historicalBacktest, runDrawdown,
+                    historicalRuns, backtest,
                     HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START,
-                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL};
+                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE};

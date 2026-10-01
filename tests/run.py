@@ -2,9 +2,10 @@
 """Run the calculation tests against the math in src/.
 
 The engine is src/js/math.js (between its ===MATH START=== and ===MATH END===
-markers) and the retirement plan engine, src/js/plan.js (between ===PLAN
-START=== and ===PLAN END===); a few calculators live in the app script,
-src/js/app/*.js.
+markers), the Drawdown Simulator's engine, src/js/drawdown.js (between
+===DRAWDOWN START=== and ===DRAWDOWN END===) and the retirement plan engine,
+src/js/plan.js (between ===PLAN START=== and ===PLAN END===); a few
+calculators live in the app script, src/js/app/*.js.
 This takes the engine block, the named extras and the text of the "about
 this tool" articles (whose worked examples the tests check), puts them in
 one script with tests/math.test.js, and runs it with whichever
@@ -79,9 +80,11 @@ def main():
     src = "".join(open(p, encoding="utf-8").read()
                   for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
+    dd = open(os.path.join(ROOT, "src", "js", "drawdown.js"), encoding="utf-8").read()
+    e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")
     plan = open(os.path.join(ROOT, "src", "js", "plan.js"), encoding="utf-8").read()
     c, d = plan.index("// ===PLAN START==="), plan.index("// ===PLAN END===")
-    parts = [math[a:b], plan[c:d]]
+    parts = [math[a:b], dd[e:f], plan[c:d]]
     parts += [constant(src, c) for c in CONSTANTS]
     parts += [function(src, f) for f in FUNCTIONS]
     parts.append(articles())

@@ -3,8 +3,9 @@
 The site is one page, but it's written here in pieces so each part can be
 found and changed on its own. `build.py` (in the repo root) puts the pieces
 back together: the styles and the script into two shared files,
-`assets/app.<hash>.css` and `assets/app.<hash>.js` (plus the Plan Optimizer's
-worker, `assets/plan.<hash>.js`: the engine and `js/plan-worker.js`), and the page itself into
+`assets/app.<hash>.css` and `assets/app.<hash>.js` (plus the worker,
+`assets/plan.<hash>.js`: the engine and `js/plan-worker.js`, which runs the
+Plan Optimizer's search and the Drawdown Simulator's heavier ones), and the page itself into
 `index.html` plus a copy for each clean URL (`drawdown.html`, `rmd.html`,
 ...), each with its own title, main heading and "about this tool" article.
 It also writes `sitemap.xml` and `robots.txt`.
@@ -21,9 +22,10 @@ the edit isn't silently lost.
 | `page-meta.json` | Every page's title, description and (where it isn't the tool's own name) main heading. The build writes each page's `<head>` from it, and the app uses it for the browser-tab title and heading |
 | `css/*.css` | The styles, by area: base tokens, layout, fields, navigation, each tool, the guide, charts, footer and phone rules |
 | `main/*.html` | Everything inside `<main>`: the household bar, each tool's inputs and results, About, the tool picker, the guide, and the "about this tool" articles (each page ships with only its own) |
-| `js/math.js` | The calculation engine: projections, Monte Carlo, taxes, Social Security, RMDs and Roth conversions, ACA premiums, mortgages, debt, drawdown and the historical data. Tested by `tests/math.test.js` |
+| `js/math.js` | The calculation engine: projections, Monte Carlo, taxes, Social Security, RMDs and Roth conversions, ACA premiums, mortgages, debt and the historical data (returns, inflation and CAPE). Tested by `tests/math.test.js` |
+| `js/drawdown.js` | The Drawdown Simulator's engine: every withdrawal strategy's yearly rule and dial, a retirement run year by year, the historical and Monte Carlo tests, and the searches on top of them (the most each strategy can spend for a given risk, each start's safe rate, the success grid, the solvers and the strategy showdown). Tested by `tests/math.test.js` |
 | `js/plan.js` | The retirement plan engine: one household's retirement year by year and account by account, with each year's tax, penalties, RMDs, Medicare surcharge and ACA premiums, and the Plan Optimizer's search over claiming ages, withdrawal order and Roth conversions. The readiness guide's score runs on it too. Tested by `tests/math.test.js` |
-| `js/plan-worker.js` | The few lines that run the Plan Optimizer's search in a web worker, so the page keeps drawing while it works |
+| `js/plan-worker.js` | The few lines that run the Plan Optimizer's search, and the Drawdown Simulator's searches, in a web worker, so the page keeps drawing while they work |
 | `js/app/*.js` | Everything else the page does, by area: inputs, charts, each tool's screen, navigation, sharing, saved scenarios, the readiness guide, tool help |
 
 Files are joined in filename order, so the number prefix sets the order, and

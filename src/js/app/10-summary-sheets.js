@@ -571,7 +571,8 @@ function buildDrawdownSheet(){
   ddRetireAge = o.retireAge;
   if (!(o.initial > 0)){ $("sheet").innerHTML = ""; toast("Enter a portfolio value first"); return false; }
   const H = historicalBacktest(o);
-  const show = H.runs.filter(r => r.startYear === ddSelectedYear)[0] || H.firstFail || H.runs[0];
+  const show = H.runs.filter(r => r.startIdx === ddSelStart)[0] || H.firstFail || H.runs[0];
+  const showLabel = ddStartLabel(show, H.monthly);
 
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
@@ -581,9 +582,9 @@ function buildDrawdownSheet(){
     inputs += row("Expected return, real", pctStr((o.vpwRate || 0) / 100, 2));
     inputs += row("PMT future value", money(o.vpwFV || 0));
   } else inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
-  if (o.strategy === "fixed") ddWdOrder(o.wdStages).forEach(function (x) {
+  if (o.path === "stages") ddWdOrder(o.pathStages).forEach(function (x) {
     inputs += row(escapeHtml(x.st.name || ("Stage " + (x.i + 2))),
-      pctStr((x.st.rate || 0) / 100, 1) + " from " +
+      fmtNum(x.st.level || 0) + "% of year one's spending from " +
       (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
   });
   if (o.strategy === "guardrails"){
@@ -671,9 +672,9 @@ function buildDrawdownSheet(){
     "<div class='sh-cols'>" +
       "<section><div class='sh-t'>Plan</div>" + inputs + "</section>" +
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
-      "<section><div class='sh-t'>Spending, retiring " + show.startYear + "</div>" + spend + "</section>" +
+      "<section><div class='sh-t'>Spending, retiring " + showLabel + "</div>" + spend + "</section>" +
     "</div>" +
-    "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + show.startYear +
+    "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + showLabel +
       (show.depleted ? (" (ran out " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + ")") : " (survived)") + "</div>" + table + "</div>" +
     "<div class='sh-foot'>" + verdict + " Tested against real US market history (" +
       H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1) + "). " +

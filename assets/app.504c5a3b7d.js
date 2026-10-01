@@ -2221,353 +2221,124 @@ var HIST_STOCK = histAnnual(HIST_M_STOCK);
 var HIST_BOND = histAnnual(HIST_M_BOND);
 var HIST_INFL = histAnnual(HIST_M_INFL);
 
-/* ---------- drawdown engine ----------
-   One retirement run. Withdrawal happens at the start of each year, then the
-   remaining balance earns that year's blended stock/bond return less fees.
-   Sequence is an array of {stock, bond, infl} in percent. */
-/**
- * Only enabled items (item.on !== false) are ever considered active.
- * @param {CustomItem[]} items
- * @param {number} year - 1-based year, matching runDrawdown's row numbering
- * @returns {CustomItem[]} the items active in this year
- */
-function itemsActiveThisYear(items, year) {
-  if (!items || !items.length) return [];
-  return items.filter(function (it) {
-    if (it.on === false) return false;
-    var start = Math.max(1, Math.round(it.startYear || 1));
-    if (year < start) return false;
-    if (it.duration.type === "once") return year === start;
-    if (it.duration.type === "years") return year < start + Math.max(1, Math.round(it.duration.years));
-    return true; // forever
-  });
-}
-/**
- * Matches how the base withdrawal and Social Security are inflated: the
- * stated annual figure is in today's dollars, and gets the same amount of
- * inflation applied as everything else by the year it's actually paid —
- * whether that's year 1 or year 20 doesn't need special-casing, cumInfl
- * already reflects however many years have passed by then.
- * @param {CustomItem} it
- * @param {number} year - 1-based year this amount is being paid
- * @param {number} cumInfl - price level at the start of this year (1 in year 1)
- * @returns {number} this item's dollar amount for this year
- */
-function itemAmount(it, year, cumInfl) {
-  if (!it.inflate) return it.annual;
-  return it.annual * cumInfl;
-}
+/* Shiller's cyclically adjusted P/E (CAPE), January 1926 through December
+   2025, one per month in step with the returns above: the month's S&P 500
+   price over the average of the ten years of earnings before it, both after
+   inflation. A high reading means stocks are dear against their earnings.
+   Source: Robert Shiller (Yale), via multpl. */
+var HIST_M_CAPE = [
+  11.34,11.39,10.71,10.40,10.58,11.20,11.87,12.49,12.69,12.43,12.62,13.01,
+  13.19,13.63,14.03,14.49,15.00,15.12,15.82,16.86,17.82,17.54,18.13,18.65,
+  18.81,18.87,19.94,21.26,21.83,20.91,21.08,21.76,23.00,23.58,25.12,25.30,
+  27.08,27.13,27.68,27.57,27.70,27.94,29.93,31.48,32.56,28.96,21.17,22.01,
+  22.31,23.70,24.59,25.84,24.31,21.87,21.55,21.30,21.07,18.21,16.94,16.06,
+  16.71,18.16,18.58,16.87,15.40,15.06,15.52,15.01,12.82,11.15,11.42,9.31,
+  9.31,9.34,9.41,7.19,6.39,5.57,5.84,8.83,9.76,8.48,8.46,8.26,
+  8.73,7.83,7.87,8.72,11.25,13.10,13.75,13.00,12.92,11.70,12.01,12.28,
+  13.03,13.93,13.25,13.52,12.18,12.29,11.74,11.32,10.91,11.11,11.45,11.64,
+  11.50,11.09,10.40,11.10,11.99,12.54,13.20,14.11,14.42,14.83,16.13,16.16,
+  17.09,18.10,18.66,18.72,17.75,18.39,19.36,19.62,19.86,20.91,21.50,21.13,
+  21.62,22.24,22.04,20.56,19.47,18.71,19.65,19.81,16.85,14.36,13.16,13.01,
+  13.51,13.26,12.38,11.79,11.99,12.29,14.77,14.90,14.28,16.06,16.15,15.76,
+  15.60,15.66,15.73,13.92,14.50,14.83,15.27,15.12,16.45,16.82,16.60,16.28,
+  16.38,16.22,16.17,16.37,14.14,12.84,13.37,13.65,14.21,14.33,14.64,13.91,
+  13.90,13.00,12.96,12.43,12.04,12.16,12.74,12.46,12.28,11.58,10.91,10.09,
+  10.10,9.68,9.00,8.54,8.51,8.91,9.15,9.01,9.08,9.60,9.66,9.62,
+  10.15,10.71,10.85,11.04,11.36,11.52,11.77,11.21,11.34,11.19,10.63,10.74,
+  11.05,10.95,11.22,10.94,11.10,11.53,11.74,11.54,11.33,11.58,11.48,11.64,
+  11.96,12.34,12.32,12.63,13.04,13.13,12.87,12.92,13.80,14.37,14.85,15.02,
+  15.62,15.76,15.13,16.04,16.01,15.77,14.51,13.98,11.84,11.39,11.11,11.37,
+  11.47,11.95,11.29,10.90,10.73,11.08,11.70,11.34,10.83,11.13,10.98,10.68,
+  10.42,10.00,10.19,10.78,11.24,11.58,11.13,10.72,10.55,10.83,10.25,10.16,
+  10.25,9.87,9.90,9.78,9.69,9.07,9.61,9.85,9.88,10.17,10.22,10.53,
+  10.75,10.91,10.91,11.18,11.46,11.55,10.54,11.04,11.34,11.66,11.54,11.31,
+  11.90,12.14,11.84,11.95,11.86,11.62,11.78,12.26,12.44,12.31,11.85,12.15,
+  12.53,12.36,12.36,12.24,12.20,12.45,12.67,12.68,12.43,12.13,12.47,12.93,
+  13.01,12.86,12.83,12.16,12.14,11.62,11.75,11.72,11.14,11.39,11.64,11.75,
+  12.00,12.22,12.42,12.91,13.31,13.36,13.83,14.04,14.36,14.62,15.12,15.79,
+  15.99,16.44,16.22,16.69,16.52,17.37,18.45,18.22,18.84,17.77,18.84,18.94,
+  18.29,18.27,19.37,19.37,18.54,18.16,18.86,18.67,17.84,17.42,17.12,17.20,
+  16.72,15.84,15.90,16.12,16.60,16.73,16.87,15.87,15.16,14.15,13.74,13.67,
+  13.79,13.78,13.93,13.91,14.32,14.64,14.96,15.54,15.93,16.56,16.99,17.36,
+  17.98,17.76,18.20,18.43,18.69,18.45,19.09,18.96,18.12,18.02,18.07,18.62,
+  18.34,17.55,17.29,17.43,17.26,17.82,17.38,17.58,17.05,16.61,17.15,17.56,
+  18.47,19.23,19.84,20.38,20.60,20.33,20.15,20.94,20.71,20.92,21.86,22.04,
+  21.20,21.45,21.44,20.66,19.09,16.83,17.14,17.57,17.32,16.74,17.85,18.59,
+  19.26,19.47,19.29,20.15,20.51,20.38,19.97,20.47,20.96,20.89,20.72,21.04,
+  21.63,21.83,22.17,22.42,22.57,22.30,22.98,22.65,22.89,23.21,23.23,22.75,
+  23.27,23.37,23.25,23.42,23.71,22.39,22.30,22.67,23.37,23.78,23.93,23.69,
+  24.06,23.70,22.61,23.11,21.85,21.56,21.38,19.91,19.16,18.83,19.71,19.74,
+  20.43,21.07,21.44,21.69,21.95,21.55,21.80,22.03,22.22,22.07,21.26,21.75,
+  21.51,20.42,19.93,21.28,21.63,22.00,21.75,21.14,21.68,22.00,22.20,22.28,
+  21.19,20.90,20.20,20.43,20.97,19.71,18.68,18.43,18.40,18.45,18.44,17.33,
+  17.09,16.37,16.53,15.87,13.98,13.80,13.73,14.10,14.84,15.06,14.95,15.87,
+  16.46,17.03,17.40,17.92,17.56,17.08,16.89,16.52,16.86,16.43,15.64,16.60,
+  17.26,17.46,17.81,17.92,17.66,17.64,17.40,17.94,17.61,17.53,18.34,18.65,
+  18.71,17.89,17.41,16.94,16.31,15.81,15.89,15.28,15.48,15.91,14.65,13.49,
+  13.53,12.96,13.31,12.55,12.00,11.89,10.39,9.82,8.68,8.74,8.95,8.29,
+  8.92,9.76,10.16,10.23,10.82,11.01,10.90,10.09,9.92,10.33,10.44,10.25,
+  11.19,11.59,11.63,11.69,11.53,11.54,11.76,11.60,11.81,11.35,11.25,11.60,
+  11.44,11.01,10.90,10.64,10.55,10.53,10.57,10.27,10.07,9.77,9.77,9.68,
+  9.24,9.05,8.95,9.26,9.63,9.55,9.43,10.02,9.94,9.53,8.93,9.01,
+  9.26,9.00,9.07,9.13,8.79,8.85,8.83,9.13,9.11,8.68,8.52,8.75,
+  8.85,9.05,8.08,7.84,8.10,8.51,8.88,9.07,9.20,9.36,9.65,9.39,
+  9.26,8.83,9.08,9.09,8.82,8.77,8.45,8.40,7.58,7.65,7.81,7.83,
+  7.39,7.18,6.95,7.26,7.19,6.69,6.64,6.64,7.40,8.00,8.35,8.47,
+  8.76,8.91,9.23,9.53,9.87,10.00,10.01,9.73,9.98,10.00,9.85,9.82,
+  9.89,9.32,9.33,9.31,9.23,9.01,8.87,9.62,9.69,9.60,9.69,9.60,
+  10.00,10.49,10.37,10.40,10.61,10.81,11.00,10.74,10.47,10.55,11.16,11.69,
+  11.72,12.39,13.19,13.55,13.56,13.89,13.62,13.89,13.47,13.43,13.87,14.09,
+  14.92,15.82,16.43,16.20,16.16,16.83,17.31,18.33,17.68,15.53,13.59,13.39,
+  13.90,14.30,14.67,14.43,14.03,14.77,14.61,14.24,14.37,14.81,14.45,14.70,
+  15.09,15.47,15.30,15.69,16.19,16.64,17.01,17.73,17.71,17.64,17.24,17.65,
+  17.05,16.51,16.83,16.81,17.39,17.82,17.75,16.17,15.30,14.82,15.19,15.85,
+  15.61,17.36,17.82,18.16,18.03,18.01,18.10,18.51,18.36,18.35,18.29,18.44,
+  19.77,19.58,19.28,19.30,19.66,19.31,19.62,19.72,19.71,19.37,19.83,20.45,
+  20.32,20.54,20.85,20.46,20.52,20.61,20.56,20.81,20.99,21.11,21.04,21.16,
+  21.41,21.26,20.83,20.05,20.19,20.29,20.07,20.53,20.57,20.39,20.21,19.91,
+  20.22,20.80,21.15,21.64,22.19,22.72,23.37,23.28,23.94,23.93,24.35,25.03,
+  24.76,25.97,25.63,25.42,25.81,25.96,24.86,25.41,25.68,26.48,27.58,27.72,
+  28.33,29.26,28.80,27.58,29.93,31.25,32.76,32.58,32.66,32.90,32.33,33.03,
+  32.86,34.71,36.29,37.27,36.95,36.80,38.26,35.42,33.53,33.77,37.37,38.82,
+  40.57,40.40,41.35,42.70,42.55,42.18,43.83,41.93,41.32,40.55,43.21,44.19,
+  43.77,42.18,43.22,43.53,41.96,42.78,42.75,42.87,41.89,39.37,38.78,37.27,
+  36.98,35.83,32.32,32.17,34.07,33.07,32.16,31.40,27.67,28.58,30.01,30.50,
+  30.28,29.09,30.29,29.01,28.13,26.39,23.46,23.59,22.36,21.96,23.35,23.10,
+  22.90,21.21,21.31,22.43,23.59,24.83,24.87,24.64,25.24,25.68,25.95,26.64,
+  27.66,27.65,26.89,26.90,25.90,26.40,25.70,25.17,25.67,25.41,26.47,27.14,
+  26.59,26.74,26.34,25.41,25.65,26.07,26.29,26.10,25.73,24.88,25.93,26.44,
+  26.47,26.25,26.33,26.15,25.65,24.75,24.70,25.05,25.64,26.54,26.93,27.28,
+  27.21,27.32,26.23,26.98,27.55,27.42,27.41,26.15,26.73,27.32,25.73,25.96,
+  24.02,23.50,22.61,23.36,23.70,22.42,20.91,21.40,20.36,16.39,15.26,15.38,
+  15.17,14.12,13.32,14.98,16.00,16.38,16.69,18.09,18.83,19.36,19.81,20.32,
+  20.53,19.92,21.00,21.80,20.48,19.74,19.67,19.77,20.38,21.24,21.70,22.40,
+  22.98,23.49,22.90,23.14,23.06,22.10,22.61,20.05,19.70,20.16,20.35,20.52,
+  21.21,21.80,22.05,21.78,20.94,20.55,21.00,21.41,21.78,21.58,20.90,21.24,
+  21.90,22.05,22.42,22.60,23.41,22.93,23.49,23.36,23.44,23.83,24.64,24.86,
+  24.86,24.59,24.96,24.79,24.94,25.56,25.82,25.62,25.92,25.16,26.61,26.79,
+  26.49,27.00,26.73,26.79,26.81,26.50,26.38,25.69,24.50,25.49,26.23,25.97,
+  24.21,24.00,25.37,25.92,25.69,25.84,26.69,26.95,26.73,26.53,26.85,27.87,
+  28.06,28.66,29.09,28.90,29.31,29.75,30.00,29.91,30.17,30.92,31.30,32.09,
+  33.31,32.04,31.81,30.97,31.24,31.63,31.89,32.39,32.62,31.04,30.20,28.29,
+  28.38,29.54,29.58,30.13,29.24,29.28,29.99,28.71,29.23,28.84,29.84,30.33,
+  30.99,30.73,24.82,25.93,27.33,28.84,29.60,31.16,30.84,31.28,32.47,33.77,
+  34.51,35.10,35.04,36.72,36.55,36.70,37.44,37.97,37.62,37.25,38.58,38.31,
+  36.94,35.29,34.27,33.89,30.67,29.05,29.00,30.70,28.23,27.08,28.38,28.32,
+  28.34,28.92,27.94,28.77,28.76,29.94,30.89,30.09,29.80,28.70,30.01,31.45,
+  31.97,33.04,33.76,33.03,33.78,34.81,35.48,35.08,35.70,36.59,37.36,37.72,
+  37.14,37.19,34.79,32.63,35.08,36.12,37.48,37.85,38.59,39.31,39.16,39.59
+];
+/* The latest reading, to set today's market against the record. */
+var CAPE_NOW = 41.0, CAPE_NOW_ASOF = "30 September 2026";
 
-/**
- * Runs one retirement drawdown over a specific sequence of years.
- * @param {DrawdownOptions} o
- * @param {Array<{stock: number, bond: number, infl: number}>} seq - one year's stock/bond/inflation, in percent (not decimals), per row
- * @returns {Object} year-by-year rows plus depleted/endBalance/totalRealSpend summary
- */
 /* Spreadsheet PMT with payments at the start of each period (type 1): the
-   level payment that takes pv down to fv over n periods at rate r. */
+   level payment that takes pv down to fv over n periods at rate r. The
+   drawdown engine (drawdown.js) and the plan engine both use it. */
 function pmtStart(r, n, pv, fv){
   if (n <= 0) return 0;
   if (Math.abs(r) < 1e-12) return (pv - fv) / n;
   const g = Math.pow(1 + r, n);
   return (pv * g - fv) * r / ((g - 1) * (1 + r));
-}
-/* The fixed strategy's rate for a 1-based year: the starting rate, or the
-   latest spending stage to have begun by then. Stages can be listed in any
-   order; year 1 always belongs to the starting rate, and when two begin the
-   same year the one further down the list wins. */
-function ddFixedRateAt(o, year) {
-  var r = o.initialPct, from = 1;
-  (o.wdStages || []).forEach(function (st) {
-    var s = Math.max(2, Math.round(st.start || 0));
-    if (s <= year && s >= from) { from = s; r = st.rate || 0; }
-  });
-  return r;
-}
-function runDrawdown(o, seq) {
-  var bal = o.initial;
-  var stockW = o.stockPct / 100;
-  var bondW = 1 - stockW;
-  var useGlide = o.stockPctEnd != null;
-  /* Withdrawals come out on the first day of each year, so they are priced
-     at that day's price level: today's dollars in year 1, then raised by the
-     inflation of each year just finished -- the Bengen / Trinity convention.
-     cumInfl is that start-of-year level; the year's own inflation only lands
-     by its end, where it deflates the closing balance. */
-  var cumInfl = 1;
-  var lastInfl = 0;
-  var baseW = o.initial * o.initialPct / 100;   // year-1 withdrawal, nominal = real
-  var prevW = baseW;
-  var rows = [];
-  var depletedYear = null;
-  var totalReal = 0;
-
-  for (var y = 0; y < o.years; y++) {
-    var s = seq[y];
-    if (useGlide) {
-      var yPct = o.stockPct + (o.stockPctEnd - o.stockPct) * y / Math.max(1, o.years - 1);
-      stockW = Math.min(100, Math.max(0, yPct)) / 100;
-      bondW = 1 - stockW;
-    }
-    var infl = s.infl / 100;
-    var w;
-
-    if (o.strategy === "fixed") {
-      // 4%-rule style: first-year amount, then follow inflation regardless.
-      // A spending stage swaps in its own rate of the starting portfolio
-      // from the year it begins, in today's dollars like the first.
-      w = o.initial * ddFixedRateAt(o, y + 1) / 100 * cumInfl;
-
-    } else if (o.strategy === "pct") {
-      // constant percentage of whatever the portfolio is worth now
-      w = bal * o.initialPct / 100;
-
-    } else if (o.strategy === "guardrails") {
-      // Guyton-Klinger style: follow inflation, but cut or raise spending
-      // when the withdrawal rate drifts past a guardrail around the target.
-      // The two guardrails and their steps can differ. Guyton and Klinger
-      // drop the cut (their capital preservation rule) in the final years,
-      // when there's too little time left for a bad run to empty the
-      // portfolio; gkFinalYears turns that on.
-      w = (y === 0) ? baseW : prevW * (1 + lastInfl);
-      if (bal > 0) {
-        var curRate = w / bal * 100;
-        var bandLo = o.guardBandLo != null ? o.guardBandLo : o.guardBand;
-        var raise = o.raisePct != null ? o.raisePct : o.adjustPct;
-        var hi = o.initialPct * (1 + o.guardBand / 100);
-        var lo = o.initialPct * (1 - bandLo / 100);
-        var noCut = o.gkFinalYears > 0 && o.years - y <= o.gkFinalYears;
-        if (curRate > hi) { if (!noCut) w = w * (1 - Math.min(100, o.adjustPct) / 100); }
-        else if (curRate < lo) w = w * (1 + raise / 100);
-      }
-
-    } else if (o.strategy === "floorceil") {
-      // floor & ceiling: aim at a fixed % of the current balance, but never
-      // change spending by more than the allowed step from last year
-      var target = bal * o.initialPct / 100;
-      var infAdj = (y === 0) ? baseW : prevW * (1 + lastInfl);
-      var floor = infAdj * (1 - o.floorPct / 100);
-      var ceil = infAdj * (1 + o.ceilPct / 100);
-      w = Math.min(Math.max(target, floor), ceil);
-
-    } else if (o.strategy === "vpw") {
-      // Variable percentage withdrawal (Bogleheads): each year, the payment
-      // that would draw the current balance down to the future value over the
-      // years left, at the expected real return, paid at the start of the
-      // year -- =PMT(rate, years left, -balance, future value, 1). Worked in
-      // real terms, so the future value is in today's dollars; this year's
-      // price level converts it. The share rises every year as the horizon
-      // shortens, and the final year takes whatever is left above the target.
-      w = Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years - y, bal, (o.vpwFV || 0) * cumInfl));
-
-    } else {
-      // Yale endowment rule: year 1 is a plain percentage of the starting
-      // portfolio, since there's no prior year yet. From year 2 on, blend
-      // last year's inflation-adjusted spending with a fresh percentage of
-      // the current portfolio, smoothing swings while still tracking the
-      // market over time.
-      if (y === 0) {
-        w = baseW;
-      } else {
-        var priorAdj = prevW * (1 + lastInfl);
-        var pctOfBal = bal * o.yaleRate / 100;
-        w = (o.yaleWeight / 100) * priorAdj + (1 - o.yaleWeight / 100) * pctOfBal;
-      }
-    }
-
-    // Optional hard floor: spending in today's dollars never falls below this,
-    // regardless of what the strategy above would otherwise call for. Applies
-    // to strategies where spending can actually fall — fixed-inflation
-    // spending never needs it, since it never drops in real terms by design.
-    // For floor & ceiling, this is a different thing from that strategy's own
-    // "max cut" limit: max cut bounds how much spending can drop from last
-    // year, while this sets an absolute dollar amount it can never go under.
-    if (o.spendFloor > 0 && o.strategy !== "fixed") {
-      var floorNominal = o.spendFloor * cumInfl;
-      if (w < floorNominal) w = floorNominal;
-    }
-    // Optional hard cap, the mirror of the floor: however much the strategy
-    // allows, spending never goes above this in today's dollars. Applied after
-    // the floor, so if the two ever cross the cap wins. It limits the
-    // strategy's own spending only; a custom future expense is added below,
-    // after it, so that year can go past the cap by the expense.
-    if (o.spendCeil > 0 && o.strategy !== "fixed") {
-      var ceilNominal = o.spendCeil * cumInfl;
-      if (w > ceilNominal) w = ceilNominal;
-    }
-
-    // This is the strategy's own ongoing baseline, before one-off custom
-    // items are layered on \u2014 it's what next year's guardrails/floor-ceiling/
-    // Yale calculations should treat as "last year's spending." A one-time
-    // expense must not permanently inflate that baseline the way it would if
-    // prevW were set from the post-expense total.
-    var strategyW = w;
-
-    // Custom future expenses are layered on top of whatever the strategy
-    // above already decided to spend, entirely independent of its logic —
-    // a $30k boat in year 5 means $30k more comes out that year, full stop.
-    var customExpense = itemsActiveThisYear(o.expenseItems, y + 1)
-      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
-    w = w + customExpense;
-
-    // Social Security covers part of the spending once it starts, so the
-    // portfolio only has to provide the remainder. Priced at the same
-    // start-of-year level as the spending it offsets.
-    var ssThisYear = 0;
-    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0))
-      ssThisYear = o.ssAnnual * cumInfl;
-    if (o.ssAnnual2 > 0 && y >= (o.ssDelayYears2 || 0))
-      ssThisYear += o.ssAnnual2 * cumInfl;
-    if (o.ssAnnual3 > 0 && y >= (o.ssDelayYears3 || 0))
-      ssThisYear += o.ssAnnual3 * cumInfl;
-    var spend = w;
-    w = Math.max(0, w - ssThisYear);
-
-    // Custom future income (pension, rental, inheritance, etc.) works the
-    // same way Social Security does: it covers part of the year's planned
-    // spending first. If it covers more than the plan calls for, nothing
-    // is withdrawn and the extra is invested straight into the portfolio
-    // instead of being wasted or reducing next year's number.
-    var customIncomeTotal = itemsActiveThisYear(o.incomeItems, y + 1)
-      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
-    var incomeInvested = Math.max(0, customIncomeTotal - w);
-    w = Math.max(0, w - customIncomeTotal);
-
-    if (w > bal) w = bal;
-    if (w < 0) w = 0;
-
-    var start = bal;
-    bal = bal - w + incomeInvested;
-    var ret = (stockW * s.stock + bondW * s.bond) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
-    var growth = bal * ret;
-    bal = bal + growth;
-    if (bal < 0) bal = 0;
-
-    // Flows are deflated by the level they were paid at; the closing balance
-    // by the level once this year's inflation has landed.
-    var realW = w / cumInfl;
-    var realSp = spend / cumInfl;
-    totalReal += realW;
-    cumInfl = cumInfl * (1 + infl);
-    lastInfl = infl;
-
-    rows.push({
-      year: y + 1, start: start, withdrawal: w, realWithdrawal: realW,
-      growth: growth, end: bal, realEnd: bal / cumInfl, infl: s.infl,
-      ret: ret * 100, ss: ssThisYear, spend: spend, realSpend: realSp,
-      customIncome: customIncomeTotal
-    });
-
-    prevW = strategyW;
-    // VPW is built to spend down to its future value in the last year, so an
-    // empty portfolio after that final withdrawal is the plan, not a failure.
-    var plannedEnd = o.strategy === "vpw" && y === o.years - 1;
-    if (bal <= 0 && depletedYear === null && !plannedEnd) depletedYear = y + 1;
-  }
-
-  var realSpendsSorted = rows.map(function (r) { return r.realSpend; }).sort(function (a, b) { return a - b; });
-  var medRealSpend = realSpendsSorted.length ? realSpendsSorted[Math.floor(realSpendsSorted.length / 2)] : 0;
-
-  return {
-    rows: rows,
-    depleted: depletedYear !== null,
-    depletedYear: depletedYear,
-    endBalance: bal,
-    endReal: rows.length ? rows[rows.length - 1].realEnd : o.initial,
-    totalRealSpend: totalReal,
-    minRealSpend: rows.reduce(function (m, r) { return Math.min(m, r.realSpend); }, Infinity),
-    medRealSpend: medRealSpend
-  };
-}
-
-/* Every rolling historical start year that has enough data to run the full
-   retirement. This is the sequence-of-returns test: 1966 and 1929 fail plans
-   that a random-draw simulation would call safe. */
-/**
- * @param {DrawdownOptions} o
- * @returns {Object} one run per historical starting year, plus success rate and end-balance percentiles
- */
-function historicalBacktest(o) {
-  var n = HIST_STOCK.length;
-  /* The caller can pull the start of the record forward. Pre-1926 data does not
-     exist in this dataset, and starting later trades sample size for a world
-     that looks more like the present \u2014 the tooltip on that input explains the
-     trade. */
-  var from = Math.max(0, Math.min(n - 1, Math.round((o.fromYear || HIST_START) - HIST_START)));
-  var runs = [];
-  for (var start = from; start + o.years <= n; start++) {
-    var seq = [];
-    for (var k = 0; k < o.years; k++) {
-      seq.push({ stock: HIST_STOCK[start + k], bond: HIST_BOND[start + k], infl: HIST_INFL[start + k] });
-    }
-    var r = runDrawdown(o, seq);
-    r.startYear = HIST_START + start;
-    runs.push(r);
-  }
-  var survived = runs.filter(function (r) { return !r.depleted; }).length;
-  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
-  var fails = runs.filter(function (r) { return r.depleted; });
-  return {
-    first: HIST_START + from,
-    runs: runs,
-    total: runs.length,
-    survived: survived,
-    successRate: runs.length ? survived / runs.length : 0,
-    medianEnd: ends.length ? ends[Math.floor(ends.length / 2)] : 0,
-    worstEnd: ends.length ? ends[0] : 0,
-    bestEnd: ends.length ? ends[ends.length - 1] : 0,
-    failYears: fails.map(function (r) { return r.startYear; }),
-    firstFail: fails.length ? fails[0] : null
-  };
-}
-
-/* Random sequences drawn from the same historical distribution, using the
-   seeded generator so a given set of inputs always produces the same chart. */
-/**
- * @param {DrawdownOptions} o
- * @param {number} trials - number of random sequences to simulate
- * @param {number} seed - PRNG seed, so the same inputs always draw the same paths
- * @returns {Object} one run per trial, plus success rate and percentile bands over time
- */
-function monteCarloDrawdown(o, trials, seed) {
-  var rng = mulberry32(seed >>> 0);
-  var n = HIST_STOCK.length;
-  var runs = [];
-  /* runDrawdown only reads seq[y] during the call, so one buffer of year slots
-     is refilled per trial rather than allocating a fresh array of objects each
-     time. At 5,000 trials that is ~175,000 fewer short-lived objects per
-     render, which is most of what made this lurch on a phone. */
-  var seq = [];
-  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0 });
-  for (var t = 0; t < trials; t++) {
-    for (var k = 0; k < o.years; k++) {
-      var i = Math.floor(rng() * n);
-      seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
-    }
-    runs.push(runDrawdown(o, seq));
-  }
-  var survived = runs.filter(function (r) { return !r.depleted; }).length;
-  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
-  var pick = function (q) { return ends.length ? ends[Math.min(ends.length - 1, Math.floor(ends.length * q))] : 0; };
-
-  // percentile bands of the real balance path, for the fan chart
-  var bands = [];
-  var col = new Float64Array(runs.length);
-  for (var y = 0; y < o.years; y++) {
-    for (var c = 0; c < runs.length; c++) {
-      var rr = runs[c].rows[y];
-      col[c] = rr ? rr.realEnd : 0;
-    }
-    col.sort();   // typed arrays sort numerically, no comparator needed
-    var at = function (q) { return col[Math.min(col.length - 1, Math.floor(col.length * q))]; };
-    bands.push({ year: y + 1, p10: at(.10), p25: at(.25), p50: at(.50), p75: at(.75), p90: at(.90) });
-  }
-  return {
-    runs: runs, trials: trials, survived: survived,
-    successRate: runs.length ? survived / runs.length : 0,
-    medianEnd: pick(.5), p10End: pick(.10), p90End: pick(.90),
-    bands: bands
-  };
 }
 
 /* ---------- Social Security estimator ----------
@@ -2973,9 +2744,1079 @@ if (typeof module !== "undefined")
                     SENIOR_ADDL, SENIOR_BONUS, SS_PROV, SS_TAX_STATES,
                     RET_STATE, stateRetireTax,
                     finalStageSolve, balanceBeforeLast,
-                    historicalRuns, backtest, historicalBacktest, runDrawdown,
+                    historicalRuns, backtest,
                     HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START,
-                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL};
+                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE};
+;
+// ===DRAWDOWN START===
+/* ---------- the Drawdown Simulator's engine ----------
+   One retirement, year by year (runDrawdown), through every historical start
+   (historicalBacktest) or thousands of random ones (monteCarloDrawdown), and
+   the searches the simulator runs on top of them: the most a strategy can
+   spend for a given risk, the safe rate for every start, the success grid,
+   the two solvers and the strategy showdown.
+
+   Each withdrawal strategy is one entry in DD_STRAT: its family, its yearly
+   rule and its dial, the one setting that decides how much it spends (the
+   starting rate, for most). The page adds each strategy's fields; the
+   searches here only ever turn the dial.
+
+   The conventions are Bengen's and the Trinity study's: a year's spending
+   comes out on its first day, priced at that day's price level; the rest
+   earns the year's stock and bond returns, rebalanced to the mix once a year,
+   less fees; and the closing balance is deflated by the year's inflation.
+   Everything reported is in today's dollars. */
+
+/* ---- history, a year at a time from any month ----
+   The year that starts in each month of the record, its twelve monthly
+   returns compounded, in percent: index i is the year from month i (0 is
+   January 1926). Each January's is the calendar year, worked exactly as
+   histAnnual() works it, so a retirement that starts in January sees the
+   same numbers either way. */
+function histYearFrom(m){
+  var out = [], i, k, g;
+  for (i = 0; i + 12 <= m.length; i++){
+    g = 1;
+    for (k = 0; k < 12; k++) g *= (1 + m[i + k] / 100);
+    out.push((g - 1) * 100);
+  }
+  return out;
+}
+var HIST_Y12_STOCK = histYearFrom(HIST_M_STOCK);
+var HIST_Y12_BOND = histYearFrom(HIST_M_BOND);
+var HIST_Y12_INFL = histYearFrom(HIST_M_INFL);
+
+/* The first start year a test uses, as an index into the annual series. */
+function ddFromIdx(o){
+  var n = HIST_STOCK.length;
+  return Math.max(0, Math.min(n - 1, Math.round((o.fromYear || HIST_START) - HIST_START)));
+}
+/* Every retirement the historical test runs: one starting each January, or
+   with o.monthly one starting every month, from o.fromYear on, each with a
+   full o.years of data after it. Each is {i (its first month), year, month,
+   seq}, seq being what runDrawdown takes: one {stock, bond, infl, cape} per
+   year. They don't depend on the plan, so they're kept for reuse. */
+var ddWinMemo = {}, ddWinKeys = [];
+function ddWindows(o){
+  var years = o.years, from = ddFromIdx(o), step = o.monthly ? 1 : 12;
+  var key = years + "|" + step + "|" + from;
+  if (ddWinMemo[key]) return ddWinMemo[key];
+  var M = HIST_M_STOCK.length, out = [];
+  for (var i = from * 12; i + 12 * years <= M; i += step){
+    var seq = [];
+    for (var k = 0; k < years; k++){
+      var j = i + 12 * k;
+      seq.push({stock: HIST_Y12_STOCK[j], bond: HIST_Y12_BOND[j], infl: HIST_Y12_INFL[j],
+        cape: HIST_M_CAPE[j]});
+    }
+    out.push({i: i, year: HIST_START + Math.floor(i / 12), month: i % 12 + 1, seq: seq});
+  }
+  ddWinKeys.push(key);
+  if (ddWinKeys.length > 24) delete ddWinMemo[ddWinKeys.shift()];
+  return (ddWinMemo[key] = out);
+}
+
+/* ---- income and expenses beyond Social Security ---- */
+/**
+ * Only enabled items (item.on !== false) are ever considered active.
+ * @param {CustomItem[]} items
+ * @param {number} year - 1-based year, matching runDrawdown's row numbering
+ * @returns {CustomItem[]} the items active in this year
+ */
+function itemsActiveThisYear(items, year) {
+  if (!items || !items.length) return [];
+  return items.filter(function (it) {
+    if (it.on === false) return false;
+    var start = Math.max(1, Math.round(it.startYear || 1));
+    if (year < start) return false;
+    if (it.duration.type === "once") return year === start;
+    if (it.duration.type === "years") return year < start + Math.max(1, Math.round(it.duration.years));
+    return true; // forever
+  });
+}
+/**
+ * Matches how the base withdrawal and Social Security are inflated: the
+ * stated annual figure is in today's dollars, and gets the same amount of
+ * inflation applied as everything else by the year it's actually paid.
+ * One that doesn't rise with inflation is paid at its stated figure.
+ * @param {CustomItem} it
+ * @param {number} year - 1-based year this amount is being paid
+ * @param {number} cumInfl - price level at the start of this year (1 in year 1)
+ * @returns {number} this item's dollar amount for this year
+ */
+function itemAmount(it, year, cumInfl) {
+  if (!it.inflate) return it.annual;
+  return it.annual * cumInfl;
+}
+
+/* ---- the spending path ----
+   How the plan means its spending to move with age, as a multiplier on each
+   year's spending (1 in year one). "flat" keeps it level in today's dollars;
+   "ease" lowers it by a set share a year; "smile" follows David Blanchett's
+   2014 estimate of how retirees' real spending actually changes, by age and
+   by how much they spend: falling through the 70s, then rising again late;
+   "stages" moves it to a share of year one's level from a given year. Every
+   strategy works out its own spending as usual and the path then shapes it,
+   so it can't compound into the strategy's memory of last year. */
+function ddBlanchett(age, spend){
+  return 0.00008 * age * age - 0.0125 * age - 0.0066 * Math.log(Math.max(1, spend)) + 0.546;
+}
+function ddPath(o, firstSpend){
+  var n = o.years, m = [], i, kind = o.path || "flat";
+  for (i = 0; i < n; i++) m.push(1);
+  if (kind === "ease"){
+    var e = Math.max(-50, Math.min(50, o.pathEase || 0)) / 100;
+    for (i = 1; i < n; i++) m[i] = m[i - 1] * (1 - e);
+  } else if (kind === "smile"){
+    var age0 = o.retireAge != null ? o.retireAge : 65;
+    for (i = 1; i < n; i++)
+      m[i] = m[i - 1] * (1 + Math.max(-.05, Math.min(.05, ddBlanchett(age0 + i - 1, firstSpend * m[i - 1]))));
+  } else if (kind === "stages"){
+    var st = ddStageOrder(o.pathStages);
+    for (i = 0; i < n; i++){
+      var lv = 1;
+      for (var k = 0; k < st.length; k++) if (st[k].start <= i + 1) lv = st[k].level;
+      m[i] = lv;
+    }
+  }
+  return m;
+}
+/* Stages in the order they take effect: each from its 1-based year, at a
+   share of year one's spending. Year one always belongs to the plan's own
+   level, and when two begin the same year the later one in the list wins. */
+function ddStageOrder(list){
+  return (list || []).map(function (x, k) {
+    return {start: Math.max(2, Math.round(x.start || 0)), level: Math.max(0, +x.level || 0) / 100, k: k};
+  }).sort(function (a, b) { return a.start - b.start || a.k - b.k; });
+}
+/* Spending stages saved before the spending path existed belonged to the
+   fixed strategy only, each a withdrawal rate of the starting portfolio from
+   its year. As a path, each becomes that rate's share of the starting rate. */
+function ddStagesFromRates(wd, rate){
+  if (!(rate > 0)) return [];
+  return (wd || []).map(function (x) {
+    var out = {start: Math.max(2, Math.round(x.start || 0)), level: Math.round((x.rate || 0) / rate * 1e6) / 1e4};
+    if (x.name) out.name = x.name;
+    return out;
+  });
+}
+
+/* ---- guaranteed income ----
+   Part of the portfolio can buy income at retirement: a TIPS ladder, paying
+   the same real amount every year to the end of the plan (the level payment
+   its real yield allows), or an annuity at a payout rate, level in dollars
+   unless it has inflation raises. The rest of the portfolio runs the
+   strategy, and this income comes on top of what the strategy spends. */
+function ddGuaranteed(o){
+  var share = Math.min(100, Math.max(0, o.gShare || 0)) / 100;
+  if (!(share > 0) || !(o.initial > 0)) return {share: 0, income: 0, real: true, rate: 0};
+  var tips = o.gType !== "annuity";
+  var rate = tips ? pmtStart((o.gYield || 0) / 100, o.years, 1, 0) : Math.max(0, o.gPayout || 0) / 100;
+  return {share: share, income: o.initial * share * rate, real: tips || !!o.gInflate, rate: rate};
+}
+
+/* The RMD method's divisor: the IRS Uniform Lifetime Table from 72, and
+   below it the table's own trend carried down, about 0.9 a year. */
+function ddRmdDivisor(age){
+  if (age >= 72) return ultDivisor(Math.min(100, Math.floor(age)));
+  return 27.4 + (72 - age) * .9;
+}
+
+/* ---- risk-based guardrails ----
+   The chance a plan lasts, from history: for each start, the most that could
+   have been taken every year, in today's dollars, as a share of the starting
+   balance, and still lasted L years. With growth factors g, that's
+   1 / (1 + 1/g0 + 1/(g0 g1) + ...), L terms. byL[L] holds them sorted, so the
+   share at or above a rate is the chance that rate lasts L years, at this
+   stock mix and these fees. The guardrail checks use the starts the test
+   itself uses, every January or every month. */
+var ddRiskMemo = {}, ddRiskKeys = [];
+function ddRiskTable(o){
+  var step = o.monthly ? 1 : 12, from = ddFromIdx(o);
+  var w = Math.min(100, Math.max(0, o.stockPct)) / 100;
+  var fee = (o.fee || 0) / 100 + (o.returnDrag || 0) / 100;
+  var key = step + "|" + from + "|" + w + "|" + fee;
+  if (ddRiskMemo[key]) return ddRiskMemo[key];
+  var N = HIST_Y12_STOCK.length, maxL = 100, byL = [], L;
+  for (L = 0; L <= maxL; L++) byL.push([]);
+  for (var i = from * 12; i < N; i += step){
+    var sum = 0, D = 1;
+    for (L = 1; L <= maxL; L++){
+      var j = i + 12 * (L - 1);
+      if (j >= N) break;
+      sum += D;
+      byL[L].push(sum > 0 && isFinite(sum) ? 1 / sum : 0);
+      var g = (1 + (w * HIST_Y12_STOCK[j] + (1 - w) * HIST_Y12_BOND[j]) / 100 - fee) / (1 + HIST_Y12_INFL[j] / 100);
+      D = g > 0 ? D / g : Infinity;
+    }
+  }
+  byL.forEach(function (a) { a.sort(function (p, q) { return p - q; }); });
+  ddRiskKeys.push(key);
+  if (ddRiskKeys.length > 12) delete ddRiskMemo[ddRiskKeys.shift()];
+  return (ddRiskMemo[key] = {byL: byL});
+}
+function ddRiskRow(T, L){
+  for (var k = Math.min(L, T.byL.length - 1); k > 0; k--) if (T.byL[k].length) return T.byL[k];
+  return [];
+}
+/* The chance a level real withdrawal of `rate` (a share of today's balance)
+   lasts L more years. */
+function ddRiskP(T, rate, L){
+  if (!(rate > 0)) return 1;
+  var a = ddRiskRow(T, L), lo = 0, hi = a.length;
+  if (!hi) return 0;
+  while (lo < hi){ var mid = (lo + hi) >> 1; if (a[mid] < rate) lo = mid + 1; else hi = mid; }
+  return (a.length - lo) / a.length;
+}
+/* The highest such rate with at least chance p of lasting L years. */
+function ddRiskRate(T, p, L){
+  var a = ddRiskRow(T, L);
+  if (!a.length) return 0;
+  return a[Math.min(a.length - 1, Math.max(0, Math.floor((1 - p) * a.length + 1e-9)))];
+}
+/* What's still to come, for the guardrail check, so the chance counts income
+   that hasn't started yet, like Social Security at 70. Each is a present
+   value at a 3% real rate from year y to the end: A of the spending path, B
+   of Social Security and other income, C of extra expenses, each split into
+   what rises with inflation (r) and what's fixed in dollars (n, divided by
+   that year's price level when it's used, and taken to lose 3% a year to
+   inflation after). f turns a present value back into a level yearly amount.
+   Guaranteed income isn't here: it pays for spending of its own. */
+function ddRiskCoef(o, path){
+  var n = o.years, d = 1 / 1.03, dn = d / 1.03, y;
+  var incR = [], incN = [], expR = [], expN = [];
+  for (y = 0; y < n; y++){
+    var r = 0, nn = 0;
+    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0)) r += o.ssAnnual;
+    if (o.ssAnnual2 > 0 && y >= (o.ssDelayYears2 || 0)) r += o.ssAnnual2;
+    if (o.ssAnnual3 > 0 && y >= (o.ssDelayYears3 || 0)) r += o.ssAnnual3;
+    itemsActiveThisYear(o.incomeItems, y + 1).forEach(function (it) { if (it.inflate) r += it.annual; else nn += it.annual; });
+    incR.push(r); incN.push(nn);
+    var er = 0, en = 0;
+    itemsActiveThisYear(o.expenseItems, y + 1).forEach(function (it) { if (it.inflate) er += it.annual; else en += it.annual; });
+    expR.push(er); expN.push(en);
+  }
+  var A = [], Br = [], Bn = [], Cr = [], Cn = [], f = [];
+  var a = 0, br = 0, bn = 0, cr = 0, cn = 0, ann = 0;
+  for (y = n - 1; y >= 0; y--){
+    a = path[y] + d * a; br = incR[y] + d * br; bn = incN[y] + dn * bn;
+    cr = expR[y] + d * cr; cn = expN[y] + dn * cn; ann = 1 + d * ann;
+    A[y] = a; Br[y] = br; Bn[y] = bn; Cr[y] = cr; Cn[y] = cn; f[y] = 1 / ann;
+  }
+  return {A: A, Br: Br, Bn: Bn, Cr: Cr, Cn: Cn, f: f};
+}
+function ddPct(v, def){ return Math.min(100, Math.max(0, v == null ? def : v)) / 100; }
+
+/* ---- the strategies ----
+   Each rule gets the year's state s and returns the strategy's own spending
+   for the year, in that year's dollars, before the spending path, the
+   minimum and maximum and any extra expenses. s.prevW is last year's figure
+   on the same footing, s.baseW the starting rate on the invested portfolio,
+   s.k a running real multiplier for the rules that step it, s.gain last
+   year's real investment gain in today's dollars.
+
+   family: how the picker groups it. dial: the setting that decides how much
+   it spends, the range a search turns it through and which way is "more"
+   (dir), and its step on the grid. byRate: year one is the rate on the
+   portfolio, so a spending amount can be turned into a rate. spendsDown: an
+   empty portfolio after the final year is the plan, not a failure.
+   limits: the minimum and maximum spending apply. */
+function ddFloorCeil(floorKey, ceilKey){
+  return function (s) {
+    var o = s.o, target = s.bal * o.initialPct / 100;
+    var infAdj = s.y === 0 ? s.baseW : s.prevW * (1 + s.lastInfl);
+    var floor = infAdj * (1 - o[floorKey] / 100);
+    var ceil = infAdj * (1 + o[ceilKey] / 100);
+    return Math.min(Math.max(target, floor), ceil);
+  };
+}
+var DD_RATE_DIAL = {key: "initialPct", lo: .25, hi: 15, dir: 1, step: .25};
+var DD_STRAT = {};
+var DD_ORDER = [];
+[
+  /* The 4% rule's way: year one's amount, then the same plus inflation
+     whatever markets do. Optionally skips the raise after a losing year. */
+  {id: "fixed", family: "steady", dial: DD_RATE_DIAL, byRate: true, limits: false,
+   rule: function (s) {
+     if (s.y > 0 && s.o.skipRaise && s.lastRet < 0) s.k /= 1 + s.lastInfl;
+     return s.baseW * s.k * s.cumInfl;
+   }},
+  /* Michael Kitces's ratchet: fixed spending that never falls, raised 10%
+     whenever the portfolio is 50% above where it started after inflation,
+     no more than once every three years. */
+  {id: "kitces", family: "steady", dial: DD_RATE_DIAL, byRate: true,
+   rule: function (s) {
+     var o = s.o;
+     if (s.y > 0){
+       if (o.skipRaise && s.lastRet < 0) s.k /= 1 + s.lastInfl;
+       if (s.bal / s.cumInfl >= s.initial * (1 + (o.kitThresh || 0) / 100) &&
+           s.y - s.last >= Math.max(1, Math.round(o.kitGap || 0))){
+         s.k *= 1 + (o.kitRaise || 0) / 100;
+         s.last = s.y;
+       }
+     }
+     return s.baseW * s.k * s.cumInfl;
+   }},
+  /* The same share of whatever the portfolio is worth each year. */
+  {id: "pct", family: "share", dial: DD_RATE_DIAL, byRate: true,
+   rule: function (s) { return s.bal * s.o.initialPct / 100; }},
+  /* Bob Clyatt's 95% rule: a share of the portfolio, but never less than
+     95% of last year's spending in dollars. */
+  {id: "clyatt", family: "share", dial: DD_RATE_DIAL, byRate: true,
+   rule: function (s) {
+     var w = s.bal * s.o.initialPct / 100;
+     return s.y === 0 ? w : Math.max(w, s.prevW * (s.o.clyFloor == null ? 95 : s.o.clyFloor) / 100);
+   }},
+  /* The balance divided by the years left: a tenth of it with ten to go,
+     all of it in the last. */
+  {id: "oneovern", family: "share", spendsDown: true,
+   rule: function (s) { return s.bal / Math.max(1, s.years - s.y); }},
+  /* The balance divided by the IRS life-expectancy divisor for your age, as
+     required minimum distributions work. Takes 65 if no age is set. */
+  {id: "rmd", family: "share",
+   rule: function (s) { return s.bal / ddRmdDivisor(s.age != null ? s.age : 65 + s.y); }},
+  /* Variable percentage withdrawal (Bogleheads): the payment that would draw
+     the balance down to the future value over the years left, at the
+     expected real return, paid at the start of the year: the spreadsheet's
+     =PMT(rate, years left, -balance, future value, 1). The future value is in
+     today's dollars, so this year's price level converts it. */
+  {id: "vpw", family: "share", spendsDown: true,
+   dial: {key: "vpwRate", lo: -3, hi: 12, dir: 1, step: .25},
+   rule: function (s) {
+     return Math.max(0, pmtStart((s.o.vpwRate || 0) / 100, s.years - s.y, s.bal, (s.o.vpwFV || 0) * s.cumInfl));
+   }},
+  /* Guyton-Klinger: follow inflation, but cut or raise spending when the
+     withdrawal rate drifts past a guardrail around the target. The two
+     guardrails and their steps can differ. Their capital preservation rule
+     drops the cut in the final years (gkFinalYears), and their inflation
+     rule (skipRaise) skips the raise after a losing year when the rate is
+     already above where it started. */
+  {id: "guardrails", family: "guard", dial: DD_RATE_DIAL, byRate: true,
+   rule: function (s) {
+     var o = s.o, w = (s.y === 0) ? s.baseW : s.prevW * (1 + s.lastInfl);
+     if (s.y > 0 && o.skipRaise && s.lastRet < 0 && s.bal > 0 && w / s.bal * 100 > o.initialPct) w = s.prevW;
+     if (s.bal > 0) {
+       var curRate = w / s.bal * 100;
+       var bandLo = o.guardBandLo != null ? o.guardBandLo : o.guardBand;
+       var raise = o.raisePct != null ? o.raisePct : o.adjustPct;
+       var hi = o.initialPct * (1 + o.guardBand / 100);
+       var lo = o.initialPct * (1 - bandLo / 100);
+       var noCut = o.gkFinalYears > 0 && o.years - s.y <= o.gkFinalYears;
+       if (curRate > hi) { if (!noCut) w = w * (1 - Math.min(100, o.adjustPct) / 100); }
+       else if (curRate < lo) w = w * (1 + raise / 100);
+     }
+     return w;
+   }},
+  /* Risk-based guardrails: start at the spending with the target chance of
+     lasting, then hold it, with inflation, until the chance drifts below the
+     lower guardrail or above the upper one; then reset to the target. The
+     chance is history's, from ddRiskTable, counting income still to come.
+     With a year left, any balance has every chance of lasting it, so like
+     VPW it spends down to nothing by the end. */
+  {id: "riskgr", family: "guard", spendsDown: true,
+   dial: {key: "rgTarget", lo: 30, hi: 99.5, dir: -1, step: 2.5,
+     set: function (x, v, base) {
+       var t = base.rgTarget == null ? 90 : base.rgTarget;
+       var dl = t - (base.rgLo == null ? 70 : base.rgLo), dh = (base.rgHi == null ? 99 : base.rgHi) - t;
+       x.rgTarget = v; x.rgLo = Math.max(1, v - dl); x.rgHi = Math.min(100, v + dh);
+     }},
+   rule: function (s) {
+     var o = s.o, R = s.P.rg, T = s.P.risk, y = s.y, L = s.years - y;
+     var balR = s.bal / s.cumInfl, A = R.A[y], f = R.f[y];
+     var B = R.Br[y] + R.Bn[y] / s.cumInfl, C = R.Cr[y] + R.Cn[y] / s.cumInfl;
+     var reset = function () {
+       return A > 1e-9 ? Math.max(0, (ddRiskRate(T, ddPct(o.rgTarget, 90), L) * balR / f + B - C) / A) * s.cumInfl : 0;
+     };
+     if (y === 0) return reset();
+     var w = s.prevW * (1 + s.lastInfl);
+     if (!(balR > 0)) return w;
+     var p = ddRiskP(T, (w / s.cumInfl * A - B + C) * f / balR, L);
+     return (p < ddPct(o.rgLo, 70) || p > ddPct(o.rgHi, 99)) ? reset() : w;
+   }},
+  /* Floor and ceiling: aim at a share of the current balance, but never move
+     spending more than the allowed step from last year's, after inflation. */
+  {id: "floorceil", family: "smooth", dial: DD_RATE_DIAL, byRate: true,
+   rule: ddFloorCeil("floorPct", "ceilPct")},
+  /* Vanguard's dynamic spending: the same rule, with its own limits, a 5%
+     raise and a 2.5% cut by default. */
+  {id: "vanguard", family: "smooth", dial: DD_RATE_DIAL, byRate: true,
+   rule: ddFloorCeil("vgFloor", "vgCeil")},
+  /* Yale's endowment rule: year one is the starting rate; after that, a
+     blend of last year's spending raised for inflation and a target rate of
+     the current balance. Its dial moves both rates together. */
+  {id: "yale", family: "smooth", byRate: true,
+   dial: {key: "yaleRate", lo: .25, hi: 15, dir: 1, step: .25,
+     set: function (x, v, base) {
+       var r = base.yaleRate > 0 ? base.initialPct / base.yaleRate : 1;
+       x.yaleRate = v; x.initialPct = v * r;
+     }},
+   rule: function (s) {
+     var o = s.o;
+     if (s.y === 0) return s.baseW;
+     var priorAdj = s.prevW * (1 + s.lastInfl);
+     var pctOfBal = s.bal * o.yaleRate / 100;
+     return (o.yaleWeight / 100) * priorAdj + (1 - o.yaleWeight / 100) * pctOfBal;
+   }},
+  /* Henry Hebeler's Autopilot II: most of last year's spending raised for
+     inflation, blended with the level payment that would spend the balance
+     over the years left at an expected real return. Year one is that
+     payment. */
+  {id: "hebeler", family: "smooth", dial: {key: "hebRate", lo: -3, hi: 12, dir: 1, step: .25},
+   rule: function (s) {
+     var o = s.o, pay = Math.max(0, pmtStart((o.hebRate || 0) / 100, s.years - s.y, s.bal, 0));
+     if (s.y === 0) return pay;
+     var wt = ddPct(o.hebWeight, 75);
+     return wt * s.prevW * (1 + s.lastInfl) + (1 - wt) * pay;
+   }},
+  /* Sensible withdrawals: a base amount, the starting rate rising with
+     inflation, plus a share of last year's real gains when there were any. */
+  {id: "sensible", family: "smooth", dial: DD_RATE_DIAL, byRate: true,
+   rule: function (s) {
+     var base = s.initial * s.o.initialPct / 100 * s.cumInfl;
+     var extra = s.y > 0 ? (s.o.sensExtra || 0) / 100 * Math.max(0, s.gain) * s.cumInfl : 0;
+     return base + extra;
+   }},
+  /* CAPE-based: each year's rate is a base plus a share of the stock
+     market's earnings yield, 1 / CAPE, so it spends more when stocks are
+     cheap and less when they're dear. Karsten Jeske (Early Retirement Now)
+     popularized it. */
+  {id: "cape", family: "value", dial: {key: "capeA", lo: -4, hi: 10, dir: 1, step: .25},
+   rule: function (s) {
+     var o = s.o, c = s.cape > 0 ? s.cape : 20;
+     return s.bal * Math.max(0, (o.capeA || 0) + (o.capeB || 0) * 100 / c) / 100;
+   }}
+].forEach(function (x) { DD_STRAT[x.id] = x; DD_ORDER.push(x.id); });
+
+/* One run's per-plan setup, shared by every start: the guaranteed income,
+   what stays invested, the spending path and, for risk-based guardrails, its
+   tables. first is year one's spending from the strategy, in today's
+   dollars, at today's CAPE where that matters. */
+function ddPrep(o){
+  var G = ddGuaranteed(o), S = DD_STRAT[o.strategy] || DD_STRAT.yale;
+  var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0};
+  if (S.id === "riskgr"){
+    // the smile's spending term only, from a 4% year one
+    P.path = ddPath(o, P.initial * .04 + G.income);
+    P.risk = ddRiskTable(o);
+    P.rg = ddRiskCoef(o, P.path);
+    P.first = S.rule(ddState(o, P));
+  } else {
+    P.first = S.rule(ddState(o, P));
+    P.path = ddPath(o, P.first + G.income);
+  }
+  return P;
+}
+function ddState(o, P){
+  return {o: o, P: P, initial: P.initial, years: o.years, y: 0, bal: P.initial, cumInfl: 1,
+    lastInfl: 0, lastRet: 0, prevW: 0, baseW: P.initial * o.initialPct / 100, gain: 0,
+    cape: CAPE_NOW, age: o.retireAge != null ? o.retireAge : null, k: 1, last: -1e9};
+}
+/* Year one's spending in today's dollars, before the path and limits. */
+function ddFirstYear(o){ return ddPrep(o).first; }
+
+/* ---- one retirement ----
+   o: the plan (ddOptsFromState makes it from the page's fields). seq: one
+   {stock, bond, infl, cape} per year, returns in percent. P: ddPrep(o),
+   passed when one plan runs many sequences. ctl, for the searches: lite
+   skips the year-by-year rows, and stop ends the run at the first failure,
+   either the money running out ("lasts") or a year's spending, without
+   extra expenses, under the comfort line ("comfort", ctl.comfort in today's
+   dollars, following the path). Returns the rows and a summary. */
+function runDrawdown(o, seq, ctl, P) {
+  P = P || ddPrep(o);
+  var S = P.strat, s = ddState(o, P), path = P.path, G = P.G;
+  var lite = !!(ctl && ctl.lite), stop = ctl ? ctl.stop : null, line = ctl && ctl.comfort || 0;
+  var stockW = o.stockPct / 100;
+  var bondW = 1 - stockW;
+  var useGlide = o.stockPctEnd != null;
+  var bal = P.initial, cumInfl = 1;
+  var rows = lite ? null : [];
+  var depletedYear = null, failed = false, invested = P.initial > 0;
+  var totalReal = 0, lived = 0, minLived = Infinity, minReg = Infinity, lastRealEnd = P.initial, firstSpend = 0;
+
+  for (var y = 0; y < o.years; y++) {
+    var q = seq[y];
+    s.y = y; s.bal = bal; s.cumInfl = cumInfl; s.cape = q.cape;
+    s.age = o.retireAge != null ? o.retireAge + y : null;
+    if (useGlide) {
+      var yPct = o.stockPct + (o.stockPctEnd - o.stockPct) * y / Math.max(1, o.years - 1);
+      stockW = Math.min(100, Math.max(0, yPct)) / 100;
+      bondW = 1 - stockW;
+    }
+    var infl = q.infl / 100;
+    var w = S.rule(s), m = path[y], reg = w * m;
+
+    // The optional minimum and maximum, in today's dollars, apply to what the
+    // strategy spends, never to extra expenses. If they cross, the maximum
+    // wins. Fixed spending never falls, so they don't apply to it. A minimum
+    // set by a search follows the spending path (floorPath).
+    if (S.limits !== false) {
+      if (o.spendFloor > 0) {
+        var floorNominal = o.spendFloor * cumInfl * (o.floorPath ? m : 1);
+        if (reg < floorNominal) reg = floorNominal;
+      }
+      if (o.spendCeil > 0) {
+        var ceilNominal = o.spendCeil * cumInfl;
+        if (reg > ceilNominal) reg = ceilNominal;
+      }
+    }
+    // What the strategy treats as "last year's spending" next year: its own
+    // figure, before the path, so the path never compounds into it.
+    s.prevW = m > 0 ? reg / m : w;
+    if (y === 0) firstSpend = reg;
+
+    // Extra expenses come on top of the strategy's spending, whatever it is.
+    var expense = itemsActiveThisYear(o.expenseItems, y + 1)
+      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
+    var planned = reg + expense;
+
+    // Social Security covers part of the spending once it starts, so the
+    // portfolio only has to provide the remainder. Priced at the same
+    // start-of-year level as the spending it offsets.
+    var ssThisYear = 0;
+    if (o.ssAnnual > 0 && y >= (o.ssDelayYears || 0))
+      ssThisYear = o.ssAnnual * cumInfl;
+    if (o.ssAnnual2 > 0 && y >= (o.ssDelayYears2 || 0))
+      ssThisYear += o.ssAnnual2 * cumInfl;
+    if (o.ssAnnual3 > 0 && y >= (o.ssDelayYears3 || 0))
+      ssThisYear += o.ssAnnual3 * cumInfl;
+    var need = Math.max(0, planned - ssThisYear);
+
+    // Other income works the same way. If it covers more than the plan
+    // needs, nothing is withdrawn and the extra is invested.
+    var customIncomeTotal = itemsActiveThisYear(o.incomeItems, y + 1)
+      .reduce(function (sum, it) { return sum + itemAmount(it, y + 1, cumInfl); }, 0);
+    var incomeInvested = Math.max(0, customIncomeTotal - need);
+    need = Math.max(0, need - customIncomeTotal);
+
+    // The portfolio pays what it can. Whatever it can't is spending that
+    // didn't happen: extra expenses go first, then everyday spending.
+    var wd = need > bal ? bal : need;
+    if (wd < 0) wd = 0;
+    var short = need - wd;
+
+    var start = bal;
+    bal = bal - wd + incomeInvested;
+    var ret = (stockW * q.stock + bondW * q.bond) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
+    var afterFlows = bal;
+    var growth = bal * ret;
+    bal = bal + growth;
+    if (bal < 0) bal = 0;
+
+    var gIncome = G.income > 0 ? G.income * (G.real ? cumInfl : 1) : 0;
+    var livedN = planned - short + gIncome;
+    var regN = reg - Math.max(0, short - expense) + gIncome;
+    var realW = wd / cumInfl, realLived = livedN / cumInfl, realReg = regN / cumInfl;
+    totalReal += realW; lived += realLived;
+    if (realLived < minLived) minLived = realLived;
+    if (realReg < minReg) minReg = realReg;
+
+    var startLevel = cumInfl;
+    cumInfl = cumInfl * (1 + infl);
+    s.lastInfl = infl;
+    s.lastRet = ret;
+    s.gain = bal / cumInfl - afterFlows / startLevel;
+    lastRealEnd = bal / cumInfl;
+
+    if (!lite) rows.push({
+      year: y + 1, start: start, withdrawal: wd, realWithdrawal: realW,
+      growth: growth, end: bal, realEnd: lastRealEnd, infl: q.infl,
+      ret: ret * 100, ss: ssThisYear, spend: livedN, realSpend: realLived,
+      realReg: realReg, planned: planned + gIncome, realPlanned: (planned + gIncome) / startLevel,
+      short: short, guaranteed: gIncome,
+      customIncome: customIncomeTotal, customExpense: expense, path: m, cape: q.cape
+    });
+
+    // A strategy built to spend down by the end leaves an empty portfolio
+    // after its final year by design, not by failure.
+    var plannedEnd = S.spendsDown && y === o.years - 1;
+    if (bal <= 0 && depletedYear === null && !plannedEnd && invested) depletedYear = y + 1;
+    if (stop === "lasts" && depletedYear !== null) { failed = true; break; }
+    if (stop === "comfort" && realReg < line * m - .5) { failed = true; break; }
+  }
+
+  var out = {
+    rows: rows,
+    depleted: depletedYear !== null,
+    depletedYear: depletedYear,
+    endBalance: bal,
+    endReal: lastRealEnd,
+    totalRealSpend: totalReal,
+    lived: lived,
+    minRealSpend: minLived,
+    minReg: minReg,
+    firstSpend: firstSpend,
+    failed: failed
+  };
+  if (rows) {
+    var sorted = rows.map(function (r) { return r.realSpend; }).sort(function (a, b) { return a - b; });
+    out.medRealSpend = sorted.length ? sorted[Math.floor(sorted.length / 2)] : 0;
+  }
+  return out;
+}
+
+/* Every historical start that has enough data to run the full retirement:
+   the sequence-of-returns test. 1966 and 1929 fail plans that a random-draw
+   simulation would call safe. With o.monthly, a retirement starts every
+   month instead of every January. failYears lists each year a failed
+   retirement began, once. */
+function historicalBacktest(o) {
+  var W = ddWindows(o), P = ddPrep(o), runs = [], k;
+  for (k = 0; k < W.length; k++) {
+    var r = runDrawdown(o, W[k].seq, null, P);
+    r.startYear = W[k].year; r.startMonth = W[k].month; r.startIdx = W[k].i; r.cape0 = W[k].seq[0].cape;
+    runs.push(r);
+  }
+  var survived = runs.filter(function (r) { return !r.depleted; }).length;
+  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
+  var fails = runs.filter(function (r) { return r.depleted; });
+  var failYears = [];
+  fails.forEach(function (r) { if (failYears.indexOf(r.startYear) < 0) failYears.push(r.startYear); });
+  return {
+    first: HIST_START + ddFromIdx(o),
+    monthly: !!o.monthly,
+    runs: runs,
+    total: runs.length,
+    survived: survived,
+    successRate: runs.length ? survived / runs.length : 0,
+    medianEnd: ends.length ? ends[Math.floor(ends.length / 2)] : 0,
+    worstEnd: ends.length ? ends[0] : 0,
+    bestEnd: ends.length ? ends[ends.length - 1] : 0,
+    failYears: failYears,
+    failCount: fails.length,
+    firstFail: fails.length ? fails[0] : null,
+    prep: P
+  };
+}
+
+/* Random sequences drawn from the same historical years, using the seeded
+   generator so a given set of inputs always produces the same chart. Each
+   drawn year brings its stock and bond returns, inflation and January CAPE
+   together. */
+function monteCarloDrawdown(o, trials, seed) {
+  var rng = mulberry32(seed >>> 0);
+  var n = HIST_STOCK.length;
+  var runs = [];
+  var P = ddPrep(o);
+  /* runDrawdown only reads seq[y] during the call, so one buffer of year slots
+     is refilled per trial rather than allocating a fresh array of objects each
+     time. */
+  var seq = [];
+  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0, cape: 0 });
+  for (var t = 0; t < trials; t++) {
+    for (var k = 0; k < o.years; k++) {
+      var i = Math.floor(rng() * n);
+      seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
+      seq[k].cape = HIST_M_CAPE[i * 12];
+    }
+    runs.push(runDrawdown(o, seq, null, P));
+  }
+  var survived = runs.filter(function (r) { return !r.depleted; }).length;
+  var ends = runs.map(function (r) { return r.endReal; }).sort(function (a, b) { return a - b; });
+  var pick = function (q) { return ends.length ? ends[Math.min(ends.length - 1, Math.floor(ends.length * q))] : 0; };
+
+  // percentile bands of the real balance path, for the fan chart
+  var bands = [];
+  var col = new Float64Array(runs.length);
+  for (var y = 0; y < o.years; y++) {
+    for (var c = 0; c < runs.length; c++) {
+      var rr = runs[c].rows[y];
+      col[c] = rr ? rr.realEnd : 0;
+    }
+    col.sort();   // typed arrays sort numerically, no comparator needed
+    var at = function (q) { return col[Math.min(col.length - 1, Math.floor(col.length * q))]; };
+    bands.push({ year: y + 1, p10: at(.10), p25: at(.25), p50: at(.50), p75: at(.75), p90: at(.90) });
+  }
+  return {
+    runs: runs, trials: trials, survived: survived,
+    successRate: runs.length ? survived / runs.length : 0,
+    medianEnd: pick(.5), p10End: pick(.10), p90End: pick(.90),
+    bands: bands, prep: P
+  };
+}
+
+/* ---- the page's fields, as the engine's options ----
+   d is the simulator's saved state: its fields as typed. The page reads its
+   own fields through this too, so a saved scenario compares exactly as it
+   ran. A setting an older save doesn't have takes its default, and a 0 stays
+   0. Social Security resolves to up to three streams (yours, your spouse's
+   and any spousal top-up), each from the year it starts. */
+function ddOptsFromState(d){
+  d = d || {};
+  var v = function (k, def) {
+    var x = d[k];
+    if (x == null || x === "") return def;
+    x = typeof x === "number" ? x : parseFloat(String(x).replace(/,/g, ""));
+    return isFinite(x) ? x : def;
+  };
+  var clamp = function (x, lo, hi) { return Math.min(hi, Math.max(lo, x)); };
+  var copy = function (a) { return Array.isArray(a) ? a.map(function (x) { return Object.assign({}, x); }) : []; };
+  var age = v("retireAge", null);
+  var retireAge = age != null && age > 0 ? age : null;
+  var strategy = DD_STRAT[d.strategy] ? d.strategy : "fixed";
+  var rate = v("rate", 4);
+
+  var ss = {annual: 0, delay: 0, annual2: 0, delay2: 0, annual3: 0, delay3: 0, total: 0};
+  var couple = d.ssWho === "couple";
+  if (d.ssMode === "manual") {
+    var amt = v("ssAmount", 0) + (couple ? v("ssAmount2", 0) : 0), raw = v("ssDelay", 0);
+    ss.annual = amt; ss.total = amt;
+    ss.delay = retireAge != null ? Math.max(0, Math.round(raw - retireAge)) : Math.max(0, Math.round(raw));
+  } else if (d.ssMode === "est") {
+    ss = ssDrawdownStreams(v("ssIncome", 0), v("ssClaim", 67), v("ssIncome2", 0), v("ssClaim2", 67),
+      couple, retireAge, v("ssDelay", 0));
+  }
+
+  // Stages saved before the spending path belonged to the fixed strategy.
+  var path = d.path, pathStages = copy(d.pathStages);
+  if (!path && Array.isArray(d.wdStages) && d.wdStages.length && strategy === "fixed") {
+    path = "stages"; pathStages = ddStagesFromRates(d.wdStages, rate);
+  }
+
+  return {
+    initial: v("initial", 0),
+    years: Math.min(60, Math.max(1, Math.round(v("years", 30)))),
+    stockPct: clamp(v("stock", 60), 0, 100),
+    stockPctEnd: d.stockEnd == null || String(d.stockEnd).trim() === "" ? null : clamp(v("stockEnd", 0), 0, 100),
+    fee: v("fee", 0),
+    strategy: strategy,
+    initialPct: rate,
+    guardBand: v("guardBand", 20),
+    adjustPct: v("adjust", 10),
+    guardBandLo: v("guardBandLo", v("guardBand", 20)),
+    raisePct: v("adjustLo", v("adjust", 10)),
+    gkFinalYears: d.gkFinal ? Math.max(0, Math.round(v("gkFinalYrs", 15))) : 0,
+    floorPct: v("floor", 10),
+    ceilPct: v("ceil", 10),
+    yaleWeight: clamp(v("yaleWeight", 70), 0, 100),
+    yaleRate: Math.max(0, v("yaleRate", 5)),
+    spendFloor: v("spendFloor", 0),
+    spendCeil: v("spendCeil", 0),
+    vpwRate: v("vpwRate", 3.8),
+    vpwFV: v("vpwFV", 0),
+    skipRaise: !!d.skipRaise,
+    vgCeil: v("vgCeil", 5),
+    vgFloor: v("vgFloor", 2.5),
+    kitThresh: v("kitThresh", 50),
+    kitRaise: v("kitRaise", 10),
+    kitGap: v("kitGap", 3),
+    clyFloor: v("clyFloor", 95),
+    hebWeight: clamp(v("hebWeight", 75), 0, 100),
+    hebRate: v("hebRate", 3),
+    sensExtra: v("sensExtra", 10),
+    rgTarget: clamp(v("rgTarget", 90), 1, 99.9),
+    rgLo: clamp(v("rgLo", 70), 0, 100),
+    rgHi: clamp(v("rgHi", 99), 0, 100),
+    capeA: v("capeA", 1.75),
+    capeB: v("capeB", 0.5),
+    path: path === "ease" || path === "smile" || path === "stages" ? path : "flat",
+    pathEase: v("pathEase", 1),
+    pathStages: pathStages,
+    gShare: clamp(v("gShare", 0), 0, 100),
+    gType: d.gType === "annuity" ? "annuity" : "tips",
+    gYield: v("gYield", 2),
+    gPayout: v("gPayout", 6.5),
+    gInflate: !!d.gInflate,
+    ssAnnual: ss.annual, ssDelayYears: ss.delay,
+    ssAnnual2: ss.annual2 || 0, ssDelayYears2: ss.delay2 || 0,
+    ssAnnual3: ss.annual3 || 0, ssDelayYears3: ss.delay3 || 0,
+    ssAnnualTotal: ss.total || 0,
+    legacyGoal: v("legacyGoal", 0),
+    comfort: v("comfort", 0),
+    retireAge: retireAge,
+    fromYear: clamp(Math.round(v("fromYear", HIST_START)), HIST_START, HIST_START + HIST_STOCK.length - 1),
+    monthly: d.starts === "month",
+    incomeItems: copy(d.incomeItems),
+    expenseItems: copy(d.expenseItems)
+  };
+}
+
+/* The comfort line: spending, in today's dollars, the household would hate
+   to fall below. The one set, or else the minimum spending, or else 80% of
+   year one's (guaranteed income included). */
+function ddComfort(o, P){
+  if (o.comfort > 0) return o.comfort;
+  if (o.spendFloor > 0 && (DD_STRAT[o.strategy] || {}).limits !== false) return o.spendFloor;
+  P = P || ddPrep(o);
+  return .8 * (P.first + P.G.income);
+}
+
+/* ---- how spending went ----
+   Across a set of runs, against the comfort line (today's dollars,
+   following the spending path): how many retirements ever dipped under it,
+   the share of all years under it, the longest stretch and the lowest year;
+   year-to-year cuts; and FICalc's counts of big swings (a 25% change in a
+   year), spending ever half again above year one or half below it, and
+   endings at twice the start or under half of it. The path's own planned
+   changes don't count as cuts or swings. Extra expenses are left out, so a
+   one-off purchase isn't a swing either. */
+function ddScorecard(runs, o, comfort, path){
+  var n = runs.length, years = 0, below = 0, dipped = 0, longest = 0, longRun = null;
+  var low = Infinity, lowRun = null, lowYear = 0, lowRatio = Infinity;
+  var vol = 0, large = 0, small = 0, bigEnd = 0, smallEnd = 0, cutYears = 0, maxCut = 0, maxCutRun = null;
+  var lifes = [], firsts = [];
+  runs.forEach(function (r) {
+    var rows = r.rows || [];
+    if (!rows.length) return;
+    var first = rows[0].realReg / (path[0] || 1), streak = 0, any = false, sw = false, lg = false, sm = false, prev = null, life = 0;
+    firsts.push(rows[0].realReg);
+    rows.forEach(function (row, y) {
+      var m = path[y] || 0, v = row.realReg, norm = m > 0 ? v / m : v;
+      years++; life += row.realSpend;
+      if (comfort > 0 && v < comfort * m - .5) {
+        below++; streak++; any = true;
+        if (streak > longest) { longest = streak; longRun = r; }
+      } else streak = 0;
+      if (v < low) { low = v; lowRun = r; lowYear = y + 1; }
+      if (first > 0 && norm / first < lowRatio) lowRatio = norm / first;
+      if (prev != null && prev > 0) {
+        var ch = norm / prev - 1;
+        if (Math.abs(ch) > .25) sw = true;
+        if (ch < -.005) { cutYears++; if (-ch > maxCut) { maxCut = -ch; maxCutRun = r; } }
+      }
+      if (first > 0 && norm >= first * 1.5) lg = true;
+      if (first > 0 && norm <= first * .5) sm = true;
+      prev = norm;
+    });
+    if (any) dipped++;
+    if (sw) vol++;
+    if (lg) large++;
+    if (sm) small++;
+    if (r.endReal >= 2 * o.initial) bigEnd++;
+    else if (r.endReal > .5 && r.endReal < .5 * o.initial) smallEnd++;
+    lifes.push(life);
+  });
+  var med = function (a) { var x = a.slice().sort(function (p, q) { return p - q; }); return x.length ? x[Math.floor(x.length / 2)] : 0; };
+  return {n: n, years: years, below: below, dipped: dipped, longest: longest, longRun: longRun,
+    low: isFinite(low) ? low : 0, lowRun: lowRun, lowYear: lowYear, lowRatio: isFinite(lowRatio) ? lowRatio : 1,
+    cutsAvg: n ? cutYears / n : 0, maxCut: maxCut, maxCutRun: maxCutRun,
+    volatile: vol, large: large, small: small, bigEnd: bigEnd, smallEnd: smallEnd,
+    lifeMed: med(lifes), firstMed: med(firsts), comfort: comfort};
+}
+
+/* ---- searches ----
+   A risk target T: {crit, comfort, conf}. crit "comfort" asks that spending
+   never fall under the comfort line; "lasts" that the money last the whole
+   plan. conf is the share of starts that must meet it (1 for every one).
+
+   Under "comfort", every flexible strategy is held at or above the comfort
+   line, as its minimum spending, the way people actually run them. Without
+   it, a strategy that cuts in steps (guardrails cut 10% at a time) can't
+   promise a line at any setting, since its cuts scale with whatever it
+   started at; with it, the only way under the line is running out of money,
+   or a fixed amount that starts under it. */
+function ddForTarget(o, T){
+  if (T.crit !== "comfort" || !(T.comfort > 0) || (DD_STRAT[o.strategy] || {}).limits === false) return o;
+  return Object.assign({}, o, {spendFloor: Math.max(o.spendFloor || 0, T.comfort), floorPath: true});
+}
+function ddMeets(o, T, W, order, full){
+  var P = ddPrep(o), n = W.length, fails = 0;
+  var allowed = Math.floor((1 - T.conf) * n + 1e-9);
+  var ctl = {lite: true, stop: T.crit, comfort: T.comfort};
+  for (var k = 0; k < n; k++) {
+    var idx = order ? order[k] : k, r = runDrawdown(o, W[idx].seq, ctl, P);
+    if (r.failed) {
+      fails++;
+      // The starts that fail one setting tend to fail the next, so they go first.
+      if (order && k > 0) { order.splice(k, 1); order.unshift(idx); }
+      if (!full && fails > allowed) return {ok: false, share: null};
+    }
+  }
+  return {ok: fails <= allowed, share: n ? (n - fails) / n : 0};
+}
+function ddDialVal(D, t){ return D.dir > 0 ? D.lo + t * (D.hi - D.lo) : D.hi - t * (D.hi - D.lo); }
+function ddDialGet(o){
+  var D = (DD_STRAT[o.strategy] || {}).dial;
+  return D ? o[D.key] : null;
+}
+/* The plan with a strategy's dial turned to v. */
+function ddWithDial(o, v){
+  var D = DD_STRAT[o.strategy].dial, x = Object.assign({}, o);
+  if (D.set) D.set(x, v, o); else x[D.key] = v;
+  return x;
+}
+/* The most a strategy can spend and still meet the target: the dial's value
+   at the edge. What meets it can be a range, since spending too little sits
+   under the comfort line too, so a scan from the generous end finds the
+   highest setting that works and bisection sharpens the edge above it. test
+   decides one setting; t runs 0 (least spending) to 1 (most). */
+function ddEdge(test){
+  var N = 40, k;
+  for (k = N; k >= 0; k--) if (test(k / N)) break;
+  if (k < 0) return {t: null, capped: false};
+  if (k === N) return {t: 1, capped: true};
+  var a = k / N, b = (k + 1) / N;
+  for (var i = 0; i < 10; i++) { var mid = (a + b) / 2; if (test(mid)) a = mid; else b = mid; }
+  return {t: a, capped: false};
+}
+function ddCalibrate(o, T){
+  var S = DD_STRAT[o.strategy];
+  if (!S || !S.dial) return null;
+  o = ddForTarget(o, T);
+  var D = S.dial, W = ddWindows(o);
+  if (!W.length) return null;
+  var order = W.map(function (_, i) { return i; });
+  var e = ddEdge(function (t) { return ddMeets(ddWithDial(o, ddDialVal(D, t)), T, W, order).ok; });
+  if (e.t != null) return {v: ddDialVal(D, e.t), met: true, capped: e.capped};
+  // Nothing meets it: the setting that comes closest.
+  var best = null;
+  for (var k = 0; k <= 10; k++) {
+    var v = ddDialVal(D, k / 10), sh = ddMeets(ddWithDial(o, v), T, W, null, true).share;
+    if (!best || sh > best.share + 1e-9) best = {v: v, share: sh};
+  }
+  return {v: best.v, met: false, capped: false, share: best.share};
+}
+/* For the safe-rate chart: each start's own edge, and the strategy's year-one
+   spending there as a share of the invested portfolio. null where nothing
+   works; capped where even the top of the dial's range works (a strategy
+   that can't run out, under "lasts"). */
+function ddSafeByStart(o, T){
+  var S = DD_STRAT[o.strategy];
+  if (!S || !S.dial) return null;
+  o = ddForTarget(o, T);
+  var D = S.dial, W = ddWindows(o), Pm = {};
+  var prep = function (t) { var x = ddWithDial(o, ddDialVal(D, t)); return Pm[t] || (Pm[t] = {x: x, P: ddPrep(x)}); };
+  var ctl = {lite: true, stop: T.crit, comfort: T.comfort};
+  return W.map(function (w) {
+    var e = ddEdge(function (t) { var p = prep(t); return !runDrawdown(p.x, w.seq, ctl, p.P).failed; });
+    var out = {i: w.i, year: w.year, month: w.month, cape: w.seq[0].cape, v: null, rate: null, capped: e.capped};
+    if (e.t != null) {
+      var p = prep(e.t), r = runDrawdown(p.x, w.seq, {lite: true}, p.P);
+      out.v = ddDialVal(D, e.t);
+      out.rate = p.P.initial > 0 ? r.firstSpend / p.P.initial : 0;
+    }
+    return out;
+  });
+}
+/* What portfolio the plan's year-one spending needs to meet the target, for
+   a strategy whose year one is a rate on the portfolio: the spending stays
+   put in dollars and the rate follows the portfolio. */
+function ddSolvePortfolio(o, T){
+  var S = DD_STRAT[o.strategy];
+  if (!S || !S.byRate || !(o.initial > 0)) return null;
+  o = ddForTarget(o, T);
+  var P0 = ddPrep(o), spend = P0.first, share = P0.G.share;
+  if (!(spend > 0) || share >= 1) return null;
+  var W = ddWindows(o);
+  if (!W.length) return null;
+  var order = W.map(function (_, i) { return i; });
+  var make = function (port) {
+    var x = Object.assign({}, o, {initial: port}), r = spend / (port * (1 - share)) * 100;
+    if (S.dial.set) S.dial.set(x, S.dial.key === "yaleRate" ? r * (o.yaleRate / Math.max(1e-9, o.initialPct)) : r, o);
+    else x[S.dial.key] = r;
+    if (S.dial.key === "yaleRate") x.initialPct = r;
+    return x;
+  };
+  var ok = function (port) { return ddMeets(make(port), T, W, order).ok; };
+  var lo = spend / (.15 * (1 - share)), hi = spend / (.002 * (1 - share));
+  if (!ok(hi)) return {portfolio: null};
+  if (ok(lo)) return {portfolio: lo, capped: true};
+  for (var i = 0; i < 40; i++) { var mid = Math.sqrt(lo * hi); if (ok(mid)) hi = mid; else lo = mid; }
+  return {portfolio: hi, capped: false, spend: spend};
+}
+/* The success grid: the share of starts meeting the target for the dial's
+   values around the current one, against the stock share (glide off) or the
+   length of retirement. */
+function ddHeatmap(o, T, axis){
+  var S = DD_STRAT[o.strategy];
+  if (!S || !S.dial) return null;
+  o = ddForTarget(o, T);
+  var D = S.dial, cur = ddDialGet(o), rows = [], cols;
+  var base = Math.round(cur / D.step) * D.step;
+  for (var k = -6; k <= 6; k++) {
+    var v = Math.round((base + k * D.step) * 1e6) / 1e6;
+    if (v >= D.lo - 1e-9 && v <= D.hi + 1e-9) rows.push(v);
+  }
+  if (D.dir < 0) rows.reverse();
+  cols = axis === "years" ? [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60] : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  var grid = rows.map(function (v) {
+    return cols.map(function (c) {
+      var x = Object.assign({}, o, axis === "years" ? {years: c} : {stockPct: c, stockPctEnd: null});
+      x = ddWithDial(x, v);
+      var W = ddWindows(x);
+      return W.length ? ddMeets(x, T, W, null, true).share : null;
+    });
+  });
+  return {rows: rows, cols: cols, grid: grid, axis: axis, cur: cur};
+}
+/* The starts the showdown draws each strategy through: the hard ones,
+   1966 and 1929, then whichever of these the data reaches. */
+var DD_SPOTS = [1966, 1929, 2000, 1973, 1937, 2007];
+/* The strategy showdown: every strategy on the same plan, each with its dial
+   turned to the most it can spend while meeting the same target, then what
+   each delivers. One without a dial runs as it is. */
+function ddShowdown(o, T){
+  var W = ddWindows(o), spots = [];
+  DD_SPOTS.forEach(function (yr) {
+    if (spots.length >= 3) return;
+    for (var k = 0; k < W.length; k++) if (W[k].year === yr && W[k].month === 1) { spots.push(W[k]); return; }
+  });
+  return {spots: spots.map(function (w) { return w.year; }), list: DD_ORDER.map(function (id) {
+    var S = DD_STRAT[id], x = ddForTarget(Object.assign({}, o, {strategy: id}), T), cal = null;
+    if (S.dial) {
+      cal = ddCalibrate(x, T);
+      if (cal) x = ddWithDial(x, cal.v);
+    }
+    var H = historicalBacktest(x), P = H.prep;
+    var sc = ddScorecard(H.runs, x, T.comfort, P.path);
+    var meet = ddMeets(x, T, W, null, true);
+    return {id: id, dial: cal ? cal.v : null, floor: x.floorPath ? x.spendFloor : 0,
+      met: meet.ok, share: meet.share, capped: !!(cal && cal.capped),
+      tuned: !!cal, first: sc.firstMed, life: sc.lifeMed, low: sc.low,
+      lowStart: sc.lowRun ? {year: sc.lowRun.startYear, month: sc.lowRun.startMonth} : null,
+      cuts: sc.cutsAvg, maxCut: sc.maxCut, end: H.medianEnd, success: H.successRate,
+      below: sc.years ? sc.below / sc.years : 0,
+      spots: spots.map(function (w) { return runDrawdown(x, w.seq, null, P).rows.map(function (r) { return r.realReg; }); })};
+  })};
+}
+
+/* Monte Carlo, summarized for the page: what the charts, tables and
+   scorecard need, without sending five thousand runs across. bal and spend
+   hold every run's real end balance and real spending, run by run, for the
+   distributions. extra.sens and extra.ss are smaller runs for the return
+   sensitivity and claiming-age tables. */
+function ddMCSummary(o, trials, seed, comfort, extra){
+  var M = monteCarloDrawdown(o, trials, seed), P = M.prep, Y = o.years, n = M.runs.length;
+  var sc = ddScorecard(M.runs, o, comfort, P.path);
+  var sorted = M.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; });
+  var med = sorted[Math.floor(sorted.length / 2)];
+  var bal = new Float64Array(n * Y), spend = new Float64Array(n * Y), legacy = 0, col = new Float64Array(n);
+  M.runs.forEach(function (r, i) {
+    for (var y = 0; y < Y; y++) {
+      var row = r.rows[y];
+      bal[i * Y + y] = row ? row.realEnd : 0;
+      spend[i * Y + y] = row ? row.realSpend : 0;
+    }
+    if (o.legacyGoal > 0 && r.endReal >= o.legacyGoal) legacy++;
+  });
+  var spendBands = [];
+  for (var y = 0; y < Y; y++) {
+    for (var i = 0; i < n; i++) col[i] = spend[i * Y + y];
+    col.sort();
+    var at = function (q) { return col[Math.min(n - 1, Math.floor(n * q))]; };
+    spendBands.push({year: y + 1, p10: at(.1), p25: at(.25), p50: at(.5), p75: at(.75), p90: at(.9)});
+  }
+  var small = function (ov) {
+    var S = monteCarloDrawdown(Object.assign({}, o, ov), 500, seed);
+    return {rate: S.successRate, median: S.medianEnd};
+  };
+  return {trials: trials, survived: M.survived, successRate: M.successRate, medianEnd: M.medianEnd,
+    p10End: M.p10End, p90End: M.p90End, bands: M.bands, spendBands: spendBands, legacy: legacy,
+    med: {rows: med.rows, depleted: med.depleted, depletedYear: med.depletedYear, endReal: med.endReal},
+    sc: sc, bal: bal, spend: spend, years: Y, n: n, path: P.path,
+    sens: extra && extra.sens ? extra.sens.map(function (dr) { return small({returnDrag: dr}); }) : null,
+    ss: extra && extra.ss ? extra.ss.map(small) : null};
+}
+
+/* The jobs the page hands to a worker (or runs itself where it can't). */
+function ddJob(job, a){
+  if (job === "mc") return ddMCSummary(a.o, a.trials, a.seed, a.comfort, a.extra);
+  if (job === "showdown") return ddShowdown(a.o, a.T);
+  if (job === "safe") return {safe: ddSafeByStart(a.o, a.T), dial: ddCalibrate(a.o, a.T), port: ddSolvePortfolio(a.o, a.T)};
+  if (job === "heat") return ddHeatmap(a.o, a.T, a.axis);
+  return null;
+}
+// ===DRAWDOWN END===
 ;
 // ===PLAN START===
 /* ---------- the retirement plan engine ----------
@@ -5471,54 +6312,9 @@ attachChart("chartWrapC", "chartC", "tipC", () => cmpPoints, best => {
 
 /* ========== Drawdown Strategy Comparison ========== */
 
-function ddStateToOpts(data) {
-  var retireAge = data.retireAge ? parseFloat(data.retireAge) : null;
-  if (!isFinite(retireAge) || retireAge <= 0) retireAge = null;
-  var ssAnnual = 0, ssDelay = 0, ssAnnual2 = 0, ssDelay2 = 0, ssAnnual3 = 0, ssDelay3 = 0;
-  if (data.ssMode === "est") {
-    var st = ssDrawdownStreams(+data.ssIncome || 0, +data.ssClaim || 67, +data.ssIncome2 || 0,
-      +data.ssClaim2 || 67, data.ssWho === "couple", retireAge, +data.ssDelay || 0);
-    ssAnnual = st.annual; ssDelay = st.delay; ssAnnual2 = st.annual2; ssDelay2 = st.delay2;
-    ssAnnual3 = st.annual3; ssDelay3 = st.delay3;
-  } else if (data.ssMode === "manual") {
-    ssAnnual = +data.ssAmount || 0;
-    if (data.ssWho === "couple") ssAnnual2 = +data.ssAmount2 || 0;
-    var delayRaw = +data.ssDelay || 0;
-    ssDelay = retireAge != null ? Math.max(0, Math.round(delayRaw - retireAge)) : Math.max(0, Math.round(delayRaw));
-    ssDelay2 = ssDelay;
-  }
-  return {
-    initial: +data.initial || 0,
-    years: Math.min(60, Math.max(1, Math.round(+data.years || 30))),
-    stockPct: Math.min(100, Math.max(0, +data.stock || 60)),
-    stockPctEnd: (data.stockEnd && data.stockEnd !== "") ? Math.min(100, Math.max(0, +data.stockEnd || 0)) : null,
-    fee: +data.fee || 0,
-    strategy: data.strategy || "fixed",
-    initialPct: +data.rate || 4,
-    guardBand: +data.guardBand || 20,
-    adjustPct: +data.adjust || 10,
-    guardBandLo: +(data.guardBandLo != null ? data.guardBandLo : data.guardBand) || 20,
-    raisePct: +(data.adjustLo != null ? data.adjustLo : data.adjust) || 10,
-    gkFinalYears: data.gkFinal ? Math.max(0, Math.round(+data.gkFinalYrs || 0)) : 0,
-    floorPct: +data.floor || 10,
-    ceilPct: +data.ceil || 10,
-    yaleWeight: Math.min(100, Math.max(0, +data.yaleWeight || 70)),
-    yaleRate: Math.max(0, +data.yaleRate || 5),
-    spendFloor: +data.spendFloor || 0,
-    spendCeil: +data.spendCeil || 0,
-    vpwRate: data.vpwRate != null ? +data.vpwRate : 3.8,
-    vpwFV: +data.vpwFV || 0,
-    legacyGoal: +data.legacyGoal || 0,
-    ssAnnual: ssAnnual, ssDelayYears: ssDelay,
-    ssAnnual2: ssAnnual2, ssDelayYears2: ssDelay2,
-    ssAnnual3: ssAnnual3, ssDelayYears3: ssDelay3,
-    retireAge: retireAge, fromYear: HIST_START,
-    incomeItems: Array.isArray(data.incomeItems) ? data.incomeItems.map(function(x){ return Object.assign({},x); }) : [],
-    expenseItems: Array.isArray(data.expenseItems) ? data.expenseItems.map(function(x){ return Object.assign({},x); }) : [],
-    wdStages: (data.strategy || "fixed") === "fixed" && Array.isArray(data.wdStages)
-      ? data.wdStages.map(function(x){ return Object.assign({},x); }) : []
-  };
-}
+/* A saved scenario's options, read exactly as the simulator reads its own
+   fields, so a scenario compares as it ran. */
+function ddStateToOpts(data) { return ddOptsFromState(data); }
 
 var ddCmpSlots = [{name:""}, {name:""}, {name:""}];
 var ddCmpPrevTab = "single";
@@ -5586,9 +6382,9 @@ function renderDDCompare() {
     return "<th>" + CMP_LETTERS[x.i] + " · " + escapeHtml(x.name) + "</th>";
   }));
   $("ddCmpOutTable").querySelector("thead").innerHTML = "<tr>" + head.join("") + "</tr>";
-  var stratLabels = {fixed:"Fixed amount", pct:"Fixed %", guardrails:"Guardrails", floorceil:"Floor & ceiling", yale:"Yale endowment", vpw:"VPW"};
+
   $("ddCmpOutTable").querySelector("tbody").innerHTML = [
-    {k:"Strategy", fn:function(x){return stratLabels[x.o.strategy]||x.o.strategy;}},
+    {k:"Strategy", fn:function(x){return DD_STRAT_NAMES[x.o.strategy]||x.o.strategy;}},
     {k:"Withdrawal rate", fn:function(x){return x.o.strategy === "vpw"
       ? "VPW at " + (x.o.vpwRate || 0).toFixed(2) + "% real" : x.o.initialPct.toFixed(1)+"%";}},
     {k:"Stock allocation", fn:function(x){return x.o.stockPct+(x.o.stockPctEnd!=null?" → "+x.o.stockPctEnd:"")+"% stocks";}},
@@ -7991,7 +8787,8 @@ function buildDrawdownSheet(){
   ddRetireAge = o.retireAge;
   if (!(o.initial > 0)){ $("sheet").innerHTML = ""; toast("Enter a portfolio value first"); return false; }
   const H = historicalBacktest(o);
-  const show = H.runs.filter(r => r.startYear === ddSelectedYear)[0] || H.firstFail || H.runs[0];
+  const show = H.runs.filter(r => r.startIdx === ddSelStart)[0] || H.firstFail || H.runs[0];
+  const showLabel = ddStartLabel(show, H.monthly);
 
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
@@ -8001,9 +8798,9 @@ function buildDrawdownSheet(){
     inputs += row("Expected return, real", pctStr((o.vpwRate || 0) / 100, 2));
     inputs += row("PMT future value", money(o.vpwFV || 0));
   } else inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
-  if (o.strategy === "fixed") ddWdOrder(o.wdStages).forEach(function (x) {
+  if (o.path === "stages") ddWdOrder(o.pathStages).forEach(function (x) {
     inputs += row(escapeHtml(x.st.name || ("Stage " + (x.i + 2))),
-      pctStr((x.st.rate || 0) / 100, 1) + " from " +
+      fmtNum(x.st.level || 0) + "% of year one's spending from " +
       (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
   });
   if (o.strategy === "guardrails"){
@@ -8091,9 +8888,9 @@ function buildDrawdownSheet(){
     "<div class='sh-cols'>" +
       "<section><div class='sh-t'>Plan</div>" + inputs + "</section>" +
       "<section><div class='sh-t'>Results</div>" + out + "</section>" +
-      "<section><div class='sh-t'>Spending, retiring " + show.startYear + "</div>" + spend + "</section>" +
+      "<section><div class='sh-t'>Spending, retiring " + showLabel + "</div>" + spend + "</section>" +
     "</div>" +
-    "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + show.startYear +
+    "<div class='sh-table'><div class='sh-t'>Year by year &middot; retiring in " + showLabel +
       (show.depleted ? (" (ran out " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + ")") : " (survived)") + "</div>" + table + "</div>" +
     "<div class='sh-foot'>" + verdict + " Tested against real US market history (" +
       H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1) + "). " +
@@ -10135,10 +10932,13 @@ function rentBuyCalc(inp) {
 /* ---------- drawdown UI ---------- */
 var ddPoints = [];
 var ddMode = "hist";
-var ddSelectedYear = null;
+/* The start shown in detail, as its first month: 0 is January 1926. */
+var ddSelStart = null;
 var ddView = "all";
 var ddSortCol = "year";
 var ddSortDir = "asc";
+/* The latest historical test, for the summary sheet and the table clicks. */
+var ddLastH = null;
 
 /* Retirement age, refreshed at the top of every renderDrawdown() call. Null
    when the optional "Age at retirement" field is blank, in which case every
@@ -10162,6 +10962,12 @@ function ddOutcomeText(r) {
   return ddRetireAge != null ? ("Ran out at age " + ddAgeVal(r.depletedYear))
                               : ("Ran out in year " + r.depletedYear);
 }
+/* When a retirement began: the year, or with a start every month, the month
+   too. */
+function ddStartLabel(r, monthly) {
+  if (r.startMonth == null) return String(r.startYear);
+  return monthly || r.startMonth !== 1 ? HIST_MON[r.startMonth - 1] + " " + r.startYear : String(r.startYear);
+}
 
 /* Value used to compare two starting-year runs for a given sortable column. */
 function ddSortValue(r, col) {
@@ -10170,7 +10976,7 @@ function ddSortValue(r, col) {
     case "end": return r.endReal;
     case "med": return r.medRealSpend;
     case "low": return r.minRealSpend;
-    default: return r.startYear;
+    default: return r.startIdx;
   }
 }
 var ddIncomeChartAgg = false;
@@ -10178,13 +10984,11 @@ var ddIncomeChartAgg = false;
 var DD_STRAT_NAMES = {fixed:"Fixed amount", pct:"% of portfolio",
   guardrails:"Guyton-Klinger Guardrails", floorceil:"Floor & ceiling",
   yale:"Yale Endowment", vpw:"Variable percentage (VPW)"};
-/* First-year spending under the chosen strategy, in today's dollars, with the
-   same minimum and maximum runDrawdown applies. */
-function ddFirstYearSpend(o){
-  var w = o.strategy === "vpw"
-    ? Math.max(0, pmtStart((o.vpwRate || 0) / 100, o.years, o.initial, o.vpwFV || 0))
-    : o.initial * o.initialPct / 100;
-  if (o.strategy !== "fixed"){
+/* Year one's spending under the chosen strategy, in today's dollars, with
+   the same minimum and maximum runDrawdown applies. */
+function ddFirstSpend(o, P){
+  var w = (P || ddPrep(o)).first;
+  if ((DD_STRAT[o.strategy] || {}).limits !== false){
     if (o.spendFloor > 0) w = Math.max(w, o.spendFloor);
     if (o.spendCeil > 0) w = Math.min(w, o.spendCeil);
   }
@@ -10194,7 +10998,7 @@ function ddFirstYearSpend(o){
 
 // Custom income and expense sources for the Drawdown tool: a pension, rental,
 // inheritance, future car purchase, and so on. Each item is independent of
-// the chosen withdrawal strategy \u2014 see runDrawdown() for how they're applied.
+// the chosen withdrawal strategy — see runDrawdown() for how they're applied.
 let ddIncomeItems = [];
 let ddExpenseItems = [];
 
@@ -10212,7 +11016,7 @@ function ddRetireAgeVal() {
 let ddWdStages = [];
 let ddWdAgeMode = null;
 /* Stages in the order they take effect, with each one's working start year;
-   ties keep list order, matching ddFixedRateAt. */
+   ties keep list order, matching the engine. */
 function ddWdOrder(list) {
   return (list || []).map(function (st, i) {
     return {st: st, i: i, start: Math.max(2, Math.round(st.start || 0))};
@@ -10227,7 +11031,7 @@ function ddWdSpanText(sp) {
   var a = ageOn ? ddAgeVal(sp.from) : sp.from, b = ageOn ? ddAgeVal(sp.to) : sp.to;
   var unit = ageOn ? "age" : "year";
   return sp.from === sp.to ? unit + " " + fmtNum(a)
-    : (sp.from === 1 && !ageOn ? "through year " + fmtNum(b) : unit + "s " + fmtNum(a) + "\u2013" + fmtNum(b));
+    : (sp.from === 1 && !ageOn ? "through year " + fmtNum(b) : unit + "s " + fmtNum(a) + "–" + fmtNum(b));
 }
 function buildWdStages() {
   var ageOn = ddRetireAgeVal() != null;
@@ -10270,7 +11074,7 @@ function syncWdStages(o) {
     var live = x.start <= o.years && to >= x.start;
     var ageOn = ddRetireAge != null;
     if (span) span.textContent = !live ? "" : (ageOn ? "Age " : "Year ") +
-      fmtNum(ageOn ? ddAgeVal(x.start) : x.start) + " \u2013 " + fmtNum(ageOn ? ddAgeVal(to) : to);
+      fmtNum(ageOn ? ddAgeVal(x.start) : x.start) + " – " + fmtNum(ageOn ? ddAgeVal(to) : to);
     // a new retirement age moves the age a stage shows, not the year it starts
     var inp = $("ddWdStageList").querySelector("[data-wf='start'][data-wi='" + x.i + "']");
     if (inp && document.activeElement !== inp)
@@ -10281,7 +11085,7 @@ function syncWdStages(o) {
     note.textContent = x.start > o.years
       ? "This starts after the " + fmtNum(o.years) + " years of retirement above, so it has no effect."
       : !live ? "Another stage starts the same year and takes its place."
-      : o.initial > 0 ? "That\u0027s " + money(w) + " a year (" + money(w / 12) + "/mo) in today\u0027s dollars."
+      : o.initial > 0 ? "That's " + money(w) + " a year (" + money(w / 12) + "/mo) in today's dollars."
       : "";
   });
 }
@@ -10351,187 +11155,253 @@ $("ddWdStageList").addEventListener("focusout", function (e) {
   el.textContent = ddWdStages[i].name || def;
 });
 
-/* Resolves the Social Security mode/inputs into up to two independent
-   {annual, delay} streams (primary + spouse). Without a retirement age this
-   collapses to exactly the old behavior: one combined amount, one shared
-   delay taken from the "Starts after" input. With a retirement age set,
-   Manual mode reinterprets that same input as an absolute starting age
-   (still one shared stream), while Estimate mode drops it entirely and
-   drives each spouse's start straight off their own claiming age \u2014 letting
-   the two benefits begin in different years for the first time. */
-function ddSSTiming(retireAge) {
-  var ssMode = $("ddSSMode").value;
-  var couple = ssMode !== "none" && $("ddSSWho").value === "couple";
-  var out = { annual: 0, delay: 0, annual2: 0, delay2: 0 };
-  if (ssMode === "none") return out;
-
-  if (ssMode === "manual") {
-    var amt = num("ddSSAmount");
-    if (couple) amt += num("ddSSAmount2");
-    out.annual = amt;
-    var raw = num("ddSSDelay");
-    out.delay = retireAge != null ? Math.max(0, Math.round(raw - retireAge)) : Math.max(0, Math.round(raw));
-    return out;
-  }
-
-  // Estimate mode, with any spousal top-up as its own stream
-  return ssDrawdownStreams(num("ddSSIncome"), num("ddSSClaim"), num("ddSSIncome2"),
-    num("ddSSClaim2"), couple, retireAge, num("ddSSDelay"));
+/* ---- the inputs, saved, loaded and shared ----
+   Every field the simulator keeps: its key in the saved state, its element,
+   its kind and its default. Saving, loading, sharing, Reset and the input
+   listeners all work from this one list, and the engine turns the saved
+   state into its options (ddOptsFromState), so a saved scenario runs the
+   same wherever it's opened. Kinds: "money" (grouped digits), "money0" (the
+   same, blank when 0, since 0 means none), "num", "text" (kept as typed,
+   blank allowed), "select" (kept as text) and "pick" (a select of numbers),
+   "check" (a tick box). */
+var DD_STATE = [
+  ["initial", "ddInitial", "money", 1000000],
+  ["years", "ddYears", "num", 30],
+  ["stock", "ddStock", "num", 60],
+  ["stockEnd", "ddStockEnd", "text", ""],
+  ["fee", "ddFee", "num", 0],
+  ["strategy", "ddStrategy", "select", "fixed"],
+  ["rate", "ddRate", "num", 4],
+  ["guardBand", "ddGuardBand", "num", 20],
+  ["adjust", "ddAdjust", "num", 10],
+  ["guardBandLo", "ddGuardBandLo", "num", 20],
+  ["adjustLo", "ddAdjustLo", "num", 10],
+  ["gkFinal", "ddGkFinal", "check", false],
+  ["gkFinalYrs", "ddGkFinalYrs", "num", 15],
+  ["floor", "ddFloor", "num", 10],
+  ["ceil", "ddCeil", "num", 10],
+  ["yaleWeight", "ddYaleWeight", "num", 70],
+  ["yaleRate", "ddYaleRate", "num", 5],
+  ["spendFloor", "ddSpendFloor", "money0", 0],
+  ["spendCeil", "ddSpendCeil", "money0", 0],
+  ["vpwRate", "ddVpwRate", "num", 3.8],
+  ["vpwFV", "ddVpwFV", "money", 0],
+  ["legacyGoal", "ddLegacyGoal", "money0", 0],
+  ["ssMode", "ddSSMode", "select", "none"],
+  ["ssWho", "ddSSWho", "select", "single"],
+  ["ssIncome", "ddSSIncome", "money", 85000],
+  ["ssClaim", "ddSSClaim", "pick", 67],
+  ["ssIncome2", "ddSSIncome2", "money", 85000],
+  ["ssClaim2", "ddSSClaim2", "pick", 67],
+  ["ssAmount", "ddSSAmount", "money", 33000],
+  ["ssAmount2", "ddSSAmount2", "money", 33000],
+  ["ssDelay", "ddSSDelay", "num", 0],
+  ["retireAge", "ddRetireAge", "text", ""]
+];
+/* Settings added after scenarios were first saved. Loading a full set of
+   inputs that doesn't have one (a scenario saved before it, or a hand-off
+   from another tool) sets it to its default, rather than keeping whatever
+   was on screen. */
+var DD_LATER = ["gkFinal", "gkFinalYrs"];
+const DD_DEFAULTS = {};
+DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
+function ddFieldRead(f){
+  var el = $(f[1]);
+  if (f[2] === "check") return el.checked;
+  if (f[2] === "text") return el.value.trim();
+  if (f[2] === "select") return el.value;
+  return num(f[1]);
 }
-
-function readDD() {
-  var strat = $("ddStrategy").value;
-  var retireAge = ddRetireAgeVal();
-  var ssTiming = ddSSTiming(retireAge);
-  return {
-    initial: num("ddInitial"),
-    years: Math.min(60, Math.max(1, Math.round(num("ddYears")))),
-    stockPct: Math.min(100, Math.max(0, num("ddStock"))),
-    stockPctEnd: (function(){ var v = $("ddStockEnd").value.trim(); return v === "" ? null : Math.min(100, Math.max(0, parseFloat(v) || 0)); })(),
-    fee: num("ddFee"),
-    strategy: strat,
-    initialPct: num("ddRate"),
-    wdStages: strat === "fixed" ? ddWdStages.map(function (x) { return Object.assign({}, x); }) : [],
-    guardBand: num("ddGuardBand"),
-    adjustPct: num("ddAdjust"),
-    guardBandLo: num("ddGuardBandLo"),
-    raisePct: num("ddAdjustLo"),
-    gkFinalYears: $("ddGkFinal").checked ? Math.max(0, Math.round(num("ddGkFinalYrs"))) : 0,
-    floorPct: num("ddFloor"),
-    ceilPct: num("ddCeil"),
-    yaleWeight: Math.min(100, Math.max(0, num("ddYaleWeight"))),
-    yaleRate: Math.max(0, num("ddYaleRate")),
-    spendFloor: num("ddSpendFloor"),
-    spendCeil: num("ddSpendCeil"),
-    vpwRate: num("ddVpwRate"),
-    vpwFV: num("ddVpwFV"),
-    ssAnnual: ssTiming.annual,
-    ssDelayYears: ssTiming.delay,
-    ssAnnual2: ssTiming.annual2,
-    ssDelayYears2: ssTiming.delay2,
-    ssAnnual3: ssTiming.annual3 || 0,
-    ssDelayYears3: ssTiming.delay3 || 0,
-    ssAnnualTotal: ddSSAnnual(),
-    legacyGoal: num("ddLegacyGoal") || 0,
-    retireAge: retireAge,
-    fromYear: HIST_START,
-    incomeItems: ddIncomeItems,
-    expenseItems: ddExpenseItems
-  };
+function ddFieldWrite(f, v){
+  var el = $(f[1]);
+  if (f[2] === "check") el.checked = !!v;
+  else if (f[2] === "money") el.value = groupDigits(v, true);
+  else if (f[2] === "money0") el.value = v > 0 ? groupDigits(v, true) : "";
+  else el.value = String(v);
 }
-
-const DD_DEFAULTS = {initial:1000000, years:30, stock:60, fee:0, strategy:"fixed", rate:4,
-  guardBand:20, adjust:10, guardBandLo:20, adjustLo:10, gkFinal:false, gkFinalYrs:15, floor:10, ceil:10, yaleWeight:70, yaleRate:5, spendFloor:0,
-  spendCeil:0, vpwRate:3.8, vpwFV:0,
-  stockEnd:"", legacyGoal:0,
-  ssMode:"none", ssWho:"single", ssIncome:85000, ssClaim:67, ssIncome2:85000, ssClaim2:67,
-  ssAmount:33000, ssAmount2:33000, ssDelay:0, retireAge:""};
-/* Raw form state for scenario save/load and Reset \u2014 distinct from readDD(),
-   which resolves Social Security to a derived annual dollar figure instead of
-   keeping the mode/income/claim-age inputs that produced it. ddIncomeItems and
-   ddExpenseItems are mutated in place (never reassigned) because wireItemList()
-   closed over these two array references once, at page load. */
+/* Raw form state for scenario save/load, links and Reset: the fields as
+   typed, not the engine's options. ddIncomeItems and ddExpenseItems are
+   mutated in place (never reassigned) because wireItemList() closed over
+   these two array references once, at page load. */
 function readDDState(){
-  return {
-    initial:num("ddInitial"), years:num("ddYears"), stock:num("ddStock"), fee:num("ddFee"),
-    strategy:$("ddStrategy").value, rate:num("ddRate"),
-    guardBand:num("ddGuardBand"), adjust:num("ddAdjust"),
-    guardBandLo:num("ddGuardBandLo"), adjustLo:num("ddAdjustLo"),
-    gkFinal:$("ddGkFinal").checked, gkFinalYrs:num("ddGkFinalYrs"),
-    floor:num("ddFloor"), ceil:num("ddCeil"),
-    yaleWeight:num("ddYaleWeight"), yaleRate:num("ddYaleRate"),
-    spendFloor:num("ddSpendFloor"),
-    spendCeil:num("ddSpendCeil"),
-    vpwRate:num("ddVpwRate"), vpwFV:num("ddVpwFV"),
-    stockEnd:$("ddStockEnd").value.trim(),
-    legacyGoal:num("ddLegacyGoal") || 0,
-    ssMode:$("ddSSMode").value, ssWho:$("ddSSWho").value,
-    ssIncome:num("ddSSIncome"), ssClaim:num("ddSSClaim"),
-    ssIncome2:num("ddSSIncome2"), ssClaim2:num("ddSSClaim2"),
-    ssAmount:num("ddSSAmount"), ssAmount2:num("ddSSAmount2"), ssDelay:num("ddSSDelay"),
-    retireAge: $("ddRetireAge").value.trim(),
-    incomeItems: ddIncomeItems.map(x => Object.assign({}, x)),
-    expenseItems: ddExpenseItems.map(x => Object.assign({}, x)),
-    wdStages: ddWdStages.map(x => Object.assign({}, x))
-  };
+  var d = {};
+  DD_STATE.forEach(function (f) { d[f[0]] = ddFieldRead(f); });
+  d.incomeItems = ddIncomeItems.map(x => Object.assign({}, x));
+  d.expenseItems = ddExpenseItems.map(x => Object.assign({}, x));
+  d.wdStages = ddWdStages.map(x => Object.assign({}, x));
+  return d;
 }
 function writeDDState(d){
-  if (d.initial != null) $("ddInitial").value = groupDigits(d.initial, true);
-  if (d.years != null) $("ddYears").value = d.years;
-  if (d.stock != null) $("ddStock").value = d.stock;
-  if (d.fee != null) $("ddFee").value = d.fee;
-  if (d.strategy) $("ddStrategy").value = d.strategy;
-  if (d.rate != null) $("ddRate").value = d.rate;
-  if (d.guardBand != null) $("ddGuardBand").value = d.guardBand;
-  if (d.adjust != null) $("ddAdjust").value = d.adjust;
+  // A full set of inputs (a load, Reset, the guide, a hand-off) sets anything
+  // it doesn't mention that came later than it; a partial fill leaves the
+  // rest be.
+  var full = d.rate != null || d.strategy != null;
+  if (full) {
+    d = Object.assign({}, d);
+    DD_LATER.forEach(function (k) { if (d[k] == null) d[k] = DD_DEFAULTS[k]; });
+  }
   // Saved before the two guardrails were split: the lower one matches the
-  // upper, as it did then, and the final-years rule is off.
-  const lo = d.guardBandLo != null ? d.guardBandLo : d.guardBand;
-  const raise = d.adjustLo != null ? d.adjustLo : d.adjust;
-  if (lo != null) $("ddGuardBandLo").value = lo;
-  if (raise != null) $("ddAdjustLo").value = raise;
-  if (d.gkFinal != null || d.strategy) $("ddGkFinal").checked = !!d.gkFinal;
-  if (d.gkFinalYrs != null) $("ddGkFinalYrs").value = d.gkFinalYrs;
+  // upper, as it did then.
+  if (d.guardBandLo == null && d.guardBand != null) d = Object.assign({}, d, {guardBandLo: d.guardBand});
+  if (d.adjustLo == null && d.adjust != null) d = Object.assign({}, d, {adjustLo: d.adjust});
+  DD_STATE.forEach(function (f) { if (d[f[0]] != null) ddFieldWrite(f, d[f[0]]); });
   ddGkFinalSync();
-  if (d.floor != null) $("ddFloor").value = d.floor;
-  if (d.ceil != null) $("ddCeil").value = d.ceil;
-  if (d.yaleWeight != null) $("ddYaleWeight").value = d.yaleWeight;
-  if (d.yaleRate != null) $("ddYaleRate").value = d.yaleRate;
-  // 0 means "no limit", so it shows as an empty box rather than a $0 limit
-  if (d.spendFloor != null) $("ddSpendFloor").value = d.spendFloor > 0 ? groupDigits(d.spendFloor, true) : "";
-  if (d.spendCeil != null) $("ddSpendCeil").value = d.spendCeil > 0 ? groupDigits(d.spendCeil, true) : "";
-  if (d.vpwRate != null) $("ddVpwRate").value = String(d.vpwRate);
-  if (d.vpwFV != null) $("ddVpwFV").value = groupDigits(d.vpwFV, true);
-  if (d.stockEnd != null) $("ddStockEnd").value = d.stockEnd;
-  if (d.legacyGoal != null) $("ddLegacyGoal").value = d.legacyGoal > 0 ? groupDigits(d.legacyGoal, true) : "";
-  if (d.ssMode) $("ddSSMode").value = d.ssMode;
-  if (d.ssWho) $("ddSSWho").value = d.ssWho;
-  if (d.ssIncome != null) $("ddSSIncome").value = groupDigits(d.ssIncome, true);
-  if (d.ssClaim != null) $("ddSSClaim").value = d.ssClaim;
-  if (d.ssIncome2 != null) $("ddSSIncome2").value = groupDigits(d.ssIncome2, true);
-  if (d.ssClaim2 != null) $("ddSSClaim2").value = d.ssClaim2;
-  if (d.ssAmount != null) $("ddSSAmount").value = groupDigits(d.ssAmount, true);
-  if (d.ssAmount2 != null) $("ddSSAmount2").value = groupDigits(d.ssAmount2, true);
-  if (d.ssDelay != null) $("ddSSDelay").value = d.ssDelay;
-  if (d.retireAge != null) $("ddRetireAge").value = d.retireAge;
   if (Array.isArray(d.incomeItems))
     ddIncomeItems.splice(0, ddIncomeItems.length, ...d.incomeItems.map(x => Object.assign({}, x)));
   if (Array.isArray(d.expenseItems))
     ddExpenseItems.splice(0, ddExpenseItems.length, ...d.expenseItems.map(x => Object.assign({}, x)));
-  // A full set of inputs (a load, Reset, the guide) replaces the spending
-  // stages, clearing them when it has none; a partial fill leaves them be.
-  if (Array.isArray(d.wdStages) || d.rate != null){
+  // A full set replaces the spending stages, clearing them when it has none.
+  if (Array.isArray(d.wdStages) || full){
     ddWdStages.splice(0, ddWdStages.length,
       ...(Array.isArray(d.wdStages) ? d.wdStages : []).map(x => Object.assign({}, x)));
     buildWdStages();
   }
 }
-function ddSSAnnual() {
-  var mode = $("ddSSMode").value;
-  if (mode === "none") return 0;
-  var couple = $("ddSSWho").value === "couple";
-  if (mode === "manual") {
-    var amt = num("ddSSAmount");
-    if (couple) amt += num("ddSSAmount2");
-    return amt;
-  }
-  if (mode === "est") {
-    return ssDrawdownStreams(num("ddSSIncome"), num("ddSSClaim"), num("ddSSIncome2"),
-      num("ddSSClaim2"), couple, null, 0).total;
-  }
-  return 0;
+/* The engine's options from the fields on screen. */
+function readDD(){ return ddOptsFromState(readDDState()); }
+
+/* ---- heavy work, off the page ----
+   Monte Carlo and the searches run in a copy of the Plan Optimizer's worker
+   (assets/plan.<hash>.js has the whole engine), so the page keeps drawing.
+   Where a worker can't start, they run here once the page has drawn. Each
+   kind of job is a lane with one job at a time: a newer request waits for
+   the running one, replacing any already waiting, and a result that a newer
+   request has overtaken is dropped. */
+var DD_WORKER_URL = "/assets/plan.618fcd9528.js";
+var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
+function ddGetWorker(){
+  if (ddWorker || ddWorkerDead) return ddWorker;
+  try {
+    ddWorker = new Worker(DD_WORKER_URL);
+    ddWorker.onmessage = function (e) {
+      var v = e.data;
+      if (v && v.type === "dd") ddFinish(v.lane, v.id, v.res);
+    };
+    ddWorker.onerror = function (e) {
+      if (e && e.preventDefault) e.preventDefault();
+      ddWorkerDead = true;
+      try { ddWorker.terminate(); } catch (x) {}
+      ddWorker = null;
+      // Whatever was running, finish here instead.
+      Object.keys(ddLanes).forEach(function (k) { var L = ddLanes[k]; if (L.busy) ddRunHere(k, L.busy); });
+    };
+  } catch (e) { ddWorkerDead = true; ddWorker = null; }
+  return ddWorker;
 }
+function ddRunHere(lane, req){
+  setTimeout(function () {
+    var res = null;
+    try { res = ddJob(req.job, req.args); } catch (e) { res = {error: String(e)}; }
+    ddFinish(lane, req.id, res);
+  }, 30);
+}
+function ddRun(lane, job, args, done){
+  var L = ddLanes[lane] || (ddLanes[lane] = {busy: null, next: null});
+  var req = {id: ++ddJobSeq, job: job, args: args, done: done};
+  if (L.busy) { L.next = req; return; }
+  ddStartJob(lane, L, req);
+}
+function ddStartJob(lane, L, req){
+  L.busy = req;
+  var w = ddGetWorker();
+  if (w) {
+    try { w.postMessage({type: "dd", id: req.id, lane: lane, job: req.job, args: req.args}); return; }
+    catch (e) {}
+  }
+  ddRunHere(lane, req);
+}
+function ddFinish(lane, id, res){
+  var L = ddLanes[lane];
+  if (!L || !L.busy || L.busy.id !== id) return;
+  var req = L.busy;
+  L.busy = null;
+  if (L.next) { var nx = L.next; L.next = null; ddStartJob(lane, L, nx); return; }
+  if (res && !res.error) req.done(res);
+}
+
 /* The historical view is cheap and renders on every keystroke as it always
-   has. The Monte Carlo view runs 5,000 retirements and is two orders of
-   magnitude heavier, so held keys are coalesced -- the same 160ms treatment
-   scheduleMC() already gives the retirement chart. Every other entry point
-   (tab switch, mode toggle, scenario load, table click) still calls
-   renderDrawdown directly and is unaffected. */
+   has. The Monte Carlo view runs 5,000 retirements in the worker, so held
+   keys are coalesced -- the same 160ms treatment scheduleMC() already gives
+   the retirement chart. Every other entry point (tab switch, mode toggle,
+   scenario load, table click) still calls renderDrawdown directly. */
 var ddTypeTimer = null;
 function renderDrawdownTyping(){
   if (ddMode !== "mc"){ clearTimeout(ddTypeTimer); renderDrawdown(); return; }
   clearTimeout(ddTypeTimer);
   ddTypeTimer = setTimeout(renderDrawdown, 160);
+}
+
+/* The return assumptions the sensitivity table tries: history less 2 and 1
+   points a year, as it was, and 1 point better. */
+var DD_DRAGS = [2, 1, 0, -1];
+/* The claiming ages the Social Security table tries, each run with every
+   stream rebuilt: moving one spouse's claim also moves when the spousal
+   top-up starts and how much it is. null unless benefits are estimated. */
+function ddSSRows(o, d){
+  if (d.ssMode !== "est" || !(d.ssIncome > 0)) return null;
+  var ages = [62, 64, 67, 70], both = d.ssWho === "couple";
+  var ov = function (st) {
+    return {ssAnnual: st.annual, ssDelayYears: st.delay, ssAnnual2: st.annual2,
+            ssDelayYears2: st.delay2, ssAnnual3: st.annual3, ssDelayYears3: st.delay3};
+  };
+  var mk = function (who) {
+    return ages.map(function (a) {
+      var st = who === 1
+        ? ssDrawdownStreams(d.ssIncome, a, d.ssIncome2, d.ssClaim2, both, o.retireAge, d.ssDelay)
+        : ssDrawdownStreams(d.ssIncome, d.ssClaim, d.ssIncome2, a, true, o.retireAge, d.ssDelay);
+      return {age: a, annual: who === 1 ? st.own1 + st.top1 : st.own2 + st.top2, ov: ov(st),
+        current: a === Math.round(who === 1 ? d.ssClaim : d.ssClaim2)};
+    });
+  };
+  var out = {rows1: mk(1), rows2: both ? mk(2) : null};
+  out.flat = out.rows1.concat(out.rows2 || []).map(function (r) { return r.ov; });
+  return out;
+}
+function ddRateClass(r){ return r >= 0.95 ? "pos" : r >= 0.85 ? "gold" : "neg"; }
+function ddSensTable(rows, baseLabel){
+  $("ddSensPanel").hidden = false;
+  $("ddSensTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
+    "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Return assumption</th>" +
+    "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+    "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+    rows.map(function (r, i) {
+      var drag = DD_DRAGS[i];
+      var label = drag === 0 ? baseLabel : (drag > 0 ? "-" + drag + "% / yr" : "+" + (-drag) + "% / yr");
+      var wt = drag === 0 ? "font-weight:600" : "";
+      return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
+        "<td style='text-align:right;padding:5px 8px' class='" + ddRateClass(r.rate) + "'>" + pctStr(r.rate, 1) + "</td>" +
+        "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
+    }).join("") + "</tbody></table>";
+}
+/* The claiming-age comparison: each row's age, benefit and result. res holds
+   each row's {rate, median}, in the order of ssx.flat. */
+function ddSSTables(ssx, res){
+  if (!ssx || !res) { $("ddSSBreakEvenPanel").hidden = true; return; }
+  $("ddSSBreakEvenPanel").hidden = false;
+  var build = function (rows, off) {
+    return "<table style='width:100%;border-collapse:collapse'>" +
+      "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
+      "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
+      "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
+      "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
+      rows.map(function (r, i) {
+        var R = res[off + i], wt = r.current ? "font-weight:600" : "", cur = r.current ? " ◄" : "";
+        return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
+          "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
+          "<td style='text-align:right;padding:5px 8px' class='" + ddRateClass(R.rate) + "'>" + pctStr(R.rate, 1) + "</td>" +
+          "<td style='text-align:right;padding:5px 8px'>" + money(R.median) + "</td></tr>";
+      }).join("") + "</tbody></table>";
+  };
+  $("ddSSBreakEvenTable").innerHTML = ssx.rows2
+    ? "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + build(ssx.rows1, 0) +
+      "<p style='font-weight:600;margin:12px 0 6px'>Spouse's claiming age (yours held constant)</p>" + build(ssx.rows2, ssx.rows1.length)
+    : build(ssx.rows1, 0);
+}
+function ddLegacy(met, total, note){
+  $("ddLegacyWrap").hidden = false;
+  $("ddLegacy").textContent = pctStr(met / total, 1);
+  $("ddLegacy").className = "v " + (met / total >= 0.75 ? "pos" : met / total >= 0.5 ? "gold" : "neg");
+  $("ddLegacyNote").textContent = note;
 }
 
 function renderDrawdown() {
@@ -10556,13 +11426,12 @@ function renderDrawdown() {
   $("ddSSAmount2Wrap").hidden = !(ssMode === "manual" && ssCouple);
   $("ddSSIncomeLabel").textContent = ssCouple ? "Your income" : "Current income";
   $("ddSSAmountLabel").textContent = ssCouple ? "Your annual benefit, today's dollars" : "Annual benefit, today's dollars";
-  var ssAmt = ddSSAnnual();
-  $("ddSSShow").textContent = ssAmt > 0 ? money(ssAmt) + "/yr" : "Not included";
+  var d = readDDState(), o = ddOptsFromState(d);
+  $("ddSSShow").textContent = o.ssAnnualTotal > 0 ? money(o.ssAnnualTotal) + "/yr" : "Not included";
   if (ssMode === "est"){
-    var e = ssEstimate(num("ddSSIncome"), 40, Math.min(70, Math.max(62, num("ddSSClaim"))));
+    var e = ssEstimate(d.ssIncome, 40, Math.min(70, Math.max(62, d.ssClaim)));
     if (ssCouple) {
-      var st = ssDrawdownStreams(num("ddSSIncome"), num("ddSSClaim"), num("ddSSIncome2"),
-        num("ddSSClaim2"), true, null, 0);
+      var st = ssDrawdownStreams(d.ssIncome, d.ssClaim, d.ssIncome2, d.ssClaim2, true, null, 0);
       var m1 = (st.own1 + st.top1) / 12, m2 = (st.own2 + st.top2) / 12;
       $("ddSSEstNote").textContent = "About " + money(m1) + "/mo for you and " + money(m2) +
         "/mo for your spouse, " + money(m1 + m2) + "/mo combined, in today's dollars" +
@@ -10570,10 +11439,9 @@ function renderDrawdown() {
           "/mo once you've both claimed" : "") + ".";
     } else {
       $("ddSSEstNote").textContent = "About " + money(e.monthly) + " a month in today's dollars, claiming at " +
-        Math.round(num("ddSSClaim")) + ".";
+        Math.round(d.ssClaim) + ".";
     }
   }
-  var o = readDD();
   var strat = o.strategy;
   $("ddGuardWrap").hidden = (strat !== "guardrails");
   $("ddFloorWrap").hidden = (strat !== "floorceil");
@@ -10586,20 +11454,19 @@ function renderDrawdown() {
   var clash = strat !== "fixed" && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
   $("ddSpendNote2").hidden = !clash;
   if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
+  var P = ddPrep(o);
   if (strat === "vpw"){
     var conv = (o.stockPct * 5.0 + (100 - o.stockPct) * 1.9) / 100;
-    var r1 = o.initial > 0 ? ddFirstYearSpend(o) / o.initial : 0;
+    var r1 = o.initial > 0 ? ddFirstSpend(o, P) / o.initial : 0;
     $("ddVpwNote").innerHTML = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the " +
       "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + o.stockPct + "/" +
       (100 - o.stockPct) + " mix.";
   }
 
   if (strat === "yale") {
-    var w = Math.min(100, Math.max(0, num("ddYaleWeight")));
-    var yr = Math.max(0, num("ddYaleRate"));
     $("ddYaleNote").hidden = false;
-    $("ddYaleNote").innerHTML = "Each year: <b>" + w + "%</b> of last year's spending (adjusted for inflation) " +
-      "plus <b>" + (100 - w) + "%</b> of <b>" + yr + "%</b> of the current portfolio.";
+    $("ddYaleNote").innerHTML = "Each year: <b>" + o.yaleWeight + "%</b> of last year's spending (adjusted for inflation) " +
+      "plus <b>" + (100 - o.yaleWeight) + "%</b> of <b>" + o.yaleRate + "%</b> of the current portfolio.";
   } else {
     $("ddYaleNote").hidden = true;
   }
@@ -10623,365 +11490,239 @@ function renderDrawdown() {
     ? "Percentage taken each year" : "Starting withdrawal rate";
   $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
 
-  var firstW = ddFirstYearSpend(o);
+  var firstW = ddFirstSpend(o, P);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
-    ? "That\u0027s " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above" +
+    ? "That's " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above" +
       (strat === "fixed" && ddWdStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
       ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
     : "Enter your portfolio value above to see this in dollars.";
   if (strat === "fixed") syncWdStages(o);
 
   if (o.initial <= 0) {
-    setBig("ddSuccess", "\u2014"); setBig("ddMedian", "\u2014"); setBig("ddWorst", "\u2014");
+    setBig("ddSuccess", "—"); setBig("ddMedian", "—"); setBig("ddWorst", "—");
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Enter your portfolio value to run the simulation.</div>";
     return;
   }
 
-  if (ddMode === "hist") {
-    var H = historicalBacktest(o);
-    if (!H.total) {
-      /* The start year has been pulled so far forward that no complete
-         retirement of this length fits before the data ends. Say so rather than
-         reporting a 0% success rate, which would read as a failure. */
-      setBig("ddSuccess", "\u2014"); setBig("ddMedian", "\u2014"); setBig("ddWorst", "\u2014");
-      $("ddSuccessNote").textContent = ""; $("ddWorstNote").textContent = "";
-      $("ddPeriods").textContent = "no complete runs";
-      $("ddBadge").textContent = "\u2014";
-      $("ddFromNote").innerHTML = "<b class='warn'>Too long for the " + HIST_START + "\u2013" +
-        (HIST_START + HIST_STOCK.length - 1) + " data</b>";
-      $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Nothing to test: " +
-        "a " + o.years + "-year retirement starting in " + o.fromYear +
-        " has not finished yet.</div>";
-      return;
-    }
-    $("ddPeriods").textContent = H.total + " start years";
-    $("ddFromNote").innerHTML = "<b>" + H.total + "</b> periods, " +
-      H.first + "\u2013" + (HIST_START + HIST_STOCK.length - o.years);
-    $("ddBadge").textContent = H.first + "\u2013" + (HIST_START + HIST_STOCK.length - 1);
-    setBig("ddSuccess", pctStr(H.successRate, 1));
-    $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
-    $("ddSuccessNote").textContent = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
-    setBig("ddMedian", money(H.medianEnd));
-    setBig("ddWorst", money(H.worstEnd));
-    $("ddWorstNote").textContent = H.failYears.length
-      ? "Ran out in " + H.failYears.length + " of " + H.total + " retirements"
-      : "Never ran out";
-
-    var verdict;
-    if (H.successRate >= 0.99) verdict = "<b class='pos'>This plan survived every historical period.</b> Including the Great Depression, the 1970s stagflation, and the 2008 crash.";
-    else if (H.successRate >= 0.90) verdict = "<b class='gold'>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") + (H.failYears.length > 6 ? " and others" : "") + ", the worst sequences on record.";
-    else verdict = "<b class='neg'>This plan ran out of money in " + H.failYears.length + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.";
-    $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + verdict + "</div>";
-
-    // Legacy goal
-    if (o.legacyGoal > 0) {
-      var metLegacy = H.runs.filter(function(r){ return r.endReal >= o.legacyGoal; }).length;
-      $("ddLegacyWrap").hidden = false;
-      $("ddLegacy").textContent = pctStr(metLegacy / H.runs.length, 1);
-      $("ddLegacy").className = "v " + (metLegacy/H.runs.length >= 0.75 ? "pos" : metLegacy/H.runs.length >= 0.5 ? "gold" : "neg");
-      $("ddLegacyNote").textContent = metLegacy + " of " + H.total + " periods";
-    } else {
-      $("ddLegacyWrap").hidden = true;
-    }
-
-    // show/hide toggle and sync button state (toggle is now on the chart h2)
-    $("ddViewWrap").hidden = false;
-    $("segDDView").querySelectorAll("button").forEach(function (b) {
-      b.classList.toggle("on", b.getAttribute("data-ddview") === ddView);
-    });
-
-    // "How each starting year fared" table
-    $("ddYearsPanel").hidden = false;
-    // default to the first failure if one exists (the toughest test), or the
-    // worst-surviving period otherwise, but the person can click any row
-    if (ddSelectedYear === null || !H.runs.some(function (r) { return r.startYear === ddSelectedYear; })) {
-      var worst = H.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[0];
-      ddSelectedYear = (H.firstFail || worst).startYear;
-    }
-    var sortedRuns = H.runs.slice().sort(function (a, b) {
-      var av = ddSortValue(a, ddSortCol), bv = ddSortValue(b, ddSortCol);
-      var cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
-      return ddSortDir === "asc" ? cmp : -cmp;
-    });
-    $("ddStartTable").querySelector("tbody").innerHTML = sortedRuns.map(function (r) {
-      return "<tr class='ddrow" + (r.startYear === ddSelectedYear ? " sel" : "") +
-        "' data-year='" + r.startYear + "' tabindex='0'><td>" + r.startYear + "</td><td class='" +
-        (r.depleted ? "neg" : "pos") + "'>" +
-        ddOutcomeText(r) + "</td><td>" +
-        money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td></tr>";
-    }).join("");
-    $("ddStartTable").querySelectorAll("th.sortcol").forEach(function (th) {
-      th.classList.remove("sort-asc", "sort-desc");
-      if (th.getAttribute("data-sort") === ddSortCol) th.classList.add(ddSortDir === "asc" ? "sort-asc" : "sort-desc");
-    });
-
-    var show = H.runs.filter(function (r) { return r.startYear === ddSelectedYear; })[0] || H.runs[0];
-
-    // Portfolio balance chart: all years fan or single selected-year line
-    var maxY = o.years;
-    if (ddView === "all") {
-      setH2Text($("ddChartTitle"), "Every historical starting year");
-      var pts = [];
-      for (var y = 0; y <= maxY; y++) {
-        var vals = H.runs.map(function (r) {
-          return y === 0 ? o.initial : (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0);
-        }).sort(function (a, b) { return a - b; });
-        var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
-        pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
-      }
-      var ddTraces = H.runs.map(function (r) {
-        var ln = [o.initial];
-        for (var y2 = 1; y2 <= maxY; y2++) ln.push(r.rows[y2 - 1] ? r.rows[y2 - 1].realEnd : 0);
-        return ln;
-      });
-      ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0,
-        {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:ddTraces}});
-      histLegend("legendDD");
-      $("ddChartNote").hidden = false;
-      $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
-        " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
-    } else {
-      setH2Text($("ddChartTitle"), "Starting in " + ddSelectedYear);
-      var singlePts = [{ year: 0, base: o.initial, hi: o.initial, lo: 0 }];
-      show.rows.forEach(function (r) {
-        singlePts.push({ year: r.year, base: r.realEnd, hi: r.realEnd, lo: 0 });
-      });
-      ddPoints = paintChart("chartDD", singlePts, maxY, "band", [], ddRetireAge != null ? ddRetireAge : 0, { enhanced: true, noLoLine: true });
-      $("legendDD").innerHTML = swatch("#e9b872", "Portfolio balance, in today\u2019s dollars");
-      $("ddChartNote").hidden = false;
-      $("ddChartNote").innerHTML = "Balance in today\u2019s dollars, retiring in " + ddSelectedYear + ".";
-    }
-
-    // "Year by year" detail table (always shows selected year)
-    setH2Text($("ddDetailTitle"), "Year by year, retiring in " + show.startYear);
-    $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
-      (show.depleted
-        ? "This one ran out of money " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + "."
-        : "This one survived the full " + o.years + " years.");
-    $("ddTableYearHeader").textContent = ddRetireAge != null ? "Age" : "Year";
-    fillDDTable(show);
-
-    // Income section: follows the same toggle, no separate control
-    $("ddSpendYearView").hidden = (ddView !== "year");
-    $("ddSpendAllView").hidden = (ddView !== "all");
-    if (ddView === "all") {
-      setH2Text($("ddIncomeSectionTitle"), "What your income looked like");
-      setH2Text($("ddIncomeChartTitle"), "Spending through retirement");
-      renderSpendStatsAll(H, o);
-      renderIncomeChartAll(H, o);
-      $("ddIncomeNote").textContent = "Median, 10th\u201390th and 25th\u201375th percentile spending by " +
-        "year of retirement, across all " + H.total + " historical starting years.";
-    } else {
-      setH2Text($("ddIncomeSectionTitle"), "What your income looked like starting in " + show.startYear);
-      setH2Text($("ddIncomeChartTitle"), "Spending through retirement, retiring in " + show.startYear);
-      renderSpendStats(show, "Showing the period selected above.");
-      renderIncomeChart(show);
-      $("ddIncomeNote").textContent = "";
-    }
-
-    // Return sensitivity
-    $("ddSensPanel").hidden = false;
-    (function() {
-      var drags = [2, 1, 0, -1];
-      var rows = drags.map(function(drag) {
-        var oS = Object.assign({}, o, {returnDrag: drag});
-        var S = historicalBacktest(oS);
-        return {drag:drag, rate:S.successRate, median:S.medianEnd};
-      });
-      $("ddSensTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
-        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Return assumption</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
-        rows.map(function(r) {
-          var label = r.drag === 0 ? "Baseline (historical)" : (r.drag > 0 ? "-" + r.drag + "% / yr" : "+" + (-r.drag) + "% / yr");
-          var wt = r.drag === 0 ? "font-weight:600" : "";
-          return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
-            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
-            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
-        }).join("") + "</tbody></table>";
-    })();
-
-    // SS break-even (estimate mode, single or couple)
-    (function() {
-      var ssMode = $("ddSSMode").value;
-      if (ssMode !== "est" || !(num("ddSSIncome") > 0)) { $("ddSSBreakEvenPanel").hidden = true; return; }
-      $("ddSSBreakEvenPanel").hidden = false;
-      var testAges = [62, 64, 67, 70];
-      var buildSSTable = function(rows) {
-        return "<table style='width:100%;border-collapse:collapse'>" +
-          "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
-          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
-          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
-          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
-          rows.map(function(r) {
-            var wt = r.current ? "font-weight:600" : "";
-            var cur = r.current ? " ◄" : "";
-            return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
-              "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
-              "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
-              "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
-          }).join("") + "</tbody></table>";
-      };
-      var ssIncome1 = num("ddSSIncome"), curAge1 = num("ddSSClaim");
-      var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
-      var ssWho = $("ddSSWho").value, ssBoth = ssWho === "couple";
-      // Every stream is rebuilt for each row: moving one spouse's claim can
-      // also move when the spousal top-up starts and how much it is.
-      var ssOpts = function(st) {
-        return {ssAnnual: st.annual, ssDelayYears: st.delay, ssAnnual2: st.annual2,
-                ssDelayYears2: st.delay2, ssAnnual3: st.annual3, ssDelayYears3: st.delay3};
-      };
-      var ssRows1 = testAges.map(function(a) {
-        var st = ssDrawdownStreams(ssIncome1, a, ssIncome2, curAge2, ssBoth, o.retireAge, num("ddSSDelay"));
-        var S = historicalBacktest(Object.assign({}, o, ssOpts(st)));
-        return {age:a, annual:st.own1 + st.top1, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
-      });
-      if (ssBoth) {
-        var ssRows2 = testAges.map(function(a) {
-          var st = ssDrawdownStreams(ssIncome1, curAge1, ssIncome2, a, true, o.retireAge, num("ddSSDelay"));
-          var S = historicalBacktest(Object.assign({}, o, ssOpts(st)));
-          return {age:a, annual:st.own2 + st.top2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
-        });
-        $("ddSSBreakEvenTable").innerHTML =
-          "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + buildSSTable(ssRows1) +
-          "<p style='font-weight:600;margin:12px 0 6px'>Spouse's claiming age (yours held constant)</p>" + buildSSTable(ssRows2);
-      } else {
-        $("ddSSBreakEvenTable").innerHTML = buildSSTable(ssRows1);
-      }
-    })();
-
-  } else {
-    var trials = 5000;
-    var M = monteCarloDrawdown(o, trials, mcSeed);
-    $("ddPeriods").textContent = trials.toLocaleString() + " runs";
-    $("ddBadge").textContent = trials.toLocaleString() + " simulations";
-    setBig("ddSuccess", pctStr(M.successRate, 1));
-    $("ddSuccess").className = "v " + (M.successRate >= 0.95 ? "pos" : M.successRate >= 0.85 ? "gold" : "neg");
-    $("ddSuccessNote").textContent = M.survived.toLocaleString() + " of " + trials.toLocaleString() + " runs lasted " + o.years + " years";
-    setBig("ddMedian", money(M.medianEnd));
-    setBig("ddWorst", money(M.p10End));
-    $("ddWorstNote").textContent = "10th percentile outcome";
-    $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>Each run draws " +
-      o.years + " years at random from the " + HIST_START + "\u2013" +
-      (HIST_START + HIST_STOCK.length - 1) + " record. This captures the range of possible " +
-      "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
-
-    // Legacy goal
-    if (o.legacyGoal > 0) {
-      var metLegacyMC = M.runs.filter(function(r){ return r.endReal >= o.legacyGoal; }).length;
-      $("ddLegacyWrap").hidden = false;
-      $("ddLegacy").textContent = pctStr(metLegacyMC / M.runs.length, 1);
-      $("ddLegacy").className = "v " + (metLegacyMC/M.runs.length >= 0.75 ? "pos" : metLegacyMC/M.runs.length >= 0.5 ? "gold" : "neg");
-      $("ddLegacyNote").textContent = metLegacyMC.toLocaleString() + " of " + M.runs.length.toLocaleString() + " simulations";
-    } else {
-      $("ddLegacyWrap").hidden = true;
-    }
-
-    setH2Text($("ddChartTitle"), "Range of outcomes");
-    var mpts = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial }];
-    M.bands.forEach(function (b) {
-      mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
-    });
-    ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
-    mcLegend("legendDD", null, true);
-    $("ddChartNote").hidden = false;
-    $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
-      " simulated retirements.";
-    $("ddYearsPanel").hidden = true;
-
-    var med = M.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[Math.floor(M.runs.length / 2)];
-    setH2Text($("ddDetailTitle"), "Year by year, a median run");
-    $("ddDetailNote").textContent = "One representative simulation from the middle of the range.";
-    fillDDTable(med);
-
-    $("ddViewWrap").hidden = true;
-    $("ddSpendYearView").hidden = false;
-    $("ddSpendAllView").hidden = true;
-    setH2Text($("ddIncomeChartTitle"), "Spending through retirement, a median run");
-    renderSpendStats(med, "Showing the same run as the table below.");
-    renderIncomeChart(med);
-    $("ddIncomeNote").textContent = "";
-
-    // Return sensitivity (MC)
-    $("ddSensPanel").hidden = false;
-    (function() {
-      var drags = [2, 1, 0, -1];
-      var rows = drags.map(function(drag) {
-        var oS = Object.assign({}, o, {returnDrag: drag});
-        var S = monteCarloDrawdown(oS, 500, mcSeed);
-        return {drag:drag, rate:S.successRate, median:S.medianEnd};
-      });
-      $("ddSensTable").innerHTML = "<table style='width:100%;border-collapse:collapse'>" +
-        "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Return assumption</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
-        "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
-        rows.map(function(r) {
-          var label = r.drag === 0 ? "Baseline (sampled)" : (r.drag > 0 ? "-" + r.drag + "% / yr" : "+" + (-r.drag) + "% / yr");
-          var wt = r.drag === 0 ? "font-weight:600" : "";
-          return "<tr style='" + wt + "'><td style='padding:5px 8px'>" + label + "</td>" +
-            "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
-            "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
-        }).join("") + "</tbody></table>";
-    })();
-
-    // SS break-even (MC)
-    (function() {
-      var ssMode = $("ddSSMode").value;
-      if (ssMode !== "est" || !(num("ddSSIncome") > 0)) { $("ddSSBreakEvenPanel").hidden = true; return; }
-      $("ddSSBreakEvenPanel").hidden = false;
-      var testAges = [62, 64, 67, 70];
-      var buildSSTable = function(rows) {
-        return "<table style='width:100%;border-collapse:collapse'>" +
-          "<thead><tr><th style='text-align:left;padding:5px 8px;border-bottom:1px solid var(--rule)'>Claim age</th>" +
-          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Annual benefit</th>" +
-          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Success rate</th>" +
-          "<th style='text-align:right;padding:5px 8px;border-bottom:1px solid var(--rule)'>Median ending balance</th></tr></thead><tbody>" +
-          rows.map(function(r) {
-            var wt = r.current ? "font-weight:600" : "";
-            var cur = r.current ? " ◄" : "";
-            return "<tr style='" + wt + "'><td style='padding:5px 8px'>Age " + r.age + cur + "</td>" +
-              "<td style='text-align:right;padding:5px 8px'>" + money(r.annual) + "/yr</td>" +
-              "<td style='text-align:right;padding:5px 8px' class='" + (r.rate>=0.95?"pos":r.rate>=0.85?"gold":"neg") + "'>" + pctStr(r.rate, 1) + "</td>" +
-              "<td style='text-align:right;padding:5px 8px'>" + money(r.median) + "</td></tr>";
-          }).join("") + "</tbody></table>";
-      };
-      var ssIncome1 = num("ddSSIncome"), curAge1 = num("ddSSClaim");
-      var ssIncome2 = num("ddSSIncome2"), curAge2 = num("ddSSClaim2");
-      var ssWho = $("ddSSWho").value, ssBoth = ssWho === "couple";
-      // Every stream is rebuilt for each row: moving one spouse's claim can
-      // also move when the spousal top-up starts and how much it is.
-      var ssOpts = function(st) {
-        return {ssAnnual: st.annual, ssDelayYears: st.delay, ssAnnual2: st.annual2,
-                ssDelayYears2: st.delay2, ssAnnual3: st.annual3, ssDelayYears3: st.delay3};
-      };
-      var ssRows1 = testAges.map(function(a) {
-        var st = ssDrawdownStreams(ssIncome1, a, ssIncome2, curAge2, ssBoth, o.retireAge, num("ddSSDelay"));
-        var S = monteCarloDrawdown(Object.assign({}, o, ssOpts(st)), 500, mcSeed);
-        return {age:a, annual:st.own1 + st.top1, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge1)};
-      });
-      if (ssBoth) {
-        var ssRows2 = testAges.map(function(a) {
-          var st = ssDrawdownStreams(ssIncome1, curAge1, ssIncome2, a, true, o.retireAge, num("ddSSDelay"));
-          var S = monteCarloDrawdown(Object.assign({}, o, ssOpts(st)), 500, mcSeed);
-          return {age:a, annual:st.own2 + st.top2, rate:S.successRate, median:S.medianEnd, current:a === Math.round(curAge2)};
-        });
-        $("ddSSBreakEvenTable").innerHTML =
-          "<p style='font-weight:600;margin:0 0 6px'>Your claiming age (spouse held constant)</p>" + buildSSTable(ssRows1) +
-          "<p style='font-weight:600;margin:12px 0 6px'>Spouse's claiming age (yours held constant)</p>" + buildSSTable(ssRows2);
-      } else {
-        $("ddSSBreakEvenTable").innerHTML = buildSSTable(ssRows1);
-      }
-    })();
-
+  if (ddMode === "hist") ddPaintHist(o, d, historicalBacktest(o));
+  else {
+    $("ddBadge").textContent = "Running…";
+    var ssx = ddSSRows(o, d);
+    ddRun("mc", "mc", {o: o, trials: MC_RUNS, seed: mcSeed, comfort: ddComfort(o, P),
+        extra: {sens: DD_DRAGS, ss: ssx ? ssx.flat : null}},
+      function (M) { if (ddMode === "mc") ddPaintMC(o, M, ssx); });
   }
+}
+
+function ddPaintHist(o, d, H){
+  ddLastH = H;
+  if (!H.total) {
+    /* The start year has been pulled so far forward that no complete
+       retirement of this length fits before the data ends. Say so rather than
+       reporting a 0% success rate, which would read as a failure. */
+    setBig("ddSuccess", "—"); setBig("ddMedian", "—"); setBig("ddWorst", "—");
+    $("ddSuccessNote").textContent = ""; $("ddWorstNote").textContent = "";
+    $("ddPeriods").textContent = "no complete runs";
+    $("ddBadge").textContent = "—";
+    $("ddFromNote").innerHTML = "<b class='warn'>Too long for the " + HIST_START + "–" +
+      (HIST_START + HIST_STOCK.length - 1) + " data</b>";
+    $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Nothing to test: " +
+      "a " + o.years + "-year retirement starting in " + o.fromYear +
+      " has not finished yet.</div>";
+    return;
+  }
+  var lastStart = H.runs[H.runs.length - 1];
+  $("ddPeriods").textContent = H.total + " start years";
+  $("ddFromNote").innerHTML = "<b>" + H.total + "</b> periods, " +
+    H.first + "–" + lastStart.startYear;
+  $("ddBadge").textContent = H.first + "–" + (HIST_START + HIST_STOCK.length - 1);
+  setBig("ddSuccess", pctStr(H.successRate, 1));
+  $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
+  $("ddSuccessNote").textContent = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
+  setBig("ddMedian", money(H.medianEnd));
+  setBig("ddWorst", money(H.worstEnd));
+  $("ddWorstNote").textContent = H.failCount
+    ? "Ran out in " + H.failCount + " of " + H.total + " retirements"
+    : "Never ran out";
+
+  var verdict;
+  if (H.successRate >= 0.99) verdict = "<b class='pos'>This plan survived every historical period.</b> Including the Great Depression, the 1970s stagflation, and the 2008 crash.";
+  else if (H.successRate >= 0.90) verdict = "<b class='gold'>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") + (H.failYears.length > 6 ? " and others" : "") + ", the worst sequences on record.";
+  else verdict = "<b class='neg'>This plan ran out of money in " + H.failCount + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.";
+  $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>" + verdict + "</div>";
+
+  // Legacy goal
+  if (o.legacyGoal > 0) {
+    var metLegacy = H.runs.filter(function(r){ return r.endReal >= o.legacyGoal; }).length;
+    ddLegacy(metLegacy, H.runs.length, metLegacy + " of " + H.total + " periods");
+  } else {
+    $("ddLegacyWrap").hidden = true;
+  }
+
+  // show/hide toggle and sync button state (toggle is now on the chart h2)
+  $("ddViewWrap").hidden = false;
+  $("segDDView").querySelectorAll("button").forEach(function (b) {
+    b.classList.toggle("on", b.getAttribute("data-ddview") === ddView);
+  });
+
+  // "How each starting year fared" table
+  $("ddYearsPanel").hidden = false;
+  // default to the first failure if one exists (the toughest test), or the
+  // worst-surviving period otherwise, but the person can click any row
+  if (ddSelStart === null || !H.runs.some(function (r) { return r.startIdx === ddSelStart; })) {
+    var worst = H.runs.slice().sort(function (a, b) { return a.endReal - b.endReal; })[0];
+    ddSelStart = (H.firstFail || worst).startIdx;
+  }
+  var sortedRuns = H.runs.slice().sort(function (a, b) {
+    var av = ddSortValue(a, ddSortCol), bv = ddSortValue(b, ddSortCol);
+    var cmp = typeof av === "string" ? av.localeCompare(bv) : av - bv;
+    return ddSortDir === "asc" ? cmp : -cmp;
+  });
+  $("ddStartTable").querySelector("tbody").innerHTML = sortedRuns.map(function (r) {
+    return "<tr class='ddrow" + (r.startIdx === ddSelStart ? " sel" : "") +
+      "' data-start='" + r.startIdx + "' tabindex='0'><td>" + ddStartLabel(r, H.monthly) + "</td><td class='" +
+      (r.depleted ? "neg" : "pos") + "'>" +
+      ddOutcomeText(r) + "</td><td>" +
+      money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td></tr>";
+  }).join("");
+  $("ddStartTable").querySelectorAll("th.sortcol").forEach(function (th) {
+    th.classList.remove("sort-asc", "sort-desc");
+    if (th.getAttribute("data-sort") === ddSortCol) th.classList.add(ddSortDir === "asc" ? "sort-asc" : "sort-desc");
+  });
+
+  var show = H.runs.filter(function (r) { return r.startIdx === ddSelStart; })[0] || H.runs[0];
+  var showLabel = ddStartLabel(show, H.monthly);
+
+  // Portfolio balance chart: all years fan or single selected-year line
+  var maxY = o.years;
+  if (ddView === "all") {
+    setH2Text($("ddChartTitle"), H.monthly ? "Every historical starting month" : "Every historical starting year");
+    var pts = [];
+    for (var y = 0; y <= maxY; y++) {
+      var vals = H.runs.map(function (r) {
+        return y === 0 ? o.initial : (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0);
+      }).sort(function (a, b) { return a - b; });
+      var at = function (q) { return vals[Math.min(vals.length - 1, Math.floor(vals.length * q))]; };
+      pts.push({ year: y, base: at(.5), hi: at(.9), lo: at(.1), p25: at(.25), p75: at(.75) });
+    }
+    var ddTraces = H.runs.map(function (r) {
+      var ln = [o.initial];
+      for (var y2 = 1; y2 <= maxY; y2++) ln.push(r.rows[y2 - 1] ? r.rows[y2 - 1].realEnd : 0);
+      return ln;
+    });
+    ddPoints = paintChart("chartDD", pts, maxY, "mc", [], ddRetireAge != null ? ddRetireAge : 0,
+      {enhanced:true, traces:{xs:pts.map(function (a) { return a.year; }), lines:ddTraces}});
+    histLegend("legendDD");
+    $("ddChartNote").hidden = false;
+    $("ddChartNote").innerHTML = "Each band covers the range of outcomes across all " + H.total +
+      " historical retirements, in today's dollars. The <b>median</b> line is the middle outcome.";
+  } else {
+    setH2Text($("ddChartTitle"), "Starting in " + showLabel);
+    var singlePts = [{ year: 0, base: o.initial, hi: o.initial, lo: 0 }];
+    show.rows.forEach(function (r) {
+      singlePts.push({ year: r.year, base: r.realEnd, hi: r.realEnd, lo: 0 });
+    });
+    ddPoints = paintChart("chartDD", singlePts, maxY, "band", [], ddRetireAge != null ? ddRetireAge : 0, { enhanced: true, noLoLine: true });
+    $("legendDD").innerHTML = swatch("#e9b872", "Portfolio balance, in today’s dollars");
+    $("ddChartNote").hidden = false;
+    $("ddChartNote").innerHTML = "Balance in today’s dollars, retiring in " + showLabel + ".";
+  }
+
+  // "Year by year" detail table (always shows selected year)
+  setH2Text($("ddDetailTitle"), "Year by year, retiring in " + showLabel);
+  $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
+    (show.depleted
+      ? "This one ran out of money " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + "."
+      : "This one survived the full " + o.years + " years.");
+  $("ddTableYearHeader").textContent = ddRetireAge != null ? "Age" : "Year";
+  fillDDTable(show);
+
+  // Income section: follows the same toggle, no separate control
+  $("ddSpendYearView").hidden = (ddView !== "year");
+  $("ddSpendAllView").hidden = (ddView !== "all");
+  if (ddView === "all") {
+    setH2Text($("ddIncomeSectionTitle"), "What your income looked like");
+    setH2Text($("ddIncomeChartTitle"), "Spending through retirement");
+    renderSpendStatsAll(H, o);
+    renderIncomeChartAll(H, o);
+    $("ddIncomeNote").textContent = "Median, 10th–90th and 25th–75th percentile spending by " +
+      "year of retirement, across all " + H.total + " historical " + (H.monthly ? "starting months." : "starting years.");
+  } else {
+    setH2Text($("ddIncomeSectionTitle"), "What your income looked like starting in " + showLabel);
+    setH2Text($("ddIncomeChartTitle"), "Spending through retirement, retiring in " + showLabel);
+    renderSpendStats(show, "Showing the period selected above.");
+    renderIncomeChart(show);
+    $("ddIncomeNote").textContent = "";
+  }
+
+  // Return sensitivity
+  ddSensTable(DD_DRAGS.map(function (drag) {
+    var S = historicalBacktest(Object.assign({}, o, {returnDrag: drag}));
+    return {rate: S.successRate, median: S.medianEnd};
+  }), "Baseline (historical)");
+
+  // Social Security claiming ages, when they're estimated
+  var ssx = ddSSRows(o, d);
+  ddSSTables(ssx, ssx && ssx.flat.map(function (ov) {
+    var S = historicalBacktest(Object.assign({}, o, ov));
+    return {rate: S.successRate, median: S.medianEnd};
+  }));
+}
+
+function ddPaintMC(o, M, ssx){
+  var trials = M.trials;
+  $("ddPeriods").textContent = trials.toLocaleString() + " runs";
+  $("ddBadge").textContent = trials.toLocaleString() + " simulations";
+  setBig("ddSuccess", pctStr(M.successRate, 1));
+  $("ddSuccess").className = "v " + (M.successRate >= 0.95 ? "pos" : M.successRate >= 0.85 ? "gold" : "neg");
+  $("ddSuccessNote").textContent = M.survived.toLocaleString() + " of " + trials.toLocaleString() + " runs lasted " + o.years + " years";
+  setBig("ddMedian", money(M.medianEnd));
+  setBig("ddWorst", money(M.p10End));
+  $("ddWorstNote").textContent = "10th percentile outcome";
+  $("ddVerdict").innerHTML = "<div class='hint' style='margin:0;font-size:13px'>Each run draws " +
+    o.years + " years at random from the " + HIST_START + "–" +
+    (HIST_START + HIST_STOCK.length - 1) + " record. This captures the range of possible " +
+    "returns but not the way bad years actually clustered, which is what the historical view shows.</div>";
+
+  // Legacy goal
+  if (o.legacyGoal > 0) ddLegacy(M.legacy, trials, M.legacy.toLocaleString() + " of " + trials.toLocaleString() + " simulations");
+  else $("ddLegacyWrap").hidden = true;
+
+  setH2Text($("ddChartTitle"), "Range of outcomes");
+  var mpts = [{ year: 0, base: o.initial, hi: o.initial, lo: o.initial, p25: o.initial, p75: o.initial }];
+  M.bands.forEach(function (b) {
+    mpts.push({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 });
+  });
+  ddPoints = paintChart("chartDD", mpts, o.years, "mc", [], ddRetireAge != null ? ddRetireAge : 0, {enhanced:true});
+  mcLegend("legendDD", null, true);
+  $("ddChartNote").hidden = false;
+  $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
+    " simulated retirements.";
+  $("ddYearsPanel").hidden = true;
+
+  var med = M.med;
+  setH2Text($("ddDetailTitle"), "Year by year, a median run");
+  $("ddDetailNote").textContent = "One representative simulation from the middle of the range.";
+  fillDDTable(med);
+
+  $("ddViewWrap").hidden = true;
+  $("ddSpendYearView").hidden = false;
+  $("ddSpendAllView").hidden = true;
+  setH2Text($("ddIncomeChartTitle"), "Spending through retirement, a median run");
+  renderSpendStats(med, "Showing the same run as the table below.");
+  renderIncomeChart(med);
+  $("ddIncomeNote").textContent = "";
+
+  ddSensTable(M.sens, "Baseline (sampled)");
+  ddSSTables(ssx, M.ss);
 }
 
 function fillDDTable(run) {
   // The engine tracks balances in the dollars of the year they occur in
   // (nominal), which is necessary for the math but confusing to read side by
-  // side over a long horizon \u2014 50 years of inflation alone can turn a real
+  // side over a long horizon — 50 years of inflation alone can turn a real
   // $20M into a nominal $140M. Every dollar figure here is converted back to
   // today's terms so the table reads consistently with the rest of the app.
   var hasCustomIncome = ddIncomeItems.some(function(it){ return it.on !== false; });
@@ -10989,10 +11730,10 @@ function fillDDTable(run) {
   $("ddTable").querySelector("tbody").innerHTML = run.rows.map(function (r, i) {
     var prevReal = i === 0 ? r.start : run.rows[i - 1].realEnd;
     var otherCell = hasCustomIncome
-      ? "<td>" + (r.customIncome > 0 ? money(r.customIncome) : "\u2014") + "</td>"
+      ? "<td>" + (r.customIncome > 0 ? money(r.customIncome) : "—") + "</td>"
       : "";
     return "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(prevReal) + "</td><td>" +
-      (r.ss > 0 ? money(r.ss) : "\u2014") + "</td>" + otherCell + "<td>" + money(r.withdrawal) +
+      (r.ss > 0 ? money(r.ss) : "—") + "</td>" + otherCell + "<td>" + money(r.withdrawal) +
       "</td><td>" + money(r.spend) + "</td><td>" + money(r.realSpend != null ? r.realSpend : r.realWithdrawal) +
       "</td><td class='" + (r.ret >= 0 ? "pos" : "neg") + "'>" +
       r.ret.toFixed(1) + "%</td><td>" + money(r.realEnd) + "</td></tr>";
@@ -11018,11 +11759,11 @@ function renderSpendStats(run, label) {
   $("ddSpendLow").textContent = money(low);
   $("ddSpendMed").textContent = money(med);
   $("ddSpendCuts").textContent = cuts + " of " + real.length + " years";
-  $("ddSpendMaxCut").textContent = maxCut > 0 ? "\u2212" + money(maxCut) + " in one year" : "None";
+  $("ddSpendMaxCut").textContent = maxCut > 0 ? "−" + money(maxCut) + " in one year" : "None";
   $("ddSpendTotal").textContent = money(total);
 
   var swing = high > 0 ? (high - low) / high : 0;
-  $("ddSpendNote").innerHTML = label + " Spending in today\u0027s dollars ranged from " +
+  $("ddSpendNote").innerHTML = label + " Spending in today's dollars ranged from " +
     money(low) + " to " + money(high) + (swing > 0.01
       ? ", a swing of " + pctStr(swing, 0) + " between the best and worst year."
       : ", essentially flat throughout.");
@@ -11039,7 +11780,7 @@ function renderIncomeChart(run) {
   var xOff = ddRetireAge != null ? ddRetireAge - 1 : 0;
   if (!pts.length) { paintChart("chartDDI", [], 1, "band", [], xOff, {enhanced:true}); return; }
   ddiPoints = paintChart("chartDDI", pts, pts.length, "band", [], xOff, {enhanced:true});
-  $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today\u0027s dollars");
+  $("legendDDI").innerHTML = swatch("#e9b872", "Total spending, in today's dollars");
 }
 
 /* Same idea as the "every historical starting year" balance chart above, but
@@ -11072,7 +11813,7 @@ function renderIncomeChartAll(H, o) {
 
 /* Aggregate version of renderSpendStats: instead of one run's swings, this
    pools every year of every historical starting-year run to show the full
-   range \u2014 the single best and worst years ever seen, and how the total
+   range — the single best and worst years ever seen, and how the total
    spent over a full retirement varied depending on when it began. */
 function renderSpendStatsAll(H, o) {
   var n = H.runs.length;
@@ -11105,9 +11846,9 @@ function renderSpendStatsAll(H, o) {
   $("ddAggAvg").textContent = money(avg);
   $("ddAggTotalMed").textContent = money(totalMed);
   $("ddAggTotalRange").textContent = Math.round(totalMax - totalMin) < 1
-    ? money(totalMin) + " in every one" : money(totalMin) + " \u2013 " + money(totalMax);
+    ? money(totalMin) + " in every one" : money(totalMin) + " – " + money(totalMax);
   $("ddAggCutsAvg").textContent = cutsAvg.toFixed(1) + " of " + o.years + " years";
-  $("ddAggMaxCut").textContent = maxCutEver > 0 ? "\u2212" + money(maxCutEver) + " in one year" : "None";
+  $("ddAggMaxCut").textContent = maxCutEver > 0 ? "−" + money(maxCutEver) + " in one year" : "None";
 
   $("ddSpendNote").innerHTML = Math.round(high - low) < 1
     ? "Across all " + n + " historical starting years, spending held at " + money(low) +
@@ -11123,20 +11864,20 @@ attachChart("chartWrapDDI", "chartDDI", "tipDDI", function () { return ddiPoints
     var lbl = ddRetireAge != null ? "Age " + ddAgeVal(best.year) : "Year " + fmtNum(best.year);
     if (ddIncomeChartAgg) {
       return "<b>" + lbl + "</b>" +
-        "<br><span style=\u0027color:#4fbf95\u0027>90th</span> <span class=\u0027n\u0027>" + money(best.hi) +
-        "</span><br><span style=\u0027color:#3f9a78\u0027>75th</span> <span class=\u0027n\u0027>" + money(best.p75) +
-        "</span><br><span style=\u0027color:#e9b872\u0027>Median</span> <span class=\u0027n\u0027>" + money(best.base) +
-        "</span><br><span style=\u0027color:#3f9a78\u0027>25th</span> <span class=\u0027n\u0027>" + money(best.p25) +
-        "</span><br><span style=\u0027color:#e2795f\u0027>10th</span> <span class=\u0027n\u0027>" + money(best.lo) + "</span>";
+        "<br><span style='color:#4fbf95'>90th</span> <span class='n'>" + money(best.hi) +
+        "</span><br><span style='color:#3f9a78'>75th</span> <span class='n'>" + money(best.p75) +
+        "</span><br><span style='color:#e9b872'>Median</span> <span class='n'>" + money(best.base) +
+        "</span><br><span style='color:#3f9a78'>25th</span> <span class='n'>" + money(best.p25) +
+        "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
     }
     return "<b>" + lbl + "</b>" +
-      "<br><span style=\u0027color:#e9b872\u0027>Spending</span> <span class=\u0027n\u0027>" + money(best.base) + "</span>";
+      "<br><span style='color:#e9b872'>Spending</span> <span class='n'>" + money(best.base) + "</span>";
   });
 
 attachChart("chartWrapDD", "chartDD", "tipDD", function () { return ddPoints; },
   function (best) {
     var lbl = ddRetireAge != null ? "Age " + ddAgeValPoint(best.year) : "Year " + fmtNum(best.year);
-    if (ddView === "year") {
+    if (ddView === "year" && ddMode === "hist") {
       return "<b>" + lbl + "</b><br><span class='n'>" + money(best.base) + "</span>";
     }
     return "<b>" + lbl + "</b>" +
@@ -11147,6 +11888,11 @@ attachChart("chartWrapDD", "chartDD", "tipDD", function () { return ddPoints; },
       "</span><br><span style='color:#e2795f'>10th</span> <span class='n'>" + money(best.lo) + "</span>";
   });
 
+function ddPickRow(tr){
+  ddSelStart = parseInt(tr.getAttribute("data-start"), 10);
+  ddView = "year";
+  renderDrawdown();
+}
 $("ddStartTable").addEventListener("click", function (e) {
   var th = e.target.closest ? e.target.closest("th.sortcol") : null;
   if (th) {
@@ -11156,20 +11902,15 @@ $("ddStartTable").addEventListener("click", function (e) {
     renderDrawdown();
     return;
   }
-  var tr = e.target.closest ? e.target.closest("tr[data-year]") : null;
-  if (!tr) return;
-  ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
-  ddView = "year";
-  renderDrawdown();
+  var tr = e.target.closest ? e.target.closest("tr[data-start]") : null;
+  if (tr) ddPickRow(tr);
 });
 $("ddStartTable").addEventListener("keydown", function (e) {
   if (e.key !== "Enter" && e.key !== " ") return;
-  var tr = e.target.closest ? e.target.closest("tr[data-year]") : null;
+  var tr = e.target.closest ? e.target.closest("tr[data-start]") : null;
   if (!tr) return;
   e.preventDefault();
-  ddSelectedYear = parseInt(tr.getAttribute("data-year"), 10);
-  ddView = "year";
-  renderDrawdown();
+  ddPickRow(tr);
 });
 $("segDD").addEventListener("click", function (e) {
   var b = e.target.closest ? e.target.closest("button[data-dd]") : null;
@@ -11180,14 +11921,14 @@ $("segDD").addEventListener("click", function (e) {
   });
   renderDrawdown();
 });
-["ddInitial", "ddYears", "ddStock", "ddFee", "ddRate", "ddGuardBand", "ddAdjust",
- "ddGuardBandLo", "ddAdjustLo", "ddGkFinalYrs",
- "ddFloor", "ddCeil", "ddYaleWeight", "ddYaleRate", "ddSpendFloor", "ddSpendCeil",
- "ddVpwRate", "ddVpwFV",
- "ddSSIncome", "ddSSIncome2", "ddSSAmount", "ddSSAmount2", "ddSSDelay",
- "ddStockEnd", "ddLegacyGoal"]
-  .forEach(function (id) { $(id).addEventListener("input", renderDrawdownTyping); });
-["ddSSClaim", "ddSSClaim2"].forEach(function(id){ $(id).addEventListener("change", renderDrawdown); });
+/* Every field re-runs the simulator as it changes: typed fields as they're
+   typed, choices and tick boxes when they change. The retirement age and the
+   final-years box have their own handlers below. */
+DD_STATE.forEach(function (f) {
+  if (f[1] === "ddRetireAge" || f[1] === "ddGkFinal") return;
+  var pick = f[2] === "select" || f[2] === "pick" || f[2] === "check";
+  $(f[1]).addEventListener(pick ? "change" : "input", pick ? renderDrawdown : renderDrawdownTyping);
+});
 /* Entering a retirement age is what flips the whole tool from "years into
    retirement" to "age" everywhere. As a small kindness, if the Social
    Security delay field is still sitting at its untouched default of 0, we
@@ -11204,22 +11945,19 @@ $("ddRetireAge").addEventListener("input", function () {
   }
   renderDrawdownTyping();
 });
-$("ddSSMode").addEventListener("change", renderDrawdown);
-$("ddSSWho").addEventListener("change", renderDrawdown);
 $("segDDView").addEventListener("click", function (e) {
   var b = e.target.closest ? e.target.closest("button[data-ddview]") : null;
   if (!b) return;
   ddView = b.getAttribute("data-ddview");
   renderDrawdown();
 });
-$("ddStrategy").addEventListener("change", renderDrawdown);
 /* The years box only means something with its box ticked. */
 function ddGkFinalSync(){ $("ddGkFinalYrs").disabled = !$("ddGkFinal").checked; }
 $("ddGkFinal").addEventListener("change", function(){ ddGkFinalSync(); renderDrawdown(); });
 ddGkFinalSync();
 /* All three retirement modes keep their last computed result in the
    background regardless of which tab is currently open, so every source
-   that has a real number is offered \u2014 not just whichever one happens to
+   that has a real number is offered — not just whichever one happens to
    be on screen. */
 $("ddCopy").addEventListener("click", async function () {
   var sources = [
@@ -11244,7 +11982,6 @@ function applyDDCopy(source) {
   renderDrawdown();
   toast("Copied " + money(source.value) + " from " + source.label);
 }
-
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
@@ -17961,7 +18698,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.a0749b2fbf.js";
+var OP_WORKER_URL = "/assets/plan.618fcd9528.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

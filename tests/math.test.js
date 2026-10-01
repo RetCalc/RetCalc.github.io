@@ -28,7 +28,7 @@ function seqFrom(start, years) {
   var s = [];
   for (var k = 0; k < years; k++) {
     var i = start - HIST_START + k;
-    s.push({ stock: HIST_STOCK[i], bond: HIST_BOND[i], infl: HIST_INFL[i] });
+    s.push({ stock: HIST_STOCK[i], bond: HIST_BOND[i], infl: HIST_INFL[i], cape: HIST_M_CAPE[i * 12] });
   }
   return s;
 }
@@ -301,7 +301,9 @@ group("Drawdown: guardrails set apart, and no cuts in the final years");
   var F = run({ gkFinalYears: 15 }, 1966), fs = steps(F);
   ok(fs.slice(15).every(function (x) { return x > .999; }), "with it, no cut in the final 15 years");
   ok(F.slice(0, 15).every(function (r, i) { return Math.abs(r.realSpend - S[i].realSpend) < 1e-6; }), "the first 15 years are unchanged");
-  ok(run({ gkFinalYears: 30 }, 1966).every(function (r, i, a) { return !i || r.realSpend >= a[i - 1].realSpend - 1e-6; }), "final years covering the whole plan: never a cut");
+  // This one runs dry, and what's spent then falls to what's left, so it's
+  // the plan's own spending that must never be cut.
+  ok(run({ gkFinalYears: 30 }, 1966).every(function (r, i, a) { return !i || r.realPlanned >= a[i - 1].realPlanned - 1e-6; }), "final years covering the whole plan: never a cut");
 
   var up = steps(run({}, 1982)), i = up.findIndex(function (x) { return x > 1.001; });
   near(up[i], 1.10, 1e-9, "1982: the first raise is 10%");
@@ -309,6 +311,144 @@ group("Drawdown: guardrails set apart, and no cuts in the final years");
   near(up5[i], 1.05, 1e-9, "a 5% raise when the lower guardrail says so");
   var wide = steps(run({ guardBandLo: 60 }, 1982));
   ok(wide.findIndex(function (x) { return x > 1.001; }) > i || wide.every(function (x) { return x <= 1.001; }), "a wider lower guardrail raises later");
+})();
+
+group("Drawdown: a retirement starting every month, and the CAPE record");
+(function () {
+  eq(HIST_M_CAPE.length, 1200, "CAPE: one reading a month, 1926-2025");
+  eq(HIST_M_CAPE[3 * 12 + 8], 32.56, "September 1929, the peak before the crash");
+  eq(HIST_M_CAPE[73 * 12 + 11], 44.19, "December 1999, the highest on record");
+  eq(HIST_M_CAPE[83 * 12 + 2], 13.32, "March 2009");
+  near(HIST_M_CAPE.reduce(function (a, b) { return a + b; }, 0), 22939.76, 1e-6, "every reading as copied");
+  ok(HIST_STOCK.every(function (v, y) { return HIST_Y12_STOCK[12 * y] === v && HIST_Y12_BOND[12 * y] === HIST_BOND[y] &&
+    HIST_Y12_INFL[12 * y] === HIST_INFL[y]; }), "a year from January is the calendar year, exactly");
+  var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, strategy: "fixed" };
+  var A = historicalBacktest(o), M = historicalBacktest(Object.assign({}, o, { monthly: true }));
+  eq(M.total, 841, "841 thirty-year retirements, one a month");
+  var jan = M.runs.filter(function (r) { return r.startMonth === 1; });
+  eq(jan.length, A.total, "one in each January");
+  ok(jan.every(function (r, i) { return r.endReal === A.runs[i].endReal && r.depleted === A.runs[i].depleted; }), "and those match the annual test");
+  // one start by hand: September 1929, compounding twelve months at a time
+  var r29 = M.runs.filter(function (r) { return r.startYear === 1929 && r.startMonth === 9; })[0], bal = 1e6, lvl = 1;
+  for (var k = 0; k < 30 && bal > 0; k++) {
+    var i = 3 * 12 + 8 + 12 * k, gs = 1, gb = 1, gi = 1;
+    for (var m = 0; m < 12; m++) { gs *= 1 + HIST_M_STOCK[i + m] / 100; gb *= 1 + HIST_M_BOND[i + m] / 100; gi *= 1 + HIST_M_INFL[i + m] / 100; }
+    bal = Math.max(0, (bal - Math.min(bal, 40000 * lvl)) * (1 + .6 * (gs - 1) + .4 * (gb - 1)));
+    lvl *= gi;
+  }
+  near(r29.endReal, bal / lvl, 1e-3, "September 1929, worked independently");
+  ok(M.failYears.every(function (y, i, a) { return a.indexOf(y) === i; }), "each failed start year listed once");
+})();
+
+group("Drawdown: the new strategies, year one and their rules");
+(function () {
+  var base = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, vpwRate: 3.8, vpwFV: 0, kitThresh: 50, kitRaise: 10,
+    kitGap: 3, clyFloor: 95, hebWeight: 75, hebRate: 3, sensExtra: 10, capeA: 1.75, capeB: .5, vgFloor: 2.5, vgCeil: 5,
+    floorPct: 2.5, ceilPct: 5, rgTarget: 90, rgLo: 70, rgHi: 99 };
+  function run(x, from, n) { var o = Object.assign({}, base, x); return runDrawdown(o, seqFrom(from, n || o.years)); }
+  near(run({ strategy: "oneovern" }, 1950).rows[0].realSpend, 1e6 / 30, 1e-6, "1/N: a thirtieth in year one");
+  var N = run({ strategy: "oneovern" }, 1966);
+  ok(!N.depleted && N.endReal < 1, "1/N ends at zero, by plan, not as a failure");
+  near(run({ strategy: "rmd", retireAge: 75 }, 1950).rows[0].realSpend, 1e6 / ultDivisor(75), 1e-6, "RMD method: the IRS divisor at 75");
+  near(run({ strategy: "rmd", retireAge: 65 }, 1950).rows[0].realSpend, 1e6 / (27.4 + 7 * .9), 1e-6, "below 72, the table's trend carried down");
+  var C = run({ strategy: "clyatt" }, 1973).rows;
+  ok(C.every(function (r, i) { return !i || r.spend >= .95 * C[i - 1].spend - 1e-6; }), "95% rule: never under 95% of last year, in dollars");
+  ok(C.some(function (r, i) { return i && r.spend < C[i - 1].spend - 1; }), "but it does cut");
+  var K = run({ strategy: "kitces" }, 1982).rows, raised = 0;
+  K.forEach(function (r, i) { if (i && r.realSpend > K[i - 1].realSpend * 1.05) raised++; });
+  ok(raised > 0 && K.every(function (r, i) { return !i || r.realSpend >= K[i - 1].realSpend - 1e-6; }), "Kitces ratchet: raises in a good run, never a cut");
+  var K66 = run({ strategy: "kitces" }, 1966).rows, F66 = run({ strategy: "fixed" }, 1966).rows;
+  ok(K66.every(function (r, i) { return Math.abs(r.realSpend - F66[i].realSpend) < 1e-6; }), "and in 1966, the same as fixed");
+  near(run({ strategy: "hebeler" }, 1950).rows[0].realSpend, pmtStart(.03, 30, 1e6, 0), 1e-6, "Autopilot II: year one is the payment");
+  var Se = run({ strategy: "sensible" }, 1950).rows;
+  near(Se[0].realSpend, 40000, 1e-6, "Sensible withdrawals: the base in year one");
+  ok(Se.every(function (r) { return r.realSpend >= 40000 - 1e-6; }) && Se.some(function (r) { return r.realSpend > 40001; }), "and the base plus a share of gains after");
+  near(run({ strategy: "cape" }, 1966).rows[0].realSpend, 1e6 * (1.75 + .5 * 100 / HIST_M_CAPE[40 * 12]) / 100, 1e-6, "CAPE rule: 1.75% plus half of 1/CAPE (January 1966)");
+  var V = run({ strategy: "vanguard" }, 1973).rows, Fc = run({ strategy: "floorceil" }, 1973).rows;
+  ok(V.every(function (r, i) { return Math.abs(r.realSpend - Fc[i].realSpend) < 1e-6; }), "Vanguard's rule is floor and ceiling at +5% / -2.5%");
+  // risk-based guardrails start at the spending with the target chance of lasting
+  var o = Object.assign({}, base, { strategy: "riskgr" }), T = ddRiskTable(o), w1 = run({ strategy: "riskgr" }, 1950).rows[0].realSpend;
+  near(ddRiskP(T, w1 / 1e6, 30), .9, .02, "risk-based guardrails: year one has about a 90% chance");
+  ok(ddRiskP(T, w1 / 1e6 * 1.05, 30) < .9, "and a little more would have less");
+  // the table's safe rate really is the edge for a fixed withdrawal
+  var safe66 = 1 / (function () { var s = 0, D = 1; for (var k = 0; k < 30; k++) { s += D; var i = 40 + k;
+    D /= (1 + (.6 * HIST_STOCK[i] + .4 * HIST_BOND[i]) / 100) / (1 + HIST_INFL[i] / 100); } return s; })();
+  ok(!run({ strategy: "fixed", initialPct: safe66 * 100 - .001 }, 1966).depleted, "1966's safe rate lasts");
+  ok(run({ strategy: "fixed", initialPct: safe66 * 100 + .01 }, 1966).depleted, "and a hair more doesn't");
+  var skip = run({ strategy: "fixed", skipRaise: true }, 1973).rows;
+  ok(skip[2].realSpend < skip[1].realSpend, "skipping the raise after a losing year (1974) lowers real spending");
+})();
+
+group("Drawdown: spending path, guaranteed income and what was really spent");
+(function () {
+  var base = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, strategy: "fixed" };
+  function run(x, from) { var o = Object.assign({}, base, x); return runDrawdown(o, seqFrom(from, o.years)); }
+  var flat = run({}, 1950).rows, st = run({ path: "stages", pathStages: [{ start: 11, level: 75 }] }, 1950).rows;
+  near(st[10].realSpend, 30000, 1e-6, "a stage at 75% from year 11");
+  ok(st.slice(0, 10).every(function (r, i) { return Math.abs(r.realSpend - flat[i].realSpend) < 1e-6; }), "and the first ten years as before");
+  var conv = ddOptsFromState({ initial: 1e6, rate: 4, strategy: "fixed", wdStages: [{ start: 11, rate: 3, name: "Slower" }] });
+  eq(conv.path, "stages", "old spending stages load as a path");
+  near(conv.pathStages[0].level, 75, 1e-9, "3% of a 4% start is a 75% stage");
+  eq(ddOptsFromState({ initial: 1e6, rate: 4, strategy: "pct", wdStages: [{ start: 11, rate: 3 }] }).path, "flat", "stages only ever belonged to fixed");
+  var ease = run({ path: "ease", pathEase: 1 }, 1950).rows;
+  near(ease[10].realSpend, 40000 * Math.pow(.99, 10), 1e-6, "easing 1% a year");
+  var sm = ddPath({ years: 35, path: "smile", retireAge: 65 }, 50000);
+  ok(sm[13] < sm[5] && sm[34] / sm[33] > sm[14] / sm[13], "the smile: down through the 70s, recovering late");
+  near(ddBlanchett(78, 50000), Math.min.apply(null, [70, 74, 78, 82, 86].map(function (a) { return ddBlanchett(a, 50000); })), 1e-12, "steepest decline near 78");
+  // guaranteed income: 30% buys a TIPS ladder; the rest runs the strategy
+  var G = run({ gShare: 30, gType: "tips", gYield: 2 }, 1966), pay = 300000 * pmtStart(.02, 30, 1, 0);
+  near(G.rows[0].realSpend, .04 * 700000 + pay, 1e-6, "year one: 4% of what's invested plus the ladder");
+  ok(G.rows.every(function (r) { return r.realSpend >= pay - 1e-6; }), "the ladder's income never falls in real terms");
+  var A = run({ gShare: 30, gType: "annuity", gPayout: 7 }, 1966).rows;
+  ok(A[29].guaranteed === A[0].guaranteed && A[29].realSpend < A[0].realSpend, "an annuity without raises loses value to inflation");
+  // what was really spent once the money ran out
+  var F = run({ initialPct: 6, ssAnnual: 12000, ssDelayYears: 0 }, 1966);
+  ok(F.depleted, "6% from 1966 runs dry");
+  var last = F.rows[F.rows.length - 1];
+  near(last.realSpend, 12000, 1e-6, "after that, only Social Security is spent");
+  ok(last.realPlanned > 50000, "though the plan still called for more");
+})();
+
+group("Drawdown: saved inputs become options the same way everywhere");
+(function () {
+  var o = ddOptsFromState({ initial: "1,000,000", years: 30, stock: 0, rate: 0, floor: 0, ceil: 0, yaleWeight: 0, strategy: "floorceil" });
+  ok(o.stockPct === 0 && o.initialPct === 0 && o.floorPct === 0 && o.ceilPct === 0 && o.yaleWeight === 0, "a 0 stays 0 (it used to become a default)");
+  eq(o.initial, 1e6, "grouped digits read");
+  var old = ddOptsFromState({ initial: 1e6, guardBand: 25, adjust: 15, strategy: "guardrails" });
+  ok(old.guardBandLo === 25 && old.raisePct === 15 && old.gkFinalYears === 0, "saved before the guardrails split: the lower matches the upper");
+  var d = ddOptsFromState({ ssMode: "manual", ssWho: "couple", ssAmount: 30000, ssAmount2: 15000, ssDelay: 67, retireAge: "62" });
+  ok(d.ssAnnual === 45000 && d.ssDelayYears === 5 && d.retireAge === 62, "known benefits from an age");
+  eq(ddOptsFromState({ strategy: "nope" }).strategy, "fixed", "an unknown strategy falls back to fixed");
+  ok(ddOptsFromState({ starts: "month" }).monthly && !ddOptsFromState({}).monthly, "every month only when asked");
+})();
+
+group("Drawdown: the searches meet the target they're given");
+(function () {
+  var o = ddOptsFromState({ initial: 1e6, years: 30, stock: 60, rate: 4, strategy: "fixed" });
+  var T = { crit: "lasts", conf: 1, comfort: 0 };
+  var cal = ddCalibrate(o, T);
+  ok(cal.met && historicalBacktest(ddWithDial(o, cal.v)).successRate === 1, "fixed: the found rate lasts every time");
+  ok(historicalBacktest(ddWithDial(o, cal.v + .02)).successRate < 1, "and a little more doesn't", "rate " + cal.v);
+  var safe = ddSafeByStart(o, T), min = Math.min.apply(null, safe.map(function (s) { return s.v; }));
+  near(min, cal.v, .002, "the lowest start's safe rate is the plan's safe rate");
+  // 10% cuts scale with wherever spending started, so on their own they can't
+  // promise a line: under "comfort" the line is each strategy's minimum.
+  var gr = Object.assign({}, o, { strategy: "guardrails", guardBand: 20, adjustPct: 10 });
+  var T2 = { crit: "comfort", conf: 1, comfort: 32000 };
+  var g = ddCalibrate(gr, T2), gx = ddWithDial(ddForTarget(gr, T2), g.v), H = historicalBacktest(gx);
+  ok(g.met && gx.spendFloor === 32000, "guardrails, held at $32,000 or more", JSON.stringify(g));
+  ok(H.runs.every(function (r) { return r.rows.every(function (w) { return w.realReg >= 32000 - .5; }); }), "never fall under it at the rate found");
+  var Hup = historicalBacktest(ddWithDial(ddForTarget(gr, T2), g.v + .05));
+  ok(Hup.runs.some(function (r) { return r.rows.some(function (w) { return w.realReg < 32000 - .5; }); }), "and a little more would run dry somewhere", "rate " + g.v);
+  var P = ddSolvePortfolio(Object.assign({}, o, { initialPct: 4 }), T);
+  var px = Object.assign({}, o, { initial: P.portfolio, initialPct: 40000 / P.portfolio * 100 });
+  ok(historicalBacktest(px).successRate === 1 && Math.abs(P.portfolio * cal.v / 100 - 40000) < 40, "the portfolio needed for $40,000 at the safe rate");
+  var S = ddShowdown(o, T2);
+  eq(S.list.length, DD_ORDER.length, "the showdown runs every strategy");
+  ok(S.list.every(function (x) { return !x.tuned || !x.met || x.share === 1; }), "each one tuned meets the target");
+  var heat = ddHeatmap(o, T, "stock");
+  eq(heat.cols.length, 11, "the grid runs 0% to 100% stocks");
+  ok(heat.rows.length === 13 && heat.grid[0][6] >= heat.grid[12][6], "lower rates succeed at least as often");
 })();
 
 group("Historical accumulation: every monthly window, one trace per year");

@@ -8,7 +8,7 @@ read and changed on its own; this puts it back together:
          <!-- @include main/*.html -->
      is replaced by the files it names (relative to src/), in filename order,
      so the numeric prefixes (00-, 01-...) set the order.
-  2. The styles (src/css/) and the script (src/js/math.js and plan.js, then
+  2. The styles (src/css/) and the script (src/js/math.js, drawdown.js and plan.js, then
      the app in src/js/app/ wrapped in one function) become two shared files,
      assets/app.<hash>.css and assets/app.<hash>.js, which the page's
      <!-- @asset --> and <!-- @preload --> lines link to. Every page uses the
@@ -118,14 +118,15 @@ def files(pattern):
 def bundles():
     """The shared files, by name. The app files are the body of one
     function, so they share a scope but leave nothing global; the engine
-    before them (math.js, plan.js) is global, for the app to use. The page is
+    before them (math.js, drawdown.js, plan.js) is global, for the app to use. The page is
     shown once the app has run, even if it threw (see page.html).
 
-    The Plan Optimizer's search runs in a worker, which is the engine plus
-    js/plan-worker.js in a file of its own, plan.<hash>.js. The app finds it
-    through the @@PLAN_WORKER@@ placeholder, filled in before app.js is
-    hashed, so a change to the engine renames both."""
-    engine = files("js/math.js") + ";\n" + files("js/plan.js") + ";\n"
+    The Plan Optimizer's search and the Drawdown Simulator's heavier
+    searches run in a worker, which is the engine plus js/plan-worker.js in a
+    file of its own, plan.<hash>.js. The app finds it through the
+    @@PLAN_WORKER@@ placeholder, filled in before app.js is hashed, so a
+    change to the engine renames both."""
+    engine = files("js/math.js") + ";\n" + files("js/drawdown.js") + ";\n" + files("js/plan.js") + ";\n"
     worker = engine + files("js/plan-worker.js")
     worker_name = "plan.%s.js" % sha(worker)[:10]
     js = (engine +

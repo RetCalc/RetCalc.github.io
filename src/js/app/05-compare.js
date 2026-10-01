@@ -319,54 +319,9 @@ attachChart("chartWrapC", "chartC", "tipC", () => cmpPoints, best => {
 
 /* ========== Drawdown Strategy Comparison ========== */
 
-function ddStateToOpts(data) {
-  var retireAge = data.retireAge ? parseFloat(data.retireAge) : null;
-  if (!isFinite(retireAge) || retireAge <= 0) retireAge = null;
-  var ssAnnual = 0, ssDelay = 0, ssAnnual2 = 0, ssDelay2 = 0, ssAnnual3 = 0, ssDelay3 = 0;
-  if (data.ssMode === "est") {
-    var st = ssDrawdownStreams(+data.ssIncome || 0, +data.ssClaim || 67, +data.ssIncome2 || 0,
-      +data.ssClaim2 || 67, data.ssWho === "couple", retireAge, +data.ssDelay || 0);
-    ssAnnual = st.annual; ssDelay = st.delay; ssAnnual2 = st.annual2; ssDelay2 = st.delay2;
-    ssAnnual3 = st.annual3; ssDelay3 = st.delay3;
-  } else if (data.ssMode === "manual") {
-    ssAnnual = +data.ssAmount || 0;
-    if (data.ssWho === "couple") ssAnnual2 = +data.ssAmount2 || 0;
-    var delayRaw = +data.ssDelay || 0;
-    ssDelay = retireAge != null ? Math.max(0, Math.round(delayRaw - retireAge)) : Math.max(0, Math.round(delayRaw));
-    ssDelay2 = ssDelay;
-  }
-  return {
-    initial: +data.initial || 0,
-    years: Math.min(60, Math.max(1, Math.round(+data.years || 30))),
-    stockPct: Math.min(100, Math.max(0, +data.stock || 60)),
-    stockPctEnd: (data.stockEnd && data.stockEnd !== "") ? Math.min(100, Math.max(0, +data.stockEnd || 0)) : null,
-    fee: +data.fee || 0,
-    strategy: data.strategy || "fixed",
-    initialPct: +data.rate || 4,
-    guardBand: +data.guardBand || 20,
-    adjustPct: +data.adjust || 10,
-    guardBandLo: +(data.guardBandLo != null ? data.guardBandLo : data.guardBand) || 20,
-    raisePct: +(data.adjustLo != null ? data.adjustLo : data.adjust) || 10,
-    gkFinalYears: data.gkFinal ? Math.max(0, Math.round(+data.gkFinalYrs || 0)) : 0,
-    floorPct: +data.floor || 10,
-    ceilPct: +data.ceil || 10,
-    yaleWeight: Math.min(100, Math.max(0, +data.yaleWeight || 70)),
-    yaleRate: Math.max(0, +data.yaleRate || 5),
-    spendFloor: +data.spendFloor || 0,
-    spendCeil: +data.spendCeil || 0,
-    vpwRate: data.vpwRate != null ? +data.vpwRate : 3.8,
-    vpwFV: +data.vpwFV || 0,
-    legacyGoal: +data.legacyGoal || 0,
-    ssAnnual: ssAnnual, ssDelayYears: ssDelay,
-    ssAnnual2: ssAnnual2, ssDelayYears2: ssDelay2,
-    ssAnnual3: ssAnnual3, ssDelayYears3: ssDelay3,
-    retireAge: retireAge, fromYear: HIST_START,
-    incomeItems: Array.isArray(data.incomeItems) ? data.incomeItems.map(function(x){ return Object.assign({},x); }) : [],
-    expenseItems: Array.isArray(data.expenseItems) ? data.expenseItems.map(function(x){ return Object.assign({},x); }) : [],
-    wdStages: (data.strategy || "fixed") === "fixed" && Array.isArray(data.wdStages)
-      ? data.wdStages.map(function(x){ return Object.assign({},x); }) : []
-  };
-}
+/* A saved scenario's options, read exactly as the simulator reads its own
+   fields, so a scenario compares as it ran. */
+function ddStateToOpts(data) { return ddOptsFromState(data); }
 
 var ddCmpSlots = [{name:""}, {name:""}, {name:""}];
 var ddCmpPrevTab = "single";
@@ -434,9 +389,9 @@ function renderDDCompare() {
     return "<th>" + CMP_LETTERS[x.i] + " · " + escapeHtml(x.name) + "</th>";
   }));
   $("ddCmpOutTable").querySelector("thead").innerHTML = "<tr>" + head.join("") + "</tr>";
-  var stratLabels = {fixed:"Fixed amount", pct:"Fixed %", guardrails:"Guardrails", floorceil:"Floor & ceiling", yale:"Yale endowment", vpw:"VPW"};
+
   $("ddCmpOutTable").querySelector("tbody").innerHTML = [
-    {k:"Strategy", fn:function(x){return stratLabels[x.o.strategy]||x.o.strategy;}},
+    {k:"Strategy", fn:function(x){return DD_STRAT_NAMES[x.o.strategy]||x.o.strategy;}},
     {k:"Withdrawal rate", fn:function(x){return x.o.strategy === "vpw"
       ? "VPW at " + (x.o.vpwRate || 0).toFixed(2) + "% real" : x.o.initialPct.toFixed(1)+"%";}},
     {k:"Stock allocation", fn:function(x){return x.o.stockPct+(x.o.stockPctEnd!=null?" → "+x.o.stockPctEnd:"")+"% stocks";}},
