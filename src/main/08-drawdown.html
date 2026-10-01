@@ -536,6 +536,22 @@
       </div>
     </div>
 
+    <div class="panel" id="ddSeqPanel" data-ddtabs="plan" hidden>
+      <h2>When you retire<span class="tipdot" data-tip="ddseq" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2ctrl">
+          <span class="seg" id="segDDSeq">
+            <button type="button" data-ddseq="decade" class="on">By first decade</button>
+            <button type="button" data-ddseq="year">By start year</button>
+          </span>
+        </span></h2>
+      <div class="body ddintro" id="ddSeqIntro"></div>
+      <div class="chartwrap" id="chartWrapDDQ">
+        <svg id="chartDDQ" viewBox="0 0 900 360" preserveAspectRatio="none" role="img" aria-label="Each start's first ten years against how its retirement ended"></svg>
+        <div class="tip" id="tipDDQ"></div>
+      </div>
+      <div class="legend" id="legendDDQ"></div>
+      <details class="dderas" id="ddEras"><summary>What happened in the marked years</summary><div id="ddEraList"></div></details>
+    </div>
+
     <div class="panel" data-ddtabs="plan">
       <h2 id="ddChartTitle">Every historical starting year<span class="h2ctrl" id="ddViewWrap" hidden>
           <span class="seg" id="segDDView">

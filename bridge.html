@@ -173,8 +173,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.74ada7b2b3.css">
-<link rel="preload" href="/assets/app.36484715e1.js" as="script">
+<link rel="stylesheet" href="/assets/app.401a10b3dd.css">
+<link rel="preload" href="/assets/app.4c678df76c.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -2081,6 +2081,22 @@ window.onerror = function(msg){
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <div class="panel" id="ddSeqPanel" data-ddtabs="plan" hidden>
+      <h2>When you retire<span class="tipdot" data-tip="ddseq" role="button" tabindex="0" aria-label="What is this?">?</span><span class="h2ctrl">
+          <span class="seg" id="segDDSeq">
+            <button type="button" data-ddseq="decade" class="on">By first decade</button>
+            <button type="button" data-ddseq="year">By start year</button>
+          </span>
+        </span></h2>
+      <div class="body ddintro" id="ddSeqIntro"></div>
+      <div class="chartwrap" id="chartWrapDDQ">
+        <svg id="chartDDQ" viewBox="0 0 900 360" preserveAspectRatio="none" role="img" aria-label="Each start's first ten years against how its retirement ended"></svg>
+        <div class="tip" id="tipDDQ"></div>
+      </div>
+      <div class="legend" id="legendDDQ"></div>
+      <details class="dderas" id="ddEras"><summary>What happened in the marked years</summary><div id="ddEraList"></div></details>
     </div>
 
     <div class="panel" data-ddtabs="plan">
@@ -5544,7 +5560,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.36484715e1.js"></script>
+<script src="/assets/app.4c678df76c.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

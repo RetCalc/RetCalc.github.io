@@ -256,6 +256,16 @@ function paintMulti(svgId, series, maxX, opt){
     svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:zy, y2:zy,
       stroke:cssVar("--axis"), "stroke-width":1 * sw, opacity:.55}));
   }
+  // Marked moments (the Drawdown Simulator's market eras): a faint dashed
+  // line with its label at the top.
+  (o.marks || []).forEach(m => {
+    if (m.x < 0 || m.x > maxX) return;
+    svg.appendChild(svgEl("line", {x1:X(m.x), x2:X(m.x), y1:T + fs + 4, y2:T + ph, stroke:cssVar("--axis"),
+      "stroke-width":1 * sw, "stroke-dasharray":"3 4", opacity:.55}));
+    const t = svgEl("text", {x:X(m.x), y:T + fs, "text-anchor":"middle", "font-size":fs * .9,
+      fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    t.textContent = m.label; svg.appendChild(t);
+  });
 
   const colors = live.map((x, i) => x.color || MULTI_COLORS[i % MULTI_COLORS.length]);
   live.forEach((x, i) => {

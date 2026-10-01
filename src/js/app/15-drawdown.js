@@ -713,6 +713,7 @@ function ddPaintHist(o, d, H, P, comfort){
     $("ddBadge").textContent = "—";
     $("ddFromNote").innerHTML = "<b class='warn'>Too long for the " + HIST_START + "–" +
       (HIST_START + HIST_STOCK.length - 1) + " data</b>";
+    $("ddSeqPanel").hidden = true;
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Nothing to test: " +
       "a " + o.years + "-year retirement starting in " + o.fromYear +
       " has not finished yet.</div>";
@@ -827,7 +828,7 @@ function ddPaintHist(o, d, H, P, comfort){
   $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
     (show.depleted
       ? "This one ran out of money " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + "."
-      : "This one survived the full " + o.years + " years.");
+      : "This one survived the full " + o.years + " years.") + ddWhyText(o, show, H);
   $("ddTableYearHeader").textContent = ddRetireAge != null ? "Age" : "Year";
   fillDDTable(show);
 
@@ -849,6 +850,7 @@ function ddPaintHist(o, d, H, P, comfort){
     $("ddIncomeNote").textContent = "";
   }
   ddPlanExtras("hist", o, P, H, comfort, B);
+  ddPaintSeq(o, H);
 
   // Return sensitivity
   ddSensTable(DD_DRAGS.map(function (drag) {
@@ -941,6 +943,7 @@ function ddPaintMC(o, M, ssx, P, comfort){
   $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
     " simulated retirements.";
   $("ddYearsPanel").hidden = true;
+  $("ddSeqPanel").hidden = true;
 
   var med = M.med;
   setH2Text($("ddDetailTitle"), "Year by year, a median run");

@@ -3674,6 +3674,47 @@ function ddWindowAvg(w){
   return (w.avg = {stock: Math.pow(gs, 1 / n) - 1, bond: Math.pow(gb, 1 / n) - 1, infl: Math.pow(gi, 1 / n) - 1});
 }
 
+/* A start's first n years (ten unless the retirement is shorter), as
+   yearly rates compounded: the portfolio at the plan's mix (after fees,
+   before withdrawals) and stocks and bonds, all after inflation, and
+   inflation itself. Sequence risk lives here: what the first decade does
+   to a portfolio that is also paying out decides most retirements. */
+function ddFirstDecade(o, seq, n){
+  n = Math.min(n || 10, seq.length);
+  var gp = 1, gs = 1, gb = 1, gi = 1, fee = (o.fee || 0) / 100;
+  for (var y = 0; y < n; y++) {
+    var q = seq[y], w = ddMixAt(o, y), inf = 1 + q.infl / 100;
+    var ret = (w[0] * q.stock + w[1] * (q.sv || 0) + w[2] * q.bond + w[3] * (q.cash || 0)) / 100 - fee;
+    gp *= (1 + ret) / inf; gs *= (1 + q.stock / 100) / inf; gb *= (1 + q.bond / 100) / inf; gi *= inf;
+  }
+  var r = function (g) { return n ? Math.pow(g, 1 / n) - 1 : 0; };
+  return {years: n, port: r(gp), stock: r(gs), bond: r(gb), infl: r(gi)};
+}
+
+/* The markets that shaped the record, each marked at the year that names it
+   and covering the starts its first years fell on. The figures are this
+   record's own (total returns, dividends included); the tests hold them to
+   it. */
+var DD_ERAS = [
+  {year: 1929, from: 1928, to: 1931, title: "The Great Crash",
+   note: "Stocks lost 82%, dividends included, from September 1929 to June 1932, the worst fall on record. Prices fell by a fifth over the same years, so bonds and cash gained ground after inflation."},
+  {year: 1937, from: 1936, to: 1940, title: "The 1937 relapse and wartime inflation",
+   note: "Stocks fell 42% from March 1937 to April 1938 as the recovery stalled. Then wartime inflation arrived with interest rates held down: bonds lost about a third of their value after inflation from 1941 through 1950."},
+  {year: 1966, from: 1965, to: 1969, title: "The long stagflation",
+   note: "1966 is the start behind the 4% rule. Stocks gained nothing after inflation over the sixteen years from it, as inflation climbed from 2% in 1965 to 13% by 1979. Bengen found about 4% was the most a fixed withdrawal could take from 1966 and last 30 years."},
+  {year: 1973, from: 1972, to: 1974, title: "The oil-shock bear market",
+   note: "Stocks fell 39%, dividends included, over 1973 and 1974 while inflation ran at 9% and then 12%, halving their value after inflation in two years."},
+  {year: 2000, from: 1999, to: 2001, title: "The dot-com bust",
+   note: "Stocks began 2000 at the highest valuation on record, a CAPE near 44, fell 41% by October 2002 and again in 2008. Ten years on they were worth 28% less after inflation, while bonds gained nearly half."},
+  {year: 2008, from: 2007, to: 2008, title: "The financial crisis",
+   note: "Stocks fell 49%, dividends included, from October 2007 to March 2009, but were back above their 2007 level by the end of 2012, with low inflation and bonds rising as rates fell."}
+];
+/* The era a start falls in, or null. */
+function ddEraFor(year){
+  for (var k = 0; k < DD_ERAS.length; k++) if (year >= DD_ERAS[k].from && year <= DD_ERAS[k].to) return DD_ERAS[k];
+  return null;
+}
+
 /* Every historical start that has enough data to run the full retirement:
    the sequence-of-returns test. 1966 and 1929 fail plans that a random-draw
    simulation would call safe. With o.monthly, a retirement starts every
@@ -3685,6 +3726,8 @@ function historicalBacktest(o) {
     var r = runDrawdown(o, W[k].seq, null, P), a = ddWindowAvg(W[k]);
     r.startYear = W[k].year; r.startMonth = W[k].month; r.startIdx = W[k].i; r.cape0 = W[k].seq[0].cape;
     r.avgStock = a.stock; r.avgBond = a.bond; r.avgInfl = a.infl;
+    r.dec1 = ddFirstDecade(o, W[k].seq);
+    r.full = ddFirstDecade(o, W[k].seq, o.years);
     runs.push(r);
   }
   var survived = runs.filter(function (r) { return !r.depleted; }).length;
@@ -6116,6 +6159,16 @@ function paintMulti(svgId, series, maxX, opt){
     svg.appendChild(svgEl("line", {x1:L, x2:W - Rp, y1:zy, y2:zy,
       stroke:cssVar("--axis"), "stroke-width":1 * sw, opacity:.55}));
   }
+  // Marked moments (the Drawdown Simulator's market eras): a faint dashed
+  // line with its label at the top.
+  (o.marks || []).forEach(m => {
+    if (m.x < 0 || m.x > maxX) return;
+    svg.appendChild(svgEl("line", {x1:X(m.x), x2:X(m.x), y1:T + fs + 4, y2:T + ph, stroke:cssVar("--axis"),
+      "stroke-width":1 * sw, "stroke-dasharray":"3 4", opacity:.55}));
+    const t = svgEl("text", {x:X(m.x), y:T + fs, "text-anchor":"middle", "font-size":fs * .9,
+      fill:cssVar("--axis"), "font-family":"ui-monospace,SF Mono,Menlo,monospace"});
+    t.textContent = m.label; svg.appendChild(t);
+  });
 
   const colors = live.map((x, i) => x.color || MULTI_COLORS[i % MULTI_COLORS.length]);
   live.forEach((x, i) => {
@@ -11789,7 +11842,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.95065687bc.js";
+var DD_WORKER_URL = "/assets/plan.0dfe4e6b14.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -12058,6 +12111,7 @@ function ddPaintHist(o, d, H, P, comfort){
     $("ddBadge").textContent = "—";
     $("ddFromNote").innerHTML = "<b class='warn'>Too long for the " + HIST_START + "–" +
       (HIST_START + HIST_STOCK.length - 1) + " data</b>";
+    $("ddSeqPanel").hidden = true;
     $("ddVerdict").innerHTML = "<div class='hint' style='margin:0'>Nothing to test: " +
       "a " + o.years + "-year retirement starting in " + o.fromYear +
       " has not finished yet.</div>";
@@ -12172,7 +12226,7 @@ function ddPaintHist(o, d, H, P, comfort){
   $("ddDetailNote").innerHTML = "Click any row in the table above to see that period's detail here. " +
     (show.depleted
       ? "This one ran out of money " + (ddRetireAge != null ? "at age " + ddAgeVal(show.depletedYear) : "in year " + show.depletedYear) + "."
-      : "This one survived the full " + o.years + " years.");
+      : "This one survived the full " + o.years + " years.") + ddWhyText(o, show, H);
   $("ddTableYearHeader").textContent = ddRetireAge != null ? "Age" : "Year";
   fillDDTable(show);
 
@@ -12194,6 +12248,7 @@ function ddPaintHist(o, d, H, P, comfort){
     $("ddIncomeNote").textContent = "";
   }
   ddPlanExtras("hist", o, P, H, comfort, B);
+  ddPaintSeq(o, H);
 
   // Return sensitivity
   ddSensTable(DD_DRAGS.map(function (drag) {
@@ -12286,6 +12341,7 @@ function ddPaintMC(o, M, ssx, P, comfort){
   $("ddChartNote").innerHTML = "Balance in today's dollars across " + trials.toLocaleString() +
     " simulated retirements.";
   $("ddYearsPanel").hidden = true;
+  $("ddSeqPanel").hidden = true;
 
   var med = M.med;
   setH2Text($("ddDetailTitle"), "Year by year, a median run");
@@ -13170,6 +13226,12 @@ function ddScatter(svgId, pts, opt){
     svg.appendChild(svgEl("line", {x1: X(opt.vLine.x), x2: X(opt.vLine.x), y1: T, y2: T + ph, stroke: "#e9b872", "stroke-width": 1.4 * sw, "stroke-dasharray": "6 5", opacity: .8}));
     text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, {"text-anchor": "end", fill: "#e9b872", "font-size": fs * .9});
   }
+  // era markers: a faint dashed line at each, its year at the top
+  (opt.marks || []).forEach(function (m) {
+    if (m.x < AXx.min || m.x > AXx.max) return;
+    svg.appendChild(svgEl("line", {x1: X(m.x), x2: X(m.x), y1: T + fs + 4, y2: T + ph, stroke: cssVar("--axis"), "stroke-width": sw, "stroke-dasharray": "3 4", opacity: .55}));
+    text(X(m.x), T + fs, m.label, {"text-anchor": "middle", "font-size": fs * .9});
+  });
   live.forEach(function (p) {
     p.px = X(p.x); p.py = Y(p.y);
     var color = p.cur ? "#e9b872" : p.miss ? "#e2795f" : (p.color || "#4fbf95");
@@ -13301,7 +13363,11 @@ function ddPaintSafe(){
       pts: [{year: 0, value: mine * 100}, {year: safe.length - 1, value: mine * 100}]}];
     ddSafePts = paintMulti("chartDDR", series, Math.max(1, safe.length - 1), {
       yFmt: function (v) { return fmtNum(v) + "%"; },
-      xFmt: function (i) { var w = safe[Math.round(i)]; return w ? String(w.year) : ""; }});
+      xFmt: function (i) { var w = safe[Math.round(i)]; return w ? String(w.year) : ""; },
+      marks: DD_ERAS.map(function (e) {
+        for (var i = 0; i < safe.length; i++) if (safe[i].year === e.year && safe[i].month === 1) return {x: i, label: String(e.year)};
+        return null;
+      }).filter(Boolean)});
     $("legendDDR").innerHTML = swatch("#4fbf95", "Highest year-one withdrawal that worked") + swatch("#e9b872", "Yours, " + pctStr(mine, 2));
   }
   // the solvers
@@ -13342,7 +13408,8 @@ attachChart("chartWrapDDR", "chartDDR", "tipDDR", function () { return ddSafePts
   if (!w) return "";
   return "<b>Retiring in " + (ddSafe.o.monthly ? HIST_MON[w.month - 1] + " " : "") + w.year + "</b>" +
     "<br><span style='color:#4fbf95'>Highest that worked</span> <span class='n'>" + (w.rate == null ? "none" : pctStr(w.rate, 2) + (w.capped ? "+" : "")) + "</span>" +
-    "<br>CAPE at the start <span class='n'>" + w.cape.toFixed(1) + "</span>";
+    "<br>CAPE at the start <span class='n'>" + w.cape.toFixed(1) + "</span>" +
+    (ddEraFor(w.year) ? "<br><span class='ddtip-era'>" + ddEraFor(w.year).title + "</span>" : "");
 });
 $("ddSolveDialUse").addEventListener("click", function () {
   if (!ddSafe || !ddSafe.res.dial || ddSafe.res.dial.v == null) return;
@@ -13856,6 +13923,152 @@ function ddMixForm(){
   if (first) first.focus();
 }
 $("ddMixBtn").addEventListener("click", ddMixForm);
+/* ---------- the Drawdown Simulator: history's lessons ----------
+   Sequence risk, shown two ways: each start's first ten years against how
+   its retirement ended, and every start in order with the eras that shaped
+   them marked (DD_ERAS, in the engine). And for the start picked in the
+   table, a line on why it went the way it did. */
+var ddSeqKind = "decade", ddSeqPts = null, ddSeqHover = null, ddSeqLast = null;
+
+/* What a run's dot measures: what's left, or for a strategy built to spend
+   everything, its typical year's spending. */
+function ddSeqMeasure(o){
+  return DD_STRAT[o.strategy].spendsDown
+    ? {of: function (r) { return r.medRealSpend; }, name: "typical year's spending", axis: "Typical year's spending"}
+    : {of: function (r) { return r.endReal; }, name: "what was left", axis: "Left at the end, today's $"};
+}
+function ddPct1(x){ return (x < 0 ? "−" : "") + pctStr(Math.abs(x), 1); }
+function ddSeqLabel(r, monthly){ return ddStartLabel(r, monthly); }
+
+/* Two starts that make the point: one that ran out though its whole
+   retirement averaged more than one that lasted. Failing that, two that
+   averaged about the same and ended furthest apart. */
+function ddSeqPair(H, M){
+  var fails = H.runs.filter(function (r) { return r.depleted; });
+  var lasts = H.runs.filter(function (r) { return !r.depleted; });
+  if (fails.length && lasts.length) {
+    var f = fails.reduce(function (a, b) { return b.full.port > a.full.port ? b : a; });
+    var s = lasts.reduce(function (a, b) { return b.full.port < a.full.port ? b : a; });
+    if (s.full.port < f.full.port - 0.0005) return {kind: "beat", a: f, b: s};
+  }
+  var best = null, runs = H.runs.length > 150 ? H.runs.filter(function (r) { return r.startMonth === 1; }) : H.runs;
+  for (var i = 0; i < runs.length; i++) for (var j = i + 1; j < runs.length; j++) {
+    var a = runs[i], b = runs[j];
+    if (Math.abs(a.full.port - b.full.port) > 0.0025) continue;
+    var g = Math.abs(M.of(a) - M.of(b));
+    if (!best || g > best.g) best = {kind: "same", a: M.of(a) < M.of(b) ? a : b, b: M.of(a) < M.of(b) ? b : a, g: g};
+  }
+  return best;
+}
+
+function ddPaintSeq(o, H){
+  ddSeqLast = {o: o, H: H};
+  var panel = $("ddSeqPanel");
+  if (!H.runs.length) { panel.hidden = true; return; }
+  panel.hidden = false;
+  $("segDDSeq").querySelectorAll("button").forEach(function (b) { b.classList.toggle("on", b.getAttribute("data-ddseq") === ddSeqKind); });
+  var M = ddSeqMeasure(o), mo = H.monthly, n = H.runs[0].dec1.years, dec = ddSeqKind === "decade";
+  var eraYear = {};
+  DD_ERAS.forEach(function (e) { eraYear[e.year] = 1; });
+  var pts = H.runs.map(function (r) {
+    return {x: dec ? r.dec1.port * 100 : r.startYear + (r.startMonth - 1) / 12, y: M.of(r), run: r,
+      miss: r.depleted, cur: r.startIdx === ddSelStart,
+      label: dec && r.startMonth === 1 && eraYear[r.startYear] ? String(r.startYear) : null};
+  });
+  var lo = H.runs[0].startYear, hi = H.runs[H.runs.length - 1].startYear;
+  ddSeqPts = ddScatter("chartDDQ", pts, {small: pts.length > 150, yZero: true, yFmt: fmtAxisMoney,
+    xFmt: dec ? function (v) { return fmtNum(v) + "%"; } : function (v) { return String(Math.round(v)); },
+    xLabel: dec ? "First " + n + " years' return a year, after inflation →" : "Retired in →",
+    yLabel: dec ? M.axis : null,
+    marks: dec ? null : DD_ERAS.filter(function (e) { return e.year >= lo && e.year <= hi; })
+      .map(function (e) { return {x: e.year, label: String(e.year)}; })});
+  $("legendDDQ").innerHTML = (dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch("#4fbf95", "Lasted") + swatch("#e2795f", "Ran out") +
+    (ddSelStart != null ? swatch("#e9b872", "The start picked in the table") : "");
+
+  // The story: the weakest and strongest thirds of first decades, and a pair
+  // whose whole retirements averaged alike.
+  var by = H.runs.slice().sort(function (a, b) { return a.dec1.port - b.dec1.port; });
+  var t = Math.max(1, Math.floor(by.length / 3));
+  var low = by.slice(0, t), top = by.slice(by.length - t);
+  var med = function (a) { var v = a.map(M.of).sort(function (p, q) { return p - q; }); return v[Math.floor(v.length / 2)]; };
+  var failLow = low.filter(function (r) { return r.depleted; }).length, failTop = top.filter(function (r) { return r.depleted; }).length;
+  var unit = mo ? "starting months" : "starts";
+  var txt = "The first " + n + " years decide most retirements: that's when withdrawals are largest against the balance, " +
+    "so losses then are locked in. The third of " + unit + " with the weakest first " + n + " years (under " +
+    ddPct1(low[low.length - 1].dec1.port) + " a year after inflation, at your mix) " +
+    (failLow ? "ran out in <b>" + failLow + " of " + low.length + "</b>, and " : "") + "left a typical <b>" + money(med(low)) + "</b>" +
+    (M.name === "what was left" ? "" : " a year") + "; the strongest third (over " + ddPct1(top[0].dec1.port) + ") " +
+    (failTop ? "ran out in " + failTop + " and " : "") + "left <b>" + money(med(top)) + "</b>. ";
+  var pr = ddSeqPair(H, M);
+  if (pr && pr.kind === "beat")
+    txt += "Retiring in " + ddSeqLabel(pr.a, mo) + " ran out though its " + o.years + " years averaged " + ddPct1(pr.a.full.port) +
+      " a year after inflation, while " + ddSeqLabel(pr.b, mo) + " lasted on " + ddPct1(pr.b.full.port) +
+      ": their first decades returned " + ddPct1(pr.a.dec1.port) + " and " + ddPct1(pr.b.dec1.port) + ".";
+  else if (pr)
+    txt += "Retiring in " + ddSeqLabel(pr.a, mo) + " and in " + ddSeqLabel(pr.b, mo) + " both averaged about " + ddPct1(pr.a.full.port) +
+      " a year after inflation over " + o.years + " years, yet one left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b)) +
+      ": their first decades returned " + ddPct1(pr.a.dec1.port) + " and " + ddPct1(pr.b.dec1.port) + ".";
+  $("ddSeqIntro").innerHTML = txt + (dec ? "" : " The dashed lines mark the eras below.");
+
+  var eras = DD_ERAS.filter(function (e) { return e.to >= lo && e.from <= hi; });
+  $("ddEras").hidden = !eras.length;
+  $("ddEraList").innerHTML = eras.map(function (e) {
+    return "<p><b>" + e.year + ": " + e.title + ".</b> " + e.note + "</p>";
+  }).join("");
+}
+ddScatterTips("chartWrapDDQ", "chartDDQ", "tipDDQ", function () { return ddSeqPts; }, function (p) {
+  if (!ddSeqLast) return "";
+  var r = p.run, o = ddSeqLast.o, era = ddEraFor(r.startYear);
+  ddSeqHover = r;
+  return "<b>Retiring in " + ddSeqLabel(r, ddSeqLast.H.monthly) + "</b>" +
+    "<br>First " + r.dec1.years + " years <span class='n'>" + ddPct1(r.dec1.port) + "/yr</span>" +
+    "<br>All " + o.years + " years <span class='n'>" + ddPct1(r.full.port) + "/yr</span>" +
+    "<br>" + (r.depleted ? "<span class='neg'>" + ddOutcomeText(r) + "</span>" : "Left <span class='n'>" + money(r.endReal) + "</span>") +
+    (era ? "<br><span class='ddtip-era'>" + era.title + "</span>" : "") +
+    "<br><span class='ddtip-era'>Tap to see it year by year</span>";
+});
+$("chartWrapDDQ").addEventListener("click", function () {
+  if (!ddSeqHover) return;
+  ddSelStart = ddSeqHover.startIdx;
+  ddView = "year";
+  renderDrawdown();
+});
+$("segDDSeq").addEventListener("click", function (e) {
+  var b = e.target.closest ? e.target.closest("button[data-ddseq]") : null;
+  if (!b || !ddSeqLast) return;
+  ddSeqKind = b.getAttribute("data-ddseq");
+  ddPaintSeq(ddSeqLast.o, ddSeqLast.H);
+});
+
+/* Why the start picked went as it did: its first years, what they left,
+   and the era it fell in. */
+function ddWhyText(o, r, H){
+  var d = r.dec1, n = d.years;
+  if (!n || !r.rows.length) return "";
+  var ps = H.runs.map(function (x) { return x.dec1.port; }).sort(function (a, b) { return a - b; });
+  var med = ps[Math.floor(ps.length / 2)];
+  var below = ps.filter(function (v) { return v < d.port - 1e-12; }).length / ps.length;
+  var ends = H.runs.map(function (x) { return x.endReal; }).sort(function (a, b) { return a - b; });
+  var endRank = ends.filter(function (v) { return v < r.endReal - 1e-6; }).length / ends.length;
+  var lead = r.depleted ? "Why it ran out" : endRank < .2 ? "Why it was hard" : endRank >= .8 ? "Why it went well" : "How it went";
+  var start = r.rows[0].start, row = r.rows[n - 1], left = start > 0 ? row.realEnd / start : 0;
+  var nx = r.rows[n];
+  var rate = nx && row.realEnd > 0 ? nx.realWithdrawal / row.realEnd : null;
+  var where = below < .1 ? "among the worst on record" : below < .33 ? "weaker than most" : below >= .9 ? "among the best on record" :
+    below >= .67 ? "stronger than most" : "about typical";
+  var txt = "<b>" + lead + ":</b> its first " + n + " years returned " + ddPct1(d.port) + " a year after inflation at your mix " +
+    "(stocks " + ddPct1(d.stock) + ", bonds " + ddPct1(d.bond) + ", with inflation at " + pctStr(d.infl, 1) + " a year), " + where +
+    "; the typical start's returned " + ddPct1(med) + ". ";
+  if (n < o.years)
+    txt += "Withdrawing through them left " + pctStr(left, 0) + " of the starting balance, after inflation" +
+      (rate != null ? ", so year " + (n + 1) + "'s withdrawal was " + pctStr(rate, 1) + " of what was left" : "") + ". ";
+  if (r.depleted)
+    txt += below < .5 ? "Too little was left for the years after to rebuild: it ran out " + (ddRetireAge != null ? "at age " + ddAgeVal(r.depletedYear) : "in year " + r.depletedYear) + ". "
+      : "The damage came later: it ran out " + (ddRetireAge != null ? "at age " + ddAgeVal(r.depletedYear) : "in year " + r.depletedYear) + ". ";
+  var era = ddEraFor(r.startYear);
+  if (era) txt += "<i>" + era.title + ".</i> " + era.note;
+  return "<span class='ddwhy'>" + txt + "</span>";
+}
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
@@ -13984,6 +14197,7 @@ const GLOSS = {
   ddheat: "The share of historical starts meeting the risk target, for settings around yours and a range of stock shares or retirement lengths. Green holds in nearly every start; red fails often. Tap a cell to put its setting into your plan.",
   ddvalue: "Shiller's CAPE (cyclically adjusted price-to-earnings): the S&P 500's price over ten years of its earnings, after inflation. A high reading means stocks were expensive. Each dot is one start: its CAPE, and the most it could have started with. Expensive starts have tended to allow less, but the link is loose.",
   ddstarts: "When each tested retirement begins. Each January is the classic way (Bengen and the Trinity study tested a retirement starting every January). Every month tests twelve times as many, so the result no longer hangs on markets happening to turn at a year's end: retiring in September 1929, at the peak, left less than half of what retiring that January did. Each year still runs twelve months from the start.",
+  ddseq: "Sequence-of-returns risk: the order returns arrive in matters once you're withdrawing. Losses early, while withdrawals are large against the balance, sell more shares at low prices, and the recovery has less to work with. Two retirements whose returns averaged the same can end far apart. Each dot is one historical start: its first ten years' return after inflation, at your mix, against how it ended. Switch to By start year to see them in order, with the eras that shaped them marked.",
   ddmcblock: "How many consecutive years each Monte Carlo draw takes from the record. At 1, every year is drawn on its own, so a crash is as likely to be followed by a boom as by another crash. Drawing 5 or 10 years together keeps the streaks history actually had, like the 1930s' losses or the 1970s' inflation, while still mixing up the order. Long blocks repeat history more, short ones invent more new paths.",
   ddmcret: "History's uses each drawn year as it happened. Your own lets you set the long-run return, compounded, for each asset and for inflation: every drawn year moves up or down by the same amount, so the record averages out to your figures while keeping its ups and downs, how the assets moved together and its streaks. Lower figures than history's are a common way to test a plan against a future some expect to be leaner. Returns are before inflation.",
   ddfrom: "The first year a tested retirement can begin. The default, 1926, uses the whole record. A later start, like 1950, leaves out the Depression and tests a world more like today's, but on fewer retirements, and those overlap more.",
@@ -20675,7 +20889,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.95065687bc.js";
+var OP_WORKER_URL = "/assets/plan.0dfe4e6b14.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

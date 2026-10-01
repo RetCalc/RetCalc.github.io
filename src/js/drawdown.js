@@ -713,6 +713,47 @@ function ddWindowAvg(w){
   return (w.avg = {stock: Math.pow(gs, 1 / n) - 1, bond: Math.pow(gb, 1 / n) - 1, infl: Math.pow(gi, 1 / n) - 1});
 }
 
+/* A start's first n years (ten unless the retirement is shorter), as
+   yearly rates compounded: the portfolio at the plan's mix (after fees,
+   before withdrawals) and stocks and bonds, all after inflation, and
+   inflation itself. Sequence risk lives here: what the first decade does
+   to a portfolio that is also paying out decides most retirements. */
+function ddFirstDecade(o, seq, n){
+  n = Math.min(n || 10, seq.length);
+  var gp = 1, gs = 1, gb = 1, gi = 1, fee = (o.fee || 0) / 100;
+  for (var y = 0; y < n; y++) {
+    var q = seq[y], w = ddMixAt(o, y), inf = 1 + q.infl / 100;
+    var ret = (w[0] * q.stock + w[1] * (q.sv || 0) + w[2] * q.bond + w[3] * (q.cash || 0)) / 100 - fee;
+    gp *= (1 + ret) / inf; gs *= (1 + q.stock / 100) / inf; gb *= (1 + q.bond / 100) / inf; gi *= inf;
+  }
+  var r = function (g) { return n ? Math.pow(g, 1 / n) - 1 : 0; };
+  return {years: n, port: r(gp), stock: r(gs), bond: r(gb), infl: r(gi)};
+}
+
+/* The markets that shaped the record, each marked at the year that names it
+   and covering the starts its first years fell on. The figures are this
+   record's own (total returns, dividends included); the tests hold them to
+   it. */
+var DD_ERAS = [
+  {year: 1929, from: 1928, to: 1931, title: "The Great Crash",
+   note: "Stocks lost 82%, dividends included, from September 1929 to June 1932, the worst fall on record. Prices fell by a fifth over the same years, so bonds and cash gained ground after inflation."},
+  {year: 1937, from: 1936, to: 1940, title: "The 1937 relapse and wartime inflation",
+   note: "Stocks fell 42% from March 1937 to April 1938 as the recovery stalled. Then wartime inflation arrived with interest rates held down: bonds lost about a third of their value after inflation from 1941 through 1950."},
+  {year: 1966, from: 1965, to: 1969, title: "The long stagflation",
+   note: "1966 is the start behind the 4% rule. Stocks gained nothing after inflation over the sixteen years from it, as inflation climbed from 2% in 1965 to 13% by 1979. Bengen found about 4% was the most a fixed withdrawal could take from 1966 and last 30 years."},
+  {year: 1973, from: 1972, to: 1974, title: "The oil-shock bear market",
+   note: "Stocks fell 39%, dividends included, over 1973 and 1974 while inflation ran at 9% and then 12%, halving their value after inflation in two years."},
+  {year: 2000, from: 1999, to: 2001, title: "The dot-com bust",
+   note: "Stocks began 2000 at the highest valuation on record, a CAPE near 44, fell 41% by October 2002 and again in 2008. Ten years on they were worth 28% less after inflation, while bonds gained nearly half."},
+  {year: 2008, from: 2007, to: 2008, title: "The financial crisis",
+   note: "Stocks fell 49%, dividends included, from October 2007 to March 2009, but were back above their 2007 level by the end of 2012, with low inflation and bonds rising as rates fell."}
+];
+/* The era a start falls in, or null. */
+function ddEraFor(year){
+  for (var k = 0; k < DD_ERAS.length; k++) if (year >= DD_ERAS[k].from && year <= DD_ERAS[k].to) return DD_ERAS[k];
+  return null;
+}
+
 /* Every historical start that has enough data to run the full retirement:
    the sequence-of-returns test. 1966 and 1929 fail plans that a random-draw
    simulation would call safe. With o.monthly, a retirement starts every
@@ -724,6 +765,8 @@ function historicalBacktest(o) {
     var r = runDrawdown(o, W[k].seq, null, P), a = ddWindowAvg(W[k]);
     r.startYear = W[k].year; r.startMonth = W[k].month; r.startIdx = W[k].i; r.cape0 = W[k].seq[0].cape;
     r.avgStock = a.stock; r.avgBond = a.bond; r.avgInfl = a.infl;
+    r.dec1 = ddFirstDecade(o, W[k].seq);
+    r.full = ddFirstDecade(o, W[k].seq, o.years);
     runs.push(r);
   }
   var survived = runs.filter(function (r) { return !r.depleted; }).length;

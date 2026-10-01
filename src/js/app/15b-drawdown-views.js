@@ -583,6 +583,12 @@ function ddScatter(svgId, pts, opt){
     svg.appendChild(svgEl("line", {x1: X(opt.vLine.x), x2: X(opt.vLine.x), y1: T, y2: T + ph, stroke: "#e9b872", "stroke-width": 1.4 * sw, "stroke-dasharray": "6 5", opacity: .8}));
     text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, {"text-anchor": "end", fill: "#e9b872", "font-size": fs * .9});
   }
+  // era markers: a faint dashed line at each, its year at the top
+  (opt.marks || []).forEach(function (m) {
+    if (m.x < AXx.min || m.x > AXx.max) return;
+    svg.appendChild(svgEl("line", {x1: X(m.x), x2: X(m.x), y1: T + fs + 4, y2: T + ph, stroke: cssVar("--axis"), "stroke-width": sw, "stroke-dasharray": "3 4", opacity: .55}));
+    text(X(m.x), T + fs, m.label, {"text-anchor": "middle", "font-size": fs * .9});
+  });
   live.forEach(function (p) {
     p.px = X(p.x); p.py = Y(p.y);
     var color = p.cur ? "#e9b872" : p.miss ? "#e2795f" : (p.color || "#4fbf95");
@@ -714,7 +720,11 @@ function ddPaintSafe(){
       pts: [{year: 0, value: mine * 100}, {year: safe.length - 1, value: mine * 100}]}];
     ddSafePts = paintMulti("chartDDR", series, Math.max(1, safe.length - 1), {
       yFmt: function (v) { return fmtNum(v) + "%"; },
-      xFmt: function (i) { var w = safe[Math.round(i)]; return w ? String(w.year) : ""; }});
+      xFmt: function (i) { var w = safe[Math.round(i)]; return w ? String(w.year) : ""; },
+      marks: DD_ERAS.map(function (e) {
+        for (var i = 0; i < safe.length; i++) if (safe[i].year === e.year && safe[i].month === 1) return {x: i, label: String(e.year)};
+        return null;
+      }).filter(Boolean)});
     $("legendDDR").innerHTML = swatch("#4fbf95", "Highest year-one withdrawal that worked") + swatch("#e9b872", "Yours, " + pctStr(mine, 2));
   }
   // the solvers
@@ -755,7 +765,8 @@ attachChart("chartWrapDDR", "chartDDR", "tipDDR", function () { return ddSafePts
   if (!w) return "";
   return "<b>Retiring in " + (ddSafe.o.monthly ? HIST_MON[w.month - 1] + " " : "") + w.year + "</b>" +
     "<br><span style='color:#4fbf95'>Highest that worked</span> <span class='n'>" + (w.rate == null ? "none" : pctStr(w.rate, 2) + (w.capped ? "+" : "")) + "</span>" +
-    "<br>CAPE at the start <span class='n'>" + w.cape.toFixed(1) + "</span>";
+    "<br>CAPE at the start <span class='n'>" + w.cape.toFixed(1) + "</span>" +
+    (ddEraFor(w.year) ? "<br><span class='ddtip-era'>" + ddEraFor(w.year).title + "</span>" : "");
 });
 $("ddSolveDialUse").addEventListener("click", function () {
   if (!ddSafe || !ddSafe.res.dial || ddSafe.res.dial.v == null) return;

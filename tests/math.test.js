@@ -492,6 +492,45 @@ group("Drawdown: Monte Carlo draws years in blocks, and can take your own return
   ok(ddOptsFromState({ mcBlock: 5, mcRet: "own", mcStock: 6 }).mcRet.stock === 6, "saved settings read back");
 })();
 
+group("Drawdown: the first decade, and the eras' figures match the record");
+(function () {
+  var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, strategy: "fixed" };
+  var seq = seqFrom(1966, 30), g = 1;
+  for (var y = 0; y < 10; y++) g *= (1 + (.6 * seq[y].stock + .4 * seq[y].bond) / 100) / (1 + seq[y].infl / 100);
+  near(ddFirstDecade(o, seq).port, Math.pow(g, .1) - 1, 1e-12, "1966's first ten years at 60/40, after inflation");
+  eq(ddFirstDecade(o, seq, 5).years, 5, "or any other span");
+  var H = historicalBacktest(Object.assign({}, o, { initialPct: 4.5 }));
+  var r69 = H.runs.filter(function (r) { return r.startYear === 1969; })[0], r55 = H.runs.filter(function (r) { return r.startYear === 1955; })[0];
+  ok(r69.depleted && !r55.depleted && r69.full.port > r55.full.port, "at 4.5%, 1969 ran out though its 30 years beat 1955's, which lasted");
+  ok(r69.dec1.port < 0 && r55.dec1.port > .05, "the first decades tell them apart");
+  eq(ddEraFor(1966).year, 1966, "1966 is in its era"); eq(ddEraFor(1985), null, "1985 in none");
+
+  // The eras' notes quote the record; each figure is worked here from it.
+  var M = function (y, m) { return (y - 1926) * 12 + m - 1; };
+  var fall = function (y0, m0, y1, m1) { var g = 1; for (var i = M(y0, m0) + 1; i <= M(y1, m1); i++) g *= 1 + HIST_M_STOCK[i] / 100; return 1 - g; };
+  var real = function (a, y0, n) { var g = 1; for (var i = 0; i < n; i++) g *= (1 + a[y0 - 1926 + i] / 100) / (1 + HIST_INFL[y0 - 1926 + i] / 100); return g; };
+  var note = function (y) { return DD_ERAS.filter(function (e) { return e.year === y; })[0].note; };
+  var pc = function (x) { return Math.round(x * 100) + "%"; };
+  var has = function (y, s) { ok(note(y).indexOf(s) >= 0, y + " says " + s, note(y)); };
+  has(1929, pc(fall(1929, 9, 1932, 6)));
+  var defl = 1; for (var i = M(1929, 9) + 1; i <= M(1932, 6); i++) defl *= 1 + HIST_M_INFL[i] / 100;
+  near(1 - defl, .2, .025, "prices fell by a fifth, 1929-32");
+  has(1937, pc(fall(1937, 3, 1938, 4)));
+  near(1 - real(HIST_BOND, 1941, 10), 1 / 3, .02, "bonds lost about a third after inflation, 1941-50");
+  ok(real(HIST_STOCK, 1966, 16) <= 1, "stocks gained nothing after inflation in the sixteen years from 1966");
+  ok(Math.round(HIST_INFL[1965 - 1926]) === 2 && Math.round(HIST_INFL[1979 - 1926]) === 13, "inflation 2% in 1965, 13% in 1979");
+  has(1973, pc(fall(1973, 1, 1974, 12)));
+  ok(Math.round(HIST_INFL[1973 - 1926]) === 9 && Math.round(HIST_INFL[1974 - 1926]) === 12, "inflation 9% then 12%");
+  near(real(HIST_STOCK, 1973, 2), .5, .02, "halving stocks after inflation");
+  near(HIST_M_CAPE[M(2000, 1)], 44, .5, "CAPE near 44 in January 2000");
+  has(2000, pc(fall(2000, 8, 2002, 10)));
+  has(2000, pc(1 - real(HIST_STOCK, 2000, 10)) + " less");
+  near(real(HIST_BOND, 2000, 10) - 1, .5, .02, "bonds gained nearly half");
+  has(2008, pc(fall(2007, 10, 2009, 3)));
+  var g8 = 1; for (var y8 = 2008; y8 <= 2012; y8++) g8 *= 1 + HIST_STOCK[y8 - 1926] / 100;
+  ok(g8 > 1, "back above the 2007 level by the end of 2012");
+})();
+
 group("Drawdown: saved inputs become options the same way everywhere");
 (function () {
   var o = ddOptsFromState({ initial: "1,000,000", years: 30, stock: 0, rate: 0, floor: 0, ceil: 0, yaleWeight: 0, strategy: "floorceil" });
