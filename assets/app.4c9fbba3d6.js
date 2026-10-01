@@ -3191,6 +3191,35 @@ var DD_ORDER = [];
    }}
 ].forEach(function (x) { DD_STRAT[x.id] = x; DD_ORDER.push(x.id); });
 
+/* The minimum spending each year, in today's dollars: Minimum spending from
+   the start, then each change in o.floorSteps ({start: 1-based year, amount,
+   glide: years}) from its year, stepped, or eased in a straight line over
+   its glide years. */
+function ddFloorSched(o){
+  var n = o.years, out = [], base = Math.max(0, o.spendFloor || 0), y, k;
+  var steps = (o.floorSteps || []).map(function (x, i) {
+    return {start: Math.max(2, Math.round(x.start || 0)), amount: Math.max(0, +x.amount || 0),
+      glide: Math.max(0, Math.round(x.glide || 0)), i: i};
+  }).sort(function (a, b) { return a.start - b.start || a.i - b.i; });
+  for (y = 0; y < n; y++) out.push(base);
+  var level = base;
+  for (k = 0; k < steps.length; k++) {
+    var st = steps[k], from = level;
+    for (y = st.start - 1; y < n; y++) {
+      var t = st.glide > 0 ? Math.min(1, (y - (st.start - 1) + 1) / (st.glide + 1)) : 1;
+      out[y] = from + (st.amount - from) * t;
+    }
+    level = st.amount;
+  }
+  return out;
+}
+/* A comfort line is one amount (following the spending path) or one per
+   year: its value in year y. */
+function ddLineAt(c, y, m){
+  if (Array.isArray(c)) return c[Math.min(y, c.length - 1)] || 0;
+  return (c || 0) * (m == null ? 1 : m);
+}
+
 /* One run's per-plan setup, shared by every start: the guaranteed income,
    what stays invested, the spending path and, for risk-based guardrails, its
    tables. first is year one's spending from the strategy, in today's
@@ -3198,7 +3227,10 @@ var DD_ORDER = [];
 function ddPrep(o){
   var G = ddGuaranteed(o), S = DD_STRAT[o.strategy] || DD_STRAT.yale;
   if (!S.path && o.path && o.path !== "flat") o = Object.assign({}, o, {path: "flat"});
-  var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0};
+  var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0,
+    floor: ddFloorSched(o)};
+  // A search's line, held as a minimum on top of the plan's own.
+  if (o.floorLine) P.floor = P.floor.map(function (v, y) { return Math.max(v, o.floorLine[y] || 0); });
   if (S.id === "riskgr"){
     // the smile's spending term only, from a 4% year one
     P.path = ddPath(o, P.initial * .04 + G.income);
@@ -3253,11 +3285,11 @@ function runDrawdown(o, seq, ctl, P) {
 
     // The optional minimum and maximum, in today's dollars, apply to what the
     // strategy spends, never to extra expenses. If they cross, the maximum
-    // wins. Fixed spending never falls, so they don't apply to it. A minimum
-    // set by a search follows the spending path (floorPath).
+    // wins. Fixed spending never falls, so they don't apply to it. The
+    // minimum can change with age (ddFloorSched).
     if (S.limits !== false) {
-      if (o.spendFloor > 0) {
-        var floorNominal = o.spendFloor * cumInfl * (o.floorPath ? m : 1);
+      if (P.floor[y] > 0) {
+        var floorNominal = P.floor[y] * cumInfl;
         if (reg < floorNominal) reg = floorNominal;
       }
       if (o.spendCeil > 0) {
@@ -3337,7 +3369,7 @@ function runDrawdown(o, seq, ctl, P) {
     var plannedEnd = S.spendsDown && y === o.years - 1;
     if (bal <= 0 && depletedYear === null && !plannedEnd && invested) depletedYear = y + 1;
     if (stop === "lasts" && depletedYear !== null) { failed = true; break; }
-    if (stop === "comfort" && realReg < line * m - .5) { failed = true; break; }
+    if (stop === "comfort" && realReg < ddLineAt(line, y, m) - .5) { failed = true; break; }
   }
 
   var out = {
@@ -3519,6 +3551,7 @@ function ddOptsFromState(d){
     yaleWeight: clamp(v("yaleWeight", 70), 0, 100),
     yaleRate: Math.max(0, v("yaleRate", 5)),
     spendFloor: v("spendFloor", 0),
+    floorSteps: copy(d.floorSteps),
     spendCeil: v("spendCeil", 0),
     vpwRate: v("vpwRate", 3.8),
     vpwFV: v("vpwFV", 0),
@@ -3560,11 +3593,16 @@ function ddOptsFromState(d){
 }
 
 /* The comfort line: spending, in today's dollars, the household would hate
-   to fall below. The one set, or else the minimum spending, or else 80% of
-   year one's (guaranteed income included). */
+   to fall below. The one set, or else the minimum spending (one amount per
+   year when it changes with age), or else 80% of year one's (guaranteed
+   income included). */
 function ddComfort(o, P){
   if (o.comfort > 0) return o.comfort;
-  if (o.spendFloor > 0 && (DD_STRAT[o.strategy] || {}).limits !== false) return o.spendFloor;
+  if ((DD_STRAT[o.strategy] || {}).limits !== false) {
+    var f = ddFloorSched(o);
+    if (f.some(function (v) { return v > 0; }))
+      return f.every(function (v) { return v === f[0]; }) ? f[0] : f;
+  }
   P = P || ddPrep(o);
   return .8 * (P.first + P.G.income);
 }
@@ -3591,7 +3629,8 @@ function ddScorecard(runs, o, comfort, path){
     rows.forEach(function (row, y) {
       var m = path[y] || 0, v = row.realReg, norm = m > 0 ? v / m : v;
       years++; life += row.realSpend;
-      if (comfort > 0 && v < comfort * m - .5) {
+      var ln = ddLineAt(comfort, y, m);
+      if (ln > 0 && v < ln - .5) {
         below++; streak++; any = true;
         if (streak > longest) { longest = streak; longRun = r; }
       } else streak = 0;
@@ -3634,8 +3673,10 @@ function ddScorecard(runs, o, comfort, path){
    started at; with it, the only way under the line is running out of money,
    or a fixed amount that starts under it. */
 function ddForTarget(o, T){
-  if (T.crit !== "comfort" || !(T.comfort > 0) || (DD_STRAT[o.strategy] || {}).limits === false) return o;
-  return Object.assign({}, o, {spendFloor: Math.max(o.spendFloor || 0, T.comfort), floorPath: true});
+  if (T.crit !== "comfort" || !(ddLineAt(T.comfort, 0) > 0) || (DD_STRAT[o.strategy] || {}).limits === false) return o;
+  var path = ddPrep(Object.assign({}, o, {floorLine: null})).path, line = [];
+  for (var y = 0; y < o.years; y++) line.push(ddLineAt(T.comfort, y, path[y]));
+  return Object.assign({}, o, {floorLine: line});
 }
 function ddMeets(o, T, W, order, full){
   var P = ddPrep(o), n = W.length, fails = 0;
@@ -3767,7 +3808,7 @@ function ddHeatmap(o, T, axis){
       // one, which says nothing about risk: -1 marks it.
       if (T.crit === "comfort" && S.limits === false) {
         var P = ddPrep(x);
-        if (P.first + P.G.income < T.comfort - .5) return -1;
+        if (P.first + P.G.income < ddLineAt(T.comfort, 0) - .5) return -1;
       }
       return ddMeets(x, T, W, null, true).share;
     });
@@ -3799,7 +3840,7 @@ function ddShowdown(o, T, ids){
     var H = historicalBacktest(x), P = H.prep;
     var sc = ddScorecard(H.runs, x, T.comfort, P.path);
     var meet = ddMeets(x, T, W, null, true);
-    return {id: id, dial: cal ? cal.v : null, floor: x.floorPath ? x.spendFloor : 0,
+    return {id: id, dial: cal ? cal.v : null, floor: x.floorLine ? 1 : 0,
       met: meet.ok, share: meet.share, capped: !!(cal && cal.capped),
       tuned: !!cal, first: sc.firstMed, life: sc.lifeMed, low: sc.low,
       lowStart: sc.lowRun ? {year: sc.lowRun.startYear, month: sc.lowRun.startMonth} : null,
@@ -11339,6 +11380,7 @@ function readDDState(){
   d.incomeItems = ddIncomeItems.map(x => Object.assign({}, x));
   d.expenseItems = ddExpenseItems.map(x => Object.assign({}, x));
   d.pathStages = ddPathStages.map(x => Object.assign({}, x));
+  d.floorSteps = ddFloorSteps.map(x => Object.assign({}, x));
   return d;
 }
 function writeDDState(d){
@@ -11367,6 +11409,12 @@ function writeDDState(d){
     ddIncomeItems.splice(0, ddIncomeItems.length, ...d.incomeItems.map(x => Object.assign({}, x)));
   if (Array.isArray(d.expenseItems))
     ddExpenseItems.splice(0, ddExpenseItems.length, ...d.expenseItems.map(x => Object.assign({}, x)));
+  // Likewise the minimum's changes with age.
+  if (Array.isArray(d.floorSteps) || full){
+    ddFloorSteps.splice(0, ddFloorSteps.length,
+      ...(Array.isArray(d.floorSteps) ? d.floorSteps : []).map(x => Object.assign({}, x)));
+    buildFloorSteps();
+  }
   // A full set replaces the spending stages, clearing them when it has none.
   if (Array.isArray(d.pathStages) || full){
     ddPathStages.splice(0, ddPathStages.length,
@@ -11384,7 +11432,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.b75d4546c4.js";
+var DD_WORKER_URL = "/assets/plan.926801845f.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -11566,6 +11614,7 @@ function renderDrawdown() {
   $("ddRateWrap").hidden = !U.rate;
   if (U.rate) $("ddRateLabel").textContent = U.rate;
   $("ddSpendFloorWrap").hidden = S.limits === false;
+  $("ddFloorStepsWrap").hidden = S.limits === false;
   var clash = S.limits !== false && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
   $("ddSpendNote2").hidden = !clash;
   if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
@@ -11606,6 +11655,7 @@ function renderDrawdown() {
       ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
     : "Enter your portfolio value above to see this in dollars.";
   ddPathSync(o, P, firstW);
+  ddFloorSync(o, P);
   ddGuarSync(o, P);
   ddStratCard(o, P);
 
@@ -12197,8 +12247,8 @@ function ddPlanLabel(o){
 function ddComfortSync(o, P){
   var c = ddComfort(o, P);
   $("ddComfortNote").textContent = o.comfort > 0 ? ""
-    : o.spendFloor > 0 && (DD_STRAT[o.strategy] || {}).limits !== false
-      ? "Blank: your minimum spending, " + money(c) + " a year."
+    : (o.spendFloor > 0 || Array.isArray(c)) && (DD_STRAT[o.strategy] || {}).limits !== false
+      ? "Blank: your minimum spending, " + ddLineWords(c, " a year") + "."
       : "Blank: 80% of year one's spending, " + money(c) + " a year.";
   return c;
 }
@@ -12271,7 +12321,7 @@ function ddPaintScore(sc, base, mc){
     return "<div class='ddtile'><div class='k'>" + k + (tip ? "<span class='tipdot' data-tip='" + tip + "' role='button' tabindex='0' aria-label='What is this?'>?</span>" : "") +
       "</div><div class='v'>" + v + "</div>" + (delta || "") + "<div class='n'>" + note + "</div></div>";
   };
-  $("ddScoreH2").textContent = "comfort line " + money(line) + " a year";
+  $("ddScoreH2").textContent = "comfort line " + ddLineWords(line, " a year");
   var out = [
     tile("Never below the comfort line", pctStr(stayed, 1),
       (n - sc.dipped).toLocaleString() + " of " + n.toLocaleString() + unit,
@@ -12332,11 +12382,12 @@ function ddPaintDist(src){
   for (var b = 0; b < bins; b++) counts.push(0);
   vals.forEach(function (v) { counts[Math.min(bins - 1, Math.floor((v - lo) / w))]++; });
   ddDistPts = ddBars("chartDDH", counts.map(function (c, i) { return {lo: lo + i * w, hi: lo + (i + 1) * w, n: c}; }),
-    ddDistKind === "spend" && src.comfort > 0 ? src.comfort : null);
+    ddDistKind === "spend" && ddLineAt(src.comfort, ddDistAt - 1) > 0 ? ddLineAt(src.comfort, ddDistAt - 1) : null);
   var stat = function (k, v) { return "<div><span>" + k + "</span><b>" + v + "</b></div>"; };
   var bal = ddDistKind === "bal";
   var below = 0;
-  if (!bal && src.comfort > 0) vals.forEach(function (v) { if (v < src.comfort - .5) below++; });
+  var lnow = ddLineAt(src.comfort, ddDistAt - 1);
+  if (!bal && lnow > 0) vals.forEach(function (v) { if (v < lnow - .5) below++; });
   $("ddDistStats").innerHTML = stat("Median", money(vals[Math.floor(n / 2)])) + stat("Average", money(avg)) +
     stat("Spread (std. dev.)", money(sd)) + stat("Largest", money(hi)) + stat("Smallest", money(lo)) +
     (bal ? stat("Empty", zeros.toLocaleString() + " (" + pctStr(zeros / n, 1) + ")")
@@ -12458,11 +12509,11 @@ function ddTarget(o, d, comfort){
     comfort: comfort};
 }
 function ddCritWords(T){
-  return T.crit === "comfort" ? "spending never falls below " + money(T.comfort) + " a year"
+  return T.crit === "comfort" ? "spending never falls below " + ddLineWords(T.comfort, " a year")
     : "the money lasts the whole retirement";
 }
 function ddTargetWords(T){
-  return ddCritWords(T) + " in " + (T.conf >= 1 ? "every historical start" : pctStr(T.conf, 0) + " of historical starts");
+  return ddCritWords(T) + (Array.isArray(T.comfort) ? ", in " : " in ") + (T.conf >= 1 ? "every historical start" : pctStr(T.conf, 0) + " of historical starts");
 }
 /* A strategy's dial, turned, as fields to set, plus the minimum a comfort
    target holds a flexible strategy to. */
@@ -12475,7 +12526,7 @@ function ddDialFields(o, id, v, T){
   if (key === "capeA") out.capeA = r2(x.capeA);
   if (key === "yaleRate") { out.yaleRate = r2(x.yaleRate); out.rate = r2(x.initialPct); }
   if (key === "rgTarget") { out.rgTarget = r2(x.rgTarget); out.rgLo = r2(x.rgLo); out.rgHi = r2(x.rgHi); }
-  if (T && T.crit === "comfort" && DD_STRAT[id].limits !== false) out.spendFloor = Math.round(Math.max(o.spendFloor || 0, T.comfort));
+  if (T && T.crit === "comfort" && !Array.isArray(T.comfort) && DD_STRAT[id].limits !== false) out.spendFloor = Math.round(Math.max(o.spendFloor || 0, T.comfort));
   return out;
 }
 /* Sets just these fields, leaving the rest as they are. */
@@ -12521,7 +12572,7 @@ function ddPaintShow(){
   ddShowPts = ddScatter("chartDDS", list.map(function (x) {
     return {x: x.life, y: x[yk], label: DD_UI[x.id].short, id: x.id, cur: x.id === o.strategy, miss: !x.met};
   }), {xFmt: fmtAxisMoney, yFmt: fmtAxisMoney, xLabel: "Typical lifetime spending →", yLabel: yName + " →", yZero: true,
-    hLine: T.crit === "comfort" && yk !== "end" ? {y: T.comfort, label: "comfort line"} : null});
+    hLine: T.crit === "comfort" && yk !== "end" ? {y: ddLineAt(T.comfort, 0), label: "comfort line"} : null});
   $("legendDDS").innerHTML = swatch("#e9b872", "Your strategy") + swatch("#4fbf95", "Meets the target") +
     swatch("#e2795f", "Can't meet it: shown at its closest");
   // the table
@@ -12566,7 +12617,7 @@ function ddPaintSpot(){
       pts: x.spots[ddSpot].map(function (v, y) { return {year: y + 1, value: v}; }), width: x.id === ddShow.o.strategy ? 2.8 : 2});
   });
   if (ddShow.T.crit === "comfort") series.push({name: "Comfort line", color: "#8b97ad", dash: "5 5", width: 1.4,
-    pts: ddShow.res.list.length ? ddShow.res.list[0].spots[ddSpot].map(function (v, y) { return {year: y + 1, value: ddShow.T.comfort}; }) : []});
+    pts: ddShow.res.list.length ? ddShow.res.list[0].spots[ddSpot].map(function (v, y) { return {year: y + 1, value: ddLineAt(ddShow.T.comfort, y)}; }) : []});
   setH2Text($("ddSpotTitle"), "Retiring in " + spots[ddSpot]);
   ddSpotPts = paintMulti("chartDDSP", series, ddShow.o.years, {xFmt: function (y) { return ddRetireAge != null ? ddAgeVal(y) : y; }});
   $("legendDDSP").innerHTML = series.map(function (s) { return swatch(s.color, escapeHtml(s.name)); }).join("");
@@ -12817,7 +12868,7 @@ function ddPaintSafe(){
     var x = ddWithDial(ddForTarget(o, T), dial.v);
     $("ddSolveDialN").innerHTML = (dial.met ? "Meets it: " + ddTargetWords(T) + "." : "Nothing meets it; this comes closest, in " + pctStr(dial.share, 0) + " of starts.") +
       " Year one: " + money(ddFirstSpend(x)) + (dial.capped ? ". That's the top of the range tested." : ".") +
-      (T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false ? " Held at " + money(Math.max(o.spendFloor || 0, T.comfort)) + " or more." : "");
+      (T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false ? " Held at " + ddLineWords(Array.isArray(T.comfort) ? T.comfort : Math.max(o.spendFloor || 0, T.comfort)) + " or more." : "");
     $("ddSolveDialUse").disabled = false;
   } else {
     $("ddSolveDial").textContent = "—";
@@ -12857,7 +12908,7 @@ $("ddSolvePortUse").addEventListener("click", function () {
   var o = ddSafe.o, port = Math.ceil(ddSafe.res.port.portfolio / 1000) * 1000, spend = ddFirstSpend(o, ddSafe.P);
   var r = spend / (port * (1 - (ddSafe.P.G.share || 0))) * 100, f = {initial: port, rate: Math.round(r * 1e4) / 1e4};
   if (o.strategy === "yale" && o.initialPct > 0) f.yaleRate = Math.round(o.yaleRate * r / o.initialPct * 1e4) / 1e4;
-  if (ddSafe.T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false) f.spendFloor = Math.round(Math.max(o.spendFloor || 0, ddSafe.T.comfort));
+  if (ddSafe.T.crit === "comfort" && !Array.isArray(ddSafe.T.comfort) && DD_STRAT[o.strategy].limits !== false) f.spendFloor = Math.round(Math.max(o.spendFloor || 0, ddSafe.T.comfort));
   ddApply(f, "Portfolio set to " + money(port));
 });
 
@@ -12949,7 +13000,7 @@ ddScatterTips("chartWrapDDV", "chartDDV", "tipDDV", function () { return ddValPt
    showing gets fresh numbers. */
 function ddViewsRefresh(o, d, P, comfort){
   var T = ddTarget(o, d, comfort);
-  $("ddTargetNote").innerHTML = "Comfort line: <b>" + money(comfort) + "</b> a year" + (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". " +
+  $("ddTargetNote").innerHTML = "Comfort line: <b>" + ddLineWords(comfort, " a year") + "</b>" + (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". " +
     "These views use the historical record" + (ddMode === "mc" ? ", whatever the Historical / Monte Carlo switch says" : "") +
     ", " + (o.monthly ? "a retirement starting every month" : "a retirement starting each January") + " from " + o.fromYear + ".";
   if (!(o.initial > 0)) return;
@@ -13157,10 +13208,97 @@ function ddPlanRows(o){
   });
   if (P.G.share > 0) out.push(["Guaranteed income", money(P.G.income) + "/yr from " + ddN(o.gShare) + "%, " +
     (o.gType === "annuity" ? "an annuity" + (o.gInflate ? " with raises" : "") : "a TIPS ladder at " + p(o.gYield) + " real")]);
-  if (o.spendFloor > 0 && DD_STRAT[o.strategy].limits !== false) out.push(["Minimum spending", money(o.spendFloor) + "/yr"]);
+  if (DD_STRAT[o.strategy].limits !== false && P.floor.some(function (v) { return v > 0; }))
+    out.push(["Minimum spending", ddLineWords(P.floor, "/yr")]);
   if (o.spendCeil > 0 && DD_STRAT[o.strategy].limits !== false) out.push(["Maximum spending", money(o.spendCeil) + "/yr"]);
   if (o.monthly || o.fromYear > HIST_START) out.push(["History tested", (o.monthly ? "A start every month" : "A start each January") + " from " + o.fromYear]);
   return out;
+}
+
+/* ---- the minimum, changing with age ----
+   Each change sets a new minimum from a year of retirement (shown as an age
+   once one is set), stepped or eased in over a few years. Mutated in place,
+   like the item lists. */
+let ddFloorSteps = [];
+let ddFloorAgeMode = null;
+function buildFloorSteps(){
+  var age = ddRetireAgeVal(), ageOn = age != null;
+  ddFloorAgeMode = ageOn;
+  var list = $("ddFloorStepList");
+  list.innerHTML = ddFloorSteps.map(function (st, i) {
+    var shown = ageOn ? age + st.start - 1 : st.start;
+    return "<div class='stagecard ddfloorcard'>" +
+      "<div class='stagehead'><span class='stagenum'>Change " + (i + 1) + "</span>" +
+      "<span class='stagespan' data-fsspan='" + i + "'></span>" +
+      "<button class='btn mini' type='button' data-fsdel='" + i + "'>Remove</button></div>" +
+      "<div class='two'>" +
+        "<div class='field' style='margin-bottom:0'><label>" + (ageOn ? "From age" : "From year") + "</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='1' data-nonneg data-ff='start' data-fi='" + i +
+          "' value='" + ddN(shown) + "' aria-label='Change " + (i + 1) + " starts'><span class='affix'>" + (ageOn ? "age" : "yr") + "</span></div></div>" +
+        "<div class='field' style='margin-bottom:0'><label>Minimum</label><div class='inputwrap'><span class='affix'>$</span>" +
+          "<input type='text' inputmode='decimal' data-money data-nonneg data-ff='amount' data-fi='" + i +
+          "' value='" + groupDigits(Math.round(st.amount || 0), true) + "' aria-label='Change " + (i + 1) + " minimum'></div></div>" +
+      "</div>" +
+      "<div class='field' style='margin:10px 0 0'><label>Ease in over</label><div class='inputwrap'>" +
+        "<input type='text' inputmode='decimal' data-num data-step='1' min='0' max='30' data-nonneg data-ff='glide' data-fi='" + i +
+        "' value='" + ddN(st.glide || 0) + "' aria-label='Change " + (i + 1) + " eases in over'><span class='affix'>years (0 = all at once)</span></div></div>" +
+    "</div>";
+  }).join("");
+  initFields(list);
+}
+function ddFloorSync(o, P){
+  if ((ddRetireAge != null) !== ddFloorAgeMode) buildFloorSteps();
+  var f = P.floor, n = f.length;
+  ddFloorSteps.forEach(function (st, i) {
+    var span = $("ddFloorStepList").querySelector("[data-fsspan='" + i + "']");
+    var s0 = Math.max(2, Math.round(st.start || 0));
+    if (span) span.textContent = s0 > n ? "after the plan ends" : ddRetireAge != null ? "Age " + ddN(ddAgeVal(s0)) + " on" : "Year " + s0 + " on";
+    var inp = $("ddFloorStepList").querySelector("[data-ff='start'][data-fi='" + i + "']");
+    if (inp && document.activeElement !== inp) inp.value = ddN(ddRetireAge != null ? ddAgeVal(st.start) : st.start);
+  });
+  $("ddFloorNote").textContent = ddFloorSteps.length && f.some(function (v) { return v > 0; })
+    ? "Minimum spending: " + ddLineWords(f) + ". It includes Social Security and other income." : "";
+}
+function ddReadFloorStart(v){
+  var n = parseNum(v), age = ddRetireAgeVal();
+  return Math.max(2, Math.round(age != null ? n - age + 1 : n));
+}
+$("ddAddFloorStep").addEventListener("click", function () {
+  var years = Math.min(60, Math.max(1, Math.round(num("ddYears")))), base = num("ddSpendFloor");
+  var last = ddFloorSteps[ddFloorSteps.length - 1];
+  ddFloorSteps.push({start: Math.min(years, last ? last.start + 10 : Math.max(2, Math.round(years / 2))),
+    amount: Math.round((last ? last.amount : base) * .875 / 1000) * 1000, glide: 0});
+  buildFloorSteps();
+  renderDrawdown();
+});
+$("ddFloorStepList").addEventListener("input", function (e) {
+  var el = e.target, f = el.getAttribute && el.getAttribute("data-ff");
+  if (!f) return;
+  var st = ddFloorSteps[parseInt(el.getAttribute("data-fi"), 10)];
+  if (!st) return;
+  if (f === "start") st.start = ddReadFloorStart(el.value);
+  else if (f === "amount") st.amount = Math.max(0, parseNum(el.value));
+  else st.glide = Math.max(0, Math.min(30, Math.round(parseNum(el.value))));
+  renderDrawdownTyping();
+});
+$("ddFloorStepList").addEventListener("click", function (e) {
+  var del = e.target.closest ? e.target.closest("[data-fsdel]") : null;
+  if (!del) return;
+  ddFloorSteps.splice(parseInt(del.getAttribute("data-fsdel"), 10), 1);
+  buildFloorSteps();
+  renderDrawdown();
+});
+/* A line in words: one amount, or where a schedule starts and ends up. */
+function ddLineWords(c, unit){
+  var u = unit || "";
+  if (!Array.isArray(c)) return money(c || 0) + u;
+  var a = c[0], z = c[c.length - 1], i, j;
+  for (i = 1; i < c.length && Math.abs(c[i] - a) < .5; i++) {}
+  if (i >= c.length) return money(a) + u;
+  for (j = i; j < c.length && Math.abs(c[j] - z) >= .5; j++) {}
+  var at = function (k) { return ddRetireAge != null ? "age " + ddN(ddAgeVal(k + 1)) : "year " + (k + 1); };
+  return money(a) + u + (j > i ? ", easing to " + money(z) + u + " by " + at(j) : ", then " + money(z) + u + " from " + at(i)) +
+    (c.slice(j).some(function (v) { return Math.abs(v - z) >= .5; }) ? " and changing again" : "");
 }
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
@@ -19977,7 +20115,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.b75d4546c4.js";
+var OP_WORKER_URL = "/assets/plan.926801845f.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

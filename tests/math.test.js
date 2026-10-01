@@ -414,6 +414,22 @@ group("Drawdown: spending path, guaranteed income and what was really spent");
   ok(last.realPlanned > 50000, "though the plan still called for more");
 })();
 
+group("Drawdown: a minimum that changes with age");
+(function () {
+  var o = { initial: 5.5e6, years: 40, stockPct: 60, initialPct: 5.5, fee: 0, strategy: "guardrails", guardBand: 20, adjustPct: 10,
+    spendFloor: 200000, retireAge: 47, floorSteps: [{ start: 17, amount: 175000, glide: 0 }] };
+  var f = ddFloorSched(o);
+  ok(f[15] === 200000 && f[16] === 175000 && f[39] === 175000, "$200,000 to 62, then $175,000 from 63");
+  var g = ddFloorSched(Object.assign({}, o, { floorSteps: [{ start: 14, amount: 175000, glide: 4 }] }));
+  ok(g[12] === 200000 && g[13] === 195000 && g[16] === 180000 && g[17] === 175000, "or eased in over four years");
+  var a = historicalBacktest(Object.assign({}, o, { floorSteps: [] })), b = historicalBacktest(o);
+  ok(b.successRate >= a.successRate, "a lower minimum later lasts at least as often", a.successRate + " -> " + b.successRate);
+  ok(b.runs.every(function (r) { return r.rows.every(function (w, y) { return w.short > 0 || w.realReg >= f[y] - .5; }); }),
+    "spending holds the year's minimum unless the money runs short");
+  var c = ddComfort(o);
+  ok(Array.isArray(c) && c[0] === 200000 && c[39] === 175000, "the comfort line follows it");
+})();
+
 group("Drawdown: saved inputs become options the same way everywhere");
 (function () {
   var o = ddOptsFromState({ initial: "1,000,000", years: 30, stock: 0, rate: 0, floor: 0, ceil: 0, yaleWeight: 0, strategy: "floorceil" });
@@ -441,7 +457,7 @@ group("Drawdown: the searches meet the target they're given");
   var gr = Object.assign({}, o, { strategy: "guardrails", guardBand: 20, adjustPct: 10 });
   var T2 = { crit: "comfort", conf: 1, comfort: 32000 };
   var g = ddCalibrate(gr, T2), gx = ddWithDial(ddForTarget(gr, T2), g.v), H = historicalBacktest(gx);
-  ok(g.met && gx.spendFloor === 32000, "guardrails, held at $32,000 or more", JSON.stringify(g));
+  ok(g.met && gx.floorLine && gx.floorLine[0] === 32000, "guardrails, held at $32,000 or more", JSON.stringify(g));
   ok(H.runs.every(function (r) { return r.rows.every(function (w) { return w.realReg >= 32000 - .5; }); }), "never fall under it at the rate found");
   var Hup = historicalBacktest(ddWithDial(ddForTarget(gr, T2), g.v + .05));
   ok(Hup.runs.some(function (r) { return r.rows.some(function (w) { return w.realReg < 32000 - .5; }); }), "and a little more would run dry somewhere", "rate " + g.v);

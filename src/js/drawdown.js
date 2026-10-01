@@ -441,6 +441,35 @@ var DD_ORDER = [];
    }}
 ].forEach(function (x) { DD_STRAT[x.id] = x; DD_ORDER.push(x.id); });
 
+/* The minimum spending each year, in today's dollars: Minimum spending from
+   the start, then each change in o.floorSteps ({start: 1-based year, amount,
+   glide: years}) from its year, stepped, or eased in a straight line over
+   its glide years. */
+function ddFloorSched(o){
+  var n = o.years, out = [], base = Math.max(0, o.spendFloor || 0), y, k;
+  var steps = (o.floorSteps || []).map(function (x, i) {
+    return {start: Math.max(2, Math.round(x.start || 0)), amount: Math.max(0, +x.amount || 0),
+      glide: Math.max(0, Math.round(x.glide || 0)), i: i};
+  }).sort(function (a, b) { return a.start - b.start || a.i - b.i; });
+  for (y = 0; y < n; y++) out.push(base);
+  var level = base;
+  for (k = 0; k < steps.length; k++) {
+    var st = steps[k], from = level;
+    for (y = st.start - 1; y < n; y++) {
+      var t = st.glide > 0 ? Math.min(1, (y - (st.start - 1) + 1) / (st.glide + 1)) : 1;
+      out[y] = from + (st.amount - from) * t;
+    }
+    level = st.amount;
+  }
+  return out;
+}
+/* A comfort line is one amount (following the spending path) or one per
+   year: its value in year y. */
+function ddLineAt(c, y, m){
+  if (Array.isArray(c)) return c[Math.min(y, c.length - 1)] || 0;
+  return (c || 0) * (m == null ? 1 : m);
+}
+
 /* One run's per-plan setup, shared by every start: the guaranteed income,
    what stays invested, the spending path and, for risk-based guardrails, its
    tables. first is year one's spending from the strategy, in today's
@@ -448,7 +477,10 @@ var DD_ORDER = [];
 function ddPrep(o){
   var G = ddGuaranteed(o), S = DD_STRAT[o.strategy] || DD_STRAT.yale;
   if (!S.path && o.path && o.path !== "flat") o = Object.assign({}, o, {path: "flat"});
-  var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0};
+  var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0,
+    floor: ddFloorSched(o)};
+  // A search's line, held as a minimum on top of the plan's own.
+  if (o.floorLine) P.floor = P.floor.map(function (v, y) { return Math.max(v, o.floorLine[y] || 0); });
   if (S.id === "riskgr"){
     // the smile's spending term only, from a 4% year one
     P.path = ddPath(o, P.initial * .04 + G.income);
@@ -503,11 +535,11 @@ function runDrawdown(o, seq, ctl, P) {
 
     // The optional minimum and maximum, in today's dollars, apply to what the
     // strategy spends, never to extra expenses. If they cross, the maximum
-    // wins. Fixed spending never falls, so they don't apply to it. A minimum
-    // set by a search follows the spending path (floorPath).
+    // wins. Fixed spending never falls, so they don't apply to it. The
+    // minimum can change with age (ddFloorSched).
     if (S.limits !== false) {
-      if (o.spendFloor > 0) {
-        var floorNominal = o.spendFloor * cumInfl * (o.floorPath ? m : 1);
+      if (P.floor[y] > 0) {
+        var floorNominal = P.floor[y] * cumInfl;
         if (reg < floorNominal) reg = floorNominal;
       }
       if (o.spendCeil > 0) {
@@ -587,7 +619,7 @@ function runDrawdown(o, seq, ctl, P) {
     var plannedEnd = S.spendsDown && y === o.years - 1;
     if (bal <= 0 && depletedYear === null && !plannedEnd && invested) depletedYear = y + 1;
     if (stop === "lasts" && depletedYear !== null) { failed = true; break; }
-    if (stop === "comfort" && realReg < line * m - .5) { failed = true; break; }
+    if (stop === "comfort" && realReg < ddLineAt(line, y, m) - .5) { failed = true; break; }
   }
 
   var out = {
@@ -769,6 +801,7 @@ function ddOptsFromState(d){
     yaleWeight: clamp(v("yaleWeight", 70), 0, 100),
     yaleRate: Math.max(0, v("yaleRate", 5)),
     spendFloor: v("spendFloor", 0),
+    floorSteps: copy(d.floorSteps),
     spendCeil: v("spendCeil", 0),
     vpwRate: v("vpwRate", 3.8),
     vpwFV: v("vpwFV", 0),
@@ -810,11 +843,16 @@ function ddOptsFromState(d){
 }
 
 /* The comfort line: spending, in today's dollars, the household would hate
-   to fall below. The one set, or else the minimum spending, or else 80% of
-   year one's (guaranteed income included). */
+   to fall below. The one set, or else the minimum spending (one amount per
+   year when it changes with age), or else 80% of year one's (guaranteed
+   income included). */
 function ddComfort(o, P){
   if (o.comfort > 0) return o.comfort;
-  if (o.spendFloor > 0 && (DD_STRAT[o.strategy] || {}).limits !== false) return o.spendFloor;
+  if ((DD_STRAT[o.strategy] || {}).limits !== false) {
+    var f = ddFloorSched(o);
+    if (f.some(function (v) { return v > 0; }))
+      return f.every(function (v) { return v === f[0]; }) ? f[0] : f;
+  }
   P = P || ddPrep(o);
   return .8 * (P.first + P.G.income);
 }
@@ -841,7 +879,8 @@ function ddScorecard(runs, o, comfort, path){
     rows.forEach(function (row, y) {
       var m = path[y] || 0, v = row.realReg, norm = m > 0 ? v / m : v;
       years++; life += row.realSpend;
-      if (comfort > 0 && v < comfort * m - .5) {
+      var ln = ddLineAt(comfort, y, m);
+      if (ln > 0 && v < ln - .5) {
         below++; streak++; any = true;
         if (streak > longest) { longest = streak; longRun = r; }
       } else streak = 0;
@@ -884,8 +923,10 @@ function ddScorecard(runs, o, comfort, path){
    started at; with it, the only way under the line is running out of money,
    or a fixed amount that starts under it. */
 function ddForTarget(o, T){
-  if (T.crit !== "comfort" || !(T.comfort > 0) || (DD_STRAT[o.strategy] || {}).limits === false) return o;
-  return Object.assign({}, o, {spendFloor: Math.max(o.spendFloor || 0, T.comfort), floorPath: true});
+  if (T.crit !== "comfort" || !(ddLineAt(T.comfort, 0) > 0) || (DD_STRAT[o.strategy] || {}).limits === false) return o;
+  var path = ddPrep(Object.assign({}, o, {floorLine: null})).path, line = [];
+  for (var y = 0; y < o.years; y++) line.push(ddLineAt(T.comfort, y, path[y]));
+  return Object.assign({}, o, {floorLine: line});
 }
 function ddMeets(o, T, W, order, full){
   var P = ddPrep(o), n = W.length, fails = 0;
@@ -1017,7 +1058,7 @@ function ddHeatmap(o, T, axis){
       // one, which says nothing about risk: -1 marks it.
       if (T.crit === "comfort" && S.limits === false) {
         var P = ddPrep(x);
-        if (P.first + P.G.income < T.comfort - .5) return -1;
+        if (P.first + P.G.income < ddLineAt(T.comfort, 0) - .5) return -1;
       }
       return ddMeets(x, T, W, null, true).share;
     });
@@ -1049,7 +1090,7 @@ function ddShowdown(o, T, ids){
     var H = historicalBacktest(x), P = H.prep;
     var sc = ddScorecard(H.runs, x, T.comfort, P.path);
     var meet = ddMeets(x, T, W, null, true);
-    return {id: id, dial: cal ? cal.v : null, floor: x.floorPath ? x.spendFloor : 0,
+    return {id: id, dial: cal ? cal.v : null, floor: x.floorLine ? 1 : 0,
       met: meet.ok, share: meet.share, capped: !!(cal && cal.capped),
       tuned: !!cal, first: sc.firstMed, life: sc.lifeMed, low: sc.low,
       lowStart: sc.lowRun ? {year: sc.lowRun.startYear, month: sc.lowRun.startMonth} : null,

@@ -379,6 +379,7 @@ function readDDState(){
   d.incomeItems = ddIncomeItems.map(x => Object.assign({}, x));
   d.expenseItems = ddExpenseItems.map(x => Object.assign({}, x));
   d.pathStages = ddPathStages.map(x => Object.assign({}, x));
+  d.floorSteps = ddFloorSteps.map(x => Object.assign({}, x));
   return d;
 }
 function writeDDState(d){
@@ -407,6 +408,12 @@ function writeDDState(d){
     ddIncomeItems.splice(0, ddIncomeItems.length, ...d.incomeItems.map(x => Object.assign({}, x)));
   if (Array.isArray(d.expenseItems))
     ddExpenseItems.splice(0, ddExpenseItems.length, ...d.expenseItems.map(x => Object.assign({}, x)));
+  // Likewise the minimum's changes with age.
+  if (Array.isArray(d.floorSteps) || full){
+    ddFloorSteps.splice(0, ddFloorSteps.length,
+      ...(Array.isArray(d.floorSteps) ? d.floorSteps : []).map(x => Object.assign({}, x)));
+    buildFloorSteps();
+  }
   // A full set replaces the spending stages, clearing them when it has none.
   if (Array.isArray(d.pathStages) || full){
     ddPathStages.splice(0, ddPathStages.length,
@@ -606,6 +613,7 @@ function renderDrawdown() {
   $("ddRateWrap").hidden = !U.rate;
   if (U.rate) $("ddRateLabel").textContent = U.rate;
   $("ddSpendFloorWrap").hidden = S.limits === false;
+  $("ddFloorStepsWrap").hidden = S.limits === false;
   var clash = S.limits !== false && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
   $("ddSpendNote2").hidden = !clash;
   if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
@@ -646,6 +654,7 @@ function renderDrawdown() {
       ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
     : "Enter your portfolio value above to see this in dollars.";
   ddPathSync(o, P, firstW);
+  ddFloorSync(o, P);
   ddGuarSync(o, P);
   ddStratCard(o, P);
 

@@ -71,8 +71,8 @@ function ddPlanLabel(o){
 function ddComfortSync(o, P){
   var c = ddComfort(o, P);
   $("ddComfortNote").textContent = o.comfort > 0 ? ""
-    : o.spendFloor > 0 && (DD_STRAT[o.strategy] || {}).limits !== false
-      ? "Blank: your minimum spending, " + money(c) + " a year."
+    : (o.spendFloor > 0 || Array.isArray(c)) && (DD_STRAT[o.strategy] || {}).limits !== false
+      ? "Blank: your minimum spending, " + ddLineWords(c, " a year") + "."
       : "Blank: 80% of year one's spending, " + money(c) + " a year.";
   return c;
 }
@@ -145,7 +145,7 @@ function ddPaintScore(sc, base, mc){
     return "<div class='ddtile'><div class='k'>" + k + (tip ? "<span class='tipdot' data-tip='" + tip + "' role='button' tabindex='0' aria-label='What is this?'>?</span>" : "") +
       "</div><div class='v'>" + v + "</div>" + (delta || "") + "<div class='n'>" + note + "</div></div>";
   };
-  $("ddScoreH2").textContent = "comfort line " + money(line) + " a year";
+  $("ddScoreH2").textContent = "comfort line " + ddLineWords(line, " a year");
   var out = [
     tile("Never below the comfort line", pctStr(stayed, 1),
       (n - sc.dipped).toLocaleString() + " of " + n.toLocaleString() + unit,
@@ -206,11 +206,12 @@ function ddPaintDist(src){
   for (var b = 0; b < bins; b++) counts.push(0);
   vals.forEach(function (v) { counts[Math.min(bins - 1, Math.floor((v - lo) / w))]++; });
   ddDistPts = ddBars("chartDDH", counts.map(function (c, i) { return {lo: lo + i * w, hi: lo + (i + 1) * w, n: c}; }),
-    ddDistKind === "spend" && src.comfort > 0 ? src.comfort : null);
+    ddDistKind === "spend" && ddLineAt(src.comfort, ddDistAt - 1) > 0 ? ddLineAt(src.comfort, ddDistAt - 1) : null);
   var stat = function (k, v) { return "<div><span>" + k + "</span><b>" + v + "</b></div>"; };
   var bal = ddDistKind === "bal";
   var below = 0;
-  if (!bal && src.comfort > 0) vals.forEach(function (v) { if (v < src.comfort - .5) below++; });
+  var lnow = ddLineAt(src.comfort, ddDistAt - 1);
+  if (!bal && lnow > 0) vals.forEach(function (v) { if (v < lnow - .5) below++; });
   $("ddDistStats").innerHTML = stat("Median", money(vals[Math.floor(n / 2)])) + stat("Average", money(avg)) +
     stat("Spread (std. dev.)", money(sd)) + stat("Largest", money(hi)) + stat("Smallest", money(lo)) +
     (bal ? stat("Empty", zeros.toLocaleString() + " (" + pctStr(zeros / n, 1) + ")")
@@ -332,11 +333,11 @@ function ddTarget(o, d, comfort){
     comfort: comfort};
 }
 function ddCritWords(T){
-  return T.crit === "comfort" ? "spending never falls below " + money(T.comfort) + " a year"
+  return T.crit === "comfort" ? "spending never falls below " + ddLineWords(T.comfort, " a year")
     : "the money lasts the whole retirement";
 }
 function ddTargetWords(T){
-  return ddCritWords(T) + " in " + (T.conf >= 1 ? "every historical start" : pctStr(T.conf, 0) + " of historical starts");
+  return ddCritWords(T) + (Array.isArray(T.comfort) ? ", in " : " in ") + (T.conf >= 1 ? "every historical start" : pctStr(T.conf, 0) + " of historical starts");
 }
 /* A strategy's dial, turned, as fields to set, plus the minimum a comfort
    target holds a flexible strategy to. */
@@ -349,7 +350,7 @@ function ddDialFields(o, id, v, T){
   if (key === "capeA") out.capeA = r2(x.capeA);
   if (key === "yaleRate") { out.yaleRate = r2(x.yaleRate); out.rate = r2(x.initialPct); }
   if (key === "rgTarget") { out.rgTarget = r2(x.rgTarget); out.rgLo = r2(x.rgLo); out.rgHi = r2(x.rgHi); }
-  if (T && T.crit === "comfort" && DD_STRAT[id].limits !== false) out.spendFloor = Math.round(Math.max(o.spendFloor || 0, T.comfort));
+  if (T && T.crit === "comfort" && !Array.isArray(T.comfort) && DD_STRAT[id].limits !== false) out.spendFloor = Math.round(Math.max(o.spendFloor || 0, T.comfort));
   return out;
 }
 /* Sets just these fields, leaving the rest as they are. */
@@ -395,7 +396,7 @@ function ddPaintShow(){
   ddShowPts = ddScatter("chartDDS", list.map(function (x) {
     return {x: x.life, y: x[yk], label: DD_UI[x.id].short, id: x.id, cur: x.id === o.strategy, miss: !x.met};
   }), {xFmt: fmtAxisMoney, yFmt: fmtAxisMoney, xLabel: "Typical lifetime spending →", yLabel: yName + " →", yZero: true,
-    hLine: T.crit === "comfort" && yk !== "end" ? {y: T.comfort, label: "comfort line"} : null});
+    hLine: T.crit === "comfort" && yk !== "end" ? {y: ddLineAt(T.comfort, 0), label: "comfort line"} : null});
   $("legendDDS").innerHTML = swatch("#e9b872", "Your strategy") + swatch("#4fbf95", "Meets the target") +
     swatch("#e2795f", "Can't meet it: shown at its closest");
   // the table
@@ -440,7 +441,7 @@ function ddPaintSpot(){
       pts: x.spots[ddSpot].map(function (v, y) { return {year: y + 1, value: v}; }), width: x.id === ddShow.o.strategy ? 2.8 : 2});
   });
   if (ddShow.T.crit === "comfort") series.push({name: "Comfort line", color: "#8b97ad", dash: "5 5", width: 1.4,
-    pts: ddShow.res.list.length ? ddShow.res.list[0].spots[ddSpot].map(function (v, y) { return {year: y + 1, value: ddShow.T.comfort}; }) : []});
+    pts: ddShow.res.list.length ? ddShow.res.list[0].spots[ddSpot].map(function (v, y) { return {year: y + 1, value: ddLineAt(ddShow.T.comfort, y)}; }) : []});
   setH2Text($("ddSpotTitle"), "Retiring in " + spots[ddSpot]);
   ddSpotPts = paintMulti("chartDDSP", series, ddShow.o.years, {xFmt: function (y) { return ddRetireAge != null ? ddAgeVal(y) : y; }});
   $("legendDDSP").innerHTML = series.map(function (s) { return swatch(s.color, escapeHtml(s.name)); }).join("");
@@ -691,7 +692,7 @@ function ddPaintSafe(){
     var x = ddWithDial(ddForTarget(o, T), dial.v);
     $("ddSolveDialN").innerHTML = (dial.met ? "Meets it: " + ddTargetWords(T) + "." : "Nothing meets it; this comes closest, in " + pctStr(dial.share, 0) + " of starts.") +
       " Year one: " + money(ddFirstSpend(x)) + (dial.capped ? ". That's the top of the range tested." : ".") +
-      (T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false ? " Held at " + money(Math.max(o.spendFloor || 0, T.comfort)) + " or more." : "");
+      (T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false ? " Held at " + ddLineWords(Array.isArray(T.comfort) ? T.comfort : Math.max(o.spendFloor || 0, T.comfort)) + " or more." : "");
     $("ddSolveDialUse").disabled = false;
   } else {
     $("ddSolveDial").textContent = "—";
@@ -731,7 +732,7 @@ $("ddSolvePortUse").addEventListener("click", function () {
   var o = ddSafe.o, port = Math.ceil(ddSafe.res.port.portfolio / 1000) * 1000, spend = ddFirstSpend(o, ddSafe.P);
   var r = spend / (port * (1 - (ddSafe.P.G.share || 0))) * 100, f = {initial: port, rate: Math.round(r * 1e4) / 1e4};
   if (o.strategy === "yale" && o.initialPct > 0) f.yaleRate = Math.round(o.yaleRate * r / o.initialPct * 1e4) / 1e4;
-  if (ddSafe.T.crit === "comfort" && DD_STRAT[o.strategy].limits !== false) f.spendFloor = Math.round(Math.max(o.spendFloor || 0, ddSafe.T.comfort));
+  if (ddSafe.T.crit === "comfort" && !Array.isArray(ddSafe.T.comfort) && DD_STRAT[o.strategy].limits !== false) f.spendFloor = Math.round(Math.max(o.spendFloor || 0, ddSafe.T.comfort));
   ddApply(f, "Portfolio set to " + money(port));
 });
 
@@ -823,7 +824,7 @@ ddScatterTips("chartWrapDDV", "chartDDV", "tipDDV", function () { return ddValPt
    showing gets fresh numbers. */
 function ddViewsRefresh(o, d, P, comfort){
   var T = ddTarget(o, d, comfort);
-  $("ddTargetNote").innerHTML = "Comfort line: <b>" + money(comfort) + "</b> a year" + (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". " +
+  $("ddTargetNote").innerHTML = "Comfort line: <b>" + ddLineWords(comfort, " a year") + "</b>" + (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". " +
     "These views use the historical record" + (ddMode === "mc" ? ", whatever the Historical / Monte Carlo switch says" : "") +
     ", " + (o.monthly ? "a retirement starting every month" : "a retirement starting each January") + " from " + o.fromYear + ".";
   if (!(o.initial > 0)) return;

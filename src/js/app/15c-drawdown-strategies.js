@@ -199,8 +199,95 @@ function ddPlanRows(o){
   });
   if (P.G.share > 0) out.push(["Guaranteed income", money(P.G.income) + "/yr from " + ddN(o.gShare) + "%, " +
     (o.gType === "annuity" ? "an annuity" + (o.gInflate ? " with raises" : "") : "a TIPS ladder at " + p(o.gYield) + " real")]);
-  if (o.spendFloor > 0 && DD_STRAT[o.strategy].limits !== false) out.push(["Minimum spending", money(o.spendFloor) + "/yr"]);
+  if (DD_STRAT[o.strategy].limits !== false && P.floor.some(function (v) { return v > 0; }))
+    out.push(["Minimum spending", ddLineWords(P.floor, "/yr")]);
   if (o.spendCeil > 0 && DD_STRAT[o.strategy].limits !== false) out.push(["Maximum spending", money(o.spendCeil) + "/yr"]);
   if (o.monthly || o.fromYear > HIST_START) out.push(["History tested", (o.monthly ? "A start every month" : "A start each January") + " from " + o.fromYear]);
   return out;
+}
+
+/* ---- the minimum, changing with age ----
+   Each change sets a new minimum from a year of retirement (shown as an age
+   once one is set), stepped or eased in over a few years. Mutated in place,
+   like the item lists. */
+let ddFloorSteps = [];
+let ddFloorAgeMode = null;
+function buildFloorSteps(){
+  var age = ddRetireAgeVal(), ageOn = age != null;
+  ddFloorAgeMode = ageOn;
+  var list = $("ddFloorStepList");
+  list.innerHTML = ddFloorSteps.map(function (st, i) {
+    var shown = ageOn ? age + st.start - 1 : st.start;
+    return "<div class='stagecard ddfloorcard'>" +
+      "<div class='stagehead'><span class='stagenum'>Change " + (i + 1) + "</span>" +
+      "<span class='stagespan' data-fsspan='" + i + "'></span>" +
+      "<button class='btn mini' type='button' data-fsdel='" + i + "'>Remove</button></div>" +
+      "<div class='two'>" +
+        "<div class='field' style='margin-bottom:0'><label>" + (ageOn ? "From age" : "From year") + "</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='1' min='1' data-nonneg data-ff='start' data-fi='" + i +
+          "' value='" + ddN(shown) + "' aria-label='Change " + (i + 1) + " starts'><span class='affix'>" + (ageOn ? "age" : "yr") + "</span></div></div>" +
+        "<div class='field' style='margin-bottom:0'><label>Minimum</label><div class='inputwrap'><span class='affix'>$</span>" +
+          "<input type='text' inputmode='decimal' data-money data-nonneg data-ff='amount' data-fi='" + i +
+          "' value='" + groupDigits(Math.round(st.amount || 0), true) + "' aria-label='Change " + (i + 1) + " minimum'></div></div>" +
+      "</div>" +
+      "<div class='field' style='margin:10px 0 0'><label>Ease in over</label><div class='inputwrap'>" +
+        "<input type='text' inputmode='decimal' data-num data-step='1' min='0' max='30' data-nonneg data-ff='glide' data-fi='" + i +
+        "' value='" + ddN(st.glide || 0) + "' aria-label='Change " + (i + 1) + " eases in over'><span class='affix'>years (0 = all at once)</span></div></div>" +
+    "</div>";
+  }).join("");
+  initFields(list);
+}
+function ddFloorSync(o, P){
+  if ((ddRetireAge != null) !== ddFloorAgeMode) buildFloorSteps();
+  var f = P.floor, n = f.length;
+  ddFloorSteps.forEach(function (st, i) {
+    var span = $("ddFloorStepList").querySelector("[data-fsspan='" + i + "']");
+    var s0 = Math.max(2, Math.round(st.start || 0));
+    if (span) span.textContent = s0 > n ? "after the plan ends" : ddRetireAge != null ? "Age " + ddN(ddAgeVal(s0)) + " on" : "Year " + s0 + " on";
+    var inp = $("ddFloorStepList").querySelector("[data-ff='start'][data-fi='" + i + "']");
+    if (inp && document.activeElement !== inp) inp.value = ddN(ddRetireAge != null ? ddAgeVal(st.start) : st.start);
+  });
+  $("ddFloorNote").textContent = ddFloorSteps.length && f.some(function (v) { return v > 0; })
+    ? "Minimum spending: " + ddLineWords(f) + ". It includes Social Security and other income." : "";
+}
+function ddReadFloorStart(v){
+  var n = parseNum(v), age = ddRetireAgeVal();
+  return Math.max(2, Math.round(age != null ? n - age + 1 : n));
+}
+$("ddAddFloorStep").addEventListener("click", function () {
+  var years = Math.min(60, Math.max(1, Math.round(num("ddYears")))), base = num("ddSpendFloor");
+  var last = ddFloorSteps[ddFloorSteps.length - 1];
+  ddFloorSteps.push({start: Math.min(years, last ? last.start + 10 : Math.max(2, Math.round(years / 2))),
+    amount: Math.round((last ? last.amount : base) * .875 / 1000) * 1000, glide: 0});
+  buildFloorSteps();
+  renderDrawdown();
+});
+$("ddFloorStepList").addEventListener("input", function (e) {
+  var el = e.target, f = el.getAttribute && el.getAttribute("data-ff");
+  if (!f) return;
+  var st = ddFloorSteps[parseInt(el.getAttribute("data-fi"), 10)];
+  if (!st) return;
+  if (f === "start") st.start = ddReadFloorStart(el.value);
+  else if (f === "amount") st.amount = Math.max(0, parseNum(el.value));
+  else st.glide = Math.max(0, Math.min(30, Math.round(parseNum(el.value))));
+  renderDrawdownTyping();
+});
+$("ddFloorStepList").addEventListener("click", function (e) {
+  var del = e.target.closest ? e.target.closest("[data-fsdel]") : null;
+  if (!del) return;
+  ddFloorSteps.splice(parseInt(del.getAttribute("data-fsdel"), 10), 1);
+  buildFloorSteps();
+  renderDrawdown();
+});
+/* A line in words: one amount, or where a schedule starts and ends up. */
+function ddLineWords(c, unit){
+  var u = unit || "";
+  if (!Array.isArray(c)) return money(c || 0) + u;
+  var a = c[0], z = c[c.length - 1], i, j;
+  for (i = 1; i < c.length && Math.abs(c[i] - a) < .5; i++) {}
+  if (i >= c.length) return money(a) + u;
+  for (j = i; j < c.length && Math.abs(c[j] - z) >= .5; j++) {}
+  var at = function (k) { return ddRetireAge != null ? "age " + ddN(ddAgeVal(k + 1)) : "year " + (k + 1); };
+  return money(a) + u + (j > i ? ", easing to " + money(z) + u + " by " + at(j) : ", then " + money(z) + u + " from " + at(i)) +
+    (c.slice(j).some(function (v) { return Math.abs(v - z) >= .5; }) ? " and changing again" : "");
 }
