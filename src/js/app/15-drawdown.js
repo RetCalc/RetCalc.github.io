@@ -1147,6 +1147,13 @@ $("segDDView").addEventListener("click", function (e) {
   ddView = b.getAttribute("data-ddview");
   renderDrawdown();
 });
+/* The record runs 1926 to 2025: a start year outside it snaps back to the
+   nearest end once the field is left (not while it's being typed). */
+$("ddFromYear").addEventListener("change", function () {
+  var el = $("ddFromYear"), v = parseNum(el.value), last = HIST_START + HIST_STOCK.length - 1;
+  var c = el.value.trim() === "" ? HIST_START : Math.min(last, Math.max(HIST_START, Math.round(v)));
+  if (String(c) !== el.value.trim()) { el.value = String(c); renderDrawdown(); }
+});
 /* The years box only means something with its box ticked. */
 function ddGkFinalSync(){ $("ddGkFinalYrs").disabled = !$("ddGkFinal").checked; }
 $("ddGkFinal").addEventListener("change", function(){ ddGkFinalSync(); renderDrawdown(); });
