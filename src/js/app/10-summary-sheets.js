@@ -577,27 +577,7 @@ function buildDrawdownSheet(){
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
   inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
-  inputs += row("Withdrawal strategy", DD_STRAT_NAMES[o.strategy] || "Floor & ceiling");
-  if (o.strategy === "vpw"){
-    inputs += row("Expected return, real", pctStr((o.vpwRate || 0) / 100, 2));
-    inputs += row("PMT future value", money(o.vpwFV || 0));
-  } else inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
-  if (o.path === "stages") ddWdOrder(o.pathStages).forEach(function (x) {
-    inputs += row(escapeHtml(x.st.name || ("Stage " + (x.i + 2))),
-      fmtNum(x.st.level || 0) + "% of year one's spending from " +
-      (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
-  });
-  if (o.strategy === "guardrails"){
-    inputs += row("Upper guardrail", fmtNum(o.guardBand) + "% above, cut " + fmtNum(o.adjustPct) + "%");
-    inputs += row("Lower guardrail", fmtNum(o.guardBandLo) + "% below, raise " + fmtNum(o.raisePct) + "%");
-    if (o.gkFinalYears > 0) inputs += row("No cuts in the final", fmtNum(o.gkFinalYears) + " years");
-  }
-  if (o.strategy === "yale"){
-    inputs += row("Weight on last year", num("ddYaleWeight") + "%");
-    inputs += row("Target spending rate", num("ddYaleRate") + "%");
-  }
-  if (o.spendFloor > 0 && o.strategy !== "fixed") inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
-  if (o.spendCeil > 0 && o.strategy !== "fixed") inputs += row("Maximum spending", money(o.spendCeil) + "/yr");
+  ddPlanRows(o).forEach(r => { inputs += row(r[0], r[1]); });
   if (o.ssAnnual > 0 || o.ssAnnual2 > 0) inputs += row("Social Security", money(o.ssAnnualTotal) + "/yr");
   (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
   (o.expenseItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name + " (expense)", describeItem(it)));

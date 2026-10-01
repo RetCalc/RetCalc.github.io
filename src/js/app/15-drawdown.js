@@ -31,6 +31,8 @@ function ddOutcomeText(r) {
   return ddRetireAge != null ? ("Ran out at age " + ddAgeVal(r.depletedYear))
                               : ("Ran out in year " + r.depletedYear);
 }
+/* A setting as words would write it: 0.5, 33.7, 2.25, 90, no padding. */
+function ddN(v){ return String(+(Math.round(v * 100) / 100)); }
 /* When a retirement began: the year, or with a start every month, the month
    too. */
 function ddStartLabel(r, monthly) {
@@ -53,26 +55,52 @@ function ddSortValue(r, col) {
   }
 }
 var ddIncomeChartAgg = false;
-/* Each strategy as the page names it, and how its dial reads. The engine's
-   catalog (DD_STRAT in drawdown.js) has its rule; this has its words. dial
-   names the saved field the engine's dial lives in. */
+/* Each strategy as the page names it and shows it. The engine's catalog
+   (DD_STRAT in drawdown.js) has its rule and dial; this has its words: its
+   name, a short name for charts, a one-line description, the label of its
+   rate field (none if it has no rate), the saved field its dial lives in,
+   and the groups of fields it shows. */
+var DD_FAMILY = {steady: "Steady income", share: "Share of the portfolio", guard: "Guardrails",
+  smooth: "Smoothed", value: "Valuation"};
 var DD_UI = {
-  fixed:     {name:"Fixed amount, rising with inflation", short:"Fixed", card:"Fixed amount", dial:"rate"},
-  kitces:    {name:"Kitces ratchet", short:"Ratchet", dial:"rate"},
-  pct:       {name:"Fixed % of portfolio each year", short:"Fixed %", card:"% of portfolio", dial:"rate"},
-  clyatt:    {name:"95% rule", short:"95% rule", dial:"rate"},
-  oneovern:  {name:"1/N: the balance over the years left", short:"1/N", card:"1/N"},
-  rmd:       {name:"RMD method", short:"RMD method"},
-  vpw:       {name:"Variable percentage withdrawal (VPW)", short:"VPW", card:"Variable percentage (VPW)", dial:"vpwRate"},
-  guardrails:{name:"Guyton-Klinger Guardrails", short:"Guardrails", dial:"rate"},
-  riskgr:    {name:"Risk-based guardrails", short:"Risk-based", dial:"rgTarget"},
-  floorceil: {name:"Floor & ceiling", short:"Floor & ceiling", dial:"rate"},
-  vanguard:  {name:"Vanguard dynamic spending", short:"Vanguard", dial:"rate"},
-  yale:      {name:"Yale Endowment", short:"Yale", dial:"yaleRate"},
-  hebeler:   {name:"Hebeler Autopilot II", short:"Autopilot II", dial:"hebRate"},
-  sensible:  {name:"Sensible withdrawals", short:"Sensible", dial:"rate"},
-  cape:      {name:"CAPE-based", short:"CAPE", dial:"capeA"}
+  fixed:     {name:"Fixed amount, rising with inflation", short:"Fixed", card:"Fixed amount", dial:"rate",
+              rate:"Starting withdrawal rate", blocks:["ddSkipWrap"],
+              blurb:"The 4% rule's way: year one's amount, then the same plus inflation, whatever markets do."},
+  kitces:    {name:"Kitces ratchet", short:"Ratchet", dial:"rate", rate:"Starting withdrawal rate", blocks:["ddKitWrap", "ddSkipWrap"],
+              blurb:"Fixed spending that never falls, stepped up after strong markets."},
+  pct:       {name:"Fixed % of portfolio each year", short:"Fixed %", card:"% of portfolio", dial:"rate",
+              rate:"Percentage taken each year", blocks:[],
+              blurb:"The same share of the portfolio every year: it can't run out, but spending swings with markets."},
+  clyatt:    {name:"95% rule", short:"95% rule", dial:"rate", rate:"Percentage taken each year", blocks:["ddClyWrap"],
+              blurb:"A share of the portfolio, but never under 95% of last year's spending."},
+  oneovern:  {name:"1/N: the balance over the years left", short:"1/N", card:"1/N", blocks:[],
+              blurb:"The balance divided by the years left, so it spends everything by the end."},
+  rmd:       {name:"RMD method", short:"RMD method", blocks:[],
+              blurb:"The balance divided by the IRS life-expectancy divisor for your age, as required distributions work."},
+  vpw:       {name:"Variable percentage withdrawal (VPW)", short:"VPW", card:"Variable percentage (VPW)", dial:"vpwRate",
+              blocks:["ddVpwWrap", "ddVpwNote"],
+              blurb:"The Bogleheads method: an annuity-style payment on what's left, worked out again each year."},
+  guardrails:{name:"Guyton-Klinger Guardrails", short:"Guardrails", dial:"rate", rate:"Starting withdrawal rate",
+              blocks:["ddGuardWrap", "ddGuardExample", "ddSkipWrap"],
+              blurb:"Steady spending with a cut or a raise when the withdrawal rate drifts too far."},
+  riskgr:    {name:"Risk-based guardrails", short:"Risk-based", dial:"rgTarget", blocks:["ddRgWrap"],
+              blurb:"Holds spending until history's odds of it lasting leave a band, then resets to the target."},
+  floorceil: {name:"Floor & ceiling", short:"Floor & ceiling", dial:"rate", rate:"Target withdrawal rate", blocks:["ddFloorWrap"],
+              blurb:"Aims at a share of the portfolio, but moves spending at most a set step a year."},
+  vanguard:  {name:"Vanguard dynamic spending", short:"Vanguard", dial:"rate", rate:"Target withdrawal rate", blocks:["ddVgWrap"],
+              blurb:"Floor and ceiling with Vanguard's limits: up 5% or down 2.5% at most a year."},
+  yale:      {name:"Yale Endowment", short:"Yale", dial:"yaleRate", rate:"Starting withdrawal rate", blocks:["ddYaleWrap", "ddYaleNote"],
+              blurb:"Mostly last year's spending, partly a share of today's portfolio."},
+  hebeler:   {name:"Hebeler Autopilot II", short:"Autopilot II", dial:"hebRate", blocks:["ddHebWrap"],
+              blurb:"Mostly last year's spending, partly an annuity-style payment on what's left."},
+  sensible:  {name:"Sensible withdrawals", short:"Sensible", dial:"rate", rate:"Base withdrawal rate", blocks:["ddSensWrap"],
+              blurb:"A steady base, plus a share of each year's real gains."},
+  cape:      {name:"CAPE-based", short:"CAPE", dial:"capeA", blocks:["ddCapeWrap"],
+              blurb:"A base rate plus a share of the market's earnings yield: more when stocks are cheap, less when they're dear."}
 };
+/* Every group of strategy fields, so the ones a strategy doesn't use hide. */
+var DD_BLOCKS = ["ddSkipWrap", "ddGuardWrap", "ddGuardExample", "ddFloorWrap", "ddVgWrap", "ddKitWrap", "ddClyWrap",
+  "ddYaleWrap", "ddYaleNote", "ddVpwWrap", "ddVpwNote", "ddHebWrap", "ddSensWrap", "ddRgWrap", "ddCapeWrap"];
 /* Display names, shared by the summary sheet, the image card and compare. */
 var DD_STRAT_NAMES = {};
 Object.keys(DD_UI).forEach(function (k) { DD_STRAT_NAMES[k] = DD_UI[k].card || DD_UI[k].name; });
@@ -99,14 +127,13 @@ function ddRetireAgeVal() {
   return v === "" ? null : parseNum(v);
 }
 
-/* Spending stages for the fixed strategy: from the year each one begins,
-   spending moves to its own rate of the starting portfolio, still in today's
-   dollars and still rising with inflation. The starting rate above is the
-   first stage. Each stage keeps the year of retirement it begins (1-based,
-   like CustomItem.startYear); with an age entered it's shown and typed as an
-   age instead. Mutated in place, like the item lists. */
-let ddWdStages = [];
-let ddWdAgeMode = null;
+/* The spending path's stages: from the year each one begins, spending moves
+   to its own share of year one's, in today's dollars, whatever the strategy.
+   Year one is the plan's own level. Each stage keeps the year of retirement
+   it begins (1-based, like CustomItem.startYear); with an age entered it's
+   shown and typed as an age instead. Mutated in place, like the item lists. */
+let ddPathStages = [];
+let ddStageAgeMode = null;
 /* Stages in the order they take effect, with each one's working start year;
    ties keep list order, matching the engine. */
 function ddWdOrder(list) {
@@ -115,7 +142,7 @@ function ddWdOrder(list) {
   }).sort(function (a, b) { return a.start - b.start || a.i - b.i; });
 }
 function ddWdBaseEnd(years) {
-  var first = ddWdOrder(ddWdStages)[0];
+  var first = ddWdOrder(ddPathStages)[0];
   return {from: 1, to: first ? Math.min(years, first.start - 1) : years};
 }
 function ddWdSpanText(sp) {
@@ -127,9 +154,9 @@ function ddWdSpanText(sp) {
 }
 function buildWdStages() {
   var ageOn = ddRetireAgeVal() != null;
-  ddWdAgeMode = ageOn;
+  ddStageAgeMode = ageOn;
   var list = $("ddWdStageList");
-  list.innerHTML = ddWdStages.map(function (st, i) {
+  list.innerHTML = ddPathStages.map(function (st, i) {
     var startShown = ageOn ? (ddRetireAgeVal() + st.start - 1) : st.start;
     return "<div class='stagecard'>" +
       "<div class='stagehead'><span class='stagenum' contenteditable='true' spellcheck='false'" +
@@ -143,9 +170,9 @@ function buildWdStages() {
           "<input type='text' inputmode='decimal' data-num data-step='1' min='1' data-nonneg data-wf='start' data-wi='" + i +
           "' value='" + fmtNum(startShown) + "' aria-label='Stage " + (i + 2) + " start'>" +
           "<span class='affix'>" + (ageOn ? "age" : "yr") + "</span></div></div>" +
-        "<div class='field' style='margin-bottom:0'><label>Withdrawal rate</label><div class='inputwrap'>" +
-          "<input type='text' inputmode='decimal' data-num data-step='0.25' min='0' data-nonneg data-wf='rate' data-wi='" + i +
-          "' value='" + fmtNum(st.rate || 0) + "' aria-label='Stage " + (i + 2) + " withdrawal rate'>" +
+        "<div class='field' style='margin-bottom:0'><label>Spending, of year one's</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='5' min='0' data-nonneg data-wf='level' data-wi='" + i +
+          "' value='" + ddN(st.level == null ? 100 : st.level) + "' aria-label='Stage " + (i + 2) + " spending, as a share of year one'>" +
           "<span class='affix'>%</span></div></div>" +
       "</div>" +
       "<div class='hint' data-wdnote='" + i + "'></div>" +
@@ -155,9 +182,9 @@ function buildWdStages() {
 }
 /* Refreshes each card's span and dollar note without rebuilding, so a field
    being typed in keeps its focus; a switch between years and ages rebuilds. */
-function syncWdStages(o) {
-  if ((ddRetireAge != null) !== ddWdAgeMode) buildWdStages();
-  var order = ddWdOrder(ddWdStages);
+function syncWdStages(o, first) {
+  if ((ddRetireAge != null) !== ddStageAgeMode) buildWdStages();
+  var order = ddWdOrder(ddPathStages);
   order.forEach(function (x, k) {
     var span = $("ddWdStageList").querySelector("[data-wdspan='" + x.i + "']");
     var note = $("ddWdStageList").querySelector("[data-wdnote='" + x.i + "']");
@@ -172,13 +199,14 @@ function syncWdStages(o) {
     if (inp && document.activeElement !== inp)
       inp.value = fmtNum(ageOn ? ddAgeVal(x.st.start) : x.st.start);
     if (!note) return;
-    var w = o.initial * (x.st.rate || 0) / 100;
+    var lv = (x.st.level == null ? 100 : x.st.level) / 100;
     note.className = "hint" + (live ? "" : " acwarn");
     note.textContent = x.start > o.years
       ? "This starts after the " + fmtNum(o.years) + " years of retirement above, so it has no effect."
       : !live ? "Another stage starts the same year and takes its place."
-      : o.initial > 0 ? "That's " + money(w) + " a year (" + money(w / 12) + "/mo) in today's dollars."
-      : "";
+      : o.strategy === "fixed" && first > 0
+        ? "That's " + money(first * lv) + " a year (" + money(first * lv / 12) + "/mo) in today's dollars."
+        : fmtNum(lv * 100) + "% of what the strategy would pay that year.";
   });
 }
 function readWdStart(v) {
@@ -188,30 +216,30 @@ function readWdStart(v) {
 }
 $("ddAddWdStage").addEventListener("click", function () {
   var years = Math.min(60, Math.max(1, Math.round(num("ddYears"))));
-  var order = ddWdOrder(ddWdStages), last = order[order.length - 1];
+  var order = ddWdOrder(ddPathStages), last = order[order.length - 1];
   var start = Math.min(years, (last ? last.start : 1) + 10);
-  ddWdStages.push({start: Math.max(2, start), rate: last ? last.st.rate : num("ddRate")});
+  ddPathStages.push({start: Math.max(2, start), level: last ? Math.max(0, (last.st.level == null ? 100 : last.st.level) - 10) : 90});
   buildWdStages();
   renderDrawdown();
-  var el = $("ddWdStageList").querySelector("[data-wf='rate'][data-wi='" + (ddWdStages.length - 1) + "']");
+  var el = $("ddWdStageList").querySelector("[data-wf='level'][data-wi='" + (ddPathStages.length - 1) + "']");
   if (el) el.focus();
 });
 $("ddWdStageList").addEventListener("input", function (e) {
   var el = e.target, f = el.getAttribute && el.getAttribute("data-wf");
   if (!f) return;
-  var st = ddWdStages[parseInt(el.getAttribute("data-wi"), 10)];
+  var st = ddPathStages[parseInt(el.getAttribute("data-wi"), 10)];
   if (!st) return;
   if (f === "start") { var y = readWdStart(el.value); if (y != null) st.start = y; }
-  else st.rate = Math.max(0, parseNum(el.value) || 0);
+  else st.level = Math.max(0, parseNum(el.value) || 0);
   renderDrawdownTyping();
 });
 $("ddWdStageList").addEventListener("click", function (e) {
   var del = e.target.closest ? e.target.closest("[data-wddel]") : null;
   if (!del) return;
   var i = parseInt(del.getAttribute("data-wddel"), 10);
-  if (!ddWdStages[i]) return;
-  var name = ddWdStages[i].name || ("Stage " + (i + 2));
-  ddWdStages.splice(i, 1);
+  if (!ddPathStages[i]) return;
+  var name = ddPathStages[i].name || ("Stage " + (i + 2));
+  ddPathStages.splice(i, 1);
   buildWdStages();
   renderDrawdown();
   toast("Removed " + name);
@@ -239,12 +267,12 @@ $("ddWdStageList").addEventListener("focusout", function (e) {
   var attr = el.getAttribute && el.getAttribute("data-wdname");
   if (attr === null || attr === undefined) return;
   var i = parseInt(attr, 10);
-  if (!ddWdStages[i]) return;
+  if (!ddPathStages[i]) return;
   var raw = el.textContent.replace(/\s+/g, " ").trim().slice(0, 40);
   var def = "Stage " + (i + 2);
-  if (raw && raw !== def) ddWdStages[i].name = raw;
-  else delete ddWdStages[i].name;
-  el.textContent = ddWdStages[i].name || def;
+  if (raw && raw !== def) ddPathStages[i].name = raw;
+  else delete ddPathStages[i].name;
+  el.textContent = ddPathStages[i].name || def;
 });
 
 /* ---- the inputs, saved, loaded and shared ----
@@ -253,7 +281,7 @@ $("ddWdStageList").addEventListener("focusout", function (e) {
    listeners all work from this one list, and the engine turns the saved
    state into its options (ddOptsFromState), so a saved scenario runs the
    same wherever it's opened. Kinds: "money" (grouped digits), "money0" (the
-   same, blank when 0, since 0 means none), "num", "text" (kept as typed,
+   same, blank when 0, since 0 means none), "num" and "num0" (blank when 0), "text" (kept as typed,
    blank allowed), "select" (kept as text) and "pick" (a select of numbers),
    "check" (a tick box). */
 var DD_STATE = [
@@ -293,13 +321,37 @@ var DD_STATE = [
   ["fromYear", "ddFromYear", "num", 1926],
   ["comfort", "ddComfort", "money0", 0],
   ["tCrit", "ddTCrit", "select", "comfort"],
-  ["tConf", "ddTConf", "pick", 100]
+  ["tConf", "ddTConf", "pick", 100],
+  ["skipRaise", "ddSkipRaise", "check", false],
+  ["vgCeil", "ddVgCeil", "num", 5],
+  ["vgFloor", "ddVgFloor", "num", 2.5],
+  ["kitThresh", "ddKitThresh", "num", 50],
+  ["kitRaise", "ddKitRaise", "num", 10],
+  ["kitGap", "ddKitGap", "num", 3],
+  ["clyFloor", "ddClyFloor", "num", 95],
+  ["hebWeight", "ddHebWeight", "num", 75],
+  ["hebRate", "ddHebRate", "num", 3],
+  ["sensExtra", "ddSensExtra", "num", 10],
+  ["rgTarget", "ddRgTarget", "num", 90],
+  ["rgLo", "ddRgLo", "num", 70],
+  ["rgHi", "ddRgHi", "num", 99],
+  ["capeA", "ddCapeA", "num", 1.75],
+  ["capeB", "ddCapeB", "num", 0.5],
+  ["path", "ddPath", "select", "flat"],
+  ["pathEase", "ddPathEase", "num", 1],
+  ["gShare", "ddGShare", "num0", 0],
+  ["gType", "ddGType", "select", "tips"],
+  ["gYield", "ddGYield", "num", 2],
+  ["gPayout", "ddGPayout", "num", 6.5],
+  ["gInflate", "ddGInflate", "check", false]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf"];
+var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
+  "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
+  "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -314,6 +366,7 @@ function ddFieldWrite(f, v){
   if (f[2] === "check") el.checked = !!v;
   else if (f[2] === "money") el.value = groupDigits(v, true);
   else if (f[2] === "money0") el.value = v > 0 ? groupDigits(v, true) : "";
+  else if (f[2] === "num0") el.value = v > 0 ? String(v) : "";
   else el.value = String(v);
 }
 /* Raw form state for scenario save/load, links and Reset: the fields as
@@ -325,7 +378,7 @@ function readDDState(){
   DD_STATE.forEach(function (f) { d[f[0]] = ddFieldRead(f); });
   d.incomeItems = ddIncomeItems.map(x => Object.assign({}, x));
   d.expenseItems = ddExpenseItems.map(x => Object.assign({}, x));
-  d.wdStages = ddWdStages.map(x => Object.assign({}, x));
+  d.pathStages = ddPathStages.map(x => Object.assign({}, x));
   return d;
 }
 function writeDDState(d){
@@ -333,6 +386,13 @@ function writeDDState(d){
   // it doesn't mention that came later than it; a partial fill leaves the
   // rest be.
   var full = d.rate != null || d.strategy != null;
+  // Spending stages saved before the spending path were a withdrawal rate for
+  // the fixed strategy; as a path, each is that rate's share of the start.
+  if (d.path == null && Array.isArray(d.wdStages)) {
+    var conv = (d.strategy || $("ddStrategy").value) === "fixed"
+      ? ddStagesFromRates(d.wdStages, d.rate != null ? +d.rate : num("ddRate")) : [];
+    d = Object.assign({}, d, {path: conv.length ? "stages" : "flat", pathStages: conv});
+  }
   if (full) {
     d = Object.assign({}, d);
     DD_LATER.forEach(function (k) { if (d[k] == null) d[k] = DD_DEFAULTS[k]; });
@@ -348,9 +408,9 @@ function writeDDState(d){
   if (Array.isArray(d.expenseItems))
     ddExpenseItems.splice(0, ddExpenseItems.length, ...d.expenseItems.map(x => Object.assign({}, x)));
   // A full set replaces the spending stages, clearing them when it has none.
-  if (Array.isArray(d.wdStages) || full){
-    ddWdStages.splice(0, ddWdStages.length,
-      ...(Array.isArray(d.wdStages) ? d.wdStages : []).map(x => Object.assign({}, x)));
+  if (Array.isArray(d.pathStages) || full){
+    ddPathStages.splice(0, ddPathStages.length,
+      ...(Array.isArray(d.pathStages) ? d.pathStages : []).map(x => Object.assign({}, x)));
     buildWdStages();
   }
 }
@@ -541,40 +601,29 @@ function renderDrawdown() {
         Math.round(d.ssClaim) + ".";
     }
   }
-  var strat = o.strategy;
-  $("ddGuardWrap").hidden = (strat !== "guardrails");
-  $("ddFloorWrap").hidden = (strat !== "floorceil");
-  $("ddYaleWrap").hidden = (strat !== "yale");
-  $("ddSpendFloorWrap").hidden = (strat === "fixed");
-  $("ddVpwWrap").hidden = (strat !== "vpw");
-  $("ddVpwNote").hidden = (strat !== "vpw");
-  $("ddRateWrap").hidden = (strat === "vpw");
-  $("ddWdStagesWrap").hidden = (strat !== "fixed");
-  var clash = strat !== "fixed" && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
+  var strat = o.strategy, U = DD_UI[strat] || DD_UI.fixed, S = DD_STRAT[strat];
+  DD_BLOCKS.forEach(function (id) { $(id).hidden = U.blocks.indexOf(id) < 0; });
+  $("ddRateWrap").hidden = !U.rate;
+  if (U.rate) $("ddRateLabel").textContent = U.rate;
+  $("ddSpendFloorWrap").hidden = S.limits === false;
+  var clash = S.limits !== false && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
   $("ddSpendNote2").hidden = !clash;
   if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
   var P = ddPrep(o);
+  var firstW = ddFirstSpend(o, P), r1 = P.initial > 0 ? firstW / P.initial : 0;
   if (strat === "vpw"){
     var conv = (o.stockPct * 5.0 + (100 - o.stockPct) * 1.9) / 100;
-    var r1 = o.initial > 0 ? ddFirstSpend(o, P) / o.initial : 0;
     $("ddVpwNote").innerHTML = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the " +
       "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + o.stockPct + "/" +
       (100 - o.stockPct) + " mix.";
   }
-
-  if (strat === "yale") {
-    $("ddYaleNote").hidden = false;
+  if (strat === "yale")
     $("ddYaleNote").innerHTML = "Each year: <b>" + o.yaleWeight + "%</b> of last year's spending (adjusted for inflation) " +
       "plus <b>" + (100 - o.yaleWeight) + "%</b> of <b>" + o.yaleRate + "%</b> of the current portfolio.";
-  } else {
-    $("ddYaleNote").hidden = true;
-  }
-
   if (strat === "guardrails") {
     var target = o.initialPct;
     var hiRate = target * (1 + Math.max(0, o.guardBand) / 100);
     var loRate = target * (1 - Math.min(100, Math.max(0, o.guardBandLo)) / 100);
-    $("ddGuardExample").hidden = false;
     $("ddGuardExample").innerHTML = "With a " + pctStr(target / 100, 1) + " target: if your withdrawal " +
       "ever climbs above <b>" + pctStr(hiRate / 100, 1) + "</b> of the portfolio, spending is cut " +
       fmtNum(Math.min(100, Math.max(0, o.adjustPct))) + "%" +
@@ -582,22 +631,23 @@ function renderDrawdown() {
           " years, it never is in a " + fmtNum(o.years) + "-year plan"
         : " (but not in the final " + fmtNum(o.gkFinalYears) + " years)") : "") +
       ". If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + fmtNum(Math.max(0, o.raisePct)) + "% raise.";
-  } else {
-    $("ddGuardExample").hidden = true;
   }
-  $("ddRateLabel").textContent = (strat === "pct")
-    ? "Percentage taken each year" : "Starting withdrawal rate";
+  // a line on what the strategies without their own note do in year one
+  var note = ddStratNote(o, P, firstW, r1);
+  $("ddStratNote").hidden = !note;
+  $("ddStratNote").innerHTML = note;
   $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
-
-  var firstW = ddFirstSpend(o, P);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
-    ? "That's " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above" +
-      (strat === "fixed" && ddWdStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
+    ? "That's " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on " +
+      (P.G.share > 0 ? "what stays invested" : "the portfolio above") +
+      (o.path === "stages" && ddPathStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
       ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
     : "Enter your portfolio value above to see this in dollars.";
-  if (strat === "fixed") syncWdStages(o);
+  ddPathSync(o, P, firstW);
+  ddGuarSync(o, P);
+  ddStratCard(o, P);
 
   var comfort = ddComfortSync(o, P);
   ddBaseSync();
@@ -854,12 +904,14 @@ function fillDDTable(run) {
   // $20M into a nominal $140M. Every dollar figure here is converted back to
   // today's terms so the table reads consistently with the rest of the app.
   var hasCustomIncome = ddIncomeItems.some(function(it){ return it.on !== false; });
+  var hasG = run.rows.some(function (r) { return r.guaranteed > 0; });
   $("ddOtherIncomeHeader").hidden = !hasCustomIncome;
+  $("ddGuarHeader").hidden = !hasG;
   $("ddTable").querySelector("tbody").innerHTML = run.rows.map(function (r, i) {
     var prevReal = i === 0 ? r.start : run.rows[i - 1].realEnd;
-    var otherCell = hasCustomIncome
+    var otherCell = (hasCustomIncome
       ? "<td>" + (r.customIncome > 0 ? money(r.customIncome) : "—") + "</td>"
-      : "";
+      : "") + (hasG ? "<td>" + (r.guaranteed > 0 ? money(r.guaranteed) : "—") + "</td>" : "");
     return "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(prevReal) + "</td><td>" +
       (r.ss > 0 ? money(r.ss) : "—") + "</td>" + otherCell + "<td>" + money(r.withdrawal) +
       "</td><td>" + money(r.spend) + "</td><td>" + money(r.realSpend != null ? r.realSpend : r.realWithdrawal) +

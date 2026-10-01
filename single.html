@@ -173,8 +173,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.bb1f7aeb6f.css">
-<link rel="preload" href="/assets/app.7f065740f2.js" as="script">
+<link rel="stylesheet" href="/assets/app.411dc666fa.css">
+<link rel="preload" href="/assets/app.8c07237fb0.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1582,13 +1582,33 @@ window.onerror = function(msg){
         <div class="field">
           <label for="ddStrategy">Withdrawal strategy<span class="tipdot" data-tip="strategy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="ddStrategy">
-            <option value="fixed">Fixed amount, rising with inflation</option>
-            <option value="pct">Fixed % of portfolio each year</option>
-            <option value="guardrails">Guyton-Klinger Guardrails</option>
-            <option value="floorceil">Floor &amp; ceiling</option>
-            <option value="yale">Yale Endowment</option>
-            <option value="vpw">Variable percentage withdrawal (VPW)</option>
+            <optgroup label="Steady income">
+              <option value="fixed">Fixed amount, rising with inflation</option>
+              <option value="kitces">Kitces ratchet</option>
+            </optgroup>
+            <optgroup label="Share of the portfolio">
+              <option value="pct">Fixed % of portfolio each year</option>
+              <option value="clyatt">95% rule</option>
+              <option value="oneovern">1/N: the balance over the years left</option>
+              <option value="rmd">RMD method</option>
+              <option value="vpw">Variable percentage withdrawal (VPW)</option>
+            </optgroup>
+            <optgroup label="Guardrails">
+              <option value="guardrails">Guyton-Klinger Guardrails</option>
+              <option value="riskgr">Risk-based guardrails</option>
+            </optgroup>
+            <optgroup label="Smoothed">
+              <option value="floorceil">Floor &amp; ceiling</option>
+              <option value="vanguard">Vanguard dynamic spending</option>
+              <option value="yale">Yale Endowment</option>
+              <option value="hebeler">Hebeler Autopilot II</option>
+              <option value="sensible">Sensible withdrawals</option>
+            </optgroup>
+            <optgroup label="Valuation">
+              <option value="cape">CAPE-based</option>
+            </optgroup>
           </select>
+          <div class="ddstrat" id="ddStratCard"></div>
           <button type="button" class="linkbtn" id="ddStratGuide">
             <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></svg>
             How the strategies compare
@@ -1599,9 +1619,9 @@ window.onerror = function(msg){
           <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
           <div class="hint" id="ddRateNote"></div>
         </div>
-        <div id="ddWdStagesWrap" hidden>
-          <div id="ddWdStageList"></div>
-          <button class="btn mini" type="button" id="ddAddWdStage">+ Add spending stage</button>
+        <div class="ddgk-final ddskip" id="ddSkipWrap" hidden>
+          <label class="ddgk-check"><input type="checkbox" id="ddSkipRaise"><span>Skip the inflation raise after a losing year</span></label>
+          <span class="tipdot" data-tip="skipraise" role="button" tabindex="0" aria-label="What is this?">?</span>
         </div>
         <div id="ddGuardWrap" hidden>
           <div class="ddgk-h">Upper guardrail: cut spending<span class="tipdot" data-tip="guardrails" role="button" tabindex="0" aria-label="What is this?">?</span></div>
@@ -1643,6 +1663,76 @@ window.onerror = function(msg){
             <div class="inputwrap"><input id="ddCeil" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
           </div>
         </div>
+        <div class="two" id="ddVgWrap" hidden>
+          <div class="field">
+            <label for="ddVgFloor">Max cut<span class="tipdot" data-tip="maxcut" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddVgFloor" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="2.5"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddVgCeil">Max raise<span class="tipdot" data-tip="maxraise" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddVgCeil" type="text" inputmode="decimal" data-num data-step="0.5" min="0" data-nonneg value="5"><span class="affix">%</span></div>
+          </div>
+        </div>
+        <div id="ddKitWrap" hidden>
+          <div class="two">
+            <div class="field">
+              <label for="ddKitThresh">Raise when the portfolio is<span class="tipdot" data-tip="kitces" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+              <div class="inputwrap"><input id="ddKitThresh" type="text" inputmode="decimal" data-num data-step="5" min="0" data-nonneg value="50"><span class="affix">% up</span></div>
+            </div>
+            <div class="field">
+              <label for="ddKitRaise">Raise spending by</label>
+              <div class="inputwrap"><input id="ddKitRaise" type="text" inputmode="decimal" data-num data-step="1" min="0" data-nonneg value="10"><span class="affix">%</span></div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="ddKitGap">At most once every</label>
+            <div class="inputwrap"><input id="ddKitGap" type="text" inputmode="decimal" data-num data-step="1" min="1" max="30" data-nonneg value="3"><span class="affix">years</span></div>
+          </div>
+        </div>
+        <div class="field" id="ddClyWrap" hidden>
+          <label for="ddClyFloor">Never less than<span class="tipdot" data-tip="clyatt" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddClyFloor" type="text" inputmode="decimal" data-num data-step="1" min="0" max="100" data-nonneg value="95"><span class="affix">% of last year's</span></div>
+        </div>
+        <div class="two" id="ddHebWrap" hidden>
+          <div class="field">
+            <label for="ddHebWeight">Weight on last year<span class="tipdot" data-tip="hebeler" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddHebWeight" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="75"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddHebRate">Expected return<span class="tipdot" data-tip="vpwrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddHebRate" type="text" inputmode="decimal" data-num data-step="0.25" value="3"><span class="affix">% real</span></div>
+          </div>
+        </div>
+        <div class="field" id="ddSensWrap" hidden>
+          <label for="ddSensExtra">Plus, of last year's real gains<span class="tipdot" data-tip="sensible" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <div class="inputwrap"><input id="ddSensExtra" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="10"><span class="affix">%</span></div>
+        </div>
+        <div id="ddRgWrap" hidden>
+          <div class="field">
+            <label for="ddRgTarget">Target chance of lasting<span class="tipdot" data-tip="riskgr" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddRgTarget" type="text" inputmode="decimal" data-num data-step="1" min="1" max="99.9" data-nonneg value="90"><span class="affix">%</span></div>
+          </div>
+          <div class="two">
+            <div class="field">
+              <label for="ddRgLo">Cut when it falls below</label>
+              <div class="inputwrap"><input id="ddRgLo" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="70"><span class="affix">%</span></div>
+            </div>
+            <div class="field">
+              <label for="ddRgHi">Raise when it's above</label>
+              <div class="inputwrap"><input id="ddRgHi" type="text" inputmode="decimal" data-num data-step="1" min="0" max="100" data-nonneg value="99"><span class="affix">%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="two" id="ddCapeWrap" hidden>
+          <div class="field">
+            <label for="ddCapeA">Base rate<span class="tipdot" data-tip="capebased" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddCapeA" type="text" inputmode="decimal" data-num data-step="0.25" value="1.75"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddCapeB">Plus 1/CAPE times</label>
+            <div class="inputwrap"><input id="ddCapeB" type="text" inputmode="decimal" data-num data-step="0.05" min="0" data-nonneg value="0.5"><span class="affix">&times;</span></div>
+          </div>
+        </div>
         <div class="two" id="ddYaleWrap" hidden>
           <div class="field">
             <label for="ddYaleWeight">Weight on last year<span class="tipdot" data-tip="yale" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -1665,6 +1755,7 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="hint" id="ddVpwNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="hint" id="ddStratNote" hidden style="margin-top:-6px;margin-bottom:12px"></div>
         <div class="two" id="ddSpendFloorWrap" hidden>
           <div class="field">
             <label for="ddSpendFloor">Minimum spending<span class="tipdot" data-tip="spendfloor" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -1676,6 +1767,24 @@ window.onerror = function(msg){
           </div>
         </div>
         <div class="hint acwarn" id="ddSpendNote2" hidden style="margin-top:-6px;margin-bottom:12px"></div>
+        <div class="field">
+          <label for="ddPath">Spending through retirement<span class="tipdot" data-tip="ddpath" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="ddPath">
+            <option value="flat">Steady, rising with inflation</option>
+            <option value="ease">Easing a little each year</option>
+            <option value="smile">The retirement spending smile</option>
+            <option value="stages">In stages</option>
+          </select>
+          <div class="hint" id="ddPathNote"></div>
+        </div>
+        <div class="field" id="ddPathEaseWrap" hidden>
+          <label for="ddPathEase">Real spending falls by</label>
+          <div class="inputwrap"><input id="ddPathEase" type="text" inputmode="decimal" data-num data-step="0.25" value="1"><span class="affix">% a year</span></div>
+        </div>
+        <div id="ddWdStagesWrap" hidden>
+          <div id="ddWdStageList"></div>
+          <button class="btn mini" type="button" id="ddAddWdStage">+ Add spending stage</button>
+        </div>
         <div class="field" style="margin-top:14px">
           <label for="ddSSMode">Social Security</label>
           <select id="ddSSMode">
@@ -1738,6 +1847,35 @@ window.onerror = function(msg){
           <div id="ddExpenseList"></div>
           <button class="btn mini" type="button" id="ddAddExpense">+ Add future expense</button>
         </div>
+        <div class="ddsec">Guaranteed income</div>
+        <div class="two">
+          <div class="field">
+            <label for="ddGShare">Share of the portfolio<span class="tipdot" data-tip="ddgshare" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddGShare" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="" placeholder="0"><span class="affix">%</span></div>
+          </div>
+          <div class="field">
+            <label for="ddGType">To buy</label>
+            <select id="ddGType">
+              <option value="tips">A TIPS ladder</option>
+              <option value="annuity">An annuity</option>
+            </select>
+          </div>
+        </div>
+        <div id="ddGDetail" hidden>
+          <div class="field" id="ddGYieldWrap">
+            <label for="ddGYield">Real yield<span class="tipdot" data-tip="ddgyield" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddGYield" type="text" inputmode="decimal" data-num data-step="0.1" value="2"><span class="affix">% after inflation</span></div>
+          </div>
+          <div class="field" id="ddGPayoutWrap" hidden>
+            <label for="ddGPayout">Payout rate<span class="tipdot" data-tip="ddgpayout" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+            <div class="inputwrap"><input id="ddGPayout" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg value="6.5"><span class="affix">% a year</span></div>
+          </div>
+          <div class="ddgk-final" id="ddGInflateWrap" hidden>
+            <label class="ddgk-check"><input type="checkbox" id="ddGInflate"><span>Payments rise with inflation</span></label>
+          </div>
+          <div class="hint" id="ddGNote" style="margin-top:-6px;margin-bottom:12px"></div>
+        </div>
+        <div class="ddsec">Goals</div>
         <div class="field">
           <label for="ddLegacyGoal">Legacy goal <span class="opt">optional</span><span class="tipdot" data-tip="legacy" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><span class="affix">$</span><input id="ddLegacyGoal" type="text" inputmode="decimal" data-money data-nonneg value=""></div>
@@ -1959,7 +2097,7 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="ddTable">
-          <thead><tr><th id="ddTableYearHeader">Year</th><th>Start, today's $</th><th>Social Security</th><th id="ddOtherIncomeHeader" hidden>Other Income</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
+          <thead><tr><th id="ddTableYearHeader">Year</th><th>Start, today's $</th><th>Social Security</th><th id="ddOtherIncomeHeader" hidden>Other Income</th><th id="ddGuarHeader" hidden>Guaranteed</th><th>From portfolio</th><th>Total spend</th><th>Spend, today's $</th><th>Return</th><th>End balance, today's $</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -5337,7 +5475,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.7f065740f2.js"></script>
+<script src="/assets/app.8c07237fb0.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

@@ -58,6 +58,10 @@
 .sg-pc ul{margin:5px 0 10px;padding-left:18px;font-size:12.5px;color:var(--dim);line-height:1.5}
 .sg-pc li{margin-bottom:4px}
 .sg-item .sg-fit{color:var(--text)}
+.sg-fam{margin:22px 0 2px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.sg-spark{margin:2px 0 10px;max-width:420px}
+.sg-spark .ddspark{height:36px;margin-top:0}
+.sg-spark span{display:block;font-size:11px;color:var(--dimmer);margin-top:2px}
 @media (max-width:640px){
   .popup.guide{padding:18px 16px}
   .sg-pc{grid-template-columns:1fr}

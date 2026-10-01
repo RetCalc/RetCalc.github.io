@@ -8835,27 +8835,7 @@ function buildDrawdownSheet(){
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
   inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
-  inputs += row("Withdrawal strategy", DD_STRAT_NAMES[o.strategy] || "Floor & ceiling");
-  if (o.strategy === "vpw"){
-    inputs += row("Expected return, real", pctStr((o.vpwRate || 0) / 100, 2));
-    inputs += row("PMT future value", money(o.vpwFV || 0));
-  } else inputs += row("Withdrawal rate", pctStr(o.initialPct / 100, 1));
-  if (o.path === "stages") ddWdOrder(o.pathStages).forEach(function (x) {
-    inputs += row(escapeHtml(x.st.name || ("Stage " + (x.i + 2))),
-      fmtNum(x.st.level || 0) + "% of year one's spending from " +
-      (o.retireAge != null ? "age " + fmtNum(o.retireAge + x.start - 1) : "year " + x.start));
-  });
-  if (o.strategy === "guardrails"){
-    inputs += row("Upper guardrail", fmtNum(o.guardBand) + "% above, cut " + fmtNum(o.adjustPct) + "%");
-    inputs += row("Lower guardrail", fmtNum(o.guardBandLo) + "% below, raise " + fmtNum(o.raisePct) + "%");
-    if (o.gkFinalYears > 0) inputs += row("No cuts in the final", fmtNum(o.gkFinalYears) + " years");
-  }
-  if (o.strategy === "yale"){
-    inputs += row("Weight on last year", num("ddYaleWeight") + "%");
-    inputs += row("Target spending rate", num("ddYaleRate") + "%");
-  }
-  if (o.spendFloor > 0 && o.strategy !== "fixed") inputs += row("Minimum spending", money(o.spendFloor) + "/yr");
-  if (o.spendCeil > 0 && o.strategy !== "fixed") inputs += row("Maximum spending", money(o.spendCeil) + "/yr");
+  ddPlanRows(o).forEach(r => { inputs += row(r[0], r[1]); });
   if (o.ssAnnual > 0 || o.ssAnnual2 > 0) inputs += row("Social Security", money(o.ssAnnualTotal) + "/yr");
   (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
   (o.expenseItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name + " (expense)", describeItem(it)));
@@ -11004,6 +10984,8 @@ function ddOutcomeText(r) {
   return ddRetireAge != null ? ("Ran out at age " + ddAgeVal(r.depletedYear))
                               : ("Ran out in year " + r.depletedYear);
 }
+/* A setting as words would write it: 0.5, 33.7, 2.25, 90, no padding. */
+function ddN(v){ return String(+(Math.round(v * 100) / 100)); }
 /* When a retirement began: the year, or with a start every month, the month
    too. */
 function ddStartLabel(r, monthly) {
@@ -11026,26 +11008,52 @@ function ddSortValue(r, col) {
   }
 }
 var ddIncomeChartAgg = false;
-/* Each strategy as the page names it, and how its dial reads. The engine's
-   catalog (DD_STRAT in drawdown.js) has its rule; this has its words. dial
-   names the saved field the engine's dial lives in. */
+/* Each strategy as the page names it and shows it. The engine's catalog
+   (DD_STRAT in drawdown.js) has its rule and dial; this has its words: its
+   name, a short name for charts, a one-line description, the label of its
+   rate field (none if it has no rate), the saved field its dial lives in,
+   and the groups of fields it shows. */
+var DD_FAMILY = {steady: "Steady income", share: "Share of the portfolio", guard: "Guardrails",
+  smooth: "Smoothed", value: "Valuation"};
 var DD_UI = {
-  fixed:     {name:"Fixed amount, rising with inflation", short:"Fixed", card:"Fixed amount", dial:"rate"},
-  kitces:    {name:"Kitces ratchet", short:"Ratchet", dial:"rate"},
-  pct:       {name:"Fixed % of portfolio each year", short:"Fixed %", card:"% of portfolio", dial:"rate"},
-  clyatt:    {name:"95% rule", short:"95% rule", dial:"rate"},
-  oneovern:  {name:"1/N: the balance over the years left", short:"1/N", card:"1/N"},
-  rmd:       {name:"RMD method", short:"RMD method"},
-  vpw:       {name:"Variable percentage withdrawal (VPW)", short:"VPW", card:"Variable percentage (VPW)", dial:"vpwRate"},
-  guardrails:{name:"Guyton-Klinger Guardrails", short:"Guardrails", dial:"rate"},
-  riskgr:    {name:"Risk-based guardrails", short:"Risk-based", dial:"rgTarget"},
-  floorceil: {name:"Floor & ceiling", short:"Floor & ceiling", dial:"rate"},
-  vanguard:  {name:"Vanguard dynamic spending", short:"Vanguard", dial:"rate"},
-  yale:      {name:"Yale Endowment", short:"Yale", dial:"yaleRate"},
-  hebeler:   {name:"Hebeler Autopilot II", short:"Autopilot II", dial:"hebRate"},
-  sensible:  {name:"Sensible withdrawals", short:"Sensible", dial:"rate"},
-  cape:      {name:"CAPE-based", short:"CAPE", dial:"capeA"}
+  fixed:     {name:"Fixed amount, rising with inflation", short:"Fixed", card:"Fixed amount", dial:"rate",
+              rate:"Starting withdrawal rate", blocks:["ddSkipWrap"],
+              blurb:"The 4% rule's way: year one's amount, then the same plus inflation, whatever markets do."},
+  kitces:    {name:"Kitces ratchet", short:"Ratchet", dial:"rate", rate:"Starting withdrawal rate", blocks:["ddKitWrap", "ddSkipWrap"],
+              blurb:"Fixed spending that never falls, stepped up after strong markets."},
+  pct:       {name:"Fixed % of portfolio each year", short:"Fixed %", card:"% of portfolio", dial:"rate",
+              rate:"Percentage taken each year", blocks:[],
+              blurb:"The same share of the portfolio every year: it can't run out, but spending swings with markets."},
+  clyatt:    {name:"95% rule", short:"95% rule", dial:"rate", rate:"Percentage taken each year", blocks:["ddClyWrap"],
+              blurb:"A share of the portfolio, but never under 95% of last year's spending."},
+  oneovern:  {name:"1/N: the balance over the years left", short:"1/N", card:"1/N", blocks:[],
+              blurb:"The balance divided by the years left, so it spends everything by the end."},
+  rmd:       {name:"RMD method", short:"RMD method", blocks:[],
+              blurb:"The balance divided by the IRS life-expectancy divisor for your age, as required distributions work."},
+  vpw:       {name:"Variable percentage withdrawal (VPW)", short:"VPW", card:"Variable percentage (VPW)", dial:"vpwRate",
+              blocks:["ddVpwWrap", "ddVpwNote"],
+              blurb:"The Bogleheads method: an annuity-style payment on what's left, worked out again each year."},
+  guardrails:{name:"Guyton-Klinger Guardrails", short:"Guardrails", dial:"rate", rate:"Starting withdrawal rate",
+              blocks:["ddGuardWrap", "ddGuardExample", "ddSkipWrap"],
+              blurb:"Steady spending with a cut or a raise when the withdrawal rate drifts too far."},
+  riskgr:    {name:"Risk-based guardrails", short:"Risk-based", dial:"rgTarget", blocks:["ddRgWrap"],
+              blurb:"Holds spending until history's odds of it lasting leave a band, then resets to the target."},
+  floorceil: {name:"Floor & ceiling", short:"Floor & ceiling", dial:"rate", rate:"Target withdrawal rate", blocks:["ddFloorWrap"],
+              blurb:"Aims at a share of the portfolio, but moves spending at most a set step a year."},
+  vanguard:  {name:"Vanguard dynamic spending", short:"Vanguard", dial:"rate", rate:"Target withdrawal rate", blocks:["ddVgWrap"],
+              blurb:"Floor and ceiling with Vanguard's limits: up 5% or down 2.5% at most a year."},
+  yale:      {name:"Yale Endowment", short:"Yale", dial:"yaleRate", rate:"Starting withdrawal rate", blocks:["ddYaleWrap", "ddYaleNote"],
+              blurb:"Mostly last year's spending, partly a share of today's portfolio."},
+  hebeler:   {name:"Hebeler Autopilot II", short:"Autopilot II", dial:"hebRate", blocks:["ddHebWrap"],
+              blurb:"Mostly last year's spending, partly an annuity-style payment on what's left."},
+  sensible:  {name:"Sensible withdrawals", short:"Sensible", dial:"rate", rate:"Base withdrawal rate", blocks:["ddSensWrap"],
+              blurb:"A steady base, plus a share of each year's real gains."},
+  cape:      {name:"CAPE-based", short:"CAPE", dial:"capeA", blocks:["ddCapeWrap"],
+              blurb:"A base rate plus a share of the market's earnings yield: more when stocks are cheap, less when they're dear."}
 };
+/* Every group of strategy fields, so the ones a strategy doesn't use hide. */
+var DD_BLOCKS = ["ddSkipWrap", "ddGuardWrap", "ddGuardExample", "ddFloorWrap", "ddVgWrap", "ddKitWrap", "ddClyWrap",
+  "ddYaleWrap", "ddYaleNote", "ddVpwWrap", "ddVpwNote", "ddHebWrap", "ddSensWrap", "ddRgWrap", "ddCapeWrap"];
 /* Display names, shared by the summary sheet, the image card and compare. */
 var DD_STRAT_NAMES = {};
 Object.keys(DD_UI).forEach(function (k) { DD_STRAT_NAMES[k] = DD_UI[k].card || DD_UI[k].name; });
@@ -11072,14 +11080,13 @@ function ddRetireAgeVal() {
   return v === "" ? null : parseNum(v);
 }
 
-/* Spending stages for the fixed strategy: from the year each one begins,
-   spending moves to its own rate of the starting portfolio, still in today's
-   dollars and still rising with inflation. The starting rate above is the
-   first stage. Each stage keeps the year of retirement it begins (1-based,
-   like CustomItem.startYear); with an age entered it's shown and typed as an
-   age instead. Mutated in place, like the item lists. */
-let ddWdStages = [];
-let ddWdAgeMode = null;
+/* The spending path's stages: from the year each one begins, spending moves
+   to its own share of year one's, in today's dollars, whatever the strategy.
+   Year one is the plan's own level. Each stage keeps the year of retirement
+   it begins (1-based, like CustomItem.startYear); with an age entered it's
+   shown and typed as an age instead. Mutated in place, like the item lists. */
+let ddPathStages = [];
+let ddStageAgeMode = null;
 /* Stages in the order they take effect, with each one's working start year;
    ties keep list order, matching the engine. */
 function ddWdOrder(list) {
@@ -11088,7 +11095,7 @@ function ddWdOrder(list) {
   }).sort(function (a, b) { return a.start - b.start || a.i - b.i; });
 }
 function ddWdBaseEnd(years) {
-  var first = ddWdOrder(ddWdStages)[0];
+  var first = ddWdOrder(ddPathStages)[0];
   return {from: 1, to: first ? Math.min(years, first.start - 1) : years};
 }
 function ddWdSpanText(sp) {
@@ -11100,9 +11107,9 @@ function ddWdSpanText(sp) {
 }
 function buildWdStages() {
   var ageOn = ddRetireAgeVal() != null;
-  ddWdAgeMode = ageOn;
+  ddStageAgeMode = ageOn;
   var list = $("ddWdStageList");
-  list.innerHTML = ddWdStages.map(function (st, i) {
+  list.innerHTML = ddPathStages.map(function (st, i) {
     var startShown = ageOn ? (ddRetireAgeVal() + st.start - 1) : st.start;
     return "<div class='stagecard'>" +
       "<div class='stagehead'><span class='stagenum' contenteditable='true' spellcheck='false'" +
@@ -11116,9 +11123,9 @@ function buildWdStages() {
           "<input type='text' inputmode='decimal' data-num data-step='1' min='1' data-nonneg data-wf='start' data-wi='" + i +
           "' value='" + fmtNum(startShown) + "' aria-label='Stage " + (i + 2) + " start'>" +
           "<span class='affix'>" + (ageOn ? "age" : "yr") + "</span></div></div>" +
-        "<div class='field' style='margin-bottom:0'><label>Withdrawal rate</label><div class='inputwrap'>" +
-          "<input type='text' inputmode='decimal' data-num data-step='0.25' min='0' data-nonneg data-wf='rate' data-wi='" + i +
-          "' value='" + fmtNum(st.rate || 0) + "' aria-label='Stage " + (i + 2) + " withdrawal rate'>" +
+        "<div class='field' style='margin-bottom:0'><label>Spending, of year one's</label><div class='inputwrap'>" +
+          "<input type='text' inputmode='decimal' data-num data-step='5' min='0' data-nonneg data-wf='level' data-wi='" + i +
+          "' value='" + ddN(st.level == null ? 100 : st.level) + "' aria-label='Stage " + (i + 2) + " spending, as a share of year one'>" +
           "<span class='affix'>%</span></div></div>" +
       "</div>" +
       "<div class='hint' data-wdnote='" + i + "'></div>" +
@@ -11128,9 +11135,9 @@ function buildWdStages() {
 }
 /* Refreshes each card's span and dollar note without rebuilding, so a field
    being typed in keeps its focus; a switch between years and ages rebuilds. */
-function syncWdStages(o) {
-  if ((ddRetireAge != null) !== ddWdAgeMode) buildWdStages();
-  var order = ddWdOrder(ddWdStages);
+function syncWdStages(o, first) {
+  if ((ddRetireAge != null) !== ddStageAgeMode) buildWdStages();
+  var order = ddWdOrder(ddPathStages);
   order.forEach(function (x, k) {
     var span = $("ddWdStageList").querySelector("[data-wdspan='" + x.i + "']");
     var note = $("ddWdStageList").querySelector("[data-wdnote='" + x.i + "']");
@@ -11145,13 +11152,14 @@ function syncWdStages(o) {
     if (inp && document.activeElement !== inp)
       inp.value = fmtNum(ageOn ? ddAgeVal(x.st.start) : x.st.start);
     if (!note) return;
-    var w = o.initial * (x.st.rate || 0) / 100;
+    var lv = (x.st.level == null ? 100 : x.st.level) / 100;
     note.className = "hint" + (live ? "" : " acwarn");
     note.textContent = x.start > o.years
       ? "This starts after the " + fmtNum(o.years) + " years of retirement above, so it has no effect."
       : !live ? "Another stage starts the same year and takes its place."
-      : o.initial > 0 ? "That's " + money(w) + " a year (" + money(w / 12) + "/mo) in today's dollars."
-      : "";
+      : o.strategy === "fixed" && first > 0
+        ? "That's " + money(first * lv) + " a year (" + money(first * lv / 12) + "/mo) in today's dollars."
+        : fmtNum(lv * 100) + "% of what the strategy would pay that year.";
   });
 }
 function readWdStart(v) {
@@ -11161,30 +11169,30 @@ function readWdStart(v) {
 }
 $("ddAddWdStage").addEventListener("click", function () {
   var years = Math.min(60, Math.max(1, Math.round(num("ddYears"))));
-  var order = ddWdOrder(ddWdStages), last = order[order.length - 1];
+  var order = ddWdOrder(ddPathStages), last = order[order.length - 1];
   var start = Math.min(years, (last ? last.start : 1) + 10);
-  ddWdStages.push({start: Math.max(2, start), rate: last ? last.st.rate : num("ddRate")});
+  ddPathStages.push({start: Math.max(2, start), level: last ? Math.max(0, (last.st.level == null ? 100 : last.st.level) - 10) : 90});
   buildWdStages();
   renderDrawdown();
-  var el = $("ddWdStageList").querySelector("[data-wf='rate'][data-wi='" + (ddWdStages.length - 1) + "']");
+  var el = $("ddWdStageList").querySelector("[data-wf='level'][data-wi='" + (ddPathStages.length - 1) + "']");
   if (el) el.focus();
 });
 $("ddWdStageList").addEventListener("input", function (e) {
   var el = e.target, f = el.getAttribute && el.getAttribute("data-wf");
   if (!f) return;
-  var st = ddWdStages[parseInt(el.getAttribute("data-wi"), 10)];
+  var st = ddPathStages[parseInt(el.getAttribute("data-wi"), 10)];
   if (!st) return;
   if (f === "start") { var y = readWdStart(el.value); if (y != null) st.start = y; }
-  else st.rate = Math.max(0, parseNum(el.value) || 0);
+  else st.level = Math.max(0, parseNum(el.value) || 0);
   renderDrawdownTyping();
 });
 $("ddWdStageList").addEventListener("click", function (e) {
   var del = e.target.closest ? e.target.closest("[data-wddel]") : null;
   if (!del) return;
   var i = parseInt(del.getAttribute("data-wddel"), 10);
-  if (!ddWdStages[i]) return;
-  var name = ddWdStages[i].name || ("Stage " + (i + 2));
-  ddWdStages.splice(i, 1);
+  if (!ddPathStages[i]) return;
+  var name = ddPathStages[i].name || ("Stage " + (i + 2));
+  ddPathStages.splice(i, 1);
   buildWdStages();
   renderDrawdown();
   toast("Removed " + name);
@@ -11212,12 +11220,12 @@ $("ddWdStageList").addEventListener("focusout", function (e) {
   var attr = el.getAttribute && el.getAttribute("data-wdname");
   if (attr === null || attr === undefined) return;
   var i = parseInt(attr, 10);
-  if (!ddWdStages[i]) return;
+  if (!ddPathStages[i]) return;
   var raw = el.textContent.replace(/\s+/g, " ").trim().slice(0, 40);
   var def = "Stage " + (i + 2);
-  if (raw && raw !== def) ddWdStages[i].name = raw;
-  else delete ddWdStages[i].name;
-  el.textContent = ddWdStages[i].name || def;
+  if (raw && raw !== def) ddPathStages[i].name = raw;
+  else delete ddPathStages[i].name;
+  el.textContent = ddPathStages[i].name || def;
 });
 
 /* ---- the inputs, saved, loaded and shared ----
@@ -11226,7 +11234,7 @@ $("ddWdStageList").addEventListener("focusout", function (e) {
    listeners all work from this one list, and the engine turns the saved
    state into its options (ddOptsFromState), so a saved scenario runs the
    same wherever it's opened. Kinds: "money" (grouped digits), "money0" (the
-   same, blank when 0, since 0 means none), "num", "text" (kept as typed,
+   same, blank when 0, since 0 means none), "num" and "num0" (blank when 0), "text" (kept as typed,
    blank allowed), "select" (kept as text) and "pick" (a select of numbers),
    "check" (a tick box). */
 var DD_STATE = [
@@ -11266,13 +11274,37 @@ var DD_STATE = [
   ["fromYear", "ddFromYear", "num", 1926],
   ["comfort", "ddComfort", "money0", 0],
   ["tCrit", "ddTCrit", "select", "comfort"],
-  ["tConf", "ddTConf", "pick", 100]
+  ["tConf", "ddTConf", "pick", 100],
+  ["skipRaise", "ddSkipRaise", "check", false],
+  ["vgCeil", "ddVgCeil", "num", 5],
+  ["vgFloor", "ddVgFloor", "num", 2.5],
+  ["kitThresh", "ddKitThresh", "num", 50],
+  ["kitRaise", "ddKitRaise", "num", 10],
+  ["kitGap", "ddKitGap", "num", 3],
+  ["clyFloor", "ddClyFloor", "num", 95],
+  ["hebWeight", "ddHebWeight", "num", 75],
+  ["hebRate", "ddHebRate", "num", 3],
+  ["sensExtra", "ddSensExtra", "num", 10],
+  ["rgTarget", "ddRgTarget", "num", 90],
+  ["rgLo", "ddRgLo", "num", 70],
+  ["rgHi", "ddRgHi", "num", 99],
+  ["capeA", "ddCapeA", "num", 1.75],
+  ["capeB", "ddCapeB", "num", 0.5],
+  ["path", "ddPath", "select", "flat"],
+  ["pathEase", "ddPathEase", "num", 1],
+  ["gShare", "ddGShare", "num0", 0],
+  ["gType", "ddGType", "select", "tips"],
+  ["gYield", "ddGYield", "num", 2],
+  ["gPayout", "ddGPayout", "num", 6.5],
+  ["gInflate", "ddGInflate", "check", false]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf"];
+var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
+  "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
+  "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -11287,6 +11319,7 @@ function ddFieldWrite(f, v){
   if (f[2] === "check") el.checked = !!v;
   else if (f[2] === "money") el.value = groupDigits(v, true);
   else if (f[2] === "money0") el.value = v > 0 ? groupDigits(v, true) : "";
+  else if (f[2] === "num0") el.value = v > 0 ? String(v) : "";
   else el.value = String(v);
 }
 /* Raw form state for scenario save/load, links and Reset: the fields as
@@ -11298,7 +11331,7 @@ function readDDState(){
   DD_STATE.forEach(function (f) { d[f[0]] = ddFieldRead(f); });
   d.incomeItems = ddIncomeItems.map(x => Object.assign({}, x));
   d.expenseItems = ddExpenseItems.map(x => Object.assign({}, x));
-  d.wdStages = ddWdStages.map(x => Object.assign({}, x));
+  d.pathStages = ddPathStages.map(x => Object.assign({}, x));
   return d;
 }
 function writeDDState(d){
@@ -11306,6 +11339,13 @@ function writeDDState(d){
   // it doesn't mention that came later than it; a partial fill leaves the
   // rest be.
   var full = d.rate != null || d.strategy != null;
+  // Spending stages saved before the spending path were a withdrawal rate for
+  // the fixed strategy; as a path, each is that rate's share of the start.
+  if (d.path == null && Array.isArray(d.wdStages)) {
+    var conv = (d.strategy || $("ddStrategy").value) === "fixed"
+      ? ddStagesFromRates(d.wdStages, d.rate != null ? +d.rate : num("ddRate")) : [];
+    d = Object.assign({}, d, {path: conv.length ? "stages" : "flat", pathStages: conv});
+  }
   if (full) {
     d = Object.assign({}, d);
     DD_LATER.forEach(function (k) { if (d[k] == null) d[k] = DD_DEFAULTS[k]; });
@@ -11321,9 +11361,9 @@ function writeDDState(d){
   if (Array.isArray(d.expenseItems))
     ddExpenseItems.splice(0, ddExpenseItems.length, ...d.expenseItems.map(x => Object.assign({}, x)));
   // A full set replaces the spending stages, clearing them when it has none.
-  if (Array.isArray(d.wdStages) || full){
-    ddWdStages.splice(0, ddWdStages.length,
-      ...(Array.isArray(d.wdStages) ? d.wdStages : []).map(x => Object.assign({}, x)));
+  if (Array.isArray(d.pathStages) || full){
+    ddPathStages.splice(0, ddPathStages.length,
+      ...(Array.isArray(d.pathStages) ? d.pathStages : []).map(x => Object.assign({}, x)));
     buildWdStages();
   }
 }
@@ -11514,40 +11554,29 @@ function renderDrawdown() {
         Math.round(d.ssClaim) + ".";
     }
   }
-  var strat = o.strategy;
-  $("ddGuardWrap").hidden = (strat !== "guardrails");
-  $("ddFloorWrap").hidden = (strat !== "floorceil");
-  $("ddYaleWrap").hidden = (strat !== "yale");
-  $("ddSpendFloorWrap").hidden = (strat === "fixed");
-  $("ddVpwWrap").hidden = (strat !== "vpw");
-  $("ddVpwNote").hidden = (strat !== "vpw");
-  $("ddRateWrap").hidden = (strat === "vpw");
-  $("ddWdStagesWrap").hidden = (strat !== "fixed");
-  var clash = strat !== "fixed" && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
+  var strat = o.strategy, U = DD_UI[strat] || DD_UI.fixed, S = DD_STRAT[strat];
+  DD_BLOCKS.forEach(function (id) { $(id).hidden = U.blocks.indexOf(id) < 0; });
+  $("ddRateWrap").hidden = !U.rate;
+  if (U.rate) $("ddRateLabel").textContent = U.rate;
+  $("ddSpendFloorWrap").hidden = S.limits === false;
+  var clash = S.limits !== false && o.spendFloor > 0 && o.spendCeil > 0 && o.spendFloor > o.spendCeil;
   $("ddSpendNote2").hidden = !clash;
   if (clash) $("ddSpendNote2").textContent = "Your minimum is above your maximum, so the maximum wins.";
   var P = ddPrep(o);
+  var firstW = ddFirstSpend(o, P), r1 = P.initial > 0 ? firstW / P.initial : 0;
   if (strat === "vpw"){
     var conv = (o.stockPct * 5.0 + (100 - o.stockPct) * 1.9) / 100;
-    var r1 = o.initial > 0 ? ddFirstSpend(o, P) / o.initial : 0;
     $("ddVpwNote").innerHTML = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the " +
       "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + o.stockPct + "/" +
       (100 - o.stockPct) + " mix.";
   }
-
-  if (strat === "yale") {
-    $("ddYaleNote").hidden = false;
+  if (strat === "yale")
     $("ddYaleNote").innerHTML = "Each year: <b>" + o.yaleWeight + "%</b> of last year's spending (adjusted for inflation) " +
       "plus <b>" + (100 - o.yaleWeight) + "%</b> of <b>" + o.yaleRate + "%</b> of the current portfolio.";
-  } else {
-    $("ddYaleNote").hidden = true;
-  }
-
   if (strat === "guardrails") {
     var target = o.initialPct;
     var hiRate = target * (1 + Math.max(0, o.guardBand) / 100);
     var loRate = target * (1 - Math.min(100, Math.max(0, o.guardBandLo)) / 100);
-    $("ddGuardExample").hidden = false;
     $("ddGuardExample").innerHTML = "With a " + pctStr(target / 100, 1) + " target: if your withdrawal " +
       "ever climbs above <b>" + pctStr(hiRate / 100, 1) + "</b> of the portfolio, spending is cut " +
       fmtNum(Math.min(100, Math.max(0, o.adjustPct))) + "%" +
@@ -11555,22 +11584,23 @@ function renderDrawdown() {
           " years, it never is in a " + fmtNum(o.years) + "-year plan"
         : " (but not in the final " + fmtNum(o.gkFinalYears) + " years)") : "") +
       ". If it falls below <b>" + pctStr(loRate / 100, 1) + "</b>, you get a " + fmtNum(Math.max(0, o.raisePct)) + "% raise.";
-  } else {
-    $("ddGuardExample").hidden = true;
   }
-  $("ddRateLabel").textContent = (strat === "pct")
-    ? "Percentage taken each year" : "Starting withdrawal rate";
+  // a line on what the strategies without their own note do in year one
+  var note = ddStratNote(o, P, firstW, r1);
+  $("ddStratNote").hidden = !note;
+  $("ddStratNote").innerHTML = note;
   $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
-
-  var firstW = ddFirstSpend(o, P);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
-    ? "That's " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on the portfolio above" +
-      (strat === "fixed" && ddWdStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
+    ? "That's " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on " +
+      (P.G.share > 0 ? "what stays invested" : "the portfolio above") +
+      (o.path === "stages" && ddPathStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
       ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
     : "Enter your portfolio value above to see this in dollars.";
-  if (strat === "fixed") syncWdStages(o);
+  ddPathSync(o, P, firstW);
+  ddGuarSync(o, P);
+  ddStratCard(o, P);
 
   var comfort = ddComfortSync(o, P);
   ddBaseSync();
@@ -11827,12 +11857,14 @@ function fillDDTable(run) {
   // $20M into a nominal $140M. Every dollar figure here is converted back to
   // today's terms so the table reads consistently with the rest of the app.
   var hasCustomIncome = ddIncomeItems.some(function(it){ return it.on !== false; });
+  var hasG = run.rows.some(function (r) { return r.guaranteed > 0; });
   $("ddOtherIncomeHeader").hidden = !hasCustomIncome;
+  $("ddGuarHeader").hidden = !hasG;
   $("ddTable").querySelector("tbody").innerHTML = run.rows.map(function (r, i) {
     var prevReal = i === 0 ? r.start : run.rows[i - 1].realEnd;
-    var otherCell = hasCustomIncome
+    var otherCell = (hasCustomIncome
       ? "<td>" + (r.customIncome > 0 ? money(r.customIncome) : "—") + "</td>"
-      : "";
+      : "") + (hasG ? "<td>" + (r.guaranteed > 0 ? money(r.guaranteed) : "—") + "</td>" : "");
     return "<tr><td>" + ddAgeVal(r.year) + "</td><td>" + money(prevReal) + "</td><td>" +
       (r.ss > 0 ? money(r.ss) : "—") + "</td>" + otherCell + "<td>" + money(r.withdrawal) +
       "</td><td>" + money(r.spend) + "</td><td>" + money(r.realSpend != null ? r.realSpend : r.realWithdrawal) +
@@ -12100,8 +12132,8 @@ function ddDialText(id, v, o){
   if (!D) return "";
   if (D.key === "vpwRate") return pctStr(v / 100, 2) + " real return";
   if (D.key === "hebRate") return pctStr(v / 100, 2) + " real return";
-  if (D.key === "rgTarget") return fmtNum(Math.round(v * 10) / 10) + "% chance";
-  if (D.key === "capeA") return pctStr(v / 100, 2) + " + " + fmtNum(o && o.capeB != null ? o.capeB : .5) + " × 1/CAPE";
+  if (D.key === "rgTarget") return ddN(Math.round(v * 10) / 10) + "% chance";
+  if (D.key === "capeA") return pctStr(v / 100, 2) + " + " + ddN(o && o.capeB != null ? o.capeB : .5) + " × 1/CAPE";
   if (D.key === "yaleRate") return pctStr(v / 100, 2) + " target";
   return pctStr(v / 100, 2) + " start";
 }
@@ -12916,6 +12948,208 @@ function ddViewsRefresh(o, d, P, comfort){
   if (ddTab === "compare") ddShowRefresh(o, d, comfort);
   else if (ddTab === "safe") ddSafeRefresh(o, d, comfort, P);
 }
+/* ---------- the Drawdown Simulator: strategies, the spending path and guaranteed income ----------
+   What the inputs panel says about the strategy chosen (a card with its
+   family and its spending through a hard start, and a line on what it does
+   in year one), the spending path's fields, and the guaranteed income's. */
+
+/* A sparkline: one series as a small filled line, with an optional dashed
+   level. Returns the SVG's markup. */
+function ddSpark(vals, opt){
+  opt = opt || {};
+  var W = opt.w || 260, H = opt.h || 46, pad = 3, n = vals.length;
+  if (!n) return "";
+  var hi = Math.max.apply(null, vals.concat(opt.line || 0)) || 1, lo = 0;
+  var X = function (i) { return pad + (n > 1 ? i / (n - 1) : .5) * (W - 2 * pad); };
+  var Y = function (v) { return H - pad - (v - lo) / (hi - lo) * (H - 2 * pad); };
+  var d = vals.map(function (v, i) { return (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1); }).join(" ");
+  var area = d + " L" + X(n - 1).toFixed(1) + " " + (H - pad) + " L" + X(0).toFixed(1) + " " + (H - pad) + " Z";
+  var c = opt.color || "#e9b872";
+  return "<svg class='ddspark' viewBox='0 0 " + W + " " + H + "' preserveAspectRatio='none' aria-hidden='true'>" +
+    "<path d='" + area + "' fill='" + c + "' opacity='.14'/>" +
+    (opt.line > 0 ? "<line x1='" + pad + "' x2='" + (W - pad) + "' y1='" + Y(opt.line).toFixed(1) + "' y2='" + Y(opt.line).toFixed(1) +
+      "' stroke='#8b97ad' stroke-width='1' stroke-dasharray='3 3'/>" : "") +
+    "<path d='" + d + "' fill='none' stroke='" + c + "' stroke-width='1.8' stroke-linejoin='round' vector-effect='non-scaling-stroke'/></svg>";
+}
+/* The hard start a strategy is shown through: 1966 when the record has it
+   for this length of retirement, or else the start that ended worst. */
+function ddHardStart(o, H){
+  var W = ddWindows(o);
+  for (var k = 0; k < W.length; k++) if (W[k].year === 1966 && W[k].month === 1) return W[k];
+  if (!W.length) return null;
+  var worst = null, P = ddPrep(o);
+  W.forEach(function (w) {
+    var r = runDrawdown(o, w.seq, {lite: true}, P);
+    if (!worst || r.endReal < worst.end) worst = {w: w, end: r.endReal};
+  });
+  return worst.w;
+}
+/* Year one's spending through one start, in today's dollars, and what it
+   came to over the run. */
+function ddSpendThrough(o, w, P){
+  return runDrawdown(o, w.seq, null, P || ddPrep(o)).rows.map(function (r) { return r.realSpend; });
+}
+function ddStratCard(o, P){
+  var U = DD_UI[o.strategy], S = DD_STRAT[o.strategy], el = $("ddStratCard");
+  if (!U || !S) { el.innerHTML = ""; return; }
+  var w = o.initial > 0 ? ddHardStart(o) : null, spark = "", cap = "";
+  if (w) {
+    var vals = ddSpendThrough(o, w, P), hi = Math.max.apply(null, vals), lo = Math.min.apply(null, vals);
+    spark = ddSpark(vals, {line: ddComfort(o, P)});
+    cap = "Spending, retiring in " + (w.month !== 1 ? HIST_MON[w.month - 1] + " " : "") + w.year + ": " +
+      (Math.round(hi - lo) < 1 ? money(lo) + " every year" : money(vals[0]) + " in year one, " + money(lo) + " at the lowest" +
+        (hi > vals[0] + 1 ? ", " + money(hi) + " at the highest" : ""));
+  }
+  el.innerHTML = "<div class='ddstrat-top'><span class='ddstrat-fam'>" + DD_FAMILY[S.family] + "</span></div>" +
+    "<div class='ddstrat-blurb'>" + U.blurb + "</div>" + (spark ? spark + "<div class='ddstrat-cap'>" + cap + "</div>" : "");
+}
+
+/* A line on what the strategy does, for the ones whose fields don't say it
+   themselves; the rest have their own notes, or the rate's. */
+function ddStratNote(o, P, firstW, r1){
+  if (!(o.initial > 0)) return "";
+  var yr1 = "<b>" + money(firstW) + "</b>", p = function (v, d) { return pctStr(v / 100, d == null ? 2 : d); };
+  switch (o.strategy) {
+    case "kitces":
+      return "Starts at " + yr1 + " and never falls. Whenever the portfolio is " + ddN(o.kitThresh) +
+        "% above where it started, after inflation, spending rises " + ddN(o.kitRaise) + "%, at most once every " +
+        ddN(o.kitGap) + (o.kitGap === 1 ? " year." : " years.");
+    case "clyatt":
+      return "Takes " + p(o.initialPct) + " of the portfolio each year, " + yr1 + " in year one, but never less than " +
+        ddN(o.clyFloor) + "% of last year's spending in dollars, so a crash brings a run of small cuts rather than one big one.";
+    case "oneovern":
+      return "Year one takes 1/" + o.years + " of the portfolio, " + yr1 + ". The share rises every year, to all of what's left in the last.";
+    case "rmd":
+      var age = o.retireAge != null ? o.retireAge : 65;
+      return "Year one takes the portfolio ÷ " + ddN(Math.round(ddRmdDivisor(age) * 10) / 10) + ", " + yr1 + " (" + pctStr(r1, 2) + ")" +
+        (o.retireAge == null ? ", taking 65 since no age is set above" : "") + ". The share rises with age: " +
+        pctStr(1 / ddRmdDivisor(75), 1) + " at 75, " + pctStr(1 / ddRmdDivisor(85), 1) + " at 85.";
+    case "riskgr":
+      return "Year one: " + yr1 + " (" + pctStr(r1, 2) + "), the spending with a " + ddN(o.rgTarget) + "% chance of lasting " +
+        o.years + " years at your stock mix, by history, counting Social Security and other income still to come. It then holds, with inflation, " +
+        "until that chance falls below " + ddN(o.rgLo) + "% or rises above " + ddN(o.rgHi) + "%, and resets to " + ddN(o.rgTarget) + "%.";
+    case "vanguard":
+      return "Aims at " + p(o.initialPct) + " of the current portfolio, " + yr1 + " in year one, but spending never rises more than " +
+        ddN(o.vgCeil) + "% or falls more than " + ddN(o.vgFloor) + "% from last year's, after inflation.";
+    case "floorceil":
+      return "Aims at " + p(o.initialPct) + " of the current portfolio, but moves spending at most " + ddN(o.floorPct) +
+        "% down or " + ddN(o.ceilPct) + "% up from last year's, after inflation.";
+    case "hebeler":
+      return "Year one takes the payment that would spend the portfolio over " + o.years + " years at " + p(o.hebRate) + " real, " +
+        yr1 + " (" + pctStr(r1, 2) + "). After that, " + ddN(o.hebWeight) + "% of last year's spending with inflation, plus " +
+        ddN(100 - o.hebWeight) + "% of that payment, worked out again on what's left.";
+    case "sensible":
+      return "Each year: " + yr1 + ", rising with inflation, plus " + ddN(o.sensExtra) +
+        "% of last year's real investment gains whenever there were any.";
+    case "cape":
+      var sum = 0;
+      HIST_M_CAPE.forEach(function (c) { sum += c; });
+      var avg = sum / HIST_M_CAPE.length;
+      return "Takes " + p(o.capeA) + " plus " + ddN(o.capeB) + " × 1/CAPE of the portfolio each year. At today's CAPE, " +
+        CAPE_NOW.toFixed(1) + " (" + CAPE_NOW_ASOF + "), that's " + pctStr(r1, 2) + ", " + yr1 + "; at the average since 1926, " +
+        avg.toFixed(1) + ", it would be " + p(o.capeA + o.capeB * 100 / avg) + ".";
+  }
+  return "";
+}
+
+/* ---- the spending path ---- */
+function ddPathSync(o, P, firstW){
+  var kind = o.path;
+  $("ddPathEaseWrap").hidden = kind !== "ease";
+  $("ddWdStagesWrap").hidden = kind !== "stages";
+  if (kind === "stages") syncWdStages(o, firstW);
+  var m = P.path, last = m[m.length - 1], note = "";
+  if (kind === "flat") note = "Spending keeps its value, rising with inflation, as the strategy decides.";
+  else if (kind === "ease")
+    note = "Real spending falls " + ddN(o.pathEase) + "% a year: by year " + o.years + ", " + pctStr(last, 0) +
+      " of year one's" + (o.strategy === "fixed" ? ", " + money(firstW * last) + " a year." : ".");
+  else if (kind === "smile") {
+    var age0 = o.retireAge != null ? o.retireAge : 65, at = function (a) { var i = Math.round(a - age0); return i >= 0 && i < m.length ? m[i] : null; };
+    var lowI = 0;
+    m.forEach(function (v, i) { if (v < m[lowI]) lowI = i; });
+    note = "David Blanchett's estimate of how retirees' real spending actually moves, for someone spending about " +
+      money(firstW + P.G.income) + " a year: easing through the 70s" +
+      (at(85) != null ? ", about " + pctStr(1 - at(85), 0) + " lower by 85" : "") +
+      (lowI < m.length - 1 ? ", then rising again late in life" : "") + "." +
+      (o.retireAge == null ? " It depends on age, so it takes retirement at 65 until you set your age above." : "");
+  } else if (kind === "stages")
+    note = ddPathStages.length ? "Year one's level holds until the first stage below." : "Add a stage to change spending from a given " + (ddRetireAge != null ? "age." : "year.");
+  $("ddPathNote").textContent = note;
+}
+$("ddPath").addEventListener("change", function () {
+  if ($("ddPath").value === "stages" && !ddPathStages.length) {
+    var years = Math.min(60, Math.max(1, Math.round(num("ddYears"))));
+    ddPathStages.push({start: Math.min(years, 11), level: 90});
+    if (years >= 21) ddPathStages.push({start: 21, level: 80});
+    buildWdStages();
+    renderDrawdown();
+  }
+});
+
+/* ---- guaranteed income ---- */
+function ddGuarSync(o, P){
+  var on = o.gShare > 0, G = P.G, tips = o.gType !== "annuity";
+  $("ddGDetail").hidden = !on;
+  $("ddGYieldWrap").hidden = !tips;
+  $("ddGPayoutWrap").hidden = tips;
+  $("ddGInflateWrap").hidden = tips;
+  if (!on) return;
+  var cost = o.initial * G.share, rest = o.initial - cost;
+  $("ddGNote").innerHTML = money(cost) + " buys <b>" + money(G.income) + "</b> a year" +
+    (tips ? " for " + o.years + " years, rising with inflation: a " + o.years + "-year TIPS ladder at " + pctStr((o.gYield || 0) / 100, 2) +
+        " real pays " + pctStr(G.rate, 2) + " of its cost a year, then nothing."
+      : " for life, " + (o.gInflate ? "rising with inflation." : "level in dollars, so inflation wears it down.")) +
+    " The other " + money(rest) + " stays invested and runs the strategy, and this income comes on top of what it spends.";
+}
+
+/* The plan in rows, label and value, for the printable summary: the
+   strategy and its settings, the spending path, guaranteed income, limits
+   and the history tested. */
+function ddPlanRows(o){
+  var P = ddPrep(o), first = ddFirstSpend(o, P), out = [], p = function (v, d) { return pctStr(v / 100, d == null ? 2 : d); };
+  out.push(["Withdrawal strategy", DD_STRAT_NAMES[o.strategy] || o.strategy]);
+  out.push(["Year one's spending", money(first) + (P.initial > 0 ? " (" + pctStr(first / P.initial, 2) + ")" : "")]);
+  switch (o.strategy) {
+    case "fixed": if (o.skipRaise) out.push(["After a losing year", "No raise for inflation"]); break;
+    case "kitces":
+      out.push(["Ratchet", ddN(o.kitRaise) + "% raise when " + ddN(o.kitThresh) + "% up, at most every " + ddN(o.kitGap) + " years"]);
+      if (o.skipRaise) out.push(["After a losing year", "No raise for inflation"]);
+      break;
+    case "clyatt": out.push(["Never below", ddN(o.clyFloor) + "% of last year's"]); break;
+    case "vpw":
+      out.push(["Expected return, real", p(o.vpwRate || 0)]);
+      out.push(["PMT future value", money(o.vpwFV || 0)]);
+      break;
+    case "guardrails":
+      out.push(["Upper guardrail", ddN(o.guardBand) + "% above, cut " + ddN(o.adjustPct) + "%"]);
+      out.push(["Lower guardrail", ddN(o.guardBandLo) + "% below, raise " + ddN(o.raisePct) + "%"]);
+      if (o.gkFinalYears > 0) out.push(["No cuts in the final", ddN(o.gkFinalYears) + " years"]);
+      if (o.skipRaise) out.push(["After a losing year", "No raise, when above the start rate"]);
+      break;
+    case "riskgr": out.push(["Chance of lasting", ddN(o.rgTarget) + "% target, reset below " + ddN(o.rgLo) + "% or above " + ddN(o.rgHi) + "%"]); break;
+    case "floorceil": out.push(["Each year's change", "at most " + ddN(o.floorPct) + "% down, " + ddN(o.ceilPct) + "% up"]); break;
+    case "vanguard": out.push(["Each year's change", "at most " + ddN(o.vgFloor) + "% down, " + ddN(o.vgCeil) + "% up"]); break;
+    case "yale":
+      out.push(["Weight on last year", ddN(o.yaleWeight) + "%"]);
+      out.push(["Target spending rate", p(o.yaleRate)]);
+      break;
+    case "hebeler": out.push(["Last year / payment", ddN(o.hebWeight) + "% / " + ddN(100 - o.hebWeight) + "%, at " + p(o.hebRate) + " real"]); break;
+    case "sensible": out.push(["Plus, of real gains", ddN(o.sensExtra) + "%"]); break;
+    case "cape": out.push(["Rate each year", p(o.capeA) + " + " + ddN(o.capeB) + " \u00d7 1/CAPE"]); break;
+  }
+  if (o.path === "ease") out.push(["Spending path", "Easing " + ddN(o.pathEase) + "% a year"]);
+  else if (o.path === "smile") out.push(["Spending path", "The retirement spending smile"]);
+  else if (o.path === "stages") ddWdOrder(o.pathStages).forEach(function (x) {
+    out.push([x.st.name || ("Stage " + (x.i + 2)), ddN(x.st.level == null ? 100 : x.st.level) + "% of year one from " +
+      (o.retireAge != null ? "age " + ddN(o.retireAge + x.start - 1) : "year " + x.start)]);
+  });
+  if (P.G.share > 0) out.push(["Guaranteed income", money(P.G.income) + "/yr from " + ddN(o.gShare) + "%, " +
+    (o.gType === "annuity" ? "an annuity" + (o.gInflate ? " with raises" : "") : "a TIPS ladder at " + p(o.gYield) + " real")]);
+  if (o.spendFloor > 0 && DD_STRAT[o.strategy].limits !== false) out.push(["Minimum spending", money(o.spendFloor) + "/yr"]);
+  if (o.spendCeil > 0 && DD_STRAT[o.strategy].limits !== false) out.push(["Maximum spending", money(o.spendCeil) + "/yr"]);
+  if (o.monthly || o.fromYear > HIST_START) out.push(["History tested", (o.monthly ? "A start every month" : "A start each January") + " from " + o.fromYear]);
+  return out;
+}
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
@@ -12963,7 +13197,18 @@ const GLOSS = {
   sequence: "The order returns arrive in. A bad decade early does far more damage than the same decade late, even at an identical average.",
   guardrails: "Each year, this compares what you\u0027re about to withdraw to your portfolio\u0027s current value. If that percentage climbs too far above where you started (because markets fell), it crosses the upper guardrail and spending is cut. If it falls too far below (because markets rose), it crosses the lower guardrail and you get a raise. Each guardrail has its own distance and step, so you can, say, cut sooner than you raise.",
   gkfinal: "Guyton and Klinger stop the spending cuts in the last years of retirement, 15 in their paper. With that little time left, a bad stretch is less likely to empty the portfolio before the end, so a cut would give up income you could safely spend. Raises from the lower guardrail still happen. The final years are counted back from the end of the years in retirement you set.",
-  strategy: "The rule you follow for how much to take out each year. Different rules trade off steadier income against protecting the portfolio. How the strategies compare, below, walks through each one with its pros and cons.",
+  strategy: "The rule you follow for how much to take out each year. They're grouped by family: steady income, a share of the portfolio, guardrails, smoothed rules and valuation. Each trades steadier income against protecting the portfolio. How the strategies compare, below, walks through every one; Compare strategies, in the results, runs them all at the same risk.",
+  skipraise: "Skip the raise for inflation in a year that follows a losing one. For the fixed amount and the ratchet, that's every time the portfolio lost money; Guyton and Klinger's version only skips it when the withdrawal rate is also above where it started. Each skipped raise is a small permanent cut in real spending that leaves more in the portfolio.",
+  kitces: "Michael Kitces's ratchet: spending starts like the 4% rule and never falls, but whenever the portfolio grows to this much above its starting value, after inflation, spending steps up (by 10%, in his version), and then not again for a few years. It spends more after good starts without ever asking for a cut.",
+  clyatt: "Bob Clyatt's 95% rule: take a set share of the portfolio each year, but never less than this much of last year's spending, in dollars. A crash brings a run of small cuts instead of one big one, at the cost of drawing harder on a falling portfolio.",
+  hebeler: "Henry Hebeler's Autopilot II: each year, mostly last year's spending raised for inflation (this weight), plus the rest from a fresh calculation, the level payment that would spend the balance over the years left at the expected return. It follows the markets slowly.",
+  sensible: "Sensible withdrawals: a steady base (the rate above, on the starting portfolio, rising with inflation) plus this share of the previous year's real investment gains, when there were any. Bad years take you back to the base; good ones add a bonus.",
+  riskgr: "Risk-based guardrails, an approach many financial planners use: instead of guardrails on the withdrawal rate, they're on the plan's chance of success. Spending starts where history gives it this chance of lasting, holds with inflation, and is reset to this chance when it falls below the lower line or rises above the upper one. The chance is read from every historical start at your stock mix and fees, counting Social Security and other income still to come.",
+  capebased: "Each year's rate is this base plus a share of the stock market's earnings yield, 1 ÷ CAPE, applied to the current portfolio: at a CAPE of 20 and half its yield, 1.75% + 2.5% = 4.25%. It spends more when stocks are cheap and less when they're dear. Karsten Jeske (Early Retirement Now) popularized it; each year uses that January's CAPE in the historical test.",
+  ddpath: "How you expect your spending to move in today's dollars, whatever strategy decides it. Steady keeps it level. Easing lowers it a little every year. The spending smile is David Blanchett's 2014 estimate of how retirees' real spending actually changes: down through the 70s and early 80s, then up again with health care late in life. Stages change it from a given age to a share of year one's. Planned changes don't count as cuts in the scorecard.",
+  ddgshare: "Use part of the portfolio at retirement to buy income that doesn't depend on markets: a TIPS ladder (Treasury inflation-protected bonds maturing one each year, paying a set real amount through the plan) or an annuity (an insurer pays for life). The rest stays invested and runs your strategy, and the guaranteed income comes on top. It's the floor-and-upside approach.",
+  ddgyield: "The real yield of TIPS, after inflation. It sets what a ladder pays: at 2%, a 30-year ladder pays about 4.4% of its cost each year, in today's dollars, until the last rung matures. Check today's TIPS yields; they move with the market.",
+  ddgpayout: "What an annuity pays each year as a share of its price. It depends on your age, on whether it covers one life or two, and on interest rates when you buy, and one with inflation raises pays noticeably less, so get a current quote.",
   txpre: "Money taken out of your pay before income tax: traditional 401(k) contributions, HSA contributions, a traditional IRA if deductible, and health premiums paid through work. It lowers income tax but not Social Security or Medicare tax.",
   txpreret: "Deductions that still come off before income tax in retirement: HSA contributions, self-employed health premiums and deductible IRA contributions.",
   moextras: "For paying the loan down faster or weighing a refinance. These build on the loan above; leave them off for a quick estimate on a home you haven't bought yet.",
@@ -15345,46 +15590,119 @@ var DD_GUIDE = [
    cons:["Income swings as much as the portfolio does","A long bear market can push spending well below what you need","Tends to leave a sizable balance at the end"],
    fit:"Social Security, a pension or other income covers your essentials, and the portfolio pays for flexible spending. Pair it with a minimum spending amount."},
   {k:"guardrails", name:"Guyton-Klinger guardrails", tag:"Rules-based adjustments",
-   how:"Start like the fixed-amount method and raise spending with inflation. Each year, compare what you're about to take with the portfolio's value. If that rate has drifted too far above where you started (the upper guardrail, often 20% above), cut spending by a set step, often 10%. If it falls too far below (the lower guardrail), take a raise, often also 10%. The two guardrails can be set differently, for example to cut sooner than you raise. Jonathan Guyton and William Klinger published the rules in 2006, and their paper skips cuts in the final 15 years, when too little time is left for a bad run to empty the portfolio; tick <b>No cuts in the final</b> to use that rule too. The paper's other rules, like skipping the inflation raise after a losing year, aren't modeled here.",
+   how:"Start like the fixed-amount method and raise spending with inflation. Each year, compare what you're about to take with the portfolio's value. If that rate has drifted too far above where you started (the upper guardrail, often 20% above), cut spending by a set step, often 10%. If it falls too far below (the lower guardrail), take a raise, often also 10%. The two guardrails can be set differently, for example to cut sooner than you raise. Jonathan Guyton and William Klinger published the rules in 2006, and their paper skips cuts in the final 15 years, when too little time is left for a bad run to empty the portfolio; tick <b>No cuts in the final</b> to use that rule too, and <b>Skip the inflation raise after a losing year</b> for their inflation rule, which skips it when the withdrawal rate is also above where it started.",
    pros:["Supports a higher starting rate than the 4% rule, often 5% or more","Income stays steady most years and changes only when a guardrail is hit","Reacts to a bad market before it becomes a crisis","Cuts and raises can be tuned separately, and cuts can stop late in retirement"],
    cons:["Cuts arrive as sudden 10% steps, and a long downturn can bring several","More rules to track each year","The historical record behind it is shorter than for the 4% rule"],
    fit:"You'd accept an occasional real pay cut in exchange for more income to start with."},
-  {k:"floorceil", name:"Floor and ceiling", tag:"Vanguard's dynamic spending",
-   how:"Aim at a percentage of the current portfolio each year, like the fixed-percentage method, but limit how far spending can move from last year's inflation-adjusted amount: no more than the maximum raise up, and no more than the maximum cut down. Vanguard's version uses a 5% raise and a 2.5% cut.",
+  {k:"riskgr", name:"Risk-based guardrails", tag:"Guardrails on the odds",
+   how:"Instead of guardrails on the withdrawal rate, put them on the plan's chance of success. Start at the spending with, say, a 90% chance of lasting, by history at your stock mix, counting Social Security and pensions still to come. Hold it, raised with inflation, until that chance falls below a lower line (70%) or climbs above an upper one (99%), then reset spending to the 90% level. Financial planners using tools like Income Lab made it popular.",
+   pros:["Changes only when the odds really move, so changes are fewer and better timed","Counts income that hasn't started yet","Raises come when the plan is clearly ahead"],
+   cons:["A reset to the target can be a big step","The odds are only as good as the history behind them","Spends down to nothing by the horizon"],
+   fit:"You think in odds and want rules that react to how the whole plan is doing, not one rate."},
+  {k:"floorceil", name:"Floor and ceiling", tag:"Limits on each year's change",
+   how:"Aim at a percentage of the current portfolio each year, like the fixed-percentage method, but limit how far spending can move from last year's inflation-adjusted amount: no more than the maximum raise up, and no more than the maximum cut down. Vanguard's version, with a 5% raise and a 2.5% cut, has its own entry below.",
    pros:["Follows the market, but in gentle steps","You set exactly how big a single year's change can be","A good middle ground between fixed income and fixed percentage"],
    cons:["In a long downturn the small cuts keep adding up","The cap on raises means spending catches up slowly after a strong run","Can drift away from the target percentage for years"],
    fit:"You want spending to respond to markets but can't absorb a large cut in any single year."},
+  {k:"vanguard", name:"Vanguard dynamic spending", tag:"Vanguard's floor and ceiling",
+   how:"Vanguard's version of floor and ceiling: aim at a share of the current portfolio, but let spending rise at most 5% and fall at most 2.5% from last year's, after inflation. Vanguard's research presents it as a middle way between a fixed amount and a fixed percentage.",
+   pros:["Small cuts: 2.5% at most in a year","Follows markets over time","Widely used, with published research behind it"],
+   cons:["A long downturn brings a long string of cuts","Slow to pass on good years","The small cuts can let the portfolio slide in a deep bear market"],
+   fit:"You want spending that tracks markets in small, predictable steps."},
   {k:"yale", name:"Yale endowment rule", tag:"Smoothed percentage",
    how:"Each year's spending is a blend: mostly last year's spending plus inflation, and a smaller share based on a target percentage of the current portfolio. Yale's endowment has used a version of this for decades, with 70/30 the commonly cited weighting.",
    pros:["Very smooth income: a crash filters in over several years, not all at once","Still follows the portfolio over the long run","Proven in practice by large endowments"],
    cons:["Slow to react, so it can keep spending too much early in a prolonged decline","Equally slow to pass on good years","Endowments plan to last forever; a person doesn't, so it can leave money unspent"],
    fit:"Stable year-to-year income matters most to you, and you'd rather adjust slowly than sharply."},
+  {k:"kitces", name:"Kitces ratchet", tag:"Never a cut, sometimes a raise",
+   how:"Start like the 4% rule: year one's amount, raised with inflation every year. Then, whenever the portfolio has grown to 50% above its starting value after inflation, raise spending 10% for good, and don't raise again for at least three years. Spending never falls. Michael Kitces showed that from a 4% start most historical retirements earned several raises without adding real risk, because the raises only come once the portfolio has pulled well ahead.",
+   pros:["Never asks for a cut","Spends more after good starts instead of leaving it all to heirs","As safe as the fixed amount in the bad starts, where no raise ever comes"],
+   cons:["Starts as low as the 4% rule","Raises are permanent, so a later crash isn't cushioned","Still leaves a lot unspent when markets do merely well"],
+   fit:"You want the 4% rule's safety, with a share of the upside if markets do well early."},
+  {k:"clyatt", name:"95% rule", tag:"Bob Clyatt's rule",
+   how:"Take a set share of the portfolio each year, usually 4%, but never less than 95% of what you spent last year, in dollars. A falling market brings a run of cuts of 5% or less instead of one deep one, and a rising market lets spending follow it up. Bob Clyatt described it in <i>Work Less, Live More</i>.",
+   pros:["No year's cut is more than 5%","Follows strong markets up","Simple to apply"],
+   cons:["Can run out: in a long slump the floor keeps drawing on a falling portfolio","Spending still drifts down through a long bear market","Its floor is in dollars, so inflation deepens each cut"],
+   fit:"You can live with gradual cuts but not a sudden one."},
+  {k:"oneovern", name:"1/N", tag:"Spend it all, on schedule",
+   how:"Divide the balance by the number of years left: a thirtieth in the first year of a 30-year plan, half in the second-to-last, all of it in the last. Some pensions and annuities spread money over a fixed term this way.",
+   pros:["Uses everything by the end","Can't run out before the horizon","Nothing to set"],
+   cons:["Starts lower than most strategies","Late-retirement spending swings hard with markets","Nothing left if you outlive the horizon"],
+   fit:"You have a firm horizon, want to use your savings fully, and have Social Security or a pension underneath."},
+  {k:"rmd", name:"RMD method", tag:"The IRS table",
+   how:"Each year, divide the balance by the IRS life-expectancy divisor for your age, the same table that sets required minimum distributions from IRAs. The share rises from about 3% in your 60s to about 6% at 85 and more after. Wei Sun and Anthony Webb found it a sound rule of thumb for spending from savings. The table starts at 72, so below that this carries its trend down.",
+   pros:["Follows your age and how long the money has to last","Can't run out","Easy to follow: the IRS publishes the divisors"],
+   cons:["Spending moves with markets","Starts low for an early retiree","Ignores your other income"],
+   fit:"You want a simple, age-aware percentage, and Social Security covers your essentials."},
   {k:"vpw", name:"Variable percentage withdrawal (VPW)", tag:"The Bogleheads method",
    how:"Each year, work out the level payment that would draw today's balance down to your future value (usually $0) over the years left, at an expected return after inflation. It's the spreadsheet PMT formula, the same math as a loan: =PMT(rate, years left, -balance, future value, 1). With 30 years left the share is modest; with 5 left it's large, so the percentage climbs every year. Here the horizon is the years in retirement you set; the Bogleheads tables plan to age 100.",
    pros:["Built not to run out before the horizon, since it only ever pays out what's there","Spends the portfolio instead of leaving an accidental fortune","Transparent: one formula and two inputs you can check yourself"],
    cons:["Income moves with the market, much like the fixed percentage","Spends toward the future value by the end, so choose a horizon you won't outlive","Later withdrawals are a large share of a shrinking balance, so late-life income is volatile"],
-   fit:"You want to use your savings fully, have Social Security or a pension as a floor, and can flex spending with markets."}
+   fit:"You want to use your savings fully, have Social Security or a pension as a floor, and can flex spending with markets."},
+  {k:"hebeler", name:"Hebeler Autopilot II", tag:"A smoothed annuity",
+   how:"Each year, take 75% of last year's spending raised for inflation, plus 25% of a fresh calculation: the level payment that would spend the balance over the years left at an expected real return. Henry Hebeler designed it to run on autopilot.",
+   pros:["Very smooth from year to year","Self-correcting: the payment part pulls spending toward what the portfolio can support","Uses the portfolio over the plan"],
+   cons:["Slow to cut in a long decline","Depends on the expected return you choose","Can leave little at the end"],
+   fit:"You want smooth income that still adjusts to the portfolio over time."},
+  {k:"sensible", name:"Sensible withdrawals", tag:"A base plus a bonus",
+   how:"Spend a steady base every year, a share of the starting portfolio raised with inflation, plus a bonus: a share of the previous year's real investment gains, when there were any. Bad years take you back to the base.",
+   pros:["The base is predictable","Good years pay a bonus","Leaves most gains invested"],
+   cons:["The base never adjusts, so it's as exposed as the fixed amount","Bonuses come and go","Spends less than it could after long good runs"],
+   fit:"You budget essentials from the base and treat the bonus as extra."},
+  {k:"cape", name:"CAPE-based", tag:"Valuation-aware",
+   how:"Each year's rate is a base plus a share of the stock market's earnings yield, 1 \u00f7 CAPE (Shiller's cyclically adjusted P/E), applied to the current portfolio: 1.75% plus half of 1/CAPE is a common setting. When stocks are cheap it spends more; when they're dear, less. Karsten Jeske (Early Retirement Now) popularized it.",
+   pros:["Spends less when expected returns are low and more when they're high","Responds to valuations, not just past returns","Can't run out"],
+   cons:["Income moves with markets and with valuations","With the CAPE near record highs, it starts low today","The link between CAPE and later returns is real but loose"],
+   fit:"You think valuations matter and can flex your spending."}
 ];
 function openStrategyGuide(){
   var cur = $("ddStrategy").value;
   var list = function(items){ return "<ul>" + items.map(function(t){ return "<li>" + t + "</li>"; }).join("") + "</ul>"; };
   var cmp = "<div class='sg-cmpwrap'><table class='sg-cmp'><thead><tr><th>Strategy</th><th>Income stability</th><th>Can run out</th><th>Left at the end</th></tr></thead><tbody>" +
     [["Fixed amount","Highest","Yes","Often a lot"],
+     ["Kitces ratchet","High, and only rises","Yes","Often a lot"],
      ["Fixed percentage","Lowest","No","Often a lot"],
+     ["95% rule","Moderate","Yes, in a long slump","Moderate"],
+     ["1/N","Low","Not before the horizon","Nothing"],
+     ["RMD method","Low to moderate","No","Moderate"],
+     ["VPW","Low to moderate","Not before the horizon","About the future value"],
      ["Guardrails","High, with occasional steps","Rarely","Moderate"],
+     ["Risk-based guardrails","High, with occasional resets","Rarely","Little, by design"],
      ["Floor and ceiling","High","Rarely","Moderate"],
+     ["Vanguard dynamic","High","Rarely","Moderate"],
      ["Yale endowment","High, slow to change","Sometimes","Moderate"],
-     ["VPW","Low to moderate","Not before the horizon","About the future value"]]
+     ["Autopilot II","High, slow to change","Rarely","Little"],
+     ["Sensible withdrawals","Moderate","Yes","Often a lot"],
+     ["CAPE-based","Low to moderate","No","Moderate"]]
     .map(function(r){ return "<tr><td>" + r.join("</td><td>") + "</td></tr>"; }).join("") + "</tbody></table></div>";
-  var body = DD_GUIDE.map(function(g){
-    return "<section class='sg-item" + (g.k === cur ? " sg-cur" : "") + "'>" +
-      "<div class='sg-head'><h4>" + g.name + "</h4><span class='sg-tag'>" + g.tag + "</span>" +
-      (g.k === cur ? "<span class='sg-using'>Selected</span>"
-        : "<button type='button' class='btn mini' data-usestrat='" + g.k + "'>Use this strategy</button>") + "</div>" +
-      "<p>" + g.how + "</p>" +
-      "<div class='sg-pc'><div><div class='sg-lbl pos'>Pros</div>" + list(g.pros) + "</div>" +
-      "<div><div class='sg-lbl neg'>Cons</div>" + list(g.cons) + "</div></div>" +
-      "<p class='sg-fit'><b>A good fit if:</b> " + g.fit + "</p></section>";
+  // Each strategy's spending through one hard start, with your plan's other
+  // inputs, so its character shows at a glance.
+  var o = readDD(), w = o.initial > 0 ? ddHardStart(o) : null;
+  var when = w ? (w.month !== 1 ? HIST_MON[w.month - 1] + " " : "") + w.year : "";
+  var spark = function(k){
+    if (!w) return "";
+    var x = Object.assign({}, o, {strategy:k}), vals = ddSpendThrough(x, w);
+    var lo = Math.min.apply(null, vals);
+    return "<div class='sg-spark'>" + ddSpark(vals, {w:300, h:40}) +
+      "<span>Retiring in " + when + ", with your plan: " + money(vals[0]) + " in year one, " + money(lo) + " at the lowest</span></div>";
+  };
+  var byKey = {};
+  DD_GUIDE.forEach(function(g){ byKey[g.k] = g; });
+  var body = Object.keys(DD_FAMILY).map(function(fam){
+    var items = DD_ORDER.filter(function(k){ return DD_STRAT[k].family === fam && byKey[k]; });
+    if (!items.length) return "";
+    return "<h4 class='sg-fam'>" + DD_FAMILY[fam] + "</h4>" + items.map(function(k){
+      var g = byKey[k];
+      return "<section class='sg-item" + (g.k === cur ? " sg-cur" : "") + "'>" +
+        "<div class='sg-head'><h4>" + g.name + "</h4><span class='sg-tag'>" + g.tag + "</span>" +
+        (g.k === cur ? "<span class='sg-using'>Selected</span>"
+          : "<button type='button' class='btn mini' data-usestrat='" + g.k + "'>Use this strategy</button>") + "</div>" +
+        spark(g.k) +
+        "<p>" + g.how + "</p>" +
+        "<div class='sg-pc'><div><div class='sg-lbl pos'>Pros</div>" + list(g.pros) + "</div>" +
+        "<div><div class='sg-lbl neg'>Cons</div>" + list(g.cons) + "</div></div>" +
+        "<p class='sg-fit'><b>A good fit if:</b> " + g.fit + "</p></section>";
+    }).join("");
   }).join("");
   var ov = document.createElement("div");
   ov.className = "popup-overlay";
@@ -15393,7 +15711,8 @@ function openStrategyGuide(){
     "<button type='button' class='sg-close' aria-label='Close'>&times;</button></div>" +
     "<p class='sg-intro'>Every strategy trades a steady income against protection from running out. " +
     "Rules that never cut spending can run dry in a bad decade; rules that follow the market can't run out, " +
-    "but your income moves with it. The minimum and maximum spending limits work with every strategy except fixed amount.</p>" +
+    "but your income moves with it. The minimum and maximum spending limits work with every strategy except fixed amount, " +
+    "and the spending path and guaranteed income with all of them. To see them all at the same risk, open <b>Compare strategies</b> in the results.</p>" +
     cmp + body +
     "<p class='sg-foot'>Test any of them against every retirement since 1926 with the simulator; the success rate " +
     "and the income chart show the trade-off for your own numbers.</p></div>";
@@ -15703,7 +16022,7 @@ function buildCardSVG(){
     sub = fmtNum(od.years) + " year retirement \u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
     rows = [
       ["Withdrawal strategy", stratName],
-      ["Starting withdrawal rate", pctStr(od.initialPct / 100, 1)],
+      ["Year one's withdrawal", money(ddFirstSpend(od)) + " (" + pctStr(ddFirstSpend(od) / Math.max(1, od.initial), 1) + ")"],
       ["Starting portfolio", money(od.initial)],
       ["Tested against", Hb.total + " real retirements"],
       ["Survived", Hb.survived + " of " + Hb.total + " periods"],
@@ -16202,7 +16521,7 @@ function toolIsDirty(tool){
         d.apr !== x.apr || d.min !== x.min;
     });
   if (tool === "backtest") return !sameShallow(readBTState(), BT_DEFAULTS);
-  if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) || ddWdStages.length > 0 ||
+  if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) || ddPathStages.length > 0 ||
     ddIncomeItems.some(it => it.on !== false) || ddExpenseItems.some(it => it.on !== false);
   if (tool === "basic"){
     const b = readBasic();

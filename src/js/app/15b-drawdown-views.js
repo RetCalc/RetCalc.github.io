@@ -13,8 +13,8 @@ function ddDialText(id, v, o){
   if (!D) return "";
   if (D.key === "vpwRate") return pctStr(v / 100, 2) + " real return";
   if (D.key === "hebRate") return pctStr(v / 100, 2) + " real return";
-  if (D.key === "rgTarget") return fmtNum(Math.round(v * 10) / 10) + "% chance";
-  if (D.key === "capeA") return pctStr(v / 100, 2) + " + " + fmtNum(o && o.capeB != null ? o.capeB : .5) + " × 1/CAPE";
+  if (D.key === "rgTarget") return ddN(Math.round(v * 10) / 10) + "% chance";
+  if (D.key === "capeA") return pctStr(v / 100, 2) + " + " + ddN(o && o.capeB != null ? o.capeB : .5) + " × 1/CAPE";
   if (D.key === "yaleRate") return pctStr(v / 100, 2) + " target";
   return pctStr(v / 100, 2) + " start";
 }

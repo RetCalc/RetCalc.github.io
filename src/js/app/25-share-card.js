@@ -70,7 +70,7 @@ function buildCardSVG(){
     sub = fmtNum(od.years) + " year retirement \u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
     rows = [
       ["Withdrawal strategy", stratName],
-      ["Starting withdrawal rate", pctStr(od.initialPct / 100, 1)],
+      ["Year one's withdrawal", money(ddFirstSpend(od)) + " (" + pctStr(ddFirstSpend(od) / Math.max(1, od.initial), 1) + ")"],
       ["Starting portfolio", money(od.initial)],
       ["Tested against", Hb.total + " real retirements"],
       ["Survived", Hb.survived + " of " + Hb.total + " periods"],
@@ -569,7 +569,7 @@ function toolIsDirty(tool){
         d.apr !== x.apr || d.min !== x.min;
     });
   if (tool === "backtest") return !sameShallow(readBTState(), BT_DEFAULTS);
-  if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) || ddWdStages.length > 0 ||
+  if (tool === "drawdown") return !sameShallow(readDDState(), DD_DEFAULTS) || ddPathStages.length > 0 ||
     ddIncomeItems.some(it => it.on !== false) || ddExpenseItems.some(it => it.on !== false);
   if (tool === "basic"){
     const b = readBasic();
