@@ -3020,7 +3020,11 @@ function ddPct(v, def){ return Math.min(100, Math.max(0, v == null ? def : v)) /
    (dir), and its step on the grid. byRate: year one is the rate on the
    portfolio, so a spending amount can be turned into a rate. spendsDown: an
    empty portfolio after the final year is the plan, not a failure.
-   limits: the minimum and maximum spending apply. */
+   limits: the minimum and maximum spending apply. path: the spending path
+   shapes it. Only the steady strategies take one: their spending is a plan
+   you choose, so "less of it at 80" refines that plan. The others decide
+   their own spending from the portfolio, and a path would fight their rules
+   (guardrails would read the money not spent as being ahead and raise). */
 function ddFloorCeil(floorKey, ceilKey){
   return function (s) {
     var o = s.o, target = s.bal * o.initialPct / 100;
@@ -3036,7 +3040,7 @@ var DD_ORDER = [];
 [
   /* The 4% rule's way: year one's amount, then the same plus inflation
      whatever markets do. Optionally skips the raise after a losing year. */
-  {id: "fixed", family: "steady", dial: DD_RATE_DIAL, byRate: true, limits: false,
+  {id: "fixed", family: "steady", dial: DD_RATE_DIAL, byRate: true, limits: false, path: true,
    rule: function (s) {
      if (s.y > 0 && s.o.skipRaise && s.lastRet < 0) s.k /= 1 + s.lastInfl;
      return s.baseW * s.k * s.cumInfl;
@@ -3044,7 +3048,7 @@ var DD_ORDER = [];
   /* Michael Kitces's ratchet: fixed spending that never falls, raised 10%
      whenever the portfolio is 50% above where it started after inflation,
      no more than once every three years. */
-  {id: "kitces", family: "steady", dial: DD_RATE_DIAL, byRate: true,
+  {id: "kitces", family: "steady", dial: DD_RATE_DIAL, byRate: true, path: true,
    rule: function (s) {
      var o = s.o;
      if (s.y > 0){
@@ -3193,6 +3197,7 @@ var DD_ORDER = [];
    dollars, at today's CAPE where that matters. */
 function ddPrep(o){
   var G = ddGuaranteed(o), S = DD_STRAT[o.strategy] || DD_STRAT.yale;
+  if (!S.path && o.path && o.path !== "flat") o = Object.assign({}, o, {path: "flat"});
   var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0};
   if (S.id === "riskgr"){
     // the smile's spending term only, from a 4% year one
@@ -3784,7 +3789,9 @@ function ddShowdown(o, T, ids){
   return {spots: spots.map(function (w) { return w.year; }), list: (ids || DD_ORDER).filter(function (id) {
     return DD_STRAT[id];
   }).map(function (id) {
-    var S = DD_STRAT[id], x = ddForTarget(Object.assign({}, o, {strategy: id}), T), cal = null;
+    // Everyone on steady spending, so the path, which only the steady
+    // strategies take, can't tilt the comparison.
+    var S = DD_STRAT[id], x = ddForTarget(Object.assign({}, o, {strategy: id, path: "flat"}), T), cal = null;
     if (S.dial) {
       cal = ddCalibrate(x, T);
       if (cal) x = ddWithDial(x, cal.v);
@@ -11377,7 +11384,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.9030349e87.js";
+var DD_WORKER_URL = "/assets/plan.b75d4546c4.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -12504,6 +12511,7 @@ function ddPaintShow(){
   var top = met.slice().sort(function (a, b) { return b.life - a.life; })[0];
   var steady = met.filter(function (x) { return x.cuts < .05; }).sort(function (a, b) { return b.life - a.life; })[0];
   $("ddShowIntro").innerHTML = "Each strategy is set to spend as much as it can while " + ddTargetWords(T) + "." +
+    (o.path && o.path !== "flat" ? " All are compared on steady spending; your spending path applies to the steady strategies only." : "") +
     (T.crit === "comfort" ? " The flexible ones are held at that line or above, as their minimum, so the risk they carry is running out of money while holding it." : "") +
     (top ? " Over a typical retirement, <b>" + escapeHtml(DD_STRAT_NAMES[top.id]) + "</b> spends the most, " + money(top.life) + " in today's dollars" +
       (steady && steady.id !== top.id ? "; the steadiest, <b>" + escapeHtml(DD_STRAT_NAMES[steady.id]) + "</b>, never cuts and spends " + money(steady.life) : "") + "." : "");
@@ -13054,6 +13062,10 @@ function ddStratNote(o, P, firstW, r1){
 
 /* ---- the spending path ---- */
 function ddPathSync(o, P, firstW){
+  var takes = !!DD_STRAT[o.strategy].path;
+  $("ddPathField").hidden = !takes;
+  $("ddPathOff").hidden = takes;
+  if (!takes) { $("ddPathEaseWrap").hidden = true; $("ddWdStagesWrap").hidden = true; return; }
   var kind = o.path;
   $("ddPathEaseWrap").hidden = kind !== "ease";
   $("ddWdStagesWrap").hidden = kind !== "stages";
@@ -19965,7 +19977,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.9030349e87.js";
+var OP_WORKER_URL = "/assets/plan.b75d4546c4.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

@@ -385,6 +385,7 @@ function ddPaintShow(){
   var top = met.slice().sort(function (a, b) { return b.life - a.life; })[0];
   var steady = met.filter(function (x) { return x.cuts < .05; }).sort(function (a, b) { return b.life - a.life; })[0];
   $("ddShowIntro").innerHTML = "Each strategy is set to spend as much as it can while " + ddTargetWords(T) + "." +
+    (o.path && o.path !== "flat" ? " All are compared on steady spending; your spending path applies to the steady strategies only." : "") +
     (T.crit === "comfort" ? " The flexible ones are held at that line or above, as their minimum, so the risk they carry is running out of money while holding it." : "") +
     (top ? " Over a typical retirement, <b>" + escapeHtml(DD_STRAT_NAMES[top.id]) + "</b> spends the most, " + money(top.life) + " in today's dollars" +
       (steady && steady.id !== top.id ? "; the steadiest, <b>" + escapeHtml(DD_STRAT_NAMES[steady.id]) + "</b>, never cuts and spends " + money(steady.life) : "") + "." : "");

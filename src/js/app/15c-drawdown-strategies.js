@@ -104,6 +104,10 @@ function ddStratNote(o, P, firstW, r1){
 
 /* ---- the spending path ---- */
 function ddPathSync(o, P, firstW){
+  var takes = !!DD_STRAT[o.strategy].path;
+  $("ddPathField").hidden = !takes;
+  $("ddPathOff").hidden = takes;
+  if (!takes) { $("ddPathEaseWrap").hidden = true; $("ddWdStagesWrap").hidden = true; return; }
   var kind = o.path;
   $("ddPathEaseWrap").hidden = kind !== "ease";
   $("ddWdStagesWrap").hidden = kind !== "stages";

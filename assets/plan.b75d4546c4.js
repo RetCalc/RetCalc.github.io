@@ -3020,7 +3020,11 @@ function ddPct(v, def){ return Math.min(100, Math.max(0, v == null ? def : v)) /
    (dir), and its step on the grid. byRate: year one is the rate on the
    portfolio, so a spending amount can be turned into a rate. spendsDown: an
    empty portfolio after the final year is the plan, not a failure.
-   limits: the minimum and maximum spending apply. */
+   limits: the minimum and maximum spending apply. path: the spending path
+   shapes it. Only the steady strategies take one: their spending is a plan
+   you choose, so "less of it at 80" refines that plan. The others decide
+   their own spending from the portfolio, and a path would fight their rules
+   (guardrails would read the money not spent as being ahead and raise). */
 function ddFloorCeil(floorKey, ceilKey){
   return function (s) {
     var o = s.o, target = s.bal * o.initialPct / 100;
@@ -3036,7 +3040,7 @@ var DD_ORDER = [];
 [
   /* The 4% rule's way: year one's amount, then the same plus inflation
      whatever markets do. Optionally skips the raise after a losing year. */
-  {id: "fixed", family: "steady", dial: DD_RATE_DIAL, byRate: true, limits: false,
+  {id: "fixed", family: "steady", dial: DD_RATE_DIAL, byRate: true, limits: false, path: true,
    rule: function (s) {
      if (s.y > 0 && s.o.skipRaise && s.lastRet < 0) s.k /= 1 + s.lastInfl;
      return s.baseW * s.k * s.cumInfl;
@@ -3044,7 +3048,7 @@ var DD_ORDER = [];
   /* Michael Kitces's ratchet: fixed spending that never falls, raised 10%
      whenever the portfolio is 50% above where it started after inflation,
      no more than once every three years. */
-  {id: "kitces", family: "steady", dial: DD_RATE_DIAL, byRate: true,
+  {id: "kitces", family: "steady", dial: DD_RATE_DIAL, byRate: true, path: true,
    rule: function (s) {
      var o = s.o;
      if (s.y > 0){
@@ -3193,6 +3197,7 @@ var DD_ORDER = [];
    dollars, at today's CAPE where that matters. */
 function ddPrep(o){
   var G = ddGuaranteed(o), S = DD_STRAT[o.strategy] || DD_STRAT.yale;
+  if (!S.path && o.path && o.path !== "flat") o = Object.assign({}, o, {path: "flat"});
   var P = {G: G, initial: o.initial * (1 - G.share), strat: S, path: null, rg: null, risk: null, first: 0};
   if (S.id === "riskgr"){
     // the smile's spending term only, from a 4% year one
@@ -3784,7 +3789,9 @@ function ddShowdown(o, T, ids){
   return {spots: spots.map(function (w) { return w.year; }), list: (ids || DD_ORDER).filter(function (id) {
     return DD_STRAT[id];
   }).map(function (id) {
-    var S = DD_STRAT[id], x = ddForTarget(Object.assign({}, o, {strategy: id}), T), cal = null;
+    // Everyone on steady spending, so the path, which only the steady
+    // strategies take, can't tilt the comparison.
+    var S = DD_STRAT[id], x = ddForTarget(Object.assign({}, o, {strategy: id, path: "flat"}), T), cal = null;
     if (S.dial) {
       cal = ddCalibrate(x, T);
       if (cal) x = ddWithDial(x, cal.v);
