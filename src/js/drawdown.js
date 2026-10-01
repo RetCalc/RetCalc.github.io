@@ -35,6 +35,46 @@ function histYearFrom(m){
 var HIST_Y12_STOCK = histYearFrom(HIST_M_STOCK);
 var HIST_Y12_BOND = histYearFrom(HIST_M_BOND);
 var HIST_Y12_INFL = histYearFrom(HIST_M_INFL);
+/* Cash and small value start in July 1926, so the simulator does too:
+   every test begins there. Padded to line up with the series above. */
+var HIST_MA_CASH = [0, 0, 0, 0, 0, 0].concat(HIST_M_CASH);
+var HIST_MA_SV = [0, 0, 0, 0, 0, 0].concat(HIST_M_SV);
+var HIST_Y12_CASH = histYearFrom(HIST_MA_CASH);
+var HIST_Y12_SV = histYearFrom(HIST_MA_SV);
+var HIST_CASH = histAnnual(HIST_MA_CASH);   // calendar years; 1926's is partial and unused
+var HIST_SV = histAnnual(HIST_MA_SV);
+
+/* The portfolio's target mix in year y (0-based), as shares adding to 1:
+   [US stocks, small value, bonds, cash]. Bonds are whatever the others
+   leave. A glide moves the stocks' total in a straight line to stockPctEnd
+   by the final year, small value keeping its share of the stocks and cash
+   its share of the rest. */
+function ddMixAt(o, y){
+  var us = Math.max(0, o.stockPct || 0), sv = Math.max(0, o.svPct || 0), cash = Math.max(0, o.cashPct || 0);
+  var tot = us + sv + cash;
+  if (tot > 100) { us = us * 100 / tot; sv = sv * 100 / tot; cash = cash * 100 / tot; }
+  if (o.stockPctEnd != null) {
+    var s0 = us + sv, yPct = s0 + (o.stockPctEnd - s0) * y / Math.max(1, o.years - 1);
+    var st = Math.min(100, Math.max(0, yPct)), rest0 = 100 - s0, rest = 100 - st;
+    if (s0 > 0) { var k = st / s0; us = us * k; sv = sv * k; } else us = st;
+    cash = rest0 > 0 ? cash * (rest / rest0) : 0;
+  }
+  var wu = us / 100, ws = sv / 100, wc = cash / 100;
+  return [wu, ws, 1 - wu - ws - wc, wc];
+}
+/* The same plan with its stocks' total at a share (glide off), the parts in
+   proportion. */
+function ddWithStocks(o, pct){
+  var us = o.stockPct || 0, sv = o.svPct || 0, cash = o.cashPct || 0, s0 = us + sv, r0 = 100 - s0;
+  return Object.assign({}, o, {stockPct: s0 > 0 ? pct * us / s0 : pct, svPct: s0 > 0 ? pct * sv / s0 : 0,
+    cashPct: r0 > 0 ? (100 - pct) * cash / r0 : 0, stockPctEnd: null});
+}
+/* The first month a test can start: July 1926 at the earliest, where cash
+   and small value begin, and with one start a year, the next January. */
+function ddFirstStart(o, step){
+  var i = Math.max(ddFromIdx(o) * 12, HIST_FF_START);
+  return step === 12 ? Math.ceil(i / 12) * 12 : i;
+}
 
 /* The first start year a test uses, as an index into the annual series. */
 function ddFromIdx(o){
@@ -42,7 +82,8 @@ function ddFromIdx(o){
   return Math.max(0, Math.min(n - 1, Math.round((o.fromYear || HIST_START) - HIST_START)));
 }
 /* Every retirement the historical test runs: one starting each January, or
-   with o.monthly one starting every month, from o.fromYear on, each with a
+   with o.monthly one starting every month, from o.fromYear on (July 1926 at
+   the earliest, where cash and small value begin), each with a
    full o.years of data after it. Each is {i (its first month), year, month,
    seq}, seq being what runDrawdown takes: one {stock, bond, infl, cape} per
    year. They don't depend on the plan, so they're kept for reuse. */
@@ -52,12 +93,12 @@ function ddWindows(o){
   var key = years + "|" + step + "|" + from;
   if (ddWinMemo[key]) return ddWinMemo[key];
   var M = HIST_M_STOCK.length, out = [];
-  for (var i = from * 12; i + 12 * years <= M; i += step){
+  for (var i = ddFirstStart(o, step); i + 12 * years <= M; i += step){
     var seq = [];
     for (var k = 0; k < years; k++){
       var j = i + 12 * k;
       seq.push({stock: HIST_Y12_STOCK[j], bond: HIST_Y12_BOND[j], infl: HIST_Y12_INFL[j],
-        cape: HIST_M_CAPE[j]});
+        cape: HIST_M_CAPE[j], cash: HIST_Y12_CASH[j], sv: HIST_Y12_SV[j]});
     }
     out.push({i: i, year: HIST_START + Math.floor(i / 12), month: i % 12 + 1, seq: seq});
   }
@@ -183,20 +224,21 @@ function ddRmdDivisor(age){
 var ddRiskMemo = {}, ddRiskKeys = [];
 function ddRiskTable(o){
   var step = o.monthly ? 1 : 12, from = ddFromIdx(o);
-  var w = Math.min(100, Math.max(0, o.stockPct)) / 100;
+  var w = ddMixAt(Object.assign({}, o, {stockPctEnd: null}), 0);
   var fee = (o.fee || 0) / 100 + (o.returnDrag || 0) / 100;
-  var key = step + "|" + from + "|" + w + "|" + fee;
+  var key = step + "|" + from + "|" + w.join(",") + "|" + fee;
   if (ddRiskMemo[key]) return ddRiskMemo[key];
   var N = HIST_Y12_STOCK.length, maxL = 100, byL = [], L;
   for (L = 0; L <= maxL; L++) byL.push([]);
-  for (var i = from * 12; i < N; i += step){
+  for (var i = ddFirstStart(o, step); i < N; i += step){
     var sum = 0, D = 1;
     for (L = 1; L <= maxL; L++){
       var j = i + 12 * (L - 1);
       if (j >= N) break;
       sum += D;
       byL[L].push(sum > 0 && isFinite(sum) ? 1 / sum : 0);
-      var g = (1 + (w * HIST_Y12_STOCK[j] + (1 - w) * HIST_Y12_BOND[j]) / 100 - fee) / (1 + HIST_Y12_INFL[j] / 100);
+      var g = (1 + (w[0] * HIST_Y12_STOCK[j] + w[1] * HIST_Y12_SV[j] + w[2] * HIST_Y12_BOND[j] + w[3] * HIST_Y12_CASH[j]) / 100 - fee) /
+        (1 + HIST_Y12_INFL[j] / 100);
       D = g > 0 ? D / g : Infinity;
     }
   }
@@ -513,9 +555,12 @@ function runDrawdown(o, seq, ctl, P) {
   P = P || ddPrep(o);
   var S = P.strat, s = ddState(o, P), path = P.path, G = P.G;
   var lite = !!(ctl && ctl.lite), stop = ctl ? ctl.stop : null, line = ctl && ctl.comfort || 0;
-  var stockW = o.stockPct / 100;
-  var bondW = 1 - stockW;
-  var useGlide = o.stockPctEnd != null;
+  var wts = ddMixAt(o, 0), useGlide = o.stockPctEnd != null;
+  // Rebalancing: back to the mix every year (the classic), every N years,
+  // never, or when any holding drifts more than a band from its target.
+  // Every year is a single blended return; the others track each holding.
+  var rb = o.rebal || "year", rbN = Math.max(1, Math.round(o.rebalN || 1)), rbBand = Math.max(0, o.rebalBand || 0) / 100;
+  var fast = rb === "year" || (rb === "every" && rbN <= 1), hold = null;
   var bal = P.initial, cumInfl = 1;
   var rows = lite ? null : [];
   var depletedYear = null, failed = false, invested = P.initial > 0;
@@ -525,11 +570,7 @@ function runDrawdown(o, seq, ctl, P) {
     var q = seq[y];
     s.y = y; s.bal = bal; s.cumInfl = cumInfl; s.cape = q.cape;
     s.age = o.retireAge != null ? o.retireAge + y : null;
-    if (useGlide) {
-      var yPct = o.stockPct + (o.stockPctEnd - o.stockPct) * y / Math.max(1, o.years - 1);
-      stockW = Math.min(100, Math.max(0, yPct)) / 100;
-      bondW = 1 - stockW;
-    }
+    if (useGlide) wts = ddMixAt(o, y);
     var infl = q.infl / 100;
     var w = S.rule(s), m = path[y], reg = w * m;
 
@@ -584,10 +625,31 @@ function runDrawdown(o, seq, ctl, P) {
 
     var start = bal;
     bal = bal - wd + incomeInvested;
-    var ret = (stockW * q.stock + bondW * q.bond) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
-    var afterFlows = bal;
-    var growth = bal * ret;
-    bal = bal + growth;
+    var afterFlows = bal, ret, growth;
+    if (fast) {
+      ret = (wts[0] * q.stock + wts[1] * (q.sv || 0) + wts[2] * q.bond + wts[3] * (q.cash || 0)) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
+      growth = bal * ret;
+      bal = bal + growth;
+    } else {
+      // Withdrawals and income come out of, and go into, each holding in
+      // proportion; then back to the mix if a rebalance is due.
+      var cost = (o.fee || 0) / 100 + (o.returnDrag || 0) / 100;
+      var held = hold ? hold[0] + hold[1] + hold[2] + hold[3] : 0;
+      if (!hold || !(held > 0)) hold = wts.map(function (x) { return x * afterFlows; });
+      else {
+        var kf = afterFlows / held;
+        hold = hold.map(function (h) { return h * kf; });
+        var due = rb === "every" ? y % rbN === 0
+          : rb === "band" && afterFlows > 0 && hold.some(function (h, i) { return Math.abs(h / afterFlows - wts[i]) > rbBand + 1e-12; });
+        if (due) hold = wts.map(function (x) { return x * afterFlows; });
+      }
+      var rr = [q.stock, q.sv || 0, q.bond, q.cash || 0];
+      hold = hold.map(function (h, i) { return Math.max(0, h * (1 + rr[i] / 100 - cost)); });
+      bal = hold[0] + hold[1] + hold[2] + hold[3];
+      growth = bal - afterFlows;
+      ret = afterFlows > 0 ? growth / afterFlows
+        : (wts[0] * rr[0] + wts[1] * rr[1] + wts[2] * rr[2] + wts[3] * rr[3]) / 100 - cost;
+    }
     if (bal < 0) bal = 0;
 
     var gIncome = G.income > 0 ? G.income * (G.real ? cumInfl : 1) : 0;
@@ -670,7 +732,7 @@ function historicalBacktest(o) {
   var failYears = [];
   fails.forEach(function (r) { if (failYears.indexOf(r.startYear) < 0) failYears.push(r.startYear); });
   return {
-    first: HIST_START + ddFromIdx(o),
+    first: W.length ? W[0].year : HIST_START + ddFromIdx(o),
     monthly: !!o.monthly,
     runs: runs,
     total: runs.length,
@@ -712,12 +774,13 @@ function monteCarloDrawdown(o, trials, seed) {
      is refilled per trial rather than allocating a fresh array of objects each
      time. */
   var seq = [];
-  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0, cape: 0 });
+  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0, cape: 0, cash: 0, sv: 0 });
   for (var t = 0; t < trials; t++) {
     for (var k = 0; k < o.years; k++) {
-      var i = Math.floor(rng() * n);
+      // 1927 on: 1926 has no full year of cash or small value
+      var i = 1 + Math.floor(rng() * (n - 1));
       seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
-      seq[k].cape = HIST_M_CAPE[i * 12];
+      seq[k].cape = HIST_M_CAPE[i * 12]; seq[k].cash = HIST_CASH[i]; seq[k].sv = HIST_SV[i];
     }
     runs.push(runDrawdown(o, seq, null, P));
   }
@@ -787,6 +850,11 @@ function ddOptsFromState(d){
     initial: v("initial", 0),
     years: Math.min(60, Math.max(1, Math.round(v("years", 30)))),
     stockPct: clamp(v("stock", 60), 0, 100),
+    svPct: clamp(v("sv", 0), 0, 100),
+    cashPct: clamp(v("cash", 0), 0, 100),
+    rebal: d.rebal === "every" || d.rebal === "never" || d.rebal === "band" ? d.rebal : "year",
+    rebalN: Math.max(1, Math.round(v("rebalN", 3))),
+    rebalBand: Math.max(0, v("rebalBand", 5)),
     stockPctEnd: d.stockEnd == null || String(d.stockEnd).trim() === "" ? null : clamp(v("stockEnd", 0), 0, 100),
     fee: v("fee", 0),
     strategy: strategy,
@@ -1050,7 +1118,7 @@ function ddHeatmap(o, T, axis){
   cols = axis === "years" ? [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60] : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
   var grid = rows.map(function (v) {
     return cols.map(function (c) {
-      var x = Object.assign({}, o, axis === "years" ? {years: c} : {stockPct: c, stockPctEnd: null});
+      var x = axis === "years" ? Object.assign({}, o, {years: c}) : ddWithStocks(o, c);
       x = ddWithDial(x, v);
       var W = ddWindows(x);
       if (!W.length) return null;

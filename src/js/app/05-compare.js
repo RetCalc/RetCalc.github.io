@@ -394,7 +394,7 @@ function renderDDCompare() {
     {k:"Strategy", fn:function(x){return DD_STRAT_NAMES[x.o.strategy]||x.o.strategy;}},
     {k:"Withdrawal rate", fn:function(x){return x.o.strategy === "vpw"
       ? "VPW at " + (x.o.vpwRate || 0).toFixed(2) + "% real" : x.o.initialPct.toFixed(1)+"%";}},
-    {k:"Stock allocation", fn:function(x){return x.o.stockPct+(x.o.stockPctEnd!=null?" → "+x.o.stockPctEnd:"")+"% stocks";}},
+    {k:"Asset mix", fn:function(x){return ddMixText(x.o);}},
     {k:"Periods tested", fn:function(x){return x.H.total+"";}},
     {k:"Success rate", fn:function(x){return "<span class='"+(x.H.successRate>=0.95?"pos":x.H.successRate>=0.85?"gold":"neg")+"'>"+pctStr(x.H.successRate,1)+"</span>";}},
     {k:"Median ending balance", fn:function(x){return money(x.H.medianEnd);}},

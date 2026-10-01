@@ -67,7 +67,7 @@ function buildCardSVG(){
     title = "Will my money last?";
     bigLabel = "Success rate, tested since " + HIST_START;
     big = pctStr(Hb.successRate, 0);
-    sub = fmtNum(od.years) + " year retirement \u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
+    sub = fmtNum(od.years) + " year retirement \u00b7 " + ddMixText(od);
     rows = [
       ["Withdrawal strategy", stratName],
       ["Year one's withdrawal", money(ddFirstSpend(od)) + " (" + pctStr(ddFirstSpend(od) / Math.max(1, od.initial), 1) + ")"],

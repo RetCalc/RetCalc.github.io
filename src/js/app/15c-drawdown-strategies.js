@@ -291,3 +291,82 @@ function ddLineWords(c, unit){
   return money(a) + u + (j > i ? ", easing to " + money(z) + u + " by " + at(j) : ", then " + money(z) + u + " from " + at(i)) +
     (c.slice(j).some(function (v) { return Math.abs(v - z) >= .5; }) ? " and changing again" : "");
 }
+
+/* ---- the asset mix and rebalancing ----
+   The mix lives in hidden fields (US stocks, small value, cash and the
+   glide; bonds are what's left) and is edited in a pop-up that won't save
+   until it adds up to 100%. */
+var DD_ASSETS = [["stock", "ddStock", "US stocks", "The S&P 500, dividends reinvested"],
+  ["sv", "ddSV", "Small-cap value", "Small companies priced low against their book value (Fama-French)"],
+  ["bond", null, "Bonds", "10-year US Treasuries"],
+  ["cash", "ddCash", "Cash", "One-month Treasury bills"]];
+function ddMixParts(o){
+  var b = Math.max(0, 100 - o.stockPct - o.svPct - o.cashPct);
+  return {stock: o.stockPct, sv: o.svPct, bond: b, cash: o.cashPct};
+}
+function ddMixText(o){
+  var m = ddMixParts(o), names = {stock: "US stocks", sv: "small value", bond: "bonds", cash: "cash"};
+  var t = DD_ASSETS.map(function (a) { return m[a[0]] > 0 ? ddN(m[a[0]]) + "% " + names[a[0]] : ""; }).filter(Boolean).join(", ");
+  if (o.stockPctEnd != null) t += ", gliding to " + ddN(o.stockPctEnd) + "% stocks";
+  return t || "Nothing invested";
+}
+function ddRebalText(o){
+  return o.rebal === "every" ? "Every " + o.rebalN + " years" : o.rebal === "band" ? "When off by more than " + ddN(o.rebalBand) + " points"
+    : o.rebal === "never" ? "Never" : "Every year";
+}
+function ddMixSync(o){
+  $("ddMixText").textContent = ddMixText(o);
+  $("ddRebalNWrap").hidden = o.rebal !== "every";
+  $("ddRebalBandWrap").hidden = o.rebal !== "band";
+  var one = [o.stockPct, o.svPct, ddMixParts(o).bond, o.cashPct].filter(function (v) { return v > 0; }).length < 2;
+  $("ddRebalNote").textContent = one ? "With one asset there's nothing to rebalance."
+    : o.rebal === "never" ? "The mix drifts with markets: stocks tend to grow into a bigger share." + (o.stockPctEnd != null ? " The glide has no effect without rebalancing." : "")
+    : o.rebal === "every" ? "Between rebalances the mix drifts with markets." + (o.stockPctEnd != null ? " The glide takes effect at each rebalance." : "")
+    : o.rebal === "band" ? "Checked each year, after the year's withdrawal." : "";
+}
+function ddMixForm(){
+  var o = readDD(), m = ddMixParts(o);
+  var ov = document.createElement("div");
+  ov.className = "popup-overlay";
+  ov.innerHTML = "<div class='popup wide ddmixpop'><h3>Asset mix</h3>" +
+    "<div class='formhint'>How the portfolio is split at retirement. Returns are each asset's actual history from July 1926.</div>" +
+    DD_ASSETS.map(function (a) {
+      return "<div class='ddmixrow'><div><b>" + a[2] + "</b><small>" + a[3] + "</small></div>" +
+        "<div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-mix='" + a[0] +
+        "' value='" + ddN(m[a[0]]) + "' aria-label='" + a[2] + "'><span class='affix'>%</span></div></div>";
+    }).join("") +
+    "<div class='ddmixtot' id='ddMixTot'></div>" +
+    "<div class='formfield'><label>Glide stocks to <span class='opt'>optional</span></label><div class='inputwrap'>" +
+      "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg id='ddMixGlide' value='" +
+      (o.stockPctEnd != null ? ddN(o.stockPctEnd) : "") + "' aria-label='Stocks at the end'><span class='affix'>% by the last year</span></div>" +
+      "<div class='formhint'>Moves the stocks' total in a straight line, small value keeping its share. Leave blank to hold the mix.</div></div>" +
+    "<div class='formactions'><button type='button' class='btn' data-mixcancel>Cancel</button>" +
+    "<button type='button' class='btn primary' data-mixok>Use this mix</button></div></div>";
+  document.body.appendChild(ov);
+  initFields(ov);
+  var vals = function () { var r = {}; ov.querySelectorAll("[data-mix]").forEach(function (el) { r[el.getAttribute("data-mix")] = parseNum(el.value); }); return r; };
+  var check = function () {
+    var v = vals(), t = v.stock + v.sv + v.bond + v.cash, ok = Math.abs(t - 100) < .01;
+    $("ddMixTot").innerHTML = "Total: <b class='" + (ok ? "pos" : "neg") + "'>" + ddN(t) + "%</b>" +
+      (ok ? "" : " — it needs to add up to 100%");
+    ov.querySelector("[data-mixok]").disabled = !ok;
+    return ok;
+  };
+  ov.addEventListener("input", check);
+  check();
+  var shut = function () { if (ov._modalDone) ov._modalDone(); ov.remove(); };
+  ov.addEventListener("click", function (e) {
+    if (e.target === ov || (e.target.closest && e.target.closest("[data-mixcancel]"))) { shut(); return; }
+    if (e.target.closest && e.target.closest("[data-mixok]") && check()) {
+      var v = vals(), g = $("ddMixGlide").value.trim();
+      $("ddStock").value = String(v.stock); $("ddSV").value = String(v.sv); $("ddCash").value = String(v.cash);
+      $("ddStockEnd").value = g === "" ? "" : String(Math.min(100, parseNum(g)));
+      shut();
+      renderDrawdown();
+    }
+  });
+  wireModal(ov, shut);
+  var first = ov.querySelector("[data-mix]");
+  if (first) first.focus();
+}
+$("ddMixBtn").addEventListener("click", ddMixForm);

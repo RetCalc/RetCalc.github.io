@@ -269,7 +269,7 @@ group("Drawdown: the 4% rule, replicated independently");
     eq(R.rows[0].withdrawal, 40000, y + ": year 1 withdrawal is 4% of today's dollars");
   });
   var H = historicalBacktest(o);
-  near(H.successRate, .944, .001, "success rate since 1926");
+  near(H.successRate, 66 / 70, .001, "success rate, starting July 1926: every January from 1927");
   eq(H.failYears.join(","), "1965,1966,1968,1969", "the retirements that failed");
 })();
 
@@ -324,7 +324,7 @@ group("Drawdown: a retirement starting every month, and the CAPE record");
     HIST_Y12_INFL[12 * y] === HIST_INFL[y]; }), "a year from January is the calendar year, exactly");
   var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, strategy: "fixed" };
   var A = historicalBacktest(o), M = historicalBacktest(Object.assign({}, o, { monthly: true }));
-  eq(M.total, 841, "841 thirty-year retirements, one a month");
+  eq(M.total, 835, "835 thirty-year retirements, one a month from July 1926");
   var jan = M.runs.filter(function (r) { return r.startMonth === 1; });
   eq(jan.length, A.total, "one in each January");
   ok(jan.every(function (r, i) { return r.endReal === A.runs[i].endReal && r.depleted === A.runs[i].depleted; }), "and those match the annual test");
@@ -412,6 +412,30 @@ group("Drawdown: spending path, guaranteed income and what was really spent");
   var last = F.rows[F.rows.length - 1];
   near(last.realSpend, 12000, 1e-6, "after that, only Social Security is spent");
   ok(last.realPlanned > 50000, "though the plan still called for more");
+})();
+
+group("Drawdown: four asset classes and how often to rebalance");
+(function () {
+  eq(HIST_M_CASH.length, 1194, "cash: July 1926 to December 2025");
+  eq(HIST_M_SV.length, 1194, "small value: the same months");
+  near(HIST_M_CASH[0], .22, 1e-9, "July 1926's T-bill return, as published");
+  var base = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, strategy: "fixed" };
+  var o = function (x) { return Object.assign({}, base, x); };
+  var mix = ddMixAt(o({ stockPct: 50, svPct: 10, cashPct: 5 }), 0);
+  ok(Math.abs(mix[0] - .5) < 1e-12 && Math.abs(mix[1] - .1) < 1e-12 && Math.abs(mix[2] - .35) < 1e-12 && Math.abs(mix[3] - .05) < 1e-12, "bonds are what the rest leave");
+  var g = ddMixAt(o({ stockPct: 50, svPct: 10, cashPct: 10, stockPctEnd: 30 }), 29);
+  ok(Math.abs(g[0] + g[1] - .3) < 1e-9 && Math.abs(g[1] / (g[0] + g[1]) - 1 / 6) < 1e-9 && Math.abs(g[3] / (g[2] + g[3]) - .25) < 1e-9,
+    "a glide moves the stocks' total, each part keeping its share");
+  var yr = historicalBacktest(o({})), ev1 = historicalBacktest(o({ rebal: "every", rebalN: 1 }));
+  ok(yr.runs.every(function (r, i) { return r.endReal === ev1.runs[i].endReal; }), "rebalancing every 1 year is every year");
+  var band0 = historicalBacktest(o({ rebal: "band", rebalBand: 0 }));
+  ok(yr.runs.every(function (r, i) { return Math.abs(r.endReal - band0.runs[i].endReal) < 1e-3; }), "a zero band rebalances every year");
+  var allS = historicalBacktest(o({ stockPct: 100 })), allSn = historicalBacktest(o({ stockPct: 100, rebal: "never" }));
+  ok(allS.runs.every(function (r, i) { return Math.abs(r.endReal - allSn.runs[i].endReal) < 1e-3; }), "one asset never needs rebalancing");
+  var nv = historicalBacktest(o({ rebal: "never" })), drift = nv.runs.filter(function (r, i) { return Math.abs(r.endReal - yr.runs[i].endReal) > 1; }).length;
+  ok(drift > nv.runs.length / 2, "never rebalancing lets the mix drift and changes results");
+  var cash = historicalBacktest(o({ stockPct: 0, cashPct: 100 })), sv = historicalBacktest(o({ stockPct: 0, svPct: 100 }));
+  ok(cash.successRate < yr.successRate && sv.medianEnd > yr.medianEnd, "all cash lasts less often; all small value ends higher");
 })();
 
 group("Drawdown: a minimum that changes with age");

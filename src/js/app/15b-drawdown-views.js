@@ -64,7 +64,7 @@ function ddFmtMoneyShort(v){ return fmtAxisMoney(v); }
 function ddPlanLabel(o){
   var u = DD_UI[o.strategy] || {}, D = (DD_STRAT[o.strategy] || {}).dial;
   return (u.card || u.name || o.strategy) + (D ? ", " + ddDialText(o.strategy, o[D.key], o) : "") + ", " +
-    o.stockPct + "% stocks, " + fmtNum(o.years) + " years" + (o.monthly ? ", every month" : "");
+    ddMixText(o) + ", " + fmtNum(o.years) + " years" + (o.monthly ? ", every month" : "");
 }
 
 /* ---- the comfort line ---- */
@@ -778,7 +778,7 @@ function ddPaintHeat(){
   var colTitle = h.axis === "years" ? "Years in retirement" : "Stocks";
   var rowName = D.key === "initialPct" ? "Rate" : D.key === "rgTarget" ? "Target" : "Setting";
   var near = function (a, b) { return Math.abs(a - b) < 1e-6; };
-  var curCol = h.axis === "years" ? o.years : (o.stockPctEnd == null ? o.stockPct : null);
+  var curCol = h.axis === "years" ? o.years : (o.stockPctEnd == null ? Math.round(o.stockPct + o.svPct) : null);
   var under = false;
   var cell = function (s) {
     if (s == null) return "<td class='ddh-na'>—</td>";

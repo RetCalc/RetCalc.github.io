@@ -1560,6 +1560,19 @@ a.txlink:hover{text-decoration-color:currentColor}
 .ddstrat-cap{font-size:11px;color:var(--dimmer);margin-top:3px;line-height:1.4}
 .ddskip{margin:-6px 0 14px}
 /* A group of the simulator's inputs: the market history, guaranteed income */
+.ddsec.ddsec-first{margin-top:0;padding-top:0;border-top:0}
+.ddsub{margin-top:6px}
+.ddmixbtn{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font:inherit;font-size:13px;color:var(--text);
+  background:var(--field);border:1px solid var(--line);border-radius:var(--r-well);padding:9px 10px;cursor:pointer;box-shadow:var(--well)}
+.ddmixbtn:hover{border-color:var(--line-hi)}
+.ddmixbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ddmixbtn span{flex:1 1 auto;min-width:0}
+.ddmixbtn svg{width:14px;height:14px;flex:none;color:var(--dimmer)}
+.ddmixrow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft)}
+.ddmixrow > div:first-child{flex:1 1 auto;min-width:0;font-size:13px}
+.ddmixrow small{display:block;color:var(--dimmer);font-size:11.5px;margin-top:2px}
+.ddmixrow .inputwrap{flex:0 0 110px}
+.ddmixtot{font-size:13px;color:var(--dim);margin:10px 0 14px}
 .ddsec{margin:18px 0 12px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11px;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}

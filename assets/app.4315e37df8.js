@@ -2328,6 +2328,217 @@ var HIST_M_CAPE = [
   31.97,33.04,33.76,33.03,33.78,34.81,35.48,35.08,35.70,36.59,37.36,37.72,
   37.14,37.19,34.79,32.63,35.08,36.12,37.48,37.85,38.59,39.31,39.16,39.59
 ];
+/* Two more asset classes, monthly from July 1926 (Kenneth French's records
+   start there) through December 2025, in percent. Cash is the one-month
+   Treasury bill. Small value is small-company value stocks: the small,
+   high book-to-market portfolio of the Fama-French 2x3 sorts, value
+   weighted. Source: Kenneth R. French Data Library (Dartmouth), from CRSP;
+   T-bills from Ibbotson Associates until May 2024, ICE BofA after. */
+var HIST_FF_START = 6;   // July 1926, as a month of the series above
+var HIST_M_CASH = [
+  0.22,0.25,0.23,0.32,0.31,0.28,
+  0.25,0.26,0.3,0.25,0.3,0.26,0.3,0.28,0.21,0.25,0.21,0.22,
+  0.25,0.33,0.29,0.22,0.32,0.31,0.32,0.32,0.27,0.41,0.38,0.06,
+  0.34,0.36,0.34,0.36,0.44,0.52,0.33,0.4,0.35,0.46,0.37,0.37,
+  0.14,0.3,0.35,0.21,0.26,0.27,0.2,0.09,0.22,0.09,0.13,0.14,
+  0.15,0.04,0.13,0.08,0.09,0.08,0.06,0.03,0.03,0.1,0.17,0.12,
+  0.23,0.23,0.16,0.11,0.06,0.02,0.02,0.03,0.03,0.02,0.02,0.01,
+  0.01,-0.03,0.04,0.1,0.04,0.02,0.02,0.03,0.02,0.01,0.02,0.02,
+  0.05,0.02,0.02,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,
+  0.01,0.02,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.02,0.01,
+  0.01,0.01,0.02,0.02,0.02,0.03,0.01,0.02,0.01,0.02,0.01,0,
+  0.01,0.02,0.01,0.03,0.06,0.03,0.03,0.02,0.04,0.02,0.02,0,
+  0,0,-0.01,0.01,0,0,-0.01,0,0.02,0.01,-0.06,0,
+  -0.01,0.01,-0.01,0,0.01,0.01,0,-0.01,0.01,0,0,0,
+  0,0,0,0,-0.02,0,0.01,-0.01,0,0,0,0,
+  -0.01,-0.01,0.01,-0.01,0,0,0.03,0.01,0.01,0,0,0.01,
+  0.02,0.01,0.01,0.01,0.03,0.02,0.03,0.03,0.03,0.03,0.03,0.03,
+  0.03,0.03,0.03,0.03,0.02,0.03,0.03,0.03,0.03,0.03,0.03,0.03,
+  0.03,0.03,0.02,0.03,0.03,0.03,0.03,0.03,0.02,0.03,0.03,0.02,
+  0.03,0.02,0.02,0.03,0.03,0.02,0.03,0.03,0.03,0.03,0.02,0.03,
+  0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,
+  0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.03,0.06,0.06,0.06,0.08,
+  0.07,0.07,0.09,0.08,0.08,0.09,0.08,0.09,0.04,0.04,0.04,0.04,
+  0.1,0.09,0.1,0.09,0.1,0.1,0.09,0.09,0.09,0.09,0.08,0.09,
+  0.09,0.09,0.1,0.09,0.1,0.1,0.1,0.1,0.1,0.12,0.11,0.11,
+  0.13,0.1,0.11,0.13,0.12,0.12,0.13,0.13,0.12,0.16,0.11,0.12,
+  0.15,0.12,0.11,0.12,0.13,0.15,0.15,0.15,0.16,0.14,0.1,0.16,
+  0.16,0.14,0.18,0.16,0.17,0.18,0.15,0.17,0.16,0.13,0.08,0.13,
+  0.11,0.07,0.08,0.09,0.05,0.06,0.05,0.05,0.09,0.07,0.06,0.08,
+  0.08,0.09,0.1,0.1,0.14,0.1,0.1,0.16,0.16,0.18,0.17,0.18,
+  0.22,0.19,0.15,0.19,0.23,0.2,0.22,0.17,0.18,0.25,0.2,0.24,
+  0.27,0.24,0.23,0.25,0.26,0.24,0.3,0.25,0.26,0.29,0.28,0.24,
+  0.28,0.12,0.09,0.08,0.11,0.03,0.07,0.04,0.19,0.18,0.11,0.22,
+  0.21,0.19,0.22,0.2,0.22,0.24,0.25,0.19,0.31,0.3,0.26,0.34,
+  0.33,0.29,0.35,0.19,0.27,0.24,0.13,0.17,0.16,0.22,0.13,0.16,
+  0.19,0.14,0.2,0.17,0.18,0.2,0.18,0.14,0.17,0.19,0.15,0.19,
+  0.24,0.2,0.2,0.22,0.24,0.2,0.27,0.23,0.21,0.26,0.2,0.23,
+  0.25,0.23,0.23,0.25,0.24,0.23,0.27,0.25,0.27,0.29,0.27,0.29,
+  0.3,0.26,0.31,0.29,0.26,0.3,0.3,0.28,0.28,0.29,0.29,0.31,
+  0.28,0.3,0.36,0.31,0.31,0.35,0.31,0.33,0.31,0.31,0.35,0.33,
+  0.38,0.35,0.38,0.34,0.41,0.38,0.35,0.41,0.4,0.45,0.4,0.4,
+  0.43,0.36,0.39,0.32,0.33,0.27,0.32,0.31,0.32,0.39,0.36,0.33,
+  0.4,0.39,0.38,0.43,0.45,0.43,0.48,0.42,0.43,0.44,0.42,0.43,
+  0.53,0.46,0.46,0.53,0.48,0.51,0.53,0.5,0.62,0.6,0.52,0.64,
+  0.6,0.62,0.57,0.5,0.53,0.58,0.52,0.53,0.54,0.46,0.46,0.42,
+  0.38,0.33,0.3,0.28,0.29,0.37,0.4,0.47,0.37,0.37,0.37,0.37,
+  0.29,0.25,0.27,0.29,0.3,0.29,0.31,0.29,0.34,0.4,0.37,0.37,
+  0.44,0.42,0.46,0.52,0.51,0.51,0.64,0.7,0.68,0.65,0.56,0.64,
+  0.63,0.58,0.56,0.75,0.75,0.6,0.7,0.6,0.81,0.51,0.54,0.7,
+  0.58,0.43,0.41,0.44,0.44,0.41,0.48,0.48,0.53,0.56,0.41,0.48,
+  0.47,0.34,0.4,0.42,0.37,0.43,0.47,0.42,0.44,0.41,0.4,0.4,
+  0.36,0.35,0.38,0.38,0.37,0.4,0.42,0.44,0.43,0.49,0.5,0.49,
+  0.49,0.46,0.53,0.54,0.51,0.54,0.56,0.56,0.62,0.68,0.7,0.78,
+  0.77,0.73,0.81,0.8,0.82,0.81,0.77,0.77,0.83,0.87,0.99,0.95,
+  0.8,0.89,1.21,1.26,0.81,0.61,0.53,0.64,0.75,0.95,0.96,1.31,
+  1.04,1.07,1.21,1.08,1.15,1.35,1.24,1.28,1.24,1.21,1.07,0.87,
+  0.8,0.92,0.98,1.13,1.06,0.96,1.05,0.76,0.51,0.59,0.63,0.67,
+  0.69,0.62,0.63,0.71,0.69,0.67,0.74,0.76,0.76,0.76,0.7,0.73,
+  0.76,0.71,0.73,0.81,0.78,0.75,0.82,0.83,0.86,1,0.73,0.64,
+  0.65,0.58,0.62,0.72,0.66,0.55,0.62,0.55,0.6,0.65,0.61,0.65,
+  0.56,0.53,0.6,0.52,0.49,0.52,0.52,0.46,0.45,0.46,0.39,0.49,
+  0.42,0.43,0.47,0.44,0.38,0.48,0.46,0.47,0.45,0.6,0.35,0.39,
+  0.29,0.46,0.44,0.46,0.51,0.49,0.51,0.59,0.62,0.61,0.57,0.63,
+  0.55,0.61,0.67,0.67,0.79,0.71,0.7,0.74,0.65,0.68,0.69,0.61,
+  0.57,0.57,0.64,0.69,0.68,0.63,0.68,0.66,0.6,0.68,0.57,0.6,
+  0.52,0.48,0.44,0.53,0.47,0.42,0.49,0.46,0.46,0.42,0.39,0.38,
+  0.34,0.28,0.34,0.32,0.28,0.32,0.31,0.26,0.26,0.23,0.23,0.28,
+  0.23,0.22,0.25,0.24,0.22,0.25,0.24,0.25,0.26,0.22,0.25,0.23,
+  0.25,0.21,0.27,0.27,0.32,0.31,0.28,0.37,0.37,0.38,0.37,0.44,
+  0.42,0.4,0.46,0.44,0.54,0.47,0.45,0.47,0.43,0.47,0.42,0.49,
+  0.43,0.39,0.39,0.46,0.42,0.4,0.45,0.41,0.44,0.42,0.41,0.46,
+  0.45,0.39,0.43,0.43,0.49,0.37,0.43,0.41,0.44,0.42,0.39,0.48,
+  0.43,0.39,0.39,0.43,0.4,0.41,0.4,0.43,0.46,0.32,0.31,0.38,
+  0.35,0.35,0.43,0.37,0.34,0.4,0.38,0.39,0.39,0.39,0.36,0.44,
+  0.41,0.43,0.47,0.46,0.5,0.4,0.48,0.5,0.51,0.56,0.51,0.5,
+  0.54,0.38,0.42,0.39,0.32,0.28,0.3,0.31,0.28,0.22,0.17,0.15,
+  0.14,0.13,0.13,0.15,0.14,0.13,0.15,0.14,0.14,0.14,0.12,0.11,
+  0.1,0.09,0.1,0.1,0.09,0.1,0.07,0.07,0.08,0.07,0.07,0.08,
+  0.07,0.06,0.09,0.08,0.06,0.08,0.1,0.11,0.11,0.11,0.15,0.16,
+  0.16,0.16,0.21,0.21,0.24,0.23,0.24,0.3,0.29,0.27,0.31,0.32,
+  0.35,0.34,0.37,0.36,0.43,0.4,0.4,0.42,0.41,0.41,0.42,0.4,
+  0.44,0.38,0.43,0.44,0.41,0.4,0.4,0.42,0.32,0.32,0.34,0.27,
+  0.21,0.13,0.17,0.18,0.18,0.17,0.15,0.13,0.15,0.08,0.03,0,
+  0,0.01,0.02,0.01,0,0.01,0.01,0.01,0.01,0,0,0.01,
+  0,0,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,
+  0.01,0.01,0.01,0,0,0,0,0.01,0,0,0,0,
+  0,0,0,0,0.01,0,0,0.01,0.01,0.01,0.01,0.01,
+  0,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,0.01,
+  0.01,0.02,0.02,0.01,0.01,0.02,0.02,0.02,0.02,0.02,0.01,0.03,
+  0.04,0.04,0.03,0.05,0.06,0.06,0.07,0.09,0.09,0.09,0.08,0.09,
+  0.11,0.11,0.12,0.14,0.14,0.14,0.16,0.16,0.15,0.19,0.18,0.19,
+  0.21,0.18,0.19,0.21,0.21,0.18,0.19,0.16,0.18,0.15,0.12,0.14,
+  0.13,0.12,0.12,0,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,
+  0,0,0,0,0,0,0,0,0,0,0,0.01,
+  0,0,0,0,0.03,0.06,0.08,0.19,0.19,0.23,0.29,0.33,
+  0.35,0.34,0.36,0.35,0.36,0.4,0.45,0.45,0.43,0.47,0.44,0.43,
+  0.47,0.42,0.43,0.47,0.44,0.41,0.45,0.48,0.4,0.39,0.4,0.37,
+  0.37,0.33,0.34,0.35,0.38,0.34,0.34,0.38,0.33,0.37,0.3,0.34
+];
+var HIST_M_SV = [
+  -0.1275,5.4422,-0.4399,-2.0128,2.0877,3.27,
+  3.9875,6.4416,-3.1144,3.4837,13.4556,-4.089,4.0181,0.7332,0.3714,-6.0935,10.4641,2.4534,
+  3.6043,-4.1263,9.4431,9.9758,2.6118,-6.799,-0.9736,3.7666,6.1849,1.6663,12.1856,-0.5797,
+  1.7793,0.3953,-4.3437,0.7306,-12.8944,6.456,3.8676,-0.4807,-3.607,-21.2218,-10.9661,-1.1822,
+  8.4726,4.5687,10.6873,-3.4819,-2.9869,-19.0393,2.5703,-2.321,-19.5014,-10.4086,-2.5025,-17.8435,
+  16.164,17.0097,-7.2163,-18.1804,-13.716,21.3688,-5.7544,-3.7563,-35.3242,8.1969,-9.5721,-23.201,
+  11.9357,1.5241,-10.778,-16.0788,-17.8429,1.9075,63.1226,83.3873,-12.4547,-24.1384,-13.5787,-10.3743,
+  8.045,-20.862,15.4219,56.9113,72.3588,18.5855,-7.2303,8.4113,-20.8876,-14.0569,6.1167,-0.23,
+  39.6638,4.8488,-0.0115,-1.7047,-12.0918,-2.1893,-24.6948,11.5686,-3.484,-3.9835,12.7483,1.6042,
+  -3.0465,-6.3227,-11.3386,10.5543,1.8154,0.839,13.3415,14.5514,0.4703,6.9368,19.7932,1.7938,
+  23.5566,5.6394,0.8801,-15.5268,8.7363,-1.1537,9.3731,4.1959,4.4692,6.5179,12.2081,7.5173,
+  10.1026,4.6089,3.3096,-13.1058,-4.121,-10.6147,10.7982,-5.5971,-23.0745,-9.7359,-11.7428,-12.6143,
+  3.8517,4.8697,-30.4414,20.8018,-5.5145,27.6313,15.514,-9.4011,-2.7807,16.9041,-5.8897,1.5146,
+  -10.1444,6.2924,-22.8623,1.9784,9.8728,-10.6791,13.6464,-12.6408,54.9803,-5.0122,-13.7537,0.2893,
+  -2.7816,3.1487,2.2809,4.0867,-32.4369,7.9796,3.3197,1.874,5.1994,6.2991,0.2185,-2.3194,
+  -0.3185,-2.8938,3.777,-5.2124,1.5397,8.4665,18.5092,-0.3921,-1.9575,-6.06,-2.7573,-12.7114,
+  14.4644,-1.6886,-5.7168,-3.7306,1.6402,2.1428,5.147,2.4946,5.9938,14.5034,-4.0445,2.6111,
+  23.8295,17.4933,14.9968,8.1682,13.2962,0.418,-8.9051,0.7072,5.4039,0.825,-10.4323,11.4105,
+  5.4614,0.7064,7.4552,-3.9171,7.0596,10.7165,-1.4416,1.9162,-0.2286,-0.5164,3.7232,10.5409,
+  4.1166,10.7095,-6.2843,10.0659,4.0736,6.8558,-5.4586,4.9048,6.4483,7.2211,11.5432,1.6275,
+  12.3686,-7.2977,5.8097,6.3892,5.7632,-6.0013,-5.0492,-7.3792,-15.86,0.7456,1.412,4.2294,
+  3.2543,0.8545,-2.3887,-8.1115,-3.6018,4.9714,7.0361,-1.1958,2.6266,2.9493,-2.6336,3.0711,
+  -0.1732,-5.8434,12.2751,4.6936,7.484,0.4793,-5.4885,-0.3453,-5.5319,5.3933,-12.9649,0.1041,
+  2.976,-5.6183,8.2132,-3.3768,-5.1369,-1.1177,5.7431,1.9547,4.1666,4.098,0.2029,8.8106,
+  4.7005,0.5672,-1.9727,7.5064,3.0334,-9.1003,11.5659,5.1254,5.0281,0.069,4.8664,12.5626,
+  10.6498,-0.0477,-5.6857,6.3858,-3.4954,-7.2689,6.6166,4.961,2.7764,-3.4192,0.3429,0.6857,
+  1.3001,-1.9498,3.4195,-4.0038,2.686,3.3681,-0.1708,0.3016,-2.1209,-1.9806,6.0728,1.7248,
+  3.8294,1.8288,-2.0104,-1.1389,0.7182,-3.9993,1.4679,-6.3057,-2.2839,3.1846,1.2851,-2.7507,
+  8.2521,1.4458,2.2403,0.3092,5.0968,1.3936,9.1171,-0.9026,4.6729,-0.7163,9.6779,11.4234,
+  2.3036,4.6612,0.6744,2.644,0.408,3.5391,1.3722,0.2592,-0.3405,-1.213,5.2563,2.5341,
+  -1.7564,2.4771,5.1751,0.1164,-4.5586,1.3503,3.4489,-2.1297,-2.1458,0.4204,2.2152,2.1708,
+  2.0537,-2.7225,2.2856,2.2715,1.7595,0.7265,0.4311,-5.2109,-5.0233,-8.2717,1.1037,-5.8957,
+  11.926,-0.49,3.112,4.3078,4.2901,2.9522,7.1373,3.1805,7.7016,3.0315,4.1107,3.8486,
+  5.6119,2.8743,1.7344,2.1065,1.3418,1.8411,3.5658,-1.9732,-4.1067,1.262,0.6321,2.1183,
+  -2.9912,0.6531,-3.7505,-2.9735,2.5542,1.5629,-1.3578,4.176,-6.002,-2.7753,3.1169,2.401,
+  9.4694,7.4536,5.7396,2.4132,4.819,-5.499,1.3374,1.097,-3.3141,0.2788,4.7377,0.3185,
+  2.2588,1.7942,-0.5658,-6.8415,-9.4814,-7.0685,6.5771,2.5209,-6.1043,-2.0426,14.1414,-2.1185,
+  9.7775,-0.1251,2.4629,4.9078,5.4099,-1.9054,-1.1716,5.8206,-2.0676,2.7412,-0.2705,0.1812,
+  3.879,4.0979,5.1497,-1.4805,2.0793,2.0348,2.6349,-1.2893,3.579,2.32,-0.0094,-1.4481,
+  6.5866,4.1917,1.5126,5.2849,-1.3247,-8.6234,4.1223,5.0617,3.803,6.3737,4.7078,4.8627,
+  6.9166,3.4164,-2.2547,5.8245,-10.3469,-0.0465,-0.7015,-10.4868,-1.4482,-0.1382,2.4133,0.9273,
+  17.5183,3.1071,5.6003,3.4153,-2.2857,7.9938,10.4014,0.4603,4.6461,-3.4128,-0.8761,8.0996,
+  3.5254,-5.0257,-0.5195,13.232,8.7068,1.5001,0.2387,4.7453,6.4462,1.3378,6.7665,-1.0389,
+  -0.7167,-7.6269,3.2525,1.2622,-0.1112,-10.9702,-7.4344,3.8287,-2.7652,7.268,-6.4574,-6.3597,
+  -2.2612,6.2483,0.1912,-11.2906,-8.1599,-6.0966,6.771,6.9145,9.4485,-4.1177,2.6305,9.2411,
+  12.7744,2.2959,4.6852,3.4681,-5.0099,-2.3642,-5.9499,6.5203,-2.0369,-6.5731,-3.9833,12.1314,
+  10.3472,2.6374,-0.4566,0.4767,-2.6749,-3.1227,-2.1148,2.6006,-3.1779,-1.1508,6.4213,-2.305,
+  -3.6643,-5.8529,-1.2461,-4.9989,-7.4077,-2.7099,9.0446,-4.0413,8.533,0.8956,-16.147,-1.4542,
+  13.8007,1.9282,0.4541,-3.5822,-6.8872,-1.1415,-3.0654,-7.3743,-7.46,8.0104,-5.5914,-7.6126,
+  30.5559,3.7207,8.3486,3.1393,6.9734,6.3207,-2.5385,-6.5818,-3.5465,1.9756,3.7761,-0.8652,
+  24.851,12.1275,1.8129,-1.3028,-3.4759,3.8534,0.7199,-1.4108,2.3287,-2.1394,3.903,10.1621,
+  3.0833,-0.0111,0.2349,2.4117,0.616,6.8601,0.4458,-1.5258,0.9116,-1.8721,8.0148,1.5843,
+  -1.1018,2.475,7.0626,7.1586,5.7948,0.3872,6.0064,8.4768,-0.6398,-18.8107,4.4664,1.9786,
+  9.5218,-1.9379,8.5328,3.3135,-0.4329,6.0467,3.1825,7.3189,-1.0671,-11.4225,6.8615,5.0725,
+  8.5159,-2.7072,-17.4948,6.0807,8.0593,4.3049,7.1822,3.7824,1.0692,2.8012,2.981,-1.1717,
+  2.1547,2.5971,7.6698,3.6383,1.6969,1.3943,-1.515,-4.8094,-4.9564,5.8014,4.5525,-1.4481,
+  -0.8403,-0.7474,1.5557,4.0179,-1.4859,-1.2973,-1.0157,8.0634,5.0767,11.7911,9.2224,0.6494,
+  5.0581,6.979,6.1907,7.4204,5.1106,2.4692,1.2254,-0.3309,3.925,-2.2163,4.3157,0.2822,
+  2.0497,-3.495,2.3377,-0.0496,-4.3948,1.04,-3.3759,9.3955,2.1749,0.2288,0.1047,1.8887,
+  9.0344,1.4572,1.1902,1.5356,3.2257,2.1822,1.182,0.2684,-4.2507,3.3837,6.2683,3.1477,
+  2.4964,7.0603,5.3229,0.4786,3.3126,1.8378,-5.9155,4.4528,-4.6342,1.6793,0.5379,-1.911,
+  9.2023,5.0916,3.7428,-3.6084,0.7364,3.8037,5.7371,2.8311,-1.3685,-27.8776,-3.5039,4.5259,
+  6.1895,7.2863,3.2021,2.2978,-0.214,6.043,0.22,-1.3076,2.4967,0.5492,-2.5142,2.7017,
+  5.3347,1.3926,3.4831,3.809,3.775,-0.0608,3.3417,2.6173,-0.7721,-6.3962,-0.0329,-0.2988,
+  -7.7711,2.1833,2.2177,-4.3754,4.2551,-0.0995,-4.2588,-11.2483,-8.4176,-6.1204,5.1913,2.8451,
+  8.0089,11.3003,6.5794,1.6453,2.7529,-4.1939,3.0325,4.3252,-1.151,1.7781,-5.5204,7.3657,
+  10.6665,7.1323,-0.7332,-0.9764,2.3606,-2.7897,3.7678,-2.6879,1.5623,1.9434,6.6558,5.0322,
+  6.3194,1.0808,3.5948,-2.5057,3.1505,1.3379,2.159,3.5225,2.6096,2.6117,-2.4946,2.4128,
+  4.8245,-1.0851,-4.2512,1.3617,0.2005,-1.7469,2.1871,3.931,-0.0132,-1.5113,-3.6213,1.5548,
+  0.9093,4.2075,1.2685,3.2939,2.9581,4.2966,4.9005,3.8753,1.6863,-3.7872,3.6374,2.2684,
+  0.6717,2.781,2.6303,4.5661,5.3541,-2.3488,-5.4673,4.4704,3.2911,1.0103,3.93,2.2594,
+  2.8544,1.2256,-1.807,-0.4687,8.3552,6.8454,5.5021,2.899,8.1805,-1.8702,0.4635,2.3639,
+  -1.1307,6.7893,4.5898,2.2201,-2.441,-0.1467,-7.3451,-18.5466,3.6687,3.1723,5.527,2.6778,
+  1.0609,-8.4062,-2.6941,9.0077,3.7472,6.3032,-1.1142,-3.4068,-2.8035,-2.7262,4.3606,6.5485,
+  0.3652,13.1314,-1.2937,-4.1515,-5.0754,8.6625,1.8414,6.5605,-0.4695,-1.6065,-2.8444,8.5925,
+  6.82,-0.1345,-1.5294,5.0014,6.3753,3.1245,-1.1586,-1.3838,-14.1084,4.7974,8.9081,6.7554,
+  3.2629,-0.995,9.7339,4.1434,-2.6905,-2.3608,-15.0336,-0.5765,-7.1947,0.6932,7.7653,-3.6914,
+  -1.2497,-3.6807,1.1439,9.6399,10.8144,3.5259,6.2041,5.8965,0.9479,10.8227,4.6092,3.0046,
+  7.1538,0.3121,0.3795,-6.1856,0.6909,4.4168,-5.1777,-0.6785,3.6713,1.1972,8.7983,3.689,
+  -2.5637,2.5944,-1.504,-5.7657,5.753,4.6987,5.9692,-1.244,0.2652,-2.2493,3.9882,-0.3192,
+  8.1688,-0.5966,5.2439,0.8245,-4.1166,-0.0397,-2.1049,2.4923,1.3113,4.6084,2.6157,1.9703,
+  1.8746,-0.9698,0.2683,0.9131,3.0877,-1.6674,-8.2447,-0.7386,0.0615,0.1342,-7.8909,-0.9025,
+  -3.8009,-3.9374,0.2864,1.3714,2.9478,-8.7816,5.0635,6.7736,-7.1655,-20.0909,-14.3764,5.3835,
+  -15.8576,-14.7893,10.852,18.3841,2.7828,0.5823,13.2865,8.0971,7.5823,-9.2954,3.9928,8.4145,
+  -2.7174,7.4479,8.9415,9.2553,-10.3799,-10.9297,7.1319,-8.5733,10.9241,3.6171,3.2453,9.3338,
+  0.4118,5.5048,1.4147,1.0301,-3.201,-1.8739,-3.0241,-9.6096,-10.2858,12.7026,-0.2062,1.1913,
+  5.7847,2.8792,3.1575,-0.8066,-5.992,4.7247,-1.7068,3.6947,4.0943,-0.8325,0.8113,4.4895,
+  5.8456,1.3603,4.5371,-0.109,5.337,-0.1645,7.8666,-3.8317,5.6076,3.9547,4.4652,1.889,
+  -3.6779,5.1794,1.3297,-2.6802,0.076,4.4411,-5.4068,4.4588,-6.4667,5.1491,-1.0462,3.2203,
+  -5.1742,5.1776,1.1958,-0.6868,0.9509,0.6348,-5.6538,-3.3119,-4.7033,5.7143,3.6356,-6.7883,
+  -6.9385,0.3672,8.4056,3.8426,0.5333,-0.0494,5.7207,3.2584,1.6961,-3.0215,14.9336,4.4654,
+  -0.6869,0.2892,-0.6877,0.6439,-3.7997,3.3905,0.6084,-2.3949,8.3321,0.9564,2.609,-0.0086,
+  1.7317,-3.7691,1.9093,2.3296,5.7217,0.5879,1.0789,2.3459,-2.8169,-9.1622,0.9389,-12.6404,
+  10.9497,3.6065,-4.3175,3.2808,-9.8601,6.3386,-0.5672,-8.1016,5.5824,0.6561,3.451,4.8009,
+  -8.1554,-9.9621,-27.8606,15.6046,4.0385,3.5395,2.5213,5.379,-5.8077,6.1986,19.6377,8.4115,
+  10.5172,9.3476,7.1991,1.2146,6.0539,-1.3579,-3.6443,2.8112,0.3737,3.7721,-3.6708,4.4662,
+  -0.9903,2.1431,0.5473,-5.5853,4.0799,-11.2006,8.7845,-2.3389,-9.8245,13.8038,2.5889,-5.5393,
+  8.1888,-1.7617,-9.3994,-2.6426,-4.3546,8.2166,9.167,-5.4194,-6.07,-6.1687,10.4042,15.2717,
+  -5.102,2.3798,3.676,-6.3135,4.2676,-1.727,13.0269,-2.2353,-0.1132,-1.0417,11.2187,-7.1094,
+  1.9118,-3.5186,-6.3221,-4.4015,5.3216,4.6811,2.0821,9.1109,0.7802,-1.5645,3.5508,0.3878
+];
 /* The latest reading, to set today's market against the record. */
 var CAPE_NOW = 41.0, CAPE_NOW_ASOF = "30 September 2026";
 
@@ -2746,7 +2957,7 @@ if (typeof module !== "undefined")
                     finalStageSolve, balanceBeforeLast,
                     historicalRuns, backtest,
                     HIST_STOCK, HIST_BOND, HIST_INFL, HIST_START,
-                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE};
+                    HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE, HIST_M_CASH, HIST_M_SV};
 ;
 // ===DRAWDOWN START===
 /* ---------- the Drawdown Simulator's engine ----------
@@ -2785,6 +2996,46 @@ function histYearFrom(m){
 var HIST_Y12_STOCK = histYearFrom(HIST_M_STOCK);
 var HIST_Y12_BOND = histYearFrom(HIST_M_BOND);
 var HIST_Y12_INFL = histYearFrom(HIST_M_INFL);
+/* Cash and small value start in July 1926, so the simulator does too:
+   every test begins there. Padded to line up with the series above. */
+var HIST_MA_CASH = [0, 0, 0, 0, 0, 0].concat(HIST_M_CASH);
+var HIST_MA_SV = [0, 0, 0, 0, 0, 0].concat(HIST_M_SV);
+var HIST_Y12_CASH = histYearFrom(HIST_MA_CASH);
+var HIST_Y12_SV = histYearFrom(HIST_MA_SV);
+var HIST_CASH = histAnnual(HIST_MA_CASH);   // calendar years; 1926's is partial and unused
+var HIST_SV = histAnnual(HIST_MA_SV);
+
+/* The portfolio's target mix in year y (0-based), as shares adding to 1:
+   [US stocks, small value, bonds, cash]. Bonds are whatever the others
+   leave. A glide moves the stocks' total in a straight line to stockPctEnd
+   by the final year, small value keeping its share of the stocks and cash
+   its share of the rest. */
+function ddMixAt(o, y){
+  var us = Math.max(0, o.stockPct || 0), sv = Math.max(0, o.svPct || 0), cash = Math.max(0, o.cashPct || 0);
+  var tot = us + sv + cash;
+  if (tot > 100) { us = us * 100 / tot; sv = sv * 100 / tot; cash = cash * 100 / tot; }
+  if (o.stockPctEnd != null) {
+    var s0 = us + sv, yPct = s0 + (o.stockPctEnd - s0) * y / Math.max(1, o.years - 1);
+    var st = Math.min(100, Math.max(0, yPct)), rest0 = 100 - s0, rest = 100 - st;
+    if (s0 > 0) { var k = st / s0; us = us * k; sv = sv * k; } else us = st;
+    cash = rest0 > 0 ? cash * (rest / rest0) : 0;
+  }
+  var wu = us / 100, ws = sv / 100, wc = cash / 100;
+  return [wu, ws, 1 - wu - ws - wc, wc];
+}
+/* The same plan with its stocks' total at a share (glide off), the parts in
+   proportion. */
+function ddWithStocks(o, pct){
+  var us = o.stockPct || 0, sv = o.svPct || 0, cash = o.cashPct || 0, s0 = us + sv, r0 = 100 - s0;
+  return Object.assign({}, o, {stockPct: s0 > 0 ? pct * us / s0 : pct, svPct: s0 > 0 ? pct * sv / s0 : 0,
+    cashPct: r0 > 0 ? (100 - pct) * cash / r0 : 0, stockPctEnd: null});
+}
+/* The first month a test can start: July 1926 at the earliest, where cash
+   and small value begin, and with one start a year, the next January. */
+function ddFirstStart(o, step){
+  var i = Math.max(ddFromIdx(o) * 12, HIST_FF_START);
+  return step === 12 ? Math.ceil(i / 12) * 12 : i;
+}
 
 /* The first start year a test uses, as an index into the annual series. */
 function ddFromIdx(o){
@@ -2792,7 +3043,8 @@ function ddFromIdx(o){
   return Math.max(0, Math.min(n - 1, Math.round((o.fromYear || HIST_START) - HIST_START)));
 }
 /* Every retirement the historical test runs: one starting each January, or
-   with o.monthly one starting every month, from o.fromYear on, each with a
+   with o.monthly one starting every month, from o.fromYear on (July 1926 at
+   the earliest, where cash and small value begin), each with a
    full o.years of data after it. Each is {i (its first month), year, month,
    seq}, seq being what runDrawdown takes: one {stock, bond, infl, cape} per
    year. They don't depend on the plan, so they're kept for reuse. */
@@ -2802,12 +3054,12 @@ function ddWindows(o){
   var key = years + "|" + step + "|" + from;
   if (ddWinMemo[key]) return ddWinMemo[key];
   var M = HIST_M_STOCK.length, out = [];
-  for (var i = from * 12; i + 12 * years <= M; i += step){
+  for (var i = ddFirstStart(o, step); i + 12 * years <= M; i += step){
     var seq = [];
     for (var k = 0; k < years; k++){
       var j = i + 12 * k;
       seq.push({stock: HIST_Y12_STOCK[j], bond: HIST_Y12_BOND[j], infl: HIST_Y12_INFL[j],
-        cape: HIST_M_CAPE[j]});
+        cape: HIST_M_CAPE[j], cash: HIST_Y12_CASH[j], sv: HIST_Y12_SV[j]});
     }
     out.push({i: i, year: HIST_START + Math.floor(i / 12), month: i % 12 + 1, seq: seq});
   }
@@ -2933,20 +3185,21 @@ function ddRmdDivisor(age){
 var ddRiskMemo = {}, ddRiskKeys = [];
 function ddRiskTable(o){
   var step = o.monthly ? 1 : 12, from = ddFromIdx(o);
-  var w = Math.min(100, Math.max(0, o.stockPct)) / 100;
+  var w = ddMixAt(Object.assign({}, o, {stockPctEnd: null}), 0);
   var fee = (o.fee || 0) / 100 + (o.returnDrag || 0) / 100;
-  var key = step + "|" + from + "|" + w + "|" + fee;
+  var key = step + "|" + from + "|" + w.join(",") + "|" + fee;
   if (ddRiskMemo[key]) return ddRiskMemo[key];
   var N = HIST_Y12_STOCK.length, maxL = 100, byL = [], L;
   for (L = 0; L <= maxL; L++) byL.push([]);
-  for (var i = from * 12; i < N; i += step){
+  for (var i = ddFirstStart(o, step); i < N; i += step){
     var sum = 0, D = 1;
     for (L = 1; L <= maxL; L++){
       var j = i + 12 * (L - 1);
       if (j >= N) break;
       sum += D;
       byL[L].push(sum > 0 && isFinite(sum) ? 1 / sum : 0);
-      var g = (1 + (w * HIST_Y12_STOCK[j] + (1 - w) * HIST_Y12_BOND[j]) / 100 - fee) / (1 + HIST_Y12_INFL[j] / 100);
+      var g = (1 + (w[0] * HIST_Y12_STOCK[j] + w[1] * HIST_Y12_SV[j] + w[2] * HIST_Y12_BOND[j] + w[3] * HIST_Y12_CASH[j]) / 100 - fee) /
+        (1 + HIST_Y12_INFL[j] / 100);
       D = g > 0 ? D / g : Infinity;
     }
   }
@@ -3263,9 +3516,12 @@ function runDrawdown(o, seq, ctl, P) {
   P = P || ddPrep(o);
   var S = P.strat, s = ddState(o, P), path = P.path, G = P.G;
   var lite = !!(ctl && ctl.lite), stop = ctl ? ctl.stop : null, line = ctl && ctl.comfort || 0;
-  var stockW = o.stockPct / 100;
-  var bondW = 1 - stockW;
-  var useGlide = o.stockPctEnd != null;
+  var wts = ddMixAt(o, 0), useGlide = o.stockPctEnd != null;
+  // Rebalancing: back to the mix every year (the classic), every N years,
+  // never, or when any holding drifts more than a band from its target.
+  // Every year is a single blended return; the others track each holding.
+  var rb = o.rebal || "year", rbN = Math.max(1, Math.round(o.rebalN || 1)), rbBand = Math.max(0, o.rebalBand || 0) / 100;
+  var fast = rb === "year" || (rb === "every" && rbN <= 1), hold = null;
   var bal = P.initial, cumInfl = 1;
   var rows = lite ? null : [];
   var depletedYear = null, failed = false, invested = P.initial > 0;
@@ -3275,11 +3531,7 @@ function runDrawdown(o, seq, ctl, P) {
     var q = seq[y];
     s.y = y; s.bal = bal; s.cumInfl = cumInfl; s.cape = q.cape;
     s.age = o.retireAge != null ? o.retireAge + y : null;
-    if (useGlide) {
-      var yPct = o.stockPct + (o.stockPctEnd - o.stockPct) * y / Math.max(1, o.years - 1);
-      stockW = Math.min(100, Math.max(0, yPct)) / 100;
-      bondW = 1 - stockW;
-    }
+    if (useGlide) wts = ddMixAt(o, y);
     var infl = q.infl / 100;
     var w = S.rule(s), m = path[y], reg = w * m;
 
@@ -3334,10 +3586,31 @@ function runDrawdown(o, seq, ctl, P) {
 
     var start = bal;
     bal = bal - wd + incomeInvested;
-    var ret = (stockW * q.stock + bondW * q.bond) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
-    var afterFlows = bal;
-    var growth = bal * ret;
-    bal = bal + growth;
+    var afterFlows = bal, ret, growth;
+    if (fast) {
+      ret = (wts[0] * q.stock + wts[1] * (q.sv || 0) + wts[2] * q.bond + wts[3] * (q.cash || 0)) / 100 - (o.fee || 0) / 100 - (o.returnDrag || 0) / 100;
+      growth = bal * ret;
+      bal = bal + growth;
+    } else {
+      // Withdrawals and income come out of, and go into, each holding in
+      // proportion; then back to the mix if a rebalance is due.
+      var cost = (o.fee || 0) / 100 + (o.returnDrag || 0) / 100;
+      var held = hold ? hold[0] + hold[1] + hold[2] + hold[3] : 0;
+      if (!hold || !(held > 0)) hold = wts.map(function (x) { return x * afterFlows; });
+      else {
+        var kf = afterFlows / held;
+        hold = hold.map(function (h) { return h * kf; });
+        var due = rb === "every" ? y % rbN === 0
+          : rb === "band" && afterFlows > 0 && hold.some(function (h, i) { return Math.abs(h / afterFlows - wts[i]) > rbBand + 1e-12; });
+        if (due) hold = wts.map(function (x) { return x * afterFlows; });
+      }
+      var rr = [q.stock, q.sv || 0, q.bond, q.cash || 0];
+      hold = hold.map(function (h, i) { return Math.max(0, h * (1 + rr[i] / 100 - cost)); });
+      bal = hold[0] + hold[1] + hold[2] + hold[3];
+      growth = bal - afterFlows;
+      ret = afterFlows > 0 ? growth / afterFlows
+        : (wts[0] * rr[0] + wts[1] * rr[1] + wts[2] * rr[2] + wts[3] * rr[3]) / 100 - cost;
+    }
     if (bal < 0) bal = 0;
 
     var gIncome = G.income > 0 ? G.income * (G.real ? cumInfl : 1) : 0;
@@ -3420,7 +3693,7 @@ function historicalBacktest(o) {
   var failYears = [];
   fails.forEach(function (r) { if (failYears.indexOf(r.startYear) < 0) failYears.push(r.startYear); });
   return {
-    first: HIST_START + ddFromIdx(o),
+    first: W.length ? W[0].year : HIST_START + ddFromIdx(o),
     monthly: !!o.monthly,
     runs: runs,
     total: runs.length,
@@ -3462,12 +3735,13 @@ function monteCarloDrawdown(o, trials, seed) {
      is refilled per trial rather than allocating a fresh array of objects each
      time. */
   var seq = [];
-  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0, cape: 0 });
+  for (var s = 0; s < o.years; s++) seq.push({ stock: 0, bond: 0, infl: 0, cape: 0, cash: 0, sv: 0 });
   for (var t = 0; t < trials; t++) {
     for (var k = 0; k < o.years; k++) {
-      var i = Math.floor(rng() * n);
+      // 1927 on: 1926 has no full year of cash or small value
+      var i = 1 + Math.floor(rng() * (n - 1));
       seq[k].stock = HIST_STOCK[i]; seq[k].bond = HIST_BOND[i]; seq[k].infl = HIST_INFL[i];
-      seq[k].cape = HIST_M_CAPE[i * 12];
+      seq[k].cape = HIST_M_CAPE[i * 12]; seq[k].cash = HIST_CASH[i]; seq[k].sv = HIST_SV[i];
     }
     runs.push(runDrawdown(o, seq, null, P));
   }
@@ -3537,6 +3811,11 @@ function ddOptsFromState(d){
     initial: v("initial", 0),
     years: Math.min(60, Math.max(1, Math.round(v("years", 30)))),
     stockPct: clamp(v("stock", 60), 0, 100),
+    svPct: clamp(v("sv", 0), 0, 100),
+    cashPct: clamp(v("cash", 0), 0, 100),
+    rebal: d.rebal === "every" || d.rebal === "never" || d.rebal === "band" ? d.rebal : "year",
+    rebalN: Math.max(1, Math.round(v("rebalN", 3))),
+    rebalBand: Math.max(0, v("rebalBand", 5)),
     stockPctEnd: d.stockEnd == null || String(d.stockEnd).trim() === "" ? null : clamp(v("stockEnd", 0), 0, 100),
     fee: v("fee", 0),
     strategy: strategy,
@@ -3800,7 +4079,7 @@ function ddHeatmap(o, T, axis){
   cols = axis === "years" ? [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60] : [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
   var grid = rows.map(function (v) {
     return cols.map(function (c) {
-      var x = Object.assign({}, o, axis === "years" ? {years: c} : {stockPct: c, stockPctEnd: null});
+      var x = axis === "years" ? Object.assign({}, o, {years: c}) : ddWithStocks(o, c);
       x = ddWithDial(x, v);
       var W = ddWindows(x);
       if (!W.length) return null;
@@ -6477,7 +6756,7 @@ function renderDDCompare() {
     {k:"Strategy", fn:function(x){return DD_STRAT_NAMES[x.o.strategy]||x.o.strategy;}},
     {k:"Withdrawal rate", fn:function(x){return x.o.strategy === "vpw"
       ? "VPW at " + (x.o.vpwRate || 0).toFixed(2) + "% real" : x.o.initialPct.toFixed(1)+"%";}},
-    {k:"Stock allocation", fn:function(x){return x.o.stockPct+(x.o.stockPctEnd!=null?" → "+x.o.stockPctEnd:"")+"% stocks";}},
+    {k:"Asset mix", fn:function(x){return ddMixText(x.o);}},
     {k:"Periods tested", fn:function(x){return x.H.total+"";}},
     {k:"Success rate", fn:function(x){return "<span class='"+(x.H.successRate>=0.95?"pos":x.H.successRate>=0.85?"gold":"neg")+"'>"+pctStr(x.H.successRate,1)+"</span>";}},
     {k:"Median ending balance", fn:function(x){return money(x.H.medianEnd);}},
@@ -8882,7 +9161,8 @@ function buildDrawdownSheet(){
 
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
-  inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
+  inputs += row("Asset mix", ddMixText(o));
+  if (o.rebal !== "year") inputs += row("Rebalancing", ddRebalText(o));
   ddPlanRows(o).forEach(r => { inputs += row(r[0], r[1]); });
   if (o.ssAnnual > 0 || o.ssAnnual2 > 0) inputs += row("Social Security", money(o.ssAnnualTotal) + "/yr");
   (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
@@ -11290,6 +11570,11 @@ var DD_STATE = [
   ["years", "ddYears", "num", 30],
   ["stock", "ddStock", "num", 60],
   ["stockEnd", "ddStockEnd", "text", ""],
+  ["sv", "ddSV", "num", 0],
+  ["cash", "ddCash", "num", 0],
+  ["rebal", "ddRebal", "select", "year"],
+  ["rebalN", "ddRebalN", "num", 3],
+  ["rebalBand", "ddRebalBand", "num", 5],
   ["fee", "ddFee", "num", 0],
   ["strategy", "ddStrategy", "select", "fixed"],
   ["rate", "ddRate", "num", 4],
@@ -11350,7 +11635,7 @@ var DD_STATE = [
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
+var DD_LATER = ["sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
   "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
   "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate"];
 const DD_DEFAULTS = {};
@@ -11432,7 +11717,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.926801845f.js";
+var DD_WORKER_URL = "/assets/plan.c57e5ba597.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -11621,10 +11906,10 @@ function renderDrawdown() {
   var P = ddPrep(o);
   var firstW = ddFirstSpend(o, P), r1 = P.initial > 0 ? firstW / P.initial : 0;
   if (strat === "vpw"){
-    var conv = (o.stockPct * 5.0 + (100 - o.stockPct) * 1.9) / 100;
+    var stk = o.stockPct + o.svPct, conv = (stk * 5.0 + (100 - stk) * 1.9) / 100;
     $("ddVpwNote").innerHTML = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the " +
-      "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + o.stockPct + "/" +
-      (100 - o.stockPct) + " mix.";
+      "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + ddN(stk) + "/" +
+      ddN(100 - stk) + " mix.";
   }
   if (strat === "yale")
     $("ddYaleNote").innerHTML = "Each year: <b>" + o.yaleWeight + "%</b> of last year's spending (adjusted for inflation) " +
@@ -11645,7 +11930,7 @@ function renderDrawdown() {
   var note = ddStratNote(o, P, firstW, r1);
   $("ddStratNote").hidden = !note;
   $("ddStratNote").innerHTML = note;
-  $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
+  ddMixSync(o);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
@@ -12240,7 +12525,7 @@ function ddFmtMoneyShort(v){ return fmtAxisMoney(v); }
 function ddPlanLabel(o){
   var u = DD_UI[o.strategy] || {}, D = (DD_STRAT[o.strategy] || {}).dial;
   return (u.card || u.name || o.strategy) + (D ? ", " + ddDialText(o.strategy, o[D.key], o) : "") + ", " +
-    o.stockPct + "% stocks, " + fmtNum(o.years) + " years" + (o.monthly ? ", every month" : "");
+    ddMixText(o) + ", " + fmtNum(o.years) + " years" + (o.monthly ? ", every month" : "");
 }
 
 /* ---- the comfort line ---- */
@@ -12954,7 +13239,7 @@ function ddPaintHeat(){
   var colTitle = h.axis === "years" ? "Years in retirement" : "Stocks";
   var rowName = D.key === "initialPct" ? "Rate" : D.key === "rgTarget" ? "Target" : "Setting";
   var near = function (a, b) { return Math.abs(a - b) < 1e-6; };
-  var curCol = h.axis === "years" ? o.years : (o.stockPctEnd == null ? o.stockPct : null);
+  var curCol = h.axis === "years" ? o.years : (o.stockPctEnd == null ? Math.round(o.stockPct + o.svPct) : null);
   var under = false;
   var cell = function (s) {
     if (s == null) return "<td class='ddh-na'>—</td>";
@@ -13335,6 +13620,85 @@ function ddLineWords(c, unit){
   return money(a) + u + (j > i ? ", easing to " + money(z) + u + " by " + at(j) : ", then " + money(z) + u + " from " + at(i)) +
     (c.slice(j).some(function (v) { return Math.abs(v - z) >= .5; }) ? " and changing again" : "");
 }
+
+/* ---- the asset mix and rebalancing ----
+   The mix lives in hidden fields (US stocks, small value, cash and the
+   glide; bonds are what's left) and is edited in a pop-up that won't save
+   until it adds up to 100%. */
+var DD_ASSETS = [["stock", "ddStock", "US stocks", "The S&P 500, dividends reinvested"],
+  ["sv", "ddSV", "Small-cap value", "Small companies priced low against their book value (Fama-French)"],
+  ["bond", null, "Bonds", "10-year US Treasuries"],
+  ["cash", "ddCash", "Cash", "One-month Treasury bills"]];
+function ddMixParts(o){
+  var b = Math.max(0, 100 - o.stockPct - o.svPct - o.cashPct);
+  return {stock: o.stockPct, sv: o.svPct, bond: b, cash: o.cashPct};
+}
+function ddMixText(o){
+  var m = ddMixParts(o), names = {stock: "US stocks", sv: "small value", bond: "bonds", cash: "cash"};
+  var t = DD_ASSETS.map(function (a) { return m[a[0]] > 0 ? ddN(m[a[0]]) + "% " + names[a[0]] : ""; }).filter(Boolean).join(", ");
+  if (o.stockPctEnd != null) t += ", gliding to " + ddN(o.stockPctEnd) + "% stocks";
+  return t || "Nothing invested";
+}
+function ddRebalText(o){
+  return o.rebal === "every" ? "Every " + o.rebalN + " years" : o.rebal === "band" ? "When off by more than " + ddN(o.rebalBand) + " points"
+    : o.rebal === "never" ? "Never" : "Every year";
+}
+function ddMixSync(o){
+  $("ddMixText").textContent = ddMixText(o);
+  $("ddRebalNWrap").hidden = o.rebal !== "every";
+  $("ddRebalBandWrap").hidden = o.rebal !== "band";
+  var one = [o.stockPct, o.svPct, ddMixParts(o).bond, o.cashPct].filter(function (v) { return v > 0; }).length < 2;
+  $("ddRebalNote").textContent = one ? "With one asset there's nothing to rebalance."
+    : o.rebal === "never" ? "The mix drifts with markets: stocks tend to grow into a bigger share." + (o.stockPctEnd != null ? " The glide has no effect without rebalancing." : "")
+    : o.rebal === "every" ? "Between rebalances the mix drifts with markets." + (o.stockPctEnd != null ? " The glide takes effect at each rebalance." : "")
+    : o.rebal === "band" ? "Checked each year, after the year's withdrawal." : "";
+}
+function ddMixForm(){
+  var o = readDD(), m = ddMixParts(o);
+  var ov = document.createElement("div");
+  ov.className = "popup-overlay";
+  ov.innerHTML = "<div class='popup wide ddmixpop'><h3>Asset mix</h3>" +
+    "<div class='formhint'>How the portfolio is split at retirement. Returns are each asset's actual history from July 1926.</div>" +
+    DD_ASSETS.map(function (a) {
+      return "<div class='ddmixrow'><div><b>" + a[2] + "</b><small>" + a[3] + "</small></div>" +
+        "<div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-mix='" + a[0] +
+        "' value='" + ddN(m[a[0]]) + "' aria-label='" + a[2] + "'><span class='affix'>%</span></div></div>";
+    }).join("") +
+    "<div class='ddmixtot' id='ddMixTot'></div>" +
+    "<div class='formfield'><label>Glide stocks to <span class='opt'>optional</span></label><div class='inputwrap'>" +
+      "<input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg id='ddMixGlide' value='" +
+      (o.stockPctEnd != null ? ddN(o.stockPctEnd) : "") + "' aria-label='Stocks at the end'><span class='affix'>% by the last year</span></div>" +
+      "<div class='formhint'>Moves the stocks' total in a straight line, small value keeping its share. Leave blank to hold the mix.</div></div>" +
+    "<div class='formactions'><button type='button' class='btn' data-mixcancel>Cancel</button>" +
+    "<button type='button' class='btn primary' data-mixok>Use this mix</button></div></div>";
+  document.body.appendChild(ov);
+  initFields(ov);
+  var vals = function () { var r = {}; ov.querySelectorAll("[data-mix]").forEach(function (el) { r[el.getAttribute("data-mix")] = parseNum(el.value); }); return r; };
+  var check = function () {
+    var v = vals(), t = v.stock + v.sv + v.bond + v.cash, ok = Math.abs(t - 100) < .01;
+    $("ddMixTot").innerHTML = "Total: <b class='" + (ok ? "pos" : "neg") + "'>" + ddN(t) + "%</b>" +
+      (ok ? "" : " — it needs to add up to 100%");
+    ov.querySelector("[data-mixok]").disabled = !ok;
+    return ok;
+  };
+  ov.addEventListener("input", check);
+  check();
+  var shut = function () { if (ov._modalDone) ov._modalDone(); ov.remove(); };
+  ov.addEventListener("click", function (e) {
+    if (e.target === ov || (e.target.closest && e.target.closest("[data-mixcancel]"))) { shut(); return; }
+    if (e.target.closest && e.target.closest("[data-mixok]") && check()) {
+      var v = vals(), g = $("ddMixGlide").value.trim();
+      $("ddStock").value = String(v.stock); $("ddSV").value = String(v.sv); $("ddCash").value = String(v.cash);
+      $("ddStockEnd").value = g === "" ? "" : String(Math.min(100, parseNum(g)));
+      shut();
+      renderDrawdown();
+    }
+  });
+  wireModal(ov, shut);
+  var first = ov.querySelector("[data-mix]");
+  if (first) first.focus();
+}
+$("ddMixBtn").addEventListener("click", ddMixForm);
 /* ---------- glossary tooltips ----------
    Small "?" markers next to jargon. Hover on a mouse, tap on a touch screen. */
 const GLOSS = {
@@ -13464,7 +13828,8 @@ const GLOSS = {
   ddvalue: "Shiller's CAPE (cyclically adjusted price-to-earnings): the S&P 500's price over ten years of its earnings, after inflation. A high reading means stocks were expensive. Each dot is one start: its CAPE, and the most it could have started with. Expensive starts have tended to allow less, but the link is loose.",
   ddstarts: "When each tested retirement begins. Each January is the classic way (Bengen and the Trinity study tested a retirement starting every January). Every month tests twelve times as many, so the result no longer hangs on markets happening to turn at a year's end: retiring in September 1929, at the peak, left less than half of what retiring that January did. Each year still runs twelve months from the start.",
   ddfrom: "The first year a tested retirement can begin. The default, 1926, uses the whole record. A later start, like 1950, leaves out the Depression and tests a world more like today's, but on fewer retirements, and those overlap more.",
-  ddstocks: "How the portfolio is split between stocks and bonds during retirement. Stocks have historically grown faster but swing harder in downturns, which matters more once you're withdrawing instead of contributing. 60/40 is a common conservative-to-moderate retirement mix.",
+  ddstocks: "How the portfolio is split, among US stocks (the S&P 500), small-cap value stocks, 10-year Treasuries and cash (one-month Treasury bills), each with its actual returns since July 1926. Stocks have grown fastest but swing hardest, which matters more once you're withdrawing. Small value has beaten the S&P over the century, with long stretches behind it. Cash barely beats inflation but doesn't fall. Click to change the mix; it has to add up to 100%.",
+  ddrebal: "Selling what's grown and buying what's lagged, to get back to your mix. Every year is the classic assumption (Bengen and the Trinity study). Every few years lets it drift in between. When it drifts rebalances only once a holding is more than a set number of points off its target, checked each year. Never lets the mix go where markets take it: usually toward more stocks, which raises both growth and risk. Withdrawals always come out of each holding in proportion.",
   yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is: higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
   customexpense: "A future cost on top of your regular spending, such as a car, a wedding, or long-term care. It's added directly to whatever the withdrawal strategy already decided to spend that year, independent of the strategy's own rules; a guardrail cut or raise still happens, then the expense is added on top.",
@@ -16205,7 +16570,7 @@ function buildCardSVG(){
     title = "Will my money last?";
     bigLabel = "Success rate, tested since " + HIST_START;
     big = pctStr(Hb.successRate, 0);
-    sub = fmtNum(od.years) + " year retirement \u00b7 " + od.stockPct + "% stocks / " + (100 - od.stockPct) + "% bonds";
+    sub = fmtNum(od.years) + " year retirement \u00b7 " + ddMixText(od);
     rows = [
       ["Withdrawal strategy", stratName],
       ["Year one's withdrawal", money(ddFirstSpend(od)) + " (" + pctStr(ddFirstSpend(od) / Math.max(1, od.initial), 1) + ")"],
@@ -20151,7 +20516,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.926801845f.js";
+var OP_WORKER_URL = "/assets/plan.c57e5ba597.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

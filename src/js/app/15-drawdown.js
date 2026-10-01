@@ -289,6 +289,11 @@ var DD_STATE = [
   ["years", "ddYears", "num", 30],
   ["stock", "ddStock", "num", 60],
   ["stockEnd", "ddStockEnd", "text", ""],
+  ["sv", "ddSV", "num", 0],
+  ["cash", "ddCash", "num", 0],
+  ["rebal", "ddRebal", "select", "year"],
+  ["rebalN", "ddRebalN", "num", 3],
+  ["rebalBand", "ddRebalBand", "num", 5],
   ["fee", "ddFee", "num", 0],
   ["strategy", "ddStrategy", "select", "fixed"],
   ["rate", "ddRate", "num", 4],
@@ -349,7 +354,7 @@ var DD_STATE = [
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
+var DD_LATER = ["sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
   "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
   "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate"];
 const DD_DEFAULTS = {};
@@ -620,10 +625,10 @@ function renderDrawdown() {
   var P = ddPrep(o);
   var firstW = ddFirstSpend(o, P), r1 = P.initial > 0 ? firstW / P.initial : 0;
   if (strat === "vpw"){
-    var conv = (o.stockPct * 5.0 + (100 - o.stockPct) * 1.9) / 100;
+    var stk = o.stockPct + o.svPct, conv = (stk * 5.0 + (100 - stk) * 1.9) / 100;
     $("ddVpwNote").innerHTML = "Year 1 takes <b>" + pctStr(r1, 2) + "</b>, rising each year as the " +
-      "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + o.stockPct + "/" +
-      (100 - o.stockPct) + " mix.";
+      "horizon shortens. Bogleheads suggests " + pctStr(conv / 100, 2) + " for a " + ddN(stk) + "/" +
+      ddN(100 - stk) + " mix.";
   }
   if (strat === "yale")
     $("ddYaleNote").innerHTML = "Each year: <b>" + o.yaleWeight + "%</b> of last year's spending (adjusted for inflation) " +
@@ -644,7 +649,7 @@ function renderDrawdown() {
   var note = ddStratNote(o, P, firstW, r1);
   $("ddStratNote").hidden = !note;
   $("ddStratNote").innerHTML = note;
-  $("ddMixNote").textContent = o.stockPct + "% stocks / " + (100 - o.stockPct) + "% bonds";
+  ddMixSync(o);
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0

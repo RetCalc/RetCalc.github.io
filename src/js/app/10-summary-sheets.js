@@ -576,7 +576,8 @@ function buildDrawdownSheet(){
 
   let inputs = row("Starting portfolio", money(o.initial));
   inputs += row("Years in retirement", fmtNum(o.years));
-  inputs += row("Stock / bond mix", o.stockPct + "% / " + (100 - o.stockPct) + "%");
+  inputs += row("Asset mix", ddMixText(o));
+  if (o.rebal !== "year") inputs += row("Rebalancing", ddRebalText(o));
   ddPlanRows(o).forEach(r => { inputs += row(r[0], r[1]); });
   if (o.ssAnnual > 0 || o.ssAnnual2 > 0) inputs += row("Social Security", money(o.ssAnnualTotal) + "/yr");
   (o.incomeItems || []).filter(it => it.on !== false).forEach(it => inputs += row(it.name, describeItem(it)));
