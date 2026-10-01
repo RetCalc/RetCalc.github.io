@@ -432,23 +432,46 @@ function ddPaintShow(){
     "Use sets the strategy and the setting found" + (T.crit === "comfort" ? ", with the comfort line as its minimum spending" : "") + ".";
   ddPaintSpot();
 }
+/* The start drawn: one of the three hard ones (ddSpot) or, picked from the
+   list, any January the record can run to the end (ddSpotPick). */
+var ddSpotPick = null;
 function ddPaintSpot(){
   if (!ddShow) return;
-  var res = ddShow.res, spots = res.spots;
-  var btns = $("segDDSpot").querySelectorAll("button");
-  btns.forEach(function (b, i) { b.hidden = i >= spots.length; if (spots[i] != null) b.textContent = spots[i]; b.classList.toggle("on", i === ddSpot); });
+  var res = ddShow.res, spots = res.spots, o = ddShow.o, T = ddShow.T;
+  var W = ddWindows(o).filter(function (w) { return w.month === 1; });
+  var sel = $("ddSpotYear"), want = W.map(function (w) { return w.year; }).join(",");
+  if (sel.getAttribute("data-built") !== want) {
+    sel.innerHTML = "<option value=''>Any year\u2026</option>" + W.map(function (w) { return "<option>" + w.year + "</option>"; }).join("");
+    sel.setAttribute("data-built", want);
+  }
+  if (ddSpotPick != null && !W.some(function (w) { return w.year === ddSpotPick; })) ddSpotPick = null;
   if (ddSpot >= spots.length) ddSpot = 0;
-  if (!spots.length) { $("ddSpotPanel").classList.add("ddempty"); return; }
-  $("ddSpotPanel").classList.remove("ddempty");
-  var series = [], k = 0;
-  res.list.forEach(function (x) {
-    if (!ddShowCharted[x.id] || !x.spots[ddSpot]) return;
-    series.push({name: DD_UI[x.id].short, color: x.id === ddShow.o.strategy ? "#e9b872" : DD_SPOT_COLORS[1 + (k++ % (DD_SPOT_COLORS.length - 1))],
-      pts: x.spots[ddSpot].map(function (v, y) { return {year: y + 1, value: v}; }), width: x.id === ddShow.o.strategy ? 2.8 : 2});
+  var year = ddSpotPick != null ? ddSpotPick : spots[ddSpot];
+  sel.value = ddSpotPick != null ? String(ddSpotPick) : "";
+  $("segDDSpot").querySelectorAll("button").forEach(function (b, i) {
+    b.hidden = i >= spots.length;
+    if (spots[i] != null) b.textContent = spots[i];
+    b.classList.toggle("on", ddSpotPick == null && i === ddSpot);
   });
-  if (ddShow.T.crit === "comfort") series.push({name: "Comfort line", color: "#8b97ad", dash: "5 5", width: 1.4,
-    pts: ddShow.res.list.length ? ddShow.res.list[0].spots[ddSpot].map(function (v, y) { return {year: y + 1, value: ddLineAt(ddShow.T.comfort, y)}; }) : []});
-  setH2Text($("ddSpotTitle"), "Retiring in " + spots[ddSpot]);
+  var win = W.filter(function (w) { return w.year === year; })[0];
+  if (!win) { $("ddSpotPanel").classList.add("ddempty"); return; }
+  $("ddSpotPanel").classList.remove("ddempty");
+  // each charted strategy at the setting it was tuned to, through this start
+  var series = [], k = 0, base = ddForTarget(Object.assign({}, o, {path: "flat"}), T);
+  res.list.forEach(function (x) {
+    if (!ddShowCharted[x.id]) return;
+    var xo = ddForTarget(Object.assign({}, o, {strategy: x.id, path: "flat"}), T);
+    if (x.tuned && x.dial != null) xo = ddWithDial(xo, x.dial);
+    var vals = runDrawdown(xo, win.seq).rows.map(function (r) { return r.realReg; });
+    series.push({name: DD_UI[x.id].short, color: x.id === o.strategy ? "#e9b872" : DD_SPOT_COLORS[1 + (k++ % (DD_SPOT_COLORS.length - 1))],
+      pts: vals.map(function (v, y) { return {year: y + 1, value: v}; }), width: x.id === o.strategy ? 2.8 : 2});
+  });
+  if (T.crit === "comfort") {
+    var cl = [];
+    for (var y = 0; y < o.years; y++) cl.push({year: y + 1, value: ddLineAt(T.comfort, y)});
+    series.push({name: "Comfort line", color: "#8b97ad", dash: "5 5", width: 1.4, pts: cl});
+  }
+  setH2Text($("ddSpotTitle"), "Retiring in " + year);
   ddSpotPts = paintMulti("chartDDSP", series, ddShow.o.years, {xFmt: function (y) { return ddRetireAge != null ? ddAgeVal(y) : y; }});
   $("legendDDSP").innerHTML = series.map(function (s) { return swatch(s.color, escapeHtml(s.name)); }).join("");
   $("ddSpotNote").textContent = series.length > 1 ? "Each charted strategy's spending, year by year, in today's dollars, at the setting it was tuned to above. Tick Chart in the table to add or remove one."
@@ -499,6 +522,12 @@ $("segDDSpot").addEventListener("click", function (e) {
   var b = e.target.closest ? e.target.closest("button[data-spot]") : null;
   if (!b) return;
   ddSpot = parseInt(b.getAttribute("data-spot"), 10) || 0;
+  ddSpotPick = null;
+  ddPaintSpot();
+});
+$("ddSpotYear").addEventListener("change", function () {
+  var v = parseInt($("ddSpotYear").value, 10);
+  ddSpotPick = isFinite(v) ? v : null;
   ddPaintSpot();
 });
 
