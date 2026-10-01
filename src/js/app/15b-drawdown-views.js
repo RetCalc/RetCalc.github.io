@@ -202,9 +202,15 @@ function ddPaintDist(src){
   var sum = 0, sq = 0, zeros = 0;
   vals.forEach(function (v) { sum += v; sq += v * v; if (v < .5) zeros++; });
   var avg = sum / n, sd = Math.sqrt(Math.max(0, sq / n - avg * avg));
-  var lo = vals[0], hi = vals[n - 1], bins = 24, w = (hi - lo) / bins || 1, counts = [];
+  // Bins of a round width (1, 2, 2.5 or 5 times a power of ten, about 24 of
+  // them) starting on a multiple of it, so a bar reads $5,750,000 to
+  // $6,000,000 rather than wherever the smallest value happened to fall.
+  var hi = vals[n - 1], raw = (hi - vals[0]) / 24 || Math.max(1, Math.abs(hi) * .01);
+  var mag = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / mag;
+  var w = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag;
+  var lo = Math.floor(vals[0] / w) * w, bins = Math.max(1, Math.floor((hi - lo) / w) + 1), counts = [];
   for (var b = 0; b < bins; b++) counts.push(0);
-  vals.forEach(function (v) { counts[Math.min(bins - 1, Math.floor((v - lo) / w))]++; });
+  vals.forEach(function (v) { counts[Math.min(bins - 1, Math.floor((v - lo) / w + 1e-9))]++; });
   ddDistPts = ddBars("chartDDH", counts.map(function (c, i) { return {lo: lo + i * w, hi: lo + (i + 1) * w, n: c}; }),
     ddDistKind === "spend" && ddLineAt(src.comfort, ddDistAt - 1) > 0 ? ddLineAt(src.comfort, ddDistAt - 1) : null);
   var stat = function (k, v) { return "<div><span>" + k + "</span><b>" + v + "</b></div>"; };
@@ -213,7 +219,7 @@ function ddPaintDist(src){
   var lnow = ddLineAt(src.comfort, ddDistAt - 1);
   if (!bal && lnow > 0) vals.forEach(function (v) { if (v < lnow - .5) below++; });
   $("ddDistStats").innerHTML = stat("Median", money(vals[Math.floor(n / 2)])) + stat("Average", money(avg)) +
-    stat("Spread (std. dev.)", money(sd)) + stat("Largest", money(hi)) + stat("Smallest", money(lo)) +
+    stat("Spread (std. dev.)", money(sd)) + stat("Largest", money(hi)) + stat("Smallest", money(vals[0])) +
     (bal ? stat("Empty", zeros.toLocaleString() + " (" + pctStr(zeros / n, 1) + ")")
          : stat("Under the comfort line", below.toLocaleString() + " (" + pctStr(below / n, 1) + ")"));
   setH2Text($("ddDistTitle"), bal ? "Spread of ending balances" : "Spread of spending");
