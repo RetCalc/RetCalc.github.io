@@ -3355,6 +3355,15 @@ function runDrawdown(o, seq, ctl, P) {
   return out;
 }
 
+/* What a start's years averaged, compounded: stocks, bonds and inflation, as
+   yearly rates. Kept on the window, which is reused. */
+function ddWindowAvg(w){
+  if (w.avg) return w.avg;
+  var gs = 1, gb = 1, gi = 1, n = w.seq.length;
+  w.seq.forEach(function (q) { gs *= 1 + q.stock / 100; gb *= 1 + q.bond / 100; gi *= 1 + q.infl / 100; });
+  return (w.avg = {stock: Math.pow(gs, 1 / n) - 1, bond: Math.pow(gb, 1 / n) - 1, infl: Math.pow(gi, 1 / n) - 1});
+}
+
 /* Every historical start that has enough data to run the full retirement:
    the sequence-of-returns test. 1966 and 1929 fail plans that a random-draw
    simulation would call safe. With o.monthly, a retirement starts every
@@ -3363,8 +3372,9 @@ function runDrawdown(o, seq, ctl, P) {
 function historicalBacktest(o) {
   var W = ddWindows(o), P = ddPrep(o), runs = [], k;
   for (k = 0; k < W.length; k++) {
-    var r = runDrawdown(o, W[k].seq, null, P);
+    var r = runDrawdown(o, W[k].seq, null, P), a = ddWindowAvg(W[k]);
     r.startYear = W[k].year; r.startMonth = W[k].month; r.startIdx = W[k].i; r.cape0 = W[k].seq[0].cape;
+    r.avgStock = a.stock; r.avgBond = a.bond; r.avgInfl = a.infl;
     runs.push(r);
   }
   var survived = runs.filter(function (r) { return !r.depleted; }).length;
@@ -5567,7 +5577,7 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
     cp.appendChild(svgEl("rect", {x:L, y:T, width:pw, height:ph}));
     defs.appendChild(cp);
     const tg = svgEl("g", {"clip-path":"url(#" + cid + ")", fill:"none", stroke:"#7d9fd6",
-      "stroke-opacity":o.traces.lines.length > 60 ? .13 : .18, "stroke-width":.9 * sw,
+      "stroke-opacity":o.traces.lines.length > 400 ? .055 : o.traces.lines.length > 60 ? .13 : .18, "stroke-width":.9 * sw,
       "stroke-linejoin":"round", class:"traces"});
     const xs = o.traces.xs;
     o.traces.lines.forEach(ln => {
@@ -10976,6 +10986,10 @@ function ddSortValue(r, col) {
     case "end": return r.endReal;
     case "med": return r.medRealSpend;
     case "low": return r.minRealSpend;
+    case "stock": return r.avgStock;
+    case "bond": return r.avgBond;
+    case "infl": return r.avgInfl;
+    case "cape": return r.cape0;
     default: return r.startIdx;
   }
 }
@@ -11196,13 +11210,15 @@ var DD_STATE = [
   ["ssAmount", "ddSSAmount", "money", 33000],
   ["ssAmount2", "ddSSAmount2", "money", 33000],
   ["ssDelay", "ddSSDelay", "num", 0],
-  ["retireAge", "ddRetireAge", "text", ""]
+  ["retireAge", "ddRetireAge", "text", ""],
+  ["starts", "ddStarts", "select", "year"],
+  ["fromYear", "ddFromYear", "num", 1926]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs"];
+var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -11267,7 +11283,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.618fcd9528.js";
+var DD_WORKER_URL = "/assets/plan.93942ee9ea.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -11534,10 +11550,11 @@ function ddPaintHist(o, d, H){
     return;
   }
   var lastStart = H.runs[H.runs.length - 1];
-  $("ddPeriods").textContent = H.total + " start years";
+  $("ddPeriods").textContent = H.total + (H.monthly ? " start months" : " start years");
   $("ddFromNote").innerHTML = "<b>" + H.total + "</b> periods, " +
-    H.first + "–" + lastStart.startYear;
-  $("ddBadge").textContent = H.first + "–" + (HIST_START + HIST_STOCK.length - 1);
+    H.first + "–" + ddStartLabel(lastStart, H.monthly);
+  $("ddBadge").textContent = H.first + "–" + (HIST_START + HIST_STOCK.length - 1) + (H.monthly ? " · monthly" : "");
+  setH2Text($("ddYearsTitle"), H.monthly ? "How each starting month fared" : "How each starting year fared");
   setBig("ddSuccess", pctStr(H.successRate, 1));
   $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
   $("ddSuccessNote").textContent = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
@@ -11585,7 +11602,9 @@ function ddPaintHist(o, d, H){
       "' data-start='" + r.startIdx + "' tabindex='0'><td>" + ddStartLabel(r, H.monthly) + "</td><td class='" +
       (r.depleted ? "neg" : "pos") + "'>" +
       ddOutcomeText(r) + "</td><td>" +
-      money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td></tr>";
+      money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td><td>" +
+      pctStr(r.avgStock, 1) + "</td><td>" + pctStr(r.avgBond, 1) + "</td><td>" + pctStr(r.avgInfl, 1) + "</td><td>" +
+      r.cape0.toFixed(1) + "</td></tr>";
   }).join("");
   $("ddStartTable").querySelectorAll("th.sortcol").forEach(function (th) {
     th.classList.remove("sort-asc", "sort-desc");
@@ -12085,6 +12104,8 @@ const GLOSS = {
   stsplit: "Where this stage's contribution goes. Whatever isn't traditional or Roth goes to the taxable brokerage account.",
   acbasis: "The part of the brokerage balance that is money you put in, not growth; your statement lists it. Only the growth is taxed when you sell, at long-term capital gain rates. Leave it blank to treat the whole balance as money you put in.",
   actax: "Worked out from your first year of withdrawals, not typed in. Your withdrawal is taken from each account in proportion to its balance: traditional dollars are taxed as ordinary income, the growth in the brokerage account at capital gain rates, and Roth dollars not at all. Uses 2026 brackets and the standard deduction, in today's dollars, and leaves out Social Security and any other income, which would raise it.",
+  ddstarts: "When each tested retirement begins. Each January is the classic way (Bengen and the Trinity study tested a retirement starting every January). Every month tests twelve times as many, so the result no longer hangs on markets happening to turn at a year's end: retiring in September 1929, at the peak, left less than half of what retiring that January did. Each year still runs twelve months from the start.",
+  ddfrom: "The first year a tested retirement can begin. The default, 1926, uses the whole record. A later start, like 1950, leaves out the Depression and tests a world more like today's, but on fewer retirements, and those overlap more.",
   ddstocks: "How the portfolio is split between stocks and bonds during retirement. Stocks have historically grown faster but swing harder in downturns, which matters more once you're withdrawing instead of contributing. 60/40 is a common conservative-to-moderate retirement mix.",
   yale: "Named for the spending rule Yale's endowment uses. Each year's spending is a blend: mostly last year's amount adjusted for inflation, plus a smaller share based on a target percentage of the current portfolio. The weight on last year controls how smooth spending is: higher means slower to react to markets; 70/30 is the commonly cited version, though Yale's own current policy uses 80/20 with some extra rules on top.",
   customincome: "Any income beyond Social Security, such as a pension, rental property, part-time work, or an inheritance. It covers part of what your withdrawal strategy calls for that year, the same way Social Security does. If it covers more than the plan needs, nothing is withdrawn and the extra is invested into the portfolio instead of going to waste.",
@@ -18698,7 +18719,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.618fcd9528.js";
+var OP_WORKER_URL = "/assets/plan.93942ee9ea.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

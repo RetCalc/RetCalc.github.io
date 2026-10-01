@@ -45,6 +45,10 @@ function ddSortValue(r, col) {
     case "end": return r.endReal;
     case "med": return r.medRealSpend;
     case "low": return r.minRealSpend;
+    case "stock": return r.avgStock;
+    case "bond": return r.avgBond;
+    case "infl": return r.avgInfl;
+    case "cape": return r.cape0;
     default: return r.startIdx;
   }
 }
@@ -265,13 +269,15 @@ var DD_STATE = [
   ["ssAmount", "ddSSAmount", "money", 33000],
   ["ssAmount2", "ddSSAmount2", "money", 33000],
   ["ssDelay", "ddSSDelay", "num", 0],
-  ["retireAge", "ddRetireAge", "text", ""]
+  ["retireAge", "ddRetireAge", "text", ""],
+  ["starts", "ddStarts", "select", "year"],
+  ["fromYear", "ddFromYear", "num", 1926]
 ];
 /* Settings added after scenarios were first saved. Loading a full set of
    inputs that doesn't have one (a scenario saved before it, or a hand-off
    from another tool) sets it to its default, rather than keeping whatever
    was on screen. */
-var DD_LATER = ["gkFinal", "gkFinalYrs"];
+var DD_LATER = ["gkFinal", "gkFinalYrs", "starts", "fromYear"];
 const DD_DEFAULTS = {};
 DD_STATE.forEach(function (f) { DD_DEFAULTS[f[0]] = f[3]; });
 function ddFieldRead(f){
@@ -603,10 +609,11 @@ function ddPaintHist(o, d, H){
     return;
   }
   var lastStart = H.runs[H.runs.length - 1];
-  $("ddPeriods").textContent = H.total + " start years";
+  $("ddPeriods").textContent = H.total + (H.monthly ? " start months" : " start years");
   $("ddFromNote").innerHTML = "<b>" + H.total + "</b> periods, " +
-    H.first + "–" + lastStart.startYear;
-  $("ddBadge").textContent = H.first + "–" + (HIST_START + HIST_STOCK.length - 1);
+    H.first + "–" + ddStartLabel(lastStart, H.monthly);
+  $("ddBadge").textContent = H.first + "–" + (HIST_START + HIST_STOCK.length - 1) + (H.monthly ? " · monthly" : "");
+  setH2Text($("ddYearsTitle"), H.monthly ? "How each starting month fared" : "How each starting year fared");
   setBig("ddSuccess", pctStr(H.successRate, 1));
   $("ddSuccess").className = "v " + (H.successRate >= 0.95 ? "pos" : H.successRate >= 0.85 ? "gold" : "neg");
   $("ddSuccessNote").textContent = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
@@ -654,7 +661,9 @@ function ddPaintHist(o, d, H){
       "' data-start='" + r.startIdx + "' tabindex='0'><td>" + ddStartLabel(r, H.monthly) + "</td><td class='" +
       (r.depleted ? "neg" : "pos") + "'>" +
       ddOutcomeText(r) + "</td><td>" +
-      money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td></tr>";
+      money(r.endReal) + "</td><td>" + money(r.medRealSpend) + "</td><td>" + money(r.minRealSpend) + "</td><td>" +
+      pctStr(r.avgStock, 1) + "</td><td>" + pctStr(r.avgBond, 1) + "</td><td>" + pctStr(r.avgInfl, 1) + "</td><td>" +
+      r.cape0.toFixed(1) + "</td></tr>";
   }).join("");
   $("ddStartTable").querySelectorAll("th.sortcol").forEach(function (th) {
     th.classList.remove("sort-asc", "sort-desc");

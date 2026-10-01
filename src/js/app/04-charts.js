@@ -130,7 +130,7 @@ function paintChart(svgId, pts, maxX, mode, stageMarks, xOffset, opt){
     cp.appendChild(svgEl("rect", {x:L, y:T, width:pw, height:ph}));
     defs.appendChild(cp);
     const tg = svgEl("g", {"clip-path":"url(#" + cid + ")", fill:"none", stroke:"#7d9fd6",
-      "stroke-opacity":o.traces.lines.length > 60 ? .13 : .18, "stroke-width":.9 * sw,
+      "stroke-opacity":o.traces.lines.length > 400 ? .055 : o.traces.lines.length > 60 ? .13 : .18, "stroke-width":.9 * sw,
       "stroke-linejoin":"round", class:"traces"});
     const xs = o.traces.xs;
     o.traces.lines.forEach(ln => {

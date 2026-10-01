@@ -605,6 +605,15 @@ function runDrawdown(o, seq, ctl, P) {
   return out;
 }
 
+/* What a start's years averaged, compounded: stocks, bonds and inflation, as
+   yearly rates. Kept on the window, which is reused. */
+function ddWindowAvg(w){
+  if (w.avg) return w.avg;
+  var gs = 1, gb = 1, gi = 1, n = w.seq.length;
+  w.seq.forEach(function (q) { gs *= 1 + q.stock / 100; gb *= 1 + q.bond / 100; gi *= 1 + q.infl / 100; });
+  return (w.avg = {stock: Math.pow(gs, 1 / n) - 1, bond: Math.pow(gb, 1 / n) - 1, infl: Math.pow(gi, 1 / n) - 1});
+}
+
 /* Every historical start that has enough data to run the full retirement:
    the sequence-of-returns test. 1966 and 1929 fail plans that a random-draw
    simulation would call safe. With o.monthly, a retirement starts every
@@ -613,8 +622,9 @@ function runDrawdown(o, seq, ctl, P) {
 function historicalBacktest(o) {
   var W = ddWindows(o), P = ddPrep(o), runs = [], k;
   for (k = 0; k < W.length; k++) {
-    var r = runDrawdown(o, W[k].seq, null, P);
+    var r = runDrawdown(o, W[k].seq, null, P), a = ddWindowAvg(W[k]);
     r.startYear = W[k].year; r.startMonth = W[k].month; r.startIdx = W[k].i; r.cape0 = W[k].seq[0].cape;
+    r.avgStock = a.stock; r.avgBond = a.bond; r.avgInfl = a.infl;
     runs.push(r);
   }
   var survived = runs.filter(function (r) { return !r.depleted; }).length;
