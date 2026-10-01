@@ -217,6 +217,8 @@ if (location.hash && (location.hash.indexOf("#p=") === 0 || location.hash.indexO
 if (!fromLink) hhApply(hhLoad());
 const pathRoute = fromLink ? null : routeFromPath(location.pathname);
 if (pathRoute) toolSub = pathRoute.s || "picker";
+// A strategy's landing page opens the simulator set up for it.
+if (pathRoute) ddLanding(pathSeg(location.pathname));
 showTab(fromLink ? linkTab : (pathRoute ? pathRoute.t : "simple"));
 renderAll();
 renderSeries();

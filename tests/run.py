@@ -26,7 +26,7 @@ FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "collegePlanCalc", "collegeWal
              "gdRating"]
 CONSTANTS = ["PMI_DEFAULT", "BR_SLT",
              "DEFAULTS", "BASIC_INFL", "GD_FACTORS", "RC_DEFAULTS",
-             "DEBT_DEFAULTS", "RISK_LEVELS"]
+             "DEBT_DEFAULTS", "RISK_LEVELS", "DD_LANDING"]
 ARTICLES = os.path.join(ROOT, "src", "main", "26-about-this-tool.html")
 
 

@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Free Financial Planning Calculators | RetCalc</title>
-<meta name="description" content="Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt.">
-<link rel="canonical" href="https://retcalc.app/tools">
+<title>Guyton-Klinger Guardrails Calculator: Spend More, Cut When Needed | RetCalc</title>
+<meta name="description" content="Test Guyton-Klinger guardrails against every retirement since 1926: how much more you can start spending, how often and how deep the cuts came, and the leanest year in the worst start.">
+<link rel="canonical" href="https://retcalc.app/guardrails">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Free Financial Planning Calculators | RetCalc">
-<meta property="og:description" content="Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt.">
-<meta property="og:url" content="https://retcalc.app/tools">
-<meta property="og:image" content="https://retcalc.app/og/tools.jpg">
+<meta property="og:title" content="Guyton-Klinger Guardrails Calculator: Spend More, Cut When Needed | RetCalc">
+<meta property="og:description" content="Test Guyton-Klinger guardrails against every retirement since 1926: how much more you can start spending, how often and how deep the cuts came, and the leanest year in the worst start.">
+<meta property="og:url" content="https://retcalc.app/guardrails">
+<meta property="og:image" content="https://retcalc.app/og/guardrails.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Tools: Drawdown, taxes, Roth conversions, healthcare, FIRE, budgets and more.">
+<meta property="og:image:alt" content="Guardrails Calculator: Guyton-Klinger guardrails: start higher, cut when markets fall. How deep did the cuts go?">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/tools.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Free Financial Planning Calculators", "url": "https://retcalc.app/tools", "description": "Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Are these calculators free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, all of them, with no sign-up, no ads and no limits."}}, {"@type": "Question", "name": "Where should I start?", "acceptedAnswer": {"@type": "Answer", "text": "If you're not sure where you stand, the readiness guide asks about your money one question at a time and sends you to the tool that answers what you don't know."}}, {"@type": "Question", "name": "Is my information saved?", "acceptedAnswer": {"@type": "Answer", "text": "Only in your own browser, if you save a scenario or your household. Nothing is sent to a server."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/guardrails.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Guyton-Klinger Guardrails Calculator: Spend More, Cut When Needed", "url": "https://retcalc.app/guardrails", "description": "Test Guyton-Klinger guardrails against every retirement since 1926: how much more you can start spending, how often and how deep the cuts came, and the leanest year in the worst start.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How much more can guardrails spend than the 4% rule?", "acceptedAnswer": {"@type": "Answer", "text": "With a 60/40 mix over 30 years, starting at 5% lasted in every historical retirement, against 4% for a fixed withdrawal that never cuts. The price is spending that can fall a long way in a bad decade."}}, {"@type": "Question", "name": "Can guardrails run out of money?", "acceptedAnswer": {"@type": "Answer", "text": "Rarely, because spending keeps falling as the portfolio does. That's why \"the money lasted\" is the wrong test for them: the useful question is how low spending went, which the simulator's scorecard and worst-year figures answer."}}, {"@type": "Question", "name": "What are risk-based guardrails?", "acceptedAnswer": {"@type": "Answer", "text": "A newer version that moves spending when history's odds of the plan lasting leave a band, say 70% to 99%, then resets it to a target like 90%. It tends to make fewer, larger adjustments. It's one of the strategies in the simulator."}}, {"@type": "Question", "name": "Should I skip inflation raises after a bad year?", "acceptedAnswer": {"@type": "Answer", "text": "It's one of Guyton and Klinger's rules and makes spending a little more conservative. Turn it on under Advanced to see the difference on your plan."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -287,7 +287,7 @@ window.onerror = function(msg){
 <main id="main">
 <!-- The page's main heading. A tool's page uses the tool's own title in its
      header instead (#toolCrumb); the build fills both in for each address. -->
-<h1 class="srlive" id="pageH1">Financial Planning Calculators</h1>
+<h1 class="srlive" id="pageH1" hidden></h1>
   <!-- ========== HOUSEHOLD PROFILE ========== -->
   <section class="hh" id="hhCard" aria-label="Your household">
     <div class="hh-bar">
@@ -358,7 +358,7 @@ window.onerror = function(msg){
       </div>
     </div>
   </section>
-  <div class="toolback" id="toolBack" hidden>
+  <div class="toolback" id="toolBack">
     <button type="button" class="backbtn" id="btnToolBack">
       <i class="arw back" aria-hidden="true"></i>
       All tools
@@ -366,8 +366,8 @@ window.onerror = function(msg){
     <div class="toolhead">
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
-        <h1 class="toolhead-name" id="toolCrumb"></h1>
-        <p class="toolhead-desc" id="toolHeadDesc"></p>
+        <h1 class="toolhead-name" id="toolCrumb">Guardrails Withdrawal Calculator</h1>
+        <p class="toolhead-desc" id="toolHeadDesc">Will your money last? Test withdrawal strategies against every retirement since 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -5446,50 +5446,37 @@ window.onerror = function(msg){
 
 
 
-  <article class="seo-a panel about" data-page="tools">
-    <h2>Free financial planning calculators</h2>
+
+
+
+  <article class="seo-a panel about" data-page="guardrails">
+    <h2>Guardrails withdrawal calculator: spend more, cut when needed</h2>
     <div class="body">
-    <p>Twelve tools for the money decisions around retirement and everyday life, each explained in plain language, with no sign-up and nothing stored on a server.</p>
+    <p>Guardrails let you start spending more than the 4% rule allows, in exchange for agreeing to cut back when markets fall far enough. This page opens the Drawdown Simulator set up with Guyton-Klinger guardrails and runs them through every retirement since 1926, so you can see not just whether the money lasted, but how deep the cuts went.</p>
+    <h3>How Guyton-Klinger guardrails work</h3>
+    <p>Jonathan Guyton and William Klinger published the rules in 2006. Spending starts at a chosen rate and rises with inflation each year, like the 4% rule, until the withdrawal drifts too far from where it started as a share of the portfolio:</p>
     <ul>
-      <li><a href="/drawdown">Retirement withdrawal calculator</a>: will your money last?</li>
-      <li><a href="/bridge">Early retirement calculator</a>: getting to 59½ without penalties, including <a href="/72t">72(t) payments</a>.</li>
-      <li><a href="/roth">Roth conversion calculator</a> and <a href="/rmd">RMD calculator</a>.</li>
-      <li><a href="/healthcare">Healthcare costs</a> before and after Medicare.</li>
-      <li><a href="/fire">FIRE calculator</a>, <a href="/backtest">portfolio backtest</a>, <a href="/incometax">income tax</a>, <a href="/mortgage">mortgage</a>, <a href="/rentbuy">rent vs. buy</a>, <a href="/college">college savings</a>, <a href="/budget">budget</a> and <a href="/debt">debt payoff</a>.</li>
+      <li><b>The upper guardrail:</b> if this year's withdrawal has climbed more than 20% above the starting rate (from 5% to over 6%), spending is cut by 10%.</li>
+      <li><b>The lower guardrail:</b> if it has fallen more than 20% below (under 4%), spending gets a 10% raise.</li>
+      <li><b>Optional rules:</b> the paper also skipped the inflation raise after a losing year and stopped cutting in the final 15 years. Both are settings in the simulator, under Advanced.</li>
     </ul>
-    <h3>Which tool answers your question</h3>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds and starts guardrails at 5%: $50,000 the first year, a quarter more than the 4% rule's $40,000. These are the numbers this page opens with.</p>
     <ul>
-      <li><b>"Am I saving enough?"</b> Start with the <a href="/">retirement calculator</a>, or the <a href="/guide">readiness guide</a> for a full check-up with a score.</li>
-      <li><b>"When could I stop working?"</b> The <a href="/fire">FIRE calculator</a> finds the age, and when you could stop saving altogether.</li>
-      <li><b>"How much can I spend once I retire?"</b> The <a href="/drawdown">Drawdown Simulator</a> tests a withdrawal rate against every retirement since 1926.</li>
-      <li><b>"I want to retire before 59½."</b> The <a href="/bridge">early retirement bridge</a> compares every penalty-free route, and the <a href="/72t">72(t) calculator</a> sizes SEPP payments.</li>
-      <li><b>"Should I convert to a Roth?"</b> The <a href="/roth">Roth conversion calculator</a> projects your tax to 100 both ways; the <a href="/rmd">RMD calculator</a> shows the required withdrawals it could shrink.</li>
-      <li><b>"What will health insurance cost?"</b> <a href="/healthcare">Healthcare costs</a> covers ACA premiums before 65 and Medicare after.</li>
-      <li><b>"What will I take home?"</b> <a href="/incometax">Income tax</a> for a paycheck or a year of retirement income, in all 50 states.</li>
-      <li><b>"Should I buy a home?"</b> <a href="/rentbuy">Rent vs. buy</a> for the decision, then the <a href="/mortgage">mortgage calculator</a> for the payment.</li>
-      <li><b>"How do I get out of debt?"</b> <a href="/debt">Debt payoff</a> compares avalanche and snowball.</li>
-      <li><b>"Where does my money go?"</b> The <a href="/budget">budget</a>, then <a href="/college">college savings</a> if there's a child to plan for.</li>
-      <li><b>"What do markets really do?"</b> The <a href="/backtest">portfolio backtest</a> shows any stock and bond mix since 1926.</li>
+      <li><b>It always lasted:</b> the money lasted 30 years in all 70 historical retirements.</li>
+      <li><b>But everyone got cuts:</b> every start cut spending at least once, and the typical start cut 4 times. 51 of the 70 spent less than year one's $50,000 at some point, and 37 less than $40,000, what the 4% rule would have paid every year.</li>
+      <li><b>The worst case:</b> retiring in 1966, spending was cut 10 times, fell below $40,000 from year 9 and bottomed at $17,434 a year in today's dollars in year 17, a third of where it began.</li>
+      <li><b>The typical retiree spent more:</b> across the middle start's 30 years, about $1.67 million in today's dollars, against $1.2 million for a steady $40,000.</li>
     </ul>
-    <h3>How the tools work together</h3>
-    <p>Save <b>Your household</b> once, in the bar above every tool, and your ages, state, savings, income and retirement spending fill in across the calculators. Results can move between tools too: the Budget can take your take-home pay from Income Tax, and the bridge hands what's left at 59½ to the Drawdown Simulator.</p>
-    <h3>What they have in common</h3>
-    <ul>
-      <li><b>Current rules:</b> 2026 federal brackets, standard deductions, Social Security and Medicare figures, and each state's income tax.</li>
-      <li><b>Real market history:</b> stock, bond and inflation data from 1926 through 2025, used to test plans against what actually happened.</li>
-      <li><b>Today's dollars:</b> projections are shown in what money buys now, so they're easy to judge.</li>
-      <li><b>Private:</b> every calculation runs in your browser. There's no account, and nothing you type is sent anywhere.</li>
-      <li><b>Checked:</b> the math is covered by automated tests against IRS, SSA and CMS figures and independent calculations.</li>
-    </ul>
+    <h3>Making the cuts livable</h3>
+    <p>The deep cuts happen because each cut is a share of what you're spending, with no floor. Set a <b>Minimum spending</b> to see how the plan holds if you refuse to go below a level, and a <b>Comfort line</b> to count how often and how long spending dips under it. The Compare strategies view finds the most each strategy can spend while never going under your line.</p>
     <h3>Questions</h3>
-    <details><summary>Are these calculators free?</summary><p>Yes, all of them, with no sign-up, no ads and no limits.</p></details>
-    <details><summary>Where should I start?</summary><p>If you're not sure where you stand, the <a href="/guide">readiness guide</a> asks about your money one question at a time and sends you to the tool that answers what you don't know.</p></details>
-    <details><summary>Is my information saved?</summary><p>Only in your own browser, if you save a scenario or your household. Nothing is sent to a server.</p></details>
+    <details><summary>How much more can guardrails spend than the 4% rule?</summary><p>With a 60/40 mix over 30 years, starting at 5% lasted in every historical retirement, against 4% for a fixed withdrawal that never cuts. The price is spending that can fall a long way in a bad decade.</p></details>
+    <details><summary>Can guardrails run out of money?</summary><p>Rarely, because spending keeps falling as the portfolio does. That's why "the money lasted" is the wrong test for them: the useful question is how low spending went, which the simulator's scorecard and worst-year figures answer.</p></details>
+    <details><summary>What are risk-based guardrails?</summary><p>A newer version that moves spending when history's odds of the plan lasting leave a band, say 70% to 99%, then resets it to a target like 90%. It tends to make fewer, larger adjustments. It's one of the strategies in the simulator.</p></details>
+    <details><summary>Should I skip inflation raises after a bad year?</summary><p>It's one of Guyton and Klinger's rules and makes spending a little more conservative. Turn it on under Advanced to see the difference on your plan.</p></details>
     </div>
   </article>
-
-
-
 
 
 

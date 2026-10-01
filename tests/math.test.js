@@ -776,6 +776,71 @@ group("Articles: Drawdown");
   says("drawdown", "cut as low as " + dollars(Math.min.apply(null, g66.rows.map(function (r) { return r.realSpend; }))) + " a year");
 })();
 
+group("Articles: the strategy landing pages");
+(function () {
+  var base = { initial: 1e6, years: 30, stock: 60, rate: 4, strategy: "fixed" };
+  var O = function (x) { return ddOptsFromState(Object.assign({}, base, x)); };
+  var mn = function (a) { return Math.min.apply(null, a); };
+  var real = function (r) { return r.rows.map(function (w) { return w.realSpend; }); };
+  var cutsOf = function (r) { var s = real(r), c = 0; for (var i = 1; i < s.length; i++) if (s[i] < s[i - 1] - .5) c++; return c; };
+  var med = function (a) { a = a.slice().sort(function (p, q) { return p - q; }); return a[Math.floor(a.length / 2)]; };
+  var LASTS = { crit: "lasts", conf: 1, comfort: 0 };
+  var pctD = function (x, d) { return (x * 100).toFixed(d) + "%"; };
+
+  // /4-percent-rule
+  var H = historicalBacktest(O({}));
+  says("4-percent-rule", "lasted in " + H.survived + " of the " + H.total + " historical retirements, " + pct1(H.successRate));
+  says("4-percent-rule", "began in " + H.failYears.slice(0, 3).join(", ") + " and " + H.failYears[3]);
+  var S = ddSafeByStart(O({}), LASTS).map(function (w) { return w.rate; });
+  says("4-percent-rule", "from every start was " + pctD(mn(S), 2) + ", set by 1966");
+  says("4-percent-rule", "could have taken " + pctD(med(S), 2));
+  says("4-percent-rule", "in " + H.runs.filter(function (r) { return r.endReal >= 1e6; }).length + " of the 70 starts, Pat finished with more");
+  says("4-percent-rule", "about $" + (Math.round(H.medianEnd / 1e5) / 10) + " million");
+  says("4-percent-rule", "over 40 years, 4% lasted " + pct1(historicalBacktest(O({ years: 40 })).successRate));
+  says("4-percent-rule", "over 50 years, " + pct1(historicalBacktest(O({ years: 50 })).successRate));
+  var s40 = mn(ddSafeByStart(O({ years: 40 }), LASTS).map(function (w) { return w.rate; }));
+  var s50 = mn(ddSafeByStart(O({ years: 50 }), LASTS).map(function (w) { return w.rate; }));
+  says("4-percent-rule", "fall to " + pctD(s40, 2) + " and " + pctD(s50, 2));
+  near(s50, .034, .0005, "about 3.4% over 50 years");
+  says("4-percent-rule", "CAPE is " + CAPE_NOW.toFixed(1) + " today");
+  var maxCape = mn(H.runs.map(function (r) { return -r.cape0; }));
+  ok(CAPE_NOW > -maxCape, "higher than at the start of any 30-year retirement");
+  eq(DD_LANDING["4-percent-rule"].rate, 4, "the page opens on 4%");
+
+  // /guardrails
+  var G = historicalBacktest(O({ strategy: "guardrails", rate: 5 }));
+  eq(G.successRate, 1, "guardrails at 5% lasted in all 70");
+  ok(G.runs.every(function (r) { return cutsOf(r) > 0; }), "every start cut at least once");
+  says("guardrails", "the typical start cut " + med(G.runs.map(cutsOf)) + " times");
+  says("guardrails", G.runs.filter(function (r) { return mn(real(r)) < 50000 - .5; }).length + " of the 70 spent less than year one's $50,000");
+  says("guardrails", "and " + G.runs.filter(function (r) { return mn(real(r)) < 40000; }).length + " less than $40,000");
+  var g66 = G.runs.filter(function (r) { return r.startYear === 1966; })[0], s66 = real(g66);
+  says("guardrails", "spending was cut " + cutsOf(g66) + " times");
+  var from = 0; for (var i = s66.length - 1; i >= 0 && s66[i] < 40000; i--) from = i + 1;
+  says("guardrails", "fell below $40,000 from year " + from);
+  says("guardrails", "bottomed at " + dollars(mn(s66)) + " a year in today's dollars in year " + (s66.indexOf(mn(s66)) + 1));
+  near(mn(s66) / 50000, 1 / 3, .02, "a third of where it began");
+  var life = G.runs.map(function (r) { return real(r).reduce(function (a, v) { return a + v; }, 0); });
+  says("guardrails", "about $" + (Math.round(med(life) / 1e4) / 100) + " million in today's dollars");
+  var lifeF = H.runs.map(function (r) { return real(r).reduce(function (a, v) { return a + v; }, 0); });
+  near(med(lifeF), 1.2e6, .01, "a steady $40,000 spends $1.2 million");
+
+  // /vpw
+  var vo = O(Object.assign({}, DD_LANDING.vpw)), V = historicalBacktest(vo), P = ddPrep(vo);
+  says("vpw", "5.02%, or " + dollars(P.first));
+  var at = function (age) { var n = 35 - (age - 65), r = .038; return r / ((1 - Math.pow(1 + r, -n)) * (1 + r)); };
+  near(pmtStart(.038, 30, 1, 0), 0, 1, "pmtStart is there");
+  ok(Math.abs(pmtStart(.038, 35, 1e6, 0) - P.first) < .01, "year one is VPW's payment on the whole balance");
+  says("vpw", "6.04% at 75 and " + pctD(at(85), 2) + " at 85");
+  near(at(75), .0604, .00005, "6.04% at 75");
+  eq(V.successRate, 1, "VPW lasted every start"); says("vpw", "in all " + V.total + " historical retirements");
+  says("vpw", "typical year was " + dollars(med(V.runs.map(function (r) { return r.medRealSpend; }))));
+  var v66 = V.runs.filter(function (r) { return r.startYear === 1966; })[0], w66 = real(v66);
+  says("vpw", "spending fell to " + dollars(mn(w66)) + " a year at " + (65 + w66.indexOf(mn(w66))) + ", " + pctD(mn(w66) / w66[0], 0) + " of year one");
+  says("vpw", "In " + V.runs.filter(function (r) { return real(r).some(function (v) { return v < r.rows[0].realSpend * .75; }); }).length +
+    " of the " + V.total + " starts it fell more than a quarter below year one");
+})();
+
 group("Articles: Bridge");
 (function () {
   says("bridge", "$540,000 in all");

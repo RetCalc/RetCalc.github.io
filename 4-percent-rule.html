@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Free Financial Planning Calculators | RetCalc</title>
-<meta name="description" content="Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt.">
-<link rel="canonical" href="https://retcalc.app/tools">
+<title>4% Rule Calculator: Does the Safe Withdrawal Rate Still Work? | RetCalc</title>
+<meta name="description" content="Test the 4% rule against every retirement since 1926: how often 4% lasted 30, 40 and 50 years, the years it failed and why, and the safe rate for your own mix and spending.">
+<link rel="canonical" href="https://retcalc.app/4-percent-rule">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Free Financial Planning Calculators | RetCalc">
-<meta property="og:description" content="Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt.">
-<meta property="og:url" content="https://retcalc.app/tools">
-<meta property="og:image" content="https://retcalc.app/og/tools.jpg">
+<meta property="og:title" content="4% Rule Calculator: Does the Safe Withdrawal Rate Still Work? | RetCalc">
+<meta property="og:description" content="Test the 4% rule against every retirement since 1926: how often 4% lasted 30, 40 and 50 years, the years it failed and why, and the safe rate for your own mix and spending.">
+<meta property="og:url" content="https://retcalc.app/4-percent-rule">
+<meta property="og:image" content="https://retcalc.app/og/4-percent-rule.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Retirement Tools: Drawdown, taxes, Roth conversions, healthcare, FIRE, budgets and more.">
+<meta property="og:image:alt" content="4% Rule Calculator: Does 4% still work? Test it against every retirement since 1926, and find your own safe rate.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://retcalc.app/og/tools.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Free Financial Planning Calculators", "url": "https://retcalc.app/tools", "description": "Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Are these calculators free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, all of them, with no sign-up, no ads and no limits."}}, {"@type": "Question", "name": "Where should I start?", "acceptedAnswer": {"@type": "Answer", "text": "If you're not sure where you stand, the readiness guide asks about your money one question at a time and sends you to the tool that answers what you don't know."}}, {"@type": "Question", "name": "Is my information saved?", "acceptedAnswer": {"@type": "Answer", "text": "Only in your own browser, if you save a scenario or your household. Nothing is sent to a server."}}]}]}</script>
+<meta name="twitter:image" content="https://retcalc.app/og/4-percent-rule.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "4% Rule Calculator: Does the Safe Withdrawal Rate Still Work?", "url": "https://retcalc.app/4-percent-rule", "description": "Test the 4% rule against every retirement since 1926: how often 4% lasted 30, 40 and 50 years, the years it failed and why, and the safe rate for your own mix and spending.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is it 4% of the balance every year?", "acceptedAnswer": {"@type": "Answer", "text": "No. It's 4% of the starting balance in year one; after that the same dollar amount rises with inflation, whatever the portfolio does. Taking 4% of each year's balance is a different strategy (a fixed percentage), which can't run out but whose income swings with markets."}}, {"@type": "Question", "name": "Does the 4% rule include Social Security?", "acceptedAnswer": {"@type": "Answer", "text": "No. The rate applies to the portfolio alone. Social Security and pensions reduce how much you need to withdraw, so add them in the simulator and look at the rate the portfolio actually has to support."}}, {"@type": "Question", "name": "What withdrawal rate for an early retirement?", "acceptedAnswer": {"@type": "Answer", "text": "Over 50 years, the highest first-year rate that lasted from every start with a 60/40 mix was about 3.4%. Many early retirees plan on 3.25% to 3.5%, or pair a higher start with rules for cutting back."}}, {"@type": "Question", "name": "Is the 4% before or after tax?", "acceptedAnswer": {"@type": "Answer", "text": "Before tax. Withdrawals from traditional IRAs and 401(k)s are taxed as income, so what you can spend is less. The Income Tax tool's retirement mode shows how much."}}, {"@type": "Question", "name": "What if I'm willing to cut spending in a bad decade?", "acceptedAnswer": {"@type": "Answer", "text": "Then you can usually start higher. Guardrails start around 5% and cut when markets fall; VPW spends a share that rises with age. The simulator's Compare strategies view puts them side by side."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -287,7 +287,7 @@ window.onerror = function(msg){
 <main id="main">
 <!-- The page's main heading. A tool's page uses the tool's own title in its
      header instead (#toolCrumb); the build fills both in for each address. -->
-<h1 class="srlive" id="pageH1">Financial Planning Calculators</h1>
+<h1 class="srlive" id="pageH1" hidden></h1>
   <!-- ========== HOUSEHOLD PROFILE ========== -->
   <section class="hh" id="hhCard" aria-label="Your household">
     <div class="hh-bar">
@@ -358,7 +358,7 @@ window.onerror = function(msg){
       </div>
     </div>
   </section>
-  <div class="toolback" id="toolBack" hidden>
+  <div class="toolback" id="toolBack">
     <button type="button" class="backbtn" id="btnToolBack">
       <i class="arw back" aria-hidden="true"></i>
       All tools
@@ -366,8 +366,8 @@ window.onerror = function(msg){
     <div class="toolhead">
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
-        <h1 class="toolhead-name" id="toolCrumb"></h1>
-        <p class="toolhead-desc" id="toolHeadDesc"></p>
+        <h1 class="toolhead-name" id="toolCrumb">4% Rule Calculator</h1>
+        <p class="toolhead-desc" id="toolHeadDesc">Will your money last? Test withdrawal strategies against every retirement since 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -5446,49 +5446,35 @@ window.onerror = function(msg){
 
 
 
-  <article class="seo-a panel about" data-page="tools">
-    <h2>Free financial planning calculators</h2>
+
+
+  <article class="seo-a panel about" data-page="4-percent-rule">
+    <h2>4% rule calculator: does the safe withdrawal rate still work?</h2>
     <div class="body">
-    <p>Twelve tools for the money decisions around retirement and everyday life, each explained in plain language, with no sign-up and nothing stored on a server.</p>
+    <p>The 4% rule says you can take 4% of your savings in your first year of retirement, raise that amount with inflation every year after, and have the money last 30 years. This page opens the Drawdown Simulator set up for exactly that: a fixed withdrawal, rising with inflation, run through every retirement since 1926.</p>
+    <h3>Where the 4% rule comes from</h3>
+    <p>The financial planner William Bengen published it in 1994. He ran a stock and bond portfolio through every starting year he had data for and looked for the highest first-year withdrawal that never ran out. The hardest start was 1966, the beginning of sixteen years of rising inflation and flat stock prices, and it allowed about 4%. In 1998 the Trinity study found much the same: 4% lasted 30 years in about 95% of historical periods with half or more in stocks.</p>
+    <p>To see both papers set up the way they were, and what the same tests find on today's longer record, use <b>Reproduce a classic study</b> under the strategy picker.</p>
+    <h3>A worked example</h3>
+    <p>Pat retires with $1,000,000 in a 60/40 mix of US stocks and bonds and takes $40,000 the first year, 4%, raising it with inflation every year after. These are the numbers this page opens with.</p>
     <ul>
-      <li><a href="/drawdown">Retirement withdrawal calculator</a>: will your money last?</li>
-      <li><a href="/bridge">Early retirement calculator</a>: getting to 59½ without penalties, including <a href="/72t">72(t) payments</a>.</li>
-      <li><a href="/roth">Roth conversion calculator</a> and <a href="/rmd">RMD calculator</a>.</li>
-      <li><a href="/healthcare">Healthcare costs</a> before and after Medicare.</li>
-      <li><a href="/fire">FIRE calculator</a>, <a href="/backtest">portfolio backtest</a>, <a href="/incometax">income tax</a>, <a href="/mortgage">mortgage</a>, <a href="/rentbuy">rent vs. buy</a>, <a href="/college">college savings</a>, <a href="/budget">budget</a> and <a href="/debt">debt payoff</a>.</li>
+      <li><b>Over 30 years:</b> the money lasted in 66 of the 70 historical retirements, 94.3%. The four that ran out began in 1965, 1966, 1968 and 1969.</li>
+      <li><b>The safe maximum:</b> the highest first-year rate that lasted 30 years from every start was 3.79%, set by 1966. The typical start could have taken 6.63%.</li>
+      <li><b>Most retirees end up with more:</b> in 48 of the 70 starts, Pat finished with more than the $1,000,000 started with, after inflation. The middle outcome was about $1.6 million.</li>
+      <li><b>Longer retirements:</b> over 40 years, 4% lasted 86.7% of the time, and over 50 years, 80.0%. The safe maximums fall to 3.52% and 3.36%.</li>
     </ul>
-    <h3>Which tool answers your question</h3>
-    <ul>
-      <li><b>"Am I saving enough?"</b> Start with the <a href="/">retirement calculator</a>, or the <a href="/guide">readiness guide</a> for a full check-up with a score.</li>
-      <li><b>"When could I stop working?"</b> The <a href="/fire">FIRE calculator</a> finds the age, and when you could stop saving altogether.</li>
-      <li><b>"How much can I spend once I retire?"</b> The <a href="/drawdown">Drawdown Simulator</a> tests a withdrawal rate against every retirement since 1926.</li>
-      <li><b>"I want to retire before 59½."</b> The <a href="/bridge">early retirement bridge</a> compares every penalty-free route, and the <a href="/72t">72(t) calculator</a> sizes SEPP payments.</li>
-      <li><b>"Should I convert to a Roth?"</b> The <a href="/roth">Roth conversion calculator</a> projects your tax to 100 both ways; the <a href="/rmd">RMD calculator</a> shows the required withdrawals it could shrink.</li>
-      <li><b>"What will health insurance cost?"</b> <a href="/healthcare">Healthcare costs</a> covers ACA premiums before 65 and Medicare after.</li>
-      <li><b>"What will I take home?"</b> <a href="/incometax">Income tax</a> for a paycheck or a year of retirement income, in all 50 states.</li>
-      <li><b>"Should I buy a home?"</b> <a href="/rentbuy">Rent vs. buy</a> for the decision, then the <a href="/mortgage">mortgage calculator</a> for the payment.</li>
-      <li><b>"How do I get out of debt?"</b> <a href="/debt">Debt payoff</a> compares avalanche and snowball.</li>
-      <li><b>"Where does my money go?"</b> The <a href="/budget">budget</a>, then <a href="/college">college savings</a> if there's a child to plan for.</li>
-      <li><b>"What do markets really do?"</b> The <a href="/backtest">portfolio backtest</a> shows any stock and bond mix since 1926.</li>
-    </ul>
-    <h3>How the tools work together</h3>
-    <p>Save <b>Your household</b> once, in the bar above every tool, and your ages, state, savings, income and retirement spending fill in across the calculators. Results can move between tools too: the Budget can take your take-home pay from Income Tax, and the bridge hands what's left at 59½ to the Drawdown Simulator.</p>
-    <h3>What they have in common</h3>
-    <ul>
-      <li><b>Current rules:</b> 2026 federal brackets, standard deductions, Social Security and Medicare figures, and each state's income tax.</li>
-      <li><b>Real market history:</b> stock, bond and inflation data from 1926 through 2025, used to test plans against what actually happened.</li>
-      <li><b>Today's dollars:</b> projections are shown in what money buys now, so they're easy to judge.</li>
-      <li><b>Private:</b> every calculation runs in your browser. There's no account, and nothing you type is sent anywhere.</li>
-      <li><b>Checked:</b> the math is covered by automated tests against IRS, SSA and CMS figures and independent calculations.</li>
-    </ul>
+    <h3>Why it failed when it did</h3>
+    <p>Every failure began in the late 1960s. Those retirements met high inflation and a flat stock market in their first ten years, when withdrawals were largest against the balance, and never recovered the ground. Retirements whose 30 years averaged better returns than ones that lasted still ran out, because the bad years came first. The simulator's <b>When you retire</b> chart plots each start's first decade against how it ended, and picking a year in the table says why that start went the way it did.</p>
+    <h3>Is 4% still safe today?</h3>
+    <p>Two things argue for caution. Stock prices are high against earnings: Shiller's CAPE is 41.0 today, higher than at the start of any retirement with 30 years of history after it, and expensive starts have tended to allow less. And the record is one country's century, which turned out well. The simulator's Monte Carlo mode can draw years in blocks and shift history to your own, lower, return assumptions, to see how much margin a lower rate buys.</p>
     <h3>Questions</h3>
-    <details><summary>Are these calculators free?</summary><p>Yes, all of them, with no sign-up, no ads and no limits.</p></details>
-    <details><summary>Where should I start?</summary><p>If you're not sure where you stand, the <a href="/guide">readiness guide</a> asks about your money one question at a time and sends you to the tool that answers what you don't know.</p></details>
-    <details><summary>Is my information saved?</summary><p>Only in your own browser, if you save a scenario or your household. Nothing is sent to a server.</p></details>
+    <details><summary>Is it 4% of the balance every year?</summary><p>No. It's 4% of the starting balance in year one; after that the same dollar amount rises with inflation, whatever the portfolio does. Taking 4% of each year's balance is a different strategy (a fixed percentage), which can't run out but whose income swings with markets.</p></details>
+    <details><summary>Does the 4% rule include Social Security?</summary><p>No. The rate applies to the portfolio alone. Social Security and pensions reduce how much you need to withdraw, so add them in the simulator and look at the rate the portfolio actually has to support.</p></details>
+    <details><summary>What withdrawal rate for an early retirement?</summary><p>Over 50 years, the highest first-year rate that lasted from every start with a 60/40 mix was about 3.4%. Many early retirees plan on 3.25% to 3.5%, or pair a higher start with rules for cutting back.</p></details>
+    <details><summary>Is the 4% before or after tax?</summary><p>Before tax. Withdrawals from traditional IRAs and 401(k)s are taxed as income, so what you can spend is less. The <a href="/incometax">Income Tax</a> tool's retirement mode shows how much.</p></details>
+    <details><summary>What if I'm willing to cut spending in a bad decade?</summary><p>Then you can usually start higher. <a href="/guardrails">Guardrails</a> start around 5% and cut when markets fall; <a href="/vpw">VPW</a> spends a share that rises with age. The simulator's Compare strategies view puts them side by side.</p></details>
     </div>
   </article>
-
-
 
 
 

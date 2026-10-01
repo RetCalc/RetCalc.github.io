@@ -53,6 +53,12 @@ ASSET = re.compile(r"^<!-- @(asset|preload) (app\.(?:css|js)) -->$", re.M)
 CARDS = {
     "drawdown": ("Drawdown Simulator",
         "Will your money last? Test withdrawal strategies against every retirement since 1926."),
+    "4-percent-rule": ("4% Rule Calculator",
+        "Does 4% still work? Test it against every retirement since 1926, and find your own safe rate."),
+    "guardrails": ("Guardrails Calculator",
+        "Guyton-Klinger guardrails: start higher, cut when markets fall. How deep did the cuts go?"),
+    "vpw": ("VPW Calculator",
+        "Variable percentage withdrawal: spend it all by the end, never run out. How low did it go?"),
     "optimizer": ("Plan Optimizer",
         "When to claim, what to withdraw, what to convert: thousands of plans, every market since 1926."),
     "bridge": ("Early Retirement Bridge",
@@ -97,7 +103,7 @@ ALIASES = {"single": "advanced", "series": "stages"}
 PLAIN = {"home", "about"}
 # Pages that open a tool, and the tool (the picker card's data-pick) where
 # the address differs from it. Their main heading is the tool's title.
-TOOL_SUB = {"drawdown": "drawdown", "bridge": "bridge", "72t": "bridge", "roth": "roth", "rmd": "roth",
+TOOL_SUB = {"drawdown": "drawdown", "4-percent-rule": "drawdown", "guardrails": "drawdown", "vpw": "drawdown", "bridge": "bridge", "72t": "bridge", "roth": "roth", "rmd": "roth",
             "healthcare": "healthcare", "fire": "fire", "backtest": "backtest", "incometax": "tax",
             "mortgage": "mortgage", "rentbuy": "rentbuy", "college": "college", "budget": "budget",
             "debt": "debt", "optimizer": "optimizer"}

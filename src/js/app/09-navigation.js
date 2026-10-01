@@ -234,9 +234,11 @@ function pathForRoute(t, s){
   return null;
 }
 /* Search landing pages that open an existing tool under their own address:
-   /rmd is the Roth tool, /72t the Bridge. The address stays as it came in
-   (see the boot's canonical swap) and the page shows its own article. */
-const PATH_ALIAS = {rmd:"roth", "72t":"bridge"};
+   /rmd is the Roth tool, /72t the Bridge, and /4-percent-rule, /guardrails
+   and /vpw the Drawdown Simulator, set up for that strategy (DD_LANDING).
+   The address stays as it came in (see the boot's canonical swap) and the
+   page shows its own article. */
+const PATH_ALIAS = {rmd:"roth", "72t":"bridge", "4-percent-rule":"drawdown", guardrails:"drawdown", vpw:"drawdown"};
 function pathSeg(path){ return path.replace(/^\/+|\/+$/g, "").replace(/\.html$/, ""); }
 function routeFromPath(path){
   const seg = pathSeg(path);

@@ -8469,9 +8469,11 @@ function pathForRoute(t, s){
   return null;
 }
 /* Search landing pages that open an existing tool under their own address:
-   /rmd is the Roth tool, /72t the Bridge. The address stays as it came in
-   (see the boot's canonical swap) and the page shows its own article. */
-const PATH_ALIAS = {rmd:"roth", "72t":"bridge"};
+   /rmd is the Roth tool, /72t the Bridge, and /4-percent-rule, /guardrails
+   and /vpw the Drawdown Simulator, set up for that strategy (DD_LANDING).
+   The address stays as it came in (see the boot's canonical swap) and the
+   page shows its own article. */
+const PATH_ALIAS = {rmd:"roth", "72t":"bridge", "4-percent-rule":"drawdown", guardrails:"drawdown", vpw:"drawdown"};
 function pathSeg(path){ return path.replace(/^\/+|\/+$/g, "").replace(/\.html$/, ""); }
 function routeFromPath(path){
   const seg = pathSeg(path);
@@ -14276,6 +14278,20 @@ function ddStudyForm(){
   ov.querySelector("[data-studyclose]").focus();
 }
 $("ddStudyBtn").addEventListener("click", ddStudyForm);
+
+/* The strategy landing pages (/4-percent-rule, /guardrails, /vpw) open the
+   simulator on their strategy, with the article's worked example: the
+   portfolio stays whatever it already is. */
+var DD_LANDING = {
+  "4-percent-rule": {strategy: "fixed", rate: 4, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30},
+  guardrails: {strategy: "guardrails", rate: 5, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30,
+    guardBand: 20, adjust: 10, guardBandLo: 20, adjustLo: 10, gkFinal: false, skipRaise: false},
+  vpw: {strategy: "vpw", stock: 60, sv: 0, cash: 0, stockEnd: "", years: 35, retireAge: "65", vpwRate: 3.8, vpwFV: 0}
+};
+function ddLanding(seg){
+  if (!DD_LANDING[seg]) return;
+  writeDDState(Object.assign({}, DD_LANDING[seg], {floorSteps: [], pathStages: []}));
+}
 /* ---------- the Drawdown Simulator: Simple and Advanced inputs ----------
    Simple shows the five fields a first run needs: the portfolio, its mix,
    how long, the strategy and its rate (or whatever its one setting is).
@@ -22870,6 +22886,8 @@ if (location.hash && (location.hash.indexOf("#p=") === 0 || location.hash.indexO
 if (!fromLink) hhApply(hhLoad());
 const pathRoute = fromLink ? null : routeFromPath(location.pathname);
 if (pathRoute) toolSub = pathRoute.s || "picker";
+// A strategy's landing page opens the simulator set up for it.
+if (pathRoute) ddLanding(pathSeg(location.pathname));
 showTab(fromLink ? linkTab : (pathRoute ? pathRoute.t : "simple"));
 renderAll();
 renderSeries();

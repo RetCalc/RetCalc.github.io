@@ -107,3 +107,17 @@ function ddStudyForm(){
   ov.querySelector("[data-studyclose]").focus();
 }
 $("ddStudyBtn").addEventListener("click", ddStudyForm);
+
+/* The strategy landing pages (/4-percent-rule, /guardrails, /vpw) open the
+   simulator on their strategy, with the article's worked example: the
+   portfolio stays whatever it already is. */
+var DD_LANDING = {
+  "4-percent-rule": {strategy: "fixed", rate: 4, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30},
+  guardrails: {strategy: "guardrails", rate: 5, stock: 60, sv: 0, cash: 0, stockEnd: "", years: 30,
+    guardBand: 20, adjust: 10, guardBandLo: 20, adjustLo: 10, gkFinal: false, skipRaise: false},
+  vpw: {strategy: "vpw", stock: 60, sv: 0, cash: 0, stockEnd: "", years: 35, retireAge: "65", vpwRate: 3.8, vpwFV: 0}
+};
+function ddLanding(seg){
+  if (!DD_LANDING[seg]) return;
+  writeDDState(Object.assign({}, DD_LANDING[seg], {floorSteps: [], pathStages: []}));
+}
