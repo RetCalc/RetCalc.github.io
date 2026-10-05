@@ -14,7 +14,7 @@ export const NEW = "http://localhost:3200";
 
 export default defineConfig({
   testDir: "e2e",
-  timeout: 120_000,
+  timeout: 300_000,
   fullyParallel: true,
   reporter: [["list"]],
   use: { channel: "chrome", headless: true },

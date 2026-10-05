@@ -93,6 +93,10 @@ def main():
     math = engine("math")
     src = "".join(open(p, encoding="utf-8").read()
                   for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))
+    if "--web" in sys.argv:
+        # Calculators already moved into the new app are taken from there;
+        # the rest still come from src/js/app/ until their tool is ported.
+        src = "\n" + engine("calculators") + "\n" + src
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
     dd = engine("drawdown")
     e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")

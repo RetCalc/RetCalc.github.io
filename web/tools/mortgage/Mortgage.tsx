@@ -10,29 +10,20 @@ import { BandChart } from "@/components/charts/BandChart";
 import { Legend, ShareBar } from "@/components/charts/Legend";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
-import { useToolState, type ToolDef } from "@/components/tools/ToolState";
+import { useToolState } from "@/components/tools/ToolState";
 import { BigValue } from "@/components/ui/BigValue";
 import { CsvButton } from "@/components/ui/CsvButton";
-import { MORT_RATE_30, mortgage as mortgageJs, refiCompare as refiCompareJs } from "@/lib/engine";
+import { PMI_DEFAULT, mortgage as mortgageJs, refiCompare as refiCompareJs } from "@/lib/engine";
 import type { MortgageInput, MortgageResult, RefiResult } from "@/lib/engine/types";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-
-const DEFAULTS = {
-  price: groupDigits(450000, true), downPct: "20", downAmt: groupDigits(90000, true),
-  rate: String(MORT_RATE_30), term: "30", tax: "1.1", ins: groupDigits(1800, true), pmi: "0",
-  hoa: "0", maint: "1", util: "300", extrasOn: "0", extraMo: "0", extraOnce: "0",
-  extraWhen: "12", recast: "0", refiRate: "0", refiTerm: "30", refiCost: "0",
-};
-type Inputs = typeof DEFAULTS;
+import { MORTGAGE_DEF as DEF, type Inputs } from "./model";
 
 const mortgage = mortgageJs as unknown as (m: MortgageInput) => MortgageResult;
 const refiCompare = refiCompareJs as unknown as (m: MortgageInput, r: { rate?: number; term?: number; cost?: number }) => RefiResult;
 
-const DEF: ToolDef<Inputs> = { id: "mortgage", label: "Mortgage", noun: "mortgage scenario", defaults: DEFAULTS };
 
 /* PMI only exists below 20% down, so its field follows: a default rate when
    PMI applies, 0 when it doesn't, rather than showing a rate that isn't used. */
-const PMI_DEFAULT = 0.6;
 function withPmi(s: Inputs): Inputs {
   const price = parseNum(s.price), down = parseNum(s.downAmt);
   const ltv = price > 0 ? (price - down) / price : 0;

@@ -29,3 +29,19 @@ export interface DebtResult {
   debts: DebtDetail[]; order: DebtDetail[]; totalInterest: number; monthsTotal: number; stalled: boolean;
   monthlyPool: number; baseMin: number; firstCleared: number; totalPaid: number;
 }
+
+export interface CollegeRow { year: number; balance: number; contribs: number; growth: number; projCost: number }
+export interface CollegeResult {
+  monthly: number; totalFuture: number; targetAtStart: number; savingsAtStart: number; shortfall: number; yearCosts: number[]; rows: CollegeRow[];
+}
+export interface CollegePlan {
+  monthly: number;
+  phases: { from: number; to: number; monthly: number }[];
+  kids: { index: number; yearsUntil: number; start: number; yearCosts: number[]; total: number; targetAtStart: number }[];
+  skipped: number; totalFuture: number; pvToday: number;
+  rows: { year: number; balance: number; contribs: number; paid: number; growth: number; needed: number }[];
+}
+export interface RentBuyResult {
+  years: { year: number; buyerNW: number; renterNW: number; homeVal: number; balance: number; monthBuy: number; monthRent: number }[];
+  breakEven: number | null; loan: number; pi: number; initialInvest: number; monthlyBuy: number;
+}
