@@ -94,9 +94,26 @@ function withDefaults<S extends ToolInputs>(defaults: S, data: ToolInputs): S {
   return out;
 }
 
+/* Each tool's inputs, kept for this visit as you move between pages, the way
+   the old single-page site kept them on screen. A reload starts fresh, as
+   it did there. Other tools read these too ("Copy from Budget"). */
+const memory = new Map<string, ToolInputs>();
+
+/** A tool's inputs as last left, or `fallback` if it hasn't been opened. */
+export function toolInputs<S extends ToolInputs>(id: string, fallback: S): S {
+  return (memory.get(id) as S | undefined) ?? fallback;
+}
+/** Changes another tool's inputs; it shows them when next opened. */
+export function setToolInputs(id: string, data: ToolInputs): void {
+  memory.set(id, data);
+}
+
 /** A tool's inputs. `set("price")(text)` updates one; `update({...})` several. */
 export function useToolState<S extends ToolInputs>(def: ToolDef<S>) {
-  const [state, setState] = useState<S>(def.defaults);
+  const [state, setState] = useState<S>(() => toolInputs(def.id, def.defaults));
+  useEffect(() => {
+    memory.set(def.id, state);
+  }, [def.id, state]);
   const { setActive } = use(RegistryContext);
 
   // A share link for this tool opens with its inputs.

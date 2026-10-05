@@ -5,9 +5,11 @@ import { PNG } from "pngjs";
 import pixelmatch from "pixelmatch";
 import { NEW, OLD } from "../playwright.config";
 
-/** One input change: a field (by id) and its new value. Selects are chosen
-    by value; everything else is typed, as a person would. */
-export type Step = [id: string, value: string];
+/** One input change: a field and its new value, or a click. The field is an
+    id ("moPrice") or a CSS selector ("#dtList .dtrow:nth-child(2) .desc").
+    Selects are chosen by value; everything else is typed, as a person would.
+    ["click", selector] presses a button. */
+export type Step = [target: string, value: string];
 export interface Case { name: string; steps: Step[] }
 
 /* Known, intended differences, hidden on both sites before comparing. */
@@ -22,8 +24,12 @@ async function open(page: Page, url: string) {
 }
 
 export async function apply(page: Page, steps: Step[]) {
-  for (const [id, value] of steps) {
-    const el = page.locator("#" + id);
+  for (const [target, value] of steps) {
+    if (target === "click") {
+      await page.locator(value).click();
+      continue;
+    }
+    const el = page.locator(/^[#.\[]/.test(target) ? target : "#" + target);
     const tag = await el.evaluate((e) => e.tagName);
     if (tag === "SELECT") await el.selectOption(value);
     else await el.fill(value);

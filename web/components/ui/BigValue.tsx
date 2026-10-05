@@ -35,7 +35,11 @@ export function BigValue({ text, className = "v", id, sized = true }: { text: st
     const m = RE.exec(text);
     const from = shown.current;
     shown.current = m ? { num: parseFloat(m[2].replace(/,/g, "")), pre: m[1] } : null;
-    if (!node || !m || !from || from.pre !== m[1] || node.offsetParent === null) return;
+    if (!node) return;
+    // Land on the new text first; an interrupted count must never leave an
+    // old figure behind.
+    node.textContent = text;
+    if (!m || !from || from.pre !== m[1] || node.offsetParent === null) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const to = shown.current!.num;
     if (!isFinite(to) || to === from.num) return;
@@ -48,10 +52,7 @@ export function BigValue({ text, className = "v", id, sized = true }: { text: st
       if (k < 1) raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
-    return () => {
-      cancelAnimationFrame(raf);
-      node.textContent = text;
-    };
+    return () => cancelAnimationFrame(raf);
   }, [text]);
 
   return (

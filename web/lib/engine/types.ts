@@ -21,3 +21,11 @@ export interface RefiResult {
   now: MortgageResult; then: MortgageResult; monthlyDelta: number;
   breakEvenMonths: number | null; lifetimeDelta: number;
 }
+
+export interface DebtInput { desc: string; balance: number; apr: number; min: number }
+export interface DebtDetail { desc: string; apr: number; min: number; bal: number; start: number; interest: number; paidMonth: number }
+export interface DebtResult {
+  months: { m: number; balance: number; interest: number; cleared: number }[];
+  debts: DebtDetail[]; order: DebtDetail[]; totalInterest: number; monthsTotal: number; stalled: boolean;
+  monthlyPool: number; baseMin: number; firstCleared: number; totalPaid: number;
+}
