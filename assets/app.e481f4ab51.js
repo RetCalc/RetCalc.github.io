@@ -2766,7 +2766,7 @@ function historicalRuns(g, stages){
    rest. Everything here is descriptive: no projection, no assumption, just
    what this mix did. */
 /**
- * @param {Object} o - {stockPct, svPct, cashPct, fee, initial, startYear, endYear}
+ * @param {Object} o - {stockPct, svPct, cashPct, rebal, rebalN, rebalBand, fee, initial, startYear, endYear}
  * @returns {Object} per-year rows, summary statistics and rolling-window tables
  */
 function backtest(o){
@@ -2783,13 +2783,36 @@ function backtest(o){
   const wb = Math.max(0, 1 - w - ws - wc);
   const fee = (o.fee || 0) / 100;
   const start = Math.max(1, o.initial || 10000);
+  /* Rebalancing, as the Drawdown Simulator does it: back to the mix every
+     year (one blended return), every rebalN years, when any holding is more
+     than rebalBand points off its target (checked each year), or never. Each
+     holding is tracked between rebalances; a year begins with any rebalance
+     due. */
+  const rb = o.rebal === "every" || o.rebal === "band" || o.rebal === "never" ? o.rebal : "year";
+  const rbN = Math.max(1, Math.round(o.rebalN || 1)), rbBand = Math.max(0, o.rebalBand || 0) / 100;
+  const wts = [w, ws, wb, wc];
+  let hold = null, rebalances = 0;
 
   const rows = [], rets = [], reals = [];
   let bal = start, cum = 1, peak = start, maxDD = 0, ddFrom = 0, ddTo = 0;
   let curPeakYear = HIST_START + s0;
   for (let i = s0; i <= s1; i++){
     const sv = ws > 0 ? HIST_SV[i] : 0, cash = wc > 0 ? HIST_CASH[i] : 0;
-    const r = (w * HIST_STOCK[i] + ws * sv + wb * HIST_BOND[i] + wc * cash) / 100 - fee;
+    let r;
+    if (rb === "year") r = (w * HIST_STOCK[i] + ws * sv + wb * HIST_BOND[i] + wc * cash) / 100 - fee;
+    else {
+      const k = i - s0;
+      if (!hold) hold = wts.map(x => x * bal);
+      else {
+        const due = rb === "every" ? k % rbN === 0
+          : rb === "band" && bal > 0 && hold.some((h, j) => Math.abs(h / bal - wts[j]) > rbBand + 1e-12);
+        if (due){ hold = wts.map(x => x * bal); rebalances++; }
+      }
+      const rr = [HIST_STOCK[i], sv, HIST_BOND[i], cash];
+      hold = hold.map((h, j) => Math.max(0, h * (1 + rr[j] / 100 - fee)));
+      const nb = hold[0] + hold[1] + hold[2] + hold[3];
+      r = bal > 0 ? nb / bal - 1 : 0;
+    }
     const infl = HIST_INFL[i] / 100;
     const real = (1 + r) / (1 + infl) - 1;
     bal = bal * (1 + r);
@@ -2845,7 +2868,8 @@ function backtest(o){
   }).filter(x => x.count > 0);
 
   return {rows, years:n, first: HIST_START + s0, last: HIST_START + s1,
-          stockPct: w * 100, svPct: ws * 100, bondPct: wb * 100, cashPct: wc * 100, minYear: HIST_START + minIdx, cagr, realCagr, inflCagr, vol,
+          stockPct: w * 100, svPct: ws * 100, bondPct: wb * 100, cashPct: wc * 100, minYear: HIST_START + minIdx, rebal: rb, rebalances,
+          endMix: hold && bal > 0 ? hold.map(h => h / bal) : wts.slice(), cagr, realCagr, inflCagr, vol,
           endBal: bal, endReal: bal / cum, start,
           best: bestYr, worst: worstYr, upYears: up, downYears: n - up,
           maxDD, ddFrom, ddTo, rolling,
@@ -11956,7 +11980,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.df10e6ebee.js";
+var DD_WORKER_URL = "/assets/plan.df5b426da2.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -14388,7 +14412,7 @@ const GLOSS = {
   bthistory: "The years the backtest covers. Earlier start dates give more data and more market regimes; later ones describe a world closer to the present. Both are useful, and they often disagree \u2014 a 60/40 mix looks very different measured from 1926 than from 1982.",
   histmix: "The share held in stocks, with the rest in 10-year Treasuries, rebalanced once a year. History mode replaces your rate of return with what this mix actually earned, year by year, so the mix is what sets returns here.",
   histglidemix: "Where the stock share ends up by the end of the glide. In history mode a glide moves the mix, not the rate: it walks the stock share down to this figure over the final years of the plan.",
-  btmix: "How the portfolio is split among US stocks (the S&P 500), small-cap value stocks, 10-year Treasuries and cash (one-month Treasury bills), rebalanced annually. Small value and cash begin in July 1926, so a mix holding either starts in 1927. Everything on this page is what that mix did over the years selected, not a projection.",
+  btmix: "How the portfolio is split among US stocks (the S&P 500), small-cap value stocks, 10-year Treasuries and cash (one-month Treasury bills), rebalanced as set under Rebalancing. Small value and cash begin in July 1926, so a mix holding either starts in 1927. Everything on this page is what that mix did over the years selected, not a projection.",
   btreal: "The same return with inflation stripped out. This is the one to carry into a plan you are running in today's dollars.",
   btvol: "Standard deviation of the annual returns. Roughly two thirds of years land within one of these of the average, which is the figure the Monte Carlo mode asks for.",
   btpricelevel: "How much the overall price level rose across the whole period. A figure of 18 means something costing $1 at the start cost about $18 at the end, which is the same thing the real return column is correcting for.",
@@ -14448,6 +14472,7 @@ const GLOSS = {
   sswho: "Include one benefit or two. Both are added together and begin at the point in retirement you set below.",
   ssbenefit: "Your benefit at the age you plan to claim, from your statement at ssa.gov/myaccount, the most accurate figure. Like the rest of the plan, it grows with inflation every year once it starts.",
   ssclaim: "The age you start benefits. Full retirement age is 67 for anyone born in 1960 or later; claiming earlier permanently reduces the benefit, and each year you wait past it adds 8%, up to age 70. Like the rest of the plan, it grows with inflation every year once it starts.",
+  btrebal: "Selling what's grown and buying what's lagged, to get back to your mix. Every year is the classic assumption. Every few years lets the mix drift in between. When it drifts rebalances only once a holding is more than a set number of points off its target, checked at the start of each year. Never lets the mix go where markets take it: usually toward more stocks, which raises both growth and risk.",
   btdata: "S&P 500 total return with dividends reinvested, Fama-French small-cap value stocks, 10-year Treasury total return, one-month Treasury bills, and CPI-U inflation, 1926\u20132025 (small value and cash from July 1926), with no fees. The chart follows a fixed $10,000 starting point; only the mix and date range change what you see. Past returns describe what happened; they are not a forecast.",
   bgincome: "What reaches you after taxes. Voluntary pre-tax savings like 401(k) and HSA contributions stay in this figure, since that money is yours; enter them under Savings & investments below so they count as saving rather than spending.",
   emergency: "Months of spending set aside for a job loss or a large surprise bill, based on your total monthly spending above. A common starting goal is 3\u20136 months; those with variable income often aim for 6\u201312.",
@@ -16337,9 +16362,10 @@ function doShare(){
 }
 
 /* ---------- portfolio backtest ---------- */
-const BT_DEFAULTS = {stock:80, sv:0, cash:0, from:1926, to:2025};
+const BT_DEFAULTS = {stock:80, sv:0, cash:0, rebal:"year", rebalN:3, rebalBand:5, from:1926, to:2025};
 function readBTState(){
-  return {stock:num("btStock"), sv:num("btSV"), cash:num("btCash"), from:num("btFrom"), to:num("btTo")};
+  return {stock:num("btStock"), sv:num("btSV"), cash:num("btCash"), rebal:$("btRebal").value,
+    rebalN:num("btRebalN"), rebalBand:num("btRebalBand"), from:num("btFrom"), to:num("btTo")};
 }
 /* A mix saved before small value and cash were offered is stocks and bonds. */
 function writeBTState(d){
@@ -16347,6 +16373,10 @@ function writeBTState(d){
     $("btStock").value = String(d.stock);
     $("btSV").value = String(d.sv || 0);
     $("btCash").value = String(d.cash || 0);
+    // and rebalanced every year
+    $("btRebal").value = d.rebal || "year";
+    $("btRebalN").value = String(d.rebalN || 3);
+    $("btRebalBand").value = String(d.rebalBand != null ? d.rebalBand : 5);
   }
   if (d.from != null) $("btFrom").value = String(d.from);
   if (d.to != null) $("btTo").value = String(d.to);
@@ -16381,15 +16411,27 @@ function renderBacktest(){
   const lo = HIST_START, hi = HIST_START + HIST_STOCK.length - 1;
   const from = Math.max(lo, Math.min(hi, Math.round(st.from || lo)));
   const to = Math.max(from, Math.min(hi, Math.round(st.to || hi)));
-  const B = backtest({stockPct: st.stock, svPct: st.sv, cashPct: st.cash, fee: 0, initial: 10000, startYear: from, endYear: to});
+  const B = backtest({stockPct: st.stock, svPct: st.sv, cashPct: st.cash, rebal: st.rebal, rebalN: st.rebalN,
+    rebalBand: st.rebalBand, fee: 0, initial: 10000, startYear: from, endYear: to});
   btRun = B;
   btFirstYear = B.first;
 
   const parts = [[B.stockPct, "S&P 500"], [B.svPct, "small-cap value"], [B.bondPct, "10-year Treasuries"],
     [B.cashPct, "cash (one-month Treasury bills)"]].filter(p => p[0] > 0);
   $("btMixText").textContent = btMixText(B);
+  const rbText = ddRebalText({rebal: B.rebal, rebalN: Math.max(1, Math.round(st.rebalN || 1)), rebalBand: st.rebalBand});
+  $("btRebalShow").textContent = rbText;
+  $("btRebalNWrap").hidden = B.rebal !== "every";
+  $("btRebalBandWrap").hidden = B.rebal !== "band";
+  const one = parts.length < 2, em = B.endMix, names = ["stocks", "small value", "bonds", "cash"];
+  const drift = em.map((x, j) => Math.round(x * 100) + "% " + names[j]).filter((t, j) => [B.stockPct, B.svPct, B.bondPct, B.cashPct][j] > 0).join(", ");
+  $("btRebalNote").textContent = one ? "With one asset there's nothing to rebalance."
+    : B.rebal === "year" ? ""
+    : (B.rebal === "never" ? "The mix drifts with markets." : B.rebal === "every" ? "Between rebalances the mix drifts with markets." :
+      "Checked at the start of each year: rebalanced " + B.rebalances + (B.rebalances === 1 ? " time." : " times.")) +
+      " By the end of " + B.last + " it stood at " + drift + ".";
   $("btMixNote").textContent = (parts.length ? parts.map(p => ddN(p[0]) + "% " + p[1]).join(", ") : "Nothing invested") +
-    ", rebalanced every year." + (B.minYear > HIST_START && from < B.minYear
+    (B.rebal === "never" ? ", never rebalanced." : ", rebalanced " + rbText.charAt(0).toLowerCase() + rbText.slice(1) + ".") + (B.minYear > HIST_START && from < B.minYear
       ? " Small value and cash begin in July 1926, so this starts in " + B.minYear + "." : "");
   $("segBTMix").querySelectorAll("button").forEach(x =>
     x.classList.toggle("on", !B.svPct && !B.cashPct && parseFloat(x.getAttribute("data-mix")) === B.stockPct));
@@ -16490,8 +16532,9 @@ function renderBacktest(){
   });
 }
 
-["btFrom","btTo"].forEach(id =>
+["btFrom","btTo","btRebalN","btRebalBand"].forEach(id =>
   $(id).addEventListener("input", renderBacktest));
+$("btRebal").addEventListener("change", renderBacktest);
 
 /* Click a column header to sort the year-by-year table; a new column starts
    high-to-low, clicking the active one again flips the direction. Mirrors the
@@ -16549,7 +16592,7 @@ function btMixForm(){
   const ov = document.createElement("div");
   ov.className = "popup-overlay";
   ov.innerHTML = "<div class='popup wide ddmixpop'><h3>Asset mix</h3>" +
-    "<div class='formhint'>How the portfolio is split, rebalanced to this mix every year. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>" +
+    "<div class='formhint'>How the portfolio is split at the start, and what each rebalance returns it to. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>" +
     DD_ASSETS.map(a => "<div class='ddmixrow'><div><b>" + a[2] + "</b><small>" + a[3] + "</small></div>" +
       "<div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-mix='" + a[0] +
       "' value='" + ddN(val[a[0]]) + "' aria-label='" + a[2] + "'><span class='affix'>%</span></div></div>").join("") +
@@ -21276,7 +21319,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.df10e6ebee.js";
+var OP_WORKER_URL = "/assets/plan.df5b426da2.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

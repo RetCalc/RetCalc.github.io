@@ -2766,7 +2766,7 @@ function historicalRuns(g, stages){
    rest. Everything here is descriptive: no projection, no assumption, just
    what this mix did. */
 /**
- * @param {Object} o - {stockPct, svPct, cashPct, fee, initial, startYear, endYear}
+ * @param {Object} o - {stockPct, svPct, cashPct, rebal, rebalN, rebalBand, fee, initial, startYear, endYear}
  * @returns {Object} per-year rows, summary statistics and rolling-window tables
  */
 function backtest(o){
@@ -2783,13 +2783,36 @@ function backtest(o){
   const wb = Math.max(0, 1 - w - ws - wc);
   const fee = (o.fee || 0) / 100;
   const start = Math.max(1, o.initial || 10000);
+  /* Rebalancing, as the Drawdown Simulator does it: back to the mix every
+     year (one blended return), every rebalN years, when any holding is more
+     than rebalBand points off its target (checked each year), or never. Each
+     holding is tracked between rebalances; a year begins with any rebalance
+     due. */
+  const rb = o.rebal === "every" || o.rebal === "band" || o.rebal === "never" ? o.rebal : "year";
+  const rbN = Math.max(1, Math.round(o.rebalN || 1)), rbBand = Math.max(0, o.rebalBand || 0) / 100;
+  const wts = [w, ws, wb, wc];
+  let hold = null, rebalances = 0;
 
   const rows = [], rets = [], reals = [];
   let bal = start, cum = 1, peak = start, maxDD = 0, ddFrom = 0, ddTo = 0;
   let curPeakYear = HIST_START + s0;
   for (let i = s0; i <= s1; i++){
     const sv = ws > 0 ? HIST_SV[i] : 0, cash = wc > 0 ? HIST_CASH[i] : 0;
-    const r = (w * HIST_STOCK[i] + ws * sv + wb * HIST_BOND[i] + wc * cash) / 100 - fee;
+    let r;
+    if (rb === "year") r = (w * HIST_STOCK[i] + ws * sv + wb * HIST_BOND[i] + wc * cash) / 100 - fee;
+    else {
+      const k = i - s0;
+      if (!hold) hold = wts.map(x => x * bal);
+      else {
+        const due = rb === "every" ? k % rbN === 0
+          : rb === "band" && bal > 0 && hold.some((h, j) => Math.abs(h / bal - wts[j]) > rbBand + 1e-12);
+        if (due){ hold = wts.map(x => x * bal); rebalances++; }
+      }
+      const rr = [HIST_STOCK[i], sv, HIST_BOND[i], cash];
+      hold = hold.map((h, j) => Math.max(0, h * (1 + rr[j] / 100 - fee)));
+      const nb = hold[0] + hold[1] + hold[2] + hold[3];
+      r = bal > 0 ? nb / bal - 1 : 0;
+    }
     const infl = HIST_INFL[i] / 100;
     const real = (1 + r) / (1 + infl) - 1;
     bal = bal * (1 + r);
@@ -2845,7 +2868,8 @@ function backtest(o){
   }).filter(x => x.count > 0);
 
   return {rows, years:n, first: HIST_START + s0, last: HIST_START + s1,
-          stockPct: w * 100, svPct: ws * 100, bondPct: wb * 100, cashPct: wc * 100, minYear: HIST_START + minIdx, cagr, realCagr, inflCagr, vol,
+          stockPct: w * 100, svPct: ws * 100, bondPct: wb * 100, cashPct: wc * 100, minYear: HIST_START + minIdx, rebal: rb, rebalances,
+          endMix: hold && bal > 0 ? hold.map(h => h / bal) : wts.slice(), cagr, realCagr, inflCagr, vol,
           endBal: bal, endReal: bal / cum, start,
           best: bestYr, worst: worstYr, upYears: up, downYears: n - up,
           maxDD, ddFrom, ddTo, rolling,

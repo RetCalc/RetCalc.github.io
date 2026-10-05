@@ -1,7 +1,8 @@
 /* ---------- portfolio backtest ---------- */
-const BT_DEFAULTS = {stock:80, sv:0, cash:0, from:1926, to:2025};
+const BT_DEFAULTS = {stock:80, sv:0, cash:0, rebal:"year", rebalN:3, rebalBand:5, from:1926, to:2025};
 function readBTState(){
-  return {stock:num("btStock"), sv:num("btSV"), cash:num("btCash"), from:num("btFrom"), to:num("btTo")};
+  return {stock:num("btStock"), sv:num("btSV"), cash:num("btCash"), rebal:$("btRebal").value,
+    rebalN:num("btRebalN"), rebalBand:num("btRebalBand"), from:num("btFrom"), to:num("btTo")};
 }
 /* A mix saved before small value and cash were offered is stocks and bonds. */
 function writeBTState(d){
@@ -9,6 +10,10 @@ function writeBTState(d){
     $("btStock").value = String(d.stock);
     $("btSV").value = String(d.sv || 0);
     $("btCash").value = String(d.cash || 0);
+    // and rebalanced every year
+    $("btRebal").value = d.rebal || "year";
+    $("btRebalN").value = String(d.rebalN || 3);
+    $("btRebalBand").value = String(d.rebalBand != null ? d.rebalBand : 5);
   }
   if (d.from != null) $("btFrom").value = String(d.from);
   if (d.to != null) $("btTo").value = String(d.to);
@@ -43,15 +48,27 @@ function renderBacktest(){
   const lo = HIST_START, hi = HIST_START + HIST_STOCK.length - 1;
   const from = Math.max(lo, Math.min(hi, Math.round(st.from || lo)));
   const to = Math.max(from, Math.min(hi, Math.round(st.to || hi)));
-  const B = backtest({stockPct: st.stock, svPct: st.sv, cashPct: st.cash, fee: 0, initial: 10000, startYear: from, endYear: to});
+  const B = backtest({stockPct: st.stock, svPct: st.sv, cashPct: st.cash, rebal: st.rebal, rebalN: st.rebalN,
+    rebalBand: st.rebalBand, fee: 0, initial: 10000, startYear: from, endYear: to});
   btRun = B;
   btFirstYear = B.first;
 
   const parts = [[B.stockPct, "S&P 500"], [B.svPct, "small-cap value"], [B.bondPct, "10-year Treasuries"],
     [B.cashPct, "cash (one-month Treasury bills)"]].filter(p => p[0] > 0);
   $("btMixText").textContent = btMixText(B);
+  const rbText = ddRebalText({rebal: B.rebal, rebalN: Math.max(1, Math.round(st.rebalN || 1)), rebalBand: st.rebalBand});
+  $("btRebalShow").textContent = rbText;
+  $("btRebalNWrap").hidden = B.rebal !== "every";
+  $("btRebalBandWrap").hidden = B.rebal !== "band";
+  const one = parts.length < 2, em = B.endMix, names = ["stocks", "small value", "bonds", "cash"];
+  const drift = em.map((x, j) => Math.round(x * 100) + "% " + names[j]).filter((t, j) => [B.stockPct, B.svPct, B.bondPct, B.cashPct][j] > 0).join(", ");
+  $("btRebalNote").textContent = one ? "With one asset there's nothing to rebalance."
+    : B.rebal === "year" ? ""
+    : (B.rebal === "never" ? "The mix drifts with markets." : B.rebal === "every" ? "Between rebalances the mix drifts with markets." :
+      "Checked at the start of each year: rebalanced " + B.rebalances + (B.rebalances === 1 ? " time." : " times.")) +
+      " By the end of " + B.last + " it stood at " + drift + ".";
   $("btMixNote").textContent = (parts.length ? parts.map(p => ddN(p[0]) + "% " + p[1]).join(", ") : "Nothing invested") +
-    ", rebalanced every year." + (B.minYear > HIST_START && from < B.minYear
+    (B.rebal === "never" ? ", never rebalanced." : ", rebalanced " + rbText.charAt(0).toLowerCase() + rbText.slice(1) + ".") + (B.minYear > HIST_START && from < B.minYear
       ? " Small value and cash begin in July 1926, so this starts in " + B.minYear + "." : "");
   $("segBTMix").querySelectorAll("button").forEach(x =>
     x.classList.toggle("on", !B.svPct && !B.cashPct && parseFloat(x.getAttribute("data-mix")) === B.stockPct));
@@ -152,8 +169,9 @@ function renderBacktest(){
   });
 }
 
-["btFrom","btTo"].forEach(id =>
+["btFrom","btTo","btRebalN","btRebalBand"].forEach(id =>
   $(id).addEventListener("input", renderBacktest));
+$("btRebal").addEventListener("change", renderBacktest);
 
 /* Click a column header to sort the year-by-year table; a new column starts
    high-to-low, clicking the active one again flips the direction. Mirrors the
@@ -211,7 +229,7 @@ function btMixForm(){
   const ov = document.createElement("div");
   ov.className = "popup-overlay";
   ov.innerHTML = "<div class='popup wide ddmixpop'><h3>Asset mix</h3>" +
-    "<div class='formhint'>How the portfolio is split, rebalanced to this mix every year. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>" +
+    "<div class='formhint'>How the portfolio is split at the start, and what each rebalance returns it to. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>" +
     DD_ASSETS.map(a => "<div class='ddmixrow'><div><b>" + a[2] + "</b><small>" + a[3] + "</small></div>" +
       "<div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-mix='" + a[0] +
       "' value='" + ddN(val[a[0]]) + "' aria-label='" + a[2] + "'><span class='affix'>%</span></div></div>").join("") +

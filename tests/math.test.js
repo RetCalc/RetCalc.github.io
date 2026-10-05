@@ -939,6 +939,19 @@ group("Backtest: small-cap value and cash");
   says("backtest", "deepest fall was " + Math.round(-A.maxDD * 100) + "% instead of " + Math.round(-S.maxDD * 100) + "%");
   says("backtest", "Cash alone earned " + p2(C.cagr) + " a year, only " + p2(C.realCagr) + " after inflation");
   ok(bt({ stockPct: 0, svPct: 100 }).cagr > bt({ stockPct: 100, startYear: 1927 }).cagr, "small value beat the S&P 500 over the century");
+  // Rebalancing, as the Drawdown Simulator does it
+  var Y = bt({ stockPct: 60 }), N = bt({ stockPct: 60, rebal: "never" });
+  near(bt({ stockPct: 60, rebal: "every", rebalN: 1 }).cagr, Y.cagr, 1e-12, "every 1 year is every year");
+  var g = 1, s = .6 * 1e4, b = .4 * 1e4;
+  for (var y = 0; y < 100; y++) { s *= 1 + HIST_STOCK[y] / 100; b *= 1 + HIST_BOND[y] / 100; }
+  near(N.endBal, s + b, 1e-6, "never: each holding grows on its own");
+  says("backtest", "earned " + p2(N.cagr) + " a year instead of " + p2(Y.cagr));
+  says("backtest", "by 2025 it was " + Math.round(N.endMix[0] * 100) + "% stocks");
+  says("backtest", "deepest fall was " + Math.round(-N.maxDD * 100) + "% instead of " + Math.round(-Y.maxDD * 100) + "%");
+  var E = bt({ stockPct: 60, rebal: "every", rebalN: 3 });
+  eq(E.rebalances, 33, "every 3 years over 100 years: 33 rebalances after the start");
+  var Bd = bt({ stockPct: 60, rebal: "band", rebalBand: 50 });
+  eq(Bd.rebalances, 0, "a 50-point band never trips on a 60/40 mix");
 })();
 
 group("Articles: Bridge");

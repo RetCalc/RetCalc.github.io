@@ -214,7 +214,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.7ba55de3b7.css">
-<link rel="preload" href="/assets/app.23738b1f84.js" as="script">
+<link rel="preload" href="/assets/app.e481f4ab51.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1284,6 +1284,24 @@ window.onerror = function(msg){
           </div>
           <div class="hint" id="btMixNote"></div>
         </div>
+        <div class="field">
+          <label for="btRebal">Rebalancing<span class="tipdot" data-tip="btrebal" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <select id="btRebal">
+            <option value="year">Every year</option>
+            <option value="every">Every few years</option>
+            <option value="band">When it drifts from the mix</option>
+            <option value="never">Never</option>
+          </select>
+        </div>
+        <div class="field" id="btRebalNWrap" hidden>
+          <label for="btRebalN">Rebalance every</label>
+          <div class="inputwrap"><input id="btRebalN" type="text" inputmode="decimal" data-num data-step="1" min="1" max="30" data-nonneg value="3"><span class="affix">years</span></div>
+        </div>
+        <div class="field" id="btRebalBandWrap" hidden>
+          <label for="btRebalBand">When any holding is off by more than</label>
+          <div class="inputwrap"><input id="btRebalBand" type="text" inputmode="decimal" data-num data-step="1" min="0" max="50" data-nonneg value="5"><span class="affix">points</span></div>
+        </div>
+        <div class="hint" id="btRebalNote" style="margin:-6px 0 12px"></div>
         <div class="two">
           <div class="field">
             <label for="btFrom">From<span class="tipdot" data-tip="bthistory" role="button" tabindex="0" aria-label="What is this?">?</span></label>
@@ -1301,7 +1319,7 @@ window.onerror = function(msg){
         </div>
         <div class="derived">
           <div><span>Years covered</span><span class="num" id="btYears"></span></div>
-          <div><span>Rebalanced</span><span class="num">Annually</span></div>
+          <div><span>Rebalanced</span><span class="num" id="btRebalShow">Every year</span></div>
           <div><span>Dividends</span><span class="num">Reinvested</span></div>
         </div>
       </div>
@@ -5623,7 +5641,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.23738b1f84.js"></script>
+<script src="/assets/app.e481f4ab51.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->
