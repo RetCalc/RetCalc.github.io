@@ -61,3 +61,21 @@ test("compare explains itself with nothing saved", async ({ page }, info) => {
   await compareShown(oldPage, page, info, "nothing saved", ["#tab-compare"]);
   await oldPage.close();
 });
+
+test("drawdown compare matches the current site", async ({ page }, info) => {
+  test.setTimeout(240_000);
+  const oldPage = await page.context().newPage();
+  for (const [p, base, ext] of [[oldPage, OLD, ".html"], [page, NEW, ""]] as const) {
+    await open(p, `${base}/drawdown${ext}`);
+    await apply(p, [["click", "#segDDIn [data-ddin='adv']"], ["ddStarts", "year"]]);
+    await save(p, "Four percent");
+    await apply(p, [["ddStrategy", "guardrails"], ["ddRate", "5"]]);
+    await save(p, "Guardrails");
+    await open(p, `${base}/drawdown${ext}`, "#seoArticles");
+    await p.locator("#btnScenario").click();
+    await p.locator(".popbtn").nth(2).click();
+    await p.waitForTimeout(600);
+  }
+  await compareShown(oldPage, page, info, "two drawdown plans", ["#tab-dd-compare"]);
+  await oldPage.close();
+});

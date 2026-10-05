@@ -43,3 +43,6 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# built from lib/engine by scripts/build-worker.mjs
+/public/engine-worker.js

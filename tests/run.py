@@ -97,7 +97,7 @@ def main():
     if "--web" in sys.argv:
         # Calculators already moved into the new app are taken from there;
         # the rest still come from src/js/app/ until their tool is ported.
-        src = "\n" + engine("calculators") + "\n" + engine("bridge") + "\n" + src
+        src = "\n" + engine("calculators") + "\n" + engine("bridge") + "\n" + engine("landing") + "\n" + src
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
     dd = engine("drawdown")
     e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")

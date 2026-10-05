@@ -24,22 +24,24 @@ export function LegendToggle({ color, label, on, onToggle }: { color: string; la
 
 /** The market-history fan's legend: no "without volatility" line, since no
     assumed rate is used, and a toggle for the line per starting year. */
-export function HistLegend({ id, tracesOn, onToggleTraces, extra }: { id?: string; tracesOn: boolean; onToggleTraces: () => void; extra?: string }) {
+export function HistLegend({ id, tracesOn, onToggleTraces, extra, children }: { id?: string; tracesOn: boolean; onToggleTraces: () => void; extra?: string; children?: React.ReactNode }) {
   return (
     <Legend id={id} items={[["#4fbf95", "10th\u201390th percentile of windows"], ["#3f9a78", "25th\u201375th"], ["#e9b872", "Median window"]]}>
       <LegendToggle color="#7d9fd6" label="Each starting year" on={tracesOn} onToggle={onToggleTraces} />
       {extra ? <span><i style={{ background: "var(--stageline)" }}></i>{extra}</span> : null}
+      {children}
     </Legend>
   );
 }
 
 /** The Monte Carlo fan's legend. `noDet`: there's no plan to draw the
     dashed no-volatility line from. */
-export function McLegend({ id, extra, noDet }: { id?: string; extra?: string; noDet?: boolean }) {
+export function McLegend({ id, extra, noDet, children }: { id?: string; extra?: string; noDet?: boolean; children?: React.ReactNode }) {
   return (
     <Legend id={id} items={[["#4fbf95", "10th\u201390th percentile"], ["#3f9a78", "25th\u201375th"], ["#e9b872", "Median"],
       ...(noDet ? [] : [["#7d9fd6", "Without volatility"] as [string, string]])]}>
       {extra ? <span><i style={{ background: "var(--stageline)" }}></i>{extra}</span> : null}
+      {children}
     </Legend>
   );
 }

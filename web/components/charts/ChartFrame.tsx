@@ -65,8 +65,15 @@ interface FrameProps {
   id: string;
   ariaLabel: string;
   size: ChartSize;
-  /** Where each point sits across the chart, in drawing units. */
-  xs: number[];
+  /** Where each point sits across the chart, in drawing units: the one
+      nearest the pointer is shown. */
+  xs?: number[];
+  /** Or, for a chart read in two directions, which point is under the
+      pointer at (x, y) in drawing units; null for none. `k` is drawing
+      units per screen pixel. */
+  pick?: (x: number, y: number, k: number) => number | null;
+  /** A click (or tap) on the point shown. */
+  onPick?: (i: number) => void;
   /** The tooltip for point i. */
   tip: (i: number) => React.ReactNode;
   svgStyle?: React.CSSProperties;
@@ -74,7 +81,7 @@ interface FrameProps {
   children: (hover: number | null) => React.ReactNode;
 }
 
-export function ChartFrame({ id, ariaLabel, size, xs, tip, svgStyle, children }: FrameProps) {
+export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyle, children }: FrameProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
@@ -97,12 +104,18 @@ export function ChartFrame({ id, ariaLabel, size, xs, tip, svgStyle, children }:
      stay inside the chart. */
   const probe = (clientX: number, clientY: number) => {
     const box = svgRef.current?.getBoundingClientRect(), wb = wrapRef.current?.getBoundingClientRect();
-    if (!box?.width || !wb || !xs.length) return;
-    const vx = ((clientX - box.left) / box.width) * size.W;
-    let i = 0;
-    xs.forEach((x, j) => {
-      if (Math.abs(x - vx) < Math.abs(xs[i] - vx)) i = j;
+    if (!box?.width || !wb) return;
+    const vx = ((clientX - box.left) / box.width) * size.W, vy = ((clientY - box.top) / box.height) * size.H;
+    let i: number | null = 0;
+    if (pick) i = pick(vx, vy, size.W / box.width);
+    else if (xs?.length) xs.forEach((x, j) => {
+      if (Math.abs(x - vx) < Math.abs(xs[i!] - vx)) i = j;
     });
+    else return;
+    if (i == null) {
+      setHover(null);
+      return;
+    }
     const tw = tipRef.current?.offsetWidth || 190, th = tipRef.current?.offsetHeight || 84;
     let left = clientX - wb.left + 16;
     if (left + tw > wb.width - 4) left = clientX - wb.left - tw - 16;
@@ -110,10 +123,10 @@ export function ChartFrame({ id, ariaLabel, size, xs, tip, svgStyle, children }:
     let top = clientY - wb.top - th - 14;
     if (top < 4) top = clientY - wb.top + 18;
     top = Math.max(4, Math.min(top, wb.height - th - 4));
-    setHover({ i, left, top });
+    setHover({ i: i!, left, top });
   };
   const clear = () => setHover(null);
-  const active = hover && hover.i < xs.length ? hover : null;
+  const active = hover && (pick || hover.i < (xs?.length ?? 0)) ? hover : null;
 
   return (
     <div
@@ -122,6 +135,7 @@ export function ChartFrame({ id, ariaLabel, size, xs, tip, svgStyle, children }:
       ref={wrapRef}
       onMouseMove={(e) => probe(e.clientX, e.clientY)}
       onMouseLeave={clear}
+      onClick={() => active && onPick?.(active.i)}
       /* A touch shows the point under the finger, and the tooltip stays up
          briefly after it lifts. The first move decides: mostly vertical hands
          the gesture back to the page; mostly sideways keeps it to scrub. */
@@ -150,7 +164,7 @@ export function ChartFrame({ id, ariaLabel, size, xs, tip, svgStyle, children }:
       }}
     >
       <svg id={`chart${id}`} ref={svgRef} viewBox={`0 0 ${size.W} ${size.H}`} preserveAspectRatio="none" role="img" aria-label={ariaLabel} style={svgStyle}>
-        {xs.length ? children(active ? active.i : null) : null}
+        {xs?.length || pick ? children(active ? active.i : null) : null}
       </svg>
       <div className="tip" ref={tipRef} style={active ? { opacity: 1, left: active.left, top: active.top } : { opacity: 0 }}>
         {active ? tip(active.i) : null}

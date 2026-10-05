@@ -11,6 +11,7 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
+import { StageHead } from "@/components/tools/StageHead";
 import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import { PeriodOptions } from "@/lib/periods";
 import { glideNote, pctField } from "@/tools/advanced/model";
@@ -101,34 +102,12 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
 
   return (
     <div className="stagecard">
-      <div className="stagehead">
-        <span className="stagenum" contentEditable suppressContentEditableWarning spellCheck={false} data-name={i} title="Click to rename" aria-label={aria + " name"}
-          onFocus={(e) => {
-            const range = document.createRange();
-            range.selectNodeContents(e.currentTarget);
-            const sel = window.getSelection();
-            sel?.removeAllRanges();
-            sel?.addRange(range);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              e.currentTarget.blur();
-            }
-          }}
-          onBlur={(e) => {
-            const raw = (e.currentTarget.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 40);
-            const def = "Stage " + (i + 1);
-            const name = raw && raw !== def ? raw : undefined;
-            e.currentTarget.textContent = name || def;
-            up((c) => {
-              const { name: _old, ...rest } = c;
-              return name ? { ...rest, name } : rest;
-            });
-          }}>{label}</span>
-        <span className="stagespan" data-span={i}>{span}</span>
-        <button className="btn mini" type="button" data-del={i} onClick={() => remove(i)}>Remove</button>
-      </div>
+      <StageHead name={st.name} fallback={"Stage " + (i + 1)} aria={aria} span={span} remove={() => remove(i)}
+        attrs={{ name: { "data-name": i }, span: { "data-span": i }, del: { "data-del": i } }}
+        rename={(name) => up((c) => {
+          const { name: _old, ...rest } = c;
+          return name ? { ...rest, name } : rest;
+        })} />
       <div className={"stagegrid" + (split ? " split" : "") + (mc ? " withvol" : "")}>
         {order.map((k) => f[k])}
         {last ? <div className={"field stageglide" + (shownCount % 2 === 0 ? " even" : "")}><label aria-hidden="true">&nbsp;</label>{glideBtn}</div> : null}

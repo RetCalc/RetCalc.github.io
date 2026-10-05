@@ -20,11 +20,8 @@ import { runRoth } from "@/lib/engine/typed";
 import type { RothResult } from "@/lib/engine/types";
 import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
+import { DRAWDOWN_DEFAULTS } from "@/tools/drawdown/fields";
 import { ROTH_DEF, rothInput, type RothInputs } from "./model";
-
-/* The Drawdown Simulator's portfolio, before that tool is ported (phase 5):
-   its default, under the key its inputs will keep. */
-const DRAWDOWN_FALLBACK = { initial: groupDigits(1000000, true) };
 
 export function Roth() {
   const { state: s, set, setState } = useToolState(ROTH_DEF);
@@ -107,7 +104,7 @@ export function Roth() {
               <Affixed prefix="$"><MoneyInput id="rcTrad" nonNeg value={s.trad} onValueChange={set("trad")} /></Affixed>
               <button className="btn mini" type="button" id="rcCopyDD" style={{ marginTop: "6px" }}
                 onClick={() => {
-                  const v = parseNum(toolInputs("drawdown", DRAWDOWN_FALLBACK).initial);
+                  const v = parseNum(toolInputs("drawdown", DRAWDOWN_DEFAULTS).initial as string);
                   if (!(v > 0)) {
                     toast("Set a portfolio value in the Drawdown Simulator first");
                     return;

@@ -109,8 +109,13 @@ export function setToolInputs(id: string, data: ToolInputs): void {
 }
 
 /** A tool's inputs. `set("price")(text)` updates one; `update({...})` several. */
-export function useToolState<S extends ToolInputs>(def: ToolDef<S>) {
-  const [state, setState] = useState<S>(() => toolInputs(def.id, def.defaults));
+/** `opening`: a change to the inputs as the page opens (a strategy page
+    sets up its strategy). */
+export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s: S) => S) {
+  const [state, setState] = useState<S>(() => {
+    const s = toolInputs(def.id, def.defaults);
+    return opening ? opening(s) : s;
+  });
   useEffect(() => {
     memory.set(def.id, state);
   }, [def.id, state]);

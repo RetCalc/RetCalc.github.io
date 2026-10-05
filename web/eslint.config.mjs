@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // built from lib/engine by scripts/build-worker.mjs
+    "public/engine-worker.js",
   ]),
 ]);
 

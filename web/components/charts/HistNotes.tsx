@@ -4,7 +4,7 @@
 import type { HistRuns, HistWindow, MCResult } from "@/lib/engine/types";
 import { fmtNum, fmtYears, money } from "@/lib/format";
 
-const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /** "Sep 1929", or the year alone for a window that starts in January. */
 export function histWhen(w: HistWindow | undefined): string {

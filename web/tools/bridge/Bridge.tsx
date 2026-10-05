@@ -18,7 +18,7 @@ import { Affixed, Field, FieldHeading, MoneyField, NumberField, SelectField } fr
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
-import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { Figure, Segmented } from "@/components/ui/Readout";
 import { HIST_START, LTCG_2026, STATES } from "@/lib/engine/typed";
@@ -27,6 +27,7 @@ import type { BrCtx, BrEnd, BrRow } from "@/lib/engine/types";
 import { useMcSeed } from "@/lib/mc-seed";
 import { DASH, dollarsField, fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
+import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { sendYearToTax } from "@/tools/tax/handoff";
 import { BRIDGE_DEF, FILLS, bridgeAge, bridgeInput, type BridgeInputs } from "./model";
 import { UNLOCK, bridgeScenarios, firstYearAfter, runBridge, type BridgeRun, type PathKey, type RunPlan, type Scenarios } from "./run";
@@ -95,10 +96,9 @@ export function Bridge() {
   const toDrawdown = () => {
     const H = handoff();
     if (!H) return;
-    setToolInputs("drawdown", {
-      ...toolInputs("drawdown", {}), initial: dollarsField(H.e.total), retireAge: "60", stock: String(Math.round(H.ctx.stock)),
-      stockEnd: "", strategy: "fixed", rate: String(Math.max(0.1, Math.round(H.y.gross / H.e.total * 10000) / 100)),
-      spendFloor: "0", spendCeil: "0",
+    sendToDrawdown({
+      initial: Math.round(H.e.total), retireAge: "60", stock: Math.round(H.ctx.stock), stockEnd: "", strategy: "fixed",
+      rate: Math.max(0.1, Math.round(H.y.gross / H.e.total * 10000) / 100), spendFloor: 0, spendCeil: 0,
     });
     router.push("/drawdown");
     toast("Drawdown set to " + money(H.e.total) + " at 60, withdrawing " + money(H.y.gross) + " a year");

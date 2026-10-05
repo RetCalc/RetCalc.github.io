@@ -9,7 +9,8 @@ import { NEW, OLD } from "../playwright.config";
 /** One input change: a field and its new value, or a click. The field is an
     id ("moPrice") or a CSS selector ("#dtList .dtrow:nth-child(2) .desc").
     Selects are chosen by value; everything else is typed, as a person would.
-    ["click", selector] presses a button. */
+    ["click", selector] presses a button; ["until", selector] waits for
+    something to appear (a Monte Carlo run's result, say). */
 export type Step = [target: string, value: string];
 export interface Case { name: string; steps: Step[] }
 
@@ -47,6 +48,11 @@ export async function apply(page: Page, steps: Step[]) {
   for (const [target, value] of steps) {
     if (target === "click") {
       await page.locator(value).click();
+      continue;
+    }
+    // work that finishes in the background: wait for what it shows
+    if (target === "until") {
+      await page.locator(value).first().waitFor({ timeout: 90_000 });
       continue;
     }
     const el = page.locator(/^[#.\[]/.test(target) ? target : "#" + target);
@@ -118,6 +124,9 @@ export async function compareShown(oldPage: Page, page: Page, info: TestInfo, na
   const [a, b] = [await snapshot(oldPage, roots), await snapshot(page, roots)];
   log(name + ": read");
   expect.soft(b, `${name}: numbers`).toEqual(a);
+  if (JSON.stringify(a) !== JSON.stringify(b))
+    for (const [kind, snap] of [["old", a], ["new", b]] as const)
+      writeFileSync(info.outputPath(`${name}-${kind}.json`.replace(/[^\w.-]+/g, "-")), JSON.stringify(snap, null, 1));
 
   // Sticky panels land wherever the last click left the page scrolled, so
   // both pages go back to the top and sticky parts are held in place.

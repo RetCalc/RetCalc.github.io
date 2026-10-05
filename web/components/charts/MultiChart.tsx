@@ -25,7 +25,9 @@ interface Props {
   maxX: number;
   ariaLabel: string;
   /** The tooltip's first line, for the year under the pointer. */
-  head: (year: number) => React.ReactNode;
+  head?: (year: number) => React.ReactNode;
+  /** Or the whole tooltip, in place of the head and a line per series. */
+  tip?: (year: number) => React.ReactNode;
   xFmt?: (x: number) => React.ReactNode;
   yFmt?: (v: number) => string;
   /** How each line's figure reads in the tooltip. */
@@ -34,7 +36,7 @@ interface Props {
   marks?: { x: number; label: string }[];
 }
 
-export function MultiChart({ id, series, maxX, ariaLabel, head, xFmt = (x) => x, yFmt = fmtAxisMoney, valFmt = money, marks = [] }: Props) {
+export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) => x, yFmt = fmtAxisMoney, valFmt = money, marks = [] }: Props) {
   const size = useChartSize();
   const { W, Rp, L, T, pw, ph, fs, sw } = size;
   const live = series.filter((x) => x.pts.length);
@@ -53,9 +55,9 @@ export function MultiChart({ id, series, maxX, ariaLabel, head, xFmt = (x) => x,
 
   return (
     <ChartFrame id={id} ariaLabel={ariaLabel} size={size} xs={grid.map((g) => X(g.year))}
-      tip={(i) => (
+      tip={(i) => tip ? tip(grid[i].year) : (
         <>
-          {head(grid[i].year)}
+          {head?.(grid[i].year)}
           {grid[i].vals.map((v, k) => (v == null ? null : <TipRow key={k} color={colors[k]} label={live[k].name} value={v} fmt={valFmt} />))}
         </>
       )}>

@@ -18,7 +18,7 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { ProjectionChart, ProjectionSummary, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
+import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { BigValue } from "@/components/ui/BigValue";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
@@ -30,6 +30,7 @@ import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_ADV, PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
 import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
+import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { ADVANCED_DEF, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs, type AdvancedPlan } from "./model";
 import { toStages } from "./toStages";
@@ -280,7 +281,7 @@ export function Advanced() {
                 <label htmlFor="withdrawal"><Tipped text="Withdrawal rate" k="withdrawal" /></label>
                 <Affixed suffix="%"><NumberInput id="withdrawal" nonNeg value={s.withdrawal} onValueChange={set("withdrawal")} /></Affixed>
                 <button className="btn mini" type="button" id="toDrawdown" style={{ marginTop: "6px" }} onClick={() => {
-                  setToolInputs("drawdown", { ...toolInputs("drawdown", {}), initial: dollarsField(R.fvReal) });
+                  sendToDrawdown({ initial: Math.round(R.fvReal) });
                   router.push("/drawdown");
                   toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
                 }}>Test withdrawals</button>

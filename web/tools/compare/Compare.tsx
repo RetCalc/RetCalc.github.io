@@ -14,6 +14,7 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { fmtNum } from "@/lib/format";
 import { compareNav } from "@/lib/compare-nav";
 import { useClient } from "@/lib/useClient";
+import { DDCompare } from "./DDCompare";
 import {
   CMP_LETTERS, CMP_MODES, CMP_MODE_LABEL, cmpDelta, cmpFmt, cmpRun, openingSlots, rememberSlots, savedNames,
   type CmpMode, type Slot,
@@ -23,7 +24,9 @@ const HELP = "Comparison reads saved scenarios only, exactly as they were saved.
 
 /* Saved scenarios live in this browser, so the page fills in once it's here. */
 export function Compare() {
-  return useClient() ? <CompareSaved /> : <div className="stack" id="tab-compare" />;
+  if (!useClient()) return <div className="stack" id="tab-compare" />;
+  // opened from the Drawdown Simulator, it compares that tool's scenarios
+  return compareNav.from === "drawdown" ? <DDCompare /> : <CompareSaved />;
 }
 
 function CompareSaved() {
