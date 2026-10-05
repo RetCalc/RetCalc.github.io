@@ -31,7 +31,7 @@ export interface BudgetRow { group: string; desc: string; amount: string; freq: 
 export const PRESET_DESCS = BUDGET_PRESETS.flatMap((g) => g.items.map((it) => it.desc));
 
 export const BUDGET_DEFAULTS = {
-  income: "0",
+  income: "",
   /** 1 = income typed as annual, 12 = as monthly */
   incomeFreq: 1,
   rows: BUDGET_PRESETS.flatMap((g) => g.items.map((it): BudgetRow => ({ group: g.group, desc: it.desc, amount: "0", freq: it.freq, custom: false }))),

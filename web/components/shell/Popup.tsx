@@ -11,6 +11,8 @@ import { createContext, use, useCallback, useEffect, useRef, useState } from "re
 export interface PopupOption {
   label: string;
   desc?: string;
+  /** Set the description as a dollar figure. */
+  money?: boolean;
 }
 type ShowPopup = (title: string, options: PopupOption[]) => Promise<number>;
 
@@ -64,7 +66,7 @@ function PopupDialog({ open, close }: { open: Open; close: (i: number) => void }
         {open.options.map((o, i) => (
           <button key={o.label} className="popbtn" onClick={() => close(i)}>
             {o.label}
-            {o.desc ? <span className="subdesc">{o.desc}</span> : null}
+            {o.desc ? <span className={o.money ? "subdesc money" : "subdesc"}>{o.desc}</span> : null}
           </button>
         ))}
         <button className="cancel" onClick={() => close(-1)}>Cancel</button>

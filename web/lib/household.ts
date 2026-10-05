@@ -28,10 +28,16 @@ export interface SavedHousehold extends Household {
 /** Stored under retcalc.household.v1. */
 export const HOUSEHOLD_STORE = { key: "household", version: 1 } as const;
 
-/** The tools that take the profile in, and whether a given profile gives
-    each one anything to fill (the save confirmation lists them). Each tool
-    adds itself here as it's ported; its fill runs via useHouseholdFill. */
-export const HOUSEHOLD_TOOLS: { name: string; takes: (h: Household) => boolean }[] = [];
+const has = (v: number | null) => v != null && isFinite(v);
+
+/** The tools that take the profile in, in the order the save confirmation
+    lists them, and whether a given profile gives each anything to fill
+    (from hhApply() in src/js/app/27-household.js). Each tool is added as
+    it's ported; its fill runs via useHouseholdFill. */
+export const HOUSEHOLD_TOOLS: { name: string; takes: (h: Household) => boolean }[] = [
+  { name: "Income Tax", takes: () => true },
+  { name: "Budget", takes: (h) => has(h.income) && (h.income! + (h.status === "m" && has(h.income2) ? h.income2! : 0)) > 0 },
+];
 
 export function isEmptyHousehold(h: Household | null): boolean {
   return !h || Object.entries(h).every(([k, v]) => k === "status" || v == null);

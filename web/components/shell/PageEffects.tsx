@@ -18,8 +18,10 @@ function initSeg(seg: HTMLElement & { __thumb?: boolean }) {
   seg.insertBefore(thumb, seg.firstChild);
   const place = () => {
     const on = seg.querySelector<HTMLElement>("button.on");
+    // Every write here is guarded: even a no-op classList change counts as a
+    // mutation, and would wake this observer again, forever.
     if (!on || !on.offsetWidth) {
-      thumb.classList.remove("ready");
+      if (thumb.classList.contains("ready")) thumb.classList.remove("ready");
       return;
     }
     const w = on.offsetWidth + "px", x = `translateX(${on.offsetLeft}px)`;

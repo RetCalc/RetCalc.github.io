@@ -50,14 +50,19 @@ web/
     shell/                masthead, navigation, footer, page frame, tool header, article, toast
     household/            the household bar and the profile shared across tools
     fields/               number and money inputs (comma grouping, arrow-key steps)
-    tools/                the tool list and each tool's icon; each tool's own folder joins here
+    tools/                the tool list, each tool's icon, and ToolState (inputs, scenarios, share, reset)
+    charts/               the band chart (hover and touch), legends and share bars
+    ui/                   headline figures, CSV buttons
   lib/
     engine/               math.js, drawdown.js, plan.js as ES modules (moved, not rewritten)
     site.ts               every address, its tab, its tool; page-meta.json beside it
     seo.ts, articles.ts   each page's <head> and structured data; its "about" article
     tools.ts              the tool list's groups, names and descriptions
     format.ts, storage.ts, theme.ts, household.ts
+  tools/<tool>/           model.ts (defaults, inputs, math wiring) and the screen
+  tools/registry.tsx      which screen each address shows
   content/articles/       each page's "about this tool" article, HTML moved unchanged
+  e2e/                    Playwright old-vs-new checks, one file per tool
   styles/                 today's CSS, split the same way it is now
   scripts/                html2jsx.py (markup into JSX), seo-compare.mjs (old vs new <head>s)
 ```
@@ -73,6 +78,17 @@ Rules that keep it from turning into a tangle again:
 - Saved data uses versioned keys (`retcalc.<name>.v1`, `lib/storage.ts`).
 - The household profile reaches a tool when the tool is next opened, not
   instantly: only the open tool is loaded now (`useHouseholdFill`).
+- Each tool keeps its defaults and input handling in `tools/<tool>/model.ts`,
+  apart from its screen, so another tool can read it ("Copy from Budget")
+  without loading that tool's page. `toolInputs(id, defaults)` reads a
+  tool's inputs as last left this visit.
+- Inputs live for the visit as you move between pages, as on the old
+  single-page site; a reload starts fresh, as it did there.
+- Anything that depends on today's date renders once in the browser
+  (`useClient`), so the pre-built pages don't bake in the build day.
+- Phase 4 must keep these input keys, which the Budget already reads:
+  Basic and Advanced `contrib` and `period`, Stages `stages[0].contrib` and
+  `.period` (`lib/retirement-contribs.ts`).
 - The engine is imported from `@/lib/engine` only. `math.js` and `drawdown.js`
   read each other's names, and `lib/engine/index.js` loads them in the order
   that works.
@@ -125,6 +141,19 @@ Each phase ends with a commit on `nextjs-migration` and its gate passing.
 ### Phase 3: Smaller tools
 Mortgage, debt, budget, college, rent vs buy, income tax.
 
+- [x] Shared tool plumbing: inputs, saved scenarios, share links (`#s=`), reset, CSV, tooltips, dropdown lists, chart
+- [x] All six tools, each with its cases in `web/e2e/`; every case matches on desktop and phone
+- [x] College and rent-vs-buy math moved into `web/lib/engine/calculators.js`; `tests/run.py --web` reads it there
+- Fixed on the way, so intentionally different from the old site (each checked on its own):
+  Debt Payoff and Rent vs. Buy no longer leave the last results on screen once there's nothing to calculate
+- [x] The household profile fills Income Tax and Budget (`e2e/household.spec.ts`)
+- Left for phase 5 with the rest of the share menu: the printable summary and the image card
+
+Running the checks: `cd web && npm run build && npx playwright test` (about
+1.5 minutes; 18 checks). They run on this machine, not in CI: they need
+Chrome and the old site built from `../src`. A check that needed its one
+retry is reported as "flaky".
+
 **Gate:** old-vs-new numbers and screenshots match for each.
 
 ### Phase 4: Planning tools
@@ -151,6 +180,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 3 | Mortgage, Debt Payoff, College Savings, Rent vs. Buy, Income Tax, Budget; old-vs-new checks for each |
 | 2026-10-05 | 2 | Shared shell, household bar, number fields, 29 pages with metadata and articles, tool list, sitemap, redirects, SEO check passing |
 | 2026-10-05 | 1 | Node, Vercel skills, Next.js app, engine moved and tested, CSS, CI |
 | 2026-10-05 | 0 | Plan written; branch created |

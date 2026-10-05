@@ -1,0 +1,482 @@
+"use client";
+
+/* Income Tax: 2026 federal, state and FICA tax on a salary, or, in
+   retirement mode, on a year of withdrawals from each kind of account.
+   Ported from src/js/app/11-income-tax.js and src/main/10-tax-inputs.html,
+   18-income-tax.html. */
+
+import { useRef, useState } from "react";
+import { ShareBar } from "@/components/charts/Legend";
+import { useHouseholdFill } from "@/components/household/HouseholdProvider";
+import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { Tipped, TipDot } from "@/components/shell/Tooltips";
+import { useToolState } from "@/components/tools/ToolState";
+import { BigValue } from "@/components/ui/BigValue";
+import { CsvButton } from "@/components/ui/CsvButton";
+import { FED_STD, NIIT, bracketRoom } from "@/lib/engine";
+import { groupDigits, money, pctStr } from "@/lib/format";
+import { STATE_OPTIONS } from "@/lib/household";
+import { TAX_DEF, runTax, taxInput, type TaxInputs } from "./model";
+import { LTCG_COLORS, stackChartSvg } from "./stackChart";
+import { stateGaps, stateRuleRows } from "./stateRules";
+
+const TAX_COLORS = { fed: "#e2795f", state: "#e9b872", fica: "#7d9fd6", net: "#4fbf95" };
+const BKT_COLORS = ["#e2795f", "#4fbf95", "#7d9fd6", "#e9b872", "#c98fb8", "#a98fd6"]; // trad, roth, brok, ss, pension, other
+const DASH = "—";
+
+interface Part { v: number; c: string; label: string }
+interface Bar { label: string; v: number; share: number; c: string }
+
+/* One row of the tax breakdown table. */
+const TxRow = ({ k, v, eff, c }: { k: string; v: number; eff: number; c: string }) => (
+  <tr><td>{k}</td><td>{money(v)}</td><td>{pctStr(eff, 2)}</td><td><span style={{ color: c }}>{"■"}</span> {pctStr(eff, 1)}</td></tr>
+);
+
+/* The donut: each slice dims the others on hover, and its label and amount
+   take the center. The bars beside it do the same. */
+function Donut({ parts, center, active }: { parts: Part[]; center: string; active: number | null }) {
+  const R = 100, C = 110, sw = 30, circ = 2 * Math.PI * (R - sw / 2);
+  const tot = parts.reduce((a, x) => a + x.v, 0) || 1;
+  // Where each slice starts, as a share of the ring.
+  const starts = parts.map((_, i) => parts.slice(0, i).reduce((a, x) => a + Math.max(0, x.v / tot), 0));
+  const pt = active != null ? parts[active] : null;
+  return (
+    <>
+      {parts.map((p, i) => {
+        const frac = p.v / tot, off = starts[i];
+        if (frac <= 0) return null;
+        return (
+          <circle key={i} cx={C} cy={C} r={R - sw / 2} fill="none" stroke={p.c} strokeWidth={sw}
+            strokeDasharray={(frac * circ).toFixed(2) + " " + circ.toFixed(2)} strokeDashoffset={(-off * circ).toFixed(2)}
+            transform={`rotate(-90 ${C} ${C})`} data-idx={i}
+            style={{ transition: "opacity .15s", cursor: "pointer", opacity: active == null || active === i ? undefined : 0.18 }} />
+        );
+      })}
+      <text id="txPieLbl" x="110" y="104" textAnchor="middle" fontSize="13" style={{ fill: "var(--dim)", fontFamily: "var(--sans)", pointerEvents: "none" }}>{pt ? pt.label : "All taxes"}</text>
+      <text id="txPieVal" x="110" y="128" textAnchor="middle" fontSize="22" fontWeight="600" style={{ fill: "var(--text)", fontFamily: "var(--mono)", pointerEvents: "none" }}>{pt ? money(pt.v) : center}</text>
+    </>
+  );
+}
+
+export function Tax() {
+  const { state: s, setState } = useToolState(TAX_DEF);
+  const set = (k: keyof TaxInputs) => (v: string) => setState((c) => ({ ...c, [k]: v }));
+  const [active, setActive] = useState<number | null>(null);
+  const deactivate = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const activate = (i: number) => {
+    clearTimeout(deactivate.current);
+    setActive(i);
+  };
+  const leave = () => {
+    deactivate.current = setTimeout(() => setActive(null), 60);
+  };
+  const tableRef = useRef<HTMLTableElement>(null), bucketRef = useRef<HTMLTableElement>(null), bracketRef = useRef<HTMLTableElement>(null), rulesRef = useRef<HTMLTableElement>(null);
+
+  // The household's filing status, state and incomes.
+  useHouseholdFill("tax", (h) => setState((c) => ({
+    ...c, status: h.status === "m" ? "m" : "s",
+    gross2: groupDigits(h.status === "m" && h.income2 != null ? h.income2 : 0, true),
+    ...(h.income != null ? { gross: groupDigits(h.income, true) } : {}),
+    ...(h.state ? { state: h.state } : {}),
+  })));
+
+  const ret = s.mode === "retire";
+  const joint = s.status === "m";
+  const split = !ret && joint;
+  const inp = taxInput(s);
+  const R = runTax(inp);
+
+  // ---- what each mode shows
+  let head: { netLabel: string; netNote: string; monthNote: string; thirdLabel: string; thirdNote: string; net: string; month: string; third: string };
+  let derived: { stdLabel: string; std: string; ssRow: string | null; marginal: string; roomLabel: string; room: string; zeroRoom: string | null };
+  let bars: Bar[], parts: Part[], rows: React.ReactNode;
+
+  const room = (taxable: number) => {
+    const br = bracketRoom(taxable, inp.status) as { nextRate: number; room: number } | null;
+    return { roomLabel: br ? "Room before " + pctStr(br.nextRate, 0) : "Room before next bracket", room: br ? money(br.room) : "Top bracket" };
+  };
+  const noRoom = { roomLabel: "Room before next bracket", room: DASH };
+  const totals = (afterLabel: string, grossLabel: string) => (
+    <>
+      <tr style={{ fontWeight: 600 }}><td>All taxes</td><td>{money(R.total)}</td><td>{pctStr(R.effTotal, 2)}</td><td></td></tr>
+      <tr><td>{afterLabel}</td><td>{money(R.net)}</td><td>{pctStr(R.effNet, 2)}</td><td></td></tr>
+      {R.pre > 0 ? <tr><td>Pre-tax deductions</td><td>{money(R.pre)}</td><td>{pctStr(R.gross ? R.pre / R.gross : 0, 2)}</td><td></td></tr> : null}
+      <tr style={{ fontWeight: 600, borderTop: "2px solid var(--line)" }}><td>{grossLabel}</td><td>{money(R.gross)}</td><td>100.00%</td><td></td></tr>
+    </>
+  );
+  const share = (v: number) => (R.gross ? v / R.gross : 0);
+  const stateLabel = "State income tax" + (R.stateNone ? " (none)" : "");
+  const stateRow = <TxRow k={"State income tax" + (R.stateName ? " · " + R.stateName : "")} v={R.state} eff={R.effState} c={TAX_COLORS.state} />;
+
+  if (!ret) {
+    // Net pay is gross minus taxes; take-home also takes out pre-tax savings,
+    // money you keep but never see in the paycheck.
+    const netPay = R.gross - R.total;
+    const shown = s.view === "take" ? R.net : netPay;
+    head = {
+      netLabel: s.view === "take" ? "Take-home pay" : "Net pay",
+      netNote: R.gross > 0
+        ? s.view === "take" ? pctStr(R.gross ? R.net / R.gross : 0, 1) + " of gross, after pre-tax savings" : pctStr(R.gross ? netPay / R.gross : 0, 1) + " of gross, after taxes"
+        : "Enter your income to begin",
+      monthNote: s.view === "take" ? "In your paycheck, after pre-tax savings" : "After all taxes",
+      thirdLabel: "Every two weeks", thirdNote: "26 paychecks a year",
+      net: money(shown), month: money(shown / 12), third: money(shown / 26),
+    };
+    derived = {
+      stdLabel: "Standard deduction", std: money((FED_STD as Record<string, number>)[inp.status]), ssRow: null,
+      marginal: pctStr(R.marginal, 0), ...(R.gross > 0 ? room(R.fedTaxable) : noRoom), zeroRoom: null,
+    };
+    bars = [
+      { label: "Take-home pay", v: R.net, share: R.effNet, c: TAX_COLORS.net },
+      { label: "Federal income tax", v: R.federal, share: R.effFed, c: TAX_COLORS.fed },
+      { label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state },
+      { label: "FICA (Social Security + Medicare)", v: R.fica, share: R.effFica, c: TAX_COLORS.fica },
+    ];
+    if (R.pre > 0) bars.push({ label: "Pre-tax savings", v: R.pre, share: share(R.pre), c: "#8ba0ac" });
+    parts = [{ v: R.net, c: TAX_COLORS.net, label: "Take-home pay" }, { v: R.federal, c: TAX_COLORS.fed, label: "Federal tax" },
+      { v: R.state, c: TAX_COLORS.state, label: "State tax" }, { v: R.fica, c: TAX_COLORS.fica, label: "FICA" }];
+    if (R.pre > 0) parts.push({ v: R.pre, c: "#8ba0ac", label: "Pre-tax savings" });
+    // The Social Security wage cap applies per earner, so a joint return
+    // shows a line for each rather than one shared cap.
+    rows = (
+      <>
+        <TxRow k="Federal income tax" v={R.federal} eff={R.effFed} c={TAX_COLORS.fed} />
+        {stateRow}
+        {inp.status === "m" ? (
+          <>
+            <TxRow k="Your Social Security" v={R.ss1} eff={share(R.ss1)} c={TAX_COLORS.fica} />
+            <TxRow k="Spouse's Social Security" v={R.ss2} eff={share(R.ss2)} c={TAX_COLORS.fica} />
+          </>
+        ) : <TxRow k="Social Security" v={R.ss} eff={share(R.ss)} c={TAX_COLORS.fica} />}
+        <TxRow k={"Medicare" + (R.addl > 0 ? " (incl. surtax)" : "")} v={R.med + R.addl} eff={share(R.med + R.addl)} c={TAX_COLORS.fica} />
+        {totals("Take-home pay", "Gross pay")}
+      </>
+    );
+  } else {
+    head = {
+      netLabel: "Income after tax", netNote: R.gross > 0 ? pctStr(R.effNet, 1) + " of what you withdrew" : "Enter your withdrawals to begin",
+      monthNote: "After all taxes", thirdLabel: "Effective tax rate", thirdNote: R.gross > 0 ? "Marginal on the next dollar: " + pctStr(R.marginal, 1) : "",
+      net: money(R.net), month: money(R.net / 12), third: pctStr(R.effTotal, 2),
+    };
+    derived = {
+      stdLabel: inp.dedType === "item" ? "Itemized deduction" : R.seniors > 0 ? "Standard deduction, incl. 65+" : "Standard deduction",
+      std: money(R.fedDed),
+      ssRow: R.ssGross > 0 ? money(R.taxableSS) + " (" + pctStr(R.taxableSS / R.ssGross, 0) + ")" : null,
+      marginal: pctStr(R.marginal, 1),
+      ...(R.gross > 0 ? room(R.ordTaxable) : noRoom),
+      zeroRoom: R.gross > 0 ? (R.zeroRoom > 0 ? money(R.zeroRoom) : "None left") : null,
+    };
+    bars = [
+      { label: "Income after tax", v: R.net, share: R.effNet, c: TAX_COLORS.net },
+      { label: "Federal ordinary income tax", v: R.fedOrdinary, share: share(R.fedOrdinary), c: TAX_COLORS.fed },
+      { label: "Federal long-term capital gain tax", v: R.ltcg, share: share(R.ltcg), c: LTCG_COLORS[1] },
+    ];
+    if (R.niit > 0) bars.push({ label: "Net investment income tax (3.8%)", v: R.niit, share: share(R.niit), c: "#a98fd6" });
+    bars.push({ label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state });
+    if (R.pre > 0) bars.push({ label: "Pre-tax deductions", v: R.pre, share: share(R.pre), c: "#8ba0ac" });
+    parts = [{ v: R.net, c: TAX_COLORS.net, label: "Income after tax" }, { v: R.fedOrdinary, c: TAX_COLORS.fed, label: "Federal ordinary tax" },
+      { v: R.ltcg, c: LTCG_COLORS[1], label: "Capital gain tax" }, { v: R.niit, c: "#a98fd6", label: "Net investment tax" },
+      { v: R.state, c: TAX_COLORS.state, label: "State tax" }];
+    if (R.pre > 0) parts.push({ v: R.pre, c: "#8ba0ac", label: "Pre-tax deductions" });
+    rows = (
+      <>
+        <TxRow k="Federal tax on ordinary income" v={R.fedOrdinary} eff={share(R.fedOrdinary)} c={TAX_COLORS.fed} />
+        <TxRow k="Federal tax on long-term gains" v={R.ltcg} eff={share(R.ltcg)} c={LTCG_COLORS[1]} />
+        {R.niit > 0 ? <TxRow k="Net investment income tax" v={R.niit} eff={share(R.niit)} c="#a98fd6" /> : null}
+        {stateRow}
+        {totals("Income after tax", "Gross withdrawals")}
+      </>
+    );
+  }
+
+  // ---- retirement mode: each source, and where the gain landed
+  type Bucket = { label: string; withdrawn: number; taxable: number; federal: number; state: number; tax: number; eff: number };
+  const live = ret ? (R.buckets as Bucket[]).map((b, i) => ({ b, c: BKT_COLORS[i] })).filter((o) => o.b.withdrawn > 0) : [];
+  const maxAmt = live.reduce((a, o) => Math.max(a, o.b.withdrawn), 0);
+  let bucketNote = "", gainNote = "";
+  if (ret) {
+    bucketNote = "The Roth column is zero by construction, and only the gain portion of the brokerage withdrawal is taxable; the rest is your own basis coming back. " +
+      "Ordinary tax is split across the traditional, Social Security and other-income rows in proportion to what each contributed to ordinary taxable income.";
+    if (R.ssGross > 0)
+      bucketNote += " Your provisional income is " + money(R.provisional) + ", which puts " +
+        (R.ssTier === 0 ? "none of your benefits in the tax base." : "up to " + R.ssTier + "% of your benefits in the tax base: " + money(R.taxableSS) + " of " + money(R.ssGross) + ".");
+    if (R.stateNote) {
+      bucketNote += " <b>" + (R.stateName || "This state") + ".</b> " + R.stateNote;
+      if (R.stateExcluded > 0) bucketNote += " That removed " + money(R.stateExcluded) + " from the state tax base here.";
+    }
+    if (R.gain > 0) {
+      gainNote = "You realized " + money(R.gain) + " of long-term gain on a " + money(R.brok) + " brokerage withdrawal; " + money(R.basis) + " of that was basis and never touched the return. ";
+      gainNote += R.gainTaxable > 0
+        ? "The gain sits on top of " + money(R.ordTaxable) + " of ordinary taxable income, so it is taxed at a blended <b>" + pctStr(R.ltcgRate, 1) + "</b>, costing " + money(R.ltcg) + ". "
+        : "Your deductions cover everything, so none of the gain is taxable at all. ";
+      if (R.zeroRoom > 0) gainNote += "You have <b>" + money(R.zeroRoom) + "</b> of room left in the 0% band: gain harvested up to that point would be federally free.";
+      else if (R.ltcgBands[0].amount > 0) gainNote += "The 0% band is now full.";
+      if (R.niit > 0)
+        gainNote += " Your MAGI of " + money(R.agi) + " is above the " + money((NIIT as { threshold: Record<string, number> }).threshold[inp.status]) +
+          " net investment income tax threshold, adding " + money(R.niit) + ".";
+    }
+  }
+
+  const moneyField = (id: string, label: React.ReactNode, k: keyof TaxInputs, wrapId?: string, hidden?: boolean) => (
+    <div className="field" id={wrapId} hidden={hidden}>
+      <label htmlFor={id}>{label}</label>
+      <div className="inputwrap"><span className="affix">$</span><MoneyInput id={id} nonNeg value={s[k] as string} onValueChange={set(k)} /></div>
+    </div>
+  );
+  const seg = (id: string, attr: string, opts: [string, string][], value: string, on: (v: string) => void, hidden?: boolean) => (
+    <span className="seg" id={id} hidden={hidden}>
+      {opts.map(([v, label]) => (
+        <button key={v} type="button" {...{ [attr]: v }} className={value === v ? "on" : undefined} onClick={() => on(v)}>{label}</button>
+      ))}
+    </span>
+  );
+
+  return (
+    <>
+      <aside id="asideTax">
+        <div className="panel inputs">
+          <h2>Your situation{"\n        "}
+            <span className="h2ctrl">
+              {seg("segTxMode", "data-txmode", [["normal", "Normal income"], ["retire", "Retirement income"]], s.mode,
+                (v) => setState((c) => ({ ...c, mode: v as TaxInputs["mode"] })))}
+            </span>
+          </h2>
+          <div className="body">
+            <div id="txGrossWrap" className={split ? "two bottomalign" : undefined} hidden={ret}>
+              <div className="field">
+                <label htmlFor="txGross" id="txGrossLabel">{split ? "Your gross income" : "Gross income"}</label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="txGross" nonNeg value={s.gross} onValueChange={set("gross")} /></div>
+              </div>
+              {moneyField("txGross2", "Spouse's gross income", "gross2", "txGross2Wrap", !split)}
+            </div>
+            <div className="derived txtotal" id="txGrossTotalWrap" hidden={!split}>
+              <div><span>Household gross income</span><span className="num" id="txGrossTotalShow">{split ? money(R.gross) : ""}</span></div>
+            </div>
+
+            <div id="txRetSources" hidden={!ret}>
+              {moneyField("txTrad", <Tipped text="Traditional 401(k) / IRA withdrawal" k="bkttrad" />, "trad")}
+              {moneyField("txRoth", <Tipped text="Roth withdrawal" k="bktroth" />, "roth")}
+              <div className="two bottomalign">
+                {moneyField("txBrok", <Tipped text="Brokerage" k="bktbrok" />, "brok")}
+                <div className="field">
+                  <label htmlFor="txGainPct"><Tipped text="Gain portion" k="bktgain" /></label>
+                  <div className="inputwrap"><NumberInput id="txGainPct" nonNeg step={5} max={100} value={s.gainPct} onValueChange={set("gainPct")} /><span className="affix">%</span></div>
+                </div>
+              </div>
+              {moneyField("txSS", <Tipped text="Social Security benefits" k="bktss" />, "ss")}
+              <div className="two bottomalign">
+                {moneyField("txPension", <Tipped text="Pension / annuity" k="bktpen" />, "pension")}
+                <div className="field">
+                  <label htmlFor="txPenType">Payer</label>
+                  <select id="txPenType" value={s.penType} onChange={(e) => set("penType")(e.target.value)}>
+                    <option value="priv">Private employer</option>
+                    <option value="pub">Government / public</option>
+                  </select>
+                </div>
+              </div>
+              {moneyField("txOther", <Tipped text="Other ordinary income" k="bktother" />, "other")}
+              <div className="derived txtotal">
+                <div><span>Gross retirement income</span><span className="num" id="txRetGross">{ret ? money(R.gross) : ""}</span></div>
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="txStatus">Filing status</label>
+              <select id="txStatus" value={s.status}
+                // "Both spouses" only means anything on a joint return.
+                onChange={(e) => setState((c) => ({ ...c, status: e.target.value, seniors: e.target.value !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
+                <option value="s">Single</option>
+                <option value="m">Married filing jointly</option>
+              </select>
+            </div>
+            <div className="field" id="txSeniorWrap" hidden={!ret}>
+              <label htmlFor="txSeniors"><Tipped text="Age 65 or older" k="senior" /></label>
+              <select id="txSeniors" value={s.seniors} onChange={(e) => set("seniors")(e.target.value)}>
+                <option value="0">No</option>
+                <option value="1">{joint ? "One spouse" : "Yes"}</option>
+                <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="txState">State</label>
+              <select id="txState" value={s.state} onChange={(e) => set("state")(e.target.value)}>
+                {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="txPre">Pre-tax deductions<TipDot k={ret ? "txpreret" : "txpre"} /></label>
+              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="txPre" nonNeg value={s.pre} onValueChange={set("pre")} /></div>
+            </div>
+            <div className="field">
+              <label htmlFor="txDedType"><Tipped text="Deduction" k="deduction" /></label>
+              <select id="txDedType" value={s.dedType} onChange={(e) => set("dedType")(e.target.value)}>
+                <option value="std">Standard deduction</option>
+                <option value="item">Itemized</option>
+              </select>
+            </div>
+            <div className="field" id="txItemWrap" hidden={s.dedType !== "item"}>
+              <label htmlFor="txItem">Itemized total</label>
+              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></div>
+              <div className="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
+            </div>
+            <div className="derived">
+              <div id="txSSRow" hidden={derived.ssRow == null}><span><Tipped text="Taxable Social Security" k="ss86" /></span><span className="num" id="txSSShow">{derived.ssRow ?? DASH}</span></div>
+              <div><span id="txStdLabel">{derived.stdLabel}</span><span className="num" id="txStdShow">{derived.std}</span></div>
+              <div><span>Taxable income</span><span className="num" id="txTaxable">{money(R.fedTaxable)}</span></div>
+              <div><span id="txMarginalLabel"><Tipped text="Marginal federal rate" k="marginal" /></span><span className="num" id="txMarginal">{derived.marginal}</span></div>
+              <div><span id="txRoomLabel">{derived.roomLabel}</span><span className="num" id="txRoomShow">{derived.room}</span></div>
+              <div id="txZeroRoomRow" hidden={derived.zeroRoom == null}><span>Room in the 0% gains rate</span><span className="num" id="txZeroRoomShow">{derived.zeroRoom ?? ""}</span></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div className="stack" id="tab-tax">
+        <div className="panel">
+          <div className="readout">
+            <div className="txhead">
+              {seg("segTxView", "data-view", [["net", "Net pay"], ["take", "Take-home pay"]], s.view, (v) => setState((c) => ({ ...c, view: v as TaxInputs["view"] })), ret)}{" "}
+              <span className="txmodelbl" id="txRetLbl" hidden={!ret}>Retirement income</span>{" "}
+              <span className="txbadge">2026 rates</span>
+            </div>
+            <div className="headline">
+              <div><div className="k" id="txNetLabel">{head.netLabel}</div><BigValue className="v gold" id="txNet" text={head.net} />
+                <div className="note" id="txNetNote">{head.netNote}</div></div>
+              <div><div className="k">Per month</div><BigValue id="txMonth" text={head.month} />
+                <div className="note" id="txMonthNote">{head.monthNote}</div></div>
+              <div><div className="k" id="txThirdLabel">{head.thirdLabel}</div><BigValue id="txBiweek" text={head.third} />
+                <div className="note" id="txThirdNote">{head.thirdNote}</div></div>
+            </div>
+          </div>
+          <div className="body">
+            <div className="grid2">
+              <div id="txBars" onMouseLeave={leave}
+                onMouseOver={(e) => {
+                  const b = (e.target as Element).closest(".bar[data-idx]");
+                  if (b) activate(+(b.getAttribute("data-idx") ?? 0));
+                }}>
+                {bars.map((b, i) => (
+                  <ShareBar key={b.label} label={b.label} value={b.v} share={b.share} color={b.c} idx={i} dim={active != null && active !== i} />
+                ))}
+              </div>
+              <div className="piewrap">
+                <svg id="txPie" viewBox="0 0 220 220" role="img" aria-label="Share of income by tax and take-home"
+                  onMouseOver={(e) => {
+                    const c = (e.target as Element).closest("circle[data-idx]");
+                    if (c) activate(+(c.getAttribute("data-idx") ?? 0));
+                    else leave();
+                  }}
+                  onMouseLeave={leave}>
+                  <Donut parts={parts} center={pctStr(R.effTotal, 1)} active={active} />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="panel">
+          <h2>Tax breakdown<span className="h2ctrl"><CsvButton table={tableRef} label="Tax breakdown" /></span></h2>
+          <div className="swipehint">Swipe the table sideways to see every column.</div>
+          <div className="scroll">
+            <table id="txTable" ref={tableRef}>
+              <thead><tr><th>Item</th><th>Amount</th><th><Tipped text="Effective rate" k="effrate" /></th><th>Share of income</th></tr></thead>
+              <tbody>{rows}</tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="panel" id="txBucketPanel" hidden={!ret}>
+          <h2>Where each dollar came from, and how it was taxed<span className="h2ctrl"><CsvButton table={bucketRef} label="Where each dollar came from, and how it was taxed" /></span></h2>
+          <div className="body">
+            <div id="txBucketBars">
+              {live.length ? live.map((o) => {
+                // The track is this source's withdrawal against the largest;
+                // the filled part is the share of it that went to tax.
+                const b = o.b;
+                return (
+                  <div className="bar" key={b.label}>
+                    <div className="lbl"><span>{b.label}</span><b>{money(b.withdrawn) + (b.withdrawn > 0 ? " · " + money(b.tax) + " tax (" + pctStr(b.eff, 1) + ")" : "")}</b></div>
+                    <div className="track" style={{ width: Math.max(maxAmt > 0 ? (b.withdrawn / maxAmt) * 100 : 0, 1.5).toFixed(1) + "%" }}>
+                      <div className="fill" style={{ width: Math.min(100, b.withdrawn > 0 ? (b.tax / b.withdrawn) * 100 : 0).toFixed(1) + "%", background: o.c }}></div>
+                    </div>
+                  </div>
+                );
+              }) : <div className="hint">Enter a withdrawal above to see how it is taxed.</div>}
+            </div>
+          </div>
+          <div className="swipehint">Swipe the table sideways to see every column.</div>
+          <div className="scroll">
+            <table id="txBucketTable" ref={bucketRef}>
+              <thead><tr><th>Source</th><th>Withdrawn</th><th>Taxable</th><th>Federal</th><th>State</th><th>Total tax</th><th><Tipped text="Effective rate" k="effrate" /></th></tr></thead>
+              <tbody>
+                {live.map((o) => (
+                  <tr key={o.b.label}><td><span style={{ color: o.c }}>{"■"}</span> {o.b.label}</td><td>{money(o.b.withdrawn)}</td><td>{money(o.b.taxable)}</td>
+                    <td>{money(o.b.federal)}</td><td>{money(o.b.state)}</td><td>{money(o.b.tax)}</td><td>{pctStr(o.b.eff, 1)}</td></tr>
+                ))}
+                {ret ? (
+                  <tr style={{ fontWeight: 600, borderTop: "2px solid var(--line)" }}><td>All sources</td><td>{money(R.gross)}</td>
+                    <td>{money(live.reduce((a, o) => a + o.b.taxable, 0))}</td><td>{money(R.federal)}</td><td>{money(R.state)}</td>
+                    <td>{money(R.total)}</td><td>{pctStr(R.effTotal, 1)}</td></tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+          <div className="mcnote" id="txBucketNote" dangerouslySetInnerHTML={{ __html: bucketNote }} />
+        </div>
+
+        <div className="panel" id="txGainPanel" hidden={!(ret && R.gain > 0)}>
+          <h2>Your capital gain, and which band it landed in<TipDot k="ltcgstack" /></h2>
+          <div className="body">
+            <div id="txStackWrap">
+              <svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"
+                dangerouslySetInnerHTML={{ __html: ret && R.gain > 0 ? stackChartSvg(R) : "" }} />
+            </div>
+            <div id="txStackLegend" className="stacklegend">
+              {ret && R.gain > 0 ? (
+                <>
+                  <span><i style={{ background: "#8ba0ac" }}></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
+                  {(R.ltcgBands as { amount: number; rate: number }[]).map((b, i) => b.amount > 0 ? (
+                    <span key={i}><i style={{ background: LTCG_COLORS[i] }}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
+                  ) : null)}
+                </>
+              ) : null}
+            </div>
+          </div>
+          <div className="mcnote" id="txGainNote" dangerouslySetInnerHTML={{ __html: gainNote }} />
+        </div>
+
+        <div className="panel">
+          <h2>Federal brackets, and what you pay in each<span className="h2ctrl"><CsvButton table={bracketRef} label="Federal brackets, and what you pay in each" /></span></h2>
+          <div className="swipehint">Swipe the table sideways to see every column.</div>
+          <div className="scroll">
+            <table id="txBrackets" ref={bracketRef}>
+              <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
+              <tbody>
+                {(R.bands as { rate: number; lo: number; hi: number; amount: number; tax: number }[]).map((b) => (
+                  <tr key={b.rate} style={b.amount > 0 ? undefined : { opacity: 0.4 }}>
+                    <td>{pctStr(b.rate, 0)}</td><td>{money(b.lo) + (b.hi === Infinity ? " and up" : " – " + money(b.hi))}</td><td>{money(b.amount)}</td><td>{money(b.tax)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="panel">
+          <h2>State rules, and what went into the figure above<span className="h2note" id="txStateRuleName">{STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? ""}</span>
+            <span className="h2ctrl"><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></span></h2>
+          <div id="txStateRuleWrap">
+            <table id="txStateRules" ref={rulesRef}>
+              <tbody>
+                {(stateRuleRows(s.state, s.status) as [string, string][]).map(([k, v]) => (
+                  <tr key={k}><td style={{ whiteSpace: "nowrap", fontWeight: 600 }}>{k}</td><td>{v}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mcnote" id="txStateGaps"><b>Not included in the figures above.</b> {stateGaps(s.state)}</div>
+        </div>
+      </div>
+    </>
+  );
+}

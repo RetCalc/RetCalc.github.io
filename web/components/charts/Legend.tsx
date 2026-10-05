@@ -12,9 +12,10 @@ export function Legend({ id, items }: { id?: string; items: [color: string, labe
   );
 }
 
-export function ShareBar({ label, value, share, color, idx }: { label: string; value: number; share: number; color: string; idx?: number }) {
+/** One labeled bar. `dim` fades it back while another one is pointed at. */
+export function ShareBar({ label, value, share, color, idx, dim }: { label: string; value: number; share: number; color: string; idx?: number; dim?: boolean }) {
   return (
-    <div className="bar" data-idx={idx}>
+    <div className="bar" data-idx={idx} style={dim ? { opacity: 0.25 } : undefined}>
       <div className="lbl"><span>{label}</span><b>{money(value)}</b></div>
       <div className="track">
         <div className="fill" style={{ width: (Math.max(0, Math.min(1, share)) * 100).toFixed(1) + "%", background: color }}></div>

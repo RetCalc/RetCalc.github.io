@@ -14,10 +14,16 @@ export const NEW = "http://localhost:3200";
 
 export default defineConfig({
   testDir: "e2e",
-  timeout: 300_000,
+  timeout: 240_000,
   fullyParallel: true,
+  // Python's test server for the old site sometimes drops a connection when
+  // many checks run at once; one retry covers that, and the report marks the
+  // test "flaky" so it's never silent.
+  retries: 1,
   reporter: [["list"]],
-  use: { channel: "chrome", headless: true },
+  // Reduced motion on both sites: figures land on their value at once, so a
+  // page in the background never stops mid-count.
+  use: { channel: "chrome", headless: true, actionTimeout: 15_000, navigationTimeout: 30_000, contextOptions: { reducedMotion: "reduce" } },
   projects: [
     { name: "desktop", use: { viewport: { width: 1280, height: 900 } } },
     { name: "phone", use: { ...devices["Pixel 7"], channel: "chrome" } },
