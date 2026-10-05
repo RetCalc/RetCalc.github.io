@@ -15,9 +15,7 @@ export type Step = [target: string, value: string];
 export interface Case { name: string; steps: Step[] }
 
 /* Known, intended differences, hidden on both sites before comparing. */
-const HIDE = [
-  "#toolHelpBtn", // the guided tours arrive in phase 5
-].join(",");
+const HIDE: string[] = [];
 
 /* Page calls that wait on the page itself have no time limit of their own,
    so a page that stops responding would hold the test until its overall
@@ -41,7 +39,8 @@ export async function open(page: Page, url: string, hide = "") {
   // The old site hides its page until its script has run.
   await page.waitForFunction(() => !document.documentElement.classList.contains("booting"), null, { timeout: 30_000 });
   log("styling " + url);
-  await page.addStyleTag({ content: `${HIDE}${hide ? "," + hide : ""}{display:none!important} *{animation:none!important;transition:none!important}` });
+  const hidden = [...HIDE, hide].filter(Boolean).join(",");
+  await page.addStyleTag({ content: (hidden ? `${hidden}{display:none!important} ` : "") + "*{animation:none!important;transition:none!important}" });
 }
 
 export async function apply(page: Page, steps: Step[]) {

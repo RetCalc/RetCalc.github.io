@@ -7,6 +7,7 @@
 import { useRouter } from "next/navigation";
 import { ToolIcon } from "@/components/tools/ToolIcon";
 import type { ToolSub } from "@/lib/tools";
+import { HelpButton } from "@/tools/help/ToolHelp";
 
 export function ToolHeader({ sub, name, desc }: { sub: ToolSub; name: string; desc: string }) {
   const router = useRouter();
@@ -22,6 +23,7 @@ export function ToolHeader({ sub, name, desc }: { sub: ToolSub; name: string; de
           <h1 className="toolhead-name" id="toolCrumb">{name}</h1>
           <p className="toolhead-desc" id="toolHeadDesc">{desc}</p>
         </div>
+        <HelpButton tool={sub} />
       </div>
     </div>
   );

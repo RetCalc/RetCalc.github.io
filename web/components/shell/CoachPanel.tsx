@@ -17,8 +17,8 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
   min: boolean; onToggle: () => void; onClose: () => void; closeLabel: string;
   tasks?: CoachTask[];
   /** A tour in parts: which, of how many, its title, and moving between them. */
-  part?: { i: number; titles: string[]; go: (d: number) => void };
-  /** Shown folded: the next thing left to do. */
+  part?: { i: number; titles: string[]; go: (d: number) => void; attr?: "data-cp" | "data-tp" };
+  /** Shown folded: the next thing left to do, or the part you're on. */
   next?: string;
   chip: string;
   foot: React.ReactNode;
@@ -52,7 +52,7 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
         </button>
       </div>
-      {next ? <Html className="gd-coach-next" html={"<span>Next</span>" + next} /> : null}
+      {next ? <Html className="gd-coach-next" html={next} /> : null}
       <div className="gd-coach-b" ref={body}>
         {children ?? (
           <>
@@ -60,9 +60,9 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
             <ol className="gd-steps">{(tasks || []).map((k, i) => <Html as="li" key={i} className={k.ok === true ? "ok" : k.ok === false ? "todo" : undefined} html={k.h} />)}</ol>
             {part ? (
               <div className="gd-cnav">
-                <button type="button" className="btn mini" data-cp="-1" disabled={!part.i} onClick={() => { part.go(-1); body.current?.scrollTo(0, 0); }}><i className="arw back" aria-hidden="true"></i>Back</button>
+                <button type="button" className="btn mini" {...{ [part.attr || "data-cp"]: "-1" }} disabled={!part.i} onClick={() => { part.go(-1); body.current?.scrollTo(0, 0); }}><i className="arw back" aria-hidden="true"></i>Back</button>
                 <span className="gd-cdots" aria-hidden="true">{part.titles.map((_, i) => <i key={i} className={i === part.i ? "on" : undefined}></i>)}</span>
-                {part.i < part.titles.length - 1 ? <button type="button" className="btn mini primary" data-cp="1" onClick={() => { part.go(1); body.current?.scrollTo(0, 0); }}>
+                {part.i < part.titles.length - 1 ? <button type="button" className="btn mini primary" {...{ [part.attr || "data-cp"]: "1" }} onClick={() => { part.go(1); body.current?.scrollTo(0, 0); }}>
                   Next: {part.titles[part.i + 1]}<i className="arw" aria-hidden="true"></i></button> : null}
               </div>
             ) : null}
@@ -82,6 +82,8 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
 export function revealFor(sel: string) {
   const f = document.querySelector(sel);
   if (!f) return;
+  // A Drawdown Simulator setting only shown in Advanced brings Advanced up.
+  if (f.closest("#asideDD .ddadv")) (document.querySelector('#asideDD [data-ddin="adv"]:not(.on)') as HTMLButtonElement | null)?.click();
   const r = f.getBoundingClientRect(), rail = (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--navh")) || 44) + 16;
   const panel = document.querySelector(".gd-coach") as HTMLElement | null;
   if (r.top < rail || r.bottom > window.innerHeight - (panel?.offsetHeight || 0) - 16) {

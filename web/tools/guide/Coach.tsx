@@ -11,6 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { CoachPanel, revealFor } from "@/components/shell/CoachPanel";
 import { useToast } from "@/components/shell/Toast";
 import { useActiveTool } from "@/components/tools/ToolState";
+import { useHelp } from "@/tools/help/ToolHelp";
 import { prefill, tripBoot } from "./actions";
 import { numbered, stepById } from "./steps";
 import { guide, setGuide, useGuide, type Trip } from "./store";
@@ -39,9 +40,10 @@ function useRereads(on: boolean) {
 }
 
 export function GuideCoach() {
-  const g = useGuide(), path = usePathname(), router = useRouter(), toast = useToast(), active = useActiveTool();
+  const g = useGuide(), path = usePathname(), router = useRouter(), toast = useToast(), active = useActiveTool(), helping = !!useHelp();
   const t = g.trip, meta = t ? TRIP_META[t.id] : null;
-  const showing = !!t && !!meta && path !== "/guide";
+  // Tool Help, while open, has the panel's place; the guide waits.
+  const showing = !!t && !!meta && path !== "/guide" && !helping;
   const here = !!meta && path === meta.path && active?.def.id === meta.store;
   useRereads(showing && here);
 
@@ -97,7 +99,7 @@ export function GuideCoach() {
         setGuide((x) => { x.trip = null; });
         toast("Guide closed. It's saved under the Guide tab whenever you want to pick it back up.");
       }}
-      tasks={tasks} next={here && nextTask ? nextTask.h.replace(/<em>.*?<\/em>/g, "") : undefined}
+      tasks={tasks} next={here && nextTask ? "<span>Next</span>" + nextTask.h.replace(/<em>.*?<\/em>/g, "") : undefined}
       part={here && pages && meta.pages ? { i: pi, titles: meta.pages.map((p) => p.title), go: (d) => {
         const n = Math.max(0, Math.min(pages - 1, pi + d));
         setGuide((x) => { if (x.trip) x.trip.page = n; });

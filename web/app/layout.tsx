@@ -12,6 +12,7 @@ import { ToastProvider } from "@/components/shell/Toast";
 import { Tooltips } from "@/components/shell/Tooltips";
 import { ToolRegistryProvider } from "@/components/tools/ToolState";
 import { GuideCoach } from "@/tools/guide/Coach";
+import { ToolHelp } from "@/tools/help/ToolHelp";
 import { SITE } from "@/lib/site";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <SelectMenus />
             <PageEffects />
             <GuideCoach />
+            <ToolHelp />
             <SheetHost />
           </HouseholdProvider>
           </ToolRegistryProvider>

@@ -7,22 +7,21 @@
    screen shows (a headline worked out in a worker, a view switched on) is
    read off the page. From GD_TRIPS in src/js/app/29-guide-trips.js. */
 
-import { debtDate, debtRun, mortgage, PPY, projectBasic, BASIC_INFL } from "@/lib/engine/typed";
-import { mcSeed } from "@/lib/mc-seed";
+import { debtDate, PPY, projectBasic, BASIC_INFL } from "@/lib/engine/typed";
+import { bridgeRun, budgetNums, debtNums, hcPrem, housing, on, q, text } from "@/lib/tool-reads";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { advancedFields } from "@/tools/advanced/model";
 import { basicInput, RISK_OPTIONS, type BasicInputs } from "@/tools/basic/model";
-import { bridgeInput, type BridgeInputs } from "@/tools/bridge/model";
-import { runBridge, type BridgeRun } from "@/tools/bridge/run";
-import { annualize, isSavingsRow, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
+import { annualize, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
 import { collegeInput, collegeMonthly, type CollegeInputs } from "@/tools/college/model";
-import { debtList, DEBT_DEFAULTS, type DebtInputs, type DebtRow } from "@/tools/debt/model";
+import { DEBT_DEFAULTS, type DebtInputs, type DebtRow } from "@/tools/debt/model";
 import { ddWrite, type DdItem, type DrawdownState } from "@/tools/drawdown/fields";
+import type { BridgeInputs } from "@/tools/bridge/model";
 import { escapeHtml } from "@/tools/drawdown/text";
 import type { FireInputs } from "@/tools/fire/model";
 import type { HealthcareInputs } from "@/tools/healthcare/model";
-import { mortgageInput, type Inputs as MortgageInputs } from "@/tools/mortgage/model";
+import type { Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { stageFields, type StagesInputs } from "@/tools/stages/model";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
 import { bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
@@ -49,10 +48,6 @@ interface TripDef<S = Inputs> {
   capture: (c: Ctx<S>) => (Capture & { sync?: boolean }) | null;
 }
 
-/* ---- reading the page, for what only the screen shows ---- */
-const q = (sel: string) => (typeof document === "undefined" ? null : document.querySelector(sel));
-const on = (sel: string) => !!q(sel);
-const text = (sel: string) => (q(sel)?.textContent || "").trim();
 const g = (v: number) => groupDigits(Math.round(v || 0), true);
 
 /* Advanced and Stages are filled from the guide once per version of the
@@ -64,46 +59,10 @@ export function planSig(a: Answers) {
 }
 let stagesFrom = "", stagesN = 1;
 
-function budgetNums(s: BudgetInputs) {
-  const inc = parseNum(s.income) * s.incomeFreq;
-  let spent = 0, saved = 0, lines = 0;
-  s.rows.forEach((r) => {
-    if (isSavingsRow(r)) saved += annualize(r);
-    else { spent += annualize(r); if (parseNum(r.amount) > 0) lines++; }
-  });
-  return { inc, spent, saved, lines, left: inc - spent - saved };
-}
-function debtNums(s: DebtInputs) {
-  const live = debtList(s.rows).filter((d) => d.balance > 0);
-  const total = live.reduce((t, d) => t + d.balance, 0);
-  const hi = live.filter((d) => d.apr >= 8).reduce((t, d) => t + d.balance, 0);
-  const min = live.reduce((t, d) => t + (d.min || 0), 0);
-  const top = live.reduce((m, d) => Math.max(m, d.apr || 0), 0);
-  const pick = live.length ? debtRun(debtList(s.rows), parseNum(s.extra), s.mode) : null;
-  return { live, total, hi, min, top, pick };
-}
-function housing(s: MortgageInputs) {
-  const R = mortgage(mortgageInput(s));
-  return { R, piti: R.pi + R.tax + R.ins + R.pmi + R.hoa };
-}
 function basicNow(s: BasicInputs) {
   const p = basicInput(s);
   return { monthly: (p.contrib * ((PPY as Record<string, number>)[p.period] || 12)) / 12, retire: p.retire, saved: p.initial, risk: p.real };
 }
-/* The bridge's plans, as its page works them out: one at a time is kept. */
-let bridgeMemo: { key: string; run: BridgeRun | null } | null = null;
-function bridgeRun(s: BridgeInputs) {
-  const mode = on('#segBR [data-brmode="mc"].on') ? "mc" : "hist", seed = mcSeed();
-  const key = JSON.stringify([s, mode, seed]);
-  if (bridgeMemo?.key !== key) bridgeMemo = { key, run: runBridge(bridgeInput(s), mode, seed).run };
-  return bridgeMemo.run;
-}
-const hcPrem = () => {
-  const t = text("#hcACABody .kv.total .v");
-  if (!t) return null;
-  const v = parseFloat(t.replace(/[^0-9.]/g, ""));
-  return isFinite(v) ? v : null;
-};
 const and = (list: string[]) => list.join(", ").replace(/, ([^,]*)$/, " and $1");
 
 const TRIPS: Record<string, TripDef<never>> = {
