@@ -76,7 +76,7 @@ CARDS = {
     "72t": ("72(t) Calculator",
         "Penalty-free IRA payments before 59½, sized and tested against every market since 1926."),
     "backtest": ("Portfolio Backtest",
-        "Pick a stock and bond mix and see what it actually did, every year back to 1926."),
+        "Pick a mix of stocks, small value, bonds and cash and see what it did, every year back to 1926."),
     "incometax": ("Income Tax",
         "Your 2026 federal, state and FICA tax, on a salary or on a year of retirement withdrawals."),
     "roth": ("Roth Conversion & RMDs",

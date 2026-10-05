@@ -2761,20 +2761,26 @@ function historicalRuns(g, stages){
 }
 
 /* ---------- Portfolio backtest ---------- */
-/* A fixed stock/bond mix, rebalanced once a year, run across a slice of the
-   historical record. Everything here is descriptive: no projection, no
-   assumption, just what this mix did. */
+/* A fixed mix, rebalanced once a year, run across a slice of the historical
+   record: US stocks, small-cap value and cash at their shares, bonds the
+   rest. Everything here is descriptive: no projection, no assumption, just
+   what this mix did. */
 /**
- * @param {Object} o - {stockPct, fee, initial, startYear, endYear}
+ * @param {Object} o - {stockPct, svPct, cashPct, fee, initial, startYear, endYear}
  * @returns {Object} per-year rows, summary statistics and rolling-window tables
  */
 function backtest(o){
   const avail = HIST_STOCK.length;
   let s0 = Math.round((o.startYear || HIST_START) - HIST_START);
   let s1 = Math.round((o.endYear || (HIST_START + avail - 1)) - HIST_START);
-  s0 = Math.max(0, Math.min(avail - 1, s0));
+  /* Small-cap value and cash (drawdown.js's calendar years) start in July
+     1926, so a mix holding either starts in 1927, its first full year. */
+  const ws = Math.max(0, Math.min(1, (o.svPct || 0) / 100)), wc = Math.max(0, Math.min(1, (o.cashPct || 0) / 100));
+  const minIdx = ws > 0 || wc > 0 ? 1 : 0;
+  s0 = Math.max(minIdx, Math.min(avail - 1, s0));
   s1 = Math.max(s0, Math.min(avail - 1, s1));
-  const w = Math.max(0, Math.min(1, (o.stockPct || 0) / 100));
+  const w = Math.max(0, Math.min(1 - ws - wc, (o.stockPct || 0) / 100));
+  const wb = Math.max(0, 1 - w - ws - wc);
   const fee = (o.fee || 0) / 100;
   const start = Math.max(1, o.initial || 10000);
 
@@ -2782,7 +2788,8 @@ function backtest(o){
   let bal = start, cum = 1, peak = start, maxDD = 0, ddFrom = 0, ddTo = 0;
   let curPeakYear = HIST_START + s0;
   for (let i = s0; i <= s1; i++){
-    const r = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100 - fee;
+    const sv = ws > 0 ? HIST_SV[i] : 0, cash = wc > 0 ? HIST_CASH[i] : 0;
+    const r = (w * HIST_STOCK[i] + ws * sv + wb * HIST_BOND[i] + wc * cash) / 100 - fee;
     const infl = HIST_INFL[i] / 100;
     const real = (1 + r) / (1 + infl) - 1;
     bal = bal * (1 + r);
@@ -2791,7 +2798,7 @@ function backtest(o){
     const dd = peak > 0 ? bal / peak - 1 : 0;
     if (dd < maxDD){ maxDD = dd; ddFrom = curPeakYear; ddTo = HIST_START + i; }
     rets.push(r); reals.push(real);
-    rows.push({year: HIST_START + i, stock: HIST_STOCK[i], bond: HIST_BOND[i],
+    rows.push({year: HIST_START + i, stock: HIST_STOCK[i], bond: HIST_BOND[i], sv, cash,
                ret: r, infl, real, end: bal, endReal: bal / cum});
   }
 
@@ -2838,7 +2845,7 @@ function backtest(o){
   }).filter(x => x.count > 0);
 
   return {rows, years:n, first: HIST_START + s0, last: HIST_START + s1,
-          stockPct: w * 100, cagr, realCagr, inflCagr, vol,
+          stockPct: w * 100, svPct: ws * 100, bondPct: wb * 100, cashPct: wc * 100, minYear: HIST_START + minIdx, cagr, realCagr, inflCagr, vol,
           endBal: bal, endReal: bal / cum, start,
           best: bestYr, worst: worstYr, upYears: up, downYears: n - up,
           maxDD, ddFrom, ddTo, rolling,
@@ -11949,7 +11956,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.3f4c8785e7.js";
+var DD_WORKER_URL = "/assets/plan.df10e6ebee.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -14381,7 +14388,7 @@ const GLOSS = {
   bthistory: "The years the backtest covers. Earlier start dates give more data and more market regimes; later ones describe a world closer to the present. Both are useful, and they often disagree \u2014 a 60/40 mix looks very different measured from 1926 than from 1982.",
   histmix: "The share held in stocks, with the rest in 10-year Treasuries, rebalanced once a year. History mode replaces your rate of return with what this mix actually earned, year by year, so the mix is what sets returns here.",
   histglidemix: "Where the stock share ends up by the end of the glide. In history mode a glide moves the mix, not the rate: it walks the stock share down to this figure over the final years of the plan.",
-  btmix: "Stocks versus 10-year Treasuries, rebalanced annually. Everything on this page is what that mix did over the years selected, not a projection.",
+  btmix: "How the portfolio is split among US stocks (the S&P 500), small-cap value stocks, 10-year Treasuries and cash (one-month Treasury bills), rebalanced annually. Small value and cash begin in July 1926, so a mix holding either starts in 1927. Everything on this page is what that mix did over the years selected, not a projection.",
   btreal: "The same return with inflation stripped out. This is the one to carry into a plan you are running in today's dollars.",
   btvol: "Standard deviation of the annual returns. Roughly two thirds of years land within one of these of the average, which is the figure the Monte Carlo mode asks for.",
   btpricelevel: "How much the overall price level rose across the whole period. A figure of 18 means something costing $1 at the start cost about $18 at the end, which is the same thing the real return column is correcting for.",
@@ -14441,7 +14448,7 @@ const GLOSS = {
   sswho: "Include one benefit or two. Both are added together and begin at the point in retirement you set below.",
   ssbenefit: "Your benefit at the age you plan to claim, from your statement at ssa.gov/myaccount, the most accurate figure. Like the rest of the plan, it grows with inflation every year once it starts.",
   ssclaim: "The age you start benefits. Full retirement age is 67 for anyone born in 1960 or later; claiming earlier permanently reduces the benefit, and each year you wait past it adds 8%, up to age 70. Like the rest of the plan, it grows with inflation every year once it starts.",
-  btdata: "S&P 500 total return with dividends reinvested, 10-year Treasury total return, and CPI-U inflation, 1926\u20132025, with no fees. The chart follows a fixed $10,000 starting point; only the mix and date range change what you see. Past returns describe what happened; they are not a forecast.",
+  btdata: "S&P 500 total return with dividends reinvested, Fama-French small-cap value stocks, 10-year Treasury total return, one-month Treasury bills, and CPI-U inflation, 1926\u20132025 (small value and cash from July 1926), with no fees. The chart follows a fixed $10,000 starting point; only the mix and date range change what you see. Past returns describe what happened; they are not a forecast.",
   bgincome: "What reaches you after taxes. Voluntary pre-tax savings like 401(k) and HSA contributions stay in this figure, since that money is yours; enter them under Savings & investments below so they count as saving rather than spending.",
   emergency: "Months of spending set aside for a job loss or a large surprise bill, based on your total monthly spending above. A common starting goal is 3\u20136 months; those with variable income often aim for 6\u201312.",
   dtrate: "The annual percentage rate (APR) on the debt, from your statement.",
@@ -16330,12 +16337,17 @@ function doShare(){
 }
 
 /* ---------- portfolio backtest ---------- */
-const BT_DEFAULTS = {stock:80, from:1926, to:2025};
+const BT_DEFAULTS = {stock:80, sv:0, cash:0, from:1926, to:2025};
 function readBTState(){
-  return {stock:num("btStock"), from:num("btFrom"), to:num("btTo")};
+  return {stock:num("btStock"), sv:num("btSV"), cash:num("btCash"), from:num("btFrom"), to:num("btTo")};
 }
+/* A mix saved before small value and cash were offered is stocks and bonds. */
 function writeBTState(d){
-  if (d.stock != null) $("btStock").value = String(d.stock);
+  if (d.stock != null) {
+    $("btStock").value = String(d.stock);
+    $("btSV").value = String(d.sv || 0);
+    $("btCash").value = String(d.cash || 0);
+  }
   if (d.from != null) $("btFrom").value = String(d.from);
   if (d.to != null) $("btTo").value = String(d.to);
 }
@@ -16353,6 +16365,8 @@ function btSortValue(r, col){
     case "year": return r.year;
     case "stock": return r.stock;
     case "bond": return r.bond;
+    case "sv": return r.sv;
+    case "cash": return r.cash;
     case "ret": return r.ret;
     case "infl": return r.infl;
     case "real": return r.real;
@@ -16367,19 +16381,24 @@ function renderBacktest(){
   const lo = HIST_START, hi = HIST_START + HIST_STOCK.length - 1;
   const from = Math.max(lo, Math.min(hi, Math.round(st.from || lo)));
   const to = Math.max(from, Math.min(hi, Math.round(st.to || hi)));
-  const B = backtest({stockPct: st.stock, fee: 0, initial: 10000, startYear: from, endYear: to});
+  const B = backtest({stockPct: st.stock, svPct: st.sv, cashPct: st.cash, fee: 0, initial: 10000, startYear: from, endYear: to});
   btRun = B;
   btFirstYear = B.first;
 
-  const bondPct = 100 - B.stockPct;
-  $("btMixNote").textContent = fmtNum(B.stockPct) + "% S&P 500, " + fmtNum(bondPct) +
-    "% 10-year Treasuries, rebalanced every year.";
+  const parts = [[B.stockPct, "S&P 500"], [B.svPct, "small-cap value"], [B.bondPct, "10-year Treasuries"],
+    [B.cashPct, "cash (one-month Treasury bills)"]].filter(p => p[0] > 0);
+  $("btMixText").textContent = btMixText(B);
+  $("btMixNote").textContent = (parts.length ? parts.map(p => ddN(p[0]) + "% " + p[1]).join(", ") : "Nothing invested") +
+    ", rebalanced every year." + (B.minYear > HIST_START && from < B.minYear
+      ? " Small value and cash begin in July 1926, so this starts in " + B.minYear + "." : "");
   $("segBTMix").querySelectorAll("button").forEach(x =>
-    x.classList.toggle("on", parseFloat(x.getAttribute("data-mix")) === B.stockPct));
+    x.classList.toggle("on", !B.svPct && !B.cashPct && parseFloat(x.getAttribute("data-mix")) === B.stockPct));
+  $("btSVHead").hidden = !(B.svPct > 0);
+  $("btCashHead").hidden = !(B.cashPct > 0);
   const lastYr = HIST_START + HIST_STOCK.length - 1;
   $("segBTEra").querySelectorAll("button").forEach(x => {
     const era = x.getAttribute("data-era");
-    const wantFrom = era === "all" ? HIST_START : lastYr - parseInt(era, 10) + 1;
+    const wantFrom = era === "all" ? B.minYear : lastYr - parseInt(era, 10) + 1;
     x.classList.toggle("on", B.first === wantFrom && B.last === lastYr);
   });
   $("btYears").textContent = B.years + (B.years === 1 ? " yr" : " yrs");
@@ -16456,8 +16475,11 @@ function renderBacktest(){
   });
   $("btTable").querySelector("tbody").innerHTML = btSorted.map(r =>
     "<tr><td>" + r.year + "</td><td class='" + (r.stock < 0 ? "neg" : "pos") + "'>" +
-    r.stock.toFixed(2) + "%</td><td class='" + (r.bond < 0 ? "neg" : "pos") + "'>" +
-    r.bond.toFixed(2) + "%</td><td class='" + (r.ret < 0 ? "neg" : "pos") + "'>" +
+    r.stock.toFixed(2) + "%</td>" +
+    (B.svPct > 0 ? "<td class='" + (r.sv < 0 ? "neg" : "pos") + "'>" + r.sv.toFixed(2) + "%</td>" : "") +
+    "<td class='" + (r.bond < 0 ? "neg" : "pos") + "'>" + r.bond.toFixed(2) + "%</td>" +
+    (B.cashPct > 0 ? "<td class='" + (r.cash < 0 ? "neg" : "pos") + "'>" + r.cash.toFixed(2) + "%</td>" : "") +
+    "<td class='" + (r.ret < 0 ? "neg" : "pos") + "'>" +
     pctStr(r.ret, 2) + "</td><td>" + pctStr(r.infl, 2) + "</td><td class='" +
     (r.real < 0 ? "neg" : "pos") + "'>" + pctStr(r.real, 2) + "</td><td>" +
     money(r.end) + "</td><td>" + money(r.endReal) + "</td></tr>").join("");
@@ -16468,7 +16490,7 @@ function renderBacktest(){
   });
 }
 
-["btStock","btFrom","btTo"].forEach(id =>
+["btFrom","btTo"].forEach(id =>
   $(id).addEventListener("input", renderBacktest));
 
 /* Click a column header to sort the year-by-year table; a new column starts
@@ -16510,8 +16532,57 @@ $("segBTMix").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-mix]") : null;
   if (!b) return;
   $("btStock").value = b.getAttribute("data-mix");
+  $("btSV").value = "0"; $("btCash").value = "0";
   renderBacktest();
 });
+/* The mix on its button: each holding with a share. */
+function btMixText(B){
+  const t = [[B.stockPct, "US stocks"], [B.svPct, "small value"], [B.bondPct, "bonds"], [B.cashPct, "cash"]]
+    .filter(p => p[0] > 0).map(p => ddN(p[0]) + "% " + p[1]).join(", ");
+  return t || "Nothing invested";
+}
+/* The mix pop-up: the same four holdings as the Drawdown Simulator's,
+   adding up to 100%. */
+function btMixForm(){
+  const st = readBTState(), bond = Math.max(0, 100 - st.stock - st.sv - st.cash);
+  const val = {stock: st.stock, sv: st.sv, bond: bond, cash: st.cash};
+  const ov = document.createElement("div");
+  ov.className = "popup-overlay";
+  ov.innerHTML = "<div class='popup wide ddmixpop'><h3>Asset mix</h3>" +
+    "<div class='formhint'>How the portfolio is split, rebalanced to this mix every year. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>" +
+    DD_ASSETS.map(a => "<div class='ddmixrow'><div><b>" + a[2] + "</b><small>" + a[3] + "</small></div>" +
+      "<div class='inputwrap'><input type='text' inputmode='decimal' data-num data-step='5' min='0' max='100' data-nonneg data-mix='" + a[0] +
+      "' value='" + ddN(val[a[0]]) + "' aria-label='" + a[2] + "'><span class='affix'>%</span></div></div>").join("") +
+    "<div class='ddmixtot' id='btMixTot'></div>" +
+    "<div class='formactions'><button type='button' class='btn' data-mixcancel>Cancel</button>" +
+    "<button type='button' class='btn primary' data-mixok>Use this mix</button></div></div>";
+  document.body.appendChild(ov);
+  initFields(ov);
+  const vals = () => { const r = {}; ov.querySelectorAll("[data-mix]").forEach(el => { r[el.getAttribute("data-mix")] = parseNum(el.value) || 0; }); return r; };
+  const check = () => {
+    const v = vals(), t = v.stock + v.sv + v.bond + v.cash, good = Math.abs(t - 100) < .01;
+    $("btMixTot").innerHTML = "Total: <b class='" + (good ? "pos" : "neg") + "'>" + ddN(t) + "%</b>" +
+      (good ? "" : " — it needs to add up to 100%");
+    ov.querySelector("[data-mixok]").disabled = !good;
+    return good;
+  };
+  ov.addEventListener("input", check);
+  check();
+  const shut = () => { if (ov._modalDone) ov._modalDone(); ov.remove(); };
+  ov.addEventListener("click", e => {
+    if (e.target === ov || (e.target.closest && e.target.closest("[data-mixcancel]"))) { shut(); return; }
+    if (e.target.closest && e.target.closest("[data-mixok]") && check()) {
+      const v = vals();
+      $("btStock").value = String(v.stock); $("btSV").value = String(v.sv); $("btCash").value = String(v.cash);
+      shut();
+      renderBacktest();
+    }
+  });
+  wireModal(ov, shut);
+  const first = ov.querySelector("[data-mix]");
+  if (first) first.focus();
+}
+$("btMixBtn").addEventListener("click", btMixForm);
 $("segBTEra").addEventListener("click", e => {
   const b = e.target.closest ? e.target.closest("button[data-era]") : null;
   if (!b) return;
@@ -19944,12 +20015,13 @@ const GD_TRIPS = {
       if (gdFilled.backtest) return;
       gdFilled.backtest = true;
       $("btStock").value = String(gdMixFor(gd.a.risk));
+      $("btSV").value = "0"; $("btCash").value = "0";
     },
     tasks(){
       const a = gd.a, mix = gdMixFor(a.risk), era = document.querySelector("#segBTEra button.on");
-      const moved = (era && era.getAttribute("data-era") !== "all") || num("btStock") !== mix;
+      const moved = (era && era.getAttribute("data-era") !== "all") || num("btStock") !== mix || num("btSV") > 0 || num("btCash") > 0;
       return [
-        {h:"<b>Stocks</b> is set to " + mix + "%, close to your " + gdRiskLabel(a.risk || .045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926."},
+        {h:"<b>Asset mix</b> is set to " + mix + "% stocks, close to your " + gdRiskLabel(a.risk || .045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926."},
         {h:"<b>After inflation</b> is the figure to compare with the " + pctStr(a.risk || .045, 1) + " a year the guide assumed for your plan. <b>Return, per year</b> is the same before inflation."},
         {h:"Try <b>Last 30</b> or <b>Last 50</b>, and a different mix, to see how much the answer moves with the period you pick.", ok: moved},
         {h:"<b>Worst year</b> and <b>Deepest fall</b> show what you'd have had to sit through. If a drop like that would have made you sell, a lower stock mix may suit you better."},
@@ -21204,7 +21276,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.3f4c8785e7.js";
+var OP_WORKER_URL = "/assets/plan.df10e6ebee.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;
@@ -22445,12 +22517,12 @@ var TH_TOURS = {
     }},
 
   backtest: {name:"Portfolio Backtest", title:"What a mix has actually earned",
-    start(){ return {stock:num("btStock")}; },
+    start(){ return {mix:$("btMixText").textContent}; },
     pages:[
       {title:"Pick a mix and a period", focus:"#asideBT", tasks(){
         const era = document.querySelector("#segBTEra button.on");
         return [
-          {h:"<b>Stocks</b> is the share in stocks (the S&amp;P 500); the rest is bonds (10-year Treasuries). Stocks grow more over time but fall harder; bonds steady the ride.", ok: num("btStock") !== thB().stock ? true : undefined},
+          {h:"<b>Asset mix</b> opens the split among US stocks (the S&amp;P 500), small-cap value stocks, bonds (10-year Treasuries) and cash (one-month Treasury bills). Stocks grow more over time but fall harder; bonds and cash steady the ride. The buttons below it are quick stock and bond mixes.", ok: $("btMixText").textContent !== thB().mix ? true : undefined},
           {h:"<b>From</b> and <b>Through</b> pick the years. <b>All</b> runs from 1926; try <b>Last 50</b> and <b>Last 30</b> to see how much the answer depends on the period.", ok: era && era.getAttribute("data-era") !== "all" ? true : undefined}
         ];
       }},

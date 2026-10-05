@@ -878,12 +878,13 @@ const GD_TRIPS = {
       if (gdFilled.backtest) return;
       gdFilled.backtest = true;
       $("btStock").value = String(gdMixFor(gd.a.risk));
+      $("btSV").value = "0"; $("btCash").value = "0";
     },
     tasks(){
       const a = gd.a, mix = gdMixFor(a.risk), era = document.querySelector("#segBTEra button.on");
-      const moved = (era && era.getAttribute("data-era") !== "all") || num("btStock") !== mix;
+      const moved = (era && era.getAttribute("data-era") !== "all") || num("btStock") !== mix || num("btSV") > 0 || num("btCash") > 0;
       return [
-        {h:"<b>Stocks</b> is set to " + mix + "%, close to your " + gdRiskLabel(a.risk || .045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926."},
+        {h:"<b>Asset mix</b> is set to " + mix + "% stocks, close to your " + gdRiskLabel(a.risk || .045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926."},
         {h:"<b>After inflation</b> is the figure to compare with the " + pctStr(a.risk || .045, 1) + " a year the guide assumed for your plan. <b>Return, per year</b> is the same before inflation."},
         {h:"Try <b>Last 30</b> or <b>Last 50</b>, and a different mix, to see how much the answer moves with the period you pick.", ok: moved},
         {h:"<b>Worst year</b> and <b>Deepest fall</b> show what you'd have had to sit through. If a drop like that would have made you sell, a lower stock mix may suit you better."},

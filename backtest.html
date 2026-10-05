@@ -15,21 +15,21 @@
 <link rel="manifest" href="/site.webmanifest">
 <meta name="apple-mobile-web-app-title" content="RetCalc">
 <!--PAGE-HEAD-->
-<title>Portfolio Backtest: Stock &amp; Bond Returns Since 1926 | RetCalc</title>
-<meta name="description" content="See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period.">
+<title>Portfolio Backtest: Stock, Bond &amp; Cash Returns Since 1926 | RetCalc</title>
+<meta name="description" content="See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period.">
 <link rel="canonical" href="https://retcalc.app/backtest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="RetCalc">
-<meta property="og:title" content="Portfolio Backtest: Stock &amp; Bond Returns Since 1926 | RetCalc">
-<meta property="og:description" content="See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period.">
+<meta property="og:title" content="Portfolio Backtest: Stock, Bond &amp; Cash Returns Since 1926 | RetCalc">
+<meta property="og:description" content="See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period.">
 <meta property="og:url" content="https://retcalc.app/backtest">
 <meta property="og:image" content="https://retcalc.app/og/backtest.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Portfolio Backtest: Pick a stock and bond mix and see what it actually did, every year back to 1926.">
+<meta property="og:image:alt" content="Portfolio Backtest: Pick a mix of stocks, small value, bonds and cash and see what it did, every year back to 1926.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://retcalc.app/og/backtest.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Portfolio Backtest: Stock & Bond Returns Since 1926", "url": "https://retcalc.app/backtest", "description": "See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What has the stock market returned historically?", "acceptedAnswer": {"@type": "Answer", "text": "U.S. stocks have returned about 10% a year since 1926, or about 7% after inflation, with individual years ranging from about +50% to −40%."}}, {"@type": "Question", "name": "What is a 60/40 portfolio?", "acceptedAnswer": {"@type": "Answer", "text": "60% stocks and 40% bonds, a classic balanced mix. Historically it has earned somewhat less than all stocks with much smaller falls. Set Stocks to 60 to see it."}}, {"@type": "Question", "name": "What was the worst year for the stock market?", "acceptedAnswer": {"@type": "Answer", "text": "In this data, 1931, at about −42%. 2008 came close, at about −39%. After the 1929 crash, stocks with dividends reinvested didn't climb back above their 1928 peak until the end of 1936, and fell again the next year."}}, {"@type": "Question", "name": "Are bonds safe?", "acceptedAnswer": {"@type": "Answer", "text": "Safer than stocks, not risk-free. Bonds lose value when interest rates rise, as in 2022, and inflation can erode them for years, as in the 1970s. Their main job in a portfolio is to fall less when stocks fall."}}, {"@type": "Question", "name": "Does past performance predict future returns?", "acceptedAnswer": {"@type": "Answer", "text": "No. History shows the range of things that have happened, which is useful for testing a plan, but the next 30 years may look different. Plan with a margin, like a lower return or a lower withdrawal rate."}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "name": "Portfolio Backtest: Stock, Bond & Cash Returns Since 1926", "url": "https://retcalc.app/backtest", "description": "See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period.", "applicationCategory": "FinanceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What has the stock market returned historically?", "acceptedAnswer": {"@type": "Answer", "text": "U.S. stocks have returned about 10% a year since 1926, or about 7% after inflation, with individual years ranging from about +50% to −40%."}}, {"@type": "Question", "name": "What is a 60/40 portfolio?", "acceptedAnswer": {"@type": "Answer", "text": "60% stocks and 40% bonds, a classic balanced mix. Historically it has earned somewhat less than all stocks with much smaller falls. Set Stocks to 60 to see it."}}, {"@type": "Question", "name": "What was the worst year for the stock market?", "acceptedAnswer": {"@type": "Answer", "text": "In this data, 1931, at about −42%. 2008 came close, at about −39%. After the 1929 crash, stocks with dividends reinvested didn't climb back above their 1928 peak until the end of 1936, and fell again the next year."}}, {"@type": "Question", "name": "Are bonds safe?", "acceptedAnswer": {"@type": "Answer", "text": "Safer than stocks, not risk-free. Bonds lose value when interest rates rise, as in 2022, and inflation can erode them for years, as in the 1970s. Their main job in a portfolio is to fall less when stocks fall."}}, {"@type": "Question", "name": "Does past performance predict future returns?", "acceptedAnswer": {"@type": "Answer", "text": "No. History shows the range of things that have happened, which is useful for testing a plan, but the next 30 years may look different. Plan with a margin, like a lower return or a lower withdrawal rate."}}]}]}</script>
 <!--/PAGE-HEAD-->
 <script>
   /* GitHub Pages has no server-side router, so a direct hit on a clean path
@@ -175,8 +175,8 @@
 },
 "backtest": {
 "h1": "Portfolio Backtest Calculator",
-"title": "Portfolio Backtest: Stock & Bond Returns Since 1926 | RetCalc",
-"desc": "See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
+"title": "Portfolio Backtest: Stock, Bond & Cash Returns Since 1926 | RetCalc",
+"desc": "See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
 },
 "incometax": {
 "h1": "Income Tax Calculator",
@@ -213,8 +213,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.2ff58299c1.css">
-<link rel="preload" href="/assets/app.72d1346c5b.js" as="script">
+<link rel="stylesheet" href="/assets/app.7ba55de3b7.css">
+<link rel="preload" href="/assets/app.23738b1f84.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -392,7 +392,7 @@ window.onerror = function(msg){
       <span class="toolcard-icon toolhead-icon" id="toolHeadIcon" aria-hidden="true"></span>
       <div class="toolhead-t">
         <h1 class="toolhead-name" id="toolCrumb">Portfolio Backtest Calculator</h1>
-        <p class="toolhead-desc" id="toolHeadDesc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</p>
+        <p class="toolhead-desc" id="toolHeadDesc">Pick a mix of stocks, small value, bonds and cash, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</p>
       </div>
       <button type="button" class="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded="false" hidden>
         <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" stroke-width="1.4"/><path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="11.4" r=".85" fill="currentColor"/></svg>
@@ -1270,9 +1270,12 @@ window.onerror = function(msg){
       <h2>The mix<span class="tipdot" data-tip="btdata" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
       <div class="body">
         <div class="field">
-          <label for="btStock">Stocks<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-          <div class="inputwrap"><input id="btStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
-          <div class="seg" id="segBTMix" style="margin-top:8px">
+          <label for="btMixBtn">Asset mix<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <button type="button" class="ddmixbtn" id="btMixBtn"><span id="btMixText"></span>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <input type="hidden" id="btStock" value="80" data-num><input type="hidden" id="btSV" value="0" data-num><input type="hidden" id="btCash" value="0" data-num>
+          <div class="btquick">Stocks, the rest in bonds:</div>
+          <div class="seg" id="segBTMix">
             <button type="button" data-mix="100">100</button>
             <button type="button" data-mix="80" class="on">80</button>
             <button type="button" data-mix="60">60</button>
@@ -1406,7 +1409,7 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="btTable">
-          <thead><tr><th class="sortcol" data-sort="year">Year</th><th class="sortcol" data-sort="stock">Stocks</th><th class="sortcol" data-sort="bond">Bonds</th><th class="sortcol" data-sort="ret">Your mix</th><th class="sortcol" data-sort="infl">Inflation</th><th class="sortcol" data-sort="real">Real</th><th class="sortcol" data-sort="end">Balance</th><th class="sortcol" data-sort="endReal">In today's $</th></tr></thead>
+          <thead><tr><th class="sortcol" data-sort="year">Year</th><th class="sortcol" data-sort="stock">Stocks</th><th class="sortcol" data-sort="sv" id="btSVHead" hidden>Small value</th><th class="sortcol" data-sort="bond">Bonds</th><th class="sortcol" data-sort="cash" id="btCashHead" hidden>Cash</th><th class="sortcol" data-sort="ret">Your mix</th><th class="sortcol" data-sort="infl">Inflation</th><th class="sortcol" data-sort="real">Real</th><th class="sortcol" data-sort="end">Balance</th><th class="sortcol" data-sort="endReal">In today's $</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -4506,7 +4509,7 @@ window.onerror = function(msg){
           </div>
           <div class="toolcard-body">
             <div class="toolcard-name">Portfolio Backtest</div>
-            <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
+            <div class="toolcard-desc">Pick a mix of stocks, small value, bonds and cash, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
           </div>
           <div class="toolcard-arrow">&#8250;</div>
         </div>
@@ -5488,19 +5491,21 @@ window.onerror = function(msg){
 
 
   <article class="seo-a panel about" data-page="backtest">
-    <h2>Portfolio backtest: stock and bond returns since 1926</h2>
+    <h2>Portfolio backtest: stock, bond and cash returns since 1926</h2>
     <div class="body">
-    <p>Pick a mix of stocks and bonds and see what it actually earned, year by year back to 1926: average return, return after inflation, volatility, the worst year, the deepest fall, and the best and worst of every 1, 5, 10, 20 and 30-year stretch.</p>
+    <p>Pick a mix of stocks, small-cap value, bonds and cash and see what it actually earned, year by year back to 1926: average return, return after inflation, volatility, the worst year, the deepest fall, and the best and worst of every 1, 5, 10, 20 and 30-year stretch.</p>
     <h3>The data</h3>
-    <p>Stocks are the S&amp;P 500 (and its predecessor index) with dividends reinvested; bonds are 10-year U.S. Treasuries; inflation is the Consumer Price Index. The portfolio is rebalanced to your mix once a year.</p>
+    <p>Stocks are the S&amp;P 500 (and its predecessor index) with dividends reinvested; small-cap value is the Fama-French portfolio of small companies priced low against their book value; bonds are 10-year U.S. Treasuries; cash is one-month Treasury bills; inflation is the Consumer Price Index. The portfolio is rebalanced to your mix once a year. Small value and cash start in July 1926, so a mix holding either starts in 1927.</p>
     <h3>What 100 years of markets show</h3>
-    <p>Here are three mixes over the full record, 1926 through 2025, with no fees. Set <b>Stocks</b> to 100, 60 or 0 to see each.</p>
+    <p>Here are three mixes over the full record, 1926 through 2025, with no fees. Pick 100, 60 or 0 from the quick mixes under <b>Asset mix</b> to see each.</p>
     <ul>
       <li><b>All stocks:</b> 10.4% a year, or 7.3% after inflation. Stocks rose in 74 of the 100 years. The worst single year was −41.8%, and from the 1928 peak to the 1932 bottom the portfolio lost 62% of its value.</li>
       <li><b>60% stocks, 40% bonds:</b> 8.7% a year, 5.6% after inflation. The worst year was −24.7%, and the deepest fall 37%, over the same Depression years. Giving up 1.8 points of return a year cut the worst losses by about 40%.</li>
       <li><b>All bonds:</b> 4.8% a year, but only 1.8% after inflation, and its deepest fall came recently: 18% from 2020 to 2022, as interest rates rose.</li>
     </ul>
     <p>Time is what makes stocks safer. Over single years they're wild, but the worst 20-year stretch for all stocks still earned 0.8% a year after inflation, and the worst 30-year stretch earned 4.3% a year. For 60/40, the worst 20 years roughly broke even after inflation, and the worst 30 years earned 3.0% a year.</p>
+    <h3>Small-cap value and cash</h3>
+    <p>Open <b>Asset mix</b> to add the other two. Moving a third of a 60/40 mix's stocks into small-cap value (40% US stocks, 20% small value, 40% bonds) earned 9.69% a year from 1927 through 2025, against 8.65% for 60/40 over the same years, but its deepest fall was 44% instead of 37%. Small value has beaten the S&amp;P 500 over the century, with long stretches behind it. Cash alone earned 3.29% a year, only 0.30% after inflation: it barely loses value, and barely grows.</p>
     <h3>How to read your results</h3>
     <ul>
       <li><b>Annual return</b> is the compound growth rate, what a dollar actually grew at. It's lower than the simple average of yearly returns.</li>
@@ -5611,7 +5616,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.72d1346c5b.js"></script>
+<script src="/assets/app.23738b1f84.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

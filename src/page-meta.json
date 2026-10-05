@@ -112,8 +112,8 @@
 },
 "backtest": {
 "h1": "Portfolio Backtest Calculator",
-"title": "Portfolio Backtest: Stock & Bond Returns Since 1926 | RetCalc",
-"desc": "See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
+"title": "Portfolio Backtest: Stock, Bond & Cash Returns Since 1926 | RetCalc",
+"desc": "See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
 },
 "incometax": {
 "h1": "Income Tax Calculator",

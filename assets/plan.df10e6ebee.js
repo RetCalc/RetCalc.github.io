@@ -2761,20 +2761,26 @@ function historicalRuns(g, stages){
 }
 
 /* ---------- Portfolio backtest ---------- */
-/* A fixed stock/bond mix, rebalanced once a year, run across a slice of the
-   historical record. Everything here is descriptive: no projection, no
-   assumption, just what this mix did. */
+/* A fixed mix, rebalanced once a year, run across a slice of the historical
+   record: US stocks, small-cap value and cash at their shares, bonds the
+   rest. Everything here is descriptive: no projection, no assumption, just
+   what this mix did. */
 /**
- * @param {Object} o - {stockPct, fee, initial, startYear, endYear}
+ * @param {Object} o - {stockPct, svPct, cashPct, fee, initial, startYear, endYear}
  * @returns {Object} per-year rows, summary statistics and rolling-window tables
  */
 function backtest(o){
   const avail = HIST_STOCK.length;
   let s0 = Math.round((o.startYear || HIST_START) - HIST_START);
   let s1 = Math.round((o.endYear || (HIST_START + avail - 1)) - HIST_START);
-  s0 = Math.max(0, Math.min(avail - 1, s0));
+  /* Small-cap value and cash (drawdown.js's calendar years) start in July
+     1926, so a mix holding either starts in 1927, its first full year. */
+  const ws = Math.max(0, Math.min(1, (o.svPct || 0) / 100)), wc = Math.max(0, Math.min(1, (o.cashPct || 0) / 100));
+  const minIdx = ws > 0 || wc > 0 ? 1 : 0;
+  s0 = Math.max(minIdx, Math.min(avail - 1, s0));
   s1 = Math.max(s0, Math.min(avail - 1, s1));
-  const w = Math.max(0, Math.min(1, (o.stockPct || 0) / 100));
+  const w = Math.max(0, Math.min(1 - ws - wc, (o.stockPct || 0) / 100));
+  const wb = Math.max(0, 1 - w - ws - wc);
   const fee = (o.fee || 0) / 100;
   const start = Math.max(1, o.initial || 10000);
 
@@ -2782,7 +2788,8 @@ function backtest(o){
   let bal = start, cum = 1, peak = start, maxDD = 0, ddFrom = 0, ddTo = 0;
   let curPeakYear = HIST_START + s0;
   for (let i = s0; i <= s1; i++){
-    const r = (w * HIST_STOCK[i] + (1 - w) * HIST_BOND[i]) / 100 - fee;
+    const sv = ws > 0 ? HIST_SV[i] : 0, cash = wc > 0 ? HIST_CASH[i] : 0;
+    const r = (w * HIST_STOCK[i] + ws * sv + wb * HIST_BOND[i] + wc * cash) / 100 - fee;
     const infl = HIST_INFL[i] / 100;
     const real = (1 + r) / (1 + infl) - 1;
     bal = bal * (1 + r);
@@ -2791,7 +2798,7 @@ function backtest(o){
     const dd = peak > 0 ? bal / peak - 1 : 0;
     if (dd < maxDD){ maxDD = dd; ddFrom = curPeakYear; ddTo = HIST_START + i; }
     rets.push(r); reals.push(real);
-    rows.push({year: HIST_START + i, stock: HIST_STOCK[i], bond: HIST_BOND[i],
+    rows.push({year: HIST_START + i, stock: HIST_STOCK[i], bond: HIST_BOND[i], sv, cash,
                ret: r, infl, real, end: bal, endReal: bal / cum});
   }
 
@@ -2838,7 +2845,7 @@ function backtest(o){
   }).filter(x => x.count > 0);
 
   return {rows, years:n, first: HIST_START + s0, last: HIST_START + s1,
-          stockPct: w * 100, cagr, realCagr, inflCagr, vol,
+          stockPct: w * 100, svPct: ws * 100, bondPct: wb * 100, cashPct: wc * 100, minYear: HIST_START + minIdx, cagr, realCagr, inflCagr, vol,
           endBal: bal, endReal: bal / cum, start,
           best: bestYr, worst: worstYr, upYears: up, downYears: n - up,
           maxDD, ddFrom, ddTo, rolling,

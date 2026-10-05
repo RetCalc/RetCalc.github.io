@@ -175,8 +175,8 @@
 },
 "backtest": {
 "h1": "Portfolio Backtest Calculator",
-"title": "Portfolio Backtest: Stock & Bond Returns Since 1926 | RetCalc",
-"desc": "See what any stock and bond mix actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
+"title": "Portfolio Backtest: Stock, Bond & Cash Returns Since 1926 | RetCalc",
+"desc": "See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
 },
 "incometax": {
 "h1": "Income Tax Calculator",
@@ -213,8 +213,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="/assets/app.2ff58299c1.css">
-<link rel="preload" href="/assets/app.72d1346c5b.js" as="script">
+<link rel="stylesheet" href="/assets/app.7ba55de3b7.css">
+<link rel="preload" href="/assets/app.23738b1f84.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -1270,9 +1270,12 @@ window.onerror = function(msg){
       <h2>The mix<span class="tipdot" data-tip="btdata" role="button" tabindex="0" aria-label="What is this?">?</span></h2>
       <div class="body">
         <div class="field">
-          <label for="btStock">Stocks<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
-          <div class="inputwrap"><input id="btStock" type="text" inputmode="decimal" data-num data-step="5" min="0" max="100" data-nonneg value="80"><span class="affix">%</span></div>
-          <div class="seg" id="segBTMix" style="margin-top:8px">
+          <label for="btMixBtn">Asset mix<span class="tipdot" data-tip="btmix" role="button" tabindex="0" aria-label="What is this?">?</span></label>
+          <button type="button" class="ddmixbtn" id="btMixBtn"><span id="btMixText"></span>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <input type="hidden" id="btStock" value="80" data-num><input type="hidden" id="btSV" value="0" data-num><input type="hidden" id="btCash" value="0" data-num>
+          <div class="btquick">Stocks, the rest in bonds:</div>
+          <div class="seg" id="segBTMix">
             <button type="button" data-mix="100">100</button>
             <button type="button" data-mix="80" class="on">80</button>
             <button type="button" data-mix="60">60</button>
@@ -1406,7 +1409,7 @@ window.onerror = function(msg){
       <div class="swipehint">Swipe the table sideways to see every column.</div>
       <div class="scroll">
         <table id="btTable">
-          <thead><tr><th class="sortcol" data-sort="year">Year</th><th class="sortcol" data-sort="stock">Stocks</th><th class="sortcol" data-sort="bond">Bonds</th><th class="sortcol" data-sort="ret">Your mix</th><th class="sortcol" data-sort="infl">Inflation</th><th class="sortcol" data-sort="real">Real</th><th class="sortcol" data-sort="end">Balance</th><th class="sortcol" data-sort="endReal">In today's $</th></tr></thead>
+          <thead><tr><th class="sortcol" data-sort="year">Year</th><th class="sortcol" data-sort="stock">Stocks</th><th class="sortcol" data-sort="sv" id="btSVHead" hidden>Small value</th><th class="sortcol" data-sort="bond">Bonds</th><th class="sortcol" data-sort="cash" id="btCashHead" hidden>Cash</th><th class="sortcol" data-sort="ret">Your mix</th><th class="sortcol" data-sort="infl">Inflation</th><th class="sortcol" data-sort="real">Real</th><th class="sortcol" data-sort="end">Balance</th><th class="sortcol" data-sort="endReal">In today's $</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -4506,7 +4509,7 @@ window.onerror = function(msg){
           </div>
           <div class="toolcard-body">
             <div class="toolcard-name">Portfolio Backtest</div>
-            <div class="toolcard-desc">Pick a stock and bond mix, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
+            <div class="toolcard-desc">Pick a mix of stocks, small value, bonds and cash, then see what it actually did: return, volatility, the worst year, the deepest fall, and every rolling window back to 1926.</div>
           </div>
           <div class="toolcard-arrow">&#8250;</div>
         </div>
@@ -5594,7 +5597,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.72d1346c5b.js"></script>
+<script src="/assets/app.23738b1f84.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

@@ -925,6 +925,22 @@ group("Articles: five more strategy pages");
   var c66 = real(start(C, 1966)); says("cape-withdrawal", "fell to " + dollars(mn(c66)) + " a year by year " + (c66.indexOf(mn(c66)) + 1));
 })();
 
+group("Backtest: small-cap value and cash");
+(function () {
+  var bt = function (o) { return backtest(Object.assign({ fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 }, o)); };
+  var p2 = function (x) { return (x * 100).toFixed(2) + "%"; };
+  var A = bt({ stockPct: 40, svPct: 20 }), S = bt({ stockPct: 60, startYear: 1927 }), C = bt({ stockPct: 0, cashPct: 100 });
+  eq(A.first, 1927, "a mix with small value starts in 1927"); eq(bt({ stockPct: 60 }).first, 1926, "stocks and bonds alone, 1926");
+  near(A.bondPct, 40, 1e-9, "bonds are the rest");
+  var r = A.rows[0], i = 1927 - HIST_START;
+  near(r.ret, (.4 * HIST_STOCK[i] + .2 * HIST_SV[i] + .4 * HIST_BOND[i]) / 100, 1e-12, "1927's return from the four holdings");
+  near(bt({ stockPct: 60, svPct: 0, cashPct: 0 }).cagr, bt({ stockPct: 60 }).cagr, 0, "no small value or cash changes nothing");
+  says("backtest", "earned " + p2(A.cagr) + " a year from 1927 through 2025, against " + p2(S.cagr) + " for 60/40");
+  says("backtest", "deepest fall was " + Math.round(-A.maxDD * 100) + "% instead of " + Math.round(-S.maxDD * 100) + "%");
+  says("backtest", "Cash alone earned " + p2(C.cagr) + " a year, only " + p2(C.realCagr) + " after inflation");
+  ok(bt({ stockPct: 0, svPct: 100 }).cagr > bt({ stockPct: 100, startYear: 1927 }).cagr, "small value beat the S&P 500 over the century");
+})();
+
 group("Articles: Bridge");
 (function () {
   says("bridge", "$540,000 in all");

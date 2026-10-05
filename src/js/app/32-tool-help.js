@@ -345,12 +345,12 @@ var TH_TOURS = {
     }},
 
   backtest: {name:"Portfolio Backtest", title:"What a mix has actually earned",
-    start(){ return {stock:num("btStock")}; },
+    start(){ return {mix:$("btMixText").textContent}; },
     pages:[
       {title:"Pick a mix and a period", focus:"#asideBT", tasks(){
         const era = document.querySelector("#segBTEra button.on");
         return [
-          {h:"<b>Stocks</b> is the share in stocks (the S&amp;P 500); the rest is bonds (10-year Treasuries). Stocks grow more over time but fall harder; bonds steady the ride.", ok: num("btStock") !== thB().stock ? true : undefined},
+          {h:"<b>Asset mix</b> opens the split among US stocks (the S&amp;P 500), small-cap value stocks, bonds (10-year Treasuries) and cash (one-month Treasury bills). Stocks grow more over time but fall harder; bonds and cash steady the ride. The buttons below it are quick stock and bond mixes.", ok: $("btMixText").textContent !== thB().mix ? true : undefined},
           {h:"<b>From</b> and <b>Through</b> pick the years. <b>All</b> runs from 1926; try <b>Last 50</b> and <b>Last 30</b> to see how much the answer depends on the period.", ok: era && era.getAttribute("data-era") !== "all" ? true : undefined}
         ];
       }},
