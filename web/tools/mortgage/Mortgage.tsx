@@ -14,9 +14,8 @@ import { useToolState } from "@/components/tools/ToolState";
 import { Figure, KV } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { PMI_DEFAULT, mortgage, refiCompare } from "@/lib/engine/typed";
-import type { MortgageInput } from "@/lib/engine/types";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-import { MORTGAGE_DEF as DEF, type Inputs } from "./model";
+import { MORTGAGE_DEF as DEF, mortgageInput, type Inputs } from "./model";
 
 
 
@@ -36,24 +35,6 @@ const pctFromAmt = (s: Inputs) => {
   const price = parseNum(s.price);
   return { ...s, downPct: price > 0 ? String(Math.round((parseNum(s.downAmt) / price) * 10000) / 100) : "0" };
 };
-
-function toInput(s: Inputs): MortgageInput {
-  const extras = s.extrasOn === "1";
-  const pct = (v: string) => parseNum(v) / 100;
-  return {
-    price: parseNum(s.price), down: parseNum(s.downAmt), rate: pct(s.rate), term: parseFloat(s.term),
-    taxPct: pct(s.tax), ins: parseNum(s.ins), pmiPct: pct(s.pmi), hoa: parseNum(s.hoa),
-    maintPct: pct(s.maint), util: parseNum(s.util),
-    // Zero whenever the panel is collapsed, so turning it off is the same as
-    // never having touched it, not just hiding the fields.
-    extraMonthly: extras ? parseNum(s.extraMo) : 0,
-    extraOnce: extras ? parseNum(s.extraOnce) : 0,
-    extraOnceMonth: extras ? parseNum(s.extraWhen) : 0,
-    recast: extras && s.recast === "1",
-    refiOn: extras && pct(s.refiRate) > 0,
-    refiRate: pct(s.refiRate), refiTerm: parseFloat(s.refiTerm), refiCost: parseNum(s.refiCost),
-  };
-}
 
 function when(months: number): string {
   const y = Math.floor(months / 12), m = months % 12;
@@ -86,7 +67,7 @@ export function Mortgage() {
       return withPmi(k === "downAmt" ? pctFromAmt(next) : amtFromPct(next));
     });
 
-  const m = toInput(s);
+  const m = mortgageInput(s);
   const R = mortgage(m);
 
   const pmiNote = R.ltv > 0.8

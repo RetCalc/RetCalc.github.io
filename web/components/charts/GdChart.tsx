@@ -17,6 +17,10 @@ export interface GdDrawing {
   /** The drawing, given the point shown (for its highlight), or null. */
   body: (hover: number | null) => React.ReactNode;
   tip: (i: number) => React.ReactNode;
+  /** Where the arrow keys start when nothing is shown yet. */
+  start?: number;
+  /** Anything under the drawing, inside the chart (a note on what's off the scale). */
+  after?: React.ReactNode;
 }
 
 export function GdChart({ className = "gd-chart", minW = 300, fallbackW = 700, draw, ...attrs }: {
@@ -28,10 +32,9 @@ export function GdChart({ className = "gd-chart", minW = 300, fallbackW = 700, d
   const tipRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const W = Math.max(minW, width || fallbackW);
-  const D = width ? draw(W) : null;
+  const D = draw(W);
 
   const nearest = (cx: number) => {
-    if (!D) return 0;
     let best = 0, bd = Infinity;
     for (let i = 0; i < D.n; i++) {
       const d = Math.abs(D.xAt(i) - cx);
@@ -45,7 +48,7 @@ export function GdChart({ className = "gd-chart", minW = 300, fallbackW = 700, d
   };
   const hide = () => setCur(null);
   const scrub = useScrub(el, at, hide);
-  const shown = D && cur != null ? Math.max(0, Math.min(D.n - 1, cur)) : null;
+  const shown = cur != null ? Math.max(0, Math.min(D.n - 1, cur)) : null;
 
   useLayoutEffect(() => {
     const node = el.current;
@@ -59,7 +62,7 @@ export function GdChart({ className = "gd-chart", minW = 300, fallbackW = 700, d
   // The tooltip beside the point, on whichever side has room.
   useLayoutEffect(() => {
     const tip = tipRef.current;
-    if (!tip || shown == null || !D) return;
+    if (!tip || shown == null) return;
     const x = D.xAt(shown), tw = tip.offsetWidth;
     tip.style.left = Math.max(0, Math.min(W - tw, x > W / 2 ? x - tw - 14 : x + 14)) + "px";
   });
@@ -67,21 +70,21 @@ export function GdChart({ className = "gd-chart", minW = 300, fallbackW = 700, d
   return (
     <div className={className} ref={el} tabIndex={0} {...attrs} {...scrub}
       onKeyDown={(e) => {
-        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
         e.preventDefault();
-        setCur((c) => Math.max(0, Math.min((D?.n ?? 1) - 1, (c == null ? 0 : c) + (e.key === "ArrowRight" ? 1 : -1))));
+        const last = D.n - 1;
+        if (e.key === "Home") setCur(0);
+        else if (e.key === "End") setCur(last);
+        else setCur((c) => Math.max(0, Math.min(last, (c == null ? D.start ?? 0 : c) + (e.key === "ArrowRight" ? 1 : -1))));
       }}
       onBlur={hide}>
-      {D ? (
-        <>
-          <svg ref={svgRef} viewBox={`0 0 ${W} ${D.H}`} width={W} height={D.H} aria-hidden="true"
-            onPointerMove={(e) => { if (e.pointerType !== "touch") at(e.clientX); }}
-            onPointerLeave={(e) => { if (e.pointerType !== "touch") hide(); }}>
-            {D.body(shown)}
-          </svg>
-          <div className="gd-tip" ref={tipRef} hidden={shown == null}>{shown != null ? D.tip(shown) : null}</div>
-        </>
-      ) : null}
+      <svg ref={svgRef} viewBox={`0 0 ${W} ${D.H}`} width={W} height={D.H} aria-hidden="true"
+        onPointerMove={(e) => { if (e.pointerType !== "touch") at(e.clientX); }}
+        onPointerLeave={(e) => { if (e.pointerType !== "touch") hide(); }}>
+        {D.body(shown)}
+      </svg>
+      <div className="gd-tip" ref={tipRef} hidden={shown == null}>{shown != null ? D.tip(shown) : null}</div>
+      {D.after}
     </div>
   );
 }

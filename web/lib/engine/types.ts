@@ -181,7 +181,7 @@ export interface PlToday {
 }
 /** The plan at retirement, as plPrep() and plOptimize() take it. */
 export interface PlPlan extends PlToday { age1: number; age2: number | null; rmdAge: number; fv: number }
-export interface PlPrep { married: boolean; gap: number; rmdAge: number; years: number; age1: number; age2: number | null }
+export interface PlPrep { P: PlPlan; married: boolean; gap: number; rmdAge: number; years: number; age1: number; age2: number | null }
 export interface PlStats { successRate: number; survived: number; total: number; medLegacy: number; p10Legacy: number; medTax: number; failYears: number[]; maxSpend?: number }
 export interface PlRow {
   age: number; spend: number; ss: number; pension: number; rmd: number; trad: number; conv: number; brok: number; roth: number;
@@ -197,3 +197,10 @@ export interface PlDone {
   steps: { key: "ss" | "draw"; T: PlTactics; from: PlStats; to: PlStats }[];
   alts: (PlStats & { T: PlTactics })[];
 }
+/** A plan through every historical start: plHistory(). */
+export interface PlHistRun { ok: boolean; depleted: boolean; startYear: number; end: number; legacy: number; tax: number; path?: Float64Array; livedPath?: Float64Array }
+export interface PlHist {
+  T: PlTactics; runs: PlHistRun[]; total: number; survived: number; successRate: number; failYears: number[];
+  first: number; medLegacy: number; p10Legacy: number; medTax: number; medianEnd: number; worstEnd: number; partial: boolean;
+}
+export interface PlSS { own1: number; own2: number; top1: number; top2: number; both1: number; total: number }

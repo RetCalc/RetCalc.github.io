@@ -10,7 +10,7 @@
    Inputs are kept as the text in each field ("450,000", "6.71"), so what's
    saved, shared and restored is exactly what was on screen. */
 
-import { createContext, use, useCallback, useEffect, useMemo, useState } from "react";
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { readStored, writeStored } from "@/lib/storage";
 
 export type ToolInputs = Record<string, string | string[] | unknown>;
@@ -64,23 +64,29 @@ export function writeScenarios(id: string, list: Scenario[]): void {
 
 /* Share links carry a tool's inputs in the address's #fragment, which never
    leaves the browser: #s=<base64url of {t: tool id, d: inputs}>. */
-export function encodeShare(id: string, data: ToolInputs): string {
-  const bytes = new TextEncoder().encode(JSON.stringify({ t: id, d: data }));
+/** Any plain value as base64url text, for an address's #fragment. */
+export function encodeHash(v: unknown): string {
+  const bytes = new TextEncoder().encode(JSON.stringify(v));
   let bin = "";
   bytes.forEach((b) => (bin += String.fromCharCode(b)));
-  return "#s=" + btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-function decodeShare(hash: string): { t: string; d: ToolInputs } | null {
-  if (!hash.startsWith("#s=")) return null;
+/** The value encodeHash() wrote, or null if it doesn't read. */
+export function decodeHash(text: string): unknown {
   try {
-    const b64 = hash.slice(3).replace(/-/g, "+").replace(/_/g, "/");
-    const bin = atob(b64);
-    const json = new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
-    const v = JSON.parse(json);
-    return v && typeof v.t === "string" && v.d && typeof v.d === "object" ? v : null;
+    const bin = atob(text.replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
   } catch {
     return null;
   }
+}
+export function encodeShare(id: string, data: ToolInputs): string {
+  return "#s=" + encodeHash({ t: id, d: data });
+}
+function decodeShare(hash: string): { t: string; d: ToolInputs } | null {
+  if (!hash.startsWith("#s=")) return null;
+  const v = decodeHash(hash.slice(3)) as { t?: unknown; d?: unknown } | null;
+  return v && typeof v.t === "string" && v.d && typeof v.d === "object" ? (v as { t: string; d: ToolInputs }) : null;
 }
 
 /** Fills in anything a saved or shared copy lacks from the defaults, and
@@ -119,7 +125,6 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
   useEffect(() => {
     memory.set(def.id, state);
   }, [def.id, state]);
-  const { setActive } = use(RegistryContext);
 
   // A share link for this tool opens with its inputs.
   useEffect(() => {
@@ -131,14 +136,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
   }, [def]);
 
   // The header's controls see this tool, and its inputs as they change.
-  useEffect(() => {
-    setActive({
-      def: def as unknown as ToolDef<ToolInputs>,
-      state,
-      load: (data) => setState(withDefaults(def.defaults, data)),
-    });
-  }, [def, state, setActive]);
-  useEffect(() => () => setActive(null), [setActive]);
+  useRegisterTool(def, state, (data) => setState(withDefaults(def.defaults, data)));
 
   const set = useCallback(
     <K extends keyof S>(k: K) => (v: S[K]) => setState((s) => ({ ...s, [k]: v })),
@@ -146,4 +144,18 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
   );
   const update = useCallback((patch: Partial<S>) => setState((s) => ({ ...s, ...patch })), []);
   return { state, set, update, setState };
+}
+
+/** Makes a page's inputs the ones the header's controls (save, share,
+    reset) work on: a tool's, or the readiness guide's plan. */
+export function useRegisterTool<S extends ToolInputs>(def: ToolDef<S>, state: S, load: (data: ToolInputs) => void) {
+  const { setActive } = use(RegistryContext);
+  const latest = useRef(load);
+  useEffect(() => {
+    latest.current = load;
+  });
+  useEffect(() => {
+    setActive({ def: def as unknown as ToolDef<ToolInputs>, state, load: (d) => latest.current(d) });
+  }, [def, state, setActive]);
+  useEffect(() => () => setActive(null), [setActive]);
 }

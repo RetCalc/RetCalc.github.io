@@ -5,11 +5,13 @@ import { Main } from "@/components/shell/Main";
 import { Masthead } from "@/components/shell/Masthead";
 import { NavBar } from "@/components/shell/NavBar";
 import { PageEffects } from "@/components/shell/PageEffects";
+import { SheetHost } from "@/components/shell/Sheet";
 import { PopupProvider } from "@/components/shell/Popup";
 import { SelectMenus } from "@/components/shell/SelectMenus";
 import { ToastProvider } from "@/components/shell/Toast";
 import { Tooltips } from "@/components/shell/Tooltips";
 import { ToolRegistryProvider } from "@/components/tools/ToolState";
+import { GuideCoach } from "@/tools/guide/Coach";
 import { SITE } from "@/lib/site";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 
@@ -90,6 +92,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Tooltips />
             <SelectMenus />
             <PageEffects />
+            <GuideCoach />
+            <SheetHost />
           </HouseholdProvider>
           </ToolRegistryProvider>
           </PopupProvider>

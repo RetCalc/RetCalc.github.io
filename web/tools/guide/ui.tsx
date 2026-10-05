@@ -1,0 +1,150 @@
+"use client";
+
+/* The pieces every guide step is built from: choice buttons, answer fields,
+   the box for a trip into a tool, and the note a step shows on your return.
+   Each step reads two copies of the answers: `v`, as they were when the card
+   was last drawn, for what the card shows and hides (so typing never pulls
+   a field out from under you), and `a`, as they are now, for the notes that
+   change while you type. From src/js/app/29-guide-trips.js. */
+
+import { createContext, use } from "react";
+import { DraftInput } from "@/components/fields/DraftInput";
+import { ToolIcon } from "@/components/tools/ToolIcon";
+import { Html } from "@/components/ui/Html";
+import { parseNum } from "@/lib/format";
+import type { ToolSub } from "@/lib/tools";
+import { gdM, ok } from "./calc";
+import type { AnswerKey, Answers, GuideState } from "./store";
+import { TRIP_META } from "./tripMeta";
+
+export interface GuideView {
+  g: GuideState;
+  /** The answers now. */
+  a: Answers;
+  /** The answers as the card was last drawn. */
+  v: Answers;
+  /** Draws the card again from the answers now. */
+  redraw: () => void;
+  /** Changes one answer; `redraw` draws the card again too. */
+  set: <K extends AnswerKey>(k: K, val: Answers[K], redraw?: boolean) => void;
+  trip: (id: string, from?: string) => void;
+  go: (step: string) => void;
+  /** The guide's own buttons: next, prev, undo, apply... */
+  act: (what: string) => void;
+}
+export const GuideCtx = createContext<GuideView | null>(null);
+export function useGuideView(): GuideView {
+  const v = use(GuideCtx);
+  if (!v) throw new Error("useGuideView needs the guide around it");
+  return v;
+}
+
+export function Choice({ k, val, title, sub }: { k: AnswerKey; val: string; title: React.ReactNode; sub?: React.ReactNode }) {
+  const G = useGuideView();
+  const on = G.a[k] === val;
+  return (
+    <button type="button" className={"gd-choice" + (on ? " on" : "")} data-set={k} data-val={val} aria-pressed={on}
+      onClick={() => G.set(k, val as Answers[typeof k], true)}>
+      <i className="dot" aria-hidden="true"></i><span className="t"><b>{title}</b>{sub ? <span>{sub}</span> : null}</span>
+    </button>
+  );
+}
+
+interface FieldOpts { full?: boolean; hint?: React.ReactNode }
+function Wrap({ k, label, full, hint, children }: FieldOpts & { k: string; label: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className={"field" + (full ? " full" : "")}><label htmlFor={"gdf-" + k}>{label}</label>{children}
+      {hint ? <div className="hint">{hint}</div> : null}</div>
+  );
+}
+const typed = (t: string) => (t.trim() === "" ? null : parseNum(t));
+
+export function MoneyF({ k, label, per, ph, ...o }: FieldOpts & { k: AnswerKey; label: React.ReactNode; per?: string; ph?: string }) {
+  const G = useGuideView();
+  const val = G.a[k];
+  return (
+    <Wrap k={k} label={label} {...o}>
+      <div className="inputwrap"><span className="affix">$</span>
+        <DraftInput money nonNeg id={"gdf-" + k} data-a={k} placeholder={ph} value={ok(val) ? val : NaN} format={gdM}
+          onType={(t) => G.set(k, typed(t) as Answers[typeof k])} />
+        {per ? <span className="affix">{per}</span> : null}</div>
+    </Wrap>
+  );
+}
+export function NumF({ k, label, affix, ...o }: FieldOpts & { k: AnswerKey; label: React.ReactNode; affix: string }) {
+  const G = useGuideView();
+  const val = G.a[k];
+  return (
+    <Wrap k={k} label={label} {...o}>
+      <div className="inputwrap">
+        <DraftInput nonNeg step={1} id={"gdf-" + k} data-a={k} value={ok(val) ? val : NaN} format={(x) => (ok(x) ? String(x) : "")}
+          onType={(t) => G.set(k, typed(t) as Answers[typeof k])} />
+        <span className="affix">{affix}</span></div>
+    </Wrap>
+  );
+}
+export function SelF({ k, label, opts, num, redraw, ...o }: FieldOpts & {
+  k: AnswerKey; label: React.ReactNode; opts: [value: string | number, label: string][]; num?: boolean; redraw?: boolean;
+}) {
+  const G = useGuideView();
+  const cur = G.a[k] == null ? "" : String(G.a[k]);
+  return (
+    <Wrap k={k} label={label} {...o}>
+      <select id={"gdf-" + k} data-a={k} value={cur} onChange={(e) => {
+        const t = e.target.value;
+        G.set(k, (num ? (t === "" ? null : parseFloat(t)) : t || null) as Answers[typeof k], redraw);
+      }}>
+        {opts.map(([val, lab]) => <option key={String(val)} value={String(val)}>{lab}</option>)}
+      </select>
+    </Wrap>
+  );
+}
+export const Fields = ({ className = "gd-fields", children }: { className?: string; children: React.ReactNode }) => <div className={className}>{children}</div>;
+export const Callout = ({ cls, children, style }: { cls?: string; children: React.ReactNode; style?: React.CSSProperties }) => (
+  <div className={"gd-callout" + (cls ? " " + cls : "")} style={style}>{children}</div>
+);
+export const Q = ({ children }: { children: React.ReactNode }) => <h2 className="gd-q" tabIndex={-1}>{children}</h2>;
+export const Lead = ({ children }: { children: React.ReactNode }) => <p className="gd-lead">{children}</p>;
+export const H3 = ({ children }: { children: React.ReactNode }) => <div className="gd-h3">{children}</div>;
+
+/* The Basic calculator has no card in the tool list, so its icon is here. */
+const BASIC_ICON = (
+  <svg viewBox="0 0 40 40" fill="none"><path d="M5 33h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M7 29 C15 27 22 22 33 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path d="M27 9h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+
+/** The trip box: which tool, why, what you'll do there, and the button. */
+export function Task({ id, head, label, after }: { id: string; head: string; label?: string | null; after?: React.ReactNode }) {
+  const G = useGuideView();
+  const T = TRIP_META[id];
+  return (
+    <div className="gd-task">
+      <div className="gd-task-h"><div className="gd-task-ic" aria-hidden="true">{T.tool === "basic" ? BASIC_ICON : <ToolIcon sub={T.tool as ToolSub} />}</div>
+        <div><b>{head}</b><span>{T.name + (T.mins ? " · about " + T.mins + " minutes" : "")}</span></div></div>
+      {T.preview?.length ? <ol className="gd-steps">{T.preview.map((t) => <li key={t}>{t}</li>)}</ol> : null}
+      <button type="button" className="btn primary" data-trip={id} onClick={() => G.trip(id)}>{label || "Open " + T.name}<i className="arw" aria-hidden="true"></i></button>
+      {after}
+    </div>
+  );
+}
+/** "Optional. Continue whenever you're ready." under a trip box. */
+export const After = ({ children }: { children: React.ReactNode }) => <div style={{ marginTop: "10px" }} className="hint">{children}</div>;
+
+/** The note a step shows on your return from a tool, or after a change:
+    the guide's own words, with Undo when it can be taken back. */
+export function BackNote({ step }: { step: string }) {
+  const G = useGuideView();
+  const B = G.g.back;
+  if (!B || B.step !== step || !B.msg) return null;
+  const html = B.msg + (B.see ? "<br><button type='button' class='btn mini' data-trip='" + B.see.trip + "' data-from='" + step + "'>" + B.see.label + "<i class='arw' aria-hidden='true'></i></button>" : "") +
+    (B.undo ? "<br><button type='button' class='btn mini' data-gd='undo'>Undo</button>" : "");
+  return (
+    <Html className="gd-callout ok" html={html} onClick={(e) => {
+      const el = (e.target as HTMLElement).closest("[data-gd],[data-trip]");
+      if (!el) return;
+      if (el.getAttribute("data-gd") === "undo") G.act("undo");
+      const t = el.getAttribute("data-trip");
+      if (t) G.trip(t, step);
+    }} />
+  );
+}

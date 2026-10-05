@@ -18,6 +18,9 @@ export function reroll(): void {
   listeners.forEach((fn) => fn());
 }
 
+/** The seed now, outside a component (the guide's coach reading a tool). */
+export const mcSeed = () => seed;
+
 export function useMcSeed(): number {
   return useSyncExternalStore(subscribe, () => seed, () => seed);
 }
