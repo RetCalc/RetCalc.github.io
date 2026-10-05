@@ -8,6 +8,7 @@
 import { useRef } from "react";
 import { BandChart } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
+import { BandTipRows } from "@/components/charts/TipRows";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped } from "@/components/shell/Tooltips";
@@ -121,9 +122,7 @@ export function Basic() {
             tip={(b) => (
               <>
                 {hasAge ? <><b>Age {fmtNum(p.age + b.year)}</b> <span style={{ color: "var(--dimmer)" }}>{"· year " + fmtNum(b.year)}</span></> : <b>Year {fmtNum(b.year)}</b>}
-                <br /><span style={{ color: "#4fbf95" }}>Better</span> <span className="n">{money(b.hi!)}</span>
-                <br /><span style={{ color: "#e9b872" }}>Expected</span> <span className="n">{money(b.base)}</span>
-                <br /><span style={{ color: "#e2795f" }}>Worse</span> <span className="n">{money(b.lo!)}</span>
+                <BandTipRows b={b} names={["Better", "Expected", "Worse"]} />
               </>
             )} />
           <Legend id="legendQ" items={pts.length ? [

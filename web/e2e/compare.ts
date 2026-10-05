@@ -111,8 +111,13 @@ export async function compareTool(page: Page, info: TestInfo, slug: string, root
       await p.addStyleTag({ content: STILL });
       await within("scrolling to the top", p.evaluate(() => window.scrollTo(0, 0)));
     }
-    const shotA = await oldPage.locator("#main").screenshot({ timeout: 30_000 });
-    const shotB = await page.locator("#main").screenshot({ timeout: 30_000 });
+    /* Chrome can't capture an image over 16,384 pixels tall; a long page on
+       a phone's dense screen passes that, so it's taken at one pixel per CSS
+       pixel instead. */
+    const tall = await within("measuring", oldPage.evaluate(() => document.querySelector("#main")!.getBoundingClientRect().height * devicePixelRatio > 16_000));
+    const shot = { timeout: 30_000, scale: tall ? "css" : "device" } as const;
+    const shotA = await oldPage.locator("#main").screenshot(shot);
+    const shotB = await page.locator("#main").screenshot(shot);
     const d = diffImages(shotA, shotB);
     if (d.ratio > 0.005 || d.sizeA.join() !== d.sizeB.join()) {
       // Saved beside the test's results, to look at what differs.

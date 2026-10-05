@@ -9,6 +9,7 @@ import { useRef, useState } from "react";
 import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
 import { HistBarNote } from "@/components/charts/HistNotes";
 import { HistLegend, Legend } from "@/components/charts/Legend";
+import { BandTipRows, FanTipRows } from "@/components/charts/TipRows";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { NumberInput } from "@/components/fields/NumberInput";
@@ -253,21 +254,7 @@ export function Fire() {
             tip={(b) => (
               <>
                 <b>Year {b.year} Age {p.curAge + b.year}</b>
-                {hist ? (
-                  <>
-                    <br /><span style={{ color: "#4fbf95" }}>90th</span> <span className="n">{money(b.hi!)}</span>
-                    <br /><span style={{ color: "#3f9a78" }}>75th</span> <span className="n">{money(b.p75 as number)}</span>
-                    <br /><span style={{ color: "#e9b872" }}>Median</span> <span className="n">{money(b.base)}</span>
-                    <br /><span style={{ color: "#3f9a78" }}>25th</span> <span className="n">{money(b.p25 as number)}</span>
-                    <br /><span style={{ color: "#e2795f" }}>10th</span> <span className="n">{money(b.lo!)}</span>
-                  </>
-                ) : (
-                  <>
-                    <br /><span style={{ color: "#4fbf95" }}>Higher</span> <span className="n">{money(b.hi!)}</span>
-                    <br /><span style={{ color: "#e9b872" }}>Your rate</span> <span className="n">{money(b.base)}</span>
-                    <br /><span style={{ color: "#e2795f" }}>Lower</span> <span className="n">{money(b.lo!)}</span>
-                  </>
-                )}
+                {hist ? <FanTipRows b={b} /> : <BandTipRows b={b} />}
               </>
             )} />
           {!chart.pts.length ? <Legend id="legendFire" items={[]} />

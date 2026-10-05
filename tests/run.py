@@ -85,6 +85,7 @@ def engine(name):
     web/lib/engine/, its top-level `export ` keywords removed."""
     if "--web" in sys.argv:
         text = open(os.path.join(ROOT, "web", "lib", "engine", name + ".js"), encoding="utf-8").read()
+        text = re.sub(r"^import [^;]*;\n", "", text, flags=re.M | re.S)
         return re.sub(r"^export ", "", text, flags=re.M)
     return open(os.path.join(ROOT, "src", "js", name + ".js"), encoding="utf-8").read()
 
@@ -96,7 +97,7 @@ def main():
     if "--web" in sys.argv:
         # Calculators already moved into the new app are taken from there;
         # the rest still come from src/js/app/ until their tool is ported.
-        src = "\n" + engine("calculators") + "\n" + src
+        src = "\n" + engine("calculators") + "\n" + engine("bridge") + "\n" + src
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
     dd = engine("drawdown")
     e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")
