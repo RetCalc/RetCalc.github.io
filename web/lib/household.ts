@@ -34,6 +34,7 @@ const has = (v: number | null) => v != null && isFinite(v);
     (from hhApply() in src/js/app/27-household.js). Each tool is added as
     it's ported; its fill runs via useHouseholdFill. */
 export const HOUSEHOLD_TOOLS: { name: string; takes: (h: Household) => boolean }[] = [
+  { name: "Basic", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly)) },
   { name: "Income Tax", takes: () => true },
   { name: "Budget", takes: (h) => has(h.income) && (h.income! + (h.status === "m" && has(h.income2) ? h.income2! : 0)) > 0 },
 ];

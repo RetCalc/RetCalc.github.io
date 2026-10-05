@@ -49,3 +49,6 @@ export interface RentBuyResult {
   years: { year: number; buyerNW: number; renterNW: number; homeVal: number; balance: number; monthBuy: number; monthRent: number }[];
   breakEven: number | null; loan: number; pi: number; initialInvest: number; monthlyBuy: number;
 }
+
+export interface BasicYear { year: number; start: number; contrib: number; growth: number; end: number }
+export interface BasicResult { ppy: number; periods: number; years: BasicYear[]; fv: number; invested: number; growth: number; contribTotal: number }

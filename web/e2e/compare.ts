@@ -94,8 +94,8 @@ export async function compareTool(page: Page, info: TestInfo, slug: string, root
   const oldPage = await page.context().newPage();
   log("second page open");
   for (const c of cases) {
-    await open(oldPage, `${OLD}/${slug}.html`);
-    await open(page, `${NEW}/${slug}`);
+    await open(oldPage, `${OLD}/${slug === "home" ? "index" : slug}.html`);
+    await open(page, `${NEW}/${slug === "home" ? "" : slug}`);
     await apply(oldPage, c.steps);
     await apply(page, c.steps);
     log(c.name + ": reading both");

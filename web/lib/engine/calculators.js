@@ -1,8 +1,11 @@
 /* Calculators that lived in the app's screen code rather than the engine:
    college savings and rent vs. buy, from src/js/app/14-college-rentbuy.js,
-   and the default PMI rate from 12-mortgage.js. Moved without changes to the
+   the default PMI rate from 12-mortgage.js, and the Basic calculator's
+   projection and defaults from 20-basic.js and 00-core.js. Moved without changes to the
    math: only `export` is added. Tested by tests/math.test.js
    (python3 tests/run.py --web). */
+
+import { PPY } from "./math.js";
 
 /* PMI only exists below 20% down; this is the rate assumed when it applies. */
 export const PMI_DEFAULT = 0.6;
@@ -324,4 +327,82 @@ export function rentBuyCalc(inp) {
     initialInvest: down + closeAmt,
     monthlyBuy: pi + initFixedCost
   };
+}
+
+
+/* ---------- the Basic calculator, from src/js/app/20-basic.js and 00-core.js ---------- */
+// Starting point when nothing is saved.
+export const DEFAULTS = {initial:10000, contrib:500, period:"Bi-Weekly", growth:.04, nominal:.085,
+  inflation:.03, years:30, withdrawal:.04, taxRate:.10, vol:.15, fees:0};
+export const BASIC_DEFAULTS = {age:30, retire:65, saved:10000, contrib:500, period:"Monthly", risk:.045};
+
+/* Everything in Basic is modeled in real terms: the rate of return already
+   has inflation taken out, so every figure is in today's dollars. */
+export const RISK_LEVELS = [
+  {label:"Very conservative", sub:"mostly cash and bonds",      real:.020},
+  {label:"Conservative",      sub:"bond heavy",                 real:.030},
+  {label:"Balanced",          sub:"a mix of stocks and bonds",  real:.045},
+  {label:"Growth",            sub:"mostly stocks",              real:.0575},
+  {label:"Aggressive",        sub:"nearly all stocks",          real:.070}
+];
+export const BASIC_BAND = .015;
+
+/* Basic's own real-return engine, replacing the old flat-forever contribution
+   with one that steps up once a year, the way Advanced's does.
+
+   Basic never asks for an inflation rate -- it only ever shows a single real
+   (after-inflation) return. But "the contribution keeps pace with inflation"
+   is not a free-standing fact; it has a shape. Held perfectly flat in real
+   dollars every single month, a contribution is implicitly rising in nominal
+   terms every month too -- continuously, at the same frequency the plan
+   compounds. Advanced does something different: it steps the nominal
+   contribution up once a year and only converts to today's dollars at the
+   very end. Those two are not the same plan, and the gap between them is
+   exactly what produced the mismatch: Basic's number was quietly larger
+   because "continuously" compounds more advantageously than "once a year."
+
+   To close it without ever surfacing an inflation input, BASIC_INFL is used
+   purely to shape the timing of the step -- it cancels out of the return the
+   person actually sees. Expressed in today's dollars, a contribution that is
+   flat in nominal terms for twelve months and then jumps at the year mark
+   loses a little ground every month within that year and recovers it all at
+   once at the boundary. The real-dollar contribution multiplier at month j
+   of a year (j = 1..periods-per-year) works out to (1+infl)^(-j/ppy) --
+   independent of which year it is, so it can be applied directly without
+   tracking nominal dollars anywhere. Run that multiplier through the same
+   periodic real return Basic has always used, and the result lands within
+   a rounding error of Advanced's own fvReal for the same real return and the
+   BASIC_INFL is intentionally the same figure "Open in Advanced" assumes when
+   it splits the real rate back into a return and an inflation rate, and the
+   same inflation Advanced itself starts with, so the tabs agree everywhere. */
+export const BASIC_INFL = DEFAULTS.inflation;
+
+export function projectBasic(p){
+  const ppy = PPY[p.period];
+  const n = Math.floor(p.years * ppy);
+  const periodicReal = Math.pow(1 + p.real, 1 / ppy) - 1;
+  let bal = p.initial, contribTotal = 0;
+  const years = [];
+  let yearStart = p.initial, yearContrib = 0, curYear = 1;
+
+  for (let i = 1; i <= n; i++){
+    const yearNo = Math.ceil(i / ppy);
+    if (yearNo !== curYear){
+      years.push({year:curYear, start:yearStart, contrib:yearContrib,
+                  growth:bal - yearStart - yearContrib, end:bal});
+      yearStart = bal; yearContrib = 0; curYear = yearNo;
+    }
+    const j = i - (yearNo - 1) * ppy;             // 1..ppy, resets every year
+    const c = p.contrib / Math.pow(1 + BASIC_INFL, j / ppy);
+    bal = bal * (1 + periodicReal) + c;
+    contribTotal += c; yearContrib += c;
+  }
+  if (n > 0) years.push({year:curYear, start:yearStart, contrib:yearContrib,
+                         growth:bal - yearStart - yearContrib, end:bal});
+
+  const fv = bal;
+  const invested = p.initial + contribTotal;
+  const wd = fv * p.withdrawal;
+  return {ppy, periods:n, years, fv, fvReal:fv, invested, growth:fv - invested,
+    contribTotal, wd, wdReal:wd, afterTax:wd, afterTaxMo:wd / 12};
 }

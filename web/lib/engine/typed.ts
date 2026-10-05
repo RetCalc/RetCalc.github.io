@@ -4,7 +4,7 @@
    instead of in each tool. Screens import calculations from here. */
 import * as E from "./index.js";
 import type {
-  CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult,
+  BasicResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult,
 } from "./types";
 
 const typed = <F>(f: unknown) => f as F;
@@ -20,4 +20,6 @@ export const collegePlanCalc = typed<(i: CollegeInput) => CollegePlan | null>(E.
 export const rentBuyCalc = typed<(i: Record<string, number | string>) => RentBuyResult>(E.rentBuyCalc);
 export const bracketRoom = typed<(taxable: number, status: string) => { nextRate: number; room: number } | null>(E.bracketRoom);
 
-export const { DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax } = E;
+export const projectBasic = typed<(p: { years: number; real: number; initial: number; contrib: number; period: string; withdrawal: number }) => BasicResult>(E.projectBasic);
+
+export const { BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax } = E;

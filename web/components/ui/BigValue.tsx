@@ -26,7 +26,7 @@ function format(v: number, sample: string): string {
   return out;
 }
 
-export function BigValue({ text, className = "v", id, sized = true }: { text: string; className?: string; id?: string; sized?: boolean }) {
+export function BigValue({ text, className = "v", id, sized = true }: { text: string; className?: string; id?: string; sized?: boolean | undefined }) {
   const el = useRef<HTMLDivElement>(null);
   const shown = useRef<{ num: number; pre: string } | null>(null);
 

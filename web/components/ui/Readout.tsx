@@ -5,21 +5,22 @@ import type { ReactNode } from "react";
 import { BigValue } from "./BigValue";
 
 /** One figure in a panel's headline: its label, the number, a note under it. */
-export function Figure({ label, labelId, id, value, className, note, noteId }:
-  { label: ReactNode; labelId?: string; id: string; value: string; className?: string; note: ReactNode; noteId?: string }) {
+/** `sized: false` leaves the figure at the CSS's own size (for a dash). */
+export function Figure({ label, labelId, id, value, className, note, noteId, sized }:
+  { label: ReactNode; labelId?: string; id: string; value: string; className?: string; note: ReactNode; noteId?: string; sized?: boolean }) {
   return (
     <div>
       <div className="k" id={labelId}>{label}</div>
-      <BigValue className={className} id={id} text={value} />
+      <BigValue className={className} id={id} text={value} sized={sized} />
       <div className="note" id={noteId}>{note}</div>
     </div>
   );
 }
 
 /** A label on the left, its value on the right. */
-export function KV({ k, v, cls }: { k: ReactNode; v: ReactNode; cls?: string }) {
+export function KV({ k, v, cls, id }: { k: ReactNode; v: ReactNode; cls?: string; id?: string }) {
   return (
-    <div className="kv"><span className="k">{k}</span><span className={cls ? `v ${cls}` : "v"}>{v}</span></div>
+    <div className="kv"><span className="k">{k}</span><span className={cls ? `v ${cls}` : "v"} id={id}>{v}</span></div>
   );
 }
 

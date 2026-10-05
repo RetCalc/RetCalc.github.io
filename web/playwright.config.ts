@@ -14,7 +14,7 @@ export const NEW = "http://localhost:3200";
 
 export default defineConfig({
   testDir: "e2e",
-  timeout: 240_000,
+  timeout: 120_000,
   fullyParallel: true,
   // Python's test server for the old site sometimes drops a connection when
   // many checks run at once; one retry covers that, and the report marks the
