@@ -4,10 +4,11 @@
    into a short form. Markup from src/main/00-household.html. */
 
 import { useRef, useState } from "react";
-import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { useToast } from "@/components/shell/Toast";
 import { groupDigits, parseOptional } from "@/lib/format";
-import { householdSummary, isEmptyHousehold, STATE_OPTIONS, type Household } from "@/lib/household";
+import { householdSummary, isEmptyHousehold, type Household } from "@/lib/household";
+import type { StateOption } from "@/lib/states";
 import { useHousehold } from "./HouseholdProvider";
 
 type Form = Record<"age" | "spouseAge" | "retire" | "saved" | "monthly" | "income" | "income2" | "spend", string> & {
@@ -49,7 +50,9 @@ const HOUSE_ICON = (
   </svg>
 );
 
-export function HouseholdBar() {
+/** `states` comes from the server (lib/states.ts), so this bar never needs
+    the calculation engine. */
+export function HouseholdBar({ states }: { states: StateOption[] }) {
   const { profile, save, shown, setShown } = useHousehold();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -86,7 +89,7 @@ export function HouseholdBar() {
   };
 
   const empty = isEmptyHousehold(profile);
-  const sum = profile && !empty ? householdSummary(profile) : null;
+  const sum = profile && !empty ? householdSummary(profile, (c) => states.find((s) => s.code === c)?.name) : null;
 
   return (
     <section className={`hh${(open ? form.status : profile?.status) === "m" ? " married" : ""}`} id="hhCard" aria-label="Your household" hidden={!shown}>
@@ -124,52 +127,22 @@ export function HouseholdBar() {
           } else if (e.key === "Escape") close();
         }}>
         <div className="hh-grid">
-          <div className="field">
-            <label htmlFor="hhStatus">Household</label>{" "}
-            <select id="hhStatus" value={form.status} onChange={(e) => set("status")(e.target.value as Form["status"])}>
-              <option value="s">Just me</option>
-              <option value="m">Me and a spouse</option>
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="hhAge">Your age</label>
-            <div className="inputwrap"><NumberInput ref={firstField} id="hhAge" nonNeg value={form.age} onValueChange={set("age")} /><span className="affix">age</span></div>
-          </div>
-          <div className="field hh-sp">
-            <label htmlFor="hhSpouseAge">Spouse&apos;s age</label>
-            <div className="inputwrap"><NumberInput id="hhSpouseAge" nonNeg value={form.spouseAge} onValueChange={set("spouseAge")} /><span className="affix">age</span></div>
-          </div>
-          <div className="field">
-            <label htmlFor="hhRetire">Retire at</label>
-            <div className="inputwrap"><NumberInput id="hhRetire" nonNeg value={form.retire} onValueChange={set("retire")} /><span className="affix">age</span></div>
-          </div>
-          <div className="field">
-            <label htmlFor="hhState">State</label>
-            <select id="hhState" value={form.state} onChange={(e) => set("state")(e.target.value)}>
-              <option value="">Not set</option>
-              {STATE_OPTIONS.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
-            </select>
-          </div>
-          <div className="field">
-            <label htmlFor="hhSaved">Retirement savings</label>
-            <div className="inputwrap"><span className="affix">$</span><MoneyInput id="hhSaved" nonNeg value={form.saved} onValueChange={set("saved")} /></div>
-          </div>
-          <div className="field">
-            <label htmlFor="hhMonthly">You save each month</label>
-            <div className="inputwrap"><span className="affix">$</span><MoneyInput id="hhMonthly" nonNeg value={form.monthly} onValueChange={set("monthly")} /></div>
-          </div>
-          <div className="field">
-            <label htmlFor="hhIncome">Your gross income</label>
-            <div className="inputwrap"><span className="affix">$</span><MoneyInput id="hhIncome" nonNeg value={form.income} onValueChange={set("income")} /><span className="affix">/yr</span></div>
-          </div>
-          <div className="field hh-sp">
-            <label htmlFor="hhIncome2">Spouse&apos;s gross income</label>
-            <div className="inputwrap"><span className="affix">$</span><MoneyInput id="hhIncome2" nonNeg value={form.income2} onValueChange={set("income2")} /><span className="affix">/yr</span></div>
-          </div>
-          <div className="field">
-            <label htmlFor="hhSpend">Spending in retirement</label>
-            <div className="inputwrap"><span className="affix">$</span><MoneyInput id="hhSpend" nonNeg value={form.spend} onValueChange={set("spend")} /><span className="affix">/yr</span></div>
-          </div>
+          <SelectField id="hhStatus" label="Household" value={form.status} onChange={(v) => set("status")(v as Form["status"])}>
+            <option value="s">Just me</option>
+            <option value="m">Me and a spouse</option>
+          </SelectField>
+          <NumberField inputRef={firstField} id="hhAge" label="Your age" unit="age" value={form.age} onValueChange={set("age")} />
+          <NumberField id="hhSpouseAge" className="hh-sp" label="Spouse's age" unit="age" value={form.spouseAge} onValueChange={set("spouseAge")} />
+          <NumberField id="hhRetire" label="Retire at" unit="age" value={form.retire} onValueChange={set("retire")} />
+          <SelectField id="hhState" label="State" value={form.state} onChange={set("state")}>
+            <option value="">Not set</option>
+            {states.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+          </SelectField>
+          <MoneyField id="hhSaved" label="Retirement savings" value={form.saved} onValueChange={set("saved")} />
+          <MoneyField id="hhMonthly" label="You save each month" value={form.monthly} onValueChange={set("monthly")} />
+          <MoneyField id="hhIncome" label="Your gross income" unit="/yr" value={form.income} onValueChange={set("income")} />
+          <MoneyField id="hhIncome2" className="hh-sp" label="Spouse's gross income" unit="/yr" value={form.income2} onValueChange={set("income2")} />
+          <MoneyField id="hhSpend" label="Spending in retirement" unit="/yr" value={form.spend} onValueChange={set("spend")} />
         </div>
         <div className="hh-foot">
           <div className="hint">Any field can stay blank. Filling in replaces those numbers in

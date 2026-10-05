@@ -1,7 +1,8 @@
 /* The College Savings tool's inputs, apart from its screen so the Budget can
    read the monthly amount. From src/js/app/14-college-rentbuy.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { collegePlanCalc, collegeSavingsCalc } from "@/lib/engine";
+import { collegePlanCalc, collegeSavingsCalc } from "@/lib/engine/typed";
+import type { CollegeInput } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 
 export const CL_PRESETS: [string, string][] = [
@@ -19,11 +20,6 @@ export type CollegeInputs = typeof COLLEGE_DEFAULTS;
 
 export const COLLEGE_DEF: ToolDef<CollegeInputs> = { id: "college", label: "College", noun: "college plan", defaults: COLLEGE_DEFAULTS };
 
-export interface CollegeKid { yearsUntil: number; annualCost: number; collegeYrs: number }
-export interface CollegeInput {
-  yearsUntil: number; annualCost: number; tuitionInfl: number; investRet: number; saved: number; collegeYrs: number; kids: CollegeKid[];
-}
-
 /** The inputs as the calculators take them. */
 export function collegeInput(c: CollegeInputs): CollegeInput {
   const kids = c.kids.map((k) => ({
@@ -39,9 +35,8 @@ export function collegeInput(c: CollegeInputs): CollegeInput {
 
 /** The amount to save each month now, for however many children. */
 export function collegeMonthly(inp: CollegeInput): number {
-  if (inp.kids.length > 1) {
-    const P = collegePlanCalc(inp) as { monthly: number } | null;
-    return P ? P.monthly : 0;
-  }
-  return inp.annualCost > 0 && inp.yearsUntil > 0 ? (collegeSavingsCalc(inp) as { monthly: number }).monthly : 0;
+  if (inp.kids.length > 1) return collegePlanCalc(inp)?.monthly ?? 0;
+  return inp.annualCost > 0 && inp.yearsUntil > 0 ? collegeSavingsCalc(inp).monthly : 0;
 }
+
+export type { CollegeInput };

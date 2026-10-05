@@ -6,24 +6,25 @@
 
 import { useRef } from "react";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
+import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
-import { encodeShare, toolInputs, useActiveTool, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
-import { computeTax } from "@/lib/engine";
+import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { CsvButton } from "@/components/ui/CsvButton";
+import { Figure, Segmented } from "@/components/ui/Readout";
+import { computeTax } from "@/lib/engine/typed";
+import { focusLast } from "@/lib/dom";
 import { groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { retirementContribs } from "@/lib/retirement-contribs";
 import { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } from "@/tools/college/model";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { BUDGET_DEF, PRESET_DESCS, budgetTotals, isSavingsRow, type BudgetRow } from "./model";
 
-const csvEsc = (v: string) => (/[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v);
 
 export function Budget() {
-  const { state: s, setState } = useToolState(BUDGET_DEF);
-  const tool = useActiveTool();
+  const { state: s, set, setState } = useToolState(BUDGET_DEF);
   const toast = useToast();
   const showPopup = usePopup();
   const listRef = useRef<HTMLDivElement>(null);
@@ -65,57 +66,36 @@ export function Budget() {
     g.rows.push({ r, i });
   });
 
-  const exportCsv = () => {
+  /* The budget isn't a table, so its CSV is built here: each item with an
+     amount, then income and the totals as labeled rows. */
+  const csvRows = (): string[][] | null => {
     const period = (f: number) => (f === 12 ? "Per month" : "Per year");
     const income = parseNum(s.income);
-    if (!(income > 0) && !(spentYr > 0) && !(savedYr > 0)) {
-      toast("Nothing to export yet");
-      return;
-    }
+    if (!(income > 0) && !(spentYr > 0) && !(savedYr > 0)) return null;
     const rows = [["Budget Item", "Amount", "Period"]];
     if (income > 0) rows.push(["Income after taxes", money(income), period(s.incomeFreq)]);
-    s.rows.forEach((r) => {
-      if (parseNum(r.amount) > 0) rows.push([r.desc, money(parseNum(r.amount)), period(r.freq)]);
-    });
+    for (const r of s.rows) if (parseNum(r.amount) > 0) rows.push([r.desc, money(parseNum(r.amount)), period(r.freq)]);
     rows.push(["Total spending", money(spentYr), "Per year"]);
     if (savedYr > 0) rows.push(["Total saving", money(savedYr), "Per year"]);
     rows.push(["Left over", money(leftYr), "Per year"]);
-    const link = location.origin + location.pathname + (tool ? encodeShare(tool.def.id, tool.state) : "");
-    const csv = "﻿" + csvEsc(link) + "\r\n" + rows.map((r) => r.map((c) => csvEsc(c)).join(",")).join("\r\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    a.download = "retcalc-budget.csv";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast("Saved " + a.download);
+    return rows;
   };
 
   return (
     <div className="stack" id="tab-budget">
       <div className="panel">
         <div className="headline">
-          <div><div className="k">Income, after taxes</div><BigValue id="bgIncome" text={money(incomeYr)} />
-            <div className="note" id="bgIncomeNote">Per year</div></div>
-          <div><div className="k">Total spending</div><BigValue id="bgSpent" text={money(spentYr)} />
-            <div className="note" id="bgSpentNote">Per year</div></div>
-          <div><div className="k">Left over</div><BigValue className={sign} id="bgLeft" text={money(leftYr)} />
-            <div className="note" id="bgLeftNote">
-              {incomeYr > 0 ? (leftYr < 0 ? "Over budget by " : "") + pctStr(Math.abs(pct), 1) + (leftYr < 0 ? " of income" : " of income left") : "Enter your income to begin"}
-            </div></div>
+          <Figure label="Income, after taxes" id="bgIncome" value={money(incomeYr)} noteId="bgIncomeNote" note="Per year" />
+          <Figure label="Total spending" id="bgSpent" value={money(spentYr)} noteId="bgSpentNote" note="Per year" />
+          <Figure label="Left over" id="bgLeft" className={sign} value={money(leftYr)} noteId="bgLeftNote"
+            note={incomeYr > 0 ? (leftYr < 0 ? "Over budget by " : "") + pctStr(Math.abs(pct), 1) + (leftYr < 0 ? " of income" : " of income left") : "Enter your income to begin"} />
         </div>
         <div className="body">
           <div className="bgincome">
             <label htmlFor="bgIncomeIn"><Tipped text="Income after taxes" k="bgincome" /></label>
             <div className="bgincome-row">
-              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="bgIncomeIn" nonNeg value={s.income} onValueChange={(v) => setState((c) => ({ ...c, income: v }))} /></div>{" "}
-              <span className="seg bgseg" id="bgIncomeFreq">
-                {([[1, "/yr"], [12, "/mo"]] as const).map(([f, label]) => (
-                  <button key={f} type="button" data-freq={f} className={s.incomeFreq === f ? "on" : undefined}
-                    onClick={() => setState((c) => ({ ...c, incomeFreq: f }))}>{label}</button>
-                ))}
-              </span>{" "}
+              <Affixed prefix="$"><MoneyInput id="bgIncomeIn" nonNeg value={s.income} onValueChange={set("income")} /></Affixed>{" "}
+              <Segmented id="bgIncomeFreq" className="seg bgseg" attr="data-freq" options={[[1, "/yr"], [12, "/mo"]] as const} value={s.incomeFreq} onChange={set("incomeFreq")} />{" "}
               <button className="btn" type="button" id="bgCopyTax"
                 onClick={() => {
                   // Gross minus taxes only, not minus pre-tax savings: a 401(k)
@@ -131,7 +111,7 @@ export function Budget() {
       </div>
 
       <div className="panel">
-        <h2>Your budget<span className="h2ctrl"><button type="button" className="btn mini csvbtn" id="bgCsv" title="Download your budget as a CSV" aria-label="Download budget as CSV" onClick={exportCsv}>CSV</button></span></h2>
+        <h2>Your budget<span className="h2ctrl"><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></span></h2>
         <div className="body">
           <div id="bgList" ref={listRef}>
             {groups.map((g) => (
@@ -166,11 +146,8 @@ export function Budget() {
                           setRow(i, { desc: raw || PRESET_DESCS[i] || r.desc });
                         }}>{r.desc}</span>
                     )}
-                    <div className="inputwrap"><span className="affix">$</span><MoneyInput nonNeg value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></div>
-                    <span className="seg bgseg">
-                      <button type="button" data-fv="12" className={r.freq === 12 ? "on" : undefined} onClick={() => setRow(i, { freq: 12 })}>/mo</button>
-                      <button type="button" data-fv="1" className={r.freq === 1 ? "on" : undefined} onClick={() => setRow(i, { freq: 1 })}>/yr</button>
-                    </span>
+                    <Affixed prefix="$"><MoneyInput nonNeg value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
+                    <Segmented className="seg bgseg" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
                     {r.custom ? (
                       <button className="del" type="button" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</button>
                     ) : <span className="delspace"></span>}
@@ -182,7 +159,7 @@ export function Budget() {
           <button className="btn" type="button" id="bgAdd" style={{ marginTop: "6px" }}
             onClick={() => {
               setState((c) => ({ ...c, rows: [...c.rows, { group: "Custom", desc: "", amount: "0", freq: 12, custom: true }] }));
-              setTimeout(() => [...(listRef.current?.querySelectorAll<HTMLInputElement>("input.desc") ?? [])].pop()?.focus(), 0);
+              focusLast(listRef, "input.desc");
             }}>Add custom item</button>
           <div className="hint" style={{ marginTop: "10px" }}>Pull a number in from another tool:</div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "6px" }}>
@@ -235,7 +212,7 @@ export function Budget() {
         <div className="body">
           <div className="efrow">
             <span>Target for</span>{" "}
-            <div className="inputwrap" style={{ width: "72px" }}><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={(v) => setState((c) => ({ ...c, efMonths: v }))} /><span className="affix">mo</span></div>{" "}
+            <Affixed suffix="mo" style={{ width: "72px" }}><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
             <span>of monthly expenses</span>
           </div>
           <div className="kv total" style={{ marginTop: "12px" }}><span className="k" id="efLabel">{ef}-month emergency fund</span><span className="v gold" id="efTarget">{money((spentYr / 12) * ef)}</span></div>

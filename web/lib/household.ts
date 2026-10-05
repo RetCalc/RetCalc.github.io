@@ -3,7 +3,6 @@
    tool's own inputs, and from then on each tool is free to drift. Nothing
    reads it live, so an edit in one tool never quietly changes another.
    Ported from src/js/app/27-household.js. */
-import { STATES } from "@/lib/engine";
 import { fmtNum, money } from "@/lib/format";
 
 export interface Household {
@@ -43,13 +42,6 @@ export function isEmptyHousehold(h: Household | null): boolean {
   return !h || Object.entries(h).every(([k, v]) => k === "status" || v == null);
 }
 
-const STATE_NAMES = STATES as Record<string, { n: string }>;
-
-/** US states as the dropdowns list them: by name, valued by code. */
-export const STATE_OPTIONS: { code: string; name: string }[] = Object.keys(STATE_NAMES)
-  .sort((a, b) => STATE_NAMES[a].n.localeCompare(STATE_NAMES[b].n))
-  .map((code) => ({ code, name: STATE_NAMES[code].n }));
-
 /* $825K, $1.2M: the phone version of the summary. */
 function short$(v: number): string {
   const a = Math.abs(v), sign = v < 0 ? "-" : "";
@@ -59,7 +51,7 @@ function short$(v: number): string {
 
 /** The collapsed bar's one-line summary: full wording for wide screens,
     a compact one that fits two lines on a phone. */
-export function householdSummary(h: Household): { long: string[]; short: string[] } {
+export function householdSummary(h: Household, stateName: (code: string) => string | undefined): { long: string[]; short: string[] } {
   const long: string[] = [], short: string[] = [];
   if (h.age != null) {
     const ages = fmtNum(h.age) + (h.status === "m" && h.spouseAge != null ? " & " + fmtNum(h.spouseAge) : "");
@@ -87,8 +79,9 @@ export function householdSummary(h: Household): { long: string[]; short: string[
     long.push("spend " + money(h.spend) + "/yr");
     short.push(short$(h.spend) + " spend");
   }
-  if (h.state && STATE_NAMES[h.state]) {
-    long.push(STATE_NAMES[h.state].n);
+  const name = h.state ? stateName(h.state) : undefined;
+  if (h.state && name) {
+    long.push(name);
     short.push(h.state);
   }
   return { long, short };

@@ -7,29 +7,28 @@
 import { useRef } from "react";
 import { BandChart } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
+import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
+import { Figure, Segmented } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
-import { DEBT_CAP, debtDate as debtDateJs, debtDur, debtRun as debtRunJs, debtUnderwater as debtUnderwaterJs } from "@/lib/engine";
-import type { DebtInput, DebtResult } from "@/lib/engine/types";
-import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { DEBT_CAP, debtDate as debtDateOn, debtDur, debtRun, debtUnderwater } from "@/lib/engine/typed";
+import type { DebtResult } from "@/lib/engine/types";
+import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { focusLast } from "@/lib/dom";
 import { useClient } from "@/lib/useClient";
 import { BUDGET_DEFAULTS, budgetTotals } from "@/tools/budget/model";
 import { DEBT_DEF, debtList, type DebtRow } from "./model";
 
-const debtRun = debtRunJs as unknown as (l: DebtInput[], extra: number, mode: string) => DebtResult | null;
-const debtUnderwater = debtUnderwaterJs as unknown as (l: DebtInput[]) => DebtInput[];
-const DASH = "—";
 
 export function Debt() {
-  const { state: s, setState } = useToolState(DEBT_DEF);
+  const { state: s, set, setState } = useToolState(DEBT_DEF);
   const toast = useToast();
   const client = useClient();
   // Dates count from today, so they're filled in once in the browser.
-  const debtDate = (m: number) => (client ? (debtDateJs as (m: number) => string)(m) : "");
+  const debtDate = (m: number) => (client ? debtDateOn(m) : "");
   const listRef = useRef<HTMLDivElement>(null);
   const compareRef = useRef<HTMLTableElement>(null), orderRef = useRef<HTMLTableElement>(null), schedRef = useRef<HTMLTableElement>(null);
 
@@ -127,19 +126,16 @@ export function Debt() {
     <div className="stack solo" id="tab-debt">
       <div className="panel">
         <div className="headline">
-          <div><div className="k">Debt-free</div><BigValue className="v gold" id="dtFree" text={head.free} />
-            <div className="note" id="dtFreeNote">{head.freeNote}</div></div>
-          <div><div className="k">Total interest</div><BigValue id="dtInterest" text={head.interest} />
-            <div className="note" id="dtInterestNote">{head.interestNote}</div></div>
-          <div><div className="k"><Tipped text="Saved vs. minimums" k="dtsaved" /></div>
-            <BigValue className={head.savedPos ? "v pos" : "v "} id="dtSaved" text={head.saved} />
-            <div className="note" id="dtSavedNote">{head.savedNote}</div></div>
+          <Figure label="Debt-free" id="dtFree" className="v gold" value={head.free} noteId="dtFreeNote" note={head.freeNote} />
+          <Figure label="Total interest" id="dtInterest" value={head.interest} noteId="dtInterestNote" note={head.interestNote} />
+          <Figure label={<Tipped text="Saved vs. minimums" k="dtsaved" />} id="dtSaved" className={head.savedPos ? "v pos" : "v "}
+            value={head.saved} noteId="dtSavedNote" note={head.savedNote} />
         </div>
         <div className="body">
           <div className="bgincome">
             <label htmlFor="dtExtra">Extra payment, on top of the minimums</label>
             <div className="bgincome-row">
-              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="dtExtra" nonNeg value={s.extra} onValueChange={(v) => setState((c) => ({ ...c, extra: v }))} /><span className="affix">/mo</span></div>{" "}
+              <Affixed prefix="$" suffix="/mo"><MoneyInput id="dtExtra" nonNeg value={s.extra} onValueChange={set("extra")} /></Affixed>{" "}
               <button className="btn" type="button" id="dtCopyBudget"
                 onClick={() => {
                   const leftMo = budgetTotals(toolInputs("budget", BUDGET_DEFAULTS)).leftYr / 12;
@@ -153,12 +149,7 @@ export function Debt() {
             </div>
           </div>
           <div className="dtstrat">
-            <span className="seg" id="segDT">
-              {(["avalanche", "snowball"] as const).map((m) => (
-                <button key={m} type="button" data-dt={m} className={s.mode === m ? "on" : undefined}
-                  onClick={() => setState((c) => ({ ...c, mode: m }))}>{m === "avalanche" ? "Avalanche" : "Snowball"}</button>
-              ))}
-            </span>{" "}
+            <Segmented id="segDT" attr="data-dt" options={[["avalanche", "Avalanche"], ["snowball", "Snowball"]] as const} value={s.mode} onChange={set("mode")} />{" "}
             <span className="hint" style={{ margin: "0" }} id="dtStratNote">
               {s.mode === "snowball" ? "Smallest balance first: quicker wins, usually more interest." : "Highest rate first: mathematically cheapest."}
             </span>
@@ -179,9 +170,9 @@ export function Debt() {
             {s.rows.map((r, i) => (
               <div className="dtrow" key={i}>
                 <input className="desc" value={r.desc} placeholder="Name" aria-label="Debt name" onChange={(e) => setRow(i, "desc")(e.target.value)} />
-                <div className="inputwrap c1"><span className="affix">$</span><MoneyInput nonNeg value={r.balance} onValueChange={setRow(i, "balance")} aria-label="Balance" /></div>
-                <div className="inputwrap c2"><NumberInput nonNeg step={0.1} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /><span className="affix">%</span></div>
-                <div className="inputwrap c3"><span className="affix">$</span><MoneyInput nonNeg value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></div>
+                <Affixed className="c1" prefix="$"><MoneyInput nonNeg value={r.balance} onValueChange={setRow(i, "balance")} aria-label="Balance" /></Affixed>
+                <Affixed className="c2" suffix="%"><NumberInput nonNeg step={0.1} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /></Affixed>
+                <Affixed className="c3" prefix="$"><MoneyInput nonNeg value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></Affixed>
                 {s.rows.length > 1 ? (
                   <button className="del" type="button" title="Remove" aria-label="Remove"
                     onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</button>
@@ -192,7 +183,7 @@ export function Debt() {
           <button className="btn" type="button" id="dtAdd" style={{ marginTop: "6px" }}
             onClick={() => {
               setState((c) => ({ ...c, rows: [...c.rows, { desc: "New debt", balance: "0", apr: "0", min: "0" }] }));
-              setTimeout(() => [...(listRef.current?.querySelectorAll<HTMLInputElement>(".dtrow input.desc") ?? [])].pop()?.focus(), 0);
+              focusLast(listRef, ".dtrow input.desc");
             }}>Add a debt</button>
         </div>
       </div>
@@ -212,7 +203,7 @@ export function Debt() {
 
       <div className="panel">
         <h2>What you owe, month by month<span className="h2note">months from now</span></h2>
-        {body ?? <><div className="chartwrap" id="chartWrapDT"><svg id="chartDT" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Balance over time" /><div className="tip" /></div><div className="legend" id="legendDT" /></>}
+        {body ?? <><BandChart id="DT" pts={[]} maxX={0} ariaLabel="Balance over time" tip={() => null} /><Legend id="legendDT" items={[]} /></>}
       </div>
 
       <div className="panel">

@@ -1,6 +1,9 @@
 /* Number formatting and parsing, ported from src/js/app/00-core.js,
    01-inputs.js and 08-stages.js with the same output. */
 
+/** What a figure shows when there's nothing to calculate yet. */
+export const DASH = "\u2014";
+
 /* Building an Intl.NumberFormat is the expensive part, so one is kept per
    decimal count. Tables run to thousands of calls per render. */
 const MONEY_FMT: Record<number, Intl.NumberFormat> = {};

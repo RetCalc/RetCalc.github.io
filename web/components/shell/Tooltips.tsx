@@ -7,7 +7,14 @@
    and glueTipdots() in 01-inputs.js. */
 
 import { useEffect, useRef, useState } from "react";
-import { GLOSS } from "@/lib/glossary";
+
+/* The explanations' text is fetched the first time a "?" is pointed at, not
+   with every page: most visits never open one. */
+let gloss: Record<string, string> | null = null;
+const loadGloss = () => import("@/lib/glossary").then((m) => (gloss = m.GLOSS));
+async function textFor(key: string | null): Promise<string> {
+  return ((gloss ?? (await loadGloss()))[key ?? ""]) || "";
+}
 
 /** A "?" for glossary entry `k`. */
 export function TipDot({ k, title }: { k: string; title?: string }) {
@@ -70,8 +77,8 @@ export function Tooltips() {
 
   useEffect(() => {
     const dotOf = (e: Event) => (e.target as Element).closest?.(".tipdot") as HTMLElement | null;
-    const show = (d: HTMLElement) => {
-      const text = GLOSS[d.getAttribute("data-tip") ?? ""];
+    const show = async (d: HTMLElement) => {
+      const text = await textFor(d.getAttribute("data-tip"));
       if (!text) return;
       openDot.current?.classList.remove("on");
       d.classList.add("on");
@@ -85,7 +92,9 @@ export function Tooltips() {
     };
     const over = (e: MouseEvent) => {
       const d = dotOf(e);
-      if (d && !phone()) show(d);
+      if (d && !phone()) void show(d);
+      // Fetch the text as soon as a pointer is near one, so it's there on arrival.
+      else if (!gloss && (e.target as Element).closest?.(".field, .k, h2, th")) void loadGloss();
     };
     const out = (e: MouseEvent) => {
       const d = dotOf(e);
@@ -96,14 +105,14 @@ export function Tooltips() {
       if (d && phone()) {
         e.preventDefault();
         hide();
-        const text = GLOSS[d.getAttribute("data-tip") ?? ""];
-        if (text) setSheet({ title: titleOf(d) || "What this means", text });
+        const title = titleOf(d) || "What this means";
+        void textFor(d.getAttribute("data-tip")).then((text) => text && setSheet({ title, text }));
         return;
       }
       if (d) {
         e.preventDefault();
         if (d === openDot.current) hide();
-        else show(d);
+        else void show(d);
       } else if (openDot.current) hide();
     };
     const key = (e: KeyboardEvent) => {

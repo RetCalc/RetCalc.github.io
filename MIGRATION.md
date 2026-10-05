@@ -44,23 +44,26 @@ web/
   app/
     layout.tsx            masthead, navigation, footer, household and toast providers, theme script
     page.tsx              / (the Basic calculator)
-    [slug]/page.tsx       every other address, pre-built from page-meta.json; unknown ones 404
+    <slug>/page.tsx       one folder per rebuilt page (mortgage/, debt/, tools/, ...), so each
+                          page loads only its own tool's code
+    [slug]/page.tsx       the pages not rebuilt yet, as placeholders; removed with the last one
     sitemap.ts, robots.ts
   components/
     shell/                masthead, navigation, footer, page frame, tool header, article, toast
     household/            the household bar and the profile shared across tools
-    fields/               number and money inputs (comma grouping, arrow-key steps)
+    fields/               Field, MoneyField, NumberField, SelectField, FieldHeading, Affixed;
+                          number and money inputs (comma grouping, arrow-key steps)
     tools/                the tool list, each tool's icon, and ToolState (inputs, scenarios, share, reset)
     charts/               the band chart (hover and touch), legends and share bars
-    ui/                   headline figures, CSV buttons
+    ui/                   Figure (headline), KV, Segmented, BigValue, CsvButton
   lib/
-    engine/               math.js, drawdown.js, plan.js as ES modules (moved, not rewritten)
+    engine/               math.js, drawdown.js, plan.js as ES modules (moved, not rewritten);
+                          typed.ts gives screens the engine's functions with their result types
     site.ts               every address, its tab, its tool; page-meta.json beside it
     seo.ts, articles.ts   each page's <head> and structured data; its "about" article
     tools.ts              the tool list's groups, names and descriptions
     format.ts, storage.ts, theme.ts, household.ts
   tools/<tool>/           model.ts (defaults, inputs, math wiring) and the screen
-  tools/registry.tsx      which screen each address shows
   content/articles/       each page's "about this tool" article, HTML moved unchanged
   e2e/                    Playwright old-vs-new checks, one file per tool
   styles/                 today's CSS, split the same way it is now
@@ -74,7 +77,13 @@ Rules that keep it from turning into a tangle again:
 - Components never do math. They pass inputs to `lib/engine` and show the result.
 - Every page is pre-rendered HTML with its own metadata; calculators run in the browser.
 - Markup moves over with `web/scripts/html2jsx.py`, not by retyping, so it
-  stays exactly what the CSS expects.
+  stays exactly what the CSS expects; then the repeated parts are swapped for
+  the shared pieces (fields, figures, toggles), never copied by hand.
+- Screens import calculations from `@/lib/engine/typed`, not the engine
+  directly, so result types are declared once.
+- Pages without a calculator never load the engine: the household bar's
+  state names come from the server (`lib/states.ts`). The "?" explanations'
+  text loads the first time one is used.
 - Saved data uses versioned keys (`retcalc.<name>.v1`, `lib/storage.ts`).
 - The household profile reaches a tool when the tool is next opened, not
   instantly: only the open tool is loaded now (`useHouseholdFill`).
@@ -180,6 +189,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 3 | Review against the Vercel skills: one route per rebuilt page (each loads only its tool), engine kept off non-calculator pages, glossary loaded on demand, field/figure/toggle/CSV/engine-type repetition replaced by shared pieces. All checks unchanged |
 | 2026-10-05 | 3 | Mortgage, Debt Payoff, College Savings, Rent vs. Buy, Income Tax, Budget; old-vs-new checks for each |
 | 2026-10-05 | 2 | Shared shell, household bar, number fields, 29 pages with metadata and articles, tool list, sitemap, redirects, SEO check passing |
 | 2026-10-05 | 1 | Node, Vercel skills, Next.js app, engine moved and tested, CSS, CI |

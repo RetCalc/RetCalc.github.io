@@ -4,6 +4,7 @@
 
 import { HouseholdBar } from "@/components/household/HouseholdBar";
 import { articleHtml } from "@/lib/articles";
+import { STATE_OPTIONS } from "@/lib/states";
 import { jsonLdFor } from "@/lib/seo";
 import { PAGES, TOOL_SUB, type Slug } from "@/lib/site";
 import { TOOLS } from "@/lib/tools";
@@ -19,7 +20,7 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
       {sub ? null : <h1 className="srlive" id="pageH1">{meta.h1 ?? "RetCalc"}</h1>}
-      {slug === "about" ? null : <HouseholdBar />}
+      {slug === "about" ? null : <HouseholdBar states={STATE_OPTIONS} />}
       {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={TOOLS[sub].desc} /> : null}
       {children}
       {article ? <Article html={article} /> : null}

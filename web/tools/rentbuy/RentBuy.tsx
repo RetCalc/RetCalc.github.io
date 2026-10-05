@@ -7,15 +7,15 @@
 import { useRef } from "react";
 import { BandChart } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
-import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { Affixed, Field, FieldHeading, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
+import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState, type ToolDef } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
+import { Figure } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
-import { MORT_RATE_30, rentBuyCalc as rentBuyJs } from "@/lib/engine";
-import type { RentBuyResult } from "@/lib/engine/types";
-import { fmtNum, groupDigits, money, parseNum } from "@/lib/format";
+import { MORT_RATE_30, rentBuyCalc } from "@/lib/engine/typed";
+import { DASH, fmtNum, groupDigits, money, parseNum } from "@/lib/format";
 import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 
 const DEFAULTS = {
@@ -26,14 +26,11 @@ const DEFAULTS = {
 type Inputs = typeof DEFAULTS;
 const DEF: ToolDef<Inputs> = { id: "rentbuy", label: "Rent vs. Buy", noun: "rent vs. buy scenario", defaults: DEFAULTS };
 
-const rentBuyCalc = rentBuyJs as unknown as (i: Record<string, number | string>) => RentBuyResult;
-const DASH = "—";
 
 export function RentBuy() {
-  const { state: s, setState } = useToolState(DEF);
+  const { state: s, set, setState } = useToolState(DEF);
   const toast = useToast();
   const tableRef = useRef<HTMLTableElement>(null);
-  const set = (k: keyof Inputs) => (v: string) => setState((c) => ({ ...c, [k]: v }));
 
   const n = (k: keyof Inputs) => parseNum(s[k]);
   const inp = {
@@ -48,14 +45,9 @@ export function RentBuy() {
   const last = R?.years[R.years.length - 1];
   const buyWins = last ? last.buyerNW >= last.renterNW : false;
 
-  const field = (id: string, label: React.ReactNode, k: keyof Inputs, unit: string, step: number, max?: number) => (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <div className="inputwrap"><NumberInput id={id} nonNeg step={step} max={max} value={s[k]} onValueChange={set(k)} /><span className="affix">{unit}</span></div>
-    </div>
-  );
-  const heading = (text: string, top?: string) => (
-    <div className="field" style={top ? { marginTop: top } : undefined}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>{text}</div></div>
+  // A number field bound to input `k`.
+  const num = (id: string, label: React.ReactNode, k: keyof Inputs, unit: string, step: number, max?: number) => (
+    <NumberField id={id} label={label} unit={unit} step={step} max={max} value={s[k]} onValueChange={set(k)} />
   );
 
   return (
@@ -64,10 +56,9 @@ export function RentBuy() {
         <div className="panel inputs">
           <h2>Your situation</h2>
           <div className="body">
-            {heading("Buying")}
-            <div className="field">
-              <label htmlFor="rbPrice">Home price</label>
-              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="rbPrice" nonNeg value={s.price} onValueChange={set("price")} /></div>
+            <FieldHeading>Buying</FieldHeading>
+            <Field id="rbPrice" label="Home price">
+              <Affixed prefix="$"><MoneyInput id="rbPrice" nonNeg value={s.price} onValueChange={set("price")} /></Affixed>
               <button className="btn mini" type="button" id="rbCopyMort" style={{ marginTop: "6px" }}
                 onClick={() => {
                   const mo = toolInputs("mortgage", MORTGAGE_DEFAULTS);
@@ -85,49 +76,37 @@ export function RentBuy() {
                   }));
                   toast("Copied the home from your mortgage calculation");
                 }}>Copy from Mortgage</button>
+            </Field>
+            <div className="two">
+              {num("rbDown", "Down payment", "down", "%", 1)}
+              {num("rbRate", "Interest rate", "rate", "%", 0.125)}
             </div>
             <div className="two">
-              {field("rbDown", "Down payment", "down", "%", 1)}
-              {field("rbRate", "Interest rate", "rate", "%", 0.125)}
+              <SelectField id="rbTerm" label="Length" value={s.term} onChange={set("term")}><option value="30">30 years</option><option value="20">20 years</option><option value="15">15 years</option></SelectField>
+              {num("rbPropTax", "Property tax", "propTax", "%/yr", 0.1)}
             </div>
             <div className="two">
-              <div className="field">
-                <label htmlFor="rbTerm">Length</label>
-                <select id="rbTerm" value={s.term} onChange={(e) => set("term")(e.target.value)}><option value="30">30 years</option><option value="20">20 years</option><option value="15">15 years</option></select>
-              </div>
-              {field("rbPropTax", "Property tax", "propTax", "%/yr", 0.1)}
+              <MoneyField id="rbIns" label="Insurance" unit="/yr" value={s.ins} onValueChange={set("ins")} />
+              {num("rbMaint", "Maintenance", "maint", "%/yr", 0.1)}
             </div>
             <div className="two">
-              <div className="field">
-                <label htmlFor="rbIns">Insurance</label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="rbIns" nonNeg value={s.ins} onValueChange={set("ins")} /><span className="affix">/yr</span></div>
-              </div>
-              {field("rbMaint", "Maintenance", "maint", "%/yr", 0.1)}
+              {num("rbClose", <Tipped text="Closing costs" k="closingcost" />, "close", "%", 0.1)}
+              {num("rbSell", <Tipped text="Selling costs" k="sellingcost" />, "sell", "%", 0.1)}
             </div>
+            <FieldHeading top="8px">Renting</FieldHeading>
             <div className="two">
-              {field("rbClose", <Tipped text="Closing costs" k="closingcost" />, "close", "%", 0.1)}
-              {field("rbSell", <Tipped text="Selling costs" k="sellingcost" />, "sell", "%", 0.1)}
+              <MoneyField id="rbRent" label="Monthly rent" value={s.rent} onValueChange={set("rent")} />
+              {num("rbRentInc", "Annual increase", "rentInc", "%", 0.5)}
             </div>
-            {heading("Renting", "8px")}
+            <FieldHeading top="8px">Assumptions</FieldHeading>
             <div className="two">
-              <div className="field">
-                <label htmlFor="rbRent">Monthly rent</label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="rbRent" nonNeg value={s.rent} onValueChange={set("rent")} /></div>
-              </div>
-              {field("rbRentInc", "Annual increase", "rentInc", "%", 0.5)}
+              {num("rbAppr", <Tipped text="Home appreciation" k="appreciation" />, "appr", "%/yr", 0.5)}
+              {num("rbInvest", "Investment return", "invest", "%/yr", 0.5)}
             </div>
-            {heading("Assumptions", "8px")}
+            {num("rbHorizon", "Time horizon", "horizon", "yrs", 1, 40)}
             <div className="two">
-              {field("rbAppr", <Tipped text="Home appreciation" k="appreciation" />, "appr", "%/yr", 0.5)}
-              {field("rbInvest", "Investment return", "invest", "%/yr", 0.5)}
-            </div>
-            {field("rbHorizon", "Time horizon", "horizon", "yrs", 1, 40)}
-            <div className="two">
-              {field("rbGainTax", <Tipped text="Tax on gains" k="rbgaintax" />, "gainTax", "%", 1, 50)}
-              <div className="field">
-                <label htmlFor="rbStatus"><Tipped text="Filing status" k="rbstatus" /></label>
-                <select id="rbStatus" value={s.status} onChange={(e) => set("status")(e.target.value)}><option value="s">Single</option><option value="m">Married, joint</option></select>
-              </div>
+              {num("rbGainTax", <Tipped text="Tax on gains" k="rbgaintax" />, "gainTax", "%", 1, 50)}
+              <SelectField id="rbStatus" label={<Tipped text="Filing status" k="rbstatus" />} value={s.status} onChange={set("status")}><option value="s">Single</option><option value="m">Married, joint</option></SelectField>
             </div>
             <div className="derived">
               <div><span>Loan amount</span><span className="num" id="rbLoan">{R ? money(R.loan) : ""}</span></div>
@@ -140,13 +119,12 @@ export function RentBuy() {
       <div className="stack" id="tab-rentbuy">
         <div className="panel">
           <div className="headline">
-            <div><div className="k">Better after <span id="rbHorizonLbl">{R ? fmtNum(inp.horizon) : ""}</span> yrs</div>
-              <BigValue className="v gold" id="rbWinner" text={last ? (buyWins ? "Buying" : "Renting") : DASH} />
-              <div className="note" id="rbWinNote">{last ? "by " + money(Math.abs(last.buyerNW - last.renterNW)) : ""}</div></div>
-            <div><div className="k">Buyer net worth</div><BigValue id="rbBuyerNW" text={last ? money(last.buyerNW) : DASH} />
-              <div className="note" id="rbBuyerNote">{last ? "Home equity after selling, plus whatever's invested in months buying costs less than renting, after tax on the gains" : ""}</div></div>
-            <div><div className="k">Renter net worth</div><BigValue id="rbRenterNW" text={last ? money(last.renterNW) : DASH} />
-              <div className="note" id="rbRenterNote">{last ? "Down payment invested from day one, plus whatever's invested in months renting costs less than buying, after tax on the gains" : ""}</div></div>
+            <Figure label={<>Better after <span id="rbHorizonLbl">{R ? fmtNum(inp.horizon) : ""}</span> yrs</>} id="rbWinner" className="v gold"
+              value={last ? (buyWins ? "Buying" : "Renting") : DASH} noteId="rbWinNote" note={last ? "by " + money(Math.abs(last.buyerNW - last.renterNW)) : ""} />
+            <Figure label="Buyer net worth" id="rbBuyerNW" value={last ? money(last.buyerNW) : DASH} noteId="rbBuyerNote"
+              note={last ? "Home equity after selling, plus whatever's invested in months buying costs less than renting, after tax on the gains" : ""} />
+            <Figure label="Renter net worth" id="rbRenterNW" value={last ? money(last.renterNW) : DASH} noteId="rbRenterNote"
+              note={last ? "Down payment invested from day one, plus whatever's invested in months renting costs less than buying, after tax on the gains" : ""} />
           </div>
           <div className="body">
             <div className="hint" style={{ marginBottom: "10px" }}>Every month, whichever side costs less banks the difference and invests it at your chosen return, so a renter paying less than a buyer&apos;s monthly cost keeps growing that gap, and vice versa.</div>
@@ -166,9 +144,7 @@ export function RentBuy() {
                   <br /><span style={{ color: "#4fbf95" }}>Renter</span> <span className="n">{money(b.hi!)}</span>
                 </>
               )} />
-          ) : (
-            <div className="chartwrap" id="chartWrapRB"><svg id="chartRB" viewBox="0 0 900 340" preserveAspectRatio="none" role="img" aria-label="Buyer vs renter net worth" /><div className="tip" /></div>
-          )}
+          ) : <BandChart id="RB" pts={[]} maxX={0} ariaLabel="Buyer vs renter net worth" tip={() => null} />}
           <Legend id="legendRB" items={R ? [["#e9b872", "Buyer net worth"], ["#4fbf95", "Renter net worth"]] : []} />
         </div>
         <div className="panel">

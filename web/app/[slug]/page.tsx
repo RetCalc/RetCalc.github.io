@@ -1,40 +1,41 @@
-/* Every address except the home page: /advanced, /drawdown, /roth, ...
-   Each is pre-built at deploy time with its own <head> (lib/seo.ts); an
-   address not in page-meta.json is a 404. */
+/* The pages not rebuilt yet, each showing a "being rebuilt" placeholder.
+   A rebuilt page gets its own folder (app/mortgage/page.tsx, ...), so it
+   loads only its own tool's code; this route goes away with the last one. */
 
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { notFound } from "next/navigation";
 import { PageShell, Placeholder } from "@/components/shell/PageShell";
-import { ToolPicker } from "@/components/tools/ToolPicker";
 import { metadataFor } from "@/lib/seo";
 import { PAGES, SLUGS, TOOL_SUB, type Slug } from "@/lib/site";
 import { TOOLS } from "@/lib/tools";
-import { TOOL_SCREENS } from "@/tools/registry";
 
 export const dynamicParams = false;
 
+/* Addresses that already have their own folder beside this one. */
+const OWN = new Set(readdirSync(join(process.cwd(), "app"), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name));
+const PENDING = SLUGS.filter((s) => s !== "home" && !OWN.has(s));
+
 export function generateStaticParams() {
-  return SLUGS.filter((s) => s !== "home").map((slug) => ({ slug }));
+  return PENDING.map((slug) => ({ slug }));
 }
 
-function known(slug: string): slug is Slug {
-  return slug in PAGES && slug !== "home";
+function pending(slug: string): slug is Slug {
+  return (PENDING as string[]).includes(slug);
 }
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">) {
   const { slug } = await params;
-  return known(slug) ? metadataFor(slug) : {};
+  return pending(slug) ? metadataFor(slug) : {};
 }
 
 export default async function Page({ params }: PageProps<"/[slug]">) {
   const { slug } = await params;
-  if (!known(slug)) notFound();
+  if (!pending(slug)) notFound();
   const sub = TOOL_SUB[slug];
-  const Screen = TOOL_SCREENS[slug];
   return (
     <PageShell slug={slug}>
-      {slug === "tools" ? <ToolPicker />
-        : Screen ? <Screen />
-        : <Placeholder what={sub ? TOOLS[sub].name : PAGES[slug].h1 ?? "About RetCalc"} />}
+      <Placeholder what={sub ? TOOLS[sub].name : PAGES[slug].h1 ?? "About RetCalc"} />
     </PageShell>
   );
 }

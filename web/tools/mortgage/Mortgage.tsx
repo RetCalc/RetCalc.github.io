@@ -8,18 +8,16 @@
 import { useRef } from "react";
 import { BandChart } from "@/components/charts/BandChart";
 import { Legend, ShareBar } from "@/components/charts/Legend";
-import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { FieldHeading, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
+import { Figure, KV } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
-import { PMI_DEFAULT, mortgage as mortgageJs, refiCompare as refiCompareJs } from "@/lib/engine";
-import type { MortgageInput, MortgageResult, RefiResult } from "@/lib/engine/types";
+import { PMI_DEFAULT, mortgage, refiCompare } from "@/lib/engine/typed";
+import type { MortgageInput } from "@/lib/engine/types";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MORTGAGE_DEF as DEF, type Inputs } from "./model";
 
-const mortgage = mortgageJs as unknown as (m: MortgageInput) => MortgageResult;
-const refiCompare = refiCompareJs as unknown as (m: MortgageInput, r: { rate?: number; term?: number; cost?: number }) => RefiResult;
 
 
 /* PMI only exists below 20% down, so its field follows: a default rate when
@@ -70,9 +68,6 @@ function dur(months: number): string {
   return y + "y " + m + "m";
 }
 
-const KV = ({ k, v, cls }: { k: string; v: string; cls?: string }) => (
-  <div className="kv"><span className="k">{k}</span><span className={cls ? `v ${cls}` : "v"}>{v}</span></div>
-);
 const TERMS = (
   <>
     <option value="30">30 years</option>
@@ -83,9 +78,8 @@ const TERMS = (
 );
 
 export function Mortgage() {
-  const { state: s, setState } = useToolState(DEF);
+  const { state: s, set, setState } = useToolState(DEF);
   const table = useRef<HTMLTableElement>(null);
-  const set = (k: keyof Inputs) => (v: string) => setState((cur) => ({ ...cur, [k]: v }));
   const setDown = (k: "price" | "downPct" | "downAmt") => (v: string) =>
     setState((cur) => {
       const next = { ...cur, [k]: v };
@@ -145,59 +139,26 @@ export function Mortgage() {
         <div className="panel inputs">
           <h2>The home and loan</h2>
           <div className="body">
-            <div className="field">
-              <label htmlFor="moPrice">Home price</label>
-              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moPrice" nonNeg value={s.price} onValueChange={setDown("price")} /></div>
+            <MoneyField id="moPrice" label="Home price" value={s.price} onValueChange={setDown("price")} />
+            <div className="two">
+              <NumberField id="moDownPct" label="Down payment" unit="%" value={s.downPct} onValueChange={setDown("downPct")} />
+              <MoneyField id="moDownAmt" label="or amount" value={s.downAmt} onValueChange={setDown("downAmt")} />
             </div>
             <div className="two">
-              <div className="field">
-                <label htmlFor="moDownPct">Down payment</label>
-                <div className="inputwrap"><NumberInput id="moDownPct" nonNeg value={s.downPct} onValueChange={setDown("downPct")} /><span className="affix">%</span></div>
-              </div>
-              <div className="field">
-                <label htmlFor="moDownAmt">or amount</label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moDownAmt" nonNeg value={s.downAmt} onValueChange={setDown("downAmt")} /></div>
-              </div>
+              <NumberField id="moRate" label="Interest rate" unit="%" step={0.125} value={s.rate} onValueChange={set("rate")} />
+              <SelectField id="moTerm" label="Length" value={s.term} onChange={set("term")}>{TERMS}</SelectField>
             </div>
             <div className="two">
-              <div className="field">
-                <label htmlFor="moRate">Interest rate</label>
-                <div className="inputwrap"><NumberInput id="moRate" nonNeg step={0.125} value={s.rate} onValueChange={set("rate")} /><span className="affix">%</span></div>
-              </div>
-              <div className="field">
-                <label htmlFor="moTerm">Length</label>
-                <select id="moTerm" value={s.term} onChange={(e) => set("term")(e.target.value)}>{TERMS}</select>
-              </div>
+              <NumberField id="moTax" label={<Tipped text="Property tax" k="proptax" />} unit="%/yr" step={0.1} value={s.tax} onValueChange={set("tax")} />
+              <MoneyField id="moIns" label={<Tipped text="Insurance" k="homeinsurance" />} unit="/yr" value={s.ins} onValueChange={set("ins")} />
             </div>
             <div className="two">
-              <div className="field">
-                <label htmlFor="moTax"><Tipped text="Property tax" k="proptax" /></label>
-                <div className="inputwrap"><NumberInput id="moTax" nonNeg step={0.1} value={s.tax} onValueChange={set("tax")} /><span className="affix">%/yr</span></div>
-              </div>
-              <div className="field">
-                <label htmlFor="moIns"><Tipped text="Insurance" k="homeinsurance" /></label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moIns" nonNeg value={s.ins} onValueChange={set("ins")} /><span className="affix">/yr</span></div>
-              </div>
+              <NumberField id="moPmi" label={<Tipped text="PMI" k="pmi" />} unit="%/yr" step={0.1} value={s.pmi} onValueChange={set("pmi")} />
+              <MoneyField id="moHoa" label="HOA" unit="/mo" value={s.hoa} onValueChange={set("hoa")} />
             </div>
             <div className="two">
-              <div className="field">
-                <label htmlFor="moPmi"><Tipped text="PMI" k="pmi" /></label>
-                <div className="inputwrap"><NumberInput id="moPmi" nonNeg step={0.1} value={s.pmi} onValueChange={set("pmi")} /><span className="affix">%/yr</span></div>
-              </div>
-              <div className="field">
-                <label htmlFor="moHoa">HOA</label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moHoa" nonNeg value={s.hoa} onValueChange={set("hoa")} /><span className="affix">/mo</span></div>
-              </div>
-            </div>
-            <div className="two">
-              <div className="field">
-                <label htmlFor="moMaint"><Tipped text="Maintenance" k="maintenance" /></label>
-                <div className="inputwrap"><NumberInput id="moMaint" nonNeg step={0.1} value={s.maint} onValueChange={set("maint")} /><span className="affix">%/yr</span></div>
-              </div>
-              <div className="field">
-                <label htmlFor="moUtil"><Tipped text="Utilities" k="utilities" /></label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moUtil" nonNeg value={s.util} onValueChange={set("util")} /><span className="affix">/mo</span></div>
-              </div>
+              <NumberField id="moMaint" label={<Tipped text="Maintenance" k="maintenance" />} unit="%/yr" step={0.1} value={s.maint} onValueChange={set("maint")} />
+              <MoneyField id="moUtil" label={<Tipped text="Utilities" k="utilities" />} unit="/mo" value={s.util} onValueChange={set("util")} />
             </div>
             <div className="hint" id="moPmiNote">{pmiNote}</div>
             <div className="derived">
@@ -211,52 +172,28 @@ export function Mortgage() {
         <div className="panel inputs">
           <h2>Already have this loan?</h2>
           <div className="body">
-            <div className="field">
-              <label htmlFor="moExtrasOn"><Tipped text="Extra payments, recasting, or refinancing" k="moextras" /></label>
-              <select id="moExtrasOn" value={s.extrasOn} onChange={(e) => set("extrasOn")(e.target.value)}>
-                <option value="0">No, just the basics</option>
-                <option value="1">Yes, show these options</option>
-              </select>
-            </div>
+            <SelectField id="moExtrasOn" label={<Tipped text="Extra payments, recasting, or refinancing" k="moextras" />} value={s.extrasOn} onChange={set("extrasOn")}>
+              <option value="0">No, just the basics</option>
+              <option value="1">Yes, show these options</option>
+            </SelectField>
             <div id="moExtrasWrap" hidden={s.extrasOn !== "1"}>
-              <div className="field" style={{ marginTop: "2px" }}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>Extra payments</div></div>
-              <div className="field">
-                <label htmlFor="moExtraMo">Extra toward principal</label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moExtraMo" nonNeg value={s.extraMo} onValueChange={set("extraMo")} /><span className="affix">/mo</span></div>
-              </div>
+              <FieldHeading top="2px">Extra payments</FieldHeading>
+              <MoneyField id="moExtraMo" label="Extra toward principal" unit="/mo" value={s.extraMo} onValueChange={set("extraMo")} />
               <div className="two">
-                <div className="field">
-                  <label htmlFor="moExtraOnce">One-time extra payment</label>
-                  <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moExtraOnce" nonNeg value={s.extraOnce} onValueChange={set("extraOnce")} /></div>
-                </div>
-                <div className="field">
-                  <label htmlFor="moExtraWhen">In month</label>
-                  <div className="inputwrap"><NumberInput id="moExtraWhen" nonNeg value={s.extraWhen} onValueChange={set("extraWhen")} /></div>
-                </div>
+                <MoneyField id="moExtraOnce" label="One-time extra payment" value={s.extraOnce} onValueChange={set("extraOnce")} />
+                <NumberField id="moExtraWhen" label="In month" value={s.extraWhen} onValueChange={set("extraWhen")} />
               </div>
-              <div className="field" id="moRecastWrap">
-                <label htmlFor="moRecast"><Tipped text="After that payment" k="recast" /></label>
-                <select id="moRecast" value={s.recast} onChange={(e) => set("recast")(e.target.value)}>
-                  <option value="0">Keep the same payment, finish early</option>
-                  <option value="1">Recast &mdash; lower the payment instead</option>
-                </select>
-              </div>
+              <SelectField id="moRecast" wrapId="moRecastWrap" label={<Tipped text="After that payment" k="recast" />} value={s.recast} onChange={set("recast")}>
+                <option value="0">Keep the same payment, finish early</option>
+                <option value="1">Recast &mdash; lower the payment instead</option>
+              </SelectField>
 
-              <div className="field" style={{ marginTop: "12px" }}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>Compare a refinance</div></div>
+              <FieldHeading top="12px">Compare a refinance</FieldHeading>
               <div className="two">
-                <div className="field">
-                  <label htmlFor="moRefiRate">New rate</label>
-                  <div className="inputwrap"><NumberInput id="moRefiRate" nonNeg step={0.125} value={s.refiRate} onValueChange={set("refiRate")} /><span className="affix">%</span></div>
-                </div>
-                <div className="field">
-                  <label htmlFor="moRefiTerm">New length</label>
-                  <select id="moRefiTerm" value={s.refiTerm} onChange={(e) => set("refiTerm")(e.target.value)}>{TERMS}</select>
-                </div>
+                <NumberField id="moRefiRate" label="New rate" unit="%" step={0.125} value={s.refiRate} onValueChange={set("refiRate")} />
+                <SelectField id="moRefiTerm" label="New length" value={s.refiTerm} onChange={set("refiTerm")}>{TERMS}</SelectField>
               </div>
-              <div className="field">
-                <label htmlFor="moRefiCost"><Tipped text="Closing costs" k="reficost" /></label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moRefiCost" nonNeg value={s.refiCost} onValueChange={set("refiCost")} /></div>
-              </div>
+              <MoneyField id="moRefiCost" label={<Tipped text="Closing costs" k="reficost" />} value={s.refiCost} onValueChange={set("refiCost")} />
             </div>
           </div>
         </div>
@@ -265,12 +202,10 @@ export function Mortgage() {
       <div className="stack" id="tab-mortgage">
         <div className="panel">
           <div className="headline">
-            <div><div className="k">Monthly payment</div><BigValue className="v gold" id="moTotal" text={money(R.total)} />
-              <div className="note">Everything included</div></div>
-            <div><div className="k">Principal &amp; interest</div><BigValue id="moPI" text={money(R.pi)} />
-              <div className="note">The loan itself</div></div>
-            <div><div className="k">Everything else</div><BigValue id="moEsc" text={money(R.total - R.pi)} />
-              <div className="note" id="moEscNote">{escTxt ? escTxt.charAt(0).toUpperCase() + escTxt.slice(1) : "Nothing else added"}</div></div>
+            <Figure label="Monthly payment" id="moTotal" className="v gold" value={money(R.total)} note="Everything included" />
+            <Figure label="Principal & interest" id="moPI" value={money(R.pi)} note="The loan itself" />
+            <Figure label="Everything else" id="moEsc" value={money(R.total - R.pi)} noteId="moEscNote"
+              note={escTxt ? escTxt.charAt(0).toUpperCase() + escTxt.slice(1) : "Nothing else added"} />
           </div>
           <div className="body">
             <div id="moBars">
@@ -284,7 +219,7 @@ export function Mortgage() {
           <div className="body">
             <div id="moExtraStats">{extra}</div>
             <div id="moRefiBlock" hidden={!RF}>
-              <div className="field" style={{ marginTop: "4px" }}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>Refinancing to <span id="moRefiHead">{RF ? `${pctStr(m.refiRate!, 2)} for ${fmtNum(m.refiTerm!)} years` : ""}</span></div></div>
+              <FieldHeading top="4px">Refinancing to <span id="moRefiHead">{RF ? `${pctStr(m.refiRate!, 2)} for ${fmtNum(m.refiTerm!)} years` : ""}</span></FieldHeading>
               <div id="moRefiStats">
                 {RF ? (
                   <>

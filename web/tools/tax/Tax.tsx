@@ -8,21 +8,21 @@
 import { useRef, useState } from "react";
 import { ShareBar } from "@/components/charts/Legend";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
-import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
+import { MoneyInput } from "@/components/fields/NumberInput";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
+import { Figure, Segmented } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
-import { FED_STD, NIIT, bracketRoom } from "@/lib/engine";
-import { groupDigits, money, pctStr } from "@/lib/format";
-import { STATE_OPTIONS } from "@/lib/household";
-import { TAX_DEF, runTax, taxInput, type TaxInputs } from "./model";
+import { FED_STD, NIIT, bracketRoom } from "@/lib/engine/typed";
+import { DASH, groupDigits, money, pctStr } from "@/lib/format";
+import { STATE_OPTIONS } from "@/lib/states";
+import { TAX_DEF, runTax, taxInput } from "./model";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
 
 const TAX_COLORS = { fed: "#e2795f", state: "#e9b872", fica: "#7d9fd6", net: "#4fbf95" };
 const BKT_COLORS = ["#e2795f", "#4fbf95", "#7d9fd6", "#e9b872", "#c98fb8", "#a98fd6"]; // trad, roth, brok, ss, pension, other
-const DASH = "—";
 
 interface Part { v: number; c: string; label: string }
 interface Bar { label: string; v: number; share: number; c: string }
@@ -59,8 +59,7 @@ function Donut({ parts, center, active }: { parts: Part[]; center: string; activ
 }
 
 export function Tax() {
-  const { state: s, setState } = useToolState(TAX_DEF);
-  const set = (k: keyof TaxInputs) => (v: string) => setState((c) => ({ ...c, [k]: v }));
+  const { state: s, set, setState } = useToolState(TAX_DEF);
   const [active, setActive] = useState<number | null>(null);
   const deactivate = useRef<ReturnType<typeof setTimeout>>(undefined);
   const activate = (i: number) => {
@@ -92,7 +91,7 @@ export function Tax() {
   let bars: Bar[], parts: Part[], rows: React.ReactNode;
 
   const room = (taxable: number) => {
-    const br = bracketRoom(taxable, inp.status) as { nextRate: number; room: number } | null;
+    const br = bracketRoom(taxable, inp.status);
     return { roomLabel: br ? "Room before " + pctStr(br.nextRate, 0) : "Room before next bracket", room: br ? money(br.room) : "Top bracket" };
   };
   const noRoom = { roomLabel: "Room before next bracket", room: DASH };
@@ -217,108 +216,68 @@ export function Tax() {
     }
   }
 
-  const moneyField = (id: string, label: React.ReactNode, k: keyof TaxInputs, wrapId?: string, hidden?: boolean) => (
-    <div className="field" id={wrapId} hidden={hidden}>
-      <label htmlFor={id}>{label}</label>
-      <div className="inputwrap"><span className="affix">$</span><MoneyInput id={id} nonNeg value={s[k] as string} onValueChange={set(k)} /></div>
-    </div>
-  );
-  const seg = (id: string, attr: string, opts: [string, string][], value: string, on: (v: string) => void, hidden?: boolean) => (
-    <span className="seg" id={id} hidden={hidden}>
-      {opts.map(([v, label]) => (
-        <button key={v} type="button" {...{ [attr]: v }} className={value === v ? "on" : undefined} onClick={() => on(v)}>{label}</button>
-      ))}
-    </span>
-  );
-
   return (
     <>
       <aside id="asideTax">
         <div className="panel inputs">
           <h2>Your situation{"\n        "}
             <span className="h2ctrl">
-              {seg("segTxMode", "data-txmode", [["normal", "Normal income"], ["retire", "Retirement income"]], s.mode,
-                (v) => setState((c) => ({ ...c, mode: v as TaxInputs["mode"] })))}
+              <Segmented id="segTxMode" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
             </span>
           </h2>
           <div className="body">
             <div id="txGrossWrap" className={split ? "two bottomalign" : undefined} hidden={ret}>
-              <div className="field">
-                <label htmlFor="txGross" id="txGrossLabel">{split ? "Your gross income" : "Gross income"}</label>
-                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="txGross" nonNeg value={s.gross} onValueChange={set("gross")} /></div>
-              </div>
-              {moneyField("txGross2", "Spouse's gross income", "gross2", "txGross2Wrap", !split)}
+              <MoneyField id="txGross" labelId="txGrossLabel" label={split ? "Your gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
+              <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label="Spouse's gross income" value={s.gross2} onValueChange={set("gross2")} />
             </div>
             <div className="derived txtotal" id="txGrossTotalWrap" hidden={!split}>
               <div><span>Household gross income</span><span className="num" id="txGrossTotalShow">{split ? money(R.gross) : ""}</span></div>
             </div>
 
             <div id="txRetSources" hidden={!ret}>
-              {moneyField("txTrad", <Tipped text="Traditional 401(k) / IRA withdrawal" k="bkttrad" />, "trad")}
-              {moneyField("txRoth", <Tipped text="Roth withdrawal" k="bktroth" />, "roth")}
+              <MoneyField id="txTrad" label={<Tipped text="Traditional 401(k) / IRA withdrawal" k="bkttrad" />} value={s.trad} onValueChange={set("trad")} />
+              <MoneyField id="txRoth" label={<Tipped text="Roth withdrawal" k="bktroth" />} value={s.roth} onValueChange={set("roth")} />
               <div className="two bottomalign">
-                {moneyField("txBrok", <Tipped text="Brokerage" k="bktbrok" />, "brok")}
-                <div className="field">
-                  <label htmlFor="txGainPct"><Tipped text="Gain portion" k="bktgain" /></label>
-                  <div className="inputwrap"><NumberInput id="txGainPct" nonNeg step={5} max={100} value={s.gainPct} onValueChange={set("gainPct")} /><span className="affix">%</span></div>
-                </div>
+                <MoneyField id="txBrok" label={<Tipped text="Brokerage" k="bktbrok" />} value={s.brok} onValueChange={set("brok")} />
+                <NumberField id="txGainPct" label={<Tipped text="Gain portion" k="bktgain" />} unit="%" step={5} max={100} value={s.gainPct} onValueChange={set("gainPct")} />
               </div>
-              {moneyField("txSS", <Tipped text="Social Security benefits" k="bktss" />, "ss")}
+              <MoneyField id="txSS" label={<Tipped text="Social Security benefits" k="bktss" />} value={s.ss} onValueChange={set("ss")} />
               <div className="two bottomalign">
-                {moneyField("txPension", <Tipped text="Pension / annuity" k="bktpen" />, "pension")}
-                <div className="field">
-                  <label htmlFor="txPenType">Payer</label>
-                  <select id="txPenType" value={s.penType} onChange={(e) => set("penType")(e.target.value)}>
-                    <option value="priv">Private employer</option>
-                    <option value="pub">Government / public</option>
-                  </select>
-                </div>
+                <MoneyField id="txPension" label={<Tipped text="Pension / annuity" k="bktpen" />} value={s.pension} onValueChange={set("pension")} />
+                <SelectField id="txPenType" label="Payer" value={s.penType} onChange={set("penType")}>
+                  <option value="priv">Private employer</option>
+                  <option value="pub">Government / public</option>
+                </SelectField>
               </div>
-              {moneyField("txOther", <Tipped text="Other ordinary income" k="bktother" />, "other")}
+              <MoneyField id="txOther" label={<Tipped text="Other ordinary income" k="bktother" />} value={s.other} onValueChange={set("other")} />
               <div className="derived txtotal">
                 <div><span>Gross retirement income</span><span className="num" id="txRetGross">{ret ? money(R.gross) : ""}</span></div>
               </div>
             </div>
 
-            <div className="field">
-              <label htmlFor="txStatus">Filing status</label>
-              <select id="txStatus" value={s.status}
-                // "Both spouses" only means anything on a joint return.
-                onChange={(e) => setState((c) => ({ ...c, status: e.target.value, seniors: e.target.value !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
-                <option value="s">Single</option>
-                <option value="m">Married filing jointly</option>
-              </select>
-            </div>
-            <div className="field" id="txSeniorWrap" hidden={!ret}>
-              <label htmlFor="txSeniors"><Tipped text="Age 65 or older" k="senior" /></label>
-              <select id="txSeniors" value={s.seniors} onChange={(e) => set("seniors")(e.target.value)}>
-                <option value="0">No</option>
-                <option value="1">{joint ? "One spouse" : "Yes"}</option>
-                <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="txState">State</label>
-              <select id="txState" value={s.state} onChange={(e) => set("state")(e.target.value)}>
-                {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-              </select>
-            </div>
-            <div className="field">
-              <label htmlFor="txPre">Pre-tax deductions<TipDot k={ret ? "txpreret" : "txpre"} /></label>
-              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="txPre" nonNeg value={s.pre} onValueChange={set("pre")} /></div>
-            </div>
-            <div className="field">
-              <label htmlFor="txDedType"><Tipped text="Deduction" k="deduction" /></label>
-              <select id="txDedType" value={s.dedType} onChange={(e) => set("dedType")(e.target.value)}>
-                <option value="std">Standard deduction</option>
-                <option value="item">Itemized</option>
-              </select>
-            </div>
-            <div className="field" id="txItemWrap" hidden={s.dedType !== "item"}>
-              <label htmlFor="txItem">Itemized total</label>
-              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></div>
+            <SelectField id="txStatus" label="Filing status" value={s.status}
+              // "Both spouses" only means anything on a joint return.
+              onChange={(v) => setState((c) => ({ ...c, status: v, seniors: v !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
+              <option value="s">Single</option>
+              <option value="m">Married filing jointly</option>
+            </SelectField>
+            <SelectField id="txSeniors" wrapId="txSeniorWrap" hidden={!ret} label={<Tipped text="Age 65 or older" k="senior" />} value={s.seniors} onChange={set("seniors")}>
+              <option value="0">No</option>
+              <option value="1">{joint ? "One spouse" : "Yes"}</option>
+              <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
+            </SelectField>
+            <SelectField id="txState" label="State" value={s.state} onChange={set("state")}>
+              {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+            </SelectField>
+            <MoneyField id="txPre" label={<>Pre-tax deductions<TipDot k={ret ? "txpreret" : "txpre"} /></>} value={s.pre} onValueChange={set("pre")} />
+            <SelectField id="txDedType" label={<Tipped text="Deduction" k="deduction" />} value={s.dedType} onChange={set("dedType")}>
+              <option value="std">Standard deduction</option>
+              <option value="item">Itemized</option>
+            </SelectField>
+            <Field id="txItem" wrapId="txItemWrap" hidden={s.dedType !== "item"} label="Itemized total">
+              <Affixed prefix="$"><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></Affixed>
               <div className="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
-            </div>
+            </Field>
             <div className="derived">
               <div id="txSSRow" hidden={derived.ssRow == null}><span><Tipped text="Taxable Social Security" k="ss86" /></span><span className="num" id="txSSShow">{derived.ssRow ?? DASH}</span></div>
               <div><span id="txStdLabel">{derived.stdLabel}</span><span className="num" id="txStdShow">{derived.std}</span></div>
@@ -335,17 +294,14 @@ export function Tax() {
         <div className="panel">
           <div className="readout">
             <div className="txhead">
-              {seg("segTxView", "data-view", [["net", "Net pay"], ["take", "Take-home pay"]], s.view, (v) => setState((c) => ({ ...c, view: v as TaxInputs["view"] })), ret)}{" "}
+              <Segmented id="segTxView" attr="data-view" options={[["net", "Net pay"], ["take", "Take-home pay"]] as const} value={s.view} onChange={set("view")} hidden={ret} />{" "}
               <span className="txmodelbl" id="txRetLbl" hidden={!ret}>Retirement income</span>{" "}
               <span className="txbadge">2026 rates</span>
             </div>
             <div className="headline">
-              <div><div className="k" id="txNetLabel">{head.netLabel}</div><BigValue className="v gold" id="txNet" text={head.net} />
-                <div className="note" id="txNetNote">{head.netNote}</div></div>
-              <div><div className="k">Per month</div><BigValue id="txMonth" text={head.month} />
-                <div className="note" id="txMonthNote">{head.monthNote}</div></div>
-              <div><div className="k" id="txThirdLabel">{head.thirdLabel}</div><BigValue id="txBiweek" text={head.third} />
-                <div className="note" id="txThirdNote">{head.thirdNote}</div></div>
+              <Figure label={head.netLabel} labelId="txNetLabel" id="txNet" className="v gold" value={head.net} noteId="txNetNote" note={head.netNote} />
+              <Figure label="Per month" id="txMonth" value={head.month} noteId="txMonthNote" note={head.monthNote} />
+              <Figure label={head.thirdLabel} labelId="txThirdLabel" id="txBiweek" value={head.third} noteId="txThirdNote" note={head.thirdNote} />
             </div>
           </div>
           <div className="body">

@@ -30,6 +30,10 @@ export interface DebtResult {
   monthlyPool: number; baseMin: number; firstCleared: number; totalPaid: number;
 }
 
+export interface CollegeKid { yearsUntil: number; annualCost: number; collegeYrs: number }
+export interface CollegeInput {
+  yearsUntil: number; annualCost: number; tuitionInfl: number; investRet: number; saved: number; collegeYrs: number; kids: CollegeKid[];
+}
 export interface CollegeRow { year: number; balance: number; contribs: number; growth: number; projCost: number }
 export interface CollegeResult {
   monthly: number; totalFuture: number; targetAtStart: number; savingsAtStart: number; shortfall: number; yearCosts: number[]; rows: CollegeRow[];
