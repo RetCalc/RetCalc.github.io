@@ -52,3 +52,12 @@ export interface RentBuyResult {
 
 export interface BasicYear { year: number; start: number; contrib: number; growth: number; end: number }
 export interface BasicResult { ppy: number; periods: number; years: BasicYear[]; fv: number; invested: number; growth: number; contribTotal: number }
+
+export interface RothRow {
+  i: number; age: number; widowed: boolean; rmd: number; conv: number; ordinary: number; magi: number; tax: number;
+  irmaa: number; irmaaTier: number; marginal: number; trad: number; roth: number; brok: number; afterTax: number;
+}
+export interface RothResult {
+  rows: RothRow[]; lifeTax: number; lifeTaxPV: number; lifeIrmaa: number; totalConv: number; peakRMD: number;
+  endAfterTax: number; endTrad: number; endRoth: number; endBrok: number; rmdStart: number;
+}

@@ -33,14 +33,14 @@ function within<T>(what: string, p: Promise<T>, ms = 30_000): Promise<T> {
 
 const STILL = ".navbar,.sbcover,aside,.gd-top,.gd-side,thead th{position:static!important}";
 
-async function open(page: Page, url: string) {
+async function open(page: Page, url: string, hide = "") {
   log("goto " + url);
   await page.goto(url);
   log("loaded " + url);
   // The old site hides its page until its script has run.
   await page.waitForFunction(() => !document.documentElement.classList.contains("booting"), null, { timeout: 30_000 });
   log("styling " + url);
-  await page.addStyleTag({ content: `${HIDE}{display:none!important} *{animation:none!important;transition:none!important}` });
+  await page.addStyleTag({ content: `${HIDE}${hide ? "," + hide : ""}{display:none!important} *{animation:none!important;transition:none!important}` });
 }
 
 export async function apply(page: Page, steps: Step[]) {
@@ -89,13 +89,15 @@ function diffImages(a: Buffer, b: Buffer) {
 
 /** Runs each case on both sites: the numbers must match exactly, and the
     page must look the same (under 0.5% of pixels differing). */
-export async function compareTool(page: Page, info: TestInfo, slug: string, roots: string[], cases: Case[]) {
+/** `hide`: selectors set aside on both sites, for a known difference that's
+    checked on its own (a control the old site lost, say). */
+export async function compareTool(page: Page, info: TestInfo, slug: string, roots: string[], cases: Case[], hide = "") {
   log("opening a second page");
   const oldPage = await page.context().newPage();
   log("second page open");
   for (const c of cases) {
-    await open(oldPage, `${OLD}/${slug === "home" ? "index" : slug}.html`);
-    await open(page, `${NEW}/${slug === "home" ? "" : slug}`);
+    await open(oldPage, `${OLD}/${slug === "home" ? "index" : slug}.html`, hide);
+    await open(page, `${NEW}/${slug === "home" ? "" : slug}`, hide);
     await apply(oldPage, c.steps);
     await apply(page, c.steps);
     log(c.name + ": reading both");
