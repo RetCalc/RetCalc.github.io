@@ -191,60 +191,75 @@ var TH_TOURS = {
     }},
 
   drawdown: {name:"Drawdown Simulator", title:"Will your savings last?",
-    start(){ return {strategy:$("ddStrategy").value, stock:num("ddStock"), claim:num("ddSSClaim"), seen:{}}; },
+    start(){ return {strategy:$("ddStrategy").value, mix:$("ddMixText").textContent, inputs:ddInputs, seen:{}}; },
     pages:[
-      {title:"Your retirement", focus:"#asideDD", tasks(){
-        return [
-          {h:"<b>Portfolio at retirement</b> is all your savings the day you stop working. <b>Copy from your plan</b> brings a projection over from the retirement calculators."},
-          {h:"<b>Years in retirement</b>: plan to about 95. Many people live longer than they expect, and running out late is the costly mistake."},
-          {h:"<b>Withdrawal rate</b> is the first year's spending as a share of savings. The well-known 4% rule says 4% a year, raised with inflation, has survived almost every 30-year retirement since 1926. The amount is before income tax."},
-          {h:"<b>Social Security</b>: choose <b>Estimate it for me</b> or, better, <b>I know my benefit</b> with the figure from your statement at ssa.gov. It covers part of your spending once it starts, so the portfolio doesn't have to."}
-        ];
-      }},
-      {title:"Your result", focus:"#ddSuccess", tasks(){
-        return [
-          {h:"<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid; very close to 100% can mean room to spend more."},
-          {h:"<b>Median ending balance</b> is what's typically left at the end, in today's dollars. <b>Worst case</b> is the leanest ending on record."},
-          {h:"The sentence under the headline names the starting years that failed, if any. They're the retirements worth studying."}
-        ];
-      }},
-      {title:"A bad start", focus:"#ddYearsPanel", tasks(){
-        return [
-          {h:"<b>How each starting year fared</b> lists every retirement tested. Tap a hard one, like <b>1966</b> or <b>1929</b>, or sort by <b>Ending balance</b> to find the worst."},
-          {h:"Above the chart, switch to <b>Selected year</b> to watch that retirement play out.", ok: ddView === "year" ? true : undefined},
-          {h:"<b>Year by year</b> shows what you lived on and where the balance went, each year."},
-          {h:"A market fall in the first few years does the most damage, because you're selling while prices are low. It's called sequence risk, and it's why average returns alone mislead."}
-        ];
-      }},
-      {title:"Withdrawal strategies", focus:"#ddStrategy", tasks(){
-        const seen = thB().seen || {};
-        seen[$("ddStrategy").value] = 1;
-        const n = Object.keys(seen).length, row = (id, txt) => ({h:txt, ok: seen[id] ? true : undefined});
-        return [
-          {h:"Change <b>Withdrawal strategy</b> and watch the <b>Success rate</b> and the spending columns in the table. Try a few." + (n > 1 ? "<em>" + n + " tried</em>" : ""), ok: n >= 3 ? true : undefined},
-          row("guardrails", "<b>Guardrails</b>: steady spending, with a 10% cut when your withdrawal rate runs 20% high, and a raise when it runs low."),
-          row("floorceil", "<b>Floor &amp; ceiling</b>: follows the market, but never moves spending more than the <b>Max cut</b> or <b>Max raise</b> in a year."),
-          row("yale", "<b>Yale Endowment</b>: blends last year's spending with a share of today's balance."),
-          row("pct", "<b>Fixed %</b>: can never run out, but look at <b>Lowest year's spending</b> in the table."),
-          row("vpw", "<b>VPW</b>: spends down on purpose, like an annuity, ending near zero."),
-          {h:"For the flexible ones, <b>Minimum spending</b> is a line spending never drops below. <b>How the strategies compare</b> explains them side by side."}
-        ];
-      }},
-      {title:"Stock mix and Social Security", focus:"#ddStock", tasks(){
+      {title:"Your plan", focus:"#asideDD", show(){ ddShowTab("plan"); }, tasks(){
         const b = thB();
         return [
-          {h:"<b>Stocks</b> is the share in stocks; the rest is bonds. Try 40% and 80%: more stocks usually lifts the typical outcome, and can cut either way in the worst ones.", ok: num("ddStock") !== b.stock ? true : undefined},
-          {h:"<b>Glide to</b> moves the mix gradually over retirement. <b>Fees</b> come off every year: try 1% to see what an advisor or pricier funds cost over a whole retirement."},
-          {h:"With <b>Estimate it for me</b>, <b>Claim at age</b> sets when Social Security starts. Waiting raises it about 8% a year from 67 to 70; claiming at 62 cuts it about 30%, for life.", ok: $("ddSSMode").value === "est" && num("ddSSClaim") !== b.claim ? true : undefined},
-          {h:"<b>Social Security claiming age comparison</b>, near the bottom, shows your success rate claiming at 62, 64, 67 and 70."}
+          {h:"<b>Simple</b> shows the five things a first run needs; <b>Advanced</b>, at the top of the panel, adds the rest: rebalancing, fees, Social Security, other income, spending limits, goals and how history is tested. Settings you've hidden still count, and Simple lists any that are in use.", ok: ddInputs !== b.inputs ? true : undefined},
+          {h:"<b>Portfolio value</b> is all your savings the day you stop working. <b>Copy from your plan</b> brings a projection over from the retirement calculators."},
+          {h:"<b>Asset mix</b> opens the split among US stocks, small-cap value, bonds and cash, each with its real returns since 1926. It can also glide the stock share over retirement, and set part of the savings aside to buy guaranteed income: a TIPS ladder or an annuity.", ok: $("ddMixText").textContent !== b.mix ? true : undefined},
+          {h:"<b>Years in retirement</b>: plan to about 95. Running out late is the costly mistake."},
+          {h:"<b>Withdrawal strategy</b> and its rate decide each year's spending. The 4% rule takes 4% of savings the first year and raises it with inflation. Amounts are before income tax."}
         ];
       }},
-      {title:"Life events and stress tests", focus:"#ddAddIncome", tasks(){
+      {title:"Your result", focus:"#ddSuccess", show(){ ddShowTab("plan"); }, tasks(){
         return [
-          {h:"<b>+ Add income source</b> for a pension, part-time work, rent or an inheritance, each with a start year and length.", ok: ddIncomeItems.length ? true : undefined},
-          {h:"<b>+ Add future expense</b> for big one-time costs: a roof, a car every ten years, helping a child.", ok: ddExpenseItems.length ? true : undefined},
-          {h:"Switch <b>Historical</b> to <b>Monte Carlo</b> at the top: 5,000 retirements drawn at random from the same record, including sequences history never produced.", ok: ddMode === "mc" ? true : undefined},
-          {h:"<b>Return sensitivity</b>, further down, shows your success rate if every year earns a little less than history did."}
+          {h:"Each test is a real retirement: one starting every month since 1926, 835 of them for a 30-year plan. <b>Success rate</b> is the share where the money never ran out."},
+          {h:"<b>Median ending balance</b> is what's typically left, in today's dollars. <b>Worst case</b> is the leanest ending on record."},
+          {h:"<b>Pin as baseline</b> keeps these results. Change anything and every figure shows whether it got better or worse, and the charts draw the baseline dashed.", ok: ddBase ? true : undefined},
+          {h:"The <b>Spending scorecard</b> below measures what living on the plan was like: how often spending stayed above your <b>comfort line</b> (set your own under Goals), the leanest year, cuts, and what a typical retirement spent in all."}
+        ];
+      }},
+      {title:"When you retired", focus:"#ddSeqPanel", show(){
+        if (ddMode !== "hist") $("segDD").querySelector("[data-dd='hist']").click();
+        ddShowTab("plan");
+      }, tasks(){
+        return [
+          {h:"<b>When you retire</b> plots each start's first ten years against how it ended. A bad first decade, when withdrawals are largest against the balance, decides most failures: that's <b>sequence risk</b>."},
+          {h:"Switch to <b>By start year</b> to see every start in order, with 1929, 1937, 1966, 1973, 2000 and 2008 marked. <b>What happened in the marked years</b> explains each.", ok: ddSeqKind === "year" ? true : undefined},
+          {h:"Tap a dot, or a row in <b>How each starting month fared</b>, to follow that retirement. <b>Year by year</b> then says why it went the way it did.", ok: ddView === "year" ? true : undefined}
+        ];
+      }},
+      {title:"Withdrawal strategies", focus:"#ddStrategy", show(){ ddShowTab("plan"); }, tasks(){
+        const seen = thB().seen || {};
+        seen[$("ddStrategy").value] = 1;
+        const n = Object.keys(seen).length;
+        return [
+          {h:"Fifteen strategies in five families: steady income, a share of the portfolio, guardrails, smoothed and valuation-based. Change it and watch the scorecard." + (n > 1 ? "<em>" + n + " tried</em>" : ""), ok: n >= 3 ? true : undefined},
+          {h:"The card under the picker sketches each one's spending through 1966, the classic hard start. <b>How the strategies compare</b> sets out the pros and cons."},
+          {h:"<b>Reproduce a classic study</b> runs Bengen, the Trinity study, Guyton-Klinger, Vanguard, VPW and the Kitces ratchet as the papers did, and puts what each found beside what the simulator finds."},
+          {h:"Under Advanced: <b>Minimum</b> and <b>Maximum spending</b> bound what a flexible strategy spends, and the minimum can change with age. <b>Spending through retirement</b> shapes a steady strategy's path, easing or in stages."}
+        ];
+      }},
+      {title:"Compare strategies", focus:"#ddTargetPanel", show(){ ddShowTab("compare"); }, tasks(){
+        return [
+          {h:"Comparing strategies at the same rate isn't fair: 4% means different things to each. The <b>Risk target</b> sets one bar, like never dropping below your comfort line in every start, and each strategy is tuned to spend the most that clears it."},
+          {h:"The <b>Strategy showdown</b> plots each one's typical lifetime spending against what it leaves, its leanest year or year one, with the full figures in the table."},
+          {h:"<b>Through a hard start</b> draws their spending through 1966, 1929 or 1973, or any year you pick."}
+        ];
+      }},
+      {title:"Safe spending", focus:"#ddSafePanel", show(){ ddShowTab("safe"); }, tasks(){
+        return [
+          {h:"<b>The most you could have started with</b>: for each start, the highest first-year withdrawal that met the risk target. The dips are the hard eras, marked on the chart."},
+          {h:"The two answers below it, the <b>highest setting</b> that meets the target and the <b>portfolio needed</b> for your spending, each have a <b>Use it</b> button."},
+          {h:"The <b>Success grid</b> tries settings around yours against stock shares or retirement lengths; tap a cell to use it. <b>Valuations at the start</b> sets each start's safe rate against its CAPE, and marks today's."}
+        ];
+      }},
+      {title:"Income and the rest", focus:"#ddSSMode", show(){ ddShowTab("plan"); }, tasks(){
+        return [
+          {h:"<b>Social Security</b>: choose <b>Estimate it for me</b>, or better, <b>I know my benefit</b> with the figure from your statement at ssa.gov. The table near the bottom compares claiming at 62, 64, 67 and 70.", ok: $("ddSSMode").value !== "none" ? true : undefined},
+          {h:"<b>Other income</b> for a pension, part-time work or rent; <b>Future expenses</b> for a roof, a car or helping a child. Each has its own start and length.", ok: ddIncomeItems.length || ddExpenseItems.length ? true : undefined},
+          {h:"<b>Rebalancing</b> and <b>Fees</b> are with the portfolio. Try 1% in fees to see what an advisor or pricier funds cost over a retirement."},
+          {h:"<b>Market history</b>: test a retirement every month or each January, and from any year, say 1950 to leave out the Depression."}
+        ];
+      }},
+      {title:"Monte Carlo", focus:"#segDD", show(){ ddShowTab("plan"); }, tasks(){
+        return [
+          {h:"Switch <b>Historical</b> to <b>Monte Carlo</b> for 5,000 retirements built from years drawn at random from the record, including sequences history never produced.", ok: ddMode === "mc" ? true : undefined},
+          {h:"<b>Years drawn together</b>, under Market history, keeps runs of consecutive years intact, so streaks like the 1970s' inflation stay together. 1 draws each year on its own.", ok: num("ddMcBlock") > 1 ? true : undefined},
+          {h:"<b>Returns: Your own</b> sets the long-run return for each asset and for inflation. History is shifted to match, keeping its ups and downs, to test a leaner future.", ok: $("ddMcRet").value === "own" ? true : undefined},
+          {h:"<b>Return sensitivity</b>, near the bottom, shows the success rate if every year earns a little less, or more, than it did."}
         ];
       }}
     ],
@@ -489,12 +504,18 @@ function thOpen(tool){
   $("thCoach").hidden = false;
   document.body.classList.add("gd-on");
   gdCoachSync();          // the guide's panel steps aside while help is open
+  thShow(T.pages[0]);
   thFill();
   thSyncBtn();
   const f = document.querySelector(T.pages[0].focus);
   if (f) thScrollTo(f);
   const nb = $("thCoachBody").querySelector("[data-tp='1']");
   if (nb) try { nb.focus({preventScroll:true}); } catch(e){}
+}
+/* A part about a view that isn't showing (another of the tool's tabs)
+   brings it up first. */
+function thShow(pg){
+  if (pg && pg.show) try { pg.show(); } catch(e){}
 }
 function thClose(){
   if (!th) return;
@@ -575,6 +596,7 @@ $("thCoachBody").addEventListener("click", e => {
   if (!b || !th) return;
   const P = TH_TOURS[th.tool].pages;
   th.page = Math.max(0, Math.min(P.length - 1, th.page + parseInt(b.getAttribute("data-tp"), 10)));
+  thShow(P[th.page]);
   thFill();
   $("thCoachBody").scrollTop = 0;
   const f = document.querySelector(P[th.page].focus);
