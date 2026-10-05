@@ -1,4 +1,12 @@
 import type { Metadata, Viewport } from "next";
+import { HouseholdProvider } from "@/components/household/HouseholdProvider";
+import { Footer } from "@/components/shell/Footer";
+import { Main } from "@/components/shell/Main";
+import { Masthead } from "@/components/shell/Masthead";
+import { NavBar } from "@/components/shell/NavBar";
+import { ToastProvider } from "@/components/shell/Toast";
+import { SITE } from "@/lib/site";
+import { THEME_SCRIPT } from "@/lib/theme-script";
 
 /* Today's styles, unchanged from src/css/ and loaded in the same order (later
    files win ties). They stay as they are until the site has switched over;
@@ -21,6 +29,7 @@ import "@/styles/14-footer-menus-mobile.css";
 import "@/styles/15-optimizer.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: "RetCalc",
   /* Kept out of search results until it replaces the live site, so Google
      never sees two copies of RetCalc. Removed at the switch (MIGRATION.md,
@@ -48,10 +57,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
+    // The theme script sets data-theme before React loads, so the server's
+    // <html> and the browser's differ by that one attribute, on purpose.
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         {/* The same Google Fonts request as the current site, so text renders
-            identically; moves to next/font in phase 2. */}
+            identically. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -60,7 +72,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ToastProvider>
+          <HouseholdProvider>
+            <Masthead />
+            <NavBar />
+            <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
+            <Main>{children}</Main>
+            <Footer />
+          </HouseholdProvider>
+        </ToastProvider>
+      </body>
     </html>
   );
 }

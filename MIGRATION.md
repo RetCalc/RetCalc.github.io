@@ -41,16 +41,25 @@ and `vercel-deploy-claimable` (deploys go through the connected GitHub repo).
 
 ```
 web/
-  app/                    one folder per address: /, /drawdown, /roth, ...
-    layout.tsx            masthead, navigation, footer, household bar, theme
-    (strategies)/         the 8 withdrawal-strategy pages, one Drawdown component with presets
-  components/             shared pieces: fields, results, charts, pop-ups, tooltips
-  tools/<tool>/           each tool's screens and its own state
-  lib/engine/             math.js, drawdown.js, plan.js as ES modules (moved, not rewritten)
-  lib/meta.ts             page titles, descriptions and structured data from page-meta.json
+  app/
+    layout.tsx            masthead, navigation, footer, household and toast providers, theme script
+    page.tsx              / (the Basic calculator)
+    [slug]/page.tsx       every other address, pre-built from page-meta.json; unknown ones 404
+    sitemap.ts, robots.ts
+  components/
+    shell/                masthead, navigation, footer, page frame, tool header, article, toast
+    household/            the household bar and the profile shared across tools
+    fields/               number and money inputs (comma grouping, arrow-key steps)
+    tools/                the tool list and each tool's icon; each tool's own folder joins here
+  lib/
+    engine/               math.js, drawdown.js, plan.js as ES modules (moved, not rewritten)
+    site.ts               every address, its tab, its tool; page-meta.json beside it
+    seo.ts, articles.ts   each page's <head> and structured data; its "about" article
+    tools.ts              the tool list's groups, names and descriptions
+    format.ts, storage.ts, theme.ts, household.ts
+  content/articles/       each page's "about this tool" article, HTML moved unchanged
   styles/                 today's CSS, split the same way it is now
-  workers/plan.worker.ts  the Plan Optimizer / Drawdown search worker
-  e2e/                    Playwright: old-vs-new number and screenshot checks
+  scripts/                html2jsx.py (markup into JSX), seo-compare.mjs (old vs new <head>s)
 ```
 
 Rules that keep it from turning into a tangle again:
@@ -59,6 +68,11 @@ Rules that keep it from turning into a tangle again:
   (the household: ages, accounts, income) lives in one React context.
 - Components never do math. They pass inputs to `lib/engine` and show the result.
 - Every page is pre-rendered HTML with its own metadata; calculators run in the browser.
+- Markup moves over with `web/scripts/html2jsx.py`, not by retyping, so it
+  stays exactly what the CSS expects.
+- Saved data uses versioned keys (`retcalc.<name>.v1`, `lib/storage.ts`).
+- The household profile reaches a tool when the tool is next opened, not
+  instantly: only the open tool is loaded now (`useHouseholdFill`).
 - The engine is imported from `@/lib/engine` only. `math.js` and `drawdown.js`
   read each other's names, and `lib/engine/index.js` loads them in the order
   that works.
@@ -97,11 +111,14 @@ Each phase ends with a commit on `nextjs-migration` and its gate passing.
 **Gate:** both test runs pass, `next build` passes, a Vercel preview loads; reviewer looks over the setup.
 
 ### Phase 2: Shared shell
-- [ ] Root layout: masthead, navigation, footer, theme toggle, pop-up and tooltip system
-- [ ] Household bar and its shared context
-- [ ] All 29 routes exist (placeholder bodies), each with its metadata, from `page-meta.json`
-- [ ] Sitemap, robots.txt, preview cards (`opengraph-image`), `.html` redirects
-- [ ] Playwright set up, with the SEO comparison
+- [x] Root layout: masthead, navigation (Calculator menu, keyboard, pinned rail), footer, theme (no flash), toasts
+- [x] Household bar and its shared context
+- [x] All 29 routes exist (placeholder bodies, real tool list on /tools, each page's article), each with its metadata
+- [x] Sitemap, robots.txt, preview cards (today's images, copied), `.html` and /single, /series redirects
+- [x] SEO comparison: `node web/scripts/seo-compare.mjs` — 29 of 29 pages match
+- Moved to the phase that needs them: Playwright (phase 3); the saved-scenario, share and
+  reset buttons (each tool, phases 3 to 5); tooltips (phase 3); the card-to-header icon
+  animation (phase 5, with the view-transitions skill)
 
 **Gate:** all 29 pages load with the right title, description, canonical URL and structured data.
 
@@ -124,6 +141,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 ### Phase 6: Switch
 - [ ] Remove the noindex setting from `web/app/layout.tsx`
+- [ ] Add Cloudflare Web Analytics (left out so previews don't count as visits)
 - [ ] retcalc.app's DNS pointed at Vercel
 - [ ] Old site left deployable on GitHub Pages for rollback
 - [ ] Search Console and analytics watched for two weeks
@@ -133,5 +151,6 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
-| 2026-10-05 | 1 | Node, Vercel skills, Next.js app, engine moved and tested, CSS, CI. Waiting on: Vercel account |
+| 2026-10-05 | 2 | Shared shell, household bar, number fields, 29 pages with metadata and articles, tool list, sitemap, redirects, SEO check passing |
+| 2026-10-05 | 1 | Node, Vercel skills, Next.js app, engine moved and tested, CSS, CI |
 | 2026-10-05 | 0 | Plan written; branch created |

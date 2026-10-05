@@ -1,0 +1,148 @@
+{
+"brand": " | RetCalc",
+"pages": {
+"home": {
+"h1": "Retirement Calculator",
+"title": "Free Retirement Calculator: Will Your Savings Last? | RetCalc",
+"desc": "Free retirement calculator: see what your savings grow to by retirement in today's dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Nothing leaves your browser."
+},
+"advanced": {
+"h1": "Advanced Retirement Calculator",
+"title": "Advanced Retirement Calculator: Taxes, Fees & Market History | RetCalc",
+"desc": "Project retirement savings with contribution growth, fees, account types, employer match and 2026 taxes, then run the plan through every market since 1926 or 5,000 random ones."
+},
+"stages": {
+"h1": "Multi-Stage Retirement Savings Calculator",
+"title": "Multi-Stage Retirement Savings Calculator | RetCalc",
+"desc": "Plan retirement savings in stages, each with its own contribution, raises, return and investment mix, chained into one projection and tested against real market history."
+},
+"guide": {
+"h1": "Retirement Readiness Guide",
+"title": "Retirement Readiness Check: Are You on Track? | RetCalc",
+"desc": "A guided retirement check-up, one question at a time: a readiness score out of 100, your plan tested against every market since 1926, and the changes that would put you on track."
+},
+"tools": {
+"h1": "Financial Planning Calculators",
+"title": "Free Financial Planning Calculators | RetCalc",
+"desc": "Free calculators for retirement withdrawals, a plan optimizer for Social Security and Roth conversions, early retirement, RMDs, healthcare, FIRE, taxes, mortgages, rent vs. buy, college, budgets and debt."
+},
+"about": {
+"h1": "About RetCalc",
+"title": "About RetCalc: How the Calculators Work",
+"desc": "How RetCalc's calculators work, where the tax rules and historical market data come from, and what each tool assumes."
+},
+"drawdown": {
+"h1": "Retirement Withdrawal Calculator",
+"title": "Retirement Withdrawal Calculator: Will My Money Last? | RetCalc",
+"desc": "How much can you safely spend in retirement? Test the 4% rule and five flexible withdrawal strategies against every retirement since 1926, with Social Security and pensions."
+},
+"4-percent-rule": {
+"h1": "4% Rule Calculator",
+"title": "4% Rule Calculator: Does the Safe Withdrawal Rate Still Work? | RetCalc",
+"desc": "Test the 4% rule against every retirement since 1926: how often 4% lasted 30, 40 and 50 years, the years it failed and why, and the safe rate for your own mix and spending."
+},
+"guardrails": {
+"h1": "Guardrails Withdrawal Calculator",
+"title": "Guyton-Klinger Guardrails Calculator: Spend More, Cut When Needed | RetCalc",
+"desc": "Test Guyton-Klinger guardrails against every retirement since 1926: how much more you can start spending, how often and how deep the cuts came, and the leanest year in the worst start."
+},
+"vpw": {
+"h1": "VPW Calculator",
+"title": "VPW Calculator: Variable Percentage Withdrawal Tested Since 1926 | RetCalc",
+"desc": "The Bogleheads' variable percentage withdrawal (VPW), tested against every retirement since 1926: each year's payment, how it rises with age, and how low it fell in the worst starts."
+},
+"vanguard-dynamic-spending": {
+"h1": "Vanguard Dynamic Spending Calculator",
+"title": "Vanguard Dynamic Spending Calculator: Ceiling and Floor Rule Tested | RetCalc",
+"desc": "Test Vanguard's dynamic spending rule, a share of the portfolio with spending rising at most 5% and falling at most 2.5% a year, against every retirement since 1926."
+},
+"risk-based-guardrails": {
+"h1": "Risk-Based Guardrails Calculator",
+"title": "Risk-Based Guardrails Calculator: Spending Set by the Odds of Success | RetCalc",
+"desc": "Risk-based guardrails adjust spending only when the chance your plan lasts leaves a band. Test them against every retirement since 1926 and see how often, and how far, spending moved."
+},
+"rmd-withdrawal-strategy": {
+"h1": "RMD Withdrawal Strategy Calculator",
+"title": "RMD Withdrawal Strategy: Spending by the IRS Life Expectancy Table | RetCalc",
+"desc": "Use required minimum distribution math as a spending rule: each year the balance divided by the IRS life-expectancy divisor. Tested against every retirement since 1926."
+},
+"ratcheting-withdrawal": {
+"h1": "Ratcheting Withdrawal Calculator",
+"title": "Kitces Ratchet Calculator: The 4% Rule With Raises | RetCalc",
+"desc": "The Kitces ratchet: start at 4% and raise spending 10% whenever the portfolio grows 50% above where it began. See how often retirees since 1926 got raises, and what it cost."
+},
+"cape-withdrawal": {
+"h1": "CAPE-Based Withdrawal Calculator",
+"title": "CAPE-Based Withdrawal Rate Calculator: Spend by Market Valuation | RetCalc",
+"desc": "Set your withdrawal rate from the stock market's CAPE ratio: more when stocks are cheap, less when they're dear. See today's rate at a CAPE of 41 and how it did since 1926."
+},
+"optimizer": {
+"h1": "Retirement Plan Optimizer",
+"title": "Retirement Plan Optimizer: Social Security, Withdrawals & Roth Conversions | RetCalc",
+"desc": "When should each of you claim Social Security, which account should you draw first, and how much should you convert to Roth? It tests thousands of plans in every market since 1926, with 2026 taxes, and finds your best."
+},
+"bridge": {
+"h1": "Early Retirement Bridge Calculator",
+"title": "Early Retirement Calculator: Reach 59½ Penalty-Free | RetCalc",
+"desc": "Retiring before 59½? Compare a Roth conversion ladder, 72(t) payments, the rule of 55 and your brokerage, with 2026 taxes, penalties and ACA premiums, tested since 1926."
+},
+"72t": {
+"h1": "72(t) Calculator",
+"title": "72(t) Calculator: SEPP Payments Before 59½ | RetCalc",
+"desc": "Size 72(t) substantially equal periodic payments from an IRA before 59½ without the 10% penalty, and see if they carry you there in every market since 1926."
+},
+"roth": {
+"h1": "Roth Conversion Calculator",
+"title": "Roth Conversion Calculator: Should You Convert? | RetCalc",
+"desc": "Test Roth conversion strategies year by year to age 100 with 2026 federal and state taxes, Social Security, RMDs and Medicare IRMAA. See lifetime tax and after-tax wealth."
+},
+"rmd": {
+"h1": "RMD Calculator",
+"title": "RMD Calculator: Required Minimum Distributions by Age | RetCalc",
+"desc": "Project your required minimum distributions every year to age 100 with the IRS Uniform Lifetime Table, and test whether Roth conversions before RMDs would lower your lifetime tax."
+},
+"healthcare": {
+"h1": "Retirement Healthcare Calculator",
+"title": "Retirement Healthcare Cost Calculator: ACA & Medicare | RetCalc",
+"desc": "Estimate retirement health costs: 2026 ACA marketplace premiums and subsidies before 65, then Medicare Part B, Part D, Medigap and IRMAA surcharges by income."
+},
+"fire": {
+"title": "FIRE Calculator & Coast FIRE Calculator | RetCalc",
+"desc": "Find your FIRE number and the age you could reach financial independence, or when you could stop saving with Coast FIRE, with steady returns or every market since 1926."
+},
+"backtest": {
+"h1": "Portfolio Backtest Calculator",
+"title": "Portfolio Backtest: Stock, Bond & Cash Returns Since 1926 | RetCalc",
+"desc": "See what any mix of stocks, small-cap value, bonds and cash actually returned since 1926: average and real return, volatility, worst year, deepest fall and every rolling 1 to 30-year period."
+},
+"incometax": {
+"h1": "Income Tax Calculator",
+"title": "2026 Income Tax Calculator: Federal, State & FICA | RetCalc",
+"desc": "Estimate 2026 take-home pay with federal brackets, all 50 states and FICA, or the tax on retirement income from IRAs, Roth, brokerage, pensions and Social Security."
+},
+"mortgage": {
+"title": "Mortgage Calculator with Taxes, PMI & Extra Payments | RetCalc",
+"desc": "Calculate your full monthly mortgage payment with property tax, insurance, PMI and HOA, see amortization year by year, and test extra payments, recasting and refinancing."
+},
+"rentbuy": {
+"h1": "Rent vs. Buy Calculator",
+"title": "Rent vs. Buy Calculator | RetCalc",
+"desc": "Should you rent or buy? Compare buyer and renter net worth year by year, counting the invested down payment, all costs of owning, appreciation, selling costs and taxes."
+},
+"college": {
+"h1": "College Savings Calculator",
+"title": "College Savings Calculator: How Much to Save Monthly | RetCalc",
+"desc": "How much to save each month for college, from public in-state to private and elite schools, with tuition inflation, current savings and 529 growth."
+},
+"budget": {
+"h1": "Budget Calculator",
+"title": "Budget Calculator: Income, Spending & Savings | RetCalc",
+"desc": "Build a monthly budget from your take-home pay, see what's left for saving and debt, and size your emergency fund. Export it as a spreadsheet."
+},
+"debt": {
+"h1": "Debt Payoff Calculator",
+"title": "Debt Payoff Calculator: Avalanche vs. Snowball | RetCalc",
+"desc": "List your debts and see your debt-free date, total interest and what you save over minimum payments, with the avalanche and snowball methods compared month by month."
+}
+}
+}
