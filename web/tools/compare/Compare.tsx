@@ -12,9 +12,10 @@ import { MULTI_COLORS, MultiChart } from "@/components/charts/MultiChart";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { fmtNum } from "@/lib/format";
+import { compareNav } from "@/lib/compare-nav";
 import { useClient } from "@/lib/useClient";
 import {
-  CMP_LETTERS, CMP_MODES, CMP_MODE_LABEL, cmpDelta, cmpFmt, cmpRun, compareNav, openingSlots, rememberSlots, savedNames,
+  CMP_LETTERS, CMP_MODES, CMP_MODE_LABEL, cmpDelta, cmpFmt, cmpRun, openingSlots, rememberSlots, savedNames,
   type CmpMode, type Slot,
 } from "./model";
 

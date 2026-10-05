@@ -4,7 +4,7 @@
    opened here, their defaults stand in, the same defaults the old site
    started them with. */
 import { toolInputs } from "@/components/tools/ToolState";
-import { PPY } from "@/lib/engine";
+import { PPY } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
 import { BASIC_INPUTS } from "@/tools/basic/model";

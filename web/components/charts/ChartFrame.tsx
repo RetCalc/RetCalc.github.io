@@ -26,6 +26,12 @@ export function valueScale(size: ChartSize, vals: number[]) {
   return { AX, Y: (v: number) => size.T + size.ph - ((v - AX.min) / span) * size.ph };
 }
 
+/** An SVG path through the points, to a tenth of a unit: finer than any
+    screen shows, and a much shorter attribute. */
+export function pathD(pts: [x: number, y: number][]): string {
+  return pts.map(([x, y], i) => (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1)).join("");
+}
+
 /** Gridlines and their labels up the left side. */
 export function YAxis({ size, ticks, Y, fmt = fmtAxisMoney }: { size: ChartSize; ticks: number[]; Y: (v: number) => number; fmt?: (v: number) => string }) {
   return (

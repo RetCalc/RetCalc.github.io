@@ -3,8 +3,8 @@
 
    Moved from src/js/drawdown.js without changes to the math: the only edits are
    `export` on each top-level name and the imports below. Import the engine
-   from "@/lib/engine" (index.js), not this file: math.js and drawdown.js read
-   each other's names, and index.js loads them in the order that works. */
+   through typed.ts (core.js), not this file: math.js and drawdown.js read
+   each other's names, and core.js loads them in the order that works. */
 import {
   mulberry32, ultDivisor, HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, histAnnual,
   HIST_STOCK, HIST_BOND, HIST_INFL, HIST_M_CAPE, HIST_FF_START, HIST_M_CASH, HIST_M_SV,

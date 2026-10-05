@@ -27,7 +27,8 @@ export interface SavedHousehold extends Household {
 /** Stored under retcalc.household.v1. */
 export const HOUSEHOLD_STORE = { key: "household", version: 1 } as const;
 
-const has = (v: number | null) => v != null && isFinite(v);
+/** Whether a profile field was filled in. */
+export const has = (v: number | null): v is number => v != null && isFinite(v);
 
 /** The tools that take the profile in, in the order the save confirmation
     lists them, and whether a given profile gives each anything to fill

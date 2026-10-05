@@ -20,7 +20,7 @@ import { KV, Segmented } from "@/components/ui/Readout";
 import { BigValue } from "@/components/ui/BigValue";
 import { fiComputeCoastCrossings, fiComputeCrossings, fiYearsFromCrossings, historicalRuns, project } from "@/lib/engine/typed";
 import type { HistRuns } from "@/lib/engine/types";
-import { DASH, fmtNum, groupDigits, money, pctStr } from "@/lib/format";
+import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
 import { FIRE_DEF, fireInput, fireSolve, type FireInputs, type FirePlan } from "./model";
 
 type Pt = { year: number; base: number; hi: number; lo: number; p25?: number; p75?: number };
@@ -80,9 +80,9 @@ export function Fire() {
     const retire = h.retire != null && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
     if (age) next.curAge = String(Math.max(18, Math.min(70, age)));
     if (retire) next.retireAge = String(retire);
-    if (h.saved != null) next.initial = groupDigits(Math.round(h.saved), true);
-    if (h.monthly != null) Object.assign(next, { contrib: groupDigits(Math.round(h.monthly), true), period: "Monthly" });
-    if (h.spend != null && h.spend > 0) Object.assign(next, { target: groupDigits(Math.round(h.spend), true), solveFor: "withdrawal" });
+    if (h.saved != null) next.initial = dollarsField(h.saved);
+    if (h.monthly != null) Object.assign(next, { contrib: dollarsField(h.monthly), period: "Monthly" });
+    if (h.spend != null && h.spend > 0) Object.assign(next, { target: dollarsField(h.spend), solveFor: "withdrawal" });
     return next;
   }));
 

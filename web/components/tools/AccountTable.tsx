@@ -9,12 +9,11 @@
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/shell/Toast";
-import { setToolInputs, toolInputs } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/ui/CsvButton";
 import type { AccountResult } from "@/lib/accounts";
 import { STATES } from "@/lib/engine/typed";
-import { fmtNum, groupDigits, money, pctStr } from "@/lib/format";
-import { TAX_DEFAULTS } from "@/tools/tax/model";
+import { fmtNum, money, pctStr } from "@/lib/format";
+import { sendYearToTax } from "@/tools/tax/handoff";
 
 const ROWS = [
   { k: "trad", label: "Traditional 401(k) / IRA", c: "#e2795f" },
@@ -30,12 +29,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
   const st = (STATES as Record<string, { n: string; none?: number }>)[a.state];
   const toTax = (e: React.MouseEvent) => {
     e.preventDefault();
-    const r = (v: number) => groupDigits(Math.round(v || 0), true);
-    setToolInputs("tax", {
-      ...toolInputs("tax", TAX_DEFAULTS), mode: "retire", status: a.status, state: a.state,
-      trad: r(B.w.trad), roth: r(B.w.roth), brok: r(B.w.brok), gainPct: String(Math.round(B.gainPct * 1000) / 10),
-      seniors: String(B.seniors || 0), ss: "0", pension: "0", other: "0", pre: "0", dedType: "std", item: "0",
-    });
+    sendYearToTax({ status: a.status, state: a.state, trad: B.w.trad, roth: B.w.roth, brok: B.w.brok, gainShare: B.gainPct, seniors: B.seniors });
     router.push("/incometax");
     toast("Loaded your first-year withdrawals into Income Tax");
   };

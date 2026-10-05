@@ -25,9 +25,7 @@ export interface CmpRun {
 }
 const row = (k: string, n: number, kind: Kind = "money") => ({ k, n, kind });
 
-/** Where Compare was opened from: which calculator's list it starts on, and
-    where Back returns to. Kept for the visit, like the slots below. */
-export const compareNav = { from: "advanced", path: "/advanced" };
+/** The slots Compare last showed, kept for the visit. */
 export interface Slot { name: string; mode: CmpMode }
 export const compareSlots: { list: Slot[] } = {
   list: [{ name: "", mode: "advanced" }, { name: "", mode: "advanced" }, { name: "", mode: "advanced" }],

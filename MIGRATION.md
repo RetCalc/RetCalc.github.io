@@ -98,9 +98,11 @@ Rules that keep it from turning into a tangle again:
 - Phase 4 must keep these input keys, which the Budget already reads:
   Basic and Advanced `contrib` and `period`, Stages `stages[0].contrib` and
   `.period` (`lib/retirement-contribs.ts`).
-- The engine is imported from `@/lib/engine` only. `math.js` and `drawdown.js`
-  read each other's names, and `lib/engine/index.js` loads them in the order
-  that works.
+- Screens import the engine through `@/lib/engine/typed` (and the Bridge's
+  through `@/lib/engine/typed-bridge`), never a module file directly:
+  `math.js` and `drawdown.js` read each other's names, and `lib/engine/core.js`
+  loads them in the order that works. Keeping the Bridge and plan engines out
+  of `core.js` keeps them off every other page.
 
 Known and accepted: `npm audit` reports a high-severity issue in `braces`, a
 lint-time dependency of the Next.js ESLint plugin. It never ships to visitors
@@ -209,6 +211,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 4 | Review against the Vercel skills: the Save menu no longer pulls the engine onto every page (tools and about back to 192 KB); the Bridge and plan engines load only on the Bridge (every calculator page about 12 KB lighter); Advanced and Stages share their headline and chart panel; shared helpers for field dollars, the Income Tax handoff, the glide note, chart paths. All 55 checks unchanged |
 | 2026-10-05 | 4 | Early Retirement Bridge and 72(t), Advanced, Stages, Compare; shared chart frame, account math and dialogs. 55 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
 | 2026-10-05 | 4 | Basic (home page), Healthcare, Roth and RMDs, FIRE |
 | 2026-10-05 | 3 | Review against the Vercel skills: one route per rebuilt page (each loads only its tool), engine kept off non-calculator pages, glossary loaded on demand, field/figure/toggle/CSV/engine-type repetition replaced by shared pieces. All checks unchanged |

@@ -10,17 +10,13 @@ import { CheckToggle, SignFlip } from "@/components/fields/CheckToggle";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
-import { ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
+import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import { PeriodOptions } from "@/lib/periods";
-import { pctField } from "@/tools/advanced/model";
+import { glideNote, pctField } from "@/tools/advanced/model";
 import { stageGlideYears, stageGrowthBlend, stageSplit, type StageInputs, type StageNum } from "./model";
 
 export type StageEdit = (i: number, f: (st: StageInputs) => StageInputs) => void;
-
-const CONV_ICON = (
-  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
-);
 
 interface Props {
   i: number; st: StageInputs; num: StageNum; last: boolean; split: boolean; mc: boolean;
@@ -64,7 +60,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
       onValueChange={(v) => up((c) => ({ ...c, years: v, ...(c.glideYears !== "" ? { glideYears: stageGlideYears(v, c.glideYears) } : {}) }))} /><span className="affix">yrs</span></div>),
     contrib: field("contrib", "Contribution", <div className="inputwrap"><span className="affix">$</span><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></div>, adjRow),
     freq: field("freq", "Frequency", <select data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></select>,
-      <button type="button" className="linkbtn" data-conv={i} onClick={() => setDialog("conv")}>{CONV_ICON}Convert</button>),
+      <button type="button" className="linkbtn" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</button>),
     growth: field("growth", <Tipped text="Contribution growth" k="contribgrowth" />, <div className="inputwrap">
       <NumberInput data-f="growth" data-i={i} step={0.5} aria-label={aria + " contribution growth"}
         value={blended ? (blend != null ? String(+(blend * 100).toFixed(2)) : "") : st.growth} onValueChange={setF("growth")}
@@ -127,7 +123,6 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
             e.currentTarget.textContent = name || def;
             up((c) => {
               const { name: _old, ...rest } = c;
-              void _old;
               return name ? { ...rest, name } : rest;
             });
           }}>{label}</span>
@@ -149,7 +144,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
                 <NumberInput data-f="glideYears" data-i={i} nonNeg value={st.glideYears} aria-label={aria + " glide years"}
                   onValueChange={(v) => up((c) => ({ ...c, glideYears: stageGlideYears(c.years, v) }))} /><span className="affix">yrs</span></div></div>
             </div>
-            <div className="hint" style={{ margin: 0 }} data-glidenote={i}>{st.glideOn ? glideNote(num) : ""}</div>
+            <div className="hint" style={{ margin: 0 }} data-glidenote={i}>{st.glideOn ? glideNote(num.nominal, num.glide?.endRate || 0, num.years, num.glide?.years || 1, " of this stage") : ""}</div>
           </div>
         </div>
       ) : null}
@@ -160,8 +155,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
             if (!split) return { ...c, contrib: groupDigits(v, true), period };
             // split by account: scale each account, in whole dollars
             const t = Math.round(v * sp.t), r = Math.round(v * sp.r), b = Math.round(v * sp.b), sum = t + r + b;
-            const { cT: _a, cR: _b, cB: _c, ...rest } = c;
-            void _a; void _b; void _c;
+            const { cT: _t, cR: _r, cB: _b, ...rest } = c;
             return { ...rest, contrib: groupDigits(sum, true), period, ...(sum > 0 ? { sTrad: t / sum, sRoth: r / sum } : {}) };
           })} />
       ) : null}
@@ -174,7 +168,6 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
             up((c) => {
               if (rates) return { ...c, gRates: rates };
               const { gRates: _g, ...rest } = c;
-              void _g;
               return { ...rest, growth: pctField(blend ?? num.growth) };
             });
             toast(rates ? "Contribution growth set by account" : "One contribution growth rate for every account");
@@ -182,12 +175,4 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
       ) : null}
     </div>
   );
-}
-
-function glideNote(st: StageNum): string {
-  const total = Math.max(1, Math.round(st.years));
-  const gy = Math.min(total, Math.max(1, Math.round(st.glide?.years || 1)));
-  const startYear = Math.max(1, total - gy + 1);
-  return "Holds " + pctStr(st.nominal, 1) + " through year " + (startYear - 1) + " of this stage, then eases down to " +
-    pctStr(st.glide?.endRate || 0, 1) + " by year " + total + ".";
 }

@@ -2,7 +2,7 @@
    from the screen so the Budget can copy net pay from it. From
    src/js/app/11-income-tax.js and 23-scenarios.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { computeRetireTax, computeTax } from "@/lib/engine";
+import { computeRetireTax, computeTax } from "@/lib/engine/typed";
 import { groupDigits, parseNum } from "@/lib/format";
 
 const g = (v: number) => groupDigits(v, true);

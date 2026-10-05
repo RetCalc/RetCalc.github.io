@@ -16,7 +16,7 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { Figure, Segmented } from "@/components/ui/Readout";
 import { computeTax } from "@/lib/engine/typed";
 import { focusLast } from "@/lib/dom";
-import { groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { retirementContribs } from "@/lib/retirement-contribs";
 import { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } from "@/tools/college/model";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
@@ -39,7 +39,7 @@ export function Budget() {
     if (h.income == null || !(h.income + inc2 > 0)) return;
     const T = computeTax({ status: married ? "m" : "s", gross: h.income, gross2: inc2, pre: 0, dedType: "std", item: 0,
       state: h.state || toolInputs("tax", TAX_DEFAULTS).state }) as { net: number };
-    setState((c) => ({ ...c, income: groupDigits(Math.round(T.net / c.incomeFreq), true) }));
+    setState((c) => ({ ...c, income: dollarsField(T.net / c.incomeFreq) }));
   });
 
   /* Another tool sending a line in: update a row with the same name rather

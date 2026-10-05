@@ -9,10 +9,6 @@
 
 import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BandChart, type BandPoint } from "@/components/charts/BandChart";
-import { HistBarNote, HistSummary, McSummary } from "@/components/charts/HistNotes";
-import { HistLegend, Legend, McLegend } from "@/components/charts/Legend";
-import { BandTipRows, FanTipRows } from "@/components/charts/TipRows";
 import { CheckToggle, SignFlip } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -20,25 +16,25 @@ import { useHousehold, useHouseholdFill } from "@/components/household/Household
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
-import { ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
+import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
+import { ProjectionChart, ProjectionSummary, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
 import { BigValue } from "@/components/ui/BigValue";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
-import { Figure, KV, Segmented } from "@/components/ui/Readout";
+import { KV } from "@/components/ui/Readout";
 import { growthBlend, matchPer, spreadTotal, type GrowthRates } from "@/lib/accounts";
 import { PPY, coastFire, goalSolve, historicalRuns, monteCarlo, project, solveYears } from "@/lib/engine/typed";
-import { DASH, fmtNum, fmtYears, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-import { MC_RUNS, reroll, useMcSeed } from "@/lib/mc-seed";
+import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_ADV, PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
+import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
-import { ADVANCED_DEF, advancedPlan, glideYearsFor, solvePlan, type AdvancedInputs, type AdvancedPlan } from "./model";
+import { ADVANCED_DEF, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs, type AdvancedPlan } from "./model";
 import { toStages } from "./toStages";
 
-type Mode = "band" | "hist" | "mc";
 const perYear = PPY as Record<string, number>;
-const g = (v: number) => groupDigits(Math.round(v), true);
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
 export function Advanced() {
@@ -47,15 +43,12 @@ export function Advanced() {
   const router = useRouter();
   const toast = useToast();
   const seed = useMcSeed();
-  const [mode, setMode] = useState<Mode>("band");
+  const [mode, setMode] = useState<ChartMode>("band");
   const [band, setBand] = useState("2");
-  const [tracesOn, setTracesOn] = useState(true);
   const [dialog, setDialog] = useState<"conv" | "growth" | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("advanced", (h) => setState((c) => {
-    const has = (v: number | null) => v != null && isFinite(v);
-    const m = (v: number) => g(v);
     const age = has(h.age) && h.age! > 0 && h.age! < 120 ? Math.round(h.age!) : null;
     const retire = has(h.retire) && h.retire! > 0 && h.retire! < 120 ? Math.round(h.retire!) : null;
     const yrs = age && retire && retire > age ? Math.min(100, retire - age) : null;
@@ -63,14 +56,14 @@ export function Advanced() {
     if (yrs) next.years = String(yrs);
     if (c.acOn) {
       // the split is the tool's own; only the facts about you carry in
-      if (has(h.income)) next.salary = m(h.income!);
+      if (has(h.income)) next.salary = dollarsField(h.income!);
       next.acStatus = h.status === "m" ? "m" : "s";
       if (h.state) next.acState = h.state;
     } else {
-      if (has(h.saved)) next.initial = m(h.saved!);
-      if (has(h.monthly)) Object.assign(next, { contrib: m(h.monthly!), period: "Monthly" });
+      if (has(h.saved)) next.initial = dollarsField(h.saved!);
+      if (has(h.monthly)) Object.assign(next, { contrib: dollarsField(h.monthly!), period: "Monthly" });
     }
-    if (h.spend != null && h.spend > 0) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: m(h.spend) });
+    if (h.spend != null && h.spend > 0) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: dollarsField(h.spend) });
     if (next.glideOn) next.glideYears = glideYearsFor(next.years, next.glideYears);
     return next;
   }));
@@ -99,8 +92,8 @@ export function Advanced() {
       if (blank) {
         const tax = toolInputs("tax", TAX_DEFAULTS), H = profile;
         setState((c) => ({
-          ...c, acOn: true, tradBal: g(parseNum(c.initial)), tradC: g(parseNum(c.contrib)), rothBal: "0", rothC: "0", brokBal: "0", brokC: "0",
-          brokBasis: "", salary: g(H?.income || 0), matchPct: "0", matchCap: "6",
+          ...c, acOn: true, tradBal: dollarsField(parseNum(c.initial)), tradC: dollarsField(parseNum(c.contrib)), rothBal: "0", rothC: "0", brokBal: "0", brokC: "0",
+          brokBasis: "", salary: dollarsField(H?.income || 0), matchPct: "0", matchCap: "6",
           acStatus: H?.status || tax.status, acState: H?.state || tax.state, gRates: null,
         }));
       } else setState((c) => ({ ...c, acOn: true }));
@@ -110,7 +103,7 @@ export function Advanced() {
       // fields, so the answer doesn't jump when you switch back.
       const now = advancedPlan(s, profile).p;
       setState((c) => ({
-        ...c, acOn: false, initial: g(now.initial), contrib: g(now.contrib), taxRate: String(+(now.taxRate * 100).toFixed(2)),
+        ...c, acOn: false, initial: dollarsField(now.initial), contrib: dollarsField(now.contrib), taxRate: String(+(now.taxRate * 100).toFixed(2)),
         growth: c.gRates ? String(+(now.growth * 100).toFixed(2)) : c.growth,
       }));
       toast("Back to one total, with a " + pctStr(now.taxRate, 1) + " tax rate");
@@ -134,7 +127,7 @@ export function Advanced() {
   const withTotal = (c: AdvancedInputs, total: number): AdvancedInputs => {
     if (!c.acOn) return { ...c, contrib: groupDigits(total, true) };
     const t = spreadTotal(advancedPlan(c, profile).a!, perYear[c.period], total);
-    return { ...c, tradC: g(t.trad), rothC: g(t.roth), brokC: g(t.brok) };
+    return { ...c, tradC: dollarsField(t.trad), rothC: dollarsField(t.roth), brokC: dollarsField(t.brok) };
   };
 
   const applyContribution = () => {
@@ -183,7 +176,7 @@ export function Advanced() {
       <label htmlFor="period">Contribution period</label>
       <select id="period" value={s.period} onChange={(e) => set("period")(e.target.value)}><PeriodOptions /></select>
       <button type="button" className="linkbtn" id="convOpen" onClick={() => setDialog("conv")}>
-        <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        {ConvertIcon}
         Convert frequency
       </button>
     </div>
@@ -278,7 +271,7 @@ export function Advanced() {
                   <NumberField id="glideEnd" label="End at" unit="%" negative value={s.glideEnd} onValueChange={set("glideEnd")} />
                   <NumberField id="glideYears" label="Over final" unit="yrs" value={s.glideYears} onValueChange={setTiming("glideYears")} />
                 </div>
-                <div className="hint" id="glideNote" style={{ margin: 0 }}>{s.glideOn ? glideNote(s) : ""}</div>
+                <div className="hint" id="glideNote" style={{ margin: 0 }}>{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
               </div>
             </div>
             <NumberField id="fees" label={<>Fees <span className="tipglue"><span className="opt">optional</span><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
@@ -287,7 +280,7 @@ export function Advanced() {
                 <label htmlFor="withdrawal"><Tipped text="Withdrawal rate" k="withdrawal" /></label>
                 <Affixed suffix="%"><NumberInput id="withdrawal" nonNeg value={s.withdrawal} onValueChange={set("withdrawal")} /></Affixed>
                 <button className="btn mini" type="button" id="toDrawdown" style={{ marginTop: "6px" }} onClick={() => {
-                  setToolInputs("drawdown", { ...toolInputs("drawdown", {}), initial: g(R.fvReal) });
+                  setToolInputs("drawdown", { ...toolInputs("drawdown", {}), initial: dollarsField(R.fvReal) });
                   router.push("/drawdown");
                   toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
                 }}>Test withdrawals</button>
@@ -315,29 +308,8 @@ export function Advanced() {
       </aside>
 
       <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single">
-        <div className="panel">
-          <div className="headline">
-            <Figure label="Future value" id="rFV" className="v" value={money(R.fv)} noteId="rFVnote" note={"After " + p.years + " years at " + pctStr(p.nominal, 2)} />
-            <Figure label="Inflation adjusted" id="rFVreal" className="v" value={money(R.fvReal)} noteId="rFVrealnote" note={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"} />
-            <Figure label="After-tax income, per year" id="rMonthly" className="v gold" value={money(R.afterTax)} note="Inflation adjusted, first year of retirement" />
-          </div>
-          <div className="body">
-            <div className="grid2">
-              <div>
-                <KV k="Amount invested" id="rInvested" v={money(R.invested)} />
-                <KV k="Growth" cls="pos" id="rGrowth" v={money(R.growth)} />
-                <KV k="Total contributions" id="rContribs" v={money(R.contribTotal)} />
-                <KV k="Final contribution, inflation adjusted" id="rLastContrib" v={money(R.lastContribReal) + " " + PERIOD_ADV[p.period]} />
-              </div>
-              <div>
-                <KV k="Annual withdrawal" id="rWd" v={money(R.wd)} />
-                <KV k="Annual withdrawal, inflation adjusted" id="rWdReal" v={money(R.wdReal)} />
-                <KV k="After tax, per year" id="rAfterTax" v={money(R.afterTax)} />
-                <KV k="After tax, per month" id="rAfterTaxMo" v={money(R.afterTaxMo)} />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProjectionSummary p="r" R={R} lastPeriod={p.period} fvNote={"After " + p.years + " years at " + pctStr(p.nominal, 2)}
+          realNote={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"} />
 
         <div className="panel" id="acPanel" hidden={!acOn}>
           {B ? <AccountTable id="acResults" B={B} years={p.years} /> : null}
@@ -400,40 +372,13 @@ export function Advanced() {
           </div>
         </div>
 
-        <div className="panel">
-          <h2>Balance over time, inflation adjusted{"\n        "}
-            <span className="h2ctrl">
-              <Segmented id="segSingle" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
-              <span className="modeopt" id="optBand" hidden={mode !== "band"}>
-                <Affixed prefix="±" suffix="%" style={{ width: "96px" }}>
-                  <NumberInput id="band" nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />
-                </Affixed>
-              </span>
-            </span>
-          </h2>
-          <div className="mcbar" id="histBar" hidden={mode !== "hist"}>
-            <NumberField id="histMix" label={<Tipped text="Stock mix" k="histmix" />} unit="%" step={5} max={100} value={s.histMix} onValueChange={set("histMix")} />
-            <NumberField id="histMixEnd" wrapId="histGlideWrap" hidden={!(p.glide.on)} label={<Tipped text="Glides to" k="histglidemix" />} unit="%" step={5} max={100} value={s.histMixEnd} onValueChange={set("histMixEnd")} />
-            <div className="hint" id="histNote" style={{ margin: 0 }}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
-          </div>
-          <div className="mcbar" id="mcBar" hidden={mode !== "mc"}>
-            <NumberField id="volatility" label={<Tipped text="Volatility" k="volatility" />} unit="%/yr" value={s.vol} onValueChange={set("vol")} />
-            <button className="btn" type="button" id="btnReroll" onClick={() => {
-              reroll();
-              toast("New set of runs");
-            }}>Re-roll</button>
-            <div className="hint" style={{ margin: 0 }}>Each redraw runs 5,000 simulations.</div>
-          </div>
-          <BandChart id="" pts={chart.pts} maxX={p.years} mode={chart.fan ? "mc" : "band"} enhanced ariaLabel="Projected inflation-adjusted balance at three rates of return"
-            traces={chart.traces && tracesOn ? chart.traces : undefined}
-            tip={(b: BandPoint) => <><b>Year {fmtNum(b.year)}</b>{chart.fan ? <FanTipRows b={b} /> : <BandTipRows b={b} />}</>} />
-          {chart.legend === "hist" ? <HistLegend id="legend" tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} />
-            : chart.legend === "mc" ? <McLegend id="legend" />
-              : <Legend id="legend" items={chart.legend === "band" ? bandLegend(p.nominal, parseNum(band) / 100) : []} />}
-          {mode === "hist" ? <HistSummary id="mcNote" H={chart.H} target={chart.H?.count ? S.portToday : 0} label={TARGET_LABEL} />
-            : mode === "mc" ? <McSummary id="mcNote" mc={chart.mc} target={S.portToday} label={TARGET_LABEL} />
-              : <div className="mcnote" id="mcNote" hidden></div>}
-        </div>
+        <ProjectionChart sfx="" segId="segSingle" ariaLabel="Projected inflation-adjusted balance at three rates of return"
+          mode={mode} setMode={setMode} band={band} setBand={setBand}
+          histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")} glides={p.glide.on}
+          mcFields={<NumberField id="volatility" label={<Tipped text="Volatility" k="volatility" />} unit="%/yr" value={s.vol} onValueChange={set("vol")} />}
+          mcHint="Each redraw runs 5,000 simulations."
+          chart={chart} maxX={p.years} bandItems={bandLegend(p.nominal, parseNum(band) / 100)}
+          tipHead={(b) => <b>Year {fmtNum(b.year)}</b>} target={S.portToday} targetLabel={TARGET_LABEL} />
 
         <div className="panel">
           <h2>Year by year<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
@@ -487,16 +432,9 @@ function YearsDiff({ Y, years }: { Y: { reached: boolean; years: number }; years
   );
 }
 
-function glideNote(s: AdvancedInputs): string {
-  const total = Math.max(1, Math.round(parseNum(s.years)));
-  const gy = Math.min(total, Math.max(1, Math.round(parseNum(s.glideYears)) || 1));
-  const startYear = Math.max(1, total - gy + 1);
-  return "Holds " + pctStr(parseNum(s.nominal) / 100, 1) + " through year " + (startYear - 1) +
-    ", then eases down to " + pctStr(parseNum(s.glideEnd) / 100, 1) + " by year " + total + ".";
-}
 
 function bandLegend(nominal: number, band: number): [string, string][] {
-  const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
+  const lbl = bandLabel(band);
   return [
     ["#4fbf95", band > 0 ? "At " + pctStr(nominal + band, 2) + " (+" + lbl + "%)" : "Higher"],
     ["#e9b872", "At " + pctStr(nominal, 2) + " (your rate)"],
@@ -519,30 +457,22 @@ function compute(s: AdvancedInputs, household: Parameters<typeof advancedPlan>[1
 }
 
 /** What the chart draws in each mode. */
-function chartData(s: AdvancedInputs, V: ReturnType<typeof compute>, mode: Mode, band: number, seed: number) {
+function chartData(s: AdvancedInputs, V: ReturnType<typeof compute>, mode: ChartMode, band: number, seed: number): ChartData {
   const { p, R } = V;
-  const empty = { pts: [] as BandPoint[], fan: mode !== "band", legend: null as Mode | null, H: null as ReturnType<typeof historicalRuns> | null, mc: null as ReturnType<typeof monteCarlo> | null, traces: null as { xs: number[]; lines: (number | null)[][] } | null };
-  if (!R.years.length) return { ...empty, fan: false };
+  if (!R.years.length) return emptyChart();
   const real = (v: number, yr: number) => v / Math.pow(1 + p.inflation, yr);
   const start = { year: 0, base: p.initial, hi: p.initial, lo: p.initial, p25: p.initial, p75: p.initial };
   if (mode === "hist") {
-    const clamp = (x: string) => Math.max(0, Math.min(1, parseNum(x) / 100));
-    const H = historicalRuns({ initial: p.initial, fees: p.fees }, [{
-      years: p.years, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, mix: clamp(s.histMix),
-      glide: p.glide.on ? { on: true, years: p.glide.years, endMix: clamp(s.histMixEnd) } : { on: false },
-    }]);
-    if (!H.count) return { ...empty, H };
-    const pts = [start, ...H.bands.map((b) => ({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }))];
-    return { ...empty, pts, legend: "hist" as Mode, H, traces: { xs: pts.map((a) => a.year), lines: (H.traces ?? []).map((t) => [p.initial, ...t]) } };
+    return histChart(start, historicalRuns({ initial: p.initial, fees: p.fees }, [{
+      years: p.years, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, mix: fraction(s.histMix),
+      glide: p.glide.on ? { on: true, years: p.glide.years, endMix: fraction(s.histMixEnd) } : { on: false },
+    }]));
   }
   if (mode === "mc") {
     const mc = monteCarlo({ initial: p.initial, inflation: p.inflation },
       [{ years: p.years, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, vol: p.vol }], MC_RUNS, seed);
-    const pts = [{ ...start, det: p.initial }, ...mc.bands.map((b, i) => ({
-      year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75,
-      det: R.years[i] ? real(R.years[i].end, R.years[i].year) : b.p50,
-    }))];
-    return { ...empty, pts, legend: "mc" as Mode, mc };
+    const pts = fanPoints({ ...start, det: p.initial }, mc.bands, (b, i) => ({ det: R.years[i] ? real(R.years[i].end, R.years[i].year) : b.p50 }));
+    return { ...emptyChart(true), pts, legend: "mc", mc };
   }
   const hiR = project({ ...p, nominal: p.nominal + band });
   const loR = project({ ...p, nominal: Math.max(-0.99, p.nominal - band) });
@@ -551,6 +481,5 @@ function chartData(s: AdvancedInputs, V: ReturnType<typeof compute>, mode: Mode,
     hi: real(hiR.years[i] ? hiR.years[i].end : y.end, y.year),
     lo: real(loR.years[i] ? loR.years[i].end : y.end, y.year),
   }))];
-  return { ...empty, pts, fan: false, legend: "band" as Mode };
+  return { ...emptyChart(), pts, legend: "band" };
 }
-

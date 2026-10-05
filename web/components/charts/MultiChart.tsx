@@ -4,7 +4,7 @@
    with one tooltip listing every line at the year under the pointer. From
    paintMulti() in src/js/app/04-charts.js. */
 
-import { ChartFrame, HoverMarks, MONO, XAxis, YAxis, useChartSize, valueScale } from "./ChartFrame";
+import { ChartFrame, HoverMarks, MONO, pathD, XAxis, YAxis, useChartSize, valueScale } from "./ChartFrame";
 import { TipRow } from "./TipRows";
 import { fmtAxisMoney } from "./scale";
 import { money } from "@/lib/format";
@@ -71,7 +71,7 @@ export function MultiChart({ id, series, maxX, ariaLabel, head, xFmt = (x) => x,
             </g>
           ))}
           {live.map((x, i) => (
-            <path key={i} d={x.pts.map((p, k) => (k ? "L" : "M") + X(p.year) + " " + Y(p.value)).join(" ")}
+            <path key={i} d={pathD(x.pts.map((p) => [X(p.year), Y(p.value)]))}
               fill="none" stroke={colors[i]} strokeWidth={(x.width || 2.4) * sw} strokeLinejoin="round" strokeDasharray={x.dash} />
           ))}
           <HoverMarks size={size} x={hi != null ? X(grid[hi].year) : null} y={hi != null ? Y(first(hi)) : null} />

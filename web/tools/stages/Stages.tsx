@@ -7,34 +7,29 @@
    03-calculator-results.html. */
 
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import { BandChart, type BandPoint } from "@/components/charts/BandChart";
-import { HistBarNote, HistSummary, McSummary } from "@/components/charts/HistNotes";
-import { HistLegend, Legend, McLegend } from "@/components/charts/Legend";
-import { BandTipRows, FanTipRows } from "@/components/charts/TipRows";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
-import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { MoneyInput } from "@/components/fields/NumberInput";
 import { useHousehold, useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
+import { ProjectionChart, ProjectionSummary, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { BigValue } from "@/components/ui/BigValue";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
-import { Figure, KV, Segmented } from "@/components/ui/Readout";
+import { KV } from "@/components/ui/Readout";
 import { PPY, finalStageSolve, historicalRuns, monteCarlo, projectSeries } from "@/lib/engine/typed";
-import { DASH, fmtNum, fmtYears, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-import type { Household } from "@/lib/household";
-import { MC_RUNS, reroll, useMcSeed } from "@/lib/mc-seed";
+import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { has, type Household } from "@/lib/household";
+import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_ADV } from "@/lib/periods";
 import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { StageCard, type StageEdit } from "./StageCard";
 import { STAGES_DEF, effectiveStages, readStage, stageSplit, stagesPlan, stagesTargetRate, type StageInputs, type StagesInputs } from "./model";
 
-type Mode = "band" | "hist" | "mc";
-const g0 = (v: number) => groupDigits(Math.round(v), true);
 const TARGET_LABEL = "(your target above)";
 
 export function Stages() {
@@ -42,20 +37,18 @@ export function Stages() {
   const { profile } = useHousehold();
   const toast = useToast();
   const seed = useMcSeed();
-  const [mode, setMode] = useState<Mode>("band");
+  const [mode, setMode] = useState<ChartMode>("band");
   const [band, setBand] = useState("2");
-  const [tracesOn, setTracesOn] = useState(true);
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("stages", (h) => setState((c) => {
-    const has = (v: number | null) => v != null && isFinite(v);
     const next = { ...c };
     if (c.saOn) {
-      if (has(h.income)) next.saSalary = g0(h.income!);
+      if (has(h.income)) next.saSalary = dollarsField(h.income!);
       next.saStatus = h.status === "m" ? "m" : "s";
       if (h.state) next.saState = h.state;
-    } else if (has(h.saved)) next.initial = g0(h.saved!);
-    if (h.spend != null && h.spend > 0) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: g0(h.spend) });
+    } else if (has(h.saved)) next.initial = dollarsField(h.saved!);
+    if (h.spend != null && h.spend > 0) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: dollarsField(h.spend) });
     return next;
   }));
 
@@ -80,7 +73,7 @@ export function Stages() {
       setState((c) => ({
         ...c, saOn: true, stages: c.stages.map(dropTyped),
         ...(blank ? {
-          saTradBal: g0(parseNum(c.initial)), saRothBal: "0", saBrokBal: "0", saBrokBasis: "", saSalary: g0(H?.income || 0),
+          saTradBal: dollarsField(parseNum(c.initial)), saRothBal: "0", saBrokBal: "0", saBrokBasis: "", saSalary: dollarsField(H?.income || 0),
           saMatchPct: "0", saMatchCap: "6", saStatus: H?.status || tax.status, saState: H?.state || tax.state,
         } : {}),
       }));
@@ -92,10 +85,10 @@ export function Stages() {
       const now = stagesPlan(s, profile);
       const matched = now.eff.some((st) => st.mf > 1);
       setState((c) => ({
-        ...c, saOn: false, initial: g0(now.g.initial), taxRate: String(+(now.g.taxRate * 100).toFixed(2)),
+        ...c, saOn: false, initial: dollarsField(now.g.initial), taxRate: String(+(now.g.taxRate * 100).toFixed(2)),
         ...(matched ? { saMatchPct: "0" } : {}),
         stages: c.stages.map((st, i) => ({
-          ...dropTyped(st), contrib: g0(now.stages[i].contrib * (now.eff[i].mf || 1)),
+          ...dropTyped(st), contrib: dollarsField(now.stages[i].contrib * (now.eff[i].mf || 1)),
           growth: st.gRates ? String(+(now.stages[i].growth * 100).toFixed(6)) : st.growth,
         })),
       }));
@@ -242,31 +235,9 @@ export function Stages() {
           </div>
         </div>
 
-        <div className="panel">
-          <div className="headline">
-            <Figure label="Future value" id="xFV" className="v" value={money(R.fv)} noteId="xFVnote"
-              note={dn ? "Across " + dn + (dn === 1 ? " stage, " : " stages, ") + fmtNum(R.totalYears) + " years" : "Add a stage to begin"} />
-            <Figure label="Inflation adjusted" id="xFVreal" className="v" value={money(R.fvReal)} noteId="xFVrealnote"
-              note={"Inflation of " + pctStr(g.inflation, 2) + " over " + fmtNum(R.inflYears) + " years"} />
-            <Figure label="After-tax income, per year" id="xMonthly" className="v gold" value={money(R.afterTax)} note="Inflation adjusted, first year of retirement" />
-          </div>
-          <div className="body">
-            <div className="grid2">
-              <div>
-                <KV k="Amount invested" id="xInvested" v={money(R.invested)} />
-                <KV k="Growth" cls="pos" id="xGrowth" v={money(R.growth)} />
-                <KV k="Total contributions" id="xContribs" v={money(R.contribTotal)} />
-                <KV k="Final contribution, inflation adjusted" id="xLastContrib" v={R.lastPeriod ? money(R.lastContribReal) + " " + PERIOD_ADV[R.lastPeriod] : money(0)} />
-              </div>
-              <div>
-                <KV k="Annual withdrawal" id="xWd" v={money(R.wd)} />
-                <KV k="Annual withdrawal, inflation adjusted" id="xWdReal" v={money(R.wdReal)} />
-                <KV k="After tax, per year" id="xAfterTax" v={money(R.afterTax)} />
-                <KV k="After tax, per month" id="xAfterTaxMo" v={money(R.afterTaxMo)} />
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProjectionSummary p="x" R={R} lastPeriod={R.lastPeriod}
+          fvNote={dn ? "Across " + dn + (dn === 1 ? " stage, " : " stages, ") + fmtNum(R.totalYears) + " years" : "Add a stage to begin"}
+          realNote={"Inflation of " + pctStr(g.inflation, 2) + " over " + fmtNum(R.inflYears) + " years"} />
 
         <div className="panel" id="saPanel" hidden={!split}>
           {P.B ? <AccountTable id="saResults" B={P.B} years={P.B.years ?? R.totalYears} /> : null}
@@ -317,41 +288,15 @@ export function Stages() {
           </div>
         </div>
 
-        <div className="panel">
-          <h2>Balance over time, inflation adjusted{"\n        "}
-            <span className="h2ctrl">
-              <Segmented id="segSeries" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
-              <span className="modeopt" id="optBandS" hidden={mode !== "band"}>
-                <Affixed prefix="±" suffix="%" style={{ width: "96px" }}>
-                  <NumberInput id="bandS" nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />
-                </Affixed>
-              </span>
-            </span>
-          </h2>
-          <div className="mcbar" id="histBarS" hidden={mode !== "hist"}>
-            <NumberField id="histMixS" label={<Tipped text="Stock mix" k="histmix" />} unit="%" step={5} max={100} value={s.histMix} onValueChange={set("histMix")} />
-            <NumberField id="histMixEndS" wrapId="histGlideWrapS" hidden={!(mode === "hist" && R.rows.length && last?.glide?.on)} label={<Tipped text="Glides to" k="histglidemix" />} unit="%" step={5} max={100} value={s.histMixEnd} onValueChange={set("histMixEnd")} />
-            <div className="hint" id="histNoteS" style={{ margin: 0 }}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
-          </div>
-          <div className="mcbar" id="mcBarS" hidden={mode !== "mc"}>
-            <button className="btn" type="button" id="btnRerollS" onClick={() => {
-              reroll();
-              toast("New set of runs");
-            }}>Re-roll</button>
-            <div className="hint" style={{ margin: 0 }}>5,000 simulations per redraw. Volatility is
-              set per stage, in the cards above.</div>
-          </div>
-          <BandChart id="S" pts={chart.pts} maxX={R.totalYears} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced
-            ariaLabel="Projected inflation-adjusted balance across stages"
-            traces={chart.traces && tracesOn ? chart.traces : undefined}
-            tip={(b: BandPoint) => <><b>Year {fmtNum(b.year)}</b> <span style={{ color: "#8ba0ac" }}>&middot; stage {String(b.stage)}</span>{chart.fan ? <FanTipRows b={b} /> : <BandTipRows b={b} />}</>} />
-          {chart.legend === "hist" ? <HistLegend id="legendS" tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} extra="Stage boundary" />
-            : chart.legend === "mc" ? <McLegend id="legendS" extra="Stage boundary" />
-              : <Legend id="legendS" items={chart.legend === "band" ? bandLegend(parseNum(band) / 100) : []} />}
-          {mode === "hist" ? <HistSummary id="mcNoteS" H={chart.H} target={chart.H?.count ? portToday : 0} label={TARGET_LABEL} />
-            : mode === "mc" ? <McSummary id="mcNoteS" mc={chart.mc} target={portToday} label={TARGET_LABEL} />
-              : <div className="mcnote" id="mcNoteS" hidden></div>}
-        </div>
+        <ProjectionChart sfx="S" segId="segSeries" ariaLabel="Projected inflation-adjusted balance across stages"
+          mode={mode} setMode={setMode} band={band} setBand={setBand}
+          histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")}
+          glides={mode === "hist" && R.rows.length > 0 && !!last?.glide?.on}
+          mcHint={<>5,000 simulations per redraw. Volatility is
+            set per stage, in the cards above.</>}
+          chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100)} legendExtra="Stage boundary"
+          tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span style={{ color: "#8ba0ac" }}>&middot; stage {String(b.stage)}</span></>}
+          target={portToday} targetLabel={TARGET_LABEL} />
 
         <div className="panel">
           <h2>Stage by stage<span className="h2ctrl"><CsvButton table={stageTable} label="Stage by stage" /></span></h2>
@@ -400,7 +345,6 @@ export function Stages() {
 /** The cached split amounts go when a stage is rebuilt from its numbers. */
 function dropTyped(st: StageInputs): StageInputs {
   const { cT: _t, cR: _r, cB: _b, ...rest } = st;
-  void _t; void _r; void _b;
   return rest;
 }
 
@@ -423,7 +367,7 @@ function matchNote(P: ReturnType<typeof stagesPlan>): string {
 }
 
 function bandLegend(band: number): [string, string][] {
-  const lbl = (band * 100).toFixed(2).replace(/\.?0+$/, "");
+  const lbl = bandLabel(band);
   return [
     ["#4fbf95", band > 0 ? "Every stage +" + lbl + "%" : "Higher"],
     ["#e9b872", "As entered"],
@@ -448,32 +392,24 @@ function compute(s: StagesInputs, household: Household | null) {
   return { P, R, F, portToday, rate, feeCost, saRate };
 }
 
-function chartData(s: StagesInputs, V: ReturnType<typeof compute>, mode: Mode, band: number, seed: number) {
+function chartData(s: StagesInputs, V: ReturnType<typeof compute>, mode: ChartMode, band: number, seed: number): ChartData {
   const { P, R } = V, g = P.g;
-  const empty = {
-    pts: [] as BandPoint[], fan: mode !== "band", marks: [] as { year: number; label: string }[], legend: null as Mode | null,
-    H: null as ReturnType<typeof historicalRuns> | null, mc: null as ReturnType<typeof monteCarlo> | null,
-    traces: null as { xs: number[]; lines: (number | null)[][] } | null,
-  };
-  if (!R.rows.length) return { ...empty, fan: false };
+  if (!R.rows.length) return emptyChart();
   const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
   const marks = R.summary.slice(0, -1).map((x) => ({ year: x.endYear, label: String(x.stage + 1) }));
   const start = { year: 0, stage: 1, base: g.initial, hi: g.initial, lo: g.initial, p25: g.initial, p75: g.initial };
   if (mode === "hist") {
-    const clamp = (x: string) => Math.max(0, Math.min(1, parseNum(x) / 100));
-    const mix = clamp(s.histMix), endMix = clamp(s.histMixEnd);
+    const mix = fraction(s.histMix), endMix = fraction(s.histMixEnd);
     const H = historicalRuns({ initial: g.initial, fees: g.fees }, P.eff.map((st) => ({ ...st, mix, ...(st.glide?.on ? { glide: { ...st.glide, endMix } } : {}) })));
-    if (!H.count) return { ...empty, H };
-    const pts = [start, ...H.bands.map((b) => ({ year: b.year, stage: (b as { stage?: number }).stage, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }))];
-    return { ...empty, pts, marks, legend: "hist" as Mode, H, traces: { xs: pts.map((a) => a.year), lines: (H.traces ?? []).map((t) => [g.initial, ...t]) } };
+    return histChart(start, H, marks, (b) => ({ stage: (b as { stage?: number }).stage }));
   }
   if (mode === "mc") {
     const mc = monteCarlo(g, P.eff, MC_RUNS, seed);
-    const pts = [{ ...start, det: g.initial }, ...mc.bands.map((b, i) => ({
-      year: b.year, stage: R.chartRows[i] ? R.chartRows[i].stage : 1, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75,
+    const pts = fanPoints({ ...start, det: g.initial }, mc.bands, (b, i) => ({
+      stage: R.chartRows[i] ? R.chartRows[i].stage : 1,
       det: R.chartRows[i] ? R.chartRows[i].end / defl(R.chartRows[i].year) : b.p50,
-    }))];
-    return { ...empty, pts, marks, legend: "mc" as Mode, mc };
+    }));
+    return { ...emptyChart(true), pts, marks, legend: "mc", mc };
   }
   const shift = (d: number) => P.eff.map((st) => ({ ...st, nominal: Math.max(-0.99, st.nominal + d) }));
   const hiR = projectSeries(g, shift(band)), loR = projectSeries(g, shift(-band));
@@ -482,6 +418,5 @@ function chartData(s: StagesInputs, V: ReturnType<typeof compute>, mode: Mode, b
     hi: (hiR.chartRows[i] ? hiR.chartRows[i].end : r.end) / defl(r.year),
     lo: (loR.chartRows[i] ? loR.chartRows[i].end : r.end) / defl(r.year),
   }))];
-  return { ...empty, pts, fan: false, marks, legend: "band" as Mode };
+  return { ...emptyChart(), pts, marks, legend: "band" };
 }
-

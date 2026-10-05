@@ -3,7 +3,7 @@
    RET_STATE data the calculation runs on. Moved unchanged from
    src/js/app/11-income-tax.js; only the two exports at the end replace the
    function that wrote the table into the page. */
-import { STATES, RET_STATE, SS_TAX_STATES } from "@/lib/engine";
+import { STATES, RET_STATE, SS_TAX_STATES } from "@/lib/engine/core";
 import { money } from "@/lib/format";
 
 /* ---------- the state rules table ----------

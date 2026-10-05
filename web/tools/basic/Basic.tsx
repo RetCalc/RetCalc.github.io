@@ -17,7 +17,7 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
 import { Figure, KV } from "@/components/ui/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
-import { DASH, fmtNum, fmtYears, groupDigits, money, pctStr } from "@/lib/format";
+import { DASH, dollarsField, fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
@@ -41,8 +41,8 @@ export function Basic() {
     const next: BasicInputs = { ...c };
     if (age) next.age = String(age);
     if (retire && (!age || retire > age)) next.retire = String(age ? Math.min(retire, age + 100) : retire);
-    if (h.saved != null) next.saved = groupDigits(Math.round(h.saved), true);
-    if (h.monthly != null) Object.assign(next, { contrib: groupDigits(Math.round(h.monthly), true), period: "Monthly" });
+    if (h.saved != null) next.saved = dollarsField(h.saved);
+    if (h.monthly != null) Object.assign(next, { contrib: dollarsField(h.monthly), period: "Monthly" });
     return next;
   }));
 

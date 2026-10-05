@@ -1,7 +1,8 @@
 /* Runs every plan for the Early Retirement Bridge, and the three markets the
    detail views follow. From renderBridge() and brScenarios() in
    src/js/app/36-bridge.js. */
-import { BR_UNLOCK, HIST_START, brBetter, brCtx, brFlatSeq, brMCSeqs, brPlans, brSim, brTax, brTest } from "@/lib/engine/typed";
+import { HIST_START } from "@/lib/engine/typed";
+import { BR_UNLOCK, brBetter, brCtx, brFlatSeq, brMCSeqs, brPlans, brSim, brTax, brTest } from "@/lib/engine/typed-bridge";
 import type { BrCtx, BrEnd, BrInput, BrPlan, BrRun, BrTest } from "@/lib/engine/types";
 
 export interface RunPlan extends BrPlan {

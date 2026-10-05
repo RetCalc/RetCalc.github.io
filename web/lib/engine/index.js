@@ -1,14 +1,5 @@
-/* The calculation engine, one import for the whole site:
-
-     import { project, monteCarlo, runDrawdown } from "@/lib/engine";
-
-   drawdown.js comes first on purpose. math.js reads two of drawdown.js's
-   tables inside a function, while drawdown.js reads math.js's historical
-   data as it loads, so drawdown.js must ask for math.js (and have it finish
-   loading) before its own top-level code runs. */
-export * from "./drawdown.js";
-export * from "./math.js";
+/* The whole engine in one import. Screens use typed.ts and typed-bridge.ts
+   instead, which load only what each page needs; core.js explains the order. */
+export * from "./core.js";
 export * from "./plan.js";
-export * from "./calculators.js";
-export * from "./fire.js";
 export * from "./bridge.js";

@@ -1,7 +1,7 @@
 /* The Mortgage Calculator's inputs, apart from its screen so Rent vs. Buy
    can copy the home from it. From src/js/app/12-mortgage.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { MORT_RATE_30 } from "@/lib/engine";
+import { MORT_RATE_30 } from "@/lib/engine/typed";
 import { groupDigits } from "@/lib/format";
 
 export const MORTGAGE_DEFAULTS = {

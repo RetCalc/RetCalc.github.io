@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { encodeShare, readScenarios, useActiveTool, writeScenarios, type Scenario } from "@/components/tools/ToolState";
 import { usePopup } from "./Popup";
 import { useToast } from "./Toast";
-import { compareNav } from "@/tools/compare/model";
+import { compareNav } from "@/lib/compare-nav";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 

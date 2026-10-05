@@ -14,7 +14,7 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
 import { KV } from "@/components/ui/Readout";
 import { HC_AGE40_MULT, HC_STATE_PREMIUM_40, hcCalcACA, hcFPL, hcGrossPremium, ssTaxable } from "@/lib/engine/typed";
-import { groupDigits, money, parseNum } from "@/lib/format";
+import { dollarsField, money, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { HC_IRMAA, HC_MEDIGAP_HIGH, HC_MEDIGAP_LOW, HC_PARTD_BASE, HC_STATES, HEALTHCARE_DEF, irmaaTier, type HealthcareInputs } from "./model";
 
@@ -228,7 +228,7 @@ export function Healthcare() {
                     toast("Enter income in the Income Tax tool first");
                     return;
                   }
-                  setState((c) => ({ ...c, income: groupDigits(Math.round(agi), true), ss: R.ssGross > 0 ? groupDigits(Math.round(R.ssGross), true) : "" }));
+                  setState((c) => ({ ...c, income: dollarsField(agi), ss: R.ssGross > 0 ? dollarsField(R.ssGross) : "" }));
                   toast("Copied " + money(agi) + " MAGI from Income Tax");
                 }}>Copy from Income Tax</button>{" "}
               <button className="btn mini" type="button" id="hcGoTax" style={{ marginTop: "4px" }}

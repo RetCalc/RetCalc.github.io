@@ -16,6 +16,11 @@ import { PERIOD_NAMES, PeriodOptions } from "@/lib/periods";
 
 const perYear = PPY as Record<string, number>;
 
+/** The two-arrow icon on the "Convert" links that open the converter. */
+export const ConvertIcon = (
+  <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 5.5h9.5M10 3l2.5 2.5L10 8M13 10.5H3.5M6 8l-2.5 2.5L6 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
+
 /** Shows a contribution at each frequency; Apply on a row hands that amount
     and frequency to `apply`. */
 export function ConverterDialog({ title, amount, period, apply, onClose }: {

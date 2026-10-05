@@ -6,7 +6,7 @@ import type { ToolDef } from "@/components/tools/ToolState";
 import { accountBreakdown, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
 import { DEFAULTS } from "@/lib/engine/typed";
 import type { Plan } from "@/lib/engine/types";
-import { groupDigits, parseNum } from "@/lib/format";
+import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 
 /** A plan in the engine's own terms: rates as decimals, dollars as numbers. */
@@ -64,6 +64,15 @@ export function glideYearsFor(years: string, glideYears: string): string {
   const y = Math.round(n(glideYears));
   const c = Math.min(total, Math.max(1, y || 1));
   return c !== y ? String(c) : glideYears;
+}
+
+/** What a glide does, in words: "Holds 8.5% through year 25, then eases
+    down to 5.5% by year 30." Stages adds " of this stage". */
+export function glideNote(start: number, end: number, years: number, glideYears: number, of = ""): string {
+  const total = Math.max(1, Math.round(years));
+  const gy = Math.min(total, Math.max(1, Math.round(glideYears) || 1));
+  return "Holds " + pctStr(start, 1) + " through year " + (Math.max(1, total - gy + 1) - 1) + of +
+    ", then eases down to " + pctStr(end, 1) + " by year " + total + ".";
 }
 
 export interface AdvancedPlan {

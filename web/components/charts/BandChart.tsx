@@ -9,7 +9,7 @@
    variables, so it follows a theme switch. */
 
 import { useId } from "react";
-import { ChartFrame, HoverMarks, MONO, XAxis, YAxis, useChartSize, valueScale } from "./ChartFrame";
+import { ChartFrame, HoverMarks, MONO, pathD, XAxis, YAxis, useChartSize, valueScale } from "./ChartFrame";
 
 export interface BandPoint {
   year: number;
@@ -66,10 +66,9 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
   const { AX, Y } = valueScale(size, vals.length ? vals : [0]);
   const X = (y: number) => L + (y / (maxX || 1)) * pw;
 
-  const line = (f: (a: P) => number) => pts.map((a, i) => (i ? "L" : "M") + X(a.year) + " " + Y(f(a))).join(" ");
+  const line = (f: (a: P) => number) => pathD(pts.map((a) => [X(a.year), Y(f(a))]));
   const ribbon = (top: (a: P) => number, bot: (a: P) => number) =>
-    pts.map((a, i) => (i ? "L" : "M") + X(a.year) + " " + Y(top(a))).join(" ") + " " +
-    pts.slice().reverse().map((a) => "L" + X(a.year) + " " + Y(bot(a))).join(" ") + " Z";
+    pathD([...pts.map((a) => [X(a.year), Y(top(a))] as [number, number]), ...pts.toReversed().map((a) => [X(a.year), Y(bot(a))] as [number, number])]) + "Z";
   const g = (name: string) => `${name}${uid}`;
 
   return (
@@ -102,13 +101,12 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
               <g clipPath={`url(#${g("trc")})`} fill="none" stroke="#7d9fd6" strokeLinejoin="round" className="traces"
                 strokeOpacity={traces.lines.length > 400 ? .055 : traces.lines.length > 60 ? .13 : .18} strokeWidth={.9 * sw}>
                 {traces.lines.map((ln, k) => {
-                  let d = "";
+                  const at: [number, number][] = [];
                   for (let i = 0; i < traces.xs.length && i < ln.length; i++) {
                     const val = ln[i];
-                    if (val == null || !isFinite(val)) continue;
-                    d += (d ? "L" : "M") + X(traces.xs[i]).toFixed(1) + " " + Y(val).toFixed(1);
+                    if (val != null && isFinite(val)) at.push([X(traces.xs[i]), Y(val)]);
                   }
-                  return d ? <path key={k} d={d} /> : null;
+                  return at.length ? <path key={k} d={pathD(at)} /> : null;
                 })}
               </g>
             ) : null}
@@ -143,7 +141,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             )}
 
             {overlay.filter((ov) => ov.pts.length).map((ov, k) => (
-              <path key={k} d={ov.pts.map((p, i) => (i ? "L" : "M") + X(p.year) + " " + Y(p.value)).join(" ")}
+              <path key={k} d={pathD(ov.pts.map((p) => [X(p.year), Y(p.value)]))}
                 fill="none" style={{ stroke: ov.color || "var(--dim)" }} strokeWidth={(ov.width || 1.8) * sw}
                 strokeDasharray={ov.dash || "6 5"} strokeLinejoin="round" opacity={.95} />
             ))}

@@ -66,3 +66,13 @@ export function fmtYears(y: number): string {
   const r = Math.round(y * 100) / 100;
   return (r === Math.floor(r) ? String(r) : r.toFixed(2)) + (r === 1 ? " year" : " years");
 }
+
+/** A dollar amount as a field shows it: whole dollars, grouped. */
+export function dollarsField(v: number): string {
+  return groupDigits(Math.round(v || 0), true);
+}
+
+/** A percent field as a share between 0 and 1 ("80" is 0.8). */
+export function fraction(s: string): number {
+  return Math.max(0, Math.min(1, parseNum(s) / 100));
+}

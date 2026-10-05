@@ -21,16 +21,16 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { Figure, Segmented } from "@/components/ui/Readout";
-import { BR_CATS, BR_NOEXP, BR_TRIALS, HIST_START, LTCG_2026, STATES, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engine/typed";
+import { HIST_START, LTCG_2026, STATES } from "@/lib/engine/typed";
+import { BR_CATS, BR_NOEXP, BR_TRIALS, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engine/typed-bridge";
 import type { BrCtx, BrEnd, BrRow } from "@/lib/engine/types";
 import { useMcSeed } from "@/lib/mc-seed";
-import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { DASH, dollarsField, fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
-import { TAX_DEFAULTS } from "@/tools/tax/model";
+import { sendYearToTax } from "@/tools/tax/handoff";
 import { BRIDGE_DEF, FILLS, bridgeAge, bridgeInput, type BridgeInputs } from "./model";
 import { UNLOCK, bridgeScenarios, firstYearAfter, runBridge, type BridgeRun, type PathKey, type RunPlan, type Scenarios } from "./run";
 
-const g = (v: number) => groupDigits(Math.round(v), true);
 const pct = (n: number, of: number) => (of > 0 ? pctStr(n / of, 0) : DASH);
 /* Plan names mid-sentence: lowercase, except Roth. */
 const lower = (n: string) => (/^Roth\b/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1));
@@ -56,7 +56,7 @@ export function Bridge() {
     if (retire && retire >= 30 && retire < 60) next.age = String(retire);
     if (!married || parseNum(c.household) <= 2) next.household = married ? "2" : "1";
     if (h.state && STATE_OPTIONS.some((o) => o.code === h.state)) next.state = h.state;
-    if (h.spend != null && h.spend > 0) next.spend = g(h.spend);
+    if (h.spend != null && h.spend > 0) next.spend = dollarsField(h.spend);
     return next;
   }));
 
@@ -96,7 +96,7 @@ export function Bridge() {
     const H = handoff();
     if (!H) return;
     setToolInputs("drawdown", {
-      ...toolInputs("drawdown", {}), initial: g(H.e.total), retireAge: "60", stock: String(Math.round(H.ctx.stock)),
+      ...toolInputs("drawdown", {}), initial: dollarsField(H.e.total), retireAge: "60", stock: String(Math.round(H.ctx.stock)),
       stockEnd: "", strategy: "fixed", rate: String(Math.max(0.1, Math.round(H.y.gross / H.e.total * 10000) / 100)),
       spendFloor: "0", spendCeil: "0",
     });
@@ -106,11 +106,7 @@ export function Bridge() {
   const toTax = () => {
     const H = handoff();
     if (!H) return;
-    setToolInputs("tax", {
-      ...toolInputs("tax", TAX_DEFAULTS), mode: "retire", status: H.ctx.status, state: H.ctx.state,
-      trad: g(H.y.trad), roth: g(H.y.roth), brok: g(H.y.brok), gainPct: String(Math.round(H.y.gainPct * 1000) / 10),
-      seniors: "0", ss: "0", pension: "0", other: "0", pre: "0", dedType: "std", item: "0",
-    });
+    sendYearToTax({ status: H.ctx.status, state: H.ctx.state, trad: H.y.trad, roth: H.y.roth, brok: H.y.brok, gainShare: H.y.gainPct, seniors: 0 });
     router.push("/incometax");
     toast("Loaded a year of withdrawals at 60 into Income Tax");
   };

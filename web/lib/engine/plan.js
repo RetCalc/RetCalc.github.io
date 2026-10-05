@@ -2,9 +2,10 @@
    account, and the Plan Optimizer's search.
 
    Moved from src/js/plan.js without changes to the math: the only edits are
-   `export` on each top-level name and the imports below. Import the engine
-   from "@/lib/engine" (index.js), not this file: math.js and drawdown.js read
-   each other's names, and index.js loads them in the order that works. */
+   `export` on each top-level name and the imports below. Import it
+   through typed-bridge.ts, not this file: that loads core.js first, which
+   loads math.js and drawdown.js (which read each other's names) in the
+   order that works. */
 import {
   FED_2026, FED_STD, SENIOR_ADDL, SENIOR_BONUS, SS_PROV, computeRetireTax, ultDivisor,
   rmdStartAge, IRMAA, irmaaAnnual, HIST_START, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
