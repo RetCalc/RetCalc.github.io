@@ -106,7 +106,6 @@ function ddStratNote(o, P, firstW, r1){
 function ddPathSync(o, P, firstW){
   var takes = !!DD_STRAT[o.strategy].path;
   $("ddPathField").hidden = !takes;
-  $("ddPathOff").hidden = takes;
   if (!takes) { $("ddPathEaseWrap").hidden = true; $("ddWdStagesWrap").hidden = true; return; }
   var kind = o.path;
   $("ddPathEaseWrap").hidden = kind !== "ease";
@@ -248,7 +247,7 @@ function ddFloorSync(o, P){
     if (inp && document.activeElement !== inp) inp.value = ddN(ddRetireAge != null ? ddAgeVal(st.start) : st.start);
   });
   $("ddFloorNote").textContent = ddFloorSteps.length && f.some(function (v) { return v > 0; })
-    ? "Minimum spending: " + ddLineWords(f) + ". It includes Social Security and other income." : "";
+    ? "Minimum spending: " + ddLineWords(f) + "." : "";
 }
 function ddReadFloorStart(v){
   var n = parseNum(v), age = ddRetireAgeVal();

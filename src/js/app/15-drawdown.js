@@ -663,10 +663,7 @@ function renderDrawdown() {
   $("ddFirstW").textContent = money(firstW);
   $("ddFirstMo").textContent = money(firstW / 12);
   $("ddRateNote").textContent = o.initial > 0
-    ? "That's " + money(firstW) + " a year (" + money(firstW / 12) + "/mo) on " +
-      (P.G.share > 0 ? "what stays invested" : "the portfolio above") +
-      (o.path === "stages" && ddPathStages.length ? ", " + ddWdSpanText(ddWdBaseEnd(o.years)) : "") +
-      ", before income tax. Withdrawals from traditional accounts, and part of Social Security, are taxed, so what you can spend is somewhat less. The Income Tax tool's Retirement income mode shows how much."
+    ? money(firstW) + " per year (" + money(firstW / 12) + " per month)"
     : "Enter your portfolio value above to see this in dollars.";
   ddPathSync(o, P, firstW);
   ddFloorSync(o, P);

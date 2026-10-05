@@ -128,7 +128,7 @@
           </button>
         </div>
         <div class="field" id="ddRateWrap">
-          <label for="ddRate" id="ddRateLabel">Withdrawal rate</label>
+          <label for="ddRate"><span id="ddRateLabel">Withdrawal rate</span><span class="tipdot" data-tip="ddrate" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <div class="inputwrap"><input id="ddRate" type="text" inputmode="decimal" data-num data-step="0.25" min="0" data-nonneg><span class="affix">%</span></div>
           <div class="hint" id="ddRateNote"></div>
         </div>
@@ -286,7 +286,6 @@
           <button class="btn mini" type="button" id="ddAddFloorStep">+ Change the minimum later</button>
           <div class="hint" id="ddFloorNote"></div>
         </div>
-        <div class="hint" id="ddPathOff" hidden style="margin:-4px 0 14px">This strategy sets its own spending each year. To shape it, use Minimum and Maximum spending.</div>
         <div class="field" id="ddPathField">
           <label for="ddPath">Spending through retirement<span class="tipdot" data-tip="ddpath" role="button" tabindex="0" aria-label="What is this?">?</span></label>
           <select id="ddPath">
