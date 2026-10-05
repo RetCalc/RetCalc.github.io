@@ -159,7 +159,7 @@ Mortgage, debt, budget, college, rent vs buy, income tax.
 - Left for phase 5 with the rest of the share menu: the printable summary and the image card
 
 Running the checks: `cd web && npm run build && npx playwright test` (about
-1.5 minutes; 18 checks). They run on this machine, not in CI: they need
+3.5 minutes; 55 checks as of phase 4). They run on this machine, not in CI: they need
 Chrome and the old site built from `../src`. A check that needed its one
 retry is reported as "flaky".
 
@@ -167,6 +167,26 @@ retry is reported as "flaky".
 
 ### Phase 4: Planning tools
 Retirement calculator (basic, advanced, stages), compare, Roth, RMD, healthcare, FIRE, early-retirement bridge, 72(t).
+
+- [x] Basic (home page), Advanced and Stages, each with its cases in `web/e2e/`
+- [x] Compare at `/compare` (it had no address before; kept out of search and the sitemap),
+      opened from the Save menu; its check saves the same scenarios on both sites first
+- [x] Roth Conversion and RMDs, Healthcare Cost Planner, FIRE, Early Retirement Bridge and 72(t)
+- [x] The bridge engine moved to `web/lib/engine/bridge.js`; `tests/run.py --web` reads it there
+- [x] Shared pieces: one chart frame (size, axes, hover and touch) under the band, multi-line
+      and stacked-bar charts; account-type math (`lib/accounts.ts`); the By account type
+      table; the contribution converter and per-account growth dialogs; a Modal; one
+      Monte Carlo seed shared by every tool, as before
+- [x] The household profile fills Basic, Advanced, Stages, FIRE, Roth, the Bridge and Healthcare
+- [x] The checker also compares each list row's fields (stage cards, debts, budget lines,
+      children), and screenshots pages too tall for Chrome at one pixel per CSS pixel
+- Fixed on the way, so intentionally different from the old site (each checked on its own):
+  the Bridge and Basic clear their results when there's nothing to calculate; the Roth
+  chart keeps its Balance / Tax switch; light-theme colours on swatches and tooltip
+  labels drawn after the page loads
+- Not ported: Advanced's hidden inflation calculator, and each stage's hidden stock-mix field
+- Left for phase 5: the drawdown compare view, and the handoffs into the Drawdown Simulator
+  (the buttons already write its inputs; the page itself is still the placeholder)
 
 **Gate:** old-vs-new numbers and screenshots match for each.
 
@@ -189,6 +209,8 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 4 | Early Retirement Bridge and 72(t), Advanced, Stages, Compare; shared chart frame, account math and dialogs. 55 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
+| 2026-10-05 | 4 | Basic (home page), Healthcare, Roth and RMDs, FIRE |
 | 2026-10-05 | 3 | Review against the Vercel skills: one route per rebuilt page (each loads only its tool), engine kept off non-calculator pages, glossary loaded on demand, field/figure/toggle/CSV/engine-type repetition replaced by shared pieces. All checks unchanged |
 | 2026-10-05 | 3 | Mortgage, Debt Payoff, College Savings, Rent vs. Buy, Income Tax, Budget; old-vs-new checks for each |
 | 2026-10-05 | 2 | Shared shell, household bar, number fields, 29 pages with metadata and articles, tool list, sitemap, redirects, SEO check passing |
