@@ -105,16 +105,16 @@ export function College() {
                 const fields = (
                   <>
                     <SelectField id={first ? "clPreset" : undefined} label={first ? <Tipped text="School type" k="schooltype" /> : "School type"}
-                      aria-label={`Child ${i + 1} school type`} value={k.preset}
+                      aria-label={`Child ${i + 1} school type`} data-f="preset" data-i={i} value={k.preset}
                       onChange={(v) => setKid(i, parseFloat(v) > 0 ? { preset: v, cost: groupDigits(parseFloat(v), true) } : { preset: v })}>
                       {CL_PRESETS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
                     </SelectField>
-                    <MoneyField id={first ? "clCost" : undefined} label="Annual cost today" value={k.cost} onValueChange={(v) => setKid(i, { cost: v })} aria-label={`Child ${i + 1} annual cost today`} />
+                    <MoneyField id={first ? "clCost" : undefined} label="Annual cost today" data-f="cost" data-i={i} value={k.cost} onValueChange={(v) => setKid(i, { cost: v })} aria-label={`Child ${i + 1} annual cost today`} />
                     <div className="two">
                       <Field id={first ? "clYears" : undefined} label="Years until college">
-                        <Affixed suffix="yrs"><NumberInput id={first ? "clYears" : undefined} data-f="years" nonNeg max={25} value={k.years} onValueChange={(v) => setKid(i, { years: v })} aria-label={`Child ${i + 1} years until college`} /></Affixed>
+                        <Affixed suffix="yrs"><NumberInput id={first ? "clYears" : undefined} data-f="years" data-i={i} nonNeg max={25} value={k.years} onValueChange={(v) => setKid(i, { years: v })} aria-label={`Child ${i + 1} years until college`} /></Affixed>
                       </Field>
-                      <NumberField id={first ? "clCollegeYrs" : undefined} label="Years of college" unit="yrs" max={8} value={k.collegeYrs} onValueChange={(v) => setKid(i, { collegeYrs: v })} aria-label={`Child ${i + 1} years of college`} />
+                      <NumberField id={first ? "clCollegeYrs" : undefined} label="Years of college" unit="yrs" max={8} data-f="collegeYrs" data-i={i} value={k.collegeYrs} onValueChange={(v) => setKid(i, { collegeYrs: v })} aria-label={`Child ${i + 1} years of college`} />
                     </div>
                   </>
                 );

@@ -69,7 +69,49 @@ export interface HistRuns {
   span: number; tooLong?: boolean; finals: number[]; median: number; worst: HistWindow; best: HistWindow;
 }
 export interface ProjectYear { year: number; start: number; contrib: number; growth: number; end: number }
-export interface Projection { years: ProjectYear[]; fv: number; fvReal: number; [k: string]: unknown }
+export interface Projection {
+  years: ProjectYear[]; fv: number; fvReal: number; ppy: number; periods: number; periodicRate: number;
+  invested: number; growth: number; contribTotal: number; lastContrib: number; lastContribReal: number;
+  inflYears: number; wd: number; wdReal: number; afterTax: number; afterTaxMo: number; realReturn: number;
+}
+
+/* ---- the Advanced and Stages calculators (math.js) ---- */
+export interface Glide { on: boolean; endRate?: number; endRateGross?: number; years?: number; endMix?: number }
+/** One plan, or one stage, in the engine's terms: rates as decimals. */
+export interface Plan {
+  initial: number; contrib: number; period: string; growth: number; nominal: number; inflation: number;
+  years: number; withdrawal: number; taxRate: number; vol: number; fees: number; gross: number;
+  glide: Glide; inflYears?: number | "";
+}
+export interface FvFactors { ppy: number; n: number; initFactor: number; annuity: number; periodicRate: number }
+export interface GoalSolve {
+  ppy: number; portToday: number; pays: number; portFuture: number; initGrows: number;
+  annuity: number; perPeriod: number; perYear: number; change: number;
+}
+export interface SolveYears { reached: boolean; years: number }
+export interface Coast { state: "already" | "reachable" | "never"; years: number; balance: number }
+export interface MCBand { year: number; p10: number; p25: number; p50: number; p75: number; p90: number }
+export interface MCResult { bands: MCBand[]; finals: number[]; trials: number; median: number; totalYears: number }
+export interface Stage {
+  years: number; contrib: number; period: string; growth: number; nominal: number; vol?: number;
+  mix?: number; glide?: Glide; adj?: boolean; name?: string;
+}
+export interface SeriesGlobals { initial: number; inflation: number; withdrawal: number; taxRate: number; fees: number; inflYears?: number | "" }
+export interface SeriesRow { stage: number; endYear: number; start: number; contrib: number; growth: number; end: number }
+export interface SeriesCalRow { year: number; stageFrom: number; stage: number; start: number; contrib: number; growth: number; end: number; t: number }
+export interface SeriesSummary { stage: number; years: number; endYear: number; start: number; contrib: number; growth: number; end: number; nominal: number }
+export interface Series {
+  rows: SeriesRow[]; calRows: SeriesCalRow[]; summary: SeriesSummary[]; chartRows: { year: number; stage: number; end: number }[];
+  totalYears: number; inflYears: number; fv: number; invested: number; contribTotal: number; lastContrib: number;
+  lastPeriod: string | null; lastContribReal: number; growth: number; fvReal: number; wd: number; wdReal: number;
+  afterTax: number; afterTaxMo: number;
+}
+export interface FinalStageSolve {
+  startBal: number; priorYears: number; totalYears: number; targetFuture: number; grown: number;
+  perPeriod: number; perYear: number; change: number; stageYears: number | null; totalIfStretched: number | null; reached: boolean;
+}
+export interface TaxBucket { label: string; withdrawn: number; taxable: number; federal: number; state: number; tax: number; eff: number }
+export interface RetireTax { total: number; buckets: TaxBucket[]; [k: string]: unknown }
 
 /* ---- the Early Retirement Bridge (bridge.js) ---- */
 export interface BrInput {

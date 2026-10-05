@@ -23,11 +23,11 @@ export interface Scenario { run: BrRun; label: string; head: string; year?: numb
 export type Scenarios = Partial<Record<PathKey, Scenario>>;
 
 /** Every plan, tested; null until there's spending and a balance to plan with. */
-export function runBridge(inp: BrInput, mode: "hist" | "mc"): { ctx: BrCtx; run: BridgeRun | null } {
+export function runBridge(inp: BrInput, mode: "hist" | "mc", seed: number): { ctx: BrCtx; run: BridgeRun | null } {
   const ctx = brCtx(inp);
   if (ctx.trad + ctx.roth + ctx.brok + ctx.g457 <= 0 || !(ctx.spend > 0)) return { ctx, run: null };
   const steady = brFlatSeq(ctx.nB, ctx.real, ctx.infl);
-  const mc = mode === "mc" ? brMCSeqs(ctx) : null;
+  const mc = mode === "mc" ? brMCSeqs(ctx, seed) : null;
   const plans: AnyPlan[] = brPlans(ctx, steady).map((p) => {
     if (p.off) return p;
     const st = brSim(ctx, p, steady, true), hist = brTest(ctx, p, null), test = mc ? brTest(ctx, p, mc) : hist;

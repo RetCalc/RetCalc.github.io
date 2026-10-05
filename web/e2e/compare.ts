@@ -58,20 +58,26 @@ export async function apply(page: Page, steps: Step[]) {
   await page.waitForTimeout(400);
 }
 
+/* Fields the old site kept on the page, hidden and unused, that weren't
+   ported: Advanced's inflation calculator and each stage's stock mix. */
+const UNPORTED = ["inflAmt", "inflYrs", "mix", "glideMix"];
+
 /** Everything a tool shows: the visible text of its panels (inputs and
     results) and the value in every field, normalized for whitespace. */
 export async function snapshot(page: Page, roots: string[]) {
-  return within("reading the page", page.evaluate((sel) => {
+  return within("reading the page", page.evaluate(([sel, skip]) => {
     const out: Record<string, string> = {};
     for (const s of sel) {
       const el = document.querySelector<HTMLElement>(s);
       out[s] = el ? el.innerText.replace(/\s+/g, " ").trim() : "(missing)";
       el?.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input,select").forEach((f) => {
-        if (f.id) out["#" + f.id] = f.value;
+        // Stage cards' fields have no ids; they're named by field and stage.
+        const key = f.id || (f.dataset.f ? f.dataset.f + "@" + f.dataset.i : f.dataset.stotal ? "total@" + f.dataset.stotal : "");
+        if (key && !skip.includes(f.id || f.dataset.f || "")) out[key.startsWith("#") || !f.id ? key : "#" + key] = f.type === "checkbox" ? String((f as HTMLInputElement).checked) : f.value;
       });
     }
     return out;
-  }, roots));
+  }, [roots, UNPORTED] as const));
 }
 
 function diffImages(a: Buffer, b: Buffer) {

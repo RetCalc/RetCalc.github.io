@@ -18,11 +18,10 @@ import { Milestones } from "@/components/ui/Milestones";
 import { Figure, KV } from "@/components/ui/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
 import { DASH, fmtNum, fmtYears, groupDigits, money, pctStr } from "@/lib/format";
+import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
 
-const PERIODS = ["Weekly", "Bi-Weekly", "Monthly", "Quarterly", "Annually"];
-const PER = { Weekly: "weekly", "Bi-Weekly": "bi-weekly", Monthly: "monthly", Quarterly: "quarterly", Annually: "annually" } as Record<string, string>;
 
 export function Basic() {
   const { state: s, set, setState } = useToolState(BASIC_DEF);
@@ -72,7 +71,7 @@ export function Basic() {
             <MoneyField id="qSaved" label="How much have you saved so far?" value={s.saved} onValueChange={set("saved")} />
             <MoneyField id="qContrib" label="How much do you save for retirement?" value={s.contrib} onValueChange={set("contrib")} />
             <SelectField id="qPeriod" label="How often?" value={s.period} onChange={set("period")}>
-              {PERIODS.map((x) => <option key={x}>{x}</option>)}
+              <PeriodOptions />
             </SelectField>
             <SelectField id="qRisk" label="How is it invested?" value={s.risk} onChange={set("risk")}>
               {RISK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -107,7 +106,7 @@ export function Basic() {
               </div>
               <div>
                 <KV k="Starting from" id="qStart" v={R ? money(p.initial) : DASH} />
-                <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PER[p.period] : DASH} />
+                <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PERIOD_ADV[p.period] : DASH} />
               </div>
             </div>
             <div className="hint" style={{ marginTop: "14px" }}>Every figure here is in today&apos;s dollars,

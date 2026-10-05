@@ -169,10 +169,10 @@ export function Debt() {
           <div id="dtList" ref={listRef}>
             {s.rows.map((r, i) => (
               <div className="dtrow" key={i}>
-                <input className="desc" value={r.desc} placeholder="Name" aria-label="Debt name" onChange={(e) => setRow(i, "desc")(e.target.value)} />
-                <Affixed className="c1" prefix="$"><MoneyInput nonNeg value={r.balance} onValueChange={setRow(i, "balance")} aria-label="Balance" /></Affixed>
-                <Affixed className="c2" suffix="%"><NumberInput nonNeg step={0.1} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /></Affixed>
-                <Affixed className="c3" prefix="$"><MoneyInput nonNeg value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></Affixed>
+                <input className="desc" data-f="desc" data-i={i} value={r.desc} placeholder="Name" aria-label="Debt name" onChange={(e) => setRow(i, "desc")(e.target.value)} />
+                <Affixed className="c1" prefix="$"><MoneyInput nonNeg data-f="balance" data-i={i} value={r.balance} onValueChange={setRow(i, "balance")} aria-label="Balance" /></Affixed>
+                <Affixed className="c2" suffix="%"><NumberInput nonNeg step={0.1} data-f="apr" data-i={i} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /></Affixed>
+                <Affixed className="c3" prefix="$"><MoneyInput nonNeg data-f="min" data-i={i} value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></Affixed>
                 {s.rows.length > 1 ? (
                   <button className="del" type="button" title="Remove" aria-label="Remove"
                     onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</button>

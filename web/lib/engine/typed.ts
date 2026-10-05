@@ -4,6 +4,7 @@
    instead of in each tool. Screens import calculations from here. */
 import * as E from "./index.js";
 import type {
+  Coast, FinalStageSolve, FvFactors, GoalSolve, MCResult, Plan, RetireTax, SeriesGlobals, Series, SolveYears, Stage,
   BrCtx, BrInput, BrMC, BrPlan, BrRun, BrSeq, BrTest,
   BasicResult, HistRuns, Projection, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult,
 } from "./types";
@@ -31,6 +32,14 @@ export const hcCalcACA = typed<(income: number, gross: number, pctFPL: number, e
 export const runRoth = typed<(inp: object, doConvert: boolean) => RothResult>(E.runRoth);
 
 export const project = typed<(p: object) => Projection>(E.project);
+export const fvFactors = typed<(p: Plan, years?: number) => FvFactors>(E.fvFactors);
+export const goalSolve = typed<(p: Plan, solveFor: string, target: number) => GoalSolve>(E.goalSolve);
+export const solveYears = typed<(p: Plan, portToday: number, capYears?: number) => SolveYears>(E.solveYears);
+export const coastFire = typed<(p: Plan, targetFuture: number) => Coast>(E.coastFire);
+export const projectSeries = typed<(g: SeriesGlobals, stages: Stage[]) => Series>(E.projectSeries);
+export const finalStageSolve = typed<(g: SeriesGlobals, stages: Stage[], portToday: number) => FinalStageSolve | null>(E.finalStageSolve);
+export const monteCarlo = typed<(g: { initial: number; inflation: number }, stages: Stage[], trials: number, seed: number) => MCResult>(E.monteCarlo);
+export const retireTax = typed<(inp: object) => RetireTax>(E.computeRetireTax);
 export const historicalRuns = typed<(g: { initial: number; fees: number }, stages: object[]) => HistRuns>(E.historicalRuns);
 export const fiComputeCrossings = typed<(p: object, maxYears: number) => { crossings: number[]; total: number } | null>(E.fiComputeCrossings);
 export const fiComputeCoastCrossings = typed<(p: object) => { crossings: number[]; total: number } | null>(E.fiComputeCoastCrossings);
@@ -39,7 +48,7 @@ export const fiYearsFromCrossings = typed<(crossings: number[], total: number, p
 export const brCtx = typed<(inp: BrInput) => BrCtx>(E.brCtx);
 export const brFlatSeq = typed<(len: number, real: number, infl: number) => BrSeq>(E.brFlatSeq);
 export const brPlans = typed<(ctx: BrCtx, steady: BrSeq) => BrPlan[]>(E.brPlans);
-export const brMCSeqs = typed<(ctx: BrCtx) => BrMC>(E.brMCSeqs);
+export const brMCSeqs = typed<(ctx: BrCtx, seed: number) => BrMC>(E.brMCSeqs);
 export const brSim = typed<(ctx: BrCtx, p: BrPlan, seq: BrSeq, wantRows: boolean) => BrRun>(E.brSim);
 export const brTest = typed<(ctx: BrCtx, p: BrPlan, mc: BrMC | null) => BrTest>(E.brTest);
 export const brBetter = typed<(a: { hold: number; cost: number; left: number }, b: { hold: number; cost: number; left: number }) => number>(E.brBetter);

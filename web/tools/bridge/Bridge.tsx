@@ -23,6 +23,7 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { Figure, Segmented } from "@/components/ui/Readout";
 import { BR_CATS, BR_NOEXP, BR_TRIALS, HIST_START, LTCG_2026, STATES, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engine/typed";
 import type { BrCtx, BrEnd, BrRow } from "@/lib/engine/types";
+import { useMcSeed } from "@/lib/mc-seed";
 import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
@@ -69,7 +70,8 @@ export function Bridge() {
   /* Every plan runs against every market, so typing stays ahead of it: the
      inputs update at once and the results catch up. */
   const typed = useDeferredValue(s);
-  const { ctx, run: R } = useMemo(() => runBridge(bridgeInput(typed), mode), [typed, mode]);
+  const seed = useMcSeed();
+  const { ctx, run: R } = useMemo(() => runBridge(bridgeInput(typed), mode, seed), [typed, mode, seed]);
   const sel = R ? R.live.find((p) => p.key === selKey) ?? R.best : null;
   const S = useMemo(() => (R && sel ? bridgeScenarios(R.ctx, sel) : null), [R, sel]);
   const path: PathKey = S && !S[pathKey] ? "avg" : pathKey;

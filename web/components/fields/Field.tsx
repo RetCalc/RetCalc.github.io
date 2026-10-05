@@ -70,11 +70,11 @@ export function NumberField({ id, label, unit, step, max, wrapId, hidden, classN
 }
 
 /** A dropdown, its options as children. */
-export function SelectField({ id, label, value, onChange, wrapId, hidden, children, "aria-label": ariaLabel }:
+export function SelectField({ id, label, value, onChange, wrapId, hidden, children, ...attrs }:
   Omit<FieldProps, "children"> & { value: string; onChange: (v: string) => void; children: ReactNode; "aria-label"?: string }) {
   return (
     <Field id={id} label={label} wrapId={wrapId} hidden={hidden}>
-      <select id={id} aria-label={ariaLabel} value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
+      <select id={id} {...attrs} value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
     </Field>
   );
 }

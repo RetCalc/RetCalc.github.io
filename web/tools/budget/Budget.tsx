@@ -120,7 +120,7 @@ export function Budget() {
                 {g.rows.map(({ r, i }) => (
                   <div className="bgrow" key={i}>
                     {r.custom ? (
-                      <input className="desc" value={r.desc} placeholder="Description" aria-label="Item name" onChange={(e) => setRow(i, { desc: e.target.value })} />
+                      <input className="desc" data-f="desc" data-i={i} value={r.desc} placeholder="Description" aria-label="Item name" onChange={(e) => setRow(i, { desc: e.target.value })} />
                     ) : isSavingsRow(r) ? (
                       <span className="desc"><Tipped text={r.desc} k="bgsavings" /></span>
                     ) : (
@@ -146,7 +146,7 @@ export function Budget() {
                           setRow(i, { desc: raw || PRESET_DESCS[i] || r.desc });
                         }}>{r.desc}</span>
                     )}
-                    <Affixed prefix="$"><MoneyInput nonNeg value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
+                    <Affixed prefix="$"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
                     <Segmented className="seg bgseg" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
                     {r.custom ? (
                       <button className="del" type="button" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</button>
