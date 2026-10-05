@@ -22,6 +22,7 @@ import {
   DD_ERAS, ddEraFor, ddLineAt, ddQuick, ssDrawdownStreams, type DdHist, type DdHistRun, type DdMC, type DdOpts, type DdRun, type DdScore,
 } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
+import { useSort } from "@/lib/useSort";
 import type { DDView } from "./Drawdown";
 import type { DdItem } from "./fields";
 import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, startLabel, whyText } from "./text";
@@ -183,14 +184,10 @@ function sortValue(r: DdHistRun, col: string, age: number | null): number | stri
   }
 }
 function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
-  const [sort, setSort] = useState<{ col: string; dir: "asc" | "desc" }>({ col: "year", dir: "asc" });
+  const sort = useSort<string>("year", 1);
   const table = useRef<HTMLTableElement>(null);
   const age = v.age;
-  const runs = H ? H.runs.slice().sort((a, b) => {
-    const av = sortValue(a, sort.col, age), bv = sortValue(b, sort.col, age);
-    const cmp = typeof av === "string" ? av.localeCompare(bv as string) : av - (bv as number);
-    return sort.dir === "asc" ? cmp : -cmp;
-  }) : [];
+  const runs = H ? sort.order(H.runs, (r, c) => sortValue(r, c, age)) : [];
   const pick = (r: DdHistRun) => {
     ps.setSel(r.startIdx);
     ps.setView("year");
@@ -204,8 +201,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
         <table id="ddStartTable" ref={table}>
           <thead><tr>
             {SORT_COLS.map(([k, label, title]) => (
-              <th key={k} className={"sortcol" + (sort.col === k ? (sort.dir === "asc" ? " sort-asc" : " sort-desc") : "")} data-sort={k} title={title}
-                onClick={() => setSort((c) => (c.col === k ? { col: k, dir: c.dir === "asc" ? "desc" : "asc" } : { col: k, dir: "desc" }))}>{label}</th>
+              <th key={k} className={sort.cls(k)} data-sort={k} title={title} onClick={() => sort.by(k)}>{label}</th>
             ))}
           </tr></thead>
           <tbody>

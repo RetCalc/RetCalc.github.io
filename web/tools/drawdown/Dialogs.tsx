@@ -19,7 +19,8 @@ import { DD_DEFAULTS, ddWrite, fromClamp, type DdItem } from "./fields";
 import { DD_GUIDE } from "./guide";
 import { Spark } from "./Spark";
 import { DD_STUDY_UI } from "./studies";
-import { DD_ASSETS, DD_FAMILY, DD_STRAT_NAMES, ageVal, ddN, hardStart, mixParts, spendThrough } from "./text";
+import { MixRows, mixForm, mixOk } from "./MixRows";
+import { DD_FAMILY, DD_STRAT_NAMES, ageVal, ddN, hardStart, mixParts, spendThrough } from "./text";
 
 export type Dialog = { kind: "mix" | "guide" | "study" } | { kind: "item"; list: "incomeItems" | "expenseItems"; index: number | null };
 
@@ -36,13 +37,13 @@ export function DrawdownDialogs({ v, dialog, close }: { v: DDView; dialog: Dialo
 function MixDialog({ v, close }: { v: DDView; close: () => void }) {
   const { o } = v, m = mixParts(o);
   const [f, setF] = useState({
-    stock: ddN(m.stock), sv: ddN(m.sv), bond: ddN(m.bond), cash: ddN(m.cash),
+    ...mixForm(m),
     glide: o.stockPctEnd != null ? ddN(o.stockPctEnd) : "",
     g: o.gShare > 0 ? ddN(o.gShare) : "", gType: o.gType === "annuity" ? "annuity" : "tips",
     gYield: ddN(o.gYield), gPay: ddN(o.gPayout), gInfl: !!o.gInflate,
   });
   const up = (k: keyof typeof f) => (val: string | boolean) => setF((c) => ({ ...c, [k]: val }));
-  const t = parseNum(f.stock) + parseNum(f.sv) + parseNum(f.bond) + parseNum(f.cash), ok = Math.abs(t - 100) < 0.01;
+  const ok = mixOk(f);
   const g = Math.min(100, parseNum(f.g)), tips = f.gType !== "annuity";
   const G = ddGuaranteed({ ...o, gShare: g, gType: tips ? "tips" : "annuity", gYield: parseNum(f.gYield), gPayout: parseNum(f.gPay), gInflate: f.gInfl });
   const save = () => {
@@ -59,11 +60,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
       <h3>Asset mix</h3>
       <div className="formhint" id="ddMixLead">{(g > 0 ? "How the " + money(o.initial * (1 - G.share)) + " that stays invested is split." : "How the portfolio is split at retirement.") +
         " Returns are each asset's actual history from July 1926."}</div>
-      {DD_ASSETS.map(([k, , name, desc]) => (
-        <div className="ddmixrow" key={k}><div><b>{name}</b><small>{desc}</small></div>
-          <div className="inputwrap"><NumberInput nonNeg step={5} max={100} data-mix={k} aria-label={name} value={f[k]} onValueChange={up(k)} /><span className="affix">%</span></div></div>
-      ))}
-      <div className="ddmixtot" id="ddMixTot">Total: <b className={ok ? "pos" : "neg"}>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
+      <MixRows f={f} up={up} totId="ddMixTot" />
       <div className="formfield"><label>Glide stocks to <span className="opt">optional</span></label><div className="inputwrap">
         <NumberInput nonNeg step={5} max={100} id="ddMixGlide" aria-label="Stocks at the end" value={f.glide} onValueChange={up("glide")} /><span className="affix">% by the last year</span></div>
         <div className="formhint">Moves the stocks&apos; total in a straight line, small value keeping its share of the stocks. What leaves stocks goes to bonds and cash in the proportions you hold them (and what joins them comes from both the same way). Leave blank to hold the mix.</div></div>

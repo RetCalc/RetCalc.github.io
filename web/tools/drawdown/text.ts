@@ -99,6 +99,11 @@ export function mixText(o: DdOpts): string {
   if (o.gShare > 0) return ddN(o.gShare) + "% buys " + (o.gType === "annuity" ? "an annuity" : "a TIPS ladder") + " · the rest: " + (t || "nothing invested");
   return t || "Nothing invested";
 }
+/** How often the mix is put back, as a short phrase. */
+export function rebalText(o: { rebal: string; rebalN: number; rebalBand: number }): string {
+  return o.rebal === "every" ? "Every " + o.rebalN + " years" : o.rebal === "band" ? "When off by more than " + ddN(o.rebalBand) + " points"
+    : o.rebal === "never" ? "Never" : "Every year";
+}
 export function rebalNote(o: DdOpts): string {
   const one = [o.stockPct, o.svPct, mixParts(o).bond, o.cashPct].filter((v) => v > 0).length < 2;
   return one ? "With one asset there's nothing to rebalance."

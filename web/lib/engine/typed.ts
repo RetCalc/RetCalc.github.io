@@ -6,7 +6,7 @@
 import * as E from "./core.js";
 import type {
   Coast, FinalStageSolve, FvFactors, GoalSolve, MCResult, Plan, RetireTax, SeriesGlobals, Series, SolveYears, Stage,
-  BasicResult, HistRuns, Projection, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult,
+  BasicResult, HistRuns, Projection, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult, BtInput, BtResult,
 } from "./types";
 
 const typed = <F>(f: unknown) => f as F;
@@ -21,6 +21,9 @@ export const collegeSavingsCalc = typed<(i: CollegeInput) => CollegeResult>(E.co
 export const collegePlanCalc = typed<(i: CollegeInput) => CollegePlan | null>(E.collegePlanCalc);
 export const rentBuyCalc = typed<(i: Record<string, number | string>) => RentBuyResult>(E.rentBuyCalc);
 export const bracketRoom = typed<(taxable: number, status: string) => { nextRate: number; room: number } | null>(E.bracketRoom);
+
+export const backtest = typed<(o: BtInput) => BtResult>(E.backtest);
+export const HIST_YEARS = (E.HIST_STOCK as number[]).length;
 
 export const projectBasic = typed<(p: { years: number; real: number; initial: number; contrib: number; period: string; withdrawal: number }) => BasicResult>(E.projectBasic);
 

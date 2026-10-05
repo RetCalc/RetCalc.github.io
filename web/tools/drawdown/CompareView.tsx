@@ -16,6 +16,7 @@ import { Html } from "@/components/ui/Html";
 import { useJob } from "@/lib/engine/jobs";
 import { ddForTarget, ddLineAt, ddWindows, ddWithDial, runDrawdown, type DdShow, type DdShowItem, type DdTarget } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
+import { useSort } from "@/lib/useSort";
 import { PICKER_IDS, type DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, targetWords } from "./text";
 
@@ -30,7 +31,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
   // the results, with the plan and target they were tuned for
   const res = job.res, so = job.args?.o ?? o, sT = job.args?.T ?? T;
 
-  const [sort, setSort] = useState<{ col: Col; dir: number }>({ col: "life", dir: -1 });
+  const sort = useSort<Col>("life", -1, (c) => (c === "name" || c === "cuts" ? 1 : -1));
   const [charted, setCharted] = useState<Record<string, 1> | null>(null);
   const [yk, setYk] = useState<"end" | "low" | "first">("end");
   const table = useRef<HTMLTableElement>(null);
@@ -50,18 +51,11 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
       (sT.crit === "comfort" ? " The flexible ones are held at that line or above, as their minimum, so the risk they carry is running out of money while holding it." : "") +
       (top ? " Over a typical retirement, <b>" + escapeHtml(DD_STRAT_NAMES[top.id]) + "</b> spends the most, " + money(top.life) + " in today's dollars" +
         (steady && steady.id !== top.id ? "; the steadiest, <b>" + escapeHtml(DD_STRAT_NAMES[steady.id]) + "</b>, never cuts and spends " + money(steady.life) : "") + "." : "");
-    const { col, dir } = sort;
-    list.sort((a, b) => {
-      const av = col === "name" ? DD_UI[a.id].name : a[col], bv = col === "name" ? DD_UI[b.id].name : b[col];
-      return (typeof av === "string" ? av.localeCompare(bv as string) : (av as number) - (bv as number)) * dir;
-    });
+    list = sort.order(list, (x, c) => (c === "name" ? DD_UI[x.id].name : x[c] as number));
   }
   const yName = { end: "Typically left at the end", low: "Leanest year", first: "Year one" }[yk];
   const spotLbl = (sp: { year: number; month: number } | null) => (sp ? (sp.month && sp.month !== 1 ? MON[sp.month - 1] + " " : "") + sp.year : "");
-  const sortBy = (c: Col) => setSort((s) => (s.col === c ? { col: c, dir: -s.dir } : { col: c, dir: c === "name" || c === "cuts" ? 1 : -1 }));
-  const th = (c: Col, label: string) => (
-    <th className={"sortcol" + (res && sort.col === c ? (sort.dir > 0 ? " sort-asc" : " sort-desc") : "")} data-ssort={c} onClick={() => sortBy(c)}>{label}</th>
-  );
+  const th = (c: Col, label: string) => <th className={sort.cls(c, !!res)} data-ssort={c} onClick={() => sort.by(c)}>{label}</th>;
   return (
     <>
       <div className="panel" id="ddShowPanel" data-ddtabs="compare">

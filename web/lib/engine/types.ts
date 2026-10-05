@@ -144,3 +144,24 @@ export interface BrPlan {
   key: string; name: string; phrase: string; desc?: string; off?: string; penaltyPlanned?: boolean;
 }
 export interface BrMC { r: ArrayLike<number>; pi: ArrayLike<number>; N: number }
+
+/* ---- the Portfolio Backtest ---- */
+export interface BtInput {
+  stockPct: number; svPct: number; cashPct: number; rebal: string; rebalN: number; rebalBand: number;
+  fee: number; initial: number; startYear: number; endYear: number;
+}
+export interface BtRow { year: number; stock: number; bond: number; sv: number; cash: number; ret: number; infl: number; real: number; end: number; endReal: number }
+export interface BtRolling {
+  len: number; count: number;
+  nomWorst: number; nomBest: number; nomMed: number; nomPos: number;
+  realWorst: number; realBest: number; realMed: number; realPos: number;
+}
+export interface BtResult {
+  rows: BtRow[]; years: number; first: number; last: number;
+  stockPct: number; svPct: number; bondPct: number; cashPct: number; minYear: number; rebal: string; rebalances: number;
+  endMix: number[]; cagr: number; realCagr: number; inflCagr: number; vol: number;
+  endBal: number; endReal: number; start: number;
+  best: BtRow; worst: BtRow; upYears: number; downYears: number;
+  maxDD: number; ddFrom: number; ddTo: number; rolling: BtRolling[];
+  inflHigh: BtRow; inflLow: BtRow; deflationYears: number; priceLevel: number;
+}
