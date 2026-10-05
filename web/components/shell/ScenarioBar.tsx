@@ -7,9 +7,11 @@
    menu in phase 5. */
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { encodeShare, readScenarios, useActiveTool, writeScenarios, type Scenario } from "@/components/tools/ToolState";
 import { usePopup } from "./Popup";
 import { useToast } from "./Toast";
+import { compareNav } from "@/tools/compare/model";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -26,6 +28,7 @@ export function ScenarioBar() {
   const tool = useActiveTool();
   const showPopup = usePopup();
   const toast = useToast();
+  const router = useRouter();
   // Which saved scenario is loaded, per tool, and its inputs when loaded.
   const [loaded, setLoaded] = useState<Record<string, { name: string; data: unknown }>>({});
   // Re-read the list after a save or delete.
@@ -111,9 +114,14 @@ export function ScenarioBar() {
           const c = await showPopup("Scenario", [
             { label: "Save", desc: "Save the current inputs under a name" },
             { label: "Delete", desc: "Remove the selected saved scenario" },
+            { label: "Compare", desc: "Put saved retirement scenarios side by side" },
           ]);
           if (c === 0) save();
           else if (c === 1) remove();
+          else if (c === 2) {
+            Object.assign(compareNav, { from: tool.def.id, path: location.pathname });
+            router.push("/compare");
+          }
         }}>
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 3.5h9.5l2.5 2.5v10.5H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 3.5v4h6v-4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 16.5v-5h6v5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
       </button>

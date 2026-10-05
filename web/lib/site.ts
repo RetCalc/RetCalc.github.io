@@ -82,7 +82,7 @@ export const CARD_ALT: Partial<Record<Slug, string>> = {
 };
 
 /** Pages laid out in one column (the rest put inputs beside results). */
-const SOLO = new Set<Slug>(["tools", "guide", "about", "budget", "debt"]);
+const SOLO = new Set<string>(["tools", "guide", "about", "budget", "debt", "compare"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug);
 }
@@ -90,7 +90,7 @@ export function isSolo(slug: Slug): boolean {
 export function tabFor(slug: Slug): Tab {
   if (slug === "guide") return "guide";
   if (slug === "about") return "about";
-  if (slug === "home" || slug === "advanced" || slug === "stages") return "calc";
+  if (slug === "home" || slug === "advanced" || slug === "stages" || (slug as string) === "compare") return "calc";
   return "tools";
 }
 

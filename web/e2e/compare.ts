@@ -33,7 +33,7 @@ function within<T>(what: string, p: Promise<T>, ms = 30_000): Promise<T> {
 
 const STILL = ".navbar,.sbcover,aside,.gd-top,.gd-side,thead th{position:static!important}";
 
-async function open(page: Page, url: string, hide = "") {
+export async function open(page: Page, url: string, hide = "") {
   log("goto " + url);
   await page.goto(url);
   log("loaded " + url);
@@ -106,35 +106,41 @@ export async function compareTool(page: Page, info: TestInfo, slug: string, root
     await open(page, `${NEW}/${slug === "home" ? "" : slug}`, hide);
     await apply(oldPage, c.steps);
     await apply(page, c.steps);
-    log(c.name + ": reading both");
-    const [a, b] = [await snapshot(oldPage, roots), await snapshot(page, roots)];
-    log(c.name + ": read");
-    expect.soft(b, `${c.name}: numbers`).toEqual(a);
-
-    // Sticky panels land wherever the last click left the page scrolled, so
-    // both pages go back to the top and sticky parts are held in place.
-    for (const p of [oldPage, page]) {
-      await p.addStyleTag({ content: STILL });
-      await within("scrolling to the top", p.evaluate(() => window.scrollTo(0, 0)));
-    }
-    /* Chrome can't capture an image over 16,384 pixels tall; a long page on
-       a phone's dense screen passes that, so it's taken at one pixel per CSS
-       pixel instead. */
-    const tall = await within("measuring", oldPage.evaluate(() => document.querySelector("#main")!.getBoundingClientRect().height * devicePixelRatio > 16_000));
-    const shot = { timeout: 30_000, scale: tall ? "css" : "device" } as const;
-    const shotA = await oldPage.locator("#main").screenshot(shot);
-    const shotB = await page.locator("#main").screenshot(shot);
-    const d = diffImages(shotA, shotB);
-    if (d.ratio > 0.005 || d.sizeA.join() !== d.sizeB.join()) {
-      // Saved beside the test's results, to look at what differs.
-      for (const [kind, body] of [["old", shotA], ["new", shotB], ["diff", d.diff]] as const) {
-        const file = info.outputPath(`${c.name}-${kind}.png`.replace(/[^\w.-]+/g, "-"));
-        writeFileSync(file, body);
-        await info.attach(`${c.name}-${kind}.png`, { path: file, contentType: "image/png" });
-      }
-    }
-    expect.soft(d.sizeB, `${c.name}: page size`).toEqual(d.sizeA);
-    expect.soft(d.ratio, `${c.name}: share of pixels that differ`).toBeLessThan(0.005);
+    await compareShown(oldPage, page, info, c.name, roots);
   }
   await oldPage.close();
+}
+
+/** Compares what the two pages show now: the numbers exactly, and the look
+    (under 0.5% of pixels differing). */
+export async function compareShown(oldPage: Page, page: Page, info: TestInfo, name: string, roots: string[]) {
+  log(name + ": reading both");
+  const [a, b] = [await snapshot(oldPage, roots), await snapshot(page, roots)];
+  log(name + ": read");
+  expect.soft(b, `${name}: numbers`).toEqual(a);
+
+  // Sticky panels land wherever the last click left the page scrolled, so
+  // both pages go back to the top and sticky parts are held in place.
+  for (const p of [oldPage, page]) {
+    await p.addStyleTag({ content: STILL });
+    await within("scrolling to the top", p.evaluate(() => window.scrollTo(0, 0)));
+  }
+  /* Chrome can't capture an image over 16,384 pixels tall; a long page on
+     a phone's dense screen passes that, so it's taken at one pixel per CSS
+     pixel instead. */
+  const tall = await within("measuring", oldPage.evaluate(() => document.querySelector("#main")!.getBoundingClientRect().height * devicePixelRatio > 16_000));
+  const shot = { timeout: 30_000, scale: tall ? "css" : "device" } as const;
+  const shotA = await oldPage.locator("#main").screenshot(shot);
+  const shotB = await page.locator("#main").screenshot(shot);
+  const d = diffImages(shotA, shotB);
+  if (d.ratio > 0.005 || d.sizeA.join() !== d.sizeB.join()) {
+    // Saved beside the test's results, to look at what differs.
+    for (const [kind, body] of [["old", shotA], ["new", shotB], ["diff", d.diff]] as const) {
+      const file = info.outputPath(`${name}-${kind}.png`.replace(/[^\w.-]+/g, "-"));
+      writeFileSync(file, body);
+      await info.attach(`${name}-${kind}.png`, { path: file, contentType: "image/png" });
+    }
+  }
+  expect.soft(d.sizeB, `${name}: page size`).toEqual(d.sizeA);
+  expect.soft(d.ratio, `${name}: share of pixels that differ`).toBeLessThan(0.005);
 }
