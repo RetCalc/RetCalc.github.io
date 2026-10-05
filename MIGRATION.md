@@ -106,7 +106,7 @@ Each phase ends with a commit on `nextjs-migration` and its gate passing.
 - [x] `tests/run.py --web` runs the engine tests against the moved engine: 939 of 939 pass
 - [x] Today's CSS copied into `web/styles/`, loaded by the root layout; pages marked noindex until the switch
 - [x] CI runs the web build and both test runs; the pre-commit hook runs `--web` when the engine or tests change
-- [ ] Vercel project connected to the branch, `web/` as root (site owner creates the account)
+- [x] Vercel project `retcalc` connected, `web/` as root, Next.js preset
 
 **Gate:** both test runs pass, `next build` passes, a Vercel preview loads; reviewer looks over the setup.
 
