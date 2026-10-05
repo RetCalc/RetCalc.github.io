@@ -6,6 +6,7 @@
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { setThemeChoice, useTheme } from "@/lib/theme";
 import { Brandmark } from "./Brandmark";
+import { ScenarioBar } from "./ScenarioBar";
 
 const SUN = (
   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -59,14 +60,7 @@ export function Masthead() {
           </div>
         </div>
         <div className="scenariobar">
-          {/* Saved scenarios, sharing and reset act on the open tool; each
-              is wired up as its tool is ported (phases 3 to 5). */}
-          <div className="scgroup">
-            <select id="scenarioPick" aria-label="Saved scenarios"><option>No saved scenarios</option></select>
-            <button className="btn" id="btnScenario" type="button" aria-label="Save or delete a scenario" title="Save or delete"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 3.5h9.5l2.5 2.5v10.5H4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 3.5v4h6v-4" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M7 16.5v-5h6v5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg></button>
-            <button className="btn" id="btnShareMenu" type="button" aria-label="Share" title="Share"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3M6.5 6.2L10 2.8l3.5 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M6.5 9H5v8h10V9h-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
-            <button className="btn" id="btnReset" type="button" aria-label="Reset to defaults" title="Reset"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.2 8.2A6 6 0 1 1 4 11.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /><path d="M3.6 4v4.4H8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
-          </div>
+          <ScenarioBar />
           <HouseholdButton />
           <ThemeButton />
         </div>

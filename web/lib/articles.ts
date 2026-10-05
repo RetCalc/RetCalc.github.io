@@ -5,17 +5,28 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { cache } from "react";
+import { CHEVRON } from "@/lib/collapse";
 import type { Slug } from "@/lib/site";
 
 const DIR = join(process.cwd(), "content", "articles");
 
-/** The article's HTML, or null for a page without one (About). */
-export const articleHtml = cache((slug: Slug): string | null => {
+const raw = cache((slug: Slug): string | null => {
   try {
     return readFileSync(join(DIR, `${slug}.html`), "utf8");
   } catch {
     return null;
   }
+});
+
+/** The article's HTML as shown: collapsed under its heading, with the
+    chevron that opens it (lib/collapse.ts). Null for a page without one. */
+export const articleHtml = cache((slug: Slug): string | null => {
+  const html = raw(slug);
+  if (!html) return null;
+  return html
+    .replace('class="seo-a panel about"', 'class="seo-a panel about collapsed"')
+    .replace(/<\/h2>/, CHEVRON + "</h2>")
+    .replace(/(<div class="body">[\s\S]*<\/div>)(\s*<\/article>)/, '<div class="about-collapse">$1</div>$2');
 });
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
@@ -30,7 +41,7 @@ function plain(html: string): string {
 /** The article's questions and answers (its <details> blocks), for the
     FAQPage structured data search engines read. Same as build.py's faq(). */
 export function articleFaq(slug: Slug): { q: string; a: string }[] {
-  const html = articleHtml(slug);
+  const html = raw(slug);
   if (!html) return [];
   return [...html.matchAll(/<details><summary>([\s\S]*?)<\/summary><p>([\s\S]*?)<\/p><\/details>/g)].map((m) => ({
     q: plain(m[1]),

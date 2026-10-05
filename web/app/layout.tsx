@@ -4,7 +4,12 @@ import { Footer } from "@/components/shell/Footer";
 import { Main } from "@/components/shell/Main";
 import { Masthead } from "@/components/shell/Masthead";
 import { NavBar } from "@/components/shell/NavBar";
+import { PageEffects } from "@/components/shell/PageEffects";
+import { PopupProvider } from "@/components/shell/Popup";
+import { SelectMenus } from "@/components/shell/SelectMenus";
 import { ToastProvider } from "@/components/shell/Toast";
+import { Tooltips } from "@/components/shell/Tooltips";
+import { ToolRegistryProvider } from "@/components/tools/ToolState";
 import { SITE } from "@/lib/site";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 
@@ -74,13 +79,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <ToastProvider>
+          <PopupProvider>
+          <ToolRegistryProvider>
           <HouseholdProvider>
             <Masthead />
             <NavBar />
             <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
             <Main>{children}</Main>
             <Footer />
+            <Tooltips />
+            <SelectMenus />
+            <PageEffects />
           </HouseholdProvider>
+          </ToolRegistryProvider>
+          </PopupProvider>
         </ToastProvider>
       </body>
     </html>

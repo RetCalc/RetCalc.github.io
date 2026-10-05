@@ -8,6 +8,7 @@ import { ToolPicker } from "@/components/tools/ToolPicker";
 import { metadataFor } from "@/lib/seo";
 import { PAGES, SLUGS, TOOL_SUB, type Slug } from "@/lib/site";
 import { TOOLS } from "@/lib/tools";
+import { TOOL_SCREENS } from "@/tools/registry";
 
 export const dynamicParams = false;
 
@@ -28,9 +29,12 @@ export default async function Page({ params }: PageProps<"/[slug]">) {
   const { slug } = await params;
   if (!known(slug)) notFound();
   const sub = TOOL_SUB[slug];
+  const Screen = TOOL_SCREENS[slug];
   return (
     <PageShell slug={slug}>
-      {slug === "tools" ? <ToolPicker /> : <Placeholder what={sub ? TOOLS[sub].name : PAGES[slug].h1 ?? "About RetCalc"} />}
+      {slug === "tools" ? <ToolPicker />
+        : Screen ? <Screen />
+        : <Placeholder what={sub ? TOOLS[sub].name : PAGES[slug].h1 ?? "About RetCalc"} />}
     </PageShell>
   );
 }

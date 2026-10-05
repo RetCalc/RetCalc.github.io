@@ -1,0 +1,343 @@
+"use client";
+
+/* The Mortgage Calculator: the monthly payment with everything in it, how
+   the balance falls, and extra payments, a recast or a refinance. Ported
+   from src/js/app/12-mortgage.js and src/main/19-mortgage-inputs.html,
+   21-mortgage.html. */
+
+import { useRef } from "react";
+import { BandChart } from "@/components/charts/BandChart";
+import { Legend, ShareBar } from "@/components/charts/Legend";
+import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
+import { Tipped, TipDot } from "@/components/shell/Tooltips";
+import { useToolState, type ToolDef } from "@/components/tools/ToolState";
+import { BigValue } from "@/components/ui/BigValue";
+import { CsvButton } from "@/components/ui/CsvButton";
+import { MORT_RATE_30, mortgage as mortgageJs, refiCompare as refiCompareJs } from "@/lib/engine";
+import type { MortgageInput, MortgageResult, RefiResult } from "@/lib/engine/types";
+import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+
+const DEFAULTS = {
+  price: groupDigits(450000, true), downPct: "20", downAmt: groupDigits(90000, true),
+  rate: String(MORT_RATE_30), term: "30", tax: "1.1", ins: groupDigits(1800, true), pmi: "0",
+  hoa: "0", maint: "1", util: "300", extrasOn: "0", extraMo: "0", extraOnce: "0",
+  extraWhen: "12", recast: "0", refiRate: "0", refiTerm: "30", refiCost: "0",
+};
+type Inputs = typeof DEFAULTS;
+
+const mortgage = mortgageJs as unknown as (m: MortgageInput) => MortgageResult;
+const refiCompare = refiCompareJs as unknown as (m: MortgageInput, r: { rate?: number; term?: number; cost?: number }) => RefiResult;
+
+const DEF: ToolDef<Inputs> = { id: "mortgage", label: "Mortgage", noun: "mortgage scenario", defaults: DEFAULTS };
+
+/* PMI only exists below 20% down, so its field follows: a default rate when
+   PMI applies, 0 when it doesn't, rather than showing a rate that isn't used. */
+const PMI_DEFAULT = 0.6;
+function withPmi(s: Inputs): Inputs {
+  const price = parseNum(s.price), down = parseNum(s.downAmt);
+  const ltv = price > 0 ? (price - down) / price : 0;
+  const cur = parseNum(s.pmi);
+  if (ltv > 0.8 && cur === 0) return { ...s, pmi: String(PMI_DEFAULT) };
+  if (ltv <= 0.8 && cur !== 0) return { ...s, pmi: "0" };
+  return s;
+}
+/* The two down-payment fields mirror each other; whichever was typed in wins. */
+const amtFromPct = (s: Inputs) => ({ ...s, downAmt: groupDigits((parseNum(s.price) * parseNum(s.downPct) / 100).toFixed(0), true) });
+const pctFromAmt = (s: Inputs) => {
+  const price = parseNum(s.price);
+  return { ...s, downPct: price > 0 ? String(Math.round((parseNum(s.downAmt) / price) * 10000) / 100) : "0" };
+};
+
+function toInput(s: Inputs): MortgageInput {
+  const extras = s.extrasOn === "1";
+  const pct = (v: string) => parseNum(v) / 100;
+  return {
+    price: parseNum(s.price), down: parseNum(s.downAmt), rate: pct(s.rate), term: parseFloat(s.term),
+    taxPct: pct(s.tax), ins: parseNum(s.ins), pmiPct: pct(s.pmi), hoa: parseNum(s.hoa),
+    maintPct: pct(s.maint), util: parseNum(s.util),
+    // Zero whenever the panel is collapsed, so turning it off is the same as
+    // never having touched it, not just hiding the fields.
+    extraMonthly: extras ? parseNum(s.extraMo) : 0,
+    extraOnce: extras ? parseNum(s.extraOnce) : 0,
+    extraOnceMonth: extras ? parseNum(s.extraWhen) : 0,
+    recast: extras && s.recast === "1",
+    refiOn: extras && pct(s.refiRate) > 0,
+    refiRate: pct(s.refiRate), refiTerm: parseFloat(s.refiTerm), refiCost: parseNum(s.refiCost),
+  };
+}
+
+function when(months: number): string {
+  const y = Math.floor(months / 12), m = months % 12;
+  if (!y) return m + (m === 1 ? " month" : " months") + " in";
+  if (!m) return "year " + y;
+  return "year " + y + ", month " + m;
+}
+function dur(months: number): string {
+  const y = Math.floor(months / 12), m = months % 12;
+  if (!y) return m + (m === 1 ? " month" : " months");
+  if (!m) return y + (y === 1 ? " year" : " years");
+  return y + "y " + m + "m";
+}
+
+const KV = ({ k, v, cls }: { k: string; v: string; cls?: string }) => (
+  <div className="kv"><span className="k">{k}</span><span className={cls ? `v ${cls}` : "v"}>{v}</span></div>
+);
+const TERMS = (
+  <>
+    <option value="30">30 years</option>
+    <option value="20">20 years</option>
+    <option value="15">15 years</option>
+    <option value="10">10 years</option>
+  </>
+);
+
+export function Mortgage() {
+  const { state: s, setState } = useToolState(DEF);
+  const table = useRef<HTMLTableElement>(null);
+  const set = (k: keyof Inputs) => (v: string) => setState((cur) => ({ ...cur, [k]: v }));
+  const setDown = (k: "price" | "downPct" | "downAmt") => (v: string) =>
+    setState((cur) => {
+      const next = { ...cur, [k]: v };
+      return withPmi(k === "downAmt" ? pctFromAmt(next) : amtFromPct(next));
+    });
+
+  const m = toInput(s);
+  const R = mortgage(m);
+
+  const pmiNote = R.ltv > 0.8
+    ? R.pmiEndMonth
+      ? `PMI applies below 20% down. At this pace it ends around ${when(R.pmiEndMonth)} (federal law requires automatic removal at 22% equity either way).`
+      : "PMI applies below 20% down. You can have it removed once you reach 20% equity, and federal law ends it automatically at 22%."
+    : "No PMI; you're at or above 20% down.";
+
+  // Name only what's actually in the figure.
+  const escParts = ([[R.tax, "tax"], [R.ins, "insurance"], [R.pmi, "PMI"], [R.hoa, "HOA"], [R.maint, "upkeep"], [R.util, "utilities"]] as const)
+    .filter((x) => x[0] > 0).map((x) => x[1] as string);
+  const escTxt = escParts.length < 2 ? escParts.join("") : escParts.slice(0, -1).join(", ") + " and " + escParts[escParts.length - 1];
+
+  const t = R.total || 1;
+  const bars: [string, number, string][] = [
+    ["Principal & interest", R.pi, "#4fbf95"], ["Property tax", R.tax, "#e9b872"], ["Homeowners insurance", R.ins, "#7d9fd6"],
+  ];
+  if (R.pmi > 0) bars.push(["Mortgage insurance (PMI)", R.pmi, "#e2795f"]);
+  if (R.hoa > 0) bars.push(["HOA dues", R.hoa, "#8ba0ac"]);
+  if (R.maint > 0) bars.push(["Maintenance", R.maint, "#b48ec4"]);
+  if (R.util > 0) bars.push(["Utilities", R.util, "#6fb0a6"]);
+
+  // Extra payments and refinancing, measured against the same loan without them.
+  let extra: React.ReactNode = null;
+  if (R.extraActive) {
+    const base = mortgage({ ...m, extraMonthly: 0, extraOnce: 0, extraOnceMonth: 0, recast: false });
+    const sooner = base.payoffMonth - R.payoffMonth;
+    extra = (
+      <>
+        <KV k="Payoff" v={when(R.payoffMonth) + (sooner > 0 ? ` (${dur(sooner)} sooner)` : "")} cls="pos" />
+        <KV k="Interest saved" v={money(Math.max(0, base.totalInterest - R.totalInterest))} cls="pos" />
+        {R.recastPI != null ? <KV k="Payment after the recast" v={money(R.recastPI) + "/mo"} /> : null}
+      </>
+    );
+  }
+  const RF = m.refiOn ? (refiCompare(m, { rate: m.refiRate, term: m.refiTerm, cost: m.refiCost })) : null;
+
+  // The balance falling against cumulative interest and principal paid.
+  let ci = 0, cp = 0;
+  const pts = [{ year: 0, base: R.loan, hi: 0, lo: 0 }];
+  for (const y of R.years) {
+    ci += y.interest;
+    cp += y.principal;
+    pts.push({ year: y.year, base: y.balance, hi: cp, lo: ci });
+  }
+
+  return (
+    <>
+      <aside id="asideMort">
+        <div className="panel inputs">
+          <h2>The home and loan</h2>
+          <div className="body">
+            <div className="field">
+              <label htmlFor="moPrice">Home price</label>
+              <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moPrice" nonNeg value={s.price} onValueChange={setDown("price")} /></div>
+            </div>
+            <div className="two">
+              <div className="field">
+                <label htmlFor="moDownPct">Down payment</label>
+                <div className="inputwrap"><NumberInput id="moDownPct" nonNeg value={s.downPct} onValueChange={setDown("downPct")} /><span className="affix">%</span></div>
+              </div>
+              <div className="field">
+                <label htmlFor="moDownAmt">or amount</label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moDownAmt" nonNeg value={s.downAmt} onValueChange={setDown("downAmt")} /></div>
+              </div>
+            </div>
+            <div className="two">
+              <div className="field">
+                <label htmlFor="moRate">Interest rate</label>
+                <div className="inputwrap"><NumberInput id="moRate" nonNeg step={0.125} value={s.rate} onValueChange={set("rate")} /><span className="affix">%</span></div>
+              </div>
+              <div className="field">
+                <label htmlFor="moTerm">Length</label>
+                <select id="moTerm" value={s.term} onChange={(e) => set("term")(e.target.value)}>{TERMS}</select>
+              </div>
+            </div>
+            <div className="two">
+              <div className="field">
+                <label htmlFor="moTax"><Tipped text="Property tax" k="proptax" /></label>
+                <div className="inputwrap"><NumberInput id="moTax" nonNeg step={0.1} value={s.tax} onValueChange={set("tax")} /><span className="affix">%/yr</span></div>
+              </div>
+              <div className="field">
+                <label htmlFor="moIns"><Tipped text="Insurance" k="homeinsurance" /></label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moIns" nonNeg value={s.ins} onValueChange={set("ins")} /><span className="affix">/yr</span></div>
+              </div>
+            </div>
+            <div className="two">
+              <div className="field">
+                <label htmlFor="moPmi"><Tipped text="PMI" k="pmi" /></label>
+                <div className="inputwrap"><NumberInput id="moPmi" nonNeg step={0.1} value={s.pmi} onValueChange={set("pmi")} /><span className="affix">%/yr</span></div>
+              </div>
+              <div className="field">
+                <label htmlFor="moHoa">HOA</label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moHoa" nonNeg value={s.hoa} onValueChange={set("hoa")} /><span className="affix">/mo</span></div>
+              </div>
+            </div>
+            <div className="two">
+              <div className="field">
+                <label htmlFor="moMaint"><Tipped text="Maintenance" k="maintenance" /></label>
+                <div className="inputwrap"><NumberInput id="moMaint" nonNeg step={0.1} value={s.maint} onValueChange={set("maint")} /><span className="affix">%/yr</span></div>
+              </div>
+              <div className="field">
+                <label htmlFor="moUtil"><Tipped text="Utilities" k="utilities" /></label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moUtil" nonNeg value={s.util} onValueChange={set("util")} /><span className="affix">/mo</span></div>
+              </div>
+            </div>
+            <div className="hint" id="moPmiNote">{pmiNote}</div>
+            <div className="derived">
+              <div><span>Loan amount</span><span className="num" id="moLoan">{money(R.loan)}</span></div>
+              <div><span>Down payment</span><span className="num" id="moDownShow">{money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 1) + ")"}</span></div>
+              <div><span>Total interest paid</span><span className="num" id="moTotInt">{money(R.totalInterest)}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="panel inputs">
+          <h2>Already have this loan?</h2>
+          <div className="body">
+            <div className="field">
+              <label htmlFor="moExtrasOn"><Tipped text="Extra payments, recasting, or refinancing" k="moextras" /></label>
+              <select id="moExtrasOn" value={s.extrasOn} onChange={(e) => set("extrasOn")(e.target.value)}>
+                <option value="0">No, just the basics</option>
+                <option value="1">Yes, show these options</option>
+              </select>
+            </div>
+            <div id="moExtrasWrap" hidden={s.extrasOn !== "1"}>
+              <div className="field" style={{ marginTop: "2px" }}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>Extra payments</div></div>
+              <div className="field">
+                <label htmlFor="moExtraMo">Extra toward principal</label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moExtraMo" nonNeg value={s.extraMo} onValueChange={set("extraMo")} /><span className="affix">/mo</span></div>
+              </div>
+              <div className="two">
+                <div className="field">
+                  <label htmlFor="moExtraOnce">One-time extra payment</label>
+                  <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moExtraOnce" nonNeg value={s.extraOnce} onValueChange={set("extraOnce")} /></div>
+                </div>
+                <div className="field">
+                  <label htmlFor="moExtraWhen">In month</label>
+                  <div className="inputwrap"><NumberInput id="moExtraWhen" nonNeg value={s.extraWhen} onValueChange={set("extraWhen")} /></div>
+                </div>
+              </div>
+              <div className="field" id="moRecastWrap">
+                <label htmlFor="moRecast"><Tipped text="After that payment" k="recast" /></label>
+                <select id="moRecast" value={s.recast} onChange={(e) => set("recast")(e.target.value)}>
+                  <option value="0">Keep the same payment, finish early</option>
+                  <option value="1">Recast &mdash; lower the payment instead</option>
+                </select>
+              </div>
+
+              <div className="field" style={{ marginTop: "12px" }}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>Compare a refinance</div></div>
+              <div className="two">
+                <div className="field">
+                  <label htmlFor="moRefiRate">New rate</label>
+                  <div className="inputwrap"><NumberInput id="moRefiRate" nonNeg step={0.125} value={s.refiRate} onValueChange={set("refiRate")} /><span className="affix">%</span></div>
+                </div>
+                <div className="field">
+                  <label htmlFor="moRefiTerm">New length</label>
+                  <select id="moRefiTerm" value={s.refiTerm} onChange={(e) => set("refiTerm")(e.target.value)}>{TERMS}</select>
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="moRefiCost"><Tipped text="Closing costs" k="reficost" /></label>
+                <div className="inputwrap"><span className="affix">$</span><MoneyInput id="moRefiCost" nonNeg value={s.refiCost} onValueChange={set("refiCost")} /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div className="stack" id="tab-mortgage">
+        <div className="panel">
+          <div className="headline">
+            <div><div className="k">Monthly payment</div><BigValue className="v gold" id="moTotal" text={money(R.total)} />
+              <div className="note">Everything included</div></div>
+            <div><div className="k">Principal &amp; interest</div><BigValue id="moPI" text={money(R.pi)} />
+              <div className="note">The loan itself</div></div>
+            <div><div className="k">Everything else</div><BigValue id="moEsc" text={money(R.total - R.pi)} />
+              <div className="note" id="moEscNote">{escTxt ? escTxt.charAt(0).toUpperCase() + escTxt.slice(1) : "Nothing else added"}</div></div>
+          </div>
+          <div className="body">
+            <div id="moBars">
+              {bars.map(([label, v, c]) => <ShareBar key={label} label={label} value={v} share={v / t} color={c} />)}
+            </div>
+          </div>
+        </div>
+
+        <div className="panel" id="moExtraPanel" hidden={!R.extraActive && !m.refiOn}>
+          <h2>Extra payments &amp; refinancing</h2>
+          <div className="body">
+            <div id="moExtraStats">{extra}</div>
+            <div id="moRefiBlock" hidden={!RF}>
+              <div className="field" style={{ marginTop: "4px" }}><div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>Refinancing to <span id="moRefiHead">{RF ? `${pctStr(m.refiRate!, 2)} for ${fmtNum(m.refiTerm!)} years` : ""}</span></div></div>
+              <div id="moRefiStats">
+                {RF ? (
+                  <>
+                    <KV k="New payment" v={money(RF.then.pi) + "/mo"} />
+                    <KV k="Monthly change" v={(RF.monthlyDelta >= 0 ? "−" : "+") + money(Math.abs(RF.monthlyDelta)) + "/mo"} cls={RF.monthlyDelta >= 0 ? "pos" : "neg"} />
+                    <KV k="Breaks even on closing costs" v={RF.breakEvenMonths == null ? "Never — payment doesn't drop"
+                      : RF.breakEvenMonths <= 0 ? "Immediately — no closing costs to recover" : dur(RF.breakEvenMonths)} />
+                    <KV k="Over the life of the loan" v={(RF.lifetimeDelta >= 0 ? "Saves " : "Costs ") + money(Math.abs(RF.lifetimeDelta))} cls={RF.lifetimeDelta >= 0 ? "pos" : "neg"} />
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="panel">
+          <h2>Loan balance and what you&apos;ve paid</h2>
+          <BandChart id="Mo" pts={pts} maxX={R.years.length || 1} enhanced ariaLabel="Mortgage balance over time"
+            tip={(b) => (
+              <>
+                <b>Year {fmtNum(b.year)}</b>
+                <br /><span style={{ color: "#e9b872" }}>Balance</span> <span className="n">{money(b.base)}</span>
+                <br /><span style={{ color: "#4fbf95" }}>Principal paid</span> <span className="n">{money(b.hi!)}</span>
+                <br /><span style={{ color: "#e2795f" }}>Interest paid</span> <span className="n">{money(b.lo!)}</span>
+              </>
+            )} />
+          <Legend id="legendMo" items={[["#e9b872", "Balance remaining"], ["#4fbf95", "Principal paid"], ["#e2795f", "Interest paid"]]} />
+        </div>
+
+        <div className="panel">
+          <h2>Amortization by year<TipDot k="amort" /><span className="h2ctrl"><CsvButton table={table} label="Amortization by year" /></span></h2>
+          <div className="swipehint">Swipe the table sideways to see every column.</div>
+          <div className="scroll">
+            <table id="moTable" ref={table}>
+              <thead><tr><th>Year</th><th>Interest</th><th>Principal</th><th>Total paid</th><th>Balance</th></tr></thead>
+              <tbody>
+                {R.years.map((y) => (
+                  <tr key={y.year}><td>{y.year}</td><td>{money(y.interest)}</td><td className="pos">{money(y.principal)}</td><td>{money(y.paid)}</td><td>{money(y.balance)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
