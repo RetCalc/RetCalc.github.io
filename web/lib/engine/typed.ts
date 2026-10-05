@@ -22,4 +22,9 @@ export const bracketRoom = typed<(taxable: number, status: string) => { nextRate
 
 export const projectBasic = typed<(p: { years: number; real: number; initial: number; contrib: number; period: string; withdrawal: number }) => BasicResult>(E.projectBasic);
 
-export const { BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax } = E;
+export const ssTaxable = typed<(ss: number, otherAgi: number, st: string) => { taxable: number }>(E.ssTaxable);
+export const hcFPL = typed<(size: number) => number>(E.hcFPL);
+export const hcGrossPremium = typed<(state: string, age: number, manual: number) => number>(E.hcGrossPremium);
+export const hcCalcACA = typed<(income: number, gross: number, pctFPL: number, enhanced: boolean) => { credit: number; net: number; eligible: boolean; pct: number }>(E.hcCalcACA);
+
+export const { HC_AGE40_MULT, HC_STATE_PREMIUM_40, IRMAA, BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax } = E;

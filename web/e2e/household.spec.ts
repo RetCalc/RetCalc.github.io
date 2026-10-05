@@ -4,7 +4,7 @@
 import { expect, test } from "@playwright/test";
 import { NEW } from "../playwright.config";
 
-test("a saved household fills Income Tax and Budget", async ({ page }) => {
+test("a saved household fills the tools that take it", async ({ page }) => {
   await page.goto(NEW + "/tools");
   await page.locator("#hhEdit").click();
   await page.locator("#hhStatus").selectOption("m");
@@ -13,7 +13,7 @@ test("a saved household fills Income Tax and Budget", async ({ page }) => {
   await page.locator("#hhIncome").fill("150000");
   await page.locator("#hhIncome2").fill("60000");
   await page.locator("#hhFill").click();
-  await expect(page.locator("#toast")).toContainText("Filled in 2 tools: Income Tax, Budget");
+  await expect(page.locator("#toast")).toContainText("Filled in 4 tools: Basic, Healthcare, Income Tax, Budget");
 
   await page.locator("a.toolcard[data-pick=tax]").click();
   await expect(page.locator("#txStatus")).toHaveValue("m");

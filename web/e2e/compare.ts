@@ -40,7 +40,7 @@ async function open(page: Page, url: string) {
   // The old site hides its page until its script has run.
   await page.waitForFunction(() => !document.documentElement.classList.contains("booting"), null, { timeout: 30_000 });
   log("styling " + url);
-  await page.addStyleTag({ content: `${HIDE}{visibility:hidden!important} *{animation:none!important;transition:none!important}` });
+  await page.addStyleTag({ content: `${HIDE}{display:none!important} *{animation:none!important;transition:none!important}` });
 }
 
 export async function apply(page: Page, steps: Step[]) {
