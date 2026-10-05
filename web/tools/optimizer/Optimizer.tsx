@@ -1,0 +1,266 @@
+"use client";
+
+/* The Plan Optimizer's own page: your situation, what the best plan should
+   do, and the search. Every claiming age, withdrawal order, Roth conversion
+   and income guard, each through every market since 1926. From
+   src/main/25b-optimizer-inputs.html, 25c-optimizer.html and
+   renderOptimizer() in src/js/app/31b-plan-optimizer.js. */
+
+import { useMemo, useRef, useState } from "react";
+import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
+import { useHousehold, useHouseholdFill } from "@/components/household/HouseholdProvider";
+import { usePopup } from "@/components/shell/Popup";
+import { useToast } from "@/components/shell/Toast";
+import { TipDot, Tipped } from "@/components/shell/Tooltips";
+import { useToolState } from "@/components/tools/ToolState";
+import { Segmented } from "@/components/ui/Readout";
+import { plAtRetire } from "@/lib/engine/typed-plan";
+import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { has } from "@/lib/household";
+import { STATE_OPTIONS } from "@/lib/states";
+import { copyFrom, opSources, sourceDesc } from "./copy";
+import { OP_DEF, RISKS, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
+import { Progress } from "./Progress";
+import { OptimizerResult } from "./Result";
+import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal, type Host } from "./run";
+import { OP_GOALS } from "./words";
+
+/* The goal picked, kept for the visit. */
+const goalMemory = { goal: "legacy" as Goal };
+
+/** What should the best plan do? The tool page's and the guide's. */
+export function OpGoals({ host, goal, onPick }: { host: Host; goal: Goal; onPick: (g: Goal) => void }) {
+  return (
+    <div className="op-goals" role="radiogroup" aria-label="What should the best plan do?">
+      {(Object.keys(OP_GOALS) as Goal[]).map((g) => {
+        const [name, desc] = OP_GOALS[g], on = g === goal;
+        return (
+          <button key={g} type="button" className={"op-goal" + (on ? " on" : "")} role="radio" aria-checked={on} data-op="goal" data-host={host} data-goal={g} onClick={() => onPick(g)}>
+            <i className="dot" aria-hidden="true"></i><b>{name}</b><span>{desc}</span></button>
+        );
+      })}
+    </div>
+  );
+}
+
+const CLAIMS: [string, string][] = [["62", "62, the earliest"], ["63", "63"], ["64", "64"], ["65", "65"], ["66", "66"], ["67", "67, full retirement age"], ["68", "68"], ["69", "69"], ["70", "70, the most it pays"]];
+
+export function Optimizer() {
+  const toast = useToast();
+  const showPopup = usePopup();
+  const { profile } = useHousehold();
+  const { state: s, set, setState } = useToolState(OP_DEF);
+  const H = useOptimizer("tool");
+  const [goal, setGoalState] = useState<Goal>(goalMemory.goal);
+  const setGoal = (g: Goal) => { goalMemory.goal = g; setGoalState(g); };
+  const out = useRef<HTMLDivElement>(null);
+
+  useHouseholdFill("optimizer", (h) => setState((c) => {
+    const married = h.status === "m", m = (v: number) => dollarsField(v), next: OptimizerInputs = { ...c, status: married ? "m" : "s" };
+    const age = h.age && h.age > 0 ? Math.round(h.age) : null, retire = h.retire && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
+    if (age) next.age = String(age);
+    if (married && has(h.spouseAge) && h.spouseAge! > 0) next.spAge = String(Math.round(h.spouseAge!));
+    if (retire && (!age || retire >= age)) next.retire = String(retire);
+    if (married && retire && age && has(h.spouseAge) && h.spouseAge! > 0) next.spRet = String(Math.round(h.spouseAge! + (retire - age)));
+    if (h.state && STATE_OPTIONS.some((o) => o.code === h.state)) next.state = h.state;
+    if (h.spend != null && h.spend > 0) next.spend = m(h.spend);
+    // The profile has one total; spread it over the accounts in the shares
+    // the tool already holds, so the split stays the tool's own. In
+    // Retirement day mode the balances are what you'll have then, so
+    // today's total doesn't belong in them.
+    const scale = (ks: (keyof OptimizerInputs)[], total: number) => {
+      const now = ks.map((k) => parseNum(c[k])), sum = now.reduce((x, y) => x + y, 0);
+      ks.forEach((k, i) => { next[k] = m(sum > 0 ? (total * now[i]) / sum : i === 0 ? total : 0); });
+    };
+    if (c.mode === "now" && has(h.saved)) {
+      scale(["trad", "roth", "brok"], h.saved!);
+      const r0 = parseNum(c.roth);
+      next.rothBasis = m(r0 > 0 ? (parseNum(c.rothBasis) * parseNum(next.roth)) / r0 : 0);
+    }
+    if (c.mode === "now" && has(h.monthly)) scale(["saveTrad", "saveRoth", "saveBrok"], h.monthly!);
+    if (has(h.income)) { next.inc1 = m(h.income!); next.ss1 = ""; }
+    if (has(h.income2)) { next.inc2 = m(h.income2!); next.ss2 = ""; }
+    return next;
+  }));
+
+  const v = opView(s);
+  // the plan at retirement, and how big its search is: worked out once per change
+  const { I, P, E } = useMemo(() => {
+    const In = opToolIn(s), Pl = plAtRetire(In);
+    return { I: In, P: Pl, E: opEstimate(Pl) };
+  }, [s]);
+  const sig = opSig(P, goal), spend = I.spend > 0;
+  const fresh = H.res != null && H.res.sig === sig;
+
+  const run = () => {
+    if (!spend) { toast("Enter your spending in retirement first", "warn"); return; }
+    startOptimizer("tool", P, goal);
+    try { out.current?.scrollIntoView({ behavior: "smooth", block: "start" }); } catch { /* old browsers */ }
+  };
+  const setMode = (to: "ret" | "now") => {
+    if (to === s.mode) return;
+    setState((c) => opSetMode(c, to));
+    toast(to === "ret" ? "Enter what you'll have on the day you retire, or copy it from Advanced or Stages"
+      : "Enter what you have today and what you save each month, or copy them from Advanced or Stages");
+  };
+  const copy = async () => {
+    const src = opSources(profile);
+    if (!src.length) { toast("Turn on Split by account type in Advanced or Stages first, then copy it here", "warn"); return; }
+    let i = 0;
+    if (src.length > 1) {
+      i = await showPopup(v.now ? "Copy today's savings from which plan?" : "Copy your balances at retirement from which plan?",
+        src.map((x) => ({ label: x.label, desc: sourceDesc(x, v.now), money: true })));
+      if (i < 0) return;
+    }
+    const { next, msg } = copyFrom(s, src[i], profile);
+    setState(() => next);
+    toast(msg);
+  };
+  const risk = parseFloat(s.risk), riskHit = RISKS.some((r) => String(r.real) === s.risk);
+
+  let body: React.ReactNode;
+  if (!spend) body = <div className="panel"><div className="body"><div className="gd-callout warn">Enter what you&apos;ll spend each year in retirement to find your plan.</div></div></div>;
+  else if (H.run) body = <div className="panel"><div className="body"><Progress host="tool" R={H.run} /></div></div>;
+  else if (H.res) body = (
+    <>
+      {H.res.sig !== sig ? <div className="panel"><div className="body"><div className="gd-callout warn" style={{ margin: 0 }}>Your numbers or the goal changed since this ran.{" "}
+        <button type="button" className="btn mini" data-op="run" data-host="tool" onClick={run}>Run it again</button></div></div></div> : null}
+      <OptimizerResult key={H.res.sig + H.res.runs} host="tool" res={H.res} fresh={H.fresh} />
+    </>
+  );
+  else body = (
+    <div className="panel op-ready"><div className="body"><div className="op-ready-in">
+      <div><div className="k">{v.now ? "At " + P.age1 + " you'll have about" : "On the day you retire, at " + P.age1}</div><div className="v">{money(P.fv)}</div>
+        <div className="n">{money(P.trad) + " traditional · " + money(P.roth) + " Roth · " + money(P.brok) + " brokerage, in today's dollars"}</div></div>
+      <div><div className="k">Social Security at 67</div><div className="v">{money(I.pia1 + I.pia2)}<small>/mo</small></div>
+        <div className="n">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div></div>
+    </div><p className="hint" style={{ margin: "12px 0 0" }}>Pick a goal above and press <b>Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p></div></div>
+  );
+
+  return (
+    <>
+      <aside id="asideOP">
+        <div className="panel inputs">
+          <h2>Your situation</h2>
+          <div className="body">
+            <div className="field op-modefield">
+              <label>Start from<TipDot k="opmode" /></label>
+              <Segmented id="opModeSeg" className="seg op-modeseg" attr="data-opmode" options={[["ret", "Retirement day"], ["now", "Today"]] as const}
+                value={v.now ? "now" : "ret"} onChange={setMode} />
+              <input type="hidden" id="opMode" value={s.mode} />
+            </div>
+            <div className="two">
+              <SelectField id="opStatus" label="Filing status" value={s.status} onChange={set("status")}>
+                <option value="m">Married filing jointly</option>
+                <option value="s">Single</option>
+              </SelectField>
+              <SelectField id="opState" label="State" value={s.state} onChange={set("state")}>
+                {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+              </SelectField>
+            </div>
+            <div className="two op-nowonly" hidden={!v.now}>
+              <NumberField id="opAge" label="Your age" unit="age" max={90} value={s.age} onValueChange={set("age")} />
+              <NumberField id="opSpAge" className="op-sp" hidden={!v.married} label="Spouse's age" unit="age" max={95} value={s.spAge} onValueChange={set("spAge")} />
+            </div>
+            <div className={"two" + (v.now || !v.married ? " one" : "")} id="opRetRow">
+              <NumberField id="opRetire" label={<><span id="opRetireLbl">{v.now ? "Retire at" : "Your age at retirement"}</span><TipDot k="opretire" /></>}
+                unit="age" max={90} value={s.retire} onValueChange={set("retire")} />
+              <NumberField id="opSpRet" className="op-sp op-retonly" hidden={v.now || !v.married} label="Spouse's age then" unit="age" max={95} value={s.spRet} onValueChange={set("spRet")} />
+            </div>
+
+            <div className="field op-sub op-balhead"><div className="hint" id="opBalHead">{v.now ? "Saved for retirement today" : "Saved on the day you retire"}</div>
+              <button type="button" className="btn mini" id="opCopy" onClick={copy}>Copy from Advanced or Stages</button>
+              <div className="hint op-balnote" id="opBalNote">{v.now ? "Today's balances. Advanced or Stages can fill these in, with what you save each month."
+                : "In today's dollars. Advanced or Stages can project these for you, account by account."}</div>
+            </div>
+            <MoneyField id="opTrad" label={<Tipped text="Traditional 401(k) / IRA" k="optrad" />} value={s.trad} onValueChange={set("trad")} />
+            <div className="two">
+              <MoneyField id="opRoth" label="Roth 401(k) / IRA" value={s.roth} onValueChange={set("roth")} />
+              <MoneyField id="opRothBasis" label={<Tipped text="Of that, contributions" k="oprothbasis" />} value={s.rothBasis} onValueChange={set("rothBasis")} />
+            </div>
+            <div className="two">
+              <MoneyField id="opBrok" label="Brokerage and cash" value={s.brok} onValueChange={set("brok")} />
+              <NumberField id="opBasis" label={<Tipped text="Cost basis" k="opbasis" />} unit="% of it" step={5} max={100} value={s.basis} onValueChange={set("basis")} />
+            </div>
+
+            <div id="opSaveWrap" className="op-nowonly" hidden={!v.now || !(v.retire > v.age)}>
+              <div className="field op-sub"><div className="hint">Saving until you retire, a month</div></div>
+              <div className="two">
+                <MoneyField id="opSaveTrad" label={<Tipped text="Traditional" k="opsavetrad" />} unit="/mo" value={s.saveTrad} onValueChange={set("saveTrad")} />
+                <MoneyField id="opSaveRoth" label="Roth" unit="/mo" value={s.saveRoth} onValueChange={set("saveRoth")} />
+              </div>
+              <div className="two">
+                <MoneyField id="opSaveBrok" label="Brokerage" unit="/mo" value={s.saveBrok} onValueChange={set("saveBrok")} />
+                <SelectField id="opRisk" label="Invested" value={riskHit ? s.risk : String(risk)} onChange={(val) => setState((c) => ({ ...c, risk: val, riskFrom: "" }))}>
+                  {RISKS.map((r) => <option key={r.real} value={String(r.real)}>{r.label + " · " + pctStr(r.real, 1) + " after inflation"}</option>)}
+                  {!riskHit && isFinite(risk) ? <option data-custom="1" value={String(risk)}>{"From " + (s.riskFrom || "your plan") + " · " + pctStr(risk, 1) + " after inflation"}</option> : null}
+                </SelectField>
+              </div>
+            </div>
+
+            <div className="field op-sub"><div className="hint">In retirement</div></div>
+            <div className="two">
+              <MoneyField id="opSpend" label={<Tipped text="Spending, after tax" k="opspend" />} unit="/yr" value={s.spend} onValueChange={set("spend")} />
+              <NumberField id="opMix" label={<Tipped text="Stocks" k="opmix" />} unit="%" step={5} max={100} value={s.mix} onValueChange={set("mix")} />
+            </div>
+            <div className="two">
+              <MoneyField id="opSS1" label={<Tipped text="Your benefit at 67" k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
+              <MoneyField id="opInc1" label={<Tipped text="Or your salary" k="opinc" />} unit="/yr" value={s.inc1} onValueChange={set("inc1")} />
+            </div>
+            <div className="two op-sp" hidden={!v.married}>
+              <MoneyField id="opSS2" label="Spouse's benefit at 67" unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
+              <MoneyField id="opInc2" label="Or their salary" unit="/yr" value={s.inc2} onValueChange={set("inc2")} />
+            </div>
+            <SelectField id="opClaim" label={<Tipped text="You'd claim it at" k="opclaim" />} value={s.claim} onChange={set("claim")}>
+              {CLAIMS.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+            </SelectField>
+            <div className="two">
+              <MoneyField id="opPension" label={<>Pension <span className="opt">optional</span></>} unit="/yr" value={s.pension} onValueChange={set("pension")} />
+              <NumberField id="opPenAge" label="Starting at" unit="age" max={90} placeholder="retiring" value={s.penAge} onValueChange={set("penAge")} />
+            </div>
+            <SelectField id="opPenCola" label="Pension raises" value={s.penCola} onChange={set("penCola")}>
+              <option value="0">Fixed amount</option>
+              <option value="1">Rises with inflation</option>
+            </SelectField>
+
+            <div className="field op-sub"><div className="hint">Health, heirs and safety</div></div>
+            <SelectField id="opAca" wrapId="opAcaWrap" hidden={!(v.retire < 65)} label={<Tipped text="Health insurance before 65" k="opaca" />} value={s.aca} onChange={set("aca")}>
+              <option value="1">ACA plan, with the subsidy income earns</option>
+              <option value="0">Already in my spending</option>
+            </SelectField>
+            <SelectField id="opRule55" wrapId="opRule55Wrap" hidden={!(v.retire >= 55 && v.retire < 60)} label={<Tipped text="Leaving a job with a 401(k)" k="oprule55" />} value={s.rule55} onChange={set("rule55")}>
+              <option value="0">No, or it&apos;s rolled over</option>
+              <option value="1">Yes, at 55 or later: rule of 55</option>
+            </SelectField>
+            <div className="two">
+              <NumberField id="opHeir" label={<Tipped text="Heirs' tax rate" k="opheir" />} unit="%" max={50} value={s.heir} onValueChange={set("heir")} />
+              <SelectField id="opTarget" label={<Tipped text="Must last in" k="optarget" />} value={s.target} onChange={set("target")}>
+                <option value="0.9">90% of markets</option>
+                <option value="0.95">95% of markets</option>
+                <option value="1">Every market</option>
+              </SelectField>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div className="stack" id="tab-optimizer">
+        <div className="panel op-top">
+          <div className="body">
+            <p className="op-lede">Every age from 62 to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
+            <div className="op-goalrow">
+              <div className="op-q">What should the best plan do?</div>
+              <div id="opGoals"><OpGoals host="tool" goal={goal} onPick={setGoal} /></div>
+            </div>
+            <div className="op-go">
+              <button type="button" className="btn primary op-go-btn" id="opRunBtn" data-op="run" data-host="tool" disabled={!!H.run || !spend} onClick={run}>
+                {fresh ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></button>
+              <span className="hint" id="opEst">{groupDigits(E.n, true) + " plans × " + E.w + " historical markets = " + groupDigits(E.runs, true) + " retirements, about " + E.secs + " seconds."}</span>
+            </div>
+          </div>
+        </div>
+        <div id="opOut" className="op-out" ref={out}>{body}</div>
+      </div>
+    </>
+  );
+}

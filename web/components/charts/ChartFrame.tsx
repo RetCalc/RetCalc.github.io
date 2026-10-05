@@ -61,6 +61,50 @@ export function XAxis({ size, count, last = count, X, label }: { size: ChartSize
   );
 }
 
+/** Touch scrubbing on a phone: a touch shows the point under the finger,
+    and the tooltip stays up briefly after it lifts. The first move decides:
+    mostly vertical hands the gesture back to the page; mostly sideways keeps
+    it to scrub. From chartTouch() in src/js/app/04-charts.js. */
+export function useScrub(el: React.RefObject<HTMLElement | null>, probe: (x: number, y: number) => void, clear: () => void) {
+  const touch = useRef({ x: 0, y: 0, axis: "", timer: undefined as ReturnType<typeof setTimeout> | undefined });
+  // While scrubbing sideways the page mustn't scroll; React's touch handlers
+  // are passive and can't stop it, so this one is added directly.
+  useEffect(() => {
+    const node = el.current;
+    if (!node) return;
+    const stop = (e: TouchEvent) => {
+      if (touch.current.axis === "x") e.preventDefault();
+    };
+    node.addEventListener("touchmove", stop, { passive: false });
+    return () => node.removeEventListener("touchmove", stop);
+  }, [el]);
+  return {
+    onTouchStart: (e: React.TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      clearTimeout(touch.current.timer);
+      Object.assign(touch.current, { x: t.clientX, y: t.clientY, axis: "" });
+      probe(t.clientX, t.clientY);
+    },
+    onTouchMove: (e: React.TouchEvent) => {
+      const t = e.touches[0];
+      if (!t) return;
+      const c = touch.current;
+      if (!c.axis) {
+        const dx = Math.abs(t.clientX - c.x), dy = Math.abs(t.clientY - c.y);
+        if (dx < 6 && dy < 6) return;
+        c.axis = dy > dx ? "y" : "x";
+        if (c.axis === "y") clear();
+      }
+      if (c.axis === "x") probe(t.clientX, t.clientY);
+    },
+    onTouchEnd: () => {
+      clearTimeout(touch.current.timer);
+      touch.current.timer = setTimeout(clear, 2500);
+    },
+  };
+}
+
 interface FrameProps {
   id: string;
   ariaLabel: string;
@@ -86,19 +130,6 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyl
   const wrapRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const [hover, setHover] = useState<{ i: number; left: number; top: number } | null>(null);
-  const touch = useRef({ x: 0, y: 0, axis: "", timer: undefined as ReturnType<typeof setTimeout> | undefined });
-
-  // While scrubbing sideways the page mustn't scroll; React's touch handlers
-  // are passive and can't stop it, so this one is added directly.
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    const stop = (e: TouchEvent) => {
-      if (touch.current.axis === "x") e.preventDefault();
-    };
-    el.addEventListener("touchmove", stop, { passive: false });
-    return () => el.removeEventListener("touchmove", stop);
-  }, []);
 
   /* The point nearest the pointer, and the tooltip beside it, flipped to
      stay inside the chart. */
@@ -126,6 +157,7 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyl
     setHover({ i: i!, left, top });
   };
   const clear = () => setHover(null);
+  const scrub = useScrub(wrapRef, probe, clear);
   const active = hover && (pick || hover.i < (xs?.length ?? 0)) ? hover : null;
 
   return (
@@ -136,32 +168,7 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyl
       onMouseMove={(e) => probe(e.clientX, e.clientY)}
       onMouseLeave={clear}
       onClick={() => active && onPick?.(active.i)}
-      /* A touch shows the point under the finger, and the tooltip stays up
-         briefly after it lifts. The first move decides: mostly vertical hands
-         the gesture back to the page; mostly sideways keeps it to scrub. */
-      onTouchStart={(e) => {
-        const t = e.touches[0];
-        if (!t) return;
-        clearTimeout(touch.current.timer);
-        Object.assign(touch.current, { x: t.clientX, y: t.clientY, axis: "" });
-        probe(t.clientX, t.clientY);
-      }}
-      onTouchMove={(e) => {
-        const t = e.touches[0];
-        if (!t) return;
-        const c = touch.current;
-        if (!c.axis) {
-          const dx = Math.abs(t.clientX - c.x), dy = Math.abs(t.clientY - c.y);
-          if (dx < 6 && dy < 6) return;
-          c.axis = dy > dx ? "y" : "x";
-          if (c.axis === "y") clear();
-        }
-        if (c.axis === "x") probe(t.clientX, t.clientY);
-      }}
-      onTouchEnd={() => {
-        clearTimeout(touch.current.timer);
-        touch.current.timer = setTimeout(clear, 2500);
-      }}
+      {...scrub}
     >
       <svg id={`chart${id}`} ref={svgRef} viewBox={`0 0 ${size.W} ${size.H}`} preserveAspectRatio="none" role="img" aria-label={ariaLabel} style={svgStyle}>
         {xs?.length || pick ? children(active ? active.i : null) : null}

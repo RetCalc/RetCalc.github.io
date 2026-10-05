@@ -161,5 +161,21 @@ export const GLOSS: Record<string, string> = {
   brsteady: "The long-run average real return of this stock and bond mix from 1926 on, compounded. The steady path, the tax and premium figures, and every plan's sizing use it; the success rates use the actual year-by-year record instead.",
   brholds: "The share of historical start years (or random draws, in Monte Carlo) in which the plan gets to 59½ without running short and without having to touch penalized money it didn't plan on. For the pay-the-penalty plan, only running short counts.",
   brcost: "Everything the best plan pays between retirement and 59½ on the steady path, other than your spending: federal and state income tax, early withdrawal penalties, and net health insurance premiums. Today's dollars.",
-  brhandoff: "Both buttons use the highlighted column above. Drawdown gets the total as its starting portfolio at 60 and a fixed withdrawal that covers your spending plus tax. Income Tax gets one year of those withdrawals, split across traditional, Roth and brokerage in proportion to their balances."
+  brhandoff: "Both buttons use the highlighted column above. Drawdown gets the total as its starting portfolio at 60 and a fixed withdrawal that covers your spending plus tax. Income Tax gets one year of those withdrawals, split across traditional, Roth and brokerage in proportion to their balances.",
+  /* The Plan Optimizer's, from src/js/app/31b-plan-optimizer.js. */
+  opinc: "Don't have your Social Security statement? Leave the benefit blank and enter your salary instead: the optimizer estimates the benefit at 67 from it, with the 2026 formula, assuming you work at about this pay until you retire. A statement from ssa.gov/myaccount is more accurate.",
+  opmode: "Retirement day: enter the balances you'll have when you retire (or copy them from Advanced or Stages, which project them with every detail), and the optimizer starts there. Today: enter what you have now and what you save each month, and it grows them to retirement at a steady return first.",
+  opretire: "The age you stop working. Your spouse stops at the same time, at whatever age they are then. Already retired? Enter your age today.",
+  optrad: "Pre-tax money: traditional 401(k), 403(b), 457(b) and IRA balances. Every dollar is taxed as income when it comes out, and from 73 or 75 the IRS makes you take some out each year.",
+  oprothbasis: "What you've put into Roth accounts yourself, as opposed to growth. Contributions can come out at any age, tax- and penalty-free, which matters before 59½. A guess is fine.",
+  opbasis: "How much of the brokerage balance is money you put in. Only the rest, the gain, is taxed when you sell, usually at 0% or 15%.",
+  opsavetrad: "What goes in each month until you retire, in today's dollars, rising with inflation. Put any employer match here: it always lands in a traditional account.",
+  opspend: "What you want to live on each year after every tax is paid, in today's dollars. Each plan works out its own tax, Medicare surcharge and health premiums and pays them on top.",
+  opmix: "Your stock share in retirement; the rest is bonds. Every plan is tested on this mix's real history since 1926.",
+  opss: "Your monthly Social Security benefit at 67, full retirement age, from your statement at ssa.gov/myaccount. Leave it blank and enter your salary beside it to estimate it instead. The optimizer tries every claiming age from 62 to 70.",
+  opclaim: "The plan to beat: when you'd claim if you didn't optimize it. Every result is measured against this plan, run the usual way: brokerage first, then traditional, then Roth, with no conversions.",
+  opaca: "Before Medicare at 65, each plan buys the benchmark Silver marketplace plan for your state and ages, less the premium tax credit that year's income earns. Above 400% of the poverty line the credit disappears all at once.",
+  oprule55: "Leave your job in or after the year you turn 55 and that employer's 401(k) can pay out without the 10% early-withdrawal penalty. Roll it into an IRA and you lose that.",
+  opheir: "The income tax whoever inherits your traditional accounts will likely pay on them. It's what makes a Roth dollar worth more than a traditional one at the end. Roth and brokerage money passes on without income tax.",
+  optarget: "How often a plan has to last to count as safe, across every historical market. Leave the most never picks a plan that lasts less often than the usual way; Spend the most finds the highest spending that clears this bar.",
 };

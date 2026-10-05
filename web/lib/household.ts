@@ -42,6 +42,7 @@ export const HOUSEHOLD_TOOLS: { name: string; takes: (h: Household) => boolean }
   { name: "Drawdown", takes: (h) => !!((h.retire && h.retire > 0 && h.retire < 120) || has(h.income)) },
   { name: "Roth", takes: () => true },
   { name: "Early Retirement Bridge", takes: (h) => !!(h.retire || h.state || (h.spend != null && h.spend > 0) || h.status) },
+  { name: "Plan Optimizer", takes: (h) => !!(h.age || h.retire || has(h.saved) || (h.spend != null && h.spend > 0) || h.state) },
   { name: "Healthcare", takes: () => true },
   { name: "Income Tax", takes: () => true },
   { name: "Budget", takes: (h) => has(h.income) && (h.income! + (h.status === "m" && has(h.income2) ? h.income2! : 0)) > 0 },

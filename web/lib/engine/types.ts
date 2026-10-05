@@ -165,3 +165,35 @@ export interface BtResult {
   maxDD: number; ddFrom: number; ddTo: number; rolling: BtRolling[];
   inflHigh: BtRow; inflLow: BtRow; deflationYears: number; priceLevel: number;
 }
+
+/* ---- the retirement plan engine (plan.js): the Plan Optimizer ---- */
+/** A plan's tactics: claiming ages, the bracket traditional money fills, how
+    long conversions run, and the IRMAA and ACA income guards. */
+export interface PlTactics { c1: number; c2: number; f: number; u: number; im: number; ac: number }
+/** The plan from today: what plAtRetire() takes. */
+export interface PlToday {
+  status: "m" | "s"; state: string; age: number; spouseAge: number | null; retire: number; stopAge: number | null;
+  trad: number; roth: number; rothBasis: number; brok: number; brokBasis: number;
+  saveTrad: number; saveRoth: number; saveBrok: number; real: number; infl: number;
+  spend: number; pia1: number; pia2: number; claim1: number; claim2: number;
+  pension: number; pensionAge: number | null; pensionCola: boolean; aca: boolean; household: number;
+  rule55: boolean; heirRate: number; mix: number; years: number; target: number; strategy: string; minSpend: number; fromYear: number;
+}
+/** The plan at retirement, as plPrep() and plOptimize() take it. */
+export interface PlPlan extends PlToday { age1: number; age2: number | null; rmdAge: number; fv: number }
+export interface PlPrep { married: boolean; gap: number; rmdAge: number; years: number; age1: number; age2: number | null }
+export interface PlStats { successRate: number; survived: number; total: number; medLegacy: number; p10Legacy: number; medTax: number; failYears: number[]; maxSpend?: number }
+export interface PlRow {
+  age: number; spend: number; ss: number; pension: number; rmd: number; trad: number; conv: number; brok: number; roth: number;
+  tax: number; pen: number; health: number; irmaa: number; taxable: number; fplPct: number | null; short: number; surplus: number;
+  endTrad: number; endRoth: number; endBrok: number; end: number;
+}
+export interface PlSide { T: PlTactics; stats: PlStats; detail: { rows: PlRow[] }; spend: number }
+export interface PlProgress { type: "progress"; frac: number; tried: number; of: number; windows: number; T?: PlTactics; best?: { medLegacy: number; successRate: number; T: PlTactics } }
+export interface PlDone {
+  type: "done"; goal: "legacy" | "last" | "spend"; target: number; of: number; windows: number; runs: number; first: number;
+  years: number; age1: number; age2: number | null; rmdAge: number; married: boolean;
+  base: PlSide; best: PlSide; same: boolean;
+  steps: { key: "ss" | "draw"; T: PlTactics; from: PlStats; to: PlStats }[];
+  alts: (PlStats & { T: PlTactics })[];
+}
