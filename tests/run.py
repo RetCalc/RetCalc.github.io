@@ -13,7 +13,12 @@ JavaScript engine is here: jsc (built into macOS) or node (CI). The exit
 code is nonzero when any test fails, which is what the pre-commit hook and
 the GitHub workflow check.
 
+With --web, the engine is taken from web/lib/engine/ instead: the same code,
+moved into the Next.js app as modules during the migration, with its
+`export` keywords dropped so it runs as one script like the original.
+
     python3 tests/run.py
+    python3 tests/run.py --web
 """
 import glob, json, os, re, shutil, subprocess, sys, tempfile
 
@@ -75,14 +80,23 @@ def articles():
     return "var ARTICLES = %s;" % json.dumps(out)
 
 
+def engine(name):
+    """One engine file's text: src/js/<name>.js, or with --web the module in
+    web/lib/engine/, its top-level `export ` keywords removed."""
+    if "--web" in sys.argv:
+        text = open(os.path.join(ROOT, "web", "lib", "engine", name + ".js"), encoding="utf-8").read()
+        return re.sub(r"^export ", "", text, flags=re.M)
+    return open(os.path.join(ROOT, "src", "js", name + ".js"), encoding="utf-8").read()
+
+
 def main():
-    math = open(os.path.join(ROOT, "src", "js", "math.js"), encoding="utf-8").read()
+    math = engine("math")
     src = "".join(open(p, encoding="utf-8").read()
                   for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
-    dd = open(os.path.join(ROOT, "src", "js", "drawdown.js"), encoding="utf-8").read()
+    dd = engine("drawdown")
     e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")
-    plan = open(os.path.join(ROOT, "src", "js", "plan.js"), encoding="utf-8").read()
+    plan = engine("plan")
     c, d = plan.index("// ===PLAN START==="), plan.index("// ===PLAN END===")
     parts = [math[a:b], dd[e:f], plan[c:d]]
     parts += [constant(src, c) for c in CONSTANTS]

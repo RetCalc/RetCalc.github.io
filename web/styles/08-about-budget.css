@@ -1,0 +1,106 @@
+/* ---------- about ---------- */
+/* About runs full-width with no sidebar, which left prose at ~148 characters
+   a line. Narrowing the column instead of the paragraph keeps a readable
+   measure while the text still fills its panel edge to edge. */
+@media (min-width:900px){
+  #tab-about{max-width:820px;margin:0 auto;width:100%}
+}
+.about .body{padding:16px 20px 20px}
+/* Collapsible About sections: collapsed by default, toggled by clicking the
+   h2. Appearance, What this is, and Disclaimer opt out via .no-collapse /
+   .disclaimer, since those stay fully visible regardless of the toggle. */
+.panel.about:not(.no-collapse):not(.disclaimer) > h2{cursor:pointer;user-select:none}
+.panel.about:not(.no-collapse):not(.disclaimer) > h2:hover{background:var(--panel-2)}
+/* A shut section is just its heading: no divider left along its bottom, and
+   the hover wash follows the card's rounded corners instead of squaring them. */
+.panel.about > h2{border-radius:var(--r-bezel) var(--r-bezel) 0 0}
+.panel.about.collapsed > h2{border-bottom-color:transparent;border-radius:var(--r-bezel)}
+.panel.about .about-chevron{margin-left:auto;flex:none;color:var(--dimmer);
+  transition:transform .22s cubic-bezier(.2,.7,.3,1);display:flex}
+.panel.about.collapsed .about-chevron{transform:rotate(-90deg)}
+/* Sweep open/closed instead of snapping. The body is wrapped at init in a
+   one-row grid, and the row is animated between 0fr and 1fr — that measures
+   the content itself, so nothing here has to read scrollHeight or guess a
+   max-height that breaks when the text reflows. The inner overflow:hidden is
+   what actually clips during the sweep, padding included. Browsers without
+   animatable grid-template-rows fall back to the instant toggle this
+   replaced, which is no worse than before. */
+.about-collapse{overflow:hidden}
+.about-collapse > .body{opacity:1;transition:opacity .2s ease .06s}
+/* Collapsed at rest is display:none, exactly as before the sweep existed, so
+   a shut section ends flush at the heading with no leftover strip. The sweep
+   itself runs on an inline height + display:block, which outranks this rule
+   for the duration of the animation and is cleared when it finishes. */
+.panel.about.collapsed > .about-collapse{display:none}
+.panel.about.collapsed .about-collapse > .body{opacity:0;transition-delay:0s}
+.about p{margin:0 0 12px;font-size:13.5px;line-height:1.7;color:var(--dim)}
+.about p:last-child{margin-bottom:0}
+.about b{color:var(--text);font-weight:600}
+.about ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.7;color:var(--dim)}
+.about ul li{margin-bottom:9px}
+.about ul li::marker{color:var(--jade)}
+.about ul + p,.about dl + p{margin-top:14px}
+/* Sub-heads inside a single tool's About panel, for tools with more than one
+   mode to explain. */
+.about h3{font-size:12.5px;font-weight:600;color:var(--gold);margin:22px 0 10px;
+  letter-spacing:.04em;text-transform:uppercase}
+.about h3:first-child{margin-top:0}
+.about p + h3,.about dl + h3{margin-top:24px}
+.gloss{margin:0}
+.gloss dt{font-size:13px;font-weight:600;color:var(--text);margin-top:16px}
+.gloss dt:first-child{margin-top:0}
+.gloss dd{margin:5px 0 0;font-size:13px;line-height:1.7;color:var(--dim)}
+.about.disclaimer{border-color:#4d3d24;
+  background:linear-gradient(180deg,#1c1710 0%,var(--panel) 100%)}
+.about.disclaimer > h2{color:var(--gold)}
+html[data-theme="light"] .about.disclaimer{
+  border-color:#e2cfa4;background:linear-gradient(180deg,#fbf4e4,#ffffff)}
+
+/* ---------- budget ---------- */
+.bgincome{max-width:520px}
+.bgincome label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
+.bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bgincome-row .inputwrap{flex:1 1 140px}
+.bgseg{display:inline-flex;border:1px solid var(--jade);border-radius:6px;
+  overflow:hidden;flex:none}
+.bgseg button{font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;
+  color:var(--dimmer);border:0;cursor:pointer;white-space:nowrap;
+  transition:background .16s ease,color .16s ease;line-height:1}
+.bgseg button + button{border-left:1px solid var(--jade)}
+.bgseg button.on{background:var(--jade);color:#04211a;font-weight:700}
+.bggroup{margin-bottom:6px}
+.bggroup-h{font-size:11.5px;color:var(--dim);font-weight:600;
+  padding:12px 0 6px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}
+.bgrow{display:flex;gap:8px;align-items:center;padding:5px 0}
+.bgrow .desc{flex:1 1 auto;min-width:0;font-size:13.5px;color:var(--text)}
+.bgrow input.desc{background:var(--field);border:1px solid var(--line);
+  border-radius:var(--r-well);padding:8px 10px;font-family:var(--sans);color:var(--text);
+  box-shadow:var(--well)}
+.bgrow input.desc:focus{outline:none;border-color:var(--jade);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
+.bgrow span.desc[contenteditable]{cursor:text;border-radius:4px;
+  padding:2px 5px;margin:-2px -5px;border:1px dashed transparent}
+.bgrow span.desc[contenteditable]:hover{border-color:var(--line)}
+.bgrow span.desc[contenteditable]:focus{outline:none;border-color:var(--jade);
+  border-style:solid;background:var(--panel)}
+.bgrow .inputwrap{flex:0 0 130px;width:130px}
+.bgrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
+  font-size:18px;line-height:1;padding:0 6px;flex:none;transition:color .14s ease}
+.bgrow .del:hover{color:var(--coral)}
+.bgrow .delspace{width:26px;flex:none}
+.freqsel{width:auto;min-width:104px;flex:none}
+
+/* A text-weight button for opening a guide, sitting under the field it explains. */
+.linkbtn{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:2px 0;
+  background:none;border:0;cursor:pointer;font-family:var(--sans);font-size:12px;
+  color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.35);
+  text-underline-offset:3px;transition:text-decoration-color .14s ease}
+.linkbtn:hover{text-decoration-color:currentColor}
+a.txlink{color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.4);
+  text-underline-offset:2px}
+a.txlink:hover{text-decoration-color:currentColor}
+.linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+.linkbtn svg{width:14px;height:14px;flex:none}
+/* A growth field set per account shows the blend; clicking it edits the rates. */
+.inputwrap input.blended{cursor:pointer;color:var(--jade)}
+

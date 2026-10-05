@@ -1,0 +1,140 @@
+/* ---------- data ---------- */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:right;padding:9px 10px;font-size:13px;border-bottom:1px solid var(--line-soft)}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+th{font-size:11.5px;color:var(--dimmer);font-weight:600;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--panel);letter-spacing:.01em;z-index:1}
+th:first-child,td:first-child{text-align:left}
+/* Row hover marks the row's edge rather than washing it — keeps money
+   columns legible while you track across. */
+tbody tr{transition:background .12s ease}
+tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
+.scroll{max-height:460px;overflow:auto}
+.kv{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
+  border-bottom:1px solid var(--line-soft);font-size:13.5px;align-items:baseline}
+.kv:last-child{border-bottom:0}
+.kv .k{color:var(--dim);flex:1 1 auto;min-width:0}
+.kv .v{font-family:var(--mono);font-variant-numeric:tabular-nums;flex:0 0 auto;
+  white-space:nowrap;font-size:13px}
+.kv.total{font-weight:600;border-top:1px solid var(--line);border-bottom:0;padding-top:12px}
+.kv.total .k{color:var(--text)}
+.pos{color:var(--jade)}.neg{color:var(--coral)}
+.swipehint{display:none;font-size:11.5px;color:var(--dimmer);padding:0 14px 12px}
+
+/* two ways to hit the same target, side by side */
+.solveopts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line-soft)}
+.solveopt{padding:18px 20px;display:flex;flex-direction:column}
+.solveopt + .solveopt{border-left:1px solid var(--line-soft)}
+.optlabel{font-size:11.5px;color:var(--dim);margin-bottom:8px;letter-spacing:-.002em}
+.solveopt > .v{font-family:var(--mono);font-size:29px;line-height:1.05;font-weight:500;
+  font-variant-numeric:tabular-nums;letter-spacing:-.045em;white-space:nowrap;overflow:hidden}
+.solveopt > .v.gold{color:var(--gold);text-shadow:0 0 30px rgba(233,184,114,.4)}
+.solveopt > .note{font-size:11px;color:var(--dimmer);margin-top:7px;margin-bottom:6px;line-height:1.4}
+.solveopt .kv{font-size:13px;padding:8px 0}
+.solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0;text-shadow:none}
+.solveopt .btn{margin-top:14px;align-self:flex-start}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:active{transform:none}
+
+/* converter rows, each applyable */
+.convrow{display:flex;align-items:center;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--line-soft);font-size:13.5px}
+.convrow:last-child{border-bottom:0}
+.convrow .k{color:var(--dim);flex:1 1 auto;min-width:0}
+.convrow .k em{font-style:normal;color:var(--dimmer);font-size:11px}
+.convrow .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px;
+  white-space:nowrap;flex:0 0 auto}
+.convrow.total{border-top:1px solid var(--line);border-bottom:0;padding-top:12px;font-weight:600}
+.convrow.total .k{color:var(--text)}
+.convrow .spacer{width:50px;flex:none}
+.btn.mini{padding:5px 11px;font-size:12px;flex:none;text-align:center;white-space:nowrap}
+
+/* segmented switch: a recessed track with a raised thumb */
+.seg{position:relative;display:inline-flex;border:1px solid var(--line);
+  border-radius:var(--r-well);
+  overflow:hidden;flex:none;background:var(--field);box-shadow:var(--well)}
+/* A single raised thumb glides under the active option instead of each button
+   repainting its own highlight. It's positioned by a small script from the
+   active button's box, so it tracks segments of unequal width. */
+/* It carries a faint jade edge: picked reads the same here as on the guide's
+   choices and the calculator menu. */
+.seg-thumb{position:absolute;top:0;left:0;height:100%;width:0;
+  border-radius:calc(var(--r-well) - 1px);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  box-shadow:var(--edge-up),inset 0 0 0 1px var(--jade-line),0 2px 8px -4px rgba(0,0,0,.8);
+  opacity:0;pointer-events:none;z-index:0;
+  transition:transform .24s cubic-bezier(.2,.8,.3,1),
+    width .24s cubic-bezier(.2,.8,.3,1),opacity .16s ease}
+.seg-thumb.ready{opacity:1}
+.seg button{position:relative;z-index:1;
+  font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
+  color:var(--dim);border:0;cursor:pointer;white-space:nowrap;
+  transition:background .16s ease,color .16s ease,box-shadow .16s ease}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button:hover{color:var(--text)}
+.seg button:hover:not(.on){background:rgba(79,191,149,.08)}
+.seg button.on{color:var(--text)}
+/* The raised thumb covers the dividers it sits against. */
+.seg button.on,.seg button.on + button{border-left-color:transparent}
+.seg button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.modeopt{display:flex;align-items:center;gap:8px}
+.mcnote{padding:0 18px 15px;font-size:12.5px;color:var(--dim);line-height:1.5}
+.mcnote b{color:var(--gold);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.mcnote b.warn{color:var(--coral)}
+.msflag{color:var(--gold);font-weight:600}
+.mssub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:2px}
+
+/* ---------- the control deck ---------- */
+/* The input column is the only place anything is typed. It sits recessed
+   into the page, so the whole column reads as the surface you act on. */
+.panel.inputs{
+  background:linear-gradient(180deg,#04070e 0%,#080d18 100%);
+  border-color:#22405e;
+  box-shadow:
+    inset 0 3px 10px -4px rgba(0,0,0,.95),
+    inset 0 -1px 0 rgba(255,255,255,.04),
+    0 0 0 1px rgba(79,191,149,.06)}
+html[data-theme="light"] .panel.inputs{
+  background:linear-gradient(180deg,#f7f9fd 0%,#ffffff 100%);
+  border-color:#c2d2e4;
+  box-shadow:var(--well),0 0 0 1px rgba(22,133,92,.05)}
+.panel.inputs > h2{
+  color:var(--jade);font-size:14px;font-weight:600;letter-spacing:-.012em;
+  border-bottom-color:#1d3550}
+html[data-theme="light"] .panel.inputs > h2{border-bottom-color:#dde6f1}
+.panel.inputs > h2 .h2note{color:var(--dimmer)}
+.panel.inputs .inputwrap,.panel.inputs select{background-color:#05080f;border-color:#243b55}
+html[data-theme="light"] .panel.inputs .inputwrap,
+html[data-theme="light"] .panel.inputs select{background-color:#f2f6fb;border-color:#ccd9e8}
+main.solo{grid-template-columns:minmax(0,1fr)}
+
+/* ---------- healthcare cost planner ---------- */
+.hc-stats{display:flex;gap:12px;margin-bottom:16px}
+.hc-stats .hc-stat{flex:1;background:var(--panel-2);border-radius:8px;padding:12px 14px}
+.hc-stats .hc-stat .v{font-family:var(--mono);font-size:26px;font-weight:600;
+  letter-spacing:-.04em;color:var(--text);white-space:nowrap}
+.hc-stats .hc-stat .optlabel{margin-top:3px}
+.hc-section{margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.hc-section-label{font-size:11px;color:var(--dimmer);text-transform:uppercase;
+  letter-spacing:.08em;font-weight:700;margin-bottom:8px}
+.hc-tier-row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
+.hc-tier-row:last-child{border-bottom:0}
+.hc-tier-row span:first-child{color:var(--dim)}
+.hc-tier-row span:last-child{font-family:var(--mono);font-weight:600;color:var(--text)}
+.hc-tier-row.hc-tier-sel span:first-child{color:var(--text);font-weight:600}
+.hc-tier-row.hc-tier-sel span:last-child{color:var(--jade)}
+.hc-insight{background:color-mix(in srgb,var(--gold) 8%,transparent);
+  border-left:2px solid var(--gold);border-radius:0 6px 6px 0;
+  padding:10px 14px;margin-top:12px;font-size:13px;line-height:1.5;color:var(--dim)}
+.hc-insight b{color:var(--text)}
+.hc-note{font-size:12px;color:var(--dimmer);margin-top:14px;line-height:1.5;
+  padding-top:12px;border-top:1px solid var(--line-soft)}
+.hc-note a{color:var(--jade)}
+.hc-irmaa-badge{display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;
+  margin-bottom:14px;letter-spacing:.02em;
+  background:color-mix(in srgb,var(--jade) 12%,transparent);color:var(--jade)}
+.hc-irmaa-badge.hc-irmaa-hit{
+  background:color-mix(in srgb,var(--coral) 12%,transparent);color:var(--coral)}
+

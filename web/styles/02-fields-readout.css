@@ -1,0 +1,159 @@
+/* ---------- fields: recessed wells ---------- */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;
+  letter-spacing:-.002em}
+.inputwrap{display:flex;align-items:center;background:var(--field);
+  border:1px solid var(--line);border-radius:var(--r-well);
+  box-shadow:var(--well);
+  transition:border-color .14s ease,box-shadow .18s ease,background .14s ease}
+.inputwrap:hover{border-color:var(--line-hi)}
+/* Focus blooms an accent ring: the well lights up where you're working. */
+.inputwrap:focus-within{
+  border-color:var(--jade);background:var(--sunk);
+  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16),0 0 22px -6px rgba(79,191,149,.4)}
+html[data-theme="light"] .inputwrap:focus-within{background:#fff}
+.inputwrap .affix{padding:0 10px;color:var(--dimmer);font-size:12.5px;flex:none}
+.inputwrap input{
+  width:100%;min-width:0;border:0;background:transparent;padding:9px 10px;
+  font-family:var(--mono);font-size:13.5px;color:var(--text);
+  text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.inputwrap .affix + input{padding-left:0}
+.inputwrap input:focus{outline:none}
+.inputwrap input::placeholder{color:var(--dimmer);opacity:.6;font-family:var(--sans);font-size:12.5px}
+/* Native spinners overlap the value in these narrow, text-aligned boxes.
+   Hidden here; arrow keys still step the value. */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}
+
+/* Controls read as raised keys, not wells — they're pressed, not filled. */
+select,.btn{font-family:var(--sans);font-size:13px;border-radius:var(--r-well);
+  padding:8px 12px;border:1px solid var(--line);
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  color:var(--text);cursor:pointer;box-shadow:var(--edge-up);
+  transition:border-color .14s ease,background .14s ease,transform .08s ease,box-shadow .14s ease}
+select{width:100%;
+  background-color:var(--field);background-image:none;
+  box-shadow:var(--well);
+  appearance:none;-webkit-appearance:none;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2394a3bd' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  background-size:10px 10px;padding-right:26px}
+html[data-theme="light"] select{
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2354607a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+select:hover,.btn:hover{border-color:var(--line-hi)}
+/* Keys lift toward the overhead light on hover and press in on click. The
+   lift is for a mouse only: a tap on a phone leaves :hover stuck on, which
+   left keys floating a pixel up until you touched something else. */
+@media (hover:hover){ .btn:hover{transform:translateY(-1px)} }
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background:linear-gradient(180deg,#5fd3a6,#35a37c);
+  border-color:#2c8a68;color:#04211a;font-weight:600;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 6px 16px -8px rgba(79,191,149,.7)}
+.btn.primary:hover{background:linear-gradient(180deg,#6fe0b3,#3cb489);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 10px 26px -8px rgba(79,191,149,.9)}
+/* The one flourish a call to action gets: a sheen crosses it on hover. */
+.btn.primary{position:relative;overflow:hidden;isolation:isolate}
+.btn.primary::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.38) 50%,transparent 70%);
+  transform:translateX(-110%)}
+@media (hover:hover){
+  .btn.primary:hover::after{transform:translateX(110%);transition:transform .65s cubic-bezier(.3,.6,.3,1)}
+}
+.btn.primary:disabled::after{display:none}
+.btn:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* When one label in a two-up row wraps and the other does not, the inputs
+   stop lining up. Bottom-aligning the row keeps the fields on one line
+   regardless of how tall either label ends up. */
+.two.bottomalign{align-items:end}
+.hint{font-size:11.5px;color:var(--dimmer);margin-top:5px;line-height:1.45}
+
+.derived{border-top:1px solid var(--line-soft);margin-top:8px;padding-top:12px;
+  font-size:12px;color:var(--dim)}
+.derived div{display:flex;justify-content:space-between;padding:3px 0}
+.derived .num{color:var(--text);font-size:12px}
+/* The engine's own bookkeeping, one click away for anyone checking the math. */
+.calcdetails summary{cursor:pointer;list-style:none;padding:5px 0 2px;font-size:11.5px;
+  color:var(--dimmer);display:inline-flex;align-items:center;gap:6px;user-select:none}
+.calcdetails summary::-webkit-details-marker{display:none}
+.calcdetails summary::before{content:"";width:5px;height:5px;border:solid currentColor;
+  border-width:0 1.5px 1.5px 0;transform:rotate(-45deg);transition:transform .15s ease}
+.calcdetails[open] summary::before{transform:rotate(45deg)}
+.calcdetails summary:hover{color:var(--dim)}
+.calcdetails summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* ---------- the readout: the one bold thing ---------- */
+.headline{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.13),transparent 62%),
+    linear-gradient(180deg,#03050c 0%,#080d1a 100%);
+  border-radius:var(--r-bezel) var(--r-bezel) 0 0;
+  box-shadow:
+    inset 0 3px 10px -3px rgba(0,0,0,.95),
+    inset 0 1px 0 rgba(0,0,0,.7),
+    inset 0 -1px 0 rgba(255,255,255,.05);
+  position:relative;overflow:hidden}
+html[data-theme="light"] .headline{
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.18),transparent 62%),
+    linear-gradient(180deg,#dfe4ef 0%,#eef1f7 100%);
+  box-shadow:inset 0 3px 8px -4px rgba(22,32,55,.3),inset 0 -1px 0 rgba(255,255,255,.8)}
+/* the lit edge where the glass meets the bezel */
+.headline::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(79,191,149,.55) 35%,rgba(233,184,114,.55) 65%,transparent)}
+.headline > div{padding:26px 22px 24px;position:relative}
+.headline > div + div{border-left:1px solid rgba(125,159,214,.13)}
+.headline .k{font-size:11.5px;color:var(--dim);margin-bottom:10px;letter-spacing:-.002em}
+/* Every readout is lit; the accented ones burn brighter. */
+.headline .v{font-family:var(--mono);font-size:35px;line-height:1.02;
+  font-variant-numeric:tabular-nums;letter-spacing:-.05em;font-weight:500;
+  white-space:nowrap;overflow:hidden;
+  color:#f2f6ff;text-shadow:0 0 34px rgba(200,220,255,.28)}
+html[data-theme="light"] .headline .v{color:#0d1424;text-shadow:none}
+.headline .v.gold{color:var(--gold);text-shadow:0 0 38px rgba(233,184,114,.55)}
+.headline .v.jade{color:var(--jade);text-shadow:0 0 38px rgba(79,191,149,.45)}
+html[data-theme="light"] .headline .v.gold{color:var(--gold);text-shadow:none}
+html[data-theme="light"] .headline .v.jade{color:var(--jade);text-shadow:none}
+.headline .note{font-size:11px;color:var(--dimmer);margin-top:9px;line-height:1.4}
+.headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft);
+  border-radius:0 0 var(--r-bezel) var(--r-bezel)}
+
+/* Where a control row sits above the readout (the Drawdown mode switch, the
+   Income Tax view switch), the two used to be painted separately: the row took
+   the panel's own background and left a pale band above the glass. Wrapping
+   both in .readout moves the gradient up one level, so a single unbroken fill
+   runs from the top of the toggle row to the bottom of the numbers. The
+   children then paint nothing of their own. */
+.readout{
+  border-radius:var(--r-bezel) var(--r-bezel) 0 0;
+  border-bottom:1px solid var(--line);
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.13),transparent 62%),
+    linear-gradient(180deg,#03050c 0%,#080d1a 100%);
+  box-shadow:
+    inset 0 3px 10px -3px rgba(0,0,0,.95),
+    inset 0 1px 0 rgba(0,0,0,.7),
+    inset 0 -1px 0 rgba(255,255,255,.05);
+  position:relative;overflow:hidden}
+html[data-theme="light"] .readout{
+  background:
+    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.18),transparent 62%),
+    linear-gradient(180deg,#dfe4ef 0%,#eef1f7 100%);
+  box-shadow:inset 0 3px 8px -4px rgba(22,32,55,.3),inset 0 -1px 0 rgba(255,255,255,.8)}
+.readout::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:1px;z-index:2;
+  background:linear-gradient(90deg,transparent,rgba(79,191,149,.55) 35%,rgba(233,184,114,.55) 65%,transparent)}
+/* These have to out-specify html[data-theme="light"] .headline, which is more
+   specific than a bare .readout > .headline would be. Without the extra
+   qualifier the child keeps its own gradient, restarts it at its own top edge,
+   and reintroduces the very seam this wrapper exists to remove. */
+html .readout > .headline,
+html[data-theme="light"] .readout > .headline{
+  background:none;box-shadow:none;border-bottom:0;border-radius:0}
+.readout > .headline::before{display:none}
+

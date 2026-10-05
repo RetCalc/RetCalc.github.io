@@ -1,0 +1,151 @@
+/* ---------- tool icon hover animations ----------
+   Each picker icon plays a short one-shot animation that acts out what the
+   tool does: the scale tips, the tassel swings, the roof lifts. Gated to
+   fine-pointer devices so a tap on mobile doesn't fire them, and the whole
+   block is off under prefers-reduced-motion. Transforms on SVG children need
+   an explicit transform-box, since the default (view-box) and percentage
+   origins don't mix the way they do on HTML elements. */
+@media (hover:hover) and (pointer:fine){
+  /* Drawdown: the projection redraws itself, sample points landing after. */
+  @keyframes dd-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes dd-pop{0%,30%{transform:scale(0)}68%{transform:scale(1.4)}
+    100%{transform:scale(1)}}
+  .dd-dot{transform-box:fill-box;transform-origin:50% 50%}
+  .toolcard:hover .dd-line{stroke-dasharray:100;
+    animation:dd-draw .5s cubic-bezier(.35,0,.25,1)}
+  .toolcard:hover .dd-dot1{animation:dd-pop .46s ease-out}
+  .toolcard:hover .dd-dot2{animation:dd-pop .6s ease-out}
+
+  /* Income tax: the glass runs over the return. */
+  @keyframes tx-scan{0%{transform:translate(0,0)}
+    32%{transform:translate(-9px,-13px)}
+    64%{transform:translate(-13px,-4px)}
+    100%{transform:translate(0,0)}}
+  .tx-glass{transform-box:view-box}
+  .toolcard:hover .tx-glass{animation:tx-scan .62s ease-in-out}
+
+  /* Roth: dollars travel the pipe and land in the Roth bucket. */
+  @keyframes roth-flow{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes roth-head{0%,50%{opacity:0;transform:translateY(-4px)}
+    100%{opacity:1;transform:translateY(0)}}
+  @keyframes roth-land{0%,50%{transform:translateY(0)}
+    72%{transform:translateY(-2.5px)}100%{transform:translateY(0)}}
+  .roth-head,.roth-dest{transform-box:view-box}
+  .toolcard:hover .roth-path{stroke-dasharray:100;animation:roth-flow .42s ease-out}
+  .toolcard:hover .roth-head{animation:roth-head .52s ease-out}
+  .toolcard:hover .roth-dest{animation:roth-land .6s cubic-bezier(.3,.8,.4,1)}
+
+  /* Mortgage: raise the roof, then let it settle. */
+  @keyframes mg-roof{0%{transform:translateY(0)}34%{transform:translateY(-3.5px)}
+    72%{transform:translateY(.9px)}100%{transform:translateY(0)}}
+  .mg-roof{transform-box:view-box}
+  .toolcard:hover .mg-roof{animation:mg-roof .46s cubic-bezier(.3,.8,.4,1)}
+
+  /* College: cap lifts off, tassel swings after it. */
+  @keyframes cl-hop{0%{transform:translateY(0)}38%{transform:translateY(-2px)}
+    100%{transform:translateY(0)}}
+  @keyframes cl-swing{0%{transform:rotate(0)}26%{transform:rotate(-21deg)}
+    56%{transform:rotate(13deg)}80%{transform:rotate(-5deg)}
+    100%{transform:rotate(0)}}
+  .cl-cap{transform-box:view-box}
+  .cl-tassel{transform-box:view-box;transform-origin:38px 17px}
+  .toolcard:hover .cl-cap{animation:cl-hop .5s ease-out}
+  .toolcard:hover .cl-tassel{animation:cl-swing .62s ease-in-out}
+
+  /* Rent vs buy: the beam tips one way, the other, and levels off. */
+  @keyframes rb-tip{0%{transform:rotate(0)}24%{transform:rotate(-9deg)}
+    58%{transform:rotate(6deg)}82%{transform:rotate(-2.5deg)}
+    100%{transform:rotate(0)}}
+  .rb-beam{transform-box:view-box;transform-origin:20px 9px}
+  .toolcard:hover .rb-beam{animation:rb-tip .68s cubic-bezier(.4,0,.3,1)}
+
+  /* Budget: flip the coin. */
+  @keyframes bg-flip{0%{transform:scaleX(1)}50%{transform:scaleX(.06)}
+    100%{transform:scaleX(1)}}
+  .bg-coin{transform-box:view-box;transform-origin:22px 24px}
+  .toolcard:hover .bg-coin{animation:bg-flip .45s ease-in-out}
+
+  /* Debt: balances knocked down avalanche-style, biggest first. */
+  @keyframes db-pay{0%{transform:scaleY(1)}46%{transform:scaleY(.32)}
+    100%{transform:scaleY(1)}}
+  .db-bar{transform-box:view-box}
+  .db-b1{transform-origin:6px 32px}
+  .db-b2{transform-origin:14px 32px}
+  .db-b3{transform-origin:22px 32px}
+  .db-b4{transform-origin:30px 32px}
+  .toolcard:hover .db-b4{animation:db-pay .44s ease-in-out}
+  .toolcard:hover .db-b3{animation:db-pay .44s ease-in-out .07s}
+  .toolcard:hover .db-b2{animation:db-pay .44s ease-in-out .14s}
+  .toolcard:hover .db-b1{animation:db-pay .44s ease-in-out .21s}
+
+  /* Backtest: bars rise in a left-to-right wave. */
+  @keyframes bt-wave{0%,100%{transform:translateY(0)} 45%{transform:translateY(-5px)}}
+  .bt-bar{transform-box:fill-box}
+  .toolcard:hover .bt-bar1{animation:bt-wave .55s ease-in-out}
+  .toolcard:hover .bt-bar2{animation:bt-wave .55s ease-in-out .1s}
+  .toolcard:hover .bt-bar3{animation:bt-wave .55s ease-in-out .2s}
+
+  /* Healthcare: cross spins a full turn, ring dims while it goes. */
+  @keyframes hc-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .hc-cross{transform-box:view-box;transform-origin:center}
+  .toolcard:hover .hc-cross{animation:hc-spin .55s cubic-bezier(.4,0,.2,1) forwards}
+  .toolcard:hover .hc-ring{opacity:.55;transition:opacity .3s ease}
+
+  /* Bridge: the arch draws across, the cables drop in, and a dot crosses. */
+  @keyframes br-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes br-drop{0%,25%{transform:scaleY(0)}100%{transform:scaleY(1)}}
+  @keyframes br-cross{0%{transform:translateX(0);opacity:0}15%{opacity:1}
+    85%{opacity:1}100%{transform:translateX(26px);opacity:0}}
+  .br-cable{transform-box:fill-box;transform-origin:50% 100%}
+  .toolcard:hover .br-arch{stroke-dasharray:100;animation:br-draw .5s cubic-bezier(.35,0,.25,1)}
+  .toolcard:hover .br-cable1{animation:br-drop .5s ease-out}
+  .toolcard:hover .br-cable2{animation:br-drop .5s ease-out .06s both}
+  .toolcard:hover .br-cable3{animation:br-drop .5s ease-out .12s both}
+  .toolcard:hover .br-walker{animation:br-cross .9s ease-in-out .3s}
+
+  /* FIRE: line draws, flame ignites, core flickers. */
+  @keyframes fi-rise{from{transform:scaleY(.3) translateY(10px);opacity:0}to{transform:scaleY(1) translateY(0);opacity:1}}
+  @keyframes fi-burn{0%,100%{transform:rotate(0deg) scaleX(1) scaleY(1)}20%{transform:rotate(-2deg) scaleX(.96) scaleY(1.04)}50%{transform:rotate(1.5deg) scaleX(1.04) scaleY(.97)}75%{transform:rotate(-1.5deg) scaleX(.97) scaleY(1.05)}}
+  @keyframes fi-flicker{0%,100%{transform:scaleY(1) scaleX(1);opacity:1}30%{transform:scaleY(1.14) scaleX(.88);opacity:.82}60%{transform:scaleY(.9) scaleX(1.1);opacity:.95}}
+  .fi-flame,.fi-core{transform-box:fill-box;transform-origin:50% 100%}
+  .toolcard:hover .fi-flame{animation:fi-rise .25s ease-out both,fi-burn 1.2s ease-in-out .25s infinite}
+  .toolcard:hover .fi-core{animation:fi-flicker .65s ease-in-out .1s infinite}
+}
+@media (prefers-reduced-motion:reduce){
+  .toolcard:hover .dd-line,.toolcard:hover .dd-dot,.toolcard:hover .tx-glass,
+  .toolcard:hover .roth-path,.toolcard:hover .roth-head,
+  .toolcard:hover .roth-dest,.toolcard:hover .mg-roof,
+  .toolcard:hover .cl-cap,.toolcard:hover .cl-tassel,
+  .toolcard:hover .rb-beam,.toolcard:hover .bg-coin,
+  .toolcard:hover .db-bar,.toolcard:hover .bt-bar,.toolcard:hover .hc-cross,
+  .toolcard:hover .hc-ring,.toolcard:hover .fi-flame,.toolcard:hover .fi-core,
+  .toolcard:hover .br-arch,.toolcard:hover .br-cable,.toolcard:hover .br-walker{animation:none;stroke-dasharray:none;transition:none}
+}
+
+/* ---------- back to the tool picker, and the tool's header ---------- */
+.toolback{grid-column:1 / -1;display:flex;align-items:center;flex-wrap:wrap;gap:11px;
+  min-width:0;margin:-2px 0 0}
+.toolhead{flex:1 0 100%;display:flex;align-items:center;gap:15px;min-width:0;margin-top:4px}
+.toolhead-icon{width:52px;height:52px;padding:9px}
+.toolhead-t{min-width:0}
+.toolhead-name{margin:0;font-size:23px;font-weight:700;letter-spacing:-.024em;line-height:1.15;color:var(--text)}
+.toolhead-name .beta{vertical-align:4px}
+.toolhead-desc{margin:4px 0 0;font-size:13.5px;line-height:1.5;color:var(--dim);max-width:80ch}
+.toolhead-desc:empty{display:none}
+/* the glide from the picker card into this header */
+::view-transition-group(toolicon){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
+.toolback .backbtn{display:inline-flex;align-items:center;gap:7px;flex:none;
+  background:transparent;border:0;box-shadow:none;cursor:pointer;
+  padding:6px 10px 6px 7px;margin-left:-7px;border-radius:var(--r-well);
+  font-family:var(--sans);font-size:13px;color:var(--dim);
+  transition:color .14s ease,background .14s ease}
+.toolback .backbtn:hover{color:var(--text);background:var(--panel)}
+.toolback .backbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.toolback .backbtn svg{width:13px;height:13px;flex:none;
+  transition:transform .18s cubic-bezier(.2,.7,.3,1)}
+.toolback .backbtn:hover svg{transform:translateX(-2px)}
+.toolback .crumb{font-size:13px;color:var(--dimmer);min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toolback .crumb::before{content:"/";margin-right:11px;color:var(--line)}
+

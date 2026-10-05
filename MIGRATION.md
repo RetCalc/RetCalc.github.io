@@ -59,6 +59,13 @@ Rules that keep it from turning into a tangle again:
   (the household: ages, accounts, income) lives in one React context.
 - Components never do math. They pass inputs to `lib/engine` and show the result.
 - Every page is pre-rendered HTML with its own metadata; calculators run in the browser.
+- The engine is imported from `@/lib/engine` only. `math.js` and `drawdown.js`
+  read each other's names, and `lib/engine/index.js` loads them in the order
+  that works.
+
+Known and accepted: `npm audit` reports a high-severity issue in `braces`, a
+lint-time dependency of the Next.js ESLint plugin. It never ships to visitors
+(`npm audit --omit=dev` finds 0); it goes away when the plugin updates.
 
 ## Checks (every phase)
 
@@ -78,13 +85,13 @@ Rules that keep it from turning into a tangle again:
 Each phase ends with a commit on `nextjs-migration` and its gate passing.
 
 ### Phase 1: Foundation
-- [ ] Node.js installed (needed for Next.js)
-- [ ] Vercel agent skills installed in `.claude/skills/`
-- [ ] `web/` created with create-next-app (TypeScript, App Router, ESLint)
-- [ ] Engine moved to `web/lib/engine/` as ES modules, logic unchanged
-- [ ] `tests/run.py --web` runs the engine tests against the moved engine
-- [ ] Today's CSS copied into `web/styles/`, loaded by the root layout
-- [ ] CI runs the web build and both test runs
+- [x] Node.js installed (22 LTS, in `~/.local/node`)
+- [x] Vercel agent skills installed in `.claude/skills/` (`skills-lock.json` pins the versions)
+- [x] `web/` created with create-next-app (Next.js 16, TypeScript, App Router, ESLint)
+- [x] Engine moved to `web/lib/engine/` as ES modules, logic unchanged (checked line by line against `src/js/`)
+- [x] `tests/run.py --web` runs the engine tests against the moved engine: 939 of 939 pass
+- [x] Today's CSS copied into `web/styles/`, loaded by the root layout; pages marked noindex until the switch
+- [x] CI runs the web build and both test runs; the pre-commit hook runs `--web` when the engine or tests change
 - [ ] Vercel project connected to the branch, `web/` as root (site owner creates the account)
 
 **Gate:** both test runs pass, `next build` passes, a Vercel preview loads; reviewer looks over the setup.
@@ -116,6 +123,7 @@ worker), readiness guide, tool picker, about, tool help and glossary.
 vercel-optimize audits reviewed; site owner clicks through the preview.
 
 ### Phase 6: Switch
+- [ ] Remove the noindex setting from `web/app/layout.tsx`
 - [ ] retcalc.app's DNS pointed at Vercel
 - [ ] Old site left deployable on GitHub Pages for rollback
 - [ ] Search Console and analytics watched for two weeks
@@ -125,4 +133,5 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 1 | Node, Vercel skills, Next.js app, engine moved and tested, CSS, CI. Waiting on: Vercel account |
 | 2026-10-05 | 0 | Plan written; branch created |

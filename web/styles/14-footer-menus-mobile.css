@@ -1,0 +1,122 @@
+/* ---------- footer ---------- */
+.sitefoot{position:relative;z-index:1;border-top:1px solid var(--line-soft);
+  background:linear-gradient(180deg,rgba(79,191,149,.035),transparent 70%)}
+.sitefoot-in{max-width:1330px;margin:0 auto;
+  padding:28px var(--gr) calc(34px + env(safe-area-inset-bottom,0px)) var(--gl);
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px 44px;align-items:start}
+.sitefoot-brand{display:flex;align-items:center;gap:11px}
+.sitefoot .brandmark{width:36px;height:36px;filter:none}
+.sitefoot-brand b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.018em;color:var(--text)}
+.sitefoot-brand span{display:block;font-size:12px;color:var(--gold);margin-top:1px}
+.sitefoot-txt p{margin:0 0 7px;font-size:12.5px;line-height:1.6;color:var(--dim);max-width:72ch}
+.sitefoot-txt p.src{margin:0;font-size:11.5px;color:var(--dimmer)}
+.sitefoot-link{background:none;border:0;padding:0;font:inherit;color:var(--jade);cursor:pointer;
+  text-decoration:underline;text-decoration-color:var(--jade-line-hi);text-underline-offset:3px}
+.sitefoot-link:hover{text-decoration-color:currentColor}
+.sitefoot-nav{display:flex;flex-wrap:wrap;gap:2px 20px;padding-top:2px}
+.sitefoot-nav button{background:none;border:0;padding:3px 0;font:inherit;font-size:13px;color:var(--dim);cursor:pointer;
+  transition:color .14s ease}
+.sitefoot-nav button:hover{color:var(--text)}
+.sitefoot-link:focus-visible,.sitefoot-nav button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+@media (max-width:900px){ .sitefoot-in{grid-template-columns:minmax(0,1fr);gap:16px} }
+/* clear of the fixed bottom bar in the installed app, and of the guide's coach */
+body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
+@media (max-width:640px){
+  html.pwa .sitefoot-in{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  html.pwa body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 104px + env(safe-area-inset-bottom,0px))}
+}
+@media print{ .sitefoot{display:none !important} }
+
+
+/* ---------- dropdown menus ----------
+   The list a select opens, drawn like the Calculator menu: a card under the
+   field on a wide screen, a sheet from the bottom on a phone. */
+.selmenu{position:fixed;z-index:120;min-width:180px;max-width:min(440px,calc(100vw - 16px));
+  overflow-y:auto;overscroll-behavior:contain;padding:6px;background:var(--pop);
+  border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--lift-2);
+  transform-origin:top left;animation:calcmenu-in .15s cubic-bezier(.2,.7,.3,1)}
+.selmenu.up{transform-origin:bottom left;animation-name:selmenu-up}
+@keyframes selmenu-up{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:none}}
+.selmenu:focus{outline:none}
+.selmenu-g{padding:10px 10px 4px;font-size:11px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--dimmer)}
+.selmenu-i{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:14px;
+  width:100%;text-align:left;background:transparent;border:0;border-radius:8px;
+  padding:8px 11px;font-family:var(--sans);font-size:13.5px;line-height:1.35;color:var(--text);
+  cursor:pointer;transition:background .1s ease}
+.selmenu-i + .selmenu-i{margin-top:1px}
+.selmenu-i:hover,.selmenu-i.act{background:var(--panel-2)}
+.selmenu-i:focus{outline:none}
+.selmenu-i:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.selmenu-i .n{grid-column:1}
+.selmenu-i .d{grid-column:1;font-size:12px;color:var(--dimmer);margin-top:1px}
+.selmenu-i::after{content:"";grid-column:2;grid-row:1 / span 2;width:12px;height:7px;
+  border-left:2px solid var(--jade);border-bottom:2px solid var(--jade);
+  transform:translateY(-2px) rotate(-45deg);opacity:0}
+.selmenu-i[aria-selected="true"] .n{color:var(--jade);font-weight:600}
+.selmenu-i[aria-selected="true"]::after{opacity:1}
+.selmenu-i:disabled{opacity:.4;cursor:default;background:transparent}
+.selscrim{position:fixed;inset:0;z-index:119;background:rgba(3,5,12,.55);animation:selscrim-in .16s ease}
+@keyframes selscrim-in{from{opacity:0}to{opacity:1}}
+.selmenu.sheet{left:0;right:0;bottom:0;top:auto;width:auto;min-width:0;max-width:none;max-height:72vh;
+  padding:0 10px calc(12px + env(safe-area-inset-bottom,0px));border-radius:18px 18px 0 0;
+  border-left:0;border-right:0;border-bottom:0;transform-origin:bottom center;
+  animation:selsheet-in .24s cubic-bezier(.2,.8,.3,1)}
+@keyframes selsheet-in{from{transform:translateY(100%)}to{transform:none}}
+.selmenu-h{position:sticky;top:0;z-index:1;background:var(--pop);padding:8px 8px 10px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
+.selmenu-h::before{content:"";display:block;width:38px;height:4px;border-radius:2px;
+  background:var(--line);margin:0 auto 12px}
+/* the "?" explanations use the same sheet on a phone */
+.tipsheet .selmenu-h{display:flex;align-items:center;gap:12px;padding:26px 6px 8px;
+  font-size:16px;font-weight:600;letter-spacing:-.012em;text-transform:none;color:var(--text)}
+.tipsheet .selmenu-h::before{position:absolute;left:50%;top:9px;margin:0;transform:translateX(-50%)}
+.tipsheet .selmenu-h span{flex:1 1 auto;min-width:0}
+.tipsheet-x{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;
+  border:1px solid var(--line);background:var(--panel-2);color:var(--dim);cursor:pointer}
+.tipsheet-x svg{width:14px;height:14px}
+.tipsheet-x:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.tipsheet-b{margin:0;padding:2px 6px 14px;font-size:15.5px;line-height:1.65;color:var(--dim)}
+.selmenu.sheet .selmenu-i{min-height:52px;padding:12px 14px;font-size:16px;border-radius:12px}
+.selmenu.sheet .selmenu-i .d{font-size:13px}
+
+/* ---------- wide tables on phones ----------
+   A table wider than the screen scrolls sideways inside its panel. Its first
+   column (the age, year or item each row is about) stays pinned while the
+   figures slide under it, with a hairline marking the edge. The pinned cells
+   need their own fill, so they follow the row's hover and selected tints. */
+@media (max-width:640px){
+  .scroll th:first-child,.scroll td:first-child{position:sticky;left:0;z-index:1;
+    background:var(--panel);box-shadow:inset -1px 0 0 var(--line-soft)}
+  .scroll thead th:first-child{z-index:3}
+  .scroll tbody tr:hover td:first-child{background:var(--panel-2)}
+  .scroll .ddrow.sel td:first-child{background:color-mix(in srgb,var(--jade) 11%,var(--panel))}
+  .scroll tr.rc-widow > td:first-child{background:color-mix(in srgb,var(--gold) 8%,var(--panel))}
+}
+
+/* ---------- touch: no hover lifts ----------
+   A tap leaves :hover set until the next touch, so on a phone the cards
+   stayed raised with their edge lit after you'd moved on. */
+@media (hover:none){
+  .toolcard:hover{transform:none;box-shadow:var(--lift-1);border-color:var(--line);background:var(--panel)}
+  .toolcard:hover .toolcard-icon{transform:none;box-shadow:none}
+  .popup .popbtn:hover{transform:none}
+}
+
+/* ---------- phone masthead ----------
+   Household and theme join the logo's row, and the scenario toolbar gets the
+   whole second row to itself, so the picker has room to say what's loaded.
+   .scenariobar steps aside (display:contents) so its children can sit in the
+   masthead's grid directly; nothing moves in the markup. */
+@media (max-width:640px){
+  .masthead{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px 8px}
+  .scenariobar{display:contents}
+  .brand{grid-column:1;grid-row:1;min-width:0}
+  .wordmark{min-width:0}
+  .wordmark .brandname{font-size:clamp(16px,5vw,20px);white-space:nowrap}
+  #btnHousehold{grid-column:2;grid-row:1}
+  #btnTheme{grid-column:3;grid-row:1}
+  .scgroup{grid-column:1 / -1;grid-row:2}
+  .scenariobar .btn.iconbtn{width:40px;height:40px}
+}
+
