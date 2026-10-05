@@ -4,7 +4,7 @@
    instead of in each tool. Screens import calculations from here. */
 import * as E from "./index.js";
 import type {
-  BasicResult, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult,
+  BasicResult, HistRuns, Projection, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult,
 } from "./types";
 
 const typed = <F>(f: unknown) => f as F;
@@ -28,5 +28,11 @@ export const hcGrossPremium = typed<(state: string, age: number, manual: number)
 export const hcCalcACA = typed<(income: number, gross: number, pctFPL: number, enhanced: boolean) => { credit: number; net: number; eligible: boolean; pct: number }>(E.hcCalcACA);
 
 export const runRoth = typed<(inp: object, doConvert: boolean) => RothResult>(E.runRoth);
+
+export const project = typed<(p: object) => Projection>(E.project);
+export const historicalRuns = typed<(g: { initial: number; fees: number }, stages: object[]) => HistRuns>(E.historicalRuns);
+export const fiComputeCrossings = typed<(p: object, maxYears: number) => { crossings: number[]; total: number } | null>(E.fiComputeCrossings);
+export const fiComputeCoastCrossings = typed<(p: object) => { crossings: number[]; total: number } | null>(E.fiComputeCoastCrossings);
+export const fiYearsFromCrossings = typed<(crossings: number[], total: number, pct: number) => number | null>(E.fiYearsFromCrossings);
 
 export const { HC_AGE40_MULT, HC_STATE_PREMIUM_40, IRMAA, BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax } = E;

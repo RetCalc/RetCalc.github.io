@@ -58,12 +58,13 @@ export function MoneyField({ id, label, labelId, unit, wrapId, hidden, className
   );
 }
 
-/** A plain number with its unit after it, stepped by the arrow keys. */
-export function NumberField({ id, label, unit, step, max, wrapId, hidden, className, inputRef, ...input }:
-  Omit<FieldProps, "children"> & ValueProps & { unit?: string; step?: number; max?: number; inputRef?: Ref<HTMLInputElement> }) {
+/** A plain number with its unit after it, stepped by the arrow keys. Never
+    negative unless `negative` says it can be. */
+export function NumberField({ id, label, unit, step, max, wrapId, hidden, className, inputRef, negative, ...input }:
+  Omit<FieldProps, "children"> & ValueProps & { unit?: string; step?: number; max?: number; inputRef?: Ref<HTMLInputElement>; negative?: boolean }) {
   return (
     <Field id={id} label={label} wrapId={wrapId} hidden={hidden} className={className}>
-      <Affixed suffix={unit}><NumberInput ref={inputRef} id={id} nonNeg step={step} max={max} {...input} /></Affixed>
+      <Affixed suffix={unit}><NumberInput ref={inputRef} id={id} nonNeg={!negative} step={step} max={max} {...input} /></Affixed>
     </Field>
   );
 }

@@ -35,6 +35,7 @@ const has = (v: number | null) => v != null && isFinite(v);
     it's ported; its fill runs via useHouseholdFill. */
 export const HOUSEHOLD_TOOLS: { name: string; takes: (h: Household) => boolean }[] = [
   { name: "Basic", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly)) },
+  { name: "FIRE", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
   { name: "Roth", takes: () => true },
   { name: "Healthcare", takes: () => true },
   { name: "Income Tax", takes: () => true },

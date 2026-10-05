@@ -38,13 +38,21 @@ interface Props<P extends BandPoint> {
   noLoLine?: boolean;
   /** Dots on the higher and lower lines and a marker on the year axis. */
   enhanced?: boolean;
+  /** Extra marks drawn on top (a target line, say), placed with the chart's own scales. */
+  extras?: (g: ChartGeometry) => React.ReactNode;
+}
+
+/** The chart's scales and frame, for drawing extra marks on it. */
+export interface ChartGeometry {
+  X: (year: number) => number; Y: (value: number) => number;
+  W: number; T: number; ph: number; narrow: boolean; minY: number; maxY: number;
 }
 
 const MONO = "ui-monospace,SF Mono,Menlo,monospace";
 const v = (name: string) => ({ fill: `var(${name})` });
 
 export function BandChart<P extends BandPoint>(props: Props<P>) {
-  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced } = props;
+  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras } = props;
   const narrow = useNarrow();
   const uid = useId().replace(/:/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
@@ -249,6 +257,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             <circle cx={bx} cy={T + ph + B / 2} r={3 * sw} style={v("--dim")} opacity={best ? 1 : 0} />
           </>
         ) : null}
+        {extras?.({ X, Y, W, T, ph, narrow, minY: AX.min, maxY: AX.max })}
       </svg>
       <div className="tip" ref={tipRef} style={hover ? { opacity: 1, left: hover.left, top: hover.top } : { opacity: 0 }}>
         {best ? tip(best) : null}

@@ -3,6 +3,11 @@
    opened (MIGRATION.md), so the moment differs but the numbers must not. */
 import { expect, test } from "@playwright/test";
 import { NEW } from "../playwright.config";
+import { HOUSEHOLD_TOOLS, type Household } from "../lib/household";
+
+/* What the form below enters. */
+const PROFILE: Household = { status: "m", age: 45, spouseAge: null, retire: null, state: "CA", saved: null, monthly: null,
+  income: 150000, income2: 60000, spend: null };
 
 test("a saved household fills the tools that take it", async ({ page }) => {
   await page.goto(NEW + "/tools");
@@ -13,7 +18,9 @@ test("a saved household fills the tools that take it", async ({ page }) => {
   await page.locator("#hhIncome").fill("150000");
   await page.locator("#hhIncome2").fill("60000");
   await page.locator("#hhFill").click();
-  await expect(page.locator("#toast")).toContainText("Filled in 5 tools: Basic, Roth, Healthcare, Income Tax, Budget");
+  // Every tool that takes this profile, in the order the site lists them.
+  const filled = HOUSEHOLD_TOOLS.filter((t) => t.takes(PROFILE)).map((t) => t.name);
+  await expect(page.locator("#toast")).toContainText(`Filled in ${filled.length} tools: ${filled.join(", ")}`);
 
   await page.locator("a.toolcard[data-pick=tax]").click();
   await expect(page.locator("#txStatus")).toHaveValue("m");

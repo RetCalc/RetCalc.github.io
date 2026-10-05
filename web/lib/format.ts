@@ -60,3 +60,9 @@ export function sanitizeNumeric(v: string, noNeg = false): string {
   if (i !== -1) s = s.slice(0, i + 1) + s.slice(i + 1).replace(/\./g, "");
   return (neg ? "-" : "") + s;
 }
+
+/** 30 years, 1 year, 12.5 years. */
+export function fmtYears(y: number): string {
+  const r = Math.round(y * 100) / 100;
+  return (r === Math.floor(r) ? String(r) : r.toFixed(2)) + (r === 1 ? " year" : " years");
+}

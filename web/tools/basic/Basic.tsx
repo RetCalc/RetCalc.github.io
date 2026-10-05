@@ -16,17 +16,12 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
 import { Figure, KV } from "@/components/ui/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
-import { DASH, fmtNum, groupDigits, money, pctStr } from "@/lib/format";
+import { DASH, fmtNum, fmtYears, groupDigits, money, pctStr } from "@/lib/format";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
 
 const PERIODS = ["Weekly", "Bi-Weekly", "Monthly", "Quarterly", "Annually"];
 const PER = { Weekly: "weekly", "Bi-Weekly": "bi-weekly", Monthly: "monthly", Quarterly: "quarterly", Annually: "annually" } as Record<string, string>;
-
-function fmtYears(y: number): string {
-  const r = Math.round(y * 100) / 100;
-  return (r === Math.floor(r) ? String(r) : r.toFixed(2)) + (r === 1 ? " year" : " years");
-}
 
 export function Basic() {
   const { state: s, set, setState } = useToolState(BASIC_DEF);

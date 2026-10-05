@@ -61,3 +61,12 @@ export interface RothResult {
   rows: RothRow[]; lifeTax: number; lifeTaxPV: number; lifeIrmaa: number; totalConv: number; peakRMD: number;
   endAfterTax: number; endTrad: number; endRoth: number; endBrok: number; rmdStart: number;
 }
+
+export interface HistBand { year: number; p10: number; p25: number; p50: number; p75: number; p90: number }
+export interface HistWindow { start: number; startMonth?: number; final: number }
+export interface HistRuns {
+  bands: HistBand[]; traces?: (number | null)[][]; count: number; totalYears: number; first: number; last: number;
+  span: number; tooLong?: boolean; finals: number[]; median: number; worst: HistWindow; best: HistWindow;
+}
+export interface ProjectYear { year: number; start: number; contrib: number; growth: number; end: number }
+export interface Projection { years: ProjectYear[]; fv: number; fvReal: number; [k: string]: unknown }

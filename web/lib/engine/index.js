@@ -10,3 +10,4 @@ export * from "./drawdown.js";
 export * from "./math.js";
 export * from "./plan.js";
 export * from "./calculators.js";
+export * from "./fire.js";
