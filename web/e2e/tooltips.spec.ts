@@ -16,3 +16,10 @@ test("a ? shows its explanation", async ({ page, isMobile }) => {
     await expect(page.locator("#tipbox")).toContainText("mortgage insurance");
   }
 });
+
+test("the footer shows the real email address", async ({ page }) => {
+  await page.goto(NEW + "/tools");
+  const a = page.locator(".sitefoot a.mailme");
+  await expect(a).toHaveText("contact@retcalc.app");
+  await expect(a).toHaveAttribute("href", "mailto:contact@retcalc.app");
+});
