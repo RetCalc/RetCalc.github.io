@@ -33,7 +33,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Page | Route | Status | Commit | Notes |
 |---|---|---|---|---|
 | Advanced | /advanced | done | f9e824f | thirds, hero reading (after-tax income), goal inputs moved left, chart header stacks on phones |
-| Stages | /stages | todo | | same input width as Advanced |
+| Stages | /stages | done | 4fdf10e | thirds like Advanced, stage editor moved into the inputs with a timeline strip, hero reading, empty and 0-year states |
 
 ### Tools (Drawdown and Income Tax first)
 | Page | Route | Status | Commit | Notes |
