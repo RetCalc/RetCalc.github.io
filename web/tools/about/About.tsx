@@ -11,6 +11,7 @@ import { HouseholdBar } from "@/components/household/HouseholdBar";
 import type { StateOption } from "@/lib/states";
 import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
 import { Badge } from "@/components/ui/badge";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 const SWEEP = 300;
 
@@ -73,9 +74,9 @@ function ThemeRow() {
   return (
     <div className="themerow">
       <span>Theme</span>
-      <span className="seg" id="segTheme">
-        {opts.map(([k, label]) => <button key={k} type="button" data-theme={k} className={choice === k ? "on" : undefined} onClick={() => setThemeChoice(k)}>{label}</button>)}
-      </span>
+      <SegmentedGroup id="segTheme">
+        {opts.map(([k, label]) => <SegmentedItem key={k} data-theme={k} pressed={choice === k} onClick={() => setThemeChoice(k)}>{label}</SegmentedItem>)}
+      </SegmentedGroup>
     </div>
   );
 }

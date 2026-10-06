@@ -41,6 +41,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
     year one, the retirement age and the comfort line. */
@@ -216,11 +217,11 @@ export function Drawdown({ landing }: { landing?: string }) {
           unpin={() => setPinned(null)} />
 
         <div className="ddtabs" id="ddTabs">
-          <span className="seg" id="segDDTab" aria-label="Results">
+          <SegmentedGroup size="tab" id="segDDTab" aria-label="Results">
             {([["plan", "Your plan"], ["compare", "Compare strategies"], ["safe", "Safe spending"]] as const).map(([k, label]) => (
-              <button key={k} type="button" data-ddtab={k} className={tab === k ? "on" : undefined} aria-pressed={tab === k} onClick={() => setTab(k)}>{label}</button>
+              <SegmentedItem key={k} data-ddtab={k} pressed={tab === k} onClick={() => setTab(k)}>{label}</SegmentedItem>
             ))}
-          </span>
+          </SegmentedGroup>
         </div>
 
         <Card id="ddTargetPanel" data-ddtabs="compare safe">
@@ -319,10 +320,10 @@ function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
     <Card size="flush">
       <div className="readout">
         <div className="txhead">
-          <span className="seg" id="segDD">
-            <button type="button" data-dd="hist" className={mode === "hist" ? "on" : undefined} onClick={() => setMode("hist")}>Historical</button>
-            <button type="button" data-dd="mc" className={mode === "mc" ? "on" : undefined} onClick={() => setMode("mc")}>Monte Carlo</button>
-          </span>
+          <SegmentedGroup id="segDD">
+            <SegmentedItem data-dd="hist" pressed={mode === "hist"} onClick={() => setMode("hist")}>Historical</SegmentedItem>
+            <SegmentedItem data-dd="mc" pressed={mode === "mc"} onClick={() => setMode("mc")}>Monte Carlo</SegmentedItem>
+          </SegmentedGroup>
           <Badge variant="outline" id="ddBadge">{badge}</Badge>
           <Button variant="outline" size="sm" className="ml-2" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
         </div>

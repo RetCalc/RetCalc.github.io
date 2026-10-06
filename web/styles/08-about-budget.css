@@ -56,13 +56,6 @@
 /* ---------- budget ---------- */
 .bgincome{max-width:520px}
 .bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.bgseg{display:inline-flex;border:1px solid var(--ds-rule-strong);border-radius:6px;
-  overflow:hidden;flex:none;background:var(--field)}
-.bgseg button{font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;
-  color:var(--dimmer);border:0;cursor:pointer;white-space:nowrap;
-  transition:background .16s ease,color .16s ease;line-height:1}
-.bgseg button + button{border-left:1px solid var(--line)}
-.bgseg button.on{background:var(--panel-2);color:var(--text);font-weight:700;box-shadow:inset 0 0 0 1px var(--ds-rule-strong)}
 .bggroup{margin-bottom:6px}
 .bggroup-h{font-size:11.5px;color:var(--dim);font-weight:600;
   padding:12px 0 6px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}

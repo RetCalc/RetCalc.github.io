@@ -23,6 +23,7 @@ import { DD_STRAT_NAMES, critWords, dialFields, dialText, escapeHtml, firstSpend
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 const work = (t: string) => "<span class='ddwork'>" + t + "</span>";
 
@@ -82,10 +83,10 @@ const ValTitle = () => <CardHeader><CardTitle>Valuations at the start<TipDot k="
 function HeatTitle({ axis, setAxis }: { axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
   return (
     <CardHeader><CardTitle>Success grid<TipDot k="ddheat" /></CardTitle><CardAction>
-      <span className="seg" id="segDDHeat">
-        <button type="button" data-heat="stock" className={axis === "stock" ? "on" : undefined} onClick={() => setAxis("stock")}>By stock share</button>
-        <button type="button" data-heat="years" className={axis === "years" ? "on" : undefined} onClick={() => setAxis("years")}>By years</button>
-      </span>
+      <SegmentedGroup id="segDDHeat">
+        <SegmentedItem data-heat="stock" pressed={axis === "stock"} onClick={() => setAxis("stock")}>By stock share</SegmentedItem>
+        <SegmentedItem data-heat="years" pressed={axis === "years"} onClick={() => setAxis("years")}>By years</SegmentedItem>
+      </SegmentedGroup>
     </CardAction></CardHeader>
   );
 }

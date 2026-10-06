@@ -221,7 +221,6 @@ tr.br-off .br-name{color:var(--dim)}
 #tab-drawdown[data-tab="compare"] [data-ddtabs]:not([data-ddtabs~="compare"]),
 #tab-drawdown[data-tab="safe"] [data-ddtabs]:not([data-ddtabs~="safe"]){display:none !important}
 .ddtabs{display:flex;justify-content:center;margin:-2px 0}
-.ddtabs .seg button{font-size:13px;padding:8px 16px}
 /* the pinned baseline, under the headline */
 .ddbase{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:10px 18px;
   border-top:1px solid var(--line-soft);background:rgba(201,211,230,.05);font-size:12.5px}
@@ -304,8 +303,6 @@ tr.br-off .br-name{color:var(--dim)}
   .ddstats{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (max-width:640px){
-  .ddtabs .seg{width:100%;display:flex}
-  .ddtabs .seg button{flex:1;padding:10px 6px;font-size:13px}
   .ddtiles{gap:8px}
   .ddtile{padding:10px 11px}
   .ddtile .v{font-size:18px}

@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 const SPOT_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky, SERIES.rose, SERIES.lavender, SERIES.gray];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
@@ -66,11 +67,11 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
         <CardContent id="ddShowIntro"><Html className="ddintro" html={intro} /></CardContent>
         <div className="ddchartbar">
           <span>Typical lifetime spending against</span>
-          <span className="seg" id="segDDShowY">
+          <SegmentedGroup id="segDDShowY">
             {([["end", "what's left"], ["low", "the leanest year"], ["first", "year one"]] as const).map(([k, label]) => (
-              <button key={k} type="button" data-showy={k} className={yk === k ? "on" : undefined} onClick={() => setYk(k)}>{label}</button>
+              <SegmentedItem key={k} data-showy={k} pressed={yk === k} onClick={() => setYk(k)}>{label}</SegmentedItem>
             ))}
-          </span>
+          </SegmentedGroup>
         </div>
         <Scatter id="DDS" ariaLabel="Each strategy's typical lifetime spending against what it leaves, its leanest year or its year one"
           pts={res ? res.list.map((x) => ({ x: x.life, y: x[yk], label: DD_UI[x.id].short, id: x.id, cur: x.id === so.strategy, miss: !x.met })) : []}
@@ -167,12 +168,12 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
           {res ? <option value="">Any year…</option> : null}
           {W.map((w) => <option key={w.year}>{w.year}</option>)}
         </NativeSelect>
-        <span className="seg" id="segDDSpot">
+        <SegmentedGroup id="segDDSpot">
           {[0, 1, 2].map((i) => (
-            <button key={i} type="button" data-spot={i} hidden={!!res && i >= spots.length} className={pick == null && i === sp ? "on" : undefined}
-              onClick={() => { setSpot(i); setPick(null); }}>{spots[i] ?? ["1966", "1929", "1973"][i]}</button>
+            <SegmentedItem key={i} data-spot={i} hidden={!!res && i >= spots.length} pressed={pick == null && i === sp}
+              onClick={() => { setSpot(i); setPick(null); }}>{spots[i] ?? ["1966", "1929", "1973"][i]}</SegmentedItem>
           ))}
-        </span>
+        </SegmentedGroup>
       </CardAction></CardHeader>
       <MultiChart id="DDSP" series={series} maxX={o.years} ariaLabel="Each charted strategy's spending through one hard start"
         xFmt={(y) => (age != null ? ageVal(age, y) : y)} head={(y) => <b>{age != null ? "Age " + ageVal(age, y) : "Year " + fmtNum(y)}</b>} />

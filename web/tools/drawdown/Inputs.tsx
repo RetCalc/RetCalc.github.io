@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 
 export function Inputs({ v, fromNote, periods, open }: {
@@ -173,10 +174,10 @@ export function Inputs({ v, fromNote, periods, open }: {
     <aside id="asideDD" data-inputs={inputs}>
       <Card>
         <CardHeader><CardTitle>Your plan</CardTitle><CardAction>
-          <span className="seg" id="segDDIn" aria-label="How many inputs">
-            <button type="button" data-ddin="simple" className={inputs === "simple" ? "on" : undefined} onClick={() => setInputs("simple")}>Simple</button>
-            <button type="button" data-ddin="adv" className={inputs === "adv" ? "on" : undefined} onClick={() => setInputs("adv")}>Advanced</button>
-          </span>
+          <SegmentedGroup id="segDDIn" aria-label="How many inputs">
+            <SegmentedItem data-ddin="simple" pressed={inputs === "simple"} onClick={() => setInputs("simple")}>Simple</SegmentedItem>
+            <SegmentedItem data-ddin="adv" pressed={inputs === "adv"} onClick={() => setInputs("adv")}>Advanced</SegmentedItem>
+          </SegmentedGroup>
         </CardAction></CardHeader>
         <CardContent>
           <div className="ddsec ddsec-first">Your portfolio at retirement</div>

@@ -96,7 +96,7 @@ export function Budget() {
             <Label className="mb-1.5" htmlFor="bgIncomeIn"><span><Tipped text="Income after taxes" k="bgincome" /></span></Label>
             <div className="bgincome-row">
               <Affixed prefix="$" className="flex-auto basis-35"><MoneyInput id="bgIncomeIn" nonNeg value={s.income} onValueChange={set("income")} /></Affixed>{" "}
-              <Segmented id="bgIncomeFreq" className="seg bgseg" attr="data-freq" options={[[1, "/yr"], [12, "/mo"]] as const} value={s.incomeFreq} onChange={set("incomeFreq")} />{" "}
+              <Segmented id="bgIncomeFreq" size="compact" attr="data-freq" options={[[1, "/yr"], [12, "/mo"]] as const} value={s.incomeFreq} onChange={set("incomeFreq")} />{" "}
               <Button variant="outline" id="bgCopyTax"
                 onClick={() => {
                   // Gross minus taxes only, not minus pre-tax savings: a 401(k)
@@ -148,7 +148,7 @@ export function Budget() {
                         }}>{r.desc}</span>
                     )}
                     <Affixed prefix="$" className="w-32.5 flex-none sm:w-35"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
-                    <Segmented className="seg bgseg" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
+                    <Segmented size="compact" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
                     {r.custom ? (
                       <Button variant="ghost" size="icon-sm" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</Button>
                     ) : <span className="delspace"></span>}

@@ -224,10 +224,9 @@ html.pwa .popup-overlay{
      text-callout, and neither should pressing on a chart to read a point.
      Scoped to touch so desktop text selection is untouched, and kept off
      readouts/tables so figures stay copyable. */
-  nav[role=tablist] button,.seg button,.bgseg button,.btn,.toolcard,
+  nav[role=tablist] button,.btn,.toolcard,
   .tipdot,.chartwrap,.gd-chart{
     -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-  .seg button{font-size:14px}
   /* Tooltip dots stay visually small but get a much bigger invisible tap
      area on touch, since 16px is well under a comfortable touch target. */
   .tipdot{position:relative;width:17px;height:17px}
@@ -236,8 +235,6 @@ html.pwa .popup-overlay{
   /* Everything below was under 40px on a touch screen. These grow for real
      rather than overflowing an invisible pad, which would have sat on top of
      the field beside them and stolen taps meant for it. */
-  .seg button{font-size:14px;padding:10px 14px}
-  .bgseg button{font-size:14px;padding:9px 12px}
   .bgrow .delspace,.dtrow .delspace,.dthead .delspace{width:40px}
   .signflip{padding:0 13px}
   .toolcard:hover::before{transform:scaleY(0)}

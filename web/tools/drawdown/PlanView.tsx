@@ -30,6 +30,7 @@ import { badgeVariants } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 /** The return assumptions the sensitivity table tries: history less 2 and 1
     points a year, as it was, and 1 point better. */
@@ -267,10 +268,10 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   return (
     <Card id="ddSeqPanel" data-ddtabs="plan">
       <CardHeader><CardTitle>When you retire<TipDot k="ddseq" /></CardTitle><CardAction>
-        <span className="seg" id="segDDSeq">
-          <button type="button" data-ddseq="decade" className={dec ? "on" : undefined} onClick={() => setKind("decade")}>By first decade</button>
-          <button type="button" data-ddseq="year" className={!dec ? "on" : undefined} onClick={() => setKind("year")}>By start year</button>
-        </span>
+        <SegmentedGroup id="segDDSeq">
+          <SegmentedItem data-ddseq="decade" pressed={dec} onClick={() => setKind("decade")}>By first decade</SegmentedItem>
+          <SegmentedItem data-ddseq="year" pressed={!dec} onClick={() => setKind("year")}>By start year</SegmentedItem>
+        </SegmentedGroup>
       </CardAction></CardHeader>
       <CardContent id="ddSeqIntro"><Html className="ddintro" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} /></CardContent>
       <Scatter id="DDQ" pts={pts} ariaLabel="Each start's first ten years against how its retirement ended"
@@ -374,10 +375,10 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
   return (
     <Card data-ddtabs="plan">
       <CardHeader><CardTitle id="ddChartTitle">{title}</CardTitle><CardAction id="ddViewWrap" hidden={R?.kind !== "hist"}>
-        <span className="seg" id="segDDView">
-          <button type="button" data-ddview="year" className={ps.view === "year" ? "on" : undefined} onClick={() => ps.setView("year")}>Selected year</button>
-          <button type="button" data-ddview="all" className={ps.view === "all" ? "on" : undefined} onClick={() => ps.setView("all")}>All years</button>
-        </span>
+        <SegmentedGroup id="segDDView">
+          <SegmentedItem data-ddview="year" pressed={ps.view === "year"} onClick={() => ps.setView("year")}>Selected year</SegmentedItem>
+          <SegmentedItem data-ddview="all" pressed={ps.view === "all"} onClick={() => ps.setView("all")}>All years</SegmentedItem>
+        </SegmentedGroup>
       </CardAction></CardHeader>
       {chart ?? <BandChart id="DD" pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
       {legend === "hist" ? <HistLegend id="legendDD" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{hasBase ? <BaseSwatch /> : null}</HistLegend>
@@ -543,10 +544,10 @@ function DistPanel({ v, R }: { v: DDView; R: PlanResult | null }) {
   return (
     <Card id="ddDistPanel" data-ddtabs="plan">
       <CardHeader><CardTitle id="ddDistTitle">{!R || bal ? "Spread of ending balances" : "Spread of spending"}</CardTitle><CardAction>
-        <span className="seg" id="segDDDist">
-          <button type="button" data-dddist="bal" className={bal ? "on" : undefined} onClick={() => setKind("bal")}>Balance</button>
-          <button type="button" data-dddist="spend" className={!bal ? "on" : undefined} onClick={() => setKind("spend")}>Spending</button>
-        </span>
+        <SegmentedGroup id="segDDDist">
+          <SegmentedItem data-dddist="bal" pressed={bal} onClick={() => setKind("bal")}>Balance</SegmentedItem>
+          <SegmentedItem data-dddist="spend" pressed={!bal} onClick={() => setKind("spend")}>Spending</SegmentedItem>
+        </SegmentedGroup>
         <NativeSelect className="w-auto" id="ddDistYear" aria-label="Which year" value={String(at)} onChange={(e) => setAt(parseInt(e.target.value, 10) || null)}>
           {Array.from({ length: years }, (_, k) => k + 1).map((y) => (
             <option key={y} value={y}>{y === years ? "Final year" : age != null ? "Age " + fmtNum(ageVal(age, y)) : "Year " + y}</option>

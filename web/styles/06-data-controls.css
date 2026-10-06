@@ -46,33 +46,17 @@ tbody tr:hover{background:var(--panel-2)}
 .convrow.total .k{color:var(--text)}
 .convrow .spacer{width:50px;flex:none}
 
-/* segmented switch: a ground track with a strong edge, and a raised thumb */
-.seg{position:relative;display:inline-flex;border:1px solid var(--ds-rule-strong);
-  border-radius:var(--r-well);
-  overflow:hidden;flex:none;background:var(--field)}
-/* A single raised thumb glides under the active option instead of each button
-   repainting its own highlight. It's positioned by a small script from the
-   active button's box, so it tracks segments of unequal width. */
-.seg-thumb{position:absolute;top:0;left:0;height:100%;width:0;
+/* The segmented switch is components/ui/segmented.tsx. A single raised thumb
+   glides under the active option instead of each button repainting its own
+   highlight. It's positioned by a small script (PageEffects) from the active
+   button's box, so it tracks segments of unequal width. */
+.seg > .seg-thumb{position:absolute;top:0;left:0;height:100%;width:0;
   border-radius:calc(var(--r-well) - 1px);
   background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);
   opacity:0;pointer-events:none;z-index:0;
   transition:transform .24s cubic-bezier(.2,.8,.3,1),
     width .24s cubic-bezier(.2,.8,.3,1),opacity .16s ease}
-.seg-thumb.ready{opacity:1}
-.seg button{position:relative;z-index:1;
-  font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
-  color:var(--dim);border:0;cursor:pointer;white-space:nowrap;
-  transition:background .16s ease,color .16s ease,box-shadow .16s ease}
-.seg button{min-height:34px}
-@media (pointer:coarse){ .seg button{min-height:42px} }
-.seg button + button{border-left:1px solid var(--line)}
-.seg button:hover{color:var(--text)}
-.seg button:hover:not(.on){background:color-mix(in srgb,var(--text) 5%,transparent)}
-.seg button.on{color:var(--text)}
-/* The raised thumb covers the dividers it sits against. */
-.seg button.on,.seg button.on + button{border-left-color:transparent}
-.seg button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
+.seg > .seg-thumb.ready{opacity:1}
 .modeopt{display:flex;align-items:center;gap:8px}
 .mcnote{font-size:12.5px;line-height:1.5}
 .mcnote b{color:var(--text);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}

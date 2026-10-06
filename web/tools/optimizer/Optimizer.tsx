@@ -153,7 +153,7 @@ export function Optimizer() {
           <CardContent>
             <div className="field op-modefield">
               <Label className="mb-1.5"><span>Start from<TipDot k="opmode" /></span></Label>
-              <Segmented id="opModeSeg" className="seg op-modeseg" attr="data-opmode" options={[["ret", "Retirement day"], ["now", "Today"]] as const}
+              <Segmented id="opModeSeg" size="fill" attr="data-opmode" options={[["ret", "Retirement day"], ["now", "Today"]] as const}
                 value={v.now ? "now" : "ret"} onChange={setMode} />
               <input type="hidden" id="opMode" value={s.mode} />
             </div>

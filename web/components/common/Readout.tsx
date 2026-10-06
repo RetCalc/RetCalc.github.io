@@ -3,6 +3,7 @@
 
 import type { ReactNode } from "react";
 import { BigValue } from "./BigValue";
+import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 /** One figure in a panel's headline: its label, the number, a note under it. */
 /** `sized: false` leaves the figure at the CSS's own size (for a dash). */
@@ -26,15 +27,15 @@ export function KV({ k, v, cls, id }: { k: ReactNode; v: ReactNode; cls?: string
 
 /** A row of buttons, one of them on. `attr` names the data attribute each
     button carries its value in (data-dt="avalanche"), as the old markup did. */
-export function Segmented<V extends string | number>({ id, className = "seg", attr, options, value, onChange, hidden, disabled }: {
-  id?: string; className?: string; attr: `data-${string}`; options: readonly (readonly [V, string])[];
+export function Segmented<V extends string | number>({ id, size, attr, options, value, onChange, hidden, disabled }: {
+  id?: string; size?: "default" | "compact" | "fill"; attr: `data-${string}`; options: readonly (readonly [V, string])[];
   value: V; onChange: (v: V) => void; hidden?: boolean; disabled?: (v: V) => boolean;
 }) {
   return (
-    <span className={className} id={id} hidden={hidden}>
+    <SegmentedGroup size={size} id={id} hidden={hidden}>
       {options.map(([v, label]) => (
-        <button key={String(v)} type="button" {...{ [attr]: v }} className={value === v ? "on" : undefined} disabled={disabled?.(v)} onClick={() => onChange(v)}>{label}</button>
+        <SegmentedItem key={String(v)} {...{ [attr]: v }} pressed={value === v} disabled={disabled?.(v)} onClick={() => onChange(v)}>{label}</SegmentedItem>
       ))}
-    </span>
+    </SegmentedGroup>
   );
 }
