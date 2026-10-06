@@ -13,6 +13,25 @@ h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 /* Scenario picker, Save, Share and Reset join into one toolbar; household
    and theme keep their own keys beside it. */
 .scenariobar{margin-left:auto;display:flex;gap:8px;align-items:center}
+/* Trial, homepage only (2026-10-06): on desktop, once the tab rail is
+   pinned and the masthead has scrolled away, the scenario controls and the
+   household and theme buttons ride along in the rail's empty right side,
+   centered on it. Scrolling back up returns them to the masthead. The
+   controls are the masthead's own (same elements, same ids), just fixed in
+   place while the rail is pinned. */
+@media (min-width:1024px){
+  body:has(#tab-simple):has(.navbar.stuck) .scenariobar{
+    position:fixed;z-index:31;
+    top:calc(var(--sb-clear) + (var(--railh, var(--navh)) - 36px) / 2);
+    right:max(var(--gr), calc((100% - 1330px) / 2 + var(--gr)));
+    animation:railtools-in .18s cubic-bezier(.2,.7,.3,1)}
+  /* The header is its own stacking layer (z-index 1), under the rail (30);
+     while the rail is pinned the header lifts above it so the controls show.
+     By then the rest of the header has scrolled out of view. */
+  body:has(#tab-simple):has(.navbar.stuck) header{z-index:31}
+}
+@keyframes railtools-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .scenariobar{animation:none !important} }
 .scgroup{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:var(--r-well);
   overflow:hidden;background:var(--panel);box-shadow:var(--edge-up)}
 .scgroup .btn{border:0;border-left:1px solid var(--line);border-radius:0;box-shadow:none;
