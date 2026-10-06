@@ -19,7 +19,7 @@ import { MORTGAGE_DEF as DEF, dur, mortgageCompute, when, type Inputs } from "./
 import { useShareKit } from "@/components/shell/share";
 import { mortgageShare } from "./share";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SERIES } from "@/lib/hues";
+import { SERIES, hatched } from "@/lib/hues";
 
 
 
@@ -78,8 +78,8 @@ export function Mortgage() {
   ];
   if (R.pmi > 0) bars.push(["Mortgage insurance (PMI)", R.pmi, SERIES.rose]);
   if (R.hoa > 0) bars.push(["HOA dues", R.hoa, SERIES.gray]);
-  if (R.maint > 0) bars.push(["Maintenance", R.maint, SERIES.lavender]);
-  if (R.util > 0) bars.push(["Utilities", R.util, SERIES.teal]);
+  if (R.maint > 0) bars.push(["Maintenance", R.maint, hatched(SERIES.lavender)]);
+  if (R.util > 0) bars.push(["Utilities", R.util, hatched(SERIES.teal)]);
 
   // Extra payments and refinancing, measured against the same loan without them.
   let extra: React.ReactNode = null;

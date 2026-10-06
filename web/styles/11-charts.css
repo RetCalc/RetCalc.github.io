@@ -27,6 +27,9 @@ svg{display:block;width:100%;height:auto}
 /* A tooltip line's key: the series' swatch before a label in the text color,
    so the line never relies on colored text. */
 .tipsw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:0}
+/* A hatched series (lib/hues.ts): its color with diagonal stripes in the
+   surface tone, on swatches, legend keys and share bars alike. */
+.hatch{background-image:repeating-linear-gradient(135deg,transparent 0 3px,color-mix(in srgb,var(--ds-surface) 70%,transparent) 3px 5px)}
 
 .note-list{font-size:12px;color:var(--dim);line-height:1.75;margin:0;padding-left:17px}
 .note-list li{margin-bottom:6px}

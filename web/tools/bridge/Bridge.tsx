@@ -37,13 +37,13 @@ import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SERIES } from "@/lib/hues";
+import { SERIES, hatched } from "@/lib/hues";
 
 const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
 /* Where each year's spending comes from, in the chart series. The engine
    lists the categories (with colors of its own, unused here). */
 const CAT_COLOR: Record<string, string> = {
-  work: SERIES.gray, brok: SERIES.sky, rothBasis: SERIES.teal, rung: SERIES.guide,
+  work: SERIES.gray, brok: SERIES.sky, rothBasis: SERIES.teal, rung: hatched(SERIES.teal),
   sepp: SERIES.rose, r55: SERIES.lavender, early: SERIES.loss,
 };
 const CATS = BR_CATS.map((c) => ({ ...c, c: CAT_COLOR[c.k] ?? SERIES.gray }));

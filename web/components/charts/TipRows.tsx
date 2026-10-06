@@ -1,11 +1,11 @@
 /* The lines inside a chart's tooltip, from tipRows() in src/js/app/04-charts.js. */
 import { money } from "@/lib/format";
-import { BAND_INNER, SERIES } from "@/lib/hues";
+import { BAND_INNER, SERIES, baseColor, hatchClass } from "@/lib/hues";
 import type { BandPoint } from "./BandChart";
 
 /** One line: the series' swatch, a label and its dollar figure. */
 export function TipRow({ color, label, value, fmt = money }: { color: string; label: React.ReactNode; value: number; fmt?: (v: number) => string }) {
-  return <><br /><i className="tipsw bg-(--swatch)" style={{ "--swatch": color } as React.CSSProperties}></i>{label} <span className="n">{fmt(value)}</span></>;
+  return <><br /><i className={"tipsw bg-(--swatch)" + hatchClass(color)} style={{ "--swatch": baseColor(color) } as React.CSSProperties}></i>{label} <span className="n">{fmt(value)}</span></>;
 }
 
 /** A market-history or Monte Carlo fan: its five percentiles. */

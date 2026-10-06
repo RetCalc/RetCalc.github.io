@@ -78,6 +78,15 @@ copies changed:
 Everything else in the ten copied charts is unchanged (checked by opening
 every summary and saving every card on both builds, in both themes).
 
+Later, the series fixes (2026-10-06) changed three more copied charts, on
+purpose: the Drawdown fan (#chartDD) draws its "each starting year" traces
+in the muted guide tone (#8b97ad on the card) and outlines its bands
+(dashed outer, solid inner); Bridge (#chartBR) draws ladder rungs as
+hatched teal; and the Tax donut draws pre-tax deductions as hatched gray.
+The hatches are SVG patterns whose stripes use the screen's surface color,
+so on the card they take whatever theme the page was in: settle that in
+the share/print pass.
+
 ### Escape inside a dialog's select list also closes the dialog
 
 Found 2026-10-06 (keyboard test of the selects; also on 1e59077, so not

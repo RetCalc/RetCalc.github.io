@@ -7,6 +7,9 @@
 
 import { ChartFrame, HoverMarks, XAxis, YAxis, useChartSize } from "./ChartFrame";
 import { niceAxis } from "./scale";
+import { useId } from "react";
+import { HatchDefs } from "./HatchDefs";
+import { svgPaint } from "@/lib/hues";
 
 export interface StackBar {
   label: React.ReactNode;
@@ -33,11 +36,13 @@ export function StackedBars({ id, bars, cats, ariaLabel, tip }: Props) {
   const X = (i: number) => L + slot * (i + 0.5);
   const Y = (v: number) => T + ph - (v / span) * ph;
   const bw = Math.max(1.5, Math.min(slot * 0.72, 56 * sw));
+  const hp = "hatch" + useId().replace(/:/g, "");
 
   return (
     <ChartFrame id={id} ariaLabel={ariaLabel} size={size} xs={bars.map((_, i) => X(i))} tip={tip}>
       {(hi) => (
         <>
+          <defs><HatchDefs prefix={hp} colors={cats.map((c) => c.c)} /></defs>
           <YAxis size={size} ticks={AX.ticks} Y={Y} />
           <XAxis size={size} count={n} last={n - 1} X={X} label={(i) => bars[i].label} />
           {bars.map((b, i) => {
@@ -49,7 +54,7 @@ export function StackedBars({ id, bars, cats, ariaLabel, tip }: Props) {
                   if (!(v > 0.5)) return null;
                   const y0 = Y(acc), y1 = Y(acc + v);
                   acc += v;
-                  return <rect key={c.k} x={X(i) - bw / 2} y={y1} width={bw} height={Math.max(0.5, y0 - y1)} fill={c.c} />;
+                  return <rect key={c.k} x={X(i) - bw / 2} y={y1} width={bw} height={Math.max(0.5, y0 - y1)} fill={svgPaint(c.c, hp)} />;
                 })}
                 {(b.tick || 0) > 0.5 ? (
                   <line x1={X(i) - bw / 2 - 1} x2={X(i) + bw / 2 + 1} y1={Y(b.tick!)} y2={Y(b.tick!)}

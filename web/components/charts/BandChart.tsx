@@ -85,7 +85,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
         return (
           <>
             <defs>
-              {([["fanOuter", .16, .02], ["fanInner", .30, .06], ["bandFill", .20, .05]] as const).map(([name, a, b]) => (
+              {([["fanOuter", .16, .08], ["fanInner", .30, .18], ["bandFill", .20, .05]] as const).map(([name, a, b]) => (
                 <linearGradient key={name} id={g(name)} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={cHi} stopOpacity={a} />
                   <stop offset="100%" stopColor={cHi} stopOpacity={b} />
@@ -101,10 +101,12 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             <YAxis size={size} ticks={AX.ticks} Y={Y} />
             <XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} />
 
-            {/* Every starting year as its own faint line, under the shading. */}
+            {/* Every starting year as its own faint line, under the shading: thin
+                and in the muted guide tone, a texture behind the bands rather
+                than a series competing with them. */}
             {traces?.lines.length ? (
-              <g clipPath={`url(#${g("trc")})`} fill="none" stroke={SERIES.sky} strokeLinejoin="round" className="traces"
-                strokeOpacity={traces.lines.length > 400 ? .055 : traces.lines.length > 60 ? .13 : .18} strokeWidth={.9 * sw}>
+              <g clipPath={`url(#${g("trc")})`} fill="none" stroke={SERIES.guide} strokeLinejoin="round" className="traces"
+                strokeOpacity={traces.lines.length > 400 ? .07 : traces.lines.length > 60 ? .14 : .2} strokeWidth={.6 * sw}>
                 {traces.lines.map((ln, k) => {
                   const at: [number, number][] = [];
                   for (let i = 0; i < traces.xs.length && i < ln.length; i++) {
@@ -120,6 +122,15 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
               <>
                 <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={`url(#${g("fanOuter")})`} />
                 <path d={ribbon((a) => a.p75!, (a) => a.p25!)} fill={`url(#${g("fanInner")})`} />
+                {/* The bands' edges: dashed for the outer one (10th to 90th),
+                    solid for the inner one (25th to 75th), so each reads as a
+                    shape by line style as well as by shade. */}
+                <g fill="none" stroke={cHi} strokeLinejoin="round">
+                  <path d={line((a) => a.hi!)} strokeWidth={sw} strokeDasharray="4 3" strokeOpacity={.75} />
+                  <path d={line((a) => a.lo!)} strokeWidth={sw} strokeDasharray="4 3" strokeOpacity={.75} />
+                  <path d={line((a) => a.p75!)} strokeWidth={1.2 * sw} strokeOpacity={.9} />
+                  <path d={line((a) => a.p25!)} strokeWidth={1.2 * sw} strokeOpacity={.9} />
+                </g>
               </>
             ) : (
               <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={`url(#${g("bandFill")})`} />
