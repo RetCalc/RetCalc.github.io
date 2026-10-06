@@ -348,7 +348,14 @@ The site should feel alive in small ways: a tool icon that acts out what it does
 - **No endless loops,** except loading states.
 - **Every input gets it:** an animation that plays on hover also plays on keyboard focus (`:focus-visible`) and on tap. Nothing is hover-only.
 - **Reduced motion:** under `prefers-reduced-motion: reduce`, every animation becomes a plain color or border change (for a tool card: the icon tile's border turns Muted and the name turns Text). Nothing moves.
-- **Numbers stay still:** the key result, readout figures, table cells and chart values update in place: no counting up, no rolling digits, no tweened values. A chart may fade in once when it first appears; it never animates a change in its data.
+- **Numbers stay still,** with one exception: table cells, totals, inline figures and chart values update in place, with no counting up, rolling digits or tweened values. A chart may fade in once when it first appears; it never animates a change in its data. The exception is the headline readout's count (below), which stays as it is.
+
+### The headline count (kept as is)
+The large figures in the headline readouts count from their old value to the new one when an input changes. It is `BigValue` (`web/components/common/BigValue.tsx`), used through `Readout` by every tool's headline and by Advanced, Stages, Backtest, Fire and Drawdown directly. How it works today, to be kept exactly:
+- The new text is written first, then a `requestAnimationFrame` loop counts over 240ms with a cubic ease-out (`1 - (1 - k)^3`), so an interrupted count never leaves an old figure on screen.
+- The count matches the number inside the text (`$`, commas and decimals kept to the new value's format, and any suffix such as " years" carried along), and only runs when the old and new text share the same prefix.
+- It does nothing on the first render, when the value is unchanged, when the figure is hidden, or under `prefers-reduced-motion: reduce`, where the new value simply appears.
+- Separately, its type steps down as the text gets longer (29px for up to 11 characters, then 26, 23, 20, 17 and 15px), so a long result fits its column.
 
 ### Where motion is welcome
 - Tab switches: the amber arrow sliding under the new tab, and the incoming pane rising a few pixels as it fades in.
@@ -359,7 +366,7 @@ The site should feel alive in small ways: a tool icon that acts out what it does
 - The tool-picker icons.
 
 ### Where it isn't
-- Figures of any kind: readouts, tables, chart values, totals.
+- Figures of any kind (tables, chart values, totals), other than the headline count above.
 - Inputs while someone is typing, and validation (no shaking fields).
 - Table rows and list items arriving on every update.
 - Scroll-linked effects, parallax, ambient or background motion.
@@ -455,7 +462,7 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 - **Don't** use gradient washes, radial glows, glassmorphism, text glows, lit edges or bevelled keys.
 - **Don't** put shadows on anything that doesn't float.
 - **Don't** use hype, gamification (points, badges, streaks, confetti), money emoji, or stock photos of retirees. The bow-and-arrow brand motif is not gamification.
-- **Don't** animate figures: no counting up, rolling digits or tweened values.
+- **Don't** animate figures (no counting up, rolling digits or tweened values) other than the headline readout's existing count.
 - **Don't** redraw, recolor or restyle the brand mark.
 - **Don't** lay out three identical feature cards or center everything.
 - **Don't** bring back the previous system's indigo ground, jade and gold UI accents (the brand mark keeps its own colors), Instrument Sans, or monospace figures.

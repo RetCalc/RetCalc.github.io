@@ -21,6 +21,9 @@ layouts. The bow-and-arrow progress animations on the Guide and the Plan
 Optimizer are brand elements, not gamification, and stay (see Must keep).
 Some playfulness and motion is welcome; DESIGN.md's Motion section sets
 the rules.
+The headline readouts' count-up (BigValue.tsx: a 240ms count from the old
+figure to the new one, off under reduced motion) stays exactly as it is;
+it is the one exception to "numbers update plainly".
 
 ## References
 ProjectionLab (category), Stripe or Linear (restraint, typography),

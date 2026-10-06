@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T15:43:43.685Z",
+  "generatedAt": "2026-10-06T16:18:14.374Z",
   "title": "Design System: RetCalc",
   "extensions": {
     "colorMeta": {
@@ -839,7 +839,7 @@
       "Don't use gradient washes, radial glows, glassmorphism, text glows, lit edges or bevelled keys.",
       "Don't put shadows on anything that doesn't float.",
       "Don't use hype, gamification (points, badges, streaks, confetti), money emoji, or stock photos of retirees. The bow-and-arrow brand motif is not gamification.",
-      "Don't animate figures: no counting up, rolling digits or tweened values.",
+      "Don't animate figures (no counting up, rolling digits or tweened values) other than the headline readout's existing count.",
       "Don't redraw, recolor or restyle the brand mark.",
       "Don't lay out three identical feature cards or center everything.",
       "Don't bring back the previous system's indigo ground, jade and gold UI accents (the brand mark keeps its own colors), Instrument Sans, or monospace figures.",
