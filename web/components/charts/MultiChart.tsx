@@ -10,7 +10,9 @@ import { fmtAxisMoney } from "./scale";
 import { money } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 
-export const MULTI_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky];
+/* For charts of equal alternatives (Compare's saved scenarios), so none is
+   amber: amber means the visitor's own plan, and these are all theirs. */
+export const MULTI_COLORS: string[] = [SERIES.sky, SERIES.teal, SERIES.rose];
 
 export interface Series {
   name: string;

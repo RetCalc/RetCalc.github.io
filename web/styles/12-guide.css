@@ -301,7 +301,9 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-chart .ln.b{stroke:var(--ds-series-gray)}
 .gd-chart .band.p{fill:var(--ds-series-plan);fill-opacity:.15}
 .gd-chart .band.b{fill:var(--ds-series-gray);fill-opacity:.15}
-.gd-chart .tr path{fill:none;stroke:var(--ds-series-sky);stroke-opacity:.14;stroke-width:1;stroke-linejoin:round}
+/* Each historical start as a faint line in the muted guide tone: texture
+   behind the band, as on the Drawdown fans. */
+.gd-chart .tr path{fill:none;stroke:var(--ds-muted);stroke-opacity:.16;stroke-width:.8;stroke-linejoin:round}
 .gd-chart .dot{stroke:var(--panel);stroke-width:2}
 .gd-chart .dot.p{fill:var(--ds-series-plan)}
 .gd-chart .dot.b{fill:var(--ds-series-gray)}
