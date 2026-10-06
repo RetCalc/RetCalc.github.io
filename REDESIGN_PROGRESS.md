@@ -1,0 +1,117 @@
+# Redesign progress
+
+The site-wide redesign pass, after Basic (the homepage, the reference for
+the quality bar and patterns). Started 2026-10-06 on branch `redesign`.
+Updated and committed after every page; if a session is interrupted,
+re-read this file and resume from the first item that isn't done.
+
+Status: **todo**, **in progress**, **done**, **reverted** (with the reason
+in REDESIGN_NOTES.md). Per page, Phase 1 is: critique, shape (plan in
+`redesign-baseline/plans/<page>.md`, not committed), implement, polish,
+checks, one commit.
+
+Hard stops, checks and the e2e rules are in the brief this pass was given;
+the short form: no calculation, figure, data, disclaimer, privacy or
+"how it's calculated" text, route, id, data-attribute, theme-toggle or
+navigation-structure changes; logo shape and dark colors stay; logged
+behavior bugs stay logged. Each recommendation skipped for a hard stop goes
+under "Skipped from critique" in REDESIGN_NOTES.md.
+
+## Setup
+
+| Step | Status | Notes |
+|---|---|---|
+| Inventory and this file | done | |
+| Before screenshots of every page (desktop, phone, dark, light) | done | `redesign-baseline/pages-before/` |
+| Baseline full e2e at the Basic commit | done | 8fa1e04: 72 passed, 102 failed (old-site look), 2 skipped |
+| Shared: hero reading as a component and a DESIGN.md variant | done | |
+| Shared: masthead controls in the pinned rail, site-wide | done | REDESIGN_NOTES.md, Planned |
+
+## Phase 1: page pass
+
+### Calculators
+| Page | Route | Status | Commit | Notes |
+|---|---|---|---|---|
+| Advanced | /advanced | todo | | follows Basic closely |
+| Stages | /stages | todo | | same input width as Advanced |
+
+### Tools (Drawdown and Income Tax first)
+| Page | Route | Status | Commit | Notes |
+|---|---|---|---|---|
+| Drawdown Simulator | /drawdown | todo | | template for the 8 strategy pages |
+| Income Tax | /incometax | todo | | |
+| Plan Optimizer | /optimizer | todo | | bow-and-arrow loader: Phase 2 |
+| Early Retirement Bridge | /bridge | todo | | |
+| 72(t) | /72t | todo | | Bridge's page; checked with it |
+| Roth Conversion & RMDs | /roth | todo | | |
+| RMDs | /rmd | todo | | Roth's page; checked with it |
+| Healthcare Cost Planner | /healthcare | todo | | |
+| FIRE Calculator | /fire | todo | | |
+| Portfolio Backtest | /backtest | todo | | |
+| College Savings | /college | todo | | |
+| Rent vs. Buy | /rentbuy | todo | | |
+| Budget | /budget | todo | | |
+| Debt Payoff | /debt | todo | | |
+| Mortgage Calculator | /mortgage | todo | | |
+
+### Content pages
+| Page | Route | Status | Commit | Notes |
+|---|---|---|---|---|
+| Guide | /guide | todo | | bow-and-arrow progress: Phase 2 |
+| Tools | /tools | todo | | icon motion: Phase 2 |
+| About | /about | todo | | |
+| Compare | /compare | todo | | opened from Save; no sitemap entry |
+| Tool Help (the docked help panel) | on every tool | todo | | shared CoachPanel |
+| Not found | (404) | todo | | |
+
+### Withdrawal-strategy landing pages (Drawdown template)
+Critique one representative, apply to all, check each.
+
+| Page | Route | Status | Commit | Notes |
+|---|---|---|---|---|
+| The 4% rule | /4-percent-rule | todo | | representative |
+| Guardrails | /guardrails | todo | | |
+| Risk-based guardrails | /risk-based-guardrails | todo | | |
+| Ratcheting | /ratcheting-withdrawal | todo | | |
+| VPW | /vpw | todo | | |
+| Vanguard dynamic spending | /vanguard-dynamic-spending | todo | | |
+| CAPE-based | /cape-withdrawal | todo | | |
+| RMD-based | /rmd-withdrawal-strategy | todo | | |
+
+Not a page: `/[slug]` serves placeholders for pages that don't have their
+own route yet; every page has one now, so it renders nothing.
+
+## Phase 2: motion
+| Piece | Status | Commit | Notes |
+|---|---|---|---|
+| Tool-picker icon animations | todo | | |
+| Guide bow-and-arrow progress | todo | | |
+| Optimizer bow-and-arrow loader | todo | | |
+| Page transitions, tab switches, press, panels | todo | | |
+
+## Phase 3: share card and print summary
+| Piece | Status | Commit | Notes |
+|---|---|---|---|
+| Print summaries (10) | todo | | white paper, graphite text |
+| Share image cards (16) | todo | | graphite and amber, Plex Sans |
+| Logged color items (Rent vs. Buy, Bridge 72(t), Tax state slice, hatch stripes) | todo | | |
+
+## Phase 4: audit
+| Step | Status | Notes |
+|---|---|---|
+| /impeccable audit, site-wide | todo | |
+| Fixes, one commit per kind | todo | |
+
+## Phase 5: fresh-agent review
+| Step | Status | Notes |
+|---|---|---|
+| Review round 1 | todo | |
+| Fixes | todo | |
+| Review round 2 on the fixed pages | todo | |
+
+## Finish
+| Step | Status | Notes |
+|---|---|---|
+| Final checks, full e2e, smoke, overflow, screenshots | todo | |
+| REDESIGN_REPORT.md | todo | |
+| Push, preview URL | todo | no PR, no merge |
