@@ -38,7 +38,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 ### Tools (Drawdown and Income Tax first)
 | Page | Route | Status | Commit | Notes |
 |---|---|---|---|---|
-| Drawdown Simulator | /drawdown | todo | | template for the 8 strategy pages |
+| Drawdown Simulator | /drawdown | done | 7cfb953 | thirds, hero reading (success rate in its rating tone), views as tabs each with its own answer, plan as a story, token heat grid; strategy pages share it |
 | Income Tax | /incometax | todo | | |
 | Plan Optimizer | /optimizer | todo | | bow-and-arrow loader: Phase 2 |
 | Early Retirement Bridge | /bridge | todo | | |
