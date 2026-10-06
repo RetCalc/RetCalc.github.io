@@ -224,8 +224,10 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
       only the production deployment, `VERCEL_ENV=production`, is indexable)
 - [x] Add Cloudflare Web Analytics, the current site's token, production only (previews don't
       count as visits)
-- [ ] retcalc.app's DNS pointed at Vercel
-- [ ] Old site left deployable on GitHub Pages for rollback
+- [x] retcalc.app's DNS pointed at Vercel (2026-10-05): `CNAME` `@` and `www` →
+      `c74758444c2cb8bd.vercel-dns-017.com`, DNS only; `www` 308-redirects to `retcalc.app`.
+      Vercel's production branch is now `main`
+- [x] Old site left deployable on GitHub Pages for rollback
 - **Rollback:** in Cloudflare (DNS for retcalc.app), put back the records as they were
   before the switch, all "DNS only" (grey cloud):
   - `A` `retcalc.app` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
@@ -241,6 +243,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 6 | Switched: retcalc.app served by Vercel from `main`. HTTPS, `www` redirect, old `.html` addresses redirected, robots and sitemap (29 pages), canonical tags and Cloudflare analytics checked on the live domain. Two-week watch starts |
 | 2026-10-05 | 5 | Share menu (printable summary and image card on every tool), About page, page-change motion and the icon glide. Review against the Vercel skills: tool help and guide coach load on first use (tours and trips off every page), shared pieces for print rows, sortable headings (now keyboard-usable), panel folding, the Bridge routes checklist and repeated helpers. web-design-guidelines: keyboard fixes applied, wording and visual items left for the redesign. vercel-optimize: code scan clean (0 findings); its traffic audit needs Observability Plus (paid), so skipped. 174 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
 | 2026-10-05 | 4 | Review against the Vercel skills: the Save menu no longer pulls the engine onto every page (tools and about back to 192 KB); the Bridge and plan engines load only on the Bridge (every calculator page about 12 KB lighter); Advanced and Stages share their headline and chart panel; shared helpers for field dollars, the Income Tax handoff, the glide note, chart paths. All 55 checks unchanged |
 | 2026-10-05 | 4 | Early Retirement Bridge and 72(t), Advanced, Stages, Compare; shared chart frame, account math and dialogs. 55 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
