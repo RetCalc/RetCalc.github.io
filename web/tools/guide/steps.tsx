@@ -391,7 +391,7 @@ function Lasting() {
         {" "}with each year&apos;s income tax{S.hcYears ? ", health insurance before Medicare" : ""} and any Medicare surcharge paid on top, Social Security from {S.ss.claim}{S.pension ? ", your pension" : ""} and {S.mix}% in stocks.</Lead>
       <BackNote step="lasting" />
       <div className="gd-stats">
-        <div><div className="k">Success rate</div><div className={"v " + (r >= 0.85 ? "jade" : "gold")}>{pctStr(r, 0)}</div><div className="n">{S.H.survived} of {S.H.total} starting years</div></div>
+        <div><div className="k">Success rate</div><div className={"v " + (r >= 0.85 ? "pos" : "mid")}>{pctStr(r, 0)}</div><div className="n">{S.H.survived} of {S.H.total} starting years</div></div>
         <div><div className="k">Length tested</div><div className="v">{S.years} years</div><div className="n">To age {Math.round(S.retire) + S.years}</div></div>
         <div><div className="k">Typical balance left</div><div className="v">{money(S.H.medianEnd)}</div><div className="n">In today&apos;s dollars</div></div>
       </div>

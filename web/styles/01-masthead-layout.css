@@ -22,7 +22,7 @@ html[data-theme="light"] .brand::before{background:radial-gradient(closest-side,
 html[data-theme="light"] .brandmark{filter:none}
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .wordmark .brandname{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.05}
-.tagline{font-size:13.5px;color:var(--gold);margin-top:5px;letter-spacing:-.005em}
+.tagline{font-size:13.5px;color:var(--dim);margin-top:5px;letter-spacing:-.005em}
 /* Scenario picker, Save, Share and Reset join into one toolbar; household
    and theme keep their own keys beside it. */
 .scenariobar{margin-left:auto;display:flex;gap:8px;align-items:center}
@@ -57,7 +57,7 @@ aside::-webkit-scrollbar-track{background:transparent}
 aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;border:0}
 aside::-webkit-scrollbar-thumb:hover{background:var(--dimmer)}
 
-.about a.mailme{color:var(--jade)}
+.about a.mailme{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}
 /* ---------- about this tool (the page's written explanation) ---------- */
 /* Under the tool, in the results column: the sidebar is sticky and runs the
    height of the page, so the article can't span it. Full width where there's
@@ -75,7 +75,8 @@ main.solo .seo{grid-column:1 / -1}
 .seo-a.about h3{text-transform:none;letter-spacing:0;font-size:13.5px}
 .seo-a .body li{font-size:13.5px;line-height:1.7;color:var(--dim);margin-bottom:6px}
 .seo-a .body ul{margin:0 0 12px}
-.seo-a a{color:var(--jade)}
+.seo-a a{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}
+.seo-a a:hover{text-decoration-color:currentColor}
 .seo-a details{border-top:1px solid var(--line-soft);padding:9px 0}
 .seo-a details:last-child{border-bottom:1px solid var(--line-soft)}
 .seo-a summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text);list-style-position:outside}

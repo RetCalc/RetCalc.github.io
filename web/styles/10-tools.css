@@ -10,7 +10,7 @@
 .derived.txtotal div{padding:2px 0}
 .derived.txtotal span{font-size:12.5px;color:var(--text);font-weight:600}
 .derived.txtotal .num{font-family:var(--mono);font-variant-numeric:tabular-nums;
-  font-size:13px;color:var(--gold)}
+  font-size:13px;color:var(--text)}
 #txStackWrap{width:100%;overflow:hidden}
 #txStack{width:100%;height:auto;display:block}
 .stacklegend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;
@@ -54,20 +54,21 @@
 .signflip{background:transparent;border:0;color:var(--dimmer);font-size:14px;
   padding:0 8px;cursor:pointer;flex:none;line-height:1;box-shadow:none;
   transition:color .14s ease}
-.signflip:hover{color:var(--gold)}
+.signflip:hover{color:var(--text)}
 .signflip.on{color:var(--coral)}
 
 /* ---------- optional toggles ---------- */
 .adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
   color:var(--dim);cursor:pointer;white-space:nowrap;
-  background:rgba(79,191,149,.05);border:1px solid var(--jade-line);border-radius:var(--r-well);
-  padding:6px 8px;transition:border-color .14s ease,background .14s ease}
-.adjrow:hover{border-color:var(--jade-line-hi);background:rgba(79,191,149,.09)}
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-well);
+  padding:6px 8px;transition:border-color .14s ease}
+.adjrow:hover{border-color:var(--ds-rule-strong)}
+.adjrow:has(input:checked){border-color:var(--ds-rule-strong)}
 .adjrow-top{display:flex;align-items:center;min-width:0;flex:1 1 auto}
 .adjrow input{accent-color:var(--ds-text);width:15px;height:15px;flex:none;
   margin:0 6px 0 0;cursor:pointer}
 .adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.adjnote{font-family:var(--mono);color:var(--gold);font-size:11.5px;
+.adjnote{font-family:var(--mono);color:var(--dim);font-size:11.5px;
   letter-spacing:-.02em;margin-left:auto;flex:none}
 .adjnote:empty{display:none}
 
@@ -82,22 +83,21 @@
 .stagegrid > .stageglide{display:none}
 .stageglide .glidebtn{align-self:stretch}
 .glidebtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
-  background:rgba(79,191,149,.05);border:1px solid var(--jade-line);border-radius:var(--r-well);
+  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-well);
   padding:9px 10px;cursor:pointer;font-family:var(--sans);font-size:12.5px;
   color:var(--dim);box-shadow:none;
   transition:border-color .14s ease,background .14s ease}
-.glidebtn:hover{border-color:var(--jade-line-hi);background:rgba(79,191,149,.09)}
+.glidebtn:hover,.glidebtn.on{border-color:var(--ds-rule-strong)}
 .glidebtn-check{width:16px;height:16px;flex:none;border-radius:5px;
   border:1.5px solid var(--dimmer);position:relative;
   transition:background .16s ease,border-color .16s ease}
-.glidebtn.on .glidebtn-check{background:var(--jade);border-color:var(--jade);
-  box-shadow:0 0 12px -2px rgba(79,191,149,.7)}
+.glidebtn.on .glidebtn-check{background:var(--text);border-color:var(--text)}
 .glidebtn.on .glidebtn-check::after{content:"";position:absolute;left:4.5px;top:1.5px;
-  width:4px;height:8px;border:solid #04211a;border-width:0 2px 2px 0;
+  width:4px;height:8px;border:solid var(--panel);border-width:0 2px 2px 0;
   transform:rotate(40deg)}
 .glidebtn-txt{flex:1 1 auto;min-width:0;display:flex;align-items:center}
-.glidefields{margin-top:8px;padding:10px 10px 2px;background:rgba(79,191,149,.04);
-  border:1px solid var(--jade-line);border-radius:var(--r-well);
+.glidefields{margin-top:8px;padding:10px 10px 2px;background:var(--panel-2);
+  border:1px solid var(--line);border-radius:var(--r-well);
   display:flex;flex-direction:column;gap:8px}
 /* Desktop stage cards: a compact glide toggle with its settings in line
    beside it, labels to the left of each input, instead of a full-width
@@ -138,7 +138,7 @@
 /* The chosen strategy, under the picker: its family, what it does, and its
    spending through a hard start */
 .ddstrat{margin-top:8px;padding:10px 12px 9px;border:1px solid var(--line-soft);border-radius:var(--r-well);
-  background:rgba(233,184,114,.04)}
+  background:var(--panel-2)}
 .ddstrat:empty{display:none}
 .ddstrat-fam{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddstrat-blurb{font-size:12px;color:var(--dim);margin-top:3px;line-height:1.45}
@@ -192,28 +192,27 @@
 /* ---------- roth conversion ---------- */
 /* The year the survivor starts filing single is the hinge of the whole
    comparison, so it gets a rule of its own in the table. */
-tr.rc-widow > td{border-top:1px solid var(--gold);background:rgba(233,184,114,.06)}
+tr.rc-widow > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
 /* ---------- early retirement bridge ---------- */
 #brCompare td:first-child{font-family:var(--sans);letter-spacing:0;min-width:210px}
 #brCompare .br-name{display:block;font-size:13px;font-weight:600;color:var(--text)}
 #brCompare .br-desc{display:block;font-size:11.5px;color:var(--dimmer);font-weight:400;margin-top:2px}
-#brCompare .ddrow.sel .br-name{color:var(--jade)}
+#brCompare .ddrow.sel .br-name{color:var(--text)}
 tr.br-off td{color:var(--dimmer)}
 tr.br-off .br-name{color:var(--dim)}
 #brTable tr.br-open > td{color:var(--dim)}
 #brTable td{white-space:nowrap}
 #brTable .br-fpl{font-size:11px;color:var(--dimmer)}
 #brAtTable td:first-child{font-family:var(--sans);letter-spacing:0}
-#brAtTable th.on,#brAtTable td.on{color:var(--jade)}
-#brAtTable td.on{background:rgba(79,191,149,.07)}
+#brAtTable th.on,#brAtTable td.on{color:var(--text);font-weight:600}
+#brAtTable td.on{background:var(--panel-2)}
 #brAtTable tr.br-tot td{font-weight:600;border-top:1px solid var(--line)}
 #brAtTable th .br-yr{display:block;font-size:10.5px;color:var(--dimmer);font-weight:400}
 #brAtOut .br-sub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:1px}
 .br-send{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
 .rc-tier{display:inline-block;margin-left:4px;padding:1px 5px;border-radius:4px;
-  font-size:11px;font-weight:600;color:var(--bg);background:#e2795f;
+  font-size:11px;font-weight:600;color:var(--ds-loss);background:color-mix(in srgb,var(--ds-loss) 15%,var(--panel));
   vertical-align:1px}
-html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 #msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
 
 
@@ -266,7 +265,7 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 .ddstudy-cite{font-size:11.5px;color:var(--dimmer);margin-bottom:8px;line-height:1.45}
 .ddstudy-k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-top:8px}
 .ddstudy p,.ddstudy-sim{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--text)}
-.ddstudy-sim b{color:var(--gold)}
+.ddstudy-sim b{color:var(--text)}
 #ddStratGuide,#ddStudyBtn{display:flex}
 .ddstudy-why{color:var(--dim)!important;font-size:12.5px!important;margin:8px 0 10px!important}
 .ddstudy-t{border-collapse:collapse;margin-top:4px;font-size:12.5px}
@@ -286,7 +285,8 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 #ddShowTable small.neg{color:var(--coral)}
 #ddShowTable td:first-child,#ddShowTable td.ddset{font-family:var(--sans);white-space:nowrap}
 #ddShowTable td.ddset{text-align:left}
-#ddShowTable tr.ddcur td:first-child{color:var(--gold);font-weight:600}
+#ddShowTable tr.ddcur > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
+#ddShowTable tr.ddcur td:first-child{color:var(--text);font-weight:600}
 #ddShowTable tr.ddmiss td{opacity:.78}
 #ddShowTable input[type=checkbox]{accent-color:var(--ds-text);width:15px;height:15px;cursor:pointer;margin:0}
 #ddShowTable th.sortcol{cursor:pointer;user-select:none}
@@ -300,7 +300,7 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 .ddheat th{text-align:center;border:0;position:static;background:none;padding:5px 4px;white-space:nowrap}
 .ddheat thead th:first-child{text-align:left}
 .ddheat tbody th{text-align:right;font-family:var(--mono);font-weight:500;color:var(--dim)}
-.ddheat thead th.ddh-cur,.ddheat tr.ddh-cur th{color:var(--gold)}
+.ddheat thead th.ddh-cur,.ddheat tr.ddh-cur th{color:var(--text);font-weight:700}
 .ddheat td.ddh-me{outline:2px solid var(--ds-focus);outline-offset:-2px;font-weight:700}
 .ddheat td.ddh-na{cursor:default;color:var(--dimmer)}
 [data-empty] .chartwrap,[data-empty] .legend{display:none}

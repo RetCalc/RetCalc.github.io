@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
-const holdCls = (v: number) => (v >= 0.95 ? "pos" : v >= 0.8 ? "gold" : "neg");
+const holdCls = (v: number) => (v >= 0.95 ? "pos" : v >= 0.8 ? "mid" : "neg");
 const PATHS = [["above", "Above average"], ["avg", "Average"], ["below", "Below average"]] as const;
 
 export function Bridge() {
@@ -300,7 +300,7 @@ function Headline({ R }: { R: BridgeRun | null }) {
     <Card size="flush">
       <div className="headline">
         <Figure label="Best way to 59½" id="brBest" className="v gold" value={b.name} noteId="brBestNote" note={b.desc} />
-        <Figure label={<Tipped text="Holds up in" k="brholds" />} id="brHold" className={"v " + (h >= 0.95 ? "jade" : h >= 0.8 ? "gold" : "neg")} value={pctStr(h, 0)} noteId="brHoldNote"
+        <Figure label={<Tipped text="Holds up in" k="brholds" />} id="brHold" className={"v " + (h >= 0.95 ? "pos" : h >= 0.8 ? "mid" : "neg")} value={pctStr(h, 0)} noteId="brHoldNote"
           note={R.mc ? "of " + t.of + " random markets reach 59½ penalty-free" : "of " + t.of + " retirements since " + HIST_START + " reach 59½ penalty-free"} />
         <Figure label={<Tipped text="Cost of the bridge" k="brcost" />} id="brCost" className="v" value={money(st.cost)} noteId="brCostNote"
           note={"Tax, penalties" + (ctx.aca ? " and health premiums" : "") + ", ages " + ages} />

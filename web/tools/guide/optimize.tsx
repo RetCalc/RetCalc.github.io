@@ -44,7 +44,7 @@ export function OptimizeStep() {
       ) : null}
       <H3>What should the best plan do?</H3>
       <OpGoals host="guide" goal={goal} onPick={(g) => G.set("optGoal", g, true)} />
-      <div className="op-go"><Button size="lg" data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
+      <div className="op-go"><Button size="lg" variant={H.res && !stale ? "outline" : "default"} data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
         {H.res && !stale ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
         <span className="hint">{groupDigits(E.runs, true)} retirements to simulate, about {E.secs} seconds. Nothing leaves your browser.</span></div>
       {H.run ? <Progress host="guide" R={H.run} /> : H.res ? (

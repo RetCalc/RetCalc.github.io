@@ -60,7 +60,7 @@ export function DDCompare() {
     ["Withdrawal rate", (x) => (x.r!.o.strategy === "vpw" ? "VPW at " + (x.r!.o.vpwRate || 0).toFixed(2) + "% real" : x.r!.o.initialPct.toFixed(1) + "%")],
     ["Asset mix", (x) => mixText(x.r!.o)],
     ["Periods tested", (x) => x.r!.H.total + ""],
-    ["Success rate", (x) => { const s = x.r!.H.successRate; return <span className={s >= 0.95 ? "pos" : s >= 0.85 ? "gold" : "neg"}>{pctStr(s, 1)}</span>; }],
+    ["Success rate", (x) => { const s = x.r!.H.successRate; return <span className={s >= 0.95 ? "pos" : s >= 0.85 ? "mid" : "neg"}>{pctStr(s, 1)}</span>; }],
     ["Median ending balance", (x) => money(x.r!.H.medianEnd)],
     ["Worst case", (x) => money(x.r!.H.worstEnd)],
     ["Failure years", (x) => { const f = x.r!.H.failYears; return f.length ? f.slice(0, 5).join(", ") + (f.length > 5 ? "…" : "") : "None"; }],

@@ -64,7 +64,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline
 .calcbtn{display:inline-flex;align-items:baseline;gap:7px}
 .calc-mode{display:inline-flex;align-items:baseline;gap:3px;
   font-size:12.5px;font-weight:600;color:var(--dimmer);transition:color .15s ease}
-nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
+nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
 .calc-chev{width:12px;height:12px;flex:none;align-self:center;transition:transform .2s ease}
 .calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
 .navbar.menu-open{z-index:45}
@@ -87,11 +87,11 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
 .calcmenu button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .cm-name{grid-column:1;font-size:14.5px;font-weight:600}
 .cm-desc{grid-column:1;font-size:12.5px;color:var(--dimmer);line-height:1.4;margin-top:2px}
-/* the open mode gets a check, and its name in the tab's jade */
+/* the open mode gets a check, in the text color */
 .calcmenu button::after{content:"";grid-column:2;grid-row:1 / span 2;width:14px;height:8px;
-  border-left:2px solid var(--jade);border-bottom:2px solid var(--jade);
+  border-left:2px solid var(--text);border-bottom:2px solid var(--text);
   transform:translateY(-2px) rotate(-45deg);opacity:0}
-.calcmenu button[aria-checked="true"] .cm-name{color:var(--jade)}
+.calcmenu button[aria-checked="true"] .cm-name{color:var(--text)}
 .calcmenu button[aria-checked="true"]::after{opacity:1}
 .calcscrim{display:none}
 @media (max-width:640px){
@@ -117,7 +117,7 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
 .toolcards{max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
 .toolgroup + .toolgroup{margin-top:30px}
 .toolgroup-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px 2px;
-  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--jade)}
+  font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .toolgroup-h em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;font-size:13px;color:var(--dimmer)}
 .toolgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 /* Eight cards in one column ran past the fold on a laptop, which left the
@@ -147,41 +147,33 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
      they keep a readable measure while the entry grid above uses the space. */
   #tab-budget .kv,#tab-budget .efrow{max-width:620px}
 }
+/* Flat: on hover (and keyboard focus) the card steps up a tone and its edge
+   strengthens. Nothing lifts or glows; the icon acts out its tool. */
 .toolcard{position:relative;display:flex;align-items:center;gap:18px;
   padding:20px 22px;background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--r-panel);box-shadow:var(--lift-1);cursor:pointer;
+  border-radius:var(--r-panel);cursor:pointer;
   text-decoration:none;overflow:hidden;
-  transition:border-color .16s ease,background .16s ease,
-    transform .16s cubic-bezier(.2,.7,.3,1),box-shadow .16s ease}
-.toolcard::before{
-  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--jade);
-  transform:scaleY(0);transform-origin:50% 50%;
-  transition:transform .2s cubic-bezier(.2,.7,.3,1)}
-.toolcard:hover{border-color:var(--jade-line-hi);background:var(--panel-2);
-  transform:translateY(-2px);box-shadow:var(--lift-1),0 18px 34px -22px rgba(0,0,0,.75)}
-.toolcard:hover::before{transform:scaleY(1)}
-/* Each icon sits on a jade tile, the same treatment as the household mark,
-   and the tile warms on hover while the icon acts out its tool. */
-.toolcard-icon{flex:none;width:54px;height:54px;padding:9px;color:var(--jade);
+  transition:border-color .16s ease,background-color .16s ease}
+.toolcard:hover,.toolcard:focus-visible{border-color:var(--ds-rule-strong);background:var(--panel-2)}
+/* The icon sits on a plain tile with a rule edge, in the text color. */
+.toolcard-icon{flex:none;width:54px;height:54px;padding:9px;color:var(--text);
   display:flex;align-items:center;justify-content:center;border-radius:var(--r-card);
-  background:linear-gradient(160deg,rgba(79,191,149,.13),rgba(79,191,149,.03));
-  border:1px solid var(--jade-line);
-  transition:transform .2s cubic-bezier(.2,.7,.3,1),border-color .2s ease,box-shadow .2s ease}
-.toolcard:hover .toolcard-icon{transform:scale(1.04);border-color:var(--jade-line-hi);
-  box-shadow:0 0 24px -8px rgba(79,191,149,.55)}
+  background:var(--panel-2);border:1px solid var(--line);
+  transition:border-color .16s ease}
+.toolcard:hover .toolcard-icon,.toolcard:focus-visible .toolcard-icon{border-color:var(--ds-rule-strong)}
 .toolcard-icon svg{width:100%;height:100%}
 .toolcard-body{flex:1 1 auto;min-width:0}
 .toolcard-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
 .toolcard-desc{font-size:13px;color:var(--dim);line-height:1.5}
 /* The go-arrow is the logo's own arrow (the "›" in the markup is hidden). It
-   rests dim, and on hover turns gold and flies forward a step, as if loosed. */
+   rests dim, and on hover turns to the text color and steps forward. */
 .toolcard-arrow{flex:none;width:38px;height:10px;font-size:0;line-height:0;position:relative}
 .toolcard-arrow::before{content:"";position:absolute;right:7px;top:0;width:30px;height:8px;margin-top:1px;
   background:var(--dimmer);opacity:.7;
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
   transition:transform .28s cubic-bezier(.2,.7,.3,1),background .2s ease,opacity .2s ease}
-.toolcard:hover .toolcard-arrow::before{transform:translateX(7px);background:var(--gold);opacity:1}
+.toolcard:hover .toolcard-arrow::before,.toolcard:focus-visible .toolcard-arrow::before{transform:translateX(7px);background:var(--text);opacity:1}
 
 /* ---------- pane transitions ----------
    Navigation swaps panes by toggling [hidden], which is instantaneous and
@@ -223,18 +215,17 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
 .fire-slider-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:13px}
 .fire-slider-lbl{color:var(--dim)}
 .fire-slider-val{font-family:var(--mono)}
-/* A recessed track like every other well, and a gold thumb that grows under
-   the pointer. */
+/* A track in the strong edge's tone, and a thumb in the text color that
+   grows under the pointer. No glow. */
 .fire-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;
-  background:var(--field);box-shadow:var(--well);outline:none;cursor:pointer;margin:0}
+  background:var(--ds-rule-strong);outline:none;cursor:pointer;margin:0}
 .fire-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;
-  background:var(--gold);cursor:pointer;border:3px solid var(--panel);
-  box-shadow:0 0 0 1px rgba(233,184,114,.5),0 3px 10px -2px rgba(0,0,0,.6);transition:transform .15s ease}
-.fire-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;
-  border:3px solid var(--panel);box-shadow:0 0 0 1px rgba(233,184,114,.5)}
+  background:var(--text);cursor:pointer;border:3px solid var(--panel);transition:transform .15s ease}
+.fire-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;
+  border:3px solid var(--panel)}
 .fire-slider:hover::-webkit-slider-thumb,.fire-slider:active::-webkit-slider-thumb{transform:scale(1.15)}
-.fire-slider:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 3px rgba(233,184,114,.45)}
+.fire-slider:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ds-focus)}
 .fire-slider-ends{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--dimmer)}
-.fire-slider-result{font-size:14px;font-family:var(--mono);color:var(--gold);margin-top:6px;font-weight:600}
-.firow-fire td{background:color-mix(in srgb,var(--gold) 7%,transparent)}
+.fire-slider-result{font-size:14px;font-family:var(--mono);color:var(--text);margin-top:6px;font-weight:600}
+.firow-fire td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
 

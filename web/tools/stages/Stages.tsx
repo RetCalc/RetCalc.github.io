@@ -282,7 +282,7 @@ export function Stages() {
               <div className="note" id="tPerPeriodNote">{F && last ? "Stage " + dn + ", paid " + PERIOD_ADV[last.period] + " for " + fmtYears(last.years) + (mf > 1 ? ", plus the match" : "") : ""}</div>
               <KV k="Per year" id="tPerYear" v={F ? money(F.perYear / mf) : ""} />
               <StageChange F={F} contrib={P.eff[dn - 1]?.contrib ?? 0} mf={mf} />
-              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" onClick={applyContribution}>Use this contribution</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" onClick={applyContribution}>Use this contribution</Button>
             </div>
             <div className="solveopt">
               <div className="optlabel">Option 2 &middot; Final stage length</div>
@@ -290,7 +290,7 @@ export function Stages() {
               <div className="note" id="tYearsNote">{!F ? "" : F.reached ? "Keeping " + money(P.eff[dn - 1].contrib / mf, 2) + " " + PERIOD_ADV[last.period] : "Not reached within 100 years at this contribution."}</div>
               <KV k="Final stage now" id="tYearsNow" v={F && last ? fmtYears(last.years) : ""} />
               <KV k="Whole run becomes" id="tYearsTotal" v={!F ? "" : F.reached ? fmtYears(F.totalIfStretched!) : DASH} />
-              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!!F && !F.reached} onClick={applyYears}>Use this length</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!!F && !F.reached} onClick={applyYears}>Use this length</Button>
             </div>
           </div>
         </Card>

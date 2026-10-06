@@ -21,7 +21,7 @@
   transition:border-color .14s ease,background .14s ease,transform .1s ease}
 .popup .popbtn:hover{border-color:var(--line-hi);background:var(--panel-2)}
 .popup .popbtn .subdesc{display:block;font-size:11.5px;color:var(--dim);margin-top:3px}
-.popup .popbtn .subdesc.money{font-family:var(--mono);font-size:13px;color:var(--jade);font-weight:600}
+.popup .popbtn .subdesc.money{font-family:var(--mono);font-size:13px;color:var(--text);font-weight:600}
 .popup.wide{max-width:420px}
 /* The strategy guide: a reading pop-up, wide enough for pros and cons side by side. */
 .popup.guide{max-width:780px;padding:22px 26px 20px}
@@ -38,7 +38,7 @@
 .sg-cmp td:first-child{color:var(--text);font-weight:500}
 .sg-cmp tbody tr:hover{background:transparent;box-shadow:none}
 .sg-item{border-top:1px solid var(--line-soft);padding:16px 0 4px}
-.sg-item.sg-cur{border-left:2px solid var(--jade);padding-left:14px;margin-left:-16px}
+.sg-item.sg-cur{background:var(--panel-2);border:1px solid var(--ds-rule-strong);border-radius:var(--r-well);padding:14px 14px 4px;margin:8px -15px 0}
 .sg-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .sg-head h4{margin:0;font-size:14.5px;color:var(--text);font-weight:600}
 .sg-tag{font-size:11.5px;color:var(--dimmer)}
@@ -48,7 +48,7 @@
 .sg-pc ul{margin:5px 0 10px;padding-left:18px;font-size:12.5px;color:var(--dim);line-height:1.5}
 .sg-pc li{margin-bottom:4px}
 .sg-item .sg-fit{color:var(--text)}
-.sg-fam{margin:22px 0 2px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.sg-fam{margin:22px 0 2px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .sg-spark{margin:2px 0 10px;max-width:420px}
 .sg-spark .ddspark{height:36px;margin-top:0}
 .sg-spark span{display:block;font-size:11px;color:var(--dimmer);margin-top:2px}
@@ -106,8 +106,8 @@
 #ddStartTable th.sortcol.sort-asc::after,#btTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}
 #ddStartTable th.sortcol.sort-desc::after,#btTable th.sortcol.sort-desc::after{content:"\2193";margin-left:4px;opacity:.7}
 .ddrow:hover{background:var(--panel-2)}
-.ddrow.sel{background:rgba(79,191,149,.11);box-shadow:inset 2px 0 0 var(--jade)}
-.ddrow.sel td:first-child{color:var(--jade);font-weight:600}
+.ddrow.sel > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
+.ddrow.sel td:first-child{color:var(--text);font-weight:600}
 .ddrow:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .toolcard:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 

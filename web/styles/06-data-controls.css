@@ -17,7 +17,9 @@ tbody tr:hover{background:var(--panel-2)}
   white-space:nowrap;font-size:13px}
 .kv.total{font-weight:600;border-top:1px solid var(--line);border-bottom:0;padding-top:12px}
 .kv.total .k{color:var(--text)}
-.pos{color:var(--jade)}.neg{color:var(--coral)}
+.pos{color:var(--ds-gain)}.neg{color:var(--ds-loss)}
+/* The middle of a three-level rating (good / middling / poor): plain text. */
+.mid{color:var(--text)}
 .swipehint{display:none;font-size:11.5px;color:var(--dimmer);padding:0 14px 12px}
 
 /* two ways to hit the same target, side by side */
@@ -27,7 +29,7 @@ tbody tr:hover{background:var(--panel-2)}
 .optlabel{font-size:11.5px;color:var(--dim);margin-bottom:8px;letter-spacing:-.002em}
 .solveopt > .v{font-family:var(--mono);font-size:29px;line-height:1.05;font-weight:500;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap;overflow:hidden}
-.solveopt > .v.gold{color:var(--ds-amber)}
+.solveopt > .v.gold{color:var(--text)}
 .solveopt > .note{font-size:11px;color:var(--dimmer);margin-top:7px;margin-bottom:6px;line-height:1.4}
 .solveopt .kv{font-size:13px;padding:8px 0}
 .solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0}
@@ -72,10 +74,10 @@ tbody tr:hover{background:var(--panel-2)}
 .seg button.on,.seg button.on + button{border-left-color:transparent}
 .seg button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .modeopt{display:flex;align-items:center;gap:8px}
-.mcnote{padding:0 18px 15px;font-size:12.5px;color:var(--dim);line-height:1.5}
-.mcnote b{color:var(--gold);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.mcnote{font-size:12.5px;line-height:1.5}
+.mcnote b{color:var(--text);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
 .mcnote b.warn{color:var(--coral)}
-.msflag{color:var(--gold);font-weight:600}
+.msflag{color:var(--text);font-weight:600}
 .mssub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:2px}
 
 /* ---------- the control deck ---------- */
@@ -98,12 +100,39 @@ main.solo{grid-template-columns:minmax(0,1fr)}
 .hc-tier-row span:first-child{color:var(--dim)}
 .hc-tier-row span:last-child{font-family:var(--mono);font-weight:600;color:var(--text)}
 .hc-tier-row.hc-tier-sel span:first-child{color:var(--text);font-weight:600}
-.hc-tier-row.hc-tier-sel span:last-child{color:var(--jade)}
-.hc-insight{background:color-mix(in srgb,var(--gold) 8%,transparent);
-  border-left:2px solid var(--gold);border-radius:0 6px 6px 0;
-  padding:10px 14px;margin-top:12px;font-size:13px;line-height:1.5;color:var(--dim)}
+.hc-tier-row.hc-tier-sel{background:var(--panel-2);border:1px solid var(--ds-rule-strong);border-radius:var(--r-well);padding-left:8px;padding-right:8px}
+.hc-tier-row.hc-tier-sel span:last-child{color:var(--text)}
+.hc-insight{margin-top:12px;font-size:13px;line-height:1.5}
 .hc-insight b{color:var(--text)}
 .hc-note{font-size:12px;color:var(--dimmer);margin-top:14px;line-height:1.5;
   padding-top:12px;border-top:1px solid var(--line-soft)}
-.hc-note a{color:var(--jade)}
+.hc-note a{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}
+
+/* ---------- notes, warnings and confirmations ----------
+   One neutral treatment: a raised box with a rule edge, headed by an icon
+   and a word that says what it is, so none of it relies on color. Loss red
+   is kept for real losses and errors. The icons are drawn in the muted tone
+   of each theme. */
+:is(.mcnote,.hc-insight,.acwarn,.gd-callout){background:var(--panel-2);border:1px solid var(--line);
+  border-radius:var(--r-well);padding:9px 12px 10px;color:var(--dim)}
+.mcnote{margin:0 18px 15px}
+.mcnote:empty{display:none}
+:is(.mcnote,.hc-insight,.acwarn,.gd-callout)::before{display:block;margin-bottom:3px;
+  font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%239aa4b2' stroke-width='1.5'/%3E%3Cpath d='M8 7v4.2M8 4.6v.1' stroke='%239aa4b2' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Note"}
+:is(.acwarn,.gd-callout.warn)::before{
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.8 15 14H1z' fill='none' stroke='%239aa4b2' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M8 6.4v3.6M8 12v.1' stroke='%239aa4b2' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Warning"}
+.gd-callout.ok::before{color:var(--ds-gain);
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%234cc38a' stroke-width='1.5'/%3E%3Cpath d='m5.2 8.3 1.9 1.9 3.8-4' fill='none' stroke='%234cc38a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") "\00a0 Good"}
+.gd-callout.bad::before{color:var(--ds-loss);
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%23f0716a' stroke-width='1.5'/%3E%3Cpath d='m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8' stroke='%23f0716a' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Problem"}
+.gd-callout.warn::before{color:var(--text)}
+html[data-theme="light"] :is(.mcnote,.hc-insight,.acwarn,.gd-callout)::before{
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%235b636e' stroke-width='1.5'/%3E%3Cpath d='M8 7v4.2M8 4.6v.1' stroke='%235b636e' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Note"}
+html[data-theme="light"] :is(.acwarn,.gd-callout.warn)::before{
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath d='M8 1.8 15 14H1z' fill='none' stroke='%235b636e' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M8 6.4v3.6M8 12v.1' stroke='%235b636e' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Warning"}
+html[data-theme="light"] .gd-callout.ok::before{
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%2317704a' stroke-width='1.5'/%3E%3Cpath d='m5.2 8.3 1.9 1.9 3.8-4' fill='none' stroke='%2317704a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") "\00a0 Good"}
+html[data-theme="light"] .gd-callout.bad::before{
+  content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%23b02f29' stroke-width='1.5'/%3E%3Cpath d='m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8' stroke='%23b02f29' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Problem"}
 

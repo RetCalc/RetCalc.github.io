@@ -299,13 +299,13 @@ export function score(a: Answers) {
 }
 export function rating(s: number | null) {
   if (s == null) return { label: "Not scored yet", color: "var(--dimmer)" };
-  if (s >= 85) return { label: "On track", color: "var(--jade)" };
-  if (s >= 70) return { label: "Nearly there", color: "var(--jade)" };
-  if (s >= 50) return { label: "Getting there", color: "var(--gold)" };
-  if (s >= 30) return { label: "Needs work", color: "var(--gold)" };
-  return { label: "Needs attention", color: "var(--coral)" };
+  if (s >= 85) return { label: "On track", color: "var(--ds-gain)" };
+  if (s >= 70) return { label: "Nearly there", color: "var(--ds-gain)" };
+  if (s >= 50) return { label: "Getting there", color: "var(--ds-text)" };
+  if (s >= 30) return { label: "Needs work", color: "var(--ds-text)" };
+  return { label: "Needs attention", color: "var(--ds-loss)" };
 }
-export const barColor = (p: number) => (p >= 0.8 ? "var(--jade)" : p >= 0.5 ? "var(--gold)" : "var(--coral)");
+export const barColor = (p: number) => (p >= 0.8 ? "var(--ds-gain)" : p >= 0.5 ? "var(--ds-text)" : "var(--ds-loss)");
 
 /* ---------- the ways to change the plan ----------
    Each solved on its own against the target share of historical

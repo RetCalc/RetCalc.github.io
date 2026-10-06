@@ -64,7 +64,11 @@ select:hover,.btn:hover{border-color:var(--line-hi)}
   font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:500;
   white-space:nowrap;overflow:hidden;color:var(--text)}
 .headline .v.gold{color:var(--ds-amber)}
-.headline .v.jade{color:var(--text)}
+/* Ratings (success rate, "holds up in"): good in gain, poor in loss, the
+   middle band in text. Each sits under a label that says what it rates. */
+.headline .v.pos{color:var(--ds-gain)}
+.headline .v.neg{color:var(--ds-loss)}
+.headline .v.mid,.headline .v.jade{color:var(--text)}
 .headline .note{font-size:11px;color:var(--dimmer);margin-top:9px;line-height:1.4}
 .headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft);
   border-radius:0 0 var(--r-bezel) var(--r-bezel)}

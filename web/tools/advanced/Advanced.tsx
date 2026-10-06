@@ -356,7 +356,7 @@ export function Advanced() {
                 <span className={C.state === "never" ? "v" : "v pos"} id="sCoast">{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</span>
               </div>
               <div id="sCoastAction">{C.state === "reachable"
-                ? <Button className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
+                ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
             </div>
           </CardContent>
           <div className="solveopts">
@@ -366,7 +366,7 @@ export function Advanced() {
               <div className="note" id="sPerPeriodNote">{"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}</div>
               <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
               <KV k="Change from current" id="sChange" cls={S.change > 0 ? "neg" : "pos"} v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
-              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" onClick={applyContribution}>Use this contribution</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" onClick={applyContribution}>Use this contribution</Button>
             </div>
             <div className="solveopt">
               <div className="optlabel">Option 2 &middot; Change your timeline</div>
@@ -376,7 +376,7 @@ export function Advanced() {
                 : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}</div>
               <KV k="Your plan now" id="sYearsNow" v={fmtYears(p.years)} />
               <YearsDiff Y={Y} years={p.years} />
-              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</Button>
             </div>
           </div>
         </Card>

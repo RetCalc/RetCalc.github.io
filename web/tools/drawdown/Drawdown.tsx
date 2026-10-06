@@ -267,8 +267,8 @@ function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
   let legacy: { v: string; cls: string; note: string } | null = null;
   type Figures = { success: number; median: number; worst: number; legacy: number | null };
   let cur: Figures | null = null, was: Figures | null = null;
-  const cls = (r: number) => "v " + (r >= 0.95 ? "pos" : r >= 0.85 ? "gold" : "neg");
-  const legacyOf = (met: number, total: number, note: string) => ({ v: pctStr(met / total, 1), cls: "v " + (met / total >= 0.75 ? "pos" : met / total >= 0.5 ? "gold" : "neg"), note });
+  const cls = (r: number) => "v " + (r >= 0.95 ? "pos" : r >= 0.85 ? "mid" : "neg");
+  const legacyOf = (met: number, total: number, note: string) => ({ v: pctStr(met / total, 1), cls: "v " + (met / total >= 0.75 ? "pos" : met / total >= 0.5 ? "mid" : "neg"), note });
   if (!(o.initial > 0)) verdict = "<div class='hint' style='margin:0'>Enter your portfolio value to run the simulation.</div>";
   else if (mode === "hist" && H) {
     if (!H.total) {

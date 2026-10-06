@@ -7,7 +7,7 @@ import { THEME_KEY } from "@/lib/theme-script";
 export type ThemeChoice = "light" | "dark" | "system";
 export type Theme = "light" | "dark";
 
-const THEME_COLOR: Record<Theme, string> = { dark: "#080b16", light: "#eceef4" };
+const THEME_COLOR: Record<Theme, string> = { dark: "#0e1116", light: "#faf9f6" };
 
 export function resolveTheme(choice: ThemeChoice): Theme {
   if (choice !== "system") return choice;

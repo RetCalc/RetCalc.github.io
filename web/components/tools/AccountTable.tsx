@@ -58,7 +58,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
           </tfoot>
         </table>
       </div>
-      <div className="mcnote pt-3" id={id + "Note"}>
+      <div className="mcnote mt-3" id={id + "Note"}>
         {"Taxed with 2026 " + (a.status === "m" ? "married filing jointly" : "single") + " brackets" +
           (st && !st.none ? " and " + st.n + " state tax" : st ? ", no state income tax" : "") +
           (B.seniors ? ", with the age 65+ deduction" : "") + "."}

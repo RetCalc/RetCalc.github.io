@@ -221,7 +221,7 @@ export function Fire() {
               <input type="range" id="fiSuccessSlider" className="fire-slider" min="1" max="99" value={s.successRate} onChange={(e) => set("successRate")(e.target.value)} />
               <div className="fire-slider-ends"><span>1% (aggressive)</span><span>99% (conservative)</span></div>
               <div className="fire-slider-result" id="fiSuccessAge">{successAge}</div>
-              <div className="hint mcnote pt-1 px-0 pb-0" id="fiSliderNote">{sliderNote}</div>
+              <div className="hint mcnote mx-0 mb-0" id="fiSliderNote">{sliderNote}</div>
             </div>
           </CardContent>
         </Card>

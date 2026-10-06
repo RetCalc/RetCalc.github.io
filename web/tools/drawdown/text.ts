@@ -72,7 +72,7 @@ export function outcomeText(r: DdRun, age: number | null): string {
   if (!r.depleted) return "Survived";
   return age != null ? "Ran out at age " + ageVal(age, r.depletedYear!) : "Ran out in year " + r.depletedYear;
 }
-export const rateClass = (r: number) => (r >= 0.95 ? "pos" : r >= 0.85 ? "gold" : "neg");
+export const rateClass = (r: number) => (r >= 0.95 ? "pos" : r >= 0.85 ? "mid" : "neg");
 
 /** The setting a search found, in words. */
 export function dialText(id: string, v: number | null, o?: DdOpts): string {
