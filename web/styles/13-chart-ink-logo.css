@@ -1,6 +1,7 @@
 /* ---------- charts: brand type and theme-aware ink ----------
    Every painter labels its axes in a system monospace; this puts them in the
-   site's own number face, IBM Plex Mono, like every other figure on the page.
+   site's own face (--mono is IBM Plex Sans now) with tabular figures, like
+   every other number on the page.
    (CSS outranks an SVG presentation attribute, so no painter has to change.) */
 svg text[font-family*="monospace"]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 /* The plan's gold line glows faintly on the dark theme, like the readouts. */

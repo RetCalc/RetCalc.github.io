@@ -1,8 +1,3 @@
-/* While Instrument Sans is still downloading, text shows in this stand-in:
-   Arial resized and re-spaced to Instrument Sans's measured width, ascent
-   and descent, so the swap when the real face lands barely moves a line. */
-@font-face{font-family:"Instrument Sans Fallback";src:local("Arial"),local("ArialMT"),local("Helvetica");
-  size-adjust:102.3%;ascent-override:94.8%;descent-override:24.4%;line-gap-override:0%}
 /* ============================================================
    "The Instrument" — visual system
    Depth encodes editability: recessed wells are where you type,
@@ -78,10 +73,11 @@
   --lift-2:0 24px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.05) inset;
   --well:inset 0 2px 5px -2px rgba(0,0,0,.85), inset 0 1px 0 rgba(0,0,0,.4);
 
-  --sans:"Instrument Sans","Instrument Sans Fallback","Segoe UI Variable Text","SF Pro Text",
-    -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;
-  --mono:"IBM Plex Mono",ui-monospace,"SF Mono","JetBrains Mono",
-    "Cascadia Mono",Menlo,Consolas,monospace;
+  /* IBM Plex Sans (app/layout.tsx loads it, with its own metric-matched
+     fallback), then the system's sans. Figures use the same face with
+     tabular numerals; --mono stays as a name for the rules that set them. */
+  --sans:var(--font-plex-sans),system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:var(--sans);
 }
 
 /* light theme: the instrument under daylight — paper-pale body,
@@ -112,7 +108,8 @@ body{
   background:var(--bg);color:var(--text);
   font-family:var(--sans);font-size:15px;line-height:1.5;
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-  letter-spacing:-.005em;
+  /* Every figure lines up: tabular numerals everywhere. */
+  font-variant-numeric:tabular-nums;
 }
 /* A faint overhead wash, so the page reads as lit from a source rather
    than as a flat fill. One gradient, not a decoration on every element. */

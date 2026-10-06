@@ -19,6 +19,17 @@ import { THEME_SCRIPT } from "@/lib/theme-script";
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
 import Script from "next/script";
+import { IBM_Plex_Sans } from "next/font/google";
+
+/* The site's one typeface, served from this site (next/font downloads it at
+   build time, so visitors never contact Google) with a metric-matched
+   fallback while it loads. Exposed as --font-plex-sans for styles/00-base.css. */
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+  variable: "--font-plex-sans",
+});
 
 /** The production deployment, the one retcalc.app serves. */
 const LIVE = process.env.VERCEL_ENV === "production";
@@ -53,18 +64,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // The theme script sets data-theme before React loads, so the server's
     // <html> and the browser's differ by that one attribute, on purpose.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={plexSans.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-        {/* The same Google Fonts request as the current site, so text renders
-            identically. */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
-        />
       </head>
       <body>
         <ToastProvider>

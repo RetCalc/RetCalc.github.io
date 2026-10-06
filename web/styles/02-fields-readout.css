@@ -76,7 +76,7 @@ html[data-theme="light"] .headline{
 .headline .k{font-size:11.5px;color:var(--dim);margin-bottom:10px;letter-spacing:-.002em}
 /* Every readout is lit; the accented ones burn brighter. */
 .headline .v{font-family:var(--mono);font-size:35px;line-height:1.02;
-  font-variant-numeric:tabular-nums;letter-spacing:-.05em;font-weight:500;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:500;
   white-space:nowrap;overflow:hidden;
   color:#f2f6ff;text-shadow:0 0 34px rgba(200,220,255,.28)}
 html[data-theme="light"] .headline .v{color:#0d1424;text-shadow:none}

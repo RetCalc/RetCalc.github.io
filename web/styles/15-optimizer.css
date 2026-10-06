@@ -120,7 +120,7 @@
   border-radius:var(--r-panel);overflow:hidden;background:var(--line);box-shadow:var(--lift-1)}
 .op-big{background:linear-gradient(160deg,rgba(79,191,149,.13),rgba(79,191,149,0) 60%),var(--panel);padding:20px 22px}
 .op-big .k{font-size:12.5px;color:var(--dim);max-width:34ch;line-height:1.45}
-.op-big .v{font-family:var(--mono);font-size:44px;font-weight:700;letter-spacing:-.03em;color:var(--gold);
+.op-big .v{font-family:var(--mono);font-size:44px;font-weight:700;letter-spacing:-.02em;color:var(--gold);
   font-variant-numeric:tabular-nums;margin:8px 0 6px;line-height:1.05}
 .op-big .v small{font-size:18px;color:var(--dim);font-weight:600;letter-spacing:0}
 .op-delta{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
