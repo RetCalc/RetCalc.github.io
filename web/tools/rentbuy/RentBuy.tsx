@@ -12,13 +12,14 @@ import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState, type ToolDef } from "@/components/tools/ToolState";
-import { Figure } from "@/components/ui/Readout";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { Figure } from "@/components/common/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
 import { MORT_RATE_30, rentBuyCalc } from "@/lib/engine/typed";
 import { DASH, fmtNum, groupDigits, money, parseNum } from "@/lib/format";
 import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { useShareKit } from "@/components/shell/share";
 import { rentBuyShare } from "./share";
+import { Button } from "@/components/ui/button";
 
 const DEFAULTS = {
   price: groupDigits(450000, true), down: "20", rate: String(MORT_RATE_30), term: "30", propTax: "1.1",
@@ -62,7 +63,7 @@ export function RentBuy() {
             <FieldHeading>Buying</FieldHeading>
             <Field id="rbPrice" label="Home price">
               <Affixed prefix="$"><MoneyInput id="rbPrice" nonNeg value={s.price} onValueChange={set("price")} /></Affixed>
-              <button className="btn mini" type="button" id="rbCopyMort" style={{ marginTop: "6px" }}
+              <Button variant="outline" size="sm" className="mt-1.5" id="rbCopyMort"
                 onClick={() => {
                   const mo = toolInputs("mortgage", MORTGAGE_DEFAULTS);
                   const price = parseNum(mo.price);
@@ -78,7 +79,7 @@ export function RentBuy() {
                     propTax: mo.tax, ins: mo.ins, maint: mo.maint,
                   }));
                   toast("Copied the home from your mortgage calculation");
-                }}>Copy from Mortgage</button>
+                }}>Copy from Mortgage</Button>
             </Field>
             <div className="two">
               {num("rbDown", "Down payment", "down", "%", 1)}
@@ -96,12 +97,12 @@ export function RentBuy() {
               {num("rbClose", <Tipped text="Closing costs" k="closingcost" />, "close", "%", 0.1)}
               {num("rbSell", <Tipped text="Selling costs" k="sellingcost" />, "sell", "%", 0.1)}
             </div>
-            <FieldHeading top="8px">Renting</FieldHeading>
+            <FieldHeading className="mt-2">Renting</FieldHeading>
             <div className="two">
               <MoneyField id="rbRent" label="Monthly rent" value={s.rent} onValueChange={set("rent")} />
               {num("rbRentInc", "Annual increase", "rentInc", "%", 0.5)}
             </div>
-            <FieldHeading top="8px">Assumptions</FieldHeading>
+            <FieldHeading className="mt-2">Assumptions</FieldHeading>
             <div className="two">
               {num("rbAppr", <Tipped text="Home appreciation" k="appreciation" />, "appr", "%/yr", 0.5)}
               {num("rbInvest", "Investment return", "invest", "%/yr", 0.5)}
@@ -130,7 +131,7 @@ export function RentBuy() {
               note={last ? "Down payment invested from day one, plus whatever's invested in months renting costs less than buying, after tax on the gains" : ""} />
           </div>
           <div className="body">
-            <div className="hint" style={{ marginBottom: "10px" }}>Every month, whichever side costs less banks the difference and invests it at your chosen return, so a renter paying less than a buyer&apos;s monthly cost keeps growing that gap, and vice versa.</div>
+            <div className="hint mb-2.5">Every month, whichever side costs less banks the difference and invests it at your chosen return, so a renter paying less than a buyer&apos;s monthly cost keeps growing that gap, and vice versa.</div>
             <div className="kv"><span className="k">Break-even point</span><span className="v" id="rbBreakEven">{R ? (R.breakEven ? "Year " + fmtNum(R.breakEven) + " -- buying pulls ahead" : "Renting stays ahead throughout") : ""}</span></div>
             <div className="kv"><span className="k">Renter invests</span><span className="v" id="rbRenterInvests">{R ? money(R.initialInvest) + " (down payment + closing costs)" : ""}</span></div>
           </div>
@@ -143,8 +144,8 @@ export function RentBuy() {
               tip={(b) => (
                 <>
                   <b>Year {fmtNum(b.year)}</b>
-                  <br /><span style={{ color: "#e9b872" }}>Buyer</span> <span className="n">{money(b.base)}</span>
-                  <br /><span style={{ color: "#4fbf95" }}>Renter</span> <span className="n">{money(b.hi!)}</span>
+                  <br /><span className="text-gold">Buyer</span> <span className="n">{money(b.base)}</span>
+                  <br /><span className="text-jade">Renter</span> <span className="n">{money(b.hi!)}</span>
                 </>
               )} />
           ) : <BandChart id="RB" pts={[]} maxX={0} ariaLabel="Buyer vs renter net worth" tip={() => null} />}

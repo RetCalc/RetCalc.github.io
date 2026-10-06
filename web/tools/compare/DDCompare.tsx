@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { MULTI_COLORS, MultiChart } from "@/components/charts/MultiChart";
 import { Legend } from "@/components/charts/Legend";
 import { readScenarios } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { CsvButton } from "@/components/common/CsvButton";
 import { compareNav } from "@/lib/compare-nav";
 import { ddOptsFromState, historicalBacktest } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
@@ -18,6 +18,8 @@ import { DRAWDOWN_DEFAULTS, ddRaw, type DrawdownState } from "@/tools/drawdown/f
 import { DD_STRAT_NAMES, mixText } from "@/tools/drawdown/text";
 import { CMP_LETTERS } from "./model";
 import { setNavDir } from "@/lib/nav-motion";
+import { themed } from "@/lib/hues";
+import { Button } from "@/components/ui/button";
 
 /* The slots, kept for the visit. */
 const slotMemory = { names: ["", "", ""] };
@@ -65,14 +67,14 @@ export function DDCompare() {
   return (
     <div className="stack" id="tab-dd-compare">
       <div className="panel">
-        <h2>Compare drawdown scenarios<span className="h2ctrl"><button className="btn" type="button" id="ddCmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</button></span></h2>
+        <h2>Compare drawdown scenarios<span className="h2ctrl"><Button variant="outline" size="sm" id="ddCmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</Button></span></h2>
         <div className="body">
           <div className="hint" id="ddCmpEmpty" hidden={enough}>{enough ? null : "You have " + (names.length ? "one saved scenario" : "no saved scenarios") +
             ". Save at least two Drawdown scenarios from the bar above, then come back to compare."}</div>
           <div className="cmpgrid" id="ddCmpPickers">
             {enough ? slots.map((name, i) => (
               <div className="cmpslot" key={i}>
-                <div className="cmpkey"><i style={{ background: MULTI_COLORS[i] }}></i>{CMP_LETTERS[i]}</div>
+                <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": themed(MULTI_COLORS[i]) } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
                 <div className="field"><select data-ddcmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={name} onChange={(e) => {
                   const next = slots.map((x, j) => (j === i ? e.target.value : x));
                   remember(next);
@@ -84,7 +86,7 @@ export function DDCompare() {
               </div>
             )) : null}
           </div>
-          <div className="hint" id="ddCmpHelp" style={{ marginTop: "12px" }} hidden={!enough}>Comparison reads saved scenarios only. Nothing here changes the numbers on the Drawdown Simulator tab.</div>
+          <div className="hint mt-3" id="ddCmpHelp" hidden={!enough}>Comparison reads saved scenarios only. Nothing here changes the numbers on the Drawdown Simulator tab.</div>
         </div>
       </div>
       <div className="panel" id="ddCmpChartPanel" hidden={!enough}>

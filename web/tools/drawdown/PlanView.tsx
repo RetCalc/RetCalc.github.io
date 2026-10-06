@@ -15,9 +15,9 @@ import { Scatter } from "@/components/charts/Scatter";
 import { FanTipRows } from "@/components/charts/TipRows";
 import { fmtAxisMoney } from "@/components/charts/scale";
 import { TipDot } from "@/components/shell/Tooltips";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Html } from "@/components/ui/Html";
-import { KV } from "@/components/ui/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Html } from "@/components/common/Html";
+import { KV } from "@/components/common/Readout";
 import {
   DD_ERAS, ddEraFor, ddLineAt, ddQuick, ssDrawdownStreams, type DdHist, type DdHistRun, type DdMC, type DdOpts, type DdRun, type DdScore,
 } from "@/lib/engine/typed-drawdown";
@@ -96,7 +96,7 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
         <div className="body">
           <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} /></div>
           <div id="ddSpendAllView" hidden={view !== "all"}><SpendStatsAll H={H} o={o} /></div>
-          <Html className="hint" id="ddSpendNote" style={{ marginTop: "4px" }} html={!R ? "" : view === "all" && H ? spendAllNote(H, o)
+          <Html className="hint mt-1" id="ddSpendNote" html={!R ? "" : view === "all" && H ? spendAllNote(H, o)
             : run ? spendNote(run, mc ? "Showing the same run as the table below." : "Showing the period selected above.") : ""} />
         </div>
       </div>
@@ -105,7 +105,7 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
       <div className="panel" data-ddtabs="plan">
         <h2 id="ddDetailTitle">{mc ? "Year by year, a median run" : show ? "Year by year, retiring in " + showLabel : "Year by year"}
           <span className="h2ctrl"><CsvButton table={v.detailTable} label="Year by year" /></span></h2>
-        <Html className="hint" style={{ padding: "0 18px" }} id="ddDetailNote" html={mc ? "One representative simulation from the middle of the range."
+        <Html className="hint py-0 px-4.5" id="ddDetailNote" html={mc ? "One representative simulation from the middle of the range."
           : show && H ? "Click any row in the table above to see that period's detail here. " +
             (show.depleted ? "This one ran out of money " + (age != null ? "at age " + ageVal(age, show.depletedYear!) : "in year " + show.depletedYear) + "."
               : "This one survived the full " + o.years + " years.") + whyText(o, show, H, age) : ""} />
@@ -382,7 +382,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
     </div>
   );
 }
-const BaseSwatch = () => <span><i style={{ background: BASE_COLOR }}></i>Baseline median</span>;
+const BaseSwatch = () => <span><i className="bg-chart-base"></i>Baseline median</span>;
 
 /* ---- spending ---- */
 const realOf = (r: { realSpend?: number; realWithdrawal: number }) => (r.realSpend != null ? r.realSpend : r.realWithdrawal);
@@ -474,7 +474,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
   const single = (run: DdRun, ov: ReturnType<typeof baseLine> | null) => {
     const pts: BandPoint[] = run.rows.map((r) => { const x = realOf(r); return { year: r.year, base: x, hi: x, lo: x }; });
     chart = pts.length ? <BandChart id="DDI" pts={pts} maxX={pts.length} xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
-      tip={(b) => <><b>{lbl(age, b.year, false)}</b><br /><span style={{ color: "#e9b872" }}>Spending</span> <span className="n">{money(b.base)}</span></>} /> : null;
+      tip={(b) => <><b>{lbl(age, b.year, false)}</b><br /><span className="text-gold">Spending</span> <span className="n">{money(b.base)}</span></>} /> : null;
     legend = <Html className="legend" id="legendDDI" html={swatch("#e9b872", "Total spending, in today's dollars") + (ov ? swatch(BASE_COLOR, "Baseline") : "")} />;
   };
   if (R?.kind === "hist") {
@@ -499,7 +499,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
       <h2 id="ddIncomeChartTitle">{title}</h2>
       {chart ?? <BandChart id="DDI" pts={[]} maxX={1} ariaLabel="Withdrawal amount over time" tip={() => null} />}
       {legend ?? <div className="legend" id="legendDDI"></div>}
-      <div className="hint" id="ddIncomeNote" style={{ padding: "0 18px 14px" }}>{note}</div>
+      <div className="hint pt-0 px-4.5 pb-3.5" id="ddIncomeNote">{note}</div>
     </div>
   );
 }
@@ -579,25 +579,26 @@ function DetailTable({ run, age, items, tableRef }: { run: DdRun | null; age: nu
 }
 
 /* ---- return sensitivity and claiming ages ---- */
-const TH: React.CSSProperties = { textAlign: "left", padding: "5px 8px", borderBottom: "1px solid var(--rule)" };
-const THR: React.CSSProperties = { ...TH, textAlign: "right" };
-const TD: React.CSSProperties = { padding: "5px 8px" }, TDR: React.CSSProperties = { textAlign: "right", padding: "5px 8px" };
+/* The headers once named a --rule color that doesn't exist, which left them
+   with no bottom border; border-b-0 keeps them that way. */
+const TH = "text-left py-1.25 px-2 border-b-0", THR = "text-right py-1.25 px-2 border-b-0";
+const TD = "py-1.25 px-2", TDR = "text-right py-1.25 px-2";
 
 function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[] | null; label: string }) {
   return (
     <div className="panel" id="ddSensPanel" data-ddtabs="plan" hidden={!rows}>
       <h2>Return sensitivity</h2>
-      <div style={{ padding: "0 18px 10px" }} className="hint">How your plan holds up if returns run higher or lower than history suggests.</div>
-      <div style={{ padding: "0 18px 14px" }} id="ddSensTable">
-        {rows ? <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead><tr><th style={TH}>Return assumption</th><th style={THR}>Success rate</th><th style={THR}>Median ending balance</th></tr></thead>
+      <div className="hint pt-0 px-4.5 pb-2.5">How your plan holds up if returns run higher or lower than history suggests.</div>
+      <div className="pt-0 px-4.5 pb-3.5" id="ddSensTable">
+        {rows ? <table className="w-full border-collapse">
+          <thead><tr><th className={TH}>Return assumption</th><th className={THR}>Success rate</th><th className={THR}>Median ending balance</th></tr></thead>
           <tbody>
             {rows.map((r, i) => {
               const drag = DD_DRAGS[i];
               return (
-                <tr key={i} style={drag === 0 ? { fontWeight: 600 } : undefined}>
-                  <td style={TD}>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
-                  <td style={TDR} className={rateClass(r.rate)}>{pctStr(r.rate, 1)}</td><td style={TDR}>{money(r.median)}</td>
+                <tr key={i} className={drag === 0 ? "font-semibold" : undefined}>
+                  <td className={TD}>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
+                  <td className={TDR + " " + rateClass(r.rate)}>{pctStr(r.rate, 1)}</td><td className={TDR}>{money(r.median)}</td>
                 </tr>
               );
             })}
@@ -612,15 +613,15 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
   const ssx = ssRows(v.o, v.d);
   const on = !!(ssx && res);
   const build = (rows: NonNullable<typeof ssx>["rows1"], off: number) => (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead><tr><th style={TH}>Claim age</th><th style={THR}>Annual benefit</th><th style={THR}>Success rate</th><th style={THR}>Median ending balance</th></tr></thead>
+    <table className="w-full border-collapse">
+      <thead><tr><th className={TH}>Claim age</th><th className={THR}>Annual benefit</th><th className={THR}>Success rate</th><th className={THR}>Median ending balance</th></tr></thead>
       <tbody>
         {rows.map((r, i) => {
           const R = res![off + i];
           return (
-            <tr key={r.age} style={r.current ? { fontWeight: 600 } : undefined}>
-              <td style={TD}>Age {r.age}{r.current ? " ◄" : ""}</td><td style={TDR}>{money(r.annual)}/yr</td>
-              <td style={TDR} className={rateClass(R.rate)}>{pctStr(R.rate, 1)}</td><td style={TDR}>{money(R.median)}</td>
+            <tr key={r.age} className={r.current ? "font-semibold" : undefined}>
+              <td className={TD}>Age {r.age}{r.current ? " ◄" : ""}</td><td className={TDR}>{money(r.annual)}/yr</td>
+              <td className={TDR + " " + rateClass(R.rate)}>{pctStr(R.rate, 1)}</td><td className={TDR}>{money(R.median)}</td>
             </tr>
           );
         })}
@@ -630,11 +631,11 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
   return (
     <div className="panel" id="ddSSBreakEvenPanel" data-ddtabs="plan" hidden={!on}>
       <h2>Social Security claiming age comparison</h2>
-      <div style={{ padding: "0 18px 10px" }} className="hint">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
-      <div style={{ padding: "0 18px 14px" }} id="ddSSBreakEvenTable">
+      <div className="hint pt-0 px-4.5 pb-2.5">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
+      <div className="pt-0 px-4.5 pb-3.5" id="ddSSBreakEvenTable">
         {on ? ssx!.rows2 ? <>
-          <p style={{ fontWeight: 600, margin: "0 0 6px" }}>Your claiming age (spouse held constant)</p>{build(ssx!.rows1, 0)}
-          <p style={{ fontWeight: 600, margin: "12px 0 6px" }}>Spouse&apos;s claiming age (yours held constant)</p>{build(ssx!.rows2, ssx!.rows1.length)}
+          <p className="font-semibold mt-0 mx-0 mb-1.5">Your claiming age (spouse held constant)</p>{build(ssx!.rows1, 0)}
+          <p className="font-semibold mt-3 mx-0 mb-1.5">Spouse&apos;s claiming age (yours held constant)</p>{build(ssx!.rows2, ssx!.rows1.length)}
         </> : build(ssx!.rows1, 0) : null}
       </div>
     </div>

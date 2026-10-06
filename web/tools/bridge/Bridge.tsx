@@ -19,8 +19,8 @@ import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Figure, Segmented } from "@/components/ui/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Figure, Segmented } from "@/components/common/Readout";
 import { HIST_START, LTCG_2026, STATES } from "@/lib/engine/typed";
 import { BR_CATS, BR_NOEXP, BR_TRIALS, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engine/typed-bridge";
 import type { BrCtx, BrEnd, BrRow } from "@/lib/engine/types";
@@ -34,6 +34,7 @@ import { UNLOCK, bridgeScenarios, holdPct, lowerName, firstYearAfter, runBridge,
 import { useShareKit } from "@/components/shell/share";
 import { bridgeShare } from "./share";
 import { useBusy } from "@/lib/busy";
+import { Button } from "@/components/ui/button";
 
 const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
 const holdCls = (v: number) => (v >= 0.95 ? "pos" : v >= 0.8 ? "gold" : "neg");
@@ -137,7 +138,7 @@ export function Bridge() {
               <div className="hint" id="brSpendNote">{aca ? "Leave out health insurance: each plan adds the premium its income level earns." : ""}</div>
             </Field>
 
-            <FieldHeading top="8px">Your accounts at retirement</FieldHeading>
+            <FieldHeading className="mt-2">Your accounts at retirement</FieldHeading>
             <MoneyField id="brTrad" label={<Tipped text="Traditional 401(k) / IRA" k="brtrad" />} value={s.trad} onValueChange={set("trad")} />
             <MoneyField id="brK401" wrapId="brK401Wrap" hidden={bridgeAge(s) < 55} label={<Tipped text="Of that, in the 401(k) you're leaving" k="brk401" />} value={s.k401} onValueChange={set("k401")} />
             <div className="two">
@@ -153,13 +154,13 @@ export function Bridge() {
               <NumberField id="brStock" label={<Tipped text="Stocks" k="brstock" />} unit="%" step={5} max={100} value={s.stock} onValueChange={set("stock")} />
             </div>
 
-            <FieldHeading top="8px">Income</FieldHeading>
+            <FieldHeading className="mt-2">Income</FieldHeading>
             <div className="two">
               <MoneyField id="brWork" label={<>Part-time work <span className="opt">optional</span></>} unit="/yr" value={s.work} onValueChange={set("work")} />
               <NumberField id="brWorkUntil" label="Until" unit="age" max={80} value={s.workUntil} onValueChange={set("workUntil")} />
             </div>
 
-            <FieldHeading top="8px">Health insurance</FieldHeading>
+            <FieldHeading className="mt-2">Health insurance</FieldHeading>
             <SelectField id="brAca" label={<Tipped text="Premiums" k="braca" />} value={s.aca} onChange={setAca}>
               <option value="1">ACA plan, with the subsidy your income earns</option>
               <option value="0">Leave health insurance out</option>
@@ -171,7 +172,7 @@ export function Bridge() {
               </Field>
             </div>
 
-            <FieldHeading top="8px">How the plans work</FieldHeading>
+            <FieldHeading className="mt-2">How the plans work</FieldHeading>
             <SelectField id="brFill" label={<Tipped text="Blended plan converts" k="brfill" />} value={s.fill} onChange={set("fill")}>
               {FILLS.map(([v, label]) => <option key={v} value={v} disabled={v === "aca" && !aca}>{label}</option>)}
             </SelectField>
@@ -208,13 +209,13 @@ export function Bridge() {
             </span>
           </h2>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll" style={{ maxHeight: "none" }}>
+          <div className="scroll max-h-none">
             <table id="brCompare" ref={compareRef}>
               <thead><tr><th>Plan</th><th>Holds to 59½</th><th>Tax</th><th>Penalties</th><th>Health premiums</th><th>At 59½</th></tr></thead>
               <tbody>{R && sel ? <CompareRows R={R} sel={sel} onPick={setSelKey} /> : null}</tbody>
             </table>
           </div>
-          <div className="hint" id="brCompareNote" style={{ padding: "0 18px 14px" }}>
+          <div className="hint pt-0 px-4.5 pb-3.5" id="brCompareNote">
             {R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
               ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
               pctStr(R.ctx.real, 1) + " real. “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : ""}
@@ -230,8 +231,8 @@ export function Bridge() {
           <div className="body">
             <div id="brAtOut">{R && S ? <AtTable ctx={R.ctx} S={S} path={path} /> : null}</div>
             <div className="br-send">
-              <button className="btn" type="button" id="brToDD" onClick={toDrawdown}>Send to Drawdown Simulator</button>{" "}
-              <button className="btn" type="button" id="brToTax" onClick={toTax}>Send to Income Tax</button>{" "}
+              <Button variant="outline" id="brToDD" onClick={toDrawdown}>Send to Drawdown Simulator</Button>{" "}
+              <Button variant="outline" id="brToTax" onClick={toTax}>Send to Income Tax</Button>{" "}
               <TipDot k="brhandoff" title="Sending this to another tool" />
             </div>
           </div>
@@ -240,7 +241,7 @@ export function Bridge() {
         <div className="panel">
           <h2 id="brFlowTitle">{P ? "Where each year's money comes from, " + P.label : "Where each year's money comes from"}<span className="h2note">today&apos;s dollars</span></h2>
           <FlowChart rows={rows} aca={!!R?.ctx.aca} />
-          <div className="hint" id="brFlowNote" style={{ padding: "0 18px 14px" }}>{R && P ? <FlowNotes ctx={R.ctx} P={P.run} rows={rows} /> : null}</div>
+          <div className="hint pt-0 px-4.5 pb-3.5" id="brFlowNote">{R && P ? <FlowNotes ctx={R.ctx} P={P.run} rows={rows} /> : null}</div>
         </div>
 
         <div className="panel">
@@ -292,7 +293,7 @@ function Headline({ R }: { R: BridgeRun | null }) {
           <Figure label={<Tipped text="Holds up in" k="brholds" />} id="brHold" className="v" sized={false} value={DASH} noteId="brHoldNote" note="" />
           <Figure label={<Tipped text="Cost of the bridge" k="brcost" />} id="brCost" className="v" sized={false} value={DASH} noteId="brCostNote" note="" />
         </div>
-        <div className="body"><div id="brVerdict"><div className="hint" style={{ margin: 0 }}>Enter your spending and at least one account balance to plan the bridge.</div></div></div>
+        <div className="body"><div id="brVerdict"><div className="hint m-0">Enter your spending and at least one account balance to plan the bridge.</div></div></div>
       </div>
     );
   }
@@ -309,7 +310,7 @@ function Headline({ R }: { R: BridgeRun | null }) {
           note={"Tax, penalties" + (ctx.aca ? " and health premiums" : "") + ", ages " + ages} />
       </div>
       <div className="body"><div id="brVerdict">
-        <div className="hint" style={{ margin: 0, fontSize: "13px", lineHeight: 1.6 }}>
+        <div className="hint m-0 text-note leading-note">
           With <b>{b.phrase}</b>, you reach 59½ without an unplanned penalty or running short in <b>{pctStr(h, 0)}</b> of the{" "}
           {R.mc ? t.of + " random markets drawn from the record" : t.of + " historical starts since " + HIST_START}.{" "}
           On the steady path you arrive with <b>{money(st.end.total)}</b>: {money(st.end.trad)} traditional, {money(st.end.roth)} Roth and {money(st.end.brok)} in the brokerage.
@@ -375,7 +376,7 @@ function AtTable({ ctx, S, path }: { ctx: BrCtx; S: Scenarios; path: PathKey }) 
   ].filter(Boolean).join(" ");
   return (
     <>
-      <div className="scroll" style={{ maxHeight: "none" }}>
+      <div className="scroll max-h-none">
         <table id="brAtTable">
           <thead><tr><th>Account</th>{keys.map((k) => (
             <th key={k} className={on(k)}>{S[k]!.head}{S[k]!.year ? <span className="br-yr">{S[k]!.pct + ", " + S[k]!.year}</span> : null}</th>
@@ -390,7 +391,7 @@ function AtTable({ ctx, S, path }: { ctx: BrCtx; S: Scenarios; path: PathKey }) 
         </table>
       </div>
       {notes || short.length ? (
-        <div className="hint" style={{ marginTop: "10px" }}>
+        <div className="hint mt-2.5">
           {notes}
           {short.length ? (
             <>{notes ? " " : ""}<b className="neg">In the {short.map((k) => S[k]!.head.toLowerCase()).join(" and ")} case{short.length > 1 ? "s" : ""}, this plan runs short or needs penalized money before 59{"½"}.</b></>
@@ -427,13 +428,13 @@ function FlowChart({ rows, aca }: { rows: BrRow[]; aca: boolean }) {
               <b>Age {b.label}</b>
               {BR_CATS.filter((c) => b.parts[c.k] > 0.5).map((c) => <TipRow key={c.k} color={c.c} label={c.name} value={b.parts[c.k]} />)}
               {b.tick > 0.5 ? <><br />Converted <span className="n">{money(b.tick)}</span></> : null}
-              <br /><span style={{ color: "var(--dim)" }}>{"Tax " + money(r.tax + r.fica) + (r.pen > 0.5 ? " · penalty " + money(r.pen) : "") + (aca ? " · health " + money(r.health) : "")}</span>
-              {r.surplus > 50 ? <><br /><span style={{ color: "var(--dim)" }}>Reinvested {money(r.surplus)}</span></> : null}
+              <br /><span className="text-dim">{"Tax " + money(r.tax + r.fica) + (r.pen > 0.5 ? " · penalty " + money(r.pen) : "") + (aca ? " · health " + money(r.health) : "")}</span>
+              {r.surplus > 50 ? <><br /><span className="text-dim">Reinvested {money(r.surplus)}</span></> : null}
             </>
           );
         }} />
       <Legend id="legendBR" items={used.map((c) => [c.c, c.name])}>
-        {conv ? <span><i style={{ background: "transparent", border: "2px solid var(--text)", height: "2px", marginTop: "4px" }}></i>Converted to Roth, not spent</span> : null}
+        {conv ? <span><i className="bg-transparent bg-none border-2 border-text h-0.5 mt-1"></i>Converted to Roth, not spent</span> : null}
       </Legend>
     </>
   );
@@ -504,7 +505,7 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
           </tbody>
         </table>
       </div>
-      <div className="hint" id="brLadderNote" style={{ padding: "0 18px 14px" }}>
+      <div className="hint pt-0 px-4.5 pb-3.5" id="brLadderNote">
         {conv.length ? "Converted before 59½: " + money(conv.reduce((a, r) => a + r.C, 0)) +
           ". A conversion's five-year clock starts on January 1 of the year you make it, so a " +
           "conversion made any time in 2026 is penalty-free from January 1, 2031. The tax column is " +
@@ -521,7 +522,7 @@ function YearRows({ rows, ctx }: { rows: BrRow[]; ctx: BrCtx }) {
       {rows.map((r) => {
         const d = r.d;
         return (
-          <tr key={r.age} style={r.short > 1 ? { color: "var(--coral)" } : undefined}>
+          <tr key={r.age} className={r.short > 1 ? "text-coral" : undefined}>
             <td>{r.age}</td><td>{money(ctx.spend)}</td><td>{ctx.aca ? money(r.health) : DASH}</td><td>{money(r.tax + r.fica)}</td>
             <td>{m(r.pen)}</td><td>{m(d.brok)}</td><td>{m(d.rothBasis + d.rung)}</td><td>{m(r.sp)}</td><td>{m(d.r55)}</td>
             <td>{m(d.early)}</td><td>{m(r.W)}</td><td>{m(r.C)}</td>

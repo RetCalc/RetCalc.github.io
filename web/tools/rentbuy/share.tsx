@@ -44,7 +44,7 @@ export function rentBuyShare(inp: RentBuyInput): ShareKit {
           <SheetTable t={<>Net worth by year{R.breakEven ? <> &middot; ★ marks the break-even year</> : null}</>} head={["Year", "Buyer NW", "Renter NW", "Home value", "Balance"]}
             rows={sampled(R.years, (y) => y.year === R.breakEven).map((y) => {
               const be = y.year === R.breakEven;
-              return { style: be ? { fontWeight: 700, background: "#f5f0e0" } : undefined,
+              return { className: be ? "font-bold bg-print-highlight" : undefined,
                 cells: [y.year + (be ? " ★" : ""), money(y.buyerNW), money(y.renterNW), money(y.homeVal), money(y.balance)] };
             })} />
         </SheetPage>

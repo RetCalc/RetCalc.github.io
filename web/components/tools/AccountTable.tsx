@@ -9,11 +9,12 @@
 import { useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/shell/Toast";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { CsvButton } from "@/components/common/CsvButton";
 import type { AccountResult } from "@/lib/accounts";
 import { STATES } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { sendYearToTax } from "@/tools/tax/handoff";
+import { themed } from "@/lib/hues";
 
 const ROWS = [
   { k: "trad", label: "Traditional 401(k) / IRA", c: "#e2795f" },
@@ -36,13 +37,13 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
   return (
     <>
       <h2>By account type <span className="h2note">at retirement, in today&apos;s dollars</span><span className="h2ctrl"><CsvButton table={table} label="By account type" /></span></h2>
-      <div className="scroll" style={{ maxHeight: "none" }}>
+      <div className="scroll max-h-none">
         <table id={id} ref={table}>
           <thead><tr><th>Account</th><th>Balance</th><th>Share</th><th>First-year withdrawal</th><th>Tax</th><th>After tax</th></tr></thead>
           <tbody>
             {ROWS.map((r, i) => (
               <tr key={r.k}>
-                <td><i className="acdot" style={{ background: r.c }}></i>{r.label}</td>
+                <td><i className="acdot bg-(--swatch)" style={{ "--swatch": themed(r.c) } as React.CSSProperties}></i>{r.label}</td>
                 <td>{money(B.real[r.k])}</td><td>{pctStr(B.shares[r.k], 0)}</td><td>{money(B.w[r.k])}</td>
                 <td>{money(B.tax.buckets[i].tax)}</td><td>{money(B.w[r.k] - B.tax.buckets[i].tax)}</td>
               </tr>
@@ -50,12 +51,12 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
           </tbody>
           <tfoot>
             <tr><td>Total</td><td>{money(B.totalReal)}</td><td></td><td>{money(B.wTotal)}</td>
-              <td>{money(B.tax.total)} <span style={{ color: "var(--dimmer)", fontWeight: 400 }}>({pctStr(B.effRate, 1)})</span></td>
+              <td>{money(B.tax.total)} <span className="text-dimmer font-normal">({pctStr(B.effRate, 1)})</span></td>
               <td>{money(B.wTotal - B.tax.total)}</td></tr>
           </tfoot>
         </table>
       </div>
-      <div className="mcnote" id={id + "Note"} style={{ paddingTop: "12px" }}>
+      <div className="mcnote pt-3" id={id + "Note"}>
         {"Taxed with 2026 " + (a.status === "m" ? "married filing jointly" : "single") + " brackets" +
           (st && !st.none ? " and " + st.n + " state tax" : st ? ", no state income tax" : "") +
           (B.seniors ? ", with the age 65+ deduction" : "") + "."}

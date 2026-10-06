@@ -16,7 +16,7 @@ export function Spark({ vals, line, w = 260, h = 46, color = "#e9b872" }: {
   return (
     <svg className="ddspark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
       <path d={area} fill={color} opacity=".14" />
-      {lv > 0 ? <line x1={pad} x2={w - pad} y1={Y(lv).toFixed(1)} y2={Y(lv).toFixed(1)} stroke="#8b97ad" strokeWidth="1" strokeDasharray="3 3" /> : null}
+      {lv > 0 ? <line x1={pad} x2={w - pad} y1={Y(lv).toFixed(1)} y2={Y(lv).toFixed(1)} stroke="var(--color-chart-guide)" strokeWidth="1" strokeDasharray="3 3" /> : null}
       <path d={d} fill="none" stroke={color} strokeWidth="1.8" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );

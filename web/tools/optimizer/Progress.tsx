@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 import { groupDigits, pctStr } from "@/lib/format";
 import { OP_DRAW_MS, OP_LOOSE_MS, OP_MIN_MS, finish, stopOptimizer, watch, type Host, type Run } from "./run";
 import { opCompact, opTacticsShort } from "./words";
+import { Button } from "@/components/ui/button";
 
 export function Progress({ host, R }: { host: Host; R: Run }) {
   const root = useRef<HTMLDivElement>(null);
@@ -82,15 +83,15 @@ export function Progress({ host, R }: { host: Host; R: Run }) {
   // eslint-disable-next-line react-hooks/purity -- where the flight is when this draws: a remount mid-flight starts from there
   const loosed = performance.now() - R.t0 >= OP_LOOSE_MS;
   return (
-    <div className={"op-run" + (loosed ? " op-loosed" : "")} data-op-host={host} aria-live="polite" ref={root}>
+    <div className={"op-run group/run" + (loosed ? " op-loosed" : "")} data-op-host={host} aria-live="polite" ref={root}>
       <div className="op-shot" aria-hidden="true">
         <span className="op-bow"><svg viewBox="18 5 32 54"><path className="str rest" d="M33 7 L33 57" /><path className="str drawn" d="M33 7 L33 32 L33 57" />
           <path className="limb" d="M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57" /></svg></span>
         <div className="op-lane" style={{ "--p": R.shown.toFixed(4) } as React.CSSProperties}><i className="op-fill"></i><i className="op-trail"></i>
           <span className="op-arrow"><svg viewBox="5 25.5 56 13"><path className="sh" d="M7 32 H51" />
             <path className="hd" d="M60 32 L48 25.5 L50.5 32 L48 38.5 Z M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z" /></svg></span></div>
-        <span className="op-target"><svg viewBox="0 0 44 44"><circle className="rg r1" cx="22" cy="22" r="20" /><circle className="rg r2" cx="22" cy="22" r="13.5" />
-          <circle className="rg r3" cx="22" cy="22" r="7" /><circle className="eye" cx="22" cy="22" r="2.6" /></svg></span>
+        <span className="op-target"><svg viewBox="0 0 44 44"><circle className="rg" cx="22" cy="22" r="20" /><circle className="rg" cx="22" cy="22" r="13.5" />
+          <circle className="rg" cx="22" cy="22" r="7" /><circle className="eye" cx="22" cy="22" r="2.6" /></svg></span>
       </div>
       <div className="op-stats">
         <div><b data-opn="tried">0</b><span data-opn="of">plans tried</span></div>
@@ -98,7 +99,7 @@ export function Progress({ host, R }: { host: Host; R: Run }) {
         <div><b data-opn="best">—</b><span>{R.goal === "legacy" ? "best so far, left after tax" : "best so far"}</span></div>
       </div>
       <div className="op-now" data-opn="now">Setting up every combination…</div>
-      <button type="button" className="gd-link op-stop" data-op="stop" data-host={host} onClick={() => stopOptimizer(host)}>Stop</button>
+      <Button variant="quiet" size="inline-xs" className="absolute top-0 right-0 group-[.op-hit]/run:invisible" data-op="stop" data-host={host} onClick={() => stopOptimizer(host)}>Stop</Button>
     </div>
   );
 }

@@ -14,9 +14,9 @@ import { Modal } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { KV, Segmented } from "@/components/ui/Readout";
+import { BigValue } from "@/components/common/BigValue";
+import { CsvButton } from "@/components/common/CsvButton";
+import { KV, Segmented } from "@/components/common/Readout";
 import type { BtResult, BtRow } from "@/lib/engine/types";
 import { money, parseNum, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
@@ -25,6 +25,7 @@ import { MixRows, mixForm, mixOk, type MixForm } from "@/tools/drawdown/MixRows"
 import { ddN, rebalText } from "@/tools/drawdown/text";
 import { BT_DEF, BT_FIRST, BT_LAST, decadeInflation, eraFrom, runBacktest, yearClamp, type BacktestInputs } from "./model";
 import { setNavDir } from "@/lib/nav-motion";
+import { Button } from "@/components/ui/button";
 
 const GOLD = "#e9b872", BLUE = "#7d9fd6", RED = "#e2795f";
 const MIXES = [["100", "100"], ["80", "80"], ["60", "60"], ["40", "40"], ["0", "0"]] as const;
@@ -100,8 +101,8 @@ export function Backtest() {
           <h2>The mix<TipDot k="btdata" /></h2>
           <div className="body">
             <Field id="btMixBtn" label={<Tipped text="Asset mix" k="btmix" />}>
-              <button type="button" className="ddmixbtn" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText">{mixText(B)}</span>
-                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>
+                <svg className="text-muted-foreground" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
               <input type="hidden" id="btStock" value={s.stock} /><input type="hidden" id="btSV" value={s.sv} /><input type="hidden" id="btCash" value={s.cash} />
               <div className="btquick">Stocks, the rest in bonds:</div>
               <Segmented id="segBTMix" attr="data-mix" options={MIXES} value={quickMix} onChange={(m) => setState((c) => ({ ...c, stock: m, sv: "0", cash: "0" }))} />
@@ -115,14 +116,14 @@ export function Backtest() {
             </SelectField>
             <NumberField id="btRebalN" wrapId="btRebalNWrap" hidden={B.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={s.rebalN} onValueChange={set("rebalN")} />
             <NumberField id="btRebalBand" wrapId="btRebalBandWrap" hidden={B.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={s.rebalBand} onValueChange={set("rebalBand")} />
-            <div className="hint" id="btRebalNote" style={{ margin: "-6px 0 12px" }}>{rebalNote(B)}</div>
+            <div className="hint -mt-1.5 mx-0 mb-3" id="btRebalNote">{rebalNote(B)}</div>
             <div className="two">
               <NumberField id="btFrom" label={<Tipped text="From" k="bthistory" />} max={BT_LAST} value={s.from} onValueChange={set("from")}
                 onBlur={() => setState((c) => ({ ...c, from: yearClamp(c.from, BT_FIRST) }))} />
               <NumberField id="btTo" label="Through" max={BT_LAST} value={s.to} onValueChange={set("to")}
                 onBlur={() => setState((c) => ({ ...c, to: yearClamp(c.to, BT_LAST) }))} />
             </div>
-            <div style={{ paddingBottom: "12px" }}>
+            <div className="pb-3">
               <Segmented id="segBTEra" attr="data-era" options={ERAS} value={era}
                 onChange={(e) => setState((c) => ({ ...c, from: String(eraFrom(e)), to: String(BT_LAST) }))} />
             </div>
@@ -167,9 +168,9 @@ export function Backtest() {
                 <KV k="In today's dollars" id="btEndReal" v={money(B.endReal)} />
               </div>
             </div>
-            <div style={{ marginTop: "14px" }}>
-              <button className="btn primary" type="button" id="btUseRate" onClick={useInAdvanced}>Use these figures in Advanced</button>
-              <div className="hint" id="btUseNote" style={{ marginTop: "6px" }}>{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
+            <div className="mt-3.5">
+              <Button id="btUseRate" onClick={useInAdvanced}>Use these figures in Advanced</Button>
+              <div className="hint mt-1.5" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
                 pctStr(B.inflCagr, 2) + " inflation to the Advanced tab, so the nominal figure and the inflation it was earned alongside travel together."}</div>
             </div>
           </div>
@@ -202,7 +203,7 @@ export function Backtest() {
             yFmt={(v) => (v * 100).toFixed(0) + "%"} valFmt={(v) => pctStr(v, 2)}
             series={[{ name: "Annual", color: RED, pts: annual, width: 1.9 }, { name: "Ten-year average", color: BLUE, pts: decadeInflation(B), dash: "5 4", width: 2.2 }]} />
           <Legend id="legendBTI" items={[[RED, "Annual"], [BLUE, "Ten-year average"]]} />
-          <div className="body"><div className="hint" style={{ margin: 0 }}>A high return in a high-inflation
+          <div className="body"><div className="hint m-0">A high return in a high-inflation
             year buys less than a modest one in a quiet year, which is why the headline above
             shows both. The ten-year line is the one that matters for a plan: single years
             swing hard, but it is the sustained stretches that reprice a retirement.</div></div>
@@ -234,7 +235,7 @@ export function Backtest() {
               </tbody>
             </table>
           </div>
-          <div className="body"><div className="hint" style={{ margin: 0 }}>Annualized, every overlapping
+          <div className="body"><div className="hint m-0">Annualized, every overlapping
             window in the range. The worst column is the one that matters: it is the return
             someone actually lived through.</div></div>
         </div>
@@ -284,16 +285,16 @@ function MixDialog({ s, close, save }: { s: BacktestInputs; close: () => void; s
   const up = (k: keyof MixForm) => (v: string) => setF((c) => ({ ...c, [k]: v }));
   const ok = mixOk(f);
   return (
-    <Modal className="popup wide ddmixpop" onClose={close} focus="[data-mix]">
+    <Modal className="popup wide" onClose={close} focus="[data-mix]">
       <h3>Asset mix</h3>
       <div className="formhint">How the portfolio is split at the start, and what each rebalance returns it to. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>
       <MixRows f={f} up={up} totId="btMixTot" />
-      <div className="formactions"><button type="button" className="btn" data-mixcancel onClick={close}>Cancel</button>
-        <button type="button" className="btn primary" data-mixok disabled={!ok} onClick={() => {
+      <div className="formactions"><Button variant="outline" className="flex-1" data-mixcancel onClick={close}>Cancel</Button>
+        <Button className="flex-1" data-mixok disabled={!ok} onClick={() => {
           if (!ok) return;
           save({ stock: String(parseNum(f.stock)), sv: String(parseNum(f.sv)), bond: f.bond, cash: String(parseNum(f.cash)) });
           close();
-        }}>Use this mix</button></div>
+        }}>Use this mix</Button></div>
     </Modal>
   );
 }

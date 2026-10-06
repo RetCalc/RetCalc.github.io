@@ -11,8 +11,8 @@ import { Legend, ShareBar } from "@/components/charts/Legend";
 import { FieldHeading, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { Figure, KV } from "@/components/ui/Readout";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { Figure, KV } from "@/components/common/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
 import { PMI_DEFAULT, mortgage, refiCompare } from "@/lib/engine/typed";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MORTGAGE_DEF as DEF, dur, mortgageInput, when, type Inputs } from "./model";
@@ -148,7 +148,7 @@ export function Mortgage() {
               <option value="1">Yes, show these options</option>
             </SelectField>
             <div id="moExtrasWrap" hidden={s.extrasOn !== "1"}>
-              <FieldHeading top="2px">Extra payments</FieldHeading>
+              <FieldHeading className="mt-0.5">Extra payments</FieldHeading>
               <MoneyField id="moExtraMo" label="Extra toward principal" unit="/mo" value={s.extraMo} onValueChange={set("extraMo")} />
               <div className="two">
                 <MoneyField id="moExtraOnce" label="One-time extra payment" value={s.extraOnce} onValueChange={set("extraOnce")} />
@@ -159,7 +159,7 @@ export function Mortgage() {
                 <option value="1">Recast &mdash; lower the payment instead</option>
               </SelectField>
 
-              <FieldHeading top="12px">Compare a refinance</FieldHeading>
+              <FieldHeading className="mt-3">Compare a refinance</FieldHeading>
               <div className="two">
                 <NumberField id="moRefiRate" label="New rate" unit="%" step={0.125} value={s.refiRate} onValueChange={set("refiRate")} />
                 <SelectField id="moRefiTerm" label="New length" value={s.refiTerm} onChange={set("refiTerm")}>{TERMS}</SelectField>
@@ -190,7 +190,7 @@ export function Mortgage() {
           <div className="body">
             <div id="moExtraStats">{extra}</div>
             <div id="moRefiBlock" hidden={!RF}>
-              <FieldHeading top="4px">Refinancing to <span id="moRefiHead">{RF ? `${pctStr(m.refiRate!, 2)} for ${fmtNum(m.refiTerm!)} years` : ""}</span></FieldHeading>
+              <FieldHeading className="mt-1">Refinancing to <span id="moRefiHead">{RF ? `${pctStr(m.refiRate!, 2)} for ${fmtNum(m.refiTerm!)} years` : ""}</span></FieldHeading>
               <div id="moRefiStats">
                 {RF ? (
                   <>
@@ -212,9 +212,9 @@ export function Mortgage() {
             tip={(b) => (
               <>
                 <b>Year {fmtNum(b.year)}</b>
-                <br /><span style={{ color: "#e9b872" }}>Balance</span> <span className="n">{money(b.base)}</span>
-                <br /><span style={{ color: "#4fbf95" }}>Principal paid</span> <span className="n">{money(b.hi!)}</span>
-                <br /><span style={{ color: "#e2795f" }}>Interest paid</span> <span className="n">{money(b.lo!)}</span>
+                <br /><span className="text-gold">Balance</span> <span className="n">{money(b.base)}</span>
+                <br /><span className="text-jade">Principal paid</span> <span className="n">{money(b.hi!)}</span>
+                <br /><span className="text-coral">Interest paid</span> <span className="n">{money(b.lo!)}</span>
               </>
             )} />
           <Legend id="legendMo" items={[["#e9b872", "Balance remaining"], ["#4fbf95", "Principal paid"], ["#e2795f", "Interest paid"]]} />

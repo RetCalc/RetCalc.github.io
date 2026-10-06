@@ -31,7 +31,7 @@ test("a search can be stopped", async ({ page }) => {
   await page.locator("#opRunBtn").click();
   await expect(page.locator(".op-run")).toBeVisible();
   await expect(page.locator("#opRunBtn")).toBeDisabled();
-  await page.locator(".op-stop").click();
+  await page.getByRole("button", { name: "Stop" }).click();
   await expect(page.locator(".op-run")).toHaveCount(0);
   await expect(page.locator(".op-ready")).toBeVisible();
 });

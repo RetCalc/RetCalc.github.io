@@ -90,7 +90,7 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
   });
 
   const text = (x: number, y: number, t: string, attrs: React.SVGProps<SVGTextElement> = {}, key?: string | number) => (
-    <text key={key} x={x} y={y} fontSize={fs} style={{ fill: "var(--axis)" }} fontFamily={MONO} {...attrs}>{t}</text>
+    <text key={key} x={x} y={y} fontSize={fs} fill="var(--axis)" fontFamily={MONO} {...attrs}>{t}</text>
   );
 
   return (
@@ -108,40 +108,40 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
         <>
           {AXy.ticks.map((v) => (
             <g key={"y" + v}>
-              <line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} style={{ stroke: "var(--grid)" }} strokeWidth={sw} />
+              <line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} stroke="var(--grid)" strokeWidth={sw} />
               {text(L - 8, Y(v) + fs / 3, (opt.yFmt || fmtNum)(v), { textAnchor: "end" })}
             </g>
           ))}
           {AXx.ticks.map((v) => (
             <g key={"x" + v}>
-              <line x1={X(v)} x2={X(v)} y1={T} y2={T + ph} style={{ stroke: "var(--grid)" }} strokeWidth={sw * 0.7} opacity={0.6} />
+              <line x1={X(v)} x2={X(v)} y1={T} y2={T + ph} stroke="var(--grid)" strokeWidth={sw * 0.7} opacity={0.6} />
               {text(X(v), T + ph + fs + 6, (opt.xFmt || fmtNum)(v), { textAnchor: "middle" })}
             </g>
           ))}
           {opt.xLabel ? text(W - R, H - 4, opt.xLabel, { textAnchor: "end", fontSize: fs * 0.9 }) : null}
           {opt.yLabel ? text(L + 4, T + fs, opt.yLabel, { fontSize: fs * 0.9 }) : null}
           {opt.hLine ? <>
-            <line x1={L} x2={W - R} y1={Y(opt.hLine.y)} y2={Y(opt.hLine.y)} stroke="#e9b872" strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
+            <line x1={L} x2={W - R} y1={Y(opt.hLine.y)} y2={Y(opt.hLine.y)} stroke="var(--gold)" strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
             {text(W - R - 4, Y(opt.hLine.y) - 5, opt.hLine.label, { textAnchor: "end", style: { fill: "#e9b872" }, fontSize: fs * 0.9 })}
           </> : null}
           {opt.vLine ? <>
-            <line x1={X(opt.vLine.x)} x2={X(opt.vLine.x)} y1={T} y2={T + ph} stroke="#e9b872" strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
+            <line x1={X(opt.vLine.x)} x2={X(opt.vLine.x)} y1={T} y2={T + ph} stroke="var(--gold)" strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
             {text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, { textAnchor: "end", style: { fill: "#e9b872" }, fontSize: fs * 0.9 })}
           </> : null}
           {(opt.marks || []).filter((m) => m.x >= AXx.min && m.x <= AXx.max).map((m) => (
             <g key={"m" + m.x}>
-              <line x1={X(m.x)} x2={X(m.x)} y1={T + fs + 4} y2={T + ph} style={{ stroke: "var(--axis)" }} strokeWidth={sw} strokeDasharray="3 4" opacity={0.55} />
+              <line x1={X(m.x)} x2={X(m.x)} y1={T + fs + 4} y2={T + ph} stroke="var(--axis)" strokeWidth={sw} strokeDasharray="3 4" opacity={0.55} />
               {text(X(m.x), T + fs, m.label, { textAnchor: "middle", fontSize: fs * 0.9 })}
             </g>
           ))}
           {at.map(({ p, px, py }, i) => {
             const color = p.cur ? "#e9b872" : p.miss ? "#e2795f" : p.color || "#4fbf95";
             return <circle key={i} cx={px} cy={py} r={(opt.small ? 2.6 : p.cur ? 6.5 : 5) * sw}
-              fill={p.miss ? "none" : color} stroke={p.miss ? color : undefined} style={p.miss ? undefined : { stroke: "var(--dotstroke)" }}
+              fill={p.miss ? "none" : color} stroke={p.miss ? color : "var(--dotstroke)"}
               strokeWidth={(p.miss ? 1.8 : 1.5) * sw} opacity={opt.small ? 0.55 : 1} />;
           })}
           {labels.map((l, i) => text(l.x, l.y, l.text, { style: { fill: l.cur ? "#e9b872" : "var(--dim)" }, fontSize: fs * 0.95, fontWeight: l.cur ? 600 : 400 }, "l" + i))}
-          <circle cx={hi != null ? at[hi].px : 0} cy={hi != null ? at[hi].py : 0} r={9 * sw} fill="none" stroke="#e9b872" strokeWidth={1.6 * sw} opacity={hi != null ? 1 : 0} />
+          <circle cx={hi != null ? at[hi].px : 0} cy={hi != null ? at[hi].py : 0} r={9 * sw} fill="none" stroke="var(--gold)" strokeWidth={1.6 * sw} opacity={hi != null ? 1 : 0} />
         </>
       )}
     </ChartFrame>

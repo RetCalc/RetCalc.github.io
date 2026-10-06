@@ -9,6 +9,7 @@ import { CoachPanel, revealFor, useFoldOnType, useRereads } from "@/components/s
 import { useActiveTool } from "@/components/tools/ToolState";
 import { helpNow, setHelp, type Help } from "./state";
 import { TOURS } from "./tours";
+import { Button } from "@/components/ui/button";
 
 export default function HelpPanel({ h }: { h: Help }) {
   const active = useActiveTool();
@@ -45,6 +46,6 @@ export default function HelpPanel({ h }: { h: Help }) {
         P[n].show?.();
         setTimeout(() => revealFor(P[n].focus), 0);
       } }}
-      chip={chip} foot={<button type="button" className="btn" id="thCoachDone" onClick={() => setHelp(null)}>Close help</button>} />
+      chip={chip} foot={<Button variant="outline" className="flex-none" id="thCoachDone" onClick={() => setHelp(null)}>Close help</Button>} />
   );
 }

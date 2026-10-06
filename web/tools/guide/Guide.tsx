@@ -25,6 +25,7 @@ import { freshGuide, guide, migrate, replaceGuide, setGuide, useGuide, type Answ
 import { curOpt, setTune } from "./tune";
 import { GuideCtx, type GuideView } from "./ui";
 import { setNavDir } from "@/lib/nav-motion";
+import { Button } from "@/components/ui/button";
 
 /** The guide as a tool, for the header's Save: every answer and which
     steps are done. Where you were and any trip into a tool are left out. */
@@ -303,9 +304,9 @@ function Foot({ st, a, last, act }: { st: Step; a: Answers; last: boolean; act: 
   const isOk = !st.ok || st.ok(a);
   return (
     <>
-      <button type="button" className="btn" data-gd="prev" onClick={() => act("prev")}><i className="arw back" aria-hidden="true"></i>Back</button><span className="sp"></span>
+      <Button variant="outline" size="lg" data-gd="prev" onClick={() => act("prev")}><i className="arw back" aria-hidden="true"></i>Back</Button><span className="sp"></span>
       <span className="gd-why" data-why="" hidden={isOk}>{st.why ? st.why(a) : ""}</span>
-      <button type="button" className="btn primary" data-gd="next" disabled={!isOk} onClick={() => act("next")}>{last ? "See my score" : "Continue"}<i className="arw" aria-hidden="true"></i></button>
+      <Button size="lg" className="max-sm:flex-auto" data-gd="next" disabled={!isOk} onClick={() => act("next")}>{last ? "See my score" : "Continue"}<i className="arw" aria-hidden="true"></i></Button>
     </>
   );
 }
@@ -314,14 +315,14 @@ function ScoreSide({ a, go }: { a: Answers; go: (id: string) => void }) {
   const R = score(a), rt = rating(R.score);
   return (
     <>
-      <div className="gd-score-top"><Ring score={R.score} /><div className="gd-score-t"><div className="r" style={{ color: rt.color }}>{rt.label}</div>
+      <div className="gd-score-top"><Ring score={R.score} /><div className="gd-score-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
         <div className="n">{R.score == null ? (R.n ? "Your score appears once two areas are answered." : "Your score appears as you answer.") : R.n < FACTORS.length ? "From " + R.n + " of " + FACTORS.length + " areas so far" : "All five areas answered"}</div></div></div>
       <div className="gd-facs">{FACTORS.map((f) => {
         const p = R.P[f.id];
         return (
           <button key={f.id} type="button" className={"gd-fac" + (p ? "" : " na")} data-go={f.step} onClick={() => go(f.step)}>
             <div className="top"><span>{f.name}</span><em>{p ? Math.round(p.p * f.w) + " / " + f.w : "—"}</em></div>
-            <div className="bar"><i style={{ width: (p ? p.p * 100 : 0).toFixed(0) + "%", background: p ? barColor(p.p) : "transparent" }}></i></div>
+            <div className="bar"><i className="w-(--w) bg-(--swatch)" style={{ "--w": (p ? p.p * 100 : 0).toFixed(0) + "%", "--swatch": p ? barColor(p.p) : "transparent" } as React.CSSProperties}></i></div>
             <div className="sub">{p ? p.txt : "Not answered yet"}</div></button>
         );
       })}</div>
@@ -333,7 +334,7 @@ function RouteMap({ g, cur, go, act }: { g: GuideState; cur: Step; go: (id: stri
   return (
     <>
       {CHAPTERS.map((c, ci) => (
-        <div key={c} style={{ display: "contents" }}>
+        <div key={c} className="contents">
           <div className="gd-map-ch">{c}</div>
           {STEPS.filter((s) => s.ch === ci).map((s) => {
             const na = !applies(s, g.a), cls = na ? "na" : s.id === cur.id ? "cur" : g.done[s.id] ? "done" : "";
@@ -344,7 +345,7 @@ function RouteMap({ g, cur, go, act }: { g: GuideState; cur: Step; go: (id: stri
           })}
         </div>
       ))}
-      <div className="gd-map-foot"><button type="button" className="gd-link" data-gd="restart" onClick={() => act("restart")}>Start over</button></div>
+      <div className="gd-map-foot text-note"><Button variant="quiet" size="inline" data-gd="restart" onClick={() => act("restart")}>Start over</Button></div>
     </>
   );
 }
@@ -398,19 +399,19 @@ function Top({ g, st, score: s, color, count, client, go }: { g: GuideState; st:
     <div className="panel gd-top">
       <div className="gd-top-row">
         <div className="gd-title">Retirement Readiness Guide</div>
-        <div className="gd-mini" id="gdMini">{client && s != null ? <>Score <b style={{ color }}>{s}</b></> : null}</div>
+        <div className="gd-mini" id="gdMini">{client && s != null ? <>Score <b className="text-(color:--ink)" style={{ "--ink": color } as React.CSSProperties}>{s}</b></> : null}</div>
         <div className="gd-count" id="gdCount">{client ? count : ""}</div>
       </div>
       <div className="gd-prog-wrap">
         <div className="gd-prog" id="gdProg">{client ? segs.map((x, i) => (
           <button key={x.c} type="button" className={"gd-seg" + (st.ch === x.ci ? " on" : "")} data-go={x.list[0] ? x.list[0].id : "intro"}
             aria-label={x.c + ": " + x.d + " of " + x.list.length + " done"} onClick={() => go(x.list[0] ? x.list[0].id : "intro")}>
-            <i><b style={{ width: widths[i] }}></b></i><span>{x.c}</span></button>
+            <i><b className="w-(--w)" style={{ "--w": widths[i] } as React.CSSProperties}></b></i><span>{x.c}</span></button>
         )) : null}</div>
         <div className={"gd-track" + (client && !F && !hit ? " nocked" : "") + (client && hit ? " hit" : "")} id="gdTrack" aria-hidden="true" ref={track}>
           <span className="gd-bow"><svg viewBox="18 5 32 54"><path className="str rest" d="M33 7 L33 57" /><path className="str drawn" d="M33 7 L21 32 L33 57" />
             <path className="limb" d="M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57" /></svg></span>
-          <span className="gd-arrow" id="gdArrow" ref={arrow} style={client ? { left } : undefined}><svg viewBox="5 25.5 56 13"><path className="sh" d="M7 32 H51" />
+          <span className={client ? "gd-arrow left-(--x)" : "gd-arrow"} id="gdArrow" ref={arrow} style={client ? { "--x": left } as React.CSSProperties : undefined}><svg viewBox="5 25.5 56 13"><path className="sh" d="M7 32 H51" />
             <path className="hd" d="M60 32 L48 25.5 L50.5 32 L48 38.5 Z M11 32 L6 25.5 H11 L18 32 Z M11 32 L6 38.5 H11 L18 32 Z" /></svg></span>
           <span className="gd-goal"><svg viewBox="0 0 18 18"><circle className="rg" cx="9" cy="9" r="7.5" /><circle className="rg" cx="9" cy="9" r="4" /><circle className="eye" cx="9" cy="9" r="1.6" /></svg></span>
         </div>

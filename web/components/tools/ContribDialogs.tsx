@@ -13,6 +13,7 @@ import type { GrowthRates } from "@/lib/accounts";
 import { PER_YEAR } from "@/lib/engine/typed";
 import { groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { PERIOD_NAMES, PeriodOptions } from "@/lib/periods";
+import { Button } from "@/components/ui/button";
 
 
 /** The two-arrow icon on the "Convert" links that open the converter. */
@@ -45,12 +46,12 @@ export function ConverterDialog({ title, amount, period, apply, onClose }: {
           return (
             <div className="convrow" key={to}>
               <span className="k">{to}</span><span className="v">{money(v, 2)}</span>
-              <button className="btn mini" type="button" data-period={to} onClick={() => {
+              <Button variant="outline" size="sm" className="w-14 flex-none" data-period={to} onClick={() => {
                 const r = Math.round(v);
                 onClose();
                 apply(r, to);
                 toast("Contribution set to " + money(r, 2) + " " + to.toLowerCase());
-              }}>Apply</button>
+              }}>Apply</Button>
             </div>
           );
         })}
@@ -82,10 +83,10 @@ export function GrowthRatesDialog({ title, init, blend, apply, note, onClose }: 
       <ModalTop title={title} onClose={onClose} />
       <div className="formhint">How much each account&apos;s contribution rises each year. The contribution growth field shows the blend: the single rate that ends at the same total.{note ? " " + note : ""}</div>
       {row("t", "Traditional")}{row("r", "Roth")}{row("b", "Taxable brokerage")}
-      <div className="kv total" style={{ margin: "4px 0 14px" }}><span className="k">Blended</span><span className="v" id="gr_blend">{pctStr(blend(rates), 2)}</span></div>
+      <div className="kv total mt-1 mx-0 mb-3.5"><span className="k">Blended</span><span className="v" id="gr_blend">{pctStr(blend(rates), 2)}</span></div>
       <div className="formactions">
-        <button type="button" className="btn" data-gr="one" onClick={() => done(null)}>Use one rate</button>
-        <button type="button" className="btn primary" data-gr="apply" onClick={() => done(rates)}>Apply</button>
+        <Button variant="outline" className="flex-1" data-gr="one" onClick={() => done(null)}>Use one rate</Button>
+        <Button className="flex-1" data-gr="apply" onClick={() => done(rates)}>Apply</Button>
       </div>
     </Modal>
   );

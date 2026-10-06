@@ -14,9 +14,9 @@ import { MoneyField, NumberField, SelectField } from "@/components/fields/Field"
 import { Tipped } from "@/components/shell/Tooltips";
 import { useShareKit } from "@/components/shell/share";
 import { useToolState } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Milestones } from "@/components/ui/Milestones";
-import { Figure, KV } from "@/components/ui/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Milestones } from "@/components/common/Milestones";
+import { Figure, KV } from "@/components/common/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
@@ -113,7 +113,7 @@ export function Basic() {
                 <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PERIOD_ADV[p.period] : DASH} />
               </div>
             </div>
-            <div className="hint" style={{ marginTop: "14px" }}>Every figure here is in today&apos;s dollars,
+            <div className="hint mt-3.5">Every figure here is in today&apos;s dollars,
               so you can compare it to what money is worth now. It assumes you nudge your
               contribution up a little each year to keep pace with inflation.</div>
           </div>
@@ -124,7 +124,7 @@ export function Basic() {
           <BandChart id="Q" pts={pts} maxX={p.years || 1} xOffset={hasAge ? p.age : 0} enhanced ariaLabel="Projected balance in today's dollars"
             tip={(b) => (
               <>
-                {hasAge ? <><b>Age {fmtNum(p.age + b.year)}</b> <span style={{ color: "var(--dimmer)" }}>{"· year " + fmtNum(b.year)}</span></> : <b>Year {fmtNum(b.year)}</b>}
+                {hasAge ? <><b>Age {fmtNum(p.age + b.year)}</b> <span className="text-dimmer">{"· year " + fmtNum(b.year)}</span></> : <b>Year {fmtNum(b.year)}</b>}
                 <BandTipRows b={b} names={["Better", "Expected", "Worse"]} />
               </>
             )} />
@@ -158,7 +158,7 @@ export function Basic() {
         <div className="panel">
           <h2>Want more detail?</h2>
           <div className="body">
-            <p className="hint" style={{ marginTop: "0" }}>The Advanced tab does everything this does
+            <p className="hint mt-0">The Advanced tab does everything this does
               plus taxes, fees, contribution growth, and a simulation of good and bad market
               runs. This will carry your answers over so you don&apos;t have to retype them.</p>
             <OpenInAdvanced basic={s} />

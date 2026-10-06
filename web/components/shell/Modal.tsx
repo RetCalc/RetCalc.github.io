@@ -6,6 +6,7 @@
    wireModal() in src/js/app/23-scenarios.js. */
 
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
 
 const FOCUSABLE = "button,select,input,textarea,a[href],[tabindex]:not([tabindex='-1'])";
 
@@ -63,6 +64,6 @@ export function Modal({ onClose, className = "popup", focus, children }: Props) 
 /** A dialog's title row, with its close button. */
 export function ModalTop({ title, onClose }: { title: React.ReactNode; onClose: () => void }) {
   return (
-    <div className="sg-top"><h3>{title}</h3><button type="button" className="sg-close" aria-label="Close" onClick={onClose}>&times;</button></div>
+    <div className="sg-top"><h3>{title}</h3><Button variant="ghost" size="icon-sm" className="-mt-1 -mr-2" aria-label="Close" onClick={onClose}>&times;</Button></div>
   );
 }

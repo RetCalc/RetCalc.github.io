@@ -19,10 +19,10 @@ import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { ProjectionChart, ProjectionSummary, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Milestones } from "@/components/ui/Milestones";
-import { KV } from "@/components/ui/Readout";
+import { BigValue } from "@/components/common/BigValue";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Milestones } from "@/components/common/Milestones";
+import { KV } from "@/components/common/Readout";
 import { growthBlend, matchPer, spreadTotal, type GrowthRates } from "@/lib/accounts";
 import { coastFire, goalSolve, historicalRuns, monteCarlo, project, solveYears, PER_YEAR } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
@@ -37,6 +37,7 @@ import { projectionShare } from "./share";
 import { ADVANCED_DEF, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs, type AdvancedPlan } from "./model";
 import { toStages } from "./toStages";
 import { useBusy } from "@/lib/busy";
+import { Button } from "@/components/ui/button";
 
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
@@ -180,10 +181,10 @@ export function Advanced() {
     <div className="field" id="periodField">
       <label htmlFor="period">Contribution period</label>
       <select id="period" value={s.period} onChange={(e) => set("period")(e.target.value)}><PeriodOptions /></select>
-      <button type="button" className="linkbtn" id="convOpen" onClick={() => setDialog("conv")}>
+      <Button variant="link" size="inline-xs" className="mt-1.75" id="convOpen" onClick={() => setDialog("conv")}>
         {ConvertIcon}
         Convert frequency
-      </button>
+      </Button>
     </div>
   );
   const growthField = (
@@ -194,7 +195,7 @@ export function Advanced() {
           readOnly={blended} className={blended ? "blended" : undefined} title={blended ? "Blended from your per-account rates. Click to edit." : ""}
           onClick={() => blended && setDialog("growth")} />
       </Affixed>
-      <button type="button" className="linkbtn" id="acGrowthBtn" hidden={!acOn} onClick={() => setDialog("growth")}>{blended ? "Edit rates by account" : "Set by account"}</button>
+      <Button variant="link" size="inline-xs" className="mt-1.75" id="acGrowthBtn" hidden={!acOn} onClick={() => setDialog("growth")}>{blended ? "Edit rates by account" : "Set by account"}</Button>
     </div>
   );
   const acMoney = (id: "tradBal" | "tradC" | "rothBal" | "rothC" | "brokBal" | "brokC", label: string, contrib?: boolean) => (
@@ -276,7 +277,7 @@ export function Advanced() {
                   <NumberField id="glideEnd" label="End at" unit="%" negative value={s.glideEnd} onValueChange={set("glideEnd")} />
                   <NumberField id="glideYears" label="Over final" unit="yrs" value={s.glideYears} onValueChange={setTiming("glideYears")} />
                 </div>
-                <div className="hint" id="glideNote" style={{ margin: 0 }}>{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
+                <div className="hint m-0" id="glideNote">{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
               </div>
             </div>
             <NumberField id="fees" label={<>Fees <span className="tipglue"><span className="opt">optional</span><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
@@ -284,16 +285,16 @@ export function Advanced() {
               <div className="field">
                 <label htmlFor="withdrawal"><Tipped text="Withdrawal rate" k="withdrawal" /></label>
                 <Affixed suffix="%"><NumberInput id="withdrawal" nonNeg value={s.withdrawal} onValueChange={set("withdrawal")} /></Affixed>
-                <button className="btn mini" type="button" id="toDrawdown" style={{ marginTop: "6px" }} onClick={() => {
+                <Button variant="outline" size="sm" className="mt-1.5" id="toDrawdown" onClick={() => {
                   sendToDrawdown({ initial: Math.round(R.fvReal) });
                   router.push("/drawdown");
                   toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
-                }}>Test withdrawals</button>
+                }}>Test withdrawals</Button>
               </div>
               <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
               <div className="field" id="acTaxField" hidden={!acOn}>
                 <label><Tipped text="Tax on withdrawals" k="actax" /></label>
-                <div className="inputwrap" style={{ boxShadow: "none", background: "transparent" }}>
+                <div className="inputwrap shadow-none bg-transparent bg-none">
                   <input id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /><span className="affix">calc</span>
                 </div>
               </div>
@@ -336,7 +337,7 @@ export function Advanced() {
                     : "The portfolio balance you want, in today's spending power."}</div>
                 </Field>
               </div>
-              <div className="solvekv">
+              <div>
                 <KV k="Portfolio needed, inflation adjusted" id="sPortToday" v={money(S.portToday)} />
                 <KV k="That pays, after tax" id="sPays" v={money(S.pays) + " per year"} />
                 <KV k="Portfolio needed at retirement" id="sPortFuture" v={money(S.portFuture)} />
@@ -352,7 +353,7 @@ export function Advanced() {
                 <span className={C.state === "never" ? "v" : "v pos"} id="sCoast">{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</span>
               </div>
               <div id="sCoastAction">{C.state === "reachable"
-                ? <button className="btn primary" type="button" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</button> : null}</div>
+                ? <Button className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
             </div>
           </div>
           <div className="solveopts">
@@ -362,7 +363,7 @@ export function Advanced() {
               <div className="note" id="sPerPeriodNote">{"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}</div>
               <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
               <KV k="Change from current" id="sChange" cls={S.change > 0 ? "neg" : "pos"} v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
-              <button className="btn primary" id="btnApply" onClick={applyContribution}>Use this contribution</button>
+              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" onClick={applyContribution}>Use this contribution</Button>
             </div>
             <div className="solveopt">
               <div className="optlabel">Option 2 &middot; Change your timeline</div>
@@ -372,7 +373,7 @@ export function Advanced() {
                 : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}</div>
               <KV k="Your plan now" id="sYearsNow" v={fmtYears(p.years)} />
               <YearsDiff Y={Y} years={p.years} />
-              <button className="btn primary" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</button>
+              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</Button>
             </div>
           </div>
         </div>
@@ -409,11 +410,11 @@ export function Advanced() {
         <div className="panel">
           <h2>Want to model this in stages?</h2>
           <div className="body">
-            <p className="hint" style={{ marginTop: 0 }}>The Stages tab lets you change your
+            <p className="hint mt-0">The Stages tab lets you change your
               contribution, return, or timeline partway through the plan. This will carry
               your current numbers over as the first stage, then add a second stage with
               the same numbers running 10 years longer.</p>
-            <button className="btn primary" type="button" id="btnToStages" onClick={() => handToStages(false)}>Model these numbers in Stages</button>
+            <Button id="btnToStages" onClick={() => handToStages(false)}>Model these numbers in Stages</Button>
           </div>
         </div>
       </div>

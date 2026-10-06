@@ -16,10 +16,10 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ProjectionChart, ProjectionSummary, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Milestones } from "@/components/ui/Milestones";
-import { KV } from "@/components/ui/Readout";
+import { BigValue } from "@/components/common/BigValue";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Milestones } from "@/components/common/Milestones";
+import { KV } from "@/components/common/Readout";
 import { PPY, finalStageSolve, historicalRuns, monteCarlo, projectSeries } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { has, type Household } from "@/lib/household";
@@ -32,6 +32,7 @@ import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "@/tools/advanced/share";
 import { STAGES_DEF, effectiveStages, readStage, stageSplit, stagesPlan, stagesTargetRate, type StageInputs, type StagesInputs } from "./model";
 import { useBusy } from "@/lib/busy";
+import { Button } from "@/components/ui/button";
 
 const TARGET_LABEL = "(your target above)";
 
@@ -205,7 +206,7 @@ export function Stages() {
             <NumberField id="gTaxrate" wrapId="gTaxrateField" hidden={split} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
             <div className="field" id="saTaxField" hidden={!split}>
               <label><Tipped text="Tax on withdrawals" k="actax" /></label>
-              <div className="inputwrap" style={{ boxShadow: "none", background: "transparent" }}>
+              <div className="inputwrap shadow-none bg-transparent bg-none">
                 <input id="saTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={V.saRate != null ? pctStr(V.saRate, 1) : ""} /><span className="affix">calc</span>
               </div>
             </div>
@@ -223,7 +224,7 @@ export function Stages() {
       <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-series">
         <div className="panel">
           <h2>Stages{"\n        "}
-            <span className="h2ctrl"><button className="btn" id="btnAddStage" type="button" onClick={addStage}>Add stage</button></span>
+            <span className="h2ctrl"><Button variant="outline" id="btnAddStage" onClick={addStage}>Add stage</Button></span>
           </h2>
           <div className="body">
             <div id="stageList">
@@ -234,7 +235,7 @@ export function Stages() {
                   matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
               ))}
             </div>
-            <div className="hint" id="stageEmpty" style={{ display: n ? "none" : "block" }}>
+            <div className={n ? "hint hidden" : "hint block"} id="stageEmpty">
               No stages yet. Add one to start building a run.
             </div>
           </div>
@@ -280,7 +281,7 @@ export function Stages() {
               <div className="note" id="tPerPeriodNote">{F && last ? "Stage " + dn + ", paid " + PERIOD_ADV[last.period] + " for " + fmtYears(last.years) + (mf > 1 ? ", plus the match" : "") : ""}</div>
               <KV k="Per year" id="tPerYear" v={F ? money(F.perYear / mf) : ""} />
               <StageChange F={F} contrib={P.eff[dn - 1]?.contrib ?? 0} mf={mf} />
-              <button className="btn primary" id="btnApplyS" onClick={applyContribution}>Use this contribution</button>
+              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" onClick={applyContribution}>Use this contribution</Button>
             </div>
             <div className="solveopt">
               <div className="optlabel">Option 2 &middot; Final stage length</div>
@@ -288,7 +289,7 @@ export function Stages() {
               <div className="note" id="tYearsNote">{!F ? "" : F.reached ? "Keeping " + money(P.eff[dn - 1].contrib / mf, 2) + " " + PERIOD_ADV[last.period] : "Not reached within 100 years at this contribution."}</div>
               <KV k="Final stage now" id="tYearsNow" v={F && last ? fmtYears(last.years) : ""} />
               <KV k="Whole run becomes" id="tYearsTotal" v={!F ? "" : F.reached ? fmtYears(F.totalIfStretched!) : DASH} />
-              <button className="btn primary" id="btnApplyYearsS" disabled={!!F && !F.reached} onClick={applyYears}>Use this length</button>
+              <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!!F && !F.reached} onClick={applyYears}>Use this length</Button>
             </div>
           </div>
         </div>
@@ -300,7 +301,7 @@ export function Stages() {
           mcHint={<>5,000 simulations per redraw. Volatility is
             set per stage, in the cards above.</>}
           chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100)} legendExtra="Stage boundary"
-          tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span style={{ color: "#8ba0ac" }}>&middot; stage {String(b.stage)}</span></>}
+          tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-chart-slate">&middot; stage {String(b.stage)}</span></>}
           target={portToday} targetLabel={TARGET_LABEL} />
 
         <div className="panel">

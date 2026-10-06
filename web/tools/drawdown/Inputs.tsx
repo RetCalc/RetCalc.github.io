@@ -14,13 +14,14 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { StageHead } from "@/components/tools/StageHead";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
 import { DD_STRAT, ddMCHistory, ssDrawdownStreams, ssEstimate } from "@/lib/engine/typed-drawdown";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { advInUse, fromClamp, type DdItem, type DrawdownState, type FloorStep, type PathStage } from "./fields";
 import { Spark } from "./Spark";
 import { DD_FAMILY, DD_UI, ageVal, ddN, describeItem, wdOrder, hardStart, lineWords, mixText, rebalNote, spendThrough, stratNote } from "./text";
 import type { DDView } from "./Drawdown";
+import { Button } from "@/components/ui/button";
 
 
 export function Inputs({ v, fromNote, periods, open }: {
@@ -88,7 +89,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           (hi > vals[0] + 1 ? ", " + money(hi) + " at the highest" : ""));
     }
     card = <>
-      <div className="ddstrat-top"><span className="ddstrat-fam">{DD_FAMILY[S.family]}</span></div>
+      <div><span className="ddstrat-fam">{DD_FAMILY[S.family]}</span></div>
       <div className="ddstrat-blurb">{U.blurb}</div>
       {spark ? <>{spark}<div className="ddstrat-cap">{cap}</div></> : null}
     </>;
@@ -154,10 +155,10 @@ export function Inputs({ v, fromNote, periods, open }: {
             <input type="checkbox" data-itemtoggle={i} checked={it.on !== false}
               onChange={(e) => editList<DdItem>(k, (l) => l.map((x, j) => (j === i ? { ...x, on: e.target.checked } : x)))} />
             <span className="itemtxt" data-itemedit={i} onClick={() => open({ kind: "item", list: k, index: i })}>{it.name}<small>{describeItem(it, age)}</small></span>
-            <button className="itemdel" type="button" data-itemdel={i} aria-label="Delete" onClick={() => {
+            <Button variant="ghost" size="icon-sm" data-itemdel={i} aria-label="Delete" onClick={() => {
               editList<DdItem>(k, (l) => l.filter((_, j) => j !== i));
               toast("Removed " + (it.name || "Item"));
-            }}>&times;</button>
+            }}>&times;</Button>
           </div>
         ))}
       </div>
@@ -177,11 +178,11 @@ export function Inputs({ v, fromNote, periods, open }: {
           <div className="ddsec ddsec-first">Your portfolio at retirement</div>
           <Field id="ddInitial" label="Portfolio value">
             <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")} /></Affixed>
-            <button className="btn mini" type="button" id="ddCopy" style={{ marginTop: "6px" }} onClick={v.copyFromPlan}>Copy from your plan</button>
+            <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>
           </Field>
           <Field id="ddMixBtn" label={<Tipped text="Asset mix" k="ddstocks" />}>
-            <button type="button" className="ddmixbtn" id="ddMixBtn" onClick={() => open({ kind: "mix" })}><span id="ddMixText">{mixText(o)}</span>
-              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+            <Button variant="outline" size="lg" className="w-full justify-between" id="ddMixBtn" onClick={() => open({ kind: "mix" })}><span id="ddMixText" className="min-w-0 flex-1 truncate text-left">{mixText(o)}</span>
+              <svg className="text-muted-foreground" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
             <input type="hidden" id="ddStock" value={str("stock")} /><input type="hidden" id="ddSV" value={str("sv")} />
             <input type="hidden" id="ddCash" value={str("cash")} /><input type="hidden" id="ddStockEnd" value={str("stockEnd")} />
           </Field>
@@ -194,7 +195,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             </SelectField>
             <NumberField id="ddRebalN" wrapId="ddRebalNWrap" hidden={o.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={str("rebalN")} onValueChange={set("rebalN")} />
             <NumberField id="ddRebalBand" wrapId="ddRebalBandWrap" hidden={o.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={str("rebalBand")} onValueChange={set("rebalBand")} />
-            <div className="hint" id="ddRebalNote" style={{ margin: "-6px 0 12px" }}>{rebalNote(o)}</div>
+            <div className="hint -mt-1.5 mx-0 mb-3" id="ddRebalNote">{rebalNote(o)}</div>
             <NumberField id="ddFee" label={<>Fees <span className="tipglue"><span className="opt">optional</span><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={str("fee")} onValueChange={set("fee")} />
           </div>
           {/* Guaranteed income is set in the Asset mix pop-up; these hold it. */}
@@ -213,7 +214,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <div className="ddgk-final" id="ddGInflateWrap" hidden={tips}>
                 <label className="ddgk-check"><input type="checkbox" id="ddGInflate" checked={!!s.gInflate} onChange={(e) => set("gInflate")(e.target.checked)} /><span>Payments rise with inflation</span></label>
               </div>
-              <Html className="hint" id="ddGNote" style={{ marginTop: "-6px", marginBottom: "12px" }} html={gNote} />
+              <Html className="hint -mt-1.5 mb-3" id="ddGNote" html={gNote} />
             </div>
           </div>
           <div className="ddsec">Your retirement</div>
@@ -228,7 +229,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               })} />
             <NumberField id="ddYears" label="Years in retirement" unit="yrs" max={60} value={str("years")} onValueChange={set("years")} onBlur={clampFrom} />
           </div>
-          <Html className="hint" id="ddFromNote" style={{ margin: "-6px 0 12px" }} html={fromNote} />
+          <Html className="hint -mt-1.5 mx-0 mb-3" id="ddFromNote" html={fromNote} />
 
           <Field id="ddStrategy" label={<Tipped text="Withdrawal strategy" k="strategy" />}>
             <select id="ddStrategy" value={str("strategy")} onChange={(e) => set("strategy")(e.target.value)}>
@@ -259,14 +260,14 @@ export function Inputs({ v, fromNote, periods, open }: {
               </optgroup>
             </select>
             <div className="ddstrat" id="ddStratCard">{card}</div>
-            <button type="button" className="linkbtn" id="ddStratGuide" onClick={() => open({ kind: "guide" })}>
+            <Button variant="link" size="inline-xs" className="mt-1.75" id="ddStratGuide" onClick={() => open({ kind: "guide" })}>
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" strokeWidth="1.4" /><path d="M8 7.2v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="8" cy="4.9" r=".9" fill="currentColor" /></svg>
               How the strategies compare
-            </button>
-            <button type="button" className="linkbtn" id="ddStudyBtn" onClick={() => open({ kind: "study" })}>
+            </Button>
+            <Button variant="link" size="inline-xs" className="mt-1.75" id="ddStudyBtn" onClick={() => open({ kind: "study" })}>
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 2.8h7.5L13 5.3v7.9H3z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M5.5 7.2h5M5.5 9.8h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /></svg>
               Reproduce a classic study
-            </button>
+            </Button>
           </Field>
           <Field id="ddRate" wrapId="ddRateWrap" hidden={!U.rate} label={<span className="tipglue"><span id="ddRateLabel">{U.rate || "Withdrawal rate"}</span><TipDot k="ddrate" /></span>}>
             <Affixed suffix="%"><NumberInput id="ddRate" nonNeg step={0.25} value={str("rate")} onValueChange={set("rate")} /></Affixed>
@@ -293,7 +294,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <NumberField id="ddAdjustLo" label="Raise spending by" unit="%" value={str("adjustLo")} onValueChange={set("adjustLo")} />
             </div>
           </div>
-          <Html className="hint ddadv" id="ddGuardExample" hidden={!shown("ddGuardExample")} style={{ marginTop: "-6px", marginBottom: "12px" }} html={guardExample} />
+          <Html className="hint ddadv -mt-1.5 mb-3" id="ddGuardExample" hidden={!shown("ddGuardExample")} html={guardExample} />
           <div className="two ddadv" id="ddFloorWrap" hidden={!shown("ddFloorWrap")}>
             <NumberField id="ddFloor" label={<Tipped text="Max cut" k="maxcut" />} unit="%" value={str("floor")} onValueChange={set("floor")} />
             <NumberField id="ddCeil" label={<Tipped text="Max raise" k="maxraise" />} unit="%" value={str("ceil")} onValueChange={set("ceil")} />
@@ -330,40 +331,40 @@ export function Inputs({ v, fromNote, periods, open }: {
             <NumberField id="ddYaleWeight" label={<Tipped text="Weight on last year" k="yale" />} unit="%" step={5} max={100} value={str("yaleWeight")} onValueChange={set("yaleWeight")} />
             <NumberField id="ddYaleRate" label="Target spending rate" unit="%" step={0.25} value={str("yaleRate")} onValueChange={set("yaleRate")} />
           </div>
-          <Html className="hint" id="ddYaleNote" hidden={!shown("ddYaleNote")} style={{ marginTop: "-6px", marginBottom: "12px" }} html={yaleNote} />
+          <Html className="hint -mt-1.5 mb-3" id="ddYaleNote" hidden={!shown("ddYaleNote")} html={yaleNote} />
           <div id="ddVpwWrap" hidden={!shown("ddVpwWrap")}>
             <NumberField id="ddVpwRate" label={<Tipped text="Expected rate of return" k="vpwrate" />} unit="% after inflation" step={0.25} negative value={str("vpwRate")} onValueChange={set("vpwRate")} />
             <MoneyField id="ddVpwFV" label={<Tipped text="PMT future value" k="vpwfv" />} value={str("vpwFV")} onValueChange={set("vpwFV")} />
           </div>
-          <Html className="hint" id="ddVpwNote" hidden={!shown("ddVpwNote")} style={{ marginTop: "-6px", marginBottom: "12px" }} html={vpwNote} />
-          <Html className="hint" id="ddStratNote" hidden={!note} style={{ marginTop: "-6px", marginBottom: "12px" }} html={note} />
+          <Html className="hint -mt-1.5 mb-3" id="ddVpwNote" hidden={!shown("ddVpwNote")} html={vpwNote} />
+          <Html className="hint -mt-1.5 mb-3" id="ddStratNote" hidden={!note} html={note} />
           <div className="ddadv">
             <div className="two" id="ddSpendFloorWrap" hidden={S.limits === false}>
               <MoneyField id="ddSpendFloor" label={<Tipped text="Minimum spending" k="spendfloor" />} value={str("spendFloor")} onValueChange={set("spendFloor")} />
               <MoneyField id="ddSpendCeil" label={<Tipped text="Maximum spending" k="spendceil" />} value={str("spendCeil")} onValueChange={set("spendCeil")} />
             </div>
-            <div className="hint acwarn" id="ddSpendNote2" hidden={!clash} style={{ marginTop: "-6px", marginBottom: "12px" }}>{clash ? "Your minimum is above your maximum, so the maximum wins." : ""}</div>
+            <div className="hint acwarn -mt-1.5 mb-3" id="ddSpendNote2" hidden={!clash}>{clash ? "Your minimum is above your maximum, so the maximum wins." : ""}</div>
             <div id="ddFloorStepsWrap" hidden={S.limits === false}>
               <div id="ddFloorStepList">
                 {steps.map((st, i) => {
                   const s0 = Math.max(2, Math.round(st.start || 0));
                   return (
-                    <div className="stagecard ddfloorcard" key={i}>
+                    <div className="stagecard" key={i}>
                       <div className="stagehead"><span className="stagenum">Change {i + 1}</span>
                         <span className="stagespan" data-fsspan={i}>{s0 > P.floor.length ? "after the plan ends" : age != null ? "Age " + ddN(ageVal(age, s0)) + " on" : "Year " + s0 + " on"}</span>
-                        <button className="btn mini" type="button" data-fsdel={i} onClick={() => editList<FloorStep>("floorSteps", (l) => l.filter((_, j) => j !== i))}>Remove</button></div>
+                        <Button variant="outline" size="sm" data-fsdel={i} onClick={() => editList<FloorStep>("floorSteps", (l) => l.filter((_, j) => j !== i))}>Remove</Button></div>
                       <div className="two">
-                        <div className="field" style={{ marginBottom: 0 }}><label>{startUnit ? "From age" : "From year"}</label><div className="inputwrap">
+                        <div className="field mb-0"><label>{startUnit ? "From age" : "From year"}</label><div className="inputwrap">
                           <DraftInput nonNeg data-ff="start" data-fi={i} aria-label={"Change " + (i + 1) + " starts"} value={st.start}
                             format={(x) => ddN(age != null ? ageVal(age, x) : x)}
                             onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, start: Math.max(2, Math.round(age != null ? parseNum(t) - age + 1 : parseNum(t))) } : x)))} />
                           <span className="affix">{startUnit ? "age" : "yr"}</span></div></div>
-                        <div className="field" style={{ marginBottom: 0 }}><label>Minimum</label><div className="inputwrap"><span className="affix">$</span>
+                        <div className="field mb-0"><label>Minimum</label><div className="inputwrap"><span className="affix">$</span>
                           <DraftInput money nonNeg data-ff="amount" data-fi={i} aria-label={"Change " + (i + 1) + " minimum"} value={st.amount}
                             format={(x) => groupDigits(Math.round(x || 0), true)}
                             onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, amount: Math.max(0, parseNum(t)) } : x)))} /></div></div>
                       </div>
-                      <div className="field" style={{ margin: "10px 0 0" }}><label>Ease in over</label><div className="inputwrap">
+                      <div className="field mt-2.5 mx-0 mb-0"><label>Ease in over</label><div className="inputwrap">
                         <DraftInput nonNeg max={30} data-ff="glide" data-fi={i} aria-label={"Change " + (i + 1) + " eases in over"} value={st.glide || 0}
                           format={ddN}
                           onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, glide: Math.max(0, Math.min(30, Math.round(parseNum(t)))) } : x)))} />
@@ -372,10 +373,10 @@ export function Inputs({ v, fromNote, periods, open }: {
                   );
                 })}
               </div>
-              <button className="btn mini" type="button" id="ddAddFloorStep" onClick={() => editList<FloorStep>("floorSteps", (l) => {
+              <Button variant="outline" size="sm" id="ddAddFloorStep" onClick={() => editList<FloorStep>("floorSteps", (l) => {
                 const years = Math.min(60, Math.max(1, Math.round(num("years")))), base = num("spendFloor"), last = l[l.length - 1];
                 return [...l, { start: Math.min(years, last ? last.start + 10 : Math.max(2, Math.round(years / 2))), amount: Math.round((last ? last.amount : base) * 0.875 / 1000) * 1000, glide: 0 }];
-              })}>+ Change the minimum later</button>
+              })}>+ Change the minimum later</Button>
               <div className="hint" id="ddFloorNote">{floorNote}</div>
             </div>
             <Field id="ddPath" wrapId="ddPathField" hidden={!takesPath} label={<Tipped text="Spending through retirement" k="ddpath" />}>
@@ -392,14 +393,14 @@ export function Inputs({ v, fromNote, periods, open }: {
               <div id="ddWdStageList">
                 <WdStages stages={stages} v={v} edit={(f) => editList<PathStage>("pathStages", f)} toast={toast} />
               </div>
-              <button className="btn mini" type="button" id="ddAddWdStage" onClick={() => editList<PathStage>("pathStages", (l) => {
+              <Button variant="outline" size="sm" id="ddAddWdStage" onClick={() => editList<PathStage>("pathStages", (l) => {
                 const years = Math.min(60, Math.max(1, Math.round(num("years"))));
                 const order = wdOrder(l), last = order[order.length - 1];
                 const start = Math.min(years, (last ? last.start : 1) + 10);
                 return [...l, { start: Math.max(2, start), level: last ? Math.max(0, (last.st.level ?? 100) - 10) : 90 }];
-              })}>+ Add spending stage</button>
+              })}>+ Add spending stage</Button>
             </div>
-            <SelectField id="ddSSMode" label="Social Security" value={ssMode} onChange={set("ssMode")} wrapStyle={{ marginTop: "14px" }}>
+            <SelectField id="ddSSMode" label="Social Security" value={ssMode} onChange={set("ssMode")} className="mt-3.5">
               <option value="none">Not included</option>
               <option value="est">Estimate it for me</option>
               <option value="manual">I know my benefit</option>
@@ -427,15 +428,15 @@ export function Inputs({ v, fromNote, periods, open }: {
               label={<span className="tipglue"><span id="ddSSDelayLabel">{ssAgeMode ? "Starts at age" : "Starts after"}</span><TipDot k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
               <div className="inputwrap"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")} /><span className="affix" id="ddSSDelayAffix">yrs</span></div>
             </Field>
-            <div className="field" style={{ marginTop: "14px" }}>
+            <div className="field mt-3.5">
               <label><Tipped text="Other income" k="customincome" /></label>
               {items("incomeItems", "ddIncomeList")}
-              <button className="btn mini" type="button" id="ddAddIncome" onClick={() => open({ kind: "item", list: "incomeItems", index: null })}>+ Add income source</button>
+              <Button variant="outline" size="sm" id="ddAddIncome" onClick={() => open({ kind: "item", list: "incomeItems", index: null })}>+ Add income source</Button>
             </div>
             <div className="field">
               <label><Tipped text="Future expenses" k="customexpense" /></label>
               {items("expenseItems", "ddExpenseList")}
-              <button className="btn mini" type="button" id="ddAddExpense" onClick={() => open({ kind: "item", list: "expenseItems", index: null })}>+ Add future expense</button>
+              <Button variant="outline" size="sm" id="ddAddExpense" onClick={() => open({ kind: "item", list: "expenseItems", index: null })}>+ Add future expense</Button>
             </div>
             <div className="ddsec">Goals</div>
             <MoneyField id="ddLegacyGoal" label={<>Legacy goal <span className="tipglue"><span className="opt">optional</span><TipDot k="legacy" /></span></>} value={str("legacyGoal")} onValueChange={set("legacyGoal")} />
@@ -468,9 +469,9 @@ export function Inputs({ v, fromNote, periods, open }: {
                   <NumberField id="ddMcCash" wrapId="ddMcCashWrap" hidden={!(o.cashPct > 0)} label="Cash" unit="%/yr" step={0.5} negative value={str("mcCash")} onValueChange={set("mcCash")} />
                   <NumberField id="ddMcInfl" label="Inflation" unit="%/yr" step={0.5} negative value={str("mcInfl")} onValueChange={set("mcInfl")} />
                 </div>
-                <button className="btn mini" type="button" id="ddMcReset" onClick={() => setState((c) => ({
+                <Button variant="outline" size="sm" id="ddMcReset" onClick={() => setState((c) => ({
                   ...c, mcStock: MH.stock.toFixed(1), mcSV: MH.sv.toFixed(1), mcBond: MH.bond.toFixed(1), mcCash: MH.cash.toFixed(1), mcInfl: MH.infl.toFixed(1),
-                }))}>Reset to history&apos;s</button>
+                }))}>Reset to history&apos;s</Button>
               </div>
               <div className="hint" id="ddMcNote">{o.mcOwn ? "Long-run returns, compounded, before inflation. History's since 1927: US stocks " + MH.stock.toFixed(1) +
                 "%, small value " + MH.sv.toFixed(1) + "%, bonds " + MH.bond.toFixed(1) + "%, cash " + MH.cash.toFixed(1) + "%, inflation " + MH.infl.toFixed(1) + "%." : ""}</div>
@@ -478,8 +479,8 @@ export function Inputs({ v, fromNote, periods, open }: {
           </div>
           <div className="hint ddsimple" id="ddSimpleNote">
             {inputs !== "simple" ? null : used.length
-              ? <><b>Also in use:</b> {used.join(", ")}. <button type="button" className="linkbtn" data-ddadv onClick={() => setInputs("adv")}>Show them</button></>
-              : <>Simple shows the essentials. <button type="button" className="linkbtn" data-ddadv onClick={() => setInputs("adv")}>Advanced</button> adds rebalancing, fees, Social Security, other income, spending limits, goals and how history is tested.</>}
+              ? <><b>Also in use:</b> {used.join(", ")}. <Button variant="link" size="inline" data-ddadv onClick={() => setInputs("adv")}>Show them</Button></>
+              : <>Simple shows the essentials. <Button variant="link" size="inline" data-ddadv onClick={() => setInputs("adv")}>Advanced</Button> adds rebalancing, fees, Social Security, other income, spending limits, goals and how history is tested.</>}
           </div>
           <div className="derived">
             <div><span>Social Security</span><span className="num" id="ddSSShow">{o.ssAnnualTotal > 0 ? money(o.ssAnnualTotal) + "/yr" : "Not included"}</span></div>
@@ -541,7 +542,7 @@ function WdStages({ stages, v, edit, toast }: { stages: PathStage[]; v: DDView; 
                 toast("Removed " + (st.name || "Stage " + (i + 2)));
               }} />
             <div className="two">
-              <div className="field" style={{ marginBottom: 0 }}><label data-wdstartlbl={i}>{age != null ? "Starts at age" : "Starts in year"}</label><div className="inputwrap">
+              <div className="field mb-0"><label data-wdstartlbl={i}>{age != null ? "Starts at age" : "Starts in year"}</label><div className="inputwrap">
                 <DraftInput nonNeg data-wf="start" data-wi={i} aria-label={"Stage " + (i + 2) + " start"} value={st.start}
                   format={(x) => fmtNum(age != null ? ageVal(age, x) : x)}
                   onType={(t) => {
@@ -550,7 +551,7 @@ function WdStages({ stages, v, edit, toast }: { stages: PathStage[]; v: DDView; 
                     edit((l) => l.map((x, j) => (j === i ? { ...x, start: Math.max(1, Math.round(age != null ? n - age + 1 : n)) } : x)));
                   }} />
                 <span className="affix">{age != null ? "age" : "yr"}</span></div></div>
-              <div className="field" style={{ marginBottom: 0 }}><label>Spending, of year one&apos;s</label><div className="inputwrap">
+              <div className="field mb-0"><label>Spending, of year one&apos;s</label><div className="inputwrap">
                 <DraftInput nonNeg step={5} data-wf="level" data-wi={i} aria-label={"Stage " + (i + 2) + " spending, as a share of year one"} value={st.level ?? 100}
                   format={ddN} onType={(t) => edit((l) => l.map((x, j) => (j === i ? { ...x, level: Math.max(0, parseNum(t) || 0) } : x)))} />
                 <span className="affix">%</span></div></div>

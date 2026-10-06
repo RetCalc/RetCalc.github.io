@@ -6,6 +6,8 @@
    "Stage N". Stages and the Drawdown Simulator's spending stages use it.
    From buildStages() in src/js/app/08-stages.js. */
 
+import { Button } from "@/components/ui/button";
+
 export function StageHead({ name, fallback, aria, rename, span, remove, attrs }: {
   name?: string;
   /** The name shown until one is given: "Stage 2". */
@@ -40,7 +42,7 @@ export function StageHead({ name, fallback, aria, rename, span, remove, attrs }:
           rename(next);
         }}>{name || fallback}</span>
       <span className="stagespan" {...attrs.span}>{span}</span>
-      <button className="btn mini" type="button" {...attrs.del} onClick={remove}>Remove</button>
+      <Button variant="outline" size="sm" className="ml-auto" {...attrs.del} onClick={remove}>Remove</Button>
     </div>
   );
 }

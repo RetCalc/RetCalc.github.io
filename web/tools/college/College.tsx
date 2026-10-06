@@ -11,14 +11,15 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { NumberInput } from "@/components/fields/NumberInput";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { Figure, KV } from "@/components/ui/Readout";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { Figure, KV } from "@/components/common/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
 import { collegePlanCalc, collegeSavingsCalc } from "@/lib/engine/typed";
 import { DASH, fmtNum, groupDigits, money, pctStr } from "@/lib/format";
 import { focusLast } from "@/lib/dom";
 import { CL_PRESETS, COLLEGE_DEF, collegeInput, phaseNote, type Kid } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { collegeShare } from "./share";
+import { Button } from "@/components/ui/button";
 
 
 export function College() {
@@ -113,14 +114,14 @@ export function College() {
                 return multi ? (
                   <div className="stagecard clkid" key={i}>
                     <div className="stagehead"><span className="clkid-name">Child {i + 1}</span>
-                      <button className="btn mini" type="button" onClick={() => setState((c) => ({ ...c, kids: c.kids.filter((_, j) => j !== i) }))}>Remove</button>
+                      <Button variant="outline" size="sm" onClick={() => setState((c) => ({ ...c, kids: c.kids.filter((_, j) => j !== i) }))}>Remove</Button>
                     </div>
                     {fields}
                   </div>
                 ) : <Fragment key={i}>{fields}</Fragment>;
               })}
             </div>
-            <button className="btn" type="button" id="clAddKid"
+            <Button variant="outline" id="clAddKid"
               onClick={() => {
                 // A new child starts like the last one, two years behind.
                 setState((c) => {
@@ -128,7 +129,7 @@ export function College() {
                   return { ...c, kids: [...c.kids, { ...last, years: String(Math.min(25, (parseFloat(last.years) || 0) + 2)) }] };
                 });
                 focusLast(kidsRef, "input[data-f='years']");
-              }}>{multi ? "Add another child" : "Add a child"}</button>
+              }}>{multi ? "Add another child" : "Add a child"}</Button>
             <MoneyField id="clSaved" labelId="clSavedLbl" label={multi ? "Currently saved, for all of them" : "Currently saved"} value={s.saved} onValueChange={set("saved")} />
             <div className="two">
               <NumberField id="clReturn" label="Investment return" unit="%/yr" step={0.5} value={s.ret} onValueChange={set("ret")} />
@@ -160,8 +161,8 @@ export function College() {
               tip={(b) => (
                 <>
                   <b>Year {fmtNum(b.year)}</b>
-                  <br /><span style={{ color: "#e9b872" }}>Savings</span> <span className="n">{money(b.base)}</span>
-                  {b.hi != null ? <><br /><span style={{ color: "#4fbf95" }}>{multi ? "Still needed" : "Cost of college"}</span> <span className="n">{money(b.hi)}</span></> : null}
+                  <br /><span className="text-gold">Savings</span> <span className="n">{money(b.base)}</span>
+                  {b.hi != null ? <><br /><span className="text-jade">{multi ? "Still needed" : "Cost of college"}</span> <span className="n">{money(b.hi)}</span></> : null}
                 </>
               )} />
           ) : <BandChart id="Cl" pts={[]} maxX={0} ariaLabel="College savings projection" tip={() => null} />}

@@ -139,16 +139,6 @@
 @media (prefers-reduced-motion: reduce){
   ::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){animation-duration:0s!important;animation-delay:0s!important}
 }
-.toolback .backbtn{display:inline-flex;align-items:center;gap:7px;flex:none;
-  background:transparent;border:0;box-shadow:none;cursor:pointer;
-  padding:6px 10px 6px 7px;margin-left:-7px;border-radius:var(--r-well);
-  font-family:var(--sans);font-size:13px;color:var(--dim);
-  transition:color .14s ease,background .14s ease}
-.toolback .backbtn:hover{color:var(--text);background:var(--panel)}
-.toolback .backbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.toolback .backbtn svg{width:13px;height:13px;flex:none;
-  transition:transform .18s cubic-bezier(.2,.7,.3,1)}
-.toolback .backbtn:hover svg{transform:translateX(-2px)}
 .toolback .crumb{font-size:13px;color:var(--dimmer);min-width:0;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .toolback .crumb::before{content:"/";margin-right:11px;color:var(--line)}

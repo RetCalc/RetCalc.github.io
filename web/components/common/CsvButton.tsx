@@ -7,6 +7,7 @@
 import { useToast } from "@/components/shell/Toast";
 import { encodeShare, useActiveTool } from "@/components/tools/ToolState";
 import { csvSlug, downloadCsv } from "@/lib/csv";
+import { Button } from "@/components/ui/button";
 
 function cellText(el: Element): string {
   const c = el.cloneNode(true) as Element;
@@ -23,7 +24,7 @@ export function CsvButton({ label, title = "Download this table as a CSV", id, .
   const tool = useActiveTool();
   const toast = useToast();
   return (
-    <button type="button" className="btn mini csvbtn" id={id} title={title} aria-label={`Download ${label} as CSV`}
+    <Button variant="outline" size="xs" id={id} title={title} aria-label={`Download ${label} as CSV`}
       onClick={() => {
         let rows: string[][] | null;
         if (from.table) {
@@ -39,6 +40,6 @@ export function CsvButton({ label, title = "Download this table as a CSV", id, .
         const filename = from.filename ?? `retcalc-${csvSlug(tool?.def.id ?? "table")}-${csvSlug(label)}.csv`;
         downloadCsv(rows, filename, location.origin + location.pathname + (tool ? encodeShare(tool.def.id, tool.state) : ""));
         toast("Saved " + filename);
-      }}>CSV</button>
+      }}>CSV</Button>
   );
 }

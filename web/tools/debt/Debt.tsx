@@ -12,8 +12,8 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { Figure, Segmented } from "@/components/ui/Readout";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { Figure, Segmented } from "@/components/common/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
 import { DEBT_CAP, debtDate as debtDateOn, debtDur, debtRun, debtUnderwater } from "@/lib/engine/typed";
 import type { DebtResult } from "@/lib/engine/types";
 import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
@@ -23,6 +23,7 @@ import { BUDGET_DEFAULTS, budgetTotals } from "@/tools/budget/model";
 import { DEBT_DEF, debtList, type DebtRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { debtShare } from "./share";
+import { Button } from "@/components/ui/button";
 
 
 export function Debt() {
@@ -116,8 +117,8 @@ export function Debt() {
           tip={(b) => (
             <>
               <b>Month {fmtNum(b.year)}</b> <span className="n">{debtDate(b.year)}</span>
-              <br /><span style={{ color: "#e9b872" }}>Your plan</span> <span className="n">{money(b.base)}</span>
-              <br /><span style={{ color: "#4fbf95" }}>Minimums</span> <span className="n">{money(b.hi!)}</span>
+              <br /><span className="text-gold">Your plan</span> <span className="n">{money(b.base)}</span>
+              <br /><span className="text-jade">Minimums</span> <span className="n">{money(b.hi!)}</span>
             </>
           )} />
         <Legend id="legendDT" items={[["#e9b872", s.mode === "snowball" ? "Snowball" : "Avalanche"], ["#4fbf95", "Minimums only"]]} />
@@ -139,7 +140,7 @@ export function Debt() {
             <label htmlFor="dtExtra">Extra payment, on top of the minimums</label>
             <div className="bgincome-row">
               <Affixed prefix="$" suffix="/mo"><MoneyInput id="dtExtra" nonNeg value={s.extra} onValueChange={set("extra")} /></Affixed>{" "}
-              <button className="btn" type="button" id="dtCopyBudget"
+              <Button variant="outline" id="dtCopyBudget"
                 onClick={() => {
                   const leftMo = budgetTotals(toolInputs("budget", BUDGET_DEFAULTS)).leftYr / 12;
                   if (!(leftMo > 0)) {
@@ -148,12 +149,12 @@ export function Debt() {
                   }
                   setState((c) => ({ ...c, extra: groupDigits(leftMo.toFixed(0), true) }));
                   toast("Using " + money(leftMo, 0) + "/mo left over from your budget");
-                }}>Copy from Budget</button>
+                }}>Copy from Budget</Button>
             </div>
           </div>
           <div className="dtstrat">
             <Segmented id="segDT" attr="data-dt" options={[["avalanche", "Avalanche"], ["snowball", "Snowball"]] as const} value={s.mode} onChange={set("mode")} />{" "}
-            <span className="hint" style={{ margin: "0" }} id="dtStratNote">
+            <span className="hint m-0" id="dtStratNote">
               {s.mode === "snowball" ? "Smallest balance first: quicker wins, usually more interest." : "Highest rate first: mathematically cheapest."}
             </span>
           </div>
@@ -177,24 +178,24 @@ export function Debt() {
                 <Affixed className="c2" suffix="%"><NumberInput nonNeg step={0.1} data-f="apr" data-i={i} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /></Affixed>
                 <Affixed className="c3" prefix="$"><MoneyInput nonNeg data-f="min" data-i={i} value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></Affixed>
                 {s.rows.length > 1 ? (
-                  <button className="del" type="button" title="Remove" aria-label="Remove"
-                    onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</button>
+                  <Button variant="ghost" size="icon-sm" title="Remove" aria-label="Remove"
+                    onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</Button>
                 ) : <span className="delspace"></span>}
               </div>
             ))}
           </div>
-          <button className="btn" type="button" id="dtAdd" style={{ marginTop: "6px" }}
+          <Button variant="outline" className="mt-1.5" id="dtAdd"
             onClick={() => {
               setState((c) => ({ ...c, rows: [...c.rows, { desc: "New debt", balance: "0", apr: "0", min: "0" }] }));
               focusLast(listRef, ".dtrow input.desc");
-            }}>Add a debt</button>
+            }}>Add a debt</Button>
         </div>
       </div>
 
       <div className="panel">
         <h2>Avalanche vs. snowball<span className="h2note">same money, different order</span><span className="h2ctrl"><CsvButton table={compareRef} label="Avalanche vs. snowball" /></span></h2>
         <div className="body">
-          <div id="dtVerdict">{verdict ? <div className="hint" style={{ margin: "0 0 12px" }}>{verdict}</div> : null}</div>
+          <div id="dtVerdict">{verdict ? <div className="hint mt-0 mx-0 mb-3">{verdict}</div> : null}</div>
         </div>
         <div className="scroll">
           <table id="dtCompare" ref={compareRef}>

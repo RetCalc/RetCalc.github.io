@@ -18,6 +18,7 @@ import { guide, setGuide, useGuide, type Trip } from "./store";
 import { TRIP_META } from "./tripMeta";
 import { trip as tripDef, type Task } from "./trips";
 import { setNavDir } from "@/lib/nav-motion";
+import { Button } from "@/components/ui/button";
 
 export default function CoachBody() {
   const g = useGuide(), path = usePathname(), router = useRouter(), toast = useToast(), active = useActiveTool();
@@ -74,11 +75,11 @@ export default function CoachBody() {
         setTimeout(() => revealFor(meta.pages![n].focus), 0);
       } } : undefined}
       chip={chip || (here ? "When you're done here:" : "")}
-      foot={<button type="button" className="btn primary" id="gdCoachBack" onClick={() => { setNavDir("back"); router.push("/guide"); }}>Back to guide</button>}>
+      foot={<Button className="flex-none" id="gdCoachBack" onClick={() => { setNavDir("back"); router.push("/guide"); }}>Back to guide</Button>}>
       {here ? undefined : (
         <>
           <p>You&apos;ve stepped away from the {meta.name}. Head back to finish this step, or return to the guide.</p>
-          <p><button type="button" className="btn mini" id="gdCoachGo" onClick={() => { setNavDir("fwd"); router.push(meta.path); }}>Open {meta.name}</button></p>
+          <p><Button variant="outline" size="sm" id="gdCoachGo" onClick={() => { setNavDir("fwd"); router.push(meta.path); }}>Open {meta.name}</Button></p>
         </>
       )}
     </CoachPanel>

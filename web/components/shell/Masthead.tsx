@@ -7,6 +7,7 @@ import { useHousehold } from "@/components/household/HouseholdProvider";
 import { setThemeChoice, useTheme } from "@/lib/theme";
 import { Brandmark } from "./Brandmark";
 import { ScenarioBar } from "./ScenarioBar";
+import { Button } from "@/components/ui/button";
 
 const SUN = (
   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -27,10 +28,10 @@ function ThemeButton() {
   const goingLight = theme === "dark";
   const label = theme ? (goingLight ? "Switch to light theme" : "Switch to dark theme") : "Switch theme";
   return (
-    <button className="btn iconbtn" id="btnTheme" type="button" aria-label={label} title={theme ? label : undefined}
+    <Button variant="outline" size="icon" id="btnTheme" aria-label={label} title={theme ? label : undefined}
       onClick={() => setThemeChoice(goingLight ? "light" : "dark")}>
       {theme ? (goingLight ? SUN : MOON) : null}
-    </button>
+    </Button>
   );
 }
 
@@ -38,13 +39,13 @@ function HouseholdButton() {
   const { shown, setShown } = useHousehold();
   const label = shown ? "Hide your household bar" : "Show your household bar";
   return (
-    <button className="btn iconbtn" id="btnHousehold" type="button" aria-pressed={shown} aria-label={label} title={label}
+    <Button variant="outline" size="icon" id="btnHousehold" aria-pressed={shown} aria-label={label} title={label}
       onClick={() => {
         setShown(!shown);
         if (!shown) window.scrollTo({ top: 0, behavior: "smooth" });
       }}>
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
-    </button>
+    </Button>
   );
 }
 

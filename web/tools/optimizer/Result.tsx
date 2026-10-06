@@ -14,6 +14,7 @@ import type { PlRow, PlStats } from "@/lib/engine/types";
 import { groupDigits, money, pctStr } from "@/lib/format";
 import { seen, type Host, type Result } from "./run";
 import { axisCompact, lowerFirst, opClaims, opCompact, opConvUntil, opFillName, opFillShort, opSigned, opTacticsLine, type PlanWho } from "./words";
+import { themed } from "@/lib/hues";
 
 export const OP_COLORS = { ss: "#7d9fd6", pension: "#e9b872", trad: "#e2795f", brok: "#a98fd6", roth: "#4fbf95" };
 type Src = keyof typeof OP_COLORS;
@@ -164,7 +165,7 @@ function Moves({ res }: { res: Result }) {
         const w = Math.round((Math.abs(d) / big) * 100), cls = d >= 0 ? "pos" : "neg";
         return (
           <div className="op-move" key={st.key}><div className="op-move-t"><b>{h}</b>{p ? <p>{p}</p> : null}</div>
-            <div className="op-move-v"><em className={cls}>{fmt(d)}</em><i className="op-bar"><b className={cls} style={{ width: w + "%" }}></b></i></div></div>
+            <div className="op-move-v"><em className={cls}>{fmt(d)}</em><i className="op-bar"><b className={cls + " w-(--w)"} style={{ "--w": w + "%" } as React.CSSProperties}></b></i></div></div>
         );
       })}
     </div>
@@ -186,7 +187,7 @@ function Grid({ yMax, stepY, Y, pl, W, pr }: { yMax: number; stepY: number; Y: (
   return <>{out}</>;
 }
 const TipRow = ({ color, cls, v, label }: { color?: string; cls?: string; v: string; label: string }) => (
-  <div className="r"><s className={cls} style={color ? { background: color } : undefined}></s><b>{v}</b><span>{label}</span></div>
+  <div className="r"><s className={color ? "bg-(--swatch)" : cls} style={color ? { "--swatch": themed(color) } as React.CSSProperties : undefined}></s><b>{v}</b><span>{label}</span></div>
 );
 
 /* Where each year's money comes from, stacked, with what's converted to
@@ -310,7 +311,7 @@ export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result;
   const wrap = (title: string, note: string, inner: React.ReactNode, cls = "") => host === "tool"
     ? <div className={"panel op-p" + (cls ? " " + cls : "")}><h2>{title}{note ? <span className="h2note">{note}</span> : null}</h2><div className="body">{inner}</div></div>
     : <section className={"op-sec" + (cls ? " " + cls : "")}><div className="gd-h3">{title}{note ? <> <span className="op-note">{note}</span></> : null}</div>{inner}</section>;
-  const sw = (k: string, cls: string | null, label: string) => <span key={k}><s className={cls ?? undefined} style={cls ? undefined : { background: OP_COLORS[k as Src] }}></s>{label}</span>;
+  const sw = (k: string, cls: string | null, label: string) => <span key={k}><s className={cls ?? "bg-(--swatch)"} style={cls ? undefined : { "--swatch": themed(OP_COLORS[k as Src]) } as React.CSSProperties}></s>{label}</span>;
   const rb = res.best.detail.rows, r0 = res.base.detail.rows, used = (Object.keys(SRC_NAMES) as Src[]).filter((k) => rb.some((r) => r[k] > 1));
   const h = heir(res), net = (r: PlRow) => r.endRoth + r.endBrok + r.endTrad * (1 - h);
   const spent = (r: PlRow) => r.tax + r.pen + r.irmaa + r.health;
@@ -339,15 +340,15 @@ export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result;
         <p className="op-cap">The space between the bars and the line is each year&apos;s tax{rb.some((r) => r.health > 1) ? " and health premiums" : ""}.</p>
       </>)}
       {!res.same ? wrap("Tax and premiums each year", "the usual way against your roadmap", <>
-        <div className="gd-ch-legend"><span><s style={{ background: "#7d9fd6" }}></s>The usual way</span><span><s style={{ background: "#4fbf95" }}></s>Your roadmap</span></div>
+        <div className="gd-ch-legend"><span><s className="bg-steel"></s>The usual way</span><span><s className="bg-jade"></s>Your roadmap</span></div>
         <LinesChart host={host} kind="tax" label="Tax and premiums each year, the usual way and with the roadmap" series={[
           { name: "The usual way", color: "#7d9fd6", dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
           { name: "Your roadmap", color: "#4fbf95", w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
         <p className="op-cap">Paying some tax early, in the low-income years, to pay much less later is usually the whole trick.</p>
       </>) : null}
       {wrap("Your accounts over time", "average path", <>
-        <div className="gd-ch-legend"><span><s style={{ background: "#e9b872" }}></s>After tax, your roadmap</span><span><s style={{ background: "#94a6bf" }}></s>After tax, the usual way</span>
-          <span><s style={{ background: OP_COLORS.trad }}></s>Traditional</span><span><s style={{ background: OP_COLORS.roth }}></s>Roth</span><span><s style={{ background: OP_COLORS.brok }}></s>Brokerage</span></div>
+        <div className="gd-ch-legend"><span><s className="bg-gold"></s>After tax, your roadmap</span><span><s className="bg-chart-dimmer"></s>After tax, the usual way</span>
+          <span><s className="bg-coral"></s>Traditional</span><span><s className="bg-jade"></s>Roth</span><span><s className="bg-chart-violet"></s>Brokerage</span></div>
         <LinesChart host={host} kind="bal" label="Account balances by age, and what they are worth after tax" series={[
           { name: "Traditional", color: OP_COLORS.trad, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endTrad })) },
           { name: "Roth", color: OP_COLORS.roth, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endRoth })) },

@@ -1,10 +1,11 @@
 /* The lines inside a chart's tooltip, from tipRows() in src/js/app/04-charts.js. */
 import { money } from "@/lib/format";
+import { themed } from "@/lib/hues";
 import type { BandPoint } from "./BandChart";
 
 /** One colored line: a label and its dollar figure. */
 export function TipRow({ color, label, value, fmt = money }: { color: string; label: React.ReactNode; value: number; fmt?: (v: number) => string }) {
-  return <><br /><span style={{ color }}>{label}</span> <span className="n">{fmt(value)}</span></>;
+  return <><br /><span className="text-(color:--ink)" style={{ "--ink": themed(color) } as React.CSSProperties}>{label}</span> <span className="n">{fmt(value)}</span></>;
 }
 
 /** A market-history or Monte Carlo fan: its five percentiles. */

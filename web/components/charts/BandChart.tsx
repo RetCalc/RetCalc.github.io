@@ -73,7 +73,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
 
   return (
     <ChartFrame id={id} ariaLabel={ariaLabel} size={size} xs={pts.map((a) => X(a.year))} tip={(i) => tip(pts[i])}
-      svgStyle={enhanced ? { animation: "chartFadeUp .35s ease-out" } : undefined}>
+      fadeIn={enhanced}>
       {(hi) => {
         const best = hi != null ? pts[hi] : null;
         const bx = best ? X(best.year) : null;
@@ -82,13 +82,13 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             <defs>
               {([["fanOuter", .16, .02], ["fanInner", .30, .06], ["bandFill", .20, .05]] as const).map(([name, a, b]) => (
                 <linearGradient key={name} id={g(name)} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4fbf95" stopOpacity={a} />
-                  <stop offset="100%" stopColor="#4fbf95" stopOpacity={b} />
+                  <stop offset="0%" stopColor="var(--color-dark-jade)" stopOpacity={a} />
+                  <stop offset="100%" stopColor="var(--color-dark-jade)" stopOpacity={b} />
                 </linearGradient>
               ))}
               {/* The plan's own line ends in the logo's arrowhead. */}
               <marker id={g("tip")} viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto">
-                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill="#e9b872" />
+                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill="var(--gold)" />
               </marker>
               {traces?.lines.length ? <clipPath id={g("trc")}><rect x={L} y={T} width={pw} height={ph} /></clipPath> : null}
             </defs>
@@ -98,7 +98,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
 
             {/* Every starting year as its own faint line, under the shading. */}
             {traces?.lines.length ? (
-              <g clipPath={`url(#${g("trc")})`} fill="none" stroke="#7d9fd6" strokeLinejoin="round" className="traces"
+              <g clipPath={`url(#${g("trc")})`} fill="none" stroke="var(--steel)" strokeLinejoin="round" className="traces"
                 strokeOpacity={traces.lines.length > 400 ? .055 : traces.lines.length > 60 ? .13 : .18} strokeWidth={.9 * sw}>
                 {traces.lines.map((ln, k) => {
                   const at: [number, number][] = [];
@@ -122,36 +122,36 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
 
             {stageMarks.map((m) => (
               <g key={m.year}>
-                <line x1={X(m.year)} x2={X(m.year)} y1={T} y2={T + ph} style={{ stroke: "var(--stageline)" }} strokeWidth={sw} strokeDasharray="4 4" />
-                <text x={X(m.year) + 4} y={T + fs} fontSize={fs * .92} fill="#5f7583" fontFamily={MONO}>{m.label}</text>
+                <line x1={X(m.year)} x2={X(m.year)} y1={T} y2={T + ph} stroke="var(--stageline)" strokeWidth={sw} strokeDasharray="4 4" />
+                <text x={X(m.year) + 4} y={T + fs} fontSize={fs * .92} fill="var(--color-chart-label)" fontFamily={MONO}>{m.label}</text>
               </g>
             ))}
 
             {mode === "mc" ? (
               <>
-                {pts[0].det != null ? <path d={line((a) => a.det!)} fill="none" stroke="#7d9fd6" strokeWidth={1.6 * sw} strokeDasharray="5 4" /> : null}
-                <path d={line((a) => a.base)} fill="none" stroke="#e9b872" strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                {pts[0].det != null ? <path d={line((a) => a.det!)} fill="none" stroke="var(--steel)" strokeWidth={1.6 * sw} strokeDasharray="5 4" /> : null}
+                <path d={line((a) => a.base)} fill="none" stroke="var(--gold)" strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             ) : (
               <>
-                <path d={line((a) => a.hi!)} fill="none" stroke="#4fbf95" strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
-                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke="#e2795f" strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
-                <path d={line((a) => a.base)} fill="none" stroke="#e9b872" strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                <path d={line((a) => a.hi!)} fill="none" stroke="var(--jade)" strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
+                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke="var(--coral)" strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
+                <path d={line((a) => a.base)} fill="none" stroke="var(--gold)" strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             )}
 
             {overlay.filter((ov) => ov.pts.length).map((ov, k) => (
               <path key={k} d={pathD(ov.pts.map((p) => [X(p.year), Y(p.value)]))}
-                fill="none" style={{ stroke: ov.color || "var(--dim)" }} strokeWidth={(ov.width || 1.8) * sw}
+                fill="none" stroke={ov.color || "var(--dim)"} strokeWidth={(ov.width || 1.8) * sw}
                 strokeDasharray={ov.dash || "6 5"} strokeLinejoin="round" opacity={.95} />
             ))}
 
             <HoverMarks size={size} x={bx} y={best ? Y(best.base) : null} />
             {enhanced ? (
               <>
-                <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill="#4fbf95" style={{ stroke: "var(--dotstroke)" }} strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
-                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill="#e2795f" style={{ stroke: "var(--dotstroke)" }} strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
-                <circle cx={bx ?? 0} cy={T + ph + B / 2} r={3 * sw} style={{ fill: "var(--dim)" }} opacity={best ? 1 : 0} />
+                <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill="var(--jade)" stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
+                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill="var(--coral)" stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
+                <circle cx={bx ?? 0} cy={T + ph + B / 2} r={3 * sw} fill="var(--dim)" opacity={best ? 1 : 0} />
               </>
             ) : null}
             {extras?.({ X, Y, W, T, ph, narrow, minY: AX.min, maxY: AX.max })}

@@ -14,8 +14,8 @@ import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Figure, KV, Segmented } from "@/components/ui/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Figure, KV, Segmented } from "@/components/common/Readout";
 import { runRoth } from "@/lib/engine/typed";
 import type { RothResult } from "@/lib/engine/types";
 import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
@@ -24,6 +24,7 @@ import { DRAWDOWN_DEFAULTS } from "@/tools/drawdown/fields";
 import { ROTH_DEF, rothInput, type RothInputs } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { rothShare } from "./share";
+import { Button } from "@/components/ui/button";
 
 export function Roth() {
   const { state: s, set, setState } = useToolState(ROTH_DEF);
@@ -102,10 +103,10 @@ export function Roth() {
               {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
             </SelectField>
 
-            <FieldHeading top="8px">What you have</FieldHeading>
+            <FieldHeading className="mt-2">What you have</FieldHeading>
             <Field id="rcTrad" label={<Tipped text="Traditional 401(k) / IRA" k="rctrad" />}>
               <Affixed prefix="$"><MoneyInput id="rcTrad" nonNeg value={s.trad} onValueChange={set("trad")} /></Affixed>
-              <button className="btn mini" type="button" id="rcCopyDD" style={{ marginTop: "6px" }}
+              <Button variant="outline" size="sm" className="mt-1.5" id="rcCopyDD"
                 onClick={() => {
                   const v = parseNum(toolInputs("drawdown", DRAWDOWN_DEFAULTS).initial as string);
                   if (!(v > 0)) {
@@ -120,7 +121,7 @@ export function Roth() {
                     return cur > 0 ? { ...c, trad: share(t), roth: share(r), brok: share(b) } : { ...c, trad: groupDigits(v.toFixed(0), true) };
                   });
                   toast("Copied " + money(v) + ", split across your current account mix");
-                }}>Copy from Drawdown</button>
+                }}>Copy from Drawdown</Button>
             </Field>
             <div className="two">
               <MoneyField id="rcRoth" label="Roth" value={s.roth} onValueChange={set("roth")} />
@@ -131,7 +132,7 @@ export function Roth() {
               <NumberField id="rcReturn" label={<Tipped text="Real return" k="realreturn" />} unit="%/yr" step={0.5} value={s.ret} onValueChange={set("ret")} />
             </div>
 
-            <FieldHeading top="8px">Income and spending</FieldHeading>
+            <FieldHeading className="mt-2">Income and spending</FieldHeading>
             <MoneyField id="rcSpend" label={<Tipped text="Annual spending" k="rcspend" />} value={s.spend} onValueChange={set("spend")} />
             <div className="two">
               <MoneyField id="rcSS" label="Your Social Security" unit="/yr" value={s.ss} onValueChange={set("ss")} />
@@ -147,7 +148,7 @@ export function Roth() {
             </div>
             <NumberField id="rcDeath" wrapId="rcDeathWrap" hidden={!married} label={<Tipped text="Survivor transition" k="rcwidow" />} unit="yrs from now" max={45} value={s.death} onValueChange={set("death")} />
 
-            <FieldHeading top="8px">The conversion plan</FieldHeading>
+            <FieldHeading className="mt-2">The conversion plan</FieldHeading>
             <SelectField id="rcStrategy" label={<Tipped text="Strategy" k="rcstrategy" />} value={s.strategy} onChange={set("strategy")}>
               <option value="brk">Fill to the top of a bracket</option>
               <option value="irm">Fill to an IRMAA threshold</option>
@@ -178,7 +179,7 @@ export function Roth() {
               <option value="withhold">Withheld from the conversion</option>
             </SelectField>
 
-            <FieldHeading top="8px">How to score it</FieldHeading>
+            <FieldHeading className="mt-2">How to score it</FieldHeading>
             <SelectField id="rcIrmaaOn" label={<Tipped text="Medicare IRMAA" k="irmaa" />} value={s.irmaaOn} onChange={set("irmaaOn")}>
               <option value="1">Include the surcharge</option>
               <option value="0">Ignore it</option>
@@ -210,14 +211,14 @@ export function Roth() {
               note={plan && base ? (plan.peakRMD < base.peakRMD ? "Converting trims it to " + money(plan.peakRMD, 0) : "Unchanged by this plan") : ""} />
           </div>
           <div className="body"><div id="rcVerdict">
-            {R ? <div className="hint" style={{ margin: "0" }}>{R.verdict} Lifetime tax is what you and your heirs hand over; after-tax net worth is what is left standing at age {inp.endAge}, with traditional dollars discounted at {pctStr(inp.heirRate, 0)} because they are still owed to the IRS.</div> : null}
+            {R ? <div className="hint m-0">{R.verdict} Lifetime tax is what you and your heirs hand over; after-tax net worth is what is left standing at age {inp.endAge}, with traditional dollars discounted at {pctStr(inp.heirRate, 0)} because they are still owed to the IRS.</div> : null}
           </div></div>
         </div>
 
         <div className="panel" id="rcWidow" hidden={!R?.wRow}>
           <div className="body">
-            <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>The survivor&apos;s bracket</div>
-            <div className="hint" style={{ margin: "0" }} id="rcWidowText">{R?.widow}</div>
+            <div className="font-semibold text-text mb-1.5">The survivor&apos;s bracket</div>
+            <div className="hint m-0" id="rcWidowText">{R?.widow}</div>
           </div>
         </div>
 
@@ -238,7 +239,7 @@ export function Roth() {
                 <KV k="Roth at the end" id="rcEndRoth" v={plan && base ? money(plan.endRoth) + " vs " + money(base.endRoth) : ""} />
               </div>
             </div>
-            <div className="hint" style={{ marginTop: "14px" }}>Every figure is in today&apos;s dollars.
+            <div className="hint mt-3.5">Every figure is in today&apos;s dollars.
               Brackets, the standard deduction and the IRMAA thresholds are held fixed in
               real terms, which is what indexing does to them in practice.</div>
           </div>
@@ -254,8 +255,8 @@ export function Roth() {
             tip={(b) => (
               <>
                 <b>Age {fmtNum(inp.age + b.year)}</b>
-                <br /><span style={{ color: "#e9b872" }}>Converting</span> <span className="n">{money(b.base)}</span>
-                <br /><span style={{ color: "#4fbf95" }}>No conversions</span> <span className="n">{money(b.hi!)}</span>
+                <br /><span className="text-gold">Converting</span> <span className="n">{money(b.base)}</span>
+                <br /><span className="text-jade">No conversions</span> <span className="n">{money(b.hi!)}</span>
               </>
             )} />
           <Legend id="legendRC" items={R ? [

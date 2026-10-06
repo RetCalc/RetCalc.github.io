@@ -56,7 +56,8 @@ export function BigValue({ text, className = "v", id, sized = true }: { text: st
   }, [text]);
 
   return (
-    <div className={className} id={id} ref={el} style={sized ? { fontSize: sizeFor(text) } : undefined}>
+    <div className={sized ? className + " text-(length:--fs)" : className} id={id} ref={el}
+      style={sized ? { "--fs": sizeFor(text) + "px" } as React.CSSProperties : undefined}>
       {text}
     </div>
   );

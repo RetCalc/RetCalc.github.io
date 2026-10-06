@@ -65,11 +65,11 @@ export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) 
         <>
           <YAxis size={size} ticks={AX.ticks} Y={Y} fmt={yFmt} />
           <XAxis size={size} count={maxX} X={X} label={xFmt} />
-          {AX.min < 0 ? <line x1={L} x2={W - Rp} y1={Y(0)} y2={Y(0)} style={{ stroke: "var(--axis)" }} strokeWidth={sw} opacity={.55} /> : null}
+          {AX.min < 0 ? <line x1={L} x2={W - Rp} y1={Y(0)} y2={Y(0)} stroke="var(--axis)" strokeWidth={sw} opacity={.55} /> : null}
           {marks.filter((m) => m.x >= 0 && m.x <= maxX).map((m) => (
             <g key={m.x}>
-              <line x1={X(m.x)} x2={X(m.x)} y1={T + fs + 4} y2={T + ph} style={{ stroke: "var(--axis)" }} strokeWidth={sw} strokeDasharray="3 4" opacity={.55} />
-              <text x={X(m.x)} y={T + fs} textAnchor="middle" fontSize={fs * .9} style={{ fill: "var(--axis)" }} fontFamily={MONO}>{m.label}</text>
+              <line x1={X(m.x)} x2={X(m.x)} y1={T + fs + 4} y2={T + ph} stroke="var(--axis)" strokeWidth={sw} strokeDasharray="3 4" opacity={.55} />
+              <text x={X(m.x)} y={T + fs} textAnchor="middle" fontSize={fs * .9} fill="var(--axis)" fontFamily={MONO}>{m.label}</text>
             </g>
           ))}
           {live.map((x, i) => (

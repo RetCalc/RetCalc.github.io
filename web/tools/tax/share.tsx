@@ -52,16 +52,16 @@ export function taxShare(s: TaxInputs): ShareKit {
           big={[[ret ? "Income after tax" : "Take-home pay", money(R.net), "per year"], ["Total tax", money(R.total), pctStr(R.effTotal, 1) + " effective"],
             ["Per month", money(R.net / 12), ret ? "after tax" : "take-home"]]}
           foot="Based on published 2026 federal and state rates. Omits credits, local taxes and many special cases. Not tax advice.">
-          <div style={{ display: "flex", gap: "16px", marginBottom: "10px", alignItems: "stretch" }}>
-            {chart ? <SheetChart html={chart} style={{ width: "1.5in", flex: "none", margin: 0 }} /> : null}
-            <div style={{ flex: 1, display: "flex", gap: "16px" }}>
-              <SheetSection t="Your situation" rows={situation} style={{ flex: 1 }} />
-              <SheetSection t="Tax breakdown" rows={out} style={{ flex: 1 }} />
-              <SheetSection t={ret ? "What you keep" : "Paycheck"} rows={pay} style={{ flex: 1 }} />
+          <div className="flex gap-4 mb-2.5 items-stretch">
+            {chart ? <SheetChart html={chart} className="w-36 flex-none m-0" /> : null}
+            <div className="flex-1 flex gap-4">
+              <SheetSection t="Your situation" rows={situation} className="flex-1" />
+              <SheetSection t="Tax breakdown" rows={out} className="flex-1" />
+              <SheetSection t={ret ? "What you keep" : "Paycheck"} rows={pay} className="flex-1" />
             </div>
           </div>
           <SheetTable t="Federal tax brackets" head={["Rate", "Income range", "Taxed in band", "Tax"]}
-            rows={(R.bands as { rate: number; lo: number; hi: number; amount: number; tax: number }[]).map((b) => ({ style: b.amount > 0 ? undefined : { color: "#bbb" },
+            rows={(R.bands as { rate: number; lo: number; hi: number; amount: number; tax: number }[]).map((b) => ({ className: b.amount > 0 ? undefined : "text-print-faint",
               cells: [pctStr(b.rate, 0), money(b.lo) + (b.hi === Infinity ? " and up" : " – " + money(b.hi)), money(b.amount), money(b.tax)] }))} />
         </SheetPage>
       );

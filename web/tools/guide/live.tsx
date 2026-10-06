@@ -8,7 +8,7 @@
 import { BASIC_INFL } from "@/lib/engine/typed";
 import { escapeHtml } from "@/tools/drawdown/text";
 import { fmtNum, money, pctStr } from "@/lib/format";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
 import { accts, bridgeSplit, coastNow, gross, mar, minSpend, months, ok, pos, saveMo, sim, ssFor } from "./calc";
 import type { Answers } from "./store";
 import { Callout } from "./ui";
@@ -111,7 +111,7 @@ export function MinNote({ a }: { a: Answers }) {
 export function InflNote({ a }: { a: Answers }) {
   const m = saveMo(a), infl = BASIC_INFL as number;
   return (
-    <p className="hint" style={{ margin: "-2px 0 16px", maxWidth: "60ch" }}>Every projection in this guide raises both amounts with inflation each year, so they stay the same in today&apos;s dollars.
+    <p className="hint -mt-0.5 mx-0 mb-4 max-w-copy-narrow">Every projection in this guide raises both amounts with inflation each year, so they stay the same in today&apos;s dollars.
       {" "}At the {pctStr(infl, 2)} inflation it assumes, next year&apos;s {m > 0 ? money(m) + "/mo becomes about " + money(m * (1 + infl)) + "/mo" : "contribution rises " + pctStr(infl, 2) + " too"}.
       {" "}The Basic calculator works the same way.</p>
   );

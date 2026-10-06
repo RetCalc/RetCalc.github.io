@@ -36,9 +36,6 @@ h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .scgroup .btn:focus-visible,.scgroup select:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 /* Light/dark was three interactions deep inside About, which is the wrong
    depth for something people flip when the room changes. */
-.btn.iconbtn{flex:none;width:34px;padding:8px;display:inline-flex;
-  align-items:center;justify-content:center}
-.btn.iconbtn svg{width:16px;height:16px;display:block}
 
 /* ---------- layout ---------- */
 main{max-width:1330px;margin:0 auto;

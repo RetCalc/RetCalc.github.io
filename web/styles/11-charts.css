@@ -113,11 +113,8 @@ svg{display:block;width:100%;height:auto}
   .solveopts{grid-template-columns:1fr}
   .solveopt{padding:16px 14px}
   .solveopt + .solveopt{border-left:0;border-top:1px solid var(--line-soft)}
-  .solveopt .btn{align-self:stretch;text-align:center}
 
   .inputwrap input,select,.btn,.h2ctrl input{font-size:16px}
-  .btn.mini{font-size:13px;padding:9px 12px}
-  .convrow .btn.mini{width:56px;padding:9px 0}
   .convrow .spacer{width:56px}
   .inputwrap input{padding:11px 10px}
   select{padding:11px 12px}
@@ -128,7 +125,6 @@ svg{display:block;width:100%;height:auto}
   .scgroup{flex:1;min-width:0}
   .scgroup select{min-width:0;flex:1}
   .scgroup .btn{width:40px;padding:8px}
-  .scenariobar .btn.iconbtn{width:40px;padding:8px}
 
   .h2ctrl{margin-left:0;width:100%;justify-content:space-between;gap:10px}
   .h2ctrl .inputwrap{width:110px}
@@ -232,9 +228,8 @@ html.pwa .popup-overlay{
      Scoped to touch so desktop text selection is untouched, and kept off
      readouts/tables so figures stay copyable. */
   nav[role=tablist] button,.seg button,.bgseg button,.btn,.toolcard,
-  .toolback .backbtn,.tipdot,.chartwrap,.gd-chart{
+  .tipdot,.chartwrap,.gd-chart{
     -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-  .btn.mini{font-size:14px}
   .seg button{font-size:14px}
   /* Tooltip dots stay visually small but get a much bigger invisible tap
      area on touch, since 16px is well under a comfortable touch target. */
@@ -246,8 +241,6 @@ html.pwa .popup-overlay{
      the field beside them and stolen taps meant for it. */
   .seg button{font-size:14px;padding:10px 14px}
   .bgseg button{font-size:14px;padding:9px 12px}
-  .bgrow .del,.itemrow .itemdel,.dtrow .del{width:40px;height:40px;padding:0;
-    display:flex;align-items:center;justify-content:center}
   .bgrow .delspace,.dtrow .delspace,.dthead .delspace{width:40px}
   .signflip{padding:0 13px}
   .toolcard:hover::before{transform:scaleY(0)}

@@ -15,9 +15,9 @@ import { Affixed, MoneyField, NumberField, SelectField } from "@/components/fiel
 import { NumberInput } from "@/components/fields/NumberInput";
 import { Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { KV, Segmented } from "@/components/ui/Readout";
-import { BigValue } from "@/components/ui/BigValue";
+import { CsvButton } from "@/components/common/CsvButton";
+import { KV, Segmented } from "@/components/common/Readout";
+import { BigValue } from "@/components/common/BigValue";
 import { fiComputeCoastCrossings, fiComputeCrossings, fiYearsFromCrossings, historicalRuns, project } from "@/lib/engine/typed";
 import type { HistRuns } from "@/lib/engine/types";
 import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
@@ -137,12 +137,12 @@ export function Fire() {
       <>
         {inside ? (
           <>
-            <line x1={0} x2={g.W} y1={tY} y2={tY} stroke="#4fbf95" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.65" />
-            <text x={g.W - (g.narrow ? 14 : 16)} y={tY - 4} textAnchor="end" fontSize={g.narrow ? "13" : "10"} fill="#4fbf95" fontFamily="ui-monospace,SF Mono,Menlo,monospace">target</text>
+            <line x1={0} x2={g.W} y1={tY} y2={tY} stroke="var(--jade)" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.65" />
+            <text x={g.W - (g.narrow ? 14 : 16)} y={tY - 4} textAnchor="end" fontSize={g.narrow ? "13" : "10"} fill="var(--jade)" fontFamily="ui-monospace,SF Mono,Menlo,monospace">target</text>
           </>
         ) : null}
-        {fX !== null ? <line x1={fX} x2={fX} y1={g.T} y2={g.T + g.ph} stroke="#4fbf95" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.55" /> : null}
-        {fX !== null && !coast && inside ? <circle cx={fX} cy={tY} r={g.narrow ? "6" : "4.5"} fill="#4fbf95" style={{ stroke: "var(--bg)" }} strokeWidth="2" /> : null}
+        {fX !== null ? <line x1={fX} x2={fX} y1={g.T} y2={g.T + g.ph} stroke="var(--jade)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.55" /> : null}
+        {fX !== null && !coast && inside ? <circle cx={fX} cy={tY} r={g.narrow ? "6" : "4.5"} fill="var(--jade)" stroke="var(--bg)" strokeWidth="2" /> : null}
       </>
     );
   };
@@ -166,7 +166,7 @@ export function Fire() {
         <div className="panel inputs">
           <h2>Your plan</h2>
           <div className="body">
-            <div className="field" style={{ marginBottom: "14px" }}>
+            <div className="field mb-3.5">
               <Segmented id="segFireMode" attr="data-firemode" options={[["fire", "FIRE"], ["coast", "Coast FIRE"]] as const} value={s.mode} onChange={set("mode")} />
             </div>
             <NumberField id="fiCurAge" label="Current age" unit="age" max={70} negative value={s.curAge} onValueChange={set("curAge")} />
@@ -235,10 +235,10 @@ export function Fire() {
         <div className="panel">
           <h2>Portfolio growth{"\n        "}
             <span className="h2note" id="fiChartNote">{chart.note}</span>{"\n        "}
-            <span style={{ float: "right", display: "inline-flex", alignItems: "center", gap: "8px", marginTop: "-2px" }}>
+            <span className="float-right inline-flex items-center gap-2 -mt-0.5">
               <Segmented id="segFireChart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"]] as const} value={s.chart} onChange={set("chart")} />{" "}
-              <span id="fiOptBand" style={{ display: hist ? "none" : "inline-flex", alignItems: "center" }}>
-                <Affixed prefix="&plusmn;" suffix="%" style={{ width: "96px" }}>
+              <span id="fiOptBand" className={hist ? "hidden" : "inline-flex items-center"}>
+                <Affixed prefix="&plusmn;" suffix="%" className="w-24">
                   <NumberInput id="fiBand" nonNeg step={0.5} value={s.band} onValueChange={set("band")} aria-label="Return band" />
                 </Affixed>
               </span>
@@ -246,7 +246,7 @@ export function Fire() {
           </h2>
           <div className="mcbar" id="fiHistBar" hidden={!hist}>
             <NumberField id="fiHistMix" label="Stock mix" unit="%" step={5} max={100} value={s.histMix} onValueChange={set("histMix")} />
-            <div className="hint" id="fiHistNote" style={{ margin: "0" }}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
+            <div className="hint m-0" id="fiHistNote">{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
           </div>
           <BandChart id="Fire" pts={chart.pts} maxX={chart.maxX} mode={chart.mode} xOffset={p.curAge} ariaLabel="Portfolio growth to FIRE"
             traces={hist && tracesOn && chart.H?.traces ? { xs: chart.pts.map((a) => a.year), lines: chart.H.traces } : undefined}
@@ -264,7 +264,7 @@ export function Fire() {
               ["#e9b872", "At " + pctStr(p.nominal, 2) + " (your rate)"],
               ["#e2795f", p.band > 0 ? "At " + pctStr(Math.max(0.001, p.nominal - p.band), 2) + " (−" + lbl + "%)" : "Lower"],
             ]} />}
-          <div id="fiSliderWrap" className="body" style={{ paddingTop: "0", paddingBottom: "14px" }} hidden={!hist}>
+          <div id="fiSliderWrap" className="body pt-0 pb-3.5" hidden={!hist}>
             <div className="fire-slider-section">
               <div className="fire-slider-row">
                 <span className="fire-slider-lbl">Historical success rate</span>{" "}
@@ -273,7 +273,7 @@ export function Fire() {
               <input type="range" id="fiSuccessSlider" className="fire-slider" min="1" max="99" value={s.successRate} onChange={(e) => set("successRate")(e.target.value)} />
               <div className="fire-slider-ends"><span>1% (aggressive)</span><span>99% (conservative)</span></div>
               <div className="fire-slider-result" id="fiSuccessAge">{successAge}</div>
-              <div className="hint mcnote" id="fiSliderNote" style={{ padding: "4px 0 0" }}>{sliderNote}</div>
+              <div className="hint mcnote pt-1 px-0 pb-0" id="fiSliderNote">{sliderNote}</div>
             </div>
           </div>
         </div>

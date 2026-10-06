@@ -5,7 +5,7 @@
    next moves. From gdGuideSheet() in src/js/app/33-guide-share-controls.js. */
 
 import { SheetPage, SheetSection, type SheetRows } from "@/components/shell/Sheet";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { opTacticsLine } from "@/tools/optimizer/words";
 import { FACTORS, minSpend, need, ok, pos, rating, riskLabel, score, sim, stratName } from "./calc";

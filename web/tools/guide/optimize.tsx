@@ -17,6 +17,7 @@ import { accts, sim, tactics } from "./calc";
 import type { Answers } from "./store";
 import { NeedsPlan } from "./steps";
 import { BackNote, Callout, H3, Q, useGuideView } from "./ui";
+import { Button } from "@/components/ui/button";
 
 export const optGoal = (a: Answers): Goal => (a.optGoal === "last" || a.optGoal === "spend" ? a.optGoal : "legacy");
 
@@ -36,23 +37,23 @@ export function OptimizeStep() {
         {" "}converting to Roth for different stretches, and staying under the ACA and Medicare income lines. It runs all <b>{groupDigits(E.n, true)}</b> plans through every market since {HIST_START as number}
         {" "}and keeps the best.</p>
       <BackNote step="optimize" />
-      <div className="op-acct"><span>Starting from <b>{money(A.trad)}</b> traditional, <b>{money(A.roth)}</b> Roth and <b>{money(A.brok)}</b> brokerage today, growing to {money(S.fv)} by {fmtNum(S.retire)}.</span><button type="button" className="gd-link" data-go="savings" onClick={() => G.go("savings")}>Change the split</button></div>
+      <div className="op-acct"><span>Starting from <b>{money(A.trad)}</b> traditional, <b>{money(A.roth)}</b> Roth and <b>{money(A.brok)}</b> brokerage today, growing to {money(S.fv)} by {fmtNum(S.retire)}.</span><Button variant="quiet" size="inline" data-go="savings" onClick={() => G.go("savings")}>Change the split</Button></div>
       {SA && !H.run ? (
         <Callout cls="ok"><b>Your plan uses a roadmap:</b> Social Security at {opClaims(SA.T, SA.C)}; {lowerFirst(opTacticsLine(SA.T, SA.C))}. Your score and every step use it.
-          <div style={{ marginTop: "8px" }}><button type="button" className="btn mini" data-gd="optclear" onClick={() => G.act("optclear")}>Go back to the usual way</button></div></Callout>
+          <div className="mt-2"><Button variant="outline" size="sm" className="mt-2" data-gd="optclear" onClick={() => G.act("optclear")}>Go back to the usual way</Button></div></Callout>
       ) : null}
       <H3>What should the best plan do?</H3>
       <OpGoals host="guide" goal={goal} onPick={(g) => G.set("optGoal", g, true)} />
-      <div className="op-go"><button type="button" className="btn primary op-go-btn" data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
-        {H.res && !stale ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></button>
+      <div className="op-go"><Button size="lg" data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
+        {H.res && !stale ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
         <span className="hint">{groupDigits(E.runs, true)} retirements to simulate, about {E.secs} seconds. Nothing leaves your browser.</span></div>
       {H.run ? <Progress host="guide" R={H.run} /> : H.res ? (
         <>
           {stale ? <Callout cls="warn">Your answers or the goal changed since this ran. Run it again to see the best plan for them now.</Callout> : null}
           <OptimizerResult key={H.res.sig + H.res.runs} host="guide" res={H.res} fresh={H.fresh} />
           {!stale && !H.res.same ? (
-            <div className="gd-apply op-apply">{applied ? <span className="gd-callout ok" style={{ margin: 0 }}>Your plan uses this roadmap.</span>
-              : <><button type="button" className="btn primary" data-gd="optapply" onClick={() => G.act("optapply")}>Use this plan</button>
+            <div className="gd-apply op-apply">{applied ? <span className="gd-callout ok m-0">Your plan uses this roadmap.</span>
+              : <><Button size="lg" data-gd="optapply" onClick={() => G.act("optapply")}>Use this plan</Button>
                 <span className="hint">Your projection, score and every step after use it. You can undo it.</span></>}</div>
           ) : null}
         </>

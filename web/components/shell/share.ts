@@ -64,10 +64,12 @@ export const shareKit = (id: string): ShareKit | undefined => kits[id];
    Charts draw their structural lines in the theme's colors, so a copy for
    the light printed page, or the dark card, has those swapped for a fixed
    palette; any other color the theme sets is fixed at what it is now. */
-const STRUCTURAL = ["--grid", "--axis", "--stageline", "--dotstroke", "--bg"] as const;
+const STRUCTURAL = ["--grid", "--axis", "--stageline", "--dotstroke", "--bg", "--gold", "--jade", "--steel", "--coral"] as const;
 type Palette = Record<(typeof STRUCTURAL)[number], string>;
-export const PRINT_PALETTE: Palette = { "--grid": "#e2e5e3", "--axis": "#666e73", "--stageline": "#9aa5ab", "--dotstroke": "#ffffff", "--bg": "#ffffff" };
-export const CARD_PALETTE: Palette = { "--grid": "#1c2740", "--axis": "#7f8eaa", "--stageline": "#4a5a7b", "--dotstroke": "#080b16", "--bg": "#151e33" };
+/* The data hues go out as the dark theme's, on either palette. */
+const HUES = { "--gold": "#e9b872", "--jade": "#4fbf95", "--steel": "#7d9fd6", "--coral": "#e2795f" };
+export const PRINT_PALETTE: Palette = { "--grid": "#e2e5e3", "--axis": "#666e73", "--stageline": "#9aa5ab", "--dotstroke": "#ffffff", "--bg": "#ffffff", ...HUES };
+export const CARD_PALETTE: Palette = { "--grid": "#1c2740", "--axis": "#7f8eaa", "--stageline": "#4a5a7b", "--dotstroke": "#080b16", "--bg": "#151e33", ...HUES };
 
 function recolor(node: Element, pal: Palette) {
   const css = getComputedStyle(document.documentElement);
@@ -75,7 +77,7 @@ function recolor(node: Element, pal: Palette) {
   STRUCTURAL.forEach((v) => { now[css.getPropertyValue(v).trim().toLowerCase()] = pal[v]; });
   const resolve = (s: string) => s.replace(/var\((--[\w-]+)\)/g, (_, v: string) => (pal as Record<string, string>)[v] ?? css.getPropertyValue(v).trim());
   const walk = (el: Element) => {
-    for (const a of ["stroke", "fill"]) {
+    for (const a of ["stroke", "fill", "stop-color"]) {
       const v = el.getAttribute(a);
       if (!v) continue;
       const r = resolve(v);
@@ -95,6 +97,7 @@ export function copyChart(sel: string, pal: Palette = PRINT_PALETTE): string {
   const clone = src.cloneNode(true) as Element;
   recolor(clone, pal);
   clone.removeAttribute("style");
+  clone.removeAttribute("class");
   return clone.outerHTML;
 }
 

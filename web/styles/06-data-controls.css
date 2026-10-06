@@ -32,9 +32,6 @@ tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
 .solveopt > .note{font-size:11px;color:var(--dimmer);margin-top:7px;margin-bottom:6px;line-height:1.4}
 .solveopt .kv{font-size:13px;padding:8px 0}
 .solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0;text-shadow:none}
-.solveopt .btn{margin-top:14px;align-self:flex-start}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.btn:disabled:active{transform:none}
 
 /* converter rows, each applyable */
 .convrow{display:flex;align-items:center;gap:10px;padding:9px 0;
@@ -47,7 +44,6 @@ tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
 .convrow.total{border-top:1px solid var(--line);border-bottom:0;padding-top:12px;font-weight:600}
 .convrow.total .k{color:var(--text)}
 .convrow .spacer{width:50px;flex:none}
-.btn.mini{padding:5px 11px;font-size:12px;flex:none;text-align:center;white-space:nowrap}
 
 /* segmented switch: a recessed track with a raised thumb */
 .seg{position:relative;display:inline-flex;border:1px solid var(--line);

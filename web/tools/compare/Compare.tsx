@@ -10,16 +10,18 @@ import { useRouter } from "next/navigation";
 import { Legend } from "@/components/charts/Legend";
 import { MULTI_COLORS, MultiChart } from "@/components/charts/MultiChart";
 import { useHousehold } from "@/components/household/HouseholdProvider";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { CsvButton } from "@/components/common/CsvButton";
 import { fmtNum } from "@/lib/format";
 import { compareNav } from "@/lib/compare-nav";
 import { useClient } from "@/lib/useClient";
 import { DDCompare } from "./DDCompare";
 import { setNavDir } from "@/lib/nav-motion";
+import { themed } from "@/lib/hues";
 import {
   CMP_LETTERS, CMP_MODES, CMP_MODE_LABEL, cmpDelta, cmpFmt, cmpRun, openingSlots, rememberSlots, savedNames,
   type CmpMode, type Slot,
 } from "./model";
+import { Button } from "@/components/ui/button";
 
 const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers on the Basic, Advanced or Stages tabs.";
 
@@ -62,13 +64,13 @@ function CompareSaved() {
   return (
     <div className="stack" id="tab-compare">
       <div className="panel">
-        <h2>Compare scenarios<span className="h2ctrl"><button className="btn" type="button" id="cmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</button></span></h2>
+        <h2>Compare scenarios<span className="h2ctrl"><Button variant="outline" size="sm" id="cmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</Button></span></h2>
         <div className="body">
           <div className="hint" id="cmpEmpty" hidden={enough}>{enough ? null : <>You have {total ? "one saved scenario" : "no saved scenarios"}. Compare needs at least two: set up a plan on Basic, Advanced or Stages, save it with Save/Delete in the bar above, then change it and save again.</>}</div>
           <div className="cmpgrid" id="cmpPickers">
             {enough ? slots.map((sl, i) => (
               <div className="cmpslot" key={i}>
-                <div className="cmpkey"><i style={{ background: MULTI_COLORS[i] }}></i>{CMP_LETTERS[i]}</div>
+                <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": themed(MULTI_COLORS[i]) } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
                 <div className="field">
                   <select data-cmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={sl.name}
                     onChange={(e) => setSlots(slots.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}>
@@ -88,7 +90,7 @@ function CompareSaved() {
               </div>
             )) : null}
           </div>
-          <div className="hint" id="cmpHelp" style={{ marginTop: "12px" }} hidden={!enough}>
+          <div className="hint mt-3" id="cmpHelp" hidden={!enough}>
             {HELP}
             {blank.length ? <>{" "}<b>{blank.map((x) => x.name + " has nothing saved for " + CMP_MODE_LABEL[x.mode]).join("; ") + "."}</b></> : null}
           </div>

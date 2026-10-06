@@ -1,0 +1,193 @@
+/* Tailwind without its reset (preflight). The old styles below were written
+   against the browser's defaults, and the reset changes them: inputs inherit
+   the body's line height, headings lose their size, margins go to zero. Add
+   tailwindcss/preflight.css in layer(base) once styles/ is gone.
+   The old styles sit in their own layer, below the utilities, so a utility
+   class on an element wins over them the way an inline style did. */
+@layer theme, base, legacy, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Today's styles, unchanged from src/css/ and in the same order (later files
+   win ties). The redesign moves pieces out of them. */
+@import "../styles/00-base.css" layer(legacy);
+@import "../styles/01-masthead-layout.css" layer(legacy);
+@import "../styles/02-fields-readout.css" layer(legacy);
+@import "../styles/03-navigation.css" layer(legacy);
+@import "../styles/04-tool-icons-header.css" layer(legacy);
+@import "../styles/05-household-accounts-stages.css" layer(legacy);
+@import "../styles/06-data-controls.css" layer(legacy);
+@import "../styles/07-print-sheet.css" layer(legacy);
+@import "../styles/08-about-budget.css" layer(legacy);
+@import "../styles/09-popups-tooltips.css" layer(legacy);
+@import "../styles/10-tools.css" layer(legacy);
+@import "../styles/11-charts.css" layer(legacy);
+@import "../styles/12-guide.css" layer(legacy);
+@import "../styles/13-chart-ink-logo.css" layer(legacy);
+@import "../styles/14-footer-menus-mobile.css" layer(legacy);
+@import "../styles/15-optimizer.css" layer(legacy);
+
+/* The site's theme script sets data-theme="dark" or "light" on <html>. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* The design system's tokens (bg-primary, border-border, rounded-lg...).
+   Their values are in :root below. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --font-sans: var(--sans);
+  --font-mono: var(--mono);
+}
+
+/* The old palette as theme colors (text-dim, stroke-grid...), for markup that
+   used to reach the variables in styles/00-base.css through inline styles.
+   They follow the light and dark themes like the variables do. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-dim: var(--dim);
+  --color-dimmer: var(--dimmer);
+  --color-gold: var(--gold);
+  --color-jade: var(--jade);
+  --color-steel: var(--steel);
+  --color-coral: var(--coral);
+  --color-grid: var(--grid);
+  --color-axis: var(--axis);
+  --color-stageline: var(--stageline);
+  --color-dotstroke: var(--dotstroke);
+}
+
+/* Sizes the old markup set inline that Tailwind's scale doesn't have. */
+@theme {
+  --text-fine: 11px;
+  --text-note: 13px;
+  --text-aside: 14px;
+  --text-body: 15px;
+  --text-body-lg: 16px;
+  --leading-note: 1.6;
+  --container-copy: 64ch;
+  --container-copy-narrow: 60ch;
+  /* The keyframes are in styles/11-charts.css. */
+  --animate-chart-fade-up: chartFadeUp .35s ease-out;
+}
+
+/* Colors that stay the same in both themes. */
+@theme static {
+  /* The dark theme's data hues, on either theme: the logo, chart shading. */
+  --color-dark-gold: #e9b872;
+  --color-dark-jade: #4fbf95;
+  --color-dark-steel: #7d9fd6;
+  /* Chart labels, guide lines and neutral series. */
+  --color-chart-label: #5f7583;
+  --color-chart-slate: #8ba0ac;
+  --color-chart-dimmer: #94a6bf;
+  --color-chart-base: #c9d3e6;
+  --color-chart-violet: #a98fd6;
+  --color-chart-guide: #8b97ad;
+  /* The logo on a printed summary, in deeper hues that hold up on paper. */
+  --color-print-steel: #5a81c3;
+  --color-print-jade: #2a9e73;
+  --color-print-gold: #c1861e;
+  /* Table rows on a printed summary: an empty band, the break-even year. */
+  --color-print-faint: #bbb;
+  --color-print-highlight: #f5f0e0;
+}
+
+
+/* The design system's colors, from the site's own palette: indigo ground,
+   jade for what you can act on, gold for focus (the old focus outline),
+   coral for danger. Dark is the default, as on the rest of the site. */
+:root {
+  --background: oklch(0.153 0.024 271.2);
+  --foreground: oklch(0.945 0.014 264.5);
+  --card: oklch(0.238 0.043 265.7);
+  --card-foreground: oklch(0.945 0.014 264.5);
+  --popover: oklch(0.189 0.032 266.8);
+  --popover-foreground: oklch(0.945 0.014 264.5);
+  --primary: oklch(0.729 0.120 165.4);
+  --primary-foreground: oklch(0.223 0.038 174.0);
+  --secondary: oklch(0.288 0.051 264.6);
+  --secondary-foreground: oklch(0.945 0.014 264.5);
+  --muted: oklch(0.288 0.051 264.6);
+  --muted-foreground: oklch(0.720 0.042 256.6);
+  --accent: oklch(0.288 0.051 264.6);
+  --accent-foreground: oklch(0.945 0.014 264.5);
+  --destructive: oklch(0.689 0.136 34.9);
+  --border: oklch(0.316 0.049 266.1);
+  --input: oklch(0.411 0.061 264.6);
+  --ring: oklch(0.812 0.104 75.3);
+  --radius: 0.625rem;
+}
+
+:root[data-theme="light"] {
+  --background: oklch(0.949 0.008 271.3);
+  --foreground: oklch(0.210 0.032 264.7);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.210 0.032 264.7);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.210 0.032 264.7);
+  --primary: oklch(0.548 0.114 162.0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.970 0.007 268.5);
+  --secondary-foreground: oklch(0.210 0.032 264.7);
+  --muted: oklch(0.970 0.007 268.5);
+  --muted-foreground: oklch(0.535 0.043 260.6);
+  --accent: oklch(0.970 0.007 268.5);
+  --accent-foreground: oklch(0.210 0.032 264.7);
+  --destructive: oklch(0.546 0.162 34.0);
+  --border: oklch(0.866 0.022 265.7);
+  --input: oklch(0.784 0.031 262.5);
+  --ring: oklch(0.601 0.120 75.9);
+}
+
+/* Base rules for the design-system components only (each carries data-slot),
+   so the old markup keeps the browser's defaults it was written against.
+   The control reset is the part of Tailwind's preflight they rely on. */
+@layer base {
+  [data-slot] {
+    @apply border-border outline-ring/50;
+  }
+  /* Tailwind's own buttons default to an arrow; the site's always showed a hand. */
+  button[data-slot]:not(:disabled) {
+    cursor: pointer;
+  }
+  :is(button, input, select, textarea)[data-slot] {
+    margin: 0;
+    padding: 0;
+    border: 0 solid;
+    border-radius: 0;
+    background-color: transparent;
+    color: inherit;
+    font: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    letter-spacing: inherit;
+  }
+}

@@ -12,7 +12,7 @@ import { MultiChart } from "@/components/charts/MultiChart";
 import { Scatter } from "@/components/charts/Scatter";
 import { MON } from "@/components/charts/HistNotes";
 import { TipDot } from "@/components/shell/Tooltips";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
 import {
   CAPE_NOW, CAPE_NOW_ASOF, DD_ERAS, DD_STRAT, ddEraFor, ddForTarget, ddPrep, ddWithDial, type DdHeat, type DdOpts, type DdPrep, type DdSafe, type DdSafeStart, type DdTarget,
@@ -20,6 +20,7 @@ import {
 import { fmtNum, money, pctStr } from "@/lib/format";
 import type { DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, critWords, dialFields, dialText, escapeHtml, firstSpend, lineWords, rateOf, targetWords, swatch } from "./text";
+import { Button } from "@/components/ui/button";
 
 const work = (t: string) => "<span class='ddwork'>" + t + "</span>";
 
@@ -98,13 +99,13 @@ function Solvers({ dialK = "Highest setting that meets the target", dialV = "—
         <div className="optlabel" id="ddSolveDialK">{dialK}</div>
         <div className="v gold" id="ddSolveDial">{dialV}</div>
         <Html className="note" id="ddSolveDialN" html={dialN} />
-        <button className="btn mini" type="button" id="ddSolveDialUse" disabled={!dialUse} onClick={dialUse}>Use it</button>
+        <Button variant="outline" size="sm" className="mt-3.5 self-start max-sm:self-stretch" id="ddSolveDialUse" disabled={!dialUse} onClick={dialUse}>Use it</Button>
       </div>
       <div className="solveopt">
         <div className="optlabel" id="ddSolvePortK">{portK}</div>
         <div className="v gold" id="ddSolvePort">{portV}</div>
         <div className="note" id="ddSolvePortN">{portN}</div>
-        <button className="btn mini" type="button" id="ddSolvePortUse" disabled={!portUse} onClick={portUse}>Use it</button>
+        <Button variant="outline" size="sm" className="mt-3.5 self-start max-sm:self-stretch" id="ddSolvePortUse" disabled={!portUse} onClick={portUse}>Use it</Button>
       </div>
     </>
   );
@@ -142,7 +143,7 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
           const era = ddEraFor(w.year);
           return <>
             <b>Retiring in {startOf(w, monthly)}</b>
-            <br /><span style={{ color: "#4fbf95" }}>Highest that worked</span> <span className="n">{w.rate == null ? "none" : pctStr(w.rate, 2) + (w.capped ? "+" : "")}</span>
+            <br /><span className="text-jade">Highest that worked</span> <span className="n">{w.rate == null ? "none" : pctStr(w.rate, 2) + (w.capped ? "+" : "")}</span>
             <br />CAPE at the start <span className="n">{w.cape.toFixed(1)}</span>
             {era ? <><br /><span className="ddtip-era">{era.title}</span></> : null}
           </>;
@@ -218,7 +219,7 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
                 }
                 const hue = s >= 1 ? 158 : s >= 0.95 ? 140 : s >= 0.9 ? 95 : s >= 0.8 ? 45 : s >= 0.7 ? 25 : 8;
                 const a = 0.12 + 0.5 * Math.max(0, Math.min(1, s)) * (s >= 0.9 ? 1 : 0.8);
-                return <td key={j} className={me} data-hr={i} data-hc={j} style={{ background: "hsla(" + hue + ",60%,48%," + a.toFixed(2) + ")" }}
+                return <td key={j} data-hr={i} data-hc={j} className={me ? me + " bg-(--heat)" : "bg-(--heat)"} style={{ "--heat": "hsla(" + hue + ",60%,48%," + a.toFixed(2) + ")" } as React.CSSProperties}
                   onClick={() => use(rv, h.cols[j])}>{s >= 1 ? "100" : (s * 100).toFixed(0)}</td>;
               })}
             </tr>

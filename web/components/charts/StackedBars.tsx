@@ -53,7 +53,7 @@ export function StackedBars({ id, bars, cats, ariaLabel, tip }: Props) {
                 })}
                 {(b.tick || 0) > 0.5 ? (
                   <line x1={X(i) - bw / 2 - 1} x2={X(i) + bw / 2 + 1} y1={Y(b.tick!)} y2={Y(b.tick!)}
-                    style={{ stroke: "var(--text)" }} strokeWidth={2 * sw} strokeLinecap="round" />
+                    stroke="var(--text)" strokeWidth={2 * sw} strokeLinecap="round" />
                 ) : null}
               </g>
             );

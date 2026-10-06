@@ -10,12 +10,13 @@
 import { createContext, use } from "react";
 import { DraftInput } from "@/components/fields/DraftInput";
 import { ToolIcon } from "@/components/tools/ToolIcon";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
 import { parseNum } from "@/lib/format";
 import type { ToolSub } from "@/lib/tools";
 import { gdM, ok } from "./calc";
 import type { AnswerKey, Answers, GuideState } from "./store";
 import { TRIP_META } from "./tripMeta";
+import { Button } from "@/components/ui/button";
 
 export interface GuideView {
   g: GuideState;
@@ -122,13 +123,13 @@ export function Task({ id, head, label, after }: { id: string; head: string; lab
       <div className="gd-task-h"><div className="gd-task-ic" aria-hidden="true">{T.tool === "basic" ? BASIC_ICON : <ToolIcon sub={T.tool as ToolSub} />}</div>
         <div><b>{head}</b><span>{T.name + (T.mins ? " · about " + T.mins + " minutes" : "")}</span></div></div>
       {T.preview?.length ? <ol className="gd-steps">{T.preview.map((t) => <li key={t}>{t}</li>)}</ol> : null}
-      <button type="button" className="btn primary" data-trip={id} onClick={() => G.trip(id)}>{label || "Open " + T.name}<i className="arw" aria-hidden="true"></i></button>
+      <Button size="lg" data-trip={id} onClick={() => G.trip(id)}>{label || "Open " + T.name}<i className="arw" aria-hidden="true"></i></Button>
       {after}
     </div>
   );
 }
 /** "Optional. Continue whenever you're ready." under a trip box. */
-export const After = ({ children }: { children: React.ReactNode }) => <div style={{ marginTop: "10px" }} className="hint">{children}</div>;
+export const After = ({ children }: { children: React.ReactNode }) => <div className="hint mt-2.5">{children}</div>;
 
 /** The note a step shows on your return from a tool, or after a change:
     the guide's own words, with Undo when it can be taken back. */
@@ -136,15 +137,13 @@ export function BackNote({ step }: { step: string }) {
   const G = useGuideView();
   const B = G.g.back;
   if (!B || B.step !== step || !B.msg) return null;
-  const html = B.msg + (B.see ? "<br><button type='button' class='btn mini' data-trip='" + B.see.trip + "' data-from='" + step + "'>" + B.see.label + "<i class='arw' aria-hidden='true'></i></button>" : "") +
-    (B.undo ? "<br><button type='button' class='btn mini' data-gd='undo'>Undo</button>" : "");
+  const see = B.see;
   return (
-    <Html className="gd-callout ok" html={html} onClick={(e) => {
-      const el = (e.target as HTMLElement).closest("[data-gd],[data-trip]");
-      if (!el) return;
-      if (el.getAttribute("data-gd") === "undo") G.act("undo");
-      const t = el.getAttribute("data-trip");
-      if (t) G.trip(t, step);
-    }} />
+    <div className="gd-callout ok">
+      <Html as="span" html={B.msg} />
+      {see ? <><br /><Button variant="outline" size="sm" className="mt-2" data-trip={see.trip} data-from={step} onClick={() => G.trip(see.trip, step)}>
+        {see.label}<i className="arw" aria-hidden="true"></i></Button></> : null}
+      {B.undo ? <><br /><Button variant="outline" size="sm" className="mt-2" data-gd="undo" onClick={() => G.act("undo")}>Undo</Button></> : null}
+    </div>
   );
 }

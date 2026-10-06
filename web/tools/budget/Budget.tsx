@@ -12,8 +12,8 @@ import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Figure, Segmented } from "@/components/ui/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Figure, Segmented } from "@/components/common/Readout";
 import { computeTax } from "@/lib/engine/typed";
 import { focusLast } from "@/lib/dom";
 import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format";
@@ -23,6 +23,7 @@ import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { BUDGET_DEF, PRESET_DESCS, budgetTotals, isSavingsRow, type BudgetRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
+import { Button } from "@/components/ui/button";
 
 
 export function Budget() {
@@ -99,7 +100,7 @@ export function Budget() {
             <div className="bgincome-row">
               <Affixed prefix="$"><MoneyInput id="bgIncomeIn" nonNeg value={s.income} onValueChange={set("income")} /></Affixed>{" "}
               <Segmented id="bgIncomeFreq" className="seg bgseg" attr="data-freq" options={[[1, "/yr"], [12, "/mo"]] as const} value={s.incomeFreq} onChange={set("incomeFreq")} />{" "}
-              <button className="btn" type="button" id="bgCopyTax"
+              <Button variant="outline" id="bgCopyTax"
                 onClick={() => {
                   // Gross minus taxes only, not minus pre-tax savings: a 401(k)
                   // contribution is saving, entered again as its own line.
@@ -107,7 +108,7 @@ export function Budget() {
                   const netPay = R.gross - R.total;
                   setState((c) => ({ ...c, income: groupDigits(netPay.toFixed(0), true), incomeFreq: 1 }));
                   toast("Copied net pay of " + money(netPay) + " from the tax tool");
-                }}>Copy from Income Tax</button>
+                }}>Copy from Income Tax</Button>
             </div>
           </div>
         </div>
@@ -152,21 +153,21 @@ export function Budget() {
                     <Affixed prefix="$"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
                     <Segmented className="seg bgseg" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
                     {r.custom ? (
-                      <button className="del" type="button" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</button>
+                      <Button variant="ghost" size="icon-sm" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</Button>
                     ) : <span className="delspace"></span>}
                   </div>
                 ))}
               </div>
             ))}
           </div>
-          <button className="btn" type="button" id="bgAdd" style={{ marginTop: "6px" }}
+          <Button variant="outline" className="mt-1.5" id="bgAdd"
             onClick={() => {
               setState((c) => ({ ...c, rows: [...c.rows, { group: "Custom", desc: "", amount: "0", freq: 12, custom: true }] }));
               focusLast(listRef, "input.desc");
-            }}>Add custom item</button>
-          <div className="hint" style={{ marginTop: "10px" }}>Pull a number in from another tool:</div>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "6px" }}>
-            <button className="btn mini" type="button" id="bgCopyRetire"
+            }}>Add custom item</Button>
+          <div className="hint mt-2.5">Pull a number in from another tool:</div>
+          <div className="flex gap-2 flex-wrap mt-1.5">
+            <Button variant="outline" size="sm" id="bgCopyRetire"
               onClick={async () => {
                 // Every plan that has a contribution is offered, with its
                 // monthly amount, rather than quietly picking one.
@@ -181,8 +182,8 @@ export function Budget() {
                 const monthly = Math.round(sources[pick].value);
                 upsert("Retirement contribution", monthly);
                 toast("Added " + money(monthly) + "/mo from " + sources[pick].label);
-              }}>+ Retirement contribution</button>
-            <button className="btn mini" type="button" id="bgCopyCollege"
+              }}>+ Retirement contribution</Button>
+            <Button variant="outline" size="sm" id="bgCopyCollege"
               onClick={() => {
                 const inp = collegeInput(toolInputs("college", COLLEGE_DEFAULTS));
                 if (!inp.kids.some((k) => k.annualCost > 0)) {
@@ -196,18 +197,18 @@ export function Budget() {
                 }
                 upsert("College savings", Math.round(mo));
                 toast("Added " + money(Math.round(mo)) + "/mo from College Savings");
-              }}>+ College savings</button>
+              }}>+ College savings</Button>
           </div>
         </div>
       </div>
 
       <div className="panel">
         <div className="body">
-          <div className="kv total" style={{ fontSize: "15px" }}><span className="k">Total spending, per year</span><span className="v" id="bgTotYr">{money(spentYr)}</span></div>
-          <div className="kv total" style={{ fontSize: "15px" }}><span className="k">Total spending, per month</span><span className="v" id="bgTotMo">{money(spentYr / 12)}</span></div>
-          <div className="kv total" style={{ fontSize: "15px" }} id="bgSaveRow" hidden={!(savedYr > 0)}><span className="k">Total saving, per month</span><span className="v pos" id="bgSaveMo">{savedYr > 0 ? money(savedYr / 12) : ""}</span></div>
-          <div className="kv total" style={{ fontSize: "16px" }}><span className="k">Left over, per year</span><span className={sign} id="bgLeftYr">{money(leftYr)}</span></div>
-          <div className="kv total" style={{ fontSize: "16px" }}><span className="k">Left over, per month</span><span className={sign} id="bgLeftMo">{money(leftYr / 12)}</span></div>
+          <div className="kv total text-body"><span className="k">Total spending, per year</span><span className="v" id="bgTotYr">{money(spentYr)}</span></div>
+          <div className="kv total text-body"><span className="k">Total spending, per month</span><span className="v" id="bgTotMo">{money(spentYr / 12)}</span></div>
+          <div className="kv total text-body" id="bgSaveRow" hidden={!(savedYr > 0)}><span className="k">Total saving, per month</span><span className="v pos" id="bgSaveMo">{savedYr > 0 ? money(savedYr / 12) : ""}</span></div>
+          <div className="kv total text-body-lg"><span className="k">Left over, per year</span><span className={sign} id="bgLeftYr">{money(leftYr)}</span></div>
+          <div className="kv total text-body-lg"><span className="k">Left over, per month</span><span className={sign} id="bgLeftMo">{money(leftYr / 12)}</span></div>
         </div>
       </div>
       <div className="panel">
@@ -215,10 +216,10 @@ export function Budget() {
         <div className="body">
           <div className="efrow">
             <span>Target for</span>{" "}
-            <Affixed suffix="mo" style={{ width: "72px" }}><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
+            <Affixed suffix="mo" className="w-18"><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
             <span>of monthly expenses</span>
           </div>
-          <div className="kv total" style={{ marginTop: "12px" }}><span className="k" id="efLabel">{ef}-month emergency fund</span><span className="v gold" id="efTarget">{money((spentYr / 12) * ef)}</span></div>
+          <div className="kv total mt-3"><span className="k" id="efLabel">{ef}-month emergency fund</span><span className="v gold" id="efTarget">{money((spentYr / 12) * ef)}</span></div>
         </div>
       </div>
     </div>

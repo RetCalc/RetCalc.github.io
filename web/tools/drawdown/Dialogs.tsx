@@ -11,7 +11,7 @@ import { MON } from "@/components/charts/HistNotes";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
 import { DD_ORDER, DD_RESEARCH, DD_STRAT, ddGuaranteed } from "@/lib/engine/typed-drawdown";
 import { groupDigits, money, parseNum } from "@/lib/format";
 import type { DDView } from "./Drawdown";
@@ -21,6 +21,7 @@ import { Spark } from "./Spark";
 import { DD_STUDY_UI } from "./studies";
 import { MixRows, mixForm, mixOk } from "./MixRows";
 import { DD_FAMILY, DD_STRAT_NAMES, ageVal, ddN, hardStart, mixParts, spendThrough } from "./text";
+import { Button } from "@/components/ui/button";
 
 export type Dialog = { kind: "mix" | "guide" | "study" } | { kind: "item"; list: "incomeItems" | "expenseItems"; index: number | null };
 
@@ -56,7 +57,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
     close();
   };
   return (
-    <Modal className="popup wide ddmixpop" onClose={close} focus="[data-mix]">
+    <Modal className="popup wide" onClose={close} focus="[data-mix]">
       <h3>Asset mix</h3>
       <div className="formhint" id="ddMixLead">{(g > 0 ? "How the " + money(o.initial * (1 - G.share)) + " that stays invested is split." : "How the portfolio is split at retirement.") +
         " Returns are each asset's actual history from July 1926."}</div>
@@ -71,13 +72,13 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
           <div className="ddmixrow"><div><b>To buy</b></div><select id="ddMGType" aria-label="What it buys" value={f.gType} onChange={(e) => up("gType")(e.target.value)}><option value="tips">A TIPS ladder</option><option value="annuity">An annuity</option></select></div>
           <div className="ddmixrow" id="ddMGYieldRow" hidden={!tips}><div><b>Real yield</b><small>What TIPS pay after inflation. Check today&apos;s.</small></div><div className="inputwrap"><NumberInput step={0.1} id="ddMGYield" aria-label="Real yield" value={f.gYield} onValueChange={up("gYield")} /><span className="affix">%</span></div></div>
           <div className="ddmixrow" id="ddMGPayRow" hidden={tips}><div><b>Payout rate</b><small>From a quote: depends on age and rates.</small></div><div className="inputwrap"><NumberInput nonNeg step={0.25} id="ddMGPay" aria-label="Payout rate" value={f.gPay} onValueChange={up("gPay")} /><span className="affix">%</span></div></div>
-          <label className="ddgk-check" id="ddMGInflRow" hidden={tips} style={{ margin: "8px 0" }}><input type="checkbox" id="ddMGInfl" checked={f.gInfl} onChange={(e) => up("gInfl")(e.target.checked)} /><span>Payments rise with inflation</span></label>
+          <label className="ddgk-check my-2 mx-0" id="ddMGInflRow" hidden={tips}><input type="checkbox" id="ddMGInfl" checked={f.gInfl} onChange={(e) => up("gInfl")(e.target.checked)} /><span>Payments rise with inflation</span></label>
           <div className="formhint" id="ddMGNote">{g > 0 ? money(o.initial * G.share) + " buys " + money(G.income) + " a year" +
             (tips ? " for " + o.years + " years, rising with inflation." : " for life" + (f.gInfl ? ", rising with inflation." : ", level in dollars.")) : ""}</div>
         </div>
       </div>
-      <div className="formactions"><button type="button" className="btn" data-mixcancel onClick={close}>Cancel</button>
-        <button type="button" className="btn primary" data-mixok disabled={!ok} onClick={save}>Use this mix</button></div>
+      <div className="formactions"><Button variant="outline" className="flex-1" data-mixcancel onClick={close}>Cancel</Button>
+        <Button className="flex-1" data-mixok disabled={!ok} onClick={save}>Use this mix</Button></div>
     </Modal>
   );
 }
@@ -121,11 +122,11 @@ function GuideDialog({ v, close }: { v: DDView; close: () => void }) {
                 <section key={k} className={"sg-item" + (k === cur ? " sg-cur" : "")}>
                   <div className="sg-head"><h4>{g.name}</h4><span className="sg-tag">{g.tag}</span>
                     {k === cur ? <span className="sg-using">Selected</span>
-                      : <button type="button" className="btn mini" data-usestrat={k} onClick={() => {
+                      : <Button variant="outline" size="sm" className="ml-auto" data-usestrat={k} onClick={() => {
                         v.set("strategy")(k);
                         close();
                         toast("Using " + DD_STRAT_NAMES[k]);
-                      }}>Use this strategy</button>}</div>
+                      }}>Use this strategy</Button>}</div>
                   {vals ? <div className="sg-spark"><Spark vals={vals} w={300} h={40} />
                     <span>Retiring in {when}, with your plan: {money(vals[0])} in year one, {money(Math.min(...vals))} at the lowest</span></div> : null}
                   <Html as="p" html={g.how} />
@@ -169,10 +170,10 @@ function StudyDialog({ v, close }: { v: DDView; close: () => void }) {
             <div className="ddstudy-k">The paper found</div><p>{U.paper}</p>
             <div className="ddstudy-k">The simulator finds</div><Html className="ddstudy-sim" html={U.sim(f)} />
             <p className="ddstudy-why">{U.why}</p>
-            <button type="button" className="btn mini" data-study={S.id} onClick={() => { close(); load(S.id); }}>Load this setup</button></div>
+            <Button variant="outline" size="sm" data-study={S.id} onClick={() => { close(); load(S.id); }}>Load this setup</Button></div>
         );
       })}
-      <div className="formactions"><button type="button" className="btn" data-studyclose onClick={close}>Close</button></div>
+      <div className="formactions"><Button variant="outline" className="flex-1" data-studyclose onClick={close}>Close</Button></div>
     </Modal>
   );
 }
@@ -236,8 +237,8 @@ function ItemDialog({ v, list, index, close }: { v: DDView; list: "incomeItems" 
         <label>Number of years</label>
         <div className="formwrap"><input id="itYears" type="text" inputMode="decimal" value={f.years} onChange={(e) => up("years")(e.target.value)} /><span className="affix">yrs</span></div></div>
       <div className="formactions">
-        <button className="btn cancel" type="button" onClick={close}>Cancel</button>
-        <button className="btn primary" type="button" id="itSave" onClick={save}>{existing ? "Save" : "Add"}</button>
+        <Button variant="outline" className="flex-1" onClick={close}>Cancel</Button>
+        <Button className="flex-1" id="itSave" onClick={save}>{existing ? "Save" : "Add"}</Button>
       </div>
     </Modal>
   );

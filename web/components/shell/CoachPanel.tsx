@@ -9,7 +9,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useBusyState } from "@/lib/busy";
-import { Html } from "@/components/ui/Html";
+import { Html } from "@/components/common/Html";
+import { Button } from "@/components/ui/button";
 
 export interface CoachTask { h: string; ok?: boolean }
 
@@ -46,12 +47,12 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
     <div className={"gd-coach" + (min ? " min" : "")} id={id} role="region" aria-label={label} ref={el}>
       <div className="gd-coach-h">
         <div className="t"><span>{sub}</span><b>{title}</b></div>
-        <button type="button" className="gd-coach-ib gd-coach-tog" aria-expanded={!min} aria-label={tog} title={tog} onClick={onToggle}>
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 10l4-4 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </button>
-        <button type="button" className="gd-coach-ib" aria-label={closeLabel} title={closeLabel} onClick={onClose}>
+        <Button variant="ghost" size="icon-sm" aria-expanded={!min} aria-label={tog} title={tog} onClick={onToggle}>
+          <svg className={min ? "rotate-180 transition-transform duration-200" : "transition-transform duration-200"} viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 10l4-4 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </Button>
+        <Button variant="ghost" size="icon-sm" aria-label={closeLabel} title={closeLabel} onClick={onClose}>
           <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-        </button>
+        </Button>
       </div>
       {next ? <Html className="gd-coach-next" html={next} /> : null}
       <div className="gd-coach-b" ref={body}>
@@ -61,10 +62,10 @@ export function CoachPanel({ id, label, sub, title, min, onToggle, onClose, clos
             <ol className="gd-steps">{(tasks || []).map((k, i) => <Html as="li" key={i} className={k.ok === true ? "ok" : k.ok === false ? "todo" : undefined} html={k.h} />)}</ol>
             {part ? (
               <div className="gd-cnav">
-                <button type="button" className="btn mini" {...{ [part.attr || "data-cp"]: "-1" }} disabled={!part.i} onClick={() => { part.go(-1); body.current?.scrollTo(0, 0); }}><i className="arw back" aria-hidden="true"></i>Back</button>
+                <Button variant="outline" size="sm" {...{ [part.attr || "data-cp"]: "-1" }} disabled={!part.i} onClick={() => { part.go(-1); body.current?.scrollTo(0, 0); }}><i className="arw back" aria-hidden="true"></i>Back</Button>
                 <span className="gd-cdots" aria-hidden="true">{part.titles.map((_, i) => <i key={i} className={i === part.i ? "on" : undefined}></i>)}</span>
-                {part.i < part.titles.length - 1 ? <button type="button" className="btn mini primary" {...{ [part.attr || "data-cp"]: "1" }} onClick={() => { part.go(1); body.current?.scrollTo(0, 0); }}>
-                  Next: {part.titles[part.i + 1]}<i className="arw" aria-hidden="true"></i></button> : null}
+                {part.i < part.titles.length - 1 ? <Button size="sm" {...{ [part.attr || "data-cp"]: "1" }} onClick={() => { part.go(1); body.current?.scrollTo(0, 0); }}>
+                  Next: {part.titles[part.i + 1]}<i className="arw" aria-hidden="true"></i></Button> : null}
               </div>
             ) : null}
           </>

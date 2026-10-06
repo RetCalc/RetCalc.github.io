@@ -10,6 +10,7 @@ import { groupDigits, parseOptional } from "@/lib/format";
 import { householdSummary, isEmptyHousehold, type Household } from "@/lib/household";
 import type { StateOption } from "@/lib/states";
 import { useHousehold } from "./HouseholdProvider";
+import { Button } from "@/components/ui/button";
 
 type Form = Record<"age" | "spouseAge" | "retire" | "saved" | "monthly" | "income" | "income2" | "spend", string> & {
   status: "s" | "m";
@@ -93,7 +94,7 @@ export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbo
   const sum = profile && !empty ? householdSummary(profile, (c) => states.find((s) => s.code === c)?.name) : null;
 
   return (
-    <section className={`hh${(open ? form.status : profile?.status) === "m" ? " married" : ""}${inAbout ? " inabout" : ""}`} id="hhCard" aria-label="Your household" hidden={!shown && !inAbout}>
+    <section className={`hh${(open ? form.status : profile?.status) === "m" ? " married" : ""}`} id="hhCard" aria-label="Your household" hidden={!shown && !inAbout}>
       <div className="hh-bar">
         <span className="hh-ic" aria-hidden="true">{HOUSE_ICON}</span>
         <div className="hh-sum" id="hhSummary">
@@ -107,18 +108,20 @@ export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbo
             "Enter a few details once and every tool starts from your numbers."
           )}
         </div>
-        <button className="btn mini" type="button" id="hhEdit" aria-expanded={open} aria-controls="hhBody"
+        <Button variant="outline" size="sm" id="hhEdit" aria-expanded={open} aria-controls="hhBody"
           onClick={() => (open ? close() : openForm())}>
           {open ? "Close" : empty ? "Set up" : "Edit"}
-        </button>{" "}
-        <button className="hh-x" type="button" id="hhHide" aria-label="Hide your household bar" title="Hide"
-          onClick={() => {
-            setOpen(false);
-            setShown(false);
-            toast("Hidden. The house button at the top brings it back.");
-          }}>
-          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-        </button>
+        </Button>{" "}
+        {inAbout ? null : (
+          <Button variant="ghost" size="icon-sm" id="hhHide" aria-label="Hide your household bar" title="Hide"
+            onClick={() => {
+              setOpen(false);
+              setShown(false);
+              toast("Hidden. The house button at the top brings it back.");
+            }}>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+          </Button>
+        )}
       </div>
       <div className="hh-body" id="hhBody" hidden={!open}
         onKeyDown={(e) => {
@@ -150,9 +153,9 @@ export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbo
             Basic, Advanced, Stages and the tools that use them. You can still change any
             tool afterwards without touching this. Stored in this browser only.</div>
           <div className="hh-btns">
-            <button className="btn" type="button" id="hhClear" onClick={onClear}>Clear</button>{" "}
-            <button className="btn" type="button" id="hhCancel" onClick={close}>Close</button>{" "}
-            <button className="btn primary" type="button" id="hhFill" onClick={onSave}>Save and fill in tools</button>
+            <Button variant="outline" className="max-sm:flex-auto" id="hhClear" onClick={onClear}>Clear</Button>{" "}
+            <Button variant="outline" className="max-sm:flex-auto" id="hhCancel" onClick={close}>Close</Button>{" "}
+            <Button className="max-sm:flex-auto" id="hhFill" onClick={onSave}>Save and fill in tools</Button>
           </div>
         </div>
       </div>

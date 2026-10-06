@@ -11,12 +11,13 @@ import { BASIC_INFL } from "@/lib/engine/typed";
 import { pctStr } from "@/lib/format";
 import { ADVANCED_DEFAULTS, advancedFields } from "@/tools/advanced/model";
 import { basicInput, type BasicInputs } from "./model";
+import { Button } from "@/components/ui/button";
 
 export function OpenInAdvanced({ basic }: { basic: BasicInputs }) {
   const router = useRouter();
   const toast = useToast();
   return (
-    <button className="btn primary" type="button" id="btnUpgrade"
+    <Button id="btnUpgrade"
       onClick={() => {
         const p = basicInput(basic);
         const infl = BASIC_INFL as number;
@@ -28,6 +29,6 @@ export function OpenInAdvanced({ basic }: { basic: BasicInputs }) {
         });
         router.push("/advanced");
         toast("Copied across, with " + pctStr(infl, 2) + " inflation and a 10% tax rate added");
-      }}>Open these numbers in Advanced</button>
+      }}>Open these numbers in Advanced</Button>
   );
 }

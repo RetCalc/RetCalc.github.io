@@ -25,7 +25,7 @@ function StratTable({ a }: { a: Answers }) {
             <div className="c"><i>Typical year</i>{money(r.typical)}</div>
             <div className="c"><i>Leanest year</i>{money(r.lean)}{r.lean >= S.spend * 0.995 ? <small>never below your plan</small> : r.leanYear ? <small>retiring in {r.leanYear}, at {r.leanAge}</small> : null}</div></div>
         ))}</div>
-      <p className="hint" style={{ margin: "-6px 0 14px" }}>Spending after tax, in today&apos;s dollars, counting Social Security{S.pension ? " and your pension" : ""}. The leanest year is the worst single year across all of history; when the money ran out, it&apos;s what Social Security{S.pension ? " and the pension" : ""} paid alone.
+      <p className="hint -mt-1.5 mx-0 mb-3.5">Spending after tax, in today&apos;s dollars, counting Social Security{S.pension ? " and your pension" : ""}. The leanest year is the worst single year across all of history; when the money ran out, it&apos;s what Social Security{S.pension ? " and the pension" : ""} paid alone.
         {fl ? <> Flexible approaches never go below your {money(fl)} minimum while money remains, so each can now run out; <b>Lasted</b> counts how often it held.</> : null}</p>
     </>
   );
@@ -65,7 +65,7 @@ export function StrategyStep() {
         {" "}a year) in every retirement since {S.H.first}.</Lead>
       <BackNote step="strategy" />
       <H3>What&apos;s the least you could live on?</H3>
-      <p className="hint" style={{ margin: "-4px 0 10px", maxWidth: "64ch" }}>Flexible approaches cut spending in bad markets, and some cut deep. A minimum stops them going lower: housing, food, insurance, utilities and the other essentials, in today&apos;s dollars. Leave it blank for no minimum.</p>
+      <p className="hint -mt-1 mx-0 mb-2.5 max-w-copy">Flexible approaches cut spending in bad markets, and some cut deep. A minimum stops them going lower: housing, food, insurance, utilities and the other essentials, in today&apos;s dollars. Leave it blank for no minimum.</p>
       <div className="gd-picks">{picks.filter((p) => p[1] < S.spend).map(([lab, val]) => {
         const r = Math.round(val / 500) * 500;
         return <button key={lab} type="button" className="gd-pick" data-fill="minSpend" data-v={r} onClick={() => fill(G, "minSpend", r)}>{lab}: <b>{money(r) + "/yr"}</b></button>;

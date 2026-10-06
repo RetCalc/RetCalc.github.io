@@ -16,6 +16,7 @@ import { PlanChart, series } from "./chart";
 import type { Answers } from "./store";
 import { NeedsPlan } from "./steps";
 import { BackNote, Callout, Q, useGuideView } from "./ui";
+import { Button } from "@/components/ui/button";
 
 /* What's picked, the draft behind "Try your own numbers", and which levers
    the balanced option may move: kept for the visit. */
@@ -137,7 +138,7 @@ function Compare({ a }: { a: Answers }) {
       <table className="gd-cmp-t"><thead><tr><th></th><th>Now</th><th>With this change</th></tr></thead>
         <tbody>{rows.map(([k, x, y]) => <tr key={k}><th scope="row">{k}</th><td>{x}</td><td className={x !== y ? "chg" : undefined}>{y}</td></tr>)}</tbody></table>
       {notes.length ? <ul className="gd-notes">{notes.map((n) => <li key={n}>{n}</li>)}</ul> : null}
-      <div className="gd-apply"><button type="button" className="btn primary" data-gd="apply" onClick={() => G.act("apply")}>Apply to my plan</button>
+      <div className="gd-apply"><Button size="lg" data-gd="apply" onClick={() => G.act("apply")}>Apply to my plan</Button>
         <span className="hint">Updates your answers, score and household bar. You can undo it.</span></div>
     </>
   );
@@ -192,10 +193,10 @@ export function TuneStep() {
         <span className="hint">of historical retirements</span></div>
       {!O.list.length ? <Callout>{O.ahead ? "Your plan sits right at its target, so there's no spare room to spend without adding risk. Try your own numbers to explore."
         : "None of the single changes reach the target within reason. Try your own numbers, or work on the rest of your plan first."}</Callout> : null}
-      <div className="gd-optwrap">
+      <div>
         <div className="gd-opts">{O.list.map(card)}{card(custom)}</div>
         {sel === "balance" ? (
-          <div className="gd-target gd-levers"><span>Balance across</span>
+          <div className="gd-target"><span>Balance across</span>
             {([["retire", "Retirement age"], ["save", "Monthly saving"], ["spend", "Retirement spending"]] as const).map(([k, lab]) => (
               <button key={k} type="button" className={"gd-pick" + (ui.levers[k] ? " on" : "")} data-lever={k} aria-pressed={!!ui.levers[k]} onClick={() => {
                 const on = (Object.keys(ui.levers) as (keyof Levers)[]).filter((x) => ui.levers[x]);
@@ -211,13 +212,13 @@ export function TuneStep() {
             {draftField("contrib", "You contribute", "/mo", true, a.employer ? "Plus your employer's " + money(a.employer) + "/mo." : "")}
             {draftField("stopAge", "Stop contributing at", "age", false, "Blank means until you retire.")}
             {draftField("retSpend", "Spending in retirement", "/yr", true)}
-            <p className="hint full" style={{ margin: "0 0 10px" }}>Contributions rise with inflation each year, so they stay the same in today&apos;s dollars.</p>
+            <p className="hint full mt-0 mx-0 mb-2.5">Contributions rise with inflation each year, so they stay the same in today&apos;s dollars.</p>
           </div>
         ) : null}
       </div>
       <div className="gd-cmp" id="gdCmp"><Compare a={a} /></div>
-      <p className="hint" style={{ marginTop: "14px" }}>Prefer the classic FIRE math, with a 4% rule instead of market history?{" "}
-        <button type="button" className="gd-link" data-trip="fire" data-from="tune" onClick={() => G.trip("fire", "tune")}>Open the FIRE Calculator</button></p>
+      <p className="hint mt-3.5">Prefer the classic FIRE math, with a 4% rule instead of market history?{" "}
+        <Button variant="quiet" size="inline" data-trip="fire" data-from="tune" onClick={() => G.trip("fire", "tune")}>Open the FIRE Calculator</Button></p>
     </>
   );
 }

@@ -13,7 +13,7 @@ import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { Segmented } from "@/components/ui/Readout";
+import { Segmented } from "@/components/common/Readout";
 import { plAtRetire } from "@/lib/engine/typed-plan";
 import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { has } from "@/lib/household";
@@ -27,6 +27,7 @@ import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal, type Host }
 import { OP_GOALS } from "./words";
 import { useShareKit } from "@/components/shell/share";
 import { optimizerCard } from "./share";
+import { Button } from "@/components/ui/button";
 
 /* The goal picked, kept for the visit. */
 const goalMemory = { goal: "legacy" as Goal };
@@ -127,8 +128,8 @@ export function Optimizer() {
   else if (H.run) body = <div className="panel"><div className="body"><Progress host="tool" R={H.run} /></div></div>;
   else if (H.res) body = (
     <>
-      {H.res.sig !== sig ? <div className="panel"><div className="body"><div className="gd-callout warn" style={{ margin: 0 }}>Your numbers or the goal changed since this ran.{" "}
-        <button type="button" className="btn mini" data-op="run" data-host="tool" onClick={run}>Run it again</button></div></div></div> : null}
+      {H.res.sig !== sig ? <div className="panel"><div className="body"><div className="gd-callout warn m-0">Your numbers or the goal changed since this ran.{" "}
+        <Button variant="outline" size="sm" className="mt-2" data-op="run" data-host="tool" onClick={run}>Run it again</Button></div></div></div> : null}
       <OptimizerResult key={H.res.sig + H.res.runs} host="tool" res={H.res} fresh={H.fresh} />
     </>
   );
@@ -138,7 +139,7 @@ export function Optimizer() {
         <div className="n">{money(P.trad) + " traditional · " + money(P.roth) + " Roth · " + money(P.brok) + " brokerage, in today's dollars"}</div></div>
       <div><div className="k">Social Security at 67</div><div className="v">{money(I.pia1 + I.pia2)}<small>/mo</small></div>
         <div className="n">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div></div>
-    </div><p className="hint" style={{ margin: "12px 0 0" }}>Pick a goal above and press <b>Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p></div></div>
+    </div><p className="hint mt-3 mx-0 mb-0">Pick a goal above and press <b>Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p></div></div>
   );
 
   return (
@@ -162,18 +163,18 @@ export function Optimizer() {
                 {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
               </SelectField>
             </div>
-            <div className="two op-nowonly" hidden={!v.now}>
+            <div className="two" hidden={!v.now}>
               <NumberField id="opAge" label="Your age" unit="age" max={90} value={s.age} onValueChange={set("age")} />
-              <NumberField id="opSpAge" className="op-sp" hidden={!v.married} label="Spouse's age" unit="age" max={95} value={s.spAge} onValueChange={set("spAge")} />
+              <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="age" max={95} value={s.spAge} onValueChange={set("spAge")} />
             </div>
             <div className={"two" + (v.now || !v.married ? " one" : "")} id="opRetRow">
               <NumberField id="opRetire" label={<><span id="opRetireLbl">{v.now ? "Retire at" : "Your age at retirement"}</span><TipDot k="opretire" /></>}
                 unit="age" max={90} value={s.retire} onValueChange={set("retire")} />
-              <NumberField id="opSpRet" className="op-sp op-retonly" hidden={v.now || !v.married} label="Spouse's age then" unit="age" max={95} value={s.spRet} onValueChange={set("spRet")} />
+              <NumberField id="opSpRet" hidden={v.now || !v.married} label="Spouse's age then" unit="age" max={95} value={s.spRet} onValueChange={set("spRet")} />
             </div>
 
             <div className="field op-sub op-balhead"><div className="hint" id="opBalHead">{v.now ? "Saved for retirement today" : "Saved on the day you retire"}</div>
-              <button type="button" className="btn mini" id="opCopy" onClick={copy}>Copy from Advanced or Stages</button>
+              <Button variant="outline" size="sm" className="ml-auto" id="opCopy" onClick={copy}>Copy from Advanced or Stages</Button>
               <div className="hint op-balnote" id="opBalNote">{v.now ? "Today's balances. Advanced or Stages can fill these in, with what you save each month."
                 : "In today's dollars. Advanced or Stages can project these for you, account by account."}</div>
             </div>
@@ -187,7 +188,7 @@ export function Optimizer() {
               <NumberField id="opBasis" label={<Tipped text="Cost basis" k="opbasis" />} unit="% of it" step={5} max={100} value={s.basis} onValueChange={set("basis")} />
             </div>
 
-            <div id="opSaveWrap" className="op-nowonly" hidden={!v.now || !(v.retire > v.age)}>
+            <div id="opSaveWrap" hidden={!v.now || !(v.retire > v.age)}>
               <div className="field op-sub"><div className="hint">Saving until you retire, a month</div></div>
               <div className="two">
                 <MoneyField id="opSaveTrad" label={<Tipped text="Traditional" k="opsavetrad" />} unit="/mo" value={s.saveTrad} onValueChange={set("saveTrad")} />
@@ -211,7 +212,7 @@ export function Optimizer() {
               <MoneyField id="opSS1" label={<Tipped text="Your benefit at 67" k="opss" />} unit="/mo" value={s.ss1} onValueChange={set("ss1")} />
               <MoneyField id="opInc1" label={<Tipped text="Or your salary" k="opinc" />} unit="/yr" value={s.inc1} onValueChange={set("inc1")} />
             </div>
-            <div className="two op-sp" hidden={!v.married}>
+            <div className="two" hidden={!v.married}>
               <MoneyField id="opSS2" label="Spouse's benefit at 67" unit="/mo" value={s.ss2} onValueChange={set("ss2")} />
               <MoneyField id="opInc2" label="Or their salary" unit="/yr" value={s.inc2} onValueChange={set("inc2")} />
             </div>
@@ -252,13 +253,13 @@ export function Optimizer() {
         <div className="panel op-top">
           <div className="body">
             <p className="op-lede">Every age from 62 to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
-            <div className="op-goalrow">
+            <div>
               <div className="op-q">What should the best plan do?</div>
               <div id="opGoals"><OpGoals host="tool" goal={goal} onPick={setGoal} /></div>
             </div>
             <div className="op-go">
-              <button type="button" className="btn primary op-go-btn" id="opRunBtn" data-op="run" data-host="tool" disabled={!!H.run || !spend} onClick={run}>
-                {fresh ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></button>
+              <Button size="lg" id="opRunBtn" data-op="run" data-host="tool" disabled={!!H.run || !spend} onClick={run}>
+                {fresh ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
               <span className="hint" id="opEst">{groupDigits(E.n, true) + " plans × " + E.w + " historical markets = " + groupDigits(E.runs, true) + " retirements, about " + E.secs + " seconds."}</span>
             </div>
           </div>

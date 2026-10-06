@@ -27,20 +27,19 @@ export function budgetShare(s: BudgetInputs): ShareKit {
       if (T.savedYr > 0) summary.push(["Saving", perMo(T.savedYr)]);
       summary.push(["Left over", perMo(T.leftYr)], ["Percent of income spent", T.incomeYr ? pctStr(T.spentYr / T.incomeYr, 0) : DASH]);
       if (T.savedYr > 0) summary.push(["Percent of income saved", T.incomeYr ? pctStr(T.savedYr / T.incomeYr, 0) : DASH]);
-      const col = { flex: 1, minWidth: 0 };
       return (
         <SheetPage title="Monthly Budget" sub="Per month, unless noted"
           big={[["Income", money(T.incomeYr / 12), "per month"], ["Spending + saving", money((T.spentYr + T.savedYr) / 12), "per month"],
             ["Left over", money(T.leftYr / 12), (T.incomeYr ? pctStr(T.leftYr / T.incomeYr, 0) : DASH) + " of income"]]}
           foot="A snapshot of what you entered. Savings and retirement contributions are shown separately from spending and excluded from the emergency fund target. Doesn't include taxes withheld or account for irregular income.">
           <div className="sh-cols">
-            <section style={col}><div className="sh-t">Summary</div>{summary.map(([k, v]) => <div key={k} className="sh-r"><span>{k}</span><b>{v}</b></div>)}
-              {saves.length ? <><div className="sh-t" style={{ marginTop: "8px" }}>Saving</div>{saves.map((r, i) => <div key={i} className="sh-r"><span>{r.desc}</span><b>{perMo(annualize(r))}</b></div>)}</> : null}
+            <section className="flex-1 min-w-0"><div className="sh-t">Summary</div>{summary.map(([k, v]) => <div key={k} className="sh-r"><span>{k}</span><b>{v}</b></div>)}
+              {saves.length ? <><div className="sh-t mt-2">Saving</div>{saves.map((r, i) => <div key={i} className="sh-r"><span>{r.desc}</span><b>{perMo(annualize(r))}</b></div>)}</> : null}
             </section>
-            <SheetSection style={col} t="Emergency fund" rows={[[ef + "-month target", money((T.spentYr / 12) * ef)], ["Based on", perMo(T.spentYr) + " actual expenses"]]} />
+            <SheetSection className="flex-1 min-w-0" t="Emergency fund" rows={[[ef + "-month target", money((T.spentYr / 12) * ef)], ["Based on", perMo(T.spentYr) + " actual expenses"]]} />
           </div>
           <div className="sh-cols">
-            {ORDER.filter((g) => groups[g]).map((g) => <SheetSection key={g} style={col} t={g} rows={groups[g].map((r) => [r.desc, perMo(annualize(r))])} />)}
+            {ORDER.filter((g) => groups[g]).map((g) => <SheetSection key={g} className="flex-1 min-w-0" t={g} rows={groups[g].map((r) => [r.desc, perMo(annualize(r))])} />)}
           </div>
         </SheetPage>
       );

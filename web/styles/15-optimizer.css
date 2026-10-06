@@ -23,7 +23,6 @@
 .op-goal.on .dot::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--jade)}
 .op-go{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 6px}
 .op-go .hint{margin:0}
-.op-go-btn{font-size:15px;padding:11px 20px}
 .op-out{display:flex;flex-direction:column;gap:20px;min-width:0}
 .op-out:empty{display:none}
 
@@ -98,8 +97,6 @@
 .op-stats > div:last-child b{color:var(--gold)}
 .op-stats span{display:block;font-size:11.5px;color:var(--dimmer);margin-top:3px}
 .op-now{font-size:12.5px;color:var(--dim);min-height:2.9em;line-height:1.45;font-family:var(--mono)}
-.op-stop{position:absolute;top:0;right:0;font-size:12px}
-.op-run.op-hit .op-stop{visibility:hidden}
 @media (prefers-reduced-motion:reduce){
   .op-arrow svg,.op-run.op-loosed .op-bow .str.rest,.op-run.op-hit .op-target,.op-run.op-loosed .op-bow,.op-run.op-full .op-arrow svg,
   .op-run.op-hit .op-target::after,.op-run.op-hit .op-target::before,.op-run.op-hit .op-arrow svg{animation:none}
@@ -217,7 +214,6 @@
 .op-modeseg button{flex:1;font-size:12.5px;padding:7px 10px}
 #asideOP .two.one{grid-template-columns:1fr}
 #asideOP .op-balhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-#asideOP .op-balhead .btn{margin-left:auto}
 #asideOP .op-sub .hint.op-balnote{flex-basis:100%;font-weight:400;color:var(--dimmer);font-size:11.5px}
 
 /* The picker's icon: the arrow flies in and the target rings. */

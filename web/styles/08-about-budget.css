@@ -84,23 +84,12 @@ html[data-theme="light"] .about.disclaimer{
 .bgrow span.desc[contenteditable]:focus{outline:none;border-color:var(--jade);
   border-style:solid;background:var(--panel)}
 .bgrow .inputwrap{flex:0 0 130px;width:130px}
-.bgrow .del{background:transparent;border:0;color:var(--dimmer);cursor:pointer;
-  font-size:18px;line-height:1;padding:0 6px;flex:none;transition:color .14s ease}
-.bgrow .del:hover{color:var(--coral)}
-.bgrow .delspace{width:26px;flex:none}
+.bgrow .delspace{width:28px;flex:none}
 .freqsel{width:auto;min-width:104px;flex:none}
 
-/* A text-weight button for opening a guide, sitting under the field it explains. */
-.linkbtn{display:inline-flex;align-items:center;gap:6px;margin-top:7px;padding:2px 0;
-  background:none;border:0;cursor:pointer;font-family:var(--sans);font-size:12px;
-  color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.35);
-  text-underline-offset:3px;transition:text-decoration-color .14s ease}
-.linkbtn:hover{text-decoration-color:currentColor}
 a.txlink{color:var(--jade);text-decoration:underline;text-decoration-color:rgba(79,191,149,.4);
   text-underline-offset:2px}
 a.txlink:hover{text-decoration-color:currentColor}
-.linkbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
-.linkbtn svg{width:14px;height:14px;flex:none}
 /* A growth field set per account shows the blend; clicking it edits the rates. */
 .inputwrap input.blended{cursor:pointer;color:var(--jade)}
 

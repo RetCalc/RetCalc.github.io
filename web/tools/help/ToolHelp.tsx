@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { TOUR_TOOLS, helpNow, setHelp, toggleHelp, useHelp } from "./state";
+import { Button } from "@/components/ui/button";
 
 const HelpPanel = dynamic(() => import("./HelpPanel"), { ssr: false });
 
@@ -16,11 +17,11 @@ export function HelpButton({ tool }: { tool: string }) {
   const h = useHelp();
   if (!TOUR_TOOLS.has(tool)) return null;
   return (
-    <button type="button" className="btn toolhelp" id="toolHelpBtn" aria-controls="thCoach" aria-expanded={h?.tool === tool} onClick={() => toggleHelp(tool)}>
+    <Button variant="outline" size="sm" className="ml-auto flex-none self-center" id="toolHelpBtn" aria-controls="thCoach" aria-expanded={h?.tool === tool} onClick={() => toggleHelp(tool)}>
       <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" strokeWidth="1.4" />
         <path d="M6.2 6.3a1.9 1.9 0 0 1 3.7.5c0 1.3-1.9 1.6-1.9 2.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" /><circle cx="8" cy="11.4" r=".85" fill="currentColor" /></svg>
       Help
-    </button>
+    </Button>
   );
 }
 

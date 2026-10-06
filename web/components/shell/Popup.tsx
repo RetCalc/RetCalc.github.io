@@ -6,6 +6,7 @@
 
 import { createContext, use, useCallback, useState } from "react";
 import { Modal } from "./Modal";
+import { Button } from "@/components/ui/button";
 
 export interface PopupOption {
   label: string;
@@ -37,7 +38,7 @@ function PopupDialog({ open, close }: { open: Open; close: (i: number) => void }
           {o.desc ? <span className={o.money ? "subdesc money" : "subdesc"}>{o.desc}</span> : null}
         </button>
       ))}
-      <button className="cancel" onClick={() => close(-1)}>Cancel</button>
+      <Button variant="ghost" size="sm" className="mt-1 w-full" onClick={() => close(-1)}>Cancel</Button>
     </Modal>
   );
 }

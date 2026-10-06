@@ -6,7 +6,7 @@
 
 import { SheetPage, SheetSection, SheetTable, sampled } from "@/components/shell/Sheet";
 import { copyChart, type ShareKit } from "@/components/shell/share";
-import { milestoneRows } from "@/components/ui/Milestones";
+import { milestoneRows } from "@/components/common/Milestones";
 import { RISK_LEVELS, projectBasic } from "@/lib/engine/typed";
 import { fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV } from "@/lib/periods";

@@ -15,11 +15,12 @@ import { Affixed, NumberField } from "@/components/fields/Field";
 import { NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { Figure, KV, Segmented } from "@/components/ui/Readout";
+import { Figure, KV, Segmented } from "@/components/common/Readout";
 import type { HistRuns, MCBand, MCResult } from "@/lib/engine/types";
 import { money } from "@/lib/format";
 import { reroll } from "@/lib/mc-seed";
 import { PERIOD_ADV } from "@/lib/periods";
+import { Button } from "@/components/ui/button";
 
 export type ChartMode = "band" | "hist" | "mc";
 
@@ -136,7 +137,7 @@ export function ProjectionChart(props: PanelProps) {
         <span className="h2ctrl">
           <Segmented id={segId} attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
           <span className="modeopt" id={"optBand" + sfx} hidden={mode !== "band"}>
-            <Affixed prefix="±" suffix="%" style={{ width: "96px" }}>
+            <Affixed prefix="±" suffix="%" className="w-24">
               <NumberInput id={"band" + sfx} nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />
             </Affixed>
           </span>
@@ -145,15 +146,15 @@ export function ProjectionChart(props: PanelProps) {
       <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
         <NumberField id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />} unit="%" step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} />
         <NumberField id={"histMixEnd" + sfx} wrapId={"histGlideWrap" + sfx} hidden={!props.glides} label={<Tipped text="Glides to" k="histglidemix" />} unit="%" step={5} max={100} value={props.histMixEnd} onValueChange={props.setHistMixEnd} />
-        <div className="hint" id={"histNote" + sfx} style={{ margin: 0 }}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
+        <div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
       </div>
       <div className="mcbar" id={"mcBar" + sfx} hidden={mode !== "mc"}>
         {props.mcFields}
-        <button className="btn" type="button" id={"btnReroll" + sfx} onClick={() => {
+        <Button variant="outline" id={"btnReroll" + sfx} onClick={() => {
           reroll();
           toast("New set of runs");
-        }}>Re-roll</button>
-        <div className="hint" style={{ margin: 0 }}>{props.mcHint}</div>
+        }}>Re-roll</Button>
+        <div className="hint m-0">{props.mcHint}</div>
       </div>
       <BandChart id={sfx} pts={chart.pts} maxX={props.maxX} mode={chart.fan ? "mc" : "band"} stageMarks={chart.marks} enhanced ariaLabel={ariaLabel}
         traces={chart.traces && tracesOn ? chart.traces : undefined}

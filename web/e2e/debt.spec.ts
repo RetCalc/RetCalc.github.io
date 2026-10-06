@@ -12,7 +12,7 @@ test("debt payoff matches the current site", async ({ page }, info) => {
     { name: "bigger extra", steps: [["dtExtra", "1500"]] },
     { name: "edited debt", steps: [[row(1, ".desc"), "Visa"], [row(1, ".c1 input"), "15000"], [row(1, ".c2 input"), "27.5"]] },
     { name: "a minimum below interest", steps: [[row(3, ".c3 input"), "50"]] },
-    { name: "added and removed debts", steps: [["click", "#dtAdd"], [row(5, ".c1 input"), "3000"], [row(5, ".c2 input"), "12"], [row(5, ".c3 input"), "90"], ["click", row(2, ".del")]] },
+    { name: "added and removed debts", steps: [["click", "#dtAdd"], [row(5, ".c1 input"), "3000"], [row(5, ".c2 input"), "12"], [row(5, ".c3 input"), "90"], ["click", row(2, 'button[aria-label="Remove"]')]] },
   ]);
 });
 

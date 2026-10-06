@@ -6,7 +6,7 @@
 
 import { SheetPage, SheetSection, SheetTable, sampled, type SheetRows } from "@/components/shell/Sheet";
 import { copyChart, type ShareKit } from "@/components/shell/share";
-import { milestoneRows } from "@/components/ui/Milestones";
+import { milestoneRows } from "@/components/common/Milestones";
 import type { Accounts } from "@/lib/accounts";
 import { coastFire, goalSolve, solveYears } from "@/lib/engine/typed";
 import type { Plan, Projection, Series } from "@/lib/engine/types";

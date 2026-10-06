@@ -5,6 +5,7 @@
 import { useRouter } from "next/navigation";
 import { useClient } from "@/lib/useClient";
 import { Brandmark } from "./Brandmark";
+import { Button } from "@/components/ui/button";
 
 const EMAIL = ["contact", "retcalc.app"].join("@");
 
@@ -27,7 +28,7 @@ export function Footer() {
         </div>
         <div className="sitefoot-txt">
           <p>An educational tool, not financial or tax advice. Past returns don&apos;t predict future ones, and tax figures are estimates.{" "}
-            <button type="button" className="sitefoot-link" id="footDisclaimer" onClick={() => router.push("/about#disclaimer")}>Read the full disclaimer</button></p>
+            <Button variant="link" size="inline" id="footDisclaimer" onClick={() => router.push("/about#disclaimer")}>Read the full disclaimer</Button></p>
           {/* The pre-built page says "contact [at] retcalc.app", so scrapers
               reading the HTML never collect the address; in the browser it
               becomes the real one, as on the old site. */}
@@ -35,13 +36,13 @@ export function Footer() {
             <a className="sitefoot-link mailme" href={client ? "mailto:" + EMAIL : "#"}>{client ? EMAIL : "contact [at] retcalc.app"}</a></p>
           <p className="src">Market history: Robert Shiller&apos;s dataset (Yale) and the US Bureau of Labor Statistics, 1926 to 2025. Taxes: 2026 federal and state rules. Healthcare: KFF&apos;s 2026 averages.</p>
         </div>
-        <nav className="sitefoot-nav" aria-label="Site">
+        <nav className="sitefoot-nav text-note" aria-label="Site">
           {LINKS.map((l) => (
-            <button key={l.foot} type="button" data-foot={l.foot}
+            <Button key={l.foot} variant="quiet" size="inline" data-foot={l.foot}
               onClick={() => {
                 router.push(l.href);
                 window.scrollTo({ top: 0 });
-              }}>{l.label}</button>
+              }}>{l.label}</Button>
           ))}
         </nav>
       </div>

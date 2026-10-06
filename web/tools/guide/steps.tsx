@@ -21,6 +21,7 @@ import type { Answers, GuideState } from "./store";
 import { StrategyStep } from "./strategy";
 import { TuneStep } from "./tune";
 import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NumF, Q, SelF, Task, useGuideView } from "./ui";
+import { Button } from "@/components/ui/button";
 
 export const CHAPTERS = ["About you", "Cash flow", "Safety net", "Big goals", "Retirement", "Your plan"];
 
@@ -48,7 +49,7 @@ export function NeedsPlan({ title, msg = "This needs your age, savings and retir
     <>
       <Q>{title}</Q>
       <Callout cls="warn">{msg}</Callout>
-      <button type="button" className="btn" data-go="savings" onClick={() => G.go("savings")}>Go to Retirement savings</button>
+      <Button variant="outline" data-go="savings" onClick={() => G.go("savings")}>Go to Retirement savings</Button>
     </>
   );
 }
@@ -74,9 +75,9 @@ function Intro() {
 function IntroFoot() {
   const { g, act } = useGuideView();
   return Object.keys(g.done).length > 0
-    ? <><button type="button" className="btn" data-gd="restart" onClick={() => act("restart")}>Start over</button><span className="sp"></span>
-      <button type="button" className="btn primary" data-gd="resume" onClick={() => act("resume")}>Pick up where you left off<i className="arw" aria-hidden="true"></i></button></>
-    : <><span className="sp"></span><button type="button" className="btn primary" data-gd="next" onClick={() => act("next")}>Let&apos;s begin<i className="arw" aria-hidden="true"></i></button></>;
+    ? <><Button variant="outline" size="lg" data-gd="restart" onClick={() => act("restart")}>Start over</Button><span className="sp"></span>
+      <Button size="lg" className="max-sm:flex-auto" data-gd="resume" onClick={() => act("resume")}>Pick up where you left off<i className="arw" aria-hidden="true"></i></Button></>
+    : <><span className="sp"></span><Button size="lg" className="max-sm:flex-auto" data-gd="next" onClick={() => act("next")}>Let&apos;s begin<i className="arw" aria-hidden="true"></i></Button></>;
 }
 
 function About() {
@@ -125,8 +126,8 @@ function TakeHome() {
       </div>
       <BackNote step="takehome" />
       {v.thKnow === "no" ? <Task id="tax" head="Find it with the Income Tax tool" label={pos(v.takehome) ? "Open Income Tax again" : null}
-        after={est > 0 && !pos(v.takehome) ? <div style={{ marginTop: "12px" }}><button type="button" className="gd-link" data-fill="takehome" data-v={Math.round(est)}
-          onClick={() => fill(G, "takehome", Math.round(est))}>Or skip the tool and use a quick estimate: about {money(est)}/mo</button></div> : null} /> : null}
+        after={est > 0 && !pos(v.takehome) ? <div className="mt-3 text-note"><Button variant="quiet" size="inline" data-fill="takehome" data-v={Math.round(est)}
+          onClick={() => fill(G, "takehome", Math.round(est))}>Or skip the tool and use a quick estimate: about {money(est)}/mo</Button></div> : null} /> : null}
       {showField ? <Fields><MoneyF k="takehome" label="Monthly take-home pay" per="/mo"
         hint={mar(v) ? "For the two of you together." : "Paid every two weeks? Multiply one paycheck by 26, then divide by 12."} /></Fields> : null}
     </>
@@ -185,11 +186,11 @@ function Debt() {
       {v.debtHas === "yes" ? (
         <>
           {v.debtSrc !== "tool" ? <Task id="debt" head="Make a plan in Debt Payoff" label="List them in Debt Payoff"
-            after={v.debtSrc !== "quick" ? <div style={{ marginTop: "12px" }}><button type="button" className="gd-link" data-set="debtSrc" data-val="quick"
-              onClick={() => G.set("debtSrc", "quick", true)}>Rather not list them? Enter the totals instead</button></div> : null} /> : null}
+            after={v.debtSrc !== "quick" ? <div className="mt-3 text-note"><Button variant="quiet" size="inline" data-set="debtSrc" data-val="quick"
+              onClick={() => G.set("debtSrc", "quick", true)}>Rather not list them? Enter the totals instead</Button></div> : null} /> : null}
           {v.debtSrc === "quick" || v.debtSrc === "tool" ? <Fields><MoneyF k="debtTotal" label="Total you owe" />
             <MoneyF k="debtHi" label="Of that, at 8% interest or more" hint="Credit cards almost always are." /></Fields> : null}
-          {v.debtSrc === "tool" ? <button type="button" className="gd-link" data-trip="debt" onClick={() => G.trip("debt")}>Open your plan in Debt Payoff again</button> : null}
+          {v.debtSrc === "tool" ? <Button variant="quiet" size="inline-xs" data-trip="debt" onClick={() => G.trip("debt")}>Open your plan in Debt Payoff again</Button> : null}
         </>
       ) : null}
     </>
@@ -272,7 +273,7 @@ function Savings() {
         hint="Target-date funds are usually Balanced or Growth until the last decade before retirement." /></Fields>
       <RateNote a={a} />
       <H3>What kind of accounts is it in?</H3>
-      <p className="hint" style={{ margin: "-4px 0 10px", maxWidth: "64ch" }}>It changes the tax you&apos;ll pay in retirement: traditional money is taxed when it comes out, Roth money isn&apos;t, and a brokerage account is taxed only on its gains. Leave these blank if it&apos;s all in a regular 401(k) or IRA.</p>
+      <p className="hint -mt-1 mx-0 mb-2.5 max-w-copy">It changes the tax you&apos;ll pay in retirement: traditional money is taxed when it comes out, Roth money isn&apos;t, and a brokerage account is taxed only on its gains. Leave these blank if it&apos;s all in a regular 401(k) or IRA.</p>
       <Fields>
         <MoneyF k="rothNow" label="Of that, in Roth accounts" ph="0" hint="Roth 401(k) and Roth IRA." />
         <MoneyF k="brokNow" label="In a taxable brokerage account" ph="0" hint="Only money meant for retirement." />
@@ -280,7 +281,7 @@ function Savings() {
       <AcctNote a={a} />
       <H3>Where does your monthly saving go?</H3>
       <div className="gd-choices two">{SAVE_TO.map(([k, t, s]) => <Choice key={k} k="saveTo" val={k} title={t} sub={s} />)}</div>
-      <p className="hint" style={{ margin: "-4px 0 0" }}>Your employer&apos;s share goes into a traditional account either way.</p>
+      <p className="hint -mt-1 mx-0 mb-0">Your employer&apos;s share goes into a traditional account either way.</p>
     </>
   );
 }
@@ -357,14 +358,14 @@ function Outlook() {
       </div>
       <div className="gd-cover">
         <div className="gd-cover-bar" role="img" aria-label={"Income covers " + pctStr(Math.min(9.99, S.coverage), 0) + " of planned spending"}>
-          <i style={{ width: ((port / sc) * 100).toFixed(1) + "%", background: "var(--jade)" }}></i>
-          <i style={{ width: ((ss / sc) * 100).toFixed(1) + "%", background: "var(--steel)" }}></i>
-          {pen ? <i style={{ width: ((pen / sc) * 100).toFixed(1) + "%", background: "var(--gold)" }}></i> : null}
-          <span className="need" style={{ left: "calc(" + ((spendNeed / sc) * 100).toFixed(1) + "% - 1px)" }}></span>
+          <i className="w-(--w) bg-jade" style={{ "--w": ((port / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
+          <i className="w-(--w) bg-steel" style={{ "--w": ((ss / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
+          {pen ? <i className="w-(--w) bg-gold" style={{ "--w": ((pen / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i> : null}
+          <span className="need left-(--x)" style={{ "--x": "calc(" + ((spendNeed / sc) * 100).toFixed(1) + "% - 1px)" } as React.CSSProperties}></span>
         </div>
-        <div className="gd-cover-key"><span><s style={{ background: "var(--jade)" }}></s>From savings</span><span><s style={{ background: "var(--steel)" }}></s>Social Security</span>
-          {pen ? <span><s style={{ background: "var(--gold)" }}></s>Pension</span> : null}
-          <span><s style={{ background: "var(--text)", width: "2px" }}></s>Your spending and its tax: {money(spendNeed)}/yr</span></div>
+        <div className="gd-cover-key"><span><s className="bg-jade"></s>From savings</span><span><s className="bg-steel"></s>Social Security</span>
+          {pen ? <span><s className="bg-gold"></s>Pension</span> : null}
+          <span><s className="bg-text w-0.5"></s>Your spending and its tax: {money(spendNeed)}/yr</span></div>
       </div>
       <Callout><b>Taxes are built in.</b> In a typical year this plan pays about <b>{money(S.taxYr)}</b> in income tax
         {S.hcYr > 0 ? <>, and about <b>{money(S.hcYr)}</b> a year for health insurance before Medicare, after the subsidy your income earns</> : null}
@@ -430,7 +431,7 @@ function Bridge() {
         {" "}opens up without a 10% penalty. There are several legal ways across: living off a taxable account and your Roth contributions,
         {" "}{v.retire! >= 55 ? "72(t) payments and the rule of 55" : "a Roth conversion ladder and 72(t) payments"}. Which works best depends on where your money sits.</Lead>
       <BridgeNote a={a} />
-      <p className="hint" style={{ margin: "-6px 0 14px" }}>The split comes from your Retirement savings step. <button type="button" className="gd-link" data-go="savings" onClick={() => G.go("savings")}>Change it</button></p>
+      <p className="hint -mt-1.5 mx-0 mb-3.5">The split comes from your Retirement savings step. <Button variant="quiet" size="inline" data-go="savings" onClick={() => G.go("savings")}>Change it</Button></p>
       <Callout>Your plan already follows the rules: before 59½ it lives on the brokerage account and Roth contributions first, and only pays the 10% penalty if nothing else is left. The Plan Optimizer, next, can build a Roth conversion ladder to open up traditional money early.</Callout>
       {v.retire! >= 55 ? <><H3>Will you leave a job with a 401(k) at 55 or later?</H3>
         <div className="gd-choices two"><Choice k="rule55" val="yes" title="Yes" sub="The rule of 55 lets that 401(k) pay out without the penalty" /><Choice k="rule55" val="no" title="No, or not sure" /></div></> : null}

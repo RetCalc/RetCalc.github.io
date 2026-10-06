@@ -38,8 +38,8 @@ export function YAxis({ size, ticks, Y, fmt = fmtAxisMoney }: { size: ChartSize;
     <>
       {ticks.map((t) => (
         <g key={t}>
-          <line x1={size.L} x2={size.W - size.Rp} y1={Y(t)} y2={Y(t)} style={{ stroke: "var(--grid)" }} strokeWidth={size.sw} />
-          <text x={size.L - 8} y={Y(t) + size.fs / 3} textAnchor="end" fontSize={size.fs} style={{ fill: "var(--axis)" }} fontFamily={MONO}>{fmt(t)}</text>
+          <line x1={size.L} x2={size.W - size.Rp} y1={Y(t)} y2={Y(t)} stroke="var(--grid)" strokeWidth={size.sw} />
+          <text x={size.L - 8} y={Y(t) + size.fs / 3} textAnchor="end" fontSize={size.fs} fill="var(--axis)" fontFamily={MONO}>{fmt(t)}</text>
         </g>
       ))}
     </>
@@ -55,7 +55,7 @@ export function XAxis({ size, count, last = count, X, label }: { size: ChartSize
   return (
     <>
       {at.map((i) => (
-        <text key={i} x={X(i)} y={size.H - 10} textAnchor="middle" fontSize={size.fs} style={{ fill: "var(--axis)" }} fontFamily={MONO}>{label(i)}</text>
+        <text key={i} x={X(i)} y={size.H - 10} textAnchor="middle" fontSize={size.fs} fill="var(--axis)" fontFamily={MONO}>{label(i)}</text>
       ))}
     </>
   );
@@ -120,12 +120,12 @@ interface FrameProps {
   onPick?: (i: number) => void;
   /** The tooltip for point i. */
   tip: (i: number) => React.ReactNode;
-  svgStyle?: React.CSSProperties;
+  fadeIn?: boolean;
   /** The drawing; `hover` is the index under the pointer, for its markers. */
   children: (hover: number | null) => React.ReactNode;
 }
 
-export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyle, children }: FrameProps) {
+export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn, children }: FrameProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
@@ -170,10 +170,11 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyl
       onClick={() => active && onPick?.(active.i)}
       {...scrub}
     >
-      <svg id={`chart${id}`} ref={svgRef} viewBox={`0 0 ${size.W} ${size.H}`} preserveAspectRatio="none" role="img" aria-label={ariaLabel} style={svgStyle}>
+      <svg id={`chart${id}`} ref={svgRef} viewBox={`0 0 ${size.W} ${size.H}`} preserveAspectRatio="none" role="img" aria-label={ariaLabel} className={fadeIn ? "animate-chart-fade-up" : undefined}>
         {xs?.length || pick ? children(active ? active.i : null) : null}
       </svg>
-      <div className="tip" ref={tipRef} style={active ? { opacity: 1, left: active.left, top: active.top } : { opacity: 0 }}>
+      <div className={active ? "tip opacity-100 left-(--x) top-(--y)" : "tip opacity-0"} ref={tipRef}
+        style={active ? { "--x": active.left + "px", "--y": active.top + "px" } as React.CSSProperties : undefined}>
         {active ? tip(active.i) : null}
       </div>
     </div>
@@ -184,8 +185,8 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, svgStyl
 export function HoverMarks({ size, x, y }: { size: ChartSize; x: number | null; y: number | null }) {
   return (
     <>
-      <line x1={x ?? 0} x2={x ?? 0} y1={size.T} y2={size.T + size.ph} stroke="#e9b872" strokeWidth={size.sw} opacity={x != null ? 0.4 : 0} />
-      <circle cx={x ?? 0} cy={y ?? 0} r={4.5 * size.sw} fill="#e9b872" style={{ stroke: "var(--dotstroke)" }} strokeWidth={2.5 * size.sw} opacity={x != null ? 1 : 0} />
+      <line x1={x ?? 0} x2={x ?? 0} y1={size.T} y2={size.T + size.ph} stroke="var(--gold)" strokeWidth={size.sw} opacity={x != null ? 0.4 : 0} />
+      <circle cx={x ?? 0} cy={y ?? 0} r={4.5 * size.sw} fill="var(--gold)" stroke="var(--dotstroke)" strokeWidth={2.5 * size.sw} opacity={x != null ? 1 : 0} />
     </>
   );
 }

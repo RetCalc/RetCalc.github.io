@@ -13,8 +13,8 @@ import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/ui/BigValue";
-import { Html } from "@/components/ui/Html";
+import { BigValue } from "@/components/common/BigValue";
+import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
 import { project, projectBasic, projectSeries } from "@/lib/engine/typed";
 import {
@@ -37,6 +37,7 @@ import { comfortNote, firstSpend, lineWords, mcWords, planLabel, startLabel, tar
 import { useShareKit } from "@/components/shell/share";
 import { drawdownShare } from "./share";
 import { useBusy } from "@/lib/busy";
+import { Button } from "@/components/ui/button";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
     year one, the retirement age and the comfort line. */
@@ -188,10 +189,10 @@ export function Drawdown({ landing }: { landing?: string }) {
       <Inputs v={v} fromNote={fromNote} periods={periods} open={setDialog} />
       <div className="stack" id="tab-drawdown" data-tab={tab}>
         <div className="panel" id="ddIntro" hidden={introSeen === "1"}>
-          <div className="body" style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
-            <div style={{ flex: "1 1 auto", minWidth: 0 }}>
-              <div style={{ fontWeight: 600, color: "var(--text)", marginBottom: "6px" }}>New here? Here&apos;s the idea.</div>
-              <div className="hint" style={{ margin: 0 }}>
+          <div className="body flex gap-3.5 items-start">
+            <div className="flex-auto min-w-0">
+              <div className="font-semibold text-text mb-1.5">New here? Here&apos;s the idea.</div>
+              <div className="hint m-0">
                 Every other tool answers &quot;how much will I have?&quot; This one answers the
                 harder question: once you start spending it, <b>will it last?</b> Set a
                 portfolio value and a withdrawal strategy, then test it against every
@@ -200,7 +201,7 @@ export function Drawdown({ landing }: { landing?: string }) {
                 like, year by year.
               </div>
             </div>
-            <button className="btn mini" type="button" id="ddIntroClose" aria-label="Dismiss" onClick={() => setIntroSeen("1")}>&times;</button>
+            <Button variant="ghost" size="icon-sm" id="ddIntroClose" aria-label="Dismiss" onClick={() => setIntroSeen("1")}>&times;</Button>
           </div>
         </div>
         <Readout v={v} R={R} H={H} running={mcOn && mc.stale} pinned={pinned}
@@ -324,7 +325,7 @@ function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
             <button type="button" data-dd="mc" className={mode === "mc" ? "on" : undefined} onClick={() => setMode("mc")}>Monte Carlo</button>
           </span>
           <span className="txbadge" id="ddBadge">{badge}</span>
-          <button className="btn mini ddpin" type="button" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</button>
+          <Button variant="outline" size="sm" className="ml-2" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
         </div>
         <div className="headline">
           <div><div className="k"><Tipped text="Success rate" k="successrate" /></div><BigValue className={successCls} id="ddSuccess" text={success} sized={success !== "—"} />
@@ -340,7 +341,7 @@ function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
       <div className="ddbase" id="ddBaseBar" hidden={!pinned}>
         <span className="ddbase-k">Baseline</span><span className="ddbase-v" id="ddBaseLabel">{pinned?.label ?? ""}</span>
         <span className="ddbase-n">Changes since are marked <b className="pos">better</b> or <b className="neg">worse</b>; the charts draw it dashed.</span>
-        <button className="btn mini" type="button" id="ddBaseClear" onClick={unpin}>Clear</button>
+        <Button variant="outline" size="sm" id="ddBaseClear" onClick={unpin}>Clear</Button>
       </div>
       <div className="body"><Html id="ddVerdict" html={verdict} /></div>
     </div>

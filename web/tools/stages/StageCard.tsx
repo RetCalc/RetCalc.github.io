@@ -16,6 +16,7 @@ import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import { PeriodOptions } from "@/lib/periods";
 import { glideNote, pctField } from "@/tools/advanced/model";
 import { stageGlideYears, stageGrowthBlend, stageSplit, type StageInputs, type StageNum } from "./model";
+import { Button } from "@/components/ui/button";
 
 export type StageEdit = (i: number, f: (st: StageInputs) => StageInputs) => void;
 
@@ -53,29 +54,29 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
     </label>
   ) : null;
 
-  const field = (key: string, labelText: React.ReactNode, input: React.ReactNode, extra?: React.ReactNode, cls?: string, style?: React.CSSProperties) => (
-    <div className={cls ? "field " + cls : "field"} key={key} style={style}><label>{labelText}</label>{input}{extra}</div>
+  const field = (key: string, labelText: React.ReactNode, input: React.ReactNode, extra?: React.ReactNode, cls?: string) => (
+    <div className={cls ? "field " + cls : "field"} key={key}><label>{labelText}</label>{input}{extra}</div>
   );
   const f: Record<string, React.ReactNode> = {
     years: field("years", "Years", <div className="inputwrap"><NumberInput data-f="years" data-i={i} nonNeg value={st.years} aria-label={aria + " years"}
       onValueChange={(v) => up((c) => ({ ...c, years: v, ...(c.glideYears !== "" ? { glideYears: stageGlideYears(v, c.glideYears) } : {}) }))} /><span className="affix">yrs</span></div>),
     contrib: field("contrib", "Contribution", <div className="inputwrap"><span className="affix">$</span><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></div>, adjRow),
     freq: field("freq", "Frequency", <select data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></select>,
-      <button type="button" className="linkbtn" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</button>),
+      <Button variant="link" size="inline-xs" className="mt-1.75" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</Button>),
     growth: field("growth", <Tipped text="Contribution growth" k="contribgrowth" />, <div className="inputwrap">
       <NumberInput data-f="growth" data-i={i} step={0.5} aria-label={aria + " contribution growth"}
         value={blended ? (blend != null ? String(+(blend * 100).toFixed(2)) : "") : st.growth} onValueChange={setF("growth")}
         readOnly={blended} className={blended ? "blended" : undefined} title={blended ? "Blended from your per-account rates. Click to edit." : undefined}
         onClick={() => blended && setDialog("growth")} />
       <span className="affix">%/yr</span></div>,
-      split ? <button type="button" className="linkbtn" data-grate={i} onClick={() => setDialog("growth")}>{st.gRates ? "Edit by account" : "Set by account"}</button> : null),
+      split ? <Button variant="link" size="inline-xs" className="mt-1.75" data-grate={i} onClick={() => setDialog("growth")}>{st.gRates ? "Edit by account" : "Set by account"}</Button> : null),
     vol: field("vol", "Volatility", <div className="inputwrap"><NumberInput data-f="vol" data-i={i} nonNeg value={st.vol} aria-label={aria + " volatility"} onValueChange={setF("vol")} /><span className="affix">%/yr</span></div>,
-      undefined, "stagevol", mc ? undefined : { display: "none" }),
+      undefined, mc ? "stagevol" : "stagevol hidden"),
     rate: field("rate", <Tipped text="Rate of return" k="nominalreturn" />, <div className="inputwrap">
       <SignFlip value={st.nominal} onFlip={setF("nominal")} />
       <NumberInput data-f="nominal" data-i={i} step={0.5} value={st.nominal} aria-label={aria + " rate of return"} onValueChange={setF("nominal")} />
       <span className="affix">%</span></div>,
-      <div className="hint stagereal" data-realrate={i} style={{ margin: "4px 0 0" }}>{pctStr((1 + num.nominal - fees) / (1 + inflation) - 1, 2) + " Real"}</div>),
+      <div className="hint mt-1 mx-0 mb-0" data-realrate={i}>{pctStr((1 + num.nominal - fees) / (1 + inflation) - 1, 2) + " Real"}</div>),
   };
   if (split) {
     const acct = (k: "cT" | "cR" | "cB", lbl: string) => field(k, lbl, <div className="inputwrap"><span className="affix">$</span>
@@ -83,7 +84,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
     f.trad = acct("cT", "Traditional");
     f.roth = acct("cR", "Roth");
     f.brok = acct("cB", "Taxable");
-    f.total = field("total", "Total", <div className="inputwrap" style={{ boxShadow: "none", background: "transparent" }}><span className="affix">$</span>
+    f.total = field("total", "Total", <div className="inputwrap shadow-none bg-transparent bg-none"><span className="affix">$</span>
       <input type="text" readOnly tabIndex={-1} data-stotal={i} aria-label={aria + " total contribution"} value={groupDigits(Math.round(parseNum(st.contrib) * 100) / 100, true)} /></div>, adjRow);
   }
   const order = split ? ["years", "freq", "growth", "vol", "rate", "trad", "roth", "brok", "total"] : ["years", "contrib", "freq", "growth", "vol", "rate"];
@@ -123,7 +124,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
                 <NumberInput data-f="glideYears" data-i={i} nonNeg value={st.glideYears} aria-label={aria + " glide years"}
                   onValueChange={(v) => up((c) => ({ ...c, glideYears: stageGlideYears(c.years, v) }))} /><span className="affix">yrs</span></div></div>
             </div>
-            <div className="hint" style={{ margin: 0 }} data-glidenote={i}>{st.glideOn ? glideNote(num.nominal, num.glide?.endRate || 0, num.years, num.glide?.years || 1, " of this stage") : ""}</div>
+            <div className="hint m-0" data-glidenote={i}>{st.glideOn ? glideNote(num.nominal, num.glide?.endRate || 0, num.years, num.glide?.years || 1, " of this stage") : ""}</div>
           </div>
         </div>
       ) : null}

@@ -16,25 +16,7 @@ import { ToolHelp } from "@/tools/help/ToolHelp";
 import { SITE } from "@/lib/site";
 import { THEME_SCRIPT } from "@/lib/theme-script";
 
-/* Today's styles, unchanged from src/css/ and loaded in the same order (later
-   files win ties). They stay as they are until the site has switched over;
-   the redesign comes after. */
-import "@/styles/00-base.css";
-import "@/styles/01-masthead-layout.css";
-import "@/styles/02-fields-readout.css";
-import "@/styles/03-navigation.css";
-import "@/styles/04-tool-icons-header.css";
-import "@/styles/05-household-accounts-stages.css";
-import "@/styles/06-data-controls.css";
-import "@/styles/07-print-sheet.css";
-import "@/styles/08-about-budget.css";
-import "@/styles/09-popups-tooltips.css";
-import "@/styles/10-tools.css";
-import "@/styles/11-charts.css";
-import "@/styles/12-guide.css";
-import "@/styles/13-chart-ink-logo.css";
-import "@/styles/14-footer-menus-mobile.css";
-import "@/styles/15-optimizer.css";
+import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
 import Script from "next/script";
 

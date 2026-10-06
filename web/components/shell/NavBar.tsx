@@ -196,7 +196,7 @@ export function NavBar() {
               >
                 {isCalc ? (
                   <>
-                    <span className="calc-lbl">Calculator</span>
+                    <span>Calculator</span>
                     <span className="calc-mode">
                       <span id="calcMode">{CALC_MODE_NAMES[shownMode]}</span>
                       <svg className="calc-chev" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.6L6 7.6l3-3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -210,8 +210,8 @@ export function NavBar() {
           })}
         </nav>
         {/* Outside the nav so the phone rail's horizontal scroll can't clip it. */}
-        <div className="calcmenu" id="calcMenu" role="menu" aria-labelledby="tabbtn-calc" hidden={!open}
-          ref={menuRef} style={{ left: menuLeft }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+        <div className="calcmenu left-(--x)" id="calcMenu" role="menu" aria-labelledby="tabbtn-calc" hidden={!open}
+          ref={menuRef} style={{ "--x": menuLeft + "px" } as React.CSSProperties} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
           <div className="calcmenu-h" aria-hidden="true">Calculator</div>
           {MODES.map((m, i) => (
             <button

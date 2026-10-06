@@ -12,8 +12,8 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { Figure, Segmented } from "@/components/ui/Readout";
-import { CsvButton } from "@/components/ui/CsvButton";
+import { Figure, Segmented } from "@/components/common/Readout";
+import { CsvButton } from "@/components/common/CsvButton";
 import { FED_STD, NIIT, bracketRoom } from "@/lib/engine/typed";
 import { DASH, groupDigits, money, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
@@ -22,6 +22,7 @@ import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
 import { useShareKit } from "@/components/shell/share";
 import { taxShare } from "./share";
+import { themed } from "@/lib/hues";
 
 const TAX_COLORS = { fed: "#e2795f", state: "#e9b872", fica: "#7d9fd6", net: "#4fbf95" };
 const BKT_COLORS = ["#e2795f", "#4fbf95", "#7d9fd6", "#e9b872", "#c98fb8", "#a98fd6"]; // trad, roth, brok, ss, pension, other
@@ -31,7 +32,7 @@ interface Bar { label: string; v: number; share: number; c: string }
 
 /* One row of the tax breakdown table. */
 const TxRow = ({ k, v, eff, c }: { k: string; v: number; eff: number; c: string }) => (
-  <tr><td>{k}</td><td>{money(v)}</td><td>{pctStr(eff, 2)}</td><td><span style={{ color: c }}>{"■"}</span> {pctStr(eff, 1)}</td></tr>
+  <tr><td>{k}</td><td>{money(v)}</td><td>{pctStr(eff, 2)}</td><td><span className="text-(color:--ink)" style={{ "--ink": themed(c) } as React.CSSProperties}>{"■"}</span> {pctStr(eff, 1)}</td></tr>
 );
 
 /* The donut: each slice dims the others on hover, and its label and amount
@@ -51,11 +52,11 @@ function Donut({ parts, center, active }: { parts: Part[]; center: string; activ
           <circle key={i} cx={C} cy={C} r={R - sw / 2} fill="none" stroke={p.c} strokeWidth={sw}
             strokeDasharray={(frac * circ).toFixed(2) + " " + circ.toFixed(2)} strokeDashoffset={(-off * circ).toFixed(2)}
             transform={`rotate(-90 ${C} ${C})`} data-idx={i}
-            style={{ transition: "opacity .15s", cursor: "pointer", opacity: active == null || active === i ? undefined : 0.18 }} />
+            className={active == null || active === i ? "transition-opacity duration-150 cursor-pointer" : "transition-opacity duration-150 cursor-pointer opacity-18"} />
         );
       })}
-      <text id="txPieLbl" x="110" y="104" textAnchor="middle" fontSize="13" style={{ fill: "var(--dim)", fontFamily: "var(--sans)", pointerEvents: "none" }}>{pt ? pt.label : "All taxes"}</text>
-      <text id="txPieVal" x="110" y="128" textAnchor="middle" fontSize="22" fontWeight="600" style={{ fill: "var(--text)", fontFamily: "var(--mono)", pointerEvents: "none" }}>{pt ? money(pt.v) : center}</text>
+      <text id="txPieLbl" x="110" y="104" textAnchor="middle" fontSize="13" fill="var(--dim)" className="font-sans pointer-events-none">{pt ? pt.label : "All taxes"}</text>
+      <text id="txPieVal" x="110" y="128" textAnchor="middle" fontSize="22" fontWeight="600" fill="var(--text)" className="font-mono pointer-events-none">{pt ? money(pt.v) : center}</text>
     </>
   );
 }
@@ -100,10 +101,10 @@ export function Tax() {
   const noRoom = { roomLabel: "Room before next bracket", room: DASH };
   const totals = (afterLabel: string, grossLabel: string) => (
     <>
-      <tr style={{ fontWeight: 600 }}><td>All taxes</td><td>{money(R.total)}</td><td>{pctStr(R.effTotal, 2)}</td><td></td></tr>
+      <tr className="font-semibold"><td>All taxes</td><td>{money(R.total)}</td><td>{pctStr(R.effTotal, 2)}</td><td></td></tr>
       <tr><td>{afterLabel}</td><td>{money(R.net)}</td><td>{pctStr(R.effNet, 2)}</td><td></td></tr>
       {R.pre > 0 ? <tr><td>Pre-tax deductions</td><td>{money(R.pre)}</td><td>{pctStr(R.gross ? R.pre / R.gross : 0, 2)}</td><td></td></tr> : null}
-      <tr style={{ fontWeight: 600, borderTop: "2px solid var(--line)" }}><td>{grossLabel}</td><td>{money(R.gross)}</td><td>100.00%</td><td></td></tr>
+      <tr className="font-semibold border-t-2 border-t-line"><td>{grossLabel}</td><td>{money(R.gross)}</td><td>100.00%</td><td></td></tr>
     </>
   );
   const share = (v: number) => (R.gross ? v / R.gross : 0);
@@ -355,8 +356,9 @@ export function Tax() {
                 return (
                   <div className="bar" key={b.label}>
                     <div className="lbl"><span>{b.label}</span><b>{money(b.withdrawn) + (b.withdrawn > 0 ? " · " + money(b.tax) + " tax (" + pctStr(b.eff, 1) + ")" : "")}</b></div>
-                    <div className="track" style={{ width: Math.max(maxAmt > 0 ? (b.withdrawn / maxAmt) * 100 : 0, 1.5).toFixed(1) + "%" }}>
-                      <div className="fill" style={{ width: Math.min(100, b.withdrawn > 0 ? (b.tax / b.withdrawn) * 100 : 0).toFixed(1) + "%", background: o.c }}></div>
+                    <div className="track w-(--w)" style={{ "--w": Math.max(maxAmt > 0 ? (b.withdrawn / maxAmt) * 100 : 0, 1.5).toFixed(1) + "%" } as React.CSSProperties}>
+                      <div className="fill w-(--w) bg-(--swatch)"
+                        style={{ "--w": Math.min(100, b.withdrawn > 0 ? (b.tax / b.withdrawn) * 100 : 0).toFixed(1) + "%", "--swatch": themed(o.c) } as React.CSSProperties}></div>
                     </div>
                   </div>
                 );
@@ -369,11 +371,11 @@ export function Tax() {
               <thead><tr><th>Source</th><th>Withdrawn</th><th>Taxable</th><th>Federal</th><th>State</th><th>Total tax</th><th><Tipped text="Effective rate" k="effrate" /></th></tr></thead>
               <tbody>
                 {live.map((o) => (
-                  <tr key={o.b.label}><td><span style={{ color: o.c }}>{"■"}</span> {o.b.label}</td><td>{money(o.b.withdrawn)}</td><td>{money(o.b.taxable)}</td>
+                  <tr key={o.b.label}><td><span className="text-(color:--ink)" style={{ "--ink": themed(o.c) } as React.CSSProperties}>{"■"}</span> {o.b.label}</td><td>{money(o.b.withdrawn)}</td><td>{money(o.b.taxable)}</td>
                     <td>{money(o.b.federal)}</td><td>{money(o.b.state)}</td><td>{money(o.b.tax)}</td><td>{pctStr(o.b.eff, 1)}</td></tr>
                 ))}
                 {ret ? (
-                  <tr style={{ fontWeight: 600, borderTop: "2px solid var(--line)" }}><td>All sources</td><td>{money(R.gross)}</td>
+                  <tr className="font-semibold border-t-2 border-t-line"><td>All sources</td><td>{money(R.gross)}</td>
                     <td>{money(live.reduce((a, o) => a + o.b.taxable, 0))}</td><td>{money(R.federal)}</td><td>{money(R.state)}</td>
                     <td>{money(R.total)}</td><td>{pctStr(R.effTotal, 1)}</td></tr>
                 ) : null}
@@ -393,9 +395,9 @@ export function Tax() {
             <div id="txStackLegend" className="stacklegend">
               {ret && R.gain > 0 ? (
                 <>
-                  <span><i style={{ background: "#8ba0ac" }}></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
+                  <span><i className="bg-chart-slate"></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
                   {(R.ltcgBands as { amount: number; rate: number }[]).map((b, i) => b.amount > 0 ? (
-                    <span key={i}><i style={{ background: LTCG_COLORS[i] }}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
+                    <span key={i}><i className="bg-(--swatch)" style={{ "--swatch": themed(LTCG_COLORS[i]) } as React.CSSProperties}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
                   ) : null)}
                 </>
               ) : null}
@@ -412,7 +414,7 @@ export function Tax() {
               <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
               <tbody>
                 {(R.bands as { rate: number; lo: number; hi: number; amount: number; tax: number }[]).map((b) => (
-                  <tr key={b.rate} style={b.amount > 0 ? undefined : { opacity: 0.4 }}>
+                  <tr key={b.rate} className={b.amount > 0 ? undefined : "opacity-40"}>
                     <td>{pctStr(b.rate, 0)}</td><td>{money(b.lo) + (b.hi === Infinity ? " and up" : " – " + money(b.hi))}</td><td>{money(b.amount)}</td><td>{money(b.tax)}</td>
                   </tr>
                 ))}
@@ -428,7 +430,7 @@ export function Tax() {
             <table id="txStateRules" ref={rulesRef}>
               <tbody>
                 {(stateRuleRows(s.state, s.status) as [string, string][]).map(([k, v]) => (
-                  <tr key={k}><td style={{ whiteSpace: "nowrap", fontWeight: 600 }}>{k}</td><td>{v}</td></tr>
+                  <tr key={k}><td className="whitespace-nowrap font-semibold">{k}</td><td>{v}</td></tr>
                 ))}
               </tbody>
             </table>

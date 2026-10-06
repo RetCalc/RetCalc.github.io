@@ -20,14 +20,12 @@ interface FieldProps {
   wrapId?: string;
   hidden?: boolean;
   className?: string;
-  /** Style on the field itself (a little more space above, say). */
-  wrapStyle?: CSSProperties;
   children: ReactNode;
 }
 
-export function Field({ id, label, labelId, wrapId, hidden, className, wrapStyle, children }: FieldProps) {
+export function Field({ id, label, labelId, wrapId, hidden, className, children }: FieldProps) {
   return (
-    <div className={className ? `field ${className}` : "field"} id={wrapId} hidden={hidden} style={wrapStyle}>
+    <div className={className ? `field ${className}` : "field"} id={wrapId} hidden={hidden}>
       <label htmlFor={id} id={labelId}>{label}</label>
       {children}
     </div>
@@ -75,20 +73,20 @@ export function NumberField({ id, label, unit, step, max, wrapId, hidden, classN
 }
 
 /** A dropdown, its options as children. */
-export function SelectField({ id, label, value, onChange, wrapId, hidden, className, wrapStyle, children, ...attrs }:
+export function SelectField({ id, label, value, onChange, wrapId, hidden, className, children, ...attrs }:
   Omit<FieldProps, "children"> & { value: string; onChange: (v: string) => void; children: ReactNode; "aria-label"?: string }) {
   return (
-    <Field id={id} label={label} wrapId={wrapId} hidden={hidden} className={className} wrapStyle={wrapStyle}>
+    <Field id={id} label={label} wrapId={wrapId} hidden={hidden} className={className}>
       <select id={id} {...attrs} value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
     </Field>
   );
 }
 
 /** A small bold heading between groups of fields ("Buying", "Renting"). */
-export function FieldHeading({ children, top }: { children: ReactNode; top?: string }) {
+export function FieldHeading({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className="field" style={top ? { marginTop: top } : undefined}>
-      <div className="hint" style={{ margin: "0", fontWeight: 600, color: "var(--text)" }}>{children}</div>
+    <div className={className ? `field ${className}` : "field"}>
+      <div className="hint m-0 font-semibold text-text">{children}</div>
     </div>
   );
 }

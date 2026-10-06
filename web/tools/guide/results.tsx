@@ -8,8 +8,8 @@
 import { debtDate } from "@/lib/engine/typed";
 import { opTacticsLine } from "@/tools/optimizer/words";
 import { fmtNum, money, pctStr } from "@/lib/format";
-import { Html } from "@/components/ui/Html";
-import { KV } from "@/components/ui/Readout";
+import { Html } from "@/components/common/Html";
+import { KV } from "@/components/common/Readout";
 import {
   FACTORS, coastNow, fixes, gross, mar, minSpend, months, need, ok, options, parts, pos, rating, saveMo, score, sim, stratName, tactics, target,
 } from "./calc";
@@ -17,13 +17,14 @@ import type { Answers } from "./store";
 import { firstOpen } from "./steps";
 import { tuneState } from "./tune";
 import { BackNote, Callout, H3, Q, useGuideView } from "./ui";
+import { Button } from "@/components/ui/button";
 
 /** The score as a ring, with the number in it. */
 export function Ring({ score: s, size }: { score: number | null; size?: number }) {
   const r = 52, c = 2 * Math.PI * r, f = s == null ? 0 : Math.max(0, Math.min(100, s)) / 100;
   return (
-    <svg className="gd-ring" viewBox="0 0 120 120" role="img" aria-label={s == null ? "No score yet" : "Score " + s + " out of 100"}
-      style={size ? { width: size + "px", height: size + "px" } : undefined}>
+    <svg className={size ? "gd-ring size-(--ring-size)" : "gd-ring"} viewBox="0 0 120 120" role="img" aria-label={s == null ? "No score yet" : "Score " + s + " out of 100"}
+      style={size ? { "--ring-size": size + "px" } as React.CSSProperties : undefined}>
       <circle className="trk" cx="60" cy="60" r={r} fill="none" strokeWidth="10" />
       <circle className="val" cx="60" cy="60" r={r} fill="none" strokeWidth="10" strokeLinecap="round" stroke={rating(s).color}
         strokeDasharray={c.toFixed(1)} strokeDashoffset={(c * (1 - f)).toFixed(1)} transform="rotate(-90 60 60)" />
@@ -120,7 +121,7 @@ export function Results() {
       <Q>Your retirement readiness</Q>
       <BackNote step="results" />
       <Callout cls="warn">There isn&apos;t enough to score yet. Answer the questions before this one and your score will appear here.</Callout>
-      <button type="button" className="btn primary" data-go={firstOpen(g)} onClick={() => G.go(firstOpen(g))}>Go to the next open question</button>
+      <Button size="lg" data-go={firstOpen(g)} onClick={() => G.go(firstOpen(g))}>Go to the next open question</Button>
     </>
   );
   const summary = R.score >= 85 ? "You're doing the big things right. Keep it going, and use the list below to fine-tune."
@@ -134,15 +135,15 @@ export function Results() {
     <>
       <Q>Your retirement readiness</Q>
       <BackNote step="results" />
-      <div className="gd-hero"><Ring score={R.score} size={132} /><div className="gd-hero-t"><div className="r" style={{ color: rt.color }}>{rt.label}</div>
-        <p>{summary}</p>{R.n < FACTORS.length ? <p className="hint" style={{ marginTop: "6px" }}>Based on {R.n} of {FACTORS.length} areas. Answer the rest to complete it.</p> : null}</div></div>
+      <div className="gd-hero"><Ring score={R.score} size={132} /><div className="gd-hero-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
+        <p>{summary}</p>{R.n < FACTORS.length ? <p className="hint mt-1.5">Based on {R.n} of {FACTORS.length} areas. Answer the rest to complete it.</p> : null}</div></div>
       {A.length ? (
         <>
           <H3>Your next moves, in order</H3>
           <ol className="gd-acts">{A.map((x) => (
             <li key={x.t} className="gd-act"><div><b>{x.t}</b><Html as="p" html={x.d} />
-              {x.trip ? <button type="button" className="btn mini" data-trip={x.trip} data-from="results" onClick={() => G.trip(x.trip!, "results")}>{x.btn}<i className="arw" aria-hidden="true"></i></button> : null}
-              {x.go ? <button type="button" className="btn mini" data-go={x.go} onClick={() => G.go(x.go!)}>{x.btn}</button> : null}</div></li>
+              {x.trip ? <Button variant="outline" size="sm" className="mt-2.5" data-trip={x.trip} data-from="results" onClick={() => G.trip(x.trip!, "results")}>{x.btn}<i className="arw" aria-hidden="true"></i></Button> : null}
+              {x.go ? <Button variant="outline" size="sm" className="mt-2.5" data-go={x.go} onClick={() => G.go(x.go!)}>{x.btn}</Button> : null}</div></li>
           ))}</ol>
         </>
       ) : null}
@@ -161,8 +162,8 @@ export function Results() {
             {minSpend(a) ? <KV k="Minimum spending" v={money(minSpend(a)) + " a year"} /> : null}
             <KV k="Lasted, spending a fixed amount" v={pctStr(S.success, 0) + " of historical retirements"} />
           </div>
-          <button type="button" className="btn mini" data-go="tune" style={{ margin: "-2px 8px 16px 0" }} onClick={() => G.go("tune")}>Adjust your plan</button>
-          <button type="button" className="btn mini" data-go="optimize" style={{ margin: "-2px 0 16px" }} onClick={() => G.go("optimize")}>{S.tactics ? "Your roadmap" : "Plan Optimizer"}</button>
+          <Button variant="outline" size="sm" className="-mt-0.5 mr-2 mb-4 ml-0" data-go="tune" onClick={() => G.go("tune")}>Adjust your plan</Button>
+          <Button variant="outline" size="sm" className="-mt-0.5 mx-0 mb-4" data-go="optimize" onClick={() => G.go("optimize")}>{S.tactics ? "Your roadmap" : "Plan Optimizer"}</Button>
         </>
       ) : null}
       {wins.length ? <><H3>What&apos;s going well</H3><div className="gd-wins">{wins.map((w) => <span key={w}>{w}</span>)}</div></> : null}
@@ -178,15 +179,15 @@ export function Results() {
         if (a.fiAge) kv.push([a.fiLabel || "FIRE age", a.fiAge]);
         return kv.length ? <><H3>Your numbers</H3><div className="gd-kvs">{kv.map(([k, v]) => <KV key={k} k={k} v={v} />)}</div></> : null;
       })()}
-      <div className="gd-share"><button type="button" className="btn" data-gd="print" onClick={() => G.act("print")}>Print or save as PDF</button>
-        <button type="button" className="btn" data-gd="share" onClick={() => G.act("share")}>Copy a link to this plan</button>
+      <div className="gd-share"><Button variant="outline" data-gd="print" onClick={() => G.act("print")}>Print or save as PDF</Button>
+        <Button variant="outline" data-gd="share" onClick={() => G.act("share")}>Copy a link to this plan</Button>
         <span className="hint">The link carries your answers, so share it only with people you&apos;d show your finances to.</span></div>
       <H3>Ready for more detail?</H3>
-      <p className="hint" style={{ margin: "-4px 0 10px" }}>Advanced, Stages and Portfolio Backtest open with your numbers and the guide panel beside them, walking you through what&apos;s there.</p>
+      <p className="hint -mt-1 mx-0 mb-2.5">Advanced, Stages and Portfolio Backtest open with your numbers and the guide panel beside them, walking you through what&apos;s there.</p>
       <div className="gd-more">
-        <button type="button" className="btn mini" data-trip="advanced" data-from="results" onClick={() => G.trip("advanced", "results")}>Advanced: taxes and account types<i className="arw" aria-hidden="true"></i></button>
-        <button type="button" className="btn mini" data-trip="stages" data-from="results" onClick={() => G.trip("stages", "results")}>Stages: plans that change over time<i className="arw" aria-hidden="true"></i></button>
-        <button type="button" className="btn mini" data-trip="backtest" data-from="results" onClick={() => G.trip("backtest", "results")}>Portfolio Backtest: what your mix has earned<i className="arw" aria-hidden="true"></i></button>
+        <Button variant="outline" size="sm" data-trip="advanced" data-from="results" onClick={() => G.trip("advanced", "results")}>Advanced: taxes and account types<i className="arw" aria-hidden="true"></i></Button>
+        <Button variant="outline" size="sm" data-trip="stages" data-from="results" onClick={() => G.trip("stages", "results")}>Stages: plans that change over time<i className="arw" aria-hidden="true"></i></Button>
+        <Button variant="outline" size="sm" data-trip="backtest" data-from="results" onClick={() => G.trip("backtest", "results")}>Portfolio Backtest: what your mix has earned<i className="arw" aria-hidden="true"></i></Button>
       </div>
       <p className="hint">Retirement spending here is what you live on after tax. Each year&apos;s federal and state income tax, Medicare&apos;s income surcharge and health insurance before 65 are worked out from where the money comes from, and paid on top.
         {" "}This score is a rule-of-thumb check, not financial advice, and it leaves out home equity.</p>
@@ -198,9 +199,9 @@ export function ResultsFoot() {
   const G = useGuideView();
   return (
     <>
-      <button type="button" className="btn" data-gd="prev" onClick={() => G.act("prev")}><i className="arw back" aria-hidden="true"></i>Back</button><span className="sp"></span>
-      <button type="button" className="btn" data-gd="restart" onClick={() => G.act("restart")}>Start over</button>
-      <button type="button" className="btn primary" data-go="about" onClick={() => G.go("about")}>Review my answers</button>
+      <Button variant="outline" size="lg" data-gd="prev" onClick={() => G.act("prev")}><i className="arw back" aria-hidden="true"></i>Back</Button><span className="sp"></span>
+      <Button variant="outline" size="lg" data-gd="restart" onClick={() => G.act("restart")}>Start over</Button>
+      <Button size="lg" className="max-sm:flex-auto" data-go="about" onClick={() => G.go("about")}>Review my answers</Button>
     </>
   );
 }

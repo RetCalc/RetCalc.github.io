@@ -7,6 +7,7 @@
    and glueTipdots() in 01-inputs.js. */
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 /* The explanations' text is fetched the first time a "?" is pointed at, not
    with every page: most visits never open one. */
@@ -137,8 +138,8 @@ export function Tooltips() {
 
   return (
     <>
-      <div className={`tipbox${box ? " on" : ""}`} id="tipbox" role="tooltip" ref={boxRef}
-        style={box ? { left: box.left, top: box.top, visibility: box.placed ? undefined : "hidden" } : undefined}>
+      <div className={box ? `tipbox on left-(--x) top-(--y)${box.placed ? "" : " invisible"}` : "tipbox"} id="tipbox" role="tooltip" ref={boxRef}
+        style={box ? { "--x": box.left + "px", "--y": box.top + "px" } as React.CSSProperties : undefined}>
         {box?.text}
       </div>
       {sheet ? (
@@ -147,9 +148,9 @@ export function Tooltips() {
           <div className="selmenu sheet tipsheet" role="dialog" aria-modal="true" aria-label={sheet.title}>
             <div className="selmenu-h">
               <span>{sheet.title}</span>
-              <button type="button" className="tipsheet-x" aria-label="Close" ref={closeBtn} onClick={() => setSheet(null)}>
+              <Button variant="outline" size="icon" className="flex-none" aria-label="Close" ref={closeBtn} onClick={() => setSheet(null)}>
                 <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg>
-              </button>
+              </Button>
             </div>
             <p className="tipsheet-b">{sheet.text}</p>
           </div>

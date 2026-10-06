@@ -4,7 +4,7 @@
    (CSS outranks an SVG presentation attribute, so no painter has to change.) */
 svg text[font-family*="monospace"]{font-family:var(--mono);font-variant-numeric:tabular-nums}
 /* The plan's gold line glows faintly on the dark theme, like the readouts. */
-html:not([data-theme="light"]) .chartwrap path[stroke="#e9b872"]{filter:drop-shadow(0 0 5px rgba(233,184,114,.4))}
+html:not([data-theme="light"]) .chartwrap path:is([stroke="#e9b872"],[stroke="var(--gold)"]){filter:drop-shadow(0 0 5px rgba(233,184,114,.4))}
 /* The painters write the dark theme's data hues as literal hex, which run
    pale on white. On the light theme those same four hues are swapped for the
    theme's deeper ones wherever they appear: chart strokes and fills, legend
@@ -97,10 +97,10 @@ html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#ffffff"]{stroke:var
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2.4' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
   transition:transform .22s cubic-bezier(.2,.7,.3,1)}
 .arw.back{margin-left:0;margin-right:8px;transform:scaleX(-1)}
-.backbtn .arw.back{margin-right:0}
+[data-slot="button"] > .arw{margin:0}
 @media (hover:hover){
-  .btn:hover > .arw:not(.back){transform:translateX(3px)}
-  .btn:hover > .arw.back,.backbtn:hover > .arw.back{transform:scaleX(-1) translateX(3px)}
+  :is(.btn,[data-slot="button"]):hover > .arw:not(.back){transform:translateX(3px)}
+  :is(.btn,[data-slot="button"]):hover > .arw.back{transform:scaleX(-1) translateX(3px)}
 }
 
 /* ---------- the logo on the light theme ----------

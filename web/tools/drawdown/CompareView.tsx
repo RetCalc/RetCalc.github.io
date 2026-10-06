@@ -11,14 +11,15 @@ import { Scatter } from "@/components/charts/Scatter";
 import { fmtAxisMoney } from "@/components/charts/scale";
 import { MON } from "@/components/charts/HistNotes";
 import { TipDot } from "@/components/shell/Tooltips";
-import { CsvButton } from "@/components/ui/CsvButton";
-import { Html } from "@/components/ui/Html";
+import { CsvButton } from "@/components/common/CsvButton";
+import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
 import { ddForTarget, ddLineAt, ddWindows, ddWithDial, runDrawdown, type DdShow, type DdShowItem, type DdTarget } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
 import { PICKER_IDS, type DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, targetWords, swatch } from "./text";
+import { Button } from "@/components/ui/button";
 
 const SPOT_COLORS = ["#e9b872", "#4fbf95", "#7d9fd6", "#e2795f", "#b49be0", "#7fd0d6"];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
@@ -110,10 +111,10 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
                       else delete next[x.id];
                       setCharted(next);
                     }} /></td>
-                  <td><button className="btn mini" type="button" data-showuse={x.id} onClick={() => v.apply(
+                  <td><Button variant="outline" size="sm" data-showuse={x.id} onClick={() => v.apply(
                     x.tuned ? dialFields(so, x.id, x.dial!, sT) : { strategy: x.id },
                     "Using " + DD_UI[x.id].name + (x.tuned ? ", " + dialText(x.id, x.dial, so) : ""))}>
-                    {x.id === so.strategy && x.tuned ? "Use setting" : "Use"}</button></td>
+                    {x.id === so.strategy && x.tuned ? "Use setting" : "Use"}</Button></td>
                 </tr>
               ))}
             </tbody>

@@ -12,21 +12,22 @@ import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
-import { KV } from "@/components/ui/Readout";
+import { KV } from "@/components/common/Readout";
 import { HC_AGE40_MULT, HC_STATE_PREMIUM_40, hcCalcACA, hcFPL, hcGrossPremium, ssTaxable } from "@/lib/engine/typed";
 import { dollarsField, money, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { HC_IRMAA, HC_MEDIGAP_HIGH, HC_MEDIGAP_LOW, HC_PARTD_BASE, HC_STATES, HEALTHCARE_DEF, irmaaTier, type HealthcareInputs } from "./model";
+import { Button } from "@/components/ui/button";
 
-const small = { color: "var(--dimmer)", fontSize: "11px" } as const;
-const lead = { fontSize: "13px", color: "var(--dim)", margin: "0 0 12px" } as const;
-const empty = { color: "var(--dim)", fontSize: "14px" } as const;
+const small = "text-dimmer text-fine";
+const lead = "text-note text-dim mt-0 mx-0 mb-3";
+const empty = "text-dim text-aside";
 const TIER_NAMES = ["Standard", "Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5"];
 const r = Math.round;
 
-const Sub = ({ children }: { children: React.ReactNode }) => <span style={small}>{children}</span>;
+const Sub = ({ children }: { children: React.ReactNode }) => <span className={small}>{children}</span>;
 const Label = ({ children, note }: { children: React.ReactNode; note?: React.ReactNode }) => (
-  <div className="hc-section-label">{children}{note ? <> <span style={{ fontWeight: 400, color: "var(--dimmer)" }}>{note}</span></> : null}</div>
+  <div className="hc-section-label">{children}{note ? <> <span className="font-normal text-dimmer">{note}</span></> : null}</div>
 );
 
 export function Healthcare() {
@@ -85,9 +86,9 @@ export function Healthcare() {
 
   let aca: React.ReactNode;
   if (bridgeYears <= 0) {
-    aca = <p style={empty}>Retiring at 65 or later: no ACA bridge needed. Medicare coverage begins at 65.</p>;
+    aca = <p className={empty}>Retiring at 65 or later: no ACA bridge needed. Medicare coverage begins at 65.</p>;
   } else if (acaMagi <= 0) {
-    aca = <p style={empty}>Enter your expected retirement MAGI to see your ACA premium estimate.</p>;
+    aca = <p className={empty}>Enter your expected retirement MAGI to see your ACA premium estimate.</p>;
   } else {
     const pctFPLStr = (pctFPL * 100).toFixed(0) + "%";
     const incNote = acaMagi > magi + 0.5 ? " (your MAGI plus " + money(acaMagi - magi) + " of untaxed Social Security, which the ACA counts)" : "";
@@ -103,19 +104,19 @@ export function Healthcare() {
         </div>
         {medicaid ? (
           <>
-            <p style={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. Premium tax credits only begin at 100% FPL, so ACA subsidies do not apply here.</p>
+            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household. Premium tax credits only begin at 100% FPL, so ACA subsidies do not apply here.</p>
             <div className="hc-insight">In the 40 states (plus DC) that expanded Medicaid under the ACA, an income this low typically qualifies you for Medicaid at little or no monthly premium. In the remaining non-expansion states there is a coverage gap: income is too high for Medicaid but too low for ACA subsidies, leaving limited options for subsidized coverage. Check your state&apos;s Medicaid eligibility rules.</div>
           </>
         ) : (
           <>
-            <p style={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household — this ratio drives your subsidy. {std.eligible
+            <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household — this ratio drives your subsidy. {std.eligible
               ? "The ACA sets what you're expected to contribute toward health coverage at " + (std.pct * 100).toFixed(2) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment."
               : "That income is above the 400% FPL cutoff, so there is no credit and you would pay the Silver plan's full list price. The enhanced credits that removed this cutoff (capping your share at 8.5% of income) expired after 2025."}</p>
             <Label>2026 ACA rules</Label>
             <KV k={<>Benchmark Silver plan {usingStateEst ? <Sub>({state} est., {coveredDesc}) — the reference used to price your credit</Sub> : <Sub>your entered premium</Sub>}</>} v={"$" + r(grossMonthly) + "/mo"} />
             {!std.eligible ? (
               <>
-                <KV k="Premium tax credit" v={<span style={{ color: "var(--dimmer)" }}>none (income above 400% FPL)</span>} />
+                <KV k="Premium tax credit" v={<span className="text-dimmer">none (income above 400% FPL)</span>} />
                 <div className="kv total"><span className="k">Your net premium</span><span className="v">${r(grossMonthly)}/mo</span></div>
               </>
             ) : (
@@ -166,7 +167,7 @@ export function Healthcare() {
   const people = joint ? 2 : 1;
   let medicare: React.ReactNode;
   if (magi <= 0) {
-    medicare = <p style={empty}>Enter your expected retirement MAGI to see Medicare cost estimates. Medicare uses your income from <b>two years prior</b> to determine surcharges.</p>;
+    medicare = <p className={empty}>Enter your expected retirement MAGI to see Medicare cost estimates. Medicare uses your income from <b>two years prior</b> to determine surcharges.</p>;
   } else {
     const prev = hasIrmaa ? HC_IRMAA[tier - 1] : null;
     const next = tier < HC_IRMAA.length - 1 ? HC_IRMAA[tier + 1] : null;
@@ -175,7 +176,7 @@ export function Healthcare() {
     const nextCost = next ? next[2] - partB + (next[3] - partDIrmaa) : 0;
     medicare = (
       <>
-        <p style={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Most enrollees add a <b>Medigap supplement</b> (like Plan G) which covers deductibles and copays that Parts A and B leave unpaid, capping your out-of-pocket exposure. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>
+        <p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Most enrollees add a <b>Medigap supplement</b> (like Plan G) which covers deductibles and copays that Parts A and B leave unpaid, capping your out-of-pocket exposure. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>
         <div className={"hc-irmaa-badge" + (hasIrmaa ? " hc-irmaa-hit" : "")}>IRMAA {TIER_NAMES[tier]}{hasIrmaa ? ": income surcharge applies" : ": standard premium"}</div>
         <KV k={<>Part B premium{hasIrmaa ? <> <Sub>includes IRMAA surcharge</Sub></> : null}</>} v={"$" + partB.toFixed(0) + "/mo per person"} />
         <KV k={<>Part D estimate <Sub>{partDIrmaa > 0 ? "~$" + HC_PARTD_BASE + " avg plan + $" + partDIrmaa.toFixed(0) + " IRMAA" : "avg plan, no IRMAA"}</Sub></>} v={"~$" + r(partD) + "/mo per person"} />
@@ -215,7 +216,7 @@ export function Healthcare() {
             </SelectField>
             <Field id="hcIncome" label={<Tipped text="Retirement MAGI" k="hcincome" />}>
               <Affixed prefix="$"><MoneyInput id="hcIncome" nonNeg value={s.income} onValueChange={set("income")} /></Affixed>
-              <button className="btn mini" type="button" id="hcCopyTax" style={{ marginTop: "6px" }}
+              <Button variant="outline" size="sm" className="mt-1.5" id="hcCopyTax"
                 onClick={() => {
                   const tax = toolInputs("tax", TAX_DEFAULTS);
                   if (tax.mode !== "retire") {
@@ -230,12 +231,12 @@ export function Healthcare() {
                   }
                   setState((c) => ({ ...c, income: dollarsField(agi), ss: R.ssGross > 0 ? dollarsField(R.ssGross) : "" }));
                   toast("Copied " + money(agi) + " MAGI from Income Tax");
-                }}>Copy from Income Tax</button>{" "}
-              <button className="btn mini" type="button" id="hcGoTax" style={{ marginTop: "4px" }}
+                }}>Copy from Income Tax</Button>{" "}
+              <Button variant="outline" size="sm" className="mt-1" id="hcGoTax"
                 onClick={() => {
                   setToolInputs("tax", { ...toolInputs("tax", TAX_DEFAULTS), mode: "retire" });
                   router.push("/incometax");
-                }}>Open Income Tax</button>
+                }}>Open Income Tax</Button>
             </Field>
             <MoneyField id="hcSS" label={<>Social Security received <span className="tipglue"><span className="opt">optional</span><TipDot k="hcss" /></span></>} unit="/yr" value={s.ss} onValueChange={set("ss")} />
             <Field id="hcManualPremium" label={<Tipped text="ACA benchmark premium" k="hcbenchmark" />}>

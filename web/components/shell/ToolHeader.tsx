@@ -9,15 +9,16 @@ import { ToolIconTile } from "@/components/tools/ToolIcon";
 import { setNavDir } from "@/lib/nav-motion";
 import type { ToolSub } from "@/lib/tools";
 import { HelpButton } from "@/tools/help/ToolHelp";
+import { Button } from "@/components/ui/button";
 
 export function ToolHeader({ sub, name, desc }: { sub: ToolSub; name: string; desc: string }) {
   const router = useRouter();
   return (
     <div className="toolback" id="toolBack">
-      <button type="button" className="backbtn" id="btnToolBack" onClick={() => { setNavDir("back"); router.push("/tools"); }}>
+      <Button variant="ghost" size="sm" className="-ml-2 flex-none" id="btnToolBack" onClick={() => { setNavDir("back"); router.push("/tools"); }}>
         <i className="arw back" aria-hidden="true"></i>
         All tools
-      </button>
+      </Button>
       <div className="toolhead">
         <ToolIconTile sub={sub} className="toolcard-icon toolhead-icon" id="toolHeadIcon" />
         <div className="toolhead-t">
