@@ -185,13 +185,15 @@ export function Basic() {
       </div>
 
       <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading">
-        <div className="px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5" data-readout>
-          <div data-pair>
+        {/* From 1100px the top is two zones: the value on the left, the two
+            incomes stacked on the right behind a hairline. Narrower, they stack. */}
+        <div className="px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5 wide:flex wide:items-start wide:gap-8" data-readout>
+          <div className="wide:min-w-0 wide:flex-1" data-pair>
             <div className="mb-2.5 text-label text-muted-foreground" data-k>Value at retirement</div>
             <BigValue className="leading-none font-medium tracking-tight whitespace-nowrap text-primary tabular-nums" id="qFV" text={fv} sized={!!R} scale={narrow ? 1.5 : 2} />
             <div className="mt-2.5 min-h-4 text-label text-muted-foreground" id="qFVnote">{R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : ""}</div>
           </div>
-          <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4">
+          <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4 wide:mt-0 wide:shrink-0 wide:flex-col wide:flex-nowrap wide:gap-y-3.5 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8">
             <div data-pair>
               <span className="block text-label text-muted-foreground" data-k>Income, per month</span>
               <BigValue className="text-2xl leading-tight font-medium tabular-nums" id="qMonth" text={perMonth} sized={false} />

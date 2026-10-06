@@ -97,6 +97,8 @@
 
 /* Sizes the old markup set inline that Tailwind's scale doesn't have. */
 @theme {
+  /* Where the homepage's reading has room for its two zones side by side. */
+  --breakpoint-wide: 1100px;
   --text-fine: 11px;
   /* DESIGN.md's Label step: field hints, readout labels, legend entries. */
   --text-label: 11.5px;
