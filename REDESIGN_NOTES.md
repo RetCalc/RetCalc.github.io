@@ -29,3 +29,32 @@ keeps the old theme until it is reloaded or another page is opened.
   in the layout. It changes the toggle's behavior, so it's left for a
   separate, deliberate change: the brief says to keep the toggle and its
   behavior as they are.
+
+### Portfolio Backtest: invisible count bug, fix and re-record in the math audit
+
+Found 2026-10-06. On the yearly rebalancing setting `backtest()` reports
+`rebalances: 0`. That setting takes a shortcut (one blended return a year)
+and only the other settings count; run as "every 1 year" or with a 0-point
+drift band, the returns match to 2e-16 and the count is 99 over 1926-2025.
+
+- Where: `backtest()` in `web/lib/engine/math.js`, the `rb === "year"` branch.
+- Invisible: the screen shows the count only on the drift-band setting
+  (`rebalNote()` in `web/tools/backtest/Backtest.tsx` returns nothing for
+  yearly), and nothing else calls `backtest()`.
+- Fix: count one rebalance per year after the first, matching the
+  "rebalances after the start" convention in `tests/math.test.js`. It
+  changes the numbers baseline for "Portfolio Backtest: defaults: 80/20,
+  rebalanced yearly, 1926-2025" (rebalances 0 => 99), so re-record it with
+  the fix. Engine change: left for the math audit, not the redesign.
+
+### Debt Payoff: a plan that itself never clears still shows its runaway interest
+
+Found 2026-10-06, while fixing the minimums-only case (which is fixed). When
+the chosen plan stalls too (every debt underwater, nothing rolling over),
+the headline's Total interest and "paid in all", the table's interest cells
+and the printed summary still show the 60-year capped figure (trillions for
+a $5,000 loan at 36% with a $100 minimum). Same cause as the minimums-only
+case: `debtRun()` in `web/lib/engine/math.js` reports accrued, unpaid
+interest for a stalled run. Same kind of fix, in `web/tools/debt/Debt.tsx`
+and `share.tsx`: show "Keeps growing" or a dash instead. It changes numbers
+shown, so it needs an explicit decision.
