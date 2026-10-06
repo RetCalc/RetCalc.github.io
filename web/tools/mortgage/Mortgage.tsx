@@ -86,7 +86,7 @@ export function Mortgage() {
   if (base) {
     extra = (
       <>
-        <KV k="Payoff" v={when(R.payoffMonth) + (sooner > 0 ? ` (${dur(sooner)} sooner)` : "")} cls="pos" />
+        <KV k="Payoff" v={when(R.payoffMonth) + (sooner > 0 ? ` (${dur(sooner)} sooner)` : "")} />
         <KV k="Interest saved" v={money(interestSaved)} cls="pos" />
         {R.recastPI != null ? <KV k="Payment after the recast" v={money(R.recastPI) + "/mo"} /> : null}
       </>
@@ -226,7 +226,7 @@ export function Mortgage() {
               <thead><tr><th>Year</th><th>Interest</th><th>Principal</th><th>Total paid</th><th>Balance</th></tr></thead>
               <tbody>
                 {R.years.map((y) => (
-                  <tr key={y.year}><td>{y.year}</td><td>{money(y.interest)}</td><td className="pos">{money(y.principal)}</td><td>{money(y.paid)}</td><td>{money(y.balance)}</td></tr>
+                  <tr key={y.year}><td>{y.year}</td><td>{money(y.interest)}</td><td>{money(y.principal)}</td><td>{money(y.paid)}</td><td>{money(y.balance)}</td></tr>
                 ))}
               </tbody>
             </table>

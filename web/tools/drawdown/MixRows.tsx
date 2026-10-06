@@ -25,7 +25,7 @@ export function MixRows({ f, up, totId }: { f: MixForm; up: (k: keyof MixForm) =
         <div className="ddmixrow" key={k}><div><b>{name}</b><small>{desc}</small></div>
           <Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={5} max={100} data-mix={k} aria-label={name} value={f[k]} onValueChange={up(k)} /></Affixed></div>
       ))}
-      <div className="ddmixtot" id={totId}>Total: <b className={ok ? "pos" : "neg"}>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
+      <div className="ddmixtot" id={totId}>Total: <b>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
     </>
   );
 }

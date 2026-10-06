@@ -191,8 +191,8 @@ export function Backtest() {
             <div className="grid2">
               <div>
                 <KV k="Average, per year" id="btInfl" v={pctStr(B.inflCagr, 2)} />
-                <KV k="Highest year" cls="neg" id="btInflHigh" v={pctStr(B.inflHigh.infl, 2) + " in " + B.inflHigh.year} />
-                <KV k="Lowest year" cls="pos" id="btInflLow" v={pctStr(B.inflLow.infl, 2) + " in " + B.inflLow.year} />
+                <KV k="Highest year" id="btInflHigh" v={pctStr(B.inflHigh.infl, 2) + " in " + B.inflHigh.year} />
+                <KV k="Lowest year" id="btInflLow" v={pctStr(B.inflLow.infl, 2) + " in " + B.inflLow.year} />
               </div>
               <div>
                 <KV k="Falling-price years" id="btDefl" v={B.deflationYears + " of " + B.years} />

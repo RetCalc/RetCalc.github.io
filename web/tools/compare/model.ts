@@ -110,13 +110,13 @@ export function cmpFmt(n: number | null, kind: Kind): string {
   return money(n);
 }
 
-export function cmpDelta(a: number | null, b: number | null, kind: Kind): { t: string; cls: string } | null {
+export function cmpDelta(a: number | null, b: number | null, kind: Kind): { t: string } | null {
   if (a == null || b == null || !isFinite(a) || !isFinite(b)) return null;
   const d = b - a;
-  if (Math.abs(d) < 1e-9) return { t: "—", cls: "" };
+  if (Math.abs(d) < 1e-9) return { t: "—" };
   const body = kind === "pct" ? pctStr(Math.abs(d), 2) : kind === "years" ? fmtYears(Math.abs(d))
     : kind === "int" ? fmtNum(Math.abs(d)) : money(Math.abs(d), kind === "money2" ? 2 : 0);
-  return { t: (d > 0 ? "+" : "−") + body, cls: d > 0 ? "pos" : "neg" };
+  return { t: (d > 0 ? "+" : "−") + body };
 }
 
 /** The slots as Compare opens: every one on the calculator it was opened

@@ -84,7 +84,7 @@ export function Debt() {
     cmpRows = ([["Avalanche, highest rate first", av], ["Snowball, smallest balance first", sn], ["Minimums only, no extra", mn]] as const).map(([label, R]) => (
       <tr key={label}>
         <td>{label}</td><td>{R.stalled ? "Never" : debtDate(R.monthsTotal)}</td><td>{R.stalled ? DASH : debtDur(R.monthsTotal)}</td>
-        <td className={R === av && av.totalInterest <= sn.totalInterest ? "pos" : undefined}>{R === mn && mn.stalled ? "Keeps growing" : money(R.totalInterest)}</td>
+        <td>{R === mn && mn.stalled ? "Keeps growing" : money(R.totalInterest)}</td>
         <td>{R.firstCleared ? debtDur(R.firstCleared) : DASH}</td>
       </tr>
     ));

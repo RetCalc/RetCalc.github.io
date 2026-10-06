@@ -124,7 +124,7 @@ function CompareSaved() {
                   })}
                   {live.slice(1).map((x) => {
                     const d = cmpDelta(valOf(live[0], k), valOf(x, k), kinds[k]);
-                    return d ? <td key={"d" + x.i} className={d.cls || undefined}>{d.t}</td> : <td key={"d" + x.i} className="cmpna">{"—"}</td>;
+                    return d ? <td key={"d" + x.i}>{d.t}</td> : <td key={"d" + x.i} className="cmpna">{"—"}</td>;
                   })}
                 </tr>
               ))}

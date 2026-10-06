@@ -359,7 +359,7 @@ function dropTyped(st: StageInputs): StageInputs {
 function StageChange({ F, contrib, mf }: { F: ReturnType<typeof finalStageSolve>; contrib: number; mf: number }) {
   if (!F) return <KV k="Change from current" id="tChange" v="" />;
   const delta = (F.perPeriod - contrib) / mf;
-  return <KV k="Change from current" id="tChange" cls={delta > 0 ? "neg" : "pos"} v={(delta >= 0 ? "+" : "") + money(delta, 2)} />;
+  return <KV k="Change from current" id="tChange" v={(delta >= 0 ? "+" : "") + money(delta, 2)} />;
 }
 
 /* The match stage 1 earns in its first year, restated biweekly, beside the

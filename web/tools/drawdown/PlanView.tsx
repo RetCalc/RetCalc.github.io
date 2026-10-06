@@ -405,8 +405,8 @@ function SpendStats({ run }: { run: DdRun | null }) {
   return (
     <div className="grid2">
       <div>
-        <KV k="Highest year" cls="pos" id="ddSpendHigh" v={f ? money(f.high) : ""} />
-        <KV k="Lowest year" cls="neg" id="ddSpendLow" v={f ? money(f.low) : ""} />
+        <KV k="Highest year" id="ddSpendHigh" v={f ? money(f.high) : ""} />
+        <KV k="Lowest year" id="ddSpendLow" v={f ? money(f.low) : ""} />
         <KV k="Median year" id="ddSpendMed" v={f ? money(f.med) : ""} />
       </div>
       <div>
@@ -450,8 +450,8 @@ function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
   return (
     <div className="grid2">
       <div>
-        <KV k="Best single year" cls="pos" id="ddAggHigh" v={f ? money(f.high) : ""} />
-        <KV k="Worst single year" cls="neg" id="ddAggLow" v={f ? money(f.low) : ""} />
+        <KV k="Best single year" id="ddAggHigh" v={f ? money(f.high) : ""} />
+        <KV k="Worst single year" id="ddAggLow" v={f ? money(f.low) : ""} />
         <KV k="Median single year" id="ddAggMed" v={f ? money(f.med) : ""} />
         <KV k="Average single year" id="ddAggAvg" v={f ? money(f.avg) : ""} />
       </div>
@@ -459,7 +459,7 @@ function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
         <KV k="Median total spent over retirement" id="ddAggTotalMed" v={f ? money(f.totalMed) : ""} />
         <KV k="Total spent, lowest to highest scenario" id="ddAggTotalRange" v={f ? (Math.round(f.totalMax - f.totalMin) < 1 ? money(f.totalMin) + " in every one" : money(f.totalMin) + " – " + money(f.totalMax)) : ""} />
         <KV k="Years spending was cut, on average" id="ddAggCutsAvg" v={f ? f.cutsAvg.toFixed(1) + " of " + o.years + " years" : ""} />
-        <KV k="Biggest single-year cut, ever" cls="neg" id="ddAggMaxCut" v={f ? (f.maxCut > 0 ? "−" + money(f.maxCut) + " in one year" : "None") : ""} />
+        <KV k="Biggest single-year cut, ever" id="ddAggMaxCut" v={f ? (f.maxCut > 0 ? "−" + money(f.maxCut) + " in one year" : "None") : ""} />
       </div>
     </div>
   );

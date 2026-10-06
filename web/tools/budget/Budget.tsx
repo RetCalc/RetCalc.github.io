@@ -203,7 +203,7 @@ export function Budget() {
         <CardContent>
           <div className="kv total text-body"><span className="k">Total spending, per year</span><span className="v" id="bgTotYr">{money(spentYr)}</span></div>
           <div className="kv total text-body"><span className="k">Total spending, per month</span><span className="v" id="bgTotMo">{money(spentYr / 12)}</span></div>
-          <div className="kv total text-body" id="bgSaveRow" hidden={!(savedYr > 0)}><span className="k">Total saving, per month</span><span className="v pos" id="bgSaveMo">{savedYr > 0 ? money(savedYr / 12) : ""}</span></div>
+          <div className="kv total text-body" id="bgSaveRow" hidden={!(savedYr > 0)}><span className="k">Total saving, per month</span><span className="v" id="bgSaveMo">{savedYr > 0 ? money(savedYr / 12) : ""}</span></div>
           <div className="kv total text-body-lg"><span className="k">Left over, per year</span><span className={sign} id="bgLeftYr">{money(leftYr)}</span></div>
           <div className="kv total text-body-lg"><span className="k">Left over, per month</span><span className={sign} id="bgLeftMo">{money(leftYr / 12)}</span></div>
         </CardContent>

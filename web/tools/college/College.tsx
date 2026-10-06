@@ -63,7 +63,7 @@ export function College() {
       );
       chart = { pts: [{ year: 0, base: inp.saved, hi: P.pvToday, lo: 0 }, ...P.rows.map((r) => ({ year: r.year, base: r.balance, hi: r.needed, lo: 0 }))], maxX: P.rows.length };
       rows = P.rows.map((r) => (
-        <tr key={r.year}><td>{fmtNum(r.year)}</td><td>{money(r.balance)}</td><td className="pos">{money(r.contribs)}</td><td className="pos">{money(r.growth)}</td><td>{r.paid > 0 ? money(r.paid) : DASH}</td></tr>
+        <tr key={r.year}><td>{fmtNum(r.year)}</td><td>{money(r.balance)}</td><td>{money(r.contribs)}</td><td className="pos">{money(r.growth)}</td><td>{r.paid > 0 ? money(r.paid) : DASH}</td></tr>
       ));
     }
   } else if (inp.annualCost > 0 && inp.yearsUntil > 0) {
@@ -84,7 +84,7 @@ export function College() {
     };
     chart = { pts: [{ year: 0, base: inp.saved, hi: costIfStartingAt(0), lo: 0 }, ...R.rows.map((r) => ({ year: r.year, base: r.balance, hi: costIfStartingAt(r.year), lo: 0 }))], maxX: inp.yearsUntil };
     rows = R.rows.map((r) => (
-      <tr key={r.year}><td>{fmtNum(r.year)}</td><td>{money(r.balance)}</td><td className="pos">{money(r.contribs)}</td><td className="pos">{money(r.growth)}</td><td>{money(r.projCost)}</td></tr>
+      <tr key={r.year}><td>{fmtNum(r.year)}</td><td>{money(r.balance)}</td><td>{money(r.contribs)}</td><td className="pos">{money(r.growth)}</td><td>{money(r.projCost)}</td></tr>
     ));
   }
 

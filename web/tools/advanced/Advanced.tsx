@@ -367,7 +367,7 @@ export function Advanced() {
               <BigValue className="v gold" id="sPerPeriod" text={money(S.perPeriod, 2)} />
               <div className="note" id="sPerPeriodNote">{"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}</div>
               <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
-              <KV k="Change from current" id="sChange" cls={S.change > 0 ? "neg" : "pos"} v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
+              <KV k="Change from current" id="sChange" v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
               <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" onClick={applyContribution}>Use this contribution</Button>
             </div>
             <div className="solveopt">
@@ -438,7 +438,7 @@ function YearsDiff({ Y, years }: { Y: { reached: boolean; years: number }; years
   if (!Y.reached) return <KV k="Difference" id="sYearsDiff" cls="" v={DASH} />;
   const d = Y.years - years;
   return (
-    <KV k="Difference" id="sYearsDiff" cls={d > 0.005 ? "neg" : d < -0.005 ? "pos" : ""}
+    <KV k="Difference" id="sYearsDiff"
       v={Math.abs(d) < 0.005 ? "on track" : (d > 0 ? "+" : "−") + fmtYears(Math.abs(d))} />
   );
 }
