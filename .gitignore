@@ -1,3 +1,6 @@
 .build-stamp
 .DS_Store
 redesign-baseline/
+# Impeccable engine binary: per platform, downloaded and checksum-verified by
+# .claude/skills/impeccable/scripts/impeccable on first run
+.claude/skills/impeccable/scripts/bin/
