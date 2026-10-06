@@ -45,6 +45,7 @@ nav[role=tablist] button::after{
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
   opacity:0;transform:translateX(calc(-50% - 16px));
   transition:transform .32s cubic-bezier(.2,.7,.3,1),opacity .2s ease}
+@media (pointer:coarse){ nav[role=tablist] button{min-height:44px} }
 nav[role=tablist] button:hover{color:var(--text)}
 nav[role=tablist] button:not([aria-selected="true"]):hover::after{
   opacity:.3;transform:translateX(-50%);background:var(--dimmer)}

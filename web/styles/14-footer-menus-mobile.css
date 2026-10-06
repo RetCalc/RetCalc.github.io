@@ -12,6 +12,11 @@
 .sitefoot-link{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}
 .sitefoot-link:hover{text-decoration-color:currentColor}
 .sitefoot-link:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:3px}
+/* Under a finger the email link gets a 44px-tall hit area around its words. */
+@media (pointer:coarse){
+  .sitefoot-link{position:relative}
+  .sitefoot-link::after{content:"";position:absolute;left:0;right:0;top:-14px;bottom:-14px}
+}
 .sitefoot-nav{display:flex;flex-wrap:wrap;gap:2px 20px;padding-top:2px}
 @media (max-width:900px){ .sitefoot-in{grid-template-columns:minmax(0,1fr);gap:16px} }
 /* clear of the fixed bottom bar in the installed app, and of the guide's coach */

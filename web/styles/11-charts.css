@@ -223,7 +223,7 @@ html.pwa .popup-overlay{
      area on touch, since 16px is well under a comfortable touch target. */
   .tipdot{position:relative;width:17px;height:17px}
   .tipdot::after{content:"";position:absolute;top:50%;left:50%;
-    width:40px;height:40px;transform:translate(-50%,-50%)}
+    width:44px;height:44px;transform:translate(-50%,-50%)}
   /* Everything below was under 40px on a touch screen. These grow for real
      rather than overflowing an invisible pad, which would have sat on top of
      the field beside them and stolen taps meant for it. */
