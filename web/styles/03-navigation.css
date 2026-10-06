@@ -12,13 +12,12 @@
    stuck in a spot the translucent status bar paints over. env() resolves to
    0 in a normal tab, so this offset is a no-op there and only does anything
    once the page is actually running full-screen. */
+/* See-through on the page until it's pinned; pinned, it's Surface with the
+   Float shadow (DESIGN.md, Navigation). */
 .navbar{position:sticky;top:var(--sb-clear);z-index:30;
-  background:var(--bg);border-bottom:1px solid var(--line);
-  box-shadow:0 12px 30px -24px #000;transition:box-shadow .12s ease}
-.navbar.stuck{box-shadow:0 14px 30px -22px rgba(0,0,0,.9)}
-/* Until it's pinned the rail is see-through, so the glow behind the logo
-   fades out across it rather than stopping at the header's bottom edge. */
-.navbar:not(.stuck){background:transparent}
+  background:transparent;border-bottom:1px solid var(--line);
+  transition:box-shadow .12s ease,background-color .12s ease}
+.navbar.stuck{background:var(--panel);box-shadow:var(--ds-float)}
 
 /* Once the rail is pinned below the status-bar clearance zone, the strip
    above it (screen top down to --sb-clear) is no longer covered by the
@@ -27,7 +26,7 @@
    pointer-events:none from the start, not toggled with opacity, since that
    was exactly the earlier bug (an invisible element that still ate taps). */
 .sbcover{position:fixed;top:0;left:0;right:0;height:var(--sb-clear);
-  background:var(--bg);z-index:29;pointer-events:none;
+  background:var(--panel);z-index:29;pointer-events:none;
   opacity:0;transition:opacity .12s ease}
 .sbcover.stuck{opacity:1}
 nav[role=tablist]{max-width:1330px;margin:0 auto;
@@ -69,8 +68,8 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
 .calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
 .navbar.menu-open{z-index:45}
 .calcmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:2;width:310px;
-  padding:6px;background:var(--pop);border:1px solid var(--line);border-radius:var(--r-card);
-  box-shadow:var(--lift-2);transform-origin:top left;
+  padding:6px;background:var(--ds-raised);border:1px solid var(--line);border-radius:var(--r-card);
+  box-shadow:var(--ds-float);transform-origin:top left;
   animation:calcmenu-in .16s cubic-bezier(.2,.7,.3,1)}
 .calcmenu[hidden]{display:none}
 @media (hover:hover) and (pointer:fine){
@@ -103,7 +102,7 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
   .cm-desc{font-size:13px}
   /* above the guide's coach panel (30), below the open navbar (45) */
   .calcscrim:not([hidden]){display:block;position:fixed;inset:0;z-index:35;
-    background:rgba(3,5,12,.5);animation:calcscrim-in .16s ease}
+    background:var(--ds-scrim);animation:calcscrim-in .16s ease}
   @keyframes calcscrim-in{from{opacity:0}to{opacity:1}}
 }
 @media (prefers-reduced-motion:reduce){
