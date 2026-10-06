@@ -111,10 +111,6 @@
 
 /* Colors that stay the same in both themes. */
 @theme static {
-  /* The logo's own colors (components/shell/Brandmark.tsx), on either theme. */
-  --color-dark-gold: #e9b872;
-  --color-dark-jade: #4fbf95;
-  --color-dark-steel: #7d9fd6;
   /* The logo on a printed summary, in deeper hues that hold up on paper. */
   --color-print-steel: #5a81c3;
   --color-print-jade: #2a9e73;

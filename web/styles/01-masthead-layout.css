@@ -1,28 +1,15 @@
-/* ---------- masthead: the bezel ---------- */
-/* It fades to clear rather than to the page colour, so it meets the tab rail
-   (see-through until pinned) over the same overhead wash, with no seam. */
-header{
-  background:linear-gradient(180deg,var(--panel) 0%,transparent 100%);
-  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
-}
-html[data-theme="light"] header{
-  background:linear-gradient(180deg,#ffffff 0%,rgba(255,255,255,0) 100%);
-}
+/* ---------- masthead ---------- */
+/* Flat on the page's Ground: no wash, no glow behind the logo, no shadow
+   under it. The tab rail below is see-through until pinned, so the two read
+   as one band. */
+header{background:none}
 .masthead{max-width:1330px;margin:0 auto;padding:24px var(--gr) 20px var(--gl);
   display:flex;gap:24px;align-items:center;flex-wrap:wrap}
-/* The bow stands on its own, large, in a soft jade glow, beside the name and
-   the line from the link cards. */
 .brand{display:flex;align-items:center;gap:15px;position:relative}
-.brand::before{content:"";position:absolute;left:-90px;top:50%;width:420px;height:220px;
-  transform:translateY(-50%);pointer-events:none;z-index:-1;
-  background:radial-gradient(closest-side,rgba(79,191,149,.16),transparent)}
-html[data-theme="light"] .brand::before{background:radial-gradient(closest-side,rgba(22,133,92,.10),transparent)}
-.brandmark{width:60px;height:60px;flex:none;display:block;overflow:visible;
-  filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
-html[data-theme="light"] .brandmark{filter:none}
+.brandmark{width:60px;height:60px;flex:none;display:block;overflow:visible}
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .wordmark .brandname{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.05}
-.tagline{font-size:13.5px;color:var(--dim);margin-top:5px;letter-spacing:-.005em}
+.tagline{font-size:13.5px;color:var(--ds-muted);margin-top:5px;letter-spacing:-.005em}
 /* Scenario picker, Save, Share and Reset join into one toolbar; household
    and theme keep their own keys beside it. */
 .scenariobar{margin-left:auto;display:flex;gap:8px;align-items:center}
