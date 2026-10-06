@@ -100,10 +100,17 @@ function recolor(node: Element, pal: Palette) {
 }
 /** The chart's markup, recolored for the page or card it's going on; ""
     when the page hasn't drawn it. */
+/* Marks drawn only for the screen (the homepage's milestone ticks) stay out
+   of the printed summary and the image card, which keep their own layout. */
+function stripScreenOnly(el: Element) {
+  el.querySelectorAll("[data-screen-only]").forEach((n) => n.remove());
+}
+
 export function copyChart(sel: string, pal: Palette = PRINT_PALETTE): string {
   const src = document.querySelector(sel);
   if (!src || !src.childNodes.length) return "";
   const clone = src.cloneNode(true) as Element;
+  stripScreenOnly(clone);
   recolor(clone, pal);
   clone.removeAttribute("style");
   clone.removeAttribute("class");
@@ -120,6 +127,7 @@ function embedChart(sel: string, w: number, h: number): string {
   if (!src || !src.childNodes.length) return "";
   const vb = (src.getAttribute("viewBox") || "0 0 900 340").split(/\s+/).map(Number);
   const clone = src.cloneNode(true) as Element;
+  stripScreenOnly(clone);
   recolor(clone, CARD_PALETTE);
   return '<g transform="scale(' + w / (vb[2] || 900) + "," + h / (vb[3] || 340) + ')">' + clone.innerHTML + "</g>";
 }

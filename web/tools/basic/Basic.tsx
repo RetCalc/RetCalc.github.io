@@ -68,7 +68,7 @@ function MilestoneMarks({ g, marks }: { g: ChartGeometry; marks: ReturnType<type
     return acc;
   }, []);
   return (
-    <g aria-hidden="true">
+    <g aria-hidden="true" data-screen-only>
       {placed.map((m) => (
         <g key={m.key}>
           <line x1={m.x} x2={m.x} y1={m.y - 6} y2={m.y + 6} stroke="var(--ds-text)" strokeOpacity={0.7} strokeWidth={g.narrow ? 1.8 : 1.2} />
