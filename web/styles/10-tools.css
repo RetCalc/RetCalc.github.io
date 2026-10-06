@@ -55,7 +55,7 @@
   padding:0 8px;cursor:pointer;flex:none;line-height:1;box-shadow:none;
   transition:color .14s ease}
 .signflip:hover{color:var(--text)}
-.signflip.on{color:var(--coral)}
+.signflip.on{color:var(--ds-loss)}
 
 /* ---------- optional toggles ---------- */
 .adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
@@ -282,7 +282,7 @@ tr.br-off .br-name{color:var(--dim)}
 .ddchartbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:4px 18px 0;font-size:12.5px;color:var(--dim)}
 #ddShowTable{min-width:940px}
 #ddShowTable small{display:block;font-size:10.5px;color:var(--dimmer);font-family:var(--sans);margin-top:2px}
-#ddShowTable small.neg{color:var(--coral)}
+#ddShowTable small.neg{color:var(--ds-loss)}
 #ddShowTable td:first-child,#ddShowTable td.ddset{font-family:var(--sans);white-space:nowrap}
 #ddShowTable td.ddset{text-align:left}
 #ddShowTable tr.ddcur > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}

@@ -22,19 +22,19 @@ import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
 import { useShareKit } from "@/components/shell/share";
 import { taxShare } from "./share";
-import { themed } from "@/lib/hues";
+import { SERIES } from "@/lib/hues";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const TAX_COLORS = { fed: "#e2795f", state: "#e9b872", fica: "#7d9fd6", net: "#4fbf95" };
-const BKT_COLORS = ["#e2795f", "#4fbf95", "#7d9fd6", "#e9b872", "#c98fb8", "#a98fd6"]; // trad, roth, brok, ss, pension, other
+const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal };
+const BKT_COLORS: string[] = [SERIES.rose, SERIES.teal, SERIES.sky, SERIES.lavender, SERIES.gray, SERIES.guide]; // trad, roth, brok, ss, pension, other
 
 interface Part { v: number; c: string; label: string }
 interface Bar { label: string; v: number; share: number; c: string }
 
 /* One row of the tax breakdown table. */
 const TxRow = ({ k, v, eff, c }: { k: string; v: number; eff: number; c: string }) => (
-  <tr><td>{k}</td><td>{money(v)}</td><td>{pctStr(eff, 2)}</td><td><span className="text-(color:--ink)" style={{ "--ink": themed(c) } as React.CSSProperties}>{"■"}</span> {pctStr(eff, 1)}</td></tr>
+  <tr><td>{k}</td><td>{money(v)}</td><td>{pctStr(eff, 2)}</td><td><span className="text-(color:--ink)" style={{ "--ink": c } as React.CSSProperties}>{"■"}</span> {pctStr(eff, 1)}</td></tr>
 );
 
 /* The donut: each slice dims the others on hover, and its label and amount
@@ -137,10 +137,10 @@ export function Tax() {
       { label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state },
       { label: "FICA (Social Security + Medicare)", v: R.fica, share: R.effFica, c: TAX_COLORS.fica },
     ];
-    if (R.pre > 0) bars.push({ label: "Pre-tax savings", v: R.pre, share: share(R.pre), c: "#8ba0ac" });
+    if (R.pre > 0) bars.push({ label: "Pre-tax savings", v: R.pre, share: share(R.pre), c: SERIES.guide });
     parts = [{ v: R.net, c: TAX_COLORS.net, label: "Take-home pay" }, { v: R.federal, c: TAX_COLORS.fed, label: "Federal tax" },
       { v: R.state, c: TAX_COLORS.state, label: "State tax" }, { v: R.fica, c: TAX_COLORS.fica, label: "FICA" }];
-    if (R.pre > 0) parts.push({ v: R.pre, c: "#8ba0ac", label: "Pre-tax savings" });
+    if (R.pre > 0) parts.push({ v: R.pre, c: SERIES.guide, label: "Pre-tax savings" });
     // The Social Security wage cap applies per earner, so a joint return
     // shows a line for each rather than one shared cap.
     rows = (
@@ -176,18 +176,18 @@ export function Tax() {
       { label: "Federal ordinary income tax", v: R.fedOrdinary, share: share(R.fedOrdinary), c: TAX_COLORS.fed },
       { label: "Federal long-term capital gain tax", v: R.ltcg, share: share(R.ltcg), c: LTCG_COLORS[1] },
     ];
-    if (R.niit > 0) bars.push({ label: "Net investment income tax (3.8%)", v: R.niit, share: share(R.niit), c: "#a98fd6" });
+    if (R.niit > 0) bars.push({ label: "Net investment income tax (3.8%)", v: R.niit, share: share(R.niit), c: SERIES.gray });
     bars.push({ label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state });
-    if (R.pre > 0) bars.push({ label: "Pre-tax deductions", v: R.pre, share: share(R.pre), c: "#8ba0ac" });
+    if (R.pre > 0) bars.push({ label: "Pre-tax deductions", v: R.pre, share: share(R.pre), c: SERIES.guide });
     parts = [{ v: R.net, c: TAX_COLORS.net, label: "Income after tax" }, { v: R.fedOrdinary, c: TAX_COLORS.fed, label: "Federal ordinary tax" },
-      { v: R.ltcg, c: LTCG_COLORS[1], label: "Capital gain tax" }, { v: R.niit, c: "#a98fd6", label: "Net investment tax" },
+      { v: R.ltcg, c: LTCG_COLORS[1], label: "Capital gain tax" }, { v: R.niit, c: SERIES.gray, label: "Net investment tax" },
       { v: R.state, c: TAX_COLORS.state, label: "State tax" }];
-    if (R.pre > 0) parts.push({ v: R.pre, c: "#8ba0ac", label: "Pre-tax deductions" });
+    if (R.pre > 0) parts.push({ v: R.pre, c: SERIES.guide, label: "Pre-tax deductions" });
     rows = (
       <>
         <TxRow k="Federal tax on ordinary income" v={R.fedOrdinary} eff={share(R.fedOrdinary)} c={TAX_COLORS.fed} />
         <TxRow k="Federal tax on long-term gains" v={R.ltcg} eff={share(R.ltcg)} c={LTCG_COLORS[1]} />
-        {R.niit > 0 ? <TxRow k="Net investment income tax" v={R.niit} eff={share(R.niit)} c="#a98fd6" /> : null}
+        {R.niit > 0 ? <TxRow k="Net investment income tax" v={R.niit} eff={share(R.niit)} c={SERIES.gray} /> : null}
         {stateRow}
         {totals("Income after tax", "Gross withdrawals")}
       </>
@@ -358,7 +358,7 @@ export function Tax() {
                     <div className="lbl"><span>{b.label}</span><b>{money(b.withdrawn) + (b.withdrawn > 0 ? " · " + money(b.tax) + " tax (" + pctStr(b.eff, 1) + ")" : "")}</b></div>
                     <div className="track w-(--w)" style={{ "--w": Math.max(maxAmt > 0 ? (b.withdrawn / maxAmt) * 100 : 0, 1.5).toFixed(1) + "%" } as React.CSSProperties}>
                       <div className="fill w-(--w) bg-(--swatch)"
-                        style={{ "--w": Math.min(100, b.withdrawn > 0 ? (b.tax / b.withdrawn) * 100 : 0).toFixed(1) + "%", "--swatch": themed(o.c) } as React.CSSProperties}></div>
+                        style={{ "--w": Math.min(100, b.withdrawn > 0 ? (b.tax / b.withdrawn) * 100 : 0).toFixed(1) + "%", "--swatch": o.c } as React.CSSProperties}></div>
                     </div>
                   </div>
                 );
@@ -371,7 +371,7 @@ export function Tax() {
               <thead><tr><th>Source</th><th>Withdrawn</th><th>Taxable</th><th>Federal</th><th>State</th><th>Total tax</th><th><Tipped text="Effective rate" k="effrate" /></th></tr></thead>
               <tbody>
                 {live.map((o) => (
-                  <tr key={o.b.label}><td><span className="text-(color:--ink)" style={{ "--ink": themed(o.c) } as React.CSSProperties}>{"■"}</span> {o.b.label}</td><td>{money(o.b.withdrawn)}</td><td>{money(o.b.taxable)}</td>
+                  <tr key={o.b.label}><td><span className="text-(color:--ink)" style={{ "--ink": o.c } as React.CSSProperties}>{"■"}</span> {o.b.label}</td><td>{money(o.b.withdrawn)}</td><td>{money(o.b.taxable)}</td>
                     <td>{money(o.b.federal)}</td><td>{money(o.b.state)}</td><td>{money(o.b.tax)}</td><td>{pctStr(o.b.eff, 1)}</td></tr>
                 ))}
                 {ret ? (
@@ -395,9 +395,9 @@ export function Tax() {
             <div id="txStackLegend" className="stacklegend">
               {ret && R.gain > 0 ? (
                 <>
-                  <span><i className="bg-chart-slate"></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
+                  <span><i className="bg-series-gray"></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
                   {(R.ltcgBands as { amount: number; rate: number }[]).map((b, i) => b.amount > 0 ? (
-                    <span key={i}><i className="bg-(--swatch)" style={{ "--swatch": themed(LTCG_COLORS[i]) } as React.CSSProperties}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
+                    <span key={i}><i className="bg-(--swatch)" style={{ "--swatch": LTCG_COLORS[i] } as React.CSSProperties}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
                   ) : null)}
                 </>
               ) : null}

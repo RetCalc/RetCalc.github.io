@@ -21,6 +21,7 @@ import { useShareKit } from "@/components/shell/share";
 import { collegeShare } from "./share";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 
 export function College() {
@@ -162,12 +163,12 @@ export function College() {
               tip={(b) => (
                 <>
                   <b>Year {fmtNum(b.year)}</b>
-                  <br /><span className="text-gold">Savings</span> <span className="n">{money(b.base)}</span>
-                  {b.hi != null ? <><br /><span className="text-jade">{multi ? "Still needed" : "Cost of college"}</span> <span className="n">{money(b.hi)}</span></> : null}
+                  <br /><i className="tipsw bg-series-plan"></i>Savings <span className="n">{money(b.base)}</span>
+                  {b.hi != null ? <><br /><i className="tipsw bg-series-sky"></i>{multi ? "Still needed" : "Cost of college"} <span className="n">{money(b.hi)}</span></> : null}
                 </>
               )} />
           ) : <BandChart id="Cl" pts={[]} maxX={0} ariaLabel="College savings projection" tip={() => null} />}
-          <Legend id="legendCl" items={chart ? [["#e9b872", "Your savings"], ["#4fbf95", multi ? "Needed then for the bills still ahead" : "Cost of college, that year"]] : []} />
+          <Legend id="legendCl" items={chart ? [[SERIES.plan, "Your savings"], [SERIES.sky, multi ? "Needed then for the bills still ahead" : "Cost of college, that year"]] : []} />
         </Card>
         <Card>
           <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>

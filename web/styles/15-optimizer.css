@@ -174,10 +174,10 @@
 .op-bar b.neg{background:var(--ds-loss)}
 
 /* Charts: what's converted is drawn hollow, what's lived on is a line. */
-.op-chart .op-conv{fill:rgba(79,191,149,.10);stroke:var(--jade);stroke-width:1.2;stroke-dasharray:3 2}
+.op-chart .op-conv{fill:color-mix(in srgb,var(--ds-series-teal) 15%,transparent);stroke:var(--ds-series-teal);stroke-width:1.2;stroke-dasharray:3 2}
 .op-chart .op-live{fill:none;stroke:var(--text);stroke-width:1.6;stroke-dasharray:5 3;opacity:.85}
 .op-chart .op-hl{fill:var(--text);fill-opacity:.06}
-.gd-ch-legend s.hol,.gd-tip s.hol{height:8px;width:12px;border:1.3px dashed var(--jade);background:rgba(79,191,149,.12);border-radius:2px}
+.gd-ch-legend s.hol,.gd-tip s.hol{height:8px;width:12px;border:1.3px dashed var(--ds-series-teal);background:color-mix(in srgb,var(--ds-series-teal) 15%,transparent);border-radius:2px}
 .gd-ch-legend s.liv,.gd-tip s.liv{height:0;border-top:2px dashed var(--text);background:none}
 .op-chart .op-reinv{fill:rgba(148,166,191,.10);stroke:var(--dimmer);stroke-width:1;stroke-dasharray:2 2}
 .gd-ch-legend s.rei,.gd-tip s.rei{height:8px;width:12px;border:1.2px dashed var(--dimmer);background:rgba(148,166,191,.12);border-radius:2px}
@@ -187,7 +187,7 @@
 .op-table .scroll{margin-top:8px;max-height:420px}
 .op-table table{font-size:12px}
 .op-table td,.op-table th{white-space:nowrap}
-.op-table tr.short td{color:var(--coral)}
+.op-table tr.short td{color:var(--ds-loss)}
 .op-alts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .op-alts li{font-size:12.5px;color:var(--dim);line-height:1.5;padding:9px 12px;border:1px solid var(--line-soft);border-radius:10px}
 .op-alts li b{color:var(--text);font-weight:600}

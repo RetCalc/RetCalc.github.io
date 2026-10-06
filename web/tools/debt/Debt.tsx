@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 
 export function Debt() {
@@ -113,11 +114,11 @@ export function Debt() {
           tip={(b) => (
             <>
               <b>Month {fmtNum(b.year)}</b> <span className="n">{debtDate(b.year)}</span>
-              <br /><span className="text-gold">Your plan</span> <span className="n">{money(b.base)}</span>
-              <br /><span className="text-jade">Minimums</span> <span className="n">{money(b.hi!)}</span>
+              <br /><i className="tipsw bg-series-plan"></i>Your plan <span className="n">{money(b.base)}</span>
+              <br /><i className="tipsw bg-series-gray"></i>Minimums <span className="n">{money(b.hi!)}</span>
             </>
           )} />
-        <Legend id="legendDT" items={[["#e9b872", s.mode === "snowball" ? "Snowball" : "Avalanche"], ["#4fbf95", "Minimums only"]]} />
+        <Legend id="legendDT" items={[[SERIES.plan, s.mode === "snowball" ? "Snowball" : "Avalanche"], [SERIES.gray, "Minimums only"]]} />
       </>
     );
   }

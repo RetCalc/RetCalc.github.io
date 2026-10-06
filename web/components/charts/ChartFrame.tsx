@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { fmtAxisMoney, niceAxis } from "./scale";
 import { useNarrow } from "./useNarrow";
+import { SERIES } from "@/lib/hues";
 
 export const MONO = "ui-monospace,SF Mono,Menlo,monospace";
 
@@ -185,8 +186,8 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn,
 export function HoverMarks({ size, x, y }: { size: ChartSize; x: number | null; y: number | null }) {
   return (
     <>
-      <line x1={x ?? 0} x2={x ?? 0} y1={size.T} y2={size.T + size.ph} stroke="var(--gold)" strokeWidth={size.sw} opacity={x != null ? 0.4 : 0} />
-      <circle cx={x ?? 0} cy={y ?? 0} r={4.5 * size.sw} fill="var(--gold)" stroke="var(--dotstroke)" strokeWidth={2.5 * size.sw} opacity={x != null ? 1 : 0} />
+      <line x1={x ?? 0} x2={x ?? 0} y1={size.T} y2={size.T + size.ph} stroke={SERIES.plan} strokeWidth={size.sw} opacity={x != null ? 0.4 : 0} />
+      <circle cx={x ?? 0} cy={y ?? 0} r={4.5 * size.sw} fill={SERIES.plan} stroke="var(--dotstroke)" strokeWidth={2.5 * size.sw} opacity={x != null ? 1 : 0} />
     </>
   );
 }

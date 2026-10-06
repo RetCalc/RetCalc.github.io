@@ -27,8 +27,9 @@ import { BT_DEF, BT_FIRST, BT_LAST, decadeInflation, eraFrom, runBacktest, yearC
 import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
-const GOLD = "#e9b872", BLUE = "#7d9fd6", RED = "#e2795f";
+const GOLD = SERIES.plan, BLUE = SERIES.sky, RED = SERIES.rose;
 const MIXES = [["100", "100"], ["80", "80"], ["60", "60"], ["40", "40"], ["0", "0"]] as const;
 const ERAS = [["all", "All"], ["50", "Last 50"], ["30", "Last 30"]] as const;
 

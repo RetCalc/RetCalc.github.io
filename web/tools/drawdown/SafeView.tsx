@@ -22,6 +22,7 @@ import type { DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, critWords, dialFields, dialText, escapeHtml, firstSpend, lineWords, rateOf, targetWords, swatch } from "./text";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 const work = (t: string) => "<span class='ddwork'>" + t + "</span>";
 
@@ -132,8 +133,8 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
         (capped ? " " + capped + " start" + (capped === 1 ? "" : "s") + " reached the top of the range tested: this strategy can't run out there." : "");
       chart = <MultiChart id="DDR" maxX={Math.max(1, safe.length - 1)} ariaLabel="The highest first-year withdrawal that met the target, for each start"
         series={[
-          { name: "Highest that worked", color: "#4fbf95", width: 2, pts: safe.map((w, i) => ({ year: i, value: w.rate == null ? 0 : w.rate * 100 })) },
-          { name: "Your year one", color: "#e9b872", dash: "6 5", width: 1.6, pts: [{ year: 0, value: mine * 100 }, { year: safe.length - 1, value: mine * 100 }] },
+          { name: "Highest that worked", color: SERIES.teal, width: 2, pts: safe.map((w, i) => ({ year: i, value: w.rate == null ? 0 : w.rate * 100 })) },
+          { name: "Your year one", color: SERIES.plan, dash: "6 5", width: 1.6, pts: [{ year: 0, value: mine * 100 }, { year: safe.length - 1, value: mine * 100 }] },
         ]}
         yFmt={(x) => fmtNum(x) + "%"} xFmt={(i) => { const w = safe[Math.round(i)]; return w ? String(w.year) : ""; }}
         marks={DD_ERAS.map((e) => { const i = safe.findIndex((w) => w.year === e.year && w.month === 1); return i >= 0 ? { x: i, label: String(e.year) } : null; })
@@ -144,12 +145,12 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
           const era = ddEraFor(w.year);
           return <>
             <b>Retiring in {startOf(w, monthly)}</b>
-            <br /><span className="text-jade">Highest that worked</span> <span className="n">{w.rate == null ? "none" : pctStr(w.rate, 2) + (w.capped ? "+" : "")}</span>
+            <br /><i className="tipsw bg-series-teal"></i>Highest that worked <span className="n">{w.rate == null ? "none" : pctStr(w.rate, 2) + (w.capped ? "+" : "")}</span>
             <br />CAPE at the start <span className="n">{w.cape.toFixed(1)}</span>
             {era ? <><br /><span className="ddtip-era">{era.title}</span></> : null}
           </>;
         }} />;
-      legend = swatch("#4fbf95", "Highest year-one withdrawal that worked") + swatch("#e9b872", "Yours, " + pctStr(mine, 2));
+      legend = swatch(SERIES.teal, "Highest year-one withdrawal that worked") + swatch(SERIES.plan, "Yours, " + pctStr(mine, 2));
     }
     // the solvers
     const DK = DD_STRAT[o.strategy].dial!.key, dl = res.dial, port = res.port, spend = firstSpend(o, S.P);
@@ -251,11 +252,11 @@ function ValPanel({ S }: { S: Safe }) {
   if (S && safe.length) {
     const o = S.o, mine = rateOf(o, S.P), monthly = !!o.monthly;
     chart = <Scatter id="DDV" ariaLabel="Each start's CAPE against the most it could have started with"
-      pts={safe.map((w) => ({ x: w.cape, y: w.rate! * 100, w, color: w.rate! < mine - 1e-6 ? "#e2795f" : "#4fbf95" }))}
+      pts={safe.map((w) => ({ x: w.cape, y: w.rate! * 100, w, color: w.rate! < mine - 1e-6 ? SERIES.loss : SERIES.gain }))}
       opt={{ small: safe.length > 150, xMin: 0, yZero: true, xFmt: (x) => fmtNum(x), yFmt: (y) => fmtNum(y) + "%", xLabel: "CAPE at the start →", yLabel: "Highest year one that worked",
         vLine: { x: CAPE_NOW, label: "today, " + CAPE_NOW.toFixed(1) }, hLine: { y: mine * 100, label: "yours, " + pctStr(mine, 2) } }}
       tip={(p) => <><b>Retiring in {startOf(p.w, monthly)}</b><br />CAPE <span className="n">{p.w.cape.toFixed(1)}</span><br />Highest year one <span className="n">{pctStr(p.w.rate!, 2)}</span></>} />;
-    legend = swatch("#4fbf95", "A start your year one would have survived") + swatch("#e2795f", "One it wouldn't");
+    legend = swatch(SERIES.gain, "A start your year one would have survived") + swatch(SERIES.loss, "One it wouldn't");
     const maxCape = Math.max(...safe.map((w) => w.cape));
     const hi = safe.filter((w) => w.cape >= 25), lo = safe.filter((w) => w.cape < 15);
     const medOf = (a: DdSafeStart[]) => { const x = a.map((w) => w.rate!).sort((p, q) => p - q); return x[Math.floor(x.length / 2)]; };

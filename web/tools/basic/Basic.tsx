@@ -24,6 +24,7 @@ import { basicShare } from "./share";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 
 export function Basic() {
@@ -130,9 +131,9 @@ export function Basic() {
               </>
             )} />
           <Legend id="legendQ" items={pts.length ? [
-            ["#4fbf95", "If returns run better (" + pctStr(p.real + BASIC_BAND, 2) + ")"],
-            ["#e9b872", "Your setting (" + pctStr(p.real, 2) + ")"],
-            ["#e2795f", "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")"],
+            [SERIES.teal, "If returns run better (" + pctStr(p.real + BASIC_BAND, 2) + ")"],
+            [SERIES.plan, "Your setting (" + pctStr(p.real, 2) + ")"],
+            [SERIES.rose, "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")"],
           ] : []} />
         </Card>
 

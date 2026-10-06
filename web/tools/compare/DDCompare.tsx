@@ -18,7 +18,6 @@ import { DRAWDOWN_DEFAULTS, ddRaw, type DrawdownState } from "@/tools/drawdown/f
 import { DD_STRAT_NAMES, mixText } from "@/tools/drawdown/text";
 import { CMP_LETTERS } from "./model";
 import { setNavDir } from "@/lib/nav-motion";
-import { themed } from "@/lib/hues";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -75,7 +74,7 @@ export function DDCompare() {
           <div className="cmpgrid" id="ddCmpPickers">
             {enough ? slots.map((name, i) => (
               <div className="cmpslot" key={i}>
-                <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": themed(MULTI_COLORS[i]) } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
+                <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": MULTI_COLORS[i] } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
                 <div className="field"><select data-ddcmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={name} onChange={(e) => {
                   const next = slots.map((x, j) => (j === i ? e.target.value : x));
                   remember(next);

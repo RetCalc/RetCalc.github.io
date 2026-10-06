@@ -1,13 +1,13 @@
 /* Chart legends and the horizontal share bars. From swatch() in
    src/js/app/04-charts.js and bar() in 11-income-tax.js. */
 import { money } from "@/lib/format";
-import { themed } from "@/lib/hues";
+import { BAND_INNER, SERIES } from "@/lib/hues";
 
 export function Legend({ id, items, children }: { id?: string; items: [color: string, label: string][]; children?: React.ReactNode }) {
   return (
     <div className="legend" id={id}>
       {items.map(([c, t]) => (
-        <span key={t}><i className="bg-(--swatch)" style={{ "--swatch": themed(c) } as React.CSSProperties}></i>{t}</span>
+        <span key={t}><i className="bg-(--swatch)" style={{ "--swatch": c } as React.CSSProperties}></i>{t}</span>
       ))}
       {children}
     </div>
@@ -18,7 +18,7 @@ export function Legend({ id, items, children }: { id?: string; items: [color: st
 export function LegendToggle({ color, label, on, onToggle }: { color: string; label: string; on: boolean; onToggle: () => void }) {
   return (
     <button type="button" className="lgtoggle" aria-pressed={on} title="Show or hide on the chart" onClick={onToggle}>
-      <i className="bg-(--swatch)" style={{ "--swatch": themed(color) } as React.CSSProperties}></i>{label}
+      <i className="bg-(--swatch)" style={{ "--swatch": color } as React.CSSProperties}></i>{label}
     </button>
   );
 }
@@ -27,8 +27,8 @@ export function LegendToggle({ color, label, on, onToggle }: { color: string; la
     assumed rate is used, and a toggle for the line per starting year. */
 export function HistLegend({ id, tracesOn, onToggleTraces, extra, children }: { id?: string; tracesOn: boolean; onToggleTraces: () => void; extra?: string; children?: React.ReactNode }) {
   return (
-    <Legend id={id} items={[["#4fbf95", "10th\u201390th percentile of windows"], ["#3f9a78", "25th\u201375th"], ["#e9b872", "Median window"]]}>
-      <LegendToggle color="#7d9fd6" label="Each starting year" on={tracesOn} onToggle={onToggleTraces} />
+    <Legend id={id} items={[[SERIES.teal, "10th\u201390th percentile of windows"], [BAND_INNER, "25th\u201375th"], [SERIES.plan, "Median window"]]}>
+      <LegendToggle color={SERIES.sky} label="Each starting year" on={tracesOn} onToggle={onToggleTraces} />
       {extra ? <span><i className="bg-stageline"></i>{extra}</span> : null}
       {children}
     </Legend>
@@ -39,8 +39,8 @@ export function HistLegend({ id, tracesOn, onToggleTraces, extra, children }: { 
     dashed no-volatility line from. */
 export function McLegend({ id, extra, noDet, children }: { id?: string; extra?: string; noDet?: boolean; children?: React.ReactNode }) {
   return (
-    <Legend id={id} items={[["#4fbf95", "10th\u201390th percentile"], ["#3f9a78", "25th\u201375th"], ["#e9b872", "Median"],
-      ...(noDet ? [] : [["#7d9fd6", "Without volatility"] as [string, string]])]}>
+    <Legend id={id} items={[[SERIES.teal, "10th\u201390th percentile"], [BAND_INNER, "25th\u201375th"], [SERIES.plan, "Median"],
+      ...(noDet ? [] : [[SERIES.sky, "Without volatility"] as [string, string]])]}>
       {extra ? <span><i className="bg-stageline"></i>{extra}</span> : null}
       {children}
     </Legend>
@@ -54,7 +54,7 @@ export function ShareBar({ label, value, share, color, idx, dim }: { label: stri
       <div className="lbl"><span>{label}</span><b>{money(value)}</b></div>
       <div className="track">
         <div className="fill w-(--w) bg-(--swatch)"
-          style={{ "--w": (Math.max(0, Math.min(1, share)) * 100).toFixed(1) + "%", "--swatch": themed(color) } as React.CSSProperties}></div>
+          style={{ "--w": (Math.max(0, Math.min(1, share)) * 100).toFixed(1) + "%", "--swatch": color } as React.CSSProperties}></div>
       </div>
     </div>
   );

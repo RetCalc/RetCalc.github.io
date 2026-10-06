@@ -358,13 +358,13 @@ function Outlook() {
       </div>
       <div className="gd-cover">
         <div className="gd-cover-bar" role="img" aria-label={"Income covers " + pctStr(Math.min(9.99, S.coverage), 0) + " of planned spending"}>
-          <i className="w-(--w) bg-jade" style={{ "--w": ((port / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
-          <i className="w-(--w) bg-steel" style={{ "--w": ((ss / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
-          {pen ? <i className="w-(--w) bg-gold" style={{ "--w": ((pen / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i> : null}
+          <i className="w-(--w) bg-series-teal" style={{ "--w": ((port / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
+          <i className="w-(--w) bg-series-sky" style={{ "--w": ((ss / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
+          {pen ? <i className="w-(--w) bg-series-gray" style={{ "--w": ((pen / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i> : null}
           <span className="need left-(--x)" style={{ "--x": "calc(" + ((spendNeed / sc) * 100).toFixed(1) + "% - 1px)" } as React.CSSProperties}></span>
         </div>
-        <div className="gd-cover-key"><span><s className="bg-jade"></s>From savings</span><span><s className="bg-steel"></s>Social Security</span>
-          {pen ? <span><s className="bg-gold"></s>Pension</span> : null}
+        <div className="gd-cover-key"><span><s className="bg-series-teal"></s>From savings</span><span><s className="bg-series-sky"></s>Social Security</span>
+          {pen ? <span><s className="bg-series-gray"></s>Pension</span> : null}
           <span><s className="bg-text w-0.5"></s>Your spending and its tax: {money(spendNeed)}/yr</span></div>
       </div>
       <Callout><b>Taxes are built in.</b> In a typical year this plan pays about <b>{money(S.taxYr)}</b> in income tax

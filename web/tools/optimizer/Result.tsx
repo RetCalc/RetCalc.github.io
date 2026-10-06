@@ -14,10 +14,10 @@ import type { PlRow, PlStats } from "@/lib/engine/types";
 import { groupDigits, money, pctStr } from "@/lib/format";
 import { seen, type Host, type Result } from "./run";
 import { axisCompact, lowerFirst, opClaims, opCompact, opConvUntil, opFillName, opFillShort, opSigned, opTacticsLine, type PlanWho } from "./words";
-import { themed } from "@/lib/hues";
+import { SERIES } from "@/lib/hues";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const OP_COLORS = { ss: "#7d9fd6", pension: "#e9b872", trad: "#e2795f", brok: "#a98fd6", roth: "#4fbf95" };
+export const OP_COLORS = { ss: SERIES.sky, pension: SERIES.gray, trad: SERIES.rose, brok: SERIES.lavender, roth: SERIES.teal };
 type Src = keyof typeof OP_COLORS;
 const SRC_NAMES: Record<Src, string> = { ss: "Social Security", pension: "Pension", trad: "Traditional", brok: "Brokerage", roth: "Roth" };
 
@@ -188,7 +188,7 @@ function Grid({ yMax, stepY, Y, pl, W, pr }: { yMax: number; stepY: number; Y: (
   return <>{out}</>;
 }
 const TipRow = ({ color, cls, v, label }: { color?: string; cls?: string; v: string; label: string }) => (
-  <div className="r"><s className={color ? "bg-(--swatch)" : cls} style={color ? { "--swatch": themed(color) } as React.CSSProperties : undefined}></s><b>{v}</b><span>{label}</span></div>
+  <div className="r"><s className={color ? "bg-(--swatch)" : cls} style={color ? { "--swatch": color } as React.CSSProperties : undefined}></s><b>{v}</b><span>{label}</span></div>
 );
 
 /* Where each year's money comes from, stacked, with what's converted to
@@ -312,7 +312,7 @@ export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result;
   const wrap = (title: string, note: string, inner: React.ReactNode, cls = "") => host === "tool"
     ? <Card><CardHeader><CardTitle>{title}</CardTitle>{note ? <CardDescription>{note}</CardDescription> : null}</CardHeader><CardContent>{inner}</CardContent></Card>
     : <section className={"op-sec" + (cls ? " " + cls : "")}><div className="gd-h3">{title}{note ? <> <span className="op-note">{note}</span></> : null}</div>{inner}</section>;
-  const sw = (k: string, cls: string | null, label: string) => <span key={k}><s className={cls ?? "bg-(--swatch)"} style={cls ? undefined : { "--swatch": themed(OP_COLORS[k as Src]) } as React.CSSProperties}></s>{label}</span>;
+  const sw = (k: string, cls: string | null, label: string) => <span key={k}><s className={cls ?? "bg-(--swatch)"} style={cls ? undefined : { "--swatch": OP_COLORS[k as Src] } as React.CSSProperties}></s>{label}</span>;
   const rb = res.best.detail.rows, r0 = res.base.detail.rows, used = (Object.keys(SRC_NAMES) as Src[]).filter((k) => rb.some((r) => r[k] > 1));
   const h = heir(res), net = (r: PlRow) => r.endRoth + r.endBrok + r.endTrad * (1 - h);
   const spent = (r: PlRow) => r.tax + r.pen + r.irmaa + r.health;
@@ -341,21 +341,21 @@ export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result;
         <p className="op-cap">The space between the bars and the line is each year&apos;s tax{rb.some((r) => r.health > 1) ? " and health premiums" : ""}.</p>
       </>)}
       {!res.same ? wrap("Tax and premiums each year", "the usual way against your roadmap", <>
-        <div className="gd-ch-legend"><span><s className="bg-steel"></s>The usual way</span><span><s className="bg-jade"></s>Your roadmap</span></div>
+        <div className="gd-ch-legend"><span><s className="bg-series-gray"></s>The usual way</span><span><s className="bg-series-plan"></s>Your roadmap</span></div>
         <LinesChart host={host} kind="tax" label="Tax and premiums each year, the usual way and with the roadmap" series={[
-          { name: "The usual way", color: "#7d9fd6", dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
-          { name: "Your roadmap", color: "#4fbf95", w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
+          { name: "The usual way", color: SERIES.gray, dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
+          { name: "Your roadmap", color: SERIES.plan, w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
         <p className="op-cap">Paying some tax early, in the low-income years, to pay much less later is usually the whole trick.</p>
       </>) : null}
       {wrap("Your accounts over time", "average path", <>
-        <div className="gd-ch-legend"><span><s className="bg-gold"></s>After tax, your roadmap</span><span><s className="bg-chart-dimmer"></s>After tax, the usual way</span>
-          <span><s className="bg-coral"></s>Traditional</span><span><s className="bg-jade"></s>Roth</span><span><s className="bg-chart-violet"></s>Brokerage</span></div>
+        <div className="gd-ch-legend"><span><s className="bg-series-plan"></s>After tax, your roadmap</span><span><s className="bg-series-gray"></s>After tax, the usual way</span>
+          <span><s className="bg-series-rose"></s>Traditional</span><span><s className="bg-series-teal"></s>Roth</span><span><s className="bg-series-lavender"></s>Brokerage</span></div>
         <LinesChart host={host} kind="bal" label="Account balances by age, and what they are worth after tax" series={[
           { name: "Traditional", color: OP_COLORS.trad, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endTrad })) },
           { name: "Roth", color: OP_COLORS.roth, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endRoth })) },
           { name: "Brokerage", color: OP_COLORS.brok, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endBrok })) },
-          { name: "After tax, the usual way", color: "#94a6bf", dash: "5 4", w: 2, pts: r0.map((r) => ({ x: r.age, y: net(r) })) },
-          { name: "After tax, your roadmap", color: "#e9b872", w: 2.8, pts: rb.map((r) => ({ x: r.age, y: net(r) })) }]} />
+          { name: "After tax, the usual way", color: SERIES.gray, dash: "5 4", w: 2, pts: r0.map((r) => ({ x: r.age, y: net(r) })) },
+          { name: "After tax, your roadmap", color: SERIES.plan, w: 2.8, pts: rb.map((r) => ({ x: r.age, y: net(r) })) }]} />
         <p className="op-cap">After tax counts traditional money at {pctStr(1 - h, 0)} of its value: it still owes income tax, whoever takes it out.</p>
       </>)}
       {wrap("Year by year", "average path, today's dollars", <YearTable rows={rb} />, "op-tablesec")}

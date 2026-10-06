@@ -19,6 +19,7 @@ import { MORTGAGE_DEF as DEF, dur, mortgageCompute, when, type Inputs } from "./
 import { useShareKit } from "@/components/shell/share";
 import { mortgageShare } from "./share";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 
 
@@ -73,12 +74,12 @@ export function Mortgage() {
 
   const t = R.total || 1;
   const bars: [string, number, string][] = [
-    ["Principal & interest", R.pi, "#4fbf95"], ["Property tax", R.tax, "#e9b872"], ["Homeowners insurance", R.ins, "#7d9fd6"],
+    ["Principal & interest", R.pi, SERIES.sky], ["Property tax", R.tax, SERIES.lavender], ["Homeowners insurance", R.ins, SERIES.teal],
   ];
-  if (R.pmi > 0) bars.push(["Mortgage insurance (PMI)", R.pmi, "#e2795f"]);
-  if (R.hoa > 0) bars.push(["HOA dues", R.hoa, "#8ba0ac"]);
-  if (R.maint > 0) bars.push(["Maintenance", R.maint, "#b48ec4"]);
-  if (R.util > 0) bars.push(["Utilities", R.util, "#6fb0a6"]);
+  if (R.pmi > 0) bars.push(["Mortgage insurance (PMI)", R.pmi, SERIES.rose]);
+  if (R.hoa > 0) bars.push(["HOA dues", R.hoa, SERIES.gray]);
+  if (R.maint > 0) bars.push(["Maintenance", R.maint, SERIES.lavender]);
+  if (R.util > 0) bars.push(["Utilities", R.util, SERIES.teal]);
 
   // Extra payments and refinancing, measured against the same loan without them.
   let extra: React.ReactNode = null;
@@ -209,12 +210,12 @@ export function Mortgage() {
             tip={(b) => (
               <>
                 <b>Year {fmtNum(b.year)}</b>
-                <br /><span className="text-gold">Balance</span> <span className="n">{money(b.base)}</span>
-                <br /><span className="text-jade">Principal paid</span> <span className="n">{money(b.hi!)}</span>
-                <br /><span className="text-coral">Interest paid</span> <span className="n">{money(b.lo!)}</span>
+                <br /><i className="tipsw bg-series-plan"></i>Balance <span className="n">{money(b.base)}</span>
+                <br /><i className="tipsw bg-series-teal"></i>Principal paid <span className="n">{money(b.hi!)}</span>
+                <br /><i className="tipsw bg-series-rose"></i>Interest paid <span className="n">{money(b.lo!)}</span>
               </>
             )} />
-          <Legend id="legendMo" items={[["#e9b872", "Balance remaining"], ["#4fbf95", "Principal paid"], ["#e2795f", "Interest paid"]]} />
+          <Legend id="legendMo" items={[[SERIES.plan, "Balance remaining"], [SERIES.teal, "Principal paid"], [SERIES.rose, "Interest paid"]]} />
         </Card>
 
         <Card>

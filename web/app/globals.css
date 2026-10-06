@@ -66,6 +66,19 @@
   --font-mono: var(--mono);
 }
 
+/* Chart series and the semantic pair as theme colors (bg-series-sky...),
+   for legend swatches and tooltip keys. lib/hues.ts holds the same names. */
+@theme inline {
+  --color-series-plan: var(--ds-series-plan);
+  --color-series-sky: var(--ds-series-sky);
+  --color-series-teal: var(--ds-series-teal);
+  --color-series-rose: var(--ds-series-rose);
+  --color-series-lavender: var(--ds-series-lavender);
+  --color-series-gray: var(--ds-series-gray);
+  --color-gain: var(--ds-gain);
+  --color-loss: var(--ds-loss);
+}
+
 /* The old palette as theme colors (text-dim, stroke-grid...), for markup that
    used to reach the variables in styles/00-base.css through inline styles.
    They follow the light and dark themes like the variables do. */
@@ -76,10 +89,6 @@
   --color-text: var(--text);
   --color-dim: var(--dim);
   --color-dimmer: var(--dimmer);
-  --color-gold: var(--gold);
-  --color-jade: var(--jade);
-  --color-steel: var(--steel);
-  --color-coral: var(--coral);
   --color-grid: var(--grid);
   --color-axis: var(--axis);
   --color-stageline: var(--stageline);
@@ -102,17 +111,10 @@
 
 /* Colors that stay the same in both themes. */
 @theme static {
-  /* The dark theme's data hues, on either theme: the logo, chart shading. */
+  /* The logo's own colors (components/shell/Brandmark.tsx), on either theme. */
   --color-dark-gold: #e9b872;
   --color-dark-jade: #4fbf95;
   --color-dark-steel: #7d9fd6;
-  /* Chart labels, guide lines and neutral series. */
-  --color-chart-label: #5f7583;
-  --color-chart-slate: #8ba0ac;
-  --color-chart-dimmer: #94a6bf;
-  --color-chart-base: #c9d3e6;
-  --color-chart-violet: #a98fd6;
-  --color-chart-guide: #8b97ad;
   /* The logo on a printed summary, in deeper hues that hold up on paper. */
   --color-print-steel: #5a81c3;
   --color-print-jade: #2a9e73;

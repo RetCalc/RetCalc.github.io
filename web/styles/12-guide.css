@@ -296,14 +296,15 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-chart .ax{fill:var(--dimmer);font-family:var(--mono);font-size:11px}
 .gd-chart .mark{stroke:var(--line);stroke-width:1}
 .gd-chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.gd-chart .ln.p{stroke:var(--jade)}
-.gd-chart .ln.b{stroke:var(--steel)}
-.gd-chart .band.p{fill:var(--jade);fill-opacity:.11}
-.gd-chart .band.b{fill:var(--steel);fill-opacity:.11}
-.gd-chart .tr path{fill:none;stroke:#7d9fd6;stroke-opacity:.14;stroke-width:1;stroke-linejoin:round}
+/* p: your plan (or the plan with a change); b: the plan as it stands. */
+.gd-chart .ln.p{stroke:var(--ds-series-plan)}
+.gd-chart .ln.b{stroke:var(--ds-series-gray)}
+.gd-chart .band.p{fill:var(--ds-series-plan);fill-opacity:.15}
+.gd-chart .band.b{fill:var(--ds-series-gray);fill-opacity:.15}
+.gd-chart .tr path{fill:none;stroke:var(--ds-series-sky);stroke-opacity:.14;stroke-width:1;stroke-linejoin:round}
 .gd-chart .dot{stroke:var(--panel);stroke-width:2}
-.gd-chart .dot.p{fill:var(--jade)}
-.gd-chart .dot.b{fill:var(--steel)}
+.gd-chart .dot.p{fill:var(--ds-series-plan)}
+.gd-chart .dot.b{fill:var(--ds-series-gray)}
 .gd-chart .lab{fill:var(--dim);font-family:var(--sans);font-size:11.5px;font-weight:600;
   paint-order:stroke;stroke:var(--panel);stroke-width:4px;stroke-linejoin:round}
 .gd-chart .xh{stroke:var(--dimmer);stroke-width:1}
@@ -314,8 +315,8 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-tip b{font-family:var(--mono);font-weight:600;color:var(--text)}
 .gd-tip span{color:var(--dimmer)}
 .gd-tip s,.gd-ch-legend s{display:inline-block;width:14px;height:2px;border-radius:1px;text-decoration:none;flex:none}
-.gd-tip s.p,.gd-ch-legend s.p{background:var(--jade)}
-.gd-tip s.b,.gd-ch-legend s.b{background:var(--steel)}
+.gd-tip s.p,.gd-ch-legend s.p{background:var(--ds-series-plan)}
+.gd-tip s.b,.gd-ch-legend s.b{background:var(--ds-series-gray)}
 .gd-ch-legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--dim);margin:0 0 6px}
 .gd-ch-legend span{display:inline-flex;align-items:center;gap:7px}
 .gd-ch-cap{font-size:11.5px;color:var(--dimmer);margin-top:4px}

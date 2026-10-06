@@ -76,7 +76,7 @@ tbody tr:hover{background:var(--panel-2)}
 .modeopt{display:flex;align-items:center;gap:8px}
 .mcnote{font-size:12.5px;line-height:1.5}
 .mcnote b{color:var(--text);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
-.mcnote b.warn{color:var(--coral)}
+.mcnote b.warn{color:var(--ds-loss)}
 .msflag{color:var(--text);font-weight:600}
 .mssub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:2px}
 

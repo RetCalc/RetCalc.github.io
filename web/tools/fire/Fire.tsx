@@ -22,6 +22,7 @@ import type { HistRuns } from "@/lib/engine/types";
 import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
 import { FIRE_DEF, fireBandPoints, fireCompute, fireHistRuns, type FireInputs, type FirePt } from "./model";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 const trim1 = (v: number) => v.toFixed(1).replace(/\.0$/, "");
 
@@ -89,12 +90,12 @@ export function Fire() {
       <>
         {inside ? (
           <>
-            <line x1={0} x2={g.W} y1={tY} y2={tY} stroke="var(--jade)" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.65" />
-            <text x={g.W - (g.narrow ? 14 : 16)} y={tY - 4} textAnchor="end" fontSize={g.narrow ? "13" : "10"} fill="var(--jade)" fontFamily="ui-monospace,SF Mono,Menlo,monospace">target</text>
+            <line x1={0} x2={g.W} y1={tY} y2={tY} stroke={SERIES.guide} strokeWidth="1.5" strokeDasharray="6 4" opacity="0.8" />
+            <text x={g.W - (g.narrow ? 14 : 16)} y={tY - 4} textAnchor="end" fontSize={g.narrow ? "13" : "10"} fill={SERIES.guide} fontFamily="ui-monospace,SF Mono,Menlo,monospace">target</text>
           </>
         ) : null}
-        {fX !== null ? <line x1={fX} x2={fX} y1={g.T} y2={g.T + g.ph} stroke="var(--jade)" strokeWidth="1.5" strokeDasharray="4 3" opacity="0.55" /> : null}
-        {fX !== null && !coast && inside ? <circle cx={fX} cy={tY} r={g.narrow ? "6" : "4.5"} fill="var(--jade)" stroke="var(--bg)" strokeWidth="2" /> : null}
+        {fX !== null ? <line x1={fX} x2={fX} y1={g.T} y2={g.T + g.ph} stroke={SERIES.guide} strokeWidth="1.5" strokeDasharray="4 3" opacity="0.7" /> : null}
+        {fX !== null && !coast && inside ? <circle cx={fX} cy={tY} r={g.narrow ? "6" : "4.5"} fill={SERIES.plan} stroke="var(--dotstroke)" strokeWidth="2" /> : null}
       </>
     );
   };
@@ -208,9 +209,9 @@ export function Fire() {
           {!chart.pts.length ? <Legend id="legendFire" items={[]} />
             : hist ? <HistLegend id="legendFire" tracesOn={tracesOn} onToggleTraces={() => setTracesOn((v) => !v)} />
             : <Legend id="legendFire" items={[
-              ["#4fbf95", p.band > 0 ? "At " + pctStr(p.nominal + p.band, 2) + " (+" + lbl + "%)" : "Higher"],
-              ["#e9b872", "At " + pctStr(p.nominal, 2) + " (your rate)"],
-              ["#e2795f", p.band > 0 ? "At " + pctStr(Math.max(0.001, p.nominal - p.band), 2) + " (−" + lbl + "%)" : "Lower"],
+              [SERIES.teal, p.band > 0 ? "At " + pctStr(p.nominal + p.band, 2) + " (+" + lbl + "%)" : "Higher"],
+              [SERIES.plan, "At " + pctStr(p.nominal, 2) + " (your rate)"],
+              [SERIES.rose, p.band > 0 ? "At " + pctStr(Math.max(0.001, p.nominal - p.band), 2) + " (−" + lbl + "%)" : "Lower"],
             ]} />}
           <CardContent id="fiSliderWrap" className="pt-0 pb-3.5" hidden={!hist}>
             <div className="fire-slider-section">

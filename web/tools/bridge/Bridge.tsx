@@ -37,8 +37,16 @@ import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
+/* Where each year's spending comes from, in the chart series. The engine
+   lists the categories (with colors of its own, unused here). */
+const CAT_COLOR: Record<string, string> = {
+  work: SERIES.gray, brok: SERIES.sky, rothBasis: SERIES.teal, rung: SERIES.guide,
+  sepp: SERIES.rose, r55: SERIES.lavender, early: SERIES.loss,
+};
+const CATS = BR_CATS.map((c) => ({ ...c, c: CAT_COLOR[c.k] ?? SERIES.gray }));
 const holdCls = (v: number) => (v >= 0.95 ? "pos" : v >= 0.8 ? "mid" : "neg");
 const PATHS = [["above", "Above average"], ["avg", "Average"], ["below", "Below average"]] as const;
 
@@ -412,17 +420,17 @@ function FlowChart({ rows, aca }: { rows: BrRow[]; aca: boolean }) {
     }
     return { label: r.age, parts, tick: r.C, row: r };
   });
-  const used = BR_CATS.filter((c) => bars.some((b) => b.parts[c.k] > 0.5));
+  const used = CATS.filter((c) => bars.some((b) => b.parts[c.k] > 0.5));
   const conv = bars.some((b) => b.tick > 0.5);
   return (
     <>
-      <StackedBars id="BR" bars={bars} cats={BR_CATS} ariaLabel="Where each year's spending comes from"
+      <StackedBars id="BR" bars={bars} cats={CATS} ariaLabel="Where each year's spending comes from"
         tip={(i) => {
           const b = bars[i], r = b.row;
           return (
             <>
               <b>Age {b.label}</b>
-              {BR_CATS.filter((c) => b.parts[c.k] > 0.5).map((c) => <TipRow key={c.k} color={c.c} label={c.name} value={b.parts[c.k]} />)}
+              {CATS.filter((c) => b.parts[c.k] > 0.5).map((c) => <TipRow key={c.k} color={c.c} label={c.name} value={b.parts[c.k]} />)}
               {b.tick > 0.5 ? <><br />Converted <span className="n">{money(b.tick)}</span></> : null}
               <br /><span className="text-dim">{"Tax " + money(r.tax + r.fica) + (r.pen > 0.5 ? " · penalty " + money(r.pen) : "") + (aca ? " · health " + money(r.health) : "")}</span>
               {r.surplus > 50 ? <><br /><span className="text-dim">Reinvested {money(r.surplus)}</span></> : null}
@@ -456,10 +464,10 @@ function Balances({ ctx, rows }: { ctx: BrCtx; rows: BrRow[] }) {
   const S0 = { trad: ctx.trad + ctx.g457, roth: ctx.roth, brok: ctx.brok };
   const mk = (f: (e: BrRow["end"]) => number, start: number) => [{ year: 0, value: start }, ...rows.map((r, i) => ({ year: i + 1, value: f(r.end) }))];
   const series: Series[] = rows.length ? [
-    { name: "Total", color: "#e9b872", pts: mk((e) => e.total, S0.trad + S0.roth + S0.brok), width: 2.6 },
-    { name: "Traditional", color: "#e2795f", pts: mk((e) => e.trad, S0.trad) },
-    { name: "Roth", color: "#4fbf95", pts: mk((e) => e.roth, S0.roth) },
-    { name: "Brokerage", color: "#7d9fd6", pts: mk((e) => e.brok, S0.brok) },
+    { name: "Total", color: SERIES.plan, pts: mk((e) => e.total, S0.trad + S0.roth + S0.brok), width: 2.6 },
+    { name: "Traditional", color: SERIES.rose, pts: mk((e) => e.trad, S0.trad) },
+    { name: "Roth", color: SERIES.teal, pts: mk((e) => e.roth, S0.roth) },
+    { name: "Brokerage", color: SERIES.sky, pts: mk((e) => e.brok, S0.brok) },
   ] : [];
   return (
     <>
@@ -518,7 +526,7 @@ function YearRows({ rows, ctx }: { rows: BrRow[]; ctx: BrCtx }) {
       {rows.map((r) => {
         const d = r.d;
         return (
-          <tr key={r.age} className={r.short > 1 ? "text-coral" : undefined}>
+          <tr key={r.age} className={r.short > 1 ? "text-loss" : undefined}>
             <td>{r.age}</td><td>{money(ctx.spend)}</td><td>{ctx.aca ? money(r.health) : DASH}</td><td>{money(r.tax + r.fica)}</td>
             <td>{m(r.pen)}</td><td>{m(d.brok)}</td><td>{m(d.rothBasis + d.rung)}</td><td>{m(r.sp)}</td><td>{m(d.r55)}</td>
             <td>{m(d.early)}</td><td>{m(r.W)}</td><td>{m(r.C)}</td>

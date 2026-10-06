@@ -20,11 +20,12 @@
   --dim:var(--ds-muted);
   --dimmer:var(--ds-muted);
 
-  /* the data hues */
+  /* The previous data hues. Only the bow-and-arrow motif (styles/12-guide.css,
+     styles/15-optimizer.css) still uses these three; they go when it is
+     restyled. Everything else names a --ds-* token. */
   --gold:var(--ds-amber);
   --jade:var(--ds-gain);
   --steel:var(--ds-series-sky);
-  --coral:var(--ds-loss);
 
   --grid:var(--ds-rule);
   --axis:var(--ds-muted);

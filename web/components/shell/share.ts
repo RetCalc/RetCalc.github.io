@@ -64,10 +64,19 @@ export const shareKit = (id: string): ShareKit | undefined => kits[id];
    Charts draw their structural lines in the theme's colors, so a copy for
    the light printed page, or the dark card, has those swapped for a fixed
    palette; any other color the theme sets is fixed at what it is now. */
-const STRUCTURAL = ["--grid", "--axis", "--stageline", "--dotstroke", "--bg", "--gold", "--jade", "--steel", "--coral"] as const;
+const STRUCTURAL = ["--ds-muted", "--grid", "--axis", "--stageline", "--dotstroke", "--bg", "--gold", "--jade", "--steel", "--coral",
+  "--ds-series-plan", "--ds-series-sky", "--ds-series-teal", "--ds-series-rose", "--ds-series-lavender", "--ds-series-gray",
+  "--ds-gain", "--ds-loss"] as const;
 type Palette = Record<(typeof STRUCTURAL)[number], string>;
-/* The data hues go out as the dark theme's, on either palette. */
-const HUES = { "--gold": "#e9b872", "--jade": "#4fbf95", "--steel": "#7d9fd6", "--coral": "#e2795f" };
+/* The data hues go out as the dark theme's, on either palette. Charts name
+   their colors by series (lib/hues.ts); each series goes out as the hue it
+   took over from, so the card and the printed summary look as they did. */
+const HUES = {
+  "--gold": "#e9b872", "--jade": "#4fbf95", "--steel": "#7d9fd6", "--coral": "#e2795f",
+  "--ds-series-plan": "#e9b872", "--ds-series-sky": "#7d9fd6", "--ds-series-teal": "#4fbf95", "--ds-series-rose": "#e2795f",
+  "--ds-series-lavender": "#a98fd6", "--ds-series-gray": "#8ba0ac", "--ds-gain": "#4fbf95", "--ds-loss": "#e2795f",
+  "--ds-muted": "#8b97ad",
+};
 export const PRINT_PALETTE: Palette = { "--grid": "#e2e5e3", "--axis": "#666e73", "--stageline": "#9aa5ab", "--dotstroke": "#ffffff", "--bg": "#ffffff", ...HUES };
 export const CARD_PALETTE: Palette = { "--grid": "#1c2740", "--axis": "#7f8eaa", "--stageline": "#4a5a7b", "--dotstroke": "#080b16", "--bg": "#151e33", ...HUES };
 

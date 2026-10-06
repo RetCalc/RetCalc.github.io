@@ -37,6 +37,7 @@ import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 const TARGET_LABEL = "(your target above)";
 
@@ -302,7 +303,7 @@ export function Stages() {
           mcHint={<>5,000 simulations per redraw. Volatility is
             set per stage, in the cards above.</>}
           chart={chart} maxX={R.totalYears} bandItems={bandLegend(parseNum(band) / 100)} legendExtra="Stage boundary"
-          tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-chart-slate">&middot; stage {String(b.stage)}</span></>}
+          tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-dim">&middot; stage {String(b.stage)}</span></>}
           target={portToday} targetLabel={TARGET_LABEL} />
 
         <Card>
@@ -376,9 +377,9 @@ function matchNote(P: ReturnType<typeof stagesPlan>): string {
 function bandLegend(band: number): [string, string][] {
   const lbl = bandLabel(band);
   return [
-    ["#4fbf95", band > 0 ? "Every stage +" + lbl + "%" : "Higher"],
-    ["#e9b872", "As entered"],
-    ["#e2795f", band > 0 ? "Every stage −" + lbl + "%" : "Lower"],
+    [SERIES.teal, band > 0 ? "Every stage +" + lbl + "%" : "Higher"],
+    [SERIES.plan, "As entered"],
+    [SERIES.rose, band > 0 ? "Every stage −" + lbl + "%" : "Lower"],
     ["var(--stageline)", "Stage boundary"],
   ];
 }

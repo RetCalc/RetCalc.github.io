@@ -28,12 +28,13 @@ import type { DdItem } from "./fields";
 import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, startLabel, whyText, swatch } from "./text";
 import { badgeVariants } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 /** The return assumptions the sensitivity table tries: history less 2 and 1
     points a year, as it was, and 1 point better. */
 export const DD_DRAGS = [2, 1, 0, -1];
 
-const BASE_COLOR = "#c9d3e6";
+const BASE_COLOR: string = SERIES.gray;
 const baseLine = (pts: { year: number; value: number }[]) => [{ pts, color: BASE_COLOR, dash: "6 5", width: 1.6 }];
 
 /* ---- a change against the pinned baseline ---- */
@@ -294,8 +295,8 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
             <br /><span className="ddtip-era">Tap to see it year by year</span>
           </>;
         }} />
-      <Html className="legend" id="legendDDQ" html={(dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch("#4fbf95", "Lasted") + swatch("#e2795f", "Ran out") +
-        (ps.sel != null ? swatch("#e9b872", "The start picked in the table") : "")} />
+      <Html className="legend" id="legendDDQ" html={(dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch(SERIES.gain, "Lasted") + swatch(SERIES.loss, "Ran out") +
+        (ps.sel != null ? swatch(SERIES.plan, "The start picked in the table") : "")} />
       <details className="dderas" id="ddEras" hidden={!eras.length}><summary>What happened in the marked years</summary>
         <div id="ddEraList">{eras.map((e) => <p key={e.year}><b>{e.year}: {e.title}.</b> {e.note}</p>)}</div>
       </details>
@@ -354,7 +355,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
       const ov = baseOverlay(B, "realEnd", true, show.startIdx);
       chart = <BandChart id="DD" pts={pts} maxX={o.years} xOffset={xOff} enhanced noLoLine overlay={ov ?? undefined} ariaLabel="Portfolio balance through retirement"
         tip={(b) => <><b>{lbl(age, b.year, true)}</b><br /><span className="n">{money(b.base)}</span></>} />;
-      legend = swatch("#e9b872", "Portfolio balance, in today’s dollars") + (ov ? swatch(BASE_COLOR, "Baseline, same start") : "");
+      legend = swatch(SERIES.plan, "Portfolio balance, in today’s dollars") + (ov ? swatch(BASE_COLOR, "Baseline, same start") : "");
       note = "Balance in today’s dollars, retiring in " + showLabel + ".";
     }
   } else if (R?.kind === "mc") {
@@ -385,7 +386,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
     </Card>
   );
 }
-const BaseSwatch = () => <span><i className="bg-chart-base"></i>Baseline median</span>;
+const BaseSwatch = () => <span><i className="bg-series-gray"></i>Baseline median</span>;
 
 /* ---- spending ---- */
 const realOf = (r: { realSpend?: number; realWithdrawal: number }) => (r.realSpend != null ? r.realSpend : r.realWithdrawal);
@@ -477,8 +478,8 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
   const single = (run: DdRun, ov: ReturnType<typeof baseLine> | null) => {
     const pts: BandPoint[] = run.rows.map((r) => { const x = realOf(r); return { year: r.year, base: x, hi: x, lo: x }; });
     chart = pts.length ? <BandChart id="DDI" pts={pts} maxX={pts.length} xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
-      tip={(b) => <><b>{lbl(age, b.year, false)}</b><br /><span className="text-gold">Spending</span> <span className="n">{money(b.base)}</span></>} /> : null;
-    legend = <Html className="legend" id="legendDDI" html={swatch("#e9b872", "Total spending, in today's dollars") + (ov ? swatch(BASE_COLOR, "Baseline") : "")} />;
+      tip={(b) => <><b>{lbl(age, b.year, false)}</b><br /><i className="tipsw bg-series-plan"></i>Spending <span className="n">{money(b.base)}</span></>} /> : null;
+    legend = <Html className="legend" id="legendDDI" html={swatch(SERIES.plan, "Total spending, in today's dollars") + (ov ? swatch(BASE_COLOR, "Baseline") : "")} />;
   };
   if (R?.kind === "hist") {
     if (view === "all") {

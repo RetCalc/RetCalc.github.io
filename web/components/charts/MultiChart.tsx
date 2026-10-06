@@ -8,8 +8,9 @@ import { ChartFrame, HoverMarks, MONO, pathD, XAxis, YAxis, useChartSize, valueS
 import { TipRow } from "./TipRows";
 import { fmtAxisMoney } from "./scale";
 import { money } from "@/lib/format";
+import { SERIES } from "@/lib/hues";
 
-export const MULTI_COLORS = ["#e9b872", "#4fbf95", "#7d9fd6"];
+export const MULTI_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky];
 
 export interface Series {
   name: string;

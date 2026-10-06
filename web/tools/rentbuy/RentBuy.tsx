@@ -22,6 +22,7 @@ import { rentBuyShare } from "./share";
 import { RENTBUY_DEF as DEF, rentBuyInput, type RentBuyInputs as Inputs } from "./model";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 
 export function RentBuy() {
@@ -130,12 +131,12 @@ export function RentBuy() {
               tip={(b) => (
                 <>
                   <b>Year {fmtNum(b.year)}</b>
-                  <br /><span className="text-gold">Buyer</span> <span className="n">{money(b.base)}</span>
-                  <br /><span className="text-jade">Renter</span> <span className="n">{money(b.hi!)}</span>
+                  <br /><i className="tipsw bg-series-sky"></i>Buyer <span className="n">{money(b.base)}</span>
+                  <br /><i className="tipsw bg-series-teal"></i>Renter <span className="n">{money(b.hi!)}</span>
                 </>
               )} />
           ) : <BandChart id="RB" pts={[]} maxX={0} ariaLabel="Buyer vs renter net worth" tip={() => null} />}
-          <Legend id="legendRB" items={R ? [["#e9b872", "Buyer net worth"], ["#4fbf95", "Renter net worth"]] : []} />
+          <Legend id="legendRB" items={R ? [[SERIES.sky, "Buyer net worth"], [SERIES.teal, "Renter net worth"]] : []} />
         </Card>
         <Card>
           <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>

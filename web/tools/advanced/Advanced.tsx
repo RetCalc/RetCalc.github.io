@@ -42,6 +42,7 @@ import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
@@ -445,9 +446,9 @@ function YearsDiff({ Y, years }: { Y: { reached: boolean; years: number }; years
 function bandLegend(nominal: number, band: number): [string, string][] {
   const lbl = bandLabel(band);
   return [
-    ["#4fbf95", band > 0 ? "At " + pctStr(nominal + band, 2) + " (+" + lbl + "%)" : "Higher"],
-    ["#e9b872", "At " + pctStr(nominal, 2) + " (your rate)"],
-    ["#e2795f", band > 0 ? "At " + pctStr(Math.max(-0.99, nominal - band), 2) + " (−" + lbl + "%)" : "Lower"],
+    [SERIES.teal, band > 0 ? "At " + pctStr(nominal + band, 2) + " (+" + lbl + "%)" : "Higher"],
+    [SERIES.plan, "At " + pctStr(nominal, 2) + " (your rate)"],
+    [SERIES.rose, band > 0 ? "At " + pctStr(Math.max(-0.99, nominal - band), 2) + " (−" + lbl + "%)" : "Lower"],
   ];
 }
 

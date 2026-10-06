@@ -14,13 +14,13 @@ import type { AccountResult } from "@/lib/accounts";
 import { STATES } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { sendYearToTax } from "@/tools/tax/handoff";
-import { themed } from "@/lib/hues";
+import { SERIES } from "@/lib/hues";
 import { CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ROWS = [
-  { k: "trad", label: "Traditional 401(k) / IRA", c: "#e2795f" },
-  { k: "roth", label: "Roth 401(k) / IRA", c: "#4fbf95" },
-  { k: "brok", label: "Taxable brokerage", c: "#7d9fd6" },
+  { k: "trad", label: "Traditional 401(k) / IRA", c: SERIES.rose },
+  { k: "roth", label: "Roth 401(k) / IRA", c: SERIES.teal },
+  { k: "brok", label: "Taxable brokerage", c: SERIES.sky },
 ] as const;
 
 export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; B: AccountResult; years: number }) {
@@ -45,7 +45,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
           <tbody>
             {ROWS.map((r, i) => (
               <tr key={r.k}>
-                <td><i className="acdot bg-(--swatch)" style={{ "--swatch": themed(r.c) } as React.CSSProperties}></i>{r.label}</td>
+                <td><i className="acdot bg-(--swatch)" style={{ "--swatch": r.c } as React.CSSProperties}></i>{r.label}</td>
                 <td>{money(B.real[r.k])}</td><td>{pctStr(B.shares[r.k], 0)}</td><td>{money(B.w[r.k])}</td>
                 <td>{money(B.tax.buckets[i].tax)}</td><td>{money(B.w[r.k] - B.tax.buckets[i].tax)}</td>
               </tr>

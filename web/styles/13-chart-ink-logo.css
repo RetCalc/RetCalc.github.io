@@ -1,92 +1,13 @@
-/* ---------- charts: brand type and theme-aware ink ----------
+/* ---------- charts: brand type ----------
    Every painter labels its axes in a system monospace; this puts them in the
    site's own face (--mono is IBM Plex Sans now) with tabular figures, like
    every other number on the page.
    (CSS outranks an SVG presentation attribute, so no painter has to change.) */
 svg text[font-family*="monospace"]{font-family:var(--mono);font-variant-numeric:tabular-nums}
-/* The plan's gold line glows faintly on the dark theme, like the readouts. */
-html:not([data-theme="light"]) .chartwrap path:is([stroke="#e9b872"],[stroke="var(--gold)"]){filter:drop-shadow(0 0 5px rgba(233,184,114,.4))}
-/* The painters write the dark theme's data hues as literal hex, which run
-   pale on white. On the light theme those same four hues are swapped for the
-   theme's deeper ones wherever they appear: chart strokes and fills, legend
-   swatches, and the coloured labels in tooltips. The logo keeps its own.
-   (A colour React sets in the browser is written out as rgb(), so each rule
-   matches that form too.) */
-html[data-theme="light"] svg:not(.brandmark) [stroke="#e9b872"]{stroke:var(--gold)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#e9b872"]{fill:var(--gold)}
-html[data-theme="light"] [style*="color:#e9b872"]{color:var(--gold) !important}
-html[data-theme="light"] [style*="color: rgb(233, 184, 114)"]{color:var(--gold) !important}
-html[data-theme="light"] [style*="background:#e9b872"]{background:var(--gold) !important}
-html[data-theme="light"] [style*="background: rgb(233, 184, 114)"]{background:var(--gold) !important}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#4fbf95"]{stroke:var(--jade)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#4fbf95"]{fill:var(--jade)}
-html[data-theme="light"] [style*="color:#4fbf95"]{color:var(--jade) !important}
-html[data-theme="light"] [style*="color: rgb(79, 191, 149)"]{color:var(--jade) !important}
-html[data-theme="light"] [style*="background:#4fbf95"]{background:var(--jade) !important}
-html[data-theme="light"] [style*="background: rgb(79, 191, 149)"]{background:var(--jade) !important}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#7d9fd6"]{stroke:var(--steel)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#7d9fd6"]{fill:var(--steel)}
-html[data-theme="light"] [style*="color:#7d9fd6"]{color:var(--steel) !important}
-html[data-theme="light"] [style*="color: rgb(125, 159, 214)"]{color:var(--steel) !important}
-html[data-theme="light"] [style*="background:#7d9fd6"]{background:var(--steel) !important}
-html[data-theme="light"] [style*="background: rgb(125, 159, 214)"]{background:var(--steel) !important}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#e2795f"]{stroke:var(--coral)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#e2795f"]{fill:var(--coral)}
-html[data-theme="light"] [style*="color:#e2795f"]{color:var(--coral) !important}
-html[data-theme="light"] [style*="color: rgb(226, 121, 95)"]{color:var(--coral) !important}
-html[data-theme="light"] [style*="background:#e2795f"]{background:var(--coral) !important}
-html[data-theme="light"] [style*="background: rgb(226, 121, 95)"]{background:var(--coral) !important}
-
-
-/* Painters read theme colours with cssVar() and write the hex into each
-   drawing, so a chart drawn under one theme kept that theme's ink after a
-   switch (only the three calculator charts redraw), and a tool opened on a
-   light-theme visit was drawn before the stored theme applied, leaving its
-   labels near-white on white. Each theme token's hex from the other theme is
-   mapped back to the live token here, so every chart follows the theme
-   without being redrawn. */
-html[data-theme="light"] svg:not(.brandmark) [fill="#e8edf7"]{fill:var(--text)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#e8edf7"]{stroke:var(--text)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#bbc8db"]{fill:var(--dim)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#bbc8db"]{stroke:var(--dim)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#94a6bf"]{fill:var(--dimmer)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#94a6bf"]{stroke:var(--dimmer)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#1c2740"]{fill:var(--grid)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#1c2740"]{stroke:var(--grid)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#7f8eaa"]{fill:var(--axis)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#7f8eaa"]{stroke:var(--axis)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#4a5a7b"]{fill:var(--stageline)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#4a5a7b"]{stroke:var(--stageline)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#26314b"]{fill:var(--line)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#26314b"]{stroke:var(--line)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#1a2338"]{fill:var(--line-soft)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#1a2338"]{stroke:var(--line-soft)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#151e33"]{fill:var(--panel)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#151e33"]{stroke:var(--panel)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#1e2a44"]{fill:var(--panel-2)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#1e2a44"]{stroke:var(--panel-2)}
-html[data-theme="light"] svg:not(.brandmark) [fill="#0d1322"]{fill:var(--pop)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#0d1322"]{stroke:var(--pop)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#111827"]{fill:var(--text)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#111827"]{stroke:var(--text)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#404d64"]{fill:var(--dim)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#404d64"]{stroke:var(--dim)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#5f6e87"]{fill:var(--dimmer)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#5f6e87"]{stroke:var(--dimmer)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#e0e4ee"]{fill:var(--grid)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#e0e4ee"]{stroke:var(--grid)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#66728a"]{fill:var(--axis)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#66728a"]{stroke:var(--axis)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#9aa5bb"]{fill:var(--stageline)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#9aa5bb"]{stroke:var(--stageline)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#ccd3e2"]{fill:var(--line)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#ccd3e2"]{stroke:var(--line)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#e3e7f0"]{fill:var(--line-soft)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#e3e7f0"]{stroke:var(--line-soft)}
-html:not([data-theme="light"]) svg:not(.brandmark) [fill="#f3f5fa"]{fill:var(--panel-2)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#f3f5fa"]{stroke:var(--panel-2)}
-html[data-theme="light"] svg:not(.brandmark) [stroke="#080b16"]{stroke:var(--dotstroke)}
-html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#ffffff"]{stroke:var(--dotstroke)}
+/* Chart colors are design-system tokens written as CSS variables
+   (lib/hues.ts), so charts follow the theme on their own; the rules that
+   swapped literal hex values between themes, and the plan line's glow, are
+   gone. */
 
 
 /* ---------- the logo's arrow as a button glyph ----------
@@ -103,12 +24,3 @@ html:not([data-theme="light"]) svg:not(.brandmark) [stroke="#ffffff"]{stroke:var
   :is(.btn,[data-slot="button"]):hover > .arw:not(.back){transform:translateX(3px)}
   :is(.btn,[data-slot="button"]):hover > .arw.back{transform:scaleX(-1) translateX(3px)}
 }
-
-/* ---------- the logo on the light theme ----------
-   Its gold and jade are tuned for the dark ground and run pale on white, so
-   on the light theme they deepen a step, as the data hues do. */
-html[data-theme="light"] .brandmark [stroke="#e9b872"]{stroke:#c1861e}
-html[data-theme="light"] .brandmark [fill="#e9b872"]{fill:#c1861e}
-html[data-theme="light"] .brandmark [stroke="#4fbf95"]{stroke:#2a9e73}
-html[data-theme="light"] .brandmark [stroke="#7d9fd6"]{stroke:#5a81c3}
-

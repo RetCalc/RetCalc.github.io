@@ -26,6 +26,7 @@ import { useShareKit } from "@/components/shell/share";
 import { rothShare } from "./share";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
 export function Roth() {
   const { state: s, set, setState } = useToolState(ROTH_DEF);
@@ -254,13 +255,13 @@ export function Roth() {
             tip={(b) => (
               <>
                 <b>Age {fmtNum(inp.age + b.year)}</b>
-                <br /><span className="text-gold">Converting</span> <span className="n">{money(b.base)}</span>
-                <br /><span className="text-jade">No conversions</span> <span className="n">{money(b.hi!)}</span>
+                <br /><i className="tipsw bg-series-plan"></i>Converting <span className="n">{money(b.base)}</span>
+                <br /><i className="tipsw bg-series-gray"></i>No conversions <span className="n">{money(b.hi!)}</span>
               </>
             )} />
           <Legend id="legendRC" items={R ? [
-            ["#e9b872", view === "bal" ? "Traditional balance, converting" : "Tax paid, converting"],
-            ["#4fbf95", view === "bal" ? "Traditional balance, no conversions" : "Tax paid, no conversions"],
+            [SERIES.plan, view === "bal" ? "Traditional balance, converting" : "Tax paid, converting"],
+            [SERIES.gray, view === "bal" ? "Traditional balance, no conversions" : "Tax paid, no conversions"],
           ] : []} />
         </Card>
 

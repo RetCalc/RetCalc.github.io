@@ -5,8 +5,9 @@
    src/js/app/11-income-tax.js; colors are the theme's variables, so it
    follows a theme switch. */
 import { money } from "@/lib/format";
+import { SERIES } from "@/lib/hues";
 
-export const LTCG_COLORS = ["#4fbf95", "#e9b872", "#e2795f"]; // 0%, 15%, 20%
+export const LTCG_COLORS: string[] = [SERIES.teal, SERIES.sky, SERIES.rose]; // 0%, 15%, 20%
 
 interface Stack { ltcgCut: number[]; ordTaxable: number; gainTaxable: number; ltcgBands: { amount: number }[] }
 
@@ -30,7 +31,7 @@ export function stackChartSvg(R: Stack): string {
   s += zone(Math.min(max, c15), max, "rgba(226,121,95,.09)");
 
   // ordinary income floor
-  if (lo > 0) s += `<rect x='${x(0).toFixed(1)}' y='${barY}' width='${(x(lo) - x(0)).toFixed(1)}' height='${barH}' fill='#8ba0ac' opacity='.85' rx='2'/>`;
+  if (lo > 0) s += `<rect x='${x(0).toFixed(1)}' y='${barY}' width='${(x(lo) - x(0)).toFixed(1)}' height='${barH}' fill='${SERIES.gray}' opacity='.85' rx='2'/>`;
 
   // the gain, segment by segment
   let cur = lo;

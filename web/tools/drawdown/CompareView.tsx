@@ -21,8 +21,9 @@ import { PICKER_IDS, type DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, targetWords, swatch } from "./text";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SERIES } from "@/lib/hues";
 
-const SPOT_COLORS = ["#e9b872", "#4fbf95", "#7d9fd6", "#e2795f", "#b49be0", "#7fd0d6"];
+const SPOT_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky, SERIES.rose, SERIES.lavender, SERIES.gray];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
 
 export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: boolean }) {
@@ -86,7 +87,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
               {x.met ? null : <><br /><span className="neg">Closest it gets: {pctStr(x.share, 0)} of starts</span></>}
             </>;
           }} />
-        <Html className="legend" id="legendDDS" html={res ? swatch("#e9b872", "Your strategy") + swatch("#4fbf95", "Meets the target") + swatch("#e2795f", "Can't meet it: shown at its closest") : ""} />
+        <Html className="legend" id="legendDDS" html={res ? swatch(SERIES.plan, "Your strategy") + swatch(SERIES.gain, "Meets the target") + swatch(SERIES.loss, "Can't meet it: shown at its closest") : ""} />
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll">
           <table id="ddShowTable" ref={table}>
@@ -148,11 +149,11 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
       let xo = ddForTarget({ ...o, strategy: x.id, path: "flat" }, T);
       if (x.tuned && x.dial != null) xo = ddWithDial(xo, x.dial);
       const vals = runDrawdown(xo, win.seq, null).rows.map((r) => r.realReg);
-      series.push({ name: DD_UI[x.id].short, color: x.id === o.strategy ? "#e9b872" : SPOT_COLORS[1 + (k++ % (SPOT_COLORS.length - 1))],
+      series.push({ name: DD_UI[x.id].short, color: x.id === o.strategy ? SERIES.plan : SPOT_COLORS[1 + (k++ % (SPOT_COLORS.length - 1))],
         pts: vals.map((val, y) => ({ year: y + 1, value: val })), width: x.id === o.strategy ? 2.8 : 2 });
     }
     if (T.crit === "comfort")
-      series.push({ name: "Comfort line", color: "#8b97ad", dash: "5 5", width: 1.4, pts: Array.from({ length: o.years }, (_, y) => ({ year: y + 1, value: ddLineAt(T.comfort, y) })) });
+      series.push({ name: "Comfort line", color: SERIES.guide, dash: "5 5", width: 1.4, pts: Array.from({ length: o.years }, (_, y) => ({ year: y + 1, value: ddLineAt(T.comfort, y) })) });
   }
   const age = v.age;
   return (

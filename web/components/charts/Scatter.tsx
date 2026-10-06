@@ -8,6 +8,7 @@
 import { ChartFrame, MONO, type ChartSize } from "./ChartFrame";
 import { useNarrow } from "./useNarrow";
 import { fmtNum } from "@/lib/format";
+import { SERIES } from "@/lib/hues";
 
 export interface ScatterPoint {
   x: number; y: number;
@@ -123,12 +124,12 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
           {opt.xLabel ? text(W - R, H - 4, opt.xLabel, { textAnchor: "end", fontSize: fs * 0.9 }) : null}
           {opt.yLabel ? text(L + 4, T + fs, opt.yLabel, { fontSize: fs * 0.9 }) : null}
           {opt.hLine ? <>
-            <line x1={L} x2={W - R} y1={Y(opt.hLine.y)} y2={Y(opt.hLine.y)} stroke="var(--gold)" strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
-            {text(W - R - 4, Y(opt.hLine.y) - 5, opt.hLine.label, { textAnchor: "end", style: { fill: "#e9b872" }, fontSize: fs * 0.9 })}
+            <line x1={L} x2={W - R} y1={Y(opt.hLine.y)} y2={Y(opt.hLine.y)} stroke={SERIES.plan} strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
+            {text(W - R - 4, Y(opt.hLine.y) - 5, opt.hLine.label, { textAnchor: "end", style: { fill: SERIES.plan }, fontSize: fs * 0.9 })}
           </> : null}
           {opt.vLine ? <>
-            <line x1={X(opt.vLine.x)} x2={X(opt.vLine.x)} y1={T} y2={T + ph} stroke="var(--gold)" strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
-            {text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, { textAnchor: "end", style: { fill: "#e9b872" }, fontSize: fs * 0.9 })}
+            <line x1={X(opt.vLine.x)} x2={X(opt.vLine.x)} y1={T} y2={T + ph} stroke={SERIES.plan} strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
+            {text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, { textAnchor: "end", style: { fill: SERIES.plan }, fontSize: fs * 0.9 })}
           </> : null}
           {(opt.marks || []).filter((m) => m.x >= AXx.min && m.x <= AXx.max).map((m) => (
             <g key={"m" + m.x}>
@@ -137,13 +138,13 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
             </g>
           ))}
           {at.map(({ p, px, py }, i) => {
-            const color = p.cur ? "#e9b872" : p.miss ? "#e2795f" : p.color || "#4fbf95";
+            const color = p.cur ? SERIES.plan : p.miss ? SERIES.loss : p.color || SERIES.gain;
             return <circle key={i} cx={px} cy={py} r={(opt.small ? 2.6 : p.cur ? 6.5 : 5) * sw}
               fill={p.miss ? "none" : color} stroke={p.miss ? color : "var(--dotstroke)"}
               strokeWidth={(p.miss ? 1.8 : 1.5) * sw} opacity={opt.small ? 0.55 : 1} />;
           })}
-          {labels.map((l, i) => text(l.x, l.y, l.text, { style: { fill: l.cur ? "#e9b872" : "var(--dim)" }, fontSize: fs * 0.95, fontWeight: l.cur ? 600 : 400 }, "l" + i))}
-          <circle cx={hi != null ? at[hi].px : 0} cy={hi != null ? at[hi].py : 0} r={9 * sw} fill="none" stroke="var(--gold)" strokeWidth={1.6 * sw} opacity={hi != null ? 1 : 0} />
+          {labels.map((l, i) => text(l.x, l.y, l.text, { style: { fill: l.cur ? SERIES.plan : "var(--dim)" }, fontSize: fs * 0.95, fontWeight: l.cur ? 600 : 400 }, "l" + i))}
+          <circle cx={hi != null ? at[hi].px : 0} cy={hi != null ? at[hi].py : 0} r={9 * sw} fill="none" stroke={SERIES.plan} strokeWidth={1.6 * sw} opacity={hi != null ? 1 : 0} />
         </>
       )}
     </ChartFrame>

@@ -8,6 +8,7 @@ import { ChartFrame, MONO, type ChartSize } from "./ChartFrame";
 import { fmtAxisMoney, niceAxis } from "./scale";
 import { useNarrow } from "./useNarrow";
 import { fmtNum } from "@/lib/format";
+import { SERIES } from "@/lib/hues";
 
 export interface Bin { lo: number; hi: number; n: number }
 
@@ -59,15 +60,15 @@ export function Histogram({ id, bins, mark, ariaLabel, tip }: {
           ))}
           {bins.map((b, i) => (b.n ? (
             <rect key={i} x={X(b.lo) + gap / 2} y={Y(b.n)} width={Math.max(1, X(b.hi) - X(b.lo) - gap)} height={Math.max(0, T + ph - Y(b.n))}
-              fill="var(--jade)" opacity={0.72} rx={2} />
+              fill={SERIES.teal} opacity={0.72} rx={2} />
           ) : null))}
           {ax.ticks.filter((v) => v >= x0 - 1e-9 && v <= x1 + 1e-9).map((v) => label(X(v), H - (narrow ? 14 : 12), fmtAxisMoney(v), "middle", "x" + v))}
           {mark != null && mark >= x0 && mark <= x1 ? <>
-            <line x1={X(mark)} x2={X(mark)} y1={T} y2={T + ph} stroke="var(--gold)" strokeWidth={1.5} strokeDasharray="5 4" />
-            <text x={X(mark) + 5} y={T + fs} fontSize={fs * 0.92} fill="var(--gold)" fontFamily={MONO}>comfort line</text>
+            <line x1={X(mark)} x2={X(mark)} y1={T} y2={T + ph} stroke={SERIES.guide} strokeWidth={1.5} strokeDasharray="5 4" />
+            <text x={X(mark) + 5} y={T + fs} fontSize={fs * 0.92} fill={SERIES.guide} fontFamily={MONO}>comfort line</text>
           </> : null}
           <rect x={hi != null ? X(bins[hi].lo) : 0} y={T} width={hi != null ? Math.max(1, X(bins[hi].hi) - X(bins[hi].lo)) : 0} height={ph}
-            fill="var(--gold)" opacity={hi != null ? 0.14 : 0} rx={2} />
+            fill="var(--ds-text)" opacity={hi != null ? 0.1 : 0} rx={2} />
         </>
       )}
     </ChartFrame>

@@ -10,6 +10,7 @@
 
 import { useId } from "react";
 import { ChartFrame, HoverMarks, MONO, pathD, XAxis, YAxis, useChartSize, valueScale } from "./ChartFrame";
+import { SERIES } from "@/lib/hues";
 
 export interface BandPoint {
   year: number;
@@ -82,13 +83,13 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             <defs>
               {([["fanOuter", .16, .02], ["fanInner", .30, .06], ["bandFill", .20, .05]] as const).map(([name, a, b]) => (
                 <linearGradient key={name} id={g(name)} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-dark-jade)" stopOpacity={a} />
-                  <stop offset="100%" stopColor="var(--color-dark-jade)" stopOpacity={b} />
+                  <stop offset="0%" stopColor={SERIES.teal} stopOpacity={a} />
+                  <stop offset="100%" stopColor={SERIES.teal} stopOpacity={b} />
                 </linearGradient>
               ))}
               {/* The plan's own line ends in the logo's arrowhead. */}
               <marker id={g("tip")} viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto">
-                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill="var(--gold)" />
+                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill={SERIES.plan} />
               </marker>
               {traces?.lines.length ? <clipPath id={g("trc")}><rect x={L} y={T} width={pw} height={ph} /></clipPath> : null}
             </defs>
@@ -98,7 +99,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
 
             {/* Every starting year as its own faint line, under the shading. */}
             {traces?.lines.length ? (
-              <g clipPath={`url(#${g("trc")})`} fill="none" stroke="var(--steel)" strokeLinejoin="round" className="traces"
+              <g clipPath={`url(#${g("trc")})`} fill="none" stroke={SERIES.sky} strokeLinejoin="round" className="traces"
                 strokeOpacity={traces.lines.length > 400 ? .055 : traces.lines.length > 60 ? .13 : .18} strokeWidth={.9 * sw}>
                 {traces.lines.map((ln, k) => {
                   const at: [number, number][] = [];
@@ -123,20 +124,20 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             {stageMarks.map((m) => (
               <g key={m.year}>
                 <line x1={X(m.year)} x2={X(m.year)} y1={T} y2={T + ph} stroke="var(--stageline)" strokeWidth={sw} strokeDasharray="4 4" />
-                <text x={X(m.year) + 4} y={T + fs} fontSize={fs * .92} fill="var(--color-chart-label)" fontFamily={MONO}>{m.label}</text>
+                <text x={X(m.year) + 4} y={T + fs} fontSize={fs * .92} fill={SERIES.guide} fontFamily={MONO}>{m.label}</text>
               </g>
             ))}
 
             {mode === "mc" ? (
               <>
-                {pts[0].det != null ? <path d={line((a) => a.det!)} fill="none" stroke="var(--steel)" strokeWidth={1.6 * sw} strokeDasharray="5 4" /> : null}
-                <path d={line((a) => a.base)} fill="none" stroke="var(--gold)" strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                {pts[0].det != null ? <path d={line((a) => a.det!)} fill="none" stroke={SERIES.sky} strokeWidth={1.6 * sw} strokeDasharray="5 4" /> : null}
+                <path d={line((a) => a.base)} fill="none" stroke={SERIES.plan} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             ) : (
               <>
-                <path d={line((a) => a.hi!)} fill="none" stroke="var(--jade)" strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
-                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke="var(--coral)" strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
-                <path d={line((a) => a.base)} fill="none" stroke="var(--gold)" strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                <path d={line((a) => a.hi!)} fill="none" stroke={SERIES.teal} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
+                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke={SERIES.rose} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
+                <path d={line((a) => a.base)} fill="none" stroke={SERIES.plan} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             )}
 
@@ -149,8 +150,8 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             <HoverMarks size={size} x={bx} y={best ? Y(best.base) : null} />
             {enhanced ? (
               <>
-                <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill="var(--jade)" stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
-                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill="var(--coral)" stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
+                <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill={SERIES.teal} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
+                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill={SERIES.rose} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
                 <circle cx={bx ?? 0} cy={T + ph + B / 2} r={3 * sw} fill="var(--dim)" opacity={best ? 1 : 0} />
               </>
             ) : null}

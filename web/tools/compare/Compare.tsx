@@ -16,7 +16,6 @@ import { compareNav } from "@/lib/compare-nav";
 import { useClient } from "@/lib/useClient";
 import { DDCompare } from "./DDCompare";
 import { setNavDir } from "@/lib/nav-motion";
-import { themed } from "@/lib/hues";
 import {
   CMP_LETTERS, CMP_MODES, CMP_MODE_LABEL, cmpDelta, cmpFmt, cmpRun, openingSlots, rememberSlots, savedNames,
   type CmpMode, type Slot,
@@ -71,7 +70,7 @@ function CompareSaved() {
           <div className="cmpgrid" id="cmpPickers">
             {enough ? slots.map((sl, i) => (
               <div className="cmpslot" key={i}>
-                <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": themed(MULTI_COLORS[i]) } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
+                <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": MULTI_COLORS[i] } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
                 <div className="field">
                   <select data-cmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={sl.name}
                     onChange={(e) => setSlots(slots.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}>
