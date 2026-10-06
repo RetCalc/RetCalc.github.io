@@ -197,12 +197,12 @@ export function Basic() {
           <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4 wide:mt-0 wide:min-w-0 wide:flex-1 wide:items-center wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8">
             <div data-pair>
               <span className="block text-label text-muted-foreground" data-k>Income, per month</span>
-              <BigValue className="text-2xl leading-tight font-medium tabular-nums" id="qMonth" text={perMonth} sized={false} />
+              <BigValue className="text-3xl leading-tight font-medium tabular-nums sm:text-display" id="qMonth" text={perMonth} sized={false} />
               <span className="block text-label text-muted-foreground">The same, spread monthly</span>
             </div>
             <div data-pair>
               <span className="block text-label text-muted-foreground" data-k>Income, per year</span>
-              <BigValue className="text-2xl leading-tight font-medium tabular-nums" id="qYear" text={R ? money(R.fv * 0.04) : DASH} sized={false} />
+              <BigValue className="text-3xl leading-tight font-medium tabular-nums sm:text-display" id="qYear" text={R ? money(R.fv * 0.04) : DASH} sized={false} />
               <span className="block text-label text-muted-foreground">Taking 4% a year</span>
             </div>
           </div>

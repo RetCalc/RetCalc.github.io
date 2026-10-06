@@ -102,6 +102,8 @@
   --text-fine: 11px;
   /* DESIGN.md's Label step: field hints, readout labels, legend entries. */
   --text-label: 11.5px;
+  /* DESIGN.md's Display step: headline readout figures. */
+  --text-display: 35px;
   --text-note: 13px;
   --text-aside: 14px;
   --text-body: 15px;
