@@ -9,8 +9,10 @@ const buttonVariants = cva(
       variant: {
         // The primary action: one per view, one of amber's four places.
         default: "bg-primary font-semibold text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_12%)]",
+        // On light paper a Rule edge round a Raised fill read as disabled,
+        // so light mode gives it the control edge (Rule Strong).
         outline:
-          "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-pressed:border-muted-foreground aria-pressed:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "border-input dark:border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-pressed:border-muted-foreground aria-pressed:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
           "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
