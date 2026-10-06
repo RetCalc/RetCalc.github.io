@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-06T13:58:03.314Z",
+  "recorded": "2026-10-06T14:15:50.404Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -395,6 +395,559 @@
       "fields": {
         "withConv": "b83779a30095d3ce",
         "without": "bdaa96a57c5910b9"
+      }
+    },
+    {
+      "id": "Mortgage: defaults: $450,000, 20% down, 30 years",
+      "out": {
+        "loan": 360000,
+        "monthlyPI": 2325.3892,
+        "monthlyTotal": 3562.8892,
+        "totalInterest": 477140.1088,
+        "payoffMonth": 360,
+        "pmiPaid": 0,
+        "recastPI": null,
+        "interestSaved": null,
+        "monthsSooner": null
+      },
+      "fields": {
+        "R": "20a5e5d85afe6ae2",
+        "RF": "74234e98afe7498f",
+        "base": "74234e98afe7498f"
+      }
+    },
+    {
+      "id": "Mortgage: 10% down with PMI, $300/month extra, $10,000 at month 24, recast, refinance to 5.5%",
+      "out": {
+        "loan": 405000,
+        "monthlyPI": 2616.0628,
+        "monthlyTotal": 4056.0628,
+        "totalInterest": 382522.8081,
+        "payoffMonth": 277,
+        "pmiPaid": 9922.5,
+        "recastPI": 2499.2481,
+        "interestSaved": 154259.8143,
+        "monthsSooner": 83
+      },
+      "fields": {
+        "R": "f2a20179b4c089f0",
+        "RF": "a0583117951c8596",
+        "base": "0fe5b79e1e8ca828"
+      }
+    },
+    {
+      "id": "Debt Payoff: defaults: four debts, $300 extra, avalanche",
+      "out": {
+        "avalanche": {
+          "months": 47,
+          "totalInterest": 8154.5883,
+          "totalPaid": 57554.5883,
+          "stalled": false
+        },
+        "snowball": {
+          "months": 48,
+          "totalInterest": 8578.3962,
+          "totalPaid": 57978.3962,
+          "stalled": false
+        },
+        "minimumsOnly": {
+          "months": 123,
+          "totalInterest": 18321.3245,
+          "totalPaid": 67721.3245,
+          "stalled": false
+        },
+        "underwater": "",
+        "plus100": {
+          "months": 43,
+          "totalInterest": 7225.901,
+          "totalPaid": 56625.901,
+          "stalled": false
+        }
+      },
+      "fields": {
+        "av": "da7f4724771f2c79",
+        "bump": "87d6bc75b919725f",
+        "mn": "185df596ca9d2066",
+        "sn": "cd0310a1464be7e3",
+        "under": "4f53cda18c2baa0c"
+      }
+    },
+    {
+      "id": "Debt Payoff: snowball, $0 extra, one debt whose minimum doesn't cover interest",
+      "out": {
+        "avalanche": {
+          "months": 83,
+          "totalInterest": 30884.5608,
+          "totalPaid": 85284.5608,
+          "stalled": false
+        },
+        "snowball": {
+          "months": 83,
+          "totalInterest": 30884.5608,
+          "totalPaid": 85284.5608,
+          "stalled": false
+        },
+        "minimumsOnly": {
+          "months": 721,
+          "totalInterest": 2915080488171.708,
+          "totalPaid": 2915080542571.708,
+          "stalled": true
+        },
+        "underwater": "Payday loan",
+        "plus100": {
+          "months": 67,
+          "totalInterest": 20909.5402,
+          "totalPaid": 75309.5402,
+          "stalled": false
+        }
+      },
+      "fields": {
+        "av": "97887017a6629f70",
+        "bump": "b9de29542eaf1467",
+        "mn": "368b04577bc8256e",
+        "sn": "311f847ba1dc7d2c",
+        "under": "c0b734753208a2d5"
+      }
+    },
+    {
+      "id": "Rent vs. Buy: defaults: $450,000 home vs $1,800 rent, 30 years",
+      "out": {
+        "breakEven": null,
+        "monthlyBuy": 3262.8892,
+        "monthlyPI": 2325.3892,
+        "initialInvest": 103500,
+        "lastYear": {
+          "year": 30,
+          "buyerNW": 1347906.5612,
+          "renterNW": 2022173.7976,
+          "homeVal": 1459528.8795,
+          "balance": 0,
+          "monthBuy": 5366.0744,
+          "monthRent": 4487.2858
+        }
+      },
+      "fields": {
+        "breakEven": "74234e98afe7498f",
+        "initialInvest": "798c9f896871dd52",
+        "loan": "e6ba348d1464969b",
+        "monthlyBuy": "823adb386a79f110",
+        "pi": "b9fbb8969797b7e1",
+        "years": "4b9ebeb74371c29a"
+      }
+    },
+    {
+      "id": "Rent vs. Buy: $700,000 home vs $3,000 rent, 7 years, single, 2% appreciation",
+      "out": {
+        "breakEven": null,
+        "monthlyBuy": 4992.2721,
+        "monthlyPI": 3617.2721,
+        "initialInvest": 161000,
+        "lastYear": {
+          "year": 7,
+          "buyerNW": 271876.0699,
+          "renterNW": 432163.8385,
+          "homeVal": 804079.9674,
+          "balance": 508081.4984,
+          "monthBuy": 5196.7149,
+          "monthRent": 3624.0939
+        }
+      },
+      "fields": {
+        "breakEven": "74234e98afe7498f",
+        "initialInvest": "632aa073b82bacb5",
+        "loan": "d9df77227d1ee59d",
+        "monthlyBuy": "8bf6c56f00d78f2d",
+        "pi": "e287a756f579b902",
+        "years": "2aa4ff1a7264318c"
+      }
+    },
+    {
+      "id": "College: defaults: one child, public in-state, 18 years",
+      "out": {
+        "monthly": 558.2579,
+        "totalFuture": 232269.0364,
+        "targetAtStart": 212673.5861,
+        "shortfall": 212673.5861
+      },
+      "fields": {
+        "monthly": "765e9a8ff55a1038",
+        "rows": "d3bd7c306850daf7",
+        "savingsAtStart": "5feceb66ffc86f38",
+        "shortfall": "c7162cf380950e2c",
+        "targetAtStart": "c7162cf380950e2c",
+        "totalFuture": "553ed04e32a3d670",
+        "yearCosts": "e732a98732be049b"
+      }
+    },
+    {
+      "id": "College: two children (private in 10 years, Ivy in 4), $40,000 saved",
+      "out": {
+        "monthly": 4905.6244,
+        "totalFuture": 778218.9453,
+        "pvToday": 485059.4489,
+        "phases": 1
+      },
+      "fields": {
+        "kids": "66334546bb45b3b1",
+        "monthly": "d02d578d3e27d305",
+        "phases": "3c67cb25040a9796",
+        "pvToday": "5fad420f820f1622",
+        "rows": "b90ee0536e57e553",
+        "skipped": "5feceb66ffc86f38",
+        "totalFuture": "a5817d22ad42d64d"
+      }
+    },
+    {
+      "id": "Budget: $6,500/month income with typical rows",
+      "out": {
+        "incomeYr": 78000,
+        "spentYr": 41320,
+        "savedYr": 6000,
+        "leftYr": 30680,
+        "householdTakeHome": null
+      },
+      "fields": {
+        "net": "74234e98afe7498f",
+        "totals": "2c89ecee73cfae70"
+      }
+    },
+    {
+      "id": "Budget: income filled from the household: married, $150,000 + $70,000, California",
+      "out": {
+        "incomeYr": 0,
+        "spentYr": 0,
+        "savedYr": 0,
+        "leftYr": 0,
+        "householdTakeHome": 160429.164
+      },
+      "fields": {
+        "net": "b0a9367934f5c3f7",
+        "totals": "d7500756b3464ae5"
+      }
+    },
+    {
+      "id": "Healthcare: single, retire at 60, $55,000 MAGI, Illinois",
+      "out": {
+        "bridgeYears": 5,
+        "acaMagi": 55000,
+        "pctFPL": 3.5144,
+        "benchmarkMonthly": 1371.8654,
+        "netPremium": 456.5,
+        "credit": 915.3654,
+        "enhancedNet": 333.939,
+        "irmaaTier": 0,
+        "medicareLow": 357.9,
+        "medicareHigh": 437.9
+      },
+      "fields": {
+        "acaMagi": "4520eeb3ad812cd2",
+        "enh": "d6d1db11ae2928f2",
+        "fpl": "1740f86922944273",
+        "grossMonthly": "83da5fd479fe331c",
+        "medicare": "c5f645c5d25515a4",
+        "std": "b0b25a169570af9e"
+      }
+    },
+    {
+      "id": "Healthcare: couple, retire at 58, $90,000 MAGI + $30,000 Social Security, Florida, one child",
+      "out": {
+        "bridgeYears": 7,
+        "acaMagi": 94500,
+        "pctFPL": 3.546,
+        "benchmarkMonthly": 3017.385,
+        "netPremium": 784.35,
+        "credit": 2233.035,
+        "enhancedNet": 579.9871,
+        "irmaaTier": 0,
+        "medicareLow": 357.9,
+        "medicareHigh": 437.9
+      },
+      "fields": {
+        "acaMagi": "c3eaba96e4511b09",
+        "enh": "9d8253f0062dd175",
+        "fpl": "d1849ef0df16234b",
+        "grossMonthly": "c404c5de35a0209d",
+        "medicare": "c5f645c5d25515a4",
+        "std": "a7636405b24ee210"
+      }
+    },
+    {
+      "id": "Healthcare: couple over the 400% cliff and in an IRMAA tier",
+      "out": {
+        "bridgeYears": 2,
+        "acaMagi": 260000,
+        "pctFPL": 12.2931,
+        "benchmarkMonthly": 1887.1549,
+        "netPremium": 1887.1549,
+        "credit": 0,
+        "enhancedNet": 1841.6667,
+        "irmaaTier": 1,
+        "medicareLow": 453.6,
+        "medicareHigh": 533.6
+      },
+      "fields": {
+        "acaMagi": "9e7671068ee9f4c1",
+        "enh": "3edacf3b6e616ec0",
+        "fpl": "48ff6cf0c4990494",
+        "grossMonthly": "fd3c3c19b2142fda",
+        "medicare": "1c30e6e0fa673979",
+        "std": "1ce7461df800452b"
+      }
+    },
+    {
+      "id": "FIRE: defaults: $40,000 a year at 4%",
+      "out": {
+        "yearsUntil": 36.5679,
+        "realThen": 1024146.1972,
+        "nominalThen": 3057308.55,
+        "contribs": 444000,
+        "target": 1000000,
+        "histYears": null
+      },
+      "fields": {
+        "S": "54401ec713948946",
+        "cr": "74234e98afe7498f"
+      }
+    },
+    {
+      "id": "FIRE: Coast FIRE, $150,000 saved at 35, history chart at 80% success",
+      "out": {
+        "yearsUntil": 6.4505,
+        "realThen": 307690.6579,
+        "nominalThen": 378420.6988,
+        "contribs": 84000,
+        "target": 1000000,
+        "histYears": 15.1667
+      },
+      "fields": {
+        "S": "caac3bbff794f08a",
+        "cr": "6ca0e86cf463a178"
+      }
+    },
+    {
+      "id": "Early Retirement Bridge (and /72t): defaults: 50, married, $60,000 spending, history",
+      "out": {
+        "bestPlan": "Blended plan",
+        "holds": 100,
+        "taxCost": 74761.8111,
+        "leftAt59": 1936129.2582,
+        "plans": "Blended plan: 100%; Roth conversion ladder: 85%; Brokerage, then Roth contributions: 53%; 72(t) payments: 100%; Pay the 10% penalty: 100%",
+        "firstYearGross": 60629.1693
+      },
+      "fields": {
+        "after": "7fd80fdada1579d6",
+        "ctx": "ad4ae16aa21e1356",
+        "run": "dff669f46b876318",
+        "sc": "2bd43f1b630490eb"
+      }
+    },
+    {
+      "id": "Early Retirement Bridge (and /72t): 56, single, rule of 55, fill to 12%, Monte Carlo seed 7",
+      "out": {
+        "bestPlan": "Brokerage, then Roth contributions",
+        "holds": 100,
+        "taxCost": 16952.1633,
+        "leftAt59": 1680334.7928,
+        "plans": "Blended plan: 100%; Brokerage, then Roth contributions: 100%; 72(t) payments: 100%; Rule of 55: 100%; Pay the 10% penalty: 100%",
+        "firstYearGross": 74713.6905
+      },
+      "fields": {
+        "after": "04c0536e556b525f",
+        "ctx": "0d360cf702dbc163",
+        "run": "ff13c6ac9651b695",
+        "sc": "87f423c4d8f1382f"
+      }
+    },
+    {
+      "id": "Portfolio Backtest: defaults: 80/20, rebalanced yearly, 1926-2025",
+      "out": {
+        "cagr": 0.0965,
+        "realCagr": 0.0652,
+        "vol": 0.1526,
+        "endBal": 99910217.0127,
+        "endReal": 5518829.7266,
+        "maxDrawdown": -0.5087,
+        "rebalances": 0
+      },
+      "fields": {
+        "B": "9ed5f621534930f2",
+        "dec": "c8203372da20f3b5"
+      }
+    },
+    {
+      "id": "Portfolio Backtest: 60/30/10 with small-cap value, 5% drift bands, 1966-2000",
+      "out": {
+        "cagr": 0.1154,
+        "realCagr": 0.0626,
+        "vol": 0.1227,
+        "endBal": 457540.8449,
+        "endReal": 83619.1963,
+        "maxDrawdown": -0.2397,
+        "rebalances": 8
+      },
+      "fields": {
+        "B": "fcf673ff4d2fa5d9",
+        "dec": "966d3b05ed745b70"
+      }
+    },
+    {
+      "id": "Stages: defaults: two stages",
+      "out": {
+        "atRetirement": 2522923.4777,
+        "todaysDollars": 1039411.0681,
+        "firstYearAfterTax": 37418.7985,
+        "monthlyAfterTax": 3118.2332,
+        "portfolioNeeded": 2777777.7778,
+        "feeCost": 0
+      },
+      "fields": {
+        "F": "54b27046aefcded0",
+        "P": "cf62d4e9fdc067de",
+        "R": "b758b999af7ab3c0",
+        "feeCost": "5feceb66ffc86f38",
+        "portToday": "92c0af241c7be5a3",
+        "rate": "14be4b45f18e0d8c"
+      }
+    },
+    {
+      "id": "Stages: three stages with fees, a glide and a portfolio target",
+      "out": {
+        "atRetirement": 3707411.3534,
+        "todaysDollars": 1205747.1298,
+        "firstYearAfterTax": 43406.8967,
+        "monthlyAfterTax": 3617.2414,
+        "portfolioNeeded": 2000000,
+        "feeCost": 389463.6182
+      },
+      "fields": {
+        "F": "8c1b666d8f5452ce",
+        "P": "9ca4c735511e7eba",
+        "R": "9f77f95b9ffb0647",
+        "feeCost": "92bfa9facba57514",
+        "portToday": "dd80d7a873341d49",
+        "rate": "14be4b45f18e0d8c"
+      }
+    },
+    {
+      "id": "Plan Optimizer: defaults, goal: leave the most",
+      "out": {
+        "tried": 4941,
+        "windows": 66,
+        "bestSpend": 90000,
+        "bestStats": {
+          "successRate": 1,
+          "survived": 66,
+          "total": 66,
+          "medLegacy": 4461362.574,
+          "p10Legacy": 2688895.7452,
+          "medTax": 177698.3066,
+          "failYears": []
+        },
+        "steps": 2,
+        "alts": 3
+      },
+      "fields": {
+        "age1": "81b8a03f97e8787c",
+        "age2": "39fa9ec190eee7b6",
+        "alts": "8bf82ef8f1253ae9",
+        "base": "baceb5d58f36518f",
+        "best": "80625193eef571bb",
+        "first": "255ac64f2a9b3741",
+        "floor": "8139b33952401b3e",
+        "goal": "e4c13c4401d43136",
+        "married": "b5bea41b6c623f7c",
+        "of": "666d6fe53a66bf91",
+        "rmdAge": "f369cb89fc627e66",
+        "runs": "e7443aa7265ea3ba",
+        "same": "fcbcf165908dd18a",
+        "steps": "09d66c6acf024caf",
+        "target": "8139b33952401b3e",
+        "tried": "666d6fe53a66bf91",
+        "type": "58bf5b5478e5d1fb",
+        "windows": "3ada92f28b4ceda3",
+        "years": "9f14025af0065b30"
+      }
+    },
+    {
+      "id": "Plan Optimizer: single, from today at 50, goal: spend the most",
+      "out": {
+        "tried": 549,
+        "windows": 66,
+        "bestSpend": 132500,
+        "bestStats": {
+          "successRate": 0.9091,
+          "survived": 60,
+          "total": 66,
+          "medLegacy": 4220426.588,
+          "p10Legacy": 26755.9694,
+          "medTax": 1017866.8607,
+          "failYears": [
+            1965,
+            1966,
+            1967,
+            1968,
+            1969,
+            1973
+          ],
+          "maxSpend": 132500
+        },
+        "steps": 2,
+        "alts": 0
+      },
+      "fields": {
+        "age1": "39fa9ec190eee7b6",
+        "age2": "74234e98afe7498f",
+        "alts": "4f53cda18c2baa0c",
+        "base": "c3db018249ec2973",
+        "best": "d0e42819bdb5b4a9",
+        "first": "255ac64f2a9b3741",
+        "floor": "8139b33952401b3e",
+        "goal": "cd05eba3b23c89e8",
+        "married": "fcbcf165908dd18a",
+        "of": "068814875fcdfb8f",
+        "rmdAge": "f369cb89fc627e66",
+        "runs": "95c10a939dbf59e1",
+        "same": "fcbcf165908dd18a",
+        "steps": "556115f153195aa1",
+        "target": "8139b33952401b3e",
+        "tried": "068814875fcdfb8f",
+        "type": "58bf5b5478e5d1fb",
+        "windows": "3ada92f28b4ceda3",
+        "years": "9f14025af0065b30"
+      }
+    },
+    {
+      "id": "Guide: couple, 40 and 38, retiring at 62",
+      "out": {
+        "atRetirement": 1446013.8923,
+        "success": 1,
+        "coverage": 1.3965,
+        "taxPerYear": 12196.051,
+        "score": 98,
+        "needAtRetirement": 851000
+      },
+      "fields": {
+        "S": "8f3f30294e5e54e5",
+        "need": "9df7d368e00eb21d",
+        "sc": "cf1beef94f7af3dd",
+        "strats": "65fdb35adba9ad20"
+      }
+    },
+    {
+      "id": "Guide: single, 55, little saved, retiring at 67",
+      "out": {
+        "atRetirement": 221473.6049,
+        "success": 0.5479,
+        "coverage": 0.8935,
+        "taxPerYear": 0,
+        "score": 52,
+        "needAtRetirement": 314000
+      },
+      "fields": {
+        "S": "59e578c7d5393bd9",
+        "need": "cf2920863c0b18cb",
+        "sc": "0ca3872e18413035",
+        "strats": "59aae64015084f5d"
       }
     }
   ]
