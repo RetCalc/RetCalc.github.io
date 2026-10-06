@@ -168,7 +168,7 @@ svg{display:block;width:100%;height:auto}
      up, since the menu rises out of the bar. The menu is a sheet sitting just
      above the bar, where the thumb already is. */
   html.pwa nav[role=tablist] .calcbtn{align-items:center}
-  html.pwa .calc-mode{position:absolute;left:0;right:0;top:calc(50% + 13px);
+  html.pwa .calc-mode{position:absolute;left:0;right:0;top:calc(50% + 13px);padding-left:0;border-left:0;
     justify-content:center;align-items:center;font-size:11.5px;line-height:1;letter-spacing:0}
   html.pwa .calc-chev{transform:rotate(180deg)}
   html.pwa .calcbtn[aria-expanded="true"] .calc-chev{transform:none}

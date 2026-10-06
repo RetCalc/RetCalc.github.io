@@ -61,10 +61,13 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline
    spans the screen with finger-sized rows over a dimmed page; in the
    home-screen web app it rises from the bottom bar instead (see the
    html.pwa block below). */
-.calcbtn{display:inline-flex;align-items:baseline;gap:7px}
-.calc-mode{display:inline-flex;align-items:baseline;gap:3px;
-  font-size:11.5px;font-weight:500;color:var(--dimmer);transition:color .15s ease}
-nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
+/* The mode reads as the second half of the tab's name ("Calculator | Basic"),
+   in regular weight behind a hairline, not as a badge beside it. */
+.calcbtn{display:inline-flex;align-items:baseline;gap:9px}
+.calc-mode{display:inline-flex;align-items:center;gap:3px;align-self:center;
+  padding-left:9px;border-left:1px solid var(--ds-rule-strong);line-height:1.1;
+  font-size:13px;font-weight:400;color:var(--dimmer);transition:color .15s ease}
+nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
 .calc-chev{width:12px;height:12px;flex:none;align-self:center;transition:transform .2s ease}
 .calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
 .navbar.menu-open{z-index:45}
