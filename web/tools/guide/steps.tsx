@@ -6,9 +6,10 @@
    GD_STEPS in src/js/app/30-guide-steps.js. */
 
 import { fmtNum, money, pctStr } from "@/lib/format";
+import { RISKS } from "@/lib/engine/typed";
 import { STATE_OPTIONS } from "@/lib/states";
 import {
-  RISKS, SAVE_TO, mar, need, ok, pos, riskLabel, saveMo, sim, target, taxEst, yearsList,
+  SAVE_TO, mar, need, ok, pos, riskLabel, saveMo, sim, target, taxEst, yearsList,
 } from "./calc";
 import { PlanChart, series } from "./chart";
 import {

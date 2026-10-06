@@ -19,11 +19,14 @@ import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format
 import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { copyFrom, opSources, sourceDesc } from "./copy";
-import { OP_DEF, RISKS, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
+import { OP_DEF, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
+import { RISKS } from "@/lib/engine/typed";
 import { Progress } from "./Progress";
 import { OptimizerResult } from "./Result";
 import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal, type Host } from "./run";
 import { OP_GOALS } from "./words";
+import { useShareKit } from "@/components/shell/share";
+import { optimizerCard } from "./share";
 
 /* The goal picked, kept for the visit. */
 const goalMemory = { goal: "legacy" as Goal };
@@ -51,6 +54,7 @@ export function Optimizer() {
   const { profile } = useHousehold();
   const { state: s, set, setState } = useToolState(OP_DEF);
   const H = useOptimizer("tool");
+  useShareKit(OP_DEF.id, { card: () => optimizerCard(H.res) });
   const [goal, setGoalState] = useState<Goal>(goalMemory.goal);
   const setGoal = (g: Goal) => { goalMemory.goal = g; setGoalState(g); };
   const out = useRef<HTMLDivElement>(null);

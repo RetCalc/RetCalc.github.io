@@ -2,8 +2,8 @@
    read the monthly amount. From src/js/app/14-college-rentbuy.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
 import { collegePlanCalc, collegeSavingsCalc } from "@/lib/engine/typed";
-import type { CollegeInput } from "@/lib/engine/types";
-import { groupDigits, parseNum } from "@/lib/format";
+import type { CollegeInput, CollegePlan } from "@/lib/engine/types";
+import { fmtNum, groupDigits, money, parseNum } from "@/lib/format";
 
 export const CL_PRESETS: [string, string][] = [
   ["27000", "Public in-state · ~$27,000/yr"], ["59000", "Private non-profit · ~$59,000/yr"],
@@ -40,3 +40,13 @@ export function collegeMonthly(inp: CollegeInput): number {
 }
 
 export type { CollegeInput };
+
+/* How the monthly amount runs: one figure, or one that steps down once an
+   older child's college has started. */
+export function phaseNote(P: CollegePlan): string {
+  const yrs = (m: number) => fmtNum(Math.round((m / 12) * 10) / 10);
+  let s = "for " + yrs(P.phases[0].to) + " years";
+  for (const x of P.phases.slice(1))
+    s += x.monthly > 0 ? ", then " + money(x.monthly, 0) + "/mo for " + yrs(x.to - x.from) + " more" : ", then nothing more";
+  return s;
+}

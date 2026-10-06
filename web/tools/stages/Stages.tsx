@@ -28,7 +28,10 @@ import { PERIOD_ADV } from "@/lib/periods";
 import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { StageCard, type StageEdit } from "./StageCard";
+import { useShareKit } from "@/components/shell/share";
+import { projectionShare } from "@/tools/advanced/share";
 import { STAGES_DEF, effectiveStages, readStage, stageSplit, stagesPlan, stagesTargetRate, type StageInputs, type StagesInputs } from "./model";
+import { useBusy } from "@/lib/busy";
 
 const TARGET_LABEL = "(your target above)";
 
@@ -56,7 +59,9 @@ export function Stages() {
   const editStage: StageEdit = (i, f) => setStages((list) => list.map((st, j) => (j === i ? f(st) : st)));
 
   const typed = useDeferredValue(s);
+  useBusy(typed !== s);
   const V = useMemo(() => compute(typed, profile), [typed, profile]);
+  useShareKit(STAGES_DEF.id, projectionShare({ kind: "stages", g: V.P.g, eff: V.P.eff, R: V.R, mode }));
   const { P, R, F, portToday, rate } = V;
   const g = P.g;
   const chart = useMemo(() => chartData(typed, V, mode, parseNum(band) / 100, seed), [typed, V, mode, band, seed]);

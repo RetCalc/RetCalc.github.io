@@ -34,6 +34,9 @@ import { Inputs } from "./Inputs";
 import { DD_DRAGS, PlanView, deltaHtml, histExtras, ssRows, type PlanResult } from "./PlanView";
 import { SafeView } from "./SafeView";
 import { comfortNote, firstSpend, lineWords, mcWords, planLabel, startLabel, target } from "./text";
+import { useShareKit } from "@/components/shell/share";
+import { drawdownShare } from "./share";
+import { useBusy } from "@/lib/busy";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
     year one, the retirement age and the comfort line. */
@@ -88,12 +91,14 @@ export function Drawdown({ landing }: { landing?: string }) {
   /* Every run works from the inputs a moment behind the typing, so the
      fields keep up with the keyboard. */
   const typed = useDeferredValue(s);
+  useBusy(typed !== s);
   const base = useMemo(() => {
     const d = ddRaw(typed), o = ddOptsFromState(d), P = ddPrep(o), firstW = firstSpend(o, P);
     const ageText = String(typed.retireAge).trim();
     return { d, o, P, firstW, r1: P.initial > 0 ? firstW / P.initial : 0, comfort: ddComfort(o, P), age: ageText === "" ? null : parseNum(ageText) };
   }, [typed]);
   const { d, o, P, comfort, age } = base;
+  useShareKit(DRAWDOWN_DEF.id, drawdownShare(o, sel));
 
   /* ---- the historical test, and the baseline through it ---- */
   const hist = useMemo(() => {

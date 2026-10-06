@@ -4,7 +4,7 @@
 import { DASH, fmtNum, money } from "@/lib/format";
 import { KV } from "./Readout";
 
-const LADDER = [50e3, 100e3, 250e3, 500e3, 1e6, 2e6, 3e6, 5e6, 10e6, 25e6, 50e6, 100e6];
+export const MS_LADDER = [50e3, 100e3, 250e3, 500e3, 1e6, 2e6, 3e6, 5e6, 10e6, 25e6, 50e6, 100e6];
 
 export interface MilestoneRow { year: number; end: number; growth: number; contrib: number }
 
@@ -25,7 +25,7 @@ export function Milestones({ rows, infl = 0, feeCost = 0, horizon = 0, alreadyRe
     <>
       <KV k={<Label flag main="Crossover" sub={cross ? "Growth first outpaces what you put in" : "Growth never overtakes contributions in this run"} />}
         v={cross ? "Year " + yr(cross.year) : DASH} />
-      {LADDER.filter((v) => v <= final).slice(-6).map((v) => {
+      {MS_LADDER.filter((v) => v <= final).slice(-6).map((v) => {
         const hit = rows.find((r) => r.end >= v);
         return (
           <KV key={v} k={<Label main={money(v)} sub={alreadyReal ? undefined : money(v / Math.pow(1 + infl, hit ? hit.year : 0)) + " in today's dollars"} />}
@@ -39,3 +39,15 @@ export function Milestones({ rows, infl = 0, feeCost = 0, horizon = 0, alreadyRe
     </>
   );
 }
+
+/** The milestones as a printed summary lists them: the crossover, and the
+    last four round balances reached, each labeled by `when`. */
+export function milestoneRows(rows: MilestoneRow[], final: number, when: (year: number) => string): [string, string][] {
+  const cross = rows.find((r) => r.growth > r.contrib && r.contrib > 0);
+  return [["Crossover year", cross ? when(cross.year) : DASH] as [string, string]].concat(
+    MS_LADDER.filter((v) => v <= final).slice(-4).map((v) => {
+      const hit = rows.find((r) => r.end >= v);
+      return ["Reaches " + money(v), hit ? when(hit.year) : DASH] as [string, string];
+    }));
+}
+

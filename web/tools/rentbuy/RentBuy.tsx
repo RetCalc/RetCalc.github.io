@@ -17,6 +17,8 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { MORT_RATE_30, rentBuyCalc } from "@/lib/engine/typed";
 import { DASH, fmtNum, groupDigits, money, parseNum } from "@/lib/format";
 import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
+import { useShareKit } from "@/components/shell/share";
+import { rentBuyShare } from "./share";
 
 const DEFAULTS = {
   price: groupDigits(450000, true), down: "20", rate: String(MORT_RATE_30), term: "30", propTax: "1.1",
@@ -42,6 +44,7 @@ export function RentBuy() {
     status: s.status === "s" ? "s" : "m",
   };
   const R = inp.price > 0 ? rentBuyCalc(inp) : null;
+  useShareKit(DEF.id, rentBuyShare(inp));
   const last = R?.years[R.years.length - 1];
   const buyWins = last ? last.buyerNW >= last.renterNW : false;
 

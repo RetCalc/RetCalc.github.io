@@ -7,6 +7,7 @@
    already waiting, and a result a newer request has overtaken is dropped.
    From ddRun() in src/js/app/15-drawdown.js. */
 import { useEffect, useState } from "react";
+import { busyEnd, busyStart } from "@/lib/busy";
 import { ddJob } from "./typed-drawdown";
 
 interface Req { id: number; job: string; args: unknown; done: (res: unknown) => void }
@@ -65,6 +66,7 @@ function finish(lane: string, id: number, res: unknown) {
   if (!L?.busy || L.busy.id !== id) return;
   const req = L.busy;
   L.busy = null;
+  busyEnd();
   if (L.next) {
     const nx = L.next;
     L.next = null;
@@ -77,8 +79,12 @@ function finish(lane: string, id: number, res: unknown) {
 export function runJob(lane: string, job: string, args: unknown, done: (res: unknown) => void): void {
   const L = lanes[lane] ?? (lanes[lane] = { busy: null, next: null });
   const req = { id: ++seq, job, args, done };
-  if (L.busy) L.next = req;
-  else start(lane, req);
+  // the page is busy from the asking to the answer, or until a newer request replaces it
+  busyStart();
+  if (L.busy) {
+    if (L.next) busyEnd();
+    L.next = req;
+  } else start(lane, req);
 }
 
 /** A job's latest answer, the arguments it answered, and whether a newer

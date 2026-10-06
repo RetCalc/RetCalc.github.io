@@ -59,7 +59,9 @@ export async function apply(page: Page, steps: Step[]) {
     if (tag === "SELECT") await el.selectOption(value);
     else await el.fill(value);
   }
-  // let headline figures finish counting to their values
+  // let work in the background land (the new site marks <html data-busy>
+  // while it runs), then headline figures finish counting to their values
+  await within("waiting for the page", page.waitForFunction(() => !document.documentElement.dataset.busy, null, { timeout: 60_000 }), 65_000);
   await page.waitForTimeout(400);
 }
 

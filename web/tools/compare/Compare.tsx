@@ -15,6 +15,7 @@ import { fmtNum } from "@/lib/format";
 import { compareNav } from "@/lib/compare-nav";
 import { useClient } from "@/lib/useClient";
 import { DDCompare } from "./DDCompare";
+import { setNavDir } from "@/lib/nav-motion";
 import {
   CMP_LETTERS, CMP_MODES, CMP_MODE_LABEL, cmpDelta, cmpFmt, cmpRun, openingSlots, rememberSlots, savedNames,
   type CmpMode, type Slot,
@@ -61,7 +62,7 @@ function CompareSaved() {
   return (
     <div className="stack" id="tab-compare">
       <div className="panel">
-        <h2>Compare scenarios<span className="h2ctrl"><button className="btn" type="button" id="cmpBack" onClick={() => router.push(compareNav.path)}>Back</button></span></h2>
+        <h2>Compare scenarios<span className="h2ctrl"><button className="btn" type="button" id="cmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</button></span></h2>
         <div className="body">
           <div className="hint" id="cmpEmpty" hidden={enough}>{enough ? null : <>You have {total ? "one saved scenario" : "no saved scenarios"}. Compare needs at least two: set up a plan on Basic, Advanced or Stages, save it with Save/Delete in the bar above, then change it and save again.</>}</div>
           <div className="cmpgrid" id="cmpPickers">

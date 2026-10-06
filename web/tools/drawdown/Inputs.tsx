@@ -19,14 +19,9 @@ import { DD_STRAT, ddMCHistory, ssDrawdownStreams, ssEstimate } from "@/lib/engi
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { advInUse, fromClamp, type DdItem, type DrawdownState, type FloorStep, type PathStage } from "./fields";
 import { Spark } from "./Spark";
-import { DD_FAMILY, DD_UI, ageVal, ddN, hardStart, lineWords, mixText, rebalNote, spendThrough, stratNote } from "./text";
+import { DD_FAMILY, DD_UI, ageVal, ddN, describeItem, wdOrder, hardStart, lineWords, mixText, rebalNote, spendThrough, stratNote } from "./text";
 import type { DDView } from "./Drawdown";
 
-
-/** Stages in the order they take effect, each with its working start year. */
-export function wdOrder(list: PathStage[]) {
-  return list.map((st, i) => ({ st, i, start: Math.max(2, Math.round(st.start || 0)) })).sort((a, b) => a.start - b.start || a.i - b.i);
-}
 
 export function Inputs({ v, fromNote, periods, open }: {
   v: DDView; fromNote: string; periods: string;
@@ -509,12 +504,6 @@ function ClaimAge({ id, value, onChange }: { id: string; value: string; onChange
   );
 }
 
-/** A custom income or expense in a line. */
-export function describeItem(it: DdItem, age: number | null): string {
-  const when = it.startYear === 1 ? "starting immediately" : age != null ? "starting at age " + ageVal(age, it.startYear) : "starting year " + it.startYear;
-  const dur = it.duration.type === "once" ? "one time" : it.duration.type === "years" ? "for " + it.duration.years + " years" : "rest of retirement";
-  return money(it.annual) + "/yr, " + when + ", " + dur + " · " + (it.inflate ? "inflation-adjusted" : "fixed amount");
-}
 
 /* The spending stages: each from the year (or age) it starts, at its share
    of year one's spending. */

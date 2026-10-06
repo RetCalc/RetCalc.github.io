@@ -24,7 +24,7 @@ import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
 import { KV } from "@/components/ui/Readout";
 import { growthBlend, matchPer, spreadTotal, type GrowthRates } from "@/lib/accounts";
-import { PPY, coastFire, goalSolve, historicalRuns, monteCarlo, project, solveYears } from "@/lib/engine/typed";
+import { coastFire, goalSolve, historicalRuns, monteCarlo, project, solveYears, PER_YEAR } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_ADV, PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
@@ -32,10 +32,12 @@ import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
+import { useShareKit } from "@/components/shell/share";
+import { projectionShare } from "./share";
 import { ADVANCED_DEF, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs, type AdvancedPlan } from "./model";
 import { toStages } from "./toStages";
+import { useBusy } from "@/lib/busy";
 
-const perYear = PPY as Record<string, number>;
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
 export function Advanced() {
@@ -76,8 +78,10 @@ export function Advanced() {
   });
 
   const typed = useDeferredValue(s);
+  useBusy(typed !== s);
   const V = useMemo(() => compute(typed, profile), [typed, profile]);
   const { P, p, R, S, C, Y } = V;
+  useShareKit(ADVANCED_DEF.id, projectionShare({ kind: "advanced", P, R, target: typed.target, solveFor: typed.solveFor, mode }));
   const chart = useMemo(() => chartData(typed, V, mode, parseNum(band) / 100, seed), [typed, V, mode, band, seed]);
 
   const acOn = s.acOn;
@@ -127,7 +131,7 @@ export function Advanced() {
      spread over the accounts you pay into, with the match following. */
   const withTotal = (c: AdvancedInputs, total: number): AdvancedInputs => {
     if (!c.acOn) return { ...c, contrib: groupDigits(total, true) };
-    const t = spreadTotal(advancedPlan(c, profile).a!, perYear[c.period], total);
+    const t = spreadTotal(advancedPlan(c, profile).a!, PER_YEAR[c.period], total);
     return { ...c, tradC: dollarsField(t.trad), rothC: dollarsField(t.roth), brokC: dollarsField(t.brok) };
   };
 
@@ -416,7 +420,7 @@ export function Advanced() {
 
       {dialog === "conv" ? (
         <ConverterDialog title="Contribution converter" onClose={() => setDialog(null)} period={s.period}
-          amount={a ? mine + matchPer(a, perYear[s.period]) : parseNum(s.contrib)}
+          amount={a ? mine + matchPer(a, PER_YEAR[s.period]) : parseNum(s.contrib)}
           apply={(v, period) => setState((c) => withTotal({ ...c, period }, v))} />
       ) : null}
       {growthDialog}

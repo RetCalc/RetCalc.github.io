@@ -12,6 +12,7 @@ import { BandTipRows } from "@/components/charts/TipRows";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped } from "@/components/shell/Tooltips";
+import { useShareKit } from "@/components/shell/share";
 import { useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { Milestones } from "@/components/ui/Milestones";
@@ -19,6 +20,7 @@ import { Figure, KV } from "@/components/ui/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
+import { basicShare } from "./share";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
 
@@ -45,6 +47,8 @@ export function Basic() {
     if (h.monthly != null) Object.assign(next, { contrib: dollarsField(h.monthly), period: "Monthly" });
     return next;
   }));
+
+  useShareKit(BASIC_DEF.id, basicShare(s));
 
   const p = basicInput(s);
   const ok = p.years > 0;

@@ -17,6 +17,7 @@ import { fmtNum, money, pctStr } from "@/lib/format";
 import { DRAWDOWN_DEFAULTS, ddRaw, type DrawdownState } from "@/tools/drawdown/fields";
 import { DD_STRAT_NAMES, mixText } from "@/tools/drawdown/text";
 import { CMP_LETTERS } from "./model";
+import { setNavDir } from "@/lib/nav-motion";
 
 /* The slots, kept for the visit. */
 const slotMemory = { names: ["", "", ""] };
@@ -64,7 +65,7 @@ export function DDCompare() {
   return (
     <div className="stack" id="tab-dd-compare">
       <div className="panel">
-        <h2>Compare drawdown scenarios<span className="h2ctrl"><button className="btn" type="button" id="ddCmpBack" onClick={() => router.push(compareNav.path)}>Back</button></span></h2>
+        <h2>Compare drawdown scenarios<span className="h2ctrl"><button className="btn" type="button" id="ddCmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</button></span></h2>
         <div className="body">
           <div className="hint" id="ddCmpEmpty" hidden={enough}>{enough ? null : "You have " + (names.length ? "one saved scenario" : "no saved scenarios") +
             ". Save at least two Drawdown scenarios from the bar above, then come back to compare."}</div>

@@ -3,26 +3,19 @@
 /* The masthead's saved-scenario picker and its Save, Share and Reset
    buttons. They act on whichever tool is open (components/tools/ToolState).
    Ported from src/js/app/23-scenarios.js, 21-share-links.js and
-   25-share-card.js. The printable summary and image card join the Share
-   menu in phase 5. */
+   25-share-card.js. The Share menu offers what the page hands it
+   (share.ts): its summary and image card, where it has them. */
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { encodeShare, readScenarios, useActiveTool, writeScenarios, type Scenario } from "@/components/tools/ToolState";
-import { usePopup } from "./Popup";
+import { usePopup, type PopupOption } from "./Popup";
+import { canShareSheet, copyCard, saveCard, sendLink, shareKit, type CardData } from "./share";
+import { printSheet } from "./Sheet";
 import { useToast } from "./Toast";
 import { compareNav } from "@/lib/compare-nav";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
-
-/* On a phone with a share sheet, offer it; elsewhere copy the link. */
-function canShareSheet() {
-  try {
-    return !!navigator.share && window.matchMedia("(pointer: coarse)").matches;
-  } catch {
-    return false;
-  }
-}
 
 export function ScenarioBar() {
   const tool = useActiveTool();
@@ -72,16 +65,8 @@ export function ScenarioBar() {
   const share = () => {
     if (!tool || !id) return;
     const hash = encodeShare(id, tool.state);
-    const url = location.origin + location.pathname + hash;
     history.replaceState(history.state, "", hash);
-    const copy = () =>
-      navigator.clipboard.writeText(url)
-        .then(() => toast("Link copied; it opens with these exact numbers"))
-        .catch(() => prompt("Copy this link:", url));
-    if (!canShareSheet()) copy();
-    else navigator.share({ url }).catch((err) => {
-      if (err?.name !== "AbortError") copy();
-    });
+    sendLink(location.origin + location.pathname + hash, "Link copied; it opens with these exact numbers", toast);
   };
 
   return (
@@ -127,13 +112,26 @@ export function ScenarioBar() {
       </button>
       <button className="btn" id="btnShareMenu" type="button" aria-label="Share" title="Share"
         onClick={async () => {
-          if (!tool) return;
-          const c = await showPopup("Share", [
-            canShareSheet()
-              ? { label: "Share link", desc: "Text or send a link with all your inputs" }
-              : { label: "Copy link", desc: "Copy a shareable URL with all your inputs" },
-          ]);
-          if (c === 0) share();
+          if (!tool || !id) return;
+          const kit = shareKit(id), sheetOK = canShareSheet();
+          const acts: [PopupOption, () => void][] = [[
+            kit?.link ? { label: sheetOK ? "Share link" : "Copy link", desc: kit.link.desc[sheetOK ? 0 : 1] }
+              : sheetOK ? { label: "Share link", desc: "Text or send a link with all your inputs" } : { label: "Copy link", desc: "Copy a shareable URL with all your inputs" },
+            kit?.link ? kit.link.run : share]];
+          if (kit?.sheet) acts.push([{ label: kit.sheetLabel?.[0] ?? "Summary", desc: kit.sheetLabel?.[1] ?? "One-page printable overview (Save as PDF)" }, () => {
+            const s = kit.sheet!();
+            if (typeof s === "string") { if (s) toast(s); } else printSheet(s);
+          }]);
+          if (kit?.card) {
+            const card = (f: (d: CardData, t: (m: string) => void) => void) => () => {
+              const d = kit.card!();
+              if (typeof d === "string") toast(d); else f(d, toast);
+            };
+            acts.push([{ label: "Save image card", desc: "A square PNG of your headline numbers" }, card(saveCard)]);
+            acts.push([{ label: "Copy image card", desc: "Put that image straight on the clipboard" }, card(copyCard)]);
+          }
+          const c = await showPopup(kit?.link?.title ?? "Share", acts.map((x) => x[0]));
+          if (c >= 0) acts[c][1]();
         }}>
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 12.5V3M6.5 6.2L10 2.8l3.5 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M6.5 9H5v8h10V9h-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>

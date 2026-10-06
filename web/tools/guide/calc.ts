@@ -3,7 +3,7 @@
    change it; and the score. Everything here reads the answers it's given and
    changes nothing. From src/js/app/28-guide-core.js and the plan parts of
    30-guide-steps.js. */
-import { BASIC_INFL, HIST_START, RISK_LEVELS, computeTax } from "@/lib/engine/typed";
+import { BASIC_INFL, HIST_START, computeTax, RISKS } from "@/lib/engine/typed";
 import { ssEstimate } from "@/lib/engine/typed-drawdown";
 import {
   PL_HEIR, plAtRetire, plBands, plBaseTactics, plClaimMin, plDetail, plHistory, plKey, plPrep, plSSParts,
@@ -35,7 +35,6 @@ export function interp(x: number, pts: [number, number][]): number {
 }
 export const months = (v: number) => (v >= 10 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toFixed(1).replace(/\.0$/, ""));
 
-export const RISKS = RISK_LEVELS as { label: string; sub: string; real: number }[];
 export function riskLabel(real: number): string {
   return (RISKS.find((x) => Math.abs(x.real - real) < 1e-6) || RISKS[2]).label.toLowerCase();
 }

@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { printSheet } from "@/components/shell/Sheet";
+import { sendLink, useShareKit } from "@/components/shell/share";
 import { useToast } from "@/components/shell/Toast";
 import { decodeHash, encodeHash, useRegisterTool, type ToolDef, type ToolInputs } from "@/components/tools/ToolState";
 import { fmtNum, money, pctStr } from "@/lib/format";
@@ -23,6 +24,7 @@ import { CHAPTERS, STEPS, applies, current, firstOpen, numbered, route, stepById
 import { freshGuide, guide, migrate, replaceGuide, setGuide, useGuide, type Answers, type GuideState } from "./store";
 import { curOpt, setTune } from "./tune";
 import { GuideCtx, type GuideView } from "./ui";
+import { setNavDir } from "@/lib/nav-motion";
 
 /** The guide as a tool, for the header's Save: every answer and which
     steps are done. Where you were and any trip into a tool are left out. */
@@ -41,6 +43,12 @@ function cleanShared(o: unknown): Answers | null {
     else if (typeof x === "string" && /^[A-Za-z0-9 .,%\-]{0,40}$/.test(x)) a[k] = x;
   });
   return a as Answers;
+}
+
+/** The plan on one printed page, or why there isn't one yet. */
+function planSheet(): React.ReactNode | string {
+  const a = guide().a;
+  return score(a).score == null || !sim(a) ? "Answer more of the guide to print a plan" : <GuideSheet a={a} />;
 }
 
 /** Draws a step's arrival: the answers it assumes, and the step. */
@@ -102,6 +110,7 @@ export function Guide() {
     const r = startTrip(id, from);
     if (!r) return;
     if (r.sync) sync();
+    setNavDir("fwd");
     router.push(r.path);
   };
   const act = (what: string) => {
@@ -139,15 +148,13 @@ export function Guide() {
     else if (what === "optapply") return optApply();
     else if (what === "optclear") return optClear();
     else if (what === "print") {
-      const a = guide().a;
-      if (score(a).score == null || !sim(a)) { toast("Answer more of the guide to print a plan"); return; }
-      printSheet(<GuideSheet a={a} />);
+      const sheet = planSheet();
+      if (typeof sheet === "string") toast(sheet); else printSheet(sheet);
       return;
     } else if (what === "share") {
       const a: Record<string, unknown> = {};
       Object.entries(guide().a).forEach(([k, x]) => { if (!["bgRows", "debtRows", "moState", "clState", "ddTool"].includes(k)) a[k] = x; });
-      const url = window.location.origin + "/guide#g=" + encodeHash({ v: 1, a });
-      navigator.clipboard?.writeText(url).then(() => toast("Link copied. It opens this plan in the guide, with your numbers."), () => toast("Couldn't copy the link"));
+      sendLink(window.location.origin + "/guide#g=" + encodeHash({ v: 1, a }), "Link copied. It opens this plan in the guide, with your numbers.", toast);
       return;
     }
     redraw();
@@ -245,6 +252,13 @@ export function Guide() {
 
   // The count and the card follow the answers as the card was drawn; the
   // score and the route follow every keystroke.
+  // The header's Share: the plan's link, and the plan on one page.
+  useShareKit("guide", {
+    link: { title: "Share your plan", run: () => act("share"), desc: ["Text or send your answers and plan", "Opens your answers and plan in the guide"] },
+    sheetLabel: ["Print or save as PDF", "Your score, plan and next moves on one page"],
+    sheet: () => planSheet(),
+  });
+
   const st = current(g), L = numbered(v), idx = L.indexOf(st);
   const ch = st.ch >= 0 ? CHAPTERS[st.ch] : "Start";
   const R = score(g.a), rt = rating(R.score);

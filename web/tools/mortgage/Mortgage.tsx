@@ -15,7 +15,9 @@ import { Figure, KV } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { PMI_DEFAULT, mortgage, refiCompare } from "@/lib/engine/typed";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-import { MORTGAGE_DEF as DEF, mortgageInput, type Inputs } from "./model";
+import { MORTGAGE_DEF as DEF, dur, mortgageInput, when, type Inputs } from "./model";
+import { useShareKit } from "@/components/shell/share";
+import { mortgageShare } from "./share";
 
 
 
@@ -36,19 +38,6 @@ const pctFromAmt = (s: Inputs) => {
   return { ...s, downPct: price > 0 ? String(Math.round((parseNum(s.downAmt) / price) * 10000) / 100) : "0" };
 };
 
-function when(months: number): string {
-  const y = Math.floor(months / 12), m = months % 12;
-  if (!y) return m + (m === 1 ? " month" : " months") + " in";
-  if (!m) return "year " + y;
-  return "year " + y + ", month " + m;
-}
-function dur(months: number): string {
-  const y = Math.floor(months / 12), m = months % 12;
-  if (!y) return m + (m === 1 ? " month" : " months");
-  if (!m) return y + (y === 1 ? " year" : " years");
-  return y + "y " + m + "m";
-}
-
 const TERMS = (
   <>
     <option value="30">30 years</option>
@@ -60,6 +49,7 @@ const TERMS = (
 
 export function Mortgage() {
   const { state: s, set, setState } = useToolState(DEF);
+  useShareKit(DEF.id, mortgageShare(s));
   const table = useRef<HTMLTableElement>(null);
   const setDown = (k: "price" | "downPct" | "downAmt") => (v: string) =>
     setState((cur) => {

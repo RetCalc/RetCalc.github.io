@@ -2,9 +2,9 @@
    src/main/16-tool-picker.html; the cards are links now, so each tool's
    address can be followed by anything that reads the page. */
 
-import Link from "next/link";
 import { TOOL_GROUPS } from "@/lib/tools";
-import { ToolIcon } from "./ToolIcon";
+import { ToolCardLink } from "./ToolCardLink";
+import { ToolIconTile } from "./ToolIcon";
 
 export function ToolPicker() {
   return (
@@ -15,14 +15,14 @@ export function ToolPicker() {
             <h2 className="toolgroup-h"><span>{g.title}</span><em>{g.sub}</em></h2>
             <div className="toolgrid">
               {g.cards.map((c) => (
-                <Link key={c.sub} href={`/${c.path}`} className="toolcard" style={{ "--i": c.i } as React.CSSProperties} data-pick={c.sub}>
-                  <div className="toolcard-icon"><ToolIcon sub={c.sub} /></div>
+                <ToolCardLink key={c.sub} href={`/${c.path}`} sub={c.sub} i={c.i}>
+                  <ToolIconTile sub={c.sub} className="toolcard-icon" />
                   <div className="toolcard-body">
                     <div className="toolcard-name">{c.name}{c.badge ? <span className="beta">{c.badge}</span> : null}</div>
                     <div className="toolcard-desc">{c.desc}</div>
                   </div>
                   <div className="toolcard-arrow">&#8250;</div>
-                </Link>
+                </ToolCardLink>
               ))}
             </div>
           </section>

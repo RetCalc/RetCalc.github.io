@@ -21,10 +21,13 @@ import { retirementContribs } from "@/lib/retirement-contribs";
 import { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } from "@/tools/college/model";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { BUDGET_DEF, PRESET_DESCS, budgetTotals, isSavingsRow, type BudgetRow } from "./model";
+import { useShareKit } from "@/components/shell/share";
+import { budgetShare } from "./share";
 
 
 export function Budget() {
   const { state: s, set, setState } = useToolState(BUDGET_DEF);
+  useShareKit(BUDGET_DEF.id, budgetShare(s));
   const toast = useToast();
   const showPopup = usePopup();
   const listRef = useRef<HTMLDivElement>(null);

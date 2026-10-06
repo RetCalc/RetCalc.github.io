@@ -21,10 +21,13 @@ import { focusLast } from "@/lib/dom";
 import { useClient } from "@/lib/useClient";
 import { BUDGET_DEFAULTS, budgetTotals } from "@/tools/budget/model";
 import { DEBT_DEF, debtList, type DebtRow } from "./model";
+import { useShareKit } from "@/components/shell/share";
+import { debtShare } from "./share";
 
 
 export function Debt() {
   const { state: s, set, setState } = useToolState(DEBT_DEF);
+  useShareKit(DEBT_DEF.id, debtShare(s));
   const toast = useToast();
   const client = useClient();
   // Dates count from today, so they're filled in once in the browser.

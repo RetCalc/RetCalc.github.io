@@ -40,5 +40,49 @@ export function SheetMark() {
   );
 }
 
+/** Label-and-figure rows, as each summary lists them. */
+export type SheetRows = [string, string][];
+
 /** A label and its figure, as each summary lists them. */
 export const SheetRow = ({ k, v }: { k: React.ReactNode; v: React.ReactNode }) => <div className="sh-r"><span>{k}</span><b>{v}</b></div>;
+
+/** A summary's page: its title, the three headline figures, the chart
+    copied off the screen, then sections, a table and the fine print. */
+export function SheetPage({ title, sub, big, chart, chartStyle, children, foot }: {
+  title: React.ReactNode; sub: React.ReactNode; big?: [k: React.ReactNode, v: React.ReactNode, n: React.ReactNode][];
+  chart?: string; chartStyle?: React.CSSProperties; children: React.ReactNode; foot: React.ReactNode;
+}) {
+  return (
+    <>
+      <div className="sh-h"><SheetMark /><h1>{title}</h1><span>{sub}</span></div>
+      {big ? <div className="sh-big">{big.map(([k, v, n], i) => <div key={i}><div className="k">{k}</div><div className="v">{v}</div><div className="n">{n}</div></div>)}</div> : null}
+      {chart ? <SheetChart html={chart} style={chartStyle} /> : null}
+      {children}
+      <div className="sh-foot">{foot}</div>
+    </>
+  );
+}
+export const SheetChart = ({ html, style }: { html: string; style?: React.CSSProperties }) =>
+  <div className="sh-chart" style={style} dangerouslySetInnerHTML={{ __html: html }} />;
+/** A section of label-and-figure rows. */
+export const SheetSection = ({ t, rows, style }: { t: React.ReactNode; rows: [React.ReactNode, React.ReactNode][]; style?: React.CSSProperties }) => (
+  <section style={style}><div className="sh-t">{t}</div>{rows.map(([k, v], i) => <SheetRow key={i} k={k} v={v} />)}</section>
+);
+/** A year-by-year table, sampled so a long one stays on the page: every
+    row up to 15, every other up to 30, every third beyond, always the
+    first and last, and any `keep` asks for. */
+export function sampled<T>(rows: T[], keep: (r: T) => boolean = () => false): T[] {
+  const step = rows.length <= 15 ? 1 : rows.length <= 30 ? 2 : 3;
+  return rows.filter((r, i) => i === 0 || i === rows.length - 1 || i % step === 0 || keep(r));
+}
+export function SheetTable({ t, head, rows }: { t: React.ReactNode; head: string[]; rows: (React.ReactNode[] | { cells: React.ReactNode[]; style?: React.CSSProperties })[] }) {
+  return (
+    <div className="sh-table"><div className="sh-t">{t}</div>
+      <table><thead><tr>{head.map((h) => <th key={h}>{h}</th>)}</tr></thead>
+        <tbody>{rows.map((r, i) => {
+          const R = Array.isArray(r) ? { cells: r } : r;
+          return <tr key={i} style={R.style}>{R.cells.map((c, j) => <td key={j}>{c}</td>)}</tr>;
+        })}</tbody></table></div>
+  );
+}
+

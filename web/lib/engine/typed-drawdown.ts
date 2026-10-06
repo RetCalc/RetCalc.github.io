@@ -6,6 +6,12 @@ import * as E from "./core.js";
 const typed = <F>(f: unknown) => f as F;
 
 /** The engine's options for one plan (ddOptsFromState). */
+/** An income or expense the plan adds: an amount a year, from a year of
+    retirement, once, for some years or for good. */
+export interface DdItem {
+  name: string; annual: number; inflate: boolean; startYear: number; on?: boolean;
+  duration: { type: "once" | "forever" } | { type: "years"; years: number };
+}
 export interface DdOpts {
   initial: number; years: number; stockPct: number; svPct: number; cashPct: number; stockPctEnd: number | null;
   rebal: string; rebalN: number; rebalBand: number; fee: number; strategy: string; initialPct: number;
@@ -17,6 +23,7 @@ export interface DdOpts {
   path: string; pathEase: number; pathStages: { start: number; level?: number; name?: string }[];
   gShare: number; gType: string; gYield: number; gPayout: number; gInflate: boolean;
   mcBlock: number; mcOwn: boolean; mcRet: Record<"stock" | "sv" | "bond" | "cash" | "infl", number>;
+  ssAnnual: number; ssAnnual2: number; incomeItems: DdItem[]; expenseItems: DdItem[];
   ssAnnualTotal: number; legacyGoal: number; comfort: number; retireAge: number | null; fromYear: number; monthly: boolean;
   [k: string]: unknown;
 }
@@ -41,7 +48,7 @@ export interface DdHistRun extends DdRun {
 }
 export interface DdHist {
   first: number; monthly: boolean; runs: DdHistRun[]; total: number; survived: number; successRate: number;
-  medianEnd: number; worstEnd: number; failYears: number[]; failCount: number; firstFail: DdHistRun | null; prep: DdPrep;
+  medianEnd: number; worstEnd: number; bestEnd: number; failYears: number[]; failCount: number; firstFail: DdHistRun | null; prep: DdPrep;
 }
 export interface DdScore {
   n: number; years: number; below: number; dipped: number; longest: number; longRun: DdHistRun | null;

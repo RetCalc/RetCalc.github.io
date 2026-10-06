@@ -9,6 +9,10 @@ import {
   ddWindows, ddWithDial, runDrawdown, type DdHist, type DdHistRun, type DdOpts, type DdPrep, type DdRun, type DdTarget, type DdWindow,
 } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
+import type { DdItem, PathStage } from "./fields";
+
+/** A legend entry: a colored dot and its label, as HTML. */
+export const swatch = (c: string, t: string) => `<span><i style='background:${c}'></i>${t}</span>`;
 
 export const escapeHtml = (s: string) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -323,4 +327,16 @@ export function comfortNote(o: DdOpts, P: DdPrep, age: number | null): string {
     : (o.spendFloor > 0 || Array.isArray(c)) && DD_STRAT[o.strategy].limits !== false
       ? "Blank: your minimum spending, " + lineWords(c, age, " a year") + "."
       : "Blank: 80% of year one's spending, " + money(c as number) + " a year.";
+}
+
+/** Stages in the order they take effect, each with its working start year. */
+export function wdOrder(list: PathStage[]) {
+  return list.map((st, i) => ({ st, i, start: Math.max(2, Math.round(st.start || 0)) })).sort((a, b) => a.start - b.start || a.i - b.i);
+}
+
+/** A custom income or expense in a line. */
+export function describeItem(it: DdItem, age: number | null): string {
+  const when = it.startYear === 1 ? "starting immediately" : age != null ? "starting at age " + ageVal(age, it.startYear) : "starting year " + it.startYear;
+  const dur = it.duration.type === "once" ? "one time" : it.duration.type === "years" ? "for " + it.duration.years + " years" : "rest of retirement";
+  return money(it.annual) + "/yr, " + when + ", " + dur + " · " + (it.inflate ? "inflation-adjusted" : "fixed amount");
 }

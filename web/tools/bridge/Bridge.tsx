@@ -30,11 +30,11 @@ import { STATE_OPTIONS } from "@/lib/states";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { sendYearToTax } from "@/tools/tax/handoff";
 import { BRIDGE_DEF, FILLS, bridgeAge, bridgeInput, type BridgeInputs } from "./model";
-import { UNLOCK, bridgeScenarios, firstYearAfter, runBridge, type BridgeRun, type PathKey, type RunPlan, type Scenarios } from "./run";
+import { UNLOCK, bridgeScenarios, holdPct, lowerName, firstYearAfter, runBridge, type BridgeRun, type PathKey, type RunPlan, type Scenarios } from "./run";
+import { useShareKit } from "@/components/shell/share";
+import { bridgeShare } from "./share";
+import { useBusy } from "@/lib/busy";
 
-const pct = (n: number, of: number) => (of > 0 ? pctStr(n / of, 0) : DASH);
-/* Plan names mid-sentence: lowercase, except Roth. */
-const lower = (n: string) => (/^Roth\b/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1));
 const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
 const holdCls = (v: number) => (v >= 0.95 ? "pos" : v >= 0.8 ? "gold" : "neg");
 const PATHS = [["above", "Above average"], ["avg", "Average"], ["below", "Below average"]] as const;
@@ -71,9 +71,11 @@ export function Bridge() {
   /* Every plan runs against every market, so typing stays ahead of it: the
      inputs update at once and the results catch up. */
   const typed = useDeferredValue(s);
+  useBusy(typed !== s);
   const seed = useMcSeed();
   const { ctx, run: R } = useMemo(() => runBridge(bridgeInput(typed), mode, seed), [typed, mode, seed]);
   const sel = R ? R.live.find((p) => p.key === selKey) ?? R.best : null;
+  useShareKit(BRIDGE_DEF.id, bridgeShare(R, sel));
   const S = useMemo(() => (R && sel ? bridgeScenarios(R.ctx, sel) : null), [R, sel]);
   const path: PathKey = S && !S[pathKey] ? "avg" : pathKey;
 
@@ -220,7 +222,7 @@ export function Bridge() {
         </div>
 
         <div className="panel">
-          <h2 id="brAtTitle">{sel ? "What you'll have at 59½, " + lower(sel.name) : "What you'll have at 59½"}<span className="h2note">today&apos;s dollars</span>
+          <h2 id="brAtTitle">{sel ? "What you'll have at 59½, " + lowerName(sel.name) : "What you'll have at 59½"}<span className="h2note">today&apos;s dollars</span>
             <span className="h2ctrl">
               <Segmented id="segBRPath" attr="data-brpath" options={PATHS} value={path} onChange={setPath} disabled={S ? (k) => !S[k] : undefined} />
             </span>
@@ -260,7 +262,7 @@ export function Bridge() {
         <Ladder rows={rows} ctx={ctx} tableRef={ladderRef} />
 
         <div className="panel">
-          <h2 id="brTableTitle">{sel && P ? "Year by year, " + lower(sel.name) + ", " + P.label : "Year by year"}<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+          <h2 id="brTableTitle">{sel && P ? "Year by year, " + lowerName(sel.name) + ", " + P.label : "Year by year"}<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="brTable" ref={tableRef}>
@@ -342,8 +344,8 @@ function CompareRows({ R, sel, onPick }: { R: BridgeRun; sel: RunPlan; onPick: (
             }}>
             {name}
             {p.penaltyPlanned
-              ? <td title="Counts only running short, since the penalty is the plan">{pct(t.hold, t.of)}</td>
-              : <td className={holdCls(t.hold / Math.max(1, t.of))}>{pct(t.hold, t.of)}</td>}
+              ? <td title="Counts only running short, since the penalty is the plan">{holdPct(t.hold, t.of)}</td>
+              : <td className={holdCls(t.hold / Math.max(1, t.of))}>{holdPct(t.hold, t.of)}</td>}
             <td>{money(st.tax)}</td>
             <td className={st.pen > 0.5 ? "neg" : undefined}>{money(st.pen)}</td>
             <td>{R.ctx.aca ? money(st.health) : DASH}</td>

@@ -4,13 +4,13 @@
    src/js/app/31b-plan-optimizer.js. */
 import { toolInputs } from "@/components/tools/ToolState";
 import { matchPer, type AccountResult, type Accounts } from "@/lib/accounts";
-import { PPY } from "@/lib/engine/typed";
+import { PPY, RISKS } from "@/lib/engine/typed";
 import { fmtNum, groupDigits, money, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { ADVANCED_DEFAULTS, advancedPlan } from "@/tools/advanced/model";
 import { STAGES_DEFAULTS, stageSplit, stagesPlan } from "@/tools/stages/model";
-import { RISKS, type OptimizerInputs } from "./model";
+import { type OptimizerInputs } from "./model";
 import { opCompact } from "./words";
 
 export interface Source {

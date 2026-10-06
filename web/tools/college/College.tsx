@@ -14,24 +14,16 @@ import { useToolState } from "@/components/tools/ToolState";
 import { Figure, KV } from "@/components/ui/Readout";
 import { CsvButton } from "@/components/ui/CsvButton";
 import { collegePlanCalc, collegeSavingsCalc } from "@/lib/engine/typed";
-import type { CollegePlan } from "@/lib/engine/types";
 import { DASH, fmtNum, groupDigits, money, pctStr } from "@/lib/format";
 import { focusLast } from "@/lib/dom";
-import { CL_PRESETS, COLLEGE_DEF, collegeInput, type Kid } from "./model";
+import { CL_PRESETS, COLLEGE_DEF, collegeInput, phaseNote, type Kid } from "./model";
+import { useShareKit } from "@/components/shell/share";
+import { collegeShare } from "./share";
 
-
-/* How the monthly amount runs: one figure, or one that steps down once an
-   older child's college has started. */
-function phaseNote(P: CollegePlan): string {
-  const yrs = (m: number) => fmtNum(Math.round((m / 12) * 10) / 10);
-  let s = "for " + yrs(P.phases[0].to) + " years";
-  for (const x of P.phases.slice(1))
-    s += x.monthly > 0 ? ", then " + money(x.monthly, 0) + "/mo for " + yrs(x.to - x.from) + " more" : ", then nothing more";
-  return s;
-}
 
 export function College() {
   const { state: s, set, setState } = useToolState(COLLEGE_DEF);
+  useShareKit(COLLEGE_DEF.id, collegeShare(s));
   const kidsRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLTableElement>(null);
   const setKid = (i: number, patch: Partial<Kid>) =>

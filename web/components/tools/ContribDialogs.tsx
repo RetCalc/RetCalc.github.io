@@ -10,11 +10,10 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
 import type { GrowthRates } from "@/lib/accounts";
-import { PPY } from "@/lib/engine/typed";
+import { PER_YEAR } from "@/lib/engine/typed";
 import { groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { PERIOD_NAMES, PeriodOptions } from "@/lib/periods";
 
-const perYear = PPY as Record<string, number>;
 
 /** The two-arrow icon on the "Convert" links that open the converter. */
 export const ConvertIcon = (
@@ -28,8 +27,8 @@ export function ConverterDialog({ title, amount, period, apply, onClose }: {
 }) {
   const toast = useToast();
   const [amt, setAmt] = useState(groupDigits(Math.round(amount * 100) / 100, true));
-  const [per, setPer] = useState(perYear[period] ? period : "Monthly");
-  const annual = parseNum(amt) * perYear[per];
+  const [per, setPer] = useState(PER_YEAR[period] ? period : "Monthly");
+  const annual = parseNum(amt) * PER_YEAR[per];
   return (
     <Modal className="popup wide" onClose={onClose} focus="#convAmt">
       <ModalTop title={title} onClose={onClose} />
@@ -42,7 +41,7 @@ export function ConverterDialog({ title, amount, period, apply, onClose }: {
       </div>
       <div id="convOut">
         {PERIOD_NAMES.map((to) => {
-          const v = annual / perYear[to];
+          const v = annual / PER_YEAR[to];
           return (
             <div className="convrow" key={to}>
               <span className="k">{to}</span><span className="v">{money(v, 2)}</span>

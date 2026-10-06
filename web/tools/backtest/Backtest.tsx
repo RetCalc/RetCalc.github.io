@@ -24,6 +24,7 @@ import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
 import { MixRows, mixForm, mixOk, type MixForm } from "@/tools/drawdown/MixRows";
 import { ddN, rebalText } from "@/tools/drawdown/text";
 import { BT_DEF, BT_FIRST, BT_LAST, decadeInflation, eraFrom, runBacktest, yearClamp, type BacktestInputs } from "./model";
+import { setNavDir } from "@/lib/nav-motion";
 
 const GOLD = "#e9b872", BLUE = "#7d9fd6", RED = "#e2795f";
 const MIXES = [["100", "100"], ["80", "80"], ["60", "60"], ["40", "40"], ["0", "0"]] as const;
@@ -84,6 +85,7 @@ export function Backtest() {
   const useInAdvanced = () => {
     const f = (v: number) => String(+(v * 100).toFixed(2));
     setToolInputs("advanced", { ...toolInputs("advanced", ADVANCED_DEFAULTS), nominal: f(B.cagr), vol: f(B.vol), inflation: f(B.inflCagr) });
+    setNavDir("back");
     router.push("/advanced");
     toast("Return, volatility and inflation updated");
   };
@@ -244,8 +246,8 @@ export function Backtest() {
             <table id="btTable" ref={yearTable}>
               <thead><tr>
                 {yearCols.map(([k, label, hide]) => (
-                  <th key={k} className={sort.cls(k)} data-sort={k} id={k === "sv" ? "btSVHead" : k === "cash" ? "btCashHead" : undefined}
-                    hidden={hide} onClick={() => sort.by(k)}>{label}</th>
+                  <th key={k} {...sort.th(k)} data-sort={k} id={k === "sv" ? "btSVHead" : k === "cash" ? "btCashHead" : undefined}
+                    hidden={hide}>{label}</th>
                 ))}
               </tr></thead>
               <tbody>

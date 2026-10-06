@@ -9,6 +9,7 @@ import { debtDate } from "@/lib/engine/typed";
 import { opTacticsLine } from "@/tools/optimizer/words";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { Html } from "@/components/ui/Html";
+import { KV } from "@/components/ui/Readout";
 import {
   FACTORS, coastNow, fixes, gross, mar, minSpend, months, need, ok, options, parts, pos, rating, saveMo, score, sim, stratName, tactics, target,
 } from "./calc";
@@ -111,8 +112,6 @@ export function actions(a: Answers): Action[] {
     A.push({ t: "Stress-test how you'll spend it", d: "The Drawdown Simulator tour replays your plan through 1929, 1966 and 2000, and walks through each withdrawal strategy, your stock mix, when to claim Social Security, and big one-time costs.", trip: "drawdown", btn: "Start the tour" });
   return A.slice(0, 6);
 }
-
-const KV = ({ k, v }: { k: string; v: string }) => <div className="kv"><span className="k">{k}</span><span className="v">{v}</span></div>;
 
 export function Results() {
   const G = useGuideView(), { v: a, g } = G, R = score(a), rt = rating(R.score), S = sim(a);

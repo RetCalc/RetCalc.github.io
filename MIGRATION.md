@@ -196,6 +196,26 @@ Retirement calculator (basic, advanced, stages), compare, Roth, RMD, healthcare,
 Drawdown Simulator and its 8 strategy pages, backtest, Plan Optimizer (with the
 worker), readiness guide, tool picker, about, tool help and glossary.
 
+- [x] Drawdown Simulator and its 8 strategy pages, with its views (plan, compare, safe
+      spending), dialogs, guide and classic studies; Monte Carlo and searches in a worker
+- [x] Portfolio Backtest
+- [x] Plan Optimizer, its search in a worker of its own, and the bow-and-arrow progress
+- [x] Retirement Readiness Guide: every step, the score and route, trips into thirteen
+      tools with the coach panel docked over each, the Plan Optimizer step, the printable
+      plan and share links (`#g=`)
+- [x] Tool Help tours on twelve tools (the coach panel on its own)
+- [x] Share menu: each tool's printable one-page summary and square image card
+- [x] About page; the household bar sits in it, under Appearance
+- [x] Page-change entrances and the card-to-header icon glide (a shared React view
+      transition, `components/tools/ToolIcon.tsx`)
+- Fixed on the way, so intentionally different from the old site (each checked on its own):
+  the Share menu offers only what a page has (the old one printed Advanced's summary from
+  the Backtest, Healthcare, FIRE and Optimizer pages, and its Stages card used Advanced's
+  numbers); a coach panel reads a tool again when its background work lands; the About page has no
+  empty article box (the old one's grid gap left 20px more above the footer)
+- The checker waits for `<html data-busy>` to clear (`lib/busy.ts`): the new site works
+  some results out in the background, the old one didn't
+
 **Gate:** every page matches; SEO check passes; web-design-guidelines and
 vercel-optimize audits reviewed; site owner clicks through the preview.
 
@@ -211,6 +231,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-05 | 5 | Share menu (printable summary and image card on every tool), About page, page-change motion and the icon glide. Review against the Vercel skills: tool help and guide coach load on first use (tours and trips off every page), shared pieces for print rows, sortable headings (now keyboard-usable), panel folding, the Bridge routes checklist and repeated helpers. web-design-guidelines: keyboard fixes applied, wording and visual items left for the redesign. vercel-optimize: code scan clean (0 findings); its traffic audit needs Observability Plus (paid), so skipped. 174 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
 | 2026-10-05 | 4 | Review against the Vercel skills: the Save menu no longer pulls the engine onto every page (tools and about back to 192 KB); the Bridge and plan engines load only on the Bridge (every calculator page about 12 KB lighter); Advanced and Stages share their headline and chart panel; shared helpers for field dollars, the Income Tax handoff, the glide note, chart paths. All 55 checks unchanged |
 | 2026-10-05 | 4 | Early Retirement Bridge and 72(t), Advanced, Stages, Compare; shared chart frame, account math and dialogs. 55 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
 | 2026-10-05 | 4 | Basic (home page), Healthcare, Roth and RMDs, FIRE |

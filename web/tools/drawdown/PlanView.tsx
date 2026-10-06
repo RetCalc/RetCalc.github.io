@@ -25,7 +25,7 @@ import { fmtNum, money, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
 import type { DDView } from "./Drawdown";
 import type { DdItem } from "./fields";
-import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, startLabel, whyText } from "./text";
+import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, startLabel, whyText, swatch } from "./text";
 
 /** The return assumptions the sensitivity table tries: history less 2 and 1
     points a year, as it was, and 1 point better. */
@@ -33,7 +33,6 @@ export const DD_DRAGS = [2, 1, 0, -1];
 
 const BASE_COLOR = "#c9d3e6";
 const baseLine = (pts: { year: number; value: number }[]) => [{ pts, color: BASE_COLOR, dash: "6 5", width: 1.6 }];
-const swatch = (c: string, t: string) => `<span><i style='background:${c}'></i>${t}</span>`;
 
 /* ---- a change against the pinned baseline ---- */
 export function deltaHtml(cur: number | null, base: number | null, kind: "pts" | "money" | "n", lowBetter?: boolean): string {
@@ -201,7 +200,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
         <table id="ddStartTable" ref={table}>
           <thead><tr>
             {SORT_COLS.map(([k, label, title]) => (
-              <th key={k} className={sort.cls(k)} data-sort={k} title={title} onClick={() => sort.by(k)}>{label}</th>
+              <th key={k} {...sort.th(k)} data-sort={k} title={title}>{label}</th>
             ))}
           </tr></thead>
           <tbody>

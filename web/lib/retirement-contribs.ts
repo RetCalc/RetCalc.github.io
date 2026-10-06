@@ -4,13 +4,12 @@
    opened here, their defaults stand in, the same defaults the old site
    started them with. */
 import { toolInputs } from "@/components/tools/ToolState";
-import { PPY } from "@/lib/engine/typed";
+import { PER_YEAR } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
 import { BASIC_INPUTS } from "@/tools/basic/model";
 import { STAGES_DEFAULTS } from "@/tools/stages/model";
 
-const perYear = PPY as Record<string, number>;
 type Contrib = { contrib: string; period: string };
 
 export function retirementContribs(): { label: string; value: number }[] {
@@ -23,6 +22,6 @@ export function retirementContribs(): { label: string; value: number }[] {
     { label: "Advanced", ...advanced },
     { label: "Stages", ...first },
   ]
-    .map((c) => ({ label: c.label, value: (parseNum(c.contrib) * (perYear[c.period] ?? 12)) / 12 }))
+    .map((c) => ({ label: c.label, value: (parseNum(c.contrib) * (PER_YEAR[c.period] ?? 12)) / 12 }))
     .filter((c) => c.value > 0);
 }

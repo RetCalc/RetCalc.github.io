@@ -8,6 +8,7 @@
 import { debtDate } from "@/lib/engine/typed";
 import { money, parseNum, pctStr } from "@/lib/format";
 import { bridgeRun, budgetNums, debtNums, hcPrem, on, q, text } from "@/lib/tool-reads";
+import { routeTasks } from "@/tools/bridge/coach";
 import type { BridgeInputs } from "@/tools/bridge/model";
 import type { BudgetInputs } from "@/tools/budget/model";
 import { collegeInput, collegeMonthly, type CollegeInputs } from "@/tools/college/model";
@@ -394,20 +395,7 @@ const bridge: Tour<BridgeInputs> = { name: "Early Retirement Bridge", title: "Ge
       { h: "<b>Holds up in</b> is the share of retirements since 1926 where that plan reached 59½ without running short or needing penalized money." },
       { h: "<b>Cost of the bridge</b> is the income tax, penalties and health premiums it pays along the way." },
     ] },
-    { title: "Compare the routes", focus: "#brCompare", tasks: ({ s, base }) => {
-      const seen = (base.seen = (base.seen as Record<string, 1>) || {}) as Record<string, 1>;
-      const sel = q("#brCompare tr.sel")?.getAttribute("data-plan");
-      if (sel) seen[sel] = 1;
-      const k = Object.keys(seen).length, run = bridgeRun(s), live = (key: string) => !!run && run.live.some((p) => p.key === key);
-      const row = (key: string, h: string): HelpTask => ({ h, ok: tried(!!seen[key]) });
-      const T: HelpTask[] = [{ h: "<b>Ways to 59½</b> lists every route. Click a few rows to see each one play out below." + (k > 1 ? "<em>" + k + " tried</em>" : ""), ok: tried(k >= 3) }];
-      if (live("ladder")) T.push(row("ladder", "<b>Roth conversion ladder</b>: move a year's spending into a Roth each year and spend it five years later. The first five years need another source."));
-      if (live("sepp")) T.push(row("sepp", "<b>72(t) payments</b>: fixed yearly payments from an IRA with no penalty, but locked in until 59½ or for five years, whichever is later."));
-      T.push(row("brok", "<b>Brokerage, then Roth contributions</b>: often nearly tax-free, but it only lasts as long as those accounts do."));
-      if (live("r55")) T.push(row("r55", "<b>Rule of 55</b>: draw the 401(k) you left, penalty-free."));
-      T.push({ h: "<b>Pay the 10% penalty</b> is there to compare against: look at its <b>Penalties</b> column." });
-      return T;
-    } },
+    { title: "Compare the routes", focus: "#brCompare", tasks: ({ s, base }) => routeTasks(s, (base.seen = (base.seen as Record<string, 1>) || {}) as Record<string, 1>) },
     { title: "What you'll have at 59½", focus: "#brAtOut", tasks: ({ s, base }) => [
       { h: "The table shows each account at 59½ in an <b>Average</b> market, and in <b>Above average</b> and <b>Below average</b> ones, all real starts from history.", ok: tried(!on('#segBRPath [data-brpath="avg"].on')) },
       { h: "Under <b>Account balances</b>, switch to <b>Across history</b> to see the range over every start since 1926.", ok: tried(on('#segBRBal [data-brbal="hist"].on')) },

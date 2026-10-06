@@ -20,6 +20,8 @@ import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEF, runTax, taxInput } from "./model";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
+import { useShareKit } from "@/components/shell/share";
+import { taxShare } from "./share";
 
 const TAX_COLORS = { fed: "#e2795f", state: "#e9b872", fica: "#7d9fd6", net: "#4fbf95" };
 const BKT_COLORS = ["#e2795f", "#4fbf95", "#7d9fd6", "#e9b872", "#c98fb8", "#a98fd6"]; // trad, roth, brok, ss, pension, other
@@ -60,6 +62,7 @@ function Donut({ parts, center, active }: { parts: Part[]; center: string; activ
 
 export function Tax() {
   const { state: s, set, setState } = useToolState(TAX_DEF);
+  useShareKit(TAX_DEF.id, taxShare(s));
   const [active, setActive] = useState<number | null>(null);
   const deactivate = useRef<ReturnType<typeof setTimeout>>(undefined);
   const activate = (i: number) => {

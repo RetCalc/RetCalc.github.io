@@ -52,7 +52,8 @@ const HOUSE_ICON = (
 
 /** `states` comes from the server (lib/states.ts), so this bar never needs
     the calculation engine. */
-export function HouseholdBar({ states }: { states: StateOption[] }) {
+/** `inAbout`: on the About page, under Appearance, where it can't be hidden. */
+export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbout?: boolean }) {
   const { profile, save, shown, setShown } = useHousehold();
   const toast = useToast();
   const [open, setOpen] = useState(false);
@@ -92,7 +93,7 @@ export function HouseholdBar({ states }: { states: StateOption[] }) {
   const sum = profile && !empty ? householdSummary(profile, (c) => states.find((s) => s.code === c)?.name) : null;
 
   return (
-    <section className={`hh${(open ? form.status : profile?.status) === "m" ? " married" : ""}`} id="hhCard" aria-label="Your household" hidden={!shown}>
+    <section className={`hh${(open ? form.status : profile?.status) === "m" ? " married" : ""}${inAbout ? " inabout" : ""}`} id="hhCard" aria-label="Your household" hidden={!shown && !inAbout}>
       <div className="hh-bar">
         <span className="hh-ic" aria-hidden="true">{HOUSE_ICON}</span>
         <div className="hh-sum" id="hhSummary">

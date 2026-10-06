@@ -35,6 +35,7 @@ import "@/styles/12-guide.css";
 import "@/styles/13-chart-ink-logo.css";
 import "@/styles/14-footer-menus-mobile.css";
 import "@/styles/15-optimizer.css";
+import { PaneMotion } from "@/components/shell/PaneMotion";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
@@ -89,6 +90,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <NavBar />
             <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
             <Main>{children}</Main>
+            <PaneMotion />
             <Footer />
             <Tooltips />
             <SelectMenus />

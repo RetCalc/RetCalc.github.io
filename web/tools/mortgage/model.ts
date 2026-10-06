@@ -33,3 +33,18 @@ export function mortgageInput(s: Inputs): MortgageInput {
     refiRate: pct(s.refiRate), refiTerm: parseFloat(s.refiTerm), refiCost: parseNum(s.refiCost),
   };
 }
+
+/** A month as "year 3, month 4". */
+export function when(months: number): string {
+  const y = Math.floor(months / 12), m = months % 12;
+  if (!y) return m + (m === 1 ? " month" : " months") + " in";
+  if (!m) return "year " + y;
+  return "year " + y + ", month " + m;
+}
+/** A span as "3y 4m". */
+export function dur(months: number): string {
+  const y = Math.floor(months / 12), m = months % 12;
+  if (!y) return m + (m === 1 ? " month" : " months");
+  if (!m) return y + (y === 1 ? " year" : " years");
+  return y + "y " + m + "m";
+}

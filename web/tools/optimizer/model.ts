@@ -2,7 +2,7 @@
    opSyncFields() and opSetMode() in src/js/app/31b-plan-optimizer.js and
    src/main/25b-optimizer-inputs.html. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { BASIC_INFL, HIST_START, RISK_LEVELS } from "@/lib/engine/typed";
+import { BASIC_INFL, HIST_START } from "@/lib/engine/typed";
 import { ssEstimate } from "@/lib/engine/typed-drawdown";
 import type { PlToday } from "@/lib/engine/types";
 import { parseNum } from "@/lib/format";
@@ -18,7 +18,6 @@ export type OptimizerInputs = typeof OP_DEFAULTS;
 
 export const OP_DEF: ToolDef<OptimizerInputs> = { id: "optimizer", label: "Plan Optimizer", noun: "optimizer plan", defaults: OP_DEFAULTS };
 
-export const RISKS = RISK_LEVELS as { label: string; sub: string; real: number }[];
 
 /* A blank field takes its default; anything else is held to the range. */
 function num(raw: string, lo: number, hi: number, d: number): number {

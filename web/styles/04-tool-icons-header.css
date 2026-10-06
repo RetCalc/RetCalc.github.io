@@ -133,8 +133,12 @@
 .toolhead-desc{margin:4px 0 0;font-size:13.5px;line-height:1.5;color:var(--dim);max-width:80ch}
 .toolhead-desc:empty{display:none}
 /* the glide from the picker card into this header */
-::view-transition-group(toolicon){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+/* (React names each tile's transition; they share the class "toolicon") */
+::view-transition-group(.toolicon){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
 ::view-transition-old(root),::view-transition-new(root){animation-duration:.22s}
+@media (prefers-reduced-motion: reduce){
+  ::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){animation-duration:0s!important;animation-delay:0s!important}
+}
 .toolback .backbtn{display:inline-flex;align-items:center;gap:7px;flex:none;
   background:transparent;border:0;box-shadow:none;cursor:pointer;
   padding:6px 10px 6px 7px;margin-left:-7px;border-radius:var(--r-well);

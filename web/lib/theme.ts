@@ -23,6 +23,8 @@ export function readThemeChoice(): ThemeChoice {
   }
 }
 
+const choiceListeners = new Set<() => void>();
+
 /** Shows `choice` now and remembers it. */
 export function setThemeChoice(choice: ThemeChoice): void {
   try {
@@ -32,6 +34,16 @@ export function setThemeChoice(choice: ThemeChoice): void {
     /* applies for this visit only */
   }
   applyTheme(resolveTheme(choice));
+  choiceListeners.forEach((l) => l());
+}
+
+/** The choice stored: light, dark or the system's; "system" before hydration. */
+export function useThemeChoice(): ThemeChoice {
+  return useSyncExternalStore(
+    (l) => { choiceListeners.add(l); return () => choiceListeners.delete(l); },
+    readThemeChoice,
+    () => "system",
+  );
 }
 
 /* Native controls (checkboxes, scrollbars) and the phone's browser chrome

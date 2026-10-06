@@ -1,6 +1,7 @@
 /* Runs every plan for the Early Retirement Bridge, and the three markets the
    detail views follow. From renderBridge() and brScenarios() in
    src/js/app/36-bridge.js. */
+import { DASH, pctStr } from "@/lib/format";
 import { HIST_START } from "@/lib/engine/typed";
 import { BR_UNLOCK, brBetter, brCtx, brFlatSeq, brMCSeqs, brPlans, brSim, brTax, brTest } from "@/lib/engine/typed-bridge";
 import type { BrCtx, BrEnd, BrInput, BrPlan, BrRun, BrTest } from "@/lib/engine/types";
@@ -73,3 +74,9 @@ export function firstYearAfter(ctx: BrCtx, e: BrEnd) {
 }
 
 export const UNLOCK = BR_UNLOCK as number;
+
+/** A share held: "85%", or a dash with nothing tested. */
+export const holdPct = (n: number, of: number) => (of > 0 ? pctStr(n / of, 0) : DASH);
+/** A plan's name mid-sentence: lowercase, except Roth. */
+export const lowerName = (n: string) => (/^Roth\b/.test(n) ? n : n.charAt(0).toLowerCase() + n.slice(1));
+

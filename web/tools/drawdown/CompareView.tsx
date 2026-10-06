@@ -18,10 +18,9 @@ import { ddForTarget, ddLineAt, ddWindows, ddWithDial, runDrawdown, type DdShow,
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
 import { PICKER_IDS, type DDView } from "./Drawdown";
-import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, targetWords } from "./text";
+import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, targetWords, swatch } from "./text";
 
 const SPOT_COLORS = ["#e9b872", "#4fbf95", "#7d9fd6", "#e2795f", "#b49be0", "#7fd0d6"];
-const swatch = (c: string, t: string) => `<span><i style='background:${c}'></i>${t}</span>`;
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
 
 export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: boolean }) {
@@ -55,7 +54,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
   }
   const yName = { end: "Typically left at the end", low: "Leanest year", first: "Year one" }[yk];
   const spotLbl = (sp: { year: number; month: number } | null) => (sp ? (sp.month && sp.month !== 1 ? MON[sp.month - 1] + " " : "") + sp.year : "");
-  const th = (c: Col, label: string) => <th className={sort.cls(c, !!res)} data-ssort={c} onClick={() => sort.by(c)}>{label}</th>;
+  const th = (c: Col, label: string) => <th {...sort.th(c, !!res)} data-ssort={c}>{label}</th>;
   return (
     <>
       <div className="panel" id="ddShowPanel" data-ddtabs="compare">

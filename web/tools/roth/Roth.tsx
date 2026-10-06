@@ -22,9 +22,12 @@ import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format
 import { STATE_OPTIONS } from "@/lib/states";
 import { DRAWDOWN_DEFAULTS } from "@/tools/drawdown/fields";
 import { ROTH_DEF, rothInput, type RothInputs } from "./model";
+import { useShareKit } from "@/components/shell/share";
+import { rothShare } from "./share";
 
 export function Roth() {
   const { state: s, set, setState } = useToolState(ROTH_DEF);
+  useShareKit(ROTH_DEF.id, rothShare(s));
   const toast = useToast();
   const [view, setView] = useState<"bal" | "tax">("bal");
   const [tableView, setTableView] = useState<"plan" | "base">("plan");

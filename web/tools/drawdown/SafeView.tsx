@@ -19,9 +19,8 @@ import {
 } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import type { DDView } from "./Drawdown";
-import { DD_STRAT_NAMES, critWords, dialFields, dialText, escapeHtml, firstSpend, lineWords, rateOf, targetWords } from "./text";
+import { DD_STRAT_NAMES, critWords, dialFields, dialText, escapeHtml, firstSpend, lineWords, rateOf, targetWords, swatch } from "./text";
 
-const swatch = (c: string, t: string) => `<span><i style='background:${c}'></i>${t}</span>`;
 const work = (t: string) => "<span class='ddwork'>" + t + "</span>";
 
 export function SafeView({ v, T, active }: { v: DDView; T: DdTarget; active: boolean }) {

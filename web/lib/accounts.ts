@@ -4,7 +4,7 @@
    it changes is the tax: the first year's withdrawal is run through the
    Income Tax tool's retirement engine instead of a flat typed-in rate.
    Ported from src/js/app/02-accounts-advanced.js. */
-import { PPY, fvFactors, retireTax } from "@/lib/engine/typed";
+import { fvFactors, retireTax, PER_YEAR } from "@/lib/engine/typed";
 import type { Plan, RetireTax } from "@/lib/engine/types";
 import type { Household } from "@/lib/household";
 
@@ -29,7 +29,6 @@ export interface AccountResult {
   match?: number; matchTotal: number; perDollar?: number; rothIn?: number; years?: number;
 }
 
-const perYear = PPY as Record<string, number>;
 
 /* The employer matches matchPct% of what you put into the workplace plan,
    on your contributions up to matchCap% of salary -- "50% on the first 6%"
@@ -79,7 +78,7 @@ export function growthBlend(p: Plan, years: number, w: GrowthRates, g: GrowthRat
 
 /** Each account's ending balance for a single plan, and the tax on it. */
 export function accountBreakdown(p: Plan, a: Accounts, seniors: number): AccountResult {
-  const ppy = perYear[p.period];
+  const ppy = PER_YEAR[p.period];
   const match = matchPer(a, ppy);
   const F = fvFactors(p, p.years);
   const gr = a.gRates || { t: p.growth, r: p.growth, b: p.growth };

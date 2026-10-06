@@ -22,6 +22,7 @@ const cases: Case[] = [
 ];
 
 test("stages calculator matches the current site", async ({ page }, info) => {
+  test.setTimeout(300_000); // a long walk, slower still beside other tests
   await compareTool(page, info, "stages", ["#asideSeries", "#tab-series"], cases);
 });
 

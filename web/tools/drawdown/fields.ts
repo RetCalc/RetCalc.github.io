@@ -4,7 +4,7 @@
    From DD_STATE, readDDState() and writeDDState() in
    src/js/app/15-drawdown.js. */
 import { setToolInputs, toolInputs, type ToolDef } from "@/components/tools/ToolState";
-import { DD_LANDING, HIST_START, HIST_STOCK, ddStagesFromRates } from "@/lib/engine/typed-drawdown";
+import { DD_LANDING, HIST_START, HIST_STOCK, ddStagesFromRates, type DdItem } from "@/lib/engine/typed-drawdown";
 import { groupDigits, parseNum } from "@/lib/format";
 
 /* Kinds: "money" (grouped digits), "money0" (the same, blank when 0, since
@@ -97,11 +97,8 @@ const DD_LATER = ["sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFi
   "mcBlock", "mcRet", "mcStock", "mcSV", "mcBond", "mcCash", "mcInfl"];
 
 /** A custom income or expense: a pension, a rental, a new car. */
-export interface DdItem {
-  name: string; annual: number; inflate: boolean; startYear: number; on?: boolean;
-  duration: { type: "once" | "forever" } | { type: "years"; years: number };
-}
 /** A spending stage: from year `start`, spending moves to `level`% of year one's. */
+export type { DdItem };
 export interface PathStage { start: number; level?: number; name?: string }
 /** A change in the minimum: from year `start`, `amount`, eased in over `glide` years. */
 export interface FloorStep { start: number; amount: number; glide: number }

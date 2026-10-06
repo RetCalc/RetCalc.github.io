@@ -50,3 +50,7 @@ export const fiYearsFromCrossings = typed<(crossings: number[], total: number, p
 
 
 export const { HC_AGE40_MULT, HC_STATE_PREMIUM_40, IRMAA, BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax, HIST_START, LTCG_2026 } = E;
+/** Contributions per year for each period name ("Monthly" → 12). */
+export const PER_YEAR = PPY as Record<string, number>;
+/** The guide's and optimizer's risk levels, each with its real return. */
+export const RISKS = RISK_LEVELS as { label: string; sub: string; real: number }[];

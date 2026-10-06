@@ -7,7 +7,8 @@
    the page leaves room for it (body.gd-on, --gdh). From #gdCoach and
    #thCoach in src/page.html and gdCoachFill() in 31-guide-coach.js. */
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useBusyState } from "@/lib/busy";
 import { Html } from "@/components/ui/Html";
 
 export interface CoachTask { h: string; ok?: boolean }
@@ -92,3 +93,46 @@ export function revealFor(sel: string) {
     window.scrollBy({ top: r.top - rail, behavior: smooth ? "smooth" : "auto" });
   }
 }
+
+/** A panel reading a tool from outside draws again shortly after anything
+    on the page is touched, once more after any headline figure has counted
+    to itself, and again whenever work the page was doing in the background
+    lands. */
+export function useRereads(on: boolean) {
+  const [, tick] = useState(0);
+  const busy = useBusyState();
+  useEffect(() => {
+    if (!on) return;
+    let t1: ReturnType<typeof setTimeout>, t2: ReturnType<typeof setTimeout>;
+    const later = (e?: Event) => {
+      if ((e?.target as Element | null)?.closest?.(".gd-coach")) return;
+      clearTimeout(t1); clearTimeout(t2);
+      t1 = setTimeout(() => tick((n) => n + 1), 120);
+      t2 = setTimeout(() => tick((n) => n + 1), 400);
+    };
+    const opts = { capture: true };
+    ["input", "change", "click"].forEach((k) => document.addEventListener(k, later, opts));
+    if (!busy) later();
+    return () => { clearTimeout(t1); clearTimeout(t2); ["input", "change", "click"].forEach((k) => document.removeEventListener(k, later, opts)); };
+  }, [on, busy]);
+}
+
+/** On a phone, the open panel and the keyboard together would bury the
+    field being typed in, so starting to type in the tool folds it down. */
+export function useFoldOnType(active: boolean, folded: () => boolean, fold: () => void) {
+  const latest = useRef({ folded, fold });
+  useEffect(() => {
+    latest.current = { folded, fold };
+  });
+  useEffect(() => {
+    if (!active) return;
+    const onFocus = (e: FocusEvent) => {
+      const el = e.target as Element;
+      if (latest.current.folded() || !el.matches?.("input,select,textarea") || el.closest(".gd-coach") || !window.matchMedia("(max-width:640px)").matches) return;
+      latest.current.fold();
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
+  }, [active]);
+}
+

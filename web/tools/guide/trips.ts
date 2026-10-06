@@ -17,6 +17,7 @@ import { annualize, type BudgetInputs, type BudgetRow } from "@/tools/budget/mod
 import { collegeInput, collegeMonthly, type CollegeInputs } from "@/tools/college/model";
 import { DEBT_DEFAULTS, type DebtInputs, type DebtRow } from "@/tools/debt/model";
 import { ddWrite, type DdItem, type DrawdownState } from "@/tools/drawdown/fields";
+import { routeTasks } from "@/tools/bridge/coach";
 import type { BridgeInputs } from "@/tools/bridge/model";
 import { escapeHtml } from "@/tools/drawdown/text";
 import type { FireInputs } from "@/tools/fire/model";
@@ -416,18 +417,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       ],
       ({ s, trip }: Ctx<BridgeInputs>) => {
         const base = (trip.base || {}) as { seen?: Record<string, 1> };
-        const seen = (base.seen = base.seen || {});
-        const sel = q("#brCompare tr.sel")?.getAttribute("data-plan");
-        if (sel) seen[sel] = 1;
-        const n = Object.keys(seen).length, run = bridgeRun(s), live = (k: string) => !!run && run.live.some((p) => p.key === k);
-        const row = (k: string, h: string): Task => ({ h, ok: seen[k] ? true : undefined });
-        const T: Task[] = [{ h: "<b>Ways to 59½</b> lists every route. Click a few rows to see each one play out below." + (n > 1 ? "<em>" + n + " tried</em>" : ""), ok: n >= 3 }];
-        if (live("ladder")) T.push(row("ladder", "<b>Roth conversion ladder</b>: move a year's spending into a Roth each year and spend it five years later. The first five years need another source."));
-        if (live("sepp")) T.push(row("sepp", "<b>72(t) payments</b>: fixed yearly payments from an IRA with no penalty, but locked in until 59½ or for five years, whichever is later."));
-        T.push(row("brok", "<b>Brokerage, then Roth contributions</b>: often nearly tax-free, but it only lasts as long as those accounts do."));
-        if (live("r55")) T.push(row("r55", "<b>Rule of 55</b>: draw the 401(k) you left, penalty-free."));
-        T.push({ h: "<b>Pay the 10% penalty</b> is there to compare against: look at its <b>Penalties</b> column." });
-        return T;
+        return routeTasks(s, (base.seen = base.seen || {}));
       },
       ({ s, trip }: Ctx<BridgeInputs>) => {
         const b = trip.base as { fill: string } | undefined;
