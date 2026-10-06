@@ -94,6 +94,31 @@ until the strategy comparison has run, so for a moment it can't be opened
 (by keyboard or pointer) and shows nothing. Worth a placeholder ("Working
 it out…") or a disabled state while it fills.
 
+### Post-redesign ideas from the homepage critique (new figures, so not now)
+
+Raised by the homepage critique (2026-10-06, `.impeccable/critique/`); left
+for after the redesign because each shows numbers the page doesn't show
+today, which the redesign doesn't do.
+
+- **What-if levers.** A row of one-tap changes under the reading ("+$100 a
+  month", "retire two years later", "a more aggressive mix"), each showing
+  how the value at retirement would move. Why: the homepage answers "what
+  will I have?" but not "what would change it?", which is the question a
+  saver asks next; today they have to edit a field and remember the old
+  figure, or leave for Advanced. The engine already runs the plan
+  (`projectBasic`), so each lever is the same run with one input nudged;
+  the deltas are the new figures. They'd follow the Never Alone Rule (a
+  sign and a word with any gain or loss color).
+- **A historical range on the homepage.** Alongside or instead of the
+  ±1.5-point band, one honest line from market history: in what share of
+  historical windows since 1926 the plan reached what amount (e.g. "in 90%
+  of 35-year runs since 1926: $X to $Y"). Why: RetCalc's edge is testing
+  against every market since 1926, but the front door draws a band any
+  calculator could; the advanced planner (PRODUCT.md) judges the suite by
+  this page. The history engine exists (Advanced's Historical mode); the
+  range is a new figure on the homepage and needs a decision on which
+  windows and percentiles to show.
+
 ## Fixed
 
 ### Escape inside a dialog's select list also closes the dialog
