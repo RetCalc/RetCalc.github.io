@@ -52,7 +52,7 @@ nav[role=tablist] button:not([aria-selected="true"]):hover::after{
 nav[role=tablist] button[aria-selected="true"]{color:var(--text)}
 nav[role=tablist] button[aria-selected="true"]::after{opacity:1;transform:translateX(-50%)}
 @media (prefers-reduced-motion:reduce){nav[role=tablist] button::after{transition:none}}
-nav[role=tablist] button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 
 /* ---------- Calculator tab: a mode menu ----------
    Basic, Advanced and Stages share one tab. The tab carries the open mode
@@ -84,7 +84,7 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--jade)}
   color:var(--text);cursor:pointer;transition:background .12s ease}
 .calcmenu button + button{margin-top:2px}
 .calcmenu button:hover,.calcmenu button:focus-visible{background:var(--panel-2)}
-.calcmenu button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.calcmenu button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .cm-name{grid-column:1;font-size:14.5px;font-weight:600}
 .cm-desc{grid-column:1;font-size:12.5px;color:var(--dimmer);line-height:1.4;margin-top:2px}
 /* the open mode gets a check, and its name in the tab's jade */

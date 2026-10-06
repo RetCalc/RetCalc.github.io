@@ -12,7 +12,7 @@
 .sitefoot-txt p.src{margin:0;font-size:11.5px;color:var(--dimmer)}
 .sitefoot-link{color:var(--jade);text-decoration:underline;text-decoration-color:var(--jade-line-hi);text-underline-offset:3px}
 .sitefoot-link:hover{text-decoration-color:currentColor}
-.sitefoot-link:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+.sitefoot-link:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:3px}
 .sitefoot-nav{display:flex;flex-wrap:wrap;gap:2px 20px;padding-top:2px}
 @media (max-width:900px){ .sitefoot-in{grid-template-columns:minmax(0,1fr);gap:16px} }
 /* clear of the fixed bottom bar in the installed app, and of the guide's coach */
@@ -43,7 +43,7 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
 .selmenu-i + .selmenu-i{margin-top:1px}
 .selmenu-i:hover,.selmenu-i.act{background:var(--panel-2)}
 .selmenu-i:focus{outline:none}
-.selmenu-i:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.selmenu-i:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .selmenu-i .n{grid-column:1}
 .selmenu-i .d{grid-column:1;font-size:12px;color:var(--dimmer);margin-top:1px}
 .selmenu-i::after{content:"";grid-column:2;grid-row:1 / span 2;width:12px;height:7px;

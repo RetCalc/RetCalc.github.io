@@ -38,11 +38,11 @@
 .about b{color:var(--text);font-weight:600}
 .about ul{margin:0;padding-left:18px;font-size:13.5px;line-height:1.7;color:var(--dim)}
 .about ul li{margin-bottom:9px}
-.about ul li::marker{color:var(--jade)}
+.about ul li::marker{color:var(--dimmer)}
 .about ul + p,.about dl + p{margin-top:14px}
 /* Sub-heads inside a single tool's About panel, for tools with more than one
    mode to explain. */
-.about h3{font-size:12.5px;font-weight:600;color:var(--gold);margin:22px 0 10px;
+.about h3{font-size:12.5px;font-weight:600;color:var(--text);margin:22px 0 10px;
   letter-spacing:.04em;text-transform:uppercase}
 .about h3:first-child{margin-top:0}
 .about p + h3,.about dl + h3{margin-top:24px}
@@ -50,11 +50,8 @@
 .gloss dt{font-size:13px;font-weight:600;color:var(--text);margin-top:16px}
 .gloss dt:first-child{margin-top:0}
 .gloss dd{margin:5px 0 0;font-size:13px;line-height:1.7;color:var(--dim)}
-.about.disclaimer{border-color:#4d3d24;
-  background:linear-gradient(180deg,#1c1710 0%,var(--panel) 100%)}
-.about.disclaimer > h2{color:var(--gold)}
-html[data-theme="light"] .about.disclaimer{
-  border-color:#e2cfa4;background:linear-gradient(180deg,#fbf4e4,#ffffff)}
+/* The disclaimer is a panel like the others, its edge the strong rule. */
+.about.disclaimer{border-color:var(--ds-rule-strong)}
 
 /* ---------- budget ---------- */
 .bgincome{max-width:520px}

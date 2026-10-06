@@ -5,10 +5,9 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.01
 th{font-size:11.5px;color:var(--dimmer);font-weight:600;border-bottom:1px solid var(--line);
   position:sticky;top:0;background:var(--panel);letter-spacing:.01em;z-index:1}
 th:first-child,td:first-child{text-align:left}
-/* Row hover marks the row's edge rather than washing it — keeps money
-   columns legible while you track across. */
+/* Row hover fills the row one tone up, so you can track across it. */
 tbody tr{transition:background .12s ease}
-tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
+tbody tr:hover{background:var(--panel-2)}
 .scroll{max-height:460px;overflow:auto}
 .kv{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
   border-bottom:1px solid var(--line-soft);font-size:13.5px;align-items:baseline}
@@ -28,10 +27,10 @@ tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
 .optlabel{font-size:11.5px;color:var(--dim);margin-bottom:8px;letter-spacing:-.002em}
 .solveopt > .v{font-family:var(--mono);font-size:29px;line-height:1.05;font-weight:500;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap;overflow:hidden}
-.solveopt > .v.gold{color:var(--gold);text-shadow:0 0 30px rgba(233,184,114,.4)}
+.solveopt > .v.gold{color:var(--ds-amber)}
 .solveopt > .note{font-size:11px;color:var(--dimmer);margin-top:7px;margin-bottom:6px;line-height:1.4}
 .solveopt .kv{font-size:13px;padding:8px 0}
-.solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0;text-shadow:none}
+.solveopt .kv .v{font-size:13px;font-weight:400;letter-spacing:0}
 
 /* converter rows, each applyable */
 .convrow{display:flex;align-items:center;gap:10px;padding:9px 0;
@@ -45,19 +44,16 @@ tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
 .convrow.total .k{color:var(--text)}
 .convrow .spacer{width:50px;flex:none}
 
-/* segmented switch: a recessed track with a raised thumb */
-.seg{position:relative;display:inline-flex;border:1px solid var(--line);
+/* segmented switch: a ground track with a strong edge, and a raised thumb */
+.seg{position:relative;display:inline-flex;border:1px solid var(--ds-rule-strong);
   border-radius:var(--r-well);
-  overflow:hidden;flex:none;background:var(--field);box-shadow:var(--well)}
+  overflow:hidden;flex:none;background:var(--field)}
 /* A single raised thumb glides under the active option instead of each button
    repainting its own highlight. It's positioned by a small script from the
    active button's box, so it tracks segments of unequal width. */
-/* It carries a faint jade edge: picked reads the same here as on the guide's
-   choices and the calculator menu. */
 .seg-thumb{position:absolute;top:0;left:0;height:100%;width:0;
   border-radius:calc(var(--r-well) - 1px);
-  background:linear-gradient(180deg,var(--panel-2),var(--panel));
-  box-shadow:var(--edge-up),inset 0 0 0 1px var(--jade-line),0 2px 8px -4px rgba(0,0,0,.8);
+  background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);
   opacity:0;pointer-events:none;z-index:0;
   transition:transform .24s cubic-bezier(.2,.8,.3,1),
     width .24s cubic-bezier(.2,.8,.3,1),opacity .16s ease}
@@ -66,13 +62,15 @@ tbody tr:hover{background:var(--panel-2);box-shadow:inset 2px 0 0 var(--jade)}
   font-family:var(--sans);font-size:12px;padding:6px 11px;background:transparent;
   color:var(--dim);border:0;cursor:pointer;white-space:nowrap;
   transition:background .16s ease,color .16s ease,box-shadow .16s ease}
+.seg button{min-height:34px}
+@media (pointer:coarse){ .seg button{min-height:42px} }
 .seg button + button{border-left:1px solid var(--line)}
 .seg button:hover{color:var(--text)}
-.seg button:hover:not(.on){background:rgba(79,191,149,.08)}
+.seg button:hover:not(.on){background:color-mix(in srgb,var(--text) 5%,transparent)}
 .seg button.on{color:var(--text)}
 /* The raised thumb covers the dividers it sits against. */
 .seg button.on,.seg button.on + button{border-left-color:transparent}
-.seg button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.seg button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .modeopt{display:flex;align-items:center;gap:8px}
 .mcnote{padding:0 18px 15px;font-size:12.5px;color:var(--dim);line-height:1.5}
 .mcnote b{color:var(--gold);font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}

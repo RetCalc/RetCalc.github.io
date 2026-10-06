@@ -12,7 +12,7 @@
   transition:border-color .14s ease,background .14s ease,transform .08s ease}
 .op-goal:hover{border-color:var(--jade-line-hi)}
 .op-goal:active{transform:translateY(1px)}
-.op-goal:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.op-goal:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 .op-goal .dot{grid-row:1 / span 2;width:18px;height:18px;border-radius:50%;margin-top:1px;
   border:1.5px solid var(--dimmer);position:relative}
 .op-goal b{font-weight:600;font-size:14px;line-height:1.35}

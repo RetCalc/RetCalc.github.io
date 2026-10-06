@@ -77,7 +77,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-seg span{display:block;font-size:11px;color:var(--dimmer);margin-top:6px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 .gd-seg.on span{color:var(--text);font-weight:600}
-.gd-seg:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+.gd-seg:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px;border-radius:4px}
 .gd-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
 .gd-side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(var(--navh) + var(--gd-stick,0px) + 16px)}
 @media (max-width:899px){
@@ -106,7 +106,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
   transition:border-color .14s ease,background .14s ease,transform .08s ease}
 .gd-choice:hover{border-color:var(--jade-line-hi)}
 .gd-choice:active{transform:translateY(1px)}
-.gd-choice:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gd-choice:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 .gd-choice .dot{flex:none;width:18px;height:18px;border-radius:50%;margin-top:1px;
   border:1.5px solid var(--dimmer);position:relative;transition:border-color .14s ease}
 .gd-choice.on{border-color:var(--jade);background:rgba(79,191,149,.10)}
@@ -123,7 +123,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
   border:1px solid var(--line);background:var(--panel-2);color:var(--dim)}
 .gd-pick b{font-family:var(--mono);font-weight:600;color:var(--text)}
 .gd-pick:hover{border-color:var(--jade-line-hi);color:var(--text)}
-.gd-pick:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gd-pick:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 
 /* The trip into a tool: what to do there, and the button that goes. */
 .gd-task{border:1px solid rgba(79,191,149,.32);border-radius:var(--r-card);padding:16px 18px 18px;margin:2px 0 16px;
@@ -214,7 +214,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-facs{margin-top:14px}
 .gd-fac{display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line-soft);
   padding:9px 0 10px;font:inherit;color:inherit;cursor:pointer}
-.gd-fac:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+.gd-fac:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:4px}
 .gd-fac .top{display:flex;justify-content:space-between;gap:10px;font-size:12.5px}
 .gd-fac .top span{color:var(--dim)}
 .gd-fac .top em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--dimmer)}
@@ -230,7 +230,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-map-st{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;
   padding:6px 8px;border-radius:8px;font:inherit;font-size:13px;color:var(--dim);cursor:pointer}
 .gd-map-st:hover{background:var(--panel-2);color:var(--text)}
-.gd-map-st:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+.gd-map-st:focus-visible{outline:2px solid var(--ds-focus);outline-offset:1px}
 .gd-map-st i{flex:none;width:14px;height:14px;border-radius:50%;border:1.5px solid var(--line);position:relative}
 .gd-map-st.done i{background:var(--jade);border-color:var(--jade)}
 .gd-map-st.done i::after{content:"";position:absolute;left:3.5px;top:1px;width:3px;height:6px;
@@ -268,7 +268,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
   color:var(--text);cursor:pointer;font:inherit;box-shadow:var(--edge-up);
   transition:border-color .14s ease,background .14s ease}
 .gd-opt:hover{border-color:var(--jade-line-hi)}
-.gd-opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.gd-opt:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 .gd-opt.on{border-color:var(--jade);background:rgba(79,191,149,.10)}
 .gd-opt b{font-size:14.5px;font-weight:600;line-height:1.3}
 .gd-opt span{font-size:12.5px;color:var(--dim);line-height:1.4}
@@ -292,7 +292,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 /* The plan chart */
 .gd-chfig{margin:6px 0 14px;max-width:760px}
 .gd-chart{position:relative;min-height:210px;border-radius:10px}
-.gd-chart:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.gd-chart:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px}
 .gd-chart svg{display:block;overflow:visible}
 .gd-chart .grid{stroke:var(--line-soft);stroke-width:1}
 .gd-chart .ax{fill:var(--dimmer);font-family:var(--mono);font-size:11px}

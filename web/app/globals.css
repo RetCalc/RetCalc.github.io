@@ -153,6 +153,8 @@
   --ds-brand-jade: #4fbf95;
   --ds-brand-steel: #7d9fd6;
   --ds-focus: var(--ds-text);
+  /* The one shadow, for what floats: menus, tooltips, toasts, dialogs. */
+  --ds-float: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
 }
 
 :root[data-theme="light"] {
@@ -175,6 +177,7 @@
   --ds-brand-gold: #b0813a;
   --ds-brand-jade: #219b73;
   --ds-brand-steel: #6a8bc1;
+  --ds-float: 0 12px 32px -14px rgba(23, 25, 28, 0.18);
 }
 
 /* shadcn/ui's names for the same tokens. */

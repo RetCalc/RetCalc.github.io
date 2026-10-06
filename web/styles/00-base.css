@@ -1,10 +1,9 @@
 /* ============================================================
-   "The Instrument" — visual system
-   Depth encodes editability: recessed wells are where you type,
-   raised plateaus are what the machine computed. One light
-   source, from above, everywhere.
-   Data hues (jade/gold/steel/coral) are referenced by the chart
-   code and are deliberately unchanged.
+   "The Quiet Instrument" (DESIGN.md at the repo root)
+   Flat graphite surfaces in three tones, 1px rules, one amber
+   signal. No shadows at rest: only what floats (menus, tooltips,
+   toasts, dialogs) casts one. The colors are the --ds-* tokens in
+   app/globals.css; the names below are the older ones, aliased.
    ============================================================ */
 :root{
   /* The previous palette's names, kept so every existing rule recolors at
@@ -67,26 +66,19 @@
      there's no inset to begin with (a normal Safari tab, or desktop). */
   --sb-clear:calc(env(safe-area-inset-top,0px) * 2);
 
-  /* one light source, from above */
-  --edge-up:inset 0 1px 0 rgba(255,255,255,.055);
-  --lift-1:0 1px 0 rgba(255,255,255,.05) inset, 0 8px 24px -14px rgba(0,0,0,.9);
-  --lift-2:0 24px 60px -20px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.05) inset;
-  --well:inset 0 2px 5px -2px rgba(0,0,0,.85), inset 0 1px 0 rgba(0,0,0,.4);
+  /* Depth. Surfaces are flat at rest, so the bevel, the plateau's lift and
+     the well's inset are empty (a transparent shadow, so lists that combine
+     them stay valid); --lift-2 marks what floats and takes the one shadow. */
+  --edge-up:0 0 #0000;
+  --lift-1:0 0 #0000;
+  --lift-2:var(--ds-float);
+  --well:0 0 #0000;
 
   /* IBM Plex Sans (app/layout.tsx loads it, with its own metric-matched
      fallback), then the system's sans. Figures use the same face with
      tabular numerals; --mono stays as a name for the rules that set them. */
   --sans:var(--font-plex-sans),system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --mono:var(--sans);
-}
-
-/* light theme: the instrument under daylight — paper-pale body,
-   same accents, depth inverted to match an overhead source */
-html[data-theme="light"]{
-  --edge-up:inset 0 1px 0 rgba(255,255,255,.9);
-  --lift-1:0 1px 0 rgba(255,255,255,.9) inset, 0 8px 22px -16px rgba(22,32,55,.5);
-  --lift-2:0 24px 60px -22px rgba(22,32,55,.35), 0 0 0 1px rgba(22,32,55,.05);
-  --well:inset 0 2px 4px -2px rgba(22,32,55,.18);
 }
 
 *{box-sizing:border-box}
@@ -113,21 +105,11 @@ body{
 }
 /* A faint overhead wash, so the page reads as lit from a source rather
    than as a flat fill. One gradient, not a decoration on every element. */
-body::before{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(120% 60% at 50% -10%,rgba(125,159,214,.10),transparent 60%),
-    radial-gradient(80% 50% at 85% 0%,rgba(79,191,149,.06),transparent 70%);
-}
-html[data-theme="light"] body::before{
-  background:radial-gradient(120% 60% at 50% -10%,rgba(125,159,214,.16),transparent 65%);
-}
 header,main,.toast{position:relative;z-index:1}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
-::selection{background:rgba(233,184,114,.3)}
+::selection{background:color-mix(in srgb,var(--ds-text) 22%,transparent)}
 ::-webkit-scrollbar{width:11px;height:11px}
 ::-webkit-scrollbar-track{background:var(--sunk)}
-::-webkit-scrollbar-thumb{background:#2b3854;border-radius:7px;border:3px solid var(--sunk)}
-::-webkit-scrollbar-thumb:hover{background:#3a4a6e}
-html[data-theme="light"] ::-webkit-scrollbar-thumb{background:#c2cadb;border-color:var(--sunk)}
+::-webkit-scrollbar-thumb{background:var(--ds-rule-strong);border-radius:7px;border:3px solid var(--sunk)}
+::-webkit-scrollbar-thumb:hover{background:var(--ds-muted)}
 

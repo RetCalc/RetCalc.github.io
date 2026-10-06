@@ -6,28 +6,28 @@ input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;appearance:none;margin:0}
 input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
-/* Controls read as raised keys, not wells — they're pressed, not filled. */
+/* Controls are firm keys: a flat Raised fill, a 1px rule, 36px tall (44px
+   under a finger), and a 1px press on click. They don't lift on hover; the
+   fill and the edge change instead. Selects are fields: the ground fill and
+   the strong edge every control that has to be seen as one carries. */
 select,.btn{font-family:var(--sans);font-size:13px;border-radius:var(--r-well);
-  padding:8px 12px;border:1px solid var(--line);
-  background:linear-gradient(180deg,var(--panel-2),var(--panel));
-  color:var(--text);cursor:pointer;box-shadow:var(--edge-up);
-  transition:border-color .14s ease,background .14s ease,transform .08s ease,box-shadow .14s ease}
+  min-height:36px;padding:8px 12px;border:1px solid var(--line);
+  background:var(--panel-2);
+  color:var(--text);cursor:pointer;box-shadow:none;
+  transition:border-color .14s ease,background-color .14s ease,transform .08s ease}
+@media (pointer:coarse){ select,.btn{min-height:44px} }
 select{width:100%;
-  background-color:var(--field);background-image:none;
-  box-shadow:var(--well);
+  background-color:var(--field);border-color:var(--ds-rule-strong);
   appearance:none;-webkit-appearance:none;
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2394a3bd' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%239aa4b2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 10px center;
   background-size:10px 10px;padding-right:26px}
 html[data-theme="light"] select{
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2354607a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%235b636e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 select:hover,.btn:hover{border-color:var(--line-hi)}
-/* Keys lift toward the overhead light on hover and press in on click. The
-   lift is for a mouse only: a tap on a phone leaves :hover stuck on, which
-   left keys floating a pixel up until you touched something else. */
-@media (hover:hover){ .btn:hover{transform:translateY(-1px)} }
+.btn:hover{background-color:color-mix(in srgb,var(--panel-2),var(--text) 6%)}
 .btn:active{transform:translateY(1px)}
-.btn:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn:focus-visible,select:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* When one label in a two-up row wraps and the other does not, the inputs
    stop lining up. Bottom-aligning the row keeps the fields on one line
@@ -47,78 +47,33 @@ select:hover,.btn:hover{border-color:var(--line-hi)}
   border-width:0 1.5px 1.5px 0;transform:rotate(-45deg);transition:transform .15s ease}
 .calcdetails[open] summary::before{transform:rotate(45deg)}
 .calcdetails summary:hover{color:var(--dim)}
-.calcdetails summary:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+.calcdetails summary:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-radius:4px}
 
-/* ---------- the readout: the one bold thing ---------- */
+/* ---------- the readout: the one bold thing ----------
+   The key result, flat on the panel's own Surface with a rule beneath. Every
+   figure is Text except the one answer, which is amber (.v.gold). */
 .headline{
   display:grid;grid-template-columns:repeat(3,1fr);
   border-bottom:1px solid var(--line);
-  background:
-    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.13),transparent 62%),
-    linear-gradient(180deg,#03050c 0%,#080d1a 100%);
   border-radius:var(--r-bezel) var(--r-bezel) 0 0;
-  box-shadow:
-    inset 0 3px 10px -3px rgba(0,0,0,.95),
-    inset 0 1px 0 rgba(0,0,0,.7),
-    inset 0 -1px 0 rgba(255,255,255,.05);
   position:relative;overflow:hidden}
-html[data-theme="light"] .headline{
-  background:
-    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.18),transparent 62%),
-    linear-gradient(180deg,#dfe4ef 0%,#eef1f7 100%);
-  box-shadow:inset 0 3px 8px -4px rgba(22,32,55,.3),inset 0 -1px 0 rgba(255,255,255,.8)}
-/* the lit edge where the glass meets the bezel */
-.headline::before{
-  content:"";position:absolute;left:0;right:0;top:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(79,191,149,.55) 35%,rgba(233,184,114,.55) 65%,transparent)}
 .headline > div{padding:26px 22px 24px;position:relative}
-.headline > div + div{border-left:1px solid rgba(125,159,214,.13)}
+.headline > div + div{border-left:1px solid var(--line)}
 .headline .k{font-size:11.5px;color:var(--dim);margin-bottom:10px;letter-spacing:-.002em}
-/* Every readout is lit; the accented ones burn brighter. */
 .headline .v{font-family:var(--mono);font-size:35px;line-height:1.02;
   font-variant-numeric:tabular-nums;letter-spacing:-.02em;font-weight:500;
-  white-space:nowrap;overflow:hidden;
-  color:#f2f6ff;text-shadow:0 0 34px rgba(200,220,255,.28)}
-html[data-theme="light"] .headline .v{color:#0d1424;text-shadow:none}
-.headline .v.gold{color:var(--gold);text-shadow:0 0 38px rgba(233,184,114,.55)}
-.headline .v.jade{color:var(--jade);text-shadow:0 0 38px rgba(79,191,149,.45)}
-html[data-theme="light"] .headline .v.gold{color:var(--gold);text-shadow:none}
-html[data-theme="light"] .headline .v.jade{color:var(--jade);text-shadow:none}
+  white-space:nowrap;overflow:hidden;color:var(--text)}
+.headline .v.gold{color:var(--ds-amber)}
+.headline .v.jade{color:var(--text)}
 .headline .note{font-size:11px;color:var(--dimmer);margin-top:9px;line-height:1.4}
 .headline.bottom{border-bottom:0;border-top:1px solid var(--line-soft);
   border-radius:0 0 var(--r-bezel) var(--r-bezel)}
 
 /* Where a control row sits above the readout (the Drawdown mode switch, the
-   Income Tax view switch), the two used to be painted separately: the row took
-   the panel's own background and left a pale band above the glass. Wrapping
-   both in .readout moves the gradient up one level, so a single unbroken fill
-   runs from the top of the toggle row to the bottom of the numbers. The
-   children then paint nothing of their own. */
+   Income Tax view switch), .readout wraps both so they read as one band: the
+   rule runs under the pair, and the readout inside draws none of its own. */
 .readout{
   border-radius:var(--r-bezel) var(--r-bezel) 0 0;
   border-bottom:1px solid var(--line);
-  background:
-    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.13),transparent 62%),
-    linear-gradient(180deg,#03050c 0%,#080d1a 100%);
-  box-shadow:
-    inset 0 3px 10px -3px rgba(0,0,0,.95),
-    inset 0 1px 0 rgba(0,0,0,.7),
-    inset 0 -1px 0 rgba(255,255,255,.05);
   position:relative;overflow:hidden}
-html[data-theme="light"] .readout{
-  background:
-    radial-gradient(120% 150% at 15% -40%,rgba(125,159,214,.18),transparent 62%),
-    linear-gradient(180deg,#dfe4ef 0%,#eef1f7 100%);
-  box-shadow:inset 0 3px 8px -4px rgba(22,32,55,.3),inset 0 -1px 0 rgba(255,255,255,.8)}
-.readout::before{
-  content:"";position:absolute;left:0;right:0;top:0;height:1px;z-index:2;
-  background:linear-gradient(90deg,transparent,rgba(79,191,149,.55) 35%,rgba(233,184,114,.55) 65%,transparent)}
-/* These have to out-specify html[data-theme="light"] .headline, which is more
-   specific than a bare .readout > .headline would be. Without the extra
-   qualifier the child keeps its own gradient, restarts it at its own top edge,
-   and reintroduces the very seam this wrapper exists to remove. */
-html .readout > .headline,
-html[data-theme="light"] .readout > .headline{
-  background:none;box-shadow:none;border-bottom:0;border-radius:0}
-.readout > .headline::before{display:none}
-
+.readout > .headline{border-bottom:0;border-radius:0}

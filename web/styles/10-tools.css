@@ -64,7 +64,7 @@
   padding:6px 8px;transition:border-color .14s ease,background .14s ease}
 .adjrow:hover{border-color:var(--jade-line-hi);background:rgba(79,191,149,.09)}
 .adjrow-top{display:flex;align-items:center;min-width:0;flex:1 1 auto}
-.adjrow input{accent-color:var(--jade);width:15px;height:15px;flex:none;
+.adjrow input{accent-color:var(--ds-text);width:15px;height:15px;flex:none;
   margin:0 6px 0 0;cursor:pointer}
 .adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .adjnote{font-family:var(--mono);color:var(--gold);font-size:11.5px;
@@ -159,7 +159,7 @@
   letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}
 .ddgk-check{display:flex;align-items:center;gap:7px;cursor:pointer;flex:0 1 auto;min-width:0}
-.ddgk-check input{accent-color:var(--jade);width:15px;height:15px;flex:none;margin:0;cursor:pointer}
+.ddgk-check input{accent-color:var(--ds-text);width:15px;height:15px;flex:none;margin:0;cursor:pointer}
 /* College: one card per child once there's more than one */
 .clkid-name{font-size:13px;font-weight:600}
 .clkid .field:last-child,.clkid .two:last-child .field{margin-bottom:0}
@@ -288,7 +288,7 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 #ddShowTable td.ddset{text-align:left}
 #ddShowTable tr.ddcur td:first-child{color:var(--gold);font-weight:600}
 #ddShowTable tr.ddmiss td{opacity:.78}
-#ddShowTable input[type=checkbox]{accent-color:var(--jade);width:15px;height:15px;cursor:pointer;margin:0}
+#ddShowTable input[type=checkbox]{accent-color:var(--ds-text);width:15px;height:15px;cursor:pointer;margin:0}
 #ddShowTable th.sortcol{cursor:pointer;user-select:none}
 #ddShowTable th.sortcol:hover{color:var(--text)}
 #ddShowTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}
@@ -296,12 +296,12 @@ html[data-theme="light"] tr.rc-widow > td{background:rgba(233,184,114,.14)}
 .ddheatwrap{padding:0 18px 6px;max-height:none}
 .ddheat{border-collapse:separate;border-spacing:3px;min-width:560px}
 .ddheat td{text-align:center;font-size:12px;padding:7px 4px;border:0;border-radius:6px;cursor:pointer;color:var(--text)}
-.ddheat td:hover{outline:2px solid var(--gold);outline-offset:-2px}
+.ddheat td:hover{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .ddheat th{text-align:center;border:0;position:static;background:none;padding:5px 4px;white-space:nowrap}
 .ddheat thead th:first-child{text-align:left}
 .ddheat tbody th{text-align:right;font-family:var(--mono);font-weight:500;color:var(--dim)}
 .ddheat thead th.ddh-cur,.ddheat tr.ddh-cur th{color:var(--gold)}
-.ddheat td.ddh-me{outline:2px solid var(--gold);outline-offset:-2px;font-weight:700}
+.ddheat td.ddh-me{outline:2px solid var(--ds-focus);outline-offset:-2px;font-weight:700}
 .ddheat td.ddh-na{cursor:default;color:var(--dimmer)}
 [data-empty] .chartwrap,[data-empty] .legend{display:none}
 @media (max-width:900px){

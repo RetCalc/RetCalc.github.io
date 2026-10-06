@@ -33,7 +33,7 @@ h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
   background:transparent;width:40px;padding:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--dim)}
 .scgroup .btn:hover{transform:none;background:var(--panel-2);color:var(--text)}
 .scgroup .btn svg{width:17px;height:17px;display:block}
-.scgroup .btn:focus-visible,.scgroup select:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.scgroup .btn:focus-visible,.scgroup select:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 /* Light/dark was three interactions deep inside About, which is the wrong
    depth for something people flip when the room changes. */
 
