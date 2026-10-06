@@ -63,7 +63,7 @@ svg{display:block;width:100%;height:auto}
   .masthead{padding:16px var(--gr) 14px var(--gl);gap:14px}
   .brandmark{width:46px;height:46px}
   .brand{gap:12px}
-  .tagline{font-size:12.5px;margin-top:3px}
+  .tagline{margin-top:3px}
   .toolhead{gap:12px}
   .toolhead-icon{width:44px;height:44px;padding:7px}
   .toolhead-name{font-size:19px}
@@ -175,7 +175,7 @@ svg{display:block;width:100%;height:auto}
   html.pwa .calcmenu{top:auto !important;bottom:calc(100% + 8px);
     transform-origin:bottom center;animation-name:calcmenu-up}
   @keyframes calcmenu-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  html.pwa .calcmenu-h{display:block;padding:6px 14px 8px;font-size:11px;font-weight:700;
+  html.pwa .calcmenu-h{display:block;padding:6px 14px 8px;font-size:11px;font-weight:600;
     letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
   /* Room so the fixed (taller) bar never covers the last panel, and lift
      toasts above it. */

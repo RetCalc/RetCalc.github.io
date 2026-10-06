@@ -5,9 +5,9 @@
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:18px 44px;align-items:start}
 .sitefoot-brand{display:flex;align-items:center;gap:11px}
 .sitefoot .brandmark{width:36px;height:36px;filter:none}
-.sitefoot-brand b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.018em;color:var(--text)}
-.sitefoot-brand span{display:block;font-size:12px;color:var(--dim);margin-top:1px}
-.sitefoot-txt p{margin:0 0 7px;font-size:12.5px;line-height:1.6;color:var(--dim);max-width:72ch}
+.sitefoot-brand b{display:block;font-size:14px;font-weight:700;letter-spacing:-.018em;color:var(--text)}
+.sitefoot-brand span{display:block;font-size:11.5px;color:var(--dim);margin-top:1px}
+.sitefoot-txt p{margin:0 0 7px;font-size:13px;line-height:1.6;color:var(--dim);max-width:72ch}
 .sitefoot-txt p.src{margin:0;font-size:11.5px;color:var(--dimmer)}
 .sitefoot-link{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}
 .sitefoot-link:hover{text-decoration-color:currentColor}

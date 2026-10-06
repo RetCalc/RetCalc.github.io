@@ -32,7 +32,7 @@
 nav[role=tablist]{max-width:1330px;margin:0 auto;
   padding:0 var(--gr) 0 var(--gl);display:flex;gap:4px}
 nav[role=tablist] button{
-  position:relative;font-family:var(--sans);font-size:14.5px;background:transparent;
+  position:relative;font-family:var(--sans);font-size:15px;background:transparent;
   color:var(--dim);border:0;padding:10px 4px 15px;margin-right:22px;
   cursor:pointer;transition:color .15s ease}
 /* The picked tab is marked by the logo's arrow, which flies in from the left
@@ -62,7 +62,7 @@ nav[role=tablist] button:focus-visible{outline:2px solid var(--ds-focus);outline
    html.pwa block below). */
 .calcbtn{display:inline-flex;align-items:baseline;gap:7px}
 .calc-mode{display:inline-flex;align-items:baseline;gap:3px;
-  font-size:12.5px;font-weight:600;color:var(--dimmer);transition:color .15s ease}
+  font-size:11.5px;font-weight:500;color:var(--dimmer);transition:color .15s ease}
 nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
 .calc-chev{width:12px;height:12px;flex:none;align-self:center;transition:transform .2s ease}
 .calcbtn[aria-expanded="true"] .calc-chev{transform:rotate(180deg)}
@@ -84,8 +84,8 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
 .calcmenu button + button{margin-top:2px}
 .calcmenu button:hover,.calcmenu button:focus-visible{background:var(--panel-2)}
 .calcmenu button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
-.cm-name{grid-column:1;font-size:14.5px;font-weight:600}
-.cm-desc{grid-column:1;font-size:12.5px;color:var(--dimmer);line-height:1.4;margin-top:2px}
+.cm-name{grid-column:1;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.cm-desc{grid-column:1;font-size:13px;color:var(--dimmer);line-height:1.4;margin-top:2px}
 /* the open mode gets a check, in the text color */
 .calcmenu button::after{content:"";grid-column:2;grid-row:1 / span 2;width:14px;height:8px;
   border-left:2px solid var(--text);border-bottom:2px solid var(--text);
@@ -98,8 +98,7 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--text)}
   .calcmenu{left:10px !important;right:10px;width:auto;
     padding:8px;border-radius:16px;transform-origin:top center}
   .calcmenu button{min-height:58px;padding:11px 14px}
-  .cm-name{font-size:16px}
-  .cm-desc{font-size:13px}
+  .cm-name{font-size:15px}
   /* above the guide's coach panel (30), below the open navbar (45) */
   .calcscrim:not([hidden]){display:block;position:fixed;inset:0;z-index:35;
     background:var(--ds-scrim);animation:calcscrim-in .16s ease}

@@ -9,7 +9,7 @@ header{background:none}
 .brandmark{width:60px;height:60px;flex:none;display:block;overflow:visible}
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .wordmark .brandname{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.05}
-.tagline{font-size:13.5px;color:var(--ds-muted);margin-top:5px;letter-spacing:-.005em}
+.tagline{font-size:13px;color:var(--ds-muted);margin-top:5px}
 /* Scenario picker, Save, Share and Reset join into one toolbar; household
    and theme keep their own keys beside it. */
 .scenariobar{margin-left:auto;display:flex;gap:8px;align-items:center}
