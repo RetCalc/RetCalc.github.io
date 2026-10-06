@@ -119,6 +119,86 @@ today, which the redesign doesn't do.
   range is a new figure on the homepage and needs a decision on which
   windows and percentiles to show.
 
+## Planned
+
+### Masthead controls in the pinned tab rail, site-wide
+
+Approved 2026-10-06 after trying it on the homepage (commit 5a18669); not
+built for the other pages yet. On desktop, once the tab rail is pinned and
+the masthead has scrolled away, the scenario picker, Save/Share/Reset and
+the household and theme buttons move into the rail's empty right side,
+centered on it, and return to the masthead when you scroll back up.
+
+- How it's built today: CSS only, in `web/styles/01-masthead-layout.css`.
+  While `.navbar.stuck` is on the page, `.scenariobar` is fixed into the
+  rail's right edge (aligned to the 1330px measure) and the header, which
+  is its own stacking layer, lifts above the rail. Same elements and ids,
+  so menus, dialogs and the e2e checks see nothing new.
+- Rolling it out: drop the homepage-only `:has(#tab-simple)` from both
+  rules (the rule and the header lift), so it applies wherever the rail
+  pins. DESIGN.md's Navigation section already describes it site-wide.
+- To check on the way: pages whose masthead shows fewer controls (no
+  scenario picker), the tool pages' header, the Guide's pinned progress
+  card (which also sits under the rail), the installed web app (its rail
+  is a bottom bar, so this should stay off there), and widths around
+  1024px where the tabs and controls come closest (about 190px apart on
+  the homepage).
+- Open: the controls are 36px tall in a 44px rail, which reads snug.
+  Either shrink them while they ride in the rail or give the pinned rail a
+  few more pixels; decide when it goes site-wide.
+
+## Design decisions from the homepage review (2026-10-06)
+
+Made in conversation while acting on the homepage critique
+(`.impeccable/critique/`) and in the follow-ups after it. Each is built and
+written into DESIGN.md unless it says otherwise.
+
+- **Answer first.** The homepage puts the questions and the reading on one
+  first screen instead of a form beside a stack of equal cards; below it
+  come Milestones beside the Advanced hand-off, the year-by-year table
+  (folded), the household offer and the article.
+- **Hero reading (homepage exception).** The value at retirement stands
+  alone at about twice Display size; tool pages keep the three equal
+  figures. (DESIGN.md, Headline readout.)
+- **Thirds, not 40/60.** Questions a third of the width, the reading two
+  thirds, from 1024px. 2/5 + 3/5 was tried first and narrowed the chart
+  more than the reading needed.
+- **Two zones at the top of the reading.** From 1100px: the value on the
+  left; behind a hairline, the monthly and yearly incomes side by side,
+  spread across the rest of the width and centered vertically against the
+  value. Stacked was tried and rejected; top-aligned looked off. Below
+  1100px the incomes sit under the value. Adds a 1100px breakpoint token
+  (`wide`).
+- **Incomes at Display size.** 35px (30px on phones), not 24px: the amber
+  value still leads by size and color, and the incomes no longer look like
+  footnotes. Adds `--text-display` and `--text-label` tokens.
+- **Pinned reading on phones.** A compact copy of the value and monthly
+  income leads the page and stays under the tab rail while the questions
+  are in view.
+- **Household offer after the result** on the homepage only; the masthead's
+  house button scrolls to it there.
+- **Year by year folded** behind its title (shadcn Collapsible); on phones
+  Age and Balance stay pinned and Year steps out.
+- **Milestones on the plan line,** screen-only: they're kept out of the
+  printed summary and the share card, which keep their own layout.
+- **Errors at the field.** A bad retirement age marks the field (Loss edge,
+  icon, message); the figures clear to dashes as before, and the empty
+  chart folds away. Keeping the last result visible but dimmed was
+  considered and not done: it would show figures that don't match the
+  inputs, and an e2e check pins the clearing.
+- **Copy (owner's wording):** "Answer a few questions to see what you could
+  have at retirement.", "Nothing leaves your browser.", and the article
+  titled "About this calculator".
+- **Calculator tab reads "Calculator | Basic".**
+- **Light-mode outline buttons take the Rule Strong edge** (site-wide).
+- **44px touch targets** everywhere under a finger (site-wide).
+- **Masthead controls ride in the pinned rail** on desktop: built on the
+  homepage, approved for the whole site (see Planned).
+- **Not done (left for later):** folding the phone scenario toolbar into a
+  menu (it would hide Save/Share/Reset behind a tap and break phone e2e
+  checks), the what-if levers and the historical range (new figures; see
+  Open), and new copy beyond the three lines above.
+
 ## Fixed
 
 ### Escape inside a dialog's select list also closes the dialog

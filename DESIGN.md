@@ -288,8 +288,9 @@ Firm and tactile: controls read as keys you press, with clear fills, real hit ar
 
 ### Buttons
 - **Shape:** gently rounded (10px), 36px tall; 44px on coarse pointers.
+- **Touch targets:** every control is at least 44px tall under a finger (`pointer: coarse`). Where a control has to stay small (a CSV button, a link in a sentence, a "?" dot), its hit area grows to 44px without moving anything.
 - **Primary:** Signal Amber fill, On Signal Amber text, 600 weight. One per view at most; it is one of amber's four places.
-- **Secondary:** Raised fill, Rule border, Text color. The default for every other action (Save, Share, CSV, Reset).
+- **Secondary:** Raised fill, Rule border, Text color. The default for every other action (Save, Share, CSV, Reset). In light mode the edge is Rule Strong: on white, a Raised fill inside a Rule edge read as disabled.
 - **Ghost / quiet:** no fill or border; Muted text that turns Text color on hover. For footer links and in-sentence actions.
 - **Hover:** fill shifts one small step (toward Text in dark, toward Ground in light); border shifts to Muted. No lift.
 - **Active:** presses down 1px.
@@ -323,7 +324,7 @@ The key result, and the reason the page exists. It opens the results column as t
 - Cells in Body small, tabular; numbers right-aligned, the first column left-aligned.
 - Rows divided by Rule; hover fills the row with Raised.
 - Gain/loss cells use the semantic colors with a sign, under a header that names them.
-- On phones the table scrolls sideways inside its own container.
+- On phones the table scrolls sideways inside its own container, with its first column pinned. Where the last column is the answer (the homepage's Balance), it's pinned too, and a column that repeats another (Year beside Age) steps out on phones; the CSV keeps every column.
 
 ### Charts
 - Plan line in Signal Amber, ending in the logo's arrowhead. Comparison series in Sky, Teal, then Rose, Lavender, Gray. Ranges as bands at 15 to 25% opacity of their series.
@@ -334,6 +335,8 @@ The key result, and the reason the page exists. It opens the results column as t
 ### Navigation
 - **Tab rail:** sticky under the masthead, transparent until pinned, then Surface with a Rule bottom edge and the Float shadow. Tabs in Body, Muted at rest, Text on hover and when selected.
 - **Active tab:** marked by the logo's arrow under its name in Signal Amber, which slides in from the left (within the Motion timings); a faint Muted arrow previews it on hover.
+- **Calculator tab:** the open mode reads as the second half of the tab's name, "Calculator | Basic": regular weight at 13px behind a hairline, Muted, not a small bold word beside it.
+- **Masthead controls in the pinned rail (desktop):** once the rail is pinned and the masthead has scrolled away, the scenario picker, Save/Share/Reset and the household and theme buttons ride in the rail's empty right side, centered on it, with a short fade; scrolling back up returns them to the masthead. From 1024px wide; phones keep them in the masthead. They are the masthead's own controls held in place, not copies. Built on the homepage (2026-10-06); planned for every page (REDESIGN_NOTES.md, Planned).
 - **Calculator mode menu:** drops from the tab on desktop (Raised, 14px, Float); on phones it is a full-width sheet with 58px rows over a dimmed page. The current mode gets a check mark and Text weight, not amber.
 - **Tool picker:** cards grouped under Eyebrow headings, two columns from 900px. Each card has an icon tile, a name (600, 15px) and a one-line description, with the logo's arrow at the right that steps forward on hover. Each picker icon acts out its tool in a short animation; they stay (see Motion).
 
