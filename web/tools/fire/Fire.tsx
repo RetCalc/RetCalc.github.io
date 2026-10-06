@@ -23,6 +23,7 @@ import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
 import { FIRE_DEF, fireBandPoints, fireCompute, fireHistRuns, type FireInputs, type FirePt } from "./model";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { NativeRange } from "@/components/ui/native-range";
 
 const trim1 = (v: number) => v.toFixed(1).replace(/\.0$/, "");
 
@@ -219,7 +220,7 @@ export function Fire() {
                 <span className="fire-slider-lbl">Historical success rate</span>{" "}
                 <span className="fire-slider-val"><b id="fiSuccessPct">{p.successRate}%</b></span>
               </div>
-              <input type="range" id="fiSuccessSlider" className="fire-slider" min="1" max="99" value={s.successRate} onChange={(e) => set("successRate")(e.target.value)} />
+              <NativeRange id="fiSuccessSlider" min="1" max="99" value={s.successRate} onChange={(e) => set("successRate")(e.target.value)} />
               <div className="fire-slider-ends"><span>1% (aggressive)</span><span>99% (conservative)</span></div>
               <div className="fire-slider-result" id="fiSuccessAge">{successAge}</div>
               <div className="hint mcnote mx-0 mb-0" id="fiSliderNote">{sliderNote}</div>
