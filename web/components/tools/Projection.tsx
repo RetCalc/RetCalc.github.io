@@ -16,6 +16,7 @@ import { NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { Figure, KV, Segmented } from "@/components/common/Readout";
+import { CompositionBar, HeroReading, PartKey } from "@/components/common/Reading";
 import type { HistRuns, MCBand, MCResult } from "@/lib/engine/types";
 import { money } from "@/lib/format";
 import { reroll } from "@/lib/mc-seed";
@@ -32,6 +33,26 @@ interface Totals {
   contribTotal: number; lastContribReal: number; wd: number; wdReal: number;
 }
 
+/** The eight totals under the headline: what went in and what comes out. */
+function ProjectionTotals({ p, R, lastPeriod, keys }: { p: "r" | "x"; R: Totals; lastPeriod: string | null; keys?: boolean }) {
+  return (
+    <div className="grid2">
+      <div>
+        <KV k={keys ? <><PartKey tone="in" />Amount invested</> : "Amount invested"} id={p + "Invested"} v={money(R.invested)} />
+        <KV k={keys ? <><PartKey tone="gain" />Growth</> : "Growth"} cls="pos" id={p + "Growth"} v={money(R.growth)} />
+        <KV k="Total contributions" id={p + "Contribs"} v={money(R.contribTotal)} />
+        <KV k="Final contribution, inflation adjusted" id={p + "LastContrib"} v={lastPeriod ? money(R.lastContribReal) + " " + PERIOD_ADV[lastPeriod] : money(0)} />
+      </div>
+      <div>
+        <KV k="Annual withdrawal" id={p + "Wd"} v={money(R.wd)} />
+        <KV k="Annual withdrawal, inflation adjusted" id={p + "WdReal"} v={money(R.wdReal)} />
+        <KV k="After tax, per year" id={p + "AfterTax"} v={money(R.afterTax)} />
+        <KV k="After tax, per month" id={p + "AfterTaxMo"} v={money(R.afterTaxMo)} />
+      </div>
+    </div>
+  );
+}
+
 /** The three headline figures and the eight totals under them. `p`: the
     ids' prefix. `lastPeriod`: how often the final contribution is paid. */
 export function ProjectionSummary({ p, R, lastPeriod, fvNote, realNote }: {
@@ -44,22 +65,33 @@ export function ProjectionSummary({ p, R, lastPeriod, fvNote, realNote }: {
         <Figure label="Inflation adjusted" id={p + "FVreal"} className="v" value={money(R.fvReal)} noteId={p + "FVrealnote"} note={realNote} />
         <Figure label="After-tax income, per year" id={p + "Monthly"} className="v gold" value={money(R.afterTax)} note="Inflation adjusted, first year of retirement" />
       </div>
-      <CardContent>
-        <div className="grid2">
-          <div>
-            <KV k="Amount invested" id={p + "Invested"} v={money(R.invested)} />
-            <KV k="Growth" cls="pos" id={p + "Growth"} v={money(R.growth)} />
-            <KV k="Total contributions" id={p + "Contribs"} v={money(R.contribTotal)} />
-            <KV k="Final contribution, inflation adjusted" id={p + "LastContrib"} v={lastPeriod ? money(R.lastContribReal) + " " + PERIOD_ADV[lastPeriod] : money(0)} />
-          </div>
-          <div>
-            <KV k="Annual withdrawal" id={p + "Wd"} v={money(R.wd)} />
-            <KV k="Annual withdrawal, inflation adjusted" id={p + "WdReal"} v={money(R.wdReal)} />
-            <KV k="After tax, per year" id={p + "AfterTax"} v={money(R.afterTax)} />
-            <KV k="After tax, per month" id={p + "AfterTaxMo"} v={money(R.afterTaxMo)} />
-          </div>
-        </div>
-      </CardContent>
+      <CardContent><ProjectionTotals p={p} R={R} lastPeriod={lastPeriod} /></CardContent>
+    </Card>
+  );
+}
+
+/** The same figures as a hero reading (DESIGN.md, "Hero reading"): the
+    after-tax income a year as the answer, the inflation-adjusted and future
+    balances beside it, then what the balance is made of and the totals.
+    `children` get a band under the reading (the target and its verdict). */
+export function ProjectionReading({ p, R, lastPeriod, fvNote, realNote, id, children }: {
+  p: "r" | "x"; R: Totals; lastPeriod: string | null; fvNote: string; realNote: string; id?: string; children?: React.ReactNode;
+}) {
+  // Amount invested and growth as shares of the balance, while it grew.
+  const bar = R.fv > 0 && R.growth >= 0;
+  return (
+    <Card size="flush" id={id}>
+      <HeroReading
+        hero={{ label: "After-tax income, per year", id: p + "Monthly", value: money(R.afterTax), note: "Inflation adjusted, first year of retirement" }}
+        figures={[
+          { label: "Inflation adjusted", id: p + "FVreal", value: money(R.fvReal), noteId: p + "FVrealnote", note: realNote },
+          { label: "Future value", id: p + "FV", value: money(R.fv), noteId: p + "FVnote", note: fvNote },
+        ]} />
+      {children ? <div className="border-t border-border px-4.5 py-3 max-sm:px-3.5">{children}</div> : null}
+      <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">
+        {bar ? <CompositionBar parts={[{ share: R.invested / R.fv, tone: "in" }, { share: R.growth / R.fv, tone: "gain" }]} /> : null}
+        <ProjectionTotals p={p} R={R} lastPeriod={lastPeriod} keys={bar} />
+      </div>
     </Card>
   );
 }
@@ -134,8 +166,11 @@ export function ProjectionChart(props: PanelProps) {
   const [tracesOn, setTracesOn] = useState(true);
   return (
     <Card>
-      <CardHeader><CardTitle>Balance over time, inflation adjusted</CardTitle><CardAction>
-          <Segmented id={segId} attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
+      {/* On a phone the controls drop under the title: the switch full
+          width in three equal segments, the mode's field after it. */}
+      <CardHeader className="max-sm:grid-cols-1"><CardTitle>Balance over time, inflation adjusted</CardTitle>
+        <CardAction className="max-sm:col-start-1 max-sm:row-span-1 max-sm:row-start-2 max-sm:w-full max-sm:justify-self-stretch">
+          <Segmented id={segId} size="chart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
           <span className="modeopt" id={"optBand" + sfx} hidden={mode !== "band"}>
             <Affixed prefix="±" suffix="%" className="w-24 max-sm:w-27.5">
               <NumberInput id={"band" + sfx} nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />

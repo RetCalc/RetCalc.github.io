@@ -28,7 +28,7 @@ export function KV({ k, v, cls, id }: { k: ReactNode; v: ReactNode; cls?: string
 /** A row of buttons, one of them on. `attr` names the data attribute each
     button carries its value in (data-dt="avalanche"), as the old markup did. */
 export function Segmented<V extends string | number>({ id, size, attr, options, value, onChange, hidden, disabled }: {
-  id?: string; size?: "default" | "compact" | "fill"; attr: `data-${string}`; options: readonly (readonly [V, string])[];
+  id?: string; size?: "default" | "compact" | "fill" | "chart"; attr: `data-${string}`; options: readonly (readonly [V, string])[];
   value: V; onChange: (v: V) => void; hidden?: boolean; disabled?: (v: V) => boolean;
 }) {
   return (

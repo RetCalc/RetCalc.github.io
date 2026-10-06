@@ -2,7 +2,12 @@
    histBarNote(), histWhen(), histSummary() and mcSummary() in
    src/js/app/04-charts.js. */
 import type { HistRuns, HistWindow, MCResult } from "@/lib/engine/types";
+import { TriangleAlertIcon } from "lucide-react";
 import { fmtNum, fmtYears, money } from "@/lib/format";
+
+/* A share that falls short is set in Loss with a warning glyph, so the
+   color is never alone (DESIGN.md, the Never Alone Rule). */
+const Short = () => <TriangleAlertIcon className="mr-1 inline-block size-3.5 -translate-y-px align-middle" aria-hidden="true" />;
 
 export const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -30,14 +35,14 @@ export function HistSummary({ id, H, target, label }: { id: string; H: HistRuns 
   if (!H || !H.count) {
     return (
       <div className="mcnote" id={id} hidden={!H?.tooLong}>
-        {H?.tooLong ? <><b className="warn">{fmtYears(H.totalYears)}</b> is longer than the {H.span} years of history available ({H.first}{"–"}{H.last}). Shorten the plan to use this mode.</> : null}
+        {H?.tooLong ? <><b className="warn"><Short />{fmtYears(H.totalYears)}</b> is longer than the {H.span} years of history available ({H.first}{"–"}{H.last}). Shorten the plan to use this mode.</> : null}
       </div>
     );
   }
   const pct = target > 0 ? (H.finals.filter((f) => f >= target).length / H.count) * 100 : 0;
   return (
     <div className="mcnote" id={id}>
-      {target > 0 ? <><b className={pct >= 75 ? undefined : "warn"}>{pct.toFixed(1) + "%"}</b> of windows reach {money(target)} {label}.{" "}</> : null}
+      {target > 0 ? <><b className={pct >= 75 ? undefined : "warn"}>{pct >= 75 ? null : <Short />}{pct.toFixed(1) + "%"}</b> of windows reach {money(target)} {label}.{" "}</> : null}
       Median outcome <b>{money(H.median)}</b>. Worst window started {histWhen(H.worst)} ({money(H.worst.final)}), best started {histWhen(H.best)} ({money(H.best.final)}).
     </div>
   );
@@ -49,7 +54,7 @@ export function McSummary({ id, mc, target, label }: { id: string; mc: MCResult 
   const pct = (mc.finals.filter((f) => f >= target).length / mc.finals.length) * 100;
   return (
     <div className="mcnote" id={id}>
-      <b className={pct >= 75 ? undefined : "warn"}>{pct.toFixed(0) + "%"}</b> of {mc.trials.toLocaleString("en-US")} runs reach {money(target)} {label}. Median outcome <b>{money(mc.median)}</b>.
+      <b className={pct >= 75 ? undefined : "warn"}>{pct >= 75 ? null : <Short />}{pct.toFixed(0) + "%"}</b> of {mc.trials.toLocaleString("en-US")} runs reach {money(target)} {label}. Median outcome <b>{money(mc.median)}</b>.
     </div>
   );
 }

@@ -17,7 +17,7 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
-import { ProjectionChart, ProjectionSummary, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
+import { ProjectionChart, ProjectionReading, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { BigValue } from "@/components/common/BigValue";
 import { CsvButton } from "@/components/common/CsvButton";
@@ -41,7 +41,11 @@ import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { PinnedReading } from "@/components/common/Reading";
+import { cn } from "@/lib/utils";
+import { ChevronDownIcon, CircleCheckIcon, CircleXIcon, LockIcon } from "lucide-react";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -185,7 +189,7 @@ export function Advanced() {
   /* ---- the fields that move into the account block when it's on ---- */
   const periodField = (
     <div className="field" id="periodField">
-      <Label className="mb-1.5" htmlFor="period"><span>Contribution period</span></Label>
+      <Label className="mb-1.5" htmlFor="period"><span>How often</span></Label>
       <NativeSelect id="period" value={s.period} onChange={(e) => set("period")(e.target.value)}><PeriodOptions /></NativeSelect>
       <Button variant="link" size="inline-xs" className="mt-1.75" id="convOpen" onClick={() => setDialog("conv")}>
         {ConvertIcon}
@@ -218,167 +222,195 @@ export function Advanced() {
   // turned off, as it did on the old site.
   const acRate = B ? B.effRate : s.tradBal !== "" ? advancedPlan({ ...typed, acOn: true }, profile).B!.effRate : null;
 
+  // The target beside the answer, with the plan's verdict on it (the Coast
+  // FIRE state below says the same in full).
+  const target = parseNum(typed.target);
+  const income = typed.solveFor === "After-Tax Withdrawal";
+  const onTrack = C.state !== "never";
+  const VerdictIcon = onTrack ? CircleCheckIcon : CircleXIcon;
+
+  const toDrawdown = () => {
+    sendToDrawdown({ initial: Math.round(R.fvReal) });
+    router.push("/drawdown");
+    toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
+  };
+
   return (
-    <>
-      <aside id="asideSingle">
-        <Card>
-          <CardHeader><CardTitle>Your inputs</CardTitle></CardHeader>
-          <CardContent>
-            <div className="glidewrap acwrap" id="acWrap">
-              <CheckToggle id="acToggle" on={acOn} onToggle={toggleAccounts} controls="acFields">Split by account type<TipDot k="accttypes" /></CheckToggle>
-              <div className="acfields" id="acFields" hidden={!acOn}>
-                <div className="acgroup">Traditional 401(k) / IRA <span>pre-tax</span></div>
-                <div className="two">{acMoney("tradBal", "Balance")}{acMoney("tradC", "You add", true)}</div>
-                <div className="acgroup">Roth 401(k) / IRA <span>after-tax, grows tax-free</span></div>
-                <div className="two">{acMoney("rothBal", "Balance")}{acMoney("rothC", "You add", true)}</div>
-                <div className="acgroup">Taxable brokerage <span>gains taxed when sold</span></div>
-                <div className="two">{acMoney("brokBal", "Balance")}{acMoney("brokC", "You add", true)}</div>
-                <div className="two actotals" aria-live="polite">
-                  <div className="actot"><span className="k">Total balance</span><span className="v" id="acTotBal">{a ? money(a.tradBal + a.rothBal + a.brokBal) : ""}</span></div>
-                  <div className="actot"><span className="k">Total added</span><span className="v" id="acTotAdd">{a ? money(mine) + per : ""}</span>
-                    <span className="actsub" id="acTotSub">{B?.match ? "+ " + money(B.match) + per + " match" : ""}</span></div>
-                </div>
-                <MoneyField id="acBrokBasis" label={<Tipped text="Cost basis" k="acbasis" />} value={s.brokBasis} onValueChange={set("brokBasis")} />
-                <div className="acsep"></div>
-                <div className="two" id="acSchedule">{acOn ? <>{periodField}{growthField}</> : null}</div>
-                <div className="acsep"></div>
-                <div className="acgroup">Employer match <span>paid into traditional</span></div>
-                <MoneyField id="acSalary" label="Your salary" unit="/yr" value={s.salary} onValueChange={set("salary")} />
-                <div className="two bottomalign">
-                  <NumberField id="acMatchPct" label="Match rate" unit="%" step={10} value={s.matchPct} onValueChange={set("matchPct")} />
-                  <NumberField id="acMatchCap" label="On the first" unit="% of salary" value={s.matchCap} onValueChange={set("matchCap")} />
-                </div>
-                <div className="acsep"></div>
-                <div className="acgroup">Taxes in retirement</div>
-                <div className="two">
-                  <SelectField id="acStatus" label="Filing status" value={s.acStatus} onChange={set("acStatus")}>
-                    <option value="s">Single</option>
-                    <option value="m">Married filing jointly</option>
-                  </SelectField>
-                  <SelectField id="acState" label="State" value={s.acState} onChange={set("acState")}>
-                    {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-                  </SelectField>
+    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+        {/* Phones and narrow screens: the answer leads, and stays under the
+            tab rail while the inputs are on screen. */}
+        <PinnedReading main={{ label: "After-tax income, per year", value: money(R.afterTax) }} side={{ label: "Inflation adjusted", value: money(R.fvReal) }} />
+
+        <aside id="asideSingle" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your plan</CardTitle>
+              <CardDescription>Inflation, fees, taxes and account types, worked back from a target.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GroupHead first>Your savings</GroupHead>
+              <div className="glidewrap acwrap mt-0" id="acWrap">
+                <CheckToggle id="acToggle" on={acOn} onToggle={toggleAccounts} controls="acFields">Split by account type<TipDot k="accttypes" /></CheckToggle>
+                <div className="acfields" id="acFields" hidden={!acOn}>
+                  <AcHead note="pre-tax">Traditional 401(k) / IRA</AcHead>
+                  <div className="two max-sm:grid-cols-2">{acMoney("tradBal", "Balance")}{acMoney("tradC", "You add", true)}</div>
+                  <AcHead note="after-tax, grows tax-free">Roth 401(k) / IRA</AcHead>
+                  <div className="two max-sm:grid-cols-2">{acMoney("rothBal", "Balance")}{acMoney("rothC", "You add", true)}</div>
+                  <AcHead note="gains taxed when sold">Taxable brokerage</AcHead>
+                  <div className="two max-sm:grid-cols-2">{acMoney("brokBal", "Balance")}{acMoney("brokC", "You add", true)}</div>
+                  <MoneyField id="acBrokBasis" label={<Tipped text="Cost basis" k="acbasis" />} value={s.brokBasis} onValueChange={set("brokBasis")} />
+                  <div className="mb-3.5 grid grid-cols-2 gap-x-2.5 border-t border-border pt-2.5" aria-live="polite">
+                    <div className="actot"><span className="k">Total balance</span><span className="v" id="acTotBal">{a ? money(a.tradBal + a.rothBal + a.brokBal) : ""}</span></div>
+                    <div className="actot"><span className="k">Total added</span><span className="v" id="acTotAdd">{a ? money(mine) + per : ""}</span>
+                      <span className="actsub" id="acTotSub">{B?.match ? "+ " + money(B.match) + per + " match" : ""}</span></div>
+                  </div>
+                  <div className="two max-sm:grid-cols-2 border-t border-border pt-3.5" id="acSchedule">{acOn ? <>{periodField}{growthField}</> : null}</div>
+                  <AcHead note="paid into traditional" rule>Employer match</AcHead>
+                  <MoneyField id="acSalary" label="Your salary" unit="/yr" value={s.salary} onValueChange={set("salary")} />
+                  <div className="two max-sm:grid-cols-2 bottomalign">
+                    <NumberField id="acMatchPct" label="Match rate" unit="%" step={10} value={s.matchPct} onValueChange={set("matchPct")} />
+                    <NumberField id="acMatchCap" label="On the first" unit="% of salary" value={s.matchCap} onValueChange={set("matchCap")} />
+                  </div>
+                  <AcHead rule>Taxes in retirement</AcHead>
+                  <div className="two max-sm:grid-cols-2">
+                    <SelectField id="acStatus" label="Filing status" value={s.acStatus} onChange={set("acStatus")}>
+                      <option value="s">Single</option>
+                      <option value="m">Married filing jointly</option>
+                    </SelectField>
+                    <SelectField id="acState" label="State" value={s.acState} onChange={set("acState")}>
+                      {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+                    </SelectField>
+                  </div>
                 </div>
               </div>
-            </div>
-            <MoneyField id="initial" wrapId="initialField" hidden={acOn} label="Starting value" value={s.initial} onValueChange={set("initial")} />
-            <Field id="contrib" wrapId="contribField" hidden={acOn} label="Contribution each period">
-              <Affixed prefix="$"><MoneyInput id="contrib" value={s.contrib} onValueChange={set("contrib")} /></Affixed>
-            </Field>
-            {acOn ? null : periodField}
-            <div className="two">
-              {acOn ? null : growthField}
-              <NumberField id="years" label="Time period" unit="yrs" max={100} negative value={s.years} onValueChange={setTiming("years")} />
-            </div>
-            <div className="two">
+              <MoneyField id="initial" wrapId="initialField" hidden={acOn} label="Starting value" value={s.initial} onValueChange={set("initial")} />
+              <div className="two max-sm:grid-cols-2">
+                <Field id="contrib" wrapId="contribField" hidden={acOn} label="Contribution">
+                  <Affixed prefix="$"><MoneyInput id="contrib" value={s.contrib} onValueChange={set("contrib")} /></Affixed>
+                </Field>
+                {acOn ? null : periodField}
+              </div>
+              <div className="two bottomalign max-sm:grid-cols-2">
+                {acOn ? null : growthField}
+                <NumberField id="years" className={acOn ? "col-span-2" : undefined} label="Time period" unit="yrs" max={100} negative value={s.years} onValueChange={setTiming("years")} />
+              </div>
+
+              <GroupHead>Markets</GroupHead>
               <Field id="nominal" label={<Tipped text="Rate of return" k="nominalreturn" />}>
                 <Affixed suffix="%"><SignFlip value={s.nominal} onFlip={set("nominal")} /><NumberInput id="nominal" value={s.nominal} onValueChange={set("nominal")} /></Affixed>
               </Field>
-              <NumberField id="inflation" label={<Tipped text="Inflation" k="inflation" />} unit="%" value={s.inflation} onValueChange={set("inflation")} />
-            </div>
-            <div className="glidewrap" id="glideWrap">
-              <CheckToggle id="glideToggle" on={s.glideOn} onToggle={toggleGlide}>Glide path<TipDot k="glide" /></CheckToggle>
-              <div className="glidefields" id="glideFields" hidden={!s.glideOn}>
-                <div className="two">
-                  <NumberField id="glideEnd" label="End at" unit="%" negative value={s.glideEnd} onValueChange={set("glideEnd")} />
-                  <NumberField id="glideYears" label="Over final" unit="yrs" value={s.glideYears} onValueChange={setTiming("glideYears")} />
+              <div className="glidewrap -mt-1" id="glideWrap">
+                <CheckToggle id="glideToggle" on={s.glideOn} onToggle={toggleGlide}>Glide path<TipDot k="glide" /></CheckToggle>
+                <div className="glidefields" id="glideFields" hidden={!s.glideOn}>
+                  <div className="two max-sm:grid-cols-2">
+                    <NumberField id="glideEnd" label="End at" unit="%" negative value={s.glideEnd} onValueChange={set("glideEnd")} />
+                    <NumberField id="glideYears" label="Over final" unit="yrs" value={s.glideYears} onValueChange={setTiming("glideYears")} />
+                  </div>
+                  <div className="hint m-0" id="glideNote">{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
                 </div>
-                <div className="hint m-0" id="glideNote">{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
               </div>
-            </div>
-            <NumberField id="fees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
-            <div className="two">
-              <div className="field">
-                <Label className="mb-1.5" htmlFor="withdrawal"><span><Tipped text="Withdrawal rate" k="withdrawal" /></span></Label>
-                <Affixed suffix="%"><NumberInput id="withdrawal" nonNeg value={s.withdrawal} onValueChange={set("withdrawal")} /></Affixed>
-                <Button variant="outline" size="sm" className="mt-1.5" id="toDrawdown" onClick={() => {
-                  sendToDrawdown({ initial: Math.round(R.fvReal) });
-                  router.push("/drawdown");
-                  toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
-                }}>Test withdrawals</Button>
+              <div className="two max-sm:grid-cols-2">
+                <NumberField id="inflation" label={<Tipped text="Inflation" k="inflation" />} unit="%" value={s.inflation} onValueChange={set("inflation")} />
+                <NumberField id="fees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
               </div>
-              <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
-              <div className="field" id="acTaxField" hidden={!acOn}>
-                <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
-                <Affixed suffix="calc">
-                  <InputGroupInput variant="numeric" id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /></Affixed>
+              <div className="derived mt-0 mb-1">
+                <div><span>Return net of fees</span><span className="num" id="dNetRate">{pctStr(p.nominal, 2) + (p.fees > 0 ? "  (" + pctStr(p.gross, 2) + " − " + pctStr(p.fees, 2) + ")" : "")}</span></div>
+                <div><span><Tipped text="Real rate of return" k="realreturn" /></span><span className="num" id="dRealRate">{pctStr(R.realReturn)}</span></div>
+                <details className="calcdetails">
+                  <summary>Calculation details</summary>
+                  <div><span>Periods per year</span><span className="num" id="dPPY">{R.ppy}</span></div>
+                  <div><span>Rate per period</span><span className="num" id="dPeriodic">{pctStr(R.periodicRate, 4)}</span></div>
+                  <div><span>Periods modeled</span><span className="num" id="dPeriods">{R.periods.toLocaleString("en-US")}</span></div>
+                </details>
               </div>
-            </div>
-            <div className="derived">
-              <div><span>Return net of fees</span><span className="num" id="dNetRate">{pctStr(p.nominal, 2) + (p.fees > 0 ? "  (" + pctStr(p.gross, 2) + " − " + pctStr(p.fees, 2) + ")" : "")}</span></div>
-              <div><span><Tipped text="Real rate of return" k="realreturn" /></span><span className="num" id="dRealRate">{pctStr(R.realReturn)}</span></div>
-              <details className="calcdetails">
-                <summary>Calculation details</summary>
-                <div><span>Periods per year</span><span className="num" id="dPPY">{R.ppy}</span></div>
-                <div><span>Rate per period</span><span className="num" id="dPeriodic">{pctStr(R.periodicRate, 4)}</span></div>
-                <div><span>Periods modeled</span><span className="num" id="dPeriods">{R.periods.toLocaleString("en-US")}</span></div>
-              </details>
-            </div>
-          </CardContent>
-        </Card>
-      </aside>
 
-      <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single">
-        <ProjectionSummary p="r" R={R} lastPeriod={p.period} fvNote={"After " + p.years + " years at " + pctStr(p.nominal, 2)}
-          realNote={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"} />
-
-        <Card id="acPanel" hidden={!acOn}>
-          {B ? <AccountTable id="acResults" B={B} years={p.years} /> : null}
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Work backwards from a target</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid2" id="solveGrid">
-              <div>
+              <GroupHead>Your goal</GroupHead>
+              <div className="two bottomalign">
                 <SelectField id="solveFor" label="Solve for" value={s.solveFor} onChange={set("solveFor")}>
                   <option value="After-Tax Withdrawal">After-tax income</option>
                   <option value="Portfolio Value">Portfolio value</option>
                 </SelectField>
                 <Field id="target" label="Target, inflation adjusted">
                   <Affixed prefix="$"><MoneyInput id="target" value={s.target} onValueChange={set("target")} /></Affixed>
-                  <div className="hint" id="targetHint">{s.solveFor === "After-Tax Withdrawal"
-                    ? "The after-tax income you want each year, in today's spending power."
-                    : "The portfolio balance you want, in today's spending power."}</div>
                 </Field>
               </div>
-              <div>
-                <KV k="Portfolio needed, inflation adjusted" id="sPortToday" v={money(S.portToday)} />
-                <KV k="That pays, after tax" id="sPays" v={money(S.pays) + " per year"} />
-                <KV k="Portfolio needed at retirement" id="sPortFuture" v={money(S.portFuture)} />
-                <KV k="Your starting value grows to" id="sInitGrows" v={money(S.initGrows)} />
+              <div className="hint -mt-2 mb-3.5" id="targetHint">{s.solveFor === "After-Tax Withdrawal"
+                ? "The after-tax income you want each year, in today's spending power."
+                : "The portfolio balance you want, in today's spending power."}</div>
+              <div className="two bottomalign max-sm:grid-cols-2">
+                <NumberField id="withdrawal" label={<Tipped text="Withdrawal rate" k="withdrawal" />} unit="%" value={s.withdrawal} onValueChange={set("withdrawal")} />
+                <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
+                <div className="field" id="acTaxField" hidden={!acOn}>
+                  <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
+                  <Affixed suffix="calc">
+                    <InputGroupInput variant="numeric" id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /></Affixed>
+                </div>
               </div>
+              <p className="mt-0.5 mb-0 flex items-center gap-1.5 text-label text-muted-foreground">
+                <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser.</p>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      <div className="stack min-w-0 lg:col-span-2" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single">
+        <ProjectionReading p="r" R={R} lastPeriod={p.period} fvNote={"After " + p.years + " years at " + pctStr(p.nominal, 2)}
+          realNote={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"}>
+          {target > 0 ? (
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-note">
+              <span className="text-muted-foreground">Your target</span>
+              <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " a year, after tax" : " portfolio, in today's dollars")}</span>
+              <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{C.state === "already" ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>
             </div>
-            <div className="solvecoast">
-              <div className="kv coastrow">
-                <span className="k"><Tipped text="Coast FIRE" k="coast" /><span className="mssub" id="sCoastNote">{
-                  C.state === "already" ? "Your starting value alone reaches the target by year " + fmtNum(p.years) + "."
-                    : C.state === "reachable" ? "Stop contributing then and growth alone still reaches " + money(S.portToday) + " by year " + fmtNum(p.years) + "."
-                      : "This plan doesn't reach the target by year " + fmtNum(p.years) + ", so there's nothing to coast on yet."}</span></span>
-                <span className={C.state === "never" ? "v" : "v pos"} id="sCoast">{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</span>
-              </div>
-              <div id="sCoastAction">{C.state === "reachable"
-                ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
-            </div>
-          </CardContent>
-          <div className="solveopts">
-            <div className="solveopt">
-              <div className="optlabel">Option 1 &middot; Change your contribution</div>
-              <BigValue className="v gold" id="sPerPeriod" text={money(S.perPeriod, 2)} />
-              <div className="note" id="sPerPeriodNote">{"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}</div>
+          ) : null}
+        </ProjectionReading>
+
+        <Card id="acPanel" hidden={!acOn}>
+          {B ? <AccountTable id="acResults" B={B} years={p.years} /> : null}
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Reach your target</CardTitle>
+            <CardDescription>Two ways to get there: change what you put in, or how long you save.</CardDescription></CardHeader>
+          <div className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
+            <SolveOption label="Change your contribution" id="sPerPeriod" value={money(S.perPeriod, 2)} noteId="sPerPeriodNote"
+              note={"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}>
               <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
               <KV k="Change from current" id="sChange" v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
               <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" onClick={applyContribution}>Use this contribution</Button>
-            </div>
-            <div className="solveopt">
-              <div className="optlabel">Option 2 &middot; Change your timeline</div>
-              <BigValue className="v gold" id="sYears" text={Y.reached ? fmtYears(Y.years) : "Out of reach"} />
-              <div className="note" id="sYearsNote">{Y.reached
+            </SolveOption>
+            <SolveOption label="Change your timeline" id="sYears" value={Y.reached ? fmtYears(Y.years) : "Out of reach"} noteId="sYearsNote" className="max-sm:border-t sm:border-l"
+              note={Y.reached
                 ? "Keeping " + money(p.contrib, 2) + " " + p.period.toLowerCase() + ", growing " + pctStr(p.growth, 1) + " a year"
-                : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}</div>
+                : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}>
               <KV k="Your plan now" id="sYearsNow" v={fmtYears(p.years)} />
               <YearsDiff Y={Y} years={p.years} />
               <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</Button>
+            </SolveOption>
+          </div>
+          <div className="-mb-1 border-t border-border px-4.5 pt-1 max-sm:px-3.5">
+            <div className="flex flex-col gap-x-5 sm:flex-row sm:items-center">
+              <div className="kv min-w-0 flex-1 border-b-0">
+                <span className="k text-foreground"><Tipped text="Coast FIRE" k="coast" /><span className="mssub" id="sCoastNote">{
+                  C.state === "already" ? "Your starting value alone reaches the target by year " + fmtNum(p.years) + "."
+                    : C.state === "reachable" ? "Stop contributing then and growth alone still reaches " + money(S.portToday) + " by year " + fmtNum(p.years) + "."
+                      : "This plan doesn't reach the target by year " + fmtNum(p.years) + ", so there's nothing to coast on yet."}</span></span>
+                <span className={cn("v inline-flex items-center gap-1.5 self-center font-semibold", onTrack && "pos")} id="sCoast">
+                  <VerdictIcon className="size-4" aria-hidden="true" />{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</span>
+              </div>
+              <div id="sCoastAction" className="empty:hidden max-sm:mb-1">{C.state === "reachable"
+                ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
+            </div>
+            <div className="grid2 mt-1 border-t border-border pt-1">
+              <div>
+                <KV k="Portfolio needed, inflation adjusted" id="sPortToday" v={money(S.portToday)} />
+                <KV k="That pays, after tax" id="sPays" v={money(S.pays) + " per year"} />
+              </div>
+              <div>
+                <KV k="Portfolio needed at retirement" id="sPortFuture" v={money(S.portFuture)} />
+                <KV k="Your starting value grows to" id="sInitGrows" v={money(S.initGrows)} />
+              </div>
             </div>
           </div>
         </Card>
@@ -391,37 +423,48 @@ export function Advanced() {
           chart={chart} maxX={p.years} bandItems={bandLegend(p.nominal, parseNum(band) / 100)}
           tipHead={(b) => <b>Year {fmtNum(b.year)}</b>} target={S.portToday} targetLabel={TARGET_LABEL} />
 
-        <Card>
-          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
-          <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
-            <table id="yearTable" ref={tableRef}>
-              <thead><tr><th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
-              <tbody>
-                {R.years.map((y) => (
-                  <tr key={y.year}><td>{y.year}</td><td>{money(y.start)}</td><td>{money(y.contrib)}</td><td className="pos">{money(y.growth)}</td>
-                    <td>{money(y.end)}</td><td>{money(y.end / Math.pow(1 + p.inflation, y.year))}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2">
+          <Card>
+            <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
+            <CardContent id="msBody"><Milestones rows={R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} /></CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
-          <CardContent id="msBody"><Milestones rows={R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} /></CardContent>
-        </Card>
+          <Card>
+            <CardHeader><CardTitle>Take it further</CardTitle></CardHeader>
+            <CardContent>
+              <p className="hint mt-0">See how long this balance lasts once you start
+                drawing on it. This carries your inflation-adjusted balance into the
+                Drawdown Simulator.</p>
+              <Button variant="outline" id="toDrawdown" onClick={toDrawdown}>Test withdrawals</Button>
+              <p className="hint mt-5 border-t border-border pt-3.5">The Stages tab lets you change your
+                contribution, return, or timeline partway through the plan. This will carry
+                your current numbers over as the first stage, then add a second stage with
+                the same numbers running 10 years longer.</p>
+              <Button variant="outline" id="btnToStages" onClick={() => handToStages(false)}>Model these numbers in Stages</Button>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card>
-          <CardHeader><CardTitle>Want to model this in stages?</CardTitle></CardHeader>
-          <CardContent>
-            <p className="hint mt-0">The Stages tab lets you change your
-              contribution, return, or timeline partway through the plan. This will carry
-              your current numbers over as the first stage, then add a second stage with
-              the same numbers running 10 years longer.</p>
-            <Button id="btnToStages" onClick={() => handToStages(false)}>Model these numbers in Stages</Button>
-          </CardContent>
-        </Card>
+        <Collapsible className="min-w-0" render={<Card />}>
+          <CardHeader>
+            <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+            <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>
+          </CardHeader>
+          <CollapsibleContent keepMounted>
+            <div className="swipehint">Swipe the table sideways to see every column.</div>
+            <div className="scroll">
+              <table id="yearTable" ref={tableRef}>
+                <thead><tr><th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
+                <tbody>
+                  {R.years.map((y) => (
+                    <tr key={y.year}><td>{y.year}</td><td>{money(y.start)}</td><td>{money(y.contrib)}</td><td className="pos">{money(y.growth)}</td>
+                      <td>{money(y.end)}</td><td>{money(y.end / Math.pow(1 + p.inflation, y.year))}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
       {dialog === "conv" ? (
@@ -430,7 +473,37 @@ export function Advanced() {
           apply={(v, period) => setState((c) => withTotal({ ...c, period }, v))} />
       ) : null}
       {growthDialog}
-    </>
+    </div>
+  );
+}
+
+/** A heading over one group of the inputs, on a rule after the first. */
+function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
+  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-1 border-t border-border pt-4")}>{children}</h3>;
+}
+
+/** An account's heading inside the split: its name at Title size, what kind
+    of account it is in Label/Muted after it. */
+function AcHead({ note, rule, children }: { note?: string; rule?: boolean; children: React.ReactNode }) {
+  return (
+    <div className={cn("mb-2 text-sm font-semibold", rule && "mt-1 border-t border-border pt-3.5")}>
+      {children}{note ? <span className="ml-1.5 text-label font-normal text-muted-foreground">{note}</span> : null}
+    </div>
+  );
+}
+
+/** One way to reach the target: the figure at Display size, in Text (the
+    answer above keeps the amber), what it assumes, and its apply button. */
+function SolveOption({ label, id, value, note, noteId, className, children }: {
+  label: string; id: string; value: string; note: string; noteId: string; className?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("flex min-w-0 flex-col border-border px-4.5 pt-4 pb-4.5 max-sm:px-3.5", className)}>
+      <div className="mb-2 text-label text-muted-foreground">{label}</div>
+      <BigValue className="text-3xl leading-tight font-medium whitespace-nowrap tabular-nums sm:text-display" id={id} text={value} sized={false} />
+      <div className="mt-1.5 mb-1.5 text-label text-muted-foreground" id={noteId}>{note}</div>
+      {children}
+    </div>
   );
 }
 

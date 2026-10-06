@@ -182,6 +182,41 @@ written into DESIGN.md unless it says otherwise.
   checks), the what-if levers and the historical range (new figures; see
   Open), and new copy beyond the three lines above.
 
+## Layout decisions
+
+- **Advanced (/advanced): Basic's thirds.** Inputs a third of the width,
+  results two thirds, from 1024px (`lg:grid-cols-3`; Advanced joins SOLO in
+  lib/site.ts and lays out its own grid). The inputs are one card in three
+  groups under Title headings (Your savings, Markets, Your goal), with short
+  fields two-up on every width, phones included (the legacy `.two` goes to
+  one column on phones; Advanced overrides it with `max-sm:grid-cols-2`, and
+  rows whose labels can wrap are bottom-aligned for iOS, which gets no
+  subgrid). Rate of return runs full width with the glide path under it;
+  Solve for and Target stack on phones (the select's text truncated at half
+  width). Thirds fit all 22 fields with the split on (about 1,500px of
+  inputs); from 1024px the column stays sticky and scrolls on its own when
+  taller than the screen, as before; below 1024px it's static, no inner
+  scroller. Stages should share the same grid, group headings and two-up
+  rule.
+
+## Skipped from critique
+
+- **Advanced**: mark Time period 0 or negative as an error and dim the
+  figures — deciding that those values are invalid changes what's computed
+  and shown (the field is built `negative`); the owner decides the rule,
+  then the field-level error styling (Basic's pattern) can be added.
+- **Advanced**: a "+" sign on Growth (key/value and table) — changes a
+  displayed figure's text. Kept green under its "Growth" label/header.
+- **Advanced**: one minus glyph for "Change from current" (hyphen) and
+  "Difference" (true minus) — displayed figure text.
+- **Advanced**: decimal years ("45.12 years") read as false precision —
+  number format of a displayed figure.
+- **Advanced**: "you're $61,224 short of your target" as the page's sentence
+  — a new computed figure. The reading shows the target beside the answer
+  with an on-track badge instead.
+- **Advanced**: putting the Historical / Monte Carlo success rate in the
+  reading — restates a figure in a second place; left under the chart.
+
 ## Fixed
 
 ### Escape inside a dialog's select list also closes the dialog
