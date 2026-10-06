@@ -198,6 +198,27 @@ written into DESIGN.md unless it says otherwise.
   taller than the screen, as before; below 1024px it's static, no inner
   scroller. Stages should share the same grid, group headings and two-up
   rule.
+- **Stages (/stages): Advanced's thirds, stages in the inputs.** Same grid,
+  card ("Your plan") and two-up rule as Advanced; Stages joins SOLO. The
+  stage editor moves out of the results into the inputs column as the first
+  group, "Your stages": a proportional timeline strip (each segment as wide
+  as its years, named; a click jumps to that stage), then the stages as flat
+  rows on a rule (`.stagecard` kept, the legacy box overridden), Remove as a
+  quiet icon button (StageHead's new `quiet` prop; Drawdown keeps its full
+  button), Years beside Rate of return with the glide path under them on the
+  final stage, then what the stage puts in. Then Your savings (split, starting
+  value), Markets (inflation, fees) and Your goal (solve for, target,
+  withdrawal, tax), as on Advanced. Results: ProjectionReading with the
+  target band (no on-track badge: Stages has no verdict to show), "Reach your
+  target" (SolveOption, now shared in Projection.tsx), the chart, Milestones
+  beside "Take it further", Stage by stage open (a few rows), Year by year
+  folded. Differs from Advanced: stage rows stay open on phones (see
+  Skipped); "Take it further" holds only Test withdrawals, a new hand-off to
+  Drawdown with the inflation-adjusted balance, as Advanced's; a 0-year stage
+  gets a field message while the figures still follow the input; with no
+  stages the reading dims and one "Start with a stage" card replaces
+  everything under it. On phones the stage table keeps Stage and End balance
+  pinned, the year table Year and Inflation adj.
 
 ## Skipped from critique
 
@@ -216,6 +237,20 @@ written into DESIGN.md unless it says otherwise.
   with an on-track badge instead.
 - **Advanced**: putting the Historical / Monte Carlo success rate in the
   reading — restates a figure in a second place; left under the chart.
+- **Stages**: fold each stage to a one-line summary on phones, one open at a
+  time — the e2e walk (stages.spec) types into every stage on both the old
+  and the new site with the same steps, so hidden stage fields would fail it.
+  The pinned reading answers the P0 instead.
+- **Stages**: undo in the Remove / "Use this…" toasts — the shared Toast has
+  no action slot; a site-wide change, left for the overlays work.
+- **Stages**: show dashes instead of $10,000 / $400 with no stages, refuse a
+  0-year stage — displayed figures and the calculation. Dimmed, collapsed and
+  flagged at the field instead.
+- **Stages**: drop the duplicate "After tax, per year" row — removes the
+  `xAfterTax` id. Kept in the totals under the reading.
+- **Stages**: "+" on Growth, moving the "?" out of the glide / split toggles,
+  44px for the ± flip — figure text, and shared controls (CheckToggle,
+  SignFlip) used on other pages; left for the shared-controls pass.
 
 ## Fixed
 

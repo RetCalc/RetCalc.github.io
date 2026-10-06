@@ -52,11 +52,8 @@
 #acSchedule label{white-space:nowrap}
 .acwarn{color:var(--dim)}
 /* Running totals under the account rows, lined up with the columns above */
-.actotals{border-top:1px dashed var(--line);padding-top:8px;margin:-3px 0 12px}
 .actot{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}
 .actot .k{align-self:flex-start}
-/* a single total (Stages) has the room to sit on one line */
-.actotals:not(.two) .actot{flex-direction:row;align-items:baseline;justify-content:space-between}
 .actot .k{font-size:12px;color:var(--dim)}
 .actot .v{font-family:var(--mono);font-size:13px;color:var(--text);
   font-variant-numeric:tabular-nums;letter-spacing:-.01em;padding-right:11px}
@@ -67,15 +64,6 @@
 #acResults td:first-child,#saResults td:first-child{font-family:var(--sans)}
 #acResults .acdot,#saResults .acdot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:8px}
 #acResults tfoot td,#saResults tfoot td{font-weight:600;border-top:1px solid var(--line);border-bottom:0}
-/* Stage card: where this stage's contribution goes. Two inputs and the
-   remainder, on one line, under the stage's own grid. */
-/* Split by account type: years, frequency, growth and return on top, the
-   three account amounts and their total underneath (five across when Monte
-   Carlo adds volatility). Phones keep their two columns. */
-@media (min-width:641px){
-  .stagegrid.split{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .stagegrid.split.withvol{grid-template-columns:repeat(5,minmax(0,1fr))}
-}
 
 /* ---------- stage cards ---------- */
 .stagecard{border:1px solid var(--ds-rule-strong);
@@ -94,8 +82,6 @@
   background:var(--panel);white-space:normal;text-overflow:clip}
 .stagespan{font-family:var(--mono);font-size:11.5px;color:var(--dimmer);
   font-variant-numeric:tabular-nums;flex-shrink:0}
-.stagegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
-.stagegrid .field{margin-bottom:0}
 /* Side-by-side fields share their rows: every label in a row gets the same
    height and every input starts on the same line, however the labels wrap.
    Label widths depend on the font, and Windows' is wider than Apple's, so a
@@ -107,17 +93,9 @@
    page out. iPhones get plain rows instead (-webkit-touch-callout is
    supported only on iOS). */
 @supports (grid-template-rows: subgrid) and (not (-webkit-touch-callout: none)){
-  .two,.stagegrid,.hh-grid{row-gap:0}
-  .two > .field,.stagegrid > .field,.hh-grid > .field{display:grid;grid-row:span 3;
+  .two,.hh-grid{row-gap:0}
+  .two > .field,.hh-grid > .field{display:grid;grid-row:span 3;
     grid-template-rows:subgrid;align-self:stretch;align-content:start}
-  .two > .field > label,.stagegrid > .field > label,.hh-grid > .field > label{align-self:end}
-  .stagegrid > .field{margin-bottom:10px}
-  .stagegrid{margin-bottom:-10px}
-}
-/* iOS runs without the shared rows above, so the phone glide toggle beside
-   rate of return keeps a label row and its own height instead of stretching
-   to fill the cell. */
-@supports (-webkit-touch-callout: none){
-  .stagegrid > .stageglide{grid-template-rows:auto auto 1fr}
+  .two > .field > label,.hh-grid > .field > label{align-self:end}
 }
 

@@ -82,8 +82,8 @@ export const CARD_ALT: Partial<Record<Slug, string>> = {
 };
 
 /** Pages laid out in one column (the rest put inputs beside results). */
-// The homepage and Advanced lay out their own columns (tools/basic/Basic.tsx, tools/advanced/Advanced.tsx).
-const SOLO = new Set<string>(["home", "advanced", "tools", "guide", "about", "budget", "debt", "compare"]);
+// The homepage, Advanced and Stages lay out their own columns (tools/basic/Basic.tsx, tools/advanced/Advanced.tsx, tools/stages/Stages.tsx).
+const SOLO = new Set<string>(["home", "advanced", "stages", "tools", "guide", "about", "budget", "debt", "compare"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug);
 }

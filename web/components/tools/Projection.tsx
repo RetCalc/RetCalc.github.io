@@ -17,12 +17,14 @@ import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { Figure, KV, Segmented } from "@/components/common/Readout";
 import { CompositionBar, HeroReading, PartKey } from "@/components/common/Reading";
+import { BigValue } from "@/components/common/BigValue";
 import type { HistRuns, MCBand, MCResult } from "@/lib/engine/types";
 import { money } from "@/lib/format";
 import { reroll } from "@/lib/mc-seed";
 import { PERIOD_ADV } from "@/lib/periods";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export type ChartMode = "band" | "hist" | "mc";
 
@@ -93,6 +95,22 @@ export function ProjectionReading({ p, R, lastPeriod, fvNote, realNote, id, chil
         <ProjectionTotals p={p} R={R} lastPeriod={lastPeriod} keys={bar} />
       </div>
     </Card>
+  );
+}
+
+/** One way to reach the target, in "Reach your target": the figure at
+    Display size, in Text (the answer above keeps the amber), what it
+    assumes, and its apply button. */
+export function SolveOption({ label, id, value, sized = false, note, noteId, className, children }: {
+  label: string; id: string; value: string; sized?: boolean; note: string; noteId: string; className?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("flex min-w-0 flex-col border-border px-4.5 pt-4 pb-4.5 max-sm:px-3.5", className)}>
+      <div className="mb-2 text-label text-muted-foreground">{label}</div>
+      <BigValue className="text-3xl leading-tight font-medium whitespace-nowrap tabular-nums sm:text-display" id={id} text={value} sized={sized} />
+      <div className="mt-1.5 mb-1.5 min-h-4 text-label text-muted-foreground" id={noteId}>{note}</div>
+      {children}
+    </div>
   );
 }
 

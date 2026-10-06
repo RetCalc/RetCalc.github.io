@@ -55,29 +55,10 @@
    hook the old markup had. */
 .signflip{flex:none}
 
-/* ---------- optional toggles ---------- */
-.adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
-  color:var(--dim);cursor:pointer;white-space:nowrap;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-well);
-  padding:6px 8px;transition:border-color .14s ease}
-.adjrow:hover{border-color:var(--ds-rule-strong)}
-.adjrow:has(input:checked){border-color:var(--ds-rule-strong)}
-.adjrow-top{display:flex;align-items:center;min-width:0;flex:1 1 auto}
-.adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.adjnote{font-family:var(--mono);color:var(--dim);font-size:11.5px;
-  letter-spacing:-.02em;margin-left:auto;flex:none}
-.adjnote:empty{display:none}
 
 /* Glide toggle: a compact button that expands into two fields when active,
    so the collapsed state stays out of the way for anyone not using it. */
 .glidewrap{margin-top:13px;margin-bottom:13px}
-/* Inside a stage card the card's own padding already supplies the bottom
-   gap, and the grid above doesn't carry its own margin, so only the top
-   needs setting here. */
-.stagecard .glidewrap{margin-top:13px;margin-bottom:0}
-/* Phones get the glide toggle in the field grid (see stageGlideBtn). */
-.stagegrid > .stageglide{display:none}
-.stageglide [data-slot=toggle]{align-self:stretch}
 /* The box in a check toggle (components/ui/toggle.tsx); the class is the
    hook the old markup had. */
 .glidebtn-check{flex:none}
@@ -85,19 +66,6 @@
 .glidefields{margin-top:8px;padding:10px 10px 2px;background:var(--panel-2);
   border:1px solid var(--line);border-radius:var(--r-well);
   display:flex;flex-direction:column;gap:8px}
-/* Desktop stage cards: a compact glide toggle with its settings in line
-   beside it, labels to the left of each input, instead of a full-width
-   button over a stacked panel. Phones keep the stacked layout. */
-@media (min-width:641px){
-  .stagecard .glidewrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .stagecard .glidewrap > [data-slot=toggle]{width:auto !important;flex:none;padding-right:14px !important}
-  .stagecard .glidefields{margin:0;padding:0;background:none;border:0;
-    flex:1 1 420px;min-width:0;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 14px}
-  .stagecard .glidefields .two{display:flex;gap:14px;flex:none;margin:0}
-  .stagecard .glidefields .two > .field{display:flex;align-items:center;gap:8px;margin:0}
-  .stagecard .glidefields .two > .field > label{white-space:nowrap;align-self:center}
-  .stagecard .glidefields [data-glidenote]{flex:1 1 220px;min-width:0}
-}
 .coastrow .k{color:var(--text)}
 .coastrow .v{font-weight:600}
 #sCoastAction{margin-top:10px}

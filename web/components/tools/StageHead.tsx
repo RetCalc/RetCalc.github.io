@@ -6,9 +6,10 @@
    "Stage N". Stages and the Drawdown Simulator's spending stages use it.
    From buildStages() in src/js/app/08-stages.js. */
 
+import { XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function StageHead({ name, fallback, aria, rename, span, remove, attrs }: {
+export function StageHead({ name, fallback, aria, rename, span, remove, attrs, quiet }: {
   name?: string;
   /** The name shown until one is given: "Stage 2". */
   fallback: string;
@@ -18,6 +19,8 @@ export function StageHead({ name, fallback, aria, rename, span, remove, attrs }:
   remove: () => void;
   /** The old page's data attributes on the name, span and button. */
   attrs: { name: Record<string, number>; span: Record<string, number>; del: Record<string, number> };
+  /** Remove as a quiet icon button (Stages' flat rows) instead of a full one. */
+  quiet?: boolean;
 }) {
   return (
     <div className="stagehead">
@@ -42,7 +45,10 @@ export function StageHead({ name, fallback, aria, rename, span, remove, attrs }:
           rename(next);
         }}>{name || fallback}</span>
       <span className="stagespan" {...attrs.span}>{span}</span>
-      <Button variant="outline" size="sm" className="ml-auto" {...attrs.del} onClick={remove}>Remove</Button>
+      {quiet ? (
+        <Button variant="quiet" size="icon-sm" className="-my-1.5 -mr-2 ml-auto" {...attrs.del} aria-label={"Remove " + aria.toLowerCase()} title="Remove this stage" onClick={remove}>
+          <XIcon aria-hidden="true" /></Button>
+      ) : <Button variant="outline" size="sm" className="ml-auto" {...attrs.del} onClick={remove}>Remove</Button>}
     </div>
   );
 }

@@ -87,10 +87,6 @@ svg{display:block;width:100%;height:auto}
   .toolcard{padding:16px 16px;gap:14px}
   .toolcard-icon{width:48px;height:48px;padding:8px}
   .toolcard-name{font-size:14px}
-  .stagegrid{grid-template-columns:1fr 1fr}
-  .stagegrid > .stageglide:not(.even){display:grid}
-  .stagecard:has(.stageglide:not(.even)) .glidewrap > [data-slot=toggle]{display:none !important}
-  .stagecard:has(.stageglide:not(.even)) .glidewrap:has(> .glidefields[hidden]){display:none}
   .stagecard{padding:12px}
   #stageTable{min-width:640px}
   #xYearTable{min-width:660px}

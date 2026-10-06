@@ -17,9 +17,8 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
-import { ProjectionChart, ProjectionReading, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
+import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/common/BigValue";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -488,21 +487,6 @@ function AcHead({ note, rule, children }: { note?: string; rule?: boolean; child
   return (
     <div className={cn("mb-2 text-sm font-semibold", rule && "mt-1 border-t border-border pt-3.5")}>
       {children}{note ? <span className="ml-1.5 text-label font-normal text-muted-foreground">{note}</span> : null}
-    </div>
-  );
-}
-
-/** One way to reach the target: the figure at Display size, in Text (the
-    answer above keeps the amber), what it assumes, and its apply button. */
-function SolveOption({ label, id, value, note, noteId, className, children }: {
-  label: string; id: string; value: string; note: string; noteId: string; className?: string; children: React.ReactNode;
-}) {
-  return (
-    <div className={cn("flex min-w-0 flex-col border-border px-4.5 pt-4 pb-4.5 max-sm:px-3.5", className)}>
-      <div className="mb-2 text-label text-muted-foreground">{label}</div>
-      <BigValue className="text-3xl leading-tight font-medium whitespace-nowrap tabular-nums sm:text-display" id={id} text={value} sized={false} />
-      <div className="mt-1.5 mb-1.5 text-label text-muted-foreground" id={noteId}>{note}</div>
-      {children}
     </div>
   );
 }
