@@ -33,6 +33,7 @@ colors:
   series-lavender: "#9C8CE0"
   series-lavender-deep: "#7B68C9"
   series-gray: "#8A94A3"
+  series-gray-deep: "#808A99"
   brand-gold: "#e9b872"
   brand-jade: "#4fbf95"
   brand-steel: "#7d9fd6"
@@ -204,7 +205,7 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 ### Chart series
 - **Your plan** is always Signal Amber (Deep in light).
 - **Sky** and **Teal** (each with a Deep variant for light) are the first comparison series.
-- **Rose** and **Lavender** follow, each with a Deep variant for light mode (the dark values fall below 3:1 on Paper). **Gray** comes last, with one value in both modes.
+- **Rose**, **Lavender** and **Gray** follow, each with a Deep variant for light mode (the dark values fall below 3:1 on Paper).
 - Every series line clears 3:1 against Surface and Raised in its mode.
 - **Bands** (percentile ranges, better/worse cases) are the series color at 15 to 25% opacity.
 

@@ -50,7 +50,7 @@ Light (derived from dark)
 Chart series (dark / light)
 - plan = accent
 - sky #5AA9E6 / #2F7FC4, teal #46B9A6 / #1F8F7E
-- rose #E0749B / #C2467A, lavender #9C8CE0 / #7B68C9, gray #8A94A3
+- rose #E0749B / #C2467A, lavender #9C8CE0 / #7B68C9, gray #8A94A3 / #808A99
 - bands = series color at 15-25% opacity
 Logo (light mode only; dark keeps today's #e9b872 / #4fbf95 / #7d9fd6)
 - gold #B0813A, jade #219B73, steel #6A8BC1

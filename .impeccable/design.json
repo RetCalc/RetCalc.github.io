@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T15:40:24.722Z",
+  "generatedAt": "2026-10-06T15:43:43.685Z",
   "title": "Design System: RetCalc",
   "extensions": {
     "colorMeta": {
@@ -489,6 +489,22 @@
         "displayName": "Gray",
         "canonical": "#8A94A3",
         "oklch": "oklch(66.3% 0.025 258.4)",
+        "tonalRamp": [
+          "oklch(15% 0.025 258.4)",
+          "oklch(26.4% 0.025 258.4)",
+          "oklch(37.9% 0.025 258.4)",
+          "oklch(49.3% 0.025 258.4)",
+          "oklch(60.7% 0.025 258.4)",
+          "oklch(72.1% 0.025 258.4)",
+          "oklch(83.6% 0.025 258.4)",
+          "oklch(95% 0.025 258.4)"
+        ]
+      },
+      "series-gray-deep": {
+        "role": "chart",
+        "displayName": "Gray Deep",
+        "canonical": "#808A99",
+        "oklch": "oklch(63% 0.025 258.4)",
         "tonalRamp": [
           "oklch(15% 0.025 258.4)",
           "oklch(26.4% 0.025 258.4)",
