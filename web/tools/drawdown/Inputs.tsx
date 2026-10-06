@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 export function Inputs({ v, fromNote, periods, open }: {
@@ -157,8 +158,8 @@ export function Inputs({ v, fromNote, periods, open }: {
       <div id={elId}>
         {list.map((it, i) => (
           <div key={i} className={it.on === false ? "itemrow off" : "itemrow"}>
-            <input type="checkbox" data-itemtoggle={i} checked={it.on !== false}
-              onChange={(e) => editList<DdItem>(k, (l) => l.map((x, j) => (j === i ? { ...x, on: e.target.checked } : x)))} />
+            <Checkbox data-itemtoggle={i} checked={it.on !== false}
+              onCheckedChange={(on) => editList<DdItem>(k, (l) => l.map((x, j) => (j === i ? { ...x, on } : x)))} />
             <span className="itemtxt" data-itemedit={i} onClick={() => open({ kind: "item", list: k, index: i })}>{it.name}<small>{describeItem(it, age)}</small></span>
             <Button variant="ghost" size="icon-sm" data-itemdel={i} aria-label="Delete" onClick={() => {
               editList<DdItem>(k, (l) => l.filter((_, j) => j !== i));
@@ -217,7 +218,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <NumberField id="ddGYield" wrapId="ddGYieldWrap" hidden={!tips} label="Real yield" unit="% after inflation" step={0.1} negative value={str("gYield")} onValueChange={set("gYield")} />
               <NumberField id="ddGPayout" wrapId="ddGPayoutWrap" hidden={tips} label="Payout rate" unit="% a year" step={0.25} value={str("gPayout")} onValueChange={set("gPayout")} />
               <div className="ddgk-final" id="ddGInflateWrap" hidden={tips}>
-                <label className="ddgk-check"><input type="checkbox" id="ddGInflate" checked={!!s.gInflate} onChange={(e) => set("gInflate")(e.target.checked)} /><span>Payments rise with inflation</span></label>
+                <label className="ddgk-check"><Checkbox id="ddGInflate" checked={!!s.gInflate} onCheckedChange={set("gInflate")} /><span>Payments rise with inflation</span></label>
               </div>
               <Html className="hint -mt-1.5 mb-3" id="ddGNote" html={gNote} />
             </div>
@@ -279,7 +280,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             <div className="hint" id="ddRateNote">{o.initial > 0 ? money(firstW) + " per year (" + money(firstW / 12) + " per month)" : "Enter your portfolio value above to see this in dollars."}</div>
           </Field>
           <div className="ddgk-final ddskip ddadv" id="ddSkipWrap" hidden={!shown("ddSkipWrap")}>
-            <label className="ddgk-check"><input type="checkbox" id="ddSkipRaise" checked={!!s.skipRaise} onChange={(e) => set("skipRaise")(e.target.checked)} /><span>Skip the inflation raise after a losing year</span></label>
+            <label className="ddgk-check"><Checkbox id="ddSkipRaise" checked={!!s.skipRaise} onCheckedChange={set("skipRaise")} /><span>Skip the inflation raise after a losing year</span></label>
             <TipDot k="skipraise" />
           </div>
           <div className="ddadv" id="ddGuardWrap" hidden={!shown("ddGuardWrap")}>
@@ -289,7 +290,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <NumberField id="ddAdjust" label="Cut spending by" unit="%" max={100} value={str("adjust")} onValueChange={set("adjust")} />
             </div>
             <div className="ddgk-final">
-              <label className="ddgk-check"><input type="checkbox" id="ddGkFinal" checked={!!s.gkFinal} onChange={(e) => set("gkFinal")(e.target.checked)} /><span>No cuts in the final</span></label>
+              <label className="ddgk-check"><Checkbox id="ddGkFinal" checked={!!s.gkFinal} onCheckedChange={set("gkFinal")} /><span>No cuts in the final</span></label>
               <Affixed suffix="yrs" className="w-21 flex-none"><NumberInput id="ddGkFinalYrs" nonNeg max={60} disabled={!s.gkFinal} aria-label="Final years without cuts" value={str("gkFinalYrs")} onValueChange={set("gkFinalYrs")} /></Affixed>
               <TipDot k="gkfinal" />
             </div>

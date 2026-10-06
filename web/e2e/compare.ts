@@ -85,6 +85,11 @@ export async function snapshot(page: Page, roots: string[]) {
         const key = id || (f.dataset.f ? f.dataset.f + "@" + f.dataset.i : f.dataset.stotal ? "total@" + f.dataset.stotal : "");
         if (key && !skip.includes(id || f.dataset.f || "")) out[key.startsWith("#") || !id ? key : "#" + key] = f.type === "checkbox" ? String((f as HTMLInputElement).checked) : f.value;
       });
+      // A shadcn checkbox keeps its data attributes on the visible box
+      // (role="checkbox") and its id on a hidden input; read it by the box.
+      el?.querySelectorAll<HTMLElement>("[role=checkbox][data-f]").forEach((c) => {
+        out[c.dataset.f + "@" + c.dataset.i] = String(c.getAttribute("aria-checked") === "true");
+      });
     }
     return out;
   }, [roots, UNPORTED] as const));

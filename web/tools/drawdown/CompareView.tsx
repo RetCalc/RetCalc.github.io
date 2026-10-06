@@ -24,6 +24,7 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const SPOT_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky, SERIES.rose, SERIES.lavender, SERIES.gray];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
@@ -107,10 +108,10 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
                   <td>{money(x.first)}</td><td>{money(x.life)}</td>
                   <td>{money(x.low)}{x.lowStart ? <small>{spotLbl(x.lowStart)}</small> : null}</td>
                   <td>{(Math.round(x.cuts * 10) / 10).toFixed(1)}</td><td>{money(x.end)}</td>
-                  <td><input type="checkbox" data-showchart={x.id} checked={!!chartedNow[x.id]} aria-label={"Chart " + DD_UI[x.id].short}
-                    onChange={(e) => {
+                  <td><Checkbox data-showchart={x.id} checked={!!chartedNow[x.id]} aria-label={"Chart " + DD_UI[x.id].short}
+                    onCheckedChange={(on) => {
                       const next = { ...chartedNow };
-                      if (e.target.checked) next[x.id] = 1;
+                      if (on) next[x.id] = 1;
                       else delete next[x.id];
                       setCharted(next);
                     }} /></td>

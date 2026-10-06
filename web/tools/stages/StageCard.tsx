@@ -21,6 +21,7 @@ import { Affixed } from "@/components/fields/Field";
 import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type StageEdit = (i: number, f: (st: StageInputs) => StageInputs) => void;
 
@@ -53,7 +54,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   const blended = split && !!st.gRates;
   const adjRow = i > 0 ? (
     <label className="adjrow" title="Inflation adjusted: grows the amount you type by inflation up to the start of this stage">
-      <span className="adjrow-top"><input type="checkbox" data-f="adj" data-i={i} checked={st.adj} onChange={(e) => up((c) => ({ ...c, adj: e.target.checked }))} /><span className="adjtxt">Infl. adj.</span></span>
+      <span className="adjrow-top"><Checkbox className="mr-1.5" data-f="adj" data-i={i} checked={st.adj} onCheckedChange={(on) => up((c) => ({ ...c, adj: on }))} /><span className="adjtxt">Infl. adj.</span></span>
       <span className="adjnote" data-adj={i}>{adjNote}</span>
     </label>
   ) : null;

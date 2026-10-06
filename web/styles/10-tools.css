@@ -64,8 +64,6 @@
 .adjrow:hover{border-color:var(--ds-rule-strong)}
 .adjrow:has(input:checked){border-color:var(--ds-rule-strong)}
 .adjrow-top{display:flex;align-items:center;min-width:0;flex:1 1 auto}
-.adjrow input{accent-color:var(--ds-text);width:15px;height:15px;flex:none;
-  margin:0 6px 0 0;cursor:pointer}
 .adjtxt{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .adjnote{font-family:var(--mono);color:var(--dim);font-size:11.5px;
   letter-spacing:-.02em;margin-left:auto;flex:none}
@@ -157,7 +155,6 @@
   letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}
 .ddgk-check{display:flex;align-items:center;gap:7px;cursor:pointer;flex:0 1 auto;min-width:0}
-.ddgk-check input{accent-color:var(--ds-text);width:15px;height:15px;flex:none;margin:0;cursor:pointer}
 /* College: one card per child once there's more than one */
 .clkid-name{font-size:13px;font-weight:600}
 .clkid .field:last-child,.clkid .two:last-child .field{margin-bottom:0}
@@ -282,7 +279,6 @@ tr.br-off .br-name{color:var(--dim)}
 #ddShowTable tr.ddcur > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
 #ddShowTable tr.ddcur td:first-child{color:var(--text);font-weight:600}
 #ddShowTable tr.ddmiss td{opacity:.78}
-#ddShowTable input[type=checkbox]{accent-color:var(--ds-text);width:15px;height:15px;cursor:pointer;margin:0}
 #ddShowTable th.sortcol{cursor:pointer;user-select:none}
 #ddShowTable th.sortcol:hover{color:var(--text)}
 #ddShowTable th.sortcol.sort-asc::after{content:"\2191";margin-left:4px;opacity:.7}

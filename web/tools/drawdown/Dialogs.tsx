@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { NativeSelect } from "@/components/ui/native-select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type Dialog = { kind: "mix" | "guide" | "study" } | { kind: "item"; list: "incomeItems" | "expenseItems"; index: number | null };
 
@@ -78,7 +79,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
           <div className="ddmixrow"><div><b>To buy</b></div><NativeSelect className="w-37.5 flex-none" id="ddMGType" aria-label="What it buys" value={f.gType} onChange={(e) => up("gType")(e.target.value)}><option value="tips">A TIPS ladder</option><option value="annuity">An annuity</option></NativeSelect></div>
           <div className="ddmixrow" id="ddMGYieldRow" hidden={!tips}><div><b>Real yield</b><small>What TIPS pay after inflation. Check today&apos;s.</small></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput step={0.1} id="ddMGYield" aria-label="Real yield" value={f.gYield} onValueChange={up("gYield")} /></Affixed></div>
           <div className="ddmixrow" id="ddMGPayRow" hidden={tips}><div><b>Payout rate</b><small>From a quote: depends on age and rates.</small></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={0.25} id="ddMGPay" aria-label="Payout rate" value={f.gPay} onValueChange={up("gPay")} /></Affixed></div>
-          <label className="ddgk-check my-2 mx-0" id="ddMGInflRow" hidden={tips}><input type="checkbox" id="ddMGInfl" checked={f.gInfl} onChange={(e) => up("gInfl")(e.target.checked)} /><span>Payments rise with inflation</span></label>
+          <label className="ddgk-check my-2 mx-0" id="ddMGInflRow" hidden={tips}><Checkbox id="ddMGInfl" checked={f.gInfl} onCheckedChange={up("gInfl")} /><span>Payments rise with inflation</span></label>
           <div className="formhint" id="ddMGNote">{g > 0 ? money(o.initial * G.share) + " buys " + money(G.income) + " a year" +
             (tips ? " for " + o.years + " years, rising with inflation." : " for life" + (f.gInfl ? ", rising with inflation." : ", level in dollars.")) : ""}</div>
         </div>
@@ -229,7 +230,7 @@ function ItemDialog({ v, list, index, close }: { v: DDView; list: "incomeItems" 
         <Input id="itName" type="text" maxLength={40} placeholder={isIncome ? "e.g. Pension" : "e.g. New car"} value={f.name} onChange={(e) => up("name")(e.target.value)} /></div>
       <div className="formfield"><Label className="mb-1.5"><span>Annual amount, today&apos;s dollars</span></Label>
         <Affixed prefix="$"><MoneyInput id="itAmount" nonNeg value={f.amount} onValueChange={up("amount")} /></Affixed></div>
-      <label className="formcheck"><input type="checkbox" id="itInflate" checked={f.inflate} onChange={(e) => up("inflate")(e.target.checked)} /> Adjust for inflation over time</label>
+      <label className="formcheck"><Checkbox id="itInflate" checked={f.inflate} onCheckedChange={up("inflate")} /> Adjust for inflation over time</label>
       <div className="formtwo">
         <div className="formfield"><Label className="mb-1.5"><span>{ageMode ? "Starts at age" : "Starts in year"}</span></Label>
           <Affixed suffix={ageMode ? "yrs" : "of ret."}><InputGroupInput variant="numeric" id="itStartYear" type="text" inputMode="decimal" value={f.start} onChange={(e) => up("start")(e.target.value)} /></Affixed></div>
