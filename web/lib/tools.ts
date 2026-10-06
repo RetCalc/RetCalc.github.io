@@ -139,3 +139,18 @@ export const TOOL_GROUPS: ToolGroup[] = [
 export const TOOLS: Record<ToolSub, ToolCard> = Object.fromEntries(
   TOOL_GROUPS.flatMap((g) => g.cards.map((c) => [c.sub, c])),
 ) as Record<ToolSub, ToolCard>;
+
+/** The four kinds of tool, each with one chart series color for its icon
+    (DESIGN.md: the series tokens, never rose or amber). The tool list's
+    three sections stay as they are; the taxes-and-healthcare tools sit in
+    two of them, and share a color across both. */
+export type ToolHue = "sky" | "lavender" | "teal" | "gray";
+export const TOOL_CATEGORIES: { label: string; hue: ToolHue; tools: ToolSub[] }[] = [
+  { label: "Planning retirement", hue: "sky", tools: ["optimizer", "drawdown", "bridge"] },
+  { label: "Taxes and healthcare", hue: "lavender", tools: ["roth", "healthcare", "tax"] },
+  { label: "Saving and investing", hue: "teal", tools: ["fire", "backtest", "college", "rentbuy"] },
+  { label: "Everyday money", hue: "gray", tools: ["budget", "debt", "mortgage"] },
+];
+export const TOOL_HUE = Object.fromEntries(
+  TOOL_CATEGORIES.flatMap((c) => c.tools.map((t) => [t, c.hue])),
+) as Record<ToolSub, ToolHue>;

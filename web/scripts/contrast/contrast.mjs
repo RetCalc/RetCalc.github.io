@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* The redesign's contrast check: every text/background pair the design
    system allows, in both themes, plus the non-text marks that carry meaning
-   (control edges, chart lines, the logo).
+   (control edges, chart lines, the tool icons, the logo).
 
      node scripts/contrast/contrast.mjs          # print every pair
      node scripts/contrast/contrast.mjs check    # same, and exit 1 if any fails
@@ -84,6 +84,9 @@ function pairs(t) {
   const lines = { plan: t.accent, ...t.series };
   for (const [s, v] of Object.entries(lines))
     for (const bg of ["surface", "raised"]) marks.push([`chart ${s}`, v, bg, bgs[bg]]);
+  // The tool icons: each category's series color on its flat Raised tile
+  // (lib/tools.ts, TOOL_CATEGORIES).
+  for (const s of ["sky", "lavender", "teal", "gray"]) marks.push([`tool icon ${s}`, t.series[s], "icon tile (raised)", t.raised]);
   for (const [s, v] of Object.entries(t.logo))
     for (const [bg, b] of Object.entries(bgs)) marks.push([`logo ${s}`, v, bg, b]);
   return { text, marks };

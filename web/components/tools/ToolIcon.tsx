@@ -2,7 +2,7 @@
    header. Converted unchanged from src/main/16-tool-picker.html; the class
    names drive the hover animations in styles/04-tool-icons-header.css. */
 import { ViewTransition } from "react";
-import type { ToolSub } from "@/lib/tools";
+import { TOOL_HUE, type ToolSub } from "@/lib/tools";
 
 const ICONS: Record<ToolSub, React.ReactNode> = {
   optimizer: (
@@ -107,13 +107,14 @@ export function ToolIcon({ sub }: { sub: ToolSub }) {
   return ICONS[sub];
 }
 
-/** A tool's icon in its tile, on its card and in its page's header: the
+/** A tool's icon in its tile, on its card and in its page's header, in its
+    category's series color (TOOL_HUE, through --tool-hue): the
     same tile on both sides of opening a tool, so it glides from the card
     up into the header (a shared view transition, forward only). */
 export function ToolIconTile({ sub, className, id }: { sub: ToolSub; className: string; id?: string }) {
   return (
     <ViewTransition name={"toolicon-" + sub} share={{ "nav-forward": "toolicon", default: "none" }} default="none">
-      <span className={className} id={id} aria-hidden="true"><ToolIcon sub={sub} /></span>
+      <span className={className} id={id} aria-hidden="true" style={{ "--tool-hue": `var(--ds-series-${TOOL_HUE[sub]})` } as React.CSSProperties}><ToolIcon sub={sub} /></span>
     </ViewTransition>
   );
 }
