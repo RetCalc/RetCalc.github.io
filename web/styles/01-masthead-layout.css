@@ -28,12 +28,11 @@ h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .scenariobar{margin-left:auto;display:flex;gap:8px;align-items:center}
 .scgroup{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:var(--r-well);
   overflow:hidden;background:var(--panel);box-shadow:var(--edge-up)}
-.scgroup select{min-width:210px;width:auto;border:0;border-radius:0;box-shadow:none}
 .scgroup .btn{border:0;border-left:1px solid var(--line);border-radius:0;box-shadow:none;
   background:transparent;width:40px;padding:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--dim)}
 .scgroup .btn:hover{transform:none;background:var(--panel-2);color:var(--text)}
 .scgroup .btn svg{width:17px;height:17px;display:block}
-.scgroup .btn:focus-visible,.scgroup select:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
+.scgroup .btn:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 /* Light/dark was three interactions deep inside About, which is the wrong
    depth for something people flip when the room changes. */
 

@@ -43,6 +43,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { NativeSelect } from "@/components/ui/native-select";
 
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
@@ -185,7 +186,7 @@ export function Advanced() {
   const periodField = (
     <div className="field" id="periodField">
       <Label className="mb-1.5" htmlFor="period"><span>Contribution period</span></Label>
-      <select id="period" value={s.period} onChange={(e) => set("period")(e.target.value)}><PeriodOptions /></select>
+      <NativeSelect id="period" value={s.period} onChange={(e) => set("period")(e.target.value)}><PeriodOptions /></NativeSelect>
       <Button variant="link" size="inline-xs" className="mt-1.75" id="convOpen" onClick={() => setDialog("conv")}>
         {ConvertIcon}
         Convert frequency

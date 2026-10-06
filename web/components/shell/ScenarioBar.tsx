@@ -14,6 +14,7 @@ import { canShareSheet, copyCard, saveCard, sendLink, shareKit, type CardData } 
 import { printSheet } from "./Sheet";
 import { useToast } from "./Toast";
 import { compareNav } from "@/lib/compare-nav";
+import { NativeSelect } from "@/components/ui/native-select";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -71,7 +72,7 @@ export function ScenarioBar() {
 
   return (
     <div className="scgroup">
-      <select id="scenarioPick" aria-label="Saved scenarios" value={cur?.name ?? ""} disabled={!tool}
+      <NativeSelect variant="joined" className="w-auto min-w-52.5 max-sm:min-w-0 max-sm:flex-1" id="scenarioPick" aria-label="Saved scenarios" value={cur?.name ?? ""} disabled={!tool}
         onChange={(e) => {
           if (!tool || !id) return;
           const s = list.find((x) => x.name === e.target.value);
@@ -92,7 +93,7 @@ export function ScenarioBar() {
         ) : (
           <option value="">No saved scenarios</option>
         )}
-      </select>
+      </NativeSelect>
       <button className="btn" id="btnScenario" type="button" aria-label="Save or delete a scenario" title="Save or delete"
         onClick={async () => {
           if (!tool) return;

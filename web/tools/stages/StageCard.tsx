@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
 import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export type StageEdit = (i: number, f: (st: StageInputs) => StageInputs) => void;
 
@@ -64,7 +65,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
     years: field("years", "Years", <Affixed suffix="yrs"><NumberInput data-f="years" data-i={i} nonNeg value={st.years} aria-label={aria + " years"}
       onValueChange={(v) => up((c) => ({ ...c, years: v, ...(c.glideYears !== "" ? { glideYears: stageGlideYears(v, c.glideYears) } : {}) }))} /></Affixed>),
     contrib: field("contrib", "Contribution", <Affixed prefix="$"><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></Affixed>, adjRow),
-    freq: field("freq", "Frequency", <select data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></select>,
+    freq: field("freq", "Frequency", <NativeSelect data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></NativeSelect>,
       <Button variant="link" size="inline-xs" className="mt-1.75" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</Button>),
     growth: field("growth", <Tipped text="Contribution growth" k="contribgrowth" />, <Affixed suffix="%/yr">
       <NumberInput data-f="growth" data-i={i} step={0.5} aria-label={aria + " contribution growth"}

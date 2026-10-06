@@ -16,6 +16,7 @@ import { PERIOD_NAMES, PeriodOptions } from "@/lib/periods";
 import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 
 
 /** The two-arrow icon on the "Convert" links that open the converter. */
@@ -40,7 +41,7 @@ export function ConverterDialog({ title, amount, period, apply, onClose }: {
         <div className="field"><Label className="mb-1.5" htmlFor="convAmt"><span>Amount</span></Label>
           <Affixed prefix="$"><MoneyInput id="convAmt" nonNeg value={amt} onValueChange={setAmt} /></Affixed></div>
         <div className="field"><Label className="mb-1.5" htmlFor="convPeriod"><span>Paid</span></Label>
-          <select id="convPeriod" value={per} onChange={(e) => setPer(e.target.value)}><PeriodOptions /></select></div>
+          <NativeSelect id="convPeriod" value={per} onChange={(e) => setPer(e.target.value)}><PeriodOptions /></NativeSelect></div>
       </div>
       <div id="convOut">
         {PERIOD_NAMES.map((to) => {

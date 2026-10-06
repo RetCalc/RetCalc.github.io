@@ -22,6 +22,7 @@ import {
 } from "./model";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 
 const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers on the Basic, Advanced or Stages tabs.";
 
@@ -72,20 +73,20 @@ function CompareSaved() {
               <div className="cmpslot" key={i}>
                 <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": MULTI_COLORS[i] } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
                 <div className="field">
-                  <select data-cmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={sl.name}
+                  <NativeSelect data-cmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={sl.name}
                     onChange={(e) => setSlots(slots.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}>
                     {i === 2 ? <option value="">None</option> : null}
                     {savedNames(sl.mode).map((nm) => <option key={nm}>{nm}</option>)}
-                  </select>
+                  </NativeSelect>
                 </div>
                 <div className="field">
-                  <select data-cmpmode={i} aria-label={"Scenario " + CMP_LETTERS[i] + " mode"} value={sl.mode}
+                  <NativeSelect data-cmpmode={i} aria-label={"Scenario " + CMP_LETTERS[i] + " mode"} value={sl.mode}
                     onChange={(e) => {
                       const mode = e.target.value as CmpMode;
                       setSlots(slots.map((x, j) => (j === i ? { mode, name: savedNames(mode).includes(x.name) ? x.name : "" } : x)));
                     }}>
                     {CMP_MODES.map((m) => <option key={m} value={m}>{CMP_MODE_LABEL[m]}</option>)}
-                  </select>
+                  </NativeSelect>
                 </div>
               </div>
             )) : null}

@@ -4,13 +4,14 @@
 
      <MoneyField id="moPrice" label="Home price" value={s.price} onValueChange={set("price")} />
      <NumberField id="moRate" label="Interest rate" unit="%" step={0.125} ... />
-     <Field id="moTerm" label="Length"><select id="moTerm">...</select></Field>
+     <Field id="moTerm" label="Length"><NativeSelect id="moTerm">...</NativeSelect></Field>
 */
 
 import type { ReactNode, Ref } from "react";
 import { InputGroup, InputGroupAddon, InputGroupText } from "@/components/ui/input-group";
 import { InGroup, MoneyInput, NumberInput } from "./NumberInput";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 
 interface FieldProps {
   /** The input's id, which the label points at. */
@@ -83,7 +84,7 @@ export function SelectField({ id, label, value, onChange, wrapId, hidden, classN
   Omit<FieldProps, "children"> & { value: string; onChange: (v: string) => void; children: ReactNode; "aria-label"?: string }) {
   return (
     <Field id={id} label={label} wrapId={wrapId} hidden={hidden} className={className}>
-      <select id={id} {...attrs} value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
+      <NativeSelect id={id} {...attrs} value={value} onChange={(e) => onChange(e.target.value)}>{children}</NativeSelect>
     </Field>
   );
 }

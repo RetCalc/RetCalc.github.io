@@ -20,6 +20,7 @@ import { CMP_LETTERS } from "./model";
 import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 
 /* The slots, kept for the visit. */
 const slotMemory = { names: ["", "", ""] };
@@ -75,14 +76,14 @@ export function DDCompare() {
             {enough ? slots.map((name, i) => (
               <div className="cmpslot" key={i}>
                 <div className="cmpkey"><i className="bg-(--swatch)" style={{ "--swatch": MULTI_COLORS[i] } as React.CSSProperties}></i>{CMP_LETTERS[i]}</div>
-                <div className="field"><select data-ddcmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={name} onChange={(e) => {
+                <div className="field"><NativeSelect data-ddcmp={i} aria-label={"Scenario " + CMP_LETTERS[i]} value={name} onChange={(e) => {
                   const next = slots.map((x, j) => (j === i ? e.target.value : x));
                   remember(next);
                   setSlots(next);
                 }}>
                   {i === 2 ? <option value="">None</option> : null}
                   {names.map((nm) => <option key={nm}>{nm}</option>)}
-                </select></div>
+                </NativeSelect></div>
               </div>
             )) : null}
           </div>

@@ -27,6 +27,7 @@ import { InputGroupInput } from "@/components/ui/input-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export type Dialog = { kind: "mix" | "guide" | "study" } | { kind: "item"; list: "incomeItems" | "expenseItems"; index: number | null };
 
@@ -74,7 +75,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
         <div className="formhint">Part of the portfolio can buy income that doesn&apos;t depend on markets. It isn&apos;t invested or rebalanced: it&apos;s spent once, at retirement, and pays you every year. The mix above applies to the rest.</div>
         <div className="ddmixrow"><div><b>Share of the portfolio</b></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={5} max={100} id="ddMG" placeholder="0" aria-label="Share for guaranteed income" value={f.g} onValueChange={up("g")} /></Affixed></div>
         <div id="ddMGMore" hidden={!(g > 0)}>
-          <div className="ddmixrow"><div><b>To buy</b></div><select id="ddMGType" aria-label="What it buys" value={f.gType} onChange={(e) => up("gType")(e.target.value)}><option value="tips">A TIPS ladder</option><option value="annuity">An annuity</option></select></div>
+          <div className="ddmixrow"><div><b>To buy</b></div><NativeSelect className="w-37.5 flex-none" id="ddMGType" aria-label="What it buys" value={f.gType} onChange={(e) => up("gType")(e.target.value)}><option value="tips">A TIPS ladder</option><option value="annuity">An annuity</option></NativeSelect></div>
           <div className="ddmixrow" id="ddMGYieldRow" hidden={!tips}><div><b>Real yield</b><small>What TIPS pay after inflation. Check today&apos;s.</small></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput step={0.1} id="ddMGYield" aria-label="Real yield" value={f.gYield} onValueChange={up("gYield")} /></Affixed></div>
           <div className="ddmixrow" id="ddMGPayRow" hidden={tips}><div><b>Payout rate</b><small>From a quote: depends on age and rates.</small></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={0.25} id="ddMGPay" aria-label="Payout rate" value={f.gPay} onValueChange={up("gPay")} /></Affixed></div>
           <label className="ddgk-check my-2 mx-0" id="ddMGInflRow" hidden={tips}><input type="checkbox" id="ddMGInfl" checked={f.gInfl} onChange={(e) => up("gInfl")(e.target.checked)} /><span>Payments rise with inflation</span></label>
@@ -233,11 +234,11 @@ function ItemDialog({ v, list, index, close }: { v: DDView; list: "incomeItems" 
         <div className="formfield"><Label className="mb-1.5"><span>{ageMode ? "Starts at age" : "Starts in year"}</span></Label>
           <Affixed suffix={ageMode ? "yrs" : "of ret."}><InputGroupInput variant="numeric" id="itStartYear" type="text" inputMode="decimal" value={f.start} onChange={(e) => up("start")(e.target.value)} /></Affixed></div>
         <div className="formfield"><Label className="mb-1.5"><span>Lasts</span></Label>
-          <select className="forminput" id="itDuration" value={f.dur} onChange={(e) => up("dur")(e.target.value)}>
+          <NativeSelect id="itDuration" value={f.dur} onChange={(e) => up("dur")(e.target.value)}>
             <option value="once">One time only</option>
             <option value="years">A number of years</option>
             <option value="forever">Rest of retirement</option>
-          </select></div>
+          </NativeSelect></div>
       </div>
       <div className="formfield" id="itYearsWrap" hidden={f.dur !== "years"}>
         <Label className="mb-1.5"><span>Number of years</span></Label>

@@ -19,6 +19,7 @@ import { TRIP_META } from "./tripMeta";
 import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 
 export interface GuideView {
   g: GuideState;
@@ -92,12 +93,12 @@ export function SelF({ k, label, opts, num, redraw, ...o }: FieldOpts & {
   const cur = G.a[k] == null ? "" : String(G.a[k]);
   return (
     <Wrap k={k} label={label} {...o}>
-      <select id={"gdf-" + k} data-a={k} value={cur} onChange={(e) => {
+      <NativeSelect id={"gdf-" + k} data-a={k} value={cur} onChange={(e) => {
         const t = e.target.value;
         G.set(k, (num ? (t === "" ? null : parseFloat(t)) : t || null) as Answers[typeof k], redraw);
       }}>
         {opts.map(([val, lab]) => <option key={String(val)} value={String(val)}>{lab}</option>)}
-      </select>
+      </NativeSelect>
     </Wrap>
   );
 }

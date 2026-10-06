@@ -8,26 +8,18 @@ input[type=number]{-moz-appearance:textfield;appearance:textfield}
 
 /* Controls are firm keys: a flat Raised fill, a 1px rule, 36px tall (44px
    under a finger), and a 1px press on click. They don't lift on hover; the
-   fill and the edge change instead. Selects are fields: the ground fill and
-   the strong edge every control that has to be seen as one carries. */
-select,.btn{font-family:var(--sans);font-size:13px;border-radius:var(--r-well);
+   fill and the edge change instead. Selects are shadcn's NativeSelect
+   (components/ui/native-select.tsx), which carries their whole style. */
+.btn{font-family:var(--sans);font-size:13px;border-radius:var(--r-well);
   min-height:36px;padding:8px 12px;border:1px solid var(--line);
   background:var(--panel-2);
   color:var(--text);cursor:pointer;box-shadow:none;
   transition:border-color .14s ease,background-color .14s ease,transform .08s ease}
-@media (pointer:coarse){ select,.btn{min-height:44px} }
-select{width:100%;
-  background-color:var(--field);border-color:var(--ds-rule-strong);
-  appearance:none;-webkit-appearance:none;
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%239aa4b2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 10px center;
-  background-size:10px 10px;padding-right:26px}
-html[data-theme="light"] select{
-  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%235b636e' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-select:hover,.btn:hover{border-color:var(--line-hi)}
+@media (pointer:coarse){ .btn{min-height:44px} }
+.btn:hover{border-color:var(--line-hi)}
 .btn:hover{background-color:color-mix(in srgb,var(--panel-2),var(--text) 6%)}
 .btn:active{transform:translateY(1px)}
-.btn:focus-visible,select:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+.btn:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 /* When one label in a two-up row wraps and the other does not, the inputs
    stop lining up. Bottom-aligning the row keeps the fields on one line

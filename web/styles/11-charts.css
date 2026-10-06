@@ -114,14 +114,12 @@ svg{display:block;width:100%;height:auto}
   .solveopt{padding:16px 14px}
   .solveopt + .solveopt{border-left:0;border-top:1px solid var(--line-soft)}
 
-  select,.btn{font-size:16px}
+  .btn{font-size:16px}
   .convrow .spacer{width:56px}
-  select{padding:11px 12px}
   .btn{padding:11px 12px}
 
   .scenariobar{width:100%}
   .scgroup{flex:1;min-width:0}
-  .scgroup select{min-width:0;flex:1}
   .scgroup .btn{width:40px;padding:8px}
 
 

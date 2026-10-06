@@ -22,6 +22,7 @@ import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, target
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { NativeSelect } from "@/components/ui/native-select";
 
 const SPOT_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky, SERIES.rose, SERIES.lavender, SERIES.gray];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
@@ -159,13 +160,13 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
   return (
     <Card id="ddSpotPanel" data-ddtabs="compare" data-empty={res && !win ? "" : undefined}>
       <CardHeader><CardTitle id="ddSpotTitle">{win ? "Retiring in " + year : "Through a hard start"}<TipDot k="ddspots" /></CardTitle><CardAction>
-        <select id="ddSpotYear" aria-label="Retiring in any year" value={pick != null ? String(pick) : ""} onChange={(e) => {
+        <NativeSelect className="mr-2 w-auto" id="ddSpotYear" aria-label="Retiring in any year" value={pick != null ? String(pick) : ""} onChange={(e) => {
           const n = parseInt(e.target.value, 10);
           setPick(isFinite(n) ? n : null);
         }}>
           {res ? <option value="">Any year…</option> : null}
           {W.map((w) => <option key={w.year}>{w.year}</option>)}
-        </select>
+        </NativeSelect>
         <span className="seg" id="segDDSpot">
           {[0, 1, 2].map((i) => (
             <button key={i} type="button" data-spot={i} hidden={!!res && i >= spots.length} className={pick == null && i === sp ? "on" : undefined}

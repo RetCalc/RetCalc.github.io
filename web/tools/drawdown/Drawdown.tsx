@@ -40,6 +40,7 @@ import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
     year one, the retirement age and the comfort line. */
@@ -226,17 +227,17 @@ export function Drawdown({ landing }: { landing?: string }) {
           <CardContent>
             <div className="ddtgt-row">
               <span className="ddtgt-k"><Tipped text="Risk target" k="ddtarget" /></span>
-              <select id="ddTCrit" aria-label="What the target asks" value={s.tCrit as string} onChange={(e) => set("tCrit")(e.target.value)}>
+              <NativeSelect className="w-auto max-w-full" id="ddTCrit" aria-label="What the target asks" value={s.tCrit as string} onChange={(e) => set("tCrit")(e.target.value)}>
                 <option value="comfort">Never below the comfort line</option>
                 <option value="lasts">The money lasts</option>
-              </select>
+              </NativeSelect>
               <span>in</span>
-              <select id="ddTConf" aria-label="How many historical starts" value={s.tConf as string} onChange={(e) => set("tConf")(e.target.value)}>
+              <NativeSelect className="w-auto max-w-full" id="ddTConf" aria-label="How many historical starts" value={s.tConf as string} onChange={(e) => set("tConf")(e.target.value)}>
                 <option value="100">every</option>
                 <option value="95">95% of</option>
                 <option value="90">90% of</option>
                 <option value="85">85% of</option>
-              </select>
+              </NativeSelect>
               <span id="ddTStarts">historical starts</span>
             </div>
             <Html className="hint" id="ddTargetNote" html={"Comfort line: <b>" + lineWords(comfort, age, " a year") + "</b>" +

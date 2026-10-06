@@ -49,7 +49,6 @@
 /* ---------- monte carlo bar ---------- */
 .mcbar{display:flex;align-items:flex-end;gap:12px;padding:14px 18px 0;flex-wrap:wrap}
 .mcbar .field{margin-bottom:0}
-.mcbar select{width:104px}
 .mcbar .hint{flex:1 1 160px;min-width:0}
 .signflip{background:transparent;border:0;color:var(--dimmer);font-size:14px;
   padding:0 8px;cursor:pointer;flex:none;line-height:1;box-shadow:none;
@@ -154,7 +153,6 @@
 .ddmixtot{font-size:13px;color:var(--dim);margin:10px 0 14px}
 .ddmixg{margin:16px 0 4px;padding-top:12px;border-top:1px solid var(--line)}
 .ddmixg h4{margin:0 0 4px;font-size:13.5px;color:var(--text)}
-.ddmixg select{flex:0 0 150px;width:150px}
 .ddsec{margin:18px 0 12px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11px;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}
@@ -234,7 +232,6 @@ tr.br-off .br-name{color:var(--dim)}
 /* the risk target the showdown and safe spending share */
 .ddtgt-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--dim)}
 .ddtgt-k{font-weight:600;color:var(--text);margin-right:4px}
-.ddtgt-row select{width:auto;max-width:100%}
 /* the spending scorecard */
 .ddtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .ddtile{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--r-card);padding:12px 14px;min-width:0}
@@ -249,8 +246,6 @@ tr.br-off .br-name{color:var(--dim)}
 .ddstats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:0 18px 16px}
 .ddstats div{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--dimmer);min-width:0}
 .ddstats b{font-family:var(--mono);font-size:13px;color:var(--text);font-weight:500;font-variant-numeric:tabular-nums}
-#ddSpotYear{width:auto;padding-top:5px;padding-bottom:5px;font-size:12.5px;margin-right:8px}
-#ddDistYear{width:auto;padding-top:5px;padding-bottom:5px;font-size:12.5px}
 /* the showdown and safe spending */
 .ddintro{font-size:12.5px;color:var(--dim);line-height:1.55;padding-bottom:4px}
 .ddintro b{color:var(--text)}

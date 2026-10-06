@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { NativeSelect } from "@/components/ui/native-select";
 
 
 export function Inputs({ v, fromNote, periods, open }: {
@@ -235,7 +236,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           <Html className="hint -mt-1.5 mx-0 mb-3" id="ddFromNote" html={fromNote} />
 
           <Field id="ddStrategy" label={<Tipped text="Withdrawal strategy" k="strategy" />}>
-            <select id="ddStrategy" value={str("strategy")} onChange={(e) => set("strategy")(e.target.value)}>
+            <NativeSelect id="ddStrategy" value={str("strategy")} onChange={(e) => set("strategy")(e.target.value)}>
               <optgroup label="Steady income">
                 <option value="fixed">Fixed amount, rising with inflation</option>
                 <option value="kitces">Kitces ratchet</option>
@@ -261,7 +262,7 @@ export function Inputs({ v, fromNote, periods, open }: {
               <optgroup label="Valuation">
                 <option value="cape">CAPE-based</option>
               </optgroup>
-            </select>
+            </NativeSelect>
             <div className="ddstrat" id="ddStratCard">{card}</div>
             <Button variant="link" size="inline-xs" className="mt-1.75" id="ddStratGuide" onClick={() => open({ kind: "guide" })}>
               <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.3" stroke="currentColor" strokeWidth="1.4" /><path d="M8 7.2v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="8" cy="4.9" r=".9" fill="currentColor" /></svg>
@@ -383,12 +384,12 @@ export function Inputs({ v, fromNote, periods, open }: {
               <div className="hint" id="ddFloorNote">{floorNote}</div>
             </div>
             <Field id="ddPath" wrapId="ddPathField" hidden={!takesPath} label={<Tipped text="Spending through retirement" k="ddpath" />}>
-              <select id="ddPath" value={kind} onChange={(e) => setPath(e.target.value)}>
+              <NativeSelect id="ddPath" value={kind} onChange={(e) => setPath(e.target.value)}>
                 <option value="flat">Steady, rising with inflation</option>
                 <option value="ease">Easing a little each year</option>
                 <option value="smile">The retirement spending smile</option>
                 <option value="stages">In stages</option>
-              </select>
+              </NativeSelect>
               <div className="hint" id="ddPathNote">{pathNote}</div>
             </Field>
             <NumberField id="ddPathEase" wrapId="ddPathEaseWrap" hidden={!takesPath || kind !== "ease"} label="Real spending falls by" unit="% a year" step={0.25} negative value={str("pathEase")} onValueChange={set("pathEase")} />
@@ -501,9 +502,9 @@ function ClaimAge({ id, value, onChange }: { id: string; value: string; onChange
   return (
     <div className="field">
       <Label className="mb-1.5" htmlFor={id}><span><Tipped text="Claim at age" k="ssclaim" /></span></Label>
-      <div className="flex items-center gap-2"><select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+      <div className="flex items-center gap-2"><NativeSelect className="flex-1" id={id} value={value} onChange={(e) => onChange(e.target.value)}>
         {[62, 63, 64, 65, 66, 67, 68, 69, 70].map((a) => <option key={a} value={a}>{a}</option>)}
-      </select><span className="text-sm text-muted-foreground">yrs</span></div>
+      </NativeSelect><span className="text-sm text-muted-foreground">yrs</span></div>
     </div>
   );
 }

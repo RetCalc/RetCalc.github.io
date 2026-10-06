@@ -29,6 +29,7 @@ import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, s
 import { badgeVariants } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { NativeSelect } from "@/components/ui/native-select";
 
 /** The return assumptions the sensitivity table tries: history less 2 and 1
     points a year, as it was, and 1 point better. */
@@ -546,11 +547,11 @@ function DistPanel({ v, R }: { v: DDView; R: PlanResult | null }) {
           <button type="button" data-dddist="bal" className={bal ? "on" : undefined} onClick={() => setKind("bal")}>Balance</button>
           <button type="button" data-dddist="spend" className={!bal ? "on" : undefined} onClick={() => setKind("spend")}>Spending</button>
         </span>
-        <select id="ddDistYear" aria-label="Which year" value={String(at)} onChange={(e) => setAt(parseInt(e.target.value, 10) || null)}>
+        <NativeSelect className="w-auto" id="ddDistYear" aria-label="Which year" value={String(at)} onChange={(e) => setAt(parseInt(e.target.value, 10) || null)}>
           {Array.from({ length: years }, (_, k) => k + 1).map((y) => (
             <option key={y} value={y}>{y === years ? "Final year" : age != null ? "Age " + fmtNum(ageVal(age, y)) : "Year " + y}</option>
           ))}
-        </select>
+        </NativeSelect>
       </CardAction></CardHeader>
       <Histogram id="DDH" bins={n ? roundBins(vals) : []} mark={!bal && line > 0 ? line : null} ariaLabel="How the outcomes spread"
         tip={(b) => <><b>{money(b.lo)} – {money(b.hi)}</b><br /><span className="n">{b.n.toLocaleString("en-US")}</span> {isMc ? "runs" : "retirements"}</>} />

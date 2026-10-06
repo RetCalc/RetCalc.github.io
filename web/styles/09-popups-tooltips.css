@@ -61,11 +61,6 @@
 .popup.wide h3{margin-bottom:4px}
 .popup .formhint{font-size:11.5px;color:var(--dim);margin:0 0 16px;line-height:1.5}
 .popup .formfield{margin-bottom:13px}
-.popup select.forminput{width:100%;background:var(--field);
-  border:1px solid var(--ds-rule-strong);border-radius:var(--r-well);padding:9px 10px;
-  color:var(--text);font-family:var(--sans);font-size:13.5px;box-sizing:border-box;
-  box-shadow:var(--well)}
-.popup select.forminput:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px;border-color:var(--text)}
 .popup .formtwo{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,13fr);gap:10px}
 .popup .formcheck{display:flex;align-items:center;gap:8px;font-size:12.5px;
   color:var(--dim);margin-bottom:13px;cursor:pointer}

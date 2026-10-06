@@ -114,7 +114,6 @@
   .stagegrid > .field{margin-bottom:10px}
   .stagegrid{margin-bottom:-10px}
 }
-.stagecard select{background-color:var(--panel)}
 /* iOS runs without the shared rows above, so the phone glide toggle beside
    rate of return keeps a label row and its own height instead of stretching
    to fill the cell. */
