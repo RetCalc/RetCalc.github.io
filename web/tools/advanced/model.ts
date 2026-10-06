@@ -4,7 +4,7 @@
    src/js/app/01-inputs.js and the account fields in 02-accounts-advanced.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
 import { accountBreakdown, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
-import { DEFAULTS } from "@/lib/engine/typed";
+import { DEFAULTS, coastFire, goalSolve, project, solveYears } from "@/lib/engine/typed";
 import type { Plan } from "@/lib/engine/types";
 import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
@@ -112,4 +112,18 @@ export function advancedPlan(s: AdvancedInputs, household: Household | null): Ad
 export function solvePlan(P: AdvancedPlan, solveFor: string, target: number): Plan {
   if (!P.B || solveFor !== "After-Tax Withdrawal") return P.p;
   return { ...P.p, taxRate: targetRate(P.B, target, P.p.taxRate) };
+}
+
+/** Everything the screen shows from the inputs: the projection, the goal
+    solve, Coast FIRE, the years to the goal, and what fees cost. */
+export function advancedCompute(s: AdvancedInputs, household: Household | null) {
+  const P: AdvancedPlan = advancedPlan(s, household);
+  const p = P.p;
+  const R = project(p);
+  const target = parseNum(s.target);
+  const S = goalSolve(solvePlan(P, s.solveFor, target), s.solveFor, target);
+  const C = coastFire(p, S.portFuture);
+  const Y = solveYears(p, S.portToday);
+  const feeCost = p.fees > 0 ? project({ ...p, nominal: p.gross }).fv - R.fv : 0;
+  return { P, p, R, S, C, Y, feeCost };
 }

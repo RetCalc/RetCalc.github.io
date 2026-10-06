@@ -18,10 +18,10 @@ import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
 import { project, projectBasic, projectSeries } from "@/lib/engine/typed";
 import {
-  HIST_START, HIST_STOCK, ddComfort, ddOptsFromState, ddPrep, ddScorecard, ddWindows, historicalBacktest,
+  HIST_START, HIST_STOCK, ddOptsFromState, ddScorecard, ddWindows, historicalBacktest,
   type DdMC, type DdOpts, type DdPrep,
 } from "@/lib/engine/typed-drawdown";
-import { dollarsField, money, parseNum, pctStr } from "@/lib/format";
+import { dollarsField, money, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { useStoredText } from "@/lib/useStoredText";
 import { ADVANCED_DEFAULTS, advancedPlan } from "@/tools/advanced/model";
@@ -29,11 +29,11 @@ import { BASIC_INPUTS, basicInput } from "@/tools/basic/model";
 import { STAGES_DEFAULTS, stagesPlan } from "@/tools/stages/model";
 import { CompareView } from "./CompareView";
 import { DrawdownDialogs, type Dialog } from "./Dialogs";
-import { DRAWDOWN_DEF, ddLanding, ddRaw, ddWrite, type DrawdownState } from "./fields";
+import { DRAWDOWN_DEF, ddLanding, ddRaw, ddWrite, drawdownSetup, type DrawdownState } from "./fields";
 import { Inputs } from "./Inputs";
 import { DD_DRAGS, PlanView, deltaHtml, histExtras, ssRows, type PlanResult } from "./PlanView";
 import { SafeView } from "./SafeView";
-import { comfortNote, firstSpend, lineWords, mcWords, planLabel, startLabel, target } from "./text";
+import { comfortNote, lineWords, mcWords, planLabel, startLabel, target } from "./text";
 import { useShareKit } from "@/components/shell/share";
 import { drawdownShare } from "./share";
 import { useBusy } from "@/lib/busy";
@@ -95,11 +95,7 @@ export function Drawdown({ landing }: { landing?: string }) {
      fields keep up with the keyboard. */
   const typed = useDeferredValue(s);
   useBusy(typed !== s);
-  const base = useMemo(() => {
-    const d = ddRaw(typed), o = ddOptsFromState(d), P = ddPrep(o), firstW = firstSpend(o, P);
-    const ageText = String(typed.retireAge).trim();
-    return { d, o, P, firstW, r1: P.initial > 0 ? firstW / P.initial : 0, comfort: ddComfort(o, P), age: ageText === "" ? null : parseNum(ageText) };
-  }, [typed]);
+  const base = useMemo(() => drawdownSetup(typed), [typed]);
   const { d, o, P, comfort, age } = base;
   useShareKit(DRAWDOWN_DEF.id, drawdownShare(o, sel));
 

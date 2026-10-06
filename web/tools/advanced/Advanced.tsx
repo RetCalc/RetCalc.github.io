@@ -24,7 +24,7 @@ import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
 import { growthBlend, matchPer, spreadTotal, type GrowthRates } from "@/lib/accounts";
-import { coastFire, goalSolve, historicalRuns, monteCarlo, project, solveYears, PER_YEAR } from "@/lib/engine/typed";
+import { goalSolve, historicalRuns, monteCarlo, project, PER_YEAR } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_ADV, PERIOD_SHORT, PeriodOptions } from "@/lib/periods";
@@ -34,7 +34,7 @@ import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
-import { ADVANCED_DEF, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs, type AdvancedPlan } from "./model";
+import { ADVANCED_DEF, advancedCompute, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs } from "./model";
 import { toStages } from "./toStages";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
@@ -84,7 +84,7 @@ export function Advanced() {
 
   const typed = useDeferredValue(s);
   useBusy(typed !== s);
-  const V = useMemo(() => compute(typed, profile), [typed, profile]);
+  const V = useMemo(() => advancedCompute(typed, profile), [typed, profile]);
   const { P, p, R, S, C, Y } = V;
   useShareKit(ADVANCED_DEF.id, projectionShare({ kind: "advanced", P, R, target: typed.target, solveFor: typed.solveFor, mode }));
   const chart = useMemo(() => chartData(typed, V, mode, parseNum(band) / 100, seed), [typed, V, mode, band, seed]);
@@ -162,7 +162,7 @@ export function Advanced() {
   };
 
   const handToStages = (coast: boolean) => {
-    const now = compute(s, profile);
+    const now = advancedCompute(s, profile);
     const out = toStages(now.P, s, coast ? now.C.years : null);
     if (!out) return;
     router.push("/stages");
@@ -453,20 +453,8 @@ function bandLegend(nominal: number, band: number): [string, string][] {
 
 /* ---- the numbers ---- */
 
-function compute(s: AdvancedInputs, household: Parameters<typeof advancedPlan>[1]) {
-  const P: AdvancedPlan = advancedPlan(s, household);
-  const p = P.p;
-  const R = project(p);
-  const target = parseNum(s.target);
-  const S = goalSolve(solvePlan(P, s.solveFor, target), s.solveFor, target);
-  const C = coastFire(p, S.portFuture);
-  const Y = solveYears(p, S.portToday);
-  const feeCost = p.fees > 0 ? project({ ...p, nominal: p.gross }).fv - R.fv : 0;
-  return { P, p, R, S, C, Y, feeCost };
-}
-
 /** What the chart draws in each mode. */
-function chartData(s: AdvancedInputs, V: ReturnType<typeof compute>, mode: ChartMode, band: number, seed: number): ChartData {
+function chartData(s: AdvancedInputs, V: ReturnType<typeof advancedCompute>, mode: ChartMode, band: number, seed: number): ChartData {
   const { p, R } = V;
   if (!R.years.length) return emptyChart();
   const real = (v: number, yr: number) => v / Math.pow(1 + p.inflation, yr);

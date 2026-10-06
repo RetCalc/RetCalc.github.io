@@ -9,7 +9,7 @@ import {
   ddWindows, ddWithDial, runDrawdown, type DdHist, type DdHistRun, type DdOpts, type DdPrep, type DdRun, type DdTarget, type DdWindow,
 } from "@/lib/engine/typed-drawdown";
 import { fmtNum, money, pctStr } from "@/lib/format";
-import type { DdItem, PathStage } from "./fields";
+import { firstSpend, type DdItem, type PathStage } from "./model";
 
 /** A legend entry: a colored dot and its label, as HTML. */
 export const swatch = (c: string, t: string) => `<span><i style='background:${c}'></i>${t}</span>`;
@@ -117,16 +117,8 @@ export function rebalNote(o: DdOpts): string {
 }
 
 /* ---- spending ---- */
-/** Year one's spending under the chosen strategy, in today's dollars, with
-    the same minimum and maximum the run applies. */
-export function firstSpend(o: DdOpts, P?: DdPrep): number {
-  let w = (P || ddPrep(o)).first;
-  if (DD_STRAT[o.strategy]?.limits !== false) {
-    if (o.spendFloor > 0) w = Math.max(w, o.spendFloor);
-    if (o.spendCeil > 0) w = Math.min(w, o.spendCeil);
-  }
-  return w;
-}
+/** Year one's spending: in model.ts, beside the setup that uses it. */
+export { firstSpend };
 export function rateOf(o: DdOpts, P?: DdPrep): number {
   const p = P || ddPrep(o);
   return p.initial > 0 ? firstSpend(o, p) / p.initial : 0;

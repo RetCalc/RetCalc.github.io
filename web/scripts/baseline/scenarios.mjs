@@ -7,17 +7,12 @@
    `out` is what a person reads off the page (the headline figures); the check
    also fingerprints every field of the full results, so a change anywhere
    in them is caught. */
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const WEB = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-
 const T = await import("@/lib/engine/typed");
 const D = await import("@/lib/engine/typed-drawdown");
 const E = await import("@/lib/engine/core.js");
 const { BASIC_INPUTS, basicInput } = await import("@/tools/basic/model");
-const { ADVANCED_DEFAULTS, advancedPlan, solvePlan } = await import("@/tools/advanced/model");
+const { ADVANCED_DEFAULTS, advancedCompute } = await import("@/tools/advanced/model");
+const { DRAWDOWN_DEFAULTS, drawdownSetup } = await import("@/tools/drawdown/model");
 const { TAX_DEFAULTS, taxInput, runTax } = await import("@/tools/tax/model");
 const { ROTH_DEFAULTS, rothInput } = await import("@/tools/roth/model");
 const { parseNum } = await import("@/lib/format");
@@ -35,18 +30,6 @@ const { OP_DEFAULTS, opToolIn } = await import("@/tools/optimizer/model");
 const { STAGES_DEFAULTS, stagesPlan, stagesTargetRate, effectiveStages, stageFields } = await import("@/tools/stages/model");
 const G = await import("@/tools/guide/calc");
 
-/* The Drawdown screen's defaults (DD_STATE in tools/drawdown/fields.ts),
-   read from the file's text: fields.ts also imports the React tool state,
-   which plain Node can't load. */
-function drawdownDefaults() {
-  const src = readFileSync(join(WEB, "tools/drawdown/fields.ts"), "utf8");
-  const block = src.slice(src.indexOf("export const DD_STATE"), src.indexOf("];", src.indexOf("export const DD_STATE")));
-  const d = { incomeItems: [], expenseItems: [], pathStages: [], floorSteps: [] };
-  for (const m of block.matchAll(/\["(\w+)",\s*"\w+",\s*"\w+",\s*([^\]]+?)\]/g)) d[m[1]] = JSON.parse(m[2]);
-  if (Object.keys(d).length < 40) throw new Error("couldn't read DD_STATE from tools/drawdown/fields.ts; update drawdownDefaults()");
-  return d;
-}
-
 /* ---- each tool, as its screen runs it ---- */
 
 function basic(fields) {
@@ -55,16 +38,8 @@ function basic(fields) {
   return { full: R, out: { atRetirement: R.fv, invested: R.invested, growth: R.growth, yearlyIncome: R.wd, monthlyIncome: R.afterTaxMo } };
 }
 
-/* compute() in tools/advanced/Advanced.tsx, which lives in the screen file. */
 function advanced(fields) {
-  const s = { ...ADVANCED_DEFAULTS, ...fields };
-  const P = advancedPlan(s, null), p = P.p;
-  const R = T.project(p);
-  const target = parseNum(s.target);
-  const S = T.goalSolve(solvePlan(P, s.solveFor, target), s.solveFor, target);
-  const C = T.coastFire(p, S.portFuture);
-  const Y = T.solveYears(p, S.portToday);
-  const feeCost = p.fees > 0 ? T.project({ ...p, nominal: p.gross }).fv - R.fv : 0;
+  const { p, R, S, C, Y, feeCost, P } = advancedCompute({ ...ADVANCED_DEFAULTS, ...fields }, null);
   return {
     full: { plan: p, R, S, C, Y, feeCost, B: P.B },
     out: { atRetirement: R.fv, todaysDollars: R.fvReal, firstYearAfterTax: R.afterTax, monthlyAfterTax: R.afterTaxMo,
@@ -73,8 +48,8 @@ function advanced(fields) {
 }
 
 function drawdown(fields, mc) {
-  const d = { ...drawdownDefaults(), ...fields };
-  const o = D.ddOptsFromState(d), P = D.ddPrep(o), comfort = D.ddComfort(o, P);
+  // Fields as typed, over the screen's defaults; the setup the screen runs.
+  const { o, comfort } = drawdownSetup({ ...DRAWDOWN_DEFAULTS, ...fields });
   if (mc) {
     // The job the screen sends its worker (lib/engine/jobs.ts).
     const M = E.ddJob("mc", { o, trials: mc.trials, seed: mc.seed, comfort });
@@ -128,7 +103,7 @@ const FIRST_SCENARIOS = [
   { tool: "Drawdown", name: "defaults: $1M, 30 years, 60% stocks, fixed 4%, history",
     run: () => drawdown({}) },
   { tool: "Drawdown", name: "guardrails 5%, 40 years, couple with estimated Social Security, history",
-    run: () => drawdown({ strategy: "guardrails", rate: 5, years: 40, ssMode: "est", ssWho: "couple", retireAge: "60" }) },
+    run: () => drawdown({ strategy: "guardrails", rate: "5", years: "40", ssMode: "est", ssWho: "couple", retireAge: "60" }) },
   { tool: "Drawdown", name: "defaults, Monte Carlo 1,000 trials, seed 12345",
     run: () => drawdown({}, { trials: 1000, seed: 12345 }) },
 
