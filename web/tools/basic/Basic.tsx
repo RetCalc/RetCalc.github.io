@@ -19,14 +19,13 @@ import { ChevronDownIcon, CircleAlertIcon, LockIcon } from "lucide-react";
 import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
 import { BandTipRows } from "@/components/charts/TipRows";
-import { useNarrow } from "@/components/charts/useNarrow";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { HouseholdBar } from "@/components/household/HouseholdBar";
 import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped } from "@/components/shell/Tooltips";
 import { useShareKit } from "@/components/shell/share";
 import { useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/common/BigValue";
+import { CompositionBar, HeroReading, PartKey, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
 import { MS_LADDER, Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -82,7 +81,6 @@ function MilestoneMarks({ g, marks }: { g: ChartGeometry; marks: ReturnType<type
 export function Basic() {
   const { state: s, set, setState } = useToolState(BASIC_DEF);
   const tableRef = useRef<HTMLTableElement>(null);
-  const narrow = useNarrow();
 
   /* Retirement can be at most 100 years away; past that, it follows the age. */
   const setAge = (k: "age" | "retire") => (v: string) =>
@@ -133,18 +131,8 @@ export function Basic() {
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
-            tab rail while the questions are on screen. It repeats the
-            reading below, so screen readers skip it; srLive reads results. */}
-        <div className="sticky top-(--navh) z-20 mb-3.5 flex items-end justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true">
-          <div className="min-w-0">
-            <span className="block text-label text-muted-foreground">Value at retirement</span>
-            <b className="block text-2xl leading-tight font-medium whitespace-nowrap text-primary tabular-nums">{fv}</b>
-          </div>
-          <div className="text-right">
-            <span className="block text-label text-muted-foreground">Income, per month</span>
-            <span className="block text-body leading-tight font-medium whitespace-nowrap tabular-nums">{perMonth}</span>
-          </div>
-        </div>
+            tab rail while the questions are on screen. */}
+        <PinnedReading main={{ label: "Value at retirement", value: fv }} side={{ label: "Income, per month", value: perMonth }} />
 
         <aside id="asideSimple">
           <Card>
@@ -185,44 +173,24 @@ export function Basic() {
       </div>
 
       <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading">
-        {/* From 1100px the top is two zones: the value on the left, then,
-            behind a hairline, the two incomes side by side across the rest of
-            the width. Narrower, they sit under the value. */}
-        <div className="px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5 wide:flex wide:items-start wide:gap-8" data-readout>
-          <div className="wide:shrink-0" data-pair>
-            <div className="mb-2.5 text-label text-muted-foreground" data-k>Value at retirement</div>
-            <BigValue className="leading-none font-medium tracking-tight whitespace-nowrap text-primary tabular-nums" id="qFV" text={fv} sized={!!R} scale={narrow ? 1.5 : 2} />
-            <div className="mt-2.5 min-h-4 text-label text-muted-foreground" id="qFVnote">{R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : ""}</div>
-          </div>
-          <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4 wide:mt-0 wide:min-w-0 wide:flex-1 wide:items-center wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8">
-            <div data-pair>
-              <span className="block text-label text-muted-foreground" data-k>Income, per month</span>
-              <BigValue className="text-3xl leading-tight font-medium tabular-nums sm:text-display" id="qMonth" text={perMonth} sized={false} />
-              <span className="block text-label text-muted-foreground">The same, spread monthly</span>
-            </div>
-            <div data-pair>
-              <span className="block text-label text-muted-foreground" data-k>Income, per year</span>
-              <BigValue className="text-3xl leading-tight font-medium tabular-nums sm:text-display" id="qYear" text={R ? money(R.fv * 0.04) : DASH} sized={false} />
-              <span className="block text-label text-muted-foreground">Taking 4% a year</span>
-            </div>
-          </div>
-        </div>
+        <HeroReading sized={!!R}
+          hero={{ label: "Value at retirement", id: "qFV", value: fv, noteId: "qFVnote", note: R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : "" }}
+          figures={[
+            { label: "Income, per month", id: "qMonth", value: perMonth, note: "The same, spread monthly" },
+            { label: "Income, per year", id: "qYear", value: R ? money(R.fv * 0.04) : DASH, note: "Taking 4% a year" },
+          ]} />
 
         <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">
           {parts ? (
-            <div className="mb-2 flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-              <i className="block h-full w-(--w) bg-input" style={{ "--w": parts[0] * 100 + "%" } as React.CSSProperties} />
-              <i className="block h-full w-(--w) bg-muted-foreground" style={{ "--w": parts[1] * 100 + "%" } as React.CSSProperties} />
-              <i className="block h-full w-(--w) bg-gain" style={{ "--w": parts[2] * 100 + "%" } as React.CSSProperties} />
-            </div>
+            <CompositionBar parts={[{ share: parts[0], tone: "start" }, { share: parts[1], tone: "in" }, { share: parts[2], tone: "gain" }]} />
           ) : null}
           <div className="grid2">
             <div>
-              <KV k={<><i className="mr-2 inline-block size-2.5 rounded-xs bg-input" aria-hidden="true" />Starting from</>} id="qStart" v={R ? money(p.initial) : DASH} />
-              <KV k={<><i className="mr-2 inline-block size-2.5 rounded-xs bg-muted-foreground" aria-hidden="true" />You put in</>} id="qIn" v={R ? money(R.contribTotal) : DASH} />
+              <KV k={<><PartKey tone="start" />Starting from</>} id="qStart" v={R ? money(p.initial) : DASH} />
+              <KV k={<><PartKey tone="in" />You put in</>} id="qIn" v={R ? money(R.contribTotal) : DASH} />
             </div>
             <div>
-              <KV k={<><i className="mr-2 inline-block size-2.5 rounded-xs bg-gain" aria-hidden="true" />Growth adds</>} cls="pos" id="qGrowth" v={R ? money(R.growth) : DASH} />
+              <KV k={<><PartKey tone="gain" />Growth adds</>} cls="pos" id="qGrowth" v={R ? money(R.growth) : DASH} />
               <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PERIOD_ADV[p.period] : DASH} />
             </div>
           </div>
