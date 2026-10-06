@@ -58,3 +58,40 @@ case: `debtRun()` in `web/lib/engine/math.js` reports accrued, unpaid
 interest for a stalled run. Same kind of fix, in `web/tools/debt/Debt.tsx`
 and `share.tsx`: show "Keeps growing" or a dash instead. It changes numbers
 shown, so it needs an explicit decision.
+
+### Share card and print summary: three chart colors changed (accepted)
+
+Found 2026-10-06 in the chart-colors pass (122d62d, 1e59077); accepted as
+is, and the starting point for the share/print pass. Charts name their
+colors by series (web/lib/hues.ts), and components/shell/share.ts maps
+each series to the one hue it replaced for the card and the printed
+summary. Three charts used a hue that series no longer maps to, so their
+copies changed:
+
+- Rent vs. Buy (#chartRB): the buyer line is sky, so it prints and shares
+  as #7d9fd6 (was the plan gold #e9b872).
+- Early Retirement Bridge (#chartBR): "72(t) payments" is rose, so it
+  goes out as #e2795f (was #c98fb8).
+- Income Tax donut (#txPie): the state tax slice is lavender, so it goes
+  out as #a98fd6 (was #e9b872).
+
+Everything else in the ten copied charts is unchanged (checked by opening
+every summary and saving every card on both builds, in both themes).
+
+### Escape inside a dialog's select list also closes the dialog
+
+Found 2026-10-06 (keyboard test of the selects; also on 1e59077, so not
+caused by the NativeSelect change). In a dialog (the contribution
+converter, the Drawdown asset mix), opening a select's list and pressing
+Escape closes the list and the dialog, and focus goes to the button that
+opened the dialog. The list's Escape (web/lib/select-menus.js) doesn't
+stop the event, so the dialog's own Escape handler (components/shell/
+Modal.tsx) runs too. Fix in the overlays batch: Escape should close only
+the innermost layer.
+
+### Drawdown: "Retiring in" has no options until the comparison finishes
+
+Found 2026-10-06. On the Compare strategies view, #ddSpotYear is empty
+until the strategy comparison has run, so for a moment it can't be opened
+(by keyboard or pointer) and shows nothing. Worth a placeholder ("Working
+it out…") or a disabled state while it fills.
