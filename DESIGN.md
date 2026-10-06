@@ -316,6 +316,8 @@ Firm and tactile: controls read as keys you press, with clear fills, real hit ar
 ### Headline readout (signature)
 The key result, and the reason the page exists. It opens the results column as the top band of the first panel: up to three figures side by side on desktop, stacked on phones, each with a Label above and a short Muted note below. Exactly one figure, the answer to the tool's question, is Signal Amber; the others are Text. Figures are Display size, tabular, never wrapped. Flat: no glass, glow, or gradient, just the Surface tone and a Rule divider beneath.
 
+**Homepage exception (the hero reading).** The homepage (Basic) is the one place the readout is a single reading instead of three peers: the value at retirement alone at about twice Display size (58px on desktop, 44px on phones, stepping down as the figure gets longer, through `BigValue`'s `scale`), with its Label above and note below, and the two income figures under it at a smaller size (24px), in Text. It sits beside the questions as one first screen, with the chart directly under it. On narrow screens a compact copy of the reading (the value and the monthly income) leads the page and stays pinned under the tab rail while the questions are in view. Tool pages keep the three-figure readout.
+
 ### Tables
 - Column headers in Label/Muted on Surface, sticky at the top of their scroll container.
 - Cells in Body small, tabular; numbers right-aligned, the first column left-aligned.

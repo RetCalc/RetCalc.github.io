@@ -98,6 +98,8 @@
 /* Sizes the old markup set inline that Tailwind's scale doesn't have. */
 @theme {
   --text-fine: 11px;
+  /* DESIGN.md's Label step: field hints, readout labels, legend entries. */
+  --text-label: 11.5px;
   --text-note: 13px;
   --text-aside: 14px;
   --text-body: 15px;

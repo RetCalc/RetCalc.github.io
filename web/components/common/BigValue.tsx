@@ -26,7 +26,9 @@ function format(v: number, sample: string): string {
   return out;
 }
 
-export function BigValue({ text, className = "v", id, sized = true }: { text: string; className?: string; id?: string; sized?: boolean | undefined }) {
+/** `scale` multiplies the stepped size, for a figure that's the page's one
+    reading (the homepage's value at retirement) rather than one of three. */
+export function BigValue({ text, className = "v", id, sized = true, scale = 1 }: { text: string; className?: string; id?: string; sized?: boolean | undefined; scale?: number }) {
   const el = useRef<HTMLDivElement>(null);
   const shown = useRef<{ num: number; pre: string } | null>(null);
 
@@ -57,7 +59,7 @@ export function BigValue({ text, className = "v", id, sized = true }: { text: st
 
   return (
     <div className={sized ? className + " text-(length:--fs)" : className} id={id} ref={el}
-      style={sized ? { "--fs": sizeFor(text) + "px" } as React.CSSProperties : undefined}>
+      style={sized ? { "--fs": Math.round(sizeFor(text) * scale) + "px" } as React.CSSProperties : undefined}>
       {text}
     </div>
   );

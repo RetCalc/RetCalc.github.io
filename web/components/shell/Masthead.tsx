@@ -42,7 +42,10 @@ function HouseholdButton() {
     <Button variant="outline" size="icon" id="btnHousehold" aria-pressed={shown} aria-label={label} title={label}
       onClick={() => {
         setShown(!shown);
-        if (!shown) window.scrollTo({ top: 0, behavior: "smooth" });
+        if (shown) return;
+        // The homepage offers the bar after its result, not at the top.
+        if (location.pathname === "/") requestAnimationFrame(() => document.getElementById("hhCard")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+        else window.scrollTo({ top: 0, behavior: "smooth" });
       }}>
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
     </Button>

@@ -3,33 +3,86 @@
 /* The Basic calculator (the home page): six questions, a balance at
    retirement in today's dollars, and the income it could pay. Ported from
    src/js/app/20-basic.js and the Basic parts of src/main/02-calculator-inputs.html
-   and 03-calculator-results.html. */
+   and 03-calculator-results.html.
+
+   Laid out answer-first (the homepage critique, 2026-10-06): the questions
+   and the reading share the first screen as one instrument, the value at
+   retirement is the one large figure (DESIGN.md's homepage exception to the
+   three-figure readout), and the chart sits right under it with the
+   milestones marked on the plan line. On a phone a compact reading leads
+   and stays pinned under the tab rail while the questions are in view.
+   Everything below is depth: milestones, the Advanced hand-off, the
+   year-by-year table (folded), and the household offer. */
 
 import { useRef } from "react";
-import { BandChart } from "@/components/charts/BandChart";
+import { ChevronDownIcon, CircleAlertIcon, LockIcon } from "lucide-react";
+import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
 import { BandTipRows } from "@/components/charts/TipRows";
+import { useNarrow } from "@/components/charts/useNarrow";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
+import { HouseholdBar } from "@/components/household/HouseholdBar";
 import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped } from "@/components/shell/Tooltips";
 import { useShareKit } from "@/components/shell/share";
 import { useToolState } from "@/components/tools/ToolState";
+import { BigValue } from "@/components/common/BigValue";
 import { CsvButton } from "@/components/common/CsvButton";
-import { Milestones } from "@/components/common/Milestones";
-import { Figure, KV } from "@/components/common/Readout";
+import { MS_LADDER, Milestones } from "@/components/common/Milestones";
+import { KV } from "@/components/common/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
+import { STATE_OPTIONS } from "@/lib/states";
 import { basicShare } from "./share";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
 
+type Row = { year: number; end: number; growth: number; contrib: number };
+
+/** The milestones the Milestones panel lists (the crossover and the round
+    balances reached), as marks on the plan line: a short tick through the
+    line at that year and, where there's room, its name above. */
+function milestoneMarks(rows: Row[]): { year: number; end: number; label: string }[] {
+  if (!rows.length) return [];
+  const final = rows[rows.length - 1].end;
+  const marks: { year: number; end: number; label: string }[] = [];
+  const cross = rows.find((r) => r.growth > r.contrib && r.contrib > 0);
+  if (cross) marks.push({ year: cross.year, end: cross.end, label: "Crossover" });
+  for (const v of MS_LADDER.filter((x) => x <= final).slice(-6)) {
+    const hit = rows.find((r) => r.end >= v);
+    if (hit) marks.push({ year: hit.year, end: hit.end, label: money(v).replace(/,000,000$/, "M").replace(/,000$/, "k") });
+  }
+  return marks.sort((a, b) => a.year - b.year);
+}
+
+function MilestoneMarks({ g, marks }: { g: ChartGeometry; marks: ReturnType<typeof milestoneMarks> }) {
+  const fs = g.narrow ? 13 : 11, gap = g.narrow ? 70 : 50;
+  // Name a mark only when it's clear of the last named one.
+  const placed = marks.reduce<{ x: number; y: number; label: string | null; key: string }[]>((acc, m) => {
+    const x = g.X(m.year), lastX = [...acc].reverse().find((a) => a.label)?.x ?? -Infinity;
+    acc.push({ x, y: g.Y(m.end), label: x - lastX >= gap ? m.label : null, key: m.label + m.year });
+    return acc;
+  }, []);
+  return (
+    <g aria-hidden="true">
+      {placed.map((m) => (
+        <g key={m.key}>
+          <line x1={m.x} x2={m.x} y1={m.y - 6} y2={m.y + 6} stroke="var(--ds-text)" strokeOpacity={0.7} strokeWidth={g.narrow ? 1.8 : 1.2} />
+          {m.label ? <text x={m.x} y={m.y - 11} textAnchor="middle" fontSize={fs} fill="var(--axis)">{m.label}</text> : null}
+        </g>
+      ))}
+    </g>
+  );
+}
 
 export function Basic() {
   const { state: s, set, setState } = useToolState(BASIC_DEF);
   const tableRef = useRef<HTMLTableElement>(null);
+  const narrow = useNarrow();
 
   /* Retirement can be at most 100 years away; past that, it follows the age. */
   const setAge = (k: "age" | "retire") => (v: string) =>
@@ -65,65 +118,120 @@ export function Basic() {
       ...R.years.map((y, i) => ({ year: y.year, base: y.end, hi: hiR.years[i]?.end ?? y.end, lo: loR.years[i]?.end ?? y.end }))];
   }
   const hasAge = p.age > 0 && isFinite(p.age);
+  const marks = R ? milestoneMarks(R.years) : [];
+
+  // Which question the warning belongs to: the retirement age when it's at
+  // or before today's age, the age when it's missing.
+  const warn = ok ? "" : p.retire && p.age ? "Your retirement age needs to be higher than your age today." : "Fill in your age and the age you plan to retire to see a projection.";
+  const badRetire = !ok && !!p.retire && !!p.age, badAge = !ok && !badRetire;
+
+  const fv = R ? money(R.fv) : DASH, perMonth = R ? money((R.fv * 0.04) / 12) : DASH;
+  // What the balance is made of, as shares of one bar.
+  const parts = R && R.fv > 0 ? [p.initial, R.contribTotal, R.growth].map((v) => Math.max(0, v) / R.fv) : null;
 
   return (
-    <>
-      <aside id="asideSimple">
-        <Card>
-          <CardHeader><CardTitle>A few questions</CardTitle></CardHeader>
-          <CardContent>
-            <NumberField id="qAge" label="How old are you?" unit="age" value={s.age} onValueChange={setAge("age")} />
-            <NumberField id="qRetire" label="When do you plan to retire?" unit="age" value={s.retire} onValueChange={setAge("retire")} />
-            <MoneyField id="qSaved" label="How much have you saved so far?" value={s.saved} onValueChange={set("saved")} />
-            <MoneyField id="qContrib" label="How much do you save for retirement?" value={s.contrib} onValueChange={set("contrib")} />
-            <SelectField id="qPeriod" label="How often?" value={s.period} onChange={set("period")}>
-              <PeriodOptions />
-            </SelectField>
-            <SelectField id="qRisk" label="How is it invested?" value={s.risk} onChange={set("risk")}>
-              {RISK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </SelectField>
-            <div className="derived">
-              <div><span>Years until retirement</span><span className="num" id="qYears">{ok ? fmtYears(p.years) : DASH}</span></div>
-              <div><span><Tipped text="Growth after inflation" k="realreturn" /></span><span className="num" id="qReal">{pctStr(p.real, 2) + " a year"}</span></div>
-            </div>
-          </CardContent>
-        </Card>
-      </aside>
-
-      <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-simple">
-        <Card id="qWarn" hidden={ok}>
-          <CardContent><div className="hint" id="qWarnText">
-            {ok ? "" : p.retire && p.age ? "Your retirement age needs to be higher than your age today." : "Fill in your age and the age you plan to retire to see a projection."}
-          </div></CardContent>
-        </Card>
-
-        <Card size="flush">
-          <div className="headline">
-            <Figure label="Value at retirement" id="qFV" className="v gold" sized={!!R} value={R ? money(R.fv) : DASH} noteId="qFVnote"
-              note={R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : ""} />
-            <Figure label="Income, per year" id="qYear" sized={!!R} value={R ? money(R.fv * 0.04) : DASH} note="Taking 4% a year" />
-            <Figure label="Income, per month" id="qMonth" sized={!!R} value={R ? money((R.fv * 0.04) / 12) : DASH} note="The same, spread monthly" />
+    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-5" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
+      <div className="min-w-0 lg:col-span-2 lg:self-stretch">
+        {/* Phones and narrow screens: the answer leads, and stays under the
+            tab rail while the questions are on screen. It repeats the
+            reading below, so screen readers skip it; srLive reads results. */}
+        <div className="sticky top-(--navh) z-20 mb-3.5 flex items-end justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true">
+          <div className="min-w-0">
+            <span className="block text-label text-muted-foreground">Value at retirement</span>
+            <b className="block text-2xl leading-tight font-medium whitespace-nowrap text-primary tabular-nums">{fv}</b>
           </div>
-          <CardContent>
-            <div className="grid2">
-              <div>
-                <KV k="You put in" id="qIn" v={R ? money(R.contribTotal) : DASH} />
-                <KV k="Growth adds" cls="pos" id="qGrowth" v={R ? money(R.growth) : DASH} />
-              </div>
-              <div>
-                <KV k="Starting from" id="qStart" v={R ? money(p.initial) : DASH} />
-                <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PERIOD_ADV[p.period] : DASH} />
-              </div>
-            </div>
-            <div className="hint mt-3.5">Every figure here is in today&apos;s dollars,
-              so you can compare it to what money is worth now. It assumes you nudge your
-              contribution up a little each year to keep pace with inflation.</div>
-          </CardContent>
-        </Card>
+          <div className="text-right">
+            <span className="block text-label text-muted-foreground">Income, per month</span>
+            <span className="block text-body leading-tight font-medium whitespace-nowrap tabular-nums">{perMonth}</span>
+          </div>
+        </div>
 
-        <Card>
+        <aside id="asideSimple">
+          <Card>
+            <CardHeader>
+              <CardTitle>A few questions</CardTitle>
+              <CardDescription>Answer a few questions to see what you could have at retirement.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 items-end gap-x-3">
+                <NumberField id="qAge" label="How old are you?" unit="age" value={s.age} onValueChange={setAge("age")}
+                  aria-invalid={badAge || undefined} aria-describedby={badAge ? "qWarnText" : undefined} />
+                <NumberField id="qRetire" label="When do you plan to retire?" unit="age" value={s.retire} onValueChange={setAge("retire")}
+                  aria-invalid={badRetire || undefined} aria-describedby={badRetire ? "qWarnText" : undefined} />
+              </div>
+              <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" id="qWarn" hidden={ok}>
+                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span id="qWarnText" role="alert">{warn}</span>
+              </div>
+              <div className="grid grid-cols-2 items-end gap-x-3 border-t border-border pt-3.5">
+                <MoneyField id="qSaved" className="col-span-2" label="How much have you saved so far?" value={s.saved} onValueChange={set("saved")} />
+                <MoneyField id="qContrib" label="How much do you save for retirement?" value={s.contrib} onValueChange={set("contrib")} />
+                <SelectField id="qPeriod" label="How often?" value={s.period} onChange={set("period")}>
+                  <PeriodOptions />
+                </SelectField>
+                <SelectField id="qRisk" className="col-span-2" label="How is it invested?" value={s.risk} onChange={set("risk")}>
+                  {RISK_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </SelectField>
+              </div>
+              <div className="derived">
+                <div><span>Years until retirement</span><span className="num" id="qYears">{ok ? fmtYears(p.years) : DASH}</span></div>
+                <div><span><Tipped text="Growth after inflation" k="realreturn" /></span><span className="num" id="qReal">{pctStr(p.real, 2) + " a year"}</span></div>
+              </div>
+              <p className="mt-3.5 mb-0 flex items-center gap-1.5 text-label text-muted-foreground">
+                <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser.</p>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      <Card size="flush" className="min-w-0 lg:col-span-3" id="homeReading">
+        <div className="px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5" data-readout>
+          <div data-pair>
+            <div className="mb-2.5 text-label text-muted-foreground" data-k>Value at retirement</div>
+            <BigValue className="leading-none font-medium tracking-tight whitespace-nowrap text-primary tabular-nums" id="qFV" text={fv} sized={!!R} scale={narrow ? 1.5 : 2} />
+            <div className="mt-2.5 min-h-4 text-label text-muted-foreground" id="qFVnote">{R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : ""}</div>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4">
+            <div data-pair>
+              <span className="block text-label text-muted-foreground" data-k>Income, per month</span>
+              <BigValue className="text-2xl leading-tight font-medium tabular-nums" id="qMonth" text={perMonth} sized={false} />
+              <span className="block text-label text-muted-foreground">The same, spread monthly</span>
+            </div>
+            <div data-pair>
+              <span className="block text-label text-muted-foreground" data-k>Income, per year</span>
+              <BigValue className="text-2xl leading-tight font-medium tabular-nums" id="qYear" text={R ? money(R.fv * 0.04) : DASH} sized={false} />
+              <span className="block text-label text-muted-foreground">Taking 4% a year</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">
+          {parts ? (
+            <div className="mb-2 flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+              <i className="block h-full w-(--w) bg-input" style={{ "--w": parts[0] * 100 + "%" } as React.CSSProperties} />
+              <i className="block h-full w-(--w) bg-muted-foreground" style={{ "--w": parts[1] * 100 + "%" } as React.CSSProperties} />
+              <i className="block h-full w-(--w) bg-gain" style={{ "--w": parts[2] * 100 + "%" } as React.CSSProperties} />
+            </div>
+          ) : null}
+          <div className="grid2">
+            <div>
+              <KV k={<><i className="mr-2 inline-block size-2.5 rounded-xs bg-input" aria-hidden="true" />Starting from</>} id="qStart" v={R ? money(p.initial) : DASH} />
+              <KV k={<><i className="mr-2 inline-block size-2.5 rounded-xs bg-muted-foreground" aria-hidden="true" />You put in</>} id="qIn" v={R ? money(R.contribTotal) : DASH} />
+            </div>
+            <div>
+              <KV k={<><i className="mr-2 inline-block size-2.5 rounded-xs bg-gain" aria-hidden="true" />Growth adds</>} cls="pos" id="qGrowth" v={R ? money(R.growth) : DASH} />
+              <KV k="You add" id="qSpan" v={R ? money(p.contrib, p.contrib % 1 ? 2 : 0) + " " + PERIOD_ADV[p.period] : DASH} />
+            </div>
+          </div>
+          <div className="hint mt-3 max-w-copy">Every figure here is in today&apos;s dollars,
+            so you can compare it to what money is worth now. It assumes you nudge your
+            contribution up a little each year to keep pace with inflation.</div>
+        </div>
+
+        <div className="border-t border-border pt-4" hidden={!pts.length}>
           <CardHeader><CardTitle>Balance over time</CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
           <BandChart id="Q" pts={pts} maxX={p.years || 1} xOffset={hasAge ? p.age : 0} enhanced ariaLabel="Projected balance in today's dollars"
+            extras={(g) => <MilestoneMarks g={g} marks={marks} />}
             tip={(b) => (
               <>
                 {hasAge ? <><b>Age {fmtNum(p.age + b.year)}</b> <span className="text-dimmer">{"· year " + fmtNum(b.year)}</span></> : <b>Year {fmtNum(b.year)}</b>}
@@ -135,24 +243,11 @@ export function Basic() {
             [SERIES.plan, "Your setting (" + pctStr(p.real, 2) + ")"],
             [SERIES.rose, "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")"],
           ] : []} />
-        </Card>
+        </div>
+      </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
-          <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
-            <table id="qYearTable" ref={tableRef}>
-              <thead><tr><th>Age</th><th>Year</th><th>Start</th><th>You added</th><th>Growth</th><th>Balance</th></tr></thead>
-              <tbody>
-                {R?.years.map((y) => (
-                  <tr key={y.year}><td>{fmtNum(p.age + y.year)}</td><td>{y.year}</td><td>{money(y.start)}</td><td>{money(y.contrib)}</td><td className="pos">{money(y.growth)}</td><td>{money(y.end)}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
-        <Card>
+      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-5 lg:grid-cols-2">
+        <Card hidden={!R}>
           <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
           <CardContent id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</CardContent>
         </Card>
@@ -167,6 +262,29 @@ export function Basic() {
           </CardContent>
         </Card>
       </div>
-    </>
+
+      <Collapsible className="min-w-0 lg:col-span-5" render={<Card />}>
+        <CardHeader>
+          <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+          <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>
+        </CardHeader>
+        <CollapsibleContent keepMounted>
+          <div className="swipehint">Swipe the table sideways to see every column.</div>
+          <div className="scroll">
+            <table id="qYearTable" ref={tableRef}>
+              <thead><tr><th>Age</th><th>Year</th><th>Start</th><th>You added</th><th>Growth</th><th>Balance</th></tr></thead>
+              <tbody>
+                {R?.years.map((y) => (
+                  <tr key={y.year}><td>{fmtNum(p.age + y.year)}</td><td>{y.year}</td><td>{money(y.start)}</td><td>{money(y.contrib)}</td><td className="pos">{money(y.growth)}</td><td>{money(y.end)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* The household offer, now that there's an answer to carry over. */}
+      <div className="min-w-0 lg:col-span-5" id="hhHomeSlot"><HouseholdBar states={STATE_OPTIONS} /></div>
+    </div>
   );
 }

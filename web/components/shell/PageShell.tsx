@@ -21,7 +21,9 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
       {sub ? null : <h1 className="srlive" id="pageH1">{meta.h1 ?? "RetCalc"}</h1>}
-      {slug === "about" ? null : <HouseholdBar states={STATE_OPTIONS} />}
+      {/* About keeps it under Appearance; the homepage offers it after the
+          result (tools/basic/Basic.tsx). */}
+      {slug === "about" || slug === "home" ? null : <HouseholdBar states={STATE_OPTIONS} />}
       {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={TOOLS[sub].desc} /> : null}
       {children}
       {article ? <Article html={article} /> : null}

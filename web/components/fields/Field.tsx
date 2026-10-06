@@ -57,6 +57,10 @@ interface ValueProps {
   placeholder?: string;
   disabled?: boolean;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  /** An answer that can't be used: the field takes the Loss edge, and
+      aria-describedby points at the message that says why. */
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 }
 
 /** A dollar amount: "$" in front, commas as you type, never negative. */

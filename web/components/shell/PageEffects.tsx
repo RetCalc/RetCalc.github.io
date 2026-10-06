@@ -36,12 +36,15 @@ function initSeg(seg: HTMLElement & { __thumb?: boolean }) {
 }
 
 function announce() {
-  const head = [...document.querySelectorAll<HTMLElement>("#main .headline")].find((el) => el.offsetParent !== null);
+  const head = [...document.querySelectorAll<HTMLElement>("#main .headline, #main [data-readout]")].find((el) => el.offsetParent !== null);
   const live = document.getElementById("srLive");
   if (!head || !live) return;
   const parts: string[] = [];
-  head.querySelectorAll(":scope > div").forEach((d) => {
-    const k = d.querySelector(".k"), v = d.querySelector(".v");
+  // A readout's figures: the columns of a .headline, or the homepage's
+  // [data-pair]s, each a label ([data-k]) and the figure after it.
+  const pairs = head.matches(".headline") ? head.querySelectorAll(":scope > div") : head.querySelectorAll("[data-pair]");
+  pairs.forEach((d) => {
+    const k = d.querySelector(".k, [data-k]"), v = d.querySelector(".v, [data-k] + *");
     const t = v?.textContent?.trim() ?? "";
     if (k && t && t !== "—" && t !== "--") parts.push(k.textContent!.trim() + ": " + t);
   });
