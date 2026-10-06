@@ -1,7 +1,7 @@
 /* The Mortgage Calculator's inputs, apart from its screen so Rent vs. Buy
    can copy the home from it. From src/js/app/12-mortgage.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { MORT_RATE_30 } from "@/lib/engine/typed";
+import { MORT_RATE_30, mortgage, refiCompare } from "@/lib/engine/typed";
 import type { MortgageInput } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 
@@ -32,6 +32,19 @@ export function mortgageInput(s: Inputs): MortgageInput {
     refiOn: extras && pct(s.refiRate) > 0,
     refiRate: pct(s.refiRate), refiTerm: parseFloat(s.refiTerm), refiCost: parseNum(s.refiCost),
   };
+}
+
+/** The loan, and with extra payments the same loan without them (how much
+    sooner it's paid off and the interest saved), and with a refinance rate
+    the comparison. base is null without extras, RF without a refinance. */
+export function mortgageCompute(s: Inputs) {
+  const m = mortgageInput(s);
+  const R = mortgage(m);
+  const base = R.extraActive ? mortgage({ ...m, extraMonthly: 0, extraOnce: 0, extraOnceMonth: 0, recast: false }) : null;
+  const sooner = base ? base.payoffMonth - R.payoffMonth : 0;
+  const interestSaved = base ? Math.max(0, base.totalInterest - R.totalInterest) : 0;
+  const RF = m.refiOn ? (refiCompare(m, { rate: m.refiRate, term: m.refiTerm, cost: m.refiCost })) : null;
+  return { m, R, base, sooner, interestSaved, RF };
 }
 
 /** A month as "year 3, month 4". */

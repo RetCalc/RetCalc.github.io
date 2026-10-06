@@ -13,9 +13,9 @@ import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
 import { Figure, KV } from "@/components/common/Readout";
 import { CsvButton } from "@/components/common/CsvButton";
-import { PMI_DEFAULT, mortgage, refiCompare } from "@/lib/engine/typed";
+import { PMI_DEFAULT } from "@/lib/engine/typed";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-import { MORTGAGE_DEF as DEF, dur, mortgageInput, when, type Inputs } from "./model";
+import { MORTGAGE_DEF as DEF, dur, mortgageCompute, when, type Inputs } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { mortgageShare } from "./share";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,8 +58,7 @@ export function Mortgage() {
       return withPmi(k === "downAmt" ? pctFromAmt(next) : amtFromPct(next));
     });
 
-  const m = mortgageInput(s);
-  const R = mortgage(m);
+  const { m, R, base, sooner, interestSaved, RF } = mortgageCompute(s);
 
   const pmiNote = R.ltv > 0.8
     ? R.pmiEndMonth
@@ -83,18 +82,15 @@ export function Mortgage() {
 
   // Extra payments and refinancing, measured against the same loan without them.
   let extra: React.ReactNode = null;
-  if (R.extraActive) {
-    const base = mortgage({ ...m, extraMonthly: 0, extraOnce: 0, extraOnceMonth: 0, recast: false });
-    const sooner = base.payoffMonth - R.payoffMonth;
+  if (base) {
     extra = (
       <>
         <KV k="Payoff" v={when(R.payoffMonth) + (sooner > 0 ? ` (${dur(sooner)} sooner)` : "")} cls="pos" />
-        <KV k="Interest saved" v={money(Math.max(0, base.totalInterest - R.totalInterest))} cls="pos" />
+        <KV k="Interest saved" v={money(interestSaved)} cls="pos" />
         {R.recastPI != null ? <KV k="Payment after the recast" v={money(R.recastPI) + "/mo"} /> : null}
       </>
     );
   }
-  const RF = m.refiOn ? (refiCompare(m, { rate: m.refiRate, term: m.refiTerm, cost: m.refiCost })) : null;
 
   // The balance falling against cumulative interest and principal paid.
   let ci = 0, cp = 0;

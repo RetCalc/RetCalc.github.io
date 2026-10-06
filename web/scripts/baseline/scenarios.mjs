@@ -17,7 +17,7 @@ const { TAX_DEFAULTS, taxInput, runTax } = await import("@/tools/tax/model");
 const { ROTH_DEFAULTS, rothInput } = await import("@/tools/roth/model");
 const { parseNum } = await import("@/lib/format");
 const TP = await import("@/lib/engine/typed-plan");
-const { MORTGAGE_DEFAULTS, mortgageInput } = await import("@/tools/mortgage/model");
+const { MORTGAGE_DEFAULTS, mortgageCompute } = await import("@/tools/mortgage/model");
 const { DEBT_DEFAULTS, debtList } = await import("@/tools/debt/model");
 const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
@@ -128,16 +128,11 @@ const FIRST_SCENARIOS = [
    from the screen named, as Advanced's compute() is. */
 
 function mortgageTool(fields) {
-  const m = mortgageInput({ ...MORTGAGE_DEFAULTS, ...fields });
-  const R = T.mortgage(m);
-  // Mortgage.tsx: the same loan without extras, and the refinance comparison.
-  const base = R.extraActive ? T.mortgage({ ...m, extraMonthly: 0, extraOnce: 0, extraOnceMonth: 0, recast: false }) : null;
-  const RF = m.refiOn ? T.refiCompare(m, { rate: m.refiRate, term: m.refiTerm, cost: m.refiCost }) : null;
+  const { R, base, sooner, interestSaved, RF } = mortgageCompute({ ...MORTGAGE_DEFAULTS, ...fields });
   return {
     full: { R, base, RF },
     out: { loan: R.loan, monthlyPI: R.pi, monthlyTotal: R.total, totalInterest: R.totalInterest, payoffMonth: R.payoffMonth,
-      pmiPaid: R.pmiPaid, recastPI: R.recastPI, interestSaved: base ? Math.max(0, base.totalInterest - R.totalInterest) : null,
-      monthsSooner: base ? base.payoffMonth - R.payoffMonth : null },
+      pmiPaid: R.pmiPaid, recastPI: R.recastPI, interestSaved: base ? interestSaved : null, monthsSooner: base ? sooner : null },
   };
 }
 
