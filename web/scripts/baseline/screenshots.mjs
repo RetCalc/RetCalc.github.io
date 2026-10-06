@@ -10,21 +10,29 @@
    Uses `next start` on port 3200 (started and stopped here unless one is
    already running) and the Chrome installed on this machine, as the e2e
    checks do. BASE=<url> shoots another server instead; SHOTS=<dir> saves
-   into ../redesign-baseline/<dir> instead of screenshots/ (e.g. SHOTS=after). */
+   into ../redesign-baseline/<dir> instead of screenshots/ (e.g. SHOTS=after),
+   or into <dir> itself when it's an absolute path. SET=charts shoots the
+   tool pages with a chart that the main ten don't cover, desktop only. */
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, devices } from "@playwright/test";
 
 const WEB = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const OUT = join(WEB, "..", "redesign-baseline", process.env.SHOTS ?? "screenshots");
+const OUT = resolve(WEB, "..", "redesign-baseline", process.env.SHOTS ?? "screenshots");
 const BASE = process.env.BASE ?? "http://localhost:3200";
 
 export const PAGES = {
   home: "/", advanced: "/advanced", stages: "/stages", tools: "/tools", drawdown: "/drawdown",
   incometax: "/incometax", roth: "/roth", mortgage: "/mortgage", guide: "/guide", about: "/about",
 };
+/* Tool pages with a chart beyond the main ten. */
+export const CHART_PAGES = {
+  fire: "/fire", backtest: "/backtest", bridge: "/bridge", college: "/college", debt: "/debt",
+  rentbuy: "/rentbuy", healthcare: "/healthcare", "72t": "/72t", rmd: "/rmd",
+};
+const CHARTS = process.env.SET === "charts";
 const SIZES = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
   phone: { ...devices["iPhone 13"], defaultBrowserType: undefined },
@@ -46,12 +54,13 @@ async function server() {
 }
 
 const only = process.argv.slice(2);
-const pages = Object.entries(PAGES).filter(([k]) => !only.length || only.includes(k));
+const pages = Object.entries(CHARTS ? CHART_PAGES : PAGES).filter(([k]) => !only.length || only.includes(k));
 const proc = await server();
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 let n = 0;
 try {
   for (const theme of THEMES) for (const [size, opts] of Object.entries(SIZES)) {
+    if (CHARTS && size !== "desktop") continue;
     const ctx = await browser.newContext({ ...opts, colorScheme: theme, reducedMotion: "reduce" });
     // The theme as a visitor's saved choice (lib/theme-script.ts), set before the page's own script reads it.
     await ctx.addInitScript((t) => { try { localStorage.setItem("retcalc.theme.v1", JSON.stringify(t)); } catch {} }, theme);
