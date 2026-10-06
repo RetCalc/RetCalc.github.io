@@ -130,8 +130,8 @@ export function Basic() {
   const parts = R && R.fv > 0 ? [p.initial, R.contribTotal, R.growth].map((v) => Math.max(0, v) / R.fv) : null;
 
   return (
-    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-5" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
-      <div className="min-w-0 lg:col-span-2 lg:self-stretch">
+    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-simple" role="tabpanel" aria-labelledby="tabbtn-calc">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the questions are on screen. It repeats the
             reading below, so screen readers skip it; srLive reads results. */}
@@ -184,7 +184,7 @@ export function Basic() {
         </aside>
       </div>
 
-      <Card size="flush" className="min-w-0 lg:col-span-3" id="homeReading">
+      <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading">
         <div className="px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5" data-readout>
           <div data-pair>
             <div className="mb-2.5 text-label text-muted-foreground" data-k>Value at retirement</div>
@@ -246,7 +246,7 @@ export function Basic() {
         </div>
       </Card>
 
-      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-5 lg:grid-cols-2">
+      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:col-span-3 lg:grid-cols-2">
         <Card hidden={!R}>
           <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
           <CardContent id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</CardContent>
@@ -263,7 +263,7 @@ export function Basic() {
         </Card>
       </div>
 
-      <Collapsible className="min-w-0 lg:col-span-5" render={<Card />}>
+      <Collapsible className="min-w-0 lg:col-span-3" render={<Card />}>
         <CardHeader>
           <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
           <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>
@@ -284,7 +284,7 @@ export function Basic() {
       </Collapsible>
 
       {/* The household offer, now that there's an answer to carry over. */}
-      <div className="min-w-0 lg:col-span-5" id="hhHomeSlot"><HouseholdBar states={STATE_OPTIONS} /></div>
+      <div className="min-w-0 lg:col-span-3" id="hhHomeSlot"><HouseholdBar states={STATE_OPTIONS} /></div>
     </div>
   );
 }
