@@ -11,24 +11,17 @@ import { Affixed, Field, FieldHeading, MoneyField, NumberField, SelectField } fr
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
-import { toolInputs, useToolState, type ToolDef } from "@/components/tools/ToolState";
+import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { Figure } from "@/components/common/Readout";
 import { CsvButton } from "@/components/common/CsvButton";
-import { MORT_RATE_30, rentBuyCalc } from "@/lib/engine/typed";
+import { rentBuyCalc } from "@/lib/engine/typed";
 import { DASH, fmtNum, groupDigits, money, parseNum } from "@/lib/format";
 import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { useShareKit } from "@/components/shell/share";
 import { rentBuyShare } from "./share";
+import { RENTBUY_DEF as DEF, rentBuyInput, type RentBuyInputs as Inputs } from "./model";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const DEFAULTS = {
-  price: groupDigits(450000, true), down: "20", rate: String(MORT_RATE_30), term: "30", propTax: "1.1",
-  ins: groupDigits(1800, true), maint: "1", close: "3", sell: "3", rent: groupDigits(1800, true), rentInc: "3.2",
-  appr: "4", invest: "7", horizon: "30", gainTax: "15", status: "m",
-};
-type Inputs = typeof DEFAULTS;
-const DEF: ToolDef<Inputs> = { id: "rentbuy", label: "Rent vs. Buy", noun: "rent vs. buy scenario", defaults: DEFAULTS };
 
 
 export function RentBuy() {
@@ -36,15 +29,7 @@ export function RentBuy() {
   const toast = useToast();
   const tableRef = useRef<HTMLTableElement>(null);
 
-  const n = (k: keyof Inputs) => parseNum(s[k]);
-  const inp = {
-    price: n("price"), downPct: n("down"), rate: n("rate"), term: parseFloat(s.term), propTax: n("propTax"),
-    ins: n("ins"), maint: n("maint"), closePct: n("close"), sellPct: n("sell"), rent: n("rent"), rentInc: n("rentInc"),
-    appr: n("appr"), invest: n("invest"),
-    horizon: Math.min(40, Math.max(1, Math.round(n("horizon")))),
-    gainTax: Math.min(50, Math.max(0, n("gainTax") || 0)),
-    status: s.status === "s" ? "s" : "m",
-  };
+  const inp = rentBuyInput(s);
   const R = inp.price > 0 ? rentBuyCalc(inp) : null;
   useShareKit(DEF.id, rentBuyShare(inp));
   const last = R?.years[R.years.length - 1];

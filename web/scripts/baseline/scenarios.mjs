@@ -19,6 +19,7 @@ const { parseNum } = await import("@/lib/format");
 const TP = await import("@/lib/engine/typed-plan");
 const { MORTGAGE_DEFAULTS, mortgageInput } = await import("@/tools/mortgage/model");
 const { DEBT_DEFAULTS, debtList } = await import("@/tools/debt/model");
+const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
 const { BUDGET_DEFAULTS, budgetTotals } = await import("@/tools/budget/model");
 const { healthcareCompute } = await import("@/tools/healthcare/model");
@@ -152,18 +153,7 @@ function debt(fields) {
 }
 
 function rentBuy(fields) {
-  // RentBuy.tsx keeps its defaults and parsing in the screen.
-  const s = { price: "450,000", down: "20", rate: String(T.MORT_RATE_30), term: "30", propTax: "1.1", ins: "1,800", maint: "1",
-    close: "3", sell: "3", rent: "1,800", rentInc: "3.2", appr: "4", invest: "7", horizon: "30", gainTax: "15", status: "m", ...fields };
-  const n = (k) => parseNum(s[k]);
-  const inp = {
-    price: n("price"), downPct: n("down"), rate: n("rate"), term: parseFloat(s.term), propTax: n("propTax"),
-    ins: n("ins"), maint: n("maint"), closePct: n("close"), sellPct: n("sell"), rent: n("rent"), rentInc: n("rentInc"),
-    appr: n("appr"), invest: n("invest"),
-    horizon: Math.min(40, Math.max(1, Math.round(n("horizon")))),
-    gainTax: Math.min(50, Math.max(0, n("gainTax") || 0)),
-    status: s.status === "s" ? "s" : "m",
-  };
+  const inp = rentBuyInput({ ...RENTBUY_DEFAULTS, ...fields });
   const R = inp.price > 0 ? T.rentBuyCalc(inp) : null;
   const last = R.years[R.years.length - 1];
   return { full: R, out: { breakEven: R.breakEven, monthlyBuy: R.monthlyBuy, monthlyPI: R.pi, initialInvest: R.initialInvest, lastYear: last } };
