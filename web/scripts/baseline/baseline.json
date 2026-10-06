@@ -1,0 +1,401 @@
+{
+  "recorded": "2026-10-06T13:58:03.314Z",
+  "scenarios": [
+    {
+      "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
+      "out": {
+        "atRetirement": 537803.2336,
+        "invested": 216671.9317,
+        "growth": 321131.3019,
+        "yearlyIncome": 21512.1293,
+        "monthlyIncome": 1792.6774
+      },
+      "fields": {
+        "afterTax": "43561cfaa0d8a7c7",
+        "afterTaxMo": "294545b6acf5913a",
+        "contribTotal": "834a010b7c7c670a",
+        "fv": "2e0910ad990f8d48",
+        "fvReal": "2e0910ad990f8d48",
+        "growth": "13b3896a9b3f3e62",
+        "invested": "fcf7846c21256540",
+        "periods": "db55da3fc3098e9c",
+        "ppy": "6b51d431df5d7f14",
+        "wd": "43561cfaa0d8a7c7",
+        "wdReal": "43561cfaa0d8a7c7",
+        "years": "4b2ae5f3bcab42a1"
+      }
+    },
+    {
+      "id": "Basic: older saver, conservative 3%",
+      "out": {
+        "atRetirement": 863714.0393,
+        "invested": 605721.055,
+        "growth": 257992.9843,
+        "yearlyIncome": 34548.5616,
+        "monthlyIncome": 2879.0468
+      },
+      "fields": {
+        "afterTax": "352b88603ae28bef",
+        "afterTaxMo": "d6f3657366743e38",
+        "contribTotal": "596d5ba4bd7c1c18",
+        "fv": "5f1daa1bddeb607e",
+        "fvReal": "5f1daa1bddeb607e",
+        "growth": "86e533b091f7dbd3",
+        "invested": "380ea8412bf00ee4",
+        "periods": "7b69759630f869f2",
+        "ppy": "6b51d431df5d7f14",
+        "wd": "352b88603ae28bef",
+        "wdReal": "352b88603ae28bef",
+        "years": "0b15ec80236e9080"
+      }
+    },
+    {
+      "id": "Basic: weekly $125, aggressive 7%",
+      "out": {
+        "atRetirement": 1022091.2464,
+        "invested": 234106.864,
+        "growth": 787984.3825,
+        "yearlyIncome": 40883.6499,
+        "monthlyIncome": 3406.9708
+      },
+      "fields": {
+        "afterTax": "f9ed305c6978be82",
+        "afterTaxMo": "25397ed11867f9c0",
+        "contribTotal": "ea38a471b6287691",
+        "fv": "d82026b872486298",
+        "fvReal": "d82026b872486298",
+        "growth": "ee7cd358ae3ddbe7",
+        "invested": "1fb7b8bac633c0b7",
+        "periods": "6a7a1382f96c6e92",
+        "ppy": "41cfc0d1f2d127b0",
+        "wd": "f9ed305c6978be82",
+        "wdReal": "f9ed305c6978be82",
+        "years": "c1b065753078bb05"
+      }
+    },
+    {
+      "id": "Advanced: defaults",
+      "out": {
+        "atRetirement": 2614427.1122,
+        "todaysDollars": 1077109.354,
+        "firstYearAfterTax": 38775.9367,
+        "monthlyAfterTax": 3231.3281,
+        "goalPortfolioToday": 2777777.7778,
+        "goalPerYear": 34475.362,
+        "feeCost": 0
+      },
+      "fields": {
+        "B": "74234e98afe7498f",
+        "C": "410846594a457a13",
+        "R": "3027f3f8844f4a01",
+        "S": "f39d4e3fb64511d6",
+        "Y": "09aa0442aaa20ccf",
+        "feeCost": "5feceb66ffc86f38",
+        "plan": "bd4f0b150ad58018"
+      }
+    },
+    {
+      "id": "Advanced: monthly, 25 years, 0.5% fees, glide to 5% over 10 years, solve portfolio needed",
+      "out": {
+        "atRetirement": 1383275.1859,
+        "todaysDollars": 660659.9326,
+        "firstYearAfterTax": 23783.7576,
+        "monthlyAfterTax": 1981.9798,
+        "goalPortfolioToday": 1500000,
+        "goalPerYear": 33483.517,
+        "feeCost": 64256.5815
+      },
+      "fields": {
+        "B": "74234e98afe7498f",
+        "C": "43a266a48060a3df",
+        "R": "b74163a4a961047e",
+        "S": "98d345f9f0f741fa",
+        "Y": "7c984542194b8cc4",
+        "feeCost": "a02cb3e11f232a99",
+        "plan": "8bef4f534a84ebd2"
+      }
+    },
+    {
+      "id": "Drawdown: defaults: $1M, 30 years, 60% stocks, fixed 4%, history",
+      "out": {
+        "periods": 835,
+        "survived": 785,
+        "successRate": 0.9401,
+        "medianEnd": 1604620.009,
+        "worstEnd": 0,
+        "bestEnd": 6641918.0336,
+        "failYears": 6,
+        "firstFailStart": "1964-4",
+        "lowestSpendRatio": 0
+      },
+      "fields": {
+        "H": "ad15ca37415db5cf",
+        "o": "d8db62b8ac17c262",
+        "sc": "cbb1711c4c801260"
+      }
+    },
+    {
+      "id": "Drawdown: guardrails 5%, 40 years, couple with estimated Social Security, history",
+      "out": {
+        "periods": 715,
+        "survived": 715,
+        "successRate": 1,
+        "medianEnd": 3800134.458,
+        "worstEnd": 1550251.8917,
+        "bestEnd": 7415865.0758,
+        "failYears": 0,
+        "firstFailStart": null,
+        "lowestSpendRatio": 0.5314
+      },
+      "fields": {
+        "H": "8b191b4b572c6ff9",
+        "o": "5f0851e2d8687004",
+        "sc": "06ebf80d6c4e7c43"
+      }
+    },
+    {
+      "id": "Drawdown: defaults, Monte Carlo 1,000 trials, seed 12345",
+      "out": {
+        "trials": 1000,
+        "seed": 12345,
+        "successRate": 0.927,
+        "medianEnd": 1852795.2424,
+        "p10End": 179624.1015,
+        "p90End": 5893642.2565
+      },
+      "fields": {
+        "bal": "71962408fb1059c2",
+        "bands": "cef4c2683f5c8962",
+        "legacy": "5feceb66ffc86f38",
+        "med": "d739b10d1e6a1608",
+        "medianEnd": "1752f9a2ef716c7b",
+        "n": "40510175845988f1",
+        "p10End": "15934b20379eff13",
+        "p90End": "278e376bcc23d6f7",
+        "path": "4a65f551310ca2e4",
+        "sc": "be221677c43199c3",
+        "sens": "74234e98afe7498f",
+        "spend": "9289cb1c4287f0fa",
+        "spendBands": "654f44ee3f906b79",
+        "ss": "74234e98afe7498f",
+        "successRate": "ed48f1aa79105a2e",
+        "survived": "df156e8465ff477c",
+        "trials": "40510175845988f1",
+        "years": "624b60c58c9d8bfb"
+      }
+    },
+    {
+      "id": "Income Tax: defaults: single, Illinois, $100,000",
+      "out": {
+        "federal": 13170,
+        "state": 4805.2125,
+        "fica": 7650,
+        "total": 25625.2125,
+        "net": 74374.7875,
+        "takeHome": 74374.7875,
+        "effectiveRate": 0.2563,
+        "marginal": 0.22
+      },
+      "fields": {
+        "addl": "5feceb66ffc86f38",
+        "afterPre": "3bb78535cc9555ff",
+        "bands": "8c9576ed60f2f6d9",
+        "earner1": "3bb78535cc9555ff",
+        "earner2": "5feceb66ffc86f38",
+        "effFed": "c072091b7db9b0ff",
+        "effFica": "c81a61a42cca9309",
+        "effNet": "60199e125aeabf8c",
+        "effState": "6d92c63c47b5609f",
+        "effTotal": "680b3bed58fcc0a0",
+        "fedDed": "daebb4ce99c9383c",
+        "fedTaxable": "306eba2137304343",
+        "federal": "71ecfa2482791c0c",
+        "fica": "1c4fba56f321870c",
+        "gross": "3bb78535cc9555ff",
+        "marginal": "dc08a4e8bbdd4019",
+        "med": "b0193ceb57d22ae3",
+        "net": "4b8281ce62fc8ff1",
+        "pre": "5feceb66ffc86f38",
+        "ss": "350326701b83f92f",
+        "ss1": "350326701b83f92f",
+        "ss2": "5feceb66ffc86f38",
+        "state": "2d9b4b462d40be2f",
+        "stateName": "20ad2fe8824206eb",
+        "stateNone": "fcbcf165908dd18a",
+        "stateTaxable": "fdf0cab5c7d32037",
+        "takeHome": "4b8281ce62fc8ff1",
+        "total": "341269358144f29e"
+      }
+    },
+    {
+      "id": "Income Tax: married, California, $180,000 + $95,000, $23,000 pre-tax, itemized $40,000",
+      "out": {
+        "federal": 36076,
+        "state": 12287.276,
+        "fica": 21262.5,
+        "total": 69625.776,
+        "net": 182374.224,
+        "takeHome": 182374.224,
+        "effectiveRate": 0.2532,
+        "marginal": 0.24
+      },
+      "fields": {
+        "addl": "0e6523810856a138",
+        "afterPre": "c505c1896c9805f3",
+        "bands": "c853a557891b1562",
+        "earner1": "c3c8204aec16162a",
+        "earner2": "976115fd624e1498",
+        "effFed": "8af1f9c63b19c754",
+        "effFica": "f2d72cff53652f92",
+        "effNet": "428516f4c4f09c65",
+        "effState": "1f3384cac6091fb4",
+        "effTotal": "918a6815fe024269",
+        "fedDed": "4948963369b68261",
+        "fedTaxable": "6ab5ad374b5ce53a",
+        "federal": "422fb7cd779a4308",
+        "fica": "2684252577329742",
+        "gross": "36dd775e507e2de1",
+        "marginal": "6382e07f9de0c852",
+        "med": "5aaa2bd0029944c5",
+        "net": "b62de841e2da753f",
+        "pre": "9ea50d033486770a",
+        "ss": "22c4a38b0f53e677",
+        "ss1": "3dfbfa571165c5a2",
+        "ss2": "704f069acc2c5e2e",
+        "state": "6fd939e8740bed38",
+        "stateName": "965e753a8d47f7b0",
+        "stateNone": "fcbcf165908dd18a",
+        "stateTaxable": "6ab5ad374b5ce53a",
+        "takeHome": "b62de841e2da753f",
+        "total": "d6cd72dcd05e7adc"
+      }
+    },
+    {
+      "id": "Income Tax: retirement mode defaults",
+      "out": {
+        "federal": 4714,
+        "state": 201.7125,
+        "fica": 0,
+        "total": 4915.7125,
+        "net": 95084.2875,
+        "takeHome": 95084.2875,
+        "effectiveRate": 0.0492,
+        "marginal": 0.255
+      },
+      "fields": {
+        "addl": "5feceb66ffc86f38",
+        "afterPre": "a9dc6c68d1cff431",
+        "ageAddl": "7850e83feab6c3cc",
+        "agi": "a9dc6c68d1cff431",
+        "bands": "2c7180266d81d6a8",
+        "basis": "c5d1866aabc15dda",
+        "brok": "876c9b16254e157d",
+        "buckets": "3e7e7327d9bffb7d",
+        "effFed": "cc87515b2d49df49",
+        "effFica": "5feceb66ffc86f38",
+        "effNet": "e196b618db3f845b",
+        "effState": "b06140712647fe47",
+        "effTotal": "7c997eab39282a16",
+        "fedDed": "89c5b40d9fba2c90",
+        "fedOrdinary": "5aec55001b8d9dd8",
+        "fedTaxable": "e49672371567c414",
+        "federal": "5aec55001b8d9dd8",
+        "fica": "5feceb66ffc86f38",
+        "gain": "ad5f9478d603fe97",
+        "gainTaxable": "ad5f9478d603fe97",
+        "gross": "3bb78535cc9555ff",
+        "ltcg": "5feceb66ffc86f38",
+        "ltcgBands": "1e07ac891df0445b",
+        "ltcgCut": "52576aa61aba2a0c",
+        "ltcgRate": "5feceb66ffc86f38",
+        "marginal": "2f24a73102e4934f",
+        "med": "5feceb66ffc86f38",
+        "net": "6eb0ed7788a343db",
+        "niit": "5feceb66ffc86f38",
+        "niitBase": "5feceb66ffc86f38",
+        "nominalMarginal": "4469f737b2dd8040",
+        "ordTaxable": "313fbc4c55609d8a",
+        "ordinaryAgi": "94579d1104574f33",
+        "other": "5feceb66ffc86f38",
+        "penPublic": "fcbcf165908dd18a",
+        "pension": "5feceb66ffc86f38",
+        "pre": "5feceb66ffc86f38",
+        "provisional": "0944d4d0aabb9305",
+        "retirement": "b5bea41b6c623f7c",
+        "roth": "39e5b4830d4d9c14",
+        "seniorBonus": "8d284220975da66c",
+        "seniors": "6b86b273ff34fce1",
+        "ss": "5feceb66ffc86f38",
+        "ssGross": "891937cb335016e9",
+        "ssStateTaxed": "fcbcf165908dd18a",
+        "ssTier": "b4944c6ff08dc6f4",
+        "state": "389ad2e3434cf2aa",
+        "stateBase": "ad5f9478d603fe97",
+        "stateCredit": "5feceb66ffc86f38",
+        "stateDed": "6686fc4c74906865",
+        "stateExcluded": "5feceb66ffc86f38",
+        "stateName": "20ad2fe8824206eb",
+        "stateNone": "fcbcf165908dd18a",
+        "stateNote": "5e91478a4ca202c8",
+        "stateParts": "1c011ccdb59adf3a",
+        "stateSSIn": "5feceb66ffc86f38",
+        "stateTaxable": "9705cc6128a60cc2",
+        "takeHome": "6eb0ed7788a343db",
+        "taxableSS": "73ffe585bc3e90cd",
+        "total": "b2069ca4a8d3f5c9",
+        "trad": "4948963369b68261",
+        "zeroRoom": "ad57366865126e55"
+      }
+    },
+    {
+      "id": "Roth Conversion: defaults: married, fill the 22% bracket",
+      "out": {
+        "convert": {
+          "lifeTax": 305185.8075,
+          "lifeTaxPV": 288348.5898,
+          "lifeIrmaa": 13836,
+          "totalConv": 1288352.42,
+          "peakRMD": 0,
+          "endAfterTax": 3057098.5211
+        },
+        "noConvert": {
+          "lifeTax": 503928.1686,
+          "lifeTaxPV": 295187.8961,
+          "lifeIrmaa": 51360,
+          "totalConv": 0,
+          "peakRMD": 169099.1185,
+          "endAfterTax": 2833794.4351
+        }
+      },
+      "fields": {
+        "withConv": "e8afa782f71a9bf2",
+        "without": "1888371e403825b8"
+      }
+    },
+    {
+      "id": "Roth Conversion: single, Texas, $50,000 a year from 65 to 72",
+      "out": {
+        "convert": {
+          "lifeTax": 431971.646,
+          "lifeTaxPV": 326530.584,
+          "lifeIrmaa": 37976.4,
+          "totalConv": 400000,
+          "peakRMD": 84720.9214,
+          "endAfterTax": 2400567.9708
+        },
+        "noConvert": {
+          "lifeTax": 490753.7127,
+          "lifeTaxPV": 312455.774,
+          "lifeIrmaa": 40944,
+          "totalConv": 0,
+          "peakRMD": 155223.7589,
+          "endAfterTax": 2325821.7547
+        }
+      },
+      "fields": {
+        "withConv": "b83779a30095d3ce",
+        "without": "bdaa96a57c5910b9"
+      }
+    }
+  ]
+}
