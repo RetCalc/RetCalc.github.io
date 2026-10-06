@@ -22,7 +22,7 @@ const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model")
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
 const { BUDGET_DEFAULTS, budgetTotals } = await import("@/tools/budget/model");
 const { healthcareCompute } = await import("@/tools/healthcare/model");
-const { FIRE_DEFAULTS, fireInput, fireSolve } = await import("@/tools/fire/model");
+const { FIRE_DEFAULTS, fireCompute } = await import("@/tools/fire/model");
 const { BRIDGE_DEFAULTS, bridgeInput } = await import("@/tools/bridge/model");
 const { runBridge, bridgeScenarios, firstYearAfter } = await import("@/tools/bridge/run");
 const { BT_DEFAULTS, runBacktest, decadeInflation } = await import("@/tools/backtest/model");
@@ -183,15 +183,8 @@ function healthcare(fields) {
 }
 
 function fire(fields) {
-  const p = fireInput({ ...FIRE_DEFAULTS, ...fields });
-  const S = fireSolve(p);
-  // Fire.tsx: with the history chart, the success-rate slider's year.
-  let cr = null, histYears = null;
-  if (fields.chart === "hist") {
-    cr = p.mode === "coast" ? T.fiComputeCoastCrossings(p) : T.fiComputeCrossings(p, S.maxYears);
-    if (cr) histYears = T.fiYearsFromCrossings(cr.crossings, cr.total, p.successRate);
-  }
-  return { full: { S, cr }, out: { yearsUntil: S.fireYear, realThen: S.real, nominalThen: S.nominal, contribs: S.contribs, target: p.target, histYears } };
+  const { p, S, cr, histYear } = fireCompute({ ...FIRE_DEFAULTS, ...fields });
+  return { full: { S, cr }, out: { yearsUntil: S.fireYear, realThen: S.real, nominalThen: S.nominal, contribs: S.contribs, target: p.target, histYears: histYear } };
 }
 
 function bridge(fields, mode = "hist", seed = 1) {

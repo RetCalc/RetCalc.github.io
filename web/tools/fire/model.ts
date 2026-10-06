@@ -1,7 +1,8 @@
 /* The FIRE calculator's inputs and its search for the year the plan gets
    there. From src/js/app/35-fire.js and src/main/23-fire-inputs.html. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { PPY, project } from "@/lib/engine/typed";
+import { PPY, fiComputeCoastCrossings, fiComputeCrossings, fiYearsFromCrossings, historicalRuns, project } from "@/lib/engine/typed";
+import type { HistRuns } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 
 export const FIRE_DEFAULTS = {
@@ -84,4 +85,75 @@ export function fireSolve(p: FirePlan) {
   if (fireYear !== null && fireYear > 0)
     for (let j = 0; j < fireYear; j++) contribs += p.contrib * ((PPY as Record<string, number>)[p.period] || 12) * Math.pow(1 + p.growth, j);
   return { realRate, maxYears, pp, fireYear, real, nominal, contribs };
+}
+
+/** Everything the calculator shows from its inputs: the plan, its solve,
+    with the history chart the year the chosen share of windows since 1926
+    gets there (cr is null when history is too short for the horizon), the
+    year the chart marks, the gains to the FIRE year, and for Coast FIRE
+    what saving on to retirement would reach and how far that is above
+    coasting. */
+export function fireCompute(s: FireInputs) {
+  const p = fireInput(s);
+  const S = p.target > 0 ? fireSolve(p) : null;
+  let cr: { crossings: number[]; total: number } | null = null, histYear: number | null = null;
+  if (S && s.chart === "hist") {
+    cr = p.mode === "coast" ? fiComputeCoastCrossings(p) : fiComputeCrossings(p, S.maxYears);
+    if (cr) histYear = fiYearsFromCrossings(cr.crossings, cr.total, p.successRate);
+  }
+  const displayYear = histYear !== null && histYear >= 0 ? histYear : S?.fireYear ?? null;
+  const gains = S ? Math.max(0, S.nominal - p.initial - S.contribs) : 0;
+  let keep: number | null = null, coastGap: number | null = null;
+  if (S && p.mode === "coast" && S.fireYear !== null) {
+    const retYears = p.retireAge - p.curAge;
+    const full = project({ initial: p.initial, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, inflation: p.inflation, years: retYears, withdrawal: 0, taxRate: 0 });
+    keep = ((full.years[full.years.length - 1] || { end: 0 }).end || 0) / Math.pow(1 + p.inflation, retYears);
+    coastGap = Math.max(0, keep - S.real * Math.pow(1 + S.realRate, retYears - S.fireYear));
+  }
+  return { p, S, cr, histYear, displayYear, gains, keep, coastGap };
+}
+
+export type FirePt = { year: number; base: number; hi: number; lo: number; p25?: number; p75?: number };
+
+/* The rate band: your return, and the band's width above and below it, in
+   today's dollars. Coast FIRE stops contributing at the coast year. */
+export function fireBandPoints(p: FirePlan, displayYear: number | null, maxYears: number) {
+  const isCoast = p.mode === "coast";
+  const retYrs = isCoast ? Math.max(1, p.retireAge - p.curAge) : maxYears;
+  const rates = [p.nominal, p.nominal + p.band, Math.max(0.001, p.nominal - p.band)];
+  const run = (nominal: number, initial: number, contrib: number, years: number) =>
+    project({ initial, contrib, period: p.period, growth: p.growth, nominal, inflation: p.inflation, years, withdrawal: 0, taxRate: 0 });
+  const real = (end: number | undefined, year: number) => (end || 0) / Math.pow(1 + p.inflation, year);
+  const pts: FirePt[] = [{ year: 0, base: p.initial, hi: p.initial, lo: p.initial }];
+  let maxX = maxYears;
+  if (isCoast && displayYear !== null && displayYear > 0 && displayYear < retYrs) {
+    const coastYrs = Math.round(displayYear);
+    const [b, h, l] = rates.map((r) => run(r, p.initial, p.contrib, coastYrs));
+    b.years.forEach((y, i) => pts.push({ year: y.year, base: real(y.end, y.year), hi: real((h.years[i] || y).end, y.year), lo: real((l.years[i] || y).end, y.year) }));
+    const rest = retYrs - coastYrs;
+    if (rest > 0) {
+      // Each line coasts on from its own balance, at its own rate.
+      const [b2, h2, l2] = [run(rates[0], b.fv, 0, rest), run(rates[1], h.fv, 0, rest), run(rates[2], l.fv, 0, rest)];
+      b2.years.forEach((y, i) => pts.push({ year: coastYrs + y.year, base: real(y.end, coastYrs + y.year),
+        hi: real((h2.years[i] || y).end, coastYrs + y.year), lo: real((l2.years[i] || y).end, coastYrs + y.year) }));
+    }
+    maxX = retYrs;
+  } else {
+    const years = p.mode === "fire" && displayYear !== null && displayYear > 0 ? displayYear : isCoast ? retYrs : maxYears;
+    const [b, h, l] = rates.map((r) => run(r, p.initial, p.contrib, years));
+    b.years.forEach((y, i) => pts.push({ year: y.year, base: real(y.end, y.year), hi: real((h.years[i] || y).end, y.year), lo: real((l.years[i] || y).end, y.year) }));
+    if (b.years.length) maxX = b.years[b.years.length - 1].year;
+  }
+  return { pts, maxX };
+}
+
+/* Every rolling window since 1926: to the FIRE year, or to retirement with
+   contributions stopping at the coast year. */
+export function fireHistRuns(p: FirePlan, displayYear: number | null, maxYears: number): HistRuns {
+  const retYrs = p.mode === "coast" ? Math.max(1, p.retireAge - p.curAge) : maxYears;
+  const st = (years: number, contrib = p.contrib) => ({ years, contrib, period: contrib ? p.period : "Monthly", growth: contrib ? p.growth : 0, mix: p.histMix });
+  const stages = p.mode === "coast"
+    ? displayYear !== null && displayYear > 0 && displayYear < retYrs ? [st(displayYear), st(retYrs - displayYear, 0)] : [st(retYrs)]
+    : [st(displayYear !== null && displayYear > 0 ? displayYear : maxYears)];
+  return historicalRuns({ initial: p.initial, fees: 0 }, stages);
 }

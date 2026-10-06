@@ -18,57 +18,12 @@ import { useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { KV, Segmented } from "@/components/common/Readout";
 import { BigValue } from "@/components/common/BigValue";
-import { fiComputeCoastCrossings, fiComputeCrossings, fiYearsFromCrossings, historicalRuns, project } from "@/lib/engine/typed";
 import type { HistRuns } from "@/lib/engine/types";
 import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
-import { FIRE_DEF, fireInput, fireSolve, type FireInputs, type FirePlan } from "./model";
+import { FIRE_DEF, fireBandPoints, fireCompute, fireHistRuns, type FireInputs, type FirePt } from "./model";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-type Pt = { year: number; base: number; hi: number; lo: number; p25?: number; p75?: number };
 const trim1 = (v: number) => v.toFixed(1).replace(/\.0$/, "");
-
-/* The rate band: your return, and the band's width above and below it, in
-   today's dollars. Coast FIRE stops contributing at the coast year. */
-function bandPoints(p: FirePlan, displayYear: number | null, maxYears: number) {
-  const isCoast = p.mode === "coast";
-  const retYrs = isCoast ? Math.max(1, p.retireAge - p.curAge) : maxYears;
-  const rates = [p.nominal, p.nominal + p.band, Math.max(0.001, p.nominal - p.band)];
-  const run = (nominal: number, initial: number, contrib: number, years: number) =>
-    project({ initial, contrib, period: p.period, growth: p.growth, nominal, inflation: p.inflation, years, withdrawal: 0, taxRate: 0 });
-  const real = (end: number | undefined, year: number) => (end || 0) / Math.pow(1 + p.inflation, year);
-  const pts: Pt[] = [{ year: 0, base: p.initial, hi: p.initial, lo: p.initial }];
-  let maxX = maxYears;
-  if (isCoast && displayYear !== null && displayYear > 0 && displayYear < retYrs) {
-    const coastYrs = Math.round(displayYear);
-    const [b, h, l] = rates.map((r) => run(r, p.initial, p.contrib, coastYrs));
-    b.years.forEach((y, i) => pts.push({ year: y.year, base: real(y.end, y.year), hi: real((h.years[i] || y).end, y.year), lo: real((l.years[i] || y).end, y.year) }));
-    const rest = retYrs - coastYrs;
-    if (rest > 0) {
-      // Each line coasts on from its own balance, at its own rate.
-      const [b2, h2, l2] = [run(rates[0], b.fv, 0, rest), run(rates[1], h.fv, 0, rest), run(rates[2], l.fv, 0, rest)];
-      b2.years.forEach((y, i) => pts.push({ year: coastYrs + y.year, base: real(y.end, coastYrs + y.year),
-        hi: real((h2.years[i] || y).end, coastYrs + y.year), lo: real((l2.years[i] || y).end, coastYrs + y.year) }));
-    }
-    maxX = retYrs;
-  } else {
-    const years = p.mode === "fire" && displayYear !== null && displayYear > 0 ? displayYear : isCoast ? retYrs : maxYears;
-    const [b, h, l] = rates.map((r) => run(r, p.initial, p.contrib, years));
-    b.years.forEach((y, i) => pts.push({ year: y.year, base: real(y.end, y.year), hi: real((h.years[i] || y).end, y.year), lo: real((l.years[i] || y).end, y.year) }));
-    if (b.years.length) maxX = b.years[b.years.length - 1].year;
-  }
-  return { pts, maxX };
-}
-
-/* Every rolling window since 1926: to the FIRE year, or to retirement with
-   contributions stopping at the coast year. */
-function histRuns(p: FirePlan, displayYear: number | null, maxYears: number): HistRuns {
-  const retYrs = p.mode === "coast" ? Math.max(1, p.retireAge - p.curAge) : maxYears;
-  const st = (years: number, contrib = p.contrib) => ({ years, contrib, period: contrib ? p.period : "Monthly", growth: contrib ? p.growth : 0, mix: p.histMix });
-  const stages = p.mode === "coast"
-    ? displayYear !== null && displayYear > 0 && displayYear < retYrs ? [st(displayYear), st(retYrs - displayYear, 0)] : [st(retYrs)]
-    : [st(displayYear !== null && displayYear > 0 ? displayYear : maxYears)];
-  return historicalRuns({ initial: p.initial, fees: 0 }, stages);
-}
 
 export function Fire() {
   const { state: s, set, setState } = useToolState(FIRE_DEF);
@@ -87,25 +42,21 @@ export function Fire() {
     return next;
   }));
 
-  const p = fireInput(s);
+  const { p, S, cr, histYear, displayYear, gains, keep, coastGap } = fireCompute(s);
   const coast = p.mode === "coast";
   const hist = s.chart === "hist";
   const modeLabel = coast ? "Coast FIRE" : "FIRE";
-  const S = p.target > 0 ? fireSolve(p) : null;
 
   // ---- the success-rate slider (market history only)
-  let displayYear = S?.fireYear ?? null;
   let successAge = DASH, sliderNote = "Enter a target to see results.";
   if (S && hist) {
-    const cr = coast ? fiComputeCoastCrossings(p) : fiComputeCrossings(p, S.maxYears);
     if (cr) {
-      const y = fiYearsFromCrossings(cr.crossings, cr.total, p.successRate);
+      const y = histYear;
       if (y !== null && y >= 0) {
         const ageNum = p.curAge + y;
         const ageFmt = ageNum % 1 ? ageNum.toFixed(1) : String(ageNum), yFmt = y % 1 ? y.toFixed(1) : String(y);
         successAge = "Age " + ageFmt + " (" + yFmt + (parseFloat(yFmt) === 1 ? " year" : " years") + " from now)";
         sliderNote = p.successRate + "% of historical windows since 1926 show the portfolio reaching the " + (coast ? "coast " : "") + "target by age " + ageFmt + ".";
-        displayYear = y;
       } else {
         successAge = "Not in range";
         sliderNote = p.successRate + "% success rate not achievable within the projected window.";
@@ -114,17 +65,17 @@ export function Fire() {
   }
 
   // ---- the chart
-  let chart: { pts: Pt[]; maxX: number; mode: "band" | "mc"; H?: HistRuns; note: string } = { pts: [], maxX: 1, mode: "band", note: "" };
+  let chart: { pts: FirePt[]; maxX: number; mode: "band" | "mc"; H?: HistRuns; note: string } = { pts: [], maxX: 1, mode: "band", note: "" };
   if (S) {
     if (hist) {
-      const H = histRuns(p, displayYear, S.maxYears);
+      const H = fireHistRuns(p, displayYear, S.maxYears);
       chart = H.tooLong || !H.bands?.length
         ? { pts: [], maxX: 1, mode: "mc", H, note: H.tooLong ? "History too short for this horizon" : "" }
         : (() => {
           const pts = H.bands.map((b) => ({ year: Math.round(b.year), base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }));
           return { pts, maxX: pts[pts.length - 1].year, mode: "mc" as const, H, note: "" };
         })();
-    } else chart = { ...bandPoints(p, displayYear, S.maxYears), mode: "band", note: "" };
+    } else chart = { ...fireBandPoints(p, displayYear, S.maxYears), mode: "band", note: "" };
   }
   const lbl = (p.band * 100).toFixed(1).replace(/\.0$/, "");
 
@@ -150,15 +101,12 @@ export function Fire() {
 
   const kvs = S ? {
     target: money(p.target), withdrawal: money(p.target * p.withdrawal), contribs: money(S.contribs),
-    gains: money(Math.max(0, S.nominal - p.initial - S.contribs)), nominal: pctStr(p.nominal, 2), real: pctStr(S.realRate, 2),
+    gains: money(gains), nominal: pctStr(p.nominal, 2), real: pctStr(S.realRate, 2),
   } : null;
-  let keepSaving = "", coastGap = "";
-  if (S && coast && S.fireYear !== null) {
-    const retYears = p.retireAge - p.curAge;
-    const full = project({ initial: p.initial, contrib: p.contrib, period: p.period, growth: p.growth, nominal: p.nominal, inflation: p.inflation, years: retYears, withdrawal: 0, taxRate: 0 });
-    const keep = ((full.years[full.years.length - 1] || { end: 0 }).end || 0) / Math.pow(1 + p.inflation, retYears);
+  let keepSaving = "", coastGapText = "";
+  if (keep !== null && coastGap !== null) {
     keepSaving = money(keep);
-    coastGap = money(Math.max(0, keep - S.real * Math.pow(1 + S.realRate, retYears - S.fireYear)));
+    coastGapText = money(coastGap);
   }
 
   return (
@@ -224,7 +172,7 @@ export function Fire() {
               <div>
                 <div id="fiCoastExtra" hidden={!coast}>
                   <KV k="Portfolio if you kept saving" id="fiKeepSaving" v={keepSaving || DASH} />
-                  <KV k="Extra vs. coasting" id="fiCoastGap" v={coastGap || DASH} />
+                  <KV k="Extra vs. coasting" id="fiCoastGap" v={coastGapText || DASH} />
                 </div>
                 <KV k="Nominal return" id="fiKVNominal" v={kvs?.nominal ?? DASH} />
                 <KV k="Real return" id="fiKVRealReturn" v={kvs?.real ?? DASH} />
