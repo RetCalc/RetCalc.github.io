@@ -9,7 +9,8 @@
 
    Uses `next start` on port 3200 (started and stopped here unless one is
    already running) and the Chrome installed on this machine, as the e2e
-   checks do. BASE=<url> shoots another server instead. */
+   checks do. BASE=<url> shoots another server instead; SHOTS=<dir> saves
+   into ../redesign-baseline/<dir> instead of screenshots/ (e.g. SHOTS=after). */
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -17,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import { chromium, devices } from "@playwright/test";
 
 const WEB = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const OUT = join(WEB, "..", "redesign-baseline", "screenshots");
+const OUT = join(WEB, "..", "redesign-baseline", process.env.SHOTS ?? "screenshots");
 const BASE = process.env.BASE ?? "http://localhost:3200";
 
 export const PAGES = {

@@ -12,31 +12,31 @@
    code and are deliberately unchanged.
    ============================================================ */
 :root{
-  /* ground: deep indigo ink, not neutral near-black */
-  --bg:#080b16;
-  --sunk:#05070f;          /* below the ground plane */
-  --panel:#151e33;         /* raised plateau */
-  --panel-2:#1e2a44;       /* raised, one step up */
-  --field:#05070e;         /* recessed well */
-  --line:#26314b;
-  --line-soft:#1a2338;
-  --text:#e8edf7;
-  --dim:#bbc8db;
-  --dimmer:#94a6bf;
+  /* The previous palette's names, kept so every existing rule recolors at
+     once. Each is an alias of a design-system token (app/globals.css); both
+     themes switch through the tokens, so none is redefined for light. */
+  --bg:var(--ds-ground);
+  --sunk:var(--ds-ground);
+  --panel:var(--ds-surface);
+  --panel-2:var(--ds-raised);
+  --field:var(--ds-ground);
+  --line:var(--ds-rule);
+  --line-soft:var(--ds-rule);
+  --text:var(--ds-text);
+  --dim:var(--ds-muted);
+  --dimmer:var(--ds-muted);
 
-  /* data hues — fixed, mirrored by the chart renderer */
-  --gold:#e9b872;
-  --jade:#4fbf95;
-  --steel:#7d9fd6;
-  --coral:#e2795f;
+  /* the data hues */
+  --gold:var(--ds-amber);
+  --jade:var(--ds-gain);
+  --steel:var(--ds-series-sky);
+  --coral:var(--ds-loss);
 
-  --grid:#1c2740;
-  /* axis labels: light enough to read at 11px on a panel (about 4.5:1) */
-  --axis:#7f8eaa;
-  --stageline:#4a5a7b;
-  --dotstroke:#080b16;
-  --shadow:rgba(0,0,0,.75);
-  --pop:#0d1322;
+  --grid:var(--ds-rule);
+  --axis:var(--ds-muted);
+  --stageline:var(--ds-rule-strong);
+  --dotstroke:var(--ds-surface);
+  --pop:var(--ds-raised);
 
   /* role-encoded geometry. The readout's bezel sits just inside its panel,
      so it takes the panel's radius less the 1px border, and the two curves
@@ -50,9 +50,9 @@
   /* Borders that answer the pointer. --line-hi is the hover edge on any
      well or key; the jade lines tint the edge of anything you can pick or
      switch on, so "choosable" reads the same everywhere. */
-  --line-hi:#3a4a6c;
-  --jade-line:rgba(79,191,149,.24);
-  --jade-line-hi:rgba(79,191,149,.5);
+  --line-hi:var(--ds-muted);
+  --jade-line:var(--ds-rule);
+  --jade-line-hi:var(--ds-rule-strong);
 
   /* One page gutter per breakpoint, widened by the notch inset on devices
      that have one. The masthead, the tab rail and the content column all
@@ -87,29 +87,6 @@
 /* light theme: the instrument under daylight — paper-pale body,
    same accents, depth inverted to match an overhead source */
 html[data-theme="light"]{
-  --bg:#eceef4;
-  --sunk:#dfe3ec;
-  --panel:#ffffff;
-  --panel-2:#f3f5fa;
-  --field:#f4f6fb;
-  --line:#ccd3e2;
-  --line-soft:#e3e7f0;
-  --text:#111827;
-  --dim:#404d64;
-  --dimmer:#5f6e87;
-  --gold:#a97516;
-  --jade:#16855c;
-  --steel:#3a63a8;
-  --coral:#bc4227;
-  --grid:#e0e4ee;
-  --axis:#66728a;
-  --stageline:#9aa5bb;
-  --dotstroke:#ffffff;
-  --shadow:rgba(22,32,55,.20);
-  --pop:#ffffff;
-  --line-hi:#aeb9cd;
-  --jade-line:rgba(22,133,92,.22);
-  --jade-line-hi:rgba(22,133,92,.5);
   --edge-up:inset 0 1px 0 rgba(255,255,255,.9);
   --lift-1:0 1px 0 rgba(255,255,255,.9) inset, 0 8px 22px -16px rgba(22,32,55,.5);
   --lift-2:0 24px 60px -22px rgba(22,32,55,.35), 0 0 0 1px rgba(22,32,55,.05);
