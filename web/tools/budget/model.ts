@@ -1,7 +1,9 @@
 /* The Budget tool's inputs and totals, apart from its screen so other tools
    can read them ("Copy from Budget" in Debt Payoff). From src/js/app/13-budget.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
+import { computeTax } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
+import type { Household } from "@/lib/household";
 
 /* Grouped presets. freq is the row's default: 12 = a monthly figure, 1 = an
    annual one. Travel and gifts default to annual, as people think of them. */
@@ -52,4 +54,26 @@ export function budgetTotals(b: BudgetInputs) {
   const spentYr = b.rows.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
   const savedYr = b.rows.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
   return { incomeYr, spentYr, savedYr, leftYr: incomeYr - spentYr - savedYr };
+}
+
+/** The totals, the share of income left over, and the emergency fund: its
+    months (6 when blank) and the spending it covers. */
+export function budgetCompute(b: BudgetInputs) {
+  const { incomeYr, spentYr, savedYr, leftYr } = budgetTotals(b);
+  const pct = incomeYr > 0 ? leftYr / incomeYr : 0;
+  const ef = Math.max(1, Math.round(parseNum(b.efMonths)) || 6);
+  return { incomeYr, spentYr, savedYr, leftYr, pct, ef, efTarget: (spentYr / 12) * ef };
+}
+
+/** The household's income as take-home pay, under the same 2026 rules the
+    Income Tax tool uses, before any retirement saving; null with no income.
+    taxState gives the Income Tax tool's state, asked for only when the
+    household has none. */
+export function budgetHouseholdNet(h: Household, taxState: () => string): number | null {
+  const married = h.status === "m";
+  const inc2 = married && h.income2 != null ? h.income2 : 0;
+  if (h.income == null || !(h.income + inc2 > 0)) return null;
+  const T = computeTax({ status: married ? "m" : "s", gross: h.income, gross2: inc2, pre: 0, dedType: "std", item: 0,
+    state: h.state || taxState() }) as { net: number };
+  return T.net;
 }

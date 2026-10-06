@@ -14,13 +14,12 @@ import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Figure, Segmented } from "@/components/common/Readout";
-import { computeTax } from "@/lib/engine/typed";
 import { focusLast } from "@/lib/dom";
 import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { retirementContribs } from "@/lib/retirement-contribs";
 import { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } from "@/tools/college/model";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
-import { BUDGET_DEF, PRESET_DESCS, budgetTotals, isSavingsRow, type BudgetRow } from "./model";
+import { BUDGET_DEF, PRESET_DESCS, budgetCompute, budgetHouseholdNet, isSavingsRow, type BudgetRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
@@ -41,12 +40,9 @@ export function Budget() {
   // The household's income, as take-home pay under the same 2026 rules the
   // Income Tax tool uses, before any retirement saving.
   useHouseholdFill("budget", (h) => {
-    const married = h.status === "m";
-    const inc2 = married && h.income2 != null ? h.income2 : 0;
-    if (h.income == null || !(h.income + inc2 > 0)) return;
-    const T = computeTax({ status: married ? "m" : "s", gross: h.income, gross2: inc2, pre: 0, dedType: "std", item: 0,
-      state: h.state || toolInputs("tax", TAX_DEFAULTS).state }) as { net: number };
-    setState((c) => ({ ...c, income: dollarsField(T.net / c.incomeFreq) }));
+    const net = budgetHouseholdNet(h, () => toolInputs("tax", TAX_DEFAULTS).state);
+    if (net == null) return;
+    setState((c) => ({ ...c, income: dollarsField(net / c.incomeFreq) }));
   });
 
   /* Another tool sending a line in: update a row with the same name rather
@@ -60,9 +56,7 @@ export function Budget() {
         : { ...c, rows: [...c.rows, { group: "Custom", desc, amount, freq: 12, custom: true }] };
     });
 
-  const { incomeYr, spentYr, savedYr, leftYr } = budgetTotals(s);
-  const pct = incomeYr > 0 ? leftYr / incomeYr : 0;
-  const ef = Math.max(1, Math.round(parseNum(s.efMonths)) || 6);
+  const { incomeYr, spentYr, savedYr, leftYr, pct, ef, efTarget } = budgetCompute(s);
   const sign = leftYr < 0 ? "v neg" : "v pos";
 
   // Rows grouped as they come, keeping each row's place in the list.
@@ -222,7 +216,7 @@ export function Budget() {
             <Affixed suffix="mo" className="w-18"><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
             <span>of monthly expenses</span>
           </div>
-          <div className="kv total mt-3"><span className="k" id="efLabel">{ef}-month emergency fund</span><span className="v gold" id="efTarget">{money((spentYr / 12) * ef)}</span></div>
+          <div className="kv total mt-3"><span className="k" id="efLabel">{ef}-month emergency fund</span><span className="v gold" id="efTarget">{money(efTarget)}</span></div>
         </CardContent>
       </Card>
     </div>

@@ -20,7 +20,7 @@ const { MORTGAGE_DEFAULTS, mortgageCompute } = await import("@/tools/mortgage/mo
 const { DEBT_DEFAULTS, debtCompute } = await import("@/tools/debt/model");
 const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
-const { BUDGET_DEFAULTS, budgetTotals } = await import("@/tools/budget/model");
+const { BUDGET_DEFAULTS, budgetCompute, budgetHouseholdNet } = await import("@/tools/budget/model");
 const { healthcareCompute } = await import("@/tools/healthcare/model");
 const { FIRE_DEFAULTS, fireCompute } = await import("@/tools/fire/model");
 const { BRIDGE_DEFAULTS, bridgeInput } = await import("@/tools/bridge/model");
@@ -121,10 +121,8 @@ const FIRST_SCENARIOS = [
 ];
 
 /* ---- the other tools ----
-   Where a screen does arithmetic of its own between the model and the
-   engine (Stages, Healthcare, Rent vs. Buy, FIRE's history slider, Debt's
-   "$100 more" line, Mortgage's extra-payment comparison), it's copied here
-   from the screen named, as Advanced's compute() is. */
+   Each calls its tool's own model functions (the ones its screen calls),
+   so nothing here is a copy of a screen's arithmetic. */
 
 function mortgageTool(fields) {
   const { R, base, sooner, interestSaved, RF } = mortgageCompute({ ...MORTGAGE_DEFAULTS, ...fields });
@@ -160,14 +158,10 @@ function college(fields) {
 }
 
 function budget(fields, household) {
-  const s = { ...BUDGET_DEFAULTS, ...fields };
-  const totals = budgetTotals(s);
-  // Budget.tsx: the household's take-home pay, filled in as income.
-  let net = null;
-  if (household) {
-    const h = household, married = h.status === "m", inc2 = married ? h.income2 ?? 0 : 0;
-    net = T.computeTax({ status: married ? "m" : "s", gross: h.income, gross2: inc2, pre: 0, dedType: "std", item: 0, state: h.state }).net;
-  }
+  const { incomeYr, spentYr, savedYr, leftYr } = budgetCompute({ ...BUDGET_DEFAULTS, ...fields });
+  const totals = { incomeYr, spentYr, savedYr, leftYr };
+  // The household's take-home pay, as the screen fills it in as income.
+  const net = household ? budgetHouseholdNet(household, () => TAX_DEFAULTS.state) : null;
   return { full: { totals, net }, out: { ...totals, householdTakeHome: net } };
 }
 
