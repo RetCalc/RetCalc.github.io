@@ -13,10 +13,9 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
 import { KV } from "@/components/common/Readout";
-import { HC_AGE40_MULT, HC_STATE_PREMIUM_40, hcCalcACA, hcFPL, hcGrossPremium, ssTaxable } from "@/lib/engine/typed";
 import { dollarsField, money, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
-import { HC_IRMAA, HC_MEDIGAP_HIGH, HC_MEDIGAP_LOW, HC_PARTD_BASE, HC_STATES, HEALTHCARE_DEF, irmaaTier, type HealthcareInputs } from "./model";
+import { HC_MEDIGAP_HIGH, HC_MEDIGAP_LOW, HC_PARTD_BASE, HC_STATES, HEALTHCARE_DEF, healthcareCompute, type HealthcareInputs } from "./model";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,42 +48,12 @@ export function Healthcare() {
     return next;
   }));
 
-  const retireAge = Math.round(parseNum(s.retireAge)) || 62;
-  const joint = s.status === "m";
-  const household = parseInt(s.household) || (joint ? 2 : 1);
-  const state = s.state || "IL";
-  const manualPremium = parseNum(s.premium) || 0;
-
-  /* The field is AGI, also the MAGI Medicare's IRMAA uses. The ACA adds back
-     untaxed Social Security, found from the benefit: its taxable part depends
-     on the other income, so repeated passes settle it (exact within a cent). */
-  const magi = parseNum(s.income) || 0;
-  const ssGross = parseNum(s.ss) || 0;
-  let ssTaxed = 0;
-  for (let it = 0; it < 150 && ssGross > 0; it++) ssTaxed = ssTaxable(ssGross, Math.max(0, magi - ssTaxed), joint ? "m" : "s").taxable;
-  const acaMagi = magi + Math.max(0, ssGross - ssTaxed);
-
-  // ── the ACA bridge ──
-  const bridgeYears = Math.max(0, 65 - retireAge);
-  const fpl = hcFPL(household);
-  const pctFPL = acaMagi > 0 ? acaMagi / fpl : 0;
-  const acaAge = Math.min(64, Math.max(21, retireAge));
-  /* The credit is for the household: the benchmark for everyone enrolling
-     (each adult at their own age; a spouse already 65 is on Medicare),
-     children at the under-15 rate with at most three counted, less ONE
-     contribution based on household income. */
-  const spouseAge = Math.round(parseNum(s.spouseAge)) || retireAge;
-  const spouseOn = joint && spouseAge < 65;
-  const acaAge2 = Math.min(64, Math.max(21, spouseAge));
-  const kids = Math.min(3, Math.max(0, household - (joint ? 2 : 1)));
-  const childPrem = (((HC_STATE_PREMIUM_40 as Record<string, number>)[state] || 500) / (HC_AGE40_MULT as number)) * 0.765;
-  const grossMonthly = manualPremium > 0 ? manualPremium
-    : hcGrossPremium(state, acaAge, 0) + (spouseOn ? hcGrossPremium(state, acaAge2, 0) : 0) + kids * childPrem;
+  const {
+    joint, household, state, magi, acaMagi, bridgeYears, pctFPL, acaAge, spouseOn, acaAge2, kids, grossMonthly, std, enh, usingStateEst,
+    tier, partB, partDIrmaa, partD, totalLow, totalHigh, hasIrmaa, people, prev, next, save, nextThreshold, nextCost, cliff400, bronze, gold,
+  } = healthcareCompute(s);
   const coveredDesc = (spouseOn ? (acaAge2 === acaAge ? "two adults age " + acaAge : "ages " + acaAge + " and " + acaAge2) : "age " + acaAge) +
     (kids ? " + " + kids + (kids === 1 ? " child" : " children") : "");
-  const std = hcCalcACA(acaMagi, grossMonthly, pctFPL, false);
-  const enh = hcCalcACA(acaMagi, grossMonthly, pctFPL, true);
-  const usingStateEst = manualPremium <= 0;
 
   let aca: React.ReactNode;
   if (bridgeYears <= 0) {
@@ -96,7 +65,6 @@ export function Healthcare() {
     const incNote = acaMagi > magi + 0.5 ? " (your MAGI plus " + money(acaMagi - magi) + " of untaxed Social Security, which the ACA counts)" : "";
     const medicaid = pctFPL < 1.0;
     const showEnhanced = (!std.eligible && enh.eligible) || (std.eligible && Math.abs(enh.net - std.net) > 5);
-    const cliff400 = fpl * 4.0;
     aca = (
       <>
         {/* The headline is what 2026 actually costs; the enhanced figure is a what-if. */}
@@ -136,9 +104,9 @@ export function Healthcare() {
             ) : null}
             <div className="hc-section">
               <Label note="(same credit applies to any tier)">Plan tier comparison</Label>
-              <div className="hc-tier-row"><span>🥉 Bronze: lowest monthly cost; high deductible — you pay most costs out-of-pocket until you hit it</span><span>~${r(Math.max(0, grossMonthly * 0.75 - std.credit))}/mo</span></div>
+              <div className="hc-tier-row"><span>🥉 Bronze: lowest monthly cost; high deductible — you pay most costs out-of-pocket until you hit it</span><span>~${r(bronze)}/mo</span></div>
               <div className="hc-tier-row hc-tier-sel"><span>🥈 Silver: the credit is built around this tier; also unlocks cost-sharing reductions at lower incomes</span><span>${r(std.net)}/mo</span></div>
-              <div className="hc-tier-row"><span>🥇 Gold: higher monthly cost; lower deductible and copays — better if you expect to use a lot of care</span><span>~${r(Math.max(0, grossMonthly * 1.25 - std.credit))}/mo</span></div>
+              <div className="hc-tier-row"><span>🥇 Gold: higher monthly cost; lower deductible and copays — better if you expect to use a lot of care</span><span>~${r(gold)}/mo</span></div>
             </div>
             {spouseOn ? (
               <div className="hc-insight">For a couple, <b>both spouses need their own plan</b>, and the figures above cover both of you. The credit is worked out for the household as a whole: the benchmark for both plans, less one contribution based on your combined income. {std.eligible ? "That's why a subsidized couple pays about what one person at the same income would, not double." : "Above the 400% cliff there is no credit, so you pay both full premiums."}</div>
@@ -160,22 +128,10 @@ export function Healthcare() {
     );
   }
 
-  // ── Medicare ──
-  const tier = irmaaTier(magi, joint);
-  const [, , partB, partDIrmaa] = HC_IRMAA[tier];
-  const partD = HC_PARTD_BASE + partDIrmaa;
-  const totalLow = partB + partD + HC_MEDIGAP_LOW, totalHigh = partB + partD + HC_MEDIGAP_HIGH;
-  const hasIrmaa = tier > 0;
-  const people = joint ? 2 : 1;
   let medicare: React.ReactNode;
   if (magi <= 0) {
     medicare = <p className={empty}>Enter your expected retirement MAGI to see Medicare cost estimates. Medicare uses your income from <b>two years prior</b> to determine surcharges.</p>;
   } else {
-    const prev = hasIrmaa ? HC_IRMAA[tier - 1] : null;
-    const next = tier < HC_IRMAA.length - 1 ? HC_IRMAA[tier + 1] : null;
-    const save = prev ? partB - prev[2] + (partDIrmaa - prev[3]) : 0;
-    const nextThreshold = next ? next[joint ? 1 : 0] : 0;
-    const nextCost = next ? next[2] - partB + (next[3] - partDIrmaa) : 0;
     medicare = (
       <>
         <p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Most enrollees add a <b>Medigap supplement</b> (like Plan G) which covers deductibles and copays that Parts A and B leave unpaid, capping your out-of-pocket exposure. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>

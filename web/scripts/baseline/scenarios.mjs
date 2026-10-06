@@ -21,7 +21,7 @@ const { MORTGAGE_DEFAULTS, mortgageInput } = await import("@/tools/mortgage/mode
 const { DEBT_DEFAULTS, debtList } = await import("@/tools/debt/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
 const { BUDGET_DEFAULTS, budgetTotals } = await import("@/tools/budget/model");
-const { HC_IRMAA, HC_PARTD_BASE, HC_MEDIGAP_LOW, HC_MEDIGAP_HIGH, irmaaTier } = await import("@/tools/healthcare/model");
+const { healthcareCompute } = await import("@/tools/healthcare/model");
 const { FIRE_DEFAULTS, fireInput, fireSolve } = await import("@/tools/fire/model");
 const { BRIDGE_DEFAULTS, bridgeInput } = await import("@/tools/bridge/model");
 const { runBridge, bridgeScenarios, firstYearAfter } = await import("@/tools/bridge/run");
@@ -192,40 +192,14 @@ function budget(fields, household) {
   return { full: { totals, net }, out: { ...totals, householdTakeHome: net } };
 }
 
-/* Healthcare.tsx works out everything in the screen; this is that code. */
 function healthcare(fields) {
-  const s = { retireAge: "62", status: "s", household: "2", spouseAge: "62", state: "IL", income: "", ss: "", premium: "", ...fields };
-  const retireAge = Math.round(parseNum(s.retireAge)) || 62;
-  const joint = s.status === "m";
-  const household = parseInt(s.household) || (joint ? 2 : 1);
-  const state = s.state || "IL";
-  const manualPremium = parseNum(s.premium) || 0;
-  const magi = parseNum(s.income) || 0;
-  const ssGross = parseNum(s.ss) || 0;
-  let ssTaxed = 0;
-  for (let it = 0; it < 150 && ssGross > 0; it++) ssTaxed = T.ssTaxable(ssGross, Math.max(0, magi - ssTaxed), joint ? "m" : "s").taxable;
-  const acaMagi = magi + Math.max(0, ssGross - ssTaxed);
-  const bridgeYears = Math.max(0, 65 - retireAge);
-  const fpl = T.hcFPL(household);
-  const pctFPL = acaMagi > 0 ? acaMagi / fpl : 0;
-  const acaAge = Math.min(64, Math.max(21, retireAge));
-  const spouseAge = Math.round(parseNum(s.spouseAge)) || retireAge;
-  const spouseOn = joint && spouseAge < 65;
-  const acaAge2 = Math.min(64, Math.max(21, spouseAge));
-  const kids = Math.min(3, Math.max(0, household - (joint ? 2 : 1)));
-  const childPrem = ((T.HC_STATE_PREMIUM_40[state] || 500) / T.HC_AGE40_MULT) * 0.765;
-  const grossMonthly = manualPremium > 0 ? manualPremium
-    : T.hcGrossPremium(state, acaAge, 0) + (spouseOn ? T.hcGrossPremium(state, acaAge2, 0) : 0) + kids * childPrem;
-  const std = T.hcCalcACA(acaMagi, grossMonthly, pctFPL, false);
-  const enh = T.hcCalcACA(acaMagi, grossMonthly, pctFPL, true);
-  const tier = irmaaTier(magi, joint);
-  const [, , partB, partDIrmaa] = HC_IRMAA[tier];
-  const partD = HC_PARTD_BASE + partDIrmaa;
-  const medicare = { tier, partB, partD, totalLow: partB + partD + HC_MEDIGAP_LOW, totalHigh: partB + partD + HC_MEDIGAP_HIGH };
+  const H = healthcareCompute({ retireAge: "62", status: "s", household: "2", spouseAge: "62", state: "IL", income: "", ss: "", premium: "", ...fields });
+  const { acaMagi, fpl, grossMonthly, std, enh, tier, partB, partD, totalLow, totalHigh } = H;
+  const medicare = { tier, partB, partD, totalLow, totalHigh };
   return {
     full: { acaMagi, fpl, grossMonthly, std, enh, medicare },
-    out: { bridgeYears, acaMagi, pctFPL, benchmarkMonthly: grossMonthly, netPremium: std.eligible ? std.net : grossMonthly, credit: std.credit,
-      enhancedNet: enh.net, irmaaTier: tier, medicareLow: medicare.totalLow, medicareHigh: medicare.totalHigh },
+    out: { bridgeYears: H.bridgeYears, acaMagi, pctFPL: H.pctFPL, benchmarkMonthly: grossMonthly, netPremium: std.eligible ? std.net : grossMonthly, credit: std.credit,
+      enhancedNet: enh.net, irmaaTier: tier, medicareLow: totalLow, medicareHigh: totalHigh },
   };
 }
 
