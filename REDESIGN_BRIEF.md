@@ -14,9 +14,13 @@ Design for both: simple on first screen, depth on demand.
 
 ## Tone
 Precise, calm, trustworthy, numbers-first. A serious instrument, not a
-fintech app. Never: hype, gamification, confetti, stock photos of
-retirees, money emoji, gradient washes, glassmorphism, three identical
-feature cards, centered-everything layouts.
+fintech app. Never: hype, gamification (points, badges, streaks,
+confetti), stock photos of retirees, money emoji, gradient washes,
+glassmorphism, three identical feature cards, centered-everything
+layouts. The bow-and-arrow progress animations on the Guide and the Plan
+Optimizer are brand elements, not gamification, and stay (see Must keep).
+Some playfulness and motion is welcome; DESIGN.md's Motion section sets
+the rules.
 
 ## References
 ProjectionLab (category), Stripe or Linear (restraint, typography),
@@ -49,7 +53,8 @@ Chart series (dark / light)
 ## Color rules
 - Dark first; light derived from the same tokens.
 - Accent only on: the key result, the primary button, the active tab,
-  and "your plan" in charts.
+  and "your plan" in charts. Exempt: the logo keeps its own colors, and
+  the brand motif's bullseye turns amber when it is hit.
 - Never use color alone for meaning. Pair gain/loss with an icon and a
   label.
 - Text 4.5:1 contrast minimum in both modes, including text on tinted
@@ -66,6 +71,12 @@ Chart series (dark / light)
   first (tokens, type, nav, footer), then the homepage.
 - Review each page with screenshots (desktop and phone, both themes)
   before moving on.
+- DESIGN.md at the repo root is the visual spec ("The Quiet
+  Instrument"); this brief wins where they disagree.
+- Logo: kept exactly as it is (shape and its gold, jade and steel), in
+  both themes. Exempt from the palette and the accent rule.
+- Tool-picker icon animations: kept, retuned to DESIGN.md's Motion rules.
+- Print summary and share image card: restyled in a separate, later pass.
 
 ## Must keep (restyle only, don't rebuild)
 - The RetCalc name, tagline, disclaimers, and the "nothing leaves your
@@ -78,6 +89,12 @@ Chart series (dark / light)
   new JS or images.
 - Print summary and share image card colors are separate from the screen
   theme; handle them deliberately, not by accident.
+- The logo, unchanged.
+- The Guide's bow-and-arrow progress bar (the arrow flies from the bow
+  toward the target as the visitor advances).
+- The Plan Optimizer's bow-and-arrow loading bar (the bow shoots at the
+  target while the search runs). Both follow DESIGN.md's Brand Motif
+  rules.
 
 ## Hard constraint
 Change only styling, layout, and markup. Do not modify any calculation,

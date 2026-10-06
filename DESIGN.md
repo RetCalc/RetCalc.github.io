@@ -1,0 +1,443 @@
+---
+name: RetCalc
+description: Know your number.
+colors:
+  graphite-ground: "#0E1116"
+  graphite-surface: "#151A21"
+  graphite-raised: "#1C222B"
+  graphite-rule: "#2A313C"
+  graphite-text: "#E8EBF0"
+  graphite-muted: "#9AA4B2"
+  signal-amber: "#E3A93B"
+  on-signal-amber: "#0E1116"
+  gain: "#4CC38A"
+  loss: "#F0716A"
+  paper-ground: "#FAF9F6"
+  paper-surface: "#FFFFFF"
+  paper-raised: "#F3F1EC"
+  paper-rule: "#E3E0D8"
+  paper-text: "#17191C"
+  paper-muted: "#5B636E"
+  signal-amber-deep: "#9A6200"
+  on-signal-amber-deep: "#FFFFFF"
+  gain-deep: "#17704A"
+  loss-deep: "#B02F29"
+  series-sky: "#5AA9E6"
+  series-sky-deep: "#2F7FC4"
+  series-teal: "#46B9A6"
+  series-teal-deep: "#1F8F7E"
+  series-rose: "#E0749B"
+  series-lavender: "#9C8CE0"
+  series-gray: "#8A94A3"
+  brand-gold: "#e9b872"
+  brand-jade: "#4fbf95"
+  brand-steel: "#7d9fd6"
+typography:
+  display:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "35px"
+    fontWeight: 500
+    lineHeight: 1.05
+    letterSpacing: "-0.02em"
+    fontFeature: "\"tnum\""
+  headline:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "23px"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "-0.02em"
+  title:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 600
+    lineHeight: 1.35
+    letterSpacing: "-0.01em"
+  body:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.5
+  body-sm:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.5
+    fontFeature: "\"tnum\""
+  label:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "11.5px"
+    fontWeight: 500
+    lineHeight: 1.4
+  eyebrow:
+    fontFamily: "IBM Plex Sans, system-ui, sans-serif"
+    fontSize: "11px"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "0.08em"
+rounded:
+  control: "10px"
+  card: "14px"
+  panel: "16px"
+  pill: "999px"
+spacing:
+  field-gap: "13px"
+  panel-y: "16px"
+  panel-x: "18px"
+  grid-gap: "20px"
+  gutter-sm: "20px"
+  gutter: "26px"
+components:
+  button-primary:
+    backgroundColor: "{colors.signal-amber}"
+    textColor: "{colors.on-signal-amber}"
+    typography: "{typography.body-sm}"
+    rounded: "{rounded.control}"
+    padding: "0 14px"
+    height: "36px"
+  button-secondary:
+    backgroundColor: "{colors.graphite-raised}"
+    textColor: "{colors.graphite-text}"
+    typography: "{typography.body-sm}"
+    rounded: "{rounded.control}"
+    padding: "0 14px"
+    height: "36px"
+  input:
+    backgroundColor: "{colors.graphite-ground}"
+    textColor: "{colors.graphite-text}"
+    typography: "{typography.body-sm}"
+    rounded: "{rounded.control}"
+    padding: "0 12px"
+    height: "36px"
+  panel:
+    backgroundColor: "{colors.graphite-surface}"
+    textColor: "{colors.graphite-text}"
+    rounded: "{rounded.panel}"
+    padding: "16px 18px"
+  readout-key:
+    textColor: "{colors.signal-amber}"
+    typography: "{typography.display}"
+  readout-secondary:
+    textColor: "{colors.graphite-text}"
+    typography: "{typography.display}"
+  tab:
+    textColor: "{colors.graphite-muted}"
+    typography: "{typography.body}"
+  tab-active:
+    textColor: "{colors.graphite-text}"
+    typography: "{typography.body}"
+  table-header:
+    backgroundColor: "{colors.graphite-surface}"
+    textColor: "{colors.graphite-muted}"
+    typography: "{typography.label}"
+  table-cell:
+    textColor: "{colors.graphite-text}"
+    typography: "{typography.body-sm}"
+  menu:
+    backgroundColor: "{colors.graphite-raised}"
+    textColor: "{colors.graphite-text}"
+    rounded: "{rounded.card}"
+    padding: "6px"
+  badge:
+    backgroundColor: "{colors.graphite-raised}"
+    textColor: "{colors.graphite-text}"
+    typography: "{typography.label}"
+    rounded: "{rounded.pill}"
+    padding: "2px 8px"
+---
+
+<!-- TARGET SYSTEM. This file describes where the redesign is going, set by
+     REDESIGN_BRIEF.md (colors, font, color rules are final there) and the
+     structure the current code already has and the brief keeps. As of
+     2026-10-06 the code still runs the previous system; a snapshot of it is
+     in redesign-baseline/DESIGN.before.md (local, gitignored). Re-run
+     /impeccable document once the shared pieces have landed. -->
+
+# Design System: RetCalc
+
+## Overview
+
+**Creative North Star: "The Quiet Instrument"**
+
+RetCalc is a precision instrument for one question: will the money last? The system's job is to make the reading unmistakable and then get out of the way. Graphite surfaces sit flat and close in tone, type is exact and unhurried, and a single amber signal marks the one thing on the screen you came for. Everything else (inputs, tables, the rest of the chart) is set in neutral ink so the signal has no competition.
+
+The previous system already called itself "The Instrument", and that idea stays. What goes is the showmanship: indigo ground, glowing numerals, bevelled keys, lit edges, and gradient washes behind the page. The quiet version earns trust by restraint, the way a good annual report or an FT chart does. It is dense where the data is dense (year-by-year tables, simulation charts) and spare everywhere else. The first screen of every tool answers a quick question for a saver in their thirties; depth is one step away for the planner who wants to check the math.
+
+Dark is the primary mode and is designed first. Light is derived from the same roles, not repainted: every Graphite token has a Paper counterpart that plays the same part.
+
+**Key Characteristics:**
+- One amber signal per view, on a graphite field.
+- Flat, tonal depth: ground, surface, raised, separated by hairline rules. No shadows at rest.
+- IBM Plex Sans throughout, tabular numerals on every figure.
+- Controls that feel like firm keys: clear fills, real hit areas, a small press on click.
+- Data-first layout: inputs in a sticky left column, computed results to the right, the key result at the top of the results.
+- Small, playful motion around the numbers, never in them; the bow and arrow is the brand's moving sign.
+
+## Colors
+
+Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair and a restrained chart series set. All values are final per the brief; do not propose alternatives.
+
+### Primary
+- **Signal Amber** (dark) / **Signal Amber Deep** (light): the accent. It appears in exactly four places: the key result in the headline readout, the primary button, the active tab's indicator, and the "your plan" series in charts. Text set on an amber fill uses On Signal Amber (graphite ground in dark, white in light).
+
+### Neutral (dark, primary mode)
+- **Graphite Ground**: the page background, and the fill of input fields (one step below the panel they sit in, so a field reads as a place to type without any inset shadow).
+- **Graphite Surface**: panels and cards, the sticky tab rail once pinned, table header cells.
+- **Graphite Raised**: one step up from surface. Secondary buttons, menus, tooltips, dialogs, row hover, selected segment.
+- **Graphite Rule**: every border and divider, chart gridlines.
+- **Graphite Text**: primary text and all figures that are not the key result.
+- **Graphite Muted**: labels, hints, table column headers, axis labels, inactive tabs.
+
+### Neutral (light, derived)
+- **Paper Ground**, **Paper Surface**, **Paper Raised**, **Paper Rule**, **Paper Text**, **Paper Muted**: one-to-one counterparts of the Graphite roles above. A light-mode screen is the dark-mode screen with every Graphite token swapped for its Paper twin and every accent/semantic swapped for its Deep twin.
+
+### Semantic
+- **Gain** / **Gain Deep** and **Loss** / **Loss Deep**: money that grows or shrinks, a plan that lasts or runs out. Never on their own (see the Never Alone Rule).
+
+### Chart series
+- **Your plan** is always Signal Amber (Deep in light).
+- **Sky** and **Teal** (each with a Deep variant for light) are the first comparison series.
+- **Rose**, **Lavender**, **Gray** follow, with one value in both modes; check their contrast against Paper Surface before using them as thin lines in light mode.
+- **Bands** (percentile ranges, better/worse cases) are the series color at 15 to 25% opacity.
+
+### Brand mark
+- **Brand Gold**, **Brand Jade**, **Brand Steel**: the bow-and-arrow logo (`web/components/shell/Brandmark.tsx`), kept exactly as it is: same shape, same three colors, the same values in both themes. It is a brand mark, not UI, so it is exempt from the palette and from the Four Places Rule. Don't redraw it, recolor it, or map its colors to theme tokens, and don't use Brand Gold, Jade or Steel anywhere else in the UI.
+- The jade glow behind the mark in the masthead and its drop shadow are presentation, not the mark; they follow the No Wash and Flat Rest rules like everything else.
+- The same three colors also draw the bow-and-arrow brand motif's bow and arrow today; in the redesign the motif uses its own colors (see Brand Motif).
+
+### Print and share
+- The printed summary and the share image card use their own fixed palettes, separate from the screen theme. They are restyled in a separate, later pass; until then a theme change must never leak into them by accident.
+
+### Named Rules
+**The Four Places Rule.** Amber appears only on the key result, the primary button, the active tab, and "your plan" in charts. Not on links, headings, hover states, icons, focus rings, or decoration. If a fifth place seems to need it, it doesn't. Two exemptions, and only these: the brand mark keeps its own colors, and the brand motif's bullseye turns amber at the moment it is hit.
+
+**The Never Alone Rule.** Color never carries meaning by itself. Gain and loss always pair with a sign or arrow glyph and a word or column header that says what it is ("Lasted", "Ran out", "Growth").
+
+**The 4.5 Rule.** Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way.
+
+## Typography
+
+**Body Font:** IBM Plex Sans (with system-ui, sans-serif), self-hosted through next/font.
+**Numerals:** IBM Plex Sans with tabular figures (`font-variant-numeric: tabular-nums`). No monospace face; the previous system's IBM Plex Mono figures are retired.
+
+**Character:** One family, set carefully. Plex Sans has the engineered, slightly technical feel of an instrument face while staying calm at reading sizes, and its tabular figures keep money columns aligned without the typewriter look of a mono.
+
+### Hierarchy
+- **Display** (500, 35px, 1.05): the headline readout figures only. Size carried over from the current readout; weight and tracking get a final check when the readout is rebuilt.
+- **Headline** (600, 23px, 1.15): the tool's name in the tool header.
+- **Title** (600, 14px, 1.35): panel and card headings ("Balance over time", "Year by year").
+- **Body** (400, 15px, 1.5): default text, tabs, written explanations. Articles cap at about 78ch.
+- **Body small** (400, 13px, 1.5): table cells, key/value rows, secondary text, field values.
+- **Label** (500, 11.5px, 1.4): field hints, readout labels, table column headers, legend entries, axis labels.
+- **Eyebrow** (600, 11px, 0.08em, uppercase): group headings in the tool picker and menus. The only uppercase text in the system.
+
+The wordmark ("RetCalc", 700, 26px) and the tagline are brand elements, sized in the masthead pass.
+
+### Named Rules
+**The Tabular Rule.** Every number on screen is set with tabular numerals: readouts, tables, inputs, axis labels, tooltips, inline figures in sentences. A number that shifts width as it changes is a bug.
+
+**The Sentence Case Rule.** Headings, buttons, labels and tabs are in sentence case. Uppercase is reserved for the small eyebrow group headings.
+
+## Layout
+
+The page is a centered column up to 1330px wide, with a page gutter of 26px (20px at 900px and below) that also respects the device's safe-area insets. The masthead, the tab rail and the content all align to that same gutter.
+
+Tool pages use a two-column grid: a 340px input column on the left and a fluid results column on the right, 20px apart. The input column is sticky under the tab rail and scrolls on its own when it is taller than the viewport. Results stack vertically, 20px apart, starting with the headline readout. Pages without inputs (Budget, the tool picker, About) use a single centered column at a comfortable measure rather than stretching edge to edge.
+
+Breakpoints: at 900px and below, the input column moves above the results and stops being sticky. At 640px and below, the phone layout takes over: menus become full-width sheets with thumb-sized rows, and the readout's figures stack.
+
+Navigation is a sticky tab rail (Guide, Calculator, Tools, About) directly under the masthead. Calculator is a tab with a mode menu (Basic, Advanced, Stages). The other ~20 tools are reached from the Tools picker, grouped by the kind of question they answer, and each tool page carries a back link and a header with its icon, name and one-line description.
+
+Dense tables live inside their own scroll container. On phones they scroll sideways within that container; the page itself never scrolls horizontally.
+
+Spacing rhythm: 13px between fields, 16px by 18px inside panels, 20px between panels and grid columns.
+
+## Elevation & Depth
+
+The system is flat. Depth comes from three tonal steps (Ground, Surface, Raised) and 1px Rule borders, never from shadows, gradients, glows or inset bevels. A panel sits on the ground because it is one tone lighter and has a hairline edge; a menu sits above a panel because it is one more tone up and casts a shadow.
+
+### Shadow Vocabulary
+- **Float** (dark: `0 12px 32px -12px rgba(0,0,0,.6)`; light: `0 12px 32px -14px rgba(23,25,28,.18)`; starting values, tuned in the shared-pieces pass): menus, select lists, tooltips, toasts, dialogs and the pinned tab rail. Nothing else.
+
+### Named Rules
+**The Flat Rest Rule.** Surfaces are flat at rest. A shadow means "this is floating above the page and will go away". If it doesn't float, it doesn't get a shadow.
+
+**The No Wash Rule.** No gradient washes, radial glows, glassmorphism, text glows or lit edges, on the page background or on any component.
+
+## Shapes
+
+Gently rounded, consistent by role. Controls (buttons, inputs, selects, segmented switches) use 10px. Cards inside a panel, menus, tooltips and toasts use 14px. Panels use 16px. Badges and pills are fully round. An element nested flush inside another takes the outer radius less the border so the curves run parallel. Borders are always 1px Rule; there are no double borders, colored side stripes, or accent edges.
+
+## Components
+
+Firm and tactile: controls read as keys you press, with clear fills, real hit areas and a small physical response, but without bevels or glow.
+
+### Buttons
+- **Shape:** gently rounded (10px), 36px tall; 44px on coarse pointers.
+- **Primary:** Signal Amber fill, On Signal Amber text, 600 weight. One per view at most; it is one of amber's four places.
+- **Secondary:** Raised fill, Rule border, Text color. The default for every other action (Save, Share, CSV, Reset).
+- **Ghost / quiet:** no fill or border; Muted text that turns Text color on hover. For footer links and in-sentence actions.
+- **Hover:** fill shifts one small step (toward Text in dark, toward Ground in light); border shifts to Muted. No lift.
+- **Active:** presses down 1px.
+- **Focus:** 2px ring in Text color at 2px offset. Never amber.
+- **Disabled:** 50% opacity, no pointer events.
+
+### Inputs / Fields
+- **Style:** Ground fill inside a Surface panel, 1px Rule border, 10px radius, 36px tall. Values in tabular figures, right-aligned for money and percentages, with the unit ($, %) as a muted prefix or suffix inside the field.
+- **Label:** above the field in Body, a hint below in Label/Muted.
+- **Hover:** border to Muted. **Focus:** border to Text plus the 2px focus ring.
+- **Error:** Loss border and a written message under the field, with an icon.
+
+### Segmented switch
+- A Ground track with a Raised thumb that slides to the selected option. Selected text in Text color; others Muted. Used for view switches (Selected year / All years, chart modes).
+
+### Cards / Panels
+- **Corner Style:** 16px for panels, 14px for cards inside them.
+- **Background:** Surface; nested cards and callouts use Raised.
+- **Shadow Strategy:** none (Flat Rest Rule).
+- **Border:** 1px Rule.
+- **Internal Padding:** 16px by 18px. A panel's title row sits on a Rule divider.
+
+### Headline readout (signature)
+The key result, and the reason the page exists. It opens the results column as the top band of the first panel: up to three figures side by side on desktop, stacked on phones, each with a Label above and a short Muted note below. Exactly one figure, the answer to the tool's question, is Signal Amber; the others are Text. Figures are Display size, tabular, never wrapped. Flat: no glass, glow, or gradient, just the Surface tone and a Rule divider beneath.
+
+### Tables
+- Column headers in Label/Muted on Surface, sticky at the top of their scroll container.
+- Cells in Body small, tabular; numbers right-aligned, the first column left-aligned.
+- Rows divided by Rule; hover fills the row with Raised.
+- Gain/loss cells use the semantic colors with a sign, under a header that names them.
+- On phones the table scrolls sideways inside its own container.
+
+### Charts
+- Plan line in Signal Amber, ending in the logo's arrowhead. Comparison series in Sky, Teal, then Rose, Lavender, Gray. Ranges as bands at 15 to 25% opacity of their series.
+- Gridlines in Rule; axis labels in Label/Muted, tabular.
+- Legend below the chart: swatch plus text. Toggleable entries fade and strike through when off.
+- Tooltips: Raised fill, Rule border, 14px radius, Float shadow, tabular figures.
+
+### Navigation
+- **Tab rail:** sticky under the masthead, transparent until pinned, then Surface with a Rule bottom edge and the Float shadow. Tabs in Body, Muted at rest, Text on hover and when selected.
+- **Active tab:** marked by the logo's arrow under its name in Signal Amber, which slides in from the left (within the Motion timings); a faint Muted arrow previews it on hover.
+- **Calculator mode menu:** drops from the tab on desktop (Raised, 14px, Float); on phones it is a full-width sheet with 58px rows over a dimmed page. The current mode gets a check mark and Text weight, not amber.
+- **Tool picker:** cards grouped under Eyebrow headings, two columns from 900px. Each card has an icon tile, a name (600, 15px) and a one-line description, with the logo's arrow at the right that steps forward on hover. Each picker icon acts out its tool in a short animation; they stay (see Motion).
+
+### Badges
+- Pill shape, Label type, with a glyph and a word (never color alone).
+- **Neutral:** Raised fill, Text color.
+- **Semantic:** a 15% tint of Gain or Loss over Surface, with the semantic color as the text. Stronger tints, or the same tint on Raised, drop below 4.5:1 in one mode or the other; on Raised, use the neutral badge with a semantic glyph instead.
+- Never amber unless the badge is the key result.
+
+## Motion
+
+The site should feel alive in small ways: a tool icon that acts out what it does, a tab marker that slides, a key that gives under the finger. Motion is a moment of play around the numbers, never in them.
+
+### Rules
+- **Timing:** 150 to 250ms per animation, staggered parts included, easing `cubic-bezier(.2,.7,.3,1)`. The brand motif has its own timings (see Brand Motif).
+- **Properties:** transform and opacity only. No animating width, height, left/top, margins, or stroke drawing; nothing that shifts layout.
+- **Never in the way:** an animation never blocks or delays interaction. Content is clickable and readable the moment it appears; nothing waits for an animation to finish.
+- **No endless loops,** except loading states.
+- **Every input gets it:** an animation that plays on hover also plays on keyboard focus (`:focus-visible`) and on tap. Nothing is hover-only.
+- **Reduced motion:** under `prefers-reduced-motion: reduce`, every animation becomes a plain color or border change (for a tool card: the icon tile's border turns Muted and the name turns Text). Nothing moves.
+- **Numbers stay still:** the key result, readout figures, table cells and chart values update in place: no counting up, no rolling digits, no tweened values. A chart may fade in once when it first appears; it never animates a change in its data.
+
+### Where motion is welcome
+- Tab switches: the amber arrow sliding under the new tab, and the incoming pane rising a few pixels as it fades in.
+- Button press: the 1px press-down.
+- Panels opening and closing (About cards, "show the math" details, menus and sheets), and the segmented switch's thumb.
+- Page transitions: the pane enter animations and the tool icon gliding from the picker card into the tool header.
+- Toasts arriving and leaving.
+- The tool-picker icons.
+
+### Where it isn't
+- Figures of any kind: readouts, tables, chart values, totals.
+- Inputs while someone is typing, and validation (no shaking fields).
+- Table rows and list items arriving on every update.
+- Scroll-linked effects, parallax, ambient or background motion.
+- Anything that moves to attract attention.
+
+### Tool-picker icons
+**One style for all of them: "one beat, acting out the verb".** On hover, focus or tap, one part of the icon (never the whole tile) performs the tool's verb in a single small gesture and settles back to rest: at most about 3px of travel, 10° of rotation, or 10% of scale, eased out, finished inside 250ms including any stagger. The tile itself only changes its border color. The arrow at the right of the card steps forward a few pixels at the same time.
+
+Today's animations live in `web/styles/04-tool-icons-header.css` (the SVG parts are in `web/components/tools/ToolIcon.tsx`). They currently run on hover only, for fine pointers only, and switch off under reduced motion. As built, to tune against the rules above:
+
+| Tool | What it does today | Duration today | Out of rule |
+|---|---|---|---|
+| Drawdown | The projection line redraws; two sample points pop in after it | 0.46 to 0.6s | stroke drawing; too long |
+| Income Tax | A magnifier scans over the return and back | 0.62s | too long |
+| Roth | Money flows along a pipe into the Roth bucket, which bounces as it lands | 0.42 to 0.6s | stroke drawing; too long |
+| Mortgage | The roof lifts and settles | 0.46s | too long |
+| College | The cap hops; the tassel swings after it | 0.5 to 0.62s | too long |
+| Rent vs. Buy | The balance beam tips one way, then the other, and levels | 0.68s | too long |
+| Budget | The coin flips | 0.45s | too long |
+| Debt Payoff | Four balances are knocked down, biggest first | 0.44s + 0.21s stagger | too long |
+| Backtest | Three bars rise in a left-to-right wave | 0.55s + 0.2s stagger | too long |
+| Healthcare | The cross spins a full turn while the ring dims | 0.55s | too long |
+| Bridge | The arch draws across, cables drop in, a dot walks over | up to 1.2s | stroke drawing; too long |
+| FIRE | The flame rises, then burns and flickers for as long as the pointer stays | 0.25s, then endless | endless loop |
+
+Also out of rule today: the card lifts 2px and its icon tile scales up with a jade glow on hover, and none of it plays on focus or tap.
+
+## Brand Motif
+
+The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked, and the same drawing comes alive in two places. These are brand elements and they stay. They are not gamification: there are no points, badges, streaks or confetti, only an arrow showing how far along you are.
+
+### Rules
+- **Real progress.** On the Guide, the arrow's position reflects real progress through the steps, alongside a visible step label ("Step 3 of 8"). The bar is exposed as `role="progressbar"` with `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and an `aria-valuetext` that matches the step label.
+- **Never delays results.** On the Plan Optimizer, the animation follows the real search and never holds back the answer. It loops only when real progress isn't available, and the final shot lands as the results appear, not before them.
+- **A quick hit.** The target-hit moment (impact, the target's reaction, the arrow settling) is over in under 400ms.
+- **Phones.** The motif scales down cleanly: smaller bow, arrow and target, nothing clipped, the track still readable.
+- **Reduced motion.** `prefers-reduced-motion` removes the flight and the bounce: the arrow simply jumps to its position, and the target changes color on hit.
+- **Colors.** Bow and arrow in Text; the track in Rule; the target's rings in Muted; the bullseye in Signal Amber at the moment it is hit (the one approved exception to the Four Places Rule).
+
+### Guide progress bar (today)
+- **Where:** the `Top` component in `web/tools/guide/Guide.tsx`; styles in `web/styles/12-guide.css` (`.gd-track`, `.gd-bow`, `.gd-arrow`, `.gd-goal`).
+- **How it's built:** inline SVGs (the bow's limb and two string paths, one at rest and one drawn back; the logo's arrow; a target of two rings and an eye) laid over six chapter segments, each a button with a fill bar. The arrow is placed with CSS `left` from a computed `calc()` and moves with a 0.7s `left` transition. When progress increases, a layout effect restarts a `fly` class (a small arc and a gold streak); the first move twangs the string; finishing adds `hit` and `fresh`, and after a 0.65s delay the target jolts, a ring bursts outward and the arrow quivers.
+- **Progress:** real. The position comes from completed steps per chapter, and "Step N of M" shows in the header. It is not exposed as a progress bar: the track is `aria-hidden`, and only the chapter buttons carry labels ("Chapter: 2 of 4 done").
+- **Colors today:** limb jade, string steel, arrow and streak gold, target dim until it turns gold on hit.
+- **Phones:** the bow scales to 75% and the chapter names hide.
+- **Reduced motion:** transitions and keyframes are off, so the arrow jumps; this already matches the rule.
+- **Rough edges:**
+  - It animates `left`, a layout property, for 0.7s.
+  - The position math is full of fixed pixel offsets (46px, 6px per chapter, 18px, 28px), so the arrow and the fill can disagree at some widths.
+  - The hit takes about 1.35s, including the 0.65s delay.
+  - The streak is a gradient, and the burst ring is decoration.
+  - The chapter fills grow by animating `width`.
+  - There's no `progressbar` role.
+
+### Plan Optimizer loading bar (today)
+- **Where:** `web/tools/optimizer/Progress.tsx` (the animation loop), `web/tools/optimizer/run.ts` (timings and worker messages), styles in `web/styles/15-optimizer.css` (`.op-run`, `.op-bow`, `.op-lane`, `.op-fill`, `.op-trail`, `.op-arrow`, `.op-target`).
+- **How it's built:** inline SVGs (the same bow, arrow and target, larger), driven by a `requestAnimationFrame` loop. The string draws back over 700ms, rewriting its path every frame, and holds for 260ms before the release. In flight the arrow is placed with `left: calc(var(--p) * 100%)` and the fill's `width` follows; the arrow bobs on an endless loop. On the hit, the arrow sticks and quivers, the target jolts, two rings burst (gold and jade) and the fill glows; 1.15s later the results replace the bar and reveal themselves with a stagger of up to about 0.9s.
+- **Progress:** real but held back. The engine worker reports a real fraction, but the arrow can't outrun a clock that runs for at least 5 seconds after the release (`OP_MIN_MS`), and the counters ("plans tried", "retirements simulated", "best so far") follow the arrow rather than the search. A search that finishes in one second still shows about six seconds of animation before the answer. If the page isn't being watched (another tab), the answer is shown at once.
+- **Colors today:** limb jade, string steel, arrow and trail gold, fill a jade gradient that glows on the hit, target dim until it turns gold, "best so far" in gold.
+- **Phones:** below 560px the bow, arrow and target shrink and the lane shortens.
+- **Reduced motion:** keyframes off and the trail hidden, but the scripted draw-back, the eased flight and the five-second minimum all still run.
+- **Rough edges:**
+  - The deliberate minimum and the hold after the hit delay the results, which breaks the never-delays rule.
+  - It animates `left` and `width`.
+  - The bob and the tension shake loop endlessly even though real progress is available.
+  - It uses gradients and a glow, and the burst rings are decoration.
+  - The "best so far" figure in gold is a fifth amber place.
+  - The whole block is an `aria-live` region, so screen readers may hear every counter change.
+  - Under reduced motion it still waits.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** put the key result at the top of the results column, in Display size, as the only amber figure on the screen.
+- **Do** set every number with tabular numerals in IBM Plex Sans.
+- **Do** separate surfaces with tone (Ground, Surface, Raised) and 1px Rule borders.
+- **Do** derive every light-mode color from its dark-mode role (Graphite to Paper, accent to Deep).
+- **Do** pair gain and loss colors with a sign or icon and a label.
+- **Do** keep tables in their own scroll container so phones scroll the table, not the page.
+- **Do** check every text/background pair for 4.5:1 in both modes with the contrast script.
+- **Do** keep the bow-and-arrow brand motif on the Guide and the Plan Optimizer, driven by real progress.
+- **Do** give every tool-picker icon one short beat of motion on hover, focus and tap, with a color-only fallback under reduced motion.
+
+### Don't:
+- **Don't** use amber outside its four places: key result, primary button, active tab, your plan.
+- **Don't** use gradient washes, radial glows, glassmorphism, text glows, lit edges or bevelled keys.
+- **Don't** put shadows on anything that doesn't float.
+- **Don't** use hype, gamification (points, badges, streaks, confetti), money emoji, or stock photos of retirees. The bow-and-arrow brand motif is not gamification.
+- **Don't** animate figures: no counting up, rolling digits or tweened values.
+- **Don't** redraw, recolor or restyle the brand mark.
+- **Don't** lay out three identical feature cards or center everything.
+- **Don't** bring back the previous system's indigo ground, jade and gold UI accents (the brand mark keeps its own colors), Instrument Sans, or monospace figures.
+- **Don't** let the print summary or share card inherit the screen theme by accident.

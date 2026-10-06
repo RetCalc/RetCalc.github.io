@@ -1,0 +1,719 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T15:27:06.690Z",
+  "title": "Design System: RetCalc",
+  "extensions": {
+    "colorMeta": {
+      "graphite-ground": {
+        "role": "neutral",
+        "displayName": "Graphite Ground",
+        "canonical": "#0E1116",
+        "oklch": "oklch(17.7% 0.011 260.6)",
+        "tonalRamp": [
+          "oklch(15% 0.011 260.6)",
+          "oklch(26.4% 0.011 260.6)",
+          "oklch(37.9% 0.011 260.6)",
+          "oklch(49.3% 0.011 260.6)",
+          "oklch(60.7% 0.011 260.6)",
+          "oklch(72.1% 0.011 260.6)",
+          "oklch(83.6% 0.011 260.6)",
+          "oklch(95% 0.011 260.6)"
+        ]
+      },
+      "graphite-surface": {
+        "role": "neutral",
+        "displayName": "Graphite Surface",
+        "canonical": "#151A21",
+        "oklch": "oklch(21.6% 0.016 256.8)",
+        "tonalRamp": [
+          "oklch(15% 0.016 256.8)",
+          "oklch(26.4% 0.016 256.8)",
+          "oklch(37.9% 0.016 256.8)",
+          "oklch(49.3% 0.016 256.8)",
+          "oklch(60.7% 0.016 256.8)",
+          "oklch(72.1% 0.016 256.8)",
+          "oklch(83.6% 0.016 256.8)",
+          "oklch(95% 0.016 256.8)"
+        ]
+      },
+      "graphite-raised": {
+        "role": "neutral",
+        "displayName": "Graphite Raised",
+        "canonical": "#1C222B",
+        "oklch": "oklch(25% 0.019 258.4)",
+        "tonalRamp": [
+          "oklch(15% 0.019 258.4)",
+          "oklch(26.4% 0.019 258.4)",
+          "oklch(37.9% 0.019 258.4)",
+          "oklch(49.3% 0.019 258.4)",
+          "oklch(60.7% 0.019 258.4)",
+          "oklch(72.1% 0.019 258.4)",
+          "oklch(83.6% 0.019 258.4)",
+          "oklch(95% 0.019 258.4)"
+        ]
+      },
+      "graphite-rule": {
+        "role": "neutral",
+        "displayName": "Graphite Rule",
+        "canonical": "#2A313C",
+        "oklch": "oklch(31.1% 0.022 259.4)",
+        "tonalRamp": [
+          "oklch(15% 0.022 259.4)",
+          "oklch(26.4% 0.022 259.4)",
+          "oklch(37.9% 0.022 259.4)",
+          "oklch(49.3% 0.022 259.4)",
+          "oklch(60.7% 0.022 259.4)",
+          "oklch(72.1% 0.022 259.4)",
+          "oklch(83.6% 0.022 259.4)",
+          "oklch(95% 0.022 259.4)"
+        ]
+      },
+      "graphite-text": {
+        "role": "neutral",
+        "displayName": "Graphite Text",
+        "canonical": "#E8EBF0",
+        "oklch": "oklch(93.9% 0.007 260.7)",
+        "tonalRamp": [
+          "oklch(15% 0.007 260.7)",
+          "oklch(26.4% 0.007 260.7)",
+          "oklch(37.9% 0.007 260.7)",
+          "oklch(49.3% 0.007 260.7)",
+          "oklch(60.7% 0.007 260.7)",
+          "oklch(72.1% 0.007 260.7)",
+          "oklch(83.6% 0.007 260.7)",
+          "oklch(95% 0.007 260.7)"
+        ]
+      },
+      "graphite-muted": {
+        "role": "neutral",
+        "displayName": "Graphite Muted",
+        "canonical": "#9AA4B2",
+        "oklch": "oklch(71.5% 0.023 256.8)",
+        "tonalRamp": [
+          "oklch(15% 0.023 256.8)",
+          "oklch(26.4% 0.023 256.8)",
+          "oklch(37.9% 0.023 256.8)",
+          "oklch(49.3% 0.023 256.8)",
+          "oklch(60.7% 0.023 256.8)",
+          "oklch(72.1% 0.023 256.8)",
+          "oklch(83.6% 0.023 256.8)",
+          "oklch(95% 0.023 256.8)"
+        ]
+      },
+      "signal-amber": {
+        "role": "primary",
+        "displayName": "Signal Amber",
+        "canonical": "#E3A93B",
+        "oklch": "oklch(77.1% 0.139 79.5)",
+        "tonalRamp": [
+          "oklch(15% 0.073 79.5)",
+          "oklch(26.4% 0.089 79.5)",
+          "oklch(37.9% 0.105 79.5)",
+          "oklch(49.3% 0.12 79.5)",
+          "oklch(60.7% 0.136 79.5)",
+          "oklch(72.1% 0.139 79.5)",
+          "oklch(83.6% 0.139 79.5)",
+          "oklch(95% 0.134 79.5)"
+        ]
+      },
+      "on-signal-amber": {
+        "role": "primary",
+        "displayName": "On Signal Amber",
+        "canonical": "#0E1116",
+        "oklch": "oklch(17.7% 0.011 260.6)",
+        "tonalRamp": [
+          "oklch(15% 0.011 260.6)",
+          "oklch(26.4% 0.011 260.6)",
+          "oklch(37.9% 0.011 260.6)",
+          "oklch(49.3% 0.011 260.6)",
+          "oklch(60.7% 0.011 260.6)",
+          "oklch(72.1% 0.011 260.6)",
+          "oklch(83.6% 0.011 260.6)",
+          "oklch(95% 0.011 260.6)"
+        ]
+      },
+      "gain": {
+        "role": "semantic",
+        "displayName": "Gain",
+        "canonical": "#4CC38A",
+        "oklch": "oklch(73.5% 0.136 159.3)",
+        "tonalRamp": [
+          "oklch(15% 0.077 159.3)",
+          "oklch(26.4% 0.092 159.3)",
+          "oklch(37.9% 0.108 159.3)",
+          "oklch(49.3% 0.123 159.3)",
+          "oklch(60.7% 0.136 159.3)",
+          "oklch(72.1% 0.136 159.3)",
+          "oklch(83.6% 0.136 159.3)",
+          "oklch(95% 0.127 159.3)"
+        ]
+      },
+      "loss": {
+        "role": "semantic",
+        "displayName": "Loss",
+        "canonical": "#F0716A",
+        "oklch": "oklch(69.8% 0.158 25.2)",
+        "tonalRamp": [
+          "oklch(15% 0.091 25.2)",
+          "oklch(26.4% 0.11 25.2)",
+          "oklch(37.9% 0.128 25.2)",
+          "oklch(49.3% 0.146 25.2)",
+          "oklch(60.7% 0.158 25.2)",
+          "oklch(72.1% 0.158 25.2)",
+          "oklch(83.6% 0.156 25.2)",
+          "oklch(95% 0.138 25.2)"
+        ]
+      },
+      "paper-ground": {
+        "role": "neutral",
+        "displayName": "Paper Ground",
+        "canonical": "#FAF9F6",
+        "oklch": "oklch(98.2% 0.004 91.4)",
+        "tonalRamp": [
+          "oklch(15% 0.004 91.4)",
+          "oklch(26.4% 0.004 91.4)",
+          "oklch(37.9% 0.004 91.4)",
+          "oklch(49.3% 0.004 91.4)",
+          "oklch(60.7% 0.004 91.4)",
+          "oklch(72.1% 0.004 91.4)",
+          "oklch(83.6% 0.004 91.4)",
+          "oklch(95% 0.004 91.4)"
+        ]
+      },
+      "paper-surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "canonical": "#FFFFFF",
+        "oklch": "oklch(100% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95% 0 89.9)"
+        ]
+      },
+      "paper-raised": {
+        "role": "neutral",
+        "displayName": "Paper Raised",
+        "canonical": "#F3F1EC",
+        "oklch": "oklch(95.8% 0.007 88.6)",
+        "tonalRamp": [
+          "oklch(15% 0.007 88.6)",
+          "oklch(26.4% 0.007 88.6)",
+          "oklch(37.9% 0.007 88.6)",
+          "oklch(49.3% 0.007 88.6)",
+          "oklch(60.7% 0.007 88.6)",
+          "oklch(72.1% 0.007 88.6)",
+          "oklch(83.6% 0.007 88.6)",
+          "oklch(95% 0.007 88.6)"
+        ]
+      },
+      "paper-rule": {
+        "role": "neutral",
+        "displayName": "Paper Rule",
+        "canonical": "#E3E0D8",
+        "oklch": "oklch(90.7% 0.011 89.7)",
+        "tonalRamp": [
+          "oklch(15% 0.011 89.7)",
+          "oklch(26.4% 0.011 89.7)",
+          "oklch(37.9% 0.011 89.7)",
+          "oklch(49.3% 0.011 89.7)",
+          "oklch(60.7% 0.011 89.7)",
+          "oklch(72.1% 0.011 89.7)",
+          "oklch(83.6% 0.011 89.7)",
+          "oklch(95% 0.011 89.7)"
+        ]
+      },
+      "paper-text": {
+        "role": "neutral",
+        "displayName": "Paper Text",
+        "canonical": "#17191C",
+        "oklch": "oklch(21.3% 0.007 258.4)",
+        "tonalRamp": [
+          "oklch(15% 0.007 258.4)",
+          "oklch(26.4% 0.007 258.4)",
+          "oklch(37.9% 0.007 258.4)",
+          "oklch(49.3% 0.007 258.4)",
+          "oklch(60.7% 0.007 258.4)",
+          "oklch(72.1% 0.007 258.4)",
+          "oklch(83.6% 0.007 258.4)",
+          "oklch(95% 0.007 258.4)"
+        ]
+      },
+      "paper-muted": {
+        "role": "neutral",
+        "displayName": "Paper Muted",
+        "canonical": "#5B636E",
+        "oklch": "oklch(49.7% 0.02 256.3)",
+        "tonalRamp": [
+          "oklch(15% 0.02 256.3)",
+          "oklch(26.4% 0.02 256.3)",
+          "oklch(37.9% 0.02 256.3)",
+          "oklch(49.3% 0.02 256.3)",
+          "oklch(60.7% 0.02 256.3)",
+          "oklch(72.1% 0.02 256.3)",
+          "oklch(83.6% 0.02 256.3)",
+          "oklch(95% 0.02 256.3)"
+        ]
+      },
+      "signal-amber-deep": {
+        "role": "primary",
+        "displayName": "Signal Amber Deep",
+        "canonical": "#9A6200",
+        "oklch": "oklch(54.4% 0.117 70.8)",
+        "tonalRamp": [
+          "oklch(15% 0.091 70.8)",
+          "oklch(26.4% 0.104 70.8)",
+          "oklch(37.9% 0.117 70.8)",
+          "oklch(49.3% 0.117 70.8)",
+          "oklch(60.7% 0.117 70.8)",
+          "oklch(72.1% 0.117 70.8)",
+          "oklch(83.6% 0.103 70.8)",
+          "oklch(95% 0.09 70.8)"
+        ]
+      },
+      "on-signal-amber-deep": {
+        "role": "primary",
+        "displayName": "On Signal Amber Deep",
+        "canonical": "#FFFFFF",
+        "oklch": "oklch(100% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95% 0 89.9)"
+        ]
+      },
+      "gain-deep": {
+        "role": "semantic",
+        "displayName": "Gain Deep",
+        "canonical": "#17704A",
+        "oklch": "oklch(48.5% 0.102 159.6)",
+        "tonalRamp": [
+          "oklch(15% 0.088 159.6)",
+          "oklch(26.4% 0.099 159.6)",
+          "oklch(37.9% 0.102 159.6)",
+          "oklch(49.3% 0.102 159.6)",
+          "oklch(60.7% 0.102 159.6)",
+          "oklch(72.1% 0.098 159.6)",
+          "oklch(83.6% 0.086 159.6)",
+          "oklch(95% 0.074 159.6)"
+        ]
+      },
+      "loss-deep": {
+        "role": "semantic",
+        "displayName": "Loss Deep",
+        "canonical": "#B02F29",
+        "oklch": "oklch(50.5% 0.167 27.6)",
+        "tonalRamp": [
+          "oklch(15% 0.128 27.6)",
+          "oklch(26.4% 0.147 27.6)",
+          "oklch(37.9% 0.166 27.6)",
+          "oklch(49.3% 0.167 27.6)",
+          "oklch(60.7% 0.167 27.6)",
+          "oklch(72.1% 0.151 27.6)",
+          "oklch(83.6% 0.132 27.6)",
+          "oklch(95% 0.113 27.6)"
+        ]
+      },
+      "series-sky": {
+        "role": "chart",
+        "displayName": "Sky",
+        "canonical": "#5AA9E6",
+        "oklch": "oklch(71% 0.119 243.9)",
+        "tonalRamp": [
+          "oklch(15% 0.072 243.9)",
+          "oklch(26.4% 0.086 243.9)",
+          "oklch(37.9% 0.099 243.9)",
+          "oklch(49.3% 0.113 243.9)",
+          "oklch(60.7% 0.119 243.9)",
+          "oklch(72.1% 0.119 243.9)",
+          "oklch(83.6% 0.119 243.9)",
+          "oklch(95% 0.11 243.9)"
+        ]
+      },
+      "series-sky-deep": {
+        "role": "chart",
+        "displayName": "Sky Deep",
+        "canonical": "#2F7FC4",
+        "oklch": "oklch(58.1% 0.131 248.4)",
+        "tonalRamp": [
+          "oklch(15% 0.094 248.4)",
+          "oklch(26.4% 0.109 248.4)",
+          "oklch(37.9% 0.124 248.4)",
+          "oklch(49.3% 0.131 248.4)",
+          "oklch(60.7% 0.131 248.4)",
+          "oklch(72.1% 0.131 248.4)",
+          "oklch(83.6% 0.118 248.4)",
+          "oklch(95% 0.103 248.4)"
+        ]
+      },
+      "series-teal": {
+        "role": "chart",
+        "displayName": "Teal",
+        "canonical": "#46B9A6",
+        "oklch": "oklch(71.6% 0.107 180.2)",
+        "tonalRamp": [
+          "oklch(15% 0.066 180.2)",
+          "oklch(26.4% 0.079 180.2)",
+          "oklch(37.9% 0.091 180.2)",
+          "oklch(49.3% 0.103 180.2)",
+          "oklch(60.7% 0.107 180.2)",
+          "oklch(72.1% 0.107 180.2)",
+          "oklch(83.6% 0.107 180.2)",
+          "oklch(95% 0.102 180.2)"
+        ]
+      },
+      "series-teal-deep": {
+        "role": "chart",
+        "displayName": "Teal Deep",
+        "canonical": "#1F8F7E",
+        "oklch": "oklch(58.6% 0.099 179.7)",
+        "tonalRamp": [
+          "oklch(15% 0.076 179.7)",
+          "oklch(26.4% 0.087 179.7)",
+          "oklch(37.9% 0.098 179.7)",
+          "oklch(49.3% 0.099 179.7)",
+          "oklch(60.7% 0.099 179.7)",
+          "oklch(72.1% 0.099 179.7)",
+          "oklch(83.6% 0.094 179.7)",
+          "oklch(95% 0.083 179.7)"
+        ]
+      },
+      "series-rose": {
+        "role": "chart",
+        "displayName": "Rose",
+        "canonical": "#E0749B",
+        "oklch": "oklch(69.3% 0.14 358.5)",
+        "tonalRamp": [
+          "oklch(15% 0.084 358.5)",
+          "oklch(26.4% 0.1 358.5)",
+          "oklch(37.9% 0.116 358.5)",
+          "oklch(49.3% 0.132 358.5)",
+          "oklch(60.7% 0.14 358.5)",
+          "oklch(72.1% 0.14 358.5)",
+          "oklch(83.6% 0.14 358.5)",
+          "oklch(95% 0.124 358.5)"
+        ]
+      },
+      "series-lavender": {
+        "role": "chart",
+        "displayName": "Lavender",
+        "canonical": "#9C8CE0",
+        "oklch": "oklch(68.8% 0.122 291.6)",
+        "tonalRamp": [
+          "oklch(15% 0.076 291.6)",
+          "oklch(26.4% 0.09 291.6)",
+          "oklch(37.9% 0.104 291.6)",
+          "oklch(49.3% 0.118 291.6)",
+          "oklch(60.7% 0.122 291.6)",
+          "oklch(72.1% 0.122 291.6)",
+          "oklch(83.6% 0.122 291.6)",
+          "oklch(95% 0.11 291.6)"
+        ]
+      },
+      "series-gray": {
+        "role": "chart",
+        "displayName": "Gray",
+        "canonical": "#8A94A3",
+        "oklch": "oklch(66.3% 0.025 258.4)",
+        "tonalRamp": [
+          "oklch(15% 0.025 258.4)",
+          "oklch(26.4% 0.025 258.4)",
+          "oklch(37.9% 0.025 258.4)",
+          "oklch(49.3% 0.025 258.4)",
+          "oklch(60.7% 0.025 258.4)",
+          "oklch(72.1% 0.025 258.4)",
+          "oklch(83.6% 0.025 258.4)",
+          "oklch(95% 0.025 258.4)"
+        ]
+      },
+      "brand-gold": {
+        "role": "brand",
+        "displayName": "Brand Gold",
+        "canonical": "#e9b872",
+        "oklch": "oklch(81.2% 0.104 75.3)",
+        "tonalRamp": [
+          "oklch(15% 0.055 75.3)",
+          "oklch(26.4% 0.067 75.3)",
+          "oklch(37.9% 0.079 75.3)",
+          "oklch(49.3% 0.091 75.3)",
+          "oklch(60.7% 0.103 75.3)",
+          "oklch(72.1% 0.104 75.3)",
+          "oklch(83.6% 0.104 75.3)",
+          "oklch(95% 0.104 75.3)"
+        ],
+        "note": "Logo only. Same value in both themes; exempt from the palette and the Four Places Rule."
+      },
+      "brand-jade": {
+        "role": "brand",
+        "displayName": "Brand Jade",
+        "canonical": "#4fbf95",
+        "oklch": "oklch(72.9% 0.12 165.4)",
+        "tonalRamp": [
+          "oklch(15% 0.071 165.4)",
+          "oklch(26.4% 0.084 165.4)",
+          "oklch(37.9% 0.098 165.4)",
+          "oklch(49.3% 0.112 165.4)",
+          "oklch(60.7% 0.12 165.4)",
+          "oklch(72.1% 0.12 165.4)",
+          "oklch(83.6% 0.12 165.4)",
+          "oklch(95% 0.114 165.4)"
+        ],
+        "note": "Logo only. Same value in both themes; exempt from the palette and the Four Places Rule."
+      },
+      "brand-steel": {
+        "role": "brand",
+        "displayName": "Brand Steel",
+        "canonical": "#7d9fd6",
+        "oklch": "oklch(69.9% 0.09 259.8)",
+        "tonalRamp": [
+          "oklch(15% 0.061 259.8)",
+          "oklch(26.4% 0.071 259.8)",
+          "oklch(37.9% 0.081 259.8)",
+          "oklch(49.3% 0.09 259.8)",
+          "oklch(60.7% 0.09 259.8)",
+          "oklch(72.1% 0.09 259.8)",
+          "oklch(83.6% 0.09 259.8)",
+          "oklch(95% 0.087 259.8)"
+        ],
+        "note": "Logo only. Same value in both themes; exempt from the palette and the Four Places Rule."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Headline readout figures only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Tool name in the tool header."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel and card headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default text, tabs, articles (about 78ch max)."
+      },
+      "body-sm": {
+        "displayName": "Body small",
+        "purpose": "Table cells, key/value rows, field values."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Hints, readout labels, column headers, legends, axis labels."
+      },
+      "eyebrow": {
+        "displayName": "Eyebrow",
+        "purpose": "Uppercase group headings in the picker and menus; the only uppercase text."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 12px 32px -12px rgba(0,0,0,.6)",
+        "purpose": "Dark mode: menus, select lists, tooltips, toasts, dialogs, pinned tab rail. Nothing else."
+      },
+      {
+        "name": "float-light",
+        "value": "0 12px 32px -14px rgba(23,25,28,.18)",
+        "purpose": "Light mode counterpart of float."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(.2,.7,.3,1)",
+        "purpose": "All UI motion: tab arrow, pane changes, menus, segmented thumb, tool icons."
+      },
+      {
+        "name": "duration-min",
+        "value": "150ms",
+        "purpose": "Shortest UI animation."
+      },
+      {
+        "name": "duration-max",
+        "value": "250ms",
+        "purpose": "Longest UI animation, staggered parts included. Transform and opacity only; reduced motion falls back to a color or border change."
+      },
+      {
+        "name": "motif-hit-max",
+        "value": "400ms",
+        "purpose": "Brand motif: the whole target-hit moment."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "640px",
+        "purpose": "At or below: sheets, stacked readout."
+      },
+      {
+        "name": "stack",
+        "value": "900px",
+        "purpose": "At or below: input column moves above results, gutter 20px."
+      },
+      {
+        "name": "container",
+        "value": "1330px",
+        "purpose": "Max page width."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action in a view; one of amber's four places.",
+      "html": "<button class=\"ds-btn-primary\">Save scenario</button>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-btn-primary{height:36px;padding:0 14px;border-radius:10px;border:1px solid transparent;background:var(--amber);color:var(--on-amber);font:600 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;cursor:pointer;transition:background-color .14s cubic-bezier(.2,.7,.3,1),transform .08s ease} .ds-btn-primary:hover{background:color-mix(in oklch,var(--amber),var(--text) 12%)} .ds-btn-primary:active{transform:translateY(1px)} .ds-btn-primary:focus-visible{outline:2px solid var(--text);outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Default for every other action: Share, CSV, Reset.",
+      "html": "<button class=\"ds-btn-secondary\">Export CSV</button>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-btn-secondary{height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--rule);background:var(--raised);color:var(--text);font:500 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;cursor:pointer;transition:background-color .14s cubic-bezier(.2,.7,.3,1),border-color .14s ease,transform .08s ease} .ds-btn-secondary:hover{background:color-mix(in oklch,var(--raised),var(--text) 6%);border-color:var(--muted)} .ds-btn-secondary:active{transform:translateY(1px)} .ds-btn-secondary:focus-visible{outline:2px solid var(--text);outline-offset:2px}"
+    },
+    {
+      "name": "Money Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Ground-filled field inside a Surface panel; tabular, right-aligned value with a muted unit.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-l\">How much do you save for retirement?</span><span class=\"ds-field-box\"><span class=\"ds-field-u\">$</span><input class=\"ds-field-i\" inputmode=\"decimal\" value=\"500\"></span><span class=\"ds-field-h\">Each month, before tax</span></label>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-field{display:grid;gap:6px;width:300px;padding:16px 18px;background:var(--surface);border-radius:16px} .ds-field-l{font:400 15px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--text)} .ds-field-box{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--rule);background:var(--ground);transition:border-color .14s ease} .ds-field-box:hover{border-color:var(--muted)} .ds-field-box:focus-within{border-color:var(--text);outline:2px solid var(--text);outline-offset:2px} .ds-field-u{color:var(--muted);font-size:13px} .ds-field-i{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:400 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;text-align:right;outline:none} .ds-field-h{font:500 11.5px/1.4 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--muted)}"
+    },
+    {
+      "name": "Tab Rail",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Sticky section tabs; the active tab is marked by the logo's arrow in amber.",
+      "html": "<nav class=\"ds-tabs\" role=\"tablist\"><button role=\"tab\" aria-selected=\"false\">Guide<span class=\"ds-tab-arrow\"><svg viewBox=\"0 0 40 10\" width=\"38\" height=\"10\" aria-hidden=\"true\"><path d=\"M2 5H33\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z\" fill=\"currentColor\"/></svg></span></button><button role=\"tab\" aria-selected=\"true\">Calculator<span class=\"ds-tab-arrow\"><svg viewBox=\"0 0 40 10\" width=\"38\" height=\"10\" aria-hidden=\"true\"><path d=\"M2 5H33\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z\" fill=\"currentColor\"/></svg></span></button><button role=\"tab\" aria-selected=\"false\">Tools<span class=\"ds-tab-arrow\"><svg viewBox=\"0 0 40 10\" width=\"38\" height=\"10\" aria-hidden=\"true\"><path d=\"M2 5H33\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z\" fill=\"currentColor\"/></svg></span></button><button role=\"tab\" aria-selected=\"false\">About<span class=\"ds-tab-arrow\"><svg viewBox=\"0 0 40 10\" width=\"38\" height=\"10\" aria-hidden=\"true\"><path d=\"M2 5H33\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/><path d=\"M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z\" fill=\"currentColor\"/></svg></span></button></nav>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-tabs{display:flex;gap:22px;padding:0 18px;background:var(--surface);border-bottom:1px solid var(--rule)} .ds-tabs button{position:relative;padding:10px 4px 15px;border:0;background:transparent;color:var(--muted);font:400 15px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;cursor:pointer;transition:color .15s ease} .ds-tabs button:hover,.ds-tabs button[aria-selected=true]{color:var(--text)} .ds-tabs button:focus-visible{outline:2px solid var(--text);outline-offset:2px;border-radius:4px} .ds-tab-arrow{position:absolute;left:50%;bottom:1px;line-height:0;opacity:0;transform:translateX(calc(-50% - 16px));transition:transform .32s cubic-bezier(.2,.7,.3,1),opacity .2s ease} .ds-tabs button:hover .ds-tab-arrow{opacity:.35;transform:translateX(-50%);color:var(--muted)} .ds-tabs button[aria-selected=true] .ds-tab-arrow{opacity:1;transform:translateX(-50%);color:var(--amber)} @media (prefers-reduced-motion:reduce){.ds-tab-arrow{transition:none}}"
+    },
+    {
+      "name": "Headline Readout",
+      "kind": "custom",
+      "refersTo": "readout-key",
+      "description": "The key result: up to three figures, exactly one in amber, flat on the Surface tone.",
+      "html": "<section class=\"ds-readout\"><div><div class=\"ds-k\">You'll have at 65</div><div class=\"ds-v ds-v-key\">$812,400</div><div class=\"ds-n\">In today's dollars</div></div><div><div class=\"ds-k\">You put in</div><div class=\"ds-v\">$216,700</div><div class=\"ds-n\">Over 35 years</div></div><div><div class=\"ds-k\">Growth</div><div class=\"ds-v\">$595,700</div><div class=\"ds-n\">73% of the total</div></div></section>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-readout{display:grid;grid-template-columns:repeat(3,1fr);width:760px;background:var(--surface);border:1px solid var(--rule);border-radius:16px;overflow:hidden} .ds-readout>div{padding:26px 22px 24px} .ds-readout>div+div{border-left:1px solid var(--rule)} .ds-k{font:500 11.5px/1.4 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--muted);margin-bottom:10px} .ds-v{font:500 35px/1.05 \"IBM Plex Sans\",system-ui,sans-serif;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--text)} .ds-v-key{color:var(--amber)} .ds-n{font:400 11.5px/1.4 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--muted);margin-top:9px}"
+    },
+    {
+      "name": "Data Table",
+      "kind": "custom",
+      "refersTo": "table-cell",
+      "description": "Year-by-year table: sticky muted headers, tabular right-aligned figures, gain with sign, own scroll container.",
+      "html": "<div class=\"ds-tablewrap\"><table class=\"ds-table\"><thead><tr><th>Age</th><th>Start</th><th>You added</th><th>Growth</th><th>Balance</th></tr></thead><tbody><tr><td>31</td><td>$10,000</td><td>$5,905</td><td class=\"ds-gain\">+$571</td><td>$16,476</td></tr><tr><td>32</td><td>$16,476</td><td>$5,905</td><td class=\"ds-gain\">+$863</td><td>$23,244</td></tr><tr><td>33</td><td>$23,244</td><td>$5,905</td><td class=\"ds-gain\">+$1,167</td><td>$30,317</td></tr></tbody></table></div>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-tablewrap{width:560px;max-width:100%;overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:16px} .ds-table{width:100%;border-collapse:collapse} .ds-table th,.ds-table td{text-align:right;padding:9px 12px;border-bottom:1px solid var(--rule);white-space:nowrap} .ds-table th:first-child,.ds-table td:first-child{text-align:left} .ds-table th{position:sticky;top:0;background:var(--surface);font:500 11.5px/1.4 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--muted)} .ds-table td{font:400 13px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;color:var(--text)} .ds-table tbody tr:hover{background:var(--raised)} .ds-table tbody tr:last-child td{border-bottom:0} .ds-gain{color:var(--gain)!important}"
+    },
+    {
+      "name": "Segmented Switch",
+      "kind": "chip",
+      "refersTo": "button-secondary",
+      "description": "View switch: Ground track, Raised thumb on the selected option.",
+      "html": "<div class=\"ds-seg\" role=\"group\"><button aria-pressed=\"false\">Selected year</button><button aria-pressed=\"true\">All years</button></div>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-seg{display:inline-flex;padding:2px;gap:2px;background:var(--ground);border:1px solid var(--rule);border-radius:10px} .ds-seg button{height:30px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font:500 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;cursor:pointer;transition:background-color .14s ease,color .14s ease} .ds-seg button:hover{color:var(--text)} .ds-seg button[aria-pressed=true]{background:var(--raised);border-color:var(--rule);color:var(--text)} .ds-seg button:focus-visible{outline:2px solid var(--text);outline-offset:1px}"
+    },
+    {
+      "name": "Result Badges",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Pills that never rely on color alone: glyph plus word.",
+      "html": "<div class=\"ds-badges\"><span class=\"ds-badge ds-badge-gain\"><svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M2.5 6.5l2.5 2.5 4.5-6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>Lasted</span><span class=\"ds-badge ds-badge-loss\"><svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\" aria-hidden=\"true\"><path d=\"M3 3l6 6M9 3l-6 6\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\"/></svg>Ran out</span><span class=\"ds-badge\">Beta</span></div>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-badges{display:flex;gap:8px} .ds-badge{display:inline-flex;align-items:center;gap:4px;height:20px;padding:2px 8px;border-radius:999px;background:var(--raised);color:var(--text);font:500 11.5px/1 \"IBM Plex Sans\",system-ui,sans-serif} .ds-badge-gain{background:color-mix(in srgb,var(--gain) 15%,transparent);color:var(--gain)} .ds-badge-loss{background:color-mix(in srgb,var(--loss) 15%,transparent);color:var(--loss)}"
+    },
+    {
+      "name": "Tool Card",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Tool-picker card: one beat of icon motion on hover, focus and tap; color-only under reduced motion.",
+      "html": "<a class=\"ds-tool\" href=\"#\"><span class=\"ds-tool-ic\"><svg viewBox=\"0 0 40 40\" width=\"36\" height=\"36\" aria-hidden=\"true\"><path class=\"ds-roof\" d=\"M7 19 L20 8 L33 19\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M11 18 V32 H29 V18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linejoin=\"round\"/><path d=\"M18 32 V25 H22 V32\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.4\"/></svg></span><span class=\"ds-tool-t\"><b>Mortgage</b><span>Payments, extra principal and refinancing</span></span><span class=\"ds-tool-go\" aria-hidden=\"true\">→</span></a>",
+      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;font-family:\"IBM Plex Sans\",system-ui,sans-serif} .ds-tool{display:flex;align-items:center;gap:16px;width:420px;padding:18px 20px;background:var(--surface);border:1px solid var(--rule);border-radius:16px;color:var(--text);text-decoration:none;transition:border-color .15s ease,background-color .15s ease} .ds-tool:hover,.ds-tool:focus-visible{border-color:var(--muted);background:var(--raised)} .ds-tool:focus-visible{outline:2px solid var(--text);outline-offset:2px} .ds-tool-ic{flex:none;width:52px;height:52px;display:grid;place-items:center;border:1px solid var(--rule);border-radius:14px;background:var(--raised);color:var(--text);transition:border-color .15s ease} .ds-tool:hover .ds-tool-ic,.ds-tool:focus-visible .ds-tool-ic{border-color:var(--muted)} .ds-roof{transform-box:view-box;transform-origin:20px 14px} .ds-tool-t{flex:1;min-width:0} .ds-tool-t b{display:block;font-weight:600;font-size:15px} .ds-tool-t span{display:block;font-size:13px;color:var(--muted);margin-top:3px} .ds-tool-go{color:var(--muted);transition:transform .2s cubic-bezier(.2,.7,.3,1),color .15s ease} .ds-tool:hover .ds-tool-go,.ds-tool:focus-visible .ds-tool-go{color:var(--text);transform:translateX(4px)} @keyframes ds-roof{0%{transform:translateY(0)}45%{transform:translateY(-3px)}100%{transform:translateY(0)}} @media (prefers-reduced-motion:no-preference){.ds-tool:hover .ds-roof,.ds-tool:focus-visible .ds-roof,.ds-tool:active .ds-roof{animation:ds-roof .22s cubic-bezier(.2,.7,.3,1)}} @media (prefers-reduced-motion:reduce){.ds-tool-go{transition:color .15s ease}.ds-tool:hover .ds-tool-go,.ds-tool:focus-visible .ds-tool-go{transform:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Instrument",
+    "overview": "RetCalc is a precision instrument for one question: will the money last? The system's job is to make the reading unmistakable and then get out of the way. Graphite surfaces sit flat and close in tone, type is exact and unhurried, and a single amber signal marks the one thing on the screen you came for. Everything else (inputs, tables, the rest of the chart) is set in neutral ink so the signal has no competition.\n\nThe previous system already called itself \"The Instrument\", and that idea stays. What goes is the showmanship: indigo ground, glowing numerals, bevelled keys, lit edges, and gradient washes behind the page. The quiet version earns trust by restraint, the way a good annual report or an FT chart does. It is dense where the data is dense (year-by-year tables, simulation charts) and spare everywhere else. The first screen of every tool answers a quick question for a saver in their thirties; depth is one step away for the planner who wants to check the math.\n\nDark is the primary mode and is designed first. Light is derived from the same roles, not repainted: every Graphite token has a Paper counterpart that plays the same part.",
+    "keyCharacteristics": [
+      "One amber signal per view, on a graphite field.",
+      "Flat, tonal depth: ground, surface, raised, separated by hairline rules. No shadows at rest.",
+      "IBM Plex Sans throughout, tabular numerals on every figure.",
+      "Controls that feel like firm keys: clear fills, real hit areas, a small press on click.",
+      "Data-first layout: inputs in a sticky left column, computed results to the right, the key result at the top of the results.",
+      "Small, playful motion around the numbers, never in them; the bow and arrow is the brand's moving sign."
+    ],
+    "rules": [
+      {
+        "name": "The Four Places Rule",
+        "body": "Amber appears only on the key result, the primary button, the active tab, and \"your plan\" in charts. Not on links, headings, hover states, icons, focus rings, or decoration. If a fifth place seems to need it, it doesn't. Two exemptions, and only these: the brand mark keeps its own colors, and the brand motif's bullseye turns amber at the moment it is hit.",
+        "section": "colors"
+      },
+      {
+        "name": "The Never Alone Rule",
+        "body": "Color never carries meaning by itself. Gain and loss always pair with a sign or arrow glyph and a word or column header that says what it is (\"Lasted\", \"Ran out\", \"Growth\").",
+        "section": "colors"
+      },
+      {
+        "name": "The 4.5 Rule",
+        "body": "Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every number on screen is set with tabular numerals: readouts, tables, inputs, axis labels, tooltips, inline figures in sentences. A number that shifts width as it changes is a bug.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Headings, buttons, labels and tabs are in sentence case. Uppercase is reserved for the small eyebrow group headings.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Rest Rule",
+        "body": "Surfaces are flat at rest. A shadow means \"this is floating above the page and will go away\". If it doesn't float, it doesn't get a shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Wash Rule",
+        "body": "No gradient washes, radial glows, glassmorphism, text glows or lit edges, on the page background or on any component.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do put the key result at the top of the results column, in Display size, as the only amber figure on the screen.",
+      "Do set every number with tabular numerals in IBM Plex Sans.",
+      "Do separate surfaces with tone (Ground, Surface, Raised) and 1px Rule borders.",
+      "Do derive every light-mode color from its dark-mode role (Graphite to Paper, accent to Deep).",
+      "Do pair gain and loss colors with a sign or icon and a label.",
+      "Do keep tables in their own scroll container so phones scroll the table, not the page.",
+      "Do check every text/background pair for 4.5:1 in both modes with the contrast script.",
+      "Do keep the bow-and-arrow brand motif on the Guide and the Plan Optimizer, driven by real progress.",
+      "Do give every tool-picker icon one short beat of motion on hover, focus and tap, with a color-only fallback under reduced motion."
+    ],
+    "donts": [
+      "Don't use amber outside its four places: key result, primary button, active tab, your plan.",
+      "Don't use gradient washes, radial glows, glassmorphism, text glows, lit edges or bevelled keys.",
+      "Don't put shadows on anything that doesn't float.",
+      "Don't use hype, gamification (points, badges, streaks, confetti), money emoji, or stock photos of retirees. The bow-and-arrow brand motif is not gamification.",
+      "Don't animate figures: no counting up, rolling digits or tweened values.",
+      "Don't redraw, recolor or restyle the brand mark.",
+      "Don't lay out three identical feature cards or center everything.",
+      "Don't bring back the previous system's indigo ground, jade and gold UI accents (the brand mark keeps its own colors), Instrument Sans, or monospace figures.",
+      "Don't let the print summary or share card inherit the screen theme by accident."
+    ],
+    "motionStyle": "One beat, acting out the verb: one part of the icon performs the tool's verb in a single small gesture (about 3px, 10°, or 10% scale at most), eased out, settled inside 250ms, on hover, focus and tap."
+  }
+}
