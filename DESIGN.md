@@ -6,6 +6,7 @@ colors:
   graphite-surface: "#151A21"
   graphite-raised: "#1C222B"
   graphite-rule: "#2A313C"
+  graphite-rule-strong: "#626E7D"
   graphite-text: "#E8EBF0"
   graphite-muted: "#9AA4B2"
   signal-amber: "#E3A93B"
@@ -16,6 +17,7 @@ colors:
   paper-surface: "#FFFFFF"
   paper-raised: "#F3F1EC"
   paper-rule: "#E3E0D8"
+  paper-rule-strong: "#818995"
   paper-text: "#17191C"
   paper-muted: "#5B636E"
   signal-amber-deep: "#9A6200"
@@ -27,11 +29,16 @@ colors:
   series-teal: "#46B9A6"
   series-teal-deep: "#1F8F7E"
   series-rose: "#E0749B"
+  series-rose-deep: "#C2467A"
   series-lavender: "#9C8CE0"
+  series-lavender-deep: "#7B68C9"
   series-gray: "#8A94A3"
   brand-gold: "#e9b872"
   brand-jade: "#4fbf95"
   brand-steel: "#7d9fd6"
+  brand-gold-deep: "#B0813A"
+  brand-jade-deep: "#219B73"
+  brand-steel-deep: "#6A8BC1"
 typography:
   display:
     fontFamily: "IBM Plex Sans, system-ui, sans-serif"
@@ -183,12 +190,13 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 - **Graphite Ground**: the page background, and the fill of input fields (one step below the panel they sit in, so a field reads as a place to type without any inset shadow).
 - **Graphite Surface**: panels and cards, the sticky tab rail once pinned, table header cells.
 - **Graphite Raised**: one step up from surface. Secondary buttons, menus, tooltips, dialogs, row hover, selected segment.
-- **Graphite Rule**: every border and divider, chart gridlines.
+- **Graphite Rule**: borders on panels and cards, dividers, chart gridlines.
+- **Graphite Rule Strong** (border-strong): the edge of anything that must be seen as a control: input fields, selects, the segmented switch's track, checkboxes and toggles. At least 3:1 against Surface, Raised and the input fill.
 - **Graphite Text**: primary text and all figures that are not the key result.
 - **Graphite Muted**: labels, hints, table column headers, axis labels, inactive tabs.
 
 ### Neutral (light, derived)
-- **Paper Ground**, **Paper Surface**, **Paper Raised**, **Paper Rule**, **Paper Text**, **Paper Muted**: one-to-one counterparts of the Graphite roles above. A light-mode screen is the dark-mode screen with every Graphite token swapped for its Paper twin and every accent/semantic swapped for its Deep twin.
+- **Paper Ground**, **Paper Surface**, **Paper Raised**, **Paper Rule**, **Paper Rule Strong**, **Paper Text**, **Paper Muted**: one-to-one counterparts of the Graphite roles above. A light-mode screen is the dark-mode screen with every Graphite token swapped for its Paper twin and every accent/semantic swapped for its Deep twin.
 
 ### Semantic
 - **Gain** / **Gain Deep** and **Loss** / **Loss Deep**: money that grows or shrinks, a plan that lasts or runs out. Never on their own (see the Never Alone Rule).
@@ -196,11 +204,13 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 ### Chart series
 - **Your plan** is always Signal Amber (Deep in light).
 - **Sky** and **Teal** (each with a Deep variant for light) are the first comparison series.
-- **Rose**, **Lavender**, **Gray** follow, with one value in both modes; check their contrast against Paper Surface before using them as thin lines in light mode.
+- **Rose** and **Lavender** follow, each with a Deep variant for light mode (the dark values fall below 3:1 on Paper). **Gray** comes last, with one value in both modes.
+- Every series line clears 3:1 against Surface and Raised in its mode.
 - **Bands** (percentile ranges, better/worse cases) are the series color at 15 to 25% opacity.
 
 ### Brand mark
-- **Brand Gold**, **Brand Jade**, **Brand Steel**: the bow-and-arrow logo (`web/components/shell/Brandmark.tsx`), kept exactly as it is: same shape, same three colors, the same values in both themes. It is a brand mark, not UI, so it is exempt from the palette and from the Four Places Rule. Don't redraw it, recolor it, or map its colors to theme tokens, and don't use Brand Gold, Jade or Steel anywhere else in the UI.
+- **Brand Gold**, **Brand Jade**, **Brand Steel**: the bow-and-arrow logo (`web/components/shell/Brandmark.tsx`). In dark mode it stays exactly as it is today: same shape, same three colors. It is a brand mark, not UI, so it is exempt from the palette and from the Four Places Rule. Don't redraw it, and don't use the brand colors anywhere else in the UI.
+- **Brand Gold Deep**, **Brand Jade Deep**, **Brand Steel Deep**: the light-mode logo. Same shape, drawn in darker shades of the same three hues (same OKLCH hue and chroma, lower lightness) so each clears 3:1 on Paper Ground, Surface and Raised. The original colors measure 1.7 to 2.7:1 on paper.
 - The jade glow behind the mark in the masthead and its drop shadow are presentation, not the mark; they follow the No Wash and Flat Rest rules like everything else.
 - The same three colors also draw the bow-and-arrow brand motif's bow and arrow today; in the redesign the motif uses its own colors (see Brand Motif).
 
@@ -212,7 +222,7 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 
 **The Never Alone Rule.** Color never carries meaning by itself. Gain and loss always pair with a sign or arrow glyph and a word or column header that says what it is ("Lasted", "Ran out", "Growth").
 
-**The 4.5 Rule.** Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way.
+**The 4.5 Rule.** Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way. Non-text marks that carry meaning (control edges, chart lines, the logo) clear 3:1.
 
 ## Typography
 
@@ -265,7 +275,7 @@ The system is flat. Depth comes from three tonal steps (Ground, Surface, Raised)
 
 ## Shapes
 
-Gently rounded, consistent by role. Controls (buttons, inputs, selects, segmented switches) use 10px. Cards inside a panel, menus, tooltips and toasts use 14px. Panels use 16px. Badges and pills are fully round. An element nested flush inside another takes the outer radius less the border so the curves run parallel. Borders are always 1px Rule; there are no double borders, colored side stripes, or accent edges.
+Gently rounded, consistent by role. Controls (buttons, inputs, selects, segmented switches) use 10px. Cards inside a panel, menus, tooltips and toasts use 14px. Panels use 16px. Badges and pills are fully round. An element nested flush inside another takes the outer radius less the border so the curves run parallel. Borders are always 1px: Rule on panels, cards and dividers, Rule Strong on controls that need a visible boundary. There are no double borders, colored side stripes, or accent edges.
 
 ## Components
 
@@ -282,13 +292,14 @@ Firm and tactile: controls read as keys you press, with clear fills, real hit ar
 - **Disabled:** 50% opacity, no pointer events.
 
 ### Inputs / Fields
-- **Style:** Ground fill inside a Surface panel, 1px Rule border, 10px radius, 36px tall. Values in tabular figures, right-aligned for money and percentages, with the unit ($, %) as a muted prefix or suffix inside the field.
+- **Style:** Ground fill inside a Surface panel, 1px Rule Strong border, 10px radius, 36px tall. Values in tabular figures, right-aligned for money and percentages, with the unit ($, %) as a muted prefix or suffix inside the field.
 - **Label:** above the field in Body, a hint below in Label/Muted.
 - **Hover:** border to Muted. **Focus:** border to Text plus the 2px focus ring.
+- **Selects** share the field's style, with a Muted chevron.
 - **Error:** Loss border and a written message under the field, with an icon.
 
 ### Segmented switch
-- A Ground track with a Raised thumb that slides to the selected option. Selected text in Text color; others Muted. Used for view switches (Selected year / All years, chart modes).
+- A Ground track with a Rule Strong edge and a Raised thumb that slides to the selected option. Selected text in Text color; others Muted. Used for view switches (Selected year / All years, chart modes).
 
 ### Cards / Panels
 - **Corner Style:** 16px for panels, 14px for cards inside them.

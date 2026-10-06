@@ -36,19 +36,24 @@ FT or Observable (chart clarity).
 ## Color tokens (final; do not propose alternatives)
 Dark (primary)
 - bg #0E1116, surface #151A21, raised #1C222B, border #2A313C
+- border-strong #626E7D (input fields and other controls that need a
+  visible boundary; regular border stays for dividers and cards)
 - text #E8EBF0, muted #9AA4B2
 - accent #E3A93B (text on accent #0E1116)
 - gain #4CC38A, loss #F0716A
 Light (derived from dark)
 - bg #FAF9F6, surface #FFFFFF, raised #F3F1EC, border #E3E0D8
+- border-strong #818995
 - text #17191C, muted #5B636E
 - accent #9A6200 (text on accent #FFFFFF)
 - gain #17704A, loss #B02F29
 Chart series (dark / light)
 - plan = accent
 - sky #5AA9E6 / #2F7FC4, teal #46B9A6 / #1F8F7E
-- rose #E0749B, lavender #9C8CE0, gray #8A94A3
+- rose #E0749B / #C2467A, lavender #9C8CE0 / #7B68C9, gray #8A94A3
 - bands = series color at 15-25% opacity
+Logo (light mode only; dark keeps today's #e9b872 / #4fbf95 / #7d9fd6)
+- gold #B0813A, jade #219B73, steel #6A8BC1
 
 ## Color rules
 - Dark first; light derived from the same tokens.
@@ -73,8 +78,12 @@ Chart series (dark / light)
   before moving on.
 - DESIGN.md at the repo root is the visual spec ("The Quiet
   Instrument"); this brief wins where they disagree.
-- Logo: kept exactly as it is (shape and its gold, jade and steel), in
-  both themes. Exempt from the palette and the accent rule.
+- Logo: shape kept exactly. Dark mode keeps today's gold, jade and steel;
+  light mode uses darker shades of the same three (see Color tokens),
+  each at least 3:1 on the light backgrounds. Exempt from the palette and
+  the accent rule.
+- Non-text contrast: control edges (border-strong), chart lines and the
+  logo are at least 3:1 against the backgrounds they sit on.
 - Tool-picker icon animations: kept, retuned to DESIGN.md's Motion rules.
 - Print summary and share image card: restyled in a separate, later pass.
 
@@ -89,7 +98,7 @@ Chart series (dark / light)
   new JS or images.
 - Print summary and share image card colors are separate from the screen
   theme; handle them deliberately, not by accident.
-- The logo, unchanged.
+- The logo's shape, unchanged; in dark mode its colors too.
 - The Guide's bow-and-arrow progress bar (the arrow flies from the bow
   toward the target as the visitor advances).
 - The Plan Optimizer's bow-and-arrow loading bar (the bow shoots at the

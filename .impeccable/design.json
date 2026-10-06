@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T15:27:06.690Z",
+  "generatedAt": "2026-10-06T15:38:33.488Z",
   "title": "Design System: RetCalc",
   "extensions": {
     "colorMeta": {
@@ -66,6 +66,22 @@
           "oklch(72.1% 0.022 259.4)",
           "oklch(83.6% 0.022 259.4)",
           "oklch(95% 0.022 259.4)"
+        ]
+      },
+      "graphite-rule-strong": {
+        "role": "neutral",
+        "displayName": "Graphite Rule Strong",
+        "canonical": "#626E7D",
+        "oklch": "oklch(53.4% 0.028 254.1)",
+        "tonalRamp": [
+          "oklch(15% 0.028 254.1)",
+          "oklch(26.4% 0.028 254.1)",
+          "oklch(37.9% 0.028 254.1)",
+          "oklch(49.3% 0.028 254.1)",
+          "oklch(60.7% 0.028 254.1)",
+          "oklch(72.1% 0.028 254.1)",
+          "oklch(83.6% 0.028 254.1)",
+          "oklch(95% 0.028 254.1)"
         ]
       },
       "graphite-text": {
@@ -226,6 +242,22 @@
           "oklch(72.1% 0.011 89.7)",
           "oklch(83.6% 0.011 89.7)",
           "oklch(95% 0.011 89.7)"
+        ]
+      },
+      "paper-rule-strong": {
+        "role": "neutral",
+        "displayName": "Paper Rule Strong",
+        "canonical": "#818995",
+        "oklch": "oklch(62.7% 0.02 258.4)",
+        "tonalRamp": [
+          "oklch(15% 0.02 258.4)",
+          "oklch(26.4% 0.02 258.4)",
+          "oklch(37.9% 0.02 258.4)",
+          "oklch(49.3% 0.02 258.4)",
+          "oklch(60.7% 0.02 258.4)",
+          "oklch(72.1% 0.02 258.4)",
+          "oklch(83.6% 0.02 258.4)",
+          "oklch(95% 0.02 258.4)"
         ]
       },
       "paper-text": {
@@ -404,6 +436,22 @@
           "oklch(95% 0.124 358.5)"
         ]
       },
+      "series-rose-deep": {
+        "role": "chart",
+        "displayName": "Rose Deep",
+        "canonical": "#C2467A",
+        "oklch": "oklch(57.8% 0.166 357.7)",
+        "tonalRamp": [
+          "oklch(15% 0.115 357.7)",
+          "oklch(26.4% 0.134 357.7)",
+          "oklch(37.9% 0.152 357.7)",
+          "oklch(49.3% 0.166 357.7)",
+          "oklch(60.7% 0.166 357.7)",
+          "oklch(72.1% 0.162 357.7)",
+          "oklch(83.6% 0.143 357.7)",
+          "oklch(95% 0.124 357.7)"
+        ]
+      },
       "series-lavender": {
         "role": "chart",
         "displayName": "Lavender",
@@ -418,6 +466,22 @@
           "oklch(72.1% 0.122 291.6)",
           "oklch(83.6% 0.122 291.6)",
           "oklch(95% 0.11 291.6)"
+        ]
+      },
+      "series-lavender-deep": {
+        "role": "chart",
+        "displayName": "Lavender Deep",
+        "canonical": "#7B68C9",
+        "oklch": "oklch(58% 0.145 290.1)",
+        "tonalRamp": [
+          "oklch(15% 0.103 290.1)",
+          "oklch(26.4% 0.119 290.1)",
+          "oklch(37.9% 0.136 290.1)",
+          "oklch(49.3% 0.145 290.1)",
+          "oklch(60.7% 0.145 290.1)",
+          "oklch(72.1% 0.144 290.1)",
+          "oklch(83.6% 0.128 290.1)",
+          "oklch(95% 0.111 290.1)"
         ]
       },
       "series-gray": {
@@ -451,7 +515,7 @@
           "oklch(83.6% 0.104 75.3)",
           "oklch(95% 0.104 75.3)"
         ],
-        "note": "Logo only. Same value in both themes; exempt from the palette and the Four Places Rule."
+        "note": "Logo, dark mode (unchanged)."
       },
       "brand-jade": {
         "role": "brand",
@@ -468,7 +532,7 @@
           "oklch(83.6% 0.12 165.4)",
           "oklch(95% 0.114 165.4)"
         ],
-        "note": "Logo only. Same value in both themes; exempt from the palette and the Four Places Rule."
+        "note": "Logo, dark mode (unchanged)."
       },
       "brand-steel": {
         "role": "brand",
@@ -485,7 +549,58 @@
           "oklch(83.6% 0.09 259.8)",
           "oklch(95% 0.087 259.8)"
         ],
-        "note": "Logo only. Same value in both themes; exempt from the palette and the Four Places Rule."
+        "note": "Logo, dark mode (unchanged)."
+      },
+      "brand-gold-deep": {
+        "role": "brand",
+        "displayName": "Brand Gold Deep",
+        "canonical": "#B0813A",
+        "oklch": "oklch(63.6% 0.105 75)",
+        "tonalRamp": [
+          "oklch(15% 0.074 75)",
+          "oklch(26.4% 0.086 75)",
+          "oklch(37.9% 0.098 75)",
+          "oklch(49.3% 0.105 75)",
+          "oklch(60.7% 0.105 75)",
+          "oklch(72.1% 0.105 75)",
+          "oklch(83.6% 0.104 75)",
+          "oklch(95% 0.092 75)"
+        ],
+        "note": "Logo, light mode only."
+      },
+      "brand-jade-deep": {
+        "role": "brand",
+        "displayName": "Brand Jade Deep",
+        "canonical": "#219B73",
+        "oklch": "oklch(61.5% 0.12 165.4)",
+        "tonalRamp": [
+          "oklch(15% 0.084 165.4)",
+          "oklch(26.4% 0.098 165.4)",
+          "oklch(37.9% 0.112 165.4)",
+          "oklch(49.3% 0.12 165.4)",
+          "oklch(60.7% 0.12 165.4)",
+          "oklch(72.1% 0.12 165.4)",
+          "oklch(83.6% 0.113 165.4)",
+          "oklch(95% 0.1 165.4)"
+        ],
+        "note": "Logo, light mode only."
+      },
+      "brand-steel-deep": {
+        "role": "brand",
+        "displayName": "Brand Steel Deep",
+        "canonical": "#6A8BC1",
+        "oklch": "oklch(63.4% 0.09 260)",
+        "tonalRamp": [
+          "oklch(15% 0.066 260)",
+          "oklch(26.4% 0.077 260)",
+          "oklch(37.9% 0.087 260)",
+          "oklch(49.3% 0.09 260)",
+          "oklch(60.7% 0.09 260)",
+          "oklch(72.1% 0.09 260)",
+          "oklch(83.6% 0.09 260)",
+          "oklch(95% 0.082 260)"
+        ],
+        "note": "Logo, light mode only."
       }
     },
     "typographyMeta": {
@@ -593,7 +708,7 @@
       "refersTo": "input",
       "description": "Ground-filled field inside a Surface panel; tabular, right-aligned value with a muted unit.",
       "html": "<label class=\"ds-field\"><span class=\"ds-field-l\">How much do you save for retirement?</span><span class=\"ds-field-box\"><span class=\"ds-field-u\">$</span><input class=\"ds-field-i\" inputmode=\"decimal\" value=\"500\"></span><span class=\"ds-field-h\">Each month, before tax</span></label>",
-      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-field{display:grid;gap:6px;width:300px;padding:16px 18px;background:var(--surface);border-radius:16px} .ds-field-l{font:400 15px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--text)} .ds-field-box{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--rule);background:var(--ground);transition:border-color .14s ease} .ds-field-box:hover{border-color:var(--muted)} .ds-field-box:focus-within{border-color:var(--text);outline:2px solid var(--text);outline-offset:2px} .ds-field-u{color:var(--muted);font-size:13px} .ds-field-i{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:400 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;text-align:right;outline:none} .ds-field-h{font:500 11.5px/1.4 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--muted)}"
+      "css": ":host{--rule-strong:#626E7D;--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-field{display:grid;gap:6px;width:300px;padding:16px 18px;background:var(--surface);border-radius:16px} .ds-field-l{font:400 15px/1.5 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--text)} .ds-field-box{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--rule-strong);background:var(--ground);transition:border-color .14s ease} .ds-field-box:hover{border-color:var(--muted)} .ds-field-box:focus-within{border-color:var(--text);outline:2px solid var(--text);outline-offset:2px} .ds-field-u{color:var(--muted);font-size:13px} .ds-field-i{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:400 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;text-align:right;outline:none} .ds-field-h{font:500 11.5px/1.4 \"IBM Plex Sans\",system-ui,sans-serif;color:var(--muted)}"
     },
     {
       "name": "Tab Rail",
@@ -625,7 +740,7 @@
       "refersTo": "button-secondary",
       "description": "View switch: Ground track, Raised thumb on the selected option.",
       "html": "<div class=\"ds-seg\" role=\"group\"><button aria-pressed=\"false\">Selected year</button><button aria-pressed=\"true\">All years</button></div>",
-      "css": ":host{--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-seg{display:inline-flex;padding:2px;gap:2px;background:var(--ground);border:1px solid var(--rule);border-radius:10px} .ds-seg button{height:30px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font:500 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;cursor:pointer;transition:background-color .14s ease,color .14s ease} .ds-seg button:hover{color:var(--text)} .ds-seg button[aria-pressed=true]{background:var(--raised);border-color:var(--rule);color:var(--text)} .ds-seg button:focus-visible{outline:2px solid var(--text);outline-offset:1px}"
+      "css": ":host{--rule-strong:#626E7D;--ground:#0E1116;--surface:#151A21;--raised:#1C222B;--rule:#2A313C;--text:#E8EBF0;--muted:#9AA4B2;--amber:#E3A93B;--on-amber:#0E1116;--gain:#4CC38A;--loss:#F0716A;font-family:\"IBM Plex Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums} .ds-seg{display:inline-flex;padding:2px;gap:2px;background:var(--ground);border:1px solid var(--rule-strong);border-radius:10px} .ds-seg button{height:30px;padding:0 12px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);font:500 13px/1 \"IBM Plex Sans\",system-ui,sans-serif;cursor:pointer;transition:background-color .14s ease,color .14s ease} .ds-seg button:hover{color:var(--text)} .ds-seg button[aria-pressed=true]{background:var(--raised);border-color:var(--rule);color:var(--text)} .ds-seg button:focus-visible{outline:2px solid var(--text);outline-offset:1px}"
     },
     {
       "name": "Result Badges",
@@ -668,7 +783,7 @@
       },
       {
         "name": "The 4.5 Rule",
-        "body": "Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way.",
+        "body": "Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way. Non-text marks that carry meaning (control edges, chart lines, the logo) clear 3:1.",
         "section": "colors"
       },
       {
