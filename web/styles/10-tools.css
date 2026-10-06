@@ -51,6 +51,10 @@
 .mcbar .field{margin-bottom:0}
 .mcbar .hint{flex:1 1 160px;min-width:0}
 
+/* The ± before a rate (components/ui/toggle.tsx, sign); the class is the
+   hook the old markup had. */
+.signflip{flex:none}
+
 /* ---------- optional toggles ---------- */
 .adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
   color:var(--dim);cursor:pointer;white-space:nowrap;

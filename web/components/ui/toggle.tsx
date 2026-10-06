@@ -23,7 +23,7 @@ const toggleVariants = cva(
         check:
           "flex w-full items-center gap-2.5 rounded-(--r-well) border border-border bg-muted px-2.5 py-2.25 text-left text-[12.5px] text-muted-foreground transition-colors hover:border-input focus-visible:outline-offset-2 data-pressed:border-input",
         sign:
-          "flex-none bg-transparent px-2 text-sm leading-none text-muted-foreground transition-colors pointer-coarse:px-3.25 hover:text-foreground focus-visible:-outline-offset-2 data-pressed:text-loss",
+          "signflip bg-transparent px-2 text-sm leading-none text-muted-foreground transition-colors pointer-coarse:px-3.25 hover:text-foreground focus-visible:-outline-offset-2 data-pressed:text-loss",
         legend:
           "rounded-sm transition-opacity hover:text-foreground focus-visible:outline-offset-3 not-data-pressed:line-through not-data-pressed:opacity-45",
       },
