@@ -268,6 +268,10 @@ The system is flat. Depth comes from three tonal steps (Ground, Surface, Raised)
 
 ### Shadow Vocabulary
 - **Float** (dark: `0 12px 32px -12px rgba(0,0,0,.6)`; light: `0 12px 32px -14px rgba(23,25,28,.18)`; starting values, tuned in the shared-pieces pass): menus, select lists, tooltips, toasts, dialogs and the pinned tab rail. Nothing else.
+- **Float Up** (`--ds-float-up`; dark: `0 -12px 32px -12px rgba(0,0,0,.6)`; light: `0 -12px 32px -14px rgba(23,25,28,.18)`): the Float shadow cast upward, for the one bar fixed to the bottom of the screen, the installed web app's tab bar.
+
+### Scrim
+- **Scrim** (`--ds-scrim`; dark: Graphite Ground at 60%, `color-mix(in srgb, var(--ds-ground) 60%, transparent)`; light: Paper Text at 30%, `color-mix(in srgb, var(--ds-text) 30%, transparent)`): dims the page under a dialog, the phone Calculator menu and the phone select sheet. A flat tint, no blur. Light mode dims with the Text tone, since a Ground tint would lighten the page instead.
 
 ### Named Rules
 **The Flat Rest Rule.** Surfaces are flat at rest. A shadow means "this is floating above the page and will go away". If it doesn't float, it doesn't get a shadow.

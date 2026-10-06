@@ -4,6 +4,7 @@
    has to reach 100%. The Drawdown Simulator's and the Portfolio Backtest's
    pop-ups both use it. */
 
+import { CircleAlertIcon } from "lucide-react";
 import { NumberInput } from "@/components/fields/NumberInput";
 import { parseNum } from "@/lib/format";
 import { DD_ASSETS, ddN } from "./text";
@@ -25,7 +26,10 @@ export function MixRows({ f, up, totId }: { f: MixForm; up: (k: keyof MixForm) =
         <div className="ddmixrow" key={k}><div><b>{name}</b><small>{desc}</small></div>
           <Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={5} max={100} data-mix={k} aria-label={name} value={f[k]} onValueChange={up(k)} /></Affixed></div>
       ))}
-      <div className="ddmixtot" id={totId}>Total: <b>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
+      {/* A total that isn't 100% is an error: Loss, with an icon and the words. */}
+      <div className={ok ? "ddmixtot" : "ddmixtot text-loss"} id={totId}>
+        {ok ? null : <CircleAlertIcon className="relative -top-px mr-1.5 inline size-3.75 align-middle" aria-hidden="true" />}
+        Total: <b>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
     </>
   );
 }
