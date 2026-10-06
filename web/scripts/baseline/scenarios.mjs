@@ -22,7 +22,7 @@ const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model")
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
 const { BUDGET_DEFAULTS, budgetCompute, budgetHouseholdNet } = await import("@/tools/budget/model");
 const { healthcareCompute } = await import("@/tools/healthcare/model");
-const { FIRE_DEFAULTS, fireCompute } = await import("@/tools/fire/model");
+const { FIRE_DEFAULTS, fireCompute, fireBandPoints, fireHistRuns } = await import("@/tools/fire/model");
 const { BRIDGE_DEFAULTS, bridgeInput } = await import("@/tools/bridge/model");
 const { runBridge, bridgeScenarios, firstYearAfter } = await import("@/tools/bridge/run");
 const { BT_DEFAULTS, runBacktest, decadeInflation } = await import("@/tools/backtest/model");
@@ -49,20 +49,22 @@ function advanced(fields) {
 
 function drawdown(fields, mc) {
   // Fields as typed, over the screen's defaults; the setup the screen runs.
-  const { o, comfort } = drawdownSetup({ ...DRAWDOWN_DEFAULTS, ...fields });
+  const { o, comfort, P, firstW, r1, age } = drawdownSetup({ ...DRAWDOWN_DEFAULTS, ...fields });
+  const setup = { P, firstW, r1, age };
   if (mc) {
     // The job the screen sends its worker (lib/engine/jobs.ts).
     const M = E.ddJob("mc", { o, trials: mc.trials, seed: mc.seed, comfort });
-    return { full: M, out: { trials: mc.trials, seed: mc.seed, successRate: M.successRate, medianEnd: M.medianEnd,
-      p10End: M.p10End, p90End: M.p90End } };
+    return { full: { ...M, setup }, out: { trials: mc.trials, seed: mc.seed, successRate: M.successRate, medianEnd: M.medianEnd,
+      p10End: M.p10End, p90End: M.p90End, firstYearSpend: firstW, firstYearRate: r1 } };
   }
   const H = D.historicalBacktest(o);
   const sc = D.ddScorecard(H.runs, o, comfort, H.prep.path);
   return {
-    full: { o, H, sc },
+    full: { o, H, sc, setup },
     out: { periods: H.total, survived: H.survived, successRate: H.successRate, medianEnd: H.medianEnd,
       worstEnd: H.worstEnd, bestEnd: H.bestEnd, failYears: H.failYears.length,
-      firstFailStart: H.firstFail ? `${H.firstFail.startYear}-${H.firstFail.startMonth}` : null, lowestSpendRatio: sc.lowRatio },
+      firstFailStart: H.firstFail ? `${H.firstFail.startYear}-${H.firstFail.startMonth}` : null, lowestSpendRatio: sc.lowRatio,
+      firstYearSpend: firstW, firstYearRate: r1 },
   };
 }
 
@@ -134,9 +136,11 @@ function mortgageTool(fields) {
 }
 
 function debt(fields) {
-  const { av, sn, mn, warn: under, bump } = debtCompute({ ...DEBT_DEFAULTS, ...fields }).plan;
+  const { av, sn, mn, warn: under, bump, saved, sooner, borrowed, dInt, dMon, dFirst, rate } = debtCompute({ ...DEBT_DEFAULTS, ...fields }).plan;
   const pick = (r) => r && { months: r.monthsTotal, totalInterest: r.totalInterest, totalPaid: r.totalPaid, stalled: r.stalled };
-  return { full: { av, sn, mn, under, bump }, out: { avalanche: pick(av), snowball: pick(sn), minimumsOnly: pick(mn), underwater: under.join(", "), plus100: pick(bump) } };
+  const vs = { saved, sooner, borrowed, dInt, dMon, dFirst, rate };
+  return { full: { av, sn, mn, under, bump, vs },
+    out: { avalanche: pick(av), snowball: pick(sn), minimumsOnly: pick(mn), underwater: under.join(", "), plus100: pick(bump), vs } };
 }
 
 function rentBuy(fields) {
@@ -158,11 +162,12 @@ function college(fields) {
 }
 
 function budget(fields, household) {
-  const { incomeYr, spentYr, savedYr, leftYr } = budgetCompute({ ...BUDGET_DEFAULTS, ...fields });
+  const { incomeYr, spentYr, savedYr, leftYr, pct, ef, efTarget } = budgetCompute({ ...BUDGET_DEFAULTS, ...fields });
   const totals = { incomeYr, spentYr, savedYr, leftYr };
   // The household's take-home pay, as the screen fills it in as income.
   const net = household ? budgetHouseholdNet(household, () => TAX_DEFAULTS.state) : null;
-  return { full: { totals, net }, out: { ...totals, householdTakeHome: net } };
+  return { full: { totals, net, emergency: { pct, ef, efTarget } },
+    out: { ...totals, householdTakeHome: net, leftShare: pct, emergencyMonths: ef, emergencyTarget: efTarget } };
 }
 
 function healthcare(fields) {
@@ -170,15 +175,24 @@ function healthcare(fields) {
   const { acaMagi, fpl, grossMonthly, std, enh, tier, partB, partD, totalLow, totalHigh } = H;
   const medicare = { tier, partB, partD, totalLow, totalHigh };
   return {
-    full: { acaMagi, fpl, grossMonthly, std, enh, medicare },
+    full: { acaMagi, fpl, grossMonthly, std, enh, medicare,
+      // Added 2026-10-06: everything else healthcareCompute() returns.
+      tiers: { prev: H.prev, next: H.next, save: H.save, nextThreshold: H.nextThreshold, nextCost: H.nextCost, partDIrmaa: H.partDIrmaa, people: H.people },
+      aca: { cliff400: H.cliff400, bronze: H.bronze, gold: H.gold, ssTaxed: H.ssTaxed, childPrem: H.childPrem, kids: H.kids, spouseOn: H.spouseOn,
+        acaAge: H.acaAge, acaAge2: H.acaAge2, usingStateEst: H.usingStateEst } },
     out: { bridgeYears: H.bridgeYears, acaMagi, pctFPL: H.pctFPL, benchmarkMonthly: grossMonthly, netPremium: std.eligible ? std.net : grossMonthly, credit: std.credit,
-      enhancedNet: enh.net, irmaaTier: tier, medicareLow: totalLow, medicareHigh: totalHigh },
+      enhancedNet: enh.net, irmaaTier: tier, medicareLow: totalLow, medicareHigh: totalHigh,
+      bronze: H.bronze, gold: H.gold, cliff400: H.cliff400, tierSavings: H.save, nextTierThreshold: H.nextThreshold, nextTierCost: H.nextCost },
   };
 }
 
 function fire(fields) {
-  const { p, S, cr, histYear } = fireCompute({ ...FIRE_DEFAULTS, ...fields });
-  return { full: { S, cr }, out: { yearsUntil: S.fireYear, realThen: S.real, nominalThen: S.nominal, contribs: S.contribs, target: p.target, histYears: histYear } };
+  const { p, S, cr, histYear, displayYear, gains, keep, coastGap } = fireCompute({ ...FIRE_DEFAULTS, ...fields });
+  // The chart the screen draws: every window since 1926, or the rate band.
+  const chart = fields.chart === "hist" ? fireHistRuns(p, displayYear, S.maxYears) : fireBandPoints(p, displayYear, S.maxYears);
+  return { full: { S, cr, more: { displayYear, gains, keep, coastGap }, chart },
+    out: { yearsUntil: S.fireYear, realThen: S.real, nominalThen: S.nominal, contribs: S.contribs, target: p.target, histYears: histYear,
+      displayYear, gains, keepSaving: keep, coastGap } };
 }
 
 function bridge(fields, mode = "hist", seed = 1) {
@@ -200,9 +214,8 @@ function backtest(fields) {
 }
 
 function stages(fields) {
-  // saRate (the split's own rate, kept in a hidden field) is left out, as before.
-  const { P, R, F, portToday, rate, feeCost } = stagesCompute({ ...STAGES_DEFAULTS, ...fields }, null);
-  return { full: { P, R, F, portToday, rate, feeCost },
+  const { P, R, F, portToday, rate, feeCost, saRate } = stagesCompute({ ...STAGES_DEFAULTS, ...fields }, null);
+  return { full: { P, R, F, portToday, rate, feeCost, saRate },
     out: { atRetirement: R.fv, todaysDollars: R.fvReal, firstYearAfterTax: R.afterTax, monthlyAfterTax: R.afterTaxMo, portfolioNeeded: portToday, feeCost } };
 }
 

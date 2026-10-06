@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-06T14:15:50.404Z",
+  "recorded": "2026-10-06T14:49:47.764Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -126,12 +126,15 @@
         "bestEnd": 6641918.0336,
         "failYears": 6,
         "firstFailStart": "1964-4",
-        "lowestSpendRatio": 0
+        "lowestSpendRatio": 0,
+        "firstYearSpend": 40000,
+        "firstYearRate": 0.04
       },
       "fields": {
         "H": "ad15ca37415db5cf",
         "o": "d8db62b8ac17c262",
-        "sc": "cbb1711c4c801260"
+        "sc": "cbb1711c4c801260",
+        "setup": "febaf8bf67741f87"
       }
     },
     {
@@ -145,12 +148,15 @@
         "bestEnd": 7415865.0758,
         "failYears": 0,
         "firstFailStart": null,
-        "lowestSpendRatio": 0.5314
+        "lowestSpendRatio": 0.5314,
+        "firstYearSpend": 50000,
+        "firstYearRate": 0.05
       },
       "fields": {
         "H": "8b191b4b572c6ff9",
         "o": "5f0851e2d8687004",
-        "sc": "06ebf80d6c4e7c43"
+        "sc": "06ebf80d6c4e7c43",
+        "setup": "f100322cc6bd5377"
       }
     },
     {
@@ -161,7 +167,9 @@
         "successRate": 0.927,
         "medianEnd": 1852795.2424,
         "p10End": 179624.1015,
-        "p90End": 5893642.2565
+        "p90End": 5893642.2565,
+        "firstYearSpend": 40000,
+        "firstYearRate": 0.04
       },
       "fields": {
         "bal": "71962408fb1059c2",
@@ -175,6 +183,7 @@
         "path": "4a65f551310ca2e4",
         "sc": "be221677c43199c3",
         "sens": "74234e98afe7498f",
+        "setup": "febaf8bf67741f87",
         "spend": "9289cb1c4287f0fa",
         "spendBands": "654f44ee3f906b79",
         "ss": "74234e98afe7498f",
@@ -462,6 +471,15 @@
           "totalInterest": 7225.901,
           "totalPaid": 56625.901,
           "stalled": false
+        },
+        "vs": {
+          "saved": 10166.7361,
+          "sooner": 76,
+          "borrowed": 49400,
+          "dInt": 423.8079,
+          "dMon": 1,
+          "dFirst": -17,
+          "rate": 9.7057
         }
       },
       "fields": {
@@ -469,7 +487,8 @@
         "bump": "87d6bc75b919725f",
         "mn": "185df596ca9d2066",
         "sn": "cd0310a1464be7e3",
-        "under": "4f53cda18c2baa0c"
+        "under": "4f53cda18c2baa0c",
+        "vs": "b79e05bada11b2f2"
       }
     },
     {
@@ -499,6 +518,15 @@
           "totalInterest": 20909.5402,
           "totalPaid": 75309.5402,
           "stalled": false
+        },
+        "vs": {
+          "saved": 2915080457287.1475,
+          "sooner": 638,
+          "borrowed": 54400,
+          "dInt": 0,
+          "dMon": 0,
+          "dFirst": 0,
+          "rate": 12.1224
         }
       },
       "fields": {
@@ -506,7 +534,8 @@
         "bump": "b9de29542eaf1467",
         "mn": "368b04577bc8256e",
         "sn": "311f847ba1dc7d2c",
-        "under": "c0b734753208a2d5"
+        "under": "c0b734753208a2d5",
+        "vs": "c1915b98035c48b2"
       }
     },
     {
@@ -604,9 +633,13 @@
         "spentYr": 41320,
         "savedYr": 6000,
         "leftYr": 30680,
-        "householdTakeHome": null
+        "householdTakeHome": null,
+        "leftShare": 0.3933,
+        "emergencyMonths": 6,
+        "emergencyTarget": 20660
       },
       "fields": {
+        "emergency": "1ad02e54bef192a1",
         "net": "74234e98afe7498f",
         "totals": "2c89ecee73cfae70"
       }
@@ -618,9 +651,13 @@
         "spentYr": 0,
         "savedYr": 0,
         "leftYr": 0,
-        "householdTakeHome": 160429.164
+        "householdTakeHome": 160429.164,
+        "leftShare": 0,
+        "emergencyMonths": 6,
+        "emergencyTarget": 0
       },
       "fields": {
+        "emergency": "0f5c4073947d75e6",
         "net": "b0a9367934f5c3f7",
         "totals": "d7500756b3464ae5"
       }
@@ -637,15 +674,23 @@
         "enhancedNet": 333.939,
         "irmaaTier": 0,
         "medicareLow": 357.9,
-        "medicareHigh": 437.9
+        "medicareHigh": 437.9,
+        "bronze": 113.5336,
+        "gold": 799.4664,
+        "cliff400": 62600,
+        "tierSavings": 0,
+        "nextTierThreshold": 137000,
+        "nextTierCost": 95.7
       },
       "fields": {
+        "aca": "155f4a7b02558fdb",
         "acaMagi": "4520eeb3ad812cd2",
         "enh": "d6d1db11ae2928f2",
         "fpl": "1740f86922944273",
         "grossMonthly": "83da5fd479fe331c",
         "medicare": "c5f645c5d25515a4",
-        "std": "b0b25a169570af9e"
+        "std": "b0b25a169570af9e",
+        "tiers": "af73a63de35fd3a8"
       }
     },
     {
@@ -660,15 +705,23 @@
         "enhancedNet": 579.9871,
         "irmaaTier": 0,
         "medicareLow": 357.9,
-        "medicareHigh": 437.9
+        "medicareHigh": 437.9,
+        "bronze": 30.0038,
+        "gold": 1538.6962,
+        "cliff400": 106600,
+        "tierSavings": 0,
+        "nextTierThreshold": 274000,
+        "nextTierCost": 95.7
       },
       "fields": {
+        "aca": "aeafbf7d3d9d7b38",
         "acaMagi": "c3eaba96e4511b09",
         "enh": "9d8253f0062dd175",
         "fpl": "d1849ef0df16234b",
         "grossMonthly": "c404c5de35a0209d",
         "medicare": "c5f645c5d25515a4",
-        "std": "a7636405b24ee210"
+        "std": "a7636405b24ee210",
+        "tiers": "42a0a3f0a6170e3c"
       }
     },
     {
@@ -683,15 +736,23 @@
         "enhancedNet": 1841.6667,
         "irmaaTier": 1,
         "medicareLow": 453.6,
-        "medicareHigh": 533.6
+        "medicareHigh": 533.6,
+        "bronze": 1415.3662,
+        "gold": 2358.9437,
+        "cliff400": 84600,
+        "tierSavings": 95.7,
+        "nextTierThreshold": 342000,
+        "nextTierCost": 144.7
       },
       "fields": {
+        "aca": "2008d0256bca7ad7",
         "acaMagi": "9e7671068ee9f4c1",
         "enh": "3edacf3b6e616ec0",
         "fpl": "48ff6cf0c4990494",
         "grossMonthly": "fd3c3c19b2142fda",
         "medicare": "1c30e6e0fa673979",
-        "std": "1ce7461df800452b"
+        "std": "1ce7461df800452b",
+        "tiers": "6e2db03bfddb72c3"
       }
     },
     {
@@ -702,11 +763,17 @@
         "nominalThen": 3057308.55,
         "contribs": 444000,
         "target": 1000000,
-        "histYears": null
+        "histYears": null,
+        "displayYear": 36.5679,
+        "gains": 2603308.55,
+        "keepSaving": null,
+        "coastGap": null
       },
       "fields": {
         "S": "54401ec713948946",
-        "cr": "74234e98afe7498f"
+        "chart": "813c7d8af1482299",
+        "cr": "74234e98afe7498f",
+        "more": "5c540a8ec296bb63"
       }
     },
     {
@@ -717,11 +784,17 @@
         "nominalThen": 378420.6988,
         "contribs": 84000,
         "target": 1000000,
-        "histYears": 15.1667
+        "histYears": 15.1667,
+        "displayYear": 15.1667,
+        "gains": 144420.6988,
+        "keepSaving": 1351946.7329,
+        "coastGap": 304440.1699
       },
       "fields": {
         "S": "caac3bbff794f08a",
-        "cr": "6ca0e86cf463a178"
+        "chart": "e0c1b9727b612eda",
+        "cr": "6ca0e86cf463a178",
+        "more": "0812eaa02cc5908f"
       }
     },
     {
@@ -806,7 +879,8 @@
         "R": "b758b999af7ab3c0",
         "feeCost": "5feceb66ffc86f38",
         "portToday": "92c0af241c7be5a3",
-        "rate": "14be4b45f18e0d8c"
+        "rate": "14be4b45f18e0d8c",
+        "saRate": "74234e98afe7498f"
       }
     },
     {
@@ -825,7 +899,8 @@
         "R": "9f77f95b9ffb0647",
         "feeCost": "92bfa9facba57514",
         "portToday": "dd80d7a873341d49",
-        "rate": "14be4b45f18e0d8c"
+        "rate": "14be4b45f18e0d8c",
+        "saRate": "74234e98afe7498f"
       }
     },
     {
