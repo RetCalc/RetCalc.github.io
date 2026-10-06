@@ -4,7 +4,7 @@
    src/js/app/08-stages.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
 import { finishAccounts, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
-import { PPY, projectSeries } from "@/lib/engine/typed";
+import { PPY, finalStageSolve, projectSeries } from "@/lib/engine/typed";
 import type { Plan, SeriesGlobals, Stage } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
@@ -203,4 +203,20 @@ export function stagesPlan(s: StagesInputs, household: Household | null): Stages
 export function stagesTargetRate(P: StagesPlan, solveFor: string, target: number): number {
   if (!P.g.acct || !P.B || solveFor !== "After-Tax Withdrawal") return P.g.taxRate;
   return targetRate(P.B, target, P.g.taxRate);
+}
+
+/** Everything the screen shows from the inputs: the projection, the
+    portfolio the goal needs, the last stage's solve, and what fees cost. */
+export function stagesCompute(s: StagesInputs, household: Household | null) {
+  const P = stagesPlan(s, household);
+  const R = projectSeries(P.g, P.eff);
+  const target = parseNum(s.target);
+  const rate = stagesTargetRate(P, s.solveFor, target);
+  const portToday = s.solveFor === "After-Tax Withdrawal" ? target / (P.g.withdrawal * (1 - rate)) : target;
+  const F = P.stages.length ? finalStageSolve(P.g, P.eff, portToday) : null;
+  const feeCost = (P.g.fees || 0) > 0 ? projectSeries(P.g, effectiveStages({ ...P.g, fees: 0 }, P.stages)).fv - R.fv : 0;
+  // The calculated rate stays in its (hidden) field after the split is
+  // turned off, as it did on the old site.
+  const saRate = P.B ? P.B.effRate : s.saTradBal !== "" ? stagesPlan({ ...s, saOn: true }, household).B!.effRate : null;
+  return { P, R, F, portToday, rate, feeCost, saRate };
 }

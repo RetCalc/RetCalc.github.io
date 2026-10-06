@@ -27,7 +27,7 @@ const { BRIDGE_DEFAULTS, bridgeInput } = await import("@/tools/bridge/model");
 const { runBridge, bridgeScenarios, firstYearAfter } = await import("@/tools/bridge/run");
 const { BT_DEFAULTS, runBacktest, decadeInflation } = await import("@/tools/backtest/model");
 const { OP_DEFAULTS, opToolIn } = await import("@/tools/optimizer/model");
-const { STAGES_DEFAULTS, stagesPlan, stagesTargetRate, effectiveStages, stageFields } = await import("@/tools/stages/model");
+const { STAGES_DEFAULTS, stagesCompute, stageFields } = await import("@/tools/stages/model");
 const G = await import("@/tools/guide/calc");
 
 /* ---- each tool, as its screen runs it ---- */
@@ -260,15 +260,8 @@ function backtest(fields) {
 }
 
 function stages(fields) {
-  // compute() in tools/stages/Stages.tsx, which lives in the screen file.
-  const s = { ...STAGES_DEFAULTS, ...fields };
-  const P = stagesPlan(s, null);
-  const R = T.projectSeries(P.g, P.eff);
-  const target = parseNum(s.target);
-  const rate = stagesTargetRate(P, s.solveFor, target);
-  const portToday = s.solveFor === "After-Tax Withdrawal" ? target / (P.g.withdrawal * (1 - rate)) : target;
-  const F = P.stages.length ? T.finalStageSolve(P.g, P.eff, portToday) : null;
-  const feeCost = (P.g.fees || 0) > 0 ? T.projectSeries(P.g, effectiveStages({ ...P.g, fees: 0 }, P.stages)).fv - R.fv : 0;
+  // saRate (the split's own rate, kept in a hidden field) is left out, as before.
+  const { P, R, F, portToday, rate, feeCost } = stagesCompute({ ...STAGES_DEFAULTS, ...fields }, null);
   return { full: { P, R, F, portToday, rate, feeCost },
     out: { atRetirement: R.fv, todaysDollars: R.fvReal, firstYearAfterTax: R.afterTax, monthlyAfterTax: R.afterTaxMo, portfolioNeeded: portToday, feeCost } };
 }

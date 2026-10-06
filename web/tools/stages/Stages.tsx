@@ -22,7 +22,7 @@ import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
 import { PPY, finalStageSolve, historicalRuns, monteCarlo, projectSeries } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
-import { has, type Household } from "@/lib/household";
+import { has } from "@/lib/household";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { PERIOD_ADV } from "@/lib/periods";
 import { STATE_OPTIONS } from "@/lib/states";
@@ -30,7 +30,7 @@ import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { StageCard, type StageEdit } from "./StageCard";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "@/tools/advanced/share";
-import { STAGES_DEF, effectiveStages, readStage, stageSplit, stagesPlan, stagesTargetRate, type StageInputs, type StagesInputs } from "./model";
+import { STAGES_DEF, stagesCompute, readStage, stageSplit, stagesPlan, type StageInputs, type StagesInputs } from "./model";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
@@ -65,7 +65,7 @@ export function Stages() {
 
   const typed = useDeferredValue(s);
   useBusy(typed !== s);
-  const V = useMemo(() => compute(typed, profile), [typed, profile]);
+  const V = useMemo(() => stagesCompute(typed, profile), [typed, profile]);
   useShareKit(STAGES_DEF.id, projectionShare({ kind: "stages", g: V.P.g, eff: V.P.eff, R: V.R, mode }));
   const { P, R, F, portToday, rate } = V;
   const g = P.g;
@@ -129,7 +129,7 @@ export function Stages() {
     // so the tax rate the target needs; a few passes settle it.
     let c = s, contrib = 0;
     for (let pass = 0; pass < (c.saOn ? 5 : 1); pass++) {
-      const now = compute(c, profile);
+      const now = stagesCompute(c, profile);
       if (!now.F) return;
       // the solve works on the fee- and inflation-adjusted stage, so undo the
       // contribution adjustment before writing the number back
@@ -385,21 +385,7 @@ function bandLegend(band: number): [string, string][] {
 
 /* ---- the numbers ---- */
 
-function compute(s: StagesInputs, household: Household | null) {
-  const P = stagesPlan(s, household);
-  const R = projectSeries(P.g, P.eff);
-  const target = parseNum(s.target);
-  const rate = stagesTargetRate(P, s.solveFor, target);
-  const portToday = s.solveFor === "After-Tax Withdrawal" ? target / (P.g.withdrawal * (1 - rate)) : target;
-  const F = P.stages.length ? finalStageSolve(P.g, P.eff, portToday) : null;
-  const feeCost = (P.g.fees || 0) > 0 ? projectSeries(P.g, effectiveStages({ ...P.g, fees: 0 }, P.stages)).fv - R.fv : 0;
-  // The calculated rate stays in its (hidden) field after the split is
-  // turned off, as it did on the old site.
-  const saRate = P.B ? P.B.effRate : s.saTradBal !== "" ? stagesPlan({ ...s, saOn: true }, household).B!.effRate : null;
-  return { P, R, F, portToday, rate, feeCost, saRate };
-}
-
-function chartData(s: StagesInputs, V: ReturnType<typeof compute>, mode: ChartMode, band: number, seed: number): ChartData {
+function chartData(s: StagesInputs, V: ReturnType<typeof stagesCompute>, mode: ChartMode, band: number, seed: number): ChartData {
   const { P, R } = V, g = P.g;
   if (!R.rows.length) return emptyChart();
   const defl = (yr: number) => Math.pow(1 + g.inflation, yr);
