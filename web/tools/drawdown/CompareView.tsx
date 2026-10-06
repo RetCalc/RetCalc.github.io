@@ -25,6 +25,7 @@ import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 const SPOT_COLORS: string[] = [SERIES.plan, SERIES.teal, SERIES.sky, SERIES.rose, SERIES.lavender, SERIES.gray];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
@@ -44,6 +45,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
   let intro = on && (job.stale || !res) ? "<span class='ddwork'>Tuning every strategy to the same risk…</span>" : "";
   let list: DdShowItem[] = [];
   let chartedNow: Record<string, 1> = {};
+  let best: { top: DdShowItem; steady: DdShowItem | null } | null = null;
   if (res) {
     list = res.list.slice();
     chartedNow = charted && Object.keys(charted).length ? charted
@@ -53,9 +55,9 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
     const steady = met.filter((x) => x.cuts < 0.05).sort((a, b) => b.life - a.life)[0];
     if (!job.stale) intro = "Each strategy is set to spend as much as it can while " + targetWords(sT, v.age) + "." +
       (so.path && so.path !== "flat" ? " All are compared on steady spending; your spending path applies to the steady strategies only." : "") +
-      (sT.crit === "comfort" ? " The flexible ones are held at that line or above, as their minimum, so the risk they carry is running out of money while holding it." : "") +
-      (top ? " Over a typical retirement, <b>" + escapeHtml(DD_STRAT_NAMES[top.id]) + "</b> spends the most, " + money(top.life) + " in today's dollars" +
-        (steady && steady.id !== top.id ? "; the steadiest, <b>" + escapeHtml(DD_STRAT_NAMES[steady.id]) + "</b>, never cuts and spends " + money(steady.life) : "") + "." : "");
+      (sT.crit === "comfort" ? " The flexible ones are held at that line or above, as their minimum, so the risk they carry is running out of money while holding it." : "");
+    // the answer: the most spent at this risk, and the steadiest that never cuts
+    if (!job.stale && top) best = { top, steady: steady && steady.id !== top.id ? steady : null };
     list = sort.order(list, (x, c) => (c === "name" ? DD_UI[x.id].name : x[c] as number));
   }
   const yName = { end: "Typically left at the end", low: "Leanest year", first: "Year one" }[yk];
@@ -65,7 +67,13 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
     <>
       <Card id="ddShowPanel" data-ddtabs="compare">
         <CardHeader><CardTitle>Strategy showdown<TipDot k="ddshowdown" /></CardTitle><CardDescription>each tuned to the same risk</CardDescription><CardAction><CsvButton table={table} label="Strategy showdown" /></CardAction></CardHeader>
-        <CardContent id="ddShowIntro"><Html className="ddintro" html={intro} /></CardContent>
+        {best ? (
+          <div className={cn("grid grid-cols-1 border-b border-border", best.steady && "sm:grid-cols-2")} id="ddShowBest">
+            <ShowBest label="Spends the most at this risk" x={best.top} />
+            {best.steady ? <ShowBest label="The steadiest, never cuts" x={best.steady} className="max-sm:border-t sm:border-l" /> : null}
+          </div>
+        ) : null}
+        <CardContent id="ddShowIntro" className="pt-3.5"><Html className="ddintro max-w-copy" html={intro} /></CardContent>
         <div className="ddchartbar">
           <span>Typical lifetime spending against</span>
           <SegmentedGroup id="segDDShowY">
@@ -77,7 +85,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
         <Scatter id="DDS" ariaLabel="Each strategy's typical lifetime spending against what it leaves, its leanest year or its year one"
           pts={res ? res.list.map((x) => ({ x: x.life, y: x[yk], label: DD_UI[x.id].short, id: x.id, cur: x.id === so.strategy, miss: !x.met })) : []}
           opt={{ xFmt: fmtAxisMoney, yFmt: fmtAxisMoney, xLabel: "Typical lifetime spending →", yLabel: yName + " →", yZero: true,
-            hLine: sT.crit === "comfort" && yk !== "end" ? { y: ddLineAt(sT.comfort, 0), label: "comfort line" } : null }}
+            hLine: sT.crit === "comfort" && yk !== "end" ? { y: ddLineAt(sT.comfort, 0), label: "comfort line", color: SERIES.guide } : null }}
           tip={(p) => {
             const x = res!.list.find((q) => q.id === p.id)!;
             return <>
@@ -130,6 +138,19 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
       </Card>
       <SpotPanel v={v} res={res} o={so} T={sT} charted={chartedNow} />
     </>
+  );
+}
+
+/** One of the showdown's answers: the strategy, and what it spends over a
+    typical retirement. */
+function ShowBest({ label, x, className }: { label: string; x: DdShowItem; className?: string }) {
+  return (
+    <div className={cn("min-w-0 border-border px-4 py-4", className)} data-pair>
+      <div className="text-label text-muted-foreground" data-k>{label}</div>
+      <div className="mt-1 text-xl font-semibold text-foreground">{DD_STRAT_NAMES[x.id]}</div>
+      <div className="mt-1 text-3xl leading-tight font-medium whitespace-nowrap tabular-nums sm:text-display">{money(x.life)}</div>
+      <div className="mt-1 text-label text-muted-foreground">Typical lifetime spending, in today&apos;s dollars</div>
+    </div>
   );
 }
 

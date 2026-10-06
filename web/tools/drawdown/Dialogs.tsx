@@ -6,6 +6,7 @@
    openStrategyGuide() and showItemForm() in 24-strategy-guide.js, and
    ddStudyForm() in 15e-drawdown-research.js. */
 
+import { CheckIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { Fragment, useMemo, useState } from "react";
 import { MON } from "@/components/charts/HistNotes";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -128,7 +129,7 @@ function GuideDialog({ v, close }: { v: DDView; close: () => void }) {
               return (
                 <section key={k} className={"sg-item" + (k === cur ? " sg-cur" : "")}>
                   <div className="sg-head"><h4>{g.name}</h4><span className="sg-tag">{g.tag}</span>
-                    {k === cur ? <Badge variant="positive" className="ml-auto">Selected</Badge>
+                    {k === cur ? <Badge variant="outline" className="ml-auto"><CheckIcon aria-hidden="true" />Selected</Badge>
                       : <Button variant="outline" size="sm" className="ml-auto" data-usestrat={k} onClick={() => {
                         v.set("strategy")(k);
                         close();
@@ -137,8 +138,8 @@ function GuideDialog({ v, close }: { v: DDView; close: () => void }) {
                   {vals ? <div className="sg-spark"><Spark vals={vals} w={300} h={40} />
                     <span>Retiring in {when}, with your plan: {money(vals[0])} in year one, {money(Math.min(...vals))} at the lowest</span></div> : null}
                   <Html as="p" html={g.how} />
-                  <div className="sg-pc"><div><div className="sg-lbl pos">Pros</div><Html as="ul" html={g.pros.map((t) => "<li>" + t + "</li>").join("")} /></div>
-                    <div><div className="sg-lbl neg">Cons</div><Html as="ul" html={g.cons.map((t) => "<li>" + t + "</li>").join("")} /></div></div>
+                  <div className="sg-pc"><div><div className="sg-lbl flex items-center gap-1"><PlusIcon className="size-3.5" aria-hidden="true" />Pros</div><Html as="ul" html={g.pros.map((t) => "<li>" + t + "</li>").join("")} /></div>
+                    <div><div className="sg-lbl flex items-center gap-1"><MinusIcon className="size-3.5" aria-hidden="true" />Cons</div><Html as="ul" html={g.cons.map((t) => "<li>" + t + "</li>").join("")} /></div></div>
                   <p className="sg-fit"><b>A good fit if:</b> {g.fit}</p>
                 </section>
               );

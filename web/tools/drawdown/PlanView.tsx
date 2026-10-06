@@ -29,6 +29,7 @@ import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, s
 import { badgeVariants } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { cn } from "@/lib/utils";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
@@ -92,24 +93,31 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
   const showLabel = show && H ? startLabel(show, H.monthly) : "";
   const view = mc ? "year" : ps.view;
   const run: DdRun | null = mc ? mc.M.med : show;
+  const sensRows = hist ? hist.sens : mc ? mc.M.sens : null, ssRes = hist ? hist.ss : mc ? mc.M.ss : null;
+  const sensOn = !!sensRows, ssOn = !!(ssRows(o, v.d) && ssRes);
+  /* A story, in order: the balance through retirement, when you retire,
+     what spending was like, then every start and the finer detail. */
   return (
     <>
-      <ScorePanel v={v} R={R} monthly={!!v.lastMonthly} />
-      <YearsPanel v={v} H={H} ps={ps} />
-      <SeqPanel v={v} H={H} ps={ps} />
       <BalancePanel v={v} R={R} ps={ps} show={show} showLabel={showLabel} />
-      <Card data-ddtabs="plan">
-        <CardHeader><CardTitle id="ddIncomeSectionTitle">{hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"}
-          <TipDot k="sequence" /></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
-        <CardContent>
-          <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} /></div>
-          <div id="ddSpendAllView" hidden={view !== "all"}><SpendStatsAll H={H} o={o} /></div>
-          <Html className="hint mt-1" id="ddSpendNote" html={!R ? "" : view === "all" && H ? spendAllNote(H, o)
-            : run ? spendNote(run, mc ? "Showing the same run as the table below." : "Showing the period selected above.") : ""} />
-        </CardContent>
-      </Card>
+      <SeqPanel v={v} H={H} ps={ps} />
       <IncomePanel v={v} R={R} view={view} show={show} showLabel={showLabel} />
-      <DistPanel v={v} R={R} />
+      {/* What living on it was like: the scorecard beside the spending
+          figures, two lists of the same weight. */}
+      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2" data-ddtabs="plan">
+        <ScorePanel v={v} R={R} monthly={!!v.lastMonthly} />
+        <Card className="min-w-0" data-ddtabs="plan">
+          <CardHeader><CardTitle id="ddIncomeSectionTitle">{hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"}
+            <TipDot k="sequence" /></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
+          <CardContent>
+            <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} /></div>
+            <div id="ddSpendAllView" hidden={view !== "all"}><SpendStatsAll H={H} o={o} /></div>
+            <Html className="hint mt-1" id="ddSpendNote" html={!R ? "" : view === "all" && H ? spendAllNote(H, o)
+              : run ? spendNote(run, mc ? "Showing the same run as the table below." : "Showing the period selected above.") : ""} />
+          </CardContent>
+        </Card>
+      </div>
+      <YearsPanel v={v} H={H} ps={ps} />
       <Card data-ddtabs="plan">
         <CardHeader><CardTitle id="ddDetailTitle">{mc ? "Year by year, a median run" : show ? "Year by year, retiring in " + showLabel : "Year by year"}</CardTitle><CardAction><CsvButton table={v.detailTable} label="Year by year" /></CardAction></CardHeader>
         <Html className="hint py-0 px-4.5" id="ddDetailNote" html={mc ? "One representative simulation from the middle of the range."
@@ -119,8 +127,11 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll"><DetailTable run={run} age={age} items={v.s.incomeItems as DdItem[]} tableRef={v.detailTable} /></div>
       </Card>
-      <Sensitivity rows={hist ? hist.sens : mc ? mc.M.sens : null} label={mc ? "Baseline (sampled)" : "Baseline (historical)"} />
-      <SSCompare v={v} res={hist ? hist.ss : mc ? mc.M.ss : null} />
+      <DistPanel v={v} R={R} />
+      <div className={cn("grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5", sensOn && ssOn && "wide:grid-cols-2")} data-ddtabs="plan" hidden={!sensOn && !ssOn}>
+        <Sensitivity rows={sensRows} label={mc ? "Baseline (sampled)" : "Baseline (historical)"} />
+        <SSCompare v={v} res={ssRes} />
+      </div>
     </>
   );
 }
@@ -130,26 +141,24 @@ function ScorePanel({ v, R, monthly }: { v: DDView; R: PlanResult | null; monthl
   const sc = R?.kind === "hist" ? R.sc : R?.kind === "mc" ? R.M.sc : null;
   const base = R?.kind === "hist" ? R.B?.sc ?? null : R?.kind === "mc" ? R.Mb?.sc ?? null : null;
   const isMc = R?.kind === "mc";
-  let tiles = "", counts = "";
+  let rows: { k: string; v: string; note: string; delta: string }[] = [], counts = "";
   if (sc) {
     const n = sc.n, unit = isMc ? " runs" : " retirements";
     const who = (r: DdHistRun | null) => (r && r.startYear != null ? startLabel(r, monthly) : "");
     const stayed = n ? (n - sc.dipped) / n : 0, bStayed = base ? (base.n - base.dipped) / base.n : null;
-    const tile = (k: string, val: string, note: string, delta: string) =>
-      "<div class='ddtile'><div class='k'>" + k + "</div><div class='v'>" + val + "</div>" + (delta ? "<div class='mt-1.25'>" + delta + "</div>" : "") + "<div class='n'>" + note + "</div></div>";
-    tiles = [
-      tile("Never below the comfort line", pctStr(stayed, 1), (n - sc.dipped).toLocaleString("en-US") + " of " + n.toLocaleString("en-US") + unit,
-        base ? deltaHtml(stayed, bStayed, "pts") : ""),
-      tile("Years spent below it", pctStr(sc.years ? sc.below / sc.years : 0, 1), "of every year of every" + (isMc ? " run" : " retirement"),
-        base ? deltaHtml(sc.years ? sc.below / sc.years : 0, base.years ? base.below / base.years : 0, "pts", true) : ""),
-      tile("Longest stretch below", sc.longest ? sc.longest + (sc.longest === 1 ? " year" : " years") : "None",
-        sc.longest && who(sc.longRun) ? "retiring in " + who(sc.longRun) : "never under the line", base ? deltaHtml(sc.longest, base.longest, "n", true) : ""),
-      tile("Leanest year", money(sc.low), pctStr(sc.lowRatio, 0) + " of year one" + (who(sc.lowRun) ? ", retiring in " + who(sc.lowRun) : ""),
-        base ? deltaHtml(sc.low, base.low, "money") : ""),
-      tile("Typical lifetime spending", fmtAxisMoney(sc.lifeMed), "the median, in today's dollars", base ? deltaHtml(sc.lifeMed, base.lifeMed, "money") : ""),
-      tile("Cuts per" + (isMc ? " run" : " retirement"), (Math.round(sc.cutsAvg * 10) / 10).toFixed(1),
-        sc.maxCut > 0 ? "the biggest, " + pctStr(sc.maxCut, 0) + " in one year" : "never a cut", base ? deltaHtml(sc.cutsAvg, base.cutsAvg, "n", true) : ""),
-    ].join("");
+    rows = [
+      { k: "Never below the comfort line", v: pctStr(stayed, 1), note: (n - sc.dipped).toLocaleString("en-US") + " of " + n.toLocaleString("en-US") + unit,
+        delta: base ? deltaHtml(stayed, bStayed, "pts") : "" },
+      { k: "Years spent below it", v: pctStr(sc.years ? sc.below / sc.years : 0, 1), note: "of every year of every" + (isMc ? " run" : " retirement"),
+        delta: base ? deltaHtml(sc.years ? sc.below / sc.years : 0, base.years ? base.below / base.years : 0, "pts", true) : "" },
+      { k: "Longest stretch below", v: sc.longest ? sc.longest + (sc.longest === 1 ? " year" : " years") : "None",
+        note: sc.longest && who(sc.longRun) ? "retiring in " + who(sc.longRun) : "never under the line", delta: base ? deltaHtml(sc.longest, base.longest, "n", true) : "" },
+      { k: "Leanest year", v: money(sc.low), note: pctStr(sc.lowRatio, 0) + " of year one" + (who(sc.lowRun) ? ", retiring in " + who(sc.lowRun) : ""),
+        delta: base ? deltaHtml(sc.low, base.low, "money") : "" },
+      { k: "Typical lifetime spending", v: fmtAxisMoney(sc.lifeMed), note: "the median, in today's dollars", delta: base ? deltaHtml(sc.lifeMed, base.lifeMed, "money") : "" },
+      { k: "Cuts per" + (isMc ? " run" : " retirement"), v: (Math.round(sc.cutsAvg * 10) / 10).toFixed(1),
+        note: sc.maxCut > 0 ? "the biggest, " + pctStr(sc.maxCut, 0) + " in one year" : "never a cut", delta: base ? deltaHtml(sc.cutsAvg, base.cutsAvg, "n", true) : "" },
+    ];
     const cnt = (k: string, val: number, tip: string) =>
       "<span class='ddcount'><span class='tipglue'>" + k + "<span class='tipdot' data-tip='" + tip + "' role='button' tabindex='0' aria-label='What is this?'>?</span></span><b>" +
       val.toLocaleString("en-US") + "</b></span>";
@@ -158,10 +167,17 @@ function ScorePanel({ v, R, monthly }: { v: DDView; R: PlanResult | null; monthl
       "<span class='ddcount-of'>of " + n.toLocaleString("en-US") + unit + "</span>";
   }
   return (
-    <Card id="ddScorePanel" data-ddtabs="plan">
+    <Card id="ddScorePanel" className="min-w-0" data-ddtabs="plan">
       <CardHeader><CardTitle>Spending scorecard<TipDot k="ddscore" /></CardTitle><CardDescription id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " a year") : ""}</CardDescription></CardHeader>
       <CardContent>
-        <Html className="ddtiles" id="ddScore" html={tiles} />
+        <div id="ddScore">
+          {rows.map((r) => (
+            <div className="kv" key={r.k}>
+              <span className="k">{r.k}<span className="mssub">{r.note}</span></span>
+              <span className="v flex flex-col items-end gap-1">{r.v}{r.delta ? <Html as="span" html={r.delta} /> : null}</span>
+            </div>
+          ))}
+        </div>
         <Html className="ddcounts" id="ddCounts" html={counts} />
       </CardContent>
     </Card>
@@ -404,7 +420,7 @@ function spendFacts(run: DdRun) {
 function SpendStats({ run }: { run: DdRun | null }) {
   const f = run && run.rows.length ? spendFacts(run) : null;
   return (
-    <div className="grid2">
+    <div>
       <div>
         <KV k="Highest year" id="ddSpendHigh" v={f ? money(f.high) : ""} />
         <KV k="Lowest year" id="ddSpendLow" v={f ? money(f.low) : ""} />
@@ -449,7 +465,7 @@ function spendAll(H: DdHist) {
 function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
   const f = H?.runs.length ? spendAll(H) : null;
   return (
-    <div className="grid2">
+    <div>
       <div>
         <KV k="Best single year" id="ddAggHigh" v={f ? money(f.high) : ""} />
         <KV k="Worst single year" id="ddAggLow" v={f ? money(f.low) : ""} />
@@ -592,7 +608,7 @@ const TD = "py-1.25 px-2", TDR = "text-right py-1.25 px-2";
 
 function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[] | null; label: string }) {
   return (
-    <Card id="ddSensPanel" data-ddtabs="plan" hidden={!rows}>
+    <Card id="ddSensPanel" className="min-w-0" data-ddtabs="plan" hidden={!rows}>
       <CardHeader><CardTitle>Return sensitivity</CardTitle></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your plan holds up if returns run higher or lower than history suggests.</div>
       <div className="pt-0 px-4.5 pb-3.5" id="ddSensTable">
@@ -635,7 +651,7 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
     </table>
   );
   return (
-    <Card id="ddSSBreakEvenPanel" data-ddtabs="plan" hidden={!on}>
+    <Card id="ddSSBreakEvenPanel" className="min-w-0" data-ddtabs="plan" hidden={!on}>
       <CardHeader><CardTitle>Social Security claiming age comparison</CardTitle></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
       <div className="pt-0 px-4.5 pb-3.5" id="ddSSBreakEvenTable">

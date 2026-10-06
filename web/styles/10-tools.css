@@ -94,13 +94,10 @@
 .ddstrat{margin-top:8px;padding:10px 12px 9px;border:1px solid var(--line-soft);border-radius:var(--r-well);
   background:var(--panel-2)}
 .ddstrat:empty{display:none}
-.ddstrat-fam{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddstrat-blurb{font-size:12px;color:var(--dim);margin-top:3px;line-height:1.45}
 .ddspark{display:block;width:100%;height:42px;margin-top:8px}
 .ddstrat-cap{font-size:11px;color:var(--dimmer);margin-top:3px;line-height:1.4}
 .ddskip{margin:-6px 0 14px}
-/* A group of the simulator's inputs: the market history, guaranteed income */
-.ddsec.ddsec-first{margin-top:0;padding-top:0;border-top:0}
 .ddsub{margin-top:6px}
 .ddmixrow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-soft)}
 .ddmixrow > div:first-child{flex:1 1 auto;min-width:0;font-size:13px}
@@ -108,8 +105,6 @@
 .ddmixtot{font-size:13px;color:var(--dim);margin:10px 0 14px}
 .ddmixg{margin:16px 0 4px;padding-top:12px;border-top:1px solid var(--line)}
 .ddmixg h4{margin:0 0 4px;font-size:13.5px;color:var(--text)}
-.ddsec{margin:18px 0 12px;padding-top:14px;border-top:1px solid var(--line-soft);font-size:11px;font-weight:700;
-  letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}
 .ddgk-check{display:flex;align-items:center;gap:7px;cursor:pointer;flex:0 1 auto;min-width:0}
 /* College: one card per child once there's more than one */
@@ -175,26 +170,17 @@ tr.br-off .br-name{color:var(--dim)}
 #tab-drawdown[data-tab="compare"] [data-ddtabs]:not([data-ddtabs~="compare"]),
 #tab-drawdown[data-tab="safe"] [data-ddtabs]:not([data-ddtabs~="safe"]){display:none !important}
 .ddtabs{display:flex;justify-content:center;margin:-2px 0}
-/* the pinned baseline, under the headline */
-.ddbase{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding:10px 18px;
-  border-top:1px solid var(--line-soft);background:rgba(201,211,230,.05);font-size:12.5px}
-.ddbase-k{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
-.ddbase-v{color:var(--text);font-weight:600}
-.ddbase-n{color:var(--dimmer);flex:1 1 auto;min-width:0}
 .dddelta{margin-top:7px}
 /* the risk target the showdown and safe spending share */
 .ddtgt-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px;color:var(--dim)}
 .ddtgt-k{font-weight:600;color:var(--text);margin-right:4px}
-/* the spending scorecard */
-.ddtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.ddtile{background:var(--panel-2);border:1px solid var(--line-soft);border-radius:var(--r-card);padding:12px 14px;min-width:0}
-.ddtile .k{font-size:11.5px;color:var(--dim)}
-.ddtile .v{font-family:var(--mono);font-size:22px;letter-spacing:-.02em;color:var(--text);margin-top:6px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
-.ddtile .n{font-size:11px;color:var(--dimmer);margin-top:4px;line-height:1.4}
-.ddcounts{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:14px;font-size:12px;color:var(--dim)}
-.ddcount b{font-family:var(--mono);color:var(--text);margin-left:6px;font-weight:600}
-.ddcount-of{color:var(--dimmer)}
+/* the spending scorecard: key/value rows, then the counts as a quieter
+   list of the same rows */
+#ddScore .kv .v{text-align:right}
+.ddcounts{margin-top:6px;padding-top:4px;border-top:1px solid var(--line);font-size:12.5px;color:var(--dim)}
+.ddcount{display:flex;justify-content:space-between;gap:12px;padding:6px 0}
+.ddcount b{font-variant-numeric:tabular-nums;color:var(--text);font-weight:500}
+.ddcount-of{display:block;padding-top:4px;font-size:11.5px;color:var(--dimmer)}
 /* the spread of outcomes */
 .ddstats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:0 18px 16px}
 .ddstats div{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--dimmer);min-width:0}
@@ -211,7 +197,7 @@ tr.br-off .br-name{color:var(--dim)}
 .ddstudy{border-top:1px solid var(--rule);padding:14px 0 6px}
 .ddstudy h4{margin:0 0 2px;font-size:14.5px;color:var(--text)}
 .ddstudy-cite{font-size:11.5px;color:var(--dimmer);margin-bottom:8px;line-height:1.45}
-.ddstudy-k{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin-top:8px}
+.ddstudy-k{font-size:12.5px;font-weight:600;color:var(--dim);margin-top:10px}
 .ddstudy p,.ddstudy-sim{margin:2px 0 0;font-size:13px;line-height:1.5;color:var(--text)}
 .ddstudy-sim b{color:var(--text)}
 #ddStratGuide,#ddStudyBtn{display:flex}
@@ -221,6 +207,8 @@ tr.br-off .br-name{color:var(--dim)}
 .ddstudy-t th:first-child,.ddstudy-t td:first-child{text-align:left}
 .ddstudy-t th{color:var(--dim);font-weight:500}
 #asideDD[data-inputs="simple"] .ddadv{display:none!important}
+/* Simple hides the retirement age, so years in retirement takes the row */
+#asideDD[data-inputs="simple"] .two > .ddadv + .field{grid-column:1 / -1}
 #asideDD:not([data-inputs="simple"]) .ddsimple{display:none}
 .ddsimple{margin:4px 0 14px}
 .btquick{font-size:11.5px;color:var(--dim);margin:10px 0 6px}
@@ -228,10 +216,12 @@ tr.br-off .br-name{color:var(--dim)}
 .ddtip-era{color:var(--dim);font-style:italic}
 .ddwhy{display:block;margin-top:6px}
 .ddchartbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:4px 18px 0;font-size:12.5px;color:var(--dim)}
-#ddShowTable{min-width:940px}
+/* Names and settings wrap (about 22ch), so the table fits the results
+   column and its Use buttons aren't cut off at the card's edge. */
+#ddShowTable{min-width:760px}
 #ddShowTable small{display:block;font-size:10.5px;color:var(--dimmer);font-family:var(--sans);margin-top:2px}
 #ddShowTable small.neg{color:var(--ds-loss)}
-#ddShowTable td:first-child,#ddShowTable td.ddset{font-family:var(--sans);white-space:nowrap}
+#ddShowTable td:first-child,#ddShowTable td.ddset{font-family:var(--sans);white-space:normal;min-width:15ch;max-width:22ch}
 #ddShowTable td.ddset{text-align:left}
 #ddShowTable tr.ddcur > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
 #ddShowTable tr.ddcur td:first-child{color:var(--text);font-weight:600}
@@ -252,13 +242,9 @@ tr.br-off .br-name{color:var(--dim)}
 .ddheat td.ddh-na{cursor:default;color:var(--dimmer)}
 [data-empty] .chartwrap,[data-empty] .legend{display:none}
 @media (max-width:900px){
-  .ddtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ddstats{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media (max-width:640px){
-  .ddtiles{gap:8px}
-  .ddtile{padding:10px 11px}
-  .ddtile .v{font-size:18px}
   .ddpad{padding:4px 14px 14px}
   .ddstats{padding:0 14px 14px}
 }

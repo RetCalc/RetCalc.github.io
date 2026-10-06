@@ -13,7 +13,7 @@ import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/common/BigValue";
+import { HeroReading, PinnedReading, type HeroTone, type ReadingFigure } from "@/components/common/Reading";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
 import { project, projectBasic, projectSeries } from "@/lib/engine/typed";
@@ -41,6 +41,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
+import { CircleAlertIcon, CircleCheckIcon, CircleXIcon, XIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
@@ -184,27 +186,21 @@ export function Drawdown({ landing }: { landing?: string }) {
     periods = mc.res ? mc.res.trials.toLocaleString("en-US") + " runs" : "";
   }
 
+  /* Nothing to show under the reading: no portfolio yet, or a retirement
+     too long for the record. */
+  const noRun = !(o.initial > 0) || (mode === "hist" && !!H && !H.total);
+  const F = readoutFigures(o, mode, R, H, mcOn && mc.stale);
+
   return (
-    <>
-      <Inputs v={v} fromNote={fromNote} periods={periods} open={setDialog} />
-      <div className="stack" id="tab-drawdown" data-tab={tab}>
-        <Card id="ddIntro" hidden={introSeen === "1"}>
-          <CardContent className="flex gap-3.5 items-start">
-            <div className="flex-auto min-w-0">
-              <div className="font-semibold text-text mb-1.5">New here? Here&apos;s the idea.</div>
-              <div className="hint m-0">
-                Every other tool answers &quot;how much will I have?&quot; This one answers the
-                harder question: once you start spending it, <b>will it last?</b> Set a
-                portfolio value and a withdrawal strategy, then test it against every
-                real retirement since 1926: not a guess, actual market history.
-                Click any row in the table below to see exactly what that year looked
-                like, year by year.
-              </div>
-            </div>
-            <Button variant="ghost" size="icon-sm" id="ddIntroClose" aria-label="Dismiss" onClick={() => setIntroSeen("1")}>&times;</Button>
-          </CardContent>
-        </Card>
-        <Readout v={v} R={R} H={H} running={mcOn && mc.stale} pinned={pinned}
+    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+        {/* Phones and narrow screens: the answer leads, and stays under the
+            tab rail while the inputs are on screen. */}
+        <PinnedReading tone={F.tone} main={{ label: "Success rate", value: F.success }} side={{ label: "Median ending balance", value: F.median }} />
+        <Inputs v={v} fromNote={fromNote} periods={periods} open={setDialog} />
+      </div>
+      <div className="stack min-w-0 lg:col-span-2" id="tab-drawdown" data-tab={tab}>
+        <Readout v={v} F={F} pinned={pinned}
           setMode={setMode}
           pin={() => {
             if (!(o.initial > 0)) {
@@ -216,134 +212,171 @@ export function Drawdown({ landing }: { landing?: string }) {
           }}
           unpin={() => setPinned(null)} />
 
-        <div className="ddtabs" id="ddTabs">
-          <SegmentedGroup size="tab" id="segDDTab" aria-label="Results">
-            {([["plan", "Your plan"], ["compare", "Compare strategies"], ["safe", "Safe spending"]] as const).map(([k, label]) => (
-              <SegmentedItem key={k} data-ddtab={k} pressed={tab === k} onClick={() => setTab(k)}>{label}</SegmentedItem>
-            ))}
-          </SegmentedGroup>
-        </div>
-
-        <Card id="ddTargetPanel" data-ddtabs="compare safe">
-          <CardContent>
-            <div className="ddtgt-row">
-              <span className="ddtgt-k"><Tipped text="Risk target" k="ddtarget" /></span>
-              <NativeSelect className="w-auto max-w-full" id="ddTCrit" aria-label="What the target asks" value={s.tCrit as string} onChange={(e) => set("tCrit")(e.target.value)}>
-                <option value="comfort">Never below the comfort line</option>
-                <option value="lasts">The money lasts</option>
-              </NativeSelect>
-              <span>in</span>
-              <NativeSelect className="w-auto max-w-full" id="ddTConf" aria-label="How many historical starts" value={s.tConf as string} onChange={(e) => set("tConf")(e.target.value)}>
-                <option value="100">every</option>
-                <option value="95">95% of</option>
-                <option value="90">90% of</option>
-                <option value="85">85% of</option>
-              </NativeSelect>
-              <span id="ddTStarts">historical starts</span>
+        <Card id="ddIntro" hidden={introSeen === "1"}>
+          <CardContent className="flex items-start gap-3.5">
+            <div className="min-w-0 flex-auto">
+              <div className="mb-1.5 font-semibold text-foreground">New here? Here&apos;s the idea.</div>
+              <div className="hint m-0 max-w-copy">
+                Every other tool answers &quot;how much will I have?&quot; This one answers the
+                harder question: once you start spending it, <b>will it last?</b> Set a
+                portfolio value and a withdrawal strategy, then test it against every
+                real retirement since 1926: not a guess, actual market history.
+                Click any row in the table below to see exactly what that year looked
+                like, year by year.
+              </div>
             </div>
-            <Html className="hint" id="ddTargetNote" html={"Comfort line: <b>" + lineWords(comfort, age, " a year") + "</b>" +
-              (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". These views use the historical record" +
-              (mode === "mc" ? ", whatever the Historical / Monte Carlo switch says" : "") + ", " +
-              (o.monthly ? "a retirement starting every month" : "a retirement starting each January") + " from " + o.fromYear + "."} />
+            <Button variant="ghost" size="icon-sm" id="ddIntroClose" aria-label="Dismiss" onClick={() => setIntroSeen("1")}><XIcon aria-hidden="true" /></Button>
           </CardContent>
         </Card>
 
-        <PlanView v={v} R={R} ps={{ sel, setSel, view, setView }} />
-        <CompareView v={v} T={T} active={tab === "compare"} />
-        <SafeView v={v} T={T} active={tab === "safe"} />
+        <div className="stack" hidden={noRun}>
+          <div className="ddtabs" id="ddTabs">
+            <SegmentedGroup size="tab" id="segDDTab" aria-label="Results">
+              {([["plan", "Your plan"], ["compare", "Compare strategies"], ["safe", "Safe spending"]] as const).map(([k, label]) => (
+                <SegmentedItem key={k} data-ddtab={k} pressed={tab === k} onClick={() => setTab(k)}>{label}</SegmentedItem>
+              ))}
+            </SegmentedGroup>
+          </div>
+
+          <Card id="ddTargetPanel" data-ddtabs="compare safe">
+            <CardContent>
+              <div className="ddtgt-row">
+                <span className="ddtgt-k"><Tipped text="Risk target" k="ddtarget" /></span>
+                <NativeSelect className="w-auto max-w-full" id="ddTCrit" aria-label="What the target asks" value={s.tCrit as string} onChange={(e) => set("tCrit")(e.target.value)}>
+                  <option value="comfort">Never below the comfort line</option>
+                  <option value="lasts">The money lasts</option>
+                </NativeSelect>
+                <span>in</span>
+                <NativeSelect className="w-auto max-w-full" id="ddTConf" aria-label="How many historical starts" value={s.tConf as string} onChange={(e) => set("tConf")(e.target.value)}>
+                  <option value="100">every</option>
+                  <option value="95">95% of</option>
+                  <option value="90">90% of</option>
+                  <option value="85">85% of</option>
+                </NativeSelect>
+                <span id="ddTStarts">historical starts</span>
+              </div>
+              <Html className="hint mb-0" id="ddTargetNote" html={"Comfort line: <b>" + lineWords(comfort, age, " a year") + "</b>" +
+                (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". These views use the historical record" +
+                (mode === "mc" ? ", whatever the Historical / Monte Carlo switch says" : "") + ", " +
+                (o.monthly ? "a retirement starting every month" : "a retirement starting each January") + " from " + o.fromYear + "."} />
+            </CardContent>
+          </Card>
+
+          <PlanView v={v} R={R} ps={{ sel, setSel, view, setView }} />
+          <CompareView v={v} T={T} active={tab === "compare"} />
+          <SafeView v={v} T={T} active={tab === "safe"} />
+        </div>
       </div>
       <DrawdownDialogs v={v} dialog={dialog} close={() => setDialog(null)} />
-    </>
+    </div>
   );
 }
 
 /* ---- the headline: success rate, median and worst, against the baseline ---- */
-function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
-  v: DDView; R: PlanResult | null; H: ReturnType<typeof historicalBacktest> | null; running: boolean;
-  pinned: { state: Record<string, unknown>; label: string } | null;
-  setMode: (m: "hist" | "mc") => void; pin: () => void; unpin: () => void;
-}) {
-  const { o, mode } = v;
+type Figures = { success: number; median: number; worst: number; legacy: number | null };
+interface ReadoutFigures {
+  success: string; tone: HeroTone; successNote: string; median: string; worst: string; worstLabel: string; worstNote: string;
+  verdict: string; badge: string; legacy: { v: string; note: string } | null; cur: Figures | null; was: Figures | null;
+}
+
+function readoutFigures(o: DdOpts, mode: "hist" | "mc", R: PlanResult | null, H: ReturnType<typeof historicalBacktest> | null, running: boolean): ReadoutFigures {
   const lastYear = HIST_START + HIST_STOCK.length - 1;
-  let success = "—", successCls = "v gold", successNote = "", median = "—", worst = "—", worstNote = "", verdict = "", badge = HIST_START + "–" + lastYear;
-  let legacy: { v: string; cls: string; note: string } | null = null;
-  type Figures = { success: number; median: number; worst: number; legacy: number | null };
-  let cur: Figures | null = null, was: Figures | null = null;
-  const cls = (r: number) => "v " + (r >= 0.95 ? "pos" : r >= 0.85 ? "mid" : "neg");
-  const legacyOf = (met: number, total: number, note: string) => ({ v: pctStr(met / total, 1), cls: "v " + (met / total >= 0.75 ? "pos" : met / total >= 0.5 ? "mid" : "neg"), note });
-  if (!(o.initial > 0)) verdict = "<div class='hint' style='margin:0'>Enter your portfolio value to run the simulation.</div>";
+  const F: ReadoutFigures = { success: "—", tone: "text", successNote: "", median: "—", worst: "—", worstLabel: mode === "mc" ? "10th percentile" : "Worst case", worstNote: "",
+    verdict: "", badge: HIST_START + "–" + lastYear, legacy: null, cur: null, was: null };
+  // The success rate is a rating: gain from 95%, plain text from 85%, loss below.
+  const tone = (r: number): HeroTone => (r >= 0.95 ? "gain" : r >= 0.85 ? "text" : "loss");
+  const legacyOf = (met: number, total: number, note: string) => ({ v: pctStr(met / total, 1), note });
+  if (!(o.initial > 0)) F.verdict = "Enter your portfolio value to run the simulation.";
   else if (mode === "hist" && H) {
     if (!H.total) {
-      badge = "—";
-      verdict = "<div class='hint' style='margin:0'>Nothing to test: a " + o.years + "-year retirement starting in " + o.fromYear + " has not finished yet.</div>";
+      F.badge = "—";
+      F.verdict = "Nothing to test: a " + o.years + "-year retirement starting in " + o.fromYear + " has not finished yet.";
     } else {
-      badge = H.first + "–" + lastYear + (H.monthly ? " · monthly" : "");
-      success = pctStr(H.successRate, 1);
-      successCls = cls(H.successRate);
-      successNote = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
-      median = money(H.medianEnd);
-      worst = money(H.worstEnd);
-      worstNote = H.failCount ? "Ran out in " + H.failCount + " of " + H.total + " retirements" : "Never ran out";
-      verdict = "<div class='hint' style='margin:0;font-size:13px'>" + (H.successRate >= 0.99
-        ? "<b class='pos'>This plan survived every historical period.</b> Including the Great Depression, the 1970s stagflation, and the 2008 crash."
+      F.badge = H.first + "–" + lastYear + (H.monthly ? " · monthly" : "");
+      F.success = pctStr(H.successRate, 1);
+      F.tone = tone(H.successRate);
+      F.successNote = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
+      F.median = money(H.medianEnd);
+      F.worst = money(H.worstEnd);
+      F.worstNote = H.failCount ? "Ran out in " + H.failCount + " of " + H.total + " retirements" : "Never ran out";
+      F.verdict = H.successRate >= 0.99
+        ? "<b>This plan survived every historical period.</b> Including the Great Depression, the 1970s stagflation, and the 2008 crash."
         : H.successRate >= 0.9
-          ? "<b class='gold'>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") +
+          ? "<b>This plan survived most historical periods.</b> It failed only when retirement began in " + H.failYears.slice(0, 6).join(", ") +
             (H.failYears.length > 6 ? " and others" : "") + ", the worst sequences on record."
-          : "<b class='neg'>This plan ran out of money in " + H.failCount + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.") + "</div>";
+          : "<b>This plan ran out of money in " + H.failCount + " of " + H.total + " historical periods.</b> Consider a lower withdrawal rate or a strategy that adjusts spending.";
       const met = (h: typeof H) => h.runs.filter((r) => r.endReal >= o.legacyGoal).length;
-      if (o.legacyGoal > 0) legacy = legacyOf(met(H), H.runs.length, met(H) + " of " + H.total + " periods");
-      cur = { success: H.successRate, median: H.medianEnd, worst: H.worstEnd, legacy: o.legacyGoal > 0 ? met(H) / H.total : null };
+      if (o.legacyGoal > 0) F.legacy = legacyOf(met(H), H.runs.length, met(H) + " of " + H.total + " periods");
+      F.cur = { success: H.successRate, median: H.medianEnd, worst: H.worstEnd, legacy: o.legacyGoal > 0 ? met(H) / H.total : null };
       const B = R?.kind === "hist" ? R.B : null;
-      if (B) was = { success: B.H.successRate, median: B.H.medianEnd, worst: B.H.worstEnd, legacy: o.legacyGoal > 0 ? met(B.H) / B.H.total : null };
+      if (B) F.was = { success: B.H.successRate, median: B.H.medianEnd, worst: B.H.worstEnd, legacy: o.legacyGoal > 0 ? met(B.H) / B.H.total : null };
     }
   } else if (mode === "mc" && R?.kind === "mc") {
     const M = R.M, t = M.trials.toLocaleString("en-US");
-    badge = running ? "Running…" : t + " simulations";
-    success = pctStr(M.successRate, 1);
-    successCls = cls(M.successRate);
-    successNote = M.survived.toLocaleString("en-US") + " of " + t + " runs lasted " + o.years + " years";
-    median = money(M.medianEnd);
-    worst = money(M.p10End);
-    worstNote = "10th percentile outcome";
-    verdict = "<div class='hint' style='margin:0;font-size:13px'>" + mcWords(o) + "</div>";
-    if (o.legacyGoal > 0) legacy = legacyOf(M.legacy, M.trials, M.legacy.toLocaleString("en-US") + " of " + t + " simulations");
-    cur = { success: M.successRate, median: M.medianEnd, worst: M.p10End, legacy: o.legacyGoal > 0 ? M.legacy / M.trials : null };
+    F.badge = running ? "Running…" : t + " simulations";
+    F.success = pctStr(M.successRate, 1);
+    F.tone = tone(M.successRate);
+    F.successNote = M.survived.toLocaleString("en-US") + " of " + t + " runs lasted " + o.years + " years";
+    F.median = money(M.medianEnd);
+    F.worst = money(M.p10End);
+    F.worstNote = "10th percentile outcome";
+    F.verdict = mcWords(o);
+    if (o.legacyGoal > 0) F.legacy = legacyOf(M.legacy, M.trials, M.legacy.toLocaleString("en-US") + " of " + t + " simulations");
+    F.cur = { success: M.successRate, median: M.medianEnd, worst: M.p10End, legacy: o.legacyGoal > 0 ? M.legacy / M.trials : null };
     const Mb = R.Mb;
-    if (Mb) was = { success: Mb.successRate, median: Mb.medianEnd, worst: Mb.p10End, legacy: o.legacyGoal > 0 ? Mb.legacy / Mb.trials : null };
-  } else if (mode === "mc") badge = "Running…";
+    if (Mb) F.was = { success: Mb.successRate, median: Mb.medianEnd, worst: Mb.p10End, legacy: o.legacyGoal > 0 ? Mb.legacy / Mb.trials : null };
+  } else if (mode === "mc") F.badge = "Running…";
+  return F;
+}
+
+const TONE_ICON = { gain: CircleCheckIcon, text: CircleAlertIcon, loss: CircleXIcon, answer: CircleCheckIcon } as const;
+const TONE_TEXT = { gain: "text-gain", text: "text-foreground", loss: "text-destructive", answer: "text-primary" } as const;
+
+function Readout({ v, F, pinned, setMode, pin, unpin }: {
+  v: DDView; F: ReadoutFigures;
+  pinned: { state: Record<string, unknown>; label: string } | null;
+  setMode: (m: "hist" | "mc") => void; pin: () => void; unpin: () => void;
+}) {
+  const { mode } = v;
   const delta = (id: string, k: keyof Figures, kind: "pts" | "money") => {
-    const c = cur?.[k], b = was?.[k];
+    const c = F.cur?.[k], b = F.was?.[k];
     const h = pinned && c != null && b != null ? deltaHtml(c, b, kind) : "";
     return <Html className="dddelta" id={id} hidden={!h} html={h} />;
   };
+  const ToneIcon = TONE_ICON[F.tone];
+  const figures: ReadingFigure[] = [
+    { label: "Median ending balance", id: "ddMedian", value: F.median, note: "In today's dollars", extra: delta("ddMedianD", "median", "money") },
+    { label: F.worstLabel, id: "ddWorst", value: F.worst, note: F.worstNote, noteId: "ddWorstNote", extra: delta("ddWorstD", "worst", "money") },
+  ];
+  if (F.legacy) figures.push({ label: "Meet legacy goal", id: "ddLegacy", wrapId: "ddLegacyWrap", value: F.legacy.v, note: F.legacy.note, noteId: "ddLegacyNote", extra: delta("ddLegacyD", "legacy", "pts") });
   return (
-    <Card size="flush">
-      <div className="readout">
-        <div className="txhead">
-          <SegmentedGroup id="segDD">
-            <SegmentedItem data-dd="hist" pressed={mode === "hist"} onClick={() => setMode("hist")}>Historical</SegmentedItem>
-            <SegmentedItem data-dd="mc" pressed={mode === "mc"} onClick={() => setMode("mc")}>Monte Carlo</SegmentedItem>
-          </SegmentedGroup>
-          <Badge variant="outline" id="ddBadge">{badge}</Badge>
-          <Button variant="outline" size="sm" className="ml-2" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
-        </div>
-        <div className="headline">
-          <div><div className="k"><Tipped text="Success rate" k="successrate" /></div><BigValue className={successCls} id="ddSuccess" text={success} sized={success !== "—"} />
-            {delta("ddSuccessD", "success", "pts")}<div className="note" id="ddSuccessNote">{successNote}</div></div>
-          <div><div className="k">Median ending balance</div><BigValue className="v" id="ddMedian" text={median} sized={median !== "—"} />
-            {delta("ddMedianD", "median", "money")}<div className="note">In today&apos;s dollars</div></div>
-          <div><div className="k">Worst case</div><BigValue className="v" id="ddWorst" text={worst} sized={worst !== "—"} />
-            {delta("ddWorstD", "worst", "money")}<div className="note" id="ddWorstNote">{worstNote}</div></div>
-          <div id="ddLegacyWrap" hidden={!legacy}><div className="k">Meet legacy goal</div><div className={legacy?.cls ?? "v"} id="ddLegacy">{legacy?.v ?? "—"}</div>
-            {delta("ddLegacyD", "legacy", "pts")}<div className="note" id="ddLegacyNote">{legacy?.note ?? ""}</div></div>
-        </div>
+    <Card size="flush" className="min-w-0">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
+        <SegmentedGroup id="segDD" aria-label="How it's tested">
+          <SegmentedItem data-dd="hist" pressed={mode === "hist"} onClick={() => setMode("hist")}>Historical</SegmentedItem>
+          <SegmentedItem data-dd="mc" pressed={mode === "mc"} onClick={() => setMode("mc")}>Monte Carlo</SegmentedItem>
+        </SegmentedGroup>
+        <Badge variant="outline" id="ddBadge">{F.badge}</Badge>
+        <Button variant="outline" size="sm" className="ml-auto" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
       </div>
-      <div className="ddbase" id="ddBaseBar" hidden={!pinned}>
-        <span className="ddbase-k">Baseline</span><span className="ddbase-v" id="ddBaseLabel">{pinned?.label ?? ""}</span>
-        <span className="ddbase-n">Changes since are marked <b className="pos">better</b> or <b className="neg">worse</b>; the charts draw it dashed.</span>
+      <HeroReading tone={F.tone}
+        hero={{
+          label: <Tipped text="Success rate" k="successrate" />, id: "ddSuccess", value: F.success, noteId: "ddSuccessNote",
+          note: F.successNote ? <span className="inline-flex items-center gap-1.5"><ToneIcon className={cn("size-3.5 shrink-0", TONE_TEXT[F.tone])} aria-hidden="true" />{F.successNote}</span> : null,
+        }}
+        figures={figures}>
+        {delta("ddSuccessD", "success", "pts")}
+      </HeroReading>
+      <div className="border-t border-border px-5.5 py-3.5 max-sm:px-4" hidden={!F.verdict}>
+        {/* The verdict reads as the reading's sentence; Monte Carlo's says how
+            the runs are drawn, so it stays quieter. */}
+        <Html className={mode === "mc" ? "max-w-copy text-note text-muted-foreground" : "max-w-copy text-body text-foreground"} id="ddVerdict" html={F.verdict} />
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-border px-5.5 py-2.5 text-note max-sm:px-4" id="ddBaseBar" hidden={!pinned}>
+        <span className="text-label text-muted-foreground">Baseline</span><span className="font-semibold text-foreground" id="ddBaseLabel">{pinned?.label ?? ""}</span>
+        <span className="min-w-0 flex-auto text-muted-foreground">Changes since are marked <b className="pos">better</b> or <b className="neg">worse</b>; the charts draw it dashed.</span>
         <Button variant="outline" size="sm" id="ddBaseClear" onClick={unpin}>Clear</Button>
       </div>
-      <CardContent><Html id="ddVerdict" html={verdict} /></CardContent>
     </Card>
   );
 }

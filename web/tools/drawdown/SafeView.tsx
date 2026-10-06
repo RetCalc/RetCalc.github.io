@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
+import { cn } from "@/lib/utils";
+import { CheckIcon, XIcon } from "lucide-react";
 
 const work = (t: string) => "<span class='ddwork'>" + t + "</span>";
 
@@ -60,7 +62,7 @@ function NoDial({ name, axis, setAxis }: { name: string; axis: "stock" | "years"
           "Pick a strategy with a rate or a target to see the most it could have started with, or compare them all on the Compare strategies view."} /></CardContent>
         <MultiChart id="DDR" series={[]} maxX={1} ariaLabel="The highest first-year withdrawal that met the target, for each start" />
         <div className="legend" id="legendDDR"></div>
-        <div className="solveopts" id="ddSolve" hidden><Solvers /></div>
+        <div className="grid grid-cols-1 border-b border-border sm:grid-cols-2" id="ddSolve" hidden><Solvers /></div>
       </Card>
       <Card id="ddHeatPanel" data-ddtabs="safe">
         <HeatTitle axis={axis} setAxis={setAxis} />
@@ -98,19 +100,25 @@ function Solvers({ dialK = "Highest setting that meets the target", dialV = "—
 }) {
   return (
     <>
-      <div className="solveopt">
-        <div className="optlabel" id="ddSolveDialK">{dialK}</div>
-        <div className="v gold" id="ddSolveDial">{dialV}</div>
-        <Html className="note" id="ddSolveDialN" html={dialN} />
-        <Button variant="outline" size="sm" className="mt-3.5 self-start max-sm:self-stretch" id="ddSolveDialUse" disabled={!dialUse} onClick={dialUse}>Use it</Button>
-      </div>
-      <div className="solveopt">
-        <div className="optlabel" id="ddSolvePortK">{portK}</div>
-        <div className="v gold" id="ddSolvePort">{portV}</div>
-        <div className="note" id="ddSolvePortN">{portN}</div>
-        <Button variant="outline" size="sm" className="mt-3.5 self-start max-sm:self-stretch" id="ddSolvePortUse" disabled={!portUse} onClick={portUse}>Use it</Button>
-      </div>
+      <SolveFigure k={dialK} kId="ddSolveDialK" v={dialV} vId="ddSolveDial" n={<Html className="mt-1.5 text-label text-muted-foreground" id="ddSolveDialN" html={dialN} />}
+        use={<Button variant="outline" size="sm" className="mt-3.5 self-start max-sm:self-stretch" id="ddSolveDialUse" disabled={!dialUse} onClick={dialUse}>Use it</Button>} />
+      <SolveFigure k={portK} kId="ddSolvePortK" v={portV} vId="ddSolvePort" className="max-sm:border-t sm:border-l"
+        n={<div className="mt-1.5 text-label text-muted-foreground" id="ddSolvePortN">{portN}</div>}
+        use={<Button variant="outline" size="sm" className="mt-3.5 self-start max-sm:self-stretch" id="ddSolvePortUse" disabled={!portUse} onClick={portUse}>Use it</Button>} />
     </>
+  );
+}
+
+/** One of Safe spending's two answers, at Display size, with its note and a
+    button that uses it. */
+function SolveFigure({ k, kId, v, vId, n, use, className }: { k: string; kId: string; v: string; vId: string; n: React.ReactNode; use: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex min-w-0 flex-col border-border px-4 py-4", className)} data-pair>
+      <div className="text-label text-muted-foreground" id={kId} data-k>{k}</div>
+      <div className="mt-1 text-3xl leading-tight font-medium whitespace-nowrap tabular-nums sm:text-display" id={vId}>{v}</div>
+      {n}
+      {use}
+    </div>
   );
 }
 
@@ -182,10 +190,12 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
   return (
     <Card id="ddSafePanel" data-ddtabs="safe">
       <SafeTitle />
-      <CardContent id="ddSafeIntro"><Html className="ddintro" html={intro} /></CardContent>
+      {/* The view's answer first: the highest setting that meets the target,
+          and the portfolio your spending needs. */}
+      <div className="grid grid-cols-1 border-b border-border sm:grid-cols-2" id="ddSolve"><Solvers {...solve} /></div>
+      <CardContent id="ddSafeIntro" className="pt-3.5"><Html className="ddintro max-w-copy" html={intro} /></CardContent>
       {chart ?? <MultiChart id="DDR" series={[]} maxX={1} ariaLabel="The highest first-year withdrawal that met the target, for each start" />}
       <Html className="legend" id="legendDDR" html={legend} />
-      <div className="solveopts" id="ddSolve"><Solvers {...solve} /></div>
     </Card>
   );
 }
@@ -220,10 +230,12 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
                 if (s < 0) {
                   return <td key={j} className={["ddh-na ddh-under", me].filter(Boolean).join(" ")} data-hr={i} data-hc={j} title="Year one starts under your comfort line" onClick={() => use(rv, h.cols[j])}>under</td>;
                 }
-                const hue = s >= 1 ? 158 : s >= 0.95 ? 140 : s >= 0.9 ? 95 : s >= 0.8 ? 45 : s >= 0.7 ? 25 : 8;
-                const a = 0.12 + 0.5 * Math.max(0, Math.min(1, s)) * (s >= 0.9 ? 1 : 0.8);
-                return <td key={j} data-hr={i} data-hc={j} className={me ? me + " bg-(--heat)" : "bg-(--heat)"} style={{ "--heat": "hsla(" + hue + ",60%,48%," + a.toFixed(2) + ")" } as React.CSSProperties}
-                  onClick={() => use(rv, h.cols[j])}>{s >= 1 ? "100" : (s * 100).toFixed(0)}</td>;
+                // Gain tint and a check where the cell meets the target; loss
+                // tint and a cross where it falls more than 10 points short.
+                const met = s >= T.conf - 1e-9, far = s < T.conf - 0.1;
+                const Mark = met ? CheckIcon : far ? XIcon : null;
+                return <td key={j} data-hr={i} data-hc={j} className={cn(me, met ? "bg-gain/15" : far ? "bg-destructive/15" : "bg-muted")}
+                  onClick={() => use(rv, h.cols[j])}>{Mark ? <Mark className="mr-0.5 inline size-3 align-baseline" aria-hidden="true" /> : null}{s >= 1 ? "100" : (s * 100).toFixed(0)}</td>;
               })}
             </tr>
           );
@@ -240,6 +252,13 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
       <HeatTitle axis={axis} setAxis={setAxis} />
       <CardContent id="ddHeatIntro"><Html className="ddintro" html={intro} /></CardContent>
       <div className="scroll ddheatwrap"><table id="ddHeat" className="ddheat">{table}</table></div>
+      {table ? (
+        <div className="legend">
+          <span><i className="border border-border bg-gain/15"></i><CheckIcon className="mr-1 inline size-3" aria-hidden="true" />Meets the target</span>
+          <span><i className="border border-border bg-muted"></i>Within 10 points</span>
+          <span><i className="border border-border bg-destructive/15"></i><XIcon className="mr-1 inline size-3" aria-hidden="true" />More than 10 points short</span>
+        </div>
+      ) : null}
       <div className="hint ddpad" id="ddHeatNote">{note}</div>
     </Card>
   );
@@ -255,7 +274,7 @@ function ValPanel({ S }: { S: Safe }) {
     chart = <Scatter id="DDV" ariaLabel="Each start's CAPE against the most it could have started with"
       pts={safe.map((w) => ({ x: w.cape, y: w.rate! * 100, w, color: w.rate! < mine - 1e-6 ? SERIES.loss : SERIES.gain }))}
       opt={{ small: safe.length > 150, xMin: 0, yZero: true, xFmt: (x) => fmtNum(x), yFmt: (y) => fmtNum(y) + "%", xLabel: "CAPE at the start →", yLabel: "Highest year one that worked",
-        vLine: { x: CAPE_NOW, label: "today, " + CAPE_NOW.toFixed(1) }, hLine: { y: mine * 100, label: "yours, " + pctStr(mine, 2) } }}
+        vLine: { x: CAPE_NOW, label: "today, " + CAPE_NOW.toFixed(1), color: SERIES.guide }, hLine: { y: mine * 100, label: "yours, " + pctStr(mine, 2) } }}
       tip={(p) => <><b>Retiring in {startOf(p.w, monthly)}</b><br />CAPE <span className="n">{p.w.cape.toFixed(1)}</span><br />Highest year one <span className="n">{pctStr(p.w.rate!, 2)}</span></>} />;
     legend = swatch(SERIES.gain, "A start your year one would have survived") + swatch(SERIES.loss, "One it wouldn't");
     const maxCape = Math.max(...safe.map((w) => w.cape));

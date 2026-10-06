@@ -119,6 +119,19 @@ today, which the redesign doesn't do.
   range is a new figure on the homepage and needs a decision on which
   windows and percentiles to show.
 
+### Drawdown: "never below $1" in the strategy showdown
+
+Found 2026-10-06 (Drawdown critique, question 4). In Compare strategies, the
+Setting found column reads "never below $1" under rows such as 1/N and the
+tuned strategies when the risk target is the comfort line. It may be the
+floor the tuning really used, or a display of a near-zero floor; either way
+it's a figure and how the showdown's floors are worked out
+(the "showdown" job in `web/lib/engine`, shown as `x.floor` in `web/tools/drawdown/CompareView.tsx`),
+so it's left for a deliberate look. Related: the success grid shows "100"
+for a share that rounds to 100 (99.6%, say); with the target at every start
+that cell doesn't get the redesign's check mark, which is right but can
+read oddly.
+
 ## Planned
 
 ### Masthead controls in the pinned tab rail, site-wide (done)
@@ -220,6 +233,33 @@ written into DESIGN.md unless it says otherwise.
   everything under it. On phones the stage table keeps Stage and End balance
   pinned, the year table Year and Inflation adj.
 
+- **Drawdown Simulator (/drawdown and its eight strategy pages): Basic's
+  thirds.** Inputs a third, results two thirds from 1024px; every slug whose
+  tool is drawdown joins SOLO (lib/site.ts). 11 Simple / 21 Advanced fields
+  fit a third as Advanced's 22 do; the column stays sticky with its own
+  scroll from 1024px and is static below. Inputs card renamed "Your inputs"
+  (the first result view is "Your plan"), sentence-case group heads (Your
+  portfolio at retirement, Your retirement, Withdrawals, Income in
+  retirement, Goals, Market history), Age beside Years two-up on phones.
+  Results: one reading card (Historical / Monte Carlo, the period badge and
+  Pin in a quiet toolbar; the success rate as the hero in its rating tone,
+  gain from 95%, text from 85%, loss below, with a check / alert / cross
+  glyph before its note; median and worst at Display size, plus the legacy
+  goal when set, in Text; baseline deltas under each; the verdict as a
+  body-size sentence band, Monte Carlo's method sentence kept quieter; the
+  baseline bar). Phones get a PinnedReading (success rate, median). Then the
+  intro card, the three views as tabs, and each view's own answer: Your plan
+  as a story (balance fan, When you retire, spending fan, the scorecard as a
+  key/value list beside What your income looked like, the start table, Year
+  by year, Spread, Return sensitivity beside Social Security claiming);
+  Compare opens with the strategy that spends most at the target and the
+  steadiest; Safe opens with its two answers at Display size. With no
+  portfolio (or a retirement too long for the record) everything under the
+  reading folds away and the Portfolio field carries the error. The legacy
+  figure loses its rating color (secondaries are Text). Success grid on
+  Gain/Loss 15% tints with check/cross glyphs and a legend; the CAPE "today"
+  line and the showdown's comfort line are guide-colored, not amber.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -251,6 +291,25 @@ written into DESIGN.md unless it says otherwise.
 - **Stages**: "+" on Growth, moving the "?" out of the glide / split toggles,
   44px for the ± flip — figure text, and shared controls (CheckToggle,
   SignFlip) used on other pages; left for the shared-controls pass.
+
+- **Drawdown**: fold "How each starting year fared" and "Year by year"
+  behind disclosures — the e2e walk clicks start-table rows and headers on
+  both sites with the same steps, and the income test asserts a Year by year
+  header is visible; both stay open, moved below the charts instead.
+- **Drawdown**: "Capped at 60 years" under Years in retirement when it
+  clamps — new copy and behavior the owner would word; not added.
+- **Drawdown**: "never below $1" in the showdown — a figure / possible
+  display bug; logged under Open.
+- **Drawdown**: renaming the views ("Will it last" / "Which rule" / "How much
+  can I spend") — the strategy guide, the No-setting note and the help tour
+  name them "Your plan", "Compare strategies", "Safe spending"; kept.
+- **Drawdown**: phones pinning Strategy and showing Typical lifetime spending
+  next — reordering columns changes the CSV; the Strategy and Setting
+  columns wrap instead, so Year one and lifetime spending show on a phone.
+- **Drawdown**: Advanced inputs split into tabs or disclosures — the help
+  tour and e2e steps reach those fields directly; group heads instead.
+- **Drawdown**: secondaries side by side on phones — "Ran out in 50 of 835
+  retirements" leaves no room at 390px; they stack, as the component allows.
 
 ## Fixed
 

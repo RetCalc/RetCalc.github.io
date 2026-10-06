@@ -28,6 +28,8 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { NativeSelect } from "@/components/ui/native-select";
 import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CircleAlertIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 
 export function Inputs({ v, fromNote, periods, open }: {
@@ -95,7 +97,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           (hi > vals[0] + 1 ? ", " + money(hi) + " at the highest" : ""));
     }
     card = <>
-      <div><span className="ddstrat-fam">{DD_FAMILY[S.family]}</span></div>
+      <div className="text-label font-semibold text-muted-foreground">{DD_FAMILY[S.family]}</div>
       <div className="ddstrat-blurb">{U.blurb}</div>
       {spark ? <>{spark}<div className="ddstrat-cap">{cap}</div></> : null}
     </>;
@@ -151,6 +153,7 @@ export function Inputs({ v, fromNote, periods, open }: {
   const clampFrom = () => setState(fromClamp);
 
   const startUnit = age != null;
+  const noPortfolio = !(o.initial > 0);
 
   const items = (k: "incomeItems" | "expenseItems", elId: string) => {
     const list = nb<DdItem>(k);
@@ -172,18 +175,23 @@ export function Inputs({ v, fromNote, periods, open }: {
   };
 
   return (
-    <aside id="asideDD" data-inputs={inputs}>
+    <aside id="asideDD" data-inputs={inputs} className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
       <Card>
-        <CardHeader><CardTitle>Your plan</CardTitle><CardAction>
+        <CardHeader><CardTitle>Your inputs</CardTitle><CardAction>
           <SegmentedGroup id="segDDIn" aria-label="How many inputs">
             <SegmentedItem data-ddin="simple" pressed={inputs === "simple"} onClick={() => setInputs("simple")}>Simple</SegmentedItem>
             <SegmentedItem data-ddin="adv" pressed={inputs === "adv"} onClick={() => setInputs("adv")}>Advanced</SegmentedItem>
           </SegmentedGroup>
         </CardAction></CardHeader>
         <CardContent>
-          <div className="ddsec ddsec-first">Your portfolio at retirement</div>
+          <GroupHead first>Your portfolio at retirement</GroupHead>
           <Field id="ddInitial" label="Portfolio value">
-            <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")} /></Affixed>
+            <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")}
+              aria-invalid={noPortfolio || undefined} aria-describedby={noPortfolio ? "ddInitialWarn" : undefined} /></Affixed>
+            <div className="mt-1.5 flex items-start gap-2 text-note text-destructive" hidden={!noPortfolio}>
+              <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              <span id="ddInitialWarn">Enter your portfolio value to run the simulation.</span>
+            </div>
             <Button variant="outline" size="sm" className="mt-1.5" id="ddCopy" onClick={v.copyFromPlan}>Copy from your plan</Button>
           </Field>
           <Field id="ddMixBtn" label={<Tipped text="Asset mix" k="ddstocks" />}>
@@ -223,8 +231,8 @@ export function Inputs({ v, fromNote, periods, open }: {
               <Html className="hint -mt-1.5 mb-3" id="ddGNote" html={gNote} />
             </div>
           </div>
-          <div className="ddsec">Your retirement</div>
-          <div className="two">
+          <GroupHead>Your retirement</GroupHead>
+          <div className="two bottomalign max-sm:grid-cols-2">
             <NumberField id="ddRetireAge" className="ddadv" label={<>Age at retirement <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="retireage" /></span></>} unit="age" max={120}
               value={str("retireAge")} onValueChange={(val) => setState((c) => {
                 const next: DrawdownState = { ...c, retireAge: val };
@@ -237,6 +245,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           </div>
           <Html className="hint -mt-1.5 mx-0 mb-3" id="ddFromNote" html={fromNote} />
 
+          <GroupHead>Withdrawals</GroupHead>
           <Field id="ddStrategy" label={<Tipped text="Withdrawal strategy" k="strategy" />}>
             <NativeSelect id="ddStrategy" value={str("strategy")} onChange={(e) => set("strategy")(e.target.value)}>
               <optgroup label="Steady income">
@@ -406,7 +415,8 @@ export function Inputs({ v, fromNote, periods, open }: {
                 return [...l, { start: Math.max(2, start), level: last ? Math.max(0, (last.st.level ?? 100) - 10) : 90 }];
               })}>+ Add spending stage</Button>
             </div>
-            <SelectField id="ddSSMode" label="Social Security" value={ssMode} onChange={set("ssMode")} className="mt-3.5">
+            <GroupHead>Income in retirement</GroupHead>
+            <SelectField id="ddSSMode" label="Social Security" value={ssMode} onChange={set("ssMode")}>
               <option value="none">Not included</option>
               <option value="est">Estimate it for me</option>
               <option value="manual">I know my benefit</option>
@@ -444,13 +454,13 @@ export function Inputs({ v, fromNote, periods, open }: {
               {items("expenseItems", "ddExpenseList")}
               <Button variant="outline" size="sm" id="ddAddExpense" onClick={() => open({ kind: "item", list: "expenseItems", index: null })}>+ Add future expense</Button>
             </div>
-            <div className="ddsec">Goals</div>
+            <GroupHead>Goals</GroupHead>
             <MoneyField id="ddLegacyGoal" label={<>Legacy goal <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="legacy" /></span></>} value={str("legacyGoal")} onValueChange={set("legacyGoal")} />
             <Field id="ddComfort" label={<>Comfort line <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="ddcomfort" /></span></>}>
               <Affixed prefix="$" suffix="/yr"><MoneyInput id="ddComfort" nonNeg value={str("comfort")} onValueChange={set("comfort")} /></Affixed>
               <div className="hint" id="ddComfortNote">{v.comfortNote}</div>
             </Field>
-            <div className="ddsec">Market history</div>
+            <GroupHead>Market history</GroupHead>
             <div className="two">
               <SelectField id="ddStarts" label={<Tipped text="Test a retirement" k="ddstarts" />} value={str("starts")} onChange={set("starts")}>
                 <option value="year">Each January</option>
@@ -498,6 +508,11 @@ export function Inputs({ v, fromNote, periods, open }: {
       </Card>
     </aside>
   );
+}
+
+/** A heading over one group of the inputs, on a rule after the first (as on Advanced). */
+function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
+  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-4 border-t border-border pt-4")}>{children}</h3>;
 }
 
 function ClaimAge({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {

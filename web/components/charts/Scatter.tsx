@@ -25,7 +25,9 @@ interface Opts {
   xLabel?: string; yLabel?: string | null;
   /** Start the value axis at zero. */
   yZero?: boolean; xMin?: number;
-  hLine?: { y: number; label: string } | null; vLine?: { x: number; label: string } | null;
+  /** Reference lines; amber ("your plan") unless a color is given (a
+      comfort line or a market reading takes SERIES.guide). */
+  hLine?: { y: number; label: string; color?: string } | null; vLine?: { x: number; label: string; color?: string } | null;
   marks?: { x: number; label: string }[] | null;
   /** Many points: smaller, fainter dots. */
   small?: boolean;
@@ -124,12 +126,12 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
           {opt.xLabel ? text(W - R, H - 4, opt.xLabel, { textAnchor: "end", fontSize: fs * 0.9 }) : null}
           {opt.yLabel ? text(L + 4, T + fs, opt.yLabel, { fontSize: fs * 0.9 }) : null}
           {opt.hLine ? <>
-            <line x1={L} x2={W - R} y1={Y(opt.hLine.y)} y2={Y(opt.hLine.y)} stroke={SERIES.plan} strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
-            {text(W - R - 4, Y(opt.hLine.y) - 5, opt.hLine.label, { textAnchor: "end", style: { fill: SERIES.plan }, fontSize: fs * 0.9 })}
+            <line x1={L} x2={W - R} y1={Y(opt.hLine.y)} y2={Y(opt.hLine.y)} stroke={opt.hLine.color ?? SERIES.plan} strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
+            {text(W - R - 4, Y(opt.hLine.y) - 5, opt.hLine.label, { textAnchor: "end", style: { fill: opt.hLine.color ?? SERIES.plan }, fontSize: fs * 0.9 })}
           </> : null}
           {opt.vLine ? <>
-            <line x1={X(opt.vLine.x)} x2={X(opt.vLine.x)} y1={T} y2={T + ph} stroke={SERIES.plan} strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
-            {text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, { textAnchor: "end", style: { fill: SERIES.plan }, fontSize: fs * 0.9 })}
+            <line x1={X(opt.vLine.x)} x2={X(opt.vLine.x)} y1={T} y2={T + ph} stroke={opt.vLine.color ?? SERIES.plan} strokeWidth={1.4 * sw} strokeDasharray="6 5" opacity={0.8} />
+            {text(X(opt.vLine.x) - 5, T + fs + 14, opt.vLine.label, { textAnchor: "end", style: { fill: opt.vLine.color ?? SERIES.plan }, fontSize: fs * 0.9 })}
           </> : null}
           {(opt.marks || []).filter((m) => m.x >= AXx.min && m.x <= AXx.max).map((m) => (
             <g key={"m" + m.x}>

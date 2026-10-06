@@ -25,6 +25,10 @@ export interface ReadingFigure {
   note?: ReactNode;
   noteId?: string;
   labelId?: string;
+  /** Under the figure, above its note (a change against a baseline, say). */
+  extra?: ReactNode;
+  /** An id for the figure's whole block. */
+  wrapId?: string;
 }
 
 /** The hero's color: amber when it's the page's answer (the Four Places
@@ -62,9 +66,10 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
       {figures.length ? (
         <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4 wide:mt-0 wide:min-w-0 wide:flex-1 wide:items-center wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8">
           {figures.map((f) => (
-            <div key={f.id} data-pair>
+            <div key={f.id} id={f.wrapId} data-pair>
               <span className="block text-label text-muted-foreground" id={f.labelId} data-k>{f.label}</span>
               <BigValue className="text-3xl leading-tight font-medium tabular-nums sm:text-display" id={f.id} text={f.value} sized={false} />
+              {f.extra}
               {f.note != null ? <span className="block text-label text-muted-foreground" id={f.noteId}>{f.note}</span> : null}
             </div>
           ))}

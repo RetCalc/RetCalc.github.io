@@ -32,7 +32,7 @@
 .sg-tag{font-size:11.5px;color:var(--dimmer)}
 .sg-item p{font-size:13px;color:var(--dim);line-height:1.6;margin:0 0 10px}
 .sg-pc{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
-.sg-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.sg-lbl{font-size:12.5px;font-weight:600;color:var(--text)}
 .sg-pc ul{margin:5px 0 10px;padding-left:18px;font-size:12.5px;color:var(--dim);line-height:1.5}
 .sg-pc li{margin-bottom:4px}
 .sg-item .sg-fit{color:var(--text)}
