@@ -42,7 +42,7 @@ export function Debt() {
   const setRow = (i: number, k: keyof DebtRow) => (v: string) =>
     setState((cur) => ({ ...cur, rows: cur.rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)) }));
 
-  const { live, plan } = debtCompute(s);
+  const { extra, live, plan } = debtCompute(s);
 
   let head = { free: DASH, freeNote: "Add a debt to start", interest: DASH, interestNote: "", saved: DASH, savedPos: true, savedNote: "" };
   let body: React.ReactNode = null;
@@ -58,8 +58,9 @@ export function Debt() {
       freeNote: pick.stalled ? "Payments never clear the balance" : debtDur(pick.monthsTotal) + " from now",
       interest: money(pick.totalInterest),
       interestNote: "on " + money(borrowed) + " borrowed, " + money(pick.totalPaid) + " paid in all",
-      saved: money(Math.max(0, saved)),
-      savedPos: saved > 0,
+      // Minimums that never clear have no total to compare against.
+      saved: mn.stalled ? DASH : money(Math.max(0, saved)),
+      savedPos: !mn.stalled && saved > 0,
       savedNote: mn.stalled ? "Minimums alone never clear it" : sooner > 0 ? debtDur(sooner) + " sooner" : "Same as minimums",
     };
 
@@ -82,7 +83,7 @@ export function Debt() {
     cmpRows = ([["Avalanche, highest rate first", av], ["Snowball, smallest balance first", sn], ["Minimums only, no extra", mn]] as const).map(([label, R]) => (
       <tr key={label}>
         <td>{label}</td><td>{R.stalled ? "Never" : debtDate(R.monthsTotal)}</td><td>{R.stalled ? DASH : debtDur(R.monthsTotal)}</td>
-        <td className={R === av && av.totalInterest <= sn.totalInterest ? "pos" : undefined}>{money(R.totalInterest)}</td>
+        <td className={R === av && av.totalInterest <= sn.totalInterest ? "pos" : undefined}>{R === mn && mn.stalled ? "Keeps growing" : money(R.totalInterest)}</td>
         <td>{R.firstCleared ? debtDur(R.firstCleared) : DASH}</td>
       </tr>
     ));
@@ -100,7 +101,9 @@ export function Debt() {
         <tr key={x.m}><td>{x.m}</td><td>{debtDate(x.m)}</td><td>{money(x.balance)}</td><td>{money(x.interest)}</td><td>{x.cleared + " of " + live.length}</td></tr>
       ));
 
-    const span = Math.max(pick.months.length, Math.min(mn.months.length, DEBT_CAP));
+    // Minimums that never clear are drawn over the plan's own span: run to
+    // the 60-year cap, their growth would flatten everything else.
+    const span = mn.stalled ? pick.months.length : Math.max(pick.months.length, Math.min(mn.months.length, DEBT_CAP));
     const at = (R: DebtResult, m: number) => (m >= R.months.length ? 0 : R.months[Math.min(m, R.months.length - 1)].balance);
     const pts = [];
     for (let m = 0; m < span; m++) pts.push({ year: m, base: at(pick, m), hi: at(mn, m), lo: Math.min(at(pick, m), at(mn, m)) });
@@ -153,7 +156,7 @@ export function Debt() {
           </div>
           <div id="dtWarn" className="dtwarn" hidden={!warn.length}>
             {warn.length ? (
-              <><b>{warn.join(", ")}</b>: the minimum doesn&apos;t cover one month of interest, so that balance grows on its own. The payoff below only works because of the extra payment; check the minimum you entered.</>
+              <><b>{warn.join(", ")}</b>: the minimum doesn&apos;t cover one month of interest, so that balance grows on its own. The payoff below only works because {extra > 0 ? "of the extra payment" : "each cleared debt's minimum rolls over to the next"}; check the minimum you entered.</>
             ) : null}
           </div>
         </CardContent>

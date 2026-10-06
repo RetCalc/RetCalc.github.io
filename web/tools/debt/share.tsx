@@ -17,10 +17,11 @@ export function debtShare(s: DebtInputs): ShareKit {
       const extra = Math.max(0, parseNum(s.extra) || 0), snow = s.mode === "snowball";
       const av = debtRun(debts, extra, "avalanche")!, sn = debtRun(debts, extra, "snowball")!, mn = debtRun(debts, 0, "min")!;
       const pick = snow ? sn : av, owed = live.reduce((a, d) => a + d.balance, 0);
-      const saved = money(Math.max(0, mn.totalInterest - pick.totalInterest));
+      // Minimums that never clear have no total to compare against.
+      const saved = mn.stalled ? "—" : money(Math.max(0, mn.totalInterest - pick.totalInterest));
       return (
         <SheetPage title="Debt Payoff" sub={money(owed) + " across " + live.length + (live.length === 1 ? " debt" : " debts")}
-          big={[["Debt-free", pick.stalled ? "Never" : debtDate(pick.monthsTotal), debtDur(pick.monthsTotal) + " from now"],
+          big={[["Debt-free", pick.stalled ? "Never" : debtDate(pick.monthsTotal), pick.stalled ? "Payments never clear the balance" : debtDur(pick.monthsTotal) + " from now"],
             ["Total interest", money(pick.totalInterest), money(pick.totalPaid) + " paid in all"], ["Saved vs. minimums", saved, "in interest"]]}
           chart={copyChart("#chartDT")}
           foot="Assumes fixed minimums, fixed rates, and no new borrowing. Card minimums usually fall as the balance does, which makes real payoff slower than this unless you keep paying the original amount. Not financial advice.">
