@@ -220,10 +220,20 @@ worker), readiness guide, tool picker, about, tool help and glossary.
 vercel-optimize audits reviewed; site owner clicks through the preview.
 
 ### Phase 6: Switch
-- [ ] Remove the noindex setting from `web/app/layout.tsx`
-- [ ] Add Cloudflare Web Analytics (left out so previews don't count as visits)
+- [x] Remove the noindex setting from `web/app/layout.tsx` (kept on previews and local builds:
+      only the production deployment, `VERCEL_ENV=production`, is indexable)
+- [x] Add Cloudflare Web Analytics, the current site's token, production only (previews don't
+      count as visits)
 - [ ] retcalc.app's DNS pointed at Vercel
 - [ ] Old site left deployable on GitHub Pages for rollback
+- **Rollback:** in Cloudflare (DNS for retcalc.app), put back the records as they were
+  before the switch, all "DNS only" (grey cloud):
+  - `A` `retcalc.app` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+  - `CNAME` `www` → `retcalc.github.io`
+
+  Then in GitHub (repo Settings → Pages) re-save `retcalc.app` as the custom domain if it was
+  dropped, and tick Enforce HTTPS once the certificate is issued (can take up to an hour).
+  For a bad update to the new site alone, use Vercel's Instant Rollback instead: no DNS change.
 - [ ] Search Console and analytics watched for two weeks
 - [ ] Then: remove the old build from the repo; `web/` becomes the root
 

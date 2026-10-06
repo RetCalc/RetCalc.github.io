@@ -36,14 +36,17 @@ import "@/styles/13-chart-ink-logo.css";
 import "@/styles/14-footer-menus-mobile.css";
 import "@/styles/15-optimizer.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
+import Script from "next/script";
+
+/** The production deployment, the one retcalc.app serves. */
+const LIVE = process.env.VERCEL_ENV === "production";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: "RetCalc",
-  /* Kept out of search results until it replaces the live site, so Google
-     never sees two copies of RetCalc. Removed at the switch (MIGRATION.md,
-     phase 6). */
-  robots: { index: false, follow: false },
+  /* Only the production deployment (retcalc.app) is in search results;
+     previews and local builds stay out, so Google never sees two copies. */
+  robots: LIVE ? undefined : { index: false, follow: false },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
@@ -98,6 +101,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <GuideCoach />
             <ToolHelp />
             <SheetHost />
+            {/* Cloudflare Web Analytics, the current site's token; it follows
+                page changes on its own. Production only, so previews aren't
+                counted as visits. */}
+            {LIVE ? (
+              <Script src="https://static.cloudflareinsights.com/beacon.min.js" strategy="afterInteractive"
+                data-cf-beacon='{"token": "43d7ad6321b545f2bb8d2e02569490ee"}' />
+            ) : null}
           </HouseholdProvider>
           </ToolRegistryProvider>
           </PopupProvider>
