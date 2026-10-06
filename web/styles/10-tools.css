@@ -50,11 +50,6 @@
 .mcbar{display:flex;align-items:flex-end;gap:12px;padding:14px 18px 0;flex-wrap:wrap}
 .mcbar .field{margin-bottom:0}
 .mcbar .hint{flex:1 1 160px;min-width:0}
-.signflip{background:transparent;border:0;color:var(--dimmer);font-size:14px;
-  padding:0 8px;cursor:pointer;flex:none;line-height:1;box-shadow:none;
-  transition:color .14s ease}
-.signflip:hover{color:var(--text)}
-.signflip.on{color:var(--ds-loss)}
 
 /* ---------- optional toggles ---------- */
 .adjrow,.field label.adjrow{display:flex;margin-bottom:0;align-items:center;gap:6px;min-width:0;margin-top:6px;font-size:11.5px;
@@ -78,20 +73,10 @@
 .stagecard .glidewrap{margin-top:13px;margin-bottom:0}
 /* Phones get the glide toggle in the field grid (see stageGlideBtn). */
 .stagegrid > .stageglide{display:none}
-.stageglide .glidebtn{align-self:stretch}
-.glidebtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
-  background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-well);
-  padding:9px 10px;cursor:pointer;font-family:var(--sans);font-size:12.5px;
-  color:var(--dim);box-shadow:none;
-  transition:border-color .14s ease,background .14s ease}
-.glidebtn:hover,.glidebtn.on{border-color:var(--ds-rule-strong)}
-.glidebtn-check{width:16px;height:16px;flex:none;border-radius:5px;
-  border:1.5px solid var(--dimmer);position:relative;
-  transition:background .16s ease,border-color .16s ease}
-.glidebtn.on .glidebtn-check{background:var(--text);border-color:var(--text)}
-.glidebtn.on .glidebtn-check::after{content:"";position:absolute;left:4.5px;top:1.5px;
-  width:4px;height:8px;border:solid var(--panel);border-width:0 2px 2px 0;
-  transform:rotate(40deg)}
+.stageglide [data-slot=toggle]{align-self:stretch}
+/* The box in a check toggle (components/ui/toggle.tsx); the class is the
+   hook the old markup had. */
+.glidebtn-check{flex:none}
 .glidebtn-txt{flex:1 1 auto;min-width:0;display:flex;align-items:center}
 .glidefields{margin-top:8px;padding:10px 10px 2px;background:var(--panel-2);
   border:1px solid var(--line);border-radius:var(--r-well);
@@ -101,7 +86,7 @@
    button over a stacked panel. Phones keep the stacked layout. */
 @media (min-width:641px){
   .stagecard .glidewrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .stagecard .glidewrap > .glidebtn{width:auto;flex:none;padding-right:14px}
+  .stagecard .glidewrap > [data-slot=toggle]{width:auto !important;flex:none;padding-right:14px !important}
   .stagecard .glidefields{margin:0;padding:0;background:none;border:0;
     flex:1 1 420px;min-width:0;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px 14px}
   .stagecard .glidefields .two{display:flex;gap:14px;flex:none;margin:0}

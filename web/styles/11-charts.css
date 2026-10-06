@@ -10,13 +10,6 @@ svg{display:block;width:100%;height:auto}
   flex-wrap:wrap}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;
   vertical-align:0}
-/* Entries that show or hide a layer of the chart (lgToggle): they look like
-   the other entries, and fade with the swatch struck through when off. */
-.legend .lgtoggle{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;
-  cursor:pointer;border-radius:4px;transition:opacity .15s}
-.legend .lgtoggle:hover{color:var(--text)}
-.legend .lgtoggle:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px}
-.legend .lgtoggle[aria-pressed="false"]{opacity:.45;text-decoration:line-through}
 .hide-traces .traces{display:none}
 .tip{position:absolute;pointer-events:none;background:var(--pop);color:var(--text);
   border:1px solid var(--line);padding:10px 13px;border-radius:var(--r-card);font-size:11.5px;
@@ -96,7 +89,7 @@ svg{display:block;width:100%;height:auto}
   .toolcard-name{font-size:14px}
   .stagegrid{grid-template-columns:1fr 1fr}
   .stagegrid > .stageglide:not(.even){display:grid}
-  .stagecard:has(.stageglide:not(.even)) .glidewrap > .glidebtn{display:none}
+  .stagecard:has(.stageglide:not(.even)) .glidewrap > [data-slot=toggle]{display:none !important}
   .stagecard:has(.stageglide:not(.even)) .glidewrap:has(> .glidefields[hidden]){display:none}
   .stagecard{padding:12px}
   #stageTable{min-width:640px}
@@ -236,7 +229,6 @@ html.pwa .popup-overlay{
      rather than overflowing an invisible pad, which would have sat on top of
      the field beside them and stolen taps meant for it. */
   .bgrow .delspace,.dtrow .delspace,.dthead .delspace{width:40px}
-  .signflip{padding:0 13px}
   .toolcard:hover::before{transform:scaleY(0)}
 }
 /* Home-screen web app runs under the clock and battery, so reserve that space.

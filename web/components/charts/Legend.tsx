@@ -1,6 +1,7 @@
 /* Chart legends and the horizontal share bars. From swatch() in
    src/js/app/04-charts.js and bar() in 11-income-tax.js. */
 import { money } from "@/lib/format";
+import { Toggle } from "@/components/ui/toggle";
 import { BAND_INNER, SERIES, baseColor, hatchClass } from "@/lib/hues";
 
 export function Legend({ id, items, children }: { id?: string; items: [color: string, label: string][]; children?: React.ReactNode }) {
@@ -17,9 +18,9 @@ export function Legend({ id, items, children }: { id?: string; items: [color: st
 /** A legend entry that shows or hides a layer of the chart. */
 export function LegendToggle({ color, label, on, onToggle }: { color: string; label: string; on: boolean; onToggle: () => void }) {
   return (
-    <button type="button" className="lgtoggle" aria-pressed={on} title="Show or hide on the chart" onClick={onToggle}>
+    <Toggle variant="legend" pressed={on} title="Show or hide on the chart" onClick={onToggle}>
       <i className={"bg-(--swatch)" + hatchClass(color)} style={{ "--swatch": baseColor(color) } as React.CSSProperties}></i>{label}
-    </button>
+    </Toggle>
   );
 }
 
