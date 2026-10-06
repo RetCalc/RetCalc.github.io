@@ -121,31 +121,14 @@ today, which the redesign doesn't do.
 
 ## Planned
 
-### Masthead controls in the pinned tab rail, site-wide
+### Masthead controls in the pinned tab rail, site-wide (done)
 
-Approved 2026-10-06 after trying it on the homepage (commit 5a18669); not
-built for the other pages yet. On desktop, once the tab rail is pinned and
-the masthead has scrolled away, the scenario picker, Save/Share/Reset and
-the household and theme buttons move into the rail's empty right side,
-centered on it, and return to the masthead when you scroll back up.
-
-- How it's built today: CSS only, in `web/styles/01-masthead-layout.css`.
-  While `.navbar.stuck` is on the page, `.scenariobar` is fixed into the
-  rail's right edge (aligned to the 1330px measure) and the header, which
-  is its own stacking layer, lifts above the rail. Same elements and ids,
-  so menus, dialogs and the e2e checks see nothing new.
-- Rolling it out: drop the homepage-only `:has(#tab-simple)` from both
-  rules (the rule and the header lift), so it applies wherever the rail
-  pins. DESIGN.md's Navigation section already describes it site-wide.
-- To check on the way: pages whose masthead shows fewer controls (no
-  scenario picker), the tool pages' header, the Guide's pinned progress
-  card (which also sits under the rail), the installed web app (its rail
-  is a bottom bar, so this should stay off there), and widths around
-  1024px where the tabs and controls come closest (about 190px apart on
-  the homepage).
-- Open: the controls are 36px tall in a 44px rail, which reads snug.
-  Either shrink them while they ride in the rail or give the pinned rail a
-  few more pixels; decide when it goes site-wide.
+Applied to every page on 2026-10-06 (the homepage-only scope dropped).
+Checked scrolled at 1440 and 1024px, dark and light, on the homepage,
+Advanced, Stages, Drawdown, Income Tax, Guide, Tools, About and a strategy
+page: fixed in the rail, visible, at least 166px clear of the last tab.
+Compare is too short to pin the rail, so it never moves there. The snug
+fit (36px controls in a 44px rail) is still open.
 
 ## Design decisions from the homepage review (2026-10-06)
 
