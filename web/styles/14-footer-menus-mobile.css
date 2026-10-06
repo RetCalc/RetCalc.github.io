@@ -51,7 +51,7 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
 .selmenu-i[aria-selected="true"] .n{color:var(--text);font-weight:600}
 .selmenu-i[aria-selected="true"]::after{opacity:1}
 .selmenu-i:disabled{opacity:.4;cursor:default;background:transparent}
-.selscrim{position:fixed;inset:0;z-index:119;background:rgba(3,5,12,.55);animation:selscrim-in .16s ease}
+.selscrim{position:fixed;inset:0;z-index:119;background:var(--ds-scrim);animation:selscrim-in .16s ease}
 @keyframes selscrim-in{from{opacity:0}to{opacity:1}}
 .selmenu.sheet{left:0;right:0;bottom:0;top:auto;width:auto;min-width:0;max-width:none;max-height:72vh;
   padding:0 10px calc(12px + env(safe-area-inset-bottom,0px));border-radius:18px 18px 0 0;

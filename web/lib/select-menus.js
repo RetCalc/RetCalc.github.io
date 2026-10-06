@@ -86,13 +86,17 @@ export function initSelectMenus(){
   function open(sel, touched){
     if (cur){ const same = cur.sel === sel; close(false); if (same) return; }
     const m = build(sel), sheet = m.classList.contains("sheet");
+    // Inside an open dialog the list goes in the dialog, so a press on it
+    // isn't a click outside (which closes the dialog) and focus can reach it.
+    // It's placed in viewport coordinates, so it lands in the same spot.
+    const host = sel.closest("[role=dialog]") || document.body;
     let scrim = null;
     if (sheet){
       scrim = document.createElement("div"); scrim.className = "selscrim";
       scrim.addEventListener("click", () => close(true));
-      document.body.appendChild(scrim);
+      host.appendChild(scrim);
     }
-    document.body.appendChild(m);
+    host.appendChild(m);
     cur = {sel, menu:m, scrim, sheet, touched:!!touched};
     sel.setAttribute("aria-expanded", "true");
     place();
@@ -132,7 +136,9 @@ export function initSelectMenus(){
     else if (e.key === "End") go(items.length - 1);
     else if (e.key === "PageDown") go(at + 8);
     else if (e.key === "PageUp") go(at - 8);
-    else if (e.key === "Escape" || e.key === "Tab"){ e.preventDefault(); close(true); }
+    // Escape closes only the list, not a dialog it's in: the dialog hears a
+    // second Escape.
+    else if (e.key === "Escape" || e.key === "Tab"){ e.preventDefault(); e.stopPropagation(); close(true); }
     else if (e.key === "Enter" || e.key === " "){ e.preventDefault(); if (at >= 0) choose(+items[at].dataset.i); }
     else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey){
       // type to jump, as a native list does
@@ -166,13 +172,15 @@ export function initSelectMenus(){
     e.preventDefault();
     open(sel, true);
   }, {passive:false});
+  // In the capture phase: a dialog stops arrow keys from bubbling past it,
+  // and ArrowDown on a select inside one should still open the list.
   document.addEventListener("keydown", e => {
     if (cur || !usable(e.target) || e.ctrlKey || e.metaKey) return;
     const k = e.key;
     if (k === "Enter" || k === " " || k === "F4" || k === "ArrowDown" || k === "ArrowUp"){
       e.preventDefault(); open(e.target);
     }
-  });
+  }, true);
   window.addEventListener("resize", () => { if (cur && !cur.sheet) close(false); });
   document.addEventListener("scroll", e => {
     if (cur && !cur.sheet && !cur.menu.contains(e.target)) requestAnimationFrame(place);

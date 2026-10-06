@@ -1,67 +1,36 @@
 "use client";
 
-/* A dialog over the page: Escape or a click outside closes it, Tab stays
-   inside it, and focus goes back to whatever opened it. The menu popup, the
-   contribution converter and the per-account growth rates all use it. From
-   wireModal() in src/js/app/23-scenarios.js. */
+/* A dialog over the page: shadcn's Dialog (components/ui/dialog.tsx, Base
+   UI). Escape or a click outside closes it, Tab stays inside it, and focus
+   goes back to whatever opened it. Focus is kept in without locking the
+   page's scroll ("trap-focus"), as before. The menu popup, the
+   contribution converter, the per-account growth rates and the Drawdown
+   and Backtest dialogs all use it. From wireModal() in
+   src/js/app/23-scenarios.js. */
 
-import { useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import { useRef } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-
-const FOCUSABLE = "button,select,input,textarea,a[href],[tabindex]:not([tabindex='-1'])";
 
 interface Props {
   onClose: () => void;
-  className?: string;
-  /** What gets focus when it opens (a selector inside the dialog). */
+  size?: "default" | "wide" | "guide" | "study";
+  /** What gets focus when it opens (a selector inside the dialog); a text
+      field's contents are selected too. */
   focus?: string;
   children: React.ReactNode;
 }
 
-export function Modal({ onClose, className = "popup", focus, children }: Props) {
+export function Modal({ onClose, size, focus, children }: Props) {
   const pop = useRef<HTMLDivElement>(null);
-  const close = useRef(onClose);
-  useEffect(() => {
-    close.current = onClose;
-  });
-  useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null;
-    const first = focus ? pop.current?.querySelector<HTMLElement>(focus) : null;
-    first?.focus({ preventScroll: true });
-    if (first instanceof HTMLInputElement) first.select();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        close.current();
-        return;
-      }
-      if (e.key !== "Tab" || !pop.current) return;
-      const items = [...pop.current.querySelectorAll<HTMLElement>(FOCUSABLE)]
-        .filter((el) => !(el as HTMLButtonElement).disabled && el.offsetParent !== null);
-      if (!items.length) return;
-      const a = items[0], z = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === a) {
-        e.preventDefault();
-        z.focus();
-      } else if (!e.shiftKey && document.activeElement === z) {
-        e.preventDefault();
-        a.focus();
-      }
-    };
-    document.addEventListener("keydown", onKey, true);
-    return () => {
-      document.removeEventListener("keydown", onKey, true);
-      opener?.focus?.();
-    };
-  }, [focus]);
-  /* Rendered at the end of <body>: inside <main>, its stacking context would
-     hold the dialog under the sticky tab bar. */
-  return createPortal(
-    <div className="popup-overlay" onClick={(e) => e.target === e.currentTarget && close.current()}>
-      <div className={className} role="dialog" aria-modal="true" ref={pop}>{children}</div>
-    </div>,
-    document.body,
+  return (
+    <Dialog open modal="trap-focus" onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent size={size} ref={pop} initialFocus={() => {
+        const first = focus ? pop.current?.querySelector<HTMLElement>(focus) : null;
+        if (first instanceof HTMLInputElement) requestAnimationFrame(() => first.select());
+        return first ?? true;
+      }}>{children}</DialogContent>
+    </Dialog>
   );
 }
 

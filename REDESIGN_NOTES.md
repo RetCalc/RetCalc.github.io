@@ -87,6 +87,15 @@ The hatches are SVG patterns whose stripes use the screen's surface color,
 so on the card they take whatever theme the page was in: settle that in
 the share/print pass.
 
+### Drawdown: "Retiring in" has no options until the comparison finishes
+
+Found 2026-10-06. On the Compare strategies view, #ddSpotYear is empty
+until the strategy comparison has run, so for a moment it can't be opened
+(by keyboard or pointer) and shows nothing. Worth a placeholder ("Working
+it out…") or a disabled state while it fills.
+
+## Fixed
+
 ### Escape inside a dialog's select list also closes the dialog
 
 Found 2026-10-06 (keyboard test of the selects; also on 1e59077, so not
@@ -98,9 +107,7 @@ stop the event, so the dialog's own Escape handler (components/shell/
 Modal.tsx) runs too. Fix in the overlays batch: Escape should close only
 the innermost layer.
 
-### Drawdown: "Retiring in" has no options until the comparison finishes
-
-Found 2026-10-06. On the Compare strategies view, #ddSpotYear is empty
-until the strategy comparison has run, so for a moment it can't be opened
-(by keyboard or pointer) and shows nothing. Worth a placeholder ("Working
-it out…") or a disabled state while it fills.
+Fixed 2026-10-06 with the move to shadcn's Dialog: the list now stops its
+own Escape (and Tab) from reaching the dialog, and inside a dialog it opens
+in the dialog rather than on <body>. Escape closes the list and focus goes
+back to the select; a second Escape closes the dialog.

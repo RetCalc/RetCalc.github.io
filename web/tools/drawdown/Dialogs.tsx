@@ -64,7 +64,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
     close();
   };
   return (
-    <Modal className="popup wide" onClose={close} focus="[data-mix]">
+    <Modal size="wide" onClose={close} focus="[data-mix]">
       <h3>Asset mix</h3>
       <div className="formhint" id="ddMixLead">{(g > 0 ? "How the " + money(o.initial * (1 - G.share)) + " that stays invested is split." : "How the portfolio is split at retirement.") +
         " Returns are each asset's actual history from July 1926."}</div>
@@ -108,7 +108,7 @@ function GuideDialog({ v, close }: { v: DDView; close: () => void }) {
   const when = w ? (w.month !== 1 ? MON[w.month - 1] + " " : "") + w.year : "";
   const byKey = Object.fromEntries((DD_GUIDE as GuideEntry[]).map((g) => [g.k, g]));
   return (
-    <Modal className="popup guide" onClose={close} focus="[data-modal-x]">
+    <Modal size="guide" onClose={close} focus="[data-modal-x]">
       <ModalTop title="How the withdrawal strategies compare" onClose={close} />
       <p className="sg-intro">Every strategy trades a steady income against protection from running out.
         Rules that never cut spending can run dry in a bad decade; rules that follow the market can&apos;t run out,
@@ -167,7 +167,7 @@ function StudyDialog({ v, close }: { v: DDView; close: () => void }) {
     toast("Loaded " + U.title.replace(/ \(.*\)$/, "") + "'s setup");
   };
   return (
-    <Modal className="popup wide ddstudypop" onClose={close} focus="[data-modal-x]">
+    <Modal size="study" onClose={close} focus="[data-modal-x]">
       <ModalTop title="Classic studies, reproduced" onClose={close} />
       <div className="formhint">Each study set up as the paper did, run on this record: stocks, bonds and inflation since 1926. What the paper found, and what the simulator finds.</div>
       {found.map(({ S, f }) => {
@@ -222,7 +222,7 @@ function ItemDialog({ v, list, index, close }: { v: DDView; list: "incomeItems" 
     if (index == null) toast("Added " + item.name);
   };
   return (
-    <Modal className="popup wide" onClose={close} focus="#itName">
+    <Modal size="wide" onClose={close} focus="#itName">
       <h3>{(existing ? "Edit " : "Add ") + (isIncome ? "income source" : "future expense")}</h3>
       <div className="formhint">{isIncome ? "A pension, rental property, part-time work, an inheritance: anything that offsets what you'd otherwise withdraw."
         : "A car, a boat, long-term care costs: anything on top of your regular spending."}</div>

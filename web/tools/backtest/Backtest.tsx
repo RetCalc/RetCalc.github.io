@@ -285,7 +285,7 @@ function MixDialog({ s, close, save }: { s: BacktestInputs; close: () => void; s
   const up = (k: keyof MixForm) => (v: string) => setF((c) => ({ ...c, [k]: v }));
   const ok = mixOk(f);
   return (
-    <Modal className="popup wide" onClose={close} focus="[data-mix]">
+    <Modal size="wide" onClose={close} focus="[data-mix]">
       <h3>Asset mix</h3>
       <div className="formhint">How the portfolio is split at the start, and what each rebalance returns it to. Each holding earns its actual returns; small value and cash start in July 1926, so a mix with either starts in 1927.</div>
       <MixRows f={f} up={up} totId="btMixTot" />

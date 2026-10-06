@@ -1,15 +1,7 @@
 /* ---------- popups: floating above the deck ---------- */
-.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;
-  display:flex;align-items:flex-start;justify-content:center;padding:20px;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-  animation:ovFade .16s ease}
+/* Dialogs are components/ui/dialog.tsx; these are their entrances, and the
+   rules below style what goes in them. */
 @keyframes ovFade{from{opacity:0}to{opacity:1}}
-.popup{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-bezel);
-  padding:22px 24px 18px;max-width:340px;width:100%;box-shadow:var(--lift-2);
-  /* auto margins centre it while it fits and release it to scroll once it
-     doesn't, which align-items:center could not do */
-  margin:auto;
-  animation:popIn .2s cubic-bezier(.2,.8,.3,1)}
 @keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.98)}
   to{opacity:1;transform:none}}
 .popup h3{margin:0 0 14px;font-size:15.5px;color:var(--text);font-weight:600;
@@ -22,10 +14,6 @@
 .popup .popbtn:hover{border-color:var(--line-hi);background:var(--panel-2)}
 .popup .popbtn .subdesc{display:block;font-size:11.5px;color:var(--dim);margin-top:3px}
 .popup .popbtn .subdesc.money{font-family:var(--mono);font-size:13px;color:var(--text);font-weight:600}
-.popup.wide{max-width:420px}
-/* The strategy guide: a reading pop-up, wide enough for pros and cons side by side. */
-.popup.guide{max-width:780px;padding:22px 26px 20px}
-.popup.ddstudypop{max-width:640px}
 .sg-top{display:flex;align-items:flex-start;gap:12px}
 .sg-top h3{margin:0 0 8px;flex:1 1 auto;font-size:17px}
 .sg-intro,.sg-foot{font-size:13px;color:var(--dim);line-height:1.55;margin:0 0 16px}
@@ -53,7 +41,6 @@
 .sg-spark .ddspark{height:36px;margin-top:0}
 .sg-spark span{display:block;font-size:11px;color:var(--dimmer);margin-top:2px}
 @media (max-width:640px){
-  .popup.guide{padding:18px 16px}
   .sg-pc{grid-template-columns:1fr}
   .sg-item.sg-cur{margin-left:-10px;padding-left:8px}
   .sg-cmp{min-width:520px}

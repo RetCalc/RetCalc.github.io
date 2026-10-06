@@ -34,7 +34,7 @@ export function ConverterDialog({ title, amount, period, apply, onClose }: {
   const [per, setPer] = useState(PER_YEAR[period] ? period : "Monthly");
   const annual = parseNum(amt) * PER_YEAR[per];
   return (
-    <Modal className="popup wide" onClose={onClose} focus="#convAmt">
+    <Modal size="wide" onClose={onClose} focus="#convAmt">
       <ModalTop title={title} onClose={onClose} />
       <div className="formhint">See what a contribution comes to at each frequency, then apply the one that matches how you save.</div>
       <div className="two">
@@ -82,7 +82,7 @@ export function GrowthRatesDialog({ title, init, blend, apply, note, onClose }: 
     apply(r);
   };
   return (
-    <Modal className="popup wide" onClose={onClose} focus="#gr_t">
+    <Modal size="wide" onClose={onClose} focus="#gr_t">
       <ModalTop title={title} onClose={onClose} />
       <div className="formhint">How much each account&apos;s contribution rises each year. The contribution growth field shows the blend: the single rate that ends at the same total.{note ? " " + note : ""}</div>
       {row("t", "Traditional")}{row("r", "Roth")}{row("b", "Taxable brokerage")}
