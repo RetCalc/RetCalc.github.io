@@ -343,7 +343,7 @@ The site should feel alive in small ways: a tool icon that acts out what it does
 ### Rules
 - **Timing:** 150 to 250ms per animation, staggered parts included, easing `cubic-bezier(.2,.7,.3,1)`. The brand motif has its own timings (see Brand Motif).
 - **Properties:** transform and opacity only. No animating width, height, left/top, margins, or stroke drawing; nothing that shifts layout.
-- **Never in the way:** an animation never blocks or delays interaction. Content is clickable and readable the moment it appears; nothing waits for an animation to finish.
+- **Never in the way:** an animation never blocks or delays interaction. Content is clickable and readable the moment it appears; nothing waits for an animation to finish. The one exception is the Plan Optimizer's minimum flight, which is deliberate and can always be skipped (see Brand Motif).
 - **No endless loops,** except loading states.
 - **Every input gets it:** an animation that plays on hover also plays on keyboard focus (`:focus-visible`) and on tap. Nothing is hover-only.
 - **Reduced motion:** under `prefers-reduced-motion: reduce`, every animation becomes a plain color or border change (for a tool card: the icon tile's border turns Muted and the name turns Text). Nothing moves.
@@ -392,8 +392,13 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 
 ### Rules
 - **Real progress.** On the Guide, the arrow's position reflects real progress through the steps, alongside a visible step label ("Step 3 of 8"). The bar is exposed as `role="progressbar"` with `aria-valuemin`, `aria-valuemax`, `aria-valuenow` and an `aria-valuetext` that matches the step label.
-- **Never delays results.** On the Plan Optimizer, the animation follows the real search and never holds back the answer. It loops only when real progress isn't available, and the final shot lands as the results appear, not before them.
-- **A quick hit.** The target-hit moment (impact, the target's reaction, the arrow settling) is over in under 400ms.
+- **The Optimizer's minimum flight is intentional.** Every run shows a full shot, lasting at least 5 seconds, even when the search finishes sooner. It signals that the calculation is doing real work. Around that minimum:
+  - **Skippable:** a tap or click on the loader, Enter, or Escape skips to the results at any time. If the search has finished, they show at once; if not, they show the moment it does. The Stop button still cancels the search.
+  - **Reduced motion:** under `prefers-reduced-motion`, there is no flight. The results show as soon as the search finishes.
+  - **No extra hold:** if the real search takes longer than the minimum, the arrow lands when it finishes, and only the target-hit moment (about 400ms) comes between landing and results. Nothing else is added.
+  - **Shorter after the first run:** after the first run in a session, the minimum drops to about 2 seconds.
+  - **Real progress:** the arrow follows the real search within the minimum. It loops only when real progress isn't available, and the final shot lands as the results appear.
+- **A quick hit.** The target-hit moment (impact, the target's reaction, the arrow settling) is over in under 400ms, on both the Guide and the Optimizer.
 - **Phones.** The motif scales down cleanly: smaller bow, arrow and target, nothing clipped, the track still readable.
 - **Reduced motion.** `prefers-reduced-motion` removes the flight and the bounce: the arrow simply jumps to its position, and the target changes color on hit.
 - **Colors.** Bow and arrow in Text; the track in Rule; the target's rings in Muted; the bullseye in Signal Amber at the moment it is hit (the one approved exception to the Four Places Rule).
@@ -404,11 +409,11 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 - **Progress:** real. The position comes from completed steps per chapter, and "Step N of M" shows in the header. It is not exposed as a progress bar: the track is `aria-hidden`, and only the chapter buttons carry labels ("Chapter: 2 of 4 done").
 - **Colors today:** limb jade, string steel, arrow and streak gold, target dim until it turns gold on hit.
 - **Phones:** the bow scales to 75% and the chapter names hide.
-- **Reduced motion:** transitions and keyframes are off, so the arrow jumps; this already matches the rule.
+- **Reduced motion:** transitions and keyframes are off, so the arrow jumps and the target just changes color; this already matches the rule.
 - **Rough edges:**
   - It animates `left`, a layout property, for 0.7s.
   - The position math is full of fixed pixel offsets (46px, 6px per chapter, 18px, 28px), so the arrow and the fill can disagree at some widths.
-  - The hit takes about 1.35s, including the 0.65s delay.
+  - The hit takes about 1.35s, including the 0.65s delay, against the 400ms rule.
   - The streak is a gradient, and the burst ring is decoration.
   - The chapter fills grow by animating `width`.
   - There's no `progressbar` role.
@@ -416,18 +421,20 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 ### Plan Optimizer loading bar (today)
 - **Where:** `web/tools/optimizer/Progress.tsx` (the animation loop), `web/tools/optimizer/run.ts` (timings and worker messages), styles in `web/styles/15-optimizer.css` (`.op-run`, `.op-bow`, `.op-lane`, `.op-fill`, `.op-trail`, `.op-arrow`, `.op-target`).
 - **How it's built:** inline SVGs (the same bow, arrow and target, larger), driven by a `requestAnimationFrame` loop. The string draws back over 700ms, rewriting its path every frame, and holds for 260ms before the release. In flight the arrow is placed with `left: calc(var(--p) * 100%)` and the fill's `width` follows; the arrow bobs on an endless loop. On the hit, the arrow sticks and quivers, the target jolts, two rings burst (gold and jade) and the fill glows; 1.15s later the results replace the bar and reveal themselves with a stagger of up to about 0.9s.
-- **Progress:** real but held back. The engine worker reports a real fraction, but the arrow can't outrun a clock that runs for at least 5 seconds after the release (`OP_MIN_MS`), and the counters ("plans tried", "retirements simulated", "best so far") follow the arrow rather than the search. A search that finishes in one second still shows about six seconds of animation before the answer. If the page isn't being watched (another tab), the answer is shown at once.
+- **Progress:** real, paced by the minimum. The engine worker reports a real fraction, and the arrow follows it but can't outrun a clock that runs for at least 5 seconds after the release (`OP_MIN_MS`, the intentional minimum). The counters ("plans tried", "retirements simulated", "best so far") follow the arrow rather than the search. If the page isn't being watched (another tab), the answer is shown at once. The Stop button cancels the search and discards it; nothing skips to the results.
 - **Colors today:** limb jade, string steel, arrow and trail gold, fill a jade gradient that glows on the hit, target dim until it turns gold, "best so far" in gold.
 - **Phones:** below 560px the bow, arrow and target shrink and the lane shortens.
 - **Reduced motion:** keyframes off and the trail hidden, but the scripted draw-back, the eased flight and the five-second minimum all still run.
 - **Rough edges:**
-  - The deliberate minimum and the hold after the hit delay the results, which breaks the never-delays rule.
+  - The 1.15s wait after the hit is about three times the ~400ms target-hit moment.
+  - Nothing skips to the results: no tap, click, Enter or Escape.
+  - The minimum is the full 5 seconds on every run, not about 2 seconds after the first.
   - It animates `left` and `width`.
   - The bob and the tension shake loop endlessly even though real progress is available.
   - It uses gradients and a glow, and the burst rings are decoration.
   - The "best so far" figure in gold is a fifth amber place.
   - The whole block is an `aria-live` region, so screen readers may hear every counter change.
-  - Under reduced motion it still waits.
+  - Under reduced motion it still runs the scripted flight and waits out the minimum, instead of showing results at once.
 
 ## Do's and Don'ts
 

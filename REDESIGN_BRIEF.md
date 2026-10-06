@@ -105,6 +105,17 @@ Logo (light mode only; dark keeps today's #e9b872 / #4fbf95 / #7d9fd6)
 - The Plan Optimizer's bow-and-arrow loading bar (the bow shoots at the
   target while the search runs). Both follow DESIGN.md's Brand Motif
   rules.
+- The Optimizer's 5-second minimum flight is intentional: it shows a full
+  shot and signals that the calculation is doing real work. Keep it, with
+  these rules:
+  - Tap, click, Enter or Escape skips to the results at any time.
+  - Under prefers-reduced-motion, show the results immediately, with no
+    flight.
+  - If the real search runs past the minimum, add no hold beyond the
+    target-hit moment (about 400ms); the current 1.15s wait after the
+    hit shortens to match.
+  - After the first run in a session, the minimum drops to about 2
+    seconds.
 
 ## Hard constraint
 Change only styling, layout, and markup. Do not modify any calculation,
