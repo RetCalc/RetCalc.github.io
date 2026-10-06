@@ -65,6 +65,7 @@ Logo (light mode only; dark keeps today's #e9b872 / #4fbf95 / #7d9fd6)
 - Text 4.5:1 contrast minimum in both modes, including text on tinted
   pills. Write a contrast-check script for every text/background pair
   and fix failures.
+  The script: node scripts/contrast/contrast.mjs check (from web/).
 - Tabular numerals on every number.
 - Font: start with IBM Plex Sans; propose a better one only if it
   clearly helps.

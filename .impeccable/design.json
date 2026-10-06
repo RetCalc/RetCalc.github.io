@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-06T15:38:33.488Z",
+  "generatedAt": "2026-10-06T15:39:44.580Z",
   "title": "Design System: RetCalc",
   "extensions": {
     "colorMeta": {
@@ -783,7 +783,7 @@
       },
       {
         "name": "The 4.5 Rule",
-        "body": "Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way. Non-text marks that carry meaning (control edges, chart lines, the logo) clear 3:1.",
+        "body": "Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way. Non-text marks that carry meaning (control edges, chart lines, the logo) clear 3:1. `node scripts/contrast/contrast.mjs check` (from `web/`) checks every pair against the tokens in this file.",
         "section": "colors"
       },
       {

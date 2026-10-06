@@ -222,7 +222,7 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 
 **The Never Alone Rule.** Color never carries meaning by itself. Gain and loss always pair with a sign or arrow glyph and a word or column header that says what it is ("Lasted", "Ran out", "Growth").
 
-**The 4.5 Rule.** Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way. Non-text marks that carry meaning (control edges, chart lines, the logo) clear 3:1.
+**The 4.5 Rule.** Every text/background pair, in both modes, including text on tinted pills and badges, clears 4.5:1. A contrast-check script covers every pair and runs before a page is called done. As checked on 2026-10-06, every plain pair passes (the tightest is Signal Amber Deep on Paper Raised, 4.51:1); semantic text on a semantic tint passes only at a 15% tint on Surface, which is why badges are specified that way. Non-text marks that carry meaning (control edges, chart lines, the logo) clear 3:1. `node scripts/contrast/contrast.mjs check` (from `web/`) checks every pair against the tokens in this file.
 
 ## Typography
 
