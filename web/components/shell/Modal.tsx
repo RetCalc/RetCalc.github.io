@@ -6,6 +6,7 @@
    wireModal() in src/js/app/23-scenarios.js. */
 
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 
 const FOCUSABLE = "button,select,input,textarea,a[href],[tabindex]:not([tabindex='-1'])";
@@ -27,7 +28,7 @@ export function Modal({ onClose, className = "popup", focus, children }: Props) 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     const first = focus ? pop.current?.querySelector<HTMLElement>(focus) : null;
-    first?.focus();
+    first?.focus({ preventScroll: true });
     if (first instanceof HTMLInputElement) first.select();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -54,16 +55,19 @@ export function Modal({ onClose, className = "popup", focus, children }: Props) 
       opener?.focus?.();
     };
   }, [focus]);
-  return (
+  /* Rendered at the end of <body>: inside <main>, its stacking context would
+     hold the dialog under the sticky tab bar. */
+  return createPortal(
     <div className="popup-overlay" onClick={(e) => e.target === e.currentTarget && close.current()}>
       <div className={className} role="dialog" aria-modal="true" ref={pop}>{children}</div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
 /** A dialog's title row, with its close button. */
 export function ModalTop({ title, onClose }: { title: React.ReactNode; onClose: () => void }) {
   return (
-    <div className="sg-top"><h3>{title}</h3><Button variant="ghost" size="icon-sm" className="-mt-1 -mr-2" aria-label="Close" onClick={onClose}>&times;</Button></div>
+    <div className="sg-top"><h3>{title}</h3><Button variant="ghost" size="icon-sm" className="-mt-1 -mr-2" aria-label="Close" data-modal-x onClick={onClose}>&times;</Button></div>
   );
 }

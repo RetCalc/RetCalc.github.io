@@ -24,6 +24,9 @@ import { BUDGET_DEF, PRESET_DESCS, budgetTotals, isSavingsRow, type BudgetRow } 
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 export function Budget() {
@@ -87,18 +90,18 @@ export function Budget() {
 
   return (
     <div className="stack" id="tab-budget">
-      <div className="panel">
+      <Card size="flush">
         <div className="headline">
           <Figure label="Income, after taxes" id="bgIncome" value={money(incomeYr)} noteId="bgIncomeNote" note="Per year" />
           <Figure label="Total spending" id="bgSpent" value={money(spentYr)} noteId="bgSpentNote" note="Per year" />
           <Figure label="Left over" id="bgLeft" className={sign} value={money(leftYr)} noteId="bgLeftNote"
             note={incomeYr > 0 ? (leftYr < 0 ? "Over budget by " : "") + pctStr(Math.abs(pct), 1) + (leftYr < 0 ? " of income" : " of income left") : "Enter your income to begin"} />
         </div>
-        <div className="body">
+        <CardContent>
           <div className="bgincome">
-            <label htmlFor="bgIncomeIn"><Tipped text="Income after taxes" k="bgincome" /></label>
+            <Label className="mb-1.5" htmlFor="bgIncomeIn"><span><Tipped text="Income after taxes" k="bgincome" /></span></Label>
             <div className="bgincome-row">
-              <Affixed prefix="$"><MoneyInput id="bgIncomeIn" nonNeg value={s.income} onValueChange={set("income")} /></Affixed>{" "}
+              <Affixed prefix="$" className="flex-auto basis-35"><MoneyInput id="bgIncomeIn" nonNeg value={s.income} onValueChange={set("income")} /></Affixed>{" "}
               <Segmented id="bgIncomeFreq" className="seg bgseg" attr="data-freq" options={[[1, "/yr"], [12, "/mo"]] as const} value={s.incomeFreq} onChange={set("incomeFreq")} />{" "}
               <Button variant="outline" id="bgCopyTax"
                 onClick={() => {
@@ -111,12 +114,12 @@ export function Budget() {
                 }}>Copy from Income Tax</Button>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="panel">
-        <h2>Your budget<span className="h2ctrl"><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></span></h2>
-        <div className="body">
+      <Card>
+        <CardHeader><CardTitle>Your budget</CardTitle><CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction></CardHeader>
+        <CardContent>
           <div id="bgList" ref={listRef}>
             {groups.map((g) => (
               <div className="bggroup" key={g.name}>
@@ -124,7 +127,7 @@ export function Budget() {
                 {g.rows.map(({ r, i }) => (
                   <div className="bgrow" key={i}>
                     {r.custom ? (
-                      <input className="desc" data-f="desc" data-i={i} value={r.desc} placeholder="Description" aria-label="Item name" onChange={(e) => setRow(i, { desc: e.target.value })} />
+                      <div className="desc"><Input data-f="desc" data-i={i} value={r.desc} placeholder="Description" aria-label="Item name" onChange={(e) => setRow(i, { desc: e.target.value })} /></div>
                     ) : isSavingsRow(r) ? (
                       <span className="desc"><Tipped text={r.desc} k="bgsavings" /></span>
                     ) : (
@@ -150,7 +153,7 @@ export function Budget() {
                           setRow(i, { desc: raw || PRESET_DESCS[i] || r.desc });
                         }}>{r.desc}</span>
                     )}
-                    <Affixed prefix="$"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
+                    <Affixed prefix="$" className="w-32.5 flex-none sm:w-35"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
                     <Segmented className="seg bgseg" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
                     {r.custom ? (
                       <Button variant="ghost" size="icon-sm" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</Button>
@@ -199,29 +202,29 @@ export function Budget() {
                 toast("Added " + money(Math.round(mo)) + "/mo from College Savings");
               }}>+ College savings</Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="panel">
-        <div className="body">
+      <Card>
+        <CardContent>
           <div className="kv total text-body"><span className="k">Total spending, per year</span><span className="v" id="bgTotYr">{money(spentYr)}</span></div>
           <div className="kv total text-body"><span className="k">Total spending, per month</span><span className="v" id="bgTotMo">{money(spentYr / 12)}</span></div>
           <div className="kv total text-body" id="bgSaveRow" hidden={!(savedYr > 0)}><span className="k">Total saving, per month</span><span className="v pos" id="bgSaveMo">{savedYr > 0 ? money(savedYr / 12) : ""}</span></div>
           <div className="kv total text-body-lg"><span className="k">Left over, per year</span><span className={sign} id="bgLeftYr">{money(leftYr)}</span></div>
           <div className="kv total text-body-lg"><span className="k">Left over, per month</span><span className={sign} id="bgLeftMo">{money(leftYr / 12)}</span></div>
-        </div>
-      </div>
-      <div className="panel">
-        <h2>Emergency fund<TipDot k="emergency" /></h2>
-        <div className="body">
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle>Emergency fund<TipDot k="emergency" /></CardTitle></CardHeader>
+        <CardContent>
           <div className="efrow">
             <span>Target for</span>{" "}
             <Affixed suffix="mo" className="w-18"><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
             <span>of monthly expenses</span>
           </div>
           <div className="kv total mt-3"><span className="k" id="efLabel">{ef}-month emergency fund</span><span className="v gold" id="efTarget">{money((spentYr / 12) * ef)}</span></div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

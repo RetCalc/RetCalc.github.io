@@ -15,6 +15,7 @@ import { groupDigits, money, pctStr } from "@/lib/format";
 import { seen, type Host, type Result } from "./run";
 import { axisCompact, lowerFirst, opClaims, opCompact, opConvUntil, opFillName, opFillShort, opSigned, opTacticsLine, type PlanWho } from "./words";
 import { themed } from "@/lib/hues";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const OP_COLORS = { ss: "#7d9fd6", pension: "#e9b872", trad: "#e2795f", brok: "#a98fd6", roth: "#4fbf95" };
 type Src = keyof typeof OP_COLORS;
@@ -309,7 +310,7 @@ export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result;
   const [reveal] = useState(fresh);
   useEffect(() => seen(host), [host]);
   const wrap = (title: string, note: string, inner: React.ReactNode, cls = "") => host === "tool"
-    ? <div className={"panel op-p" + (cls ? " " + cls : "")}><h2>{title}{note ? <span className="h2note">{note}</span> : null}</h2><div className="body">{inner}</div></div>
+    ? <Card><CardHeader><CardTitle>{title}</CardTitle>{note ? <CardDescription>{note}</CardDescription> : null}</CardHeader><CardContent>{inner}</CardContent></Card>
     : <section className={"op-sec" + (cls ? " " + cls : "")}><div className="gd-h3">{title}{note ? <> <span className="op-note">{note}</span></> : null}</div>{inner}</section>;
   const sw = (k: string, cls: string | null, label: string) => <span key={k}><s className={cls ?? "bg-(--swatch)"} style={cls ? undefined : { "--swatch": themed(OP_COLORS[k as Src]) } as React.CSSProperties}></s>{label}</span>;
   const rb = res.best.detail.rows, r0 = res.base.detail.rows, used = (Object.keys(SRC_NAMES) as Src[]).filter((k) => rb.some((r) => r[k] > 1));

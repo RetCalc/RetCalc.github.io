@@ -35,6 +35,8 @@ import { useShareKit } from "@/components/shell/share";
 import { bridgeShare } from "./share";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
 const holdCls = (v: number) => (v >= 0.95 ? "pos" : v >= 0.8 ? "gold" : "neg");
@@ -120,9 +122,9 @@ export function Bridge() {
   return (
     <>
       <aside id="asideBR">
-        <div className="panel inputs">
-          <h2>Your situation</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your situation</CardTitle></CardHeader>
+          <CardContent>
             <div className="two">
               <NumberField id="brAge" label={<Tipped text="Retire at" k="brage" />} unit="age" max={59} value={s.age} onValueChange={set("age")} />
               <SelectField id="brStatus" label="Filing status" value={s.status} onChange={setStatus}>
@@ -156,7 +158,7 @@ export function Bridge() {
 
             <FieldHeading className="mt-2">Income</FieldHeading>
             <div className="two">
-              <MoneyField id="brWork" label={<>Part-time work <span className="opt">optional</span></>} unit="/yr" value={s.work} onValueChange={set("work")} />
+              <MoneyField id="brWork" label={<>Part-time work <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="/yr" value={s.work} onValueChange={set("work")} />
               <NumberField id="brWorkUntil" label="Until" unit="age" max={80} value={s.workUntil} onValueChange={set("workUntil")} />
             </div>
 
@@ -167,7 +169,7 @@ export function Bridge() {
             </SelectField>
             <div className="two" id="brAcaWrap" hidden={!aca}>
               <NumberField id="brHousehold" label="Household size" unit="people" max={10} value={s.household} onValueChange={set("household")} />
-              <Field id="brPremium" label={<>Benchmark premium <span className="tipglue"><span className="opt">optional</span><TipDot k="brpremium" /></span></>}>
+              <Field id="brPremium" label={<>Benchmark premium <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="brpremium" /></span></>}>
                 <Affixed prefix="$" suffix="/mo"><MoneyInput id="brPremium" nonNeg placeholder="estimate" value={s.premium} onValueChange={set("premium")} /></Affixed>
               </Field>
             </div>
@@ -194,20 +196,18 @@ export function Bridge() {
               <div><span>Most 72(t) could pay</span><span className="num" id="brSeppMax">{seppMax > 0 ? money(seppMax) + "/yr" : DASH}</span></div>
               <div><span><Tipped text="Average return, this mix" k="brsteady" /></span><span className="num" id="brSteadyRet">{pctStr(ctx.real, 1) + " real"}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-bridge">
         <Headline R={R} />
 
-        <div className="panel">
-          <h2>Ways to 59½<span className="h2note">click one to see it year by year</span>
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle>Ways to 59½</CardTitle><CardDescription>click one to see it year by year</CardDescription><CardAction>
               <Segmented id="segBR" attr="data-brmode" options={[["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />
               <CsvButton table={compareRef} label="Ways to 59½" />
-            </span>
-          </h2>
+            </CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll max-h-none">
             <table id="brCompare" ref={compareRef}>
@@ -220,36 +220,32 @@ export function Bridge() {
               ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
               pctStr(R.ctx.real, 1) + " real. “Holds” means reaching 59½ without running short or touching penalized money the plan didn't intend to." : ""}
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2 id="brAtTitle">{sel ? "What you'll have at 59½, " + lowerName(sel.name) : "What you'll have at 59½"}<span className="h2note">today&apos;s dollars</span>
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle id="brAtTitle">{sel ? "What you'll have at 59½, " + lowerName(sel.name) : "What you'll have at 59½"}</CardTitle><CardDescription>today&apos;s dollars</CardDescription><CardAction>
               <Segmented id="segBRPath" attr="data-brpath" options={PATHS} value={path} onChange={setPath} disabled={S ? (k) => !S[k] : undefined} />
-            </span>
-          </h2>
-          <div className="body">
+            </CardAction></CardHeader>
+          <CardContent>
             <div id="brAtOut">{R && S ? <AtTable ctx={R.ctx} S={S} path={path} /> : null}</div>
             <div className="br-send">
               <Button variant="outline" id="brToDD" onClick={toDrawdown}>Send to Drawdown Simulator</Button>{" "}
               <Button variant="outline" id="brToTax" onClick={toTax}>Send to Income Tax</Button>{" "}
               <TipDot k="brhandoff" title="Sending this to another tool" />
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2 id="brFlowTitle">{P ? "Where each year's money comes from, " + P.label : "Where each year's money comes from"}<span className="h2note">today&apos;s dollars</span></h2>
+        <Card>
+          <CardHeader><CardTitle id="brFlowTitle">{P ? "Where each year's money comes from, " + P.label : "Where each year's money comes from"}</CardTitle><CardDescription>today&apos;s dollars</CardDescription></CardHeader>
           <FlowChart rows={rows} aca={!!R?.ctx.aca} />
           <div className="hint pt-0 px-4.5 pb-3.5" id="brFlowNote">{R && P ? <FlowNotes ctx={R.ctx} P={P.run} rows={rows} /> : null}</div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2 id="brBalTitle">{balView === "hist" ? "Total balance, every start since " + HIST_START : P ? "Account balances, " + P.label : "Account balances"}<span className="h2note">today&apos;s dollars</span>
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle id="brBalTitle">{balView === "hist" ? "Total balance, every start since " + HIST_START : P ? "Account balances, " + P.label : "Account balances"}</CardTitle><CardDescription>today&apos;s dollars</CardDescription><CardAction>
               <Segmented id="segBRBal" attr="data-brbal" options={[["acct", "By account"], ["hist", "Across history"]] as const} value={balView} onChange={setBalView} />
-            </span>
-          </h2>
+            </CardAction></CardHeader>
           {balView === "hist" ? (
             <>
               <HistFan ctx={ctx} sel={R ? sel : null} tracesOn={tracesOn} />
@@ -258,12 +254,12 @@ export function Bridge() {
           ) : (
             <Balances ctx={ctx} rows={R ? rows : []} />
           )}
-        </div>
+        </Card>
 
         <Ladder rows={rows} ctx={ctx} tableRef={ladderRef} />
 
-        <div className="panel">
-          <h2 id="brTableTitle">{sel && P ? "Year by year, " + lowerName(sel.name) + ", " + P.label : "Year by year"}<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle id="brTableTitle">{sel && P ? "Year by year, " + lowerName(sel.name) + ", " + P.label : "Year by year"}</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="brTable" ref={tableRef}>
@@ -271,12 +267,12 @@ export function Bridge() {
               <tbody>{R ? <YearRows rows={rows} ctx={R.ctx} /> : null}</tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>The rules that shape this</h2>
-          <div className="body"><dl className="gloss" id="brRules">{R ? <Rules ctx={R.ctx} /> : null}</dl></div>
-        </div>
+        <Card>
+          <CardHeader><CardTitle>The rules that shape this</CardTitle></CardHeader>
+          <CardContent><dl className="gloss" id="brRules">{R ? <Rules ctx={R.ctx} /> : null}</dl></CardContent>
+        </Card>
       </div>
     </>
   );
@@ -287,21 +283,21 @@ export function Bridge() {
 function Headline({ R }: { R: BridgeRun | null }) {
   if (!R) {
     return (
-      <div className="panel">
+      <Card size="flush">
         <div className="headline">
           <Figure label="Best way to 59½" id="brBest" className="v gold" sized={false} value={DASH} noteId="brBestNote" note="" />
           <Figure label={<Tipped text="Holds up in" k="brholds" />} id="brHold" className="v" sized={false} value={DASH} noteId="brHoldNote" note="" />
           <Figure label={<Tipped text="Cost of the bridge" k="brcost" />} id="brCost" className="v" sized={false} value={DASH} noteId="brCostNote" note="" />
         </div>
-        <div className="body"><div id="brVerdict"><div className="hint m-0">Enter your spending and at least one account balance to plan the bridge.</div></div></div>
-      </div>
+        <CardContent><div id="brVerdict"><div className="hint m-0">Enter your spending and at least one account balance to plan the bridge.</div></div></CardContent>
+      </Card>
     );
   }
   const { ctx, best: b } = R, t = b.test, st = b.steady, h = t.hold / Math.max(1, t.of);
   const ages = ctx.age + (ctx.nB > 1 ? "–" + (ctx.age + ctx.nB - 1) : "");
   const pen = R.plans.find((p) => p.key === "pen");
   return (
-    <div className="panel">
+    <Card size="flush">
       <div className="headline">
         <Figure label="Best way to 59½" id="brBest" className="v gold" value={b.name} noteId="brBestNote" note={b.desc} />
         <Figure label={<Tipped text="Holds up in" k="brholds" />} id="brHold" className={"v " + (h >= 0.95 ? "jade" : h >= 0.8 ? "gold" : "neg")} value={pctStr(h, 0)} noteId="brHoldNote"
@@ -309,7 +305,7 @@ function Headline({ R }: { R: BridgeRun | null }) {
         <Figure label={<Tipped text="Cost of the bridge" k="brcost" />} id="brCost" className="v" value={money(st.cost)} noteId="brCostNote"
           note={"Tax, penalties" + (ctx.aca ? " and health premiums" : "") + ", ages " + ages} />
       </div>
-      <div className="body"><div id="brVerdict">
+      <CardContent><div id="brVerdict">
         <div className="hint m-0 text-note leading-note">
           With <b>{b.phrase}</b>, you reach 59½ without an unplanned penalty or running short in <b>{pctStr(h, 0)}</b> of the{" "}
           {R.mc ? t.of + " random markets drawn from the record" : t.of + " historical starts since " + HIST_START}.{" "}
@@ -318,8 +314,8 @@ function Headline({ R }: { R: BridgeRun | null }) {
             <> That&apos;s <b>{money(pen.steady.cost - st.cost)}</b> less in tax, penalties{ctx.aca ? " and premiums" : ""} than simply paying the penalty.</>
           ) : null}
         </div>
-      </div></div>
-    </div>
+      </div></CardContent>
+    </Card>
   );
 }
 
@@ -329,7 +325,7 @@ function CompareRows({ R, sel, onPick }: { R: BridgeRun; sel: RunPlan; onPick: (
       {R.plans.map((p) => {
         const name = (
           <td>
-            <span className="br-name">{p.name}{p.key === R.best.key ? <span className="br-tag">Best</span> : null}</span>
+            <span className="br-name">{p.name}{p.key === R.best.key ? <Badge className="ml-1.75 align-middle">Best</Badge> : null}</span>
             <span className="br-desc">{p.off || p.desc || ""}</span>
           </td>
         );
@@ -492,8 +488,8 @@ function HistFan({ ctx, sel, tracesOn }: { ctx: BrCtx; sel: RunPlan | null; trac
 function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: React.RefObject<HTMLTableElement | null> }) {
   const conv = rows.filter((r) => r.C > 0.5);
   return (
-    <div className="panel" id="brLadderPanel" hidden={!conv.length}>
-      <h2>The conversion ladder<span className="h2note">each rung waits five years</span><span className="h2ctrl"><CsvButton table={tableRef} label="The conversion ladder" /></span></h2>
+    <Card id="brLadderPanel" hidden={!conv.length}>
+      <CardHeader><CardTitle>The conversion ladder</CardTitle><CardDescription>each rung waits five years</CardDescription><CardAction><CsvButton table={tableRef} label="The conversion ladder" /></CardAction></CardHeader>
       <div className="scroll">
         <table id="brLadder" ref={tableRef}>
           <thead><tr><th>Converted at</th><th>Amount</th><th>Tax that year</th><th>Penalty-free from</th></tr></thead>
@@ -511,7 +507,7 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
           "conversion made any time in 2026 is penalty-free from January 1, 2031. The tax column is " +
           "the whole year's tax, conversion included." : ""}
       </div>
-    </div>
+    </Card>
   );
 }
 

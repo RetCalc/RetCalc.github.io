@@ -33,7 +33,7 @@ test("a search can be stopped", async ({ page }) => {
   await expect(page.locator("#opRunBtn")).toBeDisabled();
   await page.getByRole("button", { name: "Stop" }).click();
   await expect(page.locator(".op-run")).toHaveCount(0);
-  await expect(page.locator(".op-ready")).toBeVisible();
+  await expect(page.locator(".op-ready-in")).toBeVisible();
 });
 
 test("the optimizer charts show the age under the pointer", async ({ page, isMobile }) => {

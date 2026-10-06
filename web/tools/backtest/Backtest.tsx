@@ -26,6 +26,7 @@ import { ddN, rebalText } from "@/tools/drawdown/text";
 import { BT_DEF, BT_FIRST, BT_LAST, decadeInflation, eraFrom, runBacktest, yearClamp, type BacktestInputs } from "./model";
 import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const GOLD = "#e9b872", BLUE = "#7d9fd6", RED = "#e2795f";
 const MIXES = [["100", "100"], ["80", "80"], ["60", "60"], ["40", "40"], ["0", "0"]] as const;
@@ -97,9 +98,9 @@ export function Backtest() {
   return (
     <>
       <aside id="asideBT">
-        <div className="panel inputs">
-          <h2>The mix<TipDot k="btdata" /></h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>The mix<TipDot k="btdata" /></CardTitle></CardHeader>
+          <CardContent>
             <Field id="btMixBtn" label={<Tipped text="Asset mix" k="btmix" />}>
               <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>
                 <svg className="text-muted-foreground" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
@@ -132,12 +133,12 @@ export function Backtest() {
               <div><span>Rebalanced</span><span className="num" id="btRebalShow">{rb}</span></div>
               <div><span>Dividends</span><span className="num">Reinvested</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-backtest">
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <div>
               <div className="k">Return, per year</div>
@@ -155,7 +156,7 @@ export function Backtest() {
               <div className="note">Standard deviation of annual returns</div>
             </div>
           </div>
-          <div className="body">
+          <CardContent>
             <div className="grid2">
               <div>
                 <KV k="Best year" cls="pos" id="btBest" v={pctStr(B.best.ret, 2) + " in " + B.best.year} />
@@ -173,19 +174,19 @@ export function Backtest() {
               <div className="hint mt-1.5" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
                 pctStr(B.inflCagr, 2) + " inflation to the Advanced tab, so the nominal figure and the inflation it was earned alongside travel together."}</div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Growth of $10,000</h2>
+        <Card>
+          <CardHeader><CardTitle>Growth of $10,000</CardTitle></CardHeader>
           <MultiChart id="BT" ariaLabel="Historical growth of the chosen mix" maxX={B.years} xFmt={xFmt} head={head}
             series={[{ name: "Balance", color: GOLD, pts: nom }, { name: "In today's dollars", color: BLUE, pts: real, dash: "5 4", width: 2 }]} />
           <Legend id="legendBT" items={[[GOLD, "Balance"], [BLUE, "In today's dollars"]]} />
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Inflation<span className="h2note" id="btInflSpan">{B.first + "–" + B.last}</span></h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Inflation</CardTitle><CardDescription id="btInflSpan">{B.first + "–" + B.last}</CardDescription></CardHeader>
+          <CardContent>
             <div className="grid2">
               <div>
                 <KV k="Average, per year" cls="gold" id="btInfl" v={pctStr(B.inflCagr, 2)} />
@@ -198,24 +199,22 @@ export function Backtest() {
                 <KV k="$100 then is worth" id="btPriceNow" v={money(100 * B.priceLevel) + " today"} />
               </div>
             </div>
-          </div>
+          </CardContent>
           <MultiChart id="BTI" ariaLabel="Annual inflation over the selected period" maxX={B.years} xFmt={xFmt} head={head}
             yFmt={(v) => (v * 100).toFixed(0) + "%"} valFmt={(v) => pctStr(v, 2)}
             series={[{ name: "Annual", color: RED, pts: annual, width: 1.9 }, { name: "Ten-year average", color: BLUE, pts: decadeInflation(B), dash: "5 4", width: 2.2 }]} />
           <Legend id="legendBTI" items={[[RED, "Annual"], [BLUE, "Ten-year average"]]} />
-          <div className="body"><div className="hint m-0">A high return in a high-inflation
+          <CardContent><div className="hint m-0">A high return in a high-inflation
             year buys less than a modest one in a quiet year, which is why the headline above
             shows both. The ten-year line is the one that matters for a plan: single years
-            swing hard, but it is the sustained stretches that reprice a retirement.</div></div>
-        </div>
+            swing hard, but it is the sustained stretches that reprice a retirement.</div></CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Rolling returns<span className="h2note" id="btRollNote">{roll === "nom" ? "nominal" : "after inflation"}</span>
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle>Rolling returns</CardTitle><CardDescription id="btRollNote">{roll === "nom" ? "nominal" : "after inflation"}</CardDescription><CardAction>
               <Segmented id="segBTRoll" attr="data-roll" options={[["nom", "Nominal"], ["real", "Real"]] as const} value={roll} onChange={setRoll} />
               <CsvButton table={rollTable} label="Rolling returns" />
-            </span>
-          </h2>
+            </CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="btRollTable" ref={rollTable}>
@@ -235,13 +234,13 @@ export function Backtest() {
               </tbody>
             </table>
           </div>
-          <div className="body"><div className="hint m-0">Annualized, every overlapping
+          <CardContent><div className="hint m-0">Annualized, every overlapping
             window in the range. The worst column is the one that matters: it is the return
-            someone actually lived through.</div></div>
-        </div>
+            someone actually lived through.</div></CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={yearTable} label="Year by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={yearTable} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="btTable" ref={yearTable}>
@@ -268,7 +267,7 @@ export function Backtest() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
       {mixOpen ? <MixDialog s={s} close={() => setMixOpen(false)} save={(f) => setState((c) => ({ ...c, stock: f.stock, sv: f.sv, cash: f.cash }))} /> : null}
     </>

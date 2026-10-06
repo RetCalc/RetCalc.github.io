@@ -19,7 +19,7 @@ const cases: Case[] = [
    switch is set aside here and checked below. */
 for (const slug of ["roth", "rmd"])
   test(`${slug} matches the current site`, async ({ page }, info) => {
-    await compareTool(page, info, slug, ["#asideRC", "#tab-roth"], slug === "roth" ? cases : cases.slice(0, 3), "#rcChartTitle .h2ctrl");
+    await compareTool(page, info, slug, ["#asideRC", "#tab-roth"], slug === "roth" ? cases : cases.slice(0, 3), "#rcChartTitle .h2ctrl, #segRC");
   });
 
 test("the Roth chart switches to tax paid", async ({ page }) => {

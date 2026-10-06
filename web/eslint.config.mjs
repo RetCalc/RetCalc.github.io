@@ -19,7 +19,11 @@ const eslintConfig = defineConfig([
       "shadcn/no-raw-colors": "error",
       // Call sites may place a component (margin, width, position) but not
       // restyle it; a new look is a variant or size in its component file.
-      "shadcn/no-restyle": ["error", { allow: ["layout"] }],
+      "shadcn/no-restyle": ["error", {
+        allow: ["layout"],
+        // A card's content sets its own padding (a dense table, a roomy hero).
+        contracts: [{ pattern: "^CardContent$", allow: ["layout", "spacing"] }],
+      }],
       "shadcn/no-arbitrary-values": "error",
       "shadcn/no-inline-styles": "error",
     },

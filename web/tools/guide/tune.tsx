@@ -17,6 +17,8 @@ import type { Answers } from "./store";
 import { NeedsPlan } from "./steps";
 import { BackNote, Callout, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
+import { Affixed } from "@/components/fields/Field";
+import { Label } from "@/components/ui/label";
 
 /* What's picked, the draft behind "Try your own numbers", and which levers
    the balanced option may move: kept for the visit. */
@@ -169,12 +171,11 @@ export function TuneStep() {
   const custom = sel === "custom" ? curOpt(a) || { id: "custom", set: {}, T: null } : { id: "custom", set: {}, T: null };
   const d = ui.draft || draftFrom(a);
   const draftField = (k: keyof Draft, label: string, affix: string, isMoney: boolean, hint?: string) => (
-    <div className="field" key={k}><label htmlFor={"gdd-" + k}>{label}</label><div className="inputwrap">
-      {isMoney ? <span className="affix">$</span> : null}
+    <div className="field" key={k}><Label className="mb-1.5" htmlFor={"gdd-" + k}><span>{label}</span></Label><Affixed prefix={isMoney ? "$" : undefined} suffix={affix || undefined}>
       <DraftInput money={isMoney} nonNeg step={isMoney ? undefined : 1} id={"gdd-" + k} data-d={k} placeholder={k === "stopAge" ? "at retirement" : undefined}
         value={ok(d[k]) ? d[k]! : NaN} format={(x) => (ok(x) ? (isMoney ? gdM(x) : String(x)) : "")}
         onType={(t) => setTune((x) => { x.draft = { ...d, [k]: t.trim() === "" ? null : parseNum(t) }; x.typed = true; })} />
-      {affix ? <span className="affix">{affix}</span> : null}</div>{hint ? <div className="hint">{hint}</div> : null}</div>
+      </Affixed>{hint ? <div className="hint">{hint}</div> : null}</div>
   );
   return (
     <>

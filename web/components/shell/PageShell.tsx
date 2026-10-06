@@ -10,6 +10,7 @@ import { PAGES, TOOL_SUB, type Slug } from "@/lib/site";
 import { TOOLS } from "@/lib/tools";
 import { Article } from "./Article";
 import { ToolHeader } from "./ToolHeader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {
   const meta = PAGES[slug];
@@ -32,10 +33,10 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
 export function Placeholder({ what }: { what: string }) {
   return (
     <div className="stack solo">
-      <section className="panel">
-        <h2>{what}</h2>
-        <p className="hint">This part of RetCalc is being rebuilt. It works today at retcalc.app.</p>
-      </section>
+      <Card>
+        <CardHeader><CardTitle>{what}</CardTitle></CardHeader>
+        <CardContent><p className="hint">This part of RetCalc is being rebuilt. It works today at retcalc.app.</p></CardContent>
+      </Card>
     </div>
   );
 }

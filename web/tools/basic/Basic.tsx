@@ -23,6 +23,7 @@ import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
 import { basicShare } from "./share";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 export function Basic() {
@@ -67,9 +68,9 @@ export function Basic() {
   return (
     <>
       <aside id="asideSimple">
-        <div className="panel inputs">
-          <h2>A few questions</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>A few questions</CardTitle></CardHeader>
+          <CardContent>
             <NumberField id="qAge" label="How old are you?" unit="age" value={s.age} onValueChange={setAge("age")} />
             <NumberField id="qRetire" label="When do you plan to retire?" unit="age" value={s.retire} onValueChange={setAge("retire")} />
             <MoneyField id="qSaved" label="How much have you saved so far?" value={s.saved} onValueChange={set("saved")} />
@@ -84,25 +85,25 @@ export function Basic() {
               <div><span>Years until retirement</span><span className="num" id="qYears">{ok ? fmtYears(p.years) : DASH}</span></div>
               <div><span><Tipped text="Growth after inflation" k="realreturn" /></span><span className="num" id="qReal">{pctStr(p.real, 2) + " a year"}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-simple">
-        <div className="panel" id="qWarn" hidden={ok}>
-          <div className="body"><div className="hint" id="qWarnText">
+        <Card id="qWarn" hidden={ok}>
+          <CardContent><div className="hint" id="qWarnText">
             {ok ? "" : p.retire && p.age ? "Your retirement age needs to be higher than your age today." : "Fill in your age and the age you plan to retire to see a projection."}
-          </div></div>
-        </div>
+          </div></CardContent>
+        </Card>
 
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <Figure label="Value at retirement" id="qFV" className="v gold" sized={!!R} value={R ? money(R.fv) : DASH} noteId="qFVnote"
               note={R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : ""} />
             <Figure label="Income, per year" id="qYear" sized={!!R} value={R ? money(R.fv * 0.04) : DASH} note="Taking 4% a year" />
             <Figure label="Income, per month" id="qMonth" sized={!!R} value={R ? money((R.fv * 0.04) / 12) : DASH} note="The same, spread monthly" />
           </div>
-          <div className="body">
+          <CardContent>
             <div className="grid2">
               <div>
                 <KV k="You put in" id="qIn" v={R ? money(R.contribTotal) : DASH} />
@@ -116,11 +117,11 @@ export function Basic() {
             <div className="hint mt-3.5">Every figure here is in today&apos;s dollars,
               so you can compare it to what money is worth now. It assumes you nudge your
               contribution up a little each year to keep pace with inflation.</div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Balance over time<span className="h2note">in today&apos;s dollars</span></h2>
+        <Card>
+          <CardHeader><CardTitle>Balance over time</CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
           <BandChart id="Q" pts={pts} maxX={p.years || 1} xOffset={hasAge ? p.age : 0} enhanced ariaLabel="Projected balance in today's dollars"
             tip={(b) => (
               <>
@@ -133,10 +134,10 @@ export function Basic() {
             ["#e9b872", "Your setting (" + pctStr(p.real, 2) + ")"],
             ["#e2795f", "If returns run worse (" + pctStr(Math.max(0, p.real - BASIC_BAND), 2) + ")"],
           ] : []} />
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="qYearTable" ref={tableRef}>
@@ -148,22 +149,22 @@ export function Basic() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Milestones</h2>
-          <div className="body" id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</div>
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
+          <CardContent id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Want more detail?</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Want more detail?</CardTitle></CardHeader>
+          <CardContent>
             <p className="hint mt-0">The Advanced tab does everything this does
               plus taxes, fees, contribution growth, and a simulation of good and bad market
               runs. This will carry your answers over so you don&apos;t have to retype them.</p>
             <OpenInAdvanced basic={s} />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

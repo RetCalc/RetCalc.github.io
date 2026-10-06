@@ -20,6 +20,7 @@ import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { useShareKit } from "@/components/shell/share";
 import { rentBuyShare } from "./share";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const DEFAULTS = {
   price: groupDigits(450000, true), down: "20", rate: String(MORT_RATE_30), term: "30", propTax: "1.1",
@@ -57,9 +58,9 @@ export function RentBuy() {
   return (
     <>
       <aside id="asideRB">
-        <div className="panel inputs">
-          <h2>Your situation</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your situation</CardTitle></CardHeader>
+          <CardContent>
             <FieldHeading>Buying</FieldHeading>
             <Field id="rbPrice" label="Home price">
               <Affixed prefix="$"><MoneyInput id="rbPrice" nonNeg value={s.price} onValueChange={set("price")} /></Affixed>
@@ -117,11 +118,11 @@ export function RentBuy() {
               <div><span>Principal &amp; interest</span><span className="num" id="rbPI">{R ? money(R.pi, 0) + "/mo" : ""}</span></div>
               <div><span>All in</span><span className="num" id="rbMonthly">{R ? money(R.monthlyBuy, 0) + "/mo" : ""}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
       <div className="stack" id="tab-rentbuy">
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <Figure label={<>Better after <span id="rbHorizonLbl">{R ? fmtNum(inp.horizon) : ""}</span> yrs</>} id="rbWinner" className="v gold"
               value={last ? (buyWins ? "Buying" : "Renting") : DASH} noteId="rbWinNote" note={last ? "by " + money(Math.abs(last.buyerNW - last.renterNW)) : ""} />
@@ -130,14 +131,14 @@ export function RentBuy() {
             <Figure label="Renter net worth" id="rbRenterNW" value={last ? money(last.renterNW) : DASH} noteId="rbRenterNote"
               note={last ? "Down payment invested from day one, plus whatever's invested in months renting costs less than buying, after tax on the gains" : ""} />
           </div>
-          <div className="body">
+          <CardContent>
             <div className="hint mb-2.5">Every month, whichever side costs less banks the difference and invests it at your chosen return, so a renter paying less than a buyer&apos;s monthly cost keeps growing that gap, and vice versa.</div>
             <div className="kv"><span className="k">Break-even point</span><span className="v" id="rbBreakEven">{R ? (R.breakEven ? "Year " + fmtNum(R.breakEven) + " -- buying pulls ahead" : "Renting stays ahead throughout") : ""}</span></div>
             <div className="kv"><span className="k">Renter invests</span><span className="v" id="rbRenterInvests">{R ? money(R.initialInvest) + " (down payment + closing costs)" : ""}</span></div>
-          </div>
-        </div>
-        <div className="panel">
-          <h2>Net worth over time</h2>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Net worth over time</CardTitle></CardHeader>
           {R ? (
             <BandChart id="RB" enhanced maxX={inp.horizon} ariaLabel="Buyer vs renter net worth"
               pts={[{ year: 0, base: 0, hi: 0, lo: 0 }, ...R.years.map((y) => ({ year: y.year, base: y.buyerNW, hi: y.renterNW, lo: Math.min(y.buyerNW, y.renterNW) }))]}
@@ -150,9 +151,9 @@ export function RentBuy() {
               )} />
           ) : <BandChart id="RB" pts={[]} maxX={0} ariaLabel="Buyer vs renter net worth" tip={() => null} />}
           <Legend id="legendRB" items={R ? [["#e9b872", "Buyer net worth"], ["#4fbf95", "Renter net worth"]] : []} />
-        </div>
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="rbTable" ref={tableRef}>
@@ -174,7 +175,7 @@ export function RentBuy() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </>
   );

@@ -7,6 +7,7 @@
 import { NumberInput } from "@/components/fields/NumberInput";
 import { parseNum } from "@/lib/format";
 import { DD_ASSETS, ddN } from "./text";
+import { Affixed } from "@/components/fields/Field";
 
 export type MixForm = Record<(typeof DD_ASSETS)[number][0], string>;
 
@@ -22,7 +23,7 @@ export function MixRows({ f, up, totId }: { f: MixForm; up: (k: keyof MixForm) =
     <>
       {DD_ASSETS.map(([k, , name, desc]) => (
         <div className="ddmixrow" key={k}><div><b>{name}</b><small>{desc}</small></div>
-          <div className="inputwrap"><NumberInput nonNeg step={5} max={100} data-mix={k} aria-label={name} value={f[k]} onValueChange={up(k)} /><span className="affix">%</span></div></div>
+          <Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={5} max={100} data-mix={k} aria-label={name} value={f[k]} onValueChange={up(k)} /></Affixed></div>
       ))}
       <div className="ddmixtot" id={totId}>Total: <b className={ok ? "pos" : "neg"}>{ddN(t)}%</b>{ok ? "" : " — it needs to add up to 100%"}</div>
     </>

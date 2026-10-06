@@ -28,6 +28,9 @@ import { OP_GOALS } from "./words";
 import { useShareKit } from "@/components/shell/share";
 import { optimizerCard } from "./share";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /* The goal picked, kept for the visit. */
 const goalMemory = { goal: "legacy" as Goal };
@@ -124,32 +127,32 @@ export function Optimizer() {
   const risk = parseFloat(s.risk), riskHit = RISKS.some((r) => String(r.real) === s.risk);
 
   let body: React.ReactNode;
-  if (!spend) body = <div className="panel"><div className="body"><div className="gd-callout warn">Enter what you&apos;ll spend each year in retirement to find your plan.</div></div></div>;
-  else if (H.run) body = <div className="panel"><div className="body"><Progress host="tool" R={H.run} /></div></div>;
+  if (!spend) body = <Card><CardContent><div className="gd-callout warn">Enter what you&apos;ll spend each year in retirement to find your plan.</div></CardContent></Card>;
+  else if (H.run) body = <Card><CardContent><Progress host="tool" R={H.run} /></CardContent></Card>;
   else if (H.res) body = (
     <>
-      {H.res.sig !== sig ? <div className="panel"><div className="body"><div className="gd-callout warn m-0">Your numbers or the goal changed since this ran.{" "}
-        <Button variant="outline" size="sm" className="mt-2" data-op="run" data-host="tool" onClick={run}>Run it again</Button></div></div></div> : null}
+      {H.res.sig !== sig ? <Card><CardContent><div className="gd-callout warn m-0">Your numbers or the goal changed since this ran.{" "}
+        <Button variant="outline" size="sm" className="mt-2" data-op="run" data-host="tool" onClick={run}>Run it again</Button></div></CardContent></Card> : null}
       <OptimizerResult key={H.res.sig + H.res.runs} host="tool" res={H.res} fresh={H.fresh} />
     </>
   );
   else body = (
-    <div className="panel op-ready"><div className="body"><div className="op-ready-in">
+    <Card><CardContent><div className="op-ready-in">
       <div><div className="k">{v.now ? "At " + P.age1 + " you'll have about" : "On the day you retire, at " + P.age1}</div><div className="v">{money(P.fv)}</div>
         <div className="n">{money(P.trad) + " traditional · " + money(P.roth) + " Roth · " + money(P.brok) + " brokerage, in today's dollars"}</div></div>
       <div><div className="k">Social Security at 67</div><div className="v">{money(I.pia1 + I.pia2)}<small>/mo</small></div>
         <div className="n">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div></div>
-    </div><p className="hint mt-3 mx-0 mb-0">Pick a goal above and press <b>Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p></div></div>
+    </div><p className="hint mt-3 mx-0 mb-0">Pick a goal above and press <b>Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p></CardContent></Card>
   );
 
   return (
     <>
       <aside id="asideOP">
-        <div className="panel inputs">
-          <h2>Your situation</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your situation</CardTitle></CardHeader>
+          <CardContent>
             <div className="field op-modefield">
-              <label>Start from<TipDot k="opmode" /></label>
+              <Label className="mb-1.5"><span>Start from<TipDot k="opmode" /></span></Label>
               <Segmented id="opModeSeg" className="seg op-modeseg" attr="data-opmode" options={[["ret", "Retirement day"], ["now", "Today"]] as const}
                 value={v.now ? "now" : "ret"} onChange={setMode} />
               <input type="hidden" id="opMode" value={s.mode} />
@@ -220,7 +223,7 @@ export function Optimizer() {
               {CLAIMS.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
             </SelectField>
             <div className="two">
-              <MoneyField id="opPension" label={<>Pension <span className="opt">optional</span></>} unit="/yr" value={s.pension} onValueChange={set("pension")} />
+              <MoneyField id="opPension" label={<>Pension <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="/yr" value={s.pension} onValueChange={set("pension")} />
               <NumberField id="opPenAge" label="Starting at" unit="age" max={90} placeholder="retiring" value={s.penAge} onValueChange={set("penAge")} />
             </div>
             <SelectField id="opPenCola" label="Pension raises" value={s.penCola} onChange={set("penCola")}>
@@ -245,13 +248,13 @@ export function Optimizer() {
                 <option value="1">Every market</option>
               </SelectField>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-optimizer">
-        <div className="panel op-top">
-          <div className="body">
+        <Card>
+          <CardContent>
             <p className="op-lede">Every age from 62 to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
             <div>
               <div className="op-q">What should the best plan do?</div>
@@ -262,8 +265,8 @@ export function Optimizer() {
                 {fresh ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
               <span className="hint" id="opEst">{groupDigits(E.n, true) + " plans × " + E.w + " historical markets = " + groupDigits(E.runs, true) + " retirements, about " + E.secs + " seconds."}</span>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         <div id="opOut" className="op-out" ref={out}>{body}</div>
       </div>
     </>

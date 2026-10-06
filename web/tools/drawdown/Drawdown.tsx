@@ -38,6 +38,8 @@ import { useShareKit } from "@/components/shell/share";
 import { drawdownShare } from "./share";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 
 /** What the panels share: the inputs as typed and as the engine reads them,
     year one, the retirement age and the comfort line. */
@@ -188,8 +190,8 @@ export function Drawdown({ landing }: { landing?: string }) {
     <>
       <Inputs v={v} fromNote={fromNote} periods={periods} open={setDialog} />
       <div className="stack" id="tab-drawdown" data-tab={tab}>
-        <div className="panel" id="ddIntro" hidden={introSeen === "1"}>
-          <div className="body flex gap-3.5 items-start">
+        <Card id="ddIntro" hidden={introSeen === "1"}>
+          <CardContent className="flex gap-3.5 items-start">
             <div className="flex-auto min-w-0">
               <div className="font-semibold text-text mb-1.5">New here? Here&apos;s the idea.</div>
               <div className="hint m-0">
@@ -202,8 +204,8 @@ export function Drawdown({ landing }: { landing?: string }) {
               </div>
             </div>
             <Button variant="ghost" size="icon-sm" id="ddIntroClose" aria-label="Dismiss" onClick={() => setIntroSeen("1")}>&times;</Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
         <Readout v={v} R={R} H={H} running={mcOn && mc.stale} pinned={pinned}
           setMode={setMode}
           pin={() => {
@@ -224,8 +226,8 @@ export function Drawdown({ landing }: { landing?: string }) {
           </span>
         </div>
 
-        <div className="panel ddtarget" id="ddTargetPanel" data-ddtabs="compare safe">
-          <div className="body">
+        <Card id="ddTargetPanel" data-ddtabs="compare safe">
+          <CardContent>
             <div className="ddtgt-row">
               <span className="ddtgt-k"><Tipped text="Risk target" k="ddtarget" /></span>
               <select id="ddTCrit" aria-label="What the target asks" value={s.tCrit as string} onChange={(e) => set("tCrit")(e.target.value)}>
@@ -245,8 +247,8 @@ export function Drawdown({ landing }: { landing?: string }) {
               (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". These views use the historical record" +
               (mode === "mc" ? ", whatever the Historical / Monte Carlo switch says" : "") + ", " +
               (o.monthly ? "a retirement starting every month" : "a retirement starting each January") + " from " + o.fromYear + "."} />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <PlanView v={v} R={R} ps={{ sel, setSel, view, setView }} />
         <CompareView v={v} T={T} active={tab === "compare"} />
@@ -317,14 +319,14 @@ function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
     return <Html className="dddelta" id={id} hidden={!h} html={h} />;
   };
   return (
-    <div className="panel">
+    <Card size="flush">
       <div className="readout">
         <div className="txhead">
           <span className="seg" id="segDD">
             <button type="button" data-dd="hist" className={mode === "hist" ? "on" : undefined} onClick={() => setMode("hist")}>Historical</button>
             <button type="button" data-dd="mc" className={mode === "mc" ? "on" : undefined} onClick={() => setMode("mc")}>Monte Carlo</button>
           </span>
-          <span className="txbadge" id="ddBadge">{badge}</span>
+          <Badge variant="outline" id="ddBadge">{badge}</Badge>
           <Button variant="outline" size="sm" className="ml-2" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
         </div>
         <div className="headline">
@@ -343,8 +345,8 @@ function Readout({ v, R, H, running, pinned, setMode, pin, unpin }: {
         <span className="ddbase-n">Changes since are marked <b className="pos">better</b> or <b className="neg">worse</b>; the charts draw it dashed.</span>
         <Button variant="outline" size="sm" id="ddBaseClear" onClick={unpin}>Clear</Button>
       </div>
-      <div className="body"><Html id="ddVerdict" html={verdict} /></div>
-    </div>
+      <CardContent><Html id="ddVerdict" html={verdict} /></CardContent>
+    </Card>
   );
 }
 

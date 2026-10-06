@@ -26,6 +26,8 @@ import { useSort } from "@/lib/useSort";
 import type { DDView } from "./Drawdown";
 import type { DdItem } from "./fields";
 import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, startLabel, whyText, swatch } from "./text";
+import { badgeVariants } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /** The return assumptions the sensitivity table tries: history less 2 and 1
     points a year, as it was, and 1 point better. */
@@ -38,12 +40,15 @@ const baseLine = (pts: { year: number; value: number }[]) => [{ pts, color: BASE
 export function deltaHtml(cur: number | null, base: number | null, kind: "pts" | "money" | "n", lowBetter?: boolean): string {
   if (base == null || cur == null || !isFinite(cur) || !isFinite(base)) return "";
   const d = cur - base, tiny = kind === "pts" ? 0.0005 : kind === "money" ? 0.5 : 0.05;
-  if (Math.abs(d) < tiny) return "<span class='dddelta-s same'>same as baseline</span>";
+  /* Built as markup for the tiles, so the badge's classes are used directly. */
+  const badge = (variant: "outline" | "positive" | "destructive", text: string) =>
+    "<span data-slot='badge' class='" + badgeVariants({ variant }) + "'>" + text + "</span>";
+  if (Math.abs(d) < tiny) return badge("outline", "same as baseline");
   const good = lowBetter ? d < 0 : d > 0;
   const txt = kind === "pts" ? (d > 0 ? "+" : "−") + (Math.abs(d) * 100).toFixed(1) + " pts"
     : kind === "money" ? (d > 0 ? "+" : "−") + money(Math.abs(d))
       : (d > 0 ? "+" : "−") + (Math.abs(d) % 1 ? (Math.round(Math.abs(d) * 10) / 10).toFixed(1) : String(Math.abs(d)));
-  return "<span class='dddelta-s " + (good ? "pos" : "neg") + "'>" + txt + "</span>";
+  return badge(good ? "positive" : "destructive", txt);
 }
 
 /** The Social Security claiming ages the comparison tries, each with every
@@ -90,28 +95,27 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
       <YearsPanel v={v} H={H} ps={ps} />
       <SeqPanel v={v} H={H} ps={ps} />
       <BalancePanel v={v} R={R} ps={ps} show={show} showLabel={showLabel} />
-      <div className="panel" data-ddtabs="plan">
-        <h2 id="ddIncomeSectionTitle">{hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"}
-          <TipDot k="sequence" /><span className="h2note">in today&apos;s dollars</span></h2>
-        <div className="body">
+      <Card data-ddtabs="plan">
+        <CardHeader><CardTitle id="ddIncomeSectionTitle">{hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"}
+          <TipDot k="sequence" /></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
+        <CardContent>
           <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} /></div>
           <div id="ddSpendAllView" hidden={view !== "all"}><SpendStatsAll H={H} o={o} /></div>
           <Html className="hint mt-1" id="ddSpendNote" html={!R ? "" : view === "all" && H ? spendAllNote(H, o)
             : run ? spendNote(run, mc ? "Showing the same run as the table below." : "Showing the period selected above.") : ""} />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
       <IncomePanel v={v} R={R} view={view} show={show} showLabel={showLabel} />
       <DistPanel v={v} R={R} />
-      <div className="panel" data-ddtabs="plan">
-        <h2 id="ddDetailTitle">{mc ? "Year by year, a median run" : show ? "Year by year, retiring in " + showLabel : "Year by year"}
-          <span className="h2ctrl"><CsvButton table={v.detailTable} label="Year by year" /></span></h2>
+      <Card data-ddtabs="plan">
+        <CardHeader><CardTitle id="ddDetailTitle">{mc ? "Year by year, a median run" : show ? "Year by year, retiring in " + showLabel : "Year by year"}</CardTitle><CardAction><CsvButton table={v.detailTable} label="Year by year" /></CardAction></CardHeader>
         <Html className="hint py-0 px-4.5" id="ddDetailNote" html={mc ? "One representative simulation from the middle of the range."
           : show && H ? "Click any row in the table above to see that period's detail here. " +
             (show.depleted ? "This one ran out of money " + (age != null ? "at age " + ageVal(age, show.depletedYear!) : "in year " + show.depletedYear) + "."
               : "This one survived the full " + o.years + " years.") + whyText(o, show, H, age) : ""} />
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll"><DetailTable run={run} age={age} items={v.s.incomeItems as DdItem[]} tableRef={v.detailTable} /></div>
-      </div>
+      </Card>
       <Sensitivity rows={hist ? hist.sens : mc ? mc.M.sens : null} label={mc ? "Baseline (sampled)" : "Baseline (historical)"} />
       <SSCompare v={v} res={hist ? hist.ss : mc ? mc.M.ss : null} />
     </>
@@ -129,7 +133,7 @@ function ScorePanel({ v, R, monthly }: { v: DDView; R: PlanResult | null; monthl
     const who = (r: DdHistRun | null) => (r && r.startYear != null ? startLabel(r, monthly) : "");
     const stayed = n ? (n - sc.dipped) / n : 0, bStayed = base ? (base.n - base.dipped) / base.n : null;
     const tile = (k: string, val: string, note: string, delta: string) =>
-      "<div class='ddtile'><div class='k'>" + k + "</div><div class='v'>" + val + "</div>" + delta + "<div class='n'>" + note + "</div></div>";
+      "<div class='ddtile'><div class='k'>" + k + "</div><div class='v'>" + val + "</div>" + (delta ? "<div class='mt-1.25'>" + delta + "</div>" : "") + "<div class='n'>" + note + "</div></div>";
     tiles = [
       tile("Never below the comfort line", pctStr(stayed, 1), (n - sc.dipped).toLocaleString("en-US") + " of " + n.toLocaleString("en-US") + unit,
         base ? deltaHtml(stayed, bStayed, "pts") : ""),
@@ -151,13 +155,13 @@ function ScorePanel({ v, R, monthly }: { v: DDView; R: PlanResult | null; monthl
       "<span class='ddcount-of'>of " + n.toLocaleString("en-US") + unit + "</span>";
   }
   return (
-    <div className="panel" id="ddScorePanel" data-ddtabs="plan">
-      <h2>Spending scorecard<TipDot k="ddscore" /><span className="h2note" id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " a year") : ""}</span></h2>
-      <div className="body">
+    <Card id="ddScorePanel" data-ddtabs="plan">
+      <CardHeader><CardTitle>Spending scorecard<TipDot k="ddscore" /></CardTitle><CardDescription id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " a year") : ""}</CardDescription></CardHeader>
+      <CardContent>
         <Html className="ddtiles" id="ddScore" html={tiles} />
         <Html className="ddcounts" id="ddCounts" html={counts} />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -192,9 +196,8 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
     ps.setView("year");
   };
   return (
-    <div className="panel" id="ddYearsPanel" data-ddtabs="plan" hidden={v.mode === "mc"}>
-      <h2 id="ddYearsTitle">{H?.monthly ? "How each starting month fared" : "How each starting year fared"}
-        <span className="h2ctrl"><CsvButton table={table} label="How each starting year fared" /></span></h2>
+    <Card id="ddYearsPanel" data-ddtabs="plan" hidden={v.mode === "mc"}>
+      <CardHeader><CardTitle id="ddYearsTitle">{H?.monthly ? "How each starting month fared" : "How each starting year fared"}</CardTitle><CardAction><CsvButton table={table} label="How each starting year fared" /></CardAction></CardHeader>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll">
         <table id="ddStartTable" ref={table}>
@@ -220,7 +223,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -228,7 +231,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
 function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const [kind, setKind] = useState<"decade" | "year">("decade");
   const { o } = v;
-  if (!H || !H.runs.length) return <div className="panel" id="ddSeqPanel" data-ddtabs="plan" hidden />;
+  if (!H || !H.runs.length) return <Card id="ddSeqPanel" data-ddtabs="plan" hidden />;
   const M = seqMeasure(o), mo = H.monthly, n = H.runs[0].dec1.years, dec = kind === "decade";
   const eraYear = new Set(DD_ERAS.map((e) => e.year));
   const pts = H.runs.map((r) => ({
@@ -260,14 +263,14 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
       ": their first decades returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
   const eras = DD_ERAS.filter((e) => e.to >= lo && e.from <= hi);
   return (
-    <div className="panel" id="ddSeqPanel" data-ddtabs="plan">
-      <h2>When you retire<TipDot k="ddseq" /><span className="h2ctrl">
+    <Card id="ddSeqPanel" data-ddtabs="plan">
+      <CardHeader><CardTitle>When you retire<TipDot k="ddseq" /></CardTitle><CardAction>
         <span className="seg" id="segDDSeq">
           <button type="button" data-ddseq="decade" className={dec ? "on" : undefined} onClick={() => setKind("decade")}>By first decade</button>
           <button type="button" data-ddseq="year" className={!dec ? "on" : undefined} onClick={() => setKind("year")}>By start year</button>
         </span>
-      </span></h2>
-      <Html className="body ddintro" id="ddSeqIntro" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} />
+      </CardAction></CardHeader>
+      <CardContent id="ddSeqIntro"><Html className="ddintro" html={txt + (dec ? "" : " The dashed lines mark the eras below.")} /></CardContent>
       <Scatter id="DDQ" pts={pts} ariaLabel="Each start's first ten years against how its retirement ended"
         opt={{
           small: pts.length > 150, yZero: true, yFmt: fmtAxisMoney,
@@ -296,7 +299,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
       <details className="dderas" id="ddEras" hidden={!eras.length}><summary>What happened in the marked years</summary>
         <div id="ddEraList">{eras.map((e) => <p key={e.year}><b>{e.year}: {e.title}.</b> {e.note}</p>)}</div>
       </details>
-    </div>
+    </Card>
   );
 }
 
@@ -367,19 +370,19 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
   }
   const hasBase = R?.kind === "hist" ? !!R.B : R?.kind === "mc" ? !!R.Mb : false;
   return (
-    <div className="panel" data-ddtabs="plan">
-      <h2 id="ddChartTitle">{title}<span className="h2ctrl" id="ddViewWrap" hidden={R?.kind !== "hist"}>
+    <Card data-ddtabs="plan">
+      <CardHeader><CardTitle id="ddChartTitle">{title}</CardTitle><CardAction id="ddViewWrap" hidden={R?.kind !== "hist"}>
         <span className="seg" id="segDDView">
           <button type="button" data-ddview="year" className={ps.view === "year" ? "on" : undefined} onClick={() => ps.setView("year")}>Selected year</button>
           <button type="button" data-ddview="all" className={ps.view === "all" ? "on" : undefined} onClick={() => ps.setView("all")}>All years</button>
         </span>
-      </span></h2>
+      </CardAction></CardHeader>
       {chart ?? <BandChart id="DD" pts={[]} maxX={1} ariaLabel="Portfolio balance through retirement" tip={() => null} />}
       {legend === "hist" ? <HistLegend id="legendDD" tracesOn={v.tracesOn} onToggleTraces={v.toggleTraces}>{hasBase ? <BaseSwatch /> : null}</HistLegend>
         : legend === "mc" ? <McLegend id="legendDD" noDet>{hasBase ? <BaseSwatch /> : null}</McLegend>
           : <Html className="legend" id="legendDD" html={legend} />}
       <Html className="mcnote" id="ddChartNote" html={note} />
-    </div>
+    </Card>
   );
 }
 const BaseSwatch = () => <span><i className="bg-chart-base"></i>Baseline median</span>;
@@ -495,12 +498,12 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
     single(R.M.med, R.Mb ? baseLine(R.Mb.med.rows.map((w) => ({ year: w.year, value: w.realSpend }))) : null);
   }
   return (
-    <div className="panel" data-ddtabs="plan">
-      <h2 id="ddIncomeChartTitle">{title}</h2>
+    <Card data-ddtabs="plan">
+      <CardHeader><CardTitle id="ddIncomeChartTitle">{title}</CardTitle></CardHeader>
       {chart ?? <BandChart id="DDI" pts={[]} maxX={1} ariaLabel="Withdrawal amount over time" tip={() => null} />}
       {legend ?? <div className="legend" id="legendDDI"></div>}
       <div className="hint pt-0 px-4.5 pb-3.5" id="ddIncomeNote">{note}</div>
-    </div>
+    </Card>
   );
 }
 
@@ -536,8 +539,8 @@ function DistPanel({ v, R }: { v: DDView; R: PlanResult | null }) {
   }
   const isMc = R?.kind === "mc";
   return (
-    <div className="panel" id="ddDistPanel" data-ddtabs="plan">
-      <h2 id="ddDistTitle">{!R || bal ? "Spread of ending balances" : "Spread of spending"}<span className="h2ctrl">
+    <Card id="ddDistPanel" data-ddtabs="plan">
+      <CardHeader><CardTitle id="ddDistTitle">{!R || bal ? "Spread of ending balances" : "Spread of spending"}</CardTitle><CardAction>
         <span className="seg" id="segDDDist">
           <button type="button" data-dddist="bal" className={bal ? "on" : undefined} onClick={() => setKind("bal")}>Balance</button>
           <button type="button" data-dddist="spend" className={!bal ? "on" : undefined} onClick={() => setKind("spend")}>Spending</button>
@@ -547,11 +550,11 @@ function DistPanel({ v, R }: { v: DDView; R: PlanResult | null }) {
             <option key={y} value={y}>{y === years ? "Final year" : age != null ? "Age " + fmtNum(ageVal(age, y)) : "Year " + y}</option>
           ))}
         </select>
-      </span></h2>
+      </CardAction></CardHeader>
       <Histogram id="DDH" bins={n ? roundBins(vals) : []} mark={!bal && line > 0 ? line : null} ariaLabel="How the outcomes spread"
         tip={(b) => <><b>{money(b.lo)} – {money(b.hi)}</b><br /><span className="n">{b.n.toLocaleString("en-US")}</span> {isMc ? "runs" : "retirements"}</>} />
       <Html className="ddstats" id="ddDistStats" html={stats} />
-    </div>
+    </Card>
   );
 }
 
@@ -586,8 +589,8 @@ const TD = "py-1.25 px-2", TDR = "text-right py-1.25 px-2";
 
 function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[] | null; label: string }) {
   return (
-    <div className="panel" id="ddSensPanel" data-ddtabs="plan" hidden={!rows}>
-      <h2>Return sensitivity</h2>
+    <Card id="ddSensPanel" data-ddtabs="plan" hidden={!rows}>
+      <CardHeader><CardTitle>Return sensitivity</CardTitle></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your plan holds up if returns run higher or lower than history suggests.</div>
       <div className="pt-0 px-4.5 pb-3.5" id="ddSensTable">
         {rows ? <table className="w-full border-collapse">
@@ -605,7 +608,7 @@ function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[]
           </tbody>
         </table> : null}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -629,8 +632,8 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
     </table>
   );
   return (
-    <div className="panel" id="ddSSBreakEvenPanel" data-ddtabs="plan" hidden={!on}>
-      <h2>Social Security claiming age comparison</h2>
+    <Card id="ddSSBreakEvenPanel" data-ddtabs="plan" hidden={!on}>
+      <CardHeader><CardTitle>Social Security claiming age comparison</CardTitle></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
       <div className="pt-0 px-4.5 pb-3.5" id="ddSSBreakEvenTable">
         {on ? ssx!.rows2 ? <>
@@ -638,7 +641,7 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
           <p className="font-semibold mt-3 mx-0 mb-1.5">Spouse&apos;s claiming age (yours held constant)</p>{build(ssx!.rows2, ssx!.rows1.length)}
         </> : build(ssx!.rows1, 0) : null}
       </div>
-    </div>
+    </Card>
   );
 }
 

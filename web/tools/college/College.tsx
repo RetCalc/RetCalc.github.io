@@ -20,6 +20,7 @@ import { CL_PRESETS, COLLEGE_DEF, collegeInput, phaseNote, type Kid } from "./mo
 import { useShareKit } from "@/components/shell/share";
 import { collegeShare } from "./share";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 export function College() {
@@ -89,9 +90,9 @@ export function College() {
   return (
     <>
       <aside id="asideCollege">
-        <div className="panel inputs">
-          <h2>College plan</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>College plan</CardTitle></CardHeader>
+          <CardContent>
             <div id="clKids" ref={kidsRef}>
               {s.kids.map((k, i) => {
                 const first = i === 0;
@@ -138,24 +139,24 @@ export function College() {
             <div className="derived">
               <div><span id="clSavGrowK">{multi ? "What you've saved covers" : "What you've saved grows to"}</span><span className="num" id="clSavGrow">{savGrow}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
       <div className="stack" id="tab-college">
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <Figure label="Save per month" id="clMonthly" className="v gold" value={monthly} noteId="clMonthlyNote" note={monthlyNote} />
             <Figure label="Total projected cost" id="clTotalOut" value={total} noteId="clTotalNote" note={totalNote} />
             <Figure id="clShortOut" value={short} noteId="clShortNote" note={shortNote}
               label={<span className="tipglue"><span id="clShortK">{multi ? "Needed today" : "Needed when college starts"}</span><TipDot k={multi ? "collegepvall" : "collegepv"} /></span>} />
           </div>
-        </div>
-        <div className="panel" id="clEachPanel" hidden={!multi}>
-          <h2>Each child</h2>
-          <div className="body"><div className="gd-kvs" id="clEach">{each}</div></div>
-        </div>
-        <div className="panel">
-          <h2>Savings over time</h2>
+        </Card>
+        <Card id="clEachPanel" hidden={!multi}>
+          <CardHeader><CardTitle>Each child</CardTitle></CardHeader>
+          <CardContent><div className="gd-kvs" id="clEach">{each}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Savings over time</CardTitle></CardHeader>
           {chart ? (
             <BandChart id="Cl" pts={chart.pts} maxX={chart.maxX} enhanced noLoLine ariaLabel="College savings projection"
               tip={(b) => (
@@ -167,9 +168,9 @@ export function College() {
               )} />
           ) : <BandChart id="Cl" pts={[]} maxX={0} ariaLabel="College savings projection" tip={() => null} />}
           <Legend id="legendCl" items={chart ? [["#e9b872", "Your savings"], ["#4fbf95", multi ? "Needed then for the bills still ahead" : "Cost of college, that year"]] : []} />
-        </div>
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="clTable" ref={tableRef}>
@@ -177,7 +178,7 @@ export function College() {
               <tbody>{rows}</tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </>
   );

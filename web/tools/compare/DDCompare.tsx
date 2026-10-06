@@ -20,6 +20,7 @@ import { CMP_LETTERS } from "./model";
 import { setNavDir } from "@/lib/nav-motion";
 import { themed } from "@/lib/hues";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /* The slots, kept for the visit. */
 const slotMemory = { names: ["", "", ""] };
@@ -66,9 +67,9 @@ export function DDCompare() {
   ];
   return (
     <div className="stack" id="tab-dd-compare">
-      <div className="panel">
-        <h2>Compare drawdown scenarios<span className="h2ctrl"><Button variant="outline" size="sm" id="ddCmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</Button></span></h2>
-        <div className="body">
+      <Card>
+        <CardHeader><CardTitle>Compare drawdown scenarios</CardTitle><CardAction><Button variant="outline" size="sm" id="ddCmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</Button></CardAction></CardHeader>
+        <CardContent>
           <div className="hint" id="ddCmpEmpty" hidden={enough}>{enough ? null : "You have " + (names.length ? "one saved scenario" : "no saved scenarios") +
             ". Save at least two Drawdown scenarios from the bar above, then come back to compare."}</div>
           <div className="cmpgrid" id="ddCmpPickers">
@@ -87,16 +88,16 @@ export function DDCompare() {
             )) : null}
           </div>
           <div className="hint mt-3" id="ddCmpHelp" hidden={!enough}>Comparison reads saved scenarios only. Nothing here changes the numbers on the Drawdown Simulator tab.</div>
-        </div>
-      </div>
-      <div className="panel" id="ddCmpChartPanel" hidden={!enough}>
-        <h2>Median portfolio balance<span className="h2note">in today&apos;s dollars, historical backtest</span></h2>
+        </CardContent>
+      </Card>
+      <Card id="ddCmpChartPanel" hidden={!enough}>
+        <CardHeader><CardTitle>Median portfolio balance</CardTitle><CardDescription>in today&apos;s dollars, historical backtest</CardDescription></CardHeader>
         <MultiChart id="DDC" ariaLabel="Drawdown scenarios compared" maxX={Math.max(0, ...live.map((x) => x.r!.o.years)) || 1}
           series={live.map((x) => ({ name: x.name, color: MULTI_COLORS[x.i], pts: x.r!.med }))} head={(y) => <b>Year {fmtNum(y)}</b>} />
         <Legend id="legendDDC" items={live.map((x) => [MULTI_COLORS[x.i], x.name])} />
-      </div>
-      <div className="panel" id="ddCmpOutPanel" hidden={!enough}>
-        <h2>Results<span className="h2ctrl"><CsvButton table={table} label="Results" /></span></h2>
+      </Card>
+      <Card id="ddCmpOutPanel" hidden={!enough}>
+        <CardHeader><CardTitle>Results</CardTitle><CardAction><CsvButton table={table} label="Results" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll">
           <table id="ddCmpOutTable" ref={table}>
@@ -104,7 +105,7 @@ export function DDCompare() {
             <tbody>{live.length ? rows.map(([k, f]) => <tr key={k}><td>{k}</td>{live.map((x) => <td key={x.i}>{f(x)}</td>)}</tr>) : null}</tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

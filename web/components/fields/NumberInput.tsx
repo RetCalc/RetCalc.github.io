@@ -12,10 +12,16 @@
    - `nonNeg` fields refuse a minus sign
    - focusing a field selects what's in it, so typing replaces it
 
-   Both are controlled: the parent holds the text as typed. */
+   Both are controlled: the parent holds the text as typed. Inside an
+   Affixed group they render as the group's input, otherwise on their own. */
 
-import { useLayoutEffect, useRef, type InputHTMLAttributes, type Ref } from "react";
+import { createContext, use, useLayoutEffect, useRef, type InputHTMLAttributes, type Ref } from "react";
+import { Input } from "@/components/ui/input";
+import { InputGroupInput } from "@/components/ui/input-group";
 import { groupDigits, parseNum, sanitizeNumeric } from "@/lib/format";
+
+/** True inside an input group, where a field drops its own border. */
+export const InGroup = createContext(false);
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "max" | "step"> & {
   value: string;
@@ -71,9 +77,11 @@ export function MoneyInput({ value, onValueChange, nonNeg = false, ref, onBlur, 
   const inner = useRef<HTMLInputElement>(null);
   const caretRef = useCaret(inner);
   const sel = useSelectOnFocus();
+  const Control = use(InGroup) ? InputGroupInput : Input;
   return (
-    <input
+    <Control
       {...rest}
+      variant="numeric"
       ref={(el) => setRefs(ref, inner, el)}
       type="text"
       inputMode="decimal"
@@ -116,9 +124,11 @@ export function NumberInput({
   const inner = useRef<HTMLInputElement>(null);
   const caretRef = useCaret(inner);
   const sel = useSelectOnFocus();
+  const Control = use(InGroup) ? InputGroupInput : Input;
   return (
-    <input
+    <Control
       {...rest}
+      variant="numeric"
       ref={(el) => setRefs(ref, inner, el)}
       type="text"
       inputMode="decimal"

@@ -23,6 +23,8 @@ import { stateGaps, stateRuleRows } from "./stateRules";
 import { useShareKit } from "@/components/shell/share";
 import { taxShare } from "./share";
 import { themed } from "@/lib/hues";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const TAX_COLORS = { fed: "#e2795f", state: "#e9b872", fica: "#7d9fd6", net: "#4fbf95" };
 const BKT_COLORS = ["#e2795f", "#4fbf95", "#7d9fd6", "#e9b872", "#c98fb8", "#a98fd6"]; // trad, roth, brok, ss, pension, other
@@ -223,13 +225,11 @@ export function Tax() {
   return (
     <>
       <aside id="asideTax">
-        <div className="panel inputs">
-          <h2>Your situation{"\n        "}
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle>Your situation</CardTitle><CardAction>
               <Segmented id="segTxMode" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
-            </span>
-          </h2>
-          <div className="body">
+            </CardAction></CardHeader>
+          <CardContent>
             <div id="txGrossWrap" className={split ? "two bottomalign" : undefined} hidden={ret}>
               <MoneyField id="txGross" labelId="txGrossLabel" label={split ? "Your gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
               <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label="Spouse's gross income" value={s.gross2} onValueChange={set("gross2")} />
@@ -290,17 +290,17 @@ export function Tax() {
               <div><span id="txRoomLabel">{derived.roomLabel}</span><span className="num" id="txRoomShow">{derived.room}</span></div>
               <div id="txZeroRoomRow" hidden={derived.zeroRoom == null}><span>Room in the 0% gains rate</span><span className="num" id="txZeroRoomShow">{derived.zeroRoom ?? ""}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-tax">
-        <div className="panel">
+        <Card size="flush">
           <div className="readout">
             <div className="txhead">
               <Segmented id="segTxView" attr="data-view" options={[["net", "Net pay"], ["take", "Take-home pay"]] as const} value={s.view} onChange={set("view")} hidden={ret} />{" "}
               <span className="txmodelbl" id="txRetLbl" hidden={!ret}>Retirement income</span>{" "}
-              <span className="txbadge">2026 rates</span>
+              <Badge variant="outline">2026 rates</Badge>
             </div>
             <div className="headline">
               <Figure label={head.netLabel} labelId="txNetLabel" id="txNet" className="v gold" value={head.net} noteId="txNetNote" note={head.netNote} />
@@ -308,7 +308,7 @@ export function Tax() {
               <Figure label={head.thirdLabel} labelId="txThirdLabel" id="txBiweek" value={head.third} noteId="txThirdNote" note={head.thirdNote} />
             </div>
           </div>
-          <div className="body">
+          <CardContent>
             <div className="grid2">
               <div id="txBars" onMouseLeave={leave}
                 onMouseOver={(e) => {
@@ -331,11 +331,11 @@ export function Tax() {
                 </svg>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Tax breakdown<span className="h2ctrl"><CsvButton table={tableRef} label="Tax breakdown" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Tax breakdown</CardTitle><CardAction><CsvButton table={tableRef} label="Tax breakdown" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="txTable" ref={tableRef}>
@@ -343,11 +343,11 @@ export function Tax() {
               <tbody>{rows}</tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel" id="txBucketPanel" hidden={!ret}>
-          <h2>Where each dollar came from, and how it was taxed<span className="h2ctrl"><CsvButton table={bucketRef} label="Where each dollar came from, and how it was taxed" /></span></h2>
-          <div className="body">
+        <Card id="txBucketPanel" hidden={!ret}>
+          <CardHeader><CardTitle>Where each dollar came from, and how it was taxed</CardTitle><CardAction><CsvButton table={bucketRef} label="Where each dollar came from, and how it was taxed" /></CardAction></CardHeader>
+          <CardContent>
             <div id="txBucketBars">
               {live.length ? live.map((o) => {
                 // The track is this source's withdrawal against the largest;
@@ -364,7 +364,7 @@ export function Tax() {
                 );
               }) : <div className="hint">Enter a withdrawal above to see how it is taxed.</div>}
             </div>
-          </div>
+          </CardContent>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="txBucketTable" ref={bucketRef}>
@@ -383,11 +383,11 @@ export function Tax() {
             </table>
           </div>
           <div className="mcnote" id="txBucketNote" dangerouslySetInnerHTML={{ __html: bucketNote }} />
-        </div>
+        </Card>
 
-        <div className="panel" id="txGainPanel" hidden={!(ret && R.gain > 0)}>
-          <h2>Your capital gain, and which band it landed in<TipDot k="ltcgstack" /></h2>
-          <div className="body">
+        <Card id="txGainPanel" hidden={!(ret && R.gain > 0)}>
+          <CardHeader><CardTitle>Your capital gain, and which band it landed in<TipDot k="ltcgstack" /></CardTitle></CardHeader>
+          <CardContent>
             <div id="txStackWrap">
               <svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"
                 dangerouslySetInnerHTML={{ __html: ret && R.gain > 0 ? stackChartSvg(R) : "" }} />
@@ -402,12 +402,12 @@ export function Tax() {
                 </>
               ) : null}
             </div>
-          </div>
+          </CardContent>
           <div className="mcnote" id="txGainNote" dangerouslySetInnerHTML={{ __html: gainNote }} />
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Federal brackets, and what you pay in each<span className="h2ctrl"><CsvButton table={bracketRef} label="Federal brackets, and what you pay in each" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Federal brackets, and what you pay in each</CardTitle><CardAction><CsvButton table={bracketRef} label="Federal brackets, and what you pay in each" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="txBrackets" ref={bracketRef}>
@@ -421,11 +421,10 @@ export function Tax() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>State rules, and what went into the figure above<span className="h2note" id="txStateRuleName">{STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? ""}</span>
-            <span className="h2ctrl"><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>State rules, and what went into the figure above</CardTitle><CardDescription id="txStateRuleName">{STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? ""}</CardDescription><CardAction><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></CardAction></CardHeader>
           <div id="txStateRuleWrap">
             <table id="txStateRules" ref={rulesRef}>
               <tbody>
@@ -436,7 +435,7 @@ export function Tax() {
             </table>
           </div>
           <div className="mcnote" id="txStateGaps"><b>Not included in the figures above.</b> {stateGaps(s.state)}</div>
-        </div>
+        </Card>
       </div>
     </>
   );

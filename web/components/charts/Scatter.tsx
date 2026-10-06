@@ -65,7 +65,9 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
   const AXy = roundAxis(opt.yZero ? Math.min(0, ymin) : ymin - (ymax - ymin) * 0.08, ymax + (ymax - ymin) * 0.06);
   const X = (v: number) => L + ((v - AXx.min) / ((AXx.max - AXx.min) || 1)) * pw;
   const Y = (v: number) => T + ph - ((v - AXy.min) / ((AXy.max - AXy.min) || 1)) * ph;
-  const at = live.map((p) => ({ p, px: X(p.x), py: Y(p.y) }));
+  /* Rounded so the server's markup and the browser's match exactly: the two
+     compute the last few digits differently, which React flags. */
+  const at = live.map((p) => ({ p, px: Math.round(X(p.x) * 100) / 100, py: Math.round(Y(p.y) * 100) / 100 }));
 
   // Labels: each takes the first spot beside its dot (right, left, above,
   // below, then further out) that clears the labels already placed and the

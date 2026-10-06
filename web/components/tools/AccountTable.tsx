@@ -15,6 +15,7 @@ import { STATES } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { sendYearToTax } from "@/tools/tax/handoff";
 import { themed } from "@/lib/hues";
+import { CardAction, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const ROWS = [
   { k: "trad", label: "Traditional 401(k) / IRA", c: "#e2795f" },
@@ -36,7 +37,8 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
   };
   return (
     <>
-      <h2>By account type <span className="h2note">at retirement, in today&apos;s dollars</span><span className="h2ctrl"><CsvButton table={table} label="By account type" /></span></h2>
+      <CardHeader><CardTitle>By account type</CardTitle><CardDescription>at retirement, in today&apos;s dollars</CardDescription>
+        <CardAction><CsvButton table={table} label="By account type" /></CardAction></CardHeader>
       <div className="scroll max-h-none">
         <table id={id} ref={table}>
           <thead><tr><th>Account</th><th>Balance</th><th>Share</th><th>First-year withdrawal</th><th>Tax</th><th>After tax</th></tr></thead>

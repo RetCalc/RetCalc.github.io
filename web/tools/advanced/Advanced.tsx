@@ -38,6 +38,10 @@ import { ADVANCED_DEF, advancedPlan, glideNote, glideYearsFor, solvePlan, type A
 import { toStages } from "./toStages";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
+import { InputGroupInput } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const TARGET_LABEL = "(the portfolio behind your target above)";
 
@@ -179,7 +183,7 @@ export function Advanced() {
   /* ---- the fields that move into the account block when it's on ---- */
   const periodField = (
     <div className="field" id="periodField">
-      <label htmlFor="period">Contribution period</label>
+      <Label className="mb-1.5" htmlFor="period"><span>Contribution period</span></Label>
       <select id="period" value={s.period} onChange={(e) => set("period")(e.target.value)}><PeriodOptions /></select>
       <Button variant="link" size="inline-xs" className="mt-1.75" id="convOpen" onClick={() => setDialog("conv")}>
         {ConvertIcon}
@@ -189,10 +193,10 @@ export function Advanced() {
   );
   const growthField = (
     <div className="field" id="growthField">
-      <label htmlFor="growth"><Tipped text="Contribution growth" k="contribgrowth" /></label>
+      <Label className="mb-1.5" htmlFor="growth"><span><Tipped text="Contribution growth" k="contribgrowth" /></span></Label>
       <Affixed suffix="%/yr">
         <NumberInput id="growth" value={blended ? String(+(p.growth * 100).toFixed(2)) : s.growth} onValueChange={set("growth")}
-          readOnly={blended} className={blended ? "blended" : undefined} title={blended ? "Blended from your per-account rates. Click to edit." : ""}
+          readOnly={blended} title={blended ? "Blended from your per-account rates. Click to edit." : ""}
           onClick={() => blended && setDialog("growth")} />
       </Affixed>
       <Button variant="link" size="inline-xs" className="mt-1.75" id="acGrowthBtn" hidden={!acOn} onClick={() => setDialog("growth")}>{blended ? "Edit rates by account" : "Set by account"}</Button>
@@ -200,7 +204,7 @@ export function Advanced() {
   );
   const acMoney = (id: "tradBal" | "tradC" | "rothBal" | "rothC" | "brokBal" | "brokC", label: string, contrib?: boolean) => (
     <div className="field">
-      <label htmlFor={"ac" + id[0].toUpperCase() + id.slice(1)}>{label}</label>
+      <Label className="mb-1.5" htmlFor={"ac" + id[0].toUpperCase() + id.slice(1)}><span>{label}</span></Label>
       <Affixed prefix="$" suffix={contrib ? per : undefined}>
         <MoneyInput id={"ac" + id[0].toUpperCase() + id.slice(1)} nonNeg value={s[id]} onValueChange={set(id)} />
       </Affixed>
@@ -215,9 +219,9 @@ export function Advanced() {
   return (
     <>
       <aside id="asideSingle">
-        <div className="panel inputs">
-          <h2>Your inputs</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your inputs</CardTitle></CardHeader>
+          <CardContent>
             <div className="glidewrap acwrap" id="acWrap">
               <CheckToggle id="acToggle" on={acOn} onToggle={toggleAccounts} controls="acFields">Split by account type<TipDot k="accttypes" /></CheckToggle>
               <div className="acfields" id="acFields" hidden={!acOn}>
@@ -280,10 +284,10 @@ export function Advanced() {
                 <div className="hint m-0" id="glideNote">{s.glideOn ? glideNote(parseNum(s.nominal) / 100, parseNum(s.glideEnd) / 100, parseNum(s.years), parseNum(s.glideYears) || 1) : ""}</div>
               </div>
             </div>
-            <NumberField id="fees" label={<>Fees <span className="tipglue"><span className="opt">optional</span><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
+            <NumberField id="fees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
             <div className="two">
               <div className="field">
-                <label htmlFor="withdrawal"><Tipped text="Withdrawal rate" k="withdrawal" /></label>
+                <Label className="mb-1.5" htmlFor="withdrawal"><span><Tipped text="Withdrawal rate" k="withdrawal" /></span></Label>
                 <Affixed suffix="%"><NumberInput id="withdrawal" nonNeg value={s.withdrawal} onValueChange={set("withdrawal")} /></Affixed>
                 <Button variant="outline" size="sm" className="mt-1.5" id="toDrawdown" onClick={() => {
                   sendToDrawdown({ initial: Math.round(R.fvReal) });
@@ -293,10 +297,9 @@ export function Advanced() {
               </div>
               <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
               <div className="field" id="acTaxField" hidden={!acOn}>
-                <label><Tipped text="Tax on withdrawals" k="actax" /></label>
-                <div className="inputwrap shadow-none bg-transparent bg-none">
-                  <input id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /><span className="affix">calc</span>
-                </div>
+                <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
+                <Affixed suffix="calc">
+                  <InputGroupInput variant="numeric" id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /></Affixed>
               </div>
             </div>
             <div className="derived">
@@ -309,21 +312,21 @@ export function Advanced() {
                 <div><span>Periods modeled</span><span className="num" id="dPeriods">{R.periods.toLocaleString("en-US")}</span></div>
               </details>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-single">
         <ProjectionSummary p="r" R={R} lastPeriod={p.period} fvNote={"After " + p.years + " years at " + pctStr(p.nominal, 2)}
           realNote={"Inflation of " + pctStr(p.inflation, 2) + " over " + R.inflYears + " years"} />
 
-        <div className="panel" id="acPanel" hidden={!acOn}>
+        <Card id="acPanel" hidden={!acOn}>
           {B ? <AccountTable id="acResults" B={B} years={p.years} /> : null}
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Work backwards from a target</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Work backwards from a target</CardTitle></CardHeader>
+          <CardContent>
             <div className="grid2" id="solveGrid">
               <div>
                 <SelectField id="solveFor" label="Solve for" value={s.solveFor} onChange={set("solveFor")}>
@@ -355,7 +358,7 @@ export function Advanced() {
               <div id="sCoastAction">{C.state === "reachable"
                 ? <Button className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
             </div>
-          </div>
+          </CardContent>
           <div className="solveopts">
             <div className="solveopt">
               <div className="optlabel">Option 1 &middot; Change your contribution</div>
@@ -376,18 +379,18 @@ export function Advanced() {
               <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</Button>
             </div>
           </div>
-        </div>
+        </Card>
 
         <ProjectionChart sfx="" segId="segSingle" ariaLabel="Projected inflation-adjusted balance at three rates of return"
           mode={mode} setMode={setMode} band={band} setBand={setBand}
           histMix={s.histMix} setHistMix={set("histMix")} histMixEnd={s.histMixEnd} setHistMixEnd={set("histMixEnd")} glides={p.glide.on}
-          mcFields={<NumberField id="volatility" label={<Tipped text="Volatility" k="volatility" />} unit="%/yr" value={s.vol} onValueChange={set("vol")} />}
+          mcFields={<Field id="volatility" label={<Tipped text="Volatility" k="volatility" />}><Affixed suffix="%/yr" className="w-26"><NumberInput id="volatility" nonNeg value={s.vol} onValueChange={set("vol")} /></Affixed></Field>}
           mcHint="Each redraw runs 5,000 simulations."
           chart={chart} maxX={p.years} bandItems={bandLegend(p.nominal, parseNum(band) / 100)}
           tipHead={(b) => <b>Year {fmtNum(b.year)}</b>} target={S.portToday} targetLabel={TARGET_LABEL} />
 
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="yearTable" ref={tableRef}>
@@ -400,23 +403,23 @@ export function Advanced() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Milestones</h2>
-          <div className="body" id="msBody"><Milestones rows={R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} /></div>
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
+          <CardContent id="msBody"><Milestones rows={R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} /></CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Want to model this in stages?</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Want to model this in stages?</CardTitle></CardHeader>
+          <CardContent>
             <p className="hint mt-0">The Stages tab lets you change your
               contribution, return, or timeline partway through the plan. This will carry
               your current numbers over as the first stage, then add a second stage with
               the same numbers running 10 years longer.</p>
             <Button id="btnToStages" onClick={() => handToStages(false)}>Model these numbers in Stages</Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {dialog === "conv" ? (

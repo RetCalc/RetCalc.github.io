@@ -129,7 +129,6 @@
 .toolhead-icon{width:52px;height:52px;padding:9px}
 .toolhead-t{min-width:0}
 .toolhead-name{margin:0;font-size:23px;font-weight:700;letter-spacing:-.024em;line-height:1.15;color:var(--text)}
-.toolhead-name .beta{vertical-align:4px}
 .toolhead-desc{margin:4px 0 0;font-size:13.5px;line-height:1.5;color:var(--dim);max-width:80ch}
 .toolhead-desc:empty{display:none}
 /* the glide from the picker card into this header */

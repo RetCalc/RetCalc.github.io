@@ -18,6 +18,7 @@ import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MORTGAGE_DEF as DEF, dur, mortgageInput, when, type Inputs } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { mortgageShare } from "./share";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 
@@ -107,9 +108,9 @@ export function Mortgage() {
   return (
     <>
       <aside id="asideMort">
-        <div className="panel inputs">
-          <h2>The home and loan</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>The home and loan</CardTitle></CardHeader>
+          <CardContent>
             <MoneyField id="moPrice" label="Home price" value={s.price} onValueChange={setDown("price")} />
             <div className="two">
               <NumberField id="moDownPct" label="Down payment" unit="%" value={s.downPct} onValueChange={setDown("downPct")} />
@@ -137,12 +138,12 @@ export function Mortgage() {
               <div><span>Down payment</span><span className="num" id="moDownShow">{money(m.down) + " (" + pctStr(m.price ? m.down / m.price : 0, 1) + ")"}</span></div>
               <div><span>Total interest paid</span><span className="num" id="moTotInt">{money(R.totalInterest)}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel inputs">
-          <h2>Already have this loan?</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Already have this loan?</CardTitle></CardHeader>
+          <CardContent>
             <SelectField id="moExtrasOn" label={<Tipped text="Extra payments, recasting, or refinancing" k="moextras" />} value={s.extrasOn} onChange={set("extrasOn")}>
               <option value="0">No, just the basics</option>
               <option value="1">Yes, show these options</option>
@@ -166,28 +167,28 @@ export function Mortgage() {
               </div>
               <MoneyField id="moRefiCost" label={<Tipped text="Closing costs" k="reficost" />} value={s.refiCost} onValueChange={set("refiCost")} />
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-mortgage">
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <Figure label="Monthly payment" id="moTotal" className="v gold" value={money(R.total)} note="Everything included" />
             <Figure label="Principal & interest" id="moPI" value={money(R.pi)} note="The loan itself" />
             <Figure label="Everything else" id="moEsc" value={money(R.total - R.pi)} noteId="moEscNote"
               note={escTxt ? escTxt.charAt(0).toUpperCase() + escTxt.slice(1) : "Nothing else added"} />
           </div>
-          <div className="body">
+          <CardContent>
             <div id="moBars">
               {bars.map(([label, v, c]) => <ShareBar key={label} label={label} value={v} share={v / t} color={c} />)}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel" id="moExtraPanel" hidden={!R.extraActive && !m.refiOn}>
-          <h2>Extra payments &amp; refinancing</h2>
-          <div className="body">
+        <Card id="moExtraPanel" hidden={!R.extraActive && !m.refiOn}>
+          <CardHeader><CardTitle>Extra payments &amp; refinancing</CardTitle></CardHeader>
+          <CardContent>
             <div id="moExtraStats">{extra}</div>
             <div id="moRefiBlock" hidden={!RF}>
               <FieldHeading className="mt-1">Refinancing to <span id="moRefiHead">{RF ? `${pctStr(m.refiRate!, 2)} for ${fmtNum(m.refiTerm!)} years` : ""}</span></FieldHeading>
@@ -203,11 +204,11 @@ export function Mortgage() {
                 ) : null}
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Loan balance and what you&apos;ve paid</h2>
+        <Card>
+          <CardHeader><CardTitle>Loan balance and what you&apos;ve paid</CardTitle></CardHeader>
           <BandChart id="Mo" pts={pts} maxX={R.years.length || 1} enhanced ariaLabel="Mortgage balance over time"
             tip={(b) => (
               <>
@@ -218,10 +219,10 @@ export function Mortgage() {
               </>
             )} />
           <Legend id="legendMo" items={[["#e9b872", "Balance remaining"], ["#4fbf95", "Principal paid"], ["#e2795f", "Interest paid"]]} />
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Amortization by year<TipDot k="amort" /><span className="h2ctrl"><CsvButton table={table} label="Amortization by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Amortization by year<TipDot k="amort" /></CardTitle><CardAction><CsvButton table={table} label="Amortization by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="moTable" ref={table}>
@@ -233,7 +234,7 @@ export function Mortgage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </>
   );

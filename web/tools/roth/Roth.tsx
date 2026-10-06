@@ -25,6 +25,7 @@ import { ROTH_DEF, rothInput, type RothInputs } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { rothShare } from "./share";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function Roth() {
   const { state: s, set, setState } = useToolState(ROTH_DEF);
@@ -87,9 +88,9 @@ export function Roth() {
   return (
     <>
       <aside id="asideRC">
-        <div className="panel inputs">
-          <h2>Your situation</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your situation</CardTitle></CardHeader>
+          <CardContent>
             <div className="two">
               <NumberField id="rcAge" label="Your age" unit="age" max={95} value={s.age} onValueChange={set("age")} />
               <NumberField id="rcEndAge" label="Plan through" unit="age" max={100} value={s.endAge} onValueChange={set("endAge")} />
@@ -195,12 +196,12 @@ export function Roth() {
               <div><span>Years converting</span><span className="num" id="rcConvYears">{plan ? (convYears ? fmtNum(convYears) + (convYears === 1 ? " year" : " years") : "None") : ""}</span></div>
               <div><span>Average conversion</span><span className="num" id="rcAvgConv">{plan ? (convYears ? money(plan.totalConv / convYears, 0) + "/yr" : DASH) : ""}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-roth">
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <Figure label={<Tipped text="Lifetime tax saved" k="rcpv" />} id="rcSaved" className={R ? "v " + (R.taxSaved >= 0 ? "gold" : "neg") : "v gold"}
               value={R ? (R.taxSaved >= 0 ? "" : "−") + money(Math.abs(R.taxSaved)) : DASH} noteId="rcSavedNote"
@@ -210,21 +211,21 @@ export function Roth() {
             <Figure label={<Tipped text="Peak RMD" k="rcpeak" />} id="rcPeak" value={plan && base ? money(base.peakRMD, 0) : DASH} noteId="rcPeakNote"
               note={plan && base ? (plan.peakRMD < base.peakRMD ? "Converting trims it to " + money(plan.peakRMD, 0) : "Unchanged by this plan") : ""} />
           </div>
-          <div className="body"><div id="rcVerdict">
+          <CardContent><div id="rcVerdict">
             {R ? <div className="hint m-0">{R.verdict} Lifetime tax is what you and your heirs hand over; after-tax net worth is what is left standing at age {inp.endAge}, with traditional dollars discounted at {pctStr(inp.heirRate, 0)} because they are still owed to the IRS.</div> : null}
-          </div></div>
-        </div>
+          </div></CardContent>
+        </Card>
 
-        <div className="panel" id="rcWidow" hidden={!R?.wRow}>
-          <div className="body">
+        <Card id="rcWidow" hidden={!R?.wRow}>
+          <CardContent>
             <div className="font-semibold text-text mb-1.5">The survivor&apos;s bracket</div>
             <div className="hint m-0" id="rcWidowText">{R?.widow}</div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Converting vs. not</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Converting vs. not</CardTitle></CardHeader>
+          <CardContent>
             <div className="grid2">
               <div>
                 <KV k="Lifetime income tax, converting" id="rcTaxPlan" v={plan ? money(plan.lifeTax) : ""} />
@@ -242,15 +243,13 @@ export function Roth() {
             <div className="hint mt-3.5">Every figure is in today&apos;s dollars.
               Brackets, the standard deduction and the IRMAA thresholds are held fixed in
               real terms, which is what indexing does to them in practice.</div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2 id="rcChartTitle">{view === "bal" ? "Traditional balance" : "Tax paid each year"}<span className="h2note">in today&apos;s dollars</span>
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle id="rcChartTitle">{view === "bal" ? "Traditional balance" : "Tax paid each year"}</CardTitle><CardDescription>in today&apos;s dollars</CardDescription><CardAction>
               <Segmented id="segRC" attr="data-rc" options={[["bal", "Balance"], ["tax", "Tax"]] as const} value={view} onChange={setView} />
-            </span>
-          </h2>
+            </CardAction></CardHeader>
           <BandChart id="RC" pts={R?.pts ?? []} maxX={inp.endAge - inp.age} enhanced ariaLabel="Converting versus not converting"
             tip={(b) => (
               <>
@@ -263,15 +262,13 @@ export function Roth() {
             ["#e9b872", view === "bal" ? "Traditional balance, converting" : "Tax paid, converting"],
             ["#4fbf95", view === "bal" ? "Traditional balance, no conversions" : "Tax paid, no conversions"],
           ] : []} />
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Year by year
-            <span className="h2ctrl">
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction>
               <Segmented id="segRCTab" attr="data-rct" options={[["plan", "Converting"], ["base", "Doing nothing"]] as const} value={tableView} onChange={setTableView} />
               <CsvButton table={tableRef} label="Year by year" />
-            </span>
-          </h2>
+            </CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="rcTable" ref={tableRef}>
@@ -288,7 +285,7 @@ export function Roth() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </>
   );

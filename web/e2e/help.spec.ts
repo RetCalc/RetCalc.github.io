@@ -41,7 +41,7 @@ for (const [slug, parts, tries] of TOURS)
       await both(tries);
       await compareShown(oldPage, page, info, slug + " tried", ["#thCoach"]);
       // on a phone, typing in the tool folds the panel down; open it again
-      for (const p of [oldPage, page]) if (await p.locator("#thCoach.min").count()) await p.locator("#thCoach .gd-coach-tog").click();
+      for (const p of [oldPage, page]) if (await p.locator("#thCoach.min").count()) await p.locator('#thCoach button[aria-expanded][aria-label$="the steps"]').click();
     }
     for (let i = 2; i <= parts; i++) {
       await both([["click", '#thCoach [data-tp="1"]'], ...(WAIT[`${slug} part ${i}`] || [])]);

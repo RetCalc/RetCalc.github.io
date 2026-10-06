@@ -33,6 +33,10 @@ import { projectionShare } from "@/tools/advanced/share";
 import { STAGES_DEF, effectiveStages, readStage, stageSplit, stagesPlan, stagesTargetRate, type StageInputs, type StagesInputs } from "./model";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
+import { InputGroupInput } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const TARGET_LABEL = "(your target above)";
 
@@ -160,9 +164,9 @@ export function Stages() {
   return (
     <>
       <aside id="asideSeries">
-        <div className="panel inputs">
-          <h2>Your inputs <span className="h2note">whole run</span></h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your inputs</CardTitle><CardDescription>whole run</CardDescription></CardHeader>
+          <CardContent>
             <div className="glidewrap acwrap">
               <CheckToggle id="saToggle" on={split} onToggle={toggleAccounts} controls="saFields">Split by account type<TipDot k="staccttypes" /></CheckToggle>
               <div className="acfields" id="saFields" hidden={!split}>
@@ -205,28 +209,25 @@ export function Stages() {
             </div>
             <NumberField id="gTaxrate" wrapId="gTaxrateField" hidden={split} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
             <div className="field" id="saTaxField" hidden={!split}>
-              <label><Tipped text="Tax on withdrawals" k="actax" /></label>
-              <div className="inputwrap shadow-none bg-transparent bg-none">
-                <input id="saTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={V.saRate != null ? pctStr(V.saRate, 1) : ""} /><span className="affix">calc</span>
-              </div>
+              <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
+              <Affixed suffix="calc">
+                <InputGroupInput variant="numeric" id="saTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={V.saRate != null ? pctStr(V.saRate, 1) : ""} /></Affixed>
             </div>
-            <NumberField id="gFees" label={<>Fees <span className="tipglue"><span className="opt">optional</span><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
+            <NumberField id="gFees" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={s.fees} onValueChange={set("fees")} />
             <div className="derived">
               <div><span>Stages</span><span className="num" id="gStages">{n}</span></div>
               <div><span>Fees</span><span className="num" id="gFeeNote">{(g.fees || 0) > 0 ? pctStr(g.fees, 2) + " off every stage" : "none"}</span></div>
               <div><span>Total horizon</span><span className="num" id="gTotalYears">{fmtNum(R.totalYears) + (R.totalYears === 1 ? " yr" : " yrs")}</span></div>
               <div><span>Total contributed</span><span className="num" id="gTotalContrib">{money(R.contribTotal)}</span></div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" role="tabpanel" aria-labelledby="tabbtn-calc" id="tab-series">
-        <div className="panel">
-          <h2>Stages{"\n        "}
-            <span className="h2ctrl"><Button variant="outline" id="btnAddStage" onClick={addStage}>Add stage</Button></span>
-          </h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Stages</CardTitle><CardAction><Button variant="outline" id="btnAddStage" onClick={addStage}>Add stage</Button></CardAction></CardHeader>
+          <CardContent>
             <div id="stageList">
               {s.stages.map((st, i) => (
                 <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
@@ -238,20 +239,20 @@ export function Stages() {
             <div className={n ? "hint hidden" : "hint block"} id="stageEmpty">
               No stages yet. Add one to start building a run.
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <ProjectionSummary p="x" R={R} lastPeriod={R.lastPeriod}
           fvNote={dn ? "Across " + dn + (dn === 1 ? " stage, " : " stages, ") + fmtNum(R.totalYears) + " years" : "Add a stage to begin"}
           realNote={"Inflation of " + pctStr(g.inflation, 2) + " over " + fmtNum(R.inflYears) + " years"} />
 
-        <div className="panel" id="saPanel" hidden={!split}>
+        <Card id="saPanel" hidden={!split}>
           {P.B ? <AccountTable id="saResults" B={P.B} years={P.B.years ?? R.totalYears} /> : null}
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Work backwards from a target<span className="h2note">changes the final stage only</span></h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Work backwards from a target</CardTitle><CardDescription>changes the final stage only</CardDescription></CardHeader>
+          <CardContent>
             <div className="grid2">
               <div>
                 <SelectField id="solveForS" label="Solve for" value={s.solveFor} onChange={set("solveFor")}>
@@ -273,7 +274,7 @@ export function Stages() {
                 <KV k="That alone grows to" id="tGrown" v={F ? money(F.grown) : ""} />
               </div>
             </div>
-          </div>
+          </CardContent>
           <div className="solveopts">
             <div className="solveopt">
               <div className="optlabel">Option 1 &middot; Final stage contribution</div>
@@ -292,7 +293,7 @@ export function Stages() {
               <Button className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!!F && !F.reached} onClick={applyYears}>Use this length</Button>
             </div>
           </div>
-        </div>
+        </Card>
 
         <ProjectionChart sfx="S" segId="segSeries" ariaLabel="Projected inflation-adjusted balance across stages"
           mode={mode} setMode={setMode} band={band} setBand={setBand}
@@ -304,8 +305,8 @@ export function Stages() {
           tipHead={(b) => <><b>Year {fmtNum(b.year)}</b> <span className="text-chart-slate">&middot; stage {String(b.stage)}</span></>}
           target={portToday} targetLabel={TARGET_LABEL} />
 
-        <div className="panel">
-          <h2>Stage by stage<span className="h2ctrl"><CsvButton table={stageTable} label="Stage by stage" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Stage by stage</CardTitle><CardAction><CsvButton table={stageTable} label="Stage by stage" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="stageTable" ref={stageTable}>
@@ -318,10 +319,10 @@ export function Stages() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={yearTable} label="Year by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={yearTable} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="xYearTable" ref={yearTable}>
@@ -334,15 +335,15 @@ export function Stages() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
 
-        <div className="panel">
-          <h2>Milestones</h2>
-          <div className="body" id="msBodyS">
+        <Card>
+          <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
+          <CardContent id="msBodyS">
             <Milestones rows={R.rows.map((r) => ({ year: r.endYear, end: r.end, growth: r.growth, contrib: r.contrib }))}
               infl={g.inflation} feeCost={V.feeCost} horizon={R.totalYears} wholeYears />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

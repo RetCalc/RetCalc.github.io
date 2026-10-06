@@ -17,6 +17,8 @@ import { gdM, ok } from "./calc";
 import type { AnswerKey, Answers, GuideState } from "./store";
 import { TRIP_META } from "./tripMeta";
 import { Button } from "@/components/ui/button";
+import { Affixed } from "@/components/fields/Field";
+import { Label } from "@/components/ui/label";
 
 export interface GuideView {
   g: GuideState;
@@ -54,7 +56,7 @@ export function Choice({ k, val, title, sub }: { k: AnswerKey; val: string; titl
 interface FieldOpts { full?: boolean; hint?: React.ReactNode }
 function Wrap({ k, label, full, hint, children }: FieldOpts & { k: string; label: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className={"field" + (full ? " full" : "")}><label htmlFor={"gdf-" + k}>{label}</label>{children}
+    <div className={"field" + (full ? " full" : "")}><Label className="mb-1.5" htmlFor={"gdf-" + k}><span>{label}</span></Label>{children}
       {hint ? <div className="hint">{hint}</div> : null}</div>
   );
 }
@@ -65,10 +67,9 @@ export function MoneyF({ k, label, per, ph, ...o }: FieldOpts & { k: AnswerKey; 
   const val = G.a[k];
   return (
     <Wrap k={k} label={label} {...o}>
-      <div className="inputwrap"><span className="affix">$</span>
+      <Affixed prefix="$" suffix={per}>
         <DraftInput money nonNeg id={"gdf-" + k} data-a={k} placeholder={ph} value={ok(val) ? val : NaN} format={gdM}
-          onType={(t) => G.set(k, typed(t) as Answers[typeof k])} />
-        {per ? <span className="affix">{per}</span> : null}</div>
+          onType={(t) => G.set(k, typed(t) as Answers[typeof k])} /></Affixed>
     </Wrap>
   );
 }
@@ -77,10 +78,10 @@ export function NumF({ k, label, affix, ...o }: FieldOpts & { k: AnswerKey; labe
   const val = G.a[k];
   return (
     <Wrap k={k} label={label} {...o}>
-      <div className="inputwrap">
+      <Affixed suffix={affix}>
         <DraftInput nonNeg step={1} id={"gdf-" + k} data-a={k} value={ok(val) ? val : NaN} format={(x) => (ok(x) ? String(x) : "")}
           onType={(t) => G.set(k, typed(t) as Answers[typeof k])} />
-        <span className="affix">{affix}</span></div>
+        </Affixed>
     </Wrap>
   );
 }

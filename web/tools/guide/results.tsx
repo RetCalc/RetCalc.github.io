@@ -18,6 +18,7 @@ import { firstOpen } from "./steps";
 import { tuneState } from "./tune";
 import { BackNote, Callout, H3, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 /** The score as a ring, with the number in it. */
 export function Ring({ score: s, size }: { score: number | null; size?: number }) {
@@ -166,7 +167,7 @@ export function Results() {
           <Button variant="outline" size="sm" className="-mt-0.5 mx-0 mb-4" data-go="optimize" onClick={() => G.go("optimize")}>{S.tactics ? "Your roadmap" : "Plan Optimizer"}</Button>
         </>
       ) : null}
-      {wins.length ? <><H3>What&apos;s going well</H3><div className="gd-wins">{wins.map((w) => <span key={w}>{w}</span>)}</div></> : null}
+      {wins.length ? <><H3>What&apos;s going well</H3><div className="gd-wins">{wins.map((w) => <Badge key={w} variant="positive">{w}</Badge>)}</div></> : null}
       {(() => {
         const kv: [string, string][] = [];
         if (pos(a.takehome)) kv.push(["Take-home pay", money(a.takehome) + "/mo"]);

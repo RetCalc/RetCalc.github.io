@@ -11,7 +11,7 @@ import { HistBarNote } from "@/components/charts/HistNotes";
 import { HistLegend, Legend } from "@/components/charts/Legend";
 import { BandTipRows, FanTipRows } from "@/components/charts/TipRows";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
-import { Affixed, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
+import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { NumberInput } from "@/components/fields/NumberInput";
 import { Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
@@ -22,6 +22,7 @@ import { fiComputeCoastCrossings, fiComputeCrossings, fiYearsFromCrossings, hist
 import type { HistRuns } from "@/lib/engine/types";
 import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
 import { FIRE_DEF, fireInput, fireSolve, type FireInputs, type FirePlan } from "./model";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Pt = { year: number; base: number; hi: number; lo: number; p25?: number; p75?: number };
 const trim1 = (v: number) => v.toFixed(1).replace(/\.0$/, "");
@@ -163,9 +164,9 @@ export function Fire() {
   return (
     <>
       <aside id="asideFire">
-        <div className="panel inputs">
-          <h2>Your plan</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your plan</CardTitle></CardHeader>
+          <CardContent>
             <div className="field mb-3.5">
               <Segmented id="segFireMode" attr="data-firemode" options={[["fire", "FIRE"], ["coast", "Coast FIRE"]] as const} value={s.mode} onChange={set("mode")} />
             </div>
@@ -189,12 +190,12 @@ export function Fire() {
             </SelectField>
             <MoneyField id="fiTarget" label={<Tipped text="Target (today's dollars)" k="fitarget" />} value={s.target} onValueChange={set("target")} />
             <NumberField id="fiWithdrawal" label={<Tipped text="Withdrawal rate" k="withdrawal" />} unit="%" step={0.25} negative value={s.withdrawal} onValueChange={set("withdrawal")} />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-fire">
-        <div className="panel">
+        <Card size="flush">
           <div className="headline">
             <div>
               <div className="k" id="fiAgeLabel">{S ? modeLabel + " age" : "FIRE age"}</div>
@@ -212,7 +213,7 @@ export function Fire() {
               <div className="note" id="fiYearsNote">{S ? (S.fireYear ? "From age " + fmtNum(p.curAge) : "") : "\u00a0"}</div>
             </div>
           </div>
-          <div className="body">
+          <CardContent>
             <div className="grid2">
               <div>
                 <KV k="Target portfolio" id="fiKVTarget" v={kvs?.target ?? DASH} />
@@ -229,23 +230,22 @@ export function Fire() {
                 <KV k="Real return" id="fiKVRealReturn" v={kvs?.real ?? DASH} />
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Portfolio growth{"\n        "}
-            <span className="h2note" id="fiChartNote">{chart.note}</span>{"\n        "}
+        <Card>
+          <CardHeader><CardTitle>Portfolio growth{"\n        "}
+            {"\n        "}
             <span className="float-right inline-flex items-center gap-2 -mt-0.5">
               <Segmented id="segFireChart" attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"]] as const} value={s.chart} onChange={set("chart")} />{" "}
               <span id="fiOptBand" className={hist ? "hidden" : "inline-flex items-center"}>
-                <Affixed prefix="&plusmn;" suffix="%" className="w-24">
+                <Affixed prefix="&plusmn;" suffix="%" className="w-24 max-sm:w-27.5">
                   <NumberInput id="fiBand" nonNeg step={0.5} value={s.band} onValueChange={set("band")} aria-label="Return band" />
                 </Affixed>
               </span>
-            </span>
-          </h2>
+            </span></CardTitle><CardDescription id="fiChartNote">{chart.note}</CardDescription></CardHeader>
           <div className="mcbar" id="fiHistBar" hidden={!hist}>
-            <NumberField id="fiHistMix" label="Stock mix" unit="%" step={5} max={100} value={s.histMix} onValueChange={set("histMix")} />
+            <Field id="fiHistMix" label="Stock mix"><Affixed suffix="%" className="w-26"><NumberInput id="fiHistMix" nonNeg step={5} max={100} value={s.histMix} onValueChange={set("histMix")} /></Affixed></Field>
             <div className="hint m-0" id="fiHistNote">{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
           </div>
           <BandChart id="Fire" pts={chart.pts} maxX={chart.maxX} mode={chart.mode} xOffset={p.curAge} ariaLabel="Portfolio growth to FIRE"
@@ -264,7 +264,7 @@ export function Fire() {
               ["#e9b872", "At " + pctStr(p.nominal, 2) + " (your rate)"],
               ["#e2795f", p.band > 0 ? "At " + pctStr(Math.max(0.001, p.nominal - p.band), 2) + " (−" + lbl + "%)" : "Lower"],
             ]} />}
-          <div id="fiSliderWrap" className="body pt-0 pb-3.5" hidden={!hist}>
+          <CardContent id="fiSliderWrap" className="pt-0 pb-3.5" hidden={!hist}>
             <div className="fire-slider-section">
               <div className="fire-slider-row">
                 <span className="fire-slider-lbl">Historical success rate</span>{" "}
@@ -275,11 +275,11 @@ export function Fire() {
               <div className="fire-slider-result" id="fiSuccessAge">{successAge}</div>
               <div className="hint mcnote pt-1 px-0 pb-0" id="fiSliderNote">{sliderNote}</div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <div className="panel">
-          <h2>Year by year<span className="h2ctrl"><CsvButton table={tableRef} label="Year by year" /></span></h2>
+        <Card>
+          <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
             <table id="fiTable" ref={tableRef}>
@@ -294,7 +294,7 @@ export function Fire() {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       </div>
     </>
   );

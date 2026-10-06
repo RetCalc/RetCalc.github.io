@@ -58,9 +58,7 @@ html[data-theme="light"] .about.disclaimer{
 
 /* ---------- budget ---------- */
 .bgincome{max-width:520px}
-.bgincome label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
 .bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.bgincome-row .inputwrap{flex:1 1 140px}
 .bgseg{display:inline-flex;border:1px solid var(--jade);border-radius:6px;
   overflow:hidden;flex:none}
 .bgseg button{font-family:var(--mono);font-size:11px;padding:5px 9px;background:transparent;
@@ -73,17 +71,11 @@ html[data-theme="light"] .about.disclaimer{
   padding:12px 0 6px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}
 .bgrow{display:flex;gap:8px;align-items:center;padding:5px 0}
 .bgrow .desc{flex:1 1 auto;min-width:0;font-size:13.5px;color:var(--text)}
-.bgrow input.desc{background:var(--field);border:1px solid var(--line);
-  border-radius:var(--r-well);padding:8px 10px;font-family:var(--sans);color:var(--text);
-  box-shadow:var(--well)}
-.bgrow input.desc:focus{outline:none;border-color:var(--jade);
-  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
 .bgrow span.desc[contenteditable]{cursor:text;border-radius:4px;
   padding:2px 5px;margin:-2px -5px;border:1px dashed transparent}
 .bgrow span.desc[contenteditable]:hover{border-color:var(--line)}
 .bgrow span.desc[contenteditable]:focus{outline:none;border-color:var(--jade);
   border-style:solid;background:var(--panel)}
-.bgrow .inputwrap{flex:0 0 130px;width:130px}
 .bgrow .delspace{width:28px;flex:none}
 .freqsel{width:auto;min-width:104px;flex:none}
 
@@ -91,5 +83,4 @@ a.txlink{color:var(--jade);text-decoration:underline;text-decoration-color:rgba(
   text-underline-offset:2px}
 a.txlink:hover{text-decoration-color:currentColor}
 /* A growth field set per account shows the blend; clicking it edits the rates. */
-.inputwrap input.blended{cursor:pointer;color:var(--jade)}
 

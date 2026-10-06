@@ -3,7 +3,6 @@
    the string is drawn back until the search starts, then it looses and the
    arrow rides the lane, the fill following it, until the answer lands in the
    target. --p (0 to 1, set from script every frame) is how far it's flown. */
-.op-top .body{padding:20px 22px 18px}
 .op-lede{color:var(--dim);font-size:14px;line-height:1.6;margin:0 0 16px;max-width:78ch}
 .op-q{font-size:13px;font-weight:600;color:var(--text);margin:0 0 10px}
 .op-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:0 0 16px}
@@ -140,7 +139,6 @@
 .op-sec{margin-top:6px}
 .op-note{font-weight:400;color:var(--dimmer);font-size:12px}
 .op-cap{font-size:11.5px;color:var(--dimmer);margin:6px 0 0}
-.op-p .body > .gd-chart{margin-top:4px}
 
 /* The roadmap: a timeline down the left, one stop per stretch of years. */
 .op-road{list-style:none;margin:2px 0 0;padding:0;position:relative;--agew:66px}
@@ -202,14 +200,13 @@
 .op-acct b{color:var(--text);font-family:var(--mono);font-weight:600}
 .op-apply{margin-top:14px}
 .op-ready-in{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.op-ready .k{font-size:12px;color:var(--dim)}
-.op-ready .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--text);margin:4px 0}
-.op-ready .v small{font-size:14px;color:var(--dim)}
-.op-ready .n{font-size:12px;color:var(--dimmer)}
+.op-ready-in .k{font-size:12px;color:var(--dim)}
+.op-ready-in .v{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--text);margin:4px 0}
+.op-ready-in .v small{font-size:14px;color:var(--dim)}
+.op-ready-in .n{font-size:12px;color:var(--dimmer)}
 #asideOP .op-sub{margin:12px 0 4px}
 #asideOP .op-sub .hint{margin:0;font-weight:600;color:var(--text)}
 #asideOP .op-modefield{margin-bottom:14px}
-#asideOP .op-modefield label{display:block}
 .op-modeseg{display:flex;width:100%}
 .op-modeseg button{flex:1;font-size:12.5px;padding:7px 10px}
 #asideOP .two.one{grid-template-columns:1fr}

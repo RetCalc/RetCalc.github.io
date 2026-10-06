@@ -1,14 +1,16 @@
 /* The pieces every input panel is built from, so each tool composes them
-   instead of repeating the markup. They produce exactly the old site's
-   markup (.field, .inputwrap, .affix), which the CSS expects.
+   instead of repeating the markup. Labels and spacing still use the old
+   site's .field markup; the inputs are the design system's.
 
      <MoneyField id="moPrice" label="Home price" value={s.price} onValueChange={set("price")} />
      <NumberField id="moRate" label="Interest rate" unit="%" step={0.125} ... />
      <Field id="moTerm" label="Length"><select id="moTerm">...</select></Field>
 */
 
-import type { CSSProperties, ReactNode, Ref } from "react";
-import { MoneyInput, NumberInput } from "./NumberInput";
+import type { ReactNode, Ref } from "react";
+import { InputGroup, InputGroupAddon, InputGroupText } from "@/components/ui/input-group";
+import { InGroup, MoneyInput, NumberInput } from "./NumberInput";
+import { Label } from "@/components/ui/label";
 
 interface FieldProps {
   /** The input's id, which the label points at. */
@@ -26,20 +28,24 @@ interface FieldProps {
 export function Field({ id, label, labelId, wrapId, hidden, className, children }: FieldProps) {
   return (
     <div className={className ? `field ${className}` : "field"} id={wrapId} hidden={hidden}>
-      <label htmlFor={id} id={labelId}>{label}</label>
+      <Label className="mb-1.5" htmlFor={id} id={labelId}><span>{label}</span></Label>
       {children}
     </div>
   );
 }
 
-/** An input with its "$" in front and its unit after. */
-export function Affixed({ prefix, suffix, children, style, className }: { prefix?: string; suffix?: string; children: ReactNode; style?: CSSProperties; className?: string }) {
+/** An input with its "$" in front and its unit after. The addons follow
+    the input in the markup, so Tab reaches the input first; `align` puts
+    them on their side. */
+export function Affixed({ prefix, suffix, children, className }: { prefix?: ReactNode; suffix?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <div className={className ? `inputwrap ${className}` : "inputwrap"} style={style}>
-      {prefix ? <span className="affix">{prefix}</span> : null}
-      {children}
-      {suffix ? <span className="affix">{suffix}</span> : null}
-    </div>
+    <InGroup value={true}>
+      <InputGroup className={className}>
+        {children}
+        {prefix ? <InputGroupAddon><InputGroupText>{prefix}</InputGroupText></InputGroupAddon> : null}
+        {suffix ? <InputGroupAddon align="inline-end"><InputGroupText>{suffix}</InputGroupText></InputGroupAddon> : null}
+      </InputGroup>
+    </InGroup>
   );
 }
 

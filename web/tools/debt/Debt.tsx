@@ -24,6 +24,9 @@ import { DEBT_DEF, debtList, type DebtRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { debtShare } from "./share";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 export function Debt() {
@@ -128,18 +131,18 @@ export function Debt() {
 
   return (
     <div className="stack solo" id="tab-debt">
-      <div className="panel">
+      <Card size="flush">
         <div className="headline">
           <Figure label="Debt-free" id="dtFree" className="v gold" value={head.free} noteId="dtFreeNote" note={head.freeNote} />
           <Figure label="Total interest" id="dtInterest" value={head.interest} noteId="dtInterestNote" note={head.interestNote} />
           <Figure label={<Tipped text="Saved vs. minimums" k="dtsaved" />} id="dtSaved" className={head.savedPos ? "v pos" : "v "}
             value={head.saved} noteId="dtSavedNote" note={head.savedNote} />
         </div>
-        <div className="body">
+        <CardContent>
           <div className="bgincome">
-            <label htmlFor="dtExtra">Extra payment, on top of the minimums</label>
+            <Label className="mb-1.5" htmlFor="dtExtra"><span>Extra payment, on top of the minimums</span></Label>
             <div className="bgincome-row">
-              <Affixed prefix="$" suffix="/mo"><MoneyInput id="dtExtra" nonNeg value={s.extra} onValueChange={set("extra")} /></Affixed>{" "}
+              <Affixed prefix="$" suffix="/mo" className="flex-auto basis-35"><MoneyInput id="dtExtra" nonNeg value={s.extra} onValueChange={set("extra")} /></Affixed>{" "}
               <Button variant="outline" id="dtCopyBudget"
                 onClick={() => {
                   const leftMo = budgetTotals(toolInputs("budget", BUDGET_DEFAULTS)).leftYr / 12;
@@ -163,20 +166,20 @@ export function Debt() {
               <><b>{warn.join(", ")}</b>: the minimum doesn&apos;t cover one month of interest, so that balance grows on its own. The payoff below only works because of the extra payment; check the minimum you entered.</>
             ) : null}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="panel">
-        <h2>Your debts</h2>
-        <div className="body">
+      <Card>
+        <CardHeader><CardTitle>Your debts</CardTitle></CardHeader>
+        <CardContent>
           <div className="dthead"><span className="desc">Debt</span><span className="c1">Balance</span><span className="c2"><Tipped text="Rate" k="dtrate" /></span><span className="c3"><Tipped text="Minimum" k="dtmin" /></span><span className="delspace"></span></div>
           <div id="dtList" ref={listRef}>
             {s.rows.map((r, i) => (
               <div className="dtrow" key={i}>
-                <input className="desc" data-f="desc" data-i={i} value={r.desc} placeholder="Name" aria-label="Debt name" onChange={(e) => setRow(i, "desc")(e.target.value)} />
-                <Affixed className="c1" prefix="$"><MoneyInput nonNeg data-f="balance" data-i={i} value={r.balance} onValueChange={setRow(i, "balance")} aria-label="Balance" /></Affixed>
-                <Affixed className="c2" suffix="%"><NumberInput nonNeg step={0.1} data-f="apr" data-i={i} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /></Affixed>
-                <Affixed className="c3" prefix="$"><MoneyInput nonNeg data-f="min" data-i={i} value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></Affixed>
+                <div className="desc"><Input data-f="desc" data-i={i} value={r.desc} placeholder="Name" aria-label="Debt name" onChange={(e) => setRow(i, "desc")(e.target.value)} /></div>
+                <div className="c1"><Affixed prefix="$"><MoneyInput nonNeg data-f="balance" data-i={i} value={r.balance} onValueChange={setRow(i, "balance")} aria-label="Balance" /></Affixed></div>
+                <div className="c2"><Affixed suffix="%"><NumberInput nonNeg step={0.1} data-f="apr" data-i={i} value={r.apr} onValueChange={setRow(i, "apr")} aria-label="Rate" /></Affixed></div>
+                <div className="c3"><Affixed prefix="$"><MoneyInput nonNeg data-f="min" data-i={i} value={r.min} onValueChange={setRow(i, "min")} aria-label="Minimum payment" /></Affixed></div>
                 {s.rows.length > 1 ? (
                   <Button variant="ghost" size="icon-sm" title="Remove" aria-label="Remove"
                     onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}>{"×"}</Button>
@@ -189,29 +192,29 @@ export function Debt() {
               setState((c) => ({ ...c, rows: [...c.rows, { desc: "New debt", balance: "0", apr: "0", min: "0" }] }));
               focusLast(listRef, ".dtrow input.desc");
             }}>Add a debt</Button>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="panel">
-        <h2>Avalanche vs. snowball<span className="h2note">same money, different order</span><span className="h2ctrl"><CsvButton table={compareRef} label="Avalanche vs. snowball" /></span></h2>
-        <div className="body">
+      <Card>
+        <CardHeader><CardTitle>Avalanche vs. snowball</CardTitle><CardDescription>same money, different order</CardDescription><CardAction><CsvButton table={compareRef} label="Avalanche vs. snowball" /></CardAction></CardHeader>
+        <CardContent>
           <div id="dtVerdict">{verdict ? <div className="hint mt-0 mx-0 mb-3">{verdict}</div> : null}</div>
-        </div>
+        </CardContent>
         <div className="scroll">
           <table id="dtCompare" ref={compareRef}>
             <thead><tr><th>Approach</th><th>Debt-free</th><th>How long</th><th>Total interest</th><th>First debt gone</th></tr></thead>
             <tbody>{cmpRows}</tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
-      <div className="panel">
-        <h2>What you owe, month by month<span className="h2note">months from now</span></h2>
+      <Card>
+        <CardHeader><CardTitle>What you owe, month by month</CardTitle><CardDescription>months from now</CardDescription></CardHeader>
         {body ?? <><BandChart id="DT" pts={[]} maxX={0} ariaLabel="Balance over time" tip={() => null} /><Legend id="legendDT" items={[]} /></>}
-      </div>
+      </Card>
 
-      <div className="panel">
-        <h2>Payoff order<span className="h2ctrl"><CsvButton table={orderRef} label="Payoff order" /></span></h2>
+      <Card>
+        <CardHeader><CardTitle>Payoff order</CardTitle><CardAction><CsvButton table={orderRef} label="Payoff order" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll">
           <table id="dtOrder" ref={orderRef}>
@@ -219,10 +222,10 @@ export function Debt() {
             <tbody>{orderRows}</tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
-      <div className="panel">
-        <h2>The schedule<span className="h2ctrl"><CsvButton table={schedRef} label="The schedule" /></span></h2>
+      <Card>
+        <CardHeader><CardTitle>The schedule</CardTitle><CardAction><CsvButton table={schedRef} label="The schedule" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll">
           <table id="dtSched" ref={schedRef}>
@@ -230,7 +233,7 @@ export function Debt() {
             <tbody>{schedRows}</tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

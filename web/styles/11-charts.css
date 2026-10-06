@@ -114,20 +114,16 @@ svg{display:block;width:100%;height:auto}
   .solveopt{padding:16px 14px}
   .solveopt + .solveopt{border-left:0;border-top:1px solid var(--line-soft)}
 
-  .inputwrap input,select,.btn,.h2ctrl input{font-size:16px}
+  select,.btn{font-size:16px}
   .convrow .spacer{width:56px}
-  .inputwrap input{padding:11px 10px}
   select{padding:11px 12px}
   .btn{padding:11px 12px}
-  .field label{font-size:12.5px}
 
   .scenariobar{width:100%}
   .scgroup{flex:1;min-width:0}
   .scgroup select{min-width:0;flex:1}
   .scgroup .btn{width:40px;padding:8px}
 
-  .h2ctrl{margin-left:0;width:100%;justify-content:space-between;gap:10px}
-  .h2ctrl .inputwrap{width:110px}
 
   .chartwrap{padding:12px 12px 4px}
   .legend{padding:0 14px 14px;gap:12px;font-size:12px}

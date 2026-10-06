@@ -18,6 +18,8 @@ import { dollarsField, money, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { HC_IRMAA, HC_MEDIGAP_HIGH, HC_MEDIGAP_LOW, HC_PARTD_BASE, HC_STATES, HEALTHCARE_DEF, irmaaTier, type HealthcareInputs } from "./model";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const small = "text-dimmer text-fine";
 const lead = "text-note text-dim mt-0 mx-0 mb-3";
@@ -177,7 +179,7 @@ export function Healthcare() {
     medicare = (
       <>
         <p className={lead}><b>Part B</b> covers doctor visits, outpatient care, and preventive services. <b>Part D</b> covers prescription drugs. Most enrollees add a <b>Medigap supplement</b> (like Plan G) which covers deductibles and copays that Parts A and B leave unpaid, capping your out-of-pocket exposure. Higher incomes trigger IRMAA surcharges that raise the Part B and Part D premiums.</p>
-        <div className={"hc-irmaa-badge" + (hasIrmaa ? " hc-irmaa-hit" : "")}>IRMAA {TIER_NAMES[tier]}{hasIrmaa ? ": income surcharge applies" : ": standard premium"}</div>
+        <div className="mb-3.5"><Badge variant={hasIrmaa ? "destructive" : "positive"}>IRMAA {TIER_NAMES[tier]}{hasIrmaa ? ": income surcharge applies" : ": standard premium"}</Badge></div>
         <KV k={<>Part B premium{hasIrmaa ? <> <Sub>includes IRMAA surcharge</Sub></> : null}</>} v={"$" + partB.toFixed(0) + "/mo per person"} />
         <KV k={<>Part D estimate <Sub>{partDIrmaa > 0 ? "~$" + HC_PARTD_BASE + " avg plan + $" + partDIrmaa.toFixed(0) + " IRMAA" : "avg plan, no IRMAA"}</Sub></>} v={"~$" + r(partD) + "/mo per person"} />
         <KV k={<>Medigap Plan G <Sub>varies by state, insurer &amp; age</Sub></>} v={"~$" + HC_MEDIGAP_LOW + "–$" + HC_MEDIGAP_HIGH + "/mo per person"} />
@@ -197,9 +199,9 @@ export function Healthcare() {
   return (
     <>
       <aside id="asideHC">
-        <div className="panel inputs">
-          <h2>Your situation</h2>
-          <div className="body">
+        <Card>
+          <CardHeader><CardTitle>Your situation</CardTitle></CardHeader>
+          <CardContent>
             <NumberField id="hcRetireAge" label="Retirement age" unit="age" max={75} value={s.retireAge} onValueChange={set("retireAge")} />
             <div className="two">
               <SelectField id="hcStatus" label="Filing status" value={s.status} onChange={set("status")}>
@@ -232,29 +234,29 @@ export function Healthcare() {
                   setState((c) => ({ ...c, income: dollarsField(agi), ss: R.ssGross > 0 ? dollarsField(R.ssGross) : "" }));
                   toast("Copied " + money(agi) + " MAGI from Income Tax");
                 }}>Copy from Income Tax</Button>{" "}
-              <Button variant="outline" size="sm" className="mt-1" id="hcGoTax"
+              <Button variant="outline" size="sm" className="mt-1.5 ml-1.5" id="hcGoTax"
                 onClick={() => {
                   setToolInputs("tax", { ...toolInputs("tax", TAX_DEFAULTS), mode: "retire" });
                   router.push("/incometax");
                 }}>Open Income Tax</Button>
             </Field>
-            <MoneyField id="hcSS" label={<>Social Security received <span className="tipglue"><span className="opt">optional</span><TipDot k="hcss" /></span></>} unit="/yr" value={s.ss} onValueChange={set("ss")} />
+            <MoneyField id="hcSS" label={<>Social Security received <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="hcss" /></span></>} unit="/yr" value={s.ss} onValueChange={set("ss")} />
             <Field id="hcManualPremium" label={<Tipped text="ACA benchmark premium" k="hcbenchmark" />}>
               <Affixed prefix="$"><MoneyInput id="hcManualPremium" nonNeg placeholder="state est. if blank" value={s.premium} onValueChange={set("premium")} /></Affixed>
             </Field>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </aside>
 
       <div className="stack" id="tab-healthcare">
-        <div className="panel">
-          <h2>Pre-65: ACA bridge</h2>
-          <div className="body" id="hcACABody">{aca}</div>
-        </div>
-        <div className="panel">
-          <h2>Post-65: Medicare</h2>
-          <div className="body" id="hcMedicareBody">{medicare}</div>
-        </div>
+        <Card>
+          <CardHeader><CardTitle>Pre-65: ACA bridge</CardTitle></CardHeader>
+          <CardContent id="hcACABody">{aca}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle>Post-65: Medicare</CardTitle></CardHeader>
+          <CardContent id="hcMedicareBody">{medicare}</CardContent>
+        </Card>
       </div>
     </>
   );

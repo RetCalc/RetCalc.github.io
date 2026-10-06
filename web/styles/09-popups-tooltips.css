@@ -43,8 +43,6 @@
 .sg-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
 .sg-head h4{margin:0;font-size:14.5px;color:var(--text);font-weight:600}
 .sg-tag{font-size:11.5px;color:var(--dimmer)}
-.sg-using{margin-left:auto}
-.sg-using{font-size:11.5px;color:var(--jade);font-weight:600}
 .sg-item p{font-size:13px;color:var(--dim);line-height:1.6;margin:0 0 10px}
 .sg-pc{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
 .sg-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
@@ -64,23 +62,12 @@
 .popup.wide h3{margin-bottom:4px}
 .popup .formhint{font-size:11.5px;color:var(--dim);margin:0 0 16px;line-height:1.5}
 .popup .formfield{margin-bottom:13px}
-.popup .formfield label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px}
-.popup .forminput,.popup select.forminput{width:100%;background:var(--field);
+.popup select.forminput{width:100%;background:var(--field);
   border:1px solid var(--line);border-radius:var(--r-well);padding:9px 10px;
   color:var(--text);font-family:var(--sans);font-size:13.5px;box-sizing:border-box;
   box-shadow:var(--well)}
-.popup .forminput:focus,.popup select.forminput:focus{outline:none;border-color:var(--jade);
+.popup select.forminput:focus{outline:none;border-color:var(--jade);
   box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
-.popup .formwrap{display:flex;align-items:center;background:var(--field);
-  border:1px solid var(--line);border-radius:var(--r-well);overflow:hidden;
-  box-shadow:var(--well);transition:border-color .14s ease,box-shadow .16s ease}
-.popup .formwrap:focus-within{border-color:var(--jade);
-  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16)}
-.popup .formwrap .affix{padding:0 10px;color:var(--dim);font-size:13px;flex:none}
-.popup .formwrap input{border:0;background:transparent;flex:1 1 auto;min-width:0;
-  padding:9px 10px;color:var(--text);font-family:var(--mono);font-size:13.5px}
-.popup .formwrap .affix + input{padding-left:0}
-.popup .formwrap input:focus{outline:none}
 .popup .formtwo{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,13fr);gap:10px}
 .popup .formcheck{display:flex;align-items:center;gap:8px;font-size:12.5px;
   color:var(--dim);margin-bottom:13px;cursor:pointer}

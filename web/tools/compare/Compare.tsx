@@ -22,6 +22,7 @@ import {
   type CmpMode, type Slot,
 } from "./model";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const HELP = "Comparison reads saved scenarios only, exactly as they were saved. Nothing here changes the numbers on the Basic, Advanced or Stages tabs.";
 
@@ -63,9 +64,9 @@ function CompareSaved() {
 
   return (
     <div className="stack" id="tab-compare">
-      <div className="panel">
-        <h2>Compare scenarios<span className="h2ctrl"><Button variant="outline" size="sm" id="cmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</Button></span></h2>
-        <div className="body">
+      <Card>
+        <CardHeader><CardTitle>Compare scenarios</CardTitle><CardAction><Button variant="outline" size="sm" id="cmpBack" onClick={() => { setNavDir("back"); router.push(compareNav.path); }}>Back</Button></CardAction></CardHeader>
+        <CardContent>
           <div className="hint" id="cmpEmpty" hidden={enough}>{enough ? null : <>You have {total ? "one saved scenario" : "no saved scenarios"}. Compare needs at least two: set up a plan on Basic, Advanced or Stages, save it with Save/Delete in the bar above, then change it and save again.</>}</div>
           <div className="cmpgrid" id="cmpPickers">
             {enough ? slots.map((sl, i) => (
@@ -94,19 +95,19 @@ function CompareSaved() {
             {HELP}
             {blank.length ? <>{" "}<b>{blank.map((x) => x.name + " has nothing saved for " + CMP_MODE_LABEL[x.mode]).join("; ") + "."}</b></> : null}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      <div className="panel" id="cmpChartPanel" hidden={!enough}>
-        <h2>Balance over time<span className="h2note">in today&apos;s dollars</span></h2>
+      <Card id="cmpChartPanel" hidden={!enough}>
+        <CardHeader><CardTitle>Balance over time</CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
         <MultiChart id="C" ariaLabel="Saved scenarios compared" maxX={Math.max(0, ...live.map((x) => x.run!.years)) || 1}
           series={live.map((x) => ({ name: x.name, color: MULTI_COLORS[x.i], pts: x.run!.pts }))}
           head={(y) => <b>Year {fmtNum(y)}</b>} />
         <Legend id="legendC" items={live.map((x) => [MULTI_COLORS[x.i], x.name + " · " + CMP_MODE_LABEL[x.mode]])} />
-      </div>
+      </Card>
 
-      <div className="panel" id="cmpOutPanel" hidden={!enough}>
-        <h2>Results<span className="h2ctrl"><CsvButton table={outRef} label="Results" /></span></h2>
+      <Card id="cmpOutPanel" hidden={!enough}>
+        <CardHeader><CardTitle>Results</CardTitle><CardAction><CsvButton table={outRef} label="Results" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll">
           <table id="cmpOutTable" ref={outRef}>
@@ -130,10 +131,10 @@ function CompareSaved() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
-      <div className="panel" id="cmpInPanel" hidden={!enough}>
-        <h2>Inputs<span className="h2note">differences highlighted</span><span className="h2ctrl"><CsvButton table={inRef} label="Inputs" /></span></h2>
+      <Card id="cmpInPanel" hidden={!enough}>
+        <CardHeader><CardTitle>Inputs</CardTitle><CardDescription>differences highlighted</CardDescription><CardAction><CsvButton table={inRef} label="Inputs" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
         <div className="scroll">
           <table id="cmpInTable" ref={inRef}>
@@ -151,7 +152,7 @@ function CompareSaved() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

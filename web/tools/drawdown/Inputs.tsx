@@ -22,6 +22,9 @@ import { Spark } from "./Spark";
 import { DD_FAMILY, DD_UI, ageVal, ddN, describeItem, wdOrder, hardStart, lineWords, mixText, rebalNote, spendThrough, stratNote } from "./text";
 import type { DDView } from "./Drawdown";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 export function Inputs({ v, fromNote, periods, open }: {
@@ -167,14 +170,14 @@ export function Inputs({ v, fromNote, periods, open }: {
 
   return (
     <aside id="asideDD" data-inputs={inputs}>
-      <div className="panel inputs">
-        <h2>Your plan<span className="h2ctrl">
+      <Card>
+        <CardHeader><CardTitle>Your plan</CardTitle><CardAction>
           <span className="seg" id="segDDIn" aria-label="How many inputs">
             <button type="button" data-ddin="simple" className={inputs === "simple" ? "on" : undefined} onClick={() => setInputs("simple")}>Simple</button>
             <button type="button" data-ddin="adv" className={inputs === "adv" ? "on" : undefined} onClick={() => setInputs("adv")}>Advanced</button>
           </span>
-        </span></h2>
-        <div className="body">
+        </CardAction></CardHeader>
+        <CardContent>
           <div className="ddsec ddsec-first">Your portfolio at retirement</div>
           <Field id="ddInitial" label="Portfolio value">
             <Affixed prefix="$"><MoneyInput id="ddInitial" nonNeg value={str("initial")} onValueChange={set("initial")} /></Affixed>
@@ -196,11 +199,11 @@ export function Inputs({ v, fromNote, periods, open }: {
             <NumberField id="ddRebalN" wrapId="ddRebalNWrap" hidden={o.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={str("rebalN")} onValueChange={set("rebalN")} />
             <NumberField id="ddRebalBand" wrapId="ddRebalBandWrap" hidden={o.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={str("rebalBand")} onValueChange={set("rebalBand")} />
             <div className="hint -mt-1.5 mx-0 mb-3" id="ddRebalNote">{rebalNote(o)}</div>
-            <NumberField id="ddFee" label={<>Fees <span className="tipglue"><span className="opt">optional</span><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={str("fee")} onValueChange={set("fee")} />
+            <NumberField id="ddFee" label={<>Fees <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="fees" /></span></>} unit="%/yr" step={0.1} value={str("fee")} onValueChange={set("fee")} />
           </div>
           {/* Guaranteed income is set in the Asset mix pop-up; these hold it. */}
           <div id="ddGuarStore" hidden>
-            <div className="ddgk-h ddsub">Guaranteed income <span className="opt">optional</span></div>
+            <div className="ddgk-h ddsub">Guaranteed income <Badge variant="outline" className="ml-1.25">optional</Badge></div>
             <div className="two">
               <NumberField id="ddGShare" label="Share of the portfolio" unit="%" step={5} max={100} placeholder="0" value={str("gShare")} onValueChange={set("gShare")} />
               <SelectField id="ddGType" label="To buy" value={str("gType")} onChange={set("gType")}>
@@ -219,7 +222,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           </div>
           <div className="ddsec">Your retirement</div>
           <div className="two">
-            <NumberField id="ddRetireAge" className="ddadv" label={<>Age at retirement <span className="tipglue"><span className="opt">optional</span><TipDot k="retireage" /></span></>} unit="age" max={120}
+            <NumberField id="ddRetireAge" className="ddadv" label={<>Age at retirement <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="retireage" /></span></>} unit="age" max={120}
               value={str("retireAge")} onValueChange={(val) => setState((c) => {
                 const next: DrawdownState = { ...c, retireAge: val };
                 const a = parseNum(val);
@@ -285,7 +288,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             </div>
             <div className="ddgk-final">
               <label className="ddgk-check"><input type="checkbox" id="ddGkFinal" checked={!!s.gkFinal} onChange={(e) => set("gkFinal")(e.target.checked)} /><span>No cuts in the final</span></label>
-              <Affixed suffix="yrs"><NumberInput id="ddGkFinalYrs" nonNeg max={60} disabled={!s.gkFinal} aria-label="Final years without cuts" value={str("gkFinalYrs")} onValueChange={set("gkFinalYrs")} /></Affixed>
+              <Affixed suffix="yrs" className="w-21 flex-none"><NumberInput id="ddGkFinalYrs" nonNeg max={60} disabled={!s.gkFinal} aria-label="Final years without cuts" value={str("gkFinalYrs")} onValueChange={set("gkFinalYrs")} /></Affixed>
               <TipDot k="gkfinal" />
             </div>
             <div className="ddgk-h">Lower guardrail: raise spending</div>
@@ -354,21 +357,21 @@ export function Inputs({ v, fromNote, periods, open }: {
                         <span className="stagespan" data-fsspan={i}>{s0 > P.floor.length ? "after the plan ends" : age != null ? "Age " + ddN(ageVal(age, s0)) + " on" : "Year " + s0 + " on"}</span>
                         <Button variant="outline" size="sm" data-fsdel={i} onClick={() => editList<FloorStep>("floorSteps", (l) => l.filter((_, j) => j !== i))}>Remove</Button></div>
                       <div className="two">
-                        <div className="field mb-0"><label>{startUnit ? "From age" : "From year"}</label><div className="inputwrap">
+                        <div className="field mb-0"><Label className="mb-1.5"><span>{startUnit ? "From age" : "From year"}</span></Label><Affixed suffix={startUnit ? "age" : "yr"}>
                           <DraftInput nonNeg data-ff="start" data-fi={i} aria-label={"Change " + (i + 1) + " starts"} value={st.start}
                             format={(x) => ddN(age != null ? ageVal(age, x) : x)}
                             onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, start: Math.max(2, Math.round(age != null ? parseNum(t) - age + 1 : parseNum(t))) } : x)))} />
-                          <span className="affix">{startUnit ? "age" : "yr"}</span></div></div>
-                        <div className="field mb-0"><label>Minimum</label><div className="inputwrap"><span className="affix">$</span>
+                          </Affixed></div>
+                        <div className="field mb-0"><Label className="mb-1.5"><span>Minimum</span></Label><Affixed prefix="$">
                           <DraftInput money nonNeg data-ff="amount" data-fi={i} aria-label={"Change " + (i + 1) + " minimum"} value={st.amount}
                             format={(x) => groupDigits(Math.round(x || 0), true)}
-                            onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, amount: Math.max(0, parseNum(t)) } : x)))} /></div></div>
+                            onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, amount: Math.max(0, parseNum(t)) } : x)))} /></Affixed></div>
                       </div>
-                      <div className="field mt-2.5 mx-0 mb-0"><label>Ease in over</label><div className="inputwrap">
+                      <div className="field mt-2.5 mx-0 mb-0"><Label className="mb-1.5"><span>Ease in over</span></Label><Affixed suffix="years (0 = all at once)">
                         <DraftInput nonNeg max={30} data-ff="glide" data-fi={i} aria-label={"Change " + (i + 1) + " eases in over"} value={st.glide || 0}
                           format={ddN}
                           onType={(t) => editList<FloorStep>("floorSteps", (l) => l.map((x, j) => (j === i ? { ...x, glide: Math.max(0, Math.min(30, Math.round(parseNum(t)))) } : x)))} />
-                        <span className="affix">years (0 = all at once)</span></div></div>
+                        </Affixed></div>
                     </div>
                   );
                 })}
@@ -426,21 +429,21 @@ export function Inputs({ v, fromNote, periods, open }: {
             </div>
             <Field id="ddSSDelay" wrapId="ddSSDelayWrap" hidden={ssMode === "none" || (ssMode === "est" && age != null)}
               label={<span className="tipglue"><span id="ddSSDelayLabel">{ssAgeMode ? "Starts at age" : "Starts after"}</span><TipDot k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
-              <div className="inputwrap"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")} /><span className="affix" id="ddSSDelayAffix">yrs</span></div>
+              <Affixed suffix="yrs"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")} /></Affixed>
             </Field>
             <div className="field mt-3.5">
-              <label><Tipped text="Other income" k="customincome" /></label>
+              <Label className="mb-1.5"><span><Tipped text="Other income" k="customincome" /></span></Label>
               {items("incomeItems", "ddIncomeList")}
               <Button variant="outline" size="sm" id="ddAddIncome" onClick={() => open({ kind: "item", list: "incomeItems", index: null })}>+ Add income source</Button>
             </div>
             <div className="field">
-              <label><Tipped text="Future expenses" k="customexpense" /></label>
+              <Label className="mb-1.5"><span><Tipped text="Future expenses" k="customexpense" /></span></Label>
               {items("expenseItems", "ddExpenseList")}
               <Button variant="outline" size="sm" id="ddAddExpense" onClick={() => open({ kind: "item", list: "expenseItems", index: null })}>+ Add future expense</Button>
             </div>
             <div className="ddsec">Goals</div>
-            <MoneyField id="ddLegacyGoal" label={<>Legacy goal <span className="tipglue"><span className="opt">optional</span><TipDot k="legacy" /></span></>} value={str("legacyGoal")} onValueChange={set("legacyGoal")} />
-            <Field id="ddComfort" label={<>Comfort line <span className="tipglue"><span className="opt">optional</span><TipDot k="ddcomfort" /></span></>}>
+            <MoneyField id="ddLegacyGoal" label={<>Legacy goal <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="legacy" /></span></>} value={str("legacyGoal")} onValueChange={set("legacyGoal")} />
+            <Field id="ddComfort" label={<>Comfort line <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="ddcomfort" /></span></>}>
               <Affixed prefix="$" suffix="/yr"><MoneyInput id="ddComfort" nonNeg value={str("comfort")} onValueChange={set("comfort")} /></Affixed>
               <div className="hint" id="ddComfortNote">{v.comfortNote}</div>
             </Field>
@@ -488,8 +491,8 @@ export function Inputs({ v, fromNote, periods, open }: {
             <div><span>Per month</span><span className="num" id="ddFirstMo">{money(firstW / 12)}</span></div>
             <div><span>Periods tested</span><span className="num" id="ddPeriods">{periods}</span></div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </aside>
   );
 }
@@ -497,10 +500,10 @@ export function Inputs({ v, fromNote, periods, open }: {
 function ClaimAge({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
   return (
     <div className="field">
-      <label htmlFor={id}><Tipped text="Claim at age" k="ssclaim" /></label>
-      <div className="inputwrap"><select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
+      <Label className="mb-1.5" htmlFor={id}><span><Tipped text="Claim at age" k="ssclaim" /></span></Label>
+      <div className="flex items-center gap-2"><select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
         {[62, 63, 64, 65, 66, 67, 68, 69, 70].map((a) => <option key={a} value={a}>{a}</option>)}
-      </select><span className="affix">yrs</span></div>
+      </select><span className="text-sm text-muted-foreground">yrs</span></div>
     </div>
   );
 }
@@ -542,7 +545,7 @@ function WdStages({ stages, v, edit, toast }: { stages: PathStage[]; v: DDView; 
                 toast("Removed " + (st.name || "Stage " + (i + 2)));
               }} />
             <div className="two">
-              <div className="field mb-0"><label data-wdstartlbl={i}>{age != null ? "Starts at age" : "Starts in year"}</label><div className="inputwrap">
+              <div className="field mb-0"><Label className="mb-1.5" data-wdstartlbl={i}><span>{age != null ? "Starts at age" : "Starts in year"}</span></Label><Affixed suffix={age != null ? "age" : "yr"}>
                 <DraftInput nonNeg data-wf="start" data-wi={i} aria-label={"Stage " + (i + 2) + " start"} value={st.start}
                   format={(x) => fmtNum(age != null ? ageVal(age, x) : x)}
                   onType={(t) => {
@@ -550,11 +553,11 @@ function WdStages({ stages, v, edit, toast }: { stages: PathStage[]; v: DDView; 
                     if (!isFinite(n)) return;
                     edit((l) => l.map((x, j) => (j === i ? { ...x, start: Math.max(1, Math.round(age != null ? n - age + 1 : n)) } : x)));
                   }} />
-                <span className="affix">{age != null ? "age" : "yr"}</span></div></div>
-              <div className="field mb-0"><label>Spending, of year one&apos;s</label><div className="inputwrap">
+                </Affixed></div>
+              <div className="field mb-0"><Label className="mb-1.5"><span>Spending, of year one&apos;s</span></Label><Affixed suffix="%">
                 <DraftInput nonNeg step={5} data-wf="level" data-wi={i} aria-label={"Stage " + (i + 2) + " spending, as a share of year one"} value={st.level ?? 100}
                   format={ddN} onType={(t) => edit((l) => l.map((x, j) => (j === i ? { ...x, level: Math.max(0, parseNum(t) || 0) } : x)))} />
-                <span className="affix">%</span></div></div>
+                </Affixed></div>
             </div>
             <div className={inf.warn ? "hint acwarn" : "hint"} data-wdnote={i}>{inf.note}</div>
           </div>

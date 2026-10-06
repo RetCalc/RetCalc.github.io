@@ -79,8 +79,11 @@ export async function snapshot(page: Page, roots: string[]) {
       out[s] = el ? el.innerText.replace(/\s+/g, " ").trim() : "(missing)";
       el?.querySelectorAll<HTMLInputElement | HTMLSelectElement>("input,select").forEach((f) => {
         // Stage cards' fields have no ids; they're named by field and stage.
-        const key = f.id || (f.dataset.f ? f.dataset.f + "@" + f.dataset.i : f.dataset.stotal ? "total@" + f.dataset.stotal : "");
-        if (key && !skip.includes(f.id || f.dataset.f || "")) out[key.startsWith("#") || !f.id ? key : "#" + key] = f.type === "checkbox" ? String((f as HTMLInputElement).checked) : f.value;
+        // Base UI gives an input without an id one of its own ("base-ui-…"),
+        // which the old site never had, so it doesn't count as a name.
+        const id = f.id.startsWith("base-ui-") ? "" : f.id;
+        const key = id || (f.dataset.f ? f.dataset.f + "@" + f.dataset.i : f.dataset.stotal ? "total@" + f.dataset.stotal : "");
+        if (key && !skip.includes(id || f.dataset.f || "")) out[key.startsWith("#") || !id ? key : "#" + key] = f.type === "checkbox" ? String((f as HTMLInputElement).checked) : f.value;
       });
     }
     return out;

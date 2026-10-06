@@ -21,6 +21,7 @@ import { fmtNum, money, pctStr } from "@/lib/format";
 import type { DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, critWords, dialFields, dialText, escapeHtml, firstSpend, lineWords, rateOf, targetWords, swatch } from "./text";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const work = (t: string) => "<span class='ddwork'>" + t + "</span>";
 
@@ -51,40 +52,40 @@ export function SafeView({ v, T, active }: { v: DDView; T: DdTarget; active: boo
 function NoDial({ name, axis, setAxis }: { name: string; axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
   return (
     <>
-      <div className="panel" id="ddSafePanel" data-ddtabs="safe">
+      <Card id="ddSafePanel" data-ddtabs="safe">
         <SafeTitle />
-        <Html className="body ddintro" id="ddSafeIntro" html={"<b>" + escapeHtml(name) + "</b> has no setting to turn: it always takes the share its formula gives. " +
-          "Pick a strategy with a rate or a target to see the most it could have started with, or compare them all on the Compare strategies view."} />
+        <CardContent id="ddSafeIntro"><Html className="ddintro" html={"<b>" + escapeHtml(name) + "</b> has no setting to turn: it always takes the share its formula gives. " +
+          "Pick a strategy with a rate or a target to see the most it could have started with, or compare them all on the Compare strategies view."} /></CardContent>
         <MultiChart id="DDR" series={[]} maxX={1} ariaLabel="The highest first-year withdrawal that met the target, for each start" />
         <div className="legend" id="legendDDR"></div>
         <div className="solveopts" id="ddSolve" hidden><Solvers /></div>
-      </div>
-      <div className="panel" id="ddHeatPanel" data-ddtabs="safe">
+      </Card>
+      <Card id="ddHeatPanel" data-ddtabs="safe">
         <HeatTitle axis={axis} setAxis={setAxis} />
-        <div className="body ddintro" id="ddHeatIntro">The grid needs a strategy with a setting to turn.</div>
+        <CardContent id="ddHeatIntro"><div className="ddintro">The grid needs a strategy with a setting to turn.</div></CardContent>
         <div className="scroll ddheatwrap"><table id="ddHeat" className="ddheat"></table></div>
         <div className="hint ddpad" id="ddHeatNote"></div>
-      </div>
-      <div className="panel" id="ddValPanel" data-ddtabs="safe">
+      </Card>
+      <Card id="ddValPanel" data-ddtabs="safe">
         <ValTitle />
-        <div className="body ddintro" id="ddValIntro">This needs a strategy with a setting to turn.</div>
+        <CardContent id="ddValIntro"><div className="ddintro">This needs a strategy with a setting to turn.</div></CardContent>
         <Scatter id="DDV" pts={[]} ariaLabel="Each start's CAPE against the most it could have started with" tip={() => null} />
         <div className="legend" id="legendDDV"></div>
         <div className="hint ddpad" id="ddValNote"></div>
-      </div>
+      </Card>
     </>
   );
 }
-const SafeTitle = () => <h2 id="ddSafeTitle">The most you could have started with<TipDot k="ddsafe" /></h2>;
-const ValTitle = () => <h2>Valuations at the start<TipDot k="ddvalue" /><span className="h2note">Shiller CAPE</span></h2>;
+const SafeTitle = () => <CardHeader><CardTitle id="ddSafeTitle">The most you could have started with<TipDot k="ddsafe" /></CardTitle></CardHeader>;
+const ValTitle = () => <CardHeader><CardTitle>Valuations at the start<TipDot k="ddvalue" /></CardTitle><CardDescription>Shiller CAPE</CardDescription></CardHeader>;
 function HeatTitle({ axis, setAxis }: { axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
   return (
-    <h2>Success grid<TipDot k="ddheat" /><span className="h2ctrl">
+    <CardHeader><CardTitle>Success grid<TipDot k="ddheat" /></CardTitle><CardAction>
       <span className="seg" id="segDDHeat">
         <button type="button" data-heat="stock" className={axis === "stock" ? "on" : undefined} onClick={() => setAxis("stock")}>By stock share</button>
         <button type="button" data-heat="years" className={axis === "years" ? "on" : undefined} onClick={() => setAxis("years")}>By years</button>
       </span>
-    </span></h2>
+    </CardAction></CardHeader>
   );
 }
 
@@ -177,13 +178,13 @@ function SafePanel({ v, S, running }: { v: DDView; S: Safe; running: boolean }) 
       : "No portfolio size reaches the target with this spending: the rest of the plan rules it out.";
   }
   return (
-    <div className="panel" id="ddSafePanel" data-ddtabs="safe">
+    <Card id="ddSafePanel" data-ddtabs="safe">
       <SafeTitle />
-      <Html className="body ddintro" id="ddSafeIntro" html={intro} />
+      <CardContent id="ddSafeIntro"><Html className="ddintro" html={intro} /></CardContent>
       {chart ?? <MultiChart id="DDR" series={[]} maxX={1} ariaLabel="The highest first-year withdrawal that met the target, for each start" />}
       <Html className="legend" id="legendDDR" html={legend} />
       <div className="solveopts" id="ddSolve"><Solvers {...solve} /></div>
-    </div>
+    </Card>
   );
 }
 
@@ -233,12 +234,12 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
       (h.axis === "stock" && o.stockPctEnd != null ? "Your glide path is set aside here: each column holds its stock share the whole way." : "");
   }
   return (
-    <div className="panel" id="ddHeatPanel" data-ddtabs="safe">
+    <Card id="ddHeatPanel" data-ddtabs="safe">
       <HeatTitle axis={axis} setAxis={setAxis} />
-      <Html className="body ddintro" id="ddHeatIntro" html={intro} />
+      <CardContent id="ddHeatIntro"><Html className="ddintro" html={intro} /></CardContent>
       <div className="scroll ddheatwrap"><table id="ddHeat" className="ddheat">{table}</table></div>
       <div className="hint ddpad" id="ddHeatNote">{note}</div>
-    </div>
+    </Card>
   );
 }
 
@@ -269,12 +270,12 @@ function ValPanel({ S }: { S: Safe }) {
     note = "Expensive starts have tended to allow less, but the link is loose: this is what history did, not a forecast. The CAPE-based strategy uses this reading every year.";
   }
   return (
-    <div className="panel" id="ddValPanel" data-ddtabs="safe">
+    <Card id="ddValPanel" data-ddtabs="safe">
       <ValTitle />
-      <Html className="body ddintro" id="ddValIntro" html={intro} />
+      <CardContent id="ddValIntro"><Html className="ddintro" html={intro} /></CardContent>
       {chart ?? <Scatter id="DDV" pts={[]} ariaLabel="Each start's CAPE against the most it could have started with" tip={() => null} />}
       <Html className="legend" id="legendDDV" html={legend} />
       <div className="hint ddpad" id="ddValNote">{note}</div>
-    </div>
+    </Card>
   );
 }

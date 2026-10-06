@@ -11,7 +11,7 @@ import { BandChart, type BandPoint } from "@/components/charts/BandChart";
 import { HistBarNote, HistSummary, McSummary } from "@/components/charts/HistNotes";
 import { HistLegend, Legend, McLegend } from "@/components/charts/Legend";
 import { BandTipRows, FanTipRows } from "@/components/charts/TipRows";
-import { Affixed, NumberField } from "@/components/fields/Field";
+import { Affixed, Field } from "@/components/fields/Field";
 import { NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped } from "@/components/shell/Tooltips";
@@ -21,6 +21,7 @@ import { money } from "@/lib/format";
 import { reroll } from "@/lib/mc-seed";
 import { PERIOD_ADV } from "@/lib/periods";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export type ChartMode = "band" | "hist" | "mc";
 
@@ -37,13 +38,13 @@ export function ProjectionSummary({ p, R, lastPeriod, fvNote, realNote }: {
   p: "r" | "x"; R: Totals; lastPeriod: string | null; fvNote: string; realNote: string;
 }) {
   return (
-    <div className="panel">
+    <Card size="flush">
       <div className="headline">
         <Figure label="Future value" id={p + "FV"} className="v" value={money(R.fv)} noteId={p + "FVnote"} note={fvNote} />
         <Figure label="Inflation adjusted" id={p + "FVreal"} className="v" value={money(R.fvReal)} noteId={p + "FVrealnote"} note={realNote} />
         <Figure label="After-tax income, per year" id={p + "Monthly"} className="v gold" value={money(R.afterTax)} note="Inflation adjusted, first year of retirement" />
       </div>
-      <div className="body">
+      <CardContent>
         <div className="grid2">
           <div>
             <KV k="Amount invested" id={p + "Invested"} v={money(R.invested)} />
@@ -58,8 +59,8 @@ export function ProjectionSummary({ p, R, lastPeriod, fvNote, realNote }: {
             <KV k="After tax, per month" id={p + "AfterTaxMo"} v={money(R.afterTaxMo)} />
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -132,20 +133,20 @@ export function ProjectionChart(props: PanelProps) {
   const toast = useToast();
   const [tracesOn, setTracesOn] = useState(true);
   return (
-    <div className="panel">
-      <h2>Balance over time, inflation adjusted{"\n        "}
-        <span className="h2ctrl">
+    <Card>
+      <CardHeader><CardTitle>Balance over time, inflation adjusted</CardTitle><CardAction>
           <Segmented id={segId} attr="data-mode" options={[["band", "Rate band"], ["hist", "Historical"], ["mc", "Monte Carlo"]] as const} value={mode} onChange={setMode} />{"\n          "}
           <span className="modeopt" id={"optBand" + sfx} hidden={mode !== "band"}>
-            <Affixed prefix="±" suffix="%" className="w-24">
+            <Affixed prefix="±" suffix="%" className="w-24 max-sm:w-27.5">
               <NumberInput id={"band" + sfx} nonNeg step={0.5} value={band} onValueChange={setBand} aria-label="Return comparison band, percent" />
             </Affixed>
           </span>
-        </span>
-      </h2>
+        </CardAction></CardHeader>
       <div className="mcbar" id={"histBar" + sfx} hidden={mode !== "hist"}>
-        <NumberField id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />} unit="%" step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} />
-        <NumberField id={"histMixEnd" + sfx} wrapId={"histGlideWrap" + sfx} hidden={!props.glides} label={<Tipped text="Glides to" k="histglidemix" />} unit="%" step={5} max={100} value={props.histMixEnd} onValueChange={props.setHistMixEnd} />
+        <Field id={"histMix" + sfx} label={<Tipped text="Stock mix" k="histmix" />}>
+          <Affixed suffix="%" className="w-26"><NumberInput id={"histMix" + sfx} nonNeg step={5} max={100} value={props.histMix} onValueChange={props.setHistMix} /></Affixed></Field>
+        <Field id={"histMixEnd" + sfx} wrapId={"histGlideWrap" + sfx} hidden={!props.glides} label={<Tipped text="Glides to" k="histglidemix" />}>
+          <Affixed suffix="%" className="w-26"><NumberInput id={"histMixEnd" + sfx} nonNeg step={5} max={100} value={props.histMixEnd} onValueChange={props.setHistMixEnd} /></Affixed></Field>
         <div className="hint m-0" id={"histNote" + sfx}>{chart.H ? <HistBarNote H={chart.H} /> : null}</div>
       </div>
       <div className="mcbar" id={"mcBar" + sfx} hidden={mode !== "mc"}>
@@ -165,7 +166,7 @@ export function ProjectionChart(props: PanelProps) {
       {mode === "hist" ? <HistSummary id={"mcNote" + sfx} H={chart.H} target={chart.H?.count ? target : 0} label={targetLabel} />
         : mode === "mc" ? <McSummary id={"mcNote" + sfx} mc={chart.mc} target={target} label={targetLabel} />
           : <div className="mcnote" id={"mcNote" + sfx} hidden></div>}
-    </div>
+    </Card>
   );
 }
 

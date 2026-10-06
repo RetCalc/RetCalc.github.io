@@ -26,6 +26,7 @@ import { curOpt, setTune } from "./tune";
 import { GuideCtx, type GuideView } from "./ui";
 import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /** The guide as a tool, for the header's Save: every answer and which
     steps are done. Where you were and any trip into a tool are left out. */
@@ -285,14 +286,14 @@ export function Guide() {
             ) : null}
           </div>
           <div className="gd-side">
-            <div className="panel gd-score">
-              <h2>Readiness score</h2>
-              <div className="body" id="gdScore">{client ? <ScoreSide a={g.a} go={go} /> : null}</div>
-            </div>
-            <div className="panel gd-map">
-              <h2>Your route</h2>
-              <div className="body" id="gdMap">{client ? <RouteMap g={g} cur={st} go={go} act={act} /> : null}</div>
-            </div>
+            <Card>
+              <CardHeader><CardTitle>Readiness score</CardTitle></CardHeader>
+              <CardContent id="gdScore">{client ? <ScoreSide a={g.a} go={go} /> : null}</CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Your route</CardTitle></CardHeader>
+              <CardContent className="px-2.5 pt-2 pb-3" id="gdMap">{client ? <RouteMap g={g} cur={st} go={go} act={act} /> : null}</CardContent>
+            </Card>
           </div>
         </div>
       </div>

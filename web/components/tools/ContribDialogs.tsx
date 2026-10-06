@@ -14,6 +14,8 @@ import { PER_YEAR } from "@/lib/engine/typed";
 import { groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { PERIOD_NAMES, PeriodOptions } from "@/lib/periods";
 import { Button } from "@/components/ui/button";
+import { Affixed } from "@/components/fields/Field";
+import { Label } from "@/components/ui/label";
 
 
 /** The two-arrow icon on the "Convert" links that open the converter. */
@@ -35,9 +37,9 @@ export function ConverterDialog({ title, amount, period, apply, onClose }: {
       <ModalTop title={title} onClose={onClose} />
       <div className="formhint">See what a contribution comes to at each frequency, then apply the one that matches how you save.</div>
       <div className="two">
-        <div className="field"><label htmlFor="convAmt">Amount</label>
-          <div className="inputwrap"><span className="affix">$</span><MoneyInput id="convAmt" nonNeg value={amt} onValueChange={setAmt} /></div></div>
-        <div className="field"><label htmlFor="convPeriod">Paid</label>
+        <div className="field"><Label className="mb-1.5" htmlFor="convAmt"><span>Amount</span></Label>
+          <Affixed prefix="$"><MoneyInput id="convAmt" nonNeg value={amt} onValueChange={setAmt} /></Affixed></div>
+        <div className="field"><Label className="mb-1.5" htmlFor="convPeriod"><span>Paid</span></Label>
           <select id="convPeriod" value={per} onChange={(e) => setPer(e.target.value)}><PeriodOptions /></select></div>
       </div>
       <div id="convOut">
@@ -70,8 +72,8 @@ export function GrowthRatesDialog({ title, init, blend, apply, note, onClose }: 
   const [f, setF] = useState({ t: pct(init.t), r: pct(init.r), b: pct(init.b) });
   const rates = { t: parseNum(f.t) / 100, r: parseNum(f.r) / 100, b: parseNum(f.b) / 100 };
   const row = (k: "t" | "r" | "b", label: string) => (
-    <div className="formfield"><label htmlFor={"gr_" + k}>{label}</label>
-      <div className="formwrap"><NumberInput id={"gr_" + k} step={0.5} value={f[k]} onValueChange={(v) => setF((c) => ({ ...c, [k]: v }))} /><span className="affix">%/yr</span></div>
+    <div className="formfield"><Label className="mb-1.5" htmlFor={"gr_" + k}><span>{label}</span></Label>
+      <Affixed suffix="%/yr"><NumberInput id={"gr_" + k} step={0.5} value={f[k]} onValueChange={(v) => setF((c) => ({ ...c, [k]: v }))} /></Affixed>
     </div>
   );
   const done = (r: GrowthRates | null) => {

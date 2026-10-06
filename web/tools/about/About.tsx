@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { HouseholdBar } from "@/components/household/HouseholdBar";
 import type { StateOption } from "@/lib/states";
 import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
+import { Badge } from "@/components/ui/badge";
 
 const SWEEP = 300;
 
@@ -194,7 +195,7 @@ export function About({ states }: { states: StateOption[] }) {
           you shift toward bonds. The &plusmn; button lets you enter a negative return to
           stress-test a downturn.</dd>
 
-          <dt>Glide path <span className="opt">optional</span></dt>
+          <dt>Glide path <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
           <dd>Holds your rate of return steady, then blends it down in a straight
           line to an end rate over however many final years you choose: the
           common practice of shifting toward bonds as retirement nears. It shapes
@@ -204,13 +205,13 @@ export function About({ states }: { states: StateOption[] }) {
           <dd>How fast prices rise. Long-run US inflation has averaged roughly 2&ndash;3%.
           The US Federal Reserve targets 2%. Most people use 2.5&ndash;3%.</dd>
 
-          <dt>Volatility <span className="opt">Monte Carlo only</span></dt>
+          <dt>Volatility <Badge variant="outline" className="ml-1.25">Monte Carlo only</Badge></dt>
           <dd>How much returns bounce around year to year. Broad stock funds have
           historically run near 15&ndash;18%; a balanced stock-and-bond portfolio nearer
           8&ndash;12%; bond-heavy lower still. Higher volatility widens the fan without
           changing the average.</dd>
 
-          <dt>Fees <span className="opt">optional</span></dt>
+          <dt>Fees <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
           <dd>Expense ratios plus any advisory fee, subtracted from your return. Index
           funds often charge under 0.10%; actively managed funds frequently 0.5&ndash;1%;
           advisors commonly around 1%. Leave at 0 to ignore. The Milestones panel shows
@@ -231,7 +232,7 @@ export function About({ states }: { states: StateOption[] }) {
           capital-gains rates. Many retirees land somewhere in the 10&ndash;15% range,
           but this varies enormously. Use 0 for an all-Roth plan.</dd>
 
-          <dt>Split by account type <span className="opt">optional</span></dt>
+          <dt>Split by account type <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
           <dd>Swaps the single starting value, contribution and tax rate for a
           balance and contribution in each of traditional, Roth and taxable brokerage
           accounts, plus an employer match and your filing status and state. Every
@@ -290,26 +291,26 @@ export function About({ states }: { states: StateOption[] }) {
         see that section for what each one means. A few things are specific
         to Stages:</p>
         <dl className="gloss">
-          <dt>Inflation adjusted <span className="opt">stage 2 onward</span></dt>
+          <dt>Inflation adjusted <Badge variant="outline" className="ml-1.25">stage 2 onward</Badge></dt>
           <dd>Restates the contribution you typed into that stage&apos;s future dollars.
           Type $3,000 for a stage starting in year 5 at 2.5% inflation and it&apos;s
           modeled as $3,394, the amount that <i>feels like</i> $3,000 by
           then. The stage&apos;s own growth rate compounds from there. Turn it off to
           use the number exactly as typed.</dd>
 
-          <dt>Glide path <span className="opt">final stage only</span></dt>
+          <dt>Glide path <Badge variant="outline" className="ml-1.25">final stage only</Badge></dt>
           <dd>Available on the last stage only, since that&apos;s the one closest to
           retirement; earlier stages don&apos;t get the option. Works the same
           way as on the Advanced tab: holds steady, then blends down to an end rate
           over however many final years you choose within that stage.</dd>
 
-          <dt>Target <span className="opt">solving</span></dt>
+          <dt>Target <Badge variant="outline" className="ml-1.25">solving</Badge></dt>
           <dd>The solve, and &quot;Work backwards from a target&quot; on the results side,
           change <i>the final stage only</i>. Everything before it is treated as
           settled, which is what makes the answer meaningful when stages carry
           different assumptions.</dd>
 
-          <dt>Split by account type <span className="opt">optional</span></dt>
+          <dt>Split by account type <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
           <dd>Works like the Advanced version, spread across stages. Starting
           balances, the employer match and your filing status and state are set once
           for the whole run; each stage card then says where that stage&apos;s

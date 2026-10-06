@@ -45,7 +45,7 @@ function titleOf(dot: HTMLElement): string {
     r.setStart(box, 0);
     r.setEndBefore(dot);
     const f = r.cloneContents();
-    f.querySelectorAll(".tipdot,.opt,.beta,.about-chevron,.mssub,.h2note").forEach((x) => x.remove());
+    f.querySelectorAll(".tipdot,[data-slot=badge],.about-chevron,.mssub").forEach((x) => x.remove());
     return (f.textContent ?? "").replace(/\s+/g, " ").replace(/[\s:]+$/, "").trim().slice(0, 80);
   } catch {
     return "";

@@ -20,6 +20,7 @@ import { useSort } from "@/lib/useSort";
 import { PICKER_IDS, type DDView } from "./Drawdown";
 import { DD_STRAT_NAMES, DD_UI, ageVal, dialFields, dialText, escapeHtml, targetWords, swatch } from "./text";
 import { Button } from "@/components/ui/button";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const SPOT_COLORS = ["#e9b872", "#4fbf95", "#7d9fd6", "#e2795f", "#b49be0", "#7fd0d6"];
 type Col = "name" | "first" | "life" | "low" | "cuts" | "end";
@@ -58,10 +59,9 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
   const th = (c: Col, label: string) => <th {...sort.th(c, !!res)} data-ssort={c}>{label}</th>;
   return (
     <>
-      <div className="panel" id="ddShowPanel" data-ddtabs="compare">
-        <h2>Strategy showdown<TipDot k="ddshowdown" /><span className="h2note">each tuned to the same risk</span>
-          <span className="h2ctrl"><CsvButton table={table} label="Strategy showdown" /></span></h2>
-        <Html className="body ddintro" id="ddShowIntro" html={intro} />
+      <Card id="ddShowPanel" data-ddtabs="compare">
+        <CardHeader><CardTitle>Strategy showdown<TipDot k="ddshowdown" /></CardTitle><CardDescription>each tuned to the same risk</CardDescription><CardAction><CsvButton table={table} label="Strategy showdown" /></CardAction></CardHeader>
+        <CardContent id="ddShowIntro"><Html className="ddintro" html={intro} /></CardContent>
         <div className="ddchartbar">
           <span>Typical lifetime spending against</span>
           <span className="seg" id="segDDShowY">
@@ -123,7 +123,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
         <Html className="hint ddpad" id="ddShowNote" html={res ? "Year one, the leanest year and lifetime spending are what was actually spent: the strategy's spending with " +
           "Social Security, other income and any guaranteed income, in today's dollars, without extra expenses. “Typical” is the median start. " +
           "Use sets the strategy and the setting found" + (sT.crit === "comfort" ? ", with the comfort line as its minimum spending" : "") + "." : ""} />
-      </div>
+      </Card>
       <SpotPanel v={v} res={res} o={so} T={sT} charted={chartedNow} />
     </>
   );
@@ -156,8 +156,8 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
   }
   const age = v.age;
   return (
-    <div className={"panel" + (res && !win ? " ddempty" : "")} id="ddSpotPanel" data-ddtabs="compare">
-      <h2 id="ddSpotTitle">{win ? "Retiring in " + year : "Through a hard start"}<TipDot k="ddspots" /><span className="h2ctrl">
+    <Card id="ddSpotPanel" data-ddtabs="compare" data-empty={res && !win ? "" : undefined}>
+      <CardHeader><CardTitle id="ddSpotTitle">{win ? "Retiring in " + year : "Through a hard start"}<TipDot k="ddspots" /></CardTitle><CardAction>
         <select id="ddSpotYear" aria-label="Retiring in any year" value={pick != null ? String(pick) : ""} onChange={(e) => {
           const n = parseInt(e.target.value, 10);
           setPick(isFinite(n) ? n : null);
@@ -171,13 +171,13 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
               onClick={() => { setSpot(i); setPick(null); }}>{spots[i] ?? ["1966", "1929", "1973"][i]}</button>
           ))}
         </span>
-      </span></h2>
+      </CardAction></CardHeader>
       <MultiChart id="DDSP" series={series} maxX={o.years} ariaLabel="Each charted strategy's spending through one hard start"
         xFmt={(y) => (age != null ? ageVal(age, y) : y)} head={(y) => <b>{age != null ? "Age " + ageVal(age, y) : "Year " + fmtNum(y)}</b>} />
       <Html className="legend" id="legendDDSP" html={series.map((x) => swatch(x.color!, escapeHtml(x.name))).join("")} />
       <div className="hint ddpad" id="ddSpotNote">{!res || !win ? "" : series.length > 1
         ? "Each charted strategy's spending, year by year, in today's dollars, at the setting it was tuned to above. Tick Chart in the table to add or remove one."
         : "Tick Chart in the table above to draw a strategy here."}</div>
-    </div>
+    </Card>
   );
 }

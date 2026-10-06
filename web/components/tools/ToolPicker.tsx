@@ -5,6 +5,7 @@
 import { TOOL_GROUPS } from "@/lib/tools";
 import { ToolCardLink } from "./ToolCardLink";
 import { ToolIconTile } from "./ToolIcon";
+import { Badge } from "@/components/ui/badge";
 
 export function ToolPicker() {
   return (
@@ -18,7 +19,7 @@ export function ToolPicker() {
                 <ToolCardLink key={c.sub} href={`/${c.path}`} sub={c.sub} i={c.i}>
                   <ToolIconTile sub={c.sub} className="toolcard-icon" />
                   <div className="toolcard-body">
-                    <div className="toolcard-name">{c.name}{c.badge ? <span className="beta">{c.badge}</span> : null}</div>
+                    <div className="toolcard-name">{c.name}{c.badge ? <Badge variant="highlight" className="ml-1.75 align-middle">{c.badge}</Badge> : null}</div>
                     <div className="toolcard-desc">{c.desc}</div>
                   </div>
                   <div className="toolcard-arrow">&#8250;</div>

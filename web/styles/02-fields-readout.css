@@ -1,25 +1,5 @@
-/* ---------- fields: recessed wells ---------- */
+/* ---------- fields ---------- */
 .field{margin-bottom:13px}
-.field label{display:block;font-size:12px;color:var(--dim);margin-bottom:5px;
-  letter-spacing:-.002em}
-.inputwrap{display:flex;align-items:center;background:var(--field);
-  border:1px solid var(--line);border-radius:var(--r-well);
-  box-shadow:var(--well);
-  transition:border-color .14s ease,box-shadow .18s ease,background .14s ease}
-.inputwrap:hover{border-color:var(--line-hi)}
-/* Focus blooms an accent ring: the well lights up where you're working. */
-.inputwrap:focus-within{
-  border-color:var(--jade);background:var(--sunk);
-  box-shadow:var(--well),0 0 0 3px rgba(79,191,149,.16),0 0 22px -6px rgba(79,191,149,.4)}
-html[data-theme="light"] .inputwrap:focus-within{background:#fff}
-.inputwrap .affix{padding:0 10px;color:var(--dimmer);font-size:12.5px;flex:none}
-.inputwrap input{
-  width:100%;min-width:0;border:0;background:transparent;padding:9px 10px;
-  font-family:var(--mono);font-size:13.5px;color:var(--text);
-  text-align:right;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.inputwrap .affix + input{padding-left:0}
-.inputwrap input:focus{outline:none}
-.inputwrap input::placeholder{color:var(--dimmer);opacity:.6;font-family:var(--sans);font-size:12.5px}
 /* Native spinners overlap the value in these narrow, text-aligned boxes.
    Hidden here; arrow keys still step the value. */
 input[type=number]::-webkit-inner-spin-button,
