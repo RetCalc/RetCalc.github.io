@@ -38,7 +38,7 @@ export function Footer() {
         </div>
         <nav className="sitefoot-nav text-note" aria-label="Site">
           {LINKS.map((l) => (
-            <Button key={l.foot} variant="quiet" size="inline" data-foot={l.foot}
+            <Button key={l.foot} variant="link" size="inline" data-foot={l.foot}
               onClick={() => {
                 router.push(l.href);
                 window.scrollTo({ top: 0 });
