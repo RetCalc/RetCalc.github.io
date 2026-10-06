@@ -182,12 +182,13 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn,
   );
 }
 
-/** The hover line and dot every chart draws at the point under the pointer. */
-export function HoverMarks({ size, x, y }: { size: ChartSize; x: number | null; y: number | null }) {
+/** The hover line and dot every chart draws at the point under the pointer:
+    a neutral guide line, and a dot in the color of the line it sits on. */
+export function HoverMarks({ size, x, y, color = SERIES.plan }: { size: ChartSize; x: number | null; y: number | null; color?: string }) {
   return (
     <>
-      <line x1={x ?? 0} x2={x ?? 0} y1={size.T} y2={size.T + size.ph} stroke={SERIES.plan} strokeWidth={size.sw} opacity={x != null ? 0.4 : 0} />
-      <circle cx={x ?? 0} cy={y ?? 0} r={4.5 * size.sw} fill={SERIES.plan} stroke="var(--dotstroke)" strokeWidth={2.5 * size.sw} opacity={x != null ? 1 : 0} />
+      <line x1={x ?? 0} x2={x ?? 0} y1={size.T} y2={size.T + size.ph} stroke={SERIES.guide} strokeWidth={size.sw} opacity={x != null ? 0.5 : 0} />
+      <circle cx={x ?? 0} cy={y ?? 0} r={4.5 * size.sw} fill={color} stroke="var(--dotstroke)" strokeWidth={2.5 * size.sw} opacity={x != null ? 1 : 0} />
     </>
   );
 }

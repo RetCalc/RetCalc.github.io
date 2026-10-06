@@ -115,10 +115,10 @@ export function Debt() {
             <>
               <b>Month {fmtNum(b.year)}</b> <span className="n">{debtDate(b.year)}</span>
               <br /><i className="tipsw bg-series-plan"></i>Your plan <span className="n">{money(b.base)}</span>
-              <br /><i className="tipsw bg-series-gray"></i>Minimums <span className="n">{money(b.hi!)}</span>
+              <br /><i className="tipsw bg-series-teal"></i>Minimums <span className="n">{money(b.hi!)}</span>
             </>
           )} />
-        <Legend id="legendDT" items={[[SERIES.plan, s.mode === "snowball" ? "Snowball" : "Avalanche"], [SERIES.gray, "Minimums only"]]} />
+        <Legend id="legendDT" items={[[SERIES.plan, s.mode === "snowball" ? "Snowball" : "Avalanche"], [SERIES.teal, "Minimums only"]]} />
       </>
     );
   }

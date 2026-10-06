@@ -256,12 +256,12 @@ export function Roth() {
               <>
                 <b>Age {fmtNum(inp.age + b.year)}</b>
                 <br /><i className="tipsw bg-series-plan"></i>Converting <span className="n">{money(b.base)}</span>
-                <br /><i className="tipsw bg-series-gray"></i>No conversions <span className="n">{money(b.hi!)}</span>
+                <br /><i className="tipsw bg-series-teal"></i>No conversions <span className="n">{money(b.hi!)}</span>
               </>
             )} />
           <Legend id="legendRC" items={R ? [
             [SERIES.plan, view === "bal" ? "Traditional balance, converting" : "Tax paid, converting"],
-            [SERIES.gray, view === "bal" ? "Traditional balance, no conversions" : "Tax paid, no conversions"],
+            [SERIES.teal, view === "bal" ? "Traditional balance, no conversions" : "Tax paid, no conversions"],
           ] : []} />
         </Card>
 

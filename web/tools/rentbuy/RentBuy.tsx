@@ -126,7 +126,7 @@ export function RentBuy() {
         <Card>
           <CardHeader><CardTitle>Net worth over time</CardTitle></CardHeader>
           {R ? (
-            <BandChart id="RB" enhanced maxX={inp.horizon} ariaLabel="Buyer vs renter net worth"
+            <BandChart id="RB" enhanced colors={{ base: SERIES.sky, hi: SERIES.teal }} maxX={inp.horizon} ariaLabel="Buyer vs renter net worth"
               pts={[{ year: 0, base: 0, hi: 0, lo: 0 }, ...R.years.map((y) => ({ year: y.year, base: y.buyerNW, hi: y.renterNW, lo: Math.min(y.buyerNW, y.renterNW) }))]}
               tip={(b) => (
                 <>

@@ -40,6 +40,9 @@ interface Props<P extends BandPoint> {
   enhanced?: boolean;
   /** Extra marks drawn on top (a target line, say), placed with the chart's own scales. */
   extras?: (g: ChartGeometry) => React.ReactNode;
+  /** The series for the base, higher and lower lines (lib/hues.ts), where the
+      chart isn't the default plan / higher / lower band. */
+  colors?: { base?: string; hi?: string; lo?: string };
 }
 
 /** The chart's scales and frame, for drawing extra marks on it. */
@@ -50,7 +53,8 @@ export interface ChartGeometry {
 
 
 export function BandChart<P extends BandPoint>(props: Props<P>) {
-  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras } = props;
+  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras, colors } = props;
+  const cBase = colors?.base ?? SERIES.plan, cHi = colors?.hi ?? SERIES.teal, cLo = colors?.lo ?? SERIES.rose;
   const size = useChartSize();
   const uid = useId().replace(/:/g, "");
   const { narrow, W, T, B, L, pw, ph, fs, sw } = size;
@@ -83,13 +87,13 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             <defs>
               {([["fanOuter", .16, .02], ["fanInner", .30, .06], ["bandFill", .20, .05]] as const).map(([name, a, b]) => (
                 <linearGradient key={name} id={g(name)} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={SERIES.teal} stopOpacity={a} />
-                  <stop offset="100%" stopColor={SERIES.teal} stopOpacity={b} />
+                  <stop offset="0%" stopColor={cHi} stopOpacity={a} />
+                  <stop offset="100%" stopColor={cHi} stopOpacity={b} />
                 </linearGradient>
               ))}
               {/* The plan's own line ends in the logo's arrowhead. */}
               <marker id={g("tip")} viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto">
-                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill={SERIES.plan} />
+                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill={cBase} />
               </marker>
               {traces?.lines.length ? <clipPath id={g("trc")}><rect x={L} y={T} width={pw} height={ph} /></clipPath> : null}
             </defs>
@@ -131,13 +135,13 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             {mode === "mc" ? (
               <>
                 {pts[0].det != null ? <path d={line((a) => a.det!)} fill="none" stroke={SERIES.sky} strokeWidth={1.6 * sw} strokeDasharray="5 4" /> : null}
-                <path d={line((a) => a.base)} fill="none" stroke={SERIES.plan} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                <path d={line((a) => a.base)} fill="none" stroke={cBase} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             ) : (
               <>
-                <path d={line((a) => a.hi!)} fill="none" stroke={SERIES.teal} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
-                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke={SERIES.rose} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
-                <path d={line((a) => a.base)} fill="none" stroke={SERIES.plan} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                <path d={line((a) => a.hi!)} fill="none" stroke={cHi} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
+                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke={cLo} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
+                <path d={line((a) => a.base)} fill="none" stroke={cBase} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             )}
 
@@ -147,11 +151,11 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
                 strokeDasharray={ov.dash || "6 5"} strokeLinejoin="round" opacity={.95} />
             ))}
 
-            <HoverMarks size={size} x={bx} y={best ? Y(best.base) : null} />
+            <HoverMarks size={size} x={bx} y={best ? Y(best.base) : null} color={cBase} />
             {enhanced ? (
               <>
-                <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill={SERIES.teal} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
-                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill={SERIES.rose} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
+                <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill={cHi} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
+                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill={cLo} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
                 <circle cx={bx ?? 0} cy={T + ph + B / 2} r={3 * sw} fill="var(--dim)" opacity={best ? 1 : 0} />
               </>
             ) : null}

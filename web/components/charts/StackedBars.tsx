@@ -58,7 +58,7 @@ export function StackedBars({ id, bars, cats, ariaLabel, tip }: Props) {
               </g>
             );
           })}
-          <HoverMarks size={size} x={hi != null ? X(hi) : null} y={hi != null ? Y(tot[hi]) : null} />
+          <HoverMarks size={size} x={hi != null ? X(hi) : null} y={hi != null ? Y(tot[hi]) : null} color="var(--ds-text)" />
         </>
       )}
     </ChartFrame>

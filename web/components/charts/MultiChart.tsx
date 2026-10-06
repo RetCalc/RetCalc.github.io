@@ -77,7 +77,7 @@ export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) 
             <path key={i} d={pathD(x.pts.map((p) => [X(p.year), Y(p.value)]))}
               fill="none" stroke={colors[i]} strokeWidth={(x.width || 2.4) * sw} strokeLinejoin="round" strokeDasharray={x.dash} />
           ))}
-          <HoverMarks size={size} x={hi != null ? X(grid[hi].year) : null} y={hi != null ? Y(first(hi)) : null} />
+          <HoverMarks size={size} x={hi != null ? X(grid[hi].year) : null} y={hi != null ? Y(first(hi)) : null} color={colors[0]} />
         </>
       )}
     </ChartFrame>

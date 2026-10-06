@@ -164,11 +164,11 @@ export function College() {
                 <>
                   <b>Year {fmtNum(b.year)}</b>
                   <br /><i className="tipsw bg-series-plan"></i>Savings <span className="n">{money(b.base)}</span>
-                  {b.hi != null ? <><br /><i className="tipsw bg-series-sky"></i>{multi ? "Still needed" : "Cost of college"} <span className="n">{money(b.hi)}</span></> : null}
+                  {b.hi != null ? <><br /><i className="tipsw bg-series-teal"></i>{multi ? "Still needed" : "Cost of college"} <span className="n">{money(b.hi)}</span></> : null}
                 </>
               )} />
           ) : <BandChart id="Cl" pts={[]} maxX={0} ariaLabel="College savings projection" tip={() => null} />}
-          <Legend id="legendCl" items={chart ? [[SERIES.plan, "Your savings"], [SERIES.sky, multi ? "Needed then for the bills still ahead" : "Cost of college, that year"]] : []} />
+          <Legend id="legendCl" items={chart ? [[SERIES.plan, "Your savings"], [SERIES.teal, multi ? "Needed then for the bills still ahead" : "Cost of college, that year"]] : []} />
         </Card>
         <Card>
           <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction></CardHeader>
