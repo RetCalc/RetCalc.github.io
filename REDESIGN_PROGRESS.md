@@ -32,7 +32,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 ### Calculators
 | Page | Route | Status | Commit | Notes |
 |---|---|---|---|---|
-| Advanced | /advanced | todo | | follows Basic closely |
+| Advanced | /advanced | done | f9e824f | thirds, hero reading (after-tax income), goal inputs moved left, chart header stacks on phones |
 | Stages | /stages | todo | | same input width as Advanced |
 
 ### Tools (Drawdown and Income Tax first)
