@@ -14,13 +14,13 @@ import { Tipped } from "@/components/shell/Tooltips";
 import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { Figure, Segmented } from "@/components/common/Readout";
 import { CsvButton } from "@/components/common/CsvButton";
-import { DEBT_CAP, debtDate as debtDateOn, debtDur, debtRun, debtUnderwater } from "@/lib/engine/typed";
+import { DEBT_CAP, debtDate as debtDateOn, debtDur } from "@/lib/engine/typed";
 import type { DebtResult } from "@/lib/engine/types";
-import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { DASH, fmtNum, groupDigits, money, pctStr } from "@/lib/format";
 import { focusLast } from "@/lib/dom";
 import { useClient } from "@/lib/useClient";
 import { BUDGET_DEFAULTS, budgetTotals } from "@/tools/budget/model";
-import { DEBT_DEF, debtList, type DebtRow } from "./model";
+import { DEBT_DEF, debtCompute, type DebtRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { debtShare } from "./share";
 import { Button } from "@/components/ui/button";
@@ -42,9 +42,7 @@ export function Debt() {
   const setRow = (i: number, k: keyof DebtRow) => (v: string) =>
     setState((cur) => ({ ...cur, rows: cur.rows.map((r, j) => (j === i ? { ...r, [k]: v } : r)) }));
 
-  const debts = debtList(s.rows);
-  const extra = Math.max(0, parseNum(s.extra) || 0);
-  const live = debts.filter((d) => d.balance > 0);
+  const { live, plan } = debtCompute(s);
 
   let head = { free: DASH, freeNote: "Add a debt to start", interest: DASH, interestNote: "", saved: DASH, savedPos: true, savedNote: "" };
   let body: React.ReactNode = null;
@@ -52,26 +50,20 @@ export function Debt() {
   let verdict = "";
   let cmpRows: React.ReactNode = null, orderRows: React.ReactNode = null, schedRows: React.ReactNode = null;
 
-  if (live.length) {
-    const av = debtRun(debts, extra, "avalanche")!, sn = debtRun(debts, extra, "snowball")!, mn = debtRun(debts, 0, "min")!;
-    const pick = s.mode === "snowball" ? sn : av;
-    // A minimum that doesn't cover interest invalidates every number below it.
-    warn = debtUnderwater(debts).map((u) => u.desc);
-
-    const saved = mn.totalInterest - pick.totalInterest;
-    const sooner = mn.monthsTotal - pick.monthsTotal;
+  if (plan) {
+    const { av, sn, mn, pick, saved, sooner, borrowed, dInt, dMon, dFirst, rate, bump } = plan;
+    warn = plan.warn;
     head = {
       free: pick.stalled ? "Never" : debtDate(pick.monthsTotal),
       freeNote: pick.stalled ? "Payments never clear the balance" : debtDur(pick.monthsTotal) + " from now",
       interest: money(pick.totalInterest),
-      interestNote: "on " + money(live.reduce((a, d) => a + d.balance, 0)) + " borrowed, " + money(pick.totalPaid) + " paid in all",
+      interestNote: "on " + money(borrowed) + " borrowed, " + money(pick.totalPaid) + " paid in all",
       saved: money(Math.max(0, saved)),
       savedPos: saved > 0,
       savedNote: mn.stalled ? "Minimums alone never clear it" : sooner > 0 ? debtDur(sooner) + " sooner" : "Same as minimums",
     };
 
     // The verdict: the real trade-off between the two orderings.
-    const dInt = sn.totalInterest - av.totalInterest, dMon = sn.monthsTotal - av.monthsTotal, dFirst = sn.firstCleared - av.firstCleared;
     if (Math.abs(dInt) < 1 && dMon === 0) {
       verdict = "With these debts the two orderings land in the same place; pick whichever you'll actually stick to.";
     } else {
@@ -80,11 +72,9 @@ export function Debt() {
         ? "Snowball clears your first debt " + debtDur(-dFirst) + " earlier. That early win is the whole argument for it, and here it costs " + money(Math.abs(dInt)) + "."
         : "Snowball offers nothing in return here: it clears the first debt no sooner.";
     }
-    const rate = live.reduce((a, d) => a + d.balance * d.apr, 0) / live.reduce((a, d) => a + d.balance, 0);
     verdict += " Your blended rate is " + pctStr(rate / 100, 1) + " across " + live.length + (live.length === 1 ? " debt" : " debts") +
       ", and you're putting " + money(pick.monthlyPool, 0) + " a month at it.";
     // An extra dollar a month is the most underrated lever in the whole thing.
-    const bump = debtRun(debts, extra + 100, s.mode);
     if (bump && !bump.stalled && !pick.stalled && bump.monthsTotal < pick.monthsTotal)
       verdict += " Another $100 a month would clear it " + debtDur(pick.monthsTotal - bump.monthsTotal) + " sooner and save " +
         money(pick.totalInterest - bump.totalInterest) + " more.";

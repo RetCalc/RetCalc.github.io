@@ -15,10 +15,9 @@ const { ADVANCED_DEFAULTS, advancedCompute } = await import("@/tools/advanced/mo
 const { DRAWDOWN_DEFAULTS, drawdownSetup } = await import("@/tools/drawdown/model");
 const { TAX_DEFAULTS, taxInput, runTax } = await import("@/tools/tax/model");
 const { ROTH_DEFAULTS, rothInput } = await import("@/tools/roth/model");
-const { parseNum } = await import("@/lib/format");
 const TP = await import("@/lib/engine/typed-plan");
 const { MORTGAGE_DEFAULTS, mortgageCompute } = await import("@/tools/mortgage/model");
-const { DEBT_DEFAULTS, debtList } = await import("@/tools/debt/model");
+const { DEBT_DEFAULTS, debtCompute } = await import("@/tools/debt/model");
 const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
 const { BUDGET_DEFAULTS, budgetTotals } = await import("@/tools/budget/model");
@@ -137,12 +136,7 @@ function mortgageTool(fields) {
 }
 
 function debt(fields) {
-  const s = { ...DEBT_DEFAULTS, ...fields };
-  const debts = debtList(s.rows), extra = parseNum(s.extra);
-  // Debt.tsx: both orders and minimums only, the warning, and "$100 more a month".
-  const av = T.debtRun(debts, extra, "avalanche"), sn = T.debtRun(debts, extra, "snowball"), mn = T.debtRun(debts, 0, "min");
-  const under = T.debtUnderwater(debts).map((u) => u.desc);
-  const bump = T.debtRun(debts, extra + 100, s.mode);
+  const { av, sn, mn, warn: under, bump } = debtCompute({ ...DEBT_DEFAULTS, ...fields }).plan;
   const pick = (r) => r && { months: r.monthsTotal, totalInterest: r.totalInterest, totalPaid: r.totalPaid, stalled: r.stalled };
   return { full: { av, sn, mn, under, bump }, out: { avalanche: pick(av), snowball: pick(sn), minimumsOnly: pick(mn), underwater: under.join(", "), plus100: pick(bump) } };
 }
