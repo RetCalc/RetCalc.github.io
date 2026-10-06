@@ -113,7 +113,7 @@ export function Healthcare() {
             ) : null}
             {/* Near the 400% cliff, where a dollar more income loses the whole credit. */}
             {std.eligible && pctFPL > 3.5 && acaMagi < cliff400 ? (
-              <div className="hc-insight">⚠️ Your income is <b>{money(cliff400 - acaMagi)} below</b> the 400% FPL cliff. Every dollar above ${r(cliff400).toLocaleString()} eliminates the entire subsidy, adding ${r(std.credit)}/mo instantly. Roth conversions or portfolio decisions that push income over this line have an outsized cost.</div>
+              <div className="hc-insight warn">Your income is <b>{money(cliff400 - acaMagi)} below</b> the 400% FPL cliff. Every dollar above ${r(cliff400).toLocaleString()} eliminates the entire subsidy, adding ${r(std.credit)}/mo instantly. Roth conversions or portfolio decisions that push income over this line have an outsized cost.</div>
             ) : null}
           </>
         )}

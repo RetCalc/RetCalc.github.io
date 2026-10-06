@@ -150,8 +150,8 @@ export function RentBuy() {
                   return (
                     <tr key={y.year}>
                       <td>{fmtNum(y.year)}</td>
-                      <td className={y.buyerNW >= y.renterNW ? "pos" : undefined}>{money(y.buyerNW)}</td>
-                      <td className={y.renterNW >= y.buyerNW ? "pos" : undefined}>{money(y.renterNW)}</td>
+                      <td>{money(y.buyerNW)}</td>
+                      <td>{money(y.renterNW)}</td>
                       <td className={diff >= 0 ? "pos" : "neg"}>{(diff >= 0 ? "+" : "") + money(diff)}</td>
                       <td>{money(y.homeVal)}</td>
                       <td>{money(y.balance)}</td>
