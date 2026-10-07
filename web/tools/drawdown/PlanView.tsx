@@ -601,26 +601,21 @@ function DetailTable({ run, age, items, tableRef }: { run: DdRun | null; age: nu
 }
 
 /* ---- return sensitivity and claiming ages ---- */
-/* The headers once named a --rule color that doesn't exist, which left them
-   with no bottom border; border-b-0 keeps them that way. */
-const TH = "text-left py-1.25 px-2 border-b-0", THR = "text-right py-1.25 px-2 border-b-0";
-const TD = "py-1.25 px-2", TDR = "text-right py-1.25 px-2";
-
 function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[] | null; label: string }) {
   return (
     <Card id="ddSensPanel" className="min-w-0" data-ddtabs="plan" hidden={!rows}>
       <CardHeader><CardTitle>Return sensitivity</CardTitle></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your plan holds up if returns run higher or lower than history suggests.</div>
-      <div className="pt-0 px-4.5 pb-3.5" id="ddSensTable">
-        {rows ? <table className="w-full border-collapse">
-          <thead><tr><th className={TH}>Return assumption</th><th className={THR}>Success rate</th><th className={THR}>Median ending balance</th></tr></thead>
+      <div className="pb-3.5" id="ddSensTable">
+        {rows ? <table>
+          <thead><tr><th>Return assumption</th><th>Success rate</th><th>Median ending balance</th></tr></thead>
           <tbody>
             {rows.map((r, i) => {
               const drag = DD_DRAGS[i];
               return (
                 <tr key={i} className={drag === 0 ? "font-semibold" : undefined}>
-                  <td className={TD}>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
-                  <td className={TDR + " " + rateClass(r.rate)}>{pctStr(r.rate, 1)}</td><td className={TDR}>{money(r.median)}</td>
+                  <td>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
+                  <td className={rateClass(r.rate)}>{pctStr(r.rate, 1)}</td><td>{money(r.median)}</td>
                 </tr>
               );
             })}
@@ -635,15 +630,15 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
   const ssx = ssRows(v.o, v.d);
   const on = !!(ssx && res);
   const build = (rows: NonNullable<typeof ssx>["rows1"], off: number) => (
-    <table className="w-full border-collapse">
-      <thead><tr><th className={TH}>Claim age</th><th className={THR}>Annual benefit</th><th className={THR}>Success rate</th><th className={THR}>Median ending balance</th></tr></thead>
+    <table>
+      <thead><tr><th>Claim age</th><th>Annual benefit</th><th>Success rate</th><th>Median ending balance</th></tr></thead>
       <tbody>
         {rows.map((r, i) => {
           const R = res![off + i];
           return (
             <tr key={r.age} className={r.current ? "font-semibold" : undefined}>
-              <td className={TD}>Age {r.age}{r.current ? " ◄" : ""}</td><td className={TDR}>{money(r.annual)}/yr</td>
-              <td className={TDR + " " + rateClass(R.rate)}>{pctStr(R.rate, 1)}</td><td className={TDR}>{money(R.median)}</td>
+              <td>Age {r.age}{r.current ? " ◄" : ""}</td><td>{money(r.annual)}/yr</td>
+              <td className={rateClass(R.rate)}>{pctStr(R.rate, 1)}</td><td>{money(R.median)}</td>
             </tr>
           );
         })}
@@ -654,10 +649,10 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
     <Card id="ddSSBreakEvenPanel" className="min-w-0" data-ddtabs="plan" hidden={!on}>
       <CardHeader><CardTitle>Social Security claiming age comparison</CardTitle></CardHeader>
       <div className="hint pt-0 px-4.5 pb-2.5">How your claiming age affects success rate and ending balance. All other inputs held constant.</div>
-      <div className="pt-0 px-4.5 pb-3.5" id="ddSSBreakEvenTable">
+      <div className="pb-3.5" id="ddSSBreakEvenTable">
         {on ? ssx!.rows2 ? <>
-          <p className="font-semibold mt-0 mx-0 mb-1.5">Your claiming age (spouse held constant)</p>{build(ssx!.rows1, 0)}
-          <p className="font-semibold mt-3 mx-0 mb-1.5">Spouse&apos;s claiming age (yours held constant)</p>{build(ssx!.rows2, ssx!.rows1.length)}
+          <p className="font-semibold mt-0 mx-0 mb-1.5 px-4.5">Your claiming age (spouse held constant)</p>{build(ssx!.rows1, 0)}
+          <p className="font-semibold mt-3 mx-0 mb-1.5 px-4.5">Spouse&apos;s claiming age (yours held constant)</p>{build(ssx!.rows2, ssx!.rows1.length)}
         </> : build(ssx!.rows1, 0) : null}
       </div>
     </Card>

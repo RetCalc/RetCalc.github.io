@@ -77,10 +77,11 @@
 /* Drawdown guardrails: an upper and a lower guardrail, each with its own
    pair of fields, and the final-years rule under the upper one */
 .ddgk-h{font-size:12.5px;font-weight:600;color:var(--text);margin:2px 0 8px;display:flex;align-items:center}
-/* Nine columns: wide enough to keep each on one line, scrolling sideways when
-   the panel is narrower. */
-#ddStartTable{min-width:860px}
-#ddStartTable th,#ddStartTable td:first-child{white-space:nowrap}
+/* Nine columns: figures stay on one line and the longer headers wrap, so the
+   table fits the results column at 1440 (and down to 1100); narrower, it
+   scrolls sideways (phones set a min-width). */
+#ddStartTable td{white-space:nowrap}
+#ddStartTable th:first-child{white-space:nowrap}
 /* The chosen strategy, under the picker: its family, what it does, and its
    spending through a hard start */
 .ddstrat{margin-top:8px;padding:10px 12px 9px;border:1px solid var(--line-soft);border-radius:var(--r-well);
