@@ -57,7 +57,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 ### Content pages
 | Page | Route | Status | Commit | Notes |
 |---|---|---|---|---|
-| Guide | /guide | todo | | bow-and-arrow progress: Phase 2 |
+| Guide | /guide | done | 8e60269 | Card + 340px rail; score hero reading (rating tone) with lasted/projected/needed; one amber per step; compact phone progress, 44px hits, coach folded on phone trips; route folds; field error; bow-and-arrow still Phase 2 |
 | Tools | /tools | todo | | icon motion: Phase 2 |
 | About | /about | todo | | |
 | Compare | /compare | todo | | opened from Save; no sitemap entry |
