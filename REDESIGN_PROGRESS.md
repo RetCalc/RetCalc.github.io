@@ -39,7 +39,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Page | Route | Status | Commit | Notes |
 |---|---|---|---|---|
 | Drawdown Simulator | /drawdown | done | 7cfb953 | thirds, hero reading (success rate in its rating tone), views as tabs each with its own answer, plan as a story, token heat grid; strategy pages share it |
-| Income Tax | /incometax | todo | | |
+| Income Tax | /incometax | done | 36ede43 | thirds, hero reading (pay or income after tax), donut + bars as one band with a reconciling note, field error on pre-tax, gain chart up and unclipped, state rules folded |
 | Plan Optimizer | /optimizer | todo | | bow-and-arrow loader: Phase 2 |
 | Early Retirement Bridge | /bridge | todo | | |
 | 72(t) | /72t | todo | | Bridge's page; checked with it |
