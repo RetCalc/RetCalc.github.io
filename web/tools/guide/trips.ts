@@ -104,7 +104,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         { h: "For bills that come once or twice a year (insurance, travel, gifts, car repairs), tap <b>/yr</b> on the line and enter the yearly total." },
         { h: "Money you move into savings or investments goes on <b>Savings &amp; investments</b>. It counts as saving, not spending.", ok: B.saved > 0 ? true : undefined },
         { h: "Something missing? <b>Add custom item</b> sits under the list." },
-        { h: "<b>Left over</b> at the top is what's free each month for debt and saving." },
+        { h: "<b>Left over</b>, beside the list (below it on a phone), is what's free each month for debt and saving." },
       ];
     },
     chip: ({ s }: Ctx<BudgetInputs>) => { const B = budgetNums(s); return B.spent > 0 ? "Spending <b>" + money(B.spent / 12) + "/mo</b><br>Left over <b>" + money(B.left / 12) + "/mo</b>" : ""; },

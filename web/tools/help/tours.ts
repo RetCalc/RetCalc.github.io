@@ -181,7 +181,7 @@ const rentbuy: Tour<{ horizon: string; appr: string }> = { name: "Rent vs. Buy",
     { title: "Who comes out ahead", focus: "#rbWinner", tasks: () => [
       { h: "It's a fair race: both households spend the same each month, and whichever side's costs are lower invests the difference." },
       { h: "<b>Buyer net worth</b> is the home sold at that year's value, less the loan left, selling costs and tax, plus anything invested. <b>Renter net worth</b> is everything the renter invested." },
-      { h: "The break-even year, under the chart, is when buying pulls ahead. Before it, the up-front costs of buying haven't been earned back." },
+      { h: "The break-even year, in the line under the verdict, is when buying pulls ahead. Before it, the up-front costs of buying haven't been earned back." },
       { h: "This is only about money. Stability, space, and freedom to move or not to fix a roof are worth something too, and only you can price them." },
     ] },
   ],
@@ -234,7 +234,7 @@ const drawdown: Tour<DrawdownState> = { name: "Drawdown Simulator", title: "Will
       { h: "The <b>Success grid</b> tries settings around yours against stock shares or retirement lengths; tap a cell to use it. <b>Valuations at the start</b> sets each start's safe rate against its CAPE, and marks today's." },
     ] },
     { title: "Income and the rest", focus: "#ddSSMode", show: ddTab("plan"), tasks: ({ s }) => [
-      { h: "<b>Social Security</b>: choose <b>Estimate it for me</b>, or better, <b>I know my benefit</b> with the figure from your statement at ssa.gov. The table near the bottom compares claiming at 62, 64, 67 and 70.", ok: tried(s.ssMode !== "none") },
+      { h: "These settings are under <b>Advanced</b>, which this part switches on. <b>Social Security</b>: choose <b>Estimate it for me</b>, or better, <b>I know my benefit</b> with the figure from your statement at ssa.gov. The table near the bottom compares claiming at 62, 64, 67 and 70.", ok: tried(s.ssMode !== "none") },
       { h: "<b>Other income</b> for a pension, part-time work or rent; <b>Future expenses</b> for a roof, a car or helping a child. Each has its own start and length.", ok: tried(!!(s.incomeItems.length || s.expenseItems.length)) },
       { h: "<b>Rebalancing</b> and <b>Fees</b> are with the portfolio. Try 1% in fees to see what an advisor or pricier funds cost over a retirement." },
       { h: "<b>Market history</b>: test a retirement every month or each January, and from any year, say 1950 to leave out the Depression." },
