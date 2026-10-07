@@ -718,6 +718,11 @@ written into DESIGN.md unless it says otherwise.
   owner's call). A visible "Tools" header (set like a tool header) sits
   after the household bar; the SEO h1 stays screen-reader only and the
   visible title is aria-hidden so it isn't read twice.
+- **Not found (404): a centered 768px column.** Unknown addresses aren't in
+  SOLO, so the page spans main's two columns (`col-span-full`) and centers
+  its own: Headline, one line, a primary and a secondary button (links
+  drawn with buttonVariants), then four picker cards (Drawdown, Plan
+  Optimizer, Roth, FIRE) in the picker's two-column grid.
 
 ## Skipped from critique
 
@@ -727,6 +732,13 @@ written into DESIGN.md unless it says otherwise.
   and strategy pages to the picker — navigation structure.
 - **Tools**: icon motion on focus/tap, ≤250ms beats, arrow-step parity in
   the icon animations — Phase 2 (the card's arrow now steps on focus too).
+- **Not found**: the Tools tab shows as active on the 404 — `tabFor`
+  defaults unknown slugs to "tools", and returning no tab would leave every
+  tab at tabIndex -1 in the rail's roving focus (NavBar), so it isn't a
+  one-line default; needs a NavBar change.
+- **Not found**: Save/Share/Reset stay enabled on the 404 — scenario
+  toolbar behavior, logged only.
+- **Not found**: "did you mean" suggestions or redirects — routes.
 - **Advanced**: mark Time period 0 or negative as an error and dim the
   figures — deciding that those values are invalid changes what's computed
   and shown (the field is built `negative`); the owner decides the rule,

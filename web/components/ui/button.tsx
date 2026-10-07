@@ -8,15 +8,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // The primary action: one per view, one of amber's four places.
-        default: "bg-primary font-semibold text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_12%)]",
+        // (no-underline: a link drawn as a button, as on the 404 page.)
+        default: "no-underline bg-primary font-semibold text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_12%)]",
         // On light paper a Rule edge round a Raised fill read as disabled,
         // so light mode gives it the control edge (Rule Strong).
         outline:
-          "border-input dark:border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-pressed:border-muted-foreground aria-pressed:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+          "no-underline border-input dark:border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-pressed:border-muted-foreground aria-pressed:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         secondary:
-          "border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "no-underline border-border bg-secondary text-secondary-foreground hover:border-muted-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "no-underline hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:
           "bg-[color-mix(in_srgb,var(--destructive)_15%,var(--card))] text-destructive hover:border-destructive/50",
         // Text, underlined: links are never amber.
