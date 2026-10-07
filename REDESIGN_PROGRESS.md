@@ -87,7 +87,7 @@ own route yet; every page has one now, so it renders nothing.
 | Tool-picker icon animations | done | 8597d84 | one 240ms transform beat per icon on hover/focus/tap (.is-beat on touch), no stroke drawing or loops; reduced motion = Muted tile edge |
 | Guide bow-and-arrow progress | done | c3b83c4 | translateX arrow + scaleX fills from container units (tip = fill end at every width), 520ms flight, 283ms hit, no streak/burst, progressbar role; reduced motion = jump + colour |
 | Optimizer bow-and-arrow loader | done | cf34bba | 5s first shot then 2s (sessionStorage), skip by click/tap/Enter/Escape, transform-only, real progress, hit <400ms, reduced motion = no flight |
-| Page transitions, tab switches, press, panels | todo | | |
+| Page transitions, tab switches, press, panels | done | dddce36 | tab arrow slides 240ms then hands back (rest unchanged), 6px pane rise ≤250ms incl. stagger, 1px press everywhere, panels fade+4px with instant height, glide 250ms, global reduced-motion guard incl. pseudo-elements |
 
 ## Phase 3: share card and print summary — dropped
 
