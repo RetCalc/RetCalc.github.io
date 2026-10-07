@@ -380,6 +380,11 @@ written into DESIGN.md unless it says otherwise.
   marks stay in the SVG as data-print-only (hidden on screen by a rule
   scoped to .chartwrap), so the printed summary is unchanged (share.spec
   roth passes).
+  /rmd renders the same tool with `variant="rmd"` (app/rmd/page.tsx): Peak
+  RMD, doing nothing leads the figures in amber (Lifetime tax saved drops to
+  Text), the pinned reading leads with it, and Year by year opens on Doing
+  nothing with the RMD column first, so RMDs by age show on arrival. Same
+  figures, inputs and default strategy as /roth.
 
 ## Skipped from critique
 
@@ -502,6 +507,11 @@ written into DESIGN.md unless it says otherwise.
 - **Roth Conversion**: label the gap fill ("Tax avoided" / "Tax added") —
   its sign changes along the chart, which needs new per-segment marks;
   flattened and left unlabelled between the two named lines.
+- **RMDs (/rmd)**: the doing-nothing first RMD in the facts, and "No
+  conversions" as /rmd's default — a new figure and a default change; the
+  table opening on Doing nothing shows those RMDs instead.
+- **RMDs (/rmd)**: an RMD-specific tool description — the header copy comes
+  from the shared tool list; left for the owner.
 - **Roth Conversion**: 44px CSV button and the article disclosure's label —
   shared CsvButton size and the shared article component, not this page's.
 

@@ -47,12 +47,17 @@ const VERDICT = {
 
 interface Fig { label: ReactNode; id: string; value: string; note: ReactNode; noteId: string; tone: HeroTone }
 
-export function Roth() {
+/** `variant="rmd"`: the /rmd page, the same tool led by its required
+    distributions (Peak RMD first and in amber, the year table open on
+    doing nothing with the RMD column first). Same figures, inputs and
+    default plan as /roth. */
+export function Roth({ variant }: { variant?: "rmd" } = {}) {
+  const rmdPage = variant === "rmd";
   const { state: s, set, setState } = useToolState(ROTH_DEF);
   useShareKit(ROTH_DEF.id, rothShare(s));
   const toast = useToast();
   const [view, setView] = useState<"bal" | "tax">("bal");
-  const [tableView, setTableView] = useState<"plan" | "base">("plan");
+  const [tableView, setTableView] = useState<"plan" | "base">(rmdPage ? "base" : "plan");
   const tableRef = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("roth", (h) => setState((c) => {
@@ -116,7 +121,7 @@ export function Roth() {
   const savedVal = R ? (R.taxSaved >= 0 ? "" : "−") + money(Math.abs(R.taxSaved)) : DASH;
   const nwVal = R ? (R.nwDelta >= 0 ? "+" : "−") + money(Math.abs(R.nwDelta)) : DASH;
   const peakVal = plan && base ? money(base.peakRMD, 0) : DASH;
-  const savedTone: HeroTone = !R ? "text" : R.taxSaved < 0 ? "loss" : "answer";
+  const savedTone: HeroTone = !R ? "text" : R.taxSaved < 0 ? "loss" : rmdPage ? "text" : "answer";
   const NwIcon = R ? (R.nwDelta >= 0 ? ArrowUpIcon : ArrowDownIcon) : null;
   const saved: Fig = {
     label: <Tipped text="Lifetime tax saved" k="rcpv" />, id: "rcSaved", value: savedVal, noteId: "rcSavedNote", tone: savedTone,
@@ -132,10 +137,10 @@ export function Roth() {
     ) : "",
   };
   const peak: Fig = {
-    label: <Tipped text="Peak RMD, doing nothing" k="rcpeak" />, id: "rcPeak", value: peakVal, noteId: "rcPeakNote", tone: "text",
+    label: <Tipped text="Peak RMD, doing nothing" k="rcpeak" />, id: "rcPeak", value: peakVal, noteId: "rcPeakNote", tone: rmdPage && plan ? "answer" : "text",
     note: plan && base ? (plan.peakRMD < base.peakRMD ? "Converting trims it to " + money(plan.peakRMD, 0) : "Unchanged by this plan") : "",
   };
-  const figs = [saved, nw, peak];
+  const figs = rmdPage ? [peak, saved, nw] : [saved, nw, peak];
   const V = R ? VERDICT[R.kind] : null;
 
   const two = "two bottomalign max-sm:grid-cols-2";
@@ -144,13 +149,18 @@ export function Roth() {
     ["Converted", (y) => (y.conv > 0 ? money(y.conv, 0) : DASH)],
     ["RMD", (y) => (y.rmd > 0 ? money(y.rmd, 0) : DASH)],
   ];
+  if (rmdPage) cols.reverse();
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
-        <PinnedReading tone={savedTone} main={{ label: "Lifetime tax saved", value: savedVal }} side={{ label: "Net worth vs doing nothing", value: nwVal }} />
+        {rmdPage ? (
+          <PinnedReading tone={peak.tone} main={{ label: "Peak RMD, doing nothing", value: peakVal }} side={{ label: "Lifetime tax saved", value: savedVal }} />
+        ) : (
+          <PinnedReading tone={savedTone} main={{ label: "Lifetime tax saved", value: savedVal }} side={{ label: "Net worth vs doing nothing", value: nwVal }} />
+        )}
 
         <aside id="asideRC" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
@@ -378,7 +388,7 @@ export function Roth() {
             </CardContent>
           </Card>
 
-          <Collapsible className="min-w-0" render={<Card />}>
+          <Collapsible className="min-w-0" defaultOpen={rmdPage} render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
               <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>
