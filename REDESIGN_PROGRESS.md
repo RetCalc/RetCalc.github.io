@@ -61,7 +61,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Tools | /tools | todo | | icon motion: Phase 2 |
 | About | /about | todo | | |
 | Compare | /compare | todo | | opened from Save; no sitemap entry |
-| Tool Help (the docked help panel) | on every tool | todo | | shared CoachPanel |
+| Tool Help (the docked help panel) | on every tool | done | 902705e | shared CoachPanel: sidecar from 1400px, Back/Next in the footer, clickable parts, the part outlined; Guide trips too |
 | Not found | (404) | todo | | |
 
 ### Withdrawal-strategy landing pages (Drawdown template)
