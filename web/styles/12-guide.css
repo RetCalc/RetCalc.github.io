@@ -498,3 +498,51 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-learn p{max-width:64ch}
 .gd-nums .gd-fields{margin-bottom:0}
 .gd-strip-s{flex:none}
+
+/* ---- Lessons and readouts (overhaul, phase 2) ---- */
+.gd-lesson-t{margin:0 0 6px;font-size:15px;font-weight:600;color:var(--text)}
+.gd-lesson-b p{margin:0 0 10px;font-size:14.5px;line-height:1.6;color:var(--dim);max-width:64ch}
+.gd-lesson-b p b{color:var(--text);font-weight:600}
+.gd-lesson-fig{margin:6px 0 10px;max-width:640px}
+.gd-lesson-fig figcaption{margin-top:6px;font-size:11.5px;color:var(--dimmer)}
+.gd-lesson-links{display:flex;flex-wrap:wrap;gap:4px 18px;margin:4px 0 8px;font-size:12.5px;color:var(--dim)}
+.gd-lesson-links a{color:var(--text);text-decoration:underline;text-decoration-color:var(--ds-rule-strong);text-underline-offset:3px}
+.gd-lesson-links a:hover{text-decoration-color:var(--text)}
+.gd-term{white-space:nowrap}
+.gd-read{list-style:none;margin:0 0 6px;padding:0;max-width:66ch}
+.gd-read li{position:relative;padding:0 0 8px 16px;font-size:14px;line-height:1.55;color:var(--dim)}
+.gd-read li::before{content:"";position:absolute;left:2px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--ds-muted)}
+.gd-read li b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.gd-means-empty{margin:0 0 8px;font-size:13.5px;color:var(--dimmer)}
+/* Lesson 1: the two clocks on one line. */
+.gd-tl{position:relative;padding:2px 0 0}
+.gd-tl-row{position:relative;height:16px}
+.gd-tl-lab{position:absolute;left:calc(var(--x) * 1%);transform:translateX(-50%);font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gd-tl-bar{position:relative;height:12px;margin:3px 0}
+.gd-tl-bar span{position:absolute;top:0;bottom:0;left:calc(var(--a) * 1%);width:calc((var(--b) - var(--a)) * 1%)}
+.gd-tl-bar .save{background:var(--ds-series-teal);border-radius:6px 0 0 6px}
+.gd-tl-bar .fund{background:var(--ds-series-sky);border-radius:0 6px 6px 0}
+.gd-tl-bar i{position:absolute;top:-3px;bottom:-3px;left:calc(var(--x) * 1%);width:1.5px;margin-left:-.75px;background:var(--ds-text)}
+.gd-tl-key{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:12px;color:var(--dim)}
+.gd-tl-key span{display:inline-flex;align-items:center;gap:6px}
+.gd-tl-key s{display:inline-block;width:10px;height:10px;border-radius:2px;text-decoration:none}
+.gd-tl-key s.save{background:var(--ds-series-teal)}
+.gd-tl-key s.fund{background:var(--ds-series-sky)}
+.gd-lesson{margin:0 0 4px}
+/* Lesson 2: a month's pay as one bar. */
+.gd-pay-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--line-soft)}
+.gd-pay-bar span{flex:0 0 calc(var(--w) * 1%)}
+.gd-pay-bar .net,.gd-pay-key s.net{background:var(--ds-series-teal)}
+.gd-pay-bar .fed,.gd-pay-key s.fed{background:var(--ds-series-rose)}
+.gd-pay-bar .st,.gd-pay-key s.st{background:var(--ds-series-lavender)}
+.gd-pay-bar .fica,.gd-pay-key s.fica{background:var(--ds-series-gray)}
+.gd-pay-key{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:12px;color:var(--dim)}
+.gd-pay-key span{display:inline-flex;align-items:center;gap:6px}
+.gd-pay-key b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.gd-pay-key s{display:inline-block;width:10px;height:10px;border-radius:2px;text-decoration:none}
+.gd-pay-key .of{color:var(--dimmer)}
+/* What you spend: the quick estimate from take-home. */
+.gd-slide{max-width:560px;margin:2px 0 14px}
+.gd-slide label{display:block;font-size:13px;color:var(--dim);margin-bottom:4px}
+.gd-slide label b{color:var(--text);font-variant-numeric:tabular-nums}
+.gd-pay{max-width:620px}

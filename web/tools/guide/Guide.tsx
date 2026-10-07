@@ -26,7 +26,7 @@ import { cleanLink, deriveSources, doneFromV1, linkPayload, migrateAnswers } fro
 import { after, applies, before, current, firstOpen, landing, minutesLeft, numbered, stepById, type RouteFacts, type StepDecl } from "./route";
 import { Rail, type RailPlan } from "./Rail";
 import { GuideSheet } from "./sheet";
-import { mark, putter, setAnswer, stamp } from "./sources";
+import { mark, putter, refreshEstimates, setAnswer, stamp } from "./sources";
 import { VIEWS } from "./steps";
 import { freshGuide, guide, replaceGuide, setGuide, useGuide, type Answers, type GuideState, type Pace, type Sources } from "./store";
 import { curOpt, setTune } from "./tune";
@@ -59,6 +59,7 @@ const factsFor = (a: Answers) => factsFrom(a, sim(withGuess(a)));
 function arrive(g: GuideState, id: string) {
   g.cur = id;
   stepById(id)?.prep?.(g.a, putter(g));
+  refreshEstimates(g);
 }
 
 /** A guide opened from a link or a saved plan, done up to its plan card. */
@@ -266,7 +267,7 @@ export function Guide() {
   const view: GuideView = {
     g, a: g.a, v, redraw, go, trip, act,
     set: (k, val, again, kind = "entered") => {
-      setGuide((x) => setAnswer(x, k, val, kind));
+      setGuide((x) => { setAnswer(x, k, val, kind); refreshEstimates(x); });
       if (again) redraw();
     },
   };

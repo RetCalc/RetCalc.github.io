@@ -64,26 +64,22 @@ export const STEPS: StepDecl[] = [
   { id: "welcome", chapter: 0, title: "Welcome", type: "welcome", pace: "quick", minutes: 0.5 },
 
   /* 1 · You and your timeline */
-  { id: "about", chapter: 1, title: "About you", type: "question", pace: "quick", minutes: 1, sync: true,
+  { id: "about", chapter: 1, title: "About you", type: "question", pace: "quick", minutes: 1, sync: true, teaches: ["two-clocks"],
     needs: (a) => need(ok(a.age) && a.age >= 16 && a.age < 100 && ok(a.retire) && a.retire > a.age && a.retire <= 90, "Enter your age and a retirement age after it"),
     commit: (a, put) => put("status", "s", "default") },
 
   /* 2 · Where you stand */
-  { id: "income", chapter: 2, title: "Your income", type: "question", pace: "quick", minutes: 0.5, tool: "tax", sync: true,
-    needs: (a) => need(ok(a.income), "Enter your yearly income") },
-  { id: "takehome", chapter: 2, title: "Take-home pay", type: "question", pace: "quick", minutes: 0.5, tripMinutes: 3, tool: "tax",
-    needs: (a) => need(pos(a.takehome), a.thKnow === "no" ? "Open the Income Tax tool, or use the estimate" : "Enter your monthly take-home") },
-  { id: "spending", chapter: 2, title: "Monthly spending", type: "question", pace: "quick", minutes: 1, tripMinutes: 15, tool: "budget",
-    needs: (a) => need(pos(a.spend), a.bgKnow === "no" ? "Build your budget first" : "Enter your monthly spending") },
-  { id: "cash", chapter: 2, title: "Emergency fund", type: "question", pace: "quick", minutes: 0.5, tool: "budget",
-    needs: (a) => need(ok(a.cash), "Enter your cash savings, even if it's 0") },
-  { id: "debt", chapter: 2, title: "Debt", type: "question", pace: "quick", minutes: 1, tripMinutes: 5, tool: "debt",
-    needs: (a) => need(a.debtHas === "no" || (a.debtHas === "yes" && ok(a.debtTotal)), a.debtHas === "yes" ? "List your debts, or enter the total" : "Choose an answer") },
-  { id: "home", chapter: 2, title: "Housing", type: "question", pace: "full", minutes: 1, tripMinutes: 5, tool: "mortgage",
-    needs: (a) => need(!!a.home, "Choose an answer"),
+  { id: "income", chapter: 2, title: "Income and take-home", type: "question", pace: "quick", minutes: 1, tripMinutes: 3, tool: "tax", sync: true,
+    teaches: ["take-home"], needs: (a) => need(ok(a.income), "Enter your yearly income") },
+  { id: "spending", chapter: 2, title: "What you spend", type: "question", pace: "quick", minutes: 1, tripMinutes: 15, tool: "budget",
+    teaches: ["keystone"], needs: (a) => need(pos(a.spend), "Enter your monthly spending, or use the slider") },
+  { id: "cash", chapter: 2, title: "Your safety net", type: "question", pace: "quick", minutes: 0.5, tool: "budget",
+    teaches: ["months"], needs: (a) => need(ok(a.cash), "Enter your cash savings, even if it's 0") },
+  { id: "debt", chapter: 2, title: "Debt", type: "question", pace: "quick", minutes: 1, tripMinutes: 5, tool: "debt", teaches: ["eight-percent", "order"],
+    needs: (a) => need(a.debtHas === "no" || (a.debtHas === "yes" && ok(a.debtTotal)), a.debtHas === "yes" ? "Enter the total you owe" : "Choose an answer") },
+  { id: "goals", chapter: 2, title: "Home and big goals", type: "question", pace: "full", minutes: 2, tripMinutes: 8, tool: "mortgage", teaches: ["housing"],
+    needs: (a) => need(!!a.home && !!a.college, "Answer the housing and college questions"),
     prep: (a, put) => { if (a.home === "mortgage" && pos(a.bgHousing)) put("housePay", a.bgHousing, "tool", "budget"); } },
-  { id: "college", chapter: 2, title: "College", type: "question", pace: "full", minutes: 1, tripMinutes: 3, tool: "college",
-    needs: (a) => need(!!a.college, "Choose an answer") },
 
   /* 3 · Building your savings */
   { id: "savings", chapter: 3, title: "Retirement savings", type: "question", pace: "quick", minutes: 2, tool: "basic", sync: true,

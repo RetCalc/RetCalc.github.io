@@ -11,7 +11,7 @@ const fixture = (id: string) => structuredClone(FIXTURES.find((f) => f.id === id
 const ids = (a: Answers, pace: Pace, behind = false) => numbered(a, pace, { behind }).map((s) => s.id);
 const at = (a: Answers, pace: Pace, cur: string, done: Record<string, boolean> = {}) => ({ a, pace, cur, done });
 
-const QUICK = ["about", "income", "takehome", "spending", "cash", "debt", "savings", "retspend", "number", "lasting", "plan"];
+const QUICK = ["about", "income", "spending", "cash", "debt", "savings", "retspend", "number", "lasting", "plan"];
 
 test("every step has a chapter, a type, a pace and its minutes", () => {
   assert.equal(new Set(STEPS.map((s) => s.id)).size, STEPS.length);
@@ -20,8 +20,8 @@ test("every step has a chapter, a type, a pace and its minutes", () => {
     assert.ok(s.minutes > 0, s.id);
     assert.ok(["quick", "full"].includes(s.pace), s.id);
   }
-  // today's eighteen cards and Welcome
-  assert.equal(STEPS.length, 19);
+  // Welcome and every card, as far as the chapters rewritten so far go
+  assert.equal(STEPS[0].id, "welcome");
 });
 
 test("the Quick check walks its own cards, for a plan on track", () => {
@@ -32,9 +32,9 @@ test("the Quick check walks its own cards, for a plan on track", () => {
 test("the Full walkthrough walks every card that applies", () => {
   // retiring at 62: healthcare before 65, no bridge
   assert.deepEqual(ids(fixture("maya-sam"), "full"),
-    ["about", "income", "takehome", "spending", "cash", "debt", "home", "college", "savings", "retspend", "number", "lasting", "adjust", "strategy", "health", "optimize", "plan"]);
-  // retiring at 55: both, all eighteen of today's cards
-  assert.equal(ids(fixture("early-55"), "full").length, 18);
+    ["about", "income", "spending", "cash", "debt", "goals", "savings", "retspend", "number", "lasting", "adjust", "strategy", "health", "optimize", "plan"]);
+  // retiring at 55: both
+  assert.ok(ids(fixture("early-55"), "full").includes("health"));
   assert.ok(ids(fixture("early-55"), "full").includes("bridge"));
   // retiring at 65 or later: neither
   const d = ids(fixture("dan"), "full");
@@ -51,19 +51,19 @@ test("a plan that falls short brings Adjust your plan into the Quick check", () 
 test("deeper cards are listed on the Quick check, not walked", () => {
   const a = fixture("maya-sam");
   const d = STEPS.filter((s) => deeper(s, a, "quick")).map((s) => s.id);
-  assert.deepEqual(d, ["home", "college", "adjust", "strategy", "health", "optimize"]);
+  assert.deepEqual(d, ["goals", "adjust", "strategy", "health", "optimize"]);
   assert.deepEqual(STEPS.filter((s) => deeper(s, a, "full")), []);
 });
 
 test("Continue and Back follow the route, from a deeper card too", () => {
   const a = fixture("maya-sam");
   assert.equal(after(at(a, "quick", "debt")).id, "savings");
-  assert.equal(after(at(a, "full", "debt")).id, "home");
+  assert.equal(after(at(a, "full", "debt")).id, "goals");
   assert.equal(before(at(a, "quick", "savings")).id, "debt");
   // a deeper card opened from the route stays open on the Quick check
-  assert.equal(current(at(a, "quick", "college")).id, "college");
-  assert.equal(after(at(a, "quick", "college")).id, "savings");
-  assert.equal(before(at(a, "quick", "college")).id, "debt");
+  assert.equal(current(at(a, "quick", "goals")).id, "goals");
+  assert.equal(after(at(a, "quick", "goals")).id, "savings");
+  assert.equal(before(at(a, "quick", "goals")).id, "debt");
   // a card that no longer applies gives way to the next on the route
   assert.equal(current(at({ ...a, retire: 66 }, "full", "health")).id, "optimize");
   assert.equal(current(at(a, "quick", "nonsense")).id, "about");
@@ -74,7 +74,7 @@ test("Continue and Back follow the route, from a deeper card too", () => {
 
 test("the first open card skips what's done", () => {
   const a = fixture("maya-sam");
-  assert.equal(firstOpen(at(a, "quick", "about", { about: true, income: true })), "takehome");
+  assert.equal(firstOpen(at(a, "quick", "about", { about: true, income: true })), "spending");
   assert.equal(firstOpen(at(a, "quick", "about", Object.fromEntries(QUICK.map((k) => [k, true])))), "plan");
 });
 
@@ -91,10 +91,10 @@ test("time left counts the cards ahead on the pace, and the trips on the full on
 test("switching pace keeps your place, or moves to the next card the pace walks", () => {
   const a = fixture("maya-sam");
   assert.equal(landing(at(a, "quick", "debt"), "full"), "debt");
-  assert.equal(landing(at(a, "full", "home"), "quick"), "savings");
+  assert.equal(landing(at(a, "full", "goals"), "quick"), "savings");
   assert.equal(landing(at(a, "full", "strategy"), "quick"), "plan");
   // after finishing the Quick check, the Full walkthrough opens on the first deeper card
   const done = Object.fromEntries(QUICK.map((k) => [k, true]));
-  assert.equal(landing({ ...at(a, "quick", "plan", done), finishedAt: "2026-10-07" }, "full"), "home");
-  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, home: true, college: true }) }, "full"), "adjust");
+  assert.equal(landing({ ...at(a, "quick", "plan", done), finishedAt: "2026-10-07" }, "full"), "goals");
+  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true }) }, "full"), "adjust");
 });

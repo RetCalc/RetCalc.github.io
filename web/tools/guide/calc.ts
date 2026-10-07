@@ -63,6 +63,16 @@ export function withGuess(a: Answers): Answers {
 /** Whether retirement spending is still the placeholder. */
 export const guessing = (a: Answers) => !pos(a.retSpend) && spendGuess(a) > 0;
 
+/** Where a year's pay goes, by the Income Tax tool's 2026 rules: federal
+    and state income tax, Social Security and Medicare, and what's left. A
+    month of each, for lesson 2's bar. Null without an income. */
+export function payParts(a: Answers): { gross: number; federal: number; state: number; fica: number; net: number } | null {
+  const g1 = a.income || 0, g2 = mar(a) ? a.income2 || 0 : 0;
+  if (!(g1 + g2 > 0)) return null;
+  const T = (computeTax as (o: object) => { federal: number; state: number; fica: number; net: number })({ status: mar(a) ? "m" : "s", gross: g1, gross2: g2, pre: 0, dedType: "std", item: 0, state: a.state || "IL" });
+  return { gross: (g1 + g2) / 12, federal: T.federal / 12, state: T.state / 12, fica: T.fica / 12, net: T.net / 12 };
+}
+
 /** The share of historical retirements a plan has to survive to count as on
     track: 90% unless more margin is asked for on the Adjust step. */
 export const target = (a: Answers) => (a.target === 0.95 || a.target === 1 ? a.target : 0.9);

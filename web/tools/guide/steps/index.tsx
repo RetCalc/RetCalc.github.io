@@ -10,20 +10,20 @@ import { Results, ResultsFoot } from "../results";
 import { StrategyStep } from "../strategy";
 import { TuneStep } from "../tune";
 import { Welcome, WelcomeFoot } from "./ch0-welcome";
-import { About, Bridge, Cash, College, Debt, Health, Home, Income, Lasting, Outlook, RetSpend, Savings, Spending, TakeHome } from "./legacy";
+import { AboutYou } from "./ch1-timeline";
+import { DebtCard, GoalsCard, IncomeCard, SafetyCard, SpendCard } from "./ch2-standing";
+import { Bridge, Health, Lasting, Outlook, RetSpend, Savings } from "./legacy";
 
 export interface StepView { Body: () => ReactNode; Foot?: () => ReactNode }
 
 export const VIEWS: Record<string, StepView> = {
   welcome: { Body: Welcome, Foot: WelcomeFoot },
-  about: { Body: About },
-  income: { Body: Income },
-  takehome: { Body: TakeHome },
-  spending: { Body: Spending },
-  cash: { Body: Cash },
-  debt: { Body: Debt },
-  home: { Body: Home },
-  college: { Body: College },
+  about: { Body: AboutYou },
+  income: { Body: IncomeCard },
+  spending: { Body: SpendCard },
+  cash: { Body: SafetyCard },
+  debt: { Body: DebtCard },
+  goals: { Body: GoalsCard },
   savings: { Body: Savings },
   retspend: { Body: RetSpend },
   number: { Body: Outlook },

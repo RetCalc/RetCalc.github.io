@@ -5,6 +5,7 @@
    question the pace skipped is "default", written only where the answer is
    empty. Pure, for the page and the tests alike. */
 
+import { ok, taxEst } from "./calc";
 import type { AnswerKey, Answers, Source, SourceKind, Sources } from "./store";
 
 /* Keys that record how the guide got somewhere (which choice led to a
@@ -43,3 +44,16 @@ export const putter = (g: { a: Answers; src: Sources }) =>
 
 /** The tool a trip's figures come from, by the trip's id. */
 export const tripTool = (id: string) => (id === "mortBuy" || id === "mortOwn" ? "mortgage" : id);
+
+/** The figures the guide estimates for the person, kept current while
+    they're still its own: take-home from income by the 2026 tax rules,
+    until it's typed or brought back from Income Tax (doc 2, card 2). */
+export function refreshEstimates(g: { a: Answers; src: Sources }) {
+  const s = g.src.takehome;
+  if (s && s.kind !== "estimated") return;
+  if (!s && !empty(g.a.takehome)) return;
+  if (!ok(g.a.income)) return;
+  const est = Math.round(taxEst(g.a));
+  if (est > 0) { if (g.a.takehome !== est) setAnswer(g, "takehome", est, "estimated"); }
+  else { g.a.takehome = null; delete g.src.takehome; }
+}
