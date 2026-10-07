@@ -142,13 +142,10 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   #txBrackets tbody tr:hover td:last-child{background:var(--panel-2)}
 }
 
-/* ---------- touch: no hover lifts ----------
-   A tap leaves :hover set until the next touch, so on a phone the cards
-   stayed raised with their edge lit after you'd moved on. */
+/* ---------- touch: no sticky hover ----------
+   A tap leaves :hover set until the next touch. (The tool cards gate their
+   hover with @media (hover:hover) in 03-navigation.css.) */
 @media (hover:none){
-  .toolcard:hover{border-color:var(--line);background:var(--panel)}
-  .toolcard:hover .toolcard-icon{border-color:var(--line)}
-  .toolcard:hover .toolcard-arrow::before{transform:none;background:var(--dimmer);opacity:.7}
   .popup .popbtn:hover{transform:none}
 }
 

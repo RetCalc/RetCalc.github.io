@@ -384,24 +384,25 @@ The large figures in the headline readouts count from their old value to the new
 ### Tool-picker icons
 **One style for all of them: "one beat, acting out the verb".** On hover, focus or tap, one part of the icon (never the whole tile) performs the tool's verb in a single small gesture and settles back to rest: at most about 3px of travel, 10° of rotation, or 10% of scale, eased out, finished inside 250ms including any stagger. The tile itself only changes its border color. The arrow at the right of the card steps forward a few pixels at the same time.
 
-Today's animations live in `web/styles/04-tool-icons-header.css` (the SVG parts are in `web/components/tools/ToolIcon.tsx`). They currently run on hover only, for fine pointers only, and switch off under reduced motion. As built, to tune against the rules above:
+As built: the beats live in `web/styles/04-tool-icons-header.css` (the class on each SVG part, in `web/components/tools/ToolIcon.tsx`, picks the part that moves). Every beat is a single out-and-back transform keyframe peaking at 40%, eased `cubic-bezier(.2,.7,.3,1)` and played once, so nothing loops. It plays on real hover (`@media (hover:hover)`, so a phone tap never leaves a card lit), on `:focus-visible`, and on tap: a touch or pen `pointerdown` gives the card `.is-beat` for 260ms (`ToolCardLink.tsx`). The card's edge and fill step up a tone, the tile's edge turns Rule Strong, and the arrow turns Text and steps 7px forward. Nothing lifts, scales or glows. Only cards play it (the /tools picker and the 404 page's four cards); the tool header's tile stays still. Under reduced motion nothing moves: the tile's edge turns Muted, the arrow turns Text in place, and the name is Text as always. The card keeps its separate press acknowledgement (`.toolcard:active`, scale .988, off under reduced motion).
 
-| Tool | What it does today | Duration today | Out of rule |
-|---|---|---|---|
-| Drawdown | The projection line redraws; two sample points pop in after it | 0.46 to 0.6s | stroke drawing; too long |
-| Income Tax | A magnifier scans over the return and back | 0.62s | too long |
-| Roth | Money flows along a pipe into the Roth bucket, which bounces as it lands | 0.42 to 0.6s | stroke drawing; too long |
-| Mortgage | The roof lifts and settles | 0.46s | too long |
-| College | The cap hops; the tassel swings after it | 0.5 to 0.62s | too long |
-| Rent vs. Buy | The balance beam tips one way, then the other, and levels | 0.68s | too long |
-| Budget | The coin flips | 0.45s | too long |
-| Debt Payoff | Four balances are knocked down, biggest first | 0.44s + 0.21s stagger | too long |
-| Backtest | Three bars rise in a left-to-right wave | 0.55s + 0.2s stagger | too long |
-| Healthcare | The cross spins a full turn while the ring dims | 0.55s | too long |
-| Bridge | The arch draws across, cables drop in, a dot walks over | up to 1.2s | stroke drawing; too long |
-| FIRE | The flame rises, then burns and flickers for as long as the pointer stays | 0.25s, then endless | endless loop |
+| Tool | The beat | Duration |
+|---|---|---|
+| Plan Optimizer | The arrow draws back 2.5px and looses into the target | 240ms |
+| Drawdown | The projection line and its two points dip 2.5px and recover | 240ms |
+| Income Tax | The magnifier passes 3px over the return | 240ms |
+| Roth | The arrowhead pushes 2px down into the Roth bucket | 240ms |
+| Mortgage | The roof lifts 3px | 240ms |
+| College | The cap and tassel hop 3px | 240ms |
+| Rent vs. Buy | The beam tips 8° and levels | 240ms |
+| Budget | The coin is tossed 3px, turning (scaleX .9) | 240ms |
+| Debt Payoff | The four balances are knocked down 10%, biggest first | 180ms + 60ms stagger |
+| Backtest | The three bars grow 10% from the axis, left to right | 180ms + 60ms stagger |
+| Healthcare | The cross gives one heartbeat (scale 1.1); was a full spin | 240ms |
+| Bridge | The arch and its cables spring up 10% from the deck; was a stroke-drawn arch and a walking dot | 240ms |
+| FIRE | The flame flares once (scaleY 1.1 from its base); was an endless flicker | 240ms |
 
-Also out of rule today: the card lifts 2px and its icon tile scales up with a jade glow on hover, and none of it plays on focus or tap.
+The old stroke drawing (Drawdown, Roth, Bridge), the fine-pointer-only gate and the endless FIRE flicker are gone. The icon SVG has `overflow: visible` so a beat that reaches past the 40-unit drawing (the flame's tip) isn't clipped.
 
 ## Brand Motif
 
