@@ -140,7 +140,7 @@ function Compare({ a }: { a: Answers }) {
       <table className="gd-cmp-t"><thead><tr><th></th><th>Now</th><th>With this change</th></tr></thead>
         <tbody>{rows.map(([k, x, y]) => <tr key={k}><th scope="row">{k}</th><td>{x}</td><td className={x !== y ? "chg" : undefined}>{y}</td></tr>)}</tbody></table>
       {notes.length ? <ul className="gd-notes">{notes.map((n) => <li key={n}>{n}</li>)}</ul> : null}
-      <div className="gd-apply"><Button size="lg" data-gd="apply" onClick={() => G.act("apply")}>Apply to my plan</Button>
+      <div className="gd-apply"><Button variant="outline" size="lg" data-gd="apply" onClick={() => G.act("apply")}>Apply to my plan</Button>
         <span className="hint">Updates your answers, score and household bar. You can undo it.</span></div>
     </>
   );
@@ -189,7 +189,7 @@ export function TuneStep() {
       <BackNote step="tune" />
       <div className="gd-target"><span>Aim for plans that lasted in</span>
         {([[0.9, "90%"], [0.95, "95%"], [1, "every one"]] as const).map(([x, lab]) => (
-          <button key={x} type="button" className={"gd-pick" + (goal === x ? " on" : "")} data-target={x} aria-pressed={goal === x} onClick={() => G.set("target", x, true)}>{lab}</button>
+          <Button key={x} variant="outline" size="sm" data-target={x} aria-pressed={goal === x} onClick={() => G.set("target", x, true)}>{lab}</Button>
         ))}
         <span className="hint">of historical retirements</span></div>
       {!O.list.length ? <Callout>{O.ahead ? "Your plan sits right at its target, so there's no spare room to spend without adding risk. Try your own numbers to explore."
@@ -199,11 +199,11 @@ export function TuneStep() {
         {sel === "balance" ? (
           <div className="gd-target"><span>Balance across</span>
             {([["retire", "Retirement age"], ["save", "Monthly saving"], ["spend", "Retirement spending"]] as const).map(([k, lab]) => (
-              <button key={k} type="button" className={"gd-pick" + (ui.levers[k] ? " on" : "")} data-lever={k} aria-pressed={!!ui.levers[k]} onClick={() => {
+              <Button key={k} variant="outline" size="sm" data-lever={k} aria-pressed={!!ui.levers[k]} onClick={() => {
                 const on = (Object.keys(ui.levers) as (keyof Levers)[]).filter((x) => ui.levers[x]);
                 if (ui.levers[k] && on.length <= 2) { toast("Balancing needs at least two"); return; }
                 setTune((t) => { t.levers = { ...t.levers, [k]: !t.levers[k] }; t.sel = "balance"; });
-              }}>{lab}</button>
+              }}>{lab}</Button>
             ))}
             <span className="hint">Pick at least two.</span></div>
         ) : null}

@@ -649,6 +649,36 @@ written into DESIGN.md unless it says otherwise.
   refinancing" (they named the old title); the tour's "panel on the right"
   reads "panel under the fields".
 
+- **Retirement Readiness Guide (/guide): step card + a 340px rail, aligned
+  to the page.** Not Basic's thirds: the guide is one question at a time,
+  so the card takes the measure and the rail keeps the score and route
+  beside it (the 1120px cap is gone, so it lines up with the household bar
+  at 1330). Results lead with a HeroReading: the score in its rating tone
+  (Gain from 70, Text 30-69, Loss under 30) with a glyph and the rating word
+  (`.gd-hero .r` kept), the summary under it, then Lasted / Projected at /
+  Needed at at Display size (all existing figures; Projected and Needed no
+  longer repeated in the tables). The ring is no longer drawn on results;
+  the rail card there becomes "What's behind the score" (factor rows).
+  Next moves are one ruled, numbered list (the title has its own class, so
+  bold figures in the sentence stay inline); Your plan and Your numbers sit
+  side by side from 768px. Outlook and Will it last lead with a card-scale
+  HeroReading (savings at retirement amber; success rate Gain from 85% with
+  a check, else Text) with the other two figures beside it; Outlook's
+  verdict moves above the chart. One primary per view: trip buttons, Apply,
+  Find my best plan, Use this plan and Review my answers are outline;
+  Continue is the amber. The doubled uppercase eyebrow is gone (the
+  progress bar names the chapter). Phones: the progress card is one row
+  (score, step count) plus the bar, 62px (was 104); chapter bars and route
+  rows take 44px hit areas under a finger; a trip opens with the coach
+  folded (guide state only, `startTrip`; CoachPanel itself is unchanged,
+  so Tool Help is unaffected). Route: chapters fold (Collapsible, the
+  current one open, "n of m" done beside each); healthcare and 59½ rows
+  stay out until the retirement age is known. Error: an About retirement
+  age at or before your age marks the field (Loss edge, icon, the existing
+  sentence under it, aria-invalid/-describedby) instead of a Warning
+  callout; the disabled Continue's reason is Body small Text with a warning
+  glyph. Suggested-amount pills are outline Buttons (`.gd-pick` gone).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -933,6 +963,24 @@ written into DESIGN.md unless it says otherwise.
 - **Mortgage**: the payoff date before extras, the base-loan line on the
   chart, a PMI-end marker — new on-screen figures/data (owner's call).
 - **Mortgage**: "?" tip dots and CSV touch size — shared TipDot/CsvButton.
+- **Guide**: bow-and-arrow colors (green chapter fills and bow limb,
+  always-amber arrow), its motion, a progressbar role and the label/arrow
+  sync — Phase 2 (brand motif).
+- **Guide**: "89 On track" while an invalid answer drops an area — what the
+  score counts is score logic (hard stop); the score's "From N of 5 areas"
+  line is now Text weight instead.
+- **Guide**: "What's going well" listing Debt beside "#1 pay off your debt"
+  — the win threshold is score logic; badges unchanged (owner decision).
+- **Guide**: folding the tax and Social Security notes on Outlook into a
+  "How this was worked out" disclosure — method text; reordered only.
+- **Guide**: native confirm() for Start over / shared link → AlertDialog —
+  e2e accepts the native dialog on the shared-link test.
+- **Guide**: radio cards (.gd-choice, .gd-opt), factor rows and route rows
+  to shadcn components — data-set/data-val/data-opt selectors and the
+  compare walks depend on their markup; restyled in place, left for a
+  shadcn card-radio variant.
+- **Guide**: coach docking in the right gutter on desktop / reserving
+  space in the tool — CoachPanel is shared with Tool Help (its own pass).
 
 ## E2E checks edited
 

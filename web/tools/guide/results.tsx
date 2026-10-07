@@ -19,6 +19,11 @@ import { tuneState } from "./tune";
 import { BackNote, Callout, H3, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { HeroReading, type HeroTone } from "@/components/common/Reading";
+import { CircleAlertIcon, CircleCheckIcon, CircleDotIcon } from "lucide-react";
+
+/** The rating word under the score takes the score's own color. */
+const TONE_TEXT: Record<Exclude<HeroTone, "answer">, string> = { gain: "text-gain", loss: "text-destructive", text: "text-foreground" };
 
 /** The score as a ring, with the number in it. */
 export function Ring({ score: s, size }: { score: number | null; size?: number }) {
@@ -132,54 +137,69 @@ export function Results() {
   const A = actions(a);
   const wins = FACTORS.filter((f) => R.P[f.id] && R.P[f.id]!.p >= 0.9).map((f) => f.name + ": " + R.P[f.id]!.txt);
   const want = S ? need(a, S) : 0;
+  const tone: HeroTone = R.score >= 70 ? "gain" : R.score >= 30 ? "text" : "loss";
+  const Glyph = tone === "gain" ? CircleCheckIcon : tone === "loss" ? CircleAlertIcon : CircleDotIcon;
   return (
     <>
       <Q>Your retirement readiness</Q>
       <BackNote step="results" />
-      <div className="gd-hero"><Ring score={R.score} size={132} /><div className="gd-hero-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
-        <p>{summary}</p>{R.n < FACTORS.length ? <p className="hint mt-1.5">Based on {R.n} of {FACTORS.length} areas. Answer the rest to complete it.</p> : null}</div></div>
+      <div className="gd-hero">
+        <HeroReading className="px-0 pt-1 pb-3 max-sm:px-0 max-sm:pt-1" tone={tone} under
+          hero={{ label: "Readiness score", id: "gdScoreNum", value: String(R.score), note: "Out of 100" }}
+          figures={S ? [
+            { label: "Lasted", id: "gdLasted", value: pctStr(S.success, 0), note: "Of historical retirements, spending a fixed amount" },
+            { label: "Projected at " + fmtNum(S.retire), id: "gdProjected", value: money(S.fv), note: "Your savings, in today's dollars" },
+            ...(want > 0 ? [{ label: "Needed at " + fmtNum(S.retire), id: "gdNeeded", value: money(want), note: "To last in your target share" }] : []),
+          ] : []}>
+          <div className={"r mt-1 flex items-center gap-1.5 text-body font-semibold " + TONE_TEXT[tone]}><Glyph className="size-4 shrink-0" aria-hidden="true" />{rt.label}</div>
+          <p className="gd-hero-sum">{summary}</p>
+          {R.n < FACTORS.length ? <p className="mt-1.5 text-note text-foreground">Based on {R.n} of {FACTORS.length} areas. Answer the rest to complete it.</p> : null}
+        </HeroReading>
+      </div>
       {A.length ? (
         <>
           <H3>Your next moves, in order</H3>
           <ol className="gd-acts">{A.map((x) => (
-            <li key={x.t} className="gd-act"><div><b>{x.t}</b><Html as="p" html={x.d} />
+            <li key={x.t} className="gd-act"><div><b className="gd-act-t">{x.t}</b><Html as="p" html={x.d} />
               {x.trip ? <Button variant="outline" size="sm" className="mt-2.5" data-trip={x.trip} data-from="results" onClick={() => G.trip(x.trip!, "results")}>{x.btn}<i className="arw" aria-hidden="true"></i></Button> : null}
               {x.go ? <Button variant="outline" size="sm" className="mt-2.5" data-go={x.go} onClick={() => G.go(x.go!)}>{x.btn}</Button> : null}</div></li>
           ))}</ol>
         </>
       ) : null}
-      {S ? (
-        <>
-          <H3>Your plan</H3>
-          <div className="gd-kvs">
-            <KV k="Retire at" v={fmtNum(S.retire)} />
-            <KV k="Saving" v={S.stop != null ? (S.stop <= a.age! ? "Coasting: no new savings" : money(S.monthly) + "/mo until " + fmtNum(S.stop) + ", then coasting") : money(S.monthly) + "/mo until you retire"} />
-            <KV k="Spending in retirement" v={money(S.spend) + " a year"} />
-            <KV k="Social Security" v={mar(a) && S.ss.a2 > 0 ? money(S.ss.a1 / 12) + "/mo from " + S.ss.claim + ", spouse " + money(S.ss.a2 / 12) + "/mo from " + S.ss.claim2 : money(S.ss.total / 12) + "/mo from " + S.ss.claim} />
-            {S.pension ? <KV k="Pension" v={money(S.pension / 12) + "/mo"} /> : null}
-            <KV k="Withdrawals" v={S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth"} />
-            <KV k="Income tax" v={"About " + money(S.taxYr) + " a year, " + money(S.lifeTax) + " in all"} />
-            <KV k="Withdrawal approach" v={stratName(a.strategy || "fixed")} />
-            {minSpend(a) ? <KV k="Minimum spending" v={money(minSpend(a)) + " a year"} /> : null}
-            <KV k="Lasted, spending a fixed amount" v={pctStr(S.success, 0) + " of historical retirements"} />
-          </div>
-          <Button variant="outline" size="sm" className="-mt-0.5 mr-2 mb-4 ml-0" data-go="tune" onClick={() => G.go("tune")}>Adjust your plan</Button>
-          <Button variant="outline" size="sm" className="-mt-0.5 mx-0 mb-4" data-go="optimize" onClick={() => G.go("optimize")}>{S.tactics ? "Your roadmap" : "Plan Optimizer"}</Button>
-        </>
-      ) : null}
       {wins.length ? <><H3>What&apos;s going well</H3><div className="gd-wins">{wins.map((w) => <Badge key={w} variant="positive">{w}</Badge>)}</div></> : null}
-      {(() => {
-        const kv: [string, string][] = [];
-        if (pos(a.takehome)) kv.push(["Take-home pay", money(a.takehome) + "/mo"]);
-        if (pos(a.spend)) kv.push(["Spending", money(a.spend) + "/mo"]);
-        if (ok(a.cash)) kv.push(["Emergency fund", money(a.cash)]);
-        if (a.debtHas === "yes" && ok(a.debtTotal)) kv.push(["Debt, not counting a mortgage", money(a.debtTotal)]);
-        if (ok(a.saved)) kv.push(["Retirement savings", money(a.saved)]);
-        if (ok(a.contrib)) kv.push(["Saving for retirement", coastNow(a) ? "Nothing new: coasting" : money(saveMo(a)) + "/mo"]);
-        if (S) { kv.push(["Projected at " + fmtNum(S.retire), money(S.fv)]); if (want > 0) kv.push(["Needed at " + fmtNum(S.retire), money(want)]); }
-        if (a.fiAge) kv.push([a.fiLabel || "FIRE age", a.fiAge]);
-        return kv.length ? <><H3>Your numbers</H3><div className="gd-kvs">{kv.map(([k, v]) => <KV key={k} k={k} v={v} />)}</div></> : null;
-      })()}
+      <div className="grid gap-x-8 md:grid-cols-2">
+        {S ? (
+          <div className="min-w-0">
+            <H3>Your plan</H3>
+            <div className="gd-kvs">
+              <KV k="Retire at" v={fmtNum(S.retire)} />
+              <KV k="Saving" v={S.stop != null ? (S.stop <= a.age! ? "Coasting: no new savings" : money(S.monthly) + "/mo until " + fmtNum(S.stop) + ", then coasting") : money(S.monthly) + "/mo until you retire"} />
+              <KV k="Spending in retirement" v={money(S.spend) + " a year"} />
+              <KV k="Social Security" v={mar(a) && S.ss.a2 > 0 ? money(S.ss.a1 / 12) + "/mo from " + S.ss.claim + ", spouse " + money(S.ss.a2 / 12) + "/mo from " + S.ss.claim2 : money(S.ss.total / 12) + "/mo from " + S.ss.claim} />
+              {S.pension ? <KV k="Pension" v={money(S.pension / 12) + "/mo"} /> : null}
+              <KV k="Withdrawals" v={S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth"} />
+              <KV k="Income tax" v={"About " + money(S.taxYr) + " a year, " + money(S.lifeTax) + " in all"} />
+              <KV k="Withdrawal approach" v={stratName(a.strategy || "fixed")} />
+              {minSpend(a) ? <KV k="Minimum spending" v={money(minSpend(a)) + " a year"} /> : null}
+            </div>
+            <div className="mb-4 flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" data-go="tune" onClick={() => G.go("tune")}>Adjust your plan</Button>
+              <Button variant="outline" size="sm" data-go="optimize" onClick={() => G.go("optimize")}>{S.tactics ? "Your roadmap" : "Plan Optimizer"}</Button>
+            </div>
+          </div>
+        ) : null}
+        {(() => {
+          const kv: [string, string][] = [];
+          if (pos(a.takehome)) kv.push(["Take-home pay", money(a.takehome) + "/mo"]);
+          if (pos(a.spend)) kv.push(["Spending", money(a.spend) + "/mo"]);
+          if (ok(a.cash)) kv.push(["Emergency fund", money(a.cash)]);
+          if (a.debtHas === "yes" && ok(a.debtTotal)) kv.push(["Debt, not counting a mortgage", money(a.debtTotal)]);
+          if (ok(a.saved)) kv.push(["Retirement savings", money(a.saved)]);
+          if (ok(a.contrib)) kv.push(["Saving for retirement", coastNow(a) ? "Nothing new: coasting" : money(saveMo(a)) + "/mo"]);
+          if (a.fiAge) kv.push([a.fiLabel || "FIRE age", a.fiAge]);
+          return kv.length ? <div className="min-w-0"><H3>Your numbers</H3><div className="gd-kvs">{kv.map(([k, v]) => <KV key={k} k={k} v={v} />)}</div></div> : null;
+        })()}
+      </div>
       <div className="gd-share"><Button variant="outline" data-gd="print" onClick={() => G.act("print")}>Print or save as PDF</Button>
         <Button variant="outline" data-gd="share" onClick={() => G.act("share")}>Copy a link to this plan</Button>
         <span className="hint">The link carries your answers, so share it only with people you&apos;d show your finances to.</span></div>
@@ -202,7 +222,7 @@ export function ResultsFoot() {
     <>
       <Button variant="outline" size="lg" data-gd="prev" onClick={() => G.act("prev")}><i className="arw back" aria-hidden="true"></i>Back</Button><span className="sp"></span>
       <Button variant="outline" size="lg" data-gd="restart" onClick={() => G.act("restart")}>Start over</Button>
-      <Button size="lg" className="max-sm:flex-auto" data-go="about" onClick={() => G.go("about")}>Review my answers</Button>
+      <Button variant="outline" size="lg" className="max-sm:flex-auto" data-go="about" onClick={() => G.go("about")}>Review my answers</Button>
     </>
   );
 }

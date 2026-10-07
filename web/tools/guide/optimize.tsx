@@ -44,7 +44,7 @@ export function OptimizeStep() {
       ) : null}
       <H3>What should the best plan do?</H3>
       <OpGoals host="guide" goal={goal} onPick={(g) => G.set("optGoal", g, true)} />
-      <div className="op-go"><Button size="lg" variant={H.res && !stale ? "outline" : "default"} data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
+      <div className="op-go"><Button size="lg" variant="outline" data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
         {H.res && !stale ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
         <span className="hint">{groupDigits(E.runs, true)} retirements to simulate, about {E.secs} seconds. Nothing leaves your browser.</span></div>
       {H.run ? <Progress host="guide" R={H.run} /> : H.res ? (
@@ -53,7 +53,7 @@ export function OptimizeStep() {
           <OptimizerResult key={H.res.sig + H.res.runs} host="guide" res={H.res} fresh={H.fresh} />
           {!stale && !H.res.same ? (
             <div className="gd-apply op-apply">{applied ? <span className="gd-callout ok m-0">Your plan uses this roadmap.</span>
-              : <><Button size="lg" data-gd="optapply" onClick={() => G.act("optapply")}>Use this plan</Button>
+              : <><Button variant="outline" size="lg" data-gd="optapply" onClick={() => G.act("optapply")}>Use this plan</Button>
                 <span className="hint">Your projection, score and every step after use it. You can undo it.</span></>}</div>
           ) : null}
         </>

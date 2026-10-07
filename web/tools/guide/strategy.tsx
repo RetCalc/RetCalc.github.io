@@ -10,6 +10,7 @@ import { STRATS, minSpend, pos, sim, strats, target, yearsList } from "./calc";
 import { MinNote } from "./live";
 import type { Answers } from "./store";
 import { NeedsPlan, fill } from "./steps";
+import { Button } from "@/components/ui/button";
 import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, Q, Task, useGuideView } from "./ui";
 
 function StratTable({ a }: { a: Answers }) {
@@ -68,7 +69,7 @@ export function StrategyStep() {
       <p className="hint -mt-1 mx-0 mb-2.5 max-w-copy">Flexible approaches cut spending in bad markets, and some cut deep. A minimum stops them going lower: housing, food, insurance, utilities and the other essentials, in today&apos;s dollars. Leave it blank for no minimum.</p>
       <div className="gd-picks">{picks.filter((p) => p[1] < S.spend).map(([lab, val]) => {
         const r = Math.round(val / 500) * 500;
-        return <button key={lab} type="button" className="gd-pick" data-fill="minSpend" data-v={r} onClick={() => fill(G, "minSpend", r)}>{lab}: <b>{money(r) + "/yr"}</b></button>;
+        return <Button key={lab} variant="outline" size="sm" data-fill="minSpend" data-v={r} onClick={() => fill(G, "minSpend", r)}>{lab}: <b className="font-semibold tabular-nums">{money(r) + "/yr"}</b></Button>;
       })}</div>
       <Fields><MoneyF k="minSpend" label="Minimum yearly spending" per="/yr" ph="no minimum" full /></Fields>
       <MinNote a={a} />

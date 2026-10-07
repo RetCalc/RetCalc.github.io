@@ -22,6 +22,8 @@ import { StrategyStep } from "./strategy";
 import { TuneStep } from "./tune";
 import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NumF, Q, SelF, Task, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
+import { HeroReading } from "@/components/common/Reading";
+import { CircleCheckIcon } from "lucide-react";
 
 export const CHAPTERS = ["About you", "Cash flow", "Safety net", "Big goals", "Retirement", "Your plan"];
 
@@ -90,7 +92,8 @@ function About() {
         <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse or partner"]]} redraw full />
         <NumF k="age" label="Your age" affix="age" />
         {mar(v) ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
-        <NumF k="retire" label="Age you'd like to retire" affix="age" hint="A guess is fine. You can try other ages later." />
+        <NumF k="retire" label="Age you'd like to retire" affix="age" hint="A guess is fine. You can try other ages later."
+          err={ok(a.age) && ok(a.retire) && a.retire <= a.age ? <>Your retirement age needs to be later than your age today. This guide is built for the saving years; if you&apos;ve already retired, the <b>Drawdown Simulator</b> is the tool for you.</> : null} />
         <SelF k="state" label="State" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} hint="For state income tax and healthcare costs." />
       </Fields>
       <AboutNote a={a} />
@@ -302,7 +305,7 @@ function RetSpend() {
       <Lead>A year of the retirement you want, priced at today&apos;s prices: what you&apos;ll live on, <b>after</b> income tax. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel can push it back up.</Lead>
       {picks.length ? <div className="gd-picks">{picks.map(([lab, val]) => {
         const r = Math.round(val / 100) * 100;
-        return <button key={lab} type="button" className="gd-pick" data-fill="retSpend" data-v={r} onClick={() => fill(G, "retSpend", r)}>{lab}: <b>{money(r) + "/yr"}</b></button>;
+        return <Button key={lab} variant="outline" size="sm" data-fill="retSpend" data-v={r} onClick={() => fill(G, "retSpend", r)}>{lab}: <b className="font-semibold tabular-nums">{money(r) + "/yr"}</b></Button>;
       })}</div> : null}
       <Fields><MoneyF k="retSpend" label="Yearly spending in retirement" per="/yr" full hint="In today's dollars, after tax. Leave out health insurance before 65 too: the plan prices it." /></Fields>
       <BackNote step="retspend" />
@@ -351,11 +354,12 @@ function Outlook() {
       <Lead>Where your current path leads by {fmtNum(S.retire)}, in today&apos;s dollars, if a {riskLabel(S.real)} mix earns about {pctStr(S.real, 1)} a year after inflation and your saving keeps pace with inflation
         {S.stop != null ? (coast ? ". You've stopped saving, so it grows on its own from here" : " until you stop saving at " + fmtNum(S.stop)) : ""}.</Lead>
       <BackNote step="outlook" />
-      <div className="gd-stats">
-        <div><div className="k">Savings at {fmtNum(S.retire)}</div><div className="v gold">{money(S.fv)}</div><div className="n">{coast ? "What you have grows to" : "What " + money(saveMo(v)) + "/mo grows to"}</div></div>
-        <div><div className="k">Income it supports</div><div className="v">{money(port)}</div><div className="n">A year, taking 4%</div></div>
-        <div><div className="k">{pen ? "Social Security + pension" : "Social Security"}</div><div className="v">{money(ss + pen)}</div><div className="n">A year, Social Security from {S.ss.claim}</div></div>
-      </div>
+      <HeroReading className="mb-3 px-0 pt-1 pb-2 max-sm:px-0 max-sm:pt-1"
+        hero={{ label: "Savings at " + fmtNum(S.retire), id: "gdOutFv", value: money(S.fv), note: coast ? "What you have grows to" : "What " + money(saveMo(v)) + "/mo grows to" }}
+        figures={[
+          { label: "Income it supports", id: "gdOutPort", value: money(port), note: "A year, taking 4%" },
+          { label: pen ? "Social Security + pension" : "Social Security", id: "gdOutSs", value: money(ss + pen), note: "A year, Social Security from " + S.ss.claim },
+        ]} />
       <div className="gd-cover">
         <div className="gd-cover-bar" role="img" aria-label={"Income covers " + pctStr(Math.min(9.99, S.coverage), 0) + " of planned spending"}>
           <i className="w-(--w) bg-series-teal" style={{ "--w": ((port / sc) * 100).toFixed(1) + "%" } as React.CSSProperties}></i>
@@ -367,12 +371,12 @@ function Outlook() {
           {pen ? <span><s className="bg-series-gray"></s>Pension</span> : null}
           <span><s className="bg-text w-0.5"></s>Your spending and its tax: {money(spendNeed)}/yr</span></div>
       </div>
+      {close}
       <Callout><b>Taxes are built in.</b> In a typical year this plan pays about <b>{money(S.taxYr)}</b> in income tax
         {S.hcYr > 0 ? <>, and about <b>{money(S.hcYr)}</b> a year for health insurance before Medicare, after the subsidy your income earns</> : null}
         , on top of the {money(S.spend)} you live on. Across the whole retirement that comes to about <b>{money(S.lifeTax)}</b> in tax, in today&apos;s dollars
         {S.tactics ? ", with the Plan Optimizer's choices applied." : ". The Plan Optimizer, near the end, looks for ways to pay less of it."}</Callout>
       <PlanChart id="outlook" series={[series(S, v.age!, "Your plan", "p")]} caption="Your retirement savings over time, in today's dollars" />
-      {close}
       {S.retire < S.ss.claim ? <Callout>Social Security starts at {S.ss.claim}, so for the first {S.ss.claim - Math.round(S.retire)} years of retirement your savings carry everything. The next step tests exactly that.</Callout> : null}
       <Task id="basic" head="See it in the Basic calculator" after={<After>Optional. Any change you make there can come back with you.</After>} />
     </>
@@ -390,11 +394,13 @@ function Lasting() {
         {" "}{money(S.fv)} at {fmtNum(S.retire)}, living on {money(S.spend)} a year after tax, rising with inflation, for {S.years} years,
         {" "}with each year&apos;s income tax{S.hcYears ? ", health insurance before Medicare" : ""} and any Medicare surcharge paid on top, Social Security from {S.ss.claim}{S.pension ? ", your pension" : ""} and {S.mix}% in stocks.</Lead>
       <BackNote step="lasting" />
-      <div className="gd-stats">
-        <div><div className="k">Success rate</div><div className={"v " + (r >= 0.85 ? "pos" : "mid")}>{pctStr(r, 0)}</div><div className="n">{S.H.survived} of {S.H.total} starting years</div></div>
-        <div><div className="k">Length tested</div><div className="v">{S.years} years</div><div className="n">To age {Math.round(S.retire) + S.years}</div></div>
-        <div><div className="k">Typical balance left</div><div className="v">{money(S.H.medianEnd)}</div><div className="n">In today&apos;s dollars</div></div>
-      </div>
+      <HeroReading className="mb-3 px-0 pt-1 pb-2 max-sm:px-0 max-sm:pt-1" tone={r >= 0.85 ? "gain" : "text"}
+        hero={{ label: "Success rate", id: "gdLastRate", value: pctStr(r, 0),
+          note: <span className="inline-flex items-center gap-1.5">{r >= 0.85 ? <CircleCheckIcon className="size-3.5 shrink-0 text-gain" aria-hidden="true" /> : null}{S.H.survived} of {S.H.total} starting years</span> }}
+        figures={[
+          { label: "Length tested", id: "gdLastLen", value: S.years + " years", note: "To age " + (Math.round(S.retire) + S.years) },
+          { label: "Typical balance left", id: "gdLastLeft", value: money(S.H.medianEnd), note: "In today's dollars" },
+        ]} />
       {S.H.failYears.length ? <p className="gd-fails">It ran short retiring in {yearsList(S.H.failYears)}.</p> : null}
       {r >= 0.95 ? <Callout cls="ok"><b>Very solid.</b> The plan survived {r >= 1 ? "every" : "nearly every"} market in history, which can mean you have room to spend more or retire sooner.</Callout>
         : r >= 0.85 ? <Callout cls="ok"><b>A solid plan.</b> The few failures came from the worst starting years, and small spending cuts during a bad stretch usually fix those.</Callout>

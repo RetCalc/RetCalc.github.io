@@ -15,7 +15,8 @@ import { Callout } from "./ui";
 
 export function AboutNote({ a }: { a: Answers }) {
   if (!ok(a.age) || !ok(a.retire)) return null;
-  if (a.retire <= a.age) return <Callout cls="warn">Your retirement age needs to be later than your age today. This guide is built for the saving years; if you&apos;ve already retired, the <b>Drawdown Simulator</b> is the tool for you.</Callout>;
+  // Said under the retirement age field itself (steps.tsx, About).
+  if (a.retire <= a.age) return null;
   const yrs = a.retire - a.age;
   return <Callout>That gives you <b>{fmtNum(yrs) + (yrs === 1 ? " year" : " years")}</b> to prepare.
     {a.retire < 65 ? " Retiring before 65 means buying your own health insurance until Medicare starts; we'll price that out later." : ""}</Callout>;

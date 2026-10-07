@@ -27,6 +27,8 @@ import { GuideCtx, type GuideView } from "./ui";
 import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDownIcon, TriangleAlertIcon } from "lucide-react";
 
 /** The guide as a tool, for the header's Save: every answer and which
     steps are done. Where you were and any trip into a tool are left out. */
@@ -262,7 +264,6 @@ export function Guide() {
   });
 
   const st = current(g), L = numbered(v), idx = L.indexOf(st);
-  const ch = st.ch >= 0 ? CHAPTERS[st.ch] : "Start";
   const R = score(g.a), rt = rating(R.score);
   return (
     <GuideCtx value={view}>
@@ -279,7 +280,6 @@ export function Guide() {
             }}>
             {client ? (
               <>
-                <div className="gd-eyebrow"><span>{ch}</span>{idx >= 0 && st.title !== ch ? <span>{st.title}</span> : null}</div>
                 <st.Body />
                 <div className="gd-foot">{st.Foot ? <st.Foot /> : <Foot st={st} a={g.a} last={idx === L.length - 2} act={act} />}</div>
               </>
@@ -287,8 +287,8 @@ export function Guide() {
           </div>
           <div className="gd-side">
             <Card>
-              <CardHeader><CardTitle>Readiness score</CardTitle></CardHeader>
-              <CardContent id="gdScore">{client ? <ScoreSide a={g.a} go={go} /> : null}</CardContent>
+              <CardHeader><CardTitle>{st.id === "results" ? "What's behind the score" : "Readiness score"}</CardTitle></CardHeader>
+              <CardContent id="gdScore">{client ? <ScoreSide a={g.a} go={go} ring={st.id !== "results"} /> : null}</CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle>Your route</CardTitle></CardHeader>
@@ -306,17 +306,17 @@ function Foot({ st, a, last, act }: { st: Step; a: Answers; last: boolean; act: 
   return (
     <>
       <Button variant="outline" size="lg" data-gd="prev" onClick={() => act("prev")}><i className="arw back" aria-hidden="true"></i>Back</Button><span className="sp"></span>
-      <span className="gd-why" data-why="" hidden={isOk}>{st.why ? st.why(a) : ""}</span>
+      <span className="gd-why" data-why="" hidden={isOk}><TriangleAlertIcon className="size-4 shrink-0" aria-hidden="true" />{st.why ? st.why(a) : ""}</span>
       <Button size="lg" className="max-sm:flex-auto" data-gd="next" disabled={!isOk} onClick={() => act("next")}>{last ? "See my score" : "Continue"}<i className="arw" aria-hidden="true"></i></Button>
     </>
   );
 }
 
-function ScoreSide({ a, go }: { a: Answers; go: (id: string) => void }) {
+function ScoreSide({ a, go, ring }: { a: Answers; go: (id: string) => void; ring: boolean }) {
   const R = score(a), rt = rating(R.score);
   return (
     <>
-      <div className="gd-score-top"><Ring score={R.score} /><div className="gd-score-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
+      <div className="gd-score-top" hidden={!ring}><Ring score={R.score} /><div className="gd-score-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
         <div className="n">{R.score == null ? (R.n ? "Your score appears once two areas are answered." : "Your score appears as you answer.") : R.n < FACTORS.length ? "From " + R.n + " of " + FACTORS.length + " areas so far" : "All five areas answered"}</div></div></div>
       <div className="gd-facs">{FACTORS.map((f) => {
         const p = R.P[f.id];
@@ -332,20 +332,30 @@ function ScoreSide({ a, go }: { a: Answers; go: (id: string) => void }) {
 }
 
 function RouteMap({ g, cur, go, act }: { g: GuideState; cur: Step; go: (id: string) => void; act: (w: string) => void }) {
+  // The steps that hang on the retirement age stay out until it's known.
+  const known = ok(g.a.retire);
   return (
     <>
-      {CHAPTERS.map((c, ci) => (
-        <div key={c} className="contents">
-          <div className="gd-map-ch">{c}</div>
-          {STEPS.filter((s) => s.ch === ci).map((s) => {
-            const na = !applies(s, g.a), cls = na ? "na" : s.id === cur.id ? "cur" : g.done[s.id] ? "done" : "";
-            return (
-              <button key={s.id} type="button" className={"gd-map-st " + cls} disabled={na} data-go={na ? undefined : s.id} onClick={() => go(s.id)}>
-                <i aria-hidden="true"></i>{s.title}{na ? <span className="tag">not needed</span> : null}</button>
-            );
-          })}
-        </div>
-      ))}
+      {CHAPTERS.map((c, ci) => {
+        const list = STEPS.filter((s) => s.ch === ci && (known || !s.when));
+        const live = list.filter((s) => applies(s, g.a)), d = live.filter((s) => g.done[s.id]).length;
+        const here = cur.ch === ci || (cur.ch < 0 && ci === 0);
+        return (
+          <div key={c + (here ? ":here" : "")} className="gd-map-chw"><Collapsible defaultOpen={here}>
+            <div className="gd-map-ch"><CollapsibleTrigger>{c}<span className="gd-map-n">{d} of {live.length}</span><ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></div>
+            <CollapsibleContent>
+              {list.map((s) => {
+                const na = !applies(s, g.a), cls = na ? "na" : s.id === cur.id ? "cur" : g.done[s.id] ? "done" : "";
+                return (
+                  <button key={s.id} type="button" className={"gd-map-st " + cls} disabled={na} data-go={na ? undefined : s.id} onClick={() => go(s.id)}
+                    aria-current={s.id === cur.id ? "step" : undefined}>
+                    <i aria-hidden="true"></i>{s.title}{na ? <span className="tag">not needed</span> : null}</button>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible></div>
+        );
+      })}
       <div className="gd-map-foot text-note"><Button variant="quiet" size="inline" data-gd="restart" onClick={() => act("restart")}>Start over</Button></div>
     </>
   );

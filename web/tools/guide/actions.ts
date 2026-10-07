@@ -82,7 +82,9 @@ export function startTrip(id: string, from?: string): { path: string; sync: bool
     t.pending = null;
     setToolInputs(meta.store, prefill(t, g.a, toolInputs(meta.store, DEFAULTS[meta.store])));
     g.trip = t;
-    g.coachMin = false;
+    // On a phone the open coach would cover most of the tool, so it starts
+    // folded to its title, the next thing to do and Back to guide.
+    g.coachMin = typeof window !== "undefined" && window.matchMedia("(max-width:640px)").matches;
   });
   tripBoot.done = true;
   return { path: meta.path, sync };

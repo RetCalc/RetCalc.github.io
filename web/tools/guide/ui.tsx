@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
+import { CircleAlertIcon } from "lucide-react";
 
 export interface GuideView {
   g: GuideState;
@@ -54,13 +55,17 @@ export function Choice({ k, val, title, sub }: { k: AnswerKey; val: string; titl
   );
 }
 
-interface FieldOpts { full?: boolean; hint?: React.ReactNode }
-function Wrap({ k, label, full, hint, children }: FieldOpts & { k: string; label: React.ReactNode; children: React.ReactNode }) {
+interface FieldOpts { full?: boolean; hint?: React.ReactNode; /** What's wrong with the answer, under the field. */ err?: React.ReactNode }
+function Wrap({ k, label, full, hint, err, children }: FieldOpts & { k: string; label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className={"field" + (full ? " full" : "")}><Label className="mb-1.5" htmlFor={"gdf-" + k}><span>{label}</span></Label>{children}
-      {hint ? <div className="hint">{hint}</div> : null}</div>
+      {err ? <div className="mt-1.5 flex items-start gap-2 text-note text-destructive"><CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <span id={"gdf-" + k + "-err"} role="alert">{err}</span></div> : null}
+      {hint && !err ? <div className="hint">{hint}</div> : null}</div>
   );
 }
+/** Marks a field whose answer can't be used, and points it at the reason. */
+const invalid = (k: string, err: React.ReactNode) => (err ? { "aria-invalid": true, "aria-describedby": "gdf-" + k + "-err" } : {});
 const typed = (t: string) => (t.trim() === "" ? null : parseNum(t));
 
 export function MoneyF({ k, label, per, ph, ...o }: FieldOpts & { k: AnswerKey; label: React.ReactNode; per?: string; ph?: string }) {
@@ -80,7 +85,7 @@ export function NumF({ k, label, affix, ...o }: FieldOpts & { k: AnswerKey; labe
   return (
     <Wrap k={k} label={label} {...o}>
       <Affixed suffix={affix}>
-        <DraftInput nonNeg step={1} id={"gdf-" + k} data-a={k} value={ok(val) ? val : NaN} format={(x) => (ok(x) ? String(x) : "")}
+        <DraftInput nonNeg step={1} id={"gdf-" + k} data-a={k} {...invalid(k, o.err)} value={ok(val) ? val : NaN} format={(x) => (ok(x) ? String(x) : "")}
           onType={(t) => G.set(k, typed(t) as Answers[typeof k])} />
         </Affixed>
     </Wrap>
@@ -125,7 +130,7 @@ export function Task({ id, head, label, after }: { id: string; head: string; lab
       <div className="gd-task-h"><div className="gd-task-ic" aria-hidden="true">{T.tool === "basic" ? BASIC_ICON : <ToolIcon sub={T.tool as ToolSub} />}</div>
         <div><b>{head}</b><span>{T.name + (T.mins ? " · about " + T.mins + " minutes" : "")}</span></div></div>
       {T.preview?.length ? <ol className="gd-steps">{T.preview.map((t) => <li key={t}>{t}</li>)}</ol> : null}
-      <Button size="lg" data-trip={id} onClick={() => G.trip(id)}>{label || "Open " + T.name}<i className="arw" aria-hidden="true"></i></Button>
+      <Button variant="outline" size="lg" data-trip={id} onClick={() => G.trip(id)}>{label || "Open " + T.name}<i className="arw" aria-hidden="true"></i></Button>
       {after}
     </div>
   );
