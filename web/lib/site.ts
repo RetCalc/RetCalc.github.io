@@ -83,11 +83,11 @@ export const CARD_ALT: Partial<Record<Slug, string>> = {
 
 /** Pages laid out in one column (the rest put inputs beside results). */
 // The homepage, Advanced, Stages, the Drawdown Simulator (with its strategy
-// pages), Income Tax, the Plan Optimizer and the Early Retirement Bridge (with
-// /72t) lay out their own columns (tools/basic/Basic.tsx,
+// pages), Income Tax, the Plan Optimizer, the Early Retirement Bridge (with
+// /72t) and Roth Conversion (with /rmd) lay out their own columns (tools/basic/Basic.tsx,
 // tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx,
-// tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx).
-const SOLO = new Set<string>(["home", "advanced", "stages", "incometax", "optimizer", "bridge", "72t", "tools", "guide", "about", "budget", "debt", "compare"]);
+// tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx, tools/roth/Roth.tsx).
+const SOLO = new Set<string>(["home", "advanced", "stages", "incometax", "optimizer", "bridge", "72t", "roth", "rmd", "tools", "guide", "about", "budget", "debt", "compare"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug) || TOOL_SUB[slug] === "drawdown";
 }

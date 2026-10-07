@@ -6,6 +6,9 @@ svg{display:block;width:100%;height:auto}
    whatever box it lands in — including the axis text. Capping at the 900-unit
    viewBox width keeps type undistorted on wide screens instead of smearing it. */
 .chartwrap > svg{max-width:900px;margin-left:auto;margin-right:auto}
+/* Marks kept only for the printed and shared copy of a chart (BandChart's
+   screenOnly): the copy is taken outside .chartwrap, so they show there. */
+.chartwrap [data-print-only]{display:none}
 .legend{display:flex;gap:18px;font-size:11.5px;color:var(--dim);padding:0 18px 15px;
   flex-wrap:wrap}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;

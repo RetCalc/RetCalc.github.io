@@ -43,6 +43,13 @@ interface Props<P extends BandPoint> {
   /** The series for the base, higher and lower lines (lib/hues.ts), where the
       chart isn't the default plan / higher / lower band. */
   colors?: { base?: string; hi?: string; lo?: string };
+  /** Drawing that differs on screen from the copy the printed summary and
+      share card take: the original marks stay in the SVG, marked
+      data-print-only (hidden on screen, see styles/11-charts.css), and their
+      replacements are marked data-screen-only (left out of the copy). For a
+      chart whose copy must not change: the x-axis labelled from `xOffset`,
+      no lower line, and the band as a flat fill instead of a gradient. */
+  screenOnly?: { xOffset?: number; noLoLine?: boolean; flatBand?: boolean };
 }
 
 /** The chart's scales and frame, for drawing extra marks on it. */
@@ -53,7 +60,7 @@ export interface ChartGeometry {
 
 
 export function BandChart<P extends BandPoint>(props: Props<P>) {
-  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras, colors } = props;
+  const { id, pts, maxX, mode = "band", ariaLabel, tip, stageMarks = [], xOffset = 0, overlay = [], traces, noLoLine, enhanced, extras, colors, screenOnly: so } = props;
   const cBase = colors?.base ?? SERIES.plan, cHi = colors?.hi ?? SERIES.teal, cLo = colors?.lo ?? SERIES.rose;
   const size = useChartSize();
   const uid = useId().replace(/:/g, "");
@@ -99,7 +106,12 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             </defs>
 
             <YAxis size={size} ticks={AX.ticks} Y={Y} />
-            <XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} />
+            {so?.xOffset != null ? (
+              <>
+                <g data-print-only><XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} /></g>
+                <g data-screen-only><XAxis size={size} count={maxX} X={X} label={(y) => y + so.xOffset!} /></g>
+              </>
+            ) : <XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} />}
 
             {/* Every starting year as its own faint line, under the shading: thin
                 and in the muted guide tone, a texture behind the bands rather
@@ -132,6 +144,11 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
                   <path d={line((a) => a.p25!)} strokeWidth={1.2 * sw} strokeOpacity={.9} />
                 </g>
               </>
+            ) : so?.flatBand ? (
+              <>
+                <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={`url(#${g("bandFill")})`} data-print-only />
+                <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={cHi} fillOpacity={.18} data-screen-only />
+              </>
             ) : (
               <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={`url(#${g("bandFill")})`} />
             )}
@@ -151,7 +168,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             ) : (
               <>
                 <path d={line((a) => a.hi!)} fill="none" stroke={cHi} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
-                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke={cLo} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />}
+                {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke={cLo} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} data-print-only={so?.noLoLine || undefined} />}
                 <path d={line((a) => a.base)} fill="none" stroke={cBase} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
               </>
             )}
@@ -166,7 +183,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             {enhanced ? (
               <>
                 <circle cx={bx ?? 0} cy={best?.hi != null ? Y(best.hi) : 0} r={4 * sw} fill={cHi} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.hi != null ? 1 : 0} />
-                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill={cLo} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} />}
+                {noLoLine ? null : <circle cx={bx ?? 0} cy={best?.lo != null ? Y(best.lo) : 0} r={4 * sw} fill={cLo} stroke="var(--dotstroke)" strokeWidth={2 * sw} opacity={best?.lo != null ? 1 : 0} data-print-only={so?.noLoLine || undefined} />}
                 <circle cx={bx ?? 0} cy={T + ph + B / 2} r={3 * sw} fill="var(--dim)" opacity={best ? 1 : 0} />
               </>
             ) : null}

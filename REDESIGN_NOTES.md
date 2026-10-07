@@ -347,6 +347,40 @@ written into DESIGN.md unless it says otherwise.
   situation, and "Most 72(t) could pay" leads the facts strip. Same figures,
   plans, order and default selection as /bridge.
 
+- **Roth Conversion & RMDs (/roth): Basic's thirds, the verdict as the
+  headline.** Inputs a third, results two thirds from 1024px; roth (and rmd)
+  join SOLO (lib/site.ts). Sticky with its own scroll from 1024px, static
+  below. The inputs keep the facts that rarely change (Your situation, What
+  you have with Copy from Drawdown as the head's action, Income and
+  spending, How to score it: 17 fields); "The conversion plan" (strategy,
+  its sub-control, window, tax paid from) leaves them for a lever card right
+  under the reading, two-up, next to its effect. Reading: not the hero
+  variant. The page's own copy says the two measures are read together and
+  Peak RMD answers another question, so the three stay peers, at Display
+  size in thirds; what leads is the verdict sentence in Headline type with a
+  check / cross / alert glyph (a dash glyph and "This plan converts nothing,
+  so there is nothing to compare." when no year converts). Lifetime tax
+  saved stays amber (Loss with its minus when negative); "After-tax net
+  worth" is relabelled "... vs doing nothing" (it is a difference) in Gain /
+  Loss with its sign and an arrow; "Peak RMD" is relabelled "Peak RMD, doing
+  nothing" (it is that scenario's) in Text. The explanation sentence
+  (unchanged) follows the figures; the derived facts move from the inputs to
+  a four-up strip ("First RMD, converting"); the survivor card becomes a band
+  at the reading's foot. Then the chart (two named lines; the band a flat
+  teal fill, unlabelled, since it only spans the two named lines; ages on
+  the axis; the switch on its own row), Converting vs. not (a key line: pairs
+  read converting first), Year by year folded (full height from 1024px, a
+  key for the shaded survivor rows, one Rule Strong edge where they begin,
+  neutral "Tier N" badges for IRMAA). With no balances, or Plan through not
+  after Your age (the field gets the Loss edge, icon and message), the
+  figures are dashes in Text, the headline band says what to enter, and the
+  chart, comparison and table fold away; the lever card stays. Phones get a
+  PinnedReading (Lifetime tax saved; Net worth vs doing nothing). The chart's
+  screen changes go through BandChart's new `screenOnly` prop: the original
+  marks stay in the SVG as data-print-only (hidden on screen by a rule
+  scoped to .chartwrap), so the printed summary is unchanged (share.spec
+  roth passes).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -451,6 +485,25 @@ written into DESIGN.md unless it says otherwise.
   the header copy comes from the shared tool list; left for the owner.
 - **Early Retirement Bridge**: a "Runs short" badge in year-table rows — it
   would add text to the CSV; a cross glyph labelled "Runs short" instead.
+- **Roth Conversion**: clamp or warn in the engine for an age past Plan
+  through (the age-96 note) — calculation; the field is marked and the
+  results wait instead. Blank ages still read as 0 as before (e2e "blank
+  ages" compares those figures).
+- **Roth Conversion**: "Scoring assumptions" folded under the verdict —
+  roth.spec types into rcIrmaaOn and rcHeir; a closed fold would fail them.
+  They stay as the last group of the inputs.
+- **Roth Conversion**: add the chart's third (rose) line to the legend — it
+  is min(converting, doing nothing), so it only ever retraces one of the two
+  named lines; hidden on screen instead. The printed summary still draws it
+  (print/share are a later phase).
+- **Roth Conversion**: Converting vs. not as a two-column mini-table — each
+  id (rcTaxPV, rcEndTrad…) holds "x vs y" in one cell; splitting would
+  change those ids' text. A key line says the order instead.
+- **Roth Conversion**: label the gap fill ("Tax avoided" / "Tax added") —
+  its sign changes along the chart, which needs new per-segment marks;
+  flattened and left unlabelled between the two named lines.
+- **Roth Conversion**: 44px CSV button and the article disclosure's label —
+  shared CsvButton size and the shared article component, not this page's.
 
 ## Fixed
 

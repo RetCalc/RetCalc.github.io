@@ -129,9 +129,10 @@
 .csvbar{display:flex;justify-content:flex-end;padding:0 16px 8px}
 
 /* ---------- roth conversion ---------- */
-/* The year the survivor starts filing single is the hinge of the whole
-   comparison, so it gets a rule of its own in the table. */
-tr.rc-widow > td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
+/* The years after the survivor starts filing single are shaded (the key sits
+   above the table), with one strong rule where they begin. */
+tr.rc-widow > td{background:var(--panel-2)}
+tr:not(.rc-widow) + tr.rc-widow > td{box-shadow:inset 0 1px 0 var(--ds-rule-strong)}
 /* ---------- early retirement bridge ---------- */
 #brCompare td:first-child{font-family:var(--sans);letter-spacing:0;min-width:210px}
 #brCompare .br-name{display:block;font-size:13px;font-weight:600;color:var(--text)}
@@ -149,9 +150,6 @@ tr.br-off .br-name{color:var(--dim)}
 #brAtTable th .br-yr{display:block;font-size:10.5px;color:var(--dimmer);font-weight:400}
 #brAtOut .br-sub{display:block;font-size:11.5px;color:var(--dimmer);margin-top:1px}
 .br-send{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px}
-.rc-tier{display:inline-block;margin-left:4px;padding:1px 5px;border-radius:4px;
-  font-size:11px;font-weight:600;color:var(--ds-loss);background:color-mix(in srgb,var(--ds-loss) 15%,var(--panel));
-  vertical-align:1px}
 #msBody .kv .k,#msBodyS .kv .k{color:var(--text)}
 
 
