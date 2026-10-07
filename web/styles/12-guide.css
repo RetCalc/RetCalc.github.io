@@ -18,66 +18,77 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-count{margin-left:auto;font-size:12px;color:var(--dimmer);font-family:var(--mono)}
 .gd-mini{display:none;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .gd-mini b{font-family:var(--mono);font-size:15px;color:var(--text)}
-.gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
-/* The logo's arrow rides the bar, its tip at the furthest point reached, and
-   finishes in the target past the last chapter. The track spans the bars
-   only, so the same arithmetic as the grid places the tip. */
-.gd-prog-wrap{position:relative;margin-top:14px;padding-right:30px}
-.gd-track{position:absolute;left:0;right:30px;top:2.5px;height:0;pointer-events:none}
-.gd-seg i b{transition:width .7s cubic-bezier(.3,.6,.3,1)}
+/* ---- The progress bar: the logo's bow and arrow on six chapter bars ----
+   One set of measures places everything: --gap between the bars, --tail
+   (room past the last bar for the target) and --goal (the target's centre
+   past the track's end). The track spans the bars only and is a size
+   container, so the arrow's tip sits at
+     (100cqw - 5 gaps) / 6 * position + chapters passed * gap
+   which is exactly where the fill of the chapter it's in ends, at any
+   width. The arrow moves by transform and the fills grow by scaleX.
+   Bow and arrow in Text, the bars in Rule with a Muted fill, the target's
+   rings in Muted; the bullseye turns Signal Amber when it's hit and stays
+   amber while the guide is finished. */
+.gd-prog-wrap{--gap:6px;--tail:30px;--goal:17px;--al:46px;--ah:12px;--gs:18px;
+  --fly:520ms;--ease:cubic-bezier(.2,.7,.3,1);
+  position:relative;margin-top:14px;padding-right:var(--tail)}
+.gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--gap)}
+.gd-track{position:absolute;left:0;right:var(--tail);top:2.5px;height:0;pointer-events:none;
+  container-type:inline-size;--nock:27px;
+  --x:calc((100cqw - 5 * var(--gap)) / 6 * var(--pos,0) + var(--ci,0) * var(--gap))}
+.gd-track.nocked{--x:var(--nock)}
+.gd-track.hit{--x:calc(100cqw + var(--goal) + 1px)}
 /* The bow sits in the card's left padding. Until the first answer the
    string is drawn back with the arrow nocked on it; after that it hangs
    straight, and twangs once on the release. */
-.gd-track{--nock:27px}
 .gd-bow{position:absolute;top:0;left:-21px;width:20px;height:34px;transform:translateY(-50%)}
 .gd-bow svg{display:block;width:100%;height:100%;overflow:visible}
-.gd-bow .limb{fill:none;stroke:var(--jade);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
-.gd-bow .str{fill:none;stroke:var(--steel);stroke-width:2.2;transition:opacity .12s}
+.gd-bow .limb{fill:none;stroke:var(--ds-text);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.gd-bow .str{fill:none;stroke:var(--ds-text);stroke-width:2.2;transition:opacity .12s}
 .gd-bow .str.drawn{opacity:0}
 .gd-track.nocked .gd-bow .str.drawn{opacity:1}
 .gd-track.nocked .gd-bow .str.rest{opacity:0}
-.gd-track.loose .gd-bow .str.rest{transform-origin:33px 32px;animation:gdTwang .45s ease-out}
-@keyframes gdTwang{20%{transform:translateX(4px)}45%{transform:translateX(-2.5px)}70%{transform:translateX(1.2px)}}
-.gd-arrow{position:absolute;top:0;width:46px;height:12px;transform:translate(-100%,-50%);
-  transition:left .7s cubic-bezier(.3,.6,.3,1)}
+.gd-track.loose .gd-bow .str.rest{animation:gdTwang .3s var(--ease)}
+@keyframes gdTwang{25%{transform:translateX(3px)}55%{transform:translateX(-1.5px)}80%{transform:translateX(.6px)}}
+/* The arrow: its tip at the box's right edge, carried to --x. */
+.gd-arrow{position:absolute;left:0;top:0;width:var(--al);height:var(--ah);
+  transform:translateX(var(--x)) translate(-100%,-50%)}
 .gd-arrow svg,.gd-goal svg{display:block;width:100%;height:100%;overflow:visible}
-.gd-arrow .sh{stroke:var(--gold);stroke-width:3.2;stroke-linecap:round}
-.gd-arrow .hd{fill:var(--gold)}
-/* In flight it rises and dips on a small arc, tipping with it, and leaves
-   a streak behind. */
-.gd-arrow::before{content:"";position:absolute;right:100%;top:50%;width:56px;height:2px;margin-top:-1px;
-  border-radius:2px;background:linear-gradient(90deg,transparent,var(--gold));opacity:0}
-.gd-arrow.fly svg{animation:gdArc .7s cubic-bezier(.3,.6,.3,1)}
-.gd-arrow.fly::before{animation:gdStreak .7s ease-out}
-@keyframes gdArc{0%{transform:none}35%{transform:translateY(-4px) rotate(-5deg)}75%{transform:translateY(-1px) rotate(3deg)}100%{transform:none}}
-@keyframes gdStreak{15%{opacity:.75}100%{opacity:0}}
-.gd-goal{position:absolute;top:0;left:calc(100% + 17px);width:18px;height:18px;transform:translate(-50%,-50%)}
-.gd-goal .rg{fill:none;stroke:var(--dimmer);stroke-width:1.6;transition:stroke .3s .6s}
-.gd-goal .eye{fill:var(--dimmer);transition:fill .3s .6s}
-.gd-goal::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--gold);opacity:0}
-.gd-track.hit .gd-goal .rg{stroke:var(--gold)}
-.gd-track.hit .gd-goal .eye{fill:var(--gold)}
-/* On impact the target jolts back, a ring bursts out of it, and the arrow
-   quivers where it stuck. */
-.gd-track.hit.fresh .gd-goal{animation:gdJolt .5s .65s ease-out}
-.gd-track.hit.fresh .gd-goal::after{animation:gdBurst .7s .65s ease-out}
-.gd-track.hit.fresh .gd-arrow svg{transform-origin:100% 50%;animation:gdArc .7s cubic-bezier(.3,.6,.3,1),gdQuiver .5s .7s ease-out}
-@keyframes gdJolt{25%{transform:translate(-50%,-50%) translateX(3px) scale(1.25)}60%{transform:translate(-50%,-50%) translateX(-1px) scale(.95)}}
-@keyframes gdBurst{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
-@keyframes gdQuiver{20%{transform:rotate(-7deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(1.5deg)}}
-@media (prefers-reduced-motion:reduce){
-  .gd-arrow,.gd-seg i b{transition:none}
-  .gd-arrow.fly svg,.gd-arrow.fly::before,.gd-track.loose .gd-bow .str.rest,
-  .gd-track.hit.fresh .gd-goal,.gd-track.hit.fresh .gd-goal::after,.gd-track.hit.fresh .gd-arrow svg{animation:none}
-}
+.gd-arrow .sh{stroke:var(--ds-text);stroke-width:3.2;stroke-linecap:round}
+.gd-arrow .hd{fill:var(--ds-text)}
+/* The arrow and the fills travel together. .ready goes on once the page
+   has drawn the saved progress, so loading the page just places them. A
+   move forward also arcs (.fly, set from script for the length of it): the
+   arrow rises and dips, tipping with it. */
+.gd-prog-wrap.ready .gd-arrow,.gd-prog-wrap.ready .gd-seg i b{transition:transform var(--fly) var(--ease)}
+.gd-prog-wrap.fly .gd-arrow svg{animation:gdArc var(--fly) var(--ease)}
+@keyframes gdArc{35%{transform:translateY(-3px) rotate(-4deg)}75%{transform:translateY(-.5px) rotate(1.5deg)}}
+.gd-goal{position:absolute;top:0;left:calc(100% + var(--goal));width:var(--gs);height:var(--gs);transform:translate(-50%,-50%)}
+.gd-goal .rg{fill:none;stroke:var(--ds-muted);stroke-width:1.6}
+.gd-goal .eye{fill:var(--ds-muted)}
+.gd-track.hit .gd-goal .eye{fill:var(--ds-amber)}
+/* A fresh hit: the bullseye holds its colour while the arrow is in the
+   air, then on impact turns amber, the target gives once and the arrow
+   shivers where it stuck. Over in 280ms. */
+.gd-track.hit.inflight .gd-goal .eye{fill:var(--ds-muted)}
+.gd-track.impact .gd-goal{animation:gdJolt .24s var(--ease)}
+.gd-track.impact .gd-arrow svg{transform-origin:100% 50%;animation:gdQuiver .28s var(--ease)}
+@keyframes gdJolt{35%{transform:translate(-50%,-50%) translateX(2px) scale(1.12)}}
+@keyframes gdQuiver{25%{transform:rotate(-5deg)}55%{transform:rotate(3deg)}80%{transform:rotate(-1deg)}}
 .gd-seg{min-width:0;background:none;border:0;padding:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
-.gd-seg i{display:block;height:5px;border-radius:3px;background:var(--line-soft);overflow:hidden;position:relative}
-.gd-seg i b{position:absolute;left:0;top:0;bottom:0;background:var(--jade);border-radius:3px;
-  transition:width .35s cubic-bezier(.2,.7,.3,1)}
+.gd-seg i{display:block;height:5px;border-radius:3px;background:var(--ds-rule);overflow:hidden;position:relative}
+.gd-seg i b{position:absolute;inset:0;background:var(--ds-muted);transform-origin:0 50%;
+  transform:scaleX(var(--f,0))}
 .gd-seg span{display:block;font-size:11px;color:var(--dimmer);margin-top:6px;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 .gd-seg.on span{color:var(--text);font-weight:600}
 .gd-seg:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px;border-radius:4px}
+/* Reduced motion: no flight, arc, twang or jolt. The arrow and fills jump
+   and the bullseye simply changes colour. */
+@media (prefers-reduced-motion:reduce){
+  .gd-prog-wrap.ready .gd-arrow,.gd-prog-wrap.ready .gd-seg i b{transition:none}
+  .gd-prog-wrap.fly .gd-arrow svg,.gd-track.loose .gd-bow .str.rest,.gd-track.impact .gd-goal,.gd-track.impact .gd-arrow svg{animation:none}
+}
 .gd-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
 .gd-side{display:flex;flex-direction:column;gap:20px;position:sticky;top:calc(var(--navh) + var(--gd-stick,0px) + 16px)}
 @media (max-width:899px){
@@ -244,7 +255,8 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
   .gd-top-row{flex-wrap:nowrap}
   .gd-prog-wrap{margin-top:10px}
   .gd-seg span{display:none}
-  .gd-track{--nock:31px}
+  .gd-prog-wrap{--tail:26px;--goal:14px;--al:38px;--ah:10px;--gs:15px}
+  .gd-track{--nock:23px}
   .gd-bow{transform:translateY(-50%) scale(.75);transform-origin:100% 50%}
   .gd-card{padding:20px 18px 18px}
   .gd-q,.panel > h2.gd-q{font-size:20px}

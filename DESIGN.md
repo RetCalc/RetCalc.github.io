@@ -422,19 +422,14 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 - **Colors.** Bow and arrow in Text; the track in Rule; the target's rings in Muted; the bullseye in Signal Amber at the moment it is hit (the one approved exception to the Four Places Rule).
 
 ### Guide progress bar (today)
-- **Where:** the `Top` component in `web/tools/guide/Guide.tsx`; styles in `web/styles/12-guide.css` (`.gd-track`, `.gd-bow`, `.gd-arrow`, `.gd-goal`).
-- **How it's built:** inline SVGs (the bow's limb and two string paths, one at rest and one drawn back; the logo's arrow; a target of two rings and an eye) laid over six chapter segments, each a button with a fill bar. The arrow is placed with CSS `left` from a computed `calc()` and moves with a 0.7s `left` transition. When progress increases, a layout effect restarts a `fly` class (a small arc and a gold streak); the first move twangs the string; finishing adds `hit` and `fresh`, and after a 0.65s delay the target jolts, a ring bursts outward and the arrow quivers.
-- **Progress:** real. The position comes from completed steps per chapter, and "Step N of M" shows in the header. It is not exposed as a progress bar: the track is `aria-hidden`, and only the chapter buttons carry labels ("Chapter: 2 of 4 done").
-- **Colors today:** limb jade, string steel, arrow and streak gold, target dim until it turns gold on hit.
-- **Phones:** the bow scales to 75% and the chapter names hide.
-- **Reduced motion:** transitions and keyframes are off, so the arrow jumps and the target just changes color; this already matches the rule.
-- **Rough edges:**
-  - It animates `left`, a layout property, for 0.7s.
-  - The position math is full of fixed pixel offsets (46px, 6px per chapter, 18px, 28px), so the arrow and the fill can disagree at some widths.
-  - The hit takes about 1.35s, including the 0.65s delay, against the 400ms rule.
-  - The streak is a gradient, and the burst ring is decoration.
-  - The chapter fills grow by animating `width`.
-  - There's no `progressbar` role.
+- **Where:** the `Top` component in `web/tools/guide/Guide.tsx`; styles in `web/styles/12-guide.css` (`.gd-prog-wrap`, `.gd-track`, `.gd-bow`, `.gd-arrow`, `.gd-goal`, `.gd-seg`).
+- **How it's built:** inline SVGs (the bow's limb and two string paths, one at rest and one drawn back; the logo's arrow; a target of two rings and a bullseye) laid over six chapter segments, each a button with a fill bar. One set of measures on `.gd-prog-wrap` places everything: `--gap` between the bars, `--tail` (room for the target) and `--goal` (the target's centre past the track's end). The track spans the bars only and is a size container, so the arrow's tip sits at `(100cqw - 5 gaps) / 6 × position + chapters passed × gap`, exactly where the fill of the chapter it's in ends; measured to within 1px at 320, 390, 768, 1024 and 1440. The arrow moves with `transform: translateX()` and each fill grows with `transform: scaleX()`, both over 520ms in `cubic-bezier(.2,.7,.3,1)`. Transitions switch on (`.ready`) only after the saved progress is drawn, so loading the page just places the arrow.
+- **Flight and hit:** a move forward adds `.fly` for the length of the flight: a small arc (3px rise, 4° tip, transform only), and on the first release the string twangs once (300ms, translateX). A fresh finish holds the bullseye in Muted (`.inflight`) until the arrow's transition ends, then `.impact`: the bullseye turns amber, the target gives once (scale 1.12, 240ms) and the arrow shivers where it stuck (280ms). Timed in the page: impact to last animation end 283ms. No delay, streak or burst ring.
+- **Progress:** real. The arrow's position comes from completed steps per chapter (the furthest chapter with any step done). The track is `role="progressbar"` ("Guide progress") with `aria-valuemin` 0, `aria-valuemax` the number of steps, `aria-valuenow` the current step and `aria-valuetext` the same "Step N of M" shown in the header ("Not started" on the intro, where the header shows no count). The chapter buttons keep their labels ("Cash flow: 2 of 4 done") and are reached by Tab.
+- **Colors:** bow and arrow in Text, the bars in Rule with a Muted fill, the target's rings in Muted. The bullseye turns Signal Amber on the hit and stays amber while the guide is finished (that is the hit state; a page loaded already finished shows it amber).
+- **Phones:** at 640px and below the bow scales to 75%, the arrow shrinks to 38px, the target to 15px and its tail room to 26px, and the chapter names hide. Nothing clips at 320px and the page never scrolls sideways.
+- **Reduced motion:** no transitions or keyframes and no scripted states: the arrow and fills jump, and the bullseye changes colour in the same frame.
+- **Rough edges:** the arrow's position and the step label measure different things (completed steps vs. the step you're on), as the Rules ask; going back a step moves the label but not the arrow. On the hit the arrowhead sits over the target's rings, as the logo's arrow did before.
 
 ### Plan Optimizer loading bar (today)
 - **Where:** `web/tools/optimizer/Progress.tsx` (the animation loop), `web/tools/optimizer/run.ts` (timings and worker messages), styles in `web/styles/15-optimizer.css` (`.op-run`, `.op-bow`, `.op-lane`, `.op-fill`, `.op-trail`, `.op-arrow`, `.op-target`).
