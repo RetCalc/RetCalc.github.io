@@ -393,10 +393,10 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-chip{flex:1 1 auto;min-width:0;font-size:12px;color:var(--ds-muted);line-height:1.35}
 .gd-chip b{font-weight:600;color:var(--ds-text);font-size:14px;white-space:nowrap}
 .gd-chip:empty{display:none}
-/* Folded: the way on stays (Tool Help's Back/Next; a trip's Back to
-   guide), the steps and a figure-only chip line go. */
+/* Folded: the way on stays (a tour's Back/Next, a trip's Back to guide),
+   the steps and a figure-only chip line go. A trip opens folded on phones,
+   so its tour's Back/Next must stay to be followed from there. */
 .gd-coach.min .gd-coach-b{display:none}
-.gd-coach.min .gd-coach-f:has(.gd-coach-fr button) .gd-cnav,
 .gd-coach.min .gd-coach-fr:not(:has(button)){display:none}
 .gd-coach-next{display:none;padding:0 16px 10px;font-size:13px;color:var(--ds-muted);line-height:1.45}
 .gd-coach-next b{color:var(--ds-text);font-weight:600}
