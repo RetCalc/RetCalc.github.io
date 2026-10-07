@@ -52,7 +52,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Rent vs. Buy | /rentbuy | done | 9c44273 | Thirds; verdict as hero with ahead-by and break-even sentence; monthly costs moved into the reading; inputs unpinned on desktop; break-even marked on screen only |
 | Budget | /budget | done | 114c44d | Ledger two thirds + sticky reading third; Left over hero (amber / Loss + Over budget / Text when empty), composition bar, emergency fund beside its field; phone rows name-over-field |
 | Debt Payoff | /debt | done | 69b41ef | Thirds (debts + plan left, sticky); Debt-free hero (amber / Text when stalled), labelled debt cards, field-level underwater mark + Warning callout, verdict leads the race table, chart plan line ends at payoff + year ticks (screen only), schedule folded |
-| Mortgage Calculator | /mortgage | todo | | |
+| Mortgage Calculator | /mortgage | done | 1ed5b17 | Thirds; payment hero with P&I and total interest, composition under it; extras and refinance inputs beside before/after panels; field errors; chart band screen-only off; table folded, Balance pinned |
 
 ### Content pages
 | Page | Route | Status | Commit | Notes |
