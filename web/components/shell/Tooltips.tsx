@@ -138,7 +138,7 @@ export function Tooltips() {
 
   return (
     <>
-      <div className={box ? `tipbox on left-(--x) top-(--y)${box.placed ? "" : " invisible"}` : "tipbox"} id="tipbox" role="tooltip" ref={boxRef}
+      <div className={box ? `tipbox on left-(--x) top-(--y)${box.placed ? "" : " invisible"}` : "tipbox"} id="tipbox" role="tooltip" aria-hidden={box ? undefined : true} ref={boxRef}
         style={box ? { "--x": box.left + "px", "--y": box.top + "px" } as React.CSSProperties : undefined}>
         {box?.text}
       </div>

@@ -260,7 +260,7 @@ export function Budget() {
               <h3 className="m-0 flex items-center gap-2 text-body font-semibold">Emergency fund<TipDot k="emergency" /></h3>
               <div className="efrow mt-2.5">
                 <span>Target for</span>{" "}
-                <Affixed suffix="mo" className="w-18"><NumberInput id="efMonths" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
+                <Affixed suffix="mo" className="w-18"><NumberInput id="efMonths" aria-label="Emergency fund target, months of expenses" nonNeg max={36} value={s.efMonths} onValueChange={set("efMonths")} /></Affixed>{" "}
                 <span>of monthly expenses</span>
               </div>
               <div className="mt-3.5">

@@ -492,7 +492,7 @@ export function Tax() {
               <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
               <tbody>
                 {(R.bands as { rate: number; lo: number; hi: number; amount: number; tax: number }[]).map((b) => (
-                  <tr key={b.rate} className={b.amount > 0 ? undefined : "opacity-40"}>
+                  <tr key={b.rate} className={b.amount > 0 ? undefined : "text-muted-foreground"}>
                     <td>{pctStr(b.rate, 0)}</td><td>{money(b.lo) + (b.hi === Infinity ? " and up" : " – " + money(b.hi))}</td><td>{money(b.amount)}</td><td>{money(b.tax)}</td>
                   </tr>
                 ))}

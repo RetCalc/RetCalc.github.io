@@ -125,7 +125,7 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
             (show.depleted ? "This one ran out of money " + (age != null ? "at age " + ageVal(age, show.depletedYear!) : "in year " + show.depletedYear) + "."
               : "This one survived the full " + o.years + " years.") + whyText(o, show, H, age) : ""} />
         <div className="swipehint">Swipe the table sideways to see every column.</div>
-        <div className="scroll"><DetailTable run={run} age={age} items={v.s.incomeItems as DdItem[]} tableRef={v.detailTable} /></div>
+        <div className="scroll" tabIndex={0} role="region" aria-labelledby="ddDetailTitle"><DetailTable run={run} age={age} items={v.s.incomeItems as DdItem[]} tableRef={v.detailTable} /></div>
       </Card>
       <DistPanel v={v} R={R} />
       <div className={cn("grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5", sensOn && ssOn && "wide:grid-cols-2")} data-ddtabs="plan" hidden={!sensOn && !ssOn}>

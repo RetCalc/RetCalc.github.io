@@ -189,7 +189,8 @@ export function NavBar() {
                 id={isCalc ? "tabbtn-calc" : `tabbtn-${t.tab}`}
                 className={isCalc ? "calcbtn" : undefined}
                 data-tab={t.tab}
-                aria-controls={isCalc ? `tab-${shownMode}` : t.controls}
+                // A tool page sits under Tools but isn't the picker panel.
+                aria-controls={isCalc ? `tab-${shownMode}` : selected && t.tab === "tools" && slug !== "tools" ? undefined : t.controls}
                 aria-selected={selected}
                 tabIndex={selected ? undefined : -1}
                 aria-haspopup={isCalc ? "menu" : undefined}

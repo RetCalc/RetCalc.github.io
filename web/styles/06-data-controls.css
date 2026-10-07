@@ -9,6 +9,9 @@ th:first-child,td:first-child{text-align:left}
 tbody tr{transition:background .12s ease}
 tbody tr:hover{background:var(--panel-2)}
 .scroll{max-height:460px;overflow:auto}
+/* A table box that scrolls but holds nothing focusable is a tab stop itself
+   (tabIndex=0), so the keyboard can scroll it. */
+.scroll:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 .kv{display:flex;justify-content:space-between;gap:16px;padding:9px 0;
   border-bottom:1px solid var(--line-soft);font-size:13.5px;align-items:baseline}
 .kv:last-child{border-bottom:0}
