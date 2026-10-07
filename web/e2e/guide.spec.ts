@@ -159,12 +159,14 @@ test("a shared guide link opens the plan on its results", async ({ page, context
     const enc = (v: unknown) => btoa(JSON.stringify(v)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     return location.origin + "/guide#g=" + enc({ v: 1, a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } });
   });
-  // with answers of your own, it asks before replacing them
+  // with answers of your own, it asks before replacing them, in the site's
+  // own dialog rather than the browser's
   const other = await context.newPage();
-  let asked = false;
-  other.on("dialog", (d) => { asked = true; void d.accept(); });
+  let native = false;
+  other.on("dialog", (d) => { native = true; void d.dismiss(); });
   await other.goto(url);
-  await expect.poll(() => asked).toBe(true);
+  await other.locator(".popbtn", { hasText: "Replace my answers" }).click();
+  expect(native).toBe(false);
   await expect(other.locator(".gd-q")).toHaveText("Your retirement readiness");
   await expect(other.locator(".gd-hero .r")).not.toHaveText("");
   await expect(other).toHaveURL(NEW + "/guide");
@@ -221,6 +223,14 @@ async function seeded(page: Page, state: unknown) {
   await page.goto(NEW + "/guide");
   await expect(page.locator("#gdCard .gd-q")).toBeVisible();
 }
+/** The route: in the rail, or on a phone in the strip's sheet. */
+async function routeMap(page: Page) {
+  if (await page.locator("#gdStrip").isVisible()) {
+    await page.locator('#gdStrip [data-gd="route"]').click();
+    return page.locator('[role="dialog"]');
+  }
+  return page.locator("#gdMap");
+}
 /** Continue from the Welcome card to the plan, reading each card's count. */
 async function walkThrough(page: Page) {
   const counts: string[] = [];
@@ -254,7 +264,7 @@ test("switching pace keeps every answer and your place", async ({ page }) => {
   await expect(page.locator("#gdCount")).toHaveText(/^Step 6 of 11/);
   await expect(page.locator("#gdf-debtTotal")).toHaveValue("18,000");
   // a deeper card stays open from the route, and says so
-  await page.locator('#gdMap [data-go="college"]').click();
+  await (await routeMap(page)).locator('.gd-map-st[data-go="college"]').click();
   await expect(page.locator("#gdCount")).toHaveText(/^A deeper card/);
   await page.locator('#gdCard [data-gd="next"]').click();
   await expect(page.locator("#gdCard .gd-q")).toHaveText("Where do your retirement savings stand?");
@@ -282,4 +292,49 @@ test("a v2 link opens on the plan card with its pace", async ({ page }) => {
   await expect(page.locator('.gd-top [data-pace="quick"].on')).toHaveCount(1);
   const v2 = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
   expect(v2.src.spend).toMatchObject({ kind: "tool", tool: "budget" });
+});
+
+test("your number so far follows the plan, and says what the card changed", async ({ page }) => {
+  await seeded(page, stateWith("quick", "savings"));
+  await expect(page.locator("#gdNumFv")).toHaveText("$1.52M");
+  await expect(page.locator("#gdNumNeed")).toHaveText("$567,000");
+  await page.fill("#gdf-saved", "260000");
+  await expect(page.locator(".gd-num-moved")).toContainText("raised what you're on course for from $1.52M to");
+  await expect(page.locator("#gdNumFv")).not.toHaveText("$1.52M");
+});
+
+test("until retirement spending is entered, 80% of take-home stands in, marked", async ({ page }) => {
+  await seeded(page, { ...stateWith("quick", "savings"), a: { ...MAYA, retSpend: null } });
+  await expect(page.locator("#gdNumNeed")).toHaveText("$1.15M");
+  await expect(page.locator('.gd-num .gd-src[data-src="default"]')).toHaveText("default");
+  await expect(page.locator(".gd-num-note")).toContainText("$88,500 a year");
+});
+
+test("a field holding an estimate says so", async ({ page }) => {
+  await seeded(page, { ...stateWith("quick", "takehome"), a: { ...MAYA, thKnow: "yes" }, src: { takehome: { kind: "estimated", at: "2026-10-07T00:00:00.000Z" } } });
+  await expect(page.locator('#gdCard .field:has(#gdf-takehome) .gd-src[data-src="estimated"]')).toHaveText("estimated");
+});
+
+test("Start over asks in the site's own dialog", async ({ page }) => {
+  await seeded(page, { ...stateWith("quick", "cash"), done: { about: true } });
+  let native = false;
+  page.on("dialog", (d) => { native = true; void d.dismiss(); });
+  if (await page.locator("#gdStrip").isVisible()) {
+    await page.locator('#gdStrip [data-gd="route"]').click();
+    await page.locator('[role="dialog"] [data-gd="restart"]').click();
+  } else await page.locator('#gdMap [data-gd="restart"]').click();
+  await page.locator(".popbtn", { hasText: "Start over" }).click();
+  expect(native).toBe(false);
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("How ready are you for retirement?");
+});
+
+test("on a phone the rail folds into a strip, and the route opens as a sheet", async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 1280) > 640, "phone only");
+  await seeded(page, stateWith("quick", "cash"));
+  await expect(page.locator("#gdStrip")).toContainText("On course $1.52M");
+  await expect(page.locator("#gdNumber")).toBeHidden();
+  await page.locator('#gdStrip [data-gd="route"]').click();
+  await page.locator('[role="dialog"] .gd-map-st[data-go="debt"]').click();
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Do you owe money on anything besides a mortgage?");
+  await expect(page.locator('[role="dialog"]')).toHaveCount(0);
 });

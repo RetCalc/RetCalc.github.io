@@ -15,6 +15,7 @@ import { parseNum } from "@/lib/format";
 import type { ToolSub } from "@/lib/tools";
 import { gdM, ok } from "./calc";
 import type { AnswerKey, Answers, GuideState, SourceKind } from "./store";
+import { SourceBadge } from "./SourceBadge";
 import { TRIP_META } from "./tripMeta";
 import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
@@ -78,8 +79,11 @@ export function Choice({ k, val, title, sub }: { k: AnswerKey; val: string; titl
 
 interface FieldOpts { full?: boolean; hint?: React.ReactNode; /** What's wrong with the answer, under the field. */ err?: React.ReactNode }
 function Wrap({ k, label, full, hint, err, children }: FieldOpts & { k: string; label: React.ReactNode; children: React.ReactNode }) {
+  // A field holding a tool's figure, an estimate or a default says so.
+  const src = useGuideView().g.src[k as AnswerKey];
   return (
-    <div className={"field" + (full ? " full" : "")}><Label className="mb-1.5" htmlFor={"gdf-" + k}><span>{label}</span></Label>{children}
+    <div className={"field" + (full ? " full" : "")}><Label className="mb-1.5" htmlFor={"gdf-" + k}><span>{label}</span>
+      {src && src.kind !== "entered" ? <SourceBadge s={src} /> : null}</Label>{children}
       {err ? <div className="mt-1.5 flex items-start gap-2 text-note text-destructive"><CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         <span id={"gdf-" + k + "-err"} role="alert">{err}</span></div> : null}
       {hint && !err ? <div className="hint">{hint}</div> : null}</div>
