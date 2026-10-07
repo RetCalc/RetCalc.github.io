@@ -1,13 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { NEW } from "../playwright.config";
-import { compareTool, type Case } from "./compare";
+import { compareTool, type Case, type Step } from "./compare";
 
 /* The About page on both sites: folded, with panels opened, and in the
    light theme. The old page ends with an empty article box whose grid gap
    adds 20px above the footer; the new one has no box, so it's hidden. */
 const cases: Case[] = [
   { name: "folded", steps: [] },
-  { name: "panels opened", steps: [["click", "#tab-about .panel.about:nth-of-type(4) h2"], ["click", "#tab-about .panel.about:nth-of-type(9) h2"], ["click", "#tab-about .panel.about:nth-of-type(21) h2"]] },
+  // The same three sections on both sites, found by their heading's name:
+  // the old site's h2, the new one's button inside an h3.
+  { name: "panels opened", steps: ["How the projection works", "Plan Optimizer", "Historical"].map((t): Step => ["click", `#tab-about .panel.about > h2:text-is("${t}"), #tab-about h3 > button:text-is("${t}")`]) },
   { name: "light theme", steps: [["click", '#segTheme [data-theme="light"]']] },
 ];
 

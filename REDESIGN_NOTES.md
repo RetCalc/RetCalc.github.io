@@ -724,6 +724,23 @@ written into DESIGN.md unless it says otherwise.
   drawn with buttonVariants), then four picker cards (Drawdown, Plan
   Optimizer, Roth, FIRE) in the picker's two-column grid.
 
+- **About: a 42rem reading column, with a sticky index beside it from
+  1100px.** About has no inputs, so it isn't a thirds page: one centered
+  column (672px) with the prose at Body 15px in Text, capped at 65ch;
+  from 1100px a 13rem "On this page" index (groups and sections, links
+  open the section they point to) sits to its left and stays under the
+  rail, filling the empty left side. "What this is" leads under a visible
+  "About RetCalc" header; the theme switch and household bar follow as
+  "Your settings"; the 22 sections sit in six Eyebrow groups that follow
+  the picker (Calculator and Guide, Retirement income, Saving and
+  investing, Everyday money, Methods, Sharing and limits), each one panel
+  of hairline rows (shadcn Collapsible, h3 around the button, hidden
+  until found so the browser's find opens them); Contact and Disclaimer
+  close it as "Fine print" without panel chrome. Opening fades the body
+  in and drops it 4px (opacity/transform, 200ms); the height no longer
+  animates (DESIGN.md Motion: no height animation; the old 300ms sweep
+  broke it). Trade-off: the jump in height on open is instant.
+
 ## Skipped from critique
 
 - **Tools**: one-sentence descriptions ≤60 characters — new copy shared
@@ -1054,6 +1071,16 @@ written into DESIGN.md unless it says otherwise.
 - **Guide coach**: dropping the trip's chip — it is the figure the guide
   brings back; kept.
 
+- **About**: an "open all" control and a current-section highlight in the
+  index — new behavior; links open their section, find-in-page opens a
+  folded one.
+- **About**: moving Appearance to a masthead settings sheet, and moving
+  per-tool sections onto each tool's article — content/IA decisions for
+  the owner (critique's open questions); Appearance now follows "What this is".
+- **About**: a hint that the masthead's sun/moon also switches the theme,
+  and linking "Each tool is described in its own section below" — new
+  copy / editing a sentence (hard stop on wording).
+
 ## E2E checks edited
 
 - **Debt Payoff** (e2e/debt.spec.ts, "added and removed debts"): the remove
@@ -1061,6 +1088,15 @@ written into DESIGN.md unless it says otherwise.
   `button[aria-label^="Remove"]` (the button is now named "Remove <debt>";
   the old site's "Remove" still matches). Same step on both sites; no
   assertion changed.
+
+- **About** (e2e/about.spec.ts, "panels opened"): the clicks
+  `#tab-about .panel.about:nth-of-type(4|9|21) h2` became name-based
+  selectors for the same three sections ("How the projection works",
+  "Plan Optimizer", "Historical"): `.panel.about > h2:text-is(...)` on the
+  old site, `h3 > button:text-is(...)` on the new one (sections are now
+  grouped and reordered, so position no longer names them). No assertion
+  changed; the numbers diffs are text only (Appearance → Your settings,
+  the header, index and group names added, sections reordered).
 
 ## Later: share card and print summary
 
