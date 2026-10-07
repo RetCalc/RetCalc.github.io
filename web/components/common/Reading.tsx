@@ -62,7 +62,8 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
 }) {
   const narrow = useNarrow();
   // An empty reading (the hero a dash at the secondaries' size): its labels
-  // line up along the top instead of the secondaries centering on the hero.
+  // line up along the top instead of the secondaries centering on the hero,
+  // and an empty note doesn't hold space under the dash.
   const placeholder = !sized && hero.value === DASH;
   return (
     <div className={cn("px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5", !under && "wide:flex wide:items-start wide:gap-8", className)} data-readout>
@@ -72,7 +73,7 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
             so every dash in an empty reading looks alike and lines up. */}
         <BigValue className={cn("font-medium tracking-tight whitespace-nowrap tabular-nums", placeholder ? "text-3xl leading-tight sm:text-display" : "leading-none", TONE[tone])}
           id={hero.id} text={hero.value} sized={sized} scale={narrow ? 1.5 : 2} />
-        <div className="mt-2.5 min-h-4 text-label text-muted-foreground" id={hero.noteId}>{hero.note}</div>
+        <div className={cn("mt-2.5 min-h-4 text-label text-muted-foreground", placeholder && !hero.note && "hidden")} id={hero.noteId}>{hero.note}</div>
         {children}
       </div>
       {figures.length ? (
