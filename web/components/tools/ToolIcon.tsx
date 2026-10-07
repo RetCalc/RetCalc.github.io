@@ -1,31 +1,30 @@
 /* Each tool's icon, as drawn on its card in the tool list and in its page's
-   header. Converted from src/main/16-tool-picker.html; the class
-   names pick the part that plays each card's beat (hover, focus, tap) in
-   styles/04-tool-icons-header.css. */
+   header. Converted unchanged from src/main/16-tool-picker.html; the class
+   names drive the hover animations in styles/04-tool-icons-header.css. */
 import { ViewTransition } from "react";
 import { TOOL_HUE, type ToolSub } from "@/lib/tools";
 
 const ICONS: Record<ToolSub, React.ReactNode> = {
   optimizer: (
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="18" r="12" stroke="currentColor" strokeWidth="2" /><circle cx="24" cy="18" r="6.5" stroke="currentColor" strokeWidth="2" /><circle cx="24" cy="18" r="1.8" fill="currentColor" /><g className="op-ic-arrow"><path d="M5.5 34.5 L19.3 22.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M23 19 L20.98 24.27 L17.54 20.37 Z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" /><path d="M9.02 34.78 L9.24 31.19 L5.65 30.97 M6.78 36.76 L7 33.17 L3.41 32.95" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></g></svg>
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="18" r="12" stroke="currentColor" strokeWidth="2" /><circle className="op-ic-ring" cx="24" cy="18" r="6.5" stroke="currentColor" strokeWidth="2" /><circle cx="24" cy="18" r="1.8" fill="currentColor" /><g className="op-ic-arrow"><path d="M5.5 34.5 L19.3 22.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M23 19 L20.98 24.27 L17.54 20.37 Z" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" /><path d="M9.02 34.78 L9.24 31.19 L5.65 30.97 M6.78 36.76 L7 33.17 L3.41 32.95" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></g></svg>
   ),
   drawdown: (
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path className="dd-line" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M5 30 h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle className="dd-dot" cx="13" cy="18" r="2" fill="currentColor" /><circle className="dd-dot" cx="27" cy="24" r="2" fill="currentColor" /></svg>
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path className="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M5 30 h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle className="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor" /><circle className="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor" /></svg>
   ),
   bridge: (
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M6 30 V21 M34 30 V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path className="br-arch" d="M4 21 Q20 6 36 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" /><path className="br-cable" d="M13 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable" d="M20 30 V13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable" d="M27 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /></svg>
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M6 30 V21 M34 30 V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path className="br-arch" pathLength="100" d="M4 21 Q20 6 36 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" /><path className="br-cable br-cable1" d="M13 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable br-cable2" d="M20 30 V13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable br-cable3" d="M27 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><circle className="br-walker" cx="7" cy="26.6" r="1.8" fill="currentColor" opacity="0" /></svg>
   ),
   roth: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect x="4" y="12" width="13" height="22" rx="2.5" stroke="currentColor" strokeWidth="2" />
-    <rect x="23" y="18" width="13" height="16" rx="2.5" stroke="currentColor" strokeWidth="2" />
-    <path d="M10.5 9 V8 a3 3 0 0 1 3 -3 h13 a3 3 0 0 1 3 3 V14.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <rect className="roth-dest" x="23" y="18" width="13" height="16" rx="2.5" stroke="currentColor" strokeWidth="2" />
+    <path className="roth-path" pathLength="100" d="M10.5 9 V8 a3 3 0 0 1 3 -3 h13 a3 3 0 0 1 3 3 V14.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <path className="roth-head" d="M26.5 11.5 l3 3 3 -3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   ),
   healthcare: (
     <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="18" cy="18" r="14" stroke="currentColor" strokeWidth="1.8" />
+    <circle className="hc-ring" cx="18" cy="18" r="14" stroke="currentColor" strokeWidth="1.8" />
     <path className="hc-cross" d="M18 10v16M10 18h16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   ),
@@ -38,7 +37,7 @@ const ICONS: Record<ToolSub, React.ReactNode> = {
   backtest: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M4 32h32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <rect className="bt-bar" x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" strokeWidth="2" />
+    <rect className="bt-bar bt-bar1" x="7" y="20" width="5" height="12" rx="1.2" stroke="currentColor" strokeWidth="2" />
     <rect className="bt-bar bt-bar2" x="17.5" y="13" width="5" height="19" rx="1.2" stroke="currentColor" strokeWidth="2" />
     <rect className="bt-bar bt-bar3" x="28" y="7" width="5" height="25" rx="1.2" stroke="currentColor" strokeWidth="2" />
     </svg>

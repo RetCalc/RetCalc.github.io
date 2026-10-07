@@ -1,70 +1,130 @@
-/* ---------- tool icon beats ----------
-   One beat per icon, acting out the tool's verb: one part of the drawing
-   moves at most ~3px, 10deg or 10% and settles back, eased out, all inside
-   240ms (staggered parts included). Transform only, so nothing reflows and
-   the card stays clickable throughout. It plays on hover (real hover only,
-   so a tap doesn't leave it stuck on), on keyboard focus, and on tap (the
-   card gets .is-beat for a moment on a touch/pen pointerdown, ToolCardLink).
-   Under reduced motion nothing moves: the tile's edge turns Muted instead
+/* ---------- tool icon animations ----------
+   Each picker icon plays a short one-shot animation that acts out what the
+   tool does: the scale tips, the tassel swings, the roof lifts (0.4 to 1.2s,
+   the owner's call, 2026-10-07: long enough to see the whole thing). It plays
+   on hover, keyboard focus, and tap (the card gets .is-beat for the length of
+   the longest animation on a touch/pen pointerdown, ToolCardLink). FIRE's
+   flame keeps burning while hovered and burns twice on focus or tap. Under
+   reduced motion nothing moves: the tile's edge turns Muted instead
    (03-navigation.css). SVG children need an explicit transform-box, since
    the default (view-box) and percentage origins don't mix the way they do on
    HTML elements. Only cards play it, never the tool header's tile. */
-.op-ic-arrow,.tx-glass,.roth-head,.mg-roof,.cl-cap,.cl-tassel,.rb-beam,.bg-coin,
-.db-bar,.dd-line,.dd-dot,.hc-cross,.fi-flame,.fi-core,.br-arch,.br-cable{transform-box:view-box}
-.bt-bar{transform-box:fill-box;transform-origin:50% 100%}
-.rb-beam{transform-origin:20px 9px}
-.bg-coin{transform-origin:22px 24px}
-.hc-cross{transform-origin:18px 18px}
-.fi-flame,.fi-core{transform-origin:20px 36px}
-.db-b1{transform-origin:6px 32px}
-.db-b2{transform-origin:14px 32px}
-.db-b3{transform-origin:22px 32px}
-.db-b4{transform-origin:30px 32px}
-.br-arch,.br-cable{transform-origin:20px 30px}
-
-@keyframes ic-shoot{40%{transform:translate(-2.5px,2.5px)}}         /* draw back, release */
-@keyframes ic-dip{40%{transform:translateY(2.5px)}}                 /* drawn down, recovers */
-@keyframes ic-scan{40%{transform:translate(-3px,-3px)}}             /* glass passes over */
-@keyframes ic-feed{40%{transform:translateY(2px)}}                  /* into the Roth bucket */
-@keyframes ic-lift{40%{transform:translateY(-3px)}}                 /* roof / cap goes up */
-@keyframes ic-tip{40%{transform:rotate(-8deg)}}                     /* beam weighs one side */
-@keyframes ic-flip{40%{transform:translateY(-3px) scaleX(.9)}}      /* coin tossed, turning */
-@keyframes ic-pay{40%{transform:scaleY(.9)}}                        /* balance knocked down */
-@keyframes ic-rise{40%{transform:scaleY(1.1)}}                      /* bar grows */
-@keyframes ic-pulse{40%{transform:scale(1.1)}}                      /* one heartbeat */
-@keyframes ic-span{40%{transform:scaleY(1.1)}}                      /* the span springs up */
-@keyframes ic-flare{40%{transform:scaleY(1.1)}}                     /* the flame flares once */
-
 @media (prefers-reduced-motion:no-preference){
-  /* each part's beat, named once; the triggers below just switch it on */
-  .toolcard{--ic-t:.24s;--ic-e:cubic-bezier(.2,.7,.3,1)}
-  .toolcard .op-ic-arrow{--ic:ic-shoot}
-  .toolcard .dd-line,.toolcard .dd-dot{--ic:ic-dip}
-  .toolcard .tx-glass{--ic:ic-scan}
-  .toolcard .roth-head{--ic:ic-feed}
-  .toolcard .mg-roof,.toolcard .cl-cap,.toolcard .cl-tassel{--ic:ic-lift}
-  .toolcard .rb-beam{--ic:ic-tip}
-  .toolcard .bg-coin{--ic:ic-flip}
-  .toolcard .db-bar{--ic:ic-pay;--ic-t:.18s}
-  .toolcard .bt-bar{--ic:ic-rise;--ic-t:.18s}
-  .toolcard .hc-cross{--ic:ic-pulse}
-  .toolcard .br-arch,.toolcard .br-cable{--ic:ic-span}
-  .toolcard .fi-flame,.toolcard .fi-core{--ic:ic-flare}
-  /* staggers: 180ms each + up to 60ms = 240ms in all.
-     Debt pays the biggest balance first; the others run left to right. */
-  .toolcard .bt-bar2{animation-delay:.03s}
-  .toolcard .bt-bar3{animation-delay:.06s}
-  .toolcard .db-b3{animation-delay:.02s}
-  .toolcard .db-b2{animation-delay:.04s}
-  .toolcard .db-b1{animation-delay:.06s}
+  /* Drawdown: the projection redraws itself, sample points landing after. */
+  @keyframes dd-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes dd-pop{0%,30%{transform:scale(0)}68%{transform:scale(1.4)}
+    100%{transform:scale(1)}}
+  .dd-dot{transform-box:fill-box;transform-origin:50% 50%}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .dd-line{stroke-dasharray:100;
+    animation:dd-draw .5s cubic-bezier(.35,0,.25,1)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .dd-dot1{animation:dd-pop .46s ease-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .dd-dot2{animation:dd-pop .6s ease-out}
 
-  .toolcard:focus-visible :is(.op-ic-arrow,.dd-line,.dd-dot,.tx-glass,.roth-head,.mg-roof,.cl-cap,.cl-tassel,.rb-beam,.bg-coin,.db-bar,.bt-bar,.hc-cross,.br-arch,.br-cable,.fi-flame,.fi-core),
-  .toolcard.is-beat :is(.op-ic-arrow,.dd-line,.dd-dot,.tx-glass,.roth-head,.mg-roof,.cl-cap,.cl-tassel,.rb-beam,.bg-coin,.db-bar,.bt-bar,.hc-cross,.br-arch,.br-cable,.fi-flame,.fi-core){
-    animation-name:var(--ic);animation-duration:var(--ic-t);animation-timing-function:var(--ic-e)}
+  /* Income tax: the glass runs over the return. */
+  @keyframes tx-scan{0%{transform:translate(0,0)}
+    32%{transform:translate(-9px,-13px)}
+    64%{transform:translate(-13px,-4px)}
+    100%{transform:translate(0,0)}}
+  .tx-glass{transform-box:view-box}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .tx-glass{animation:tx-scan .62s ease-in-out}
+
+  /* Roth: dollars travel the pipe and land in the Roth bucket. */
+  @keyframes roth-flow{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes roth-head{0%,50%{opacity:0;transform:translateY(-4px)}
+    100%{opacity:1;transform:translateY(0)}}
+  @keyframes roth-land{0%,50%{transform:translateY(0)}
+    72%{transform:translateY(-2.5px)}100%{transform:translateY(0)}}
+  .roth-head,.roth-dest{transform-box:view-box}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .roth-path{stroke-dasharray:100;animation:roth-flow .42s ease-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .roth-head{animation:roth-head .52s ease-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .roth-dest{animation:roth-land .6s cubic-bezier(.3,.8,.4,1)}
+
+  /* Mortgage: raise the roof, then let it settle. */
+  @keyframes mg-roof{0%{transform:translateY(0)}34%{transform:translateY(-3.5px)}
+    72%{transform:translateY(.9px)}100%{transform:translateY(0)}}
+  .mg-roof{transform-box:view-box}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .mg-roof{animation:mg-roof .46s cubic-bezier(.3,.8,.4,1)}
+
+  /* College: cap lifts off, tassel swings after it. */
+  @keyframes cl-hop{0%{transform:translateY(0)}38%{transform:translateY(-2px)}
+    100%{transform:translateY(0)}}
+  @keyframes cl-swing{0%{transform:rotate(0)}26%{transform:rotate(-21deg)}
+    56%{transform:rotate(13deg)}80%{transform:rotate(-5deg)}
+    100%{transform:rotate(0)}}
+  .cl-cap{transform-box:view-box}
+  .cl-tassel{transform-box:view-box;transform-origin:38px 17px}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .cl-cap{animation:cl-hop .5s ease-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .cl-tassel{animation:cl-swing .62s ease-in-out}
+
+  /* Rent vs buy: the beam tips one way, the other, and levels off. */
+  @keyframes rb-tip{0%{transform:rotate(0)}24%{transform:rotate(-9deg)}
+    58%{transform:rotate(6deg)}82%{transform:rotate(-2.5deg)}
+    100%{transform:rotate(0)}}
+  .rb-beam{transform-box:view-box;transform-origin:20px 9px}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .rb-beam{animation:rb-tip .68s cubic-bezier(.4,0,.3,1)}
+
+  /* Budget: flip the coin. */
+  @keyframes bg-flip{0%{transform:scaleX(1)}50%{transform:scaleX(.06)}
+    100%{transform:scaleX(1)}}
+  .bg-coin{transform-box:view-box;transform-origin:22px 24px}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .bg-coin{animation:bg-flip .45s ease-in-out}
+
+  /* Debt: balances knocked down avalanche-style, biggest first. */
+  @keyframes db-pay{0%{transform:scaleY(1)}46%{transform:scaleY(.32)}
+    100%{transform:scaleY(1)}}
+  .db-bar{transform-box:view-box}
+  .db-b1{transform-origin:6px 32px}
+  .db-b2{transform-origin:14px 32px}
+  .db-b3{transform-origin:22px 32px}
+  .db-b4{transform-origin:30px 32px}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .db-b4{animation:db-pay .44s ease-in-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .db-b3{animation:db-pay .44s ease-in-out .07s}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .db-b2{animation:db-pay .44s ease-in-out .14s}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .db-b1{animation:db-pay .44s ease-in-out .21s}
+
+  /* Backtest: bars rise in a left-to-right wave. */
+  @keyframes bt-wave{0%,100%{transform:translateY(0)} 45%{transform:translateY(-5px)}}
+  .bt-bar{transform-box:fill-box}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .bt-bar1{animation:bt-wave .55s ease-in-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .bt-bar2{animation:bt-wave .55s ease-in-out .1s}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .bt-bar3{animation:bt-wave .55s ease-in-out .2s}
+
+  /* Healthcare: cross spins a full turn, ring dims while it goes. */
+  @keyframes hc-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .hc-cross{transform-box:view-box;transform-origin:center}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .hc-cross{animation:hc-spin .55s cubic-bezier(.4,0,.2,1) forwards}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .hc-ring{opacity:.55;transition:opacity .3s ease}
+
+  /* Bridge: the arch draws across, the cables drop in, and a dot crosses. */
+  @keyframes br-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes br-drop{0%,25%{transform:scaleY(0)}100%{transform:scaleY(1)}}
+  @keyframes br-cross{0%{transform:translateX(0);opacity:0}15%{opacity:1}
+    85%{opacity:1}100%{transform:translateX(26px);opacity:0}}
+  .br-cable{transform-box:fill-box;transform-origin:50% 100%}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .br-arch{stroke-dasharray:100;animation:br-draw .5s cubic-bezier(.35,0,.25,1)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .br-cable1{animation:br-drop .5s ease-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .br-cable2{animation:br-drop .5s ease-out .06s both}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .br-cable3{animation:br-drop .5s ease-out .12s both}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .br-walker{animation:br-cross .9s ease-in-out .3s}
+
+  /* FIRE: line draws, flame ignites, core flickers. */
+  @keyframes fi-rise{from{transform:scaleY(.3) translateY(10px);opacity:0}to{transform:scaleY(1) translateY(0);opacity:1}}
+  @keyframes fi-burn{0%,100%{transform:rotate(0deg) scaleX(1) scaleY(1)}20%{transform:rotate(-2deg) scaleX(.96) scaleY(1.04)}50%{transform:rotate(1.5deg) scaleX(1.04) scaleY(.97)}75%{transform:rotate(-1.5deg) scaleX(.97) scaleY(1.05)}}
+  @keyframes fi-flicker{0%,100%{transform:scaleY(1) scaleX(1);opacity:1}30%{transform:scaleY(1.14) scaleX(.88);opacity:.82}60%{transform:scaleY(.9) scaleX(1.1);opacity:.95}}
+  .fi-flame,.fi-core{transform-box:fill-box;transform-origin:50% 100%}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .fi-flame{animation:fi-rise .25s ease-out both,fi-burn 1.2s ease-in-out .25s 2}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .fi-core{animation:fi-flicker .65s ease-in-out .1s 3}
   @media (hover:hover){
-    .toolcard:hover :is(.op-ic-arrow,.dd-line,.dd-dot,.tx-glass,.roth-head,.mg-roof,.cl-cap,.cl-tassel,.rb-beam,.bg-coin,.db-bar,.bt-bar,.hc-cross,.br-arch,.br-cable,.fi-flame,.fi-core){
-      animation-name:var(--ic);animation-duration:var(--ic-t);animation-timing-function:var(--ic-e)}
+    .toolcard:hover .fi-flame{animation:fi-rise .25s ease-out both,fi-burn 1.2s ease-in-out .25s infinite}
+    .toolcard:hover .fi-core{animation:fi-flicker .65s ease-in-out .1s infinite}
   }
+
+  /* Optimizer: the arrow flies in and the target rings. */
+  @keyframes op-ic-fly{0%{transform:translate(-9px,8px);opacity:0}45%{opacity:1}70%{transform:translate(1px,-1px)}100%{transform:none}}
+  @keyframes op-ic-ring{0%,55%{transform:scale(1)}75%{transform:scale(1.25)}100%{transform:scale(1)}}
+  .op-ic-arrow,.op-ic-ring{transform-box:fill-box;transform-origin:center}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .op-ic-arrow{animation:op-ic-fly .5s cubic-bezier(.3,.7,.3,1)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .op-ic-ring{animation:op-ic-ring .6s ease-out}
 }
 
 /* ---------- back to the tool picker, and the tool's header ---------- */
