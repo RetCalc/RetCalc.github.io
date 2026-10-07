@@ -89,12 +89,12 @@ own route yet; every page has one now, so it renders nothing.
 | Optimizer bow-and-arrow loader | todo | | |
 | Page transitions, tab switches, press, panels | todo | | |
 
-## Phase 3: share card and print summary
-| Piece | Status | Commit | Notes |
-|---|---|---|---|
-| Print summaries (10) | todo | | white paper, graphite text |
-| Share image cards (16) | todo | | graphite and amber, Plex Sans |
-| Logged color items (Rent vs. Buy, Bridge 72(t), Tax state slice, hatch stripes) | todo | | |
+## Phase 3: share card and print summary — dropped
+
+Dropped at the owner's request (2026-10-06): no restyling. Open items are
+logged in REDESIGN_NOTES.md, "Later: share card and print summary". The
+finish instead opens every print summary and saves every share card to
+confirm each renders and every figure matches its page.
 
 ## Phase 4: audit
 | Step | Status | Notes |
@@ -105,7 +105,7 @@ own route yet; every page has one now, so it renders nothing.
 ## Phase 5: fresh-agent review
 | Step | Status | Notes |
 |---|---|---|
-| Review round 1 | todo | |
+| Review round 1 | todo | print summaries and share cards not in its inputs |
 | Fixes | todo | |
 | Review round 2 on the fixed pages | todo | |
 

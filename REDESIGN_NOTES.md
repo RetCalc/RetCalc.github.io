@@ -1029,6 +1029,33 @@ written into DESIGN.md unless it says otherwise.
   the old site's "Remove" still matches). Same step on both sites; no
   assertion changed.
 
+## Later: share card and print summary
+
+Dropped from the 2026-10-06 site-wide pass at the owner's request: the
+printed summaries and the share image cards keep their current look until
+a pass of their own. Open items for that pass:
+
+- **Rent vs. Buy, the buyer line:** prints and shares as #7d9fd6 (sky);
+  it was the plan gold #e9b872 before the chart-colors pass.
+- **Early Retirement Bridge, the 72(t) band:** "72(t) payments" goes out
+  as #e2795f (rose); it was #c98fb8 before.
+- **Income Tax donut, the state tax slice:** goes out as #a98fd6
+  (lavender); it was #e9b872 before.
+- **Hatch stripes follow the page's theme:** the stripes on hatched
+  series (Bridge rungs, Tax pre-tax/other) use the screen's surface color,
+  so a card or printout made from a light page differs from one made from
+  a dark page.
+- **Charts drawn differently on screen than in print** (found in this
+  pass; on screen only, by design, so print and share kept their layout):
+  Roth's chart keeps its rose third line and gradient band in print
+  (screen-only replacements, `BandChart screenOnly`); College, Mortgage
+  and Debt charts likewise keep their old band or full-length line in the
+  copies. The print/share pass should decide whether to adopt the screen
+  drawing.
+- **Rent vs. Buy, renter line color when buying wins:** the renter line is
+  drawn rose while the legend shows teal (pre-existing; changing it
+  changes the print/share colors).
+
 ## Fixed
 
 ### Escape inside a dialog's select list also closes the dialog
