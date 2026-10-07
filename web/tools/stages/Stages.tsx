@@ -378,9 +378,10 @@ export function Stages() {
             target={portToday} targetLabel={TARGET_LABEL} />
         </div>
 
-        {/* Side by side from 1100px, stretched to one height so the shorter
-            card doesn't leave a hole under it. */}
-        <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2 wide:items-stretch" hidden={!n}>
+        {/* Milestones at full width, and Take it further under it as a slim
+            strip: its one line and button no longer stretch to the list's
+            height (beside it, the card stood three-quarters empty). */}
+        <div className="grid min-w-0 grid-cols-1 gap-5 max-sm:gap-3.5" hidden={!n}>
           <Card>
             <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
             <CardContent id="msBodyS">
@@ -390,12 +391,14 @@ export function Stages() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Take it further</CardTitle></CardHeader>
-            <CardContent>
-              <p className="hint mt-0">See how long this balance lasts once you start
-                drawing on it. This carries your inflation-adjusted balance into the
-                Drawdown Simulator.</p>
-              <Button variant="outline" id="toDrawdownS" onClick={toDrawdown}>Test withdrawals</Button>
+            <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+              <div className="min-w-0">
+                <CardTitle>Take it further</CardTitle>
+                <p className="hint mt-1 mb-0 max-w-copy">See how long this balance lasts once you start
+                  drawing on it. This carries your inflation-adjusted balance into the
+                  Drawdown Simulator.</p>
+              </div>
+              <Button variant="outline" className="self-start sm:self-center" id="toDrawdownS" onClick={toDrawdown}>Test withdrawals</Button>
             </CardContent>
           </Card>
         </div>

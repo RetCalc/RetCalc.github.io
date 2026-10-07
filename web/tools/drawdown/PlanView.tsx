@@ -105,8 +105,8 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
       <SeqPanel v={v} H={H} ps={ps} />
       <IncomePanel v={v} R={R} view={view} show={show} showLabel={showLabel} />
       {/* What living on it was like: the scorecard beside the spending
-          figures, two lists of the same weight. */}
-      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2" data-ddtabs="plan">
+          figures, two lists of the same weight, at one height. */}
+      <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2 wide:items-stretch" data-ddtabs="plan">
         <ScorePanel v={v} R={R} monthly={!!v.lastMonthly} />
         <Card className="min-w-0" data-ddtabs="plan">
           <CardHeader><CardTitle id="ddIncomeSectionTitle"><span><Tipped text={hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"} k="sequence" /></span></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
