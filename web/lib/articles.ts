@@ -19,15 +19,19 @@ const raw = cache((slug: Slug): string | null => {
 });
 
 /** The article's HTML as shown: collapsed under its heading (open when
-    `open`), with the chevron that opens it (lib/collapse.ts). Null for a
+    `open`). The heading's text sits in a button (with the chevron) that
+    opens it from the mouse or the keyboard (lib/collapse.ts). Null for a
     page without one. */
 export const articleHtml = cache((slug: Slug, open = false): string | null => {
   const html = raw(slug);
   if (!html) return null;
   return html
     .replace('class="seo-a panel about"', open ? 'class="seo-a panel about"' : 'class="seo-a panel about collapsed"')
-    .replace(/<\/h2>/, CHEVRON + "</h2>")
-    .replace(/(<div class="body">[\s\S]*<\/div>)(\s*<\/article>)/, '<div class="about-collapse">$1</div>$2');
+    .replace(
+      /<h2>([\s\S]*?)<\/h2>/,
+      `<h2><button type="button" class="seo-a-toggle" aria-expanded="${open}" aria-controls="seoBody">$1${CHEVRON}</button></h2>`,
+    )
+    .replace(/(<div class="body">[\s\S]*<\/div>)(\s*<\/article>)/, '<div class="about-collapse" id="seoBody">$1</div>$2');
 });
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };

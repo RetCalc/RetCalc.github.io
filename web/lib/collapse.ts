@@ -13,6 +13,7 @@ export const CHEVRON =
 
 export function toggleCollapse(p: HTMLElement): void {
   const opening = !p.classList.toggle("collapsed");
+  p.querySelector(":scope > h2 > button[aria-expanded]")?.setAttribute("aria-expanded", String(opening));
   const wrap = p.querySelector<HTMLElement>(":scope > .about-collapse");
   if (!wrap) return;
   wrap.classList.remove("reveal");

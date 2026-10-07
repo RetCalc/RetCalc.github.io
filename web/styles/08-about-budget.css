@@ -9,6 +9,14 @@
    the hover wash follows the card's rounded corners instead of squaring them. */
 .panel.about > h2{border-radius:var(--r-bezel) var(--r-bezel) 0 0}
 .panel.about.collapsed > h2{border-bottom-color:transparent;border-radius:var(--r-bezel)}
+/* An article's heading holds a button (lib/articles.ts) so the keyboard can
+   open it too: the button takes the heading's padding and fills its row, and
+   the chevron stays on the right instead of wrapping under long titles. */
+.panel.seo-a > h2{padding:0}
+.seo-a-toggle{display:flex;align-items:center;gap:9px;width:100%;padding:15px 18px;margin:0;border:0;
+  background:none;font:inherit;letter-spacing:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:inherit}
+.seo-a-toggle:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
+@media (max-width:640px){.seo-a-toggle{padding:13px 14px}}
 .panel.about .about-chevron{margin-left:auto;flex:none;color:var(--dimmer);
   transition:transform .2s cubic-bezier(.2,.7,.3,1);display:flex}
 .panel.about.collapsed .about-chevron{transform:rotate(-90deg)}
