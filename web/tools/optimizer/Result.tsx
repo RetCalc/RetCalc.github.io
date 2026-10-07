@@ -6,7 +6,7 @@
    draws it in panels; the readiness guide in sections of its card. From
    opResultHTML() and what it calls in src/js/app/31b-plan-optimizer.js. */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { GdChart } from "@/components/charts/GdChart";
 import { STATES } from "@/lib/engine/typed";
 import { PL_HEIR, plMix } from "@/lib/engine/typed-plan";
@@ -16,6 +16,11 @@ import { seen, type Host, type Result } from "./run";
 import { axisCompact, lowerFirst, opClaims, opCompact, opConvUntil, opFillName, opFillShort, opSigned, opTacticsLine, type PlanWho } from "./words";
 import { SERIES } from "@/lib/hues";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { HeroReading } from "@/components/common/Reading";
+import { ArrowDownIcon, ArrowUpIcon, ChevronDownIcon, CircleCheckIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const OP_COLORS = { ss: SERIES.sky, pension: SERIES.gray, trad: SERIES.rose, brok: SERIES.lavender, roth: SERIES.teal };
 type Src = keyof typeof OP_COLORS;
@@ -26,25 +31,65 @@ const avg = (rows: PlRow[], f: (r: PlRow) => number) => (rows.length ? rows.redu
 const heir = (res: Result) => (res.P.heirRate == null ? PL_HEIR : res.P.heirRate);
 
 /* ---- the headline ---- */
+/** The goal's figure against the usual way: the reading's, the guide's and
+    the copy pinned over the inputs on phones. */
+export function heroFigure(res: Result) {
+  const b = res.base.stats, x = res.best.stats, goal = res.goal;
+  if (goal === "spend") return {
+    label: "You can spend, after tax, and still last in " + pctStr(res.target, 0) + " of markets", short: "You can spend",
+    value: money(x.maxSpend!) + "/yr", was: money(b.maxSpend!) + "/yr",
+    delta: opSigned((x.maxSpend || 0) - (b.maxSpend || 0)) + " a year", good: (x.maxSpend || 0) >= (b.maxSpend || 0),
+  };
+  if (goal === "last") return {
+    label: "Historical retirements where the money lasted", short: "Retirements that lasted",
+    value: x.survived + " of " + x.total, was: b.survived + " of " + b.total,
+    delta: x.survived > b.survived ? "+" + (x.survived - b.survived) + " more" : "Worst 10%: " + opSigned(x.p10Legacy - b.p10Legacy, opCompact) + " left",
+    good: x.survived > b.survived || x.p10Legacy >= b.p10Legacy,
+  };
+  return {
+    label: "Left for you and your heirs after tax, in a typical market", short: "Left after tax, typical market",
+    value: opCompact(x.medLegacy), was: opCompact(b.medLegacy),
+    delta: opSigned(x.medLegacy - b.medLegacy, opCompact), good: x.medLegacy >= b.medLegacy,
+  };
+}
+
+/* The tool page's: the shared hero reading, the goal's figure in amber
+   (Text while it's out of date) with its change as the note, and the
+   other three at Display size, each with what the usual way got. */
+function Reading({ res, stale }: { res: Result; stale: boolean }) {
+  const b = res.base.stats, x = res.best.stats, C = { married: res.married }, f = heroFigure(res);
+  const near = (a: number, c: number) => (a > c + 1 ? true : a < c - 1 ? false : null);
+  // better is down for tax, up for the rest; a step back is a trade-off
+  const was = (v0: string, good: boolean | null, up = true) => (
+    <>was {v0}{good == null ? null : good
+      ? <span className="ml-1.5 inline-flex items-center gap-0.5 text-gain">{up ? <ArrowUpIcon className="size-3" aria-hidden="true" /> : <ArrowDownIcon className="size-3" aria-hidden="true" />}better</span>
+      : <span> · a trade-off</span>}</>
+  );
+  return (
+    <HeroReading tone={stale ? "text" : "answer"}
+      hero={{
+        label: f.label, id: "opHero", value: f.value,
+        note: (
+          <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 tabular-nums">
+            <Badge variant={f.good ? "positive" : "destructive"}>{f.delta}</Badge><span>vs. {f.was} the usual way</span>
+          </span>
+        ),
+      }}
+      figures={[
+        { label: "Lifetime tax", id: "opHeroTax", value: money(x.medTax), note: was(money(b.medTax), x.medTax < b.medTax - 1 ? true : x.medTax > b.medTax + 1 ? false : null, false) },
+        { label: "Lasted in", id: "opHeroLasted", value: pctStr(x.successRate, 0), note: was(pctStr(b.successRate, 0), x.survived > b.survived ? true : x.survived < b.survived ? false : null) },
+        res.goal !== "legacy"
+          ? { label: "Left after tax", id: "opHeroLeft", value: opCompact(x.medLegacy), note: was(opCompact(b.medLegacy), near(x.medLegacy, b.medLegacy)) }
+          : { label: "Social Security at", id: "opHeroSS", value: opClaims(res.best.T, C, true), note: was(opClaims(res.base.T, C, true), null) },
+      ]} />
+  );
+}
+
+/* The readiness guide's. */
 function Hero({ res }: { res: Result }) {
-  const b = res.base.stats, x = res.best.stats, goal = res.goal, C = { married: res.married };
-  let big: React.ReactNode, lab: string, was: string, delta: string;
-  if (goal === "spend") {
-    big = <>{money(x.maxSpend!)}<small>/yr</small></>;
-    lab = "You can spend, after tax, and still last in " + pctStr(res.target, 0) + " of markets";
-    was = money(b.maxSpend!) + "/yr the usual way";
-    delta = opSigned((x.maxSpend || 0) - (b.maxSpend || 0)) + " a year";
-  } else if (goal === "last") {
-    big = <>{x.survived}<small> of {x.total}</small></>;
-    lab = "Historical retirements where the money lasted";
-    was = b.survived + " of " + b.total + " the usual way";
-    delta = x.survived > b.survived ? "+" + (x.survived - b.survived) + " more" : "Worst 10%: " + opSigned(x.p10Legacy - b.p10Legacy, opCompact) + " left";
-  } else {
-    big = opCompact(x.medLegacy);
-    lab = "Left for you and your heirs after tax, in a typical market";
-    was = opCompact(b.medLegacy) + " the usual way";
-    delta = opSigned(x.medLegacy - b.medLegacy, opCompact);
-  }
+  const b = res.base.stats, x = res.best.stats, goal = res.goal, C = { married: res.married }, f = heroFigure(res);
+  const big: React.ReactNode = goal === "spend" ? <>{money(x.maxSpend!)}<small>/yr</small></> : goal === "last" ? <>{x.survived}<small> of {x.total}</small></> : f.value;
+  const lab = f.label, was = f.was + " the usual way", delta = f.delta;
   const tile = (k: string, v0: string, v1: string, good: boolean | null) => (
     <div className="op-tile"><div className="k">{k}</div><div className="v">{v1}</div><div className={"n" + (good == null ? "" : good ? " pos" : " neg")}>was {v0}</div></div>
   );
@@ -288,11 +333,11 @@ function LinesChart({ host, kind, label, series }: { host: Host; kind: string; l
   );
 }
 
-function YearTable({ rows }: { rows: PlRow[] }) {
+function YearRows({ rows, id }: { rows: PlRow[]; id?: string }) {
   const m = (v: number) => (v > 1 ? money(v) : "—");
   const pension = rows.some((r) => r.pension > 1), health = rows.some((r) => r.health > 1 || r.irmaa > 1);
   return (
-    <details className="op-table"><summary>Show every year</summary><div className="scroll"><table>
+    <table id={id}>
       <thead><tr><th>Age</th><th>Live on</th><th>Social Security</th>{pension ? <th>Pension</th> : null}<th>Traditional</th><th>Converted</th><th>Brokerage</th><th>Roth</th><th>Tax</th>
         {health ? <th>Health / IRMAA</th> : null}<th>Taxable income</th><th>Left, all accounts</th></tr></thead>
       <tbody>{rows.map((r) => (
@@ -300,17 +345,24 @@ function YearTable({ rows }: { rows: PlRow[] }) {
           <td>{m(r.trad)}</td><td>{m(r.conv)}</td><td>{m(r.brok)}</td><td>{m(r.roth)}</td><td>{m(r.tax + r.pen)}</td>{health ? <td>{m(r.health + r.irmaa)}</td> : null}
           <td>{money(r.taxable)}</td><td>{money(r.end)}</td></tr>
       ))}</tbody>
-    </table></div></details>
+    </table>
   );
+}
+/* The guide's: folded under a line of text. */
+function YearTable({ rows }: { rows: PlRow[] }) {
+  return <details className="op-table"><summary>Show every year</summary><div className="scroll"><YearRows rows={rows} /></div></details>;
 }
 
 /* ---- the whole result ---- */
-export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result; fresh: boolean }) {
+export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: Result; fresh: boolean;
+  /** The tool page's: why the result is out of date, and the rerun. Set, the result dims. */
+  stale?: ReactNode }) {
   // reveals itself the first time it's shown, and not after
   const [reveal] = useState(fresh);
   useEffect(() => seen(host), [host]);
-  const wrap = (title: string, note: string, inner: React.ReactNode, cls = "") => host === "tool"
-    ? <Card><CardHeader><CardTitle>{title}</CardTitle>{note ? <CardDescription>{note}</CardDescription> : null}</CardHeader><CardContent>{inner}</CardContent></Card>
+  const tool = host === "tool";
+  const wrap = (title: string, note: string, inner: React.ReactNode, cls = "") => tool
+    ? <Card className="min-w-0"><CardHeader><CardTitle>{title}</CardTitle>{note ? <CardDescription>{note}</CardDescription> : null}</CardHeader><CardContent>{inner}</CardContent></Card>
     : <section className={"op-sec" + (cls ? " " + cls : "")}><div className="gd-h3">{title}{note ? <> <span className="op-note">{note}</span></> : null}</div>{inner}</section>;
   const sw = (k: string, cls: string | null, label: string) => <span key={k}><s className={cls ?? "bg-(--swatch)"} style={cls ? undefined : { "--swatch": OP_COLORS[k as Src] } as React.CSSProperties}></s>{label}</span>;
   const rb = res.best.detail.rows, r0 = res.base.detail.rows, used = (Object.keys(SRC_NAMES) as Src[]).filter((k) => rb.some((r) => r[k] > 1));
@@ -318,59 +370,104 @@ export function OptimizerResult({ host, res, fresh }: { host: Host; res: Result;
   const spent = (r: PlRow) => r.tax + r.pen + r.irmaa + r.health;
   const C = who(res);
   const state = (STATES as Record<string, { n: string }>)[res.P.state];
+  // Legends sit under their charts (DESIGN.md, Charts).
+  const legend = (items: ReactNode) => <div className={cn("gd-ch-legend", tool && "mt-2 mb-0")}>{items}</div>;
+  const brag = <>Tried <b>every one of {groupDigits(res.of, true)} plans</b> in all <b>{res.windows} historical retirements</b> since {res.first}: {groupDigits(res.runs, true)} retirements simulated.</>;
+  const sameNote = <><b>The way you&apos;d run it is already the best plan we found</b> for this goal. Nothing we tried did better, which usually means Social Security
+    {res.married ? " at " + opClaims(res.base.T, { married: true }) : ""} and drawing brokerage, then traditional, then Roth already suits your numbers.</>;
+  const roadmap = wrap("Your roadmap", "on the average path, in today's dollars", <Roadmap res={res} />, "op-roadsec");
+  const moves = wrap("What makes the difference", { legacy: "median left after tax", last: "markets lasted", spend: "safe spending" }[res.goal], <Moves res={res} />);
+  const flow = wrap("Where each year's money comes from", "your roadmap, average path", <>
+    {tool ? null : legend([...used.map((k) => sw(k, null, SRC_NAMES[k])), ...(rb.some((r) => r.surplus > 1) ? [sw("reinv", "rei", "Not needed, reinvested")] : []),
+      ...(rb.some((r) => r.conv > 1) ? [sw("conv", "hol", "Converted to Roth")] : []), sw("live", "liv", "What you live on")])}
+    <FlowChart host={host} rows={rb} />
+    {tool ? legend([...used.map((k) => sw(k, null, SRC_NAMES[k])), ...(rb.some((r) => r.surplus > 1) ? [sw("reinv", "rei", "Not needed, reinvested")] : []),
+      ...(rb.some((r) => r.conv > 1) ? [sw("conv", "hol", "Converted to Roth")] : []), sw("live", "liv", "What you live on")]) : null}
+    <p className="op-cap">The space between the bars and the line is each year&apos;s tax{rb.some((r) => r.health > 1) ? " and health premiums" : ""}.</p>
+  </>);
+  const taxLegend = tool
+    ? legend(<><span><s className="bg-series-plan"></s>Your roadmap</span><span><s className="bg-series-gray"></s>The usual way</span></>)
+    : legend(<><span><s className="bg-series-gray"></s>The usual way</span><span><s className="bg-series-plan"></s>Your roadmap</span></>);
+  const taxChart = !res.same ? wrap("Tax and premiums each year", "the usual way against your roadmap", <>
+    {tool ? null : taxLegend}
+    <LinesChart host={host} kind="tax" label="Tax and premiums each year, the usual way and with the roadmap" series={[
+      { name: "The usual way", color: SERIES.gray, dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
+      { name: "Your roadmap", color: SERIES.plan, w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
+    {tool ? taxLegend : null}
+    <p className="op-cap">Paying some tax early, in the low-income years, to pay much less later is usually the whole trick.</p>
+  </>) : null;
+  const balLegend = legend(<><span><s className="bg-series-plan"></s>After tax, your roadmap</span><span><s className="bg-series-gray"></s>After tax, the usual way</span>
+    <span><s className="bg-series-rose"></s>Traditional</span><span><s className="bg-series-teal"></s>Roth</span><span><s className="bg-series-lavender"></s>Brokerage</span></>);
+  const balChart = wrap("Your accounts over time", "average path", <>
+    {tool ? null : balLegend}
+    <LinesChart host={host} kind="bal" label="Account balances by age, and what they are worth after tax" series={[
+      { name: "Traditional", color: OP_COLORS.trad, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endTrad })) },
+      { name: "Roth", color: OP_COLORS.roth, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endRoth })) },
+      { name: "Brokerage", color: OP_COLORS.brok, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endBrok })) },
+      { name: "After tax, the usual way", color: SERIES.gray, dash: "5 4", w: 2, pts: r0.map((r) => ({ x: r.age, y: net(r) })) },
+      { name: "After tax, your roadmap", color: SERIES.plan, w: 2.8, pts: rb.map((r) => ({ x: r.age, y: net(r) })) }]} />
+    {tool ? balLegend : null}
+    <p className="op-cap">After tax counts traditional money at {pctStr(1 - h, 0)} of its value: it still owes income tax, whoever takes it out.</p>
+  </>);
+  const alts = res.alts.length && !res.same ? wrap("Other strong plans", "close behind, and different", (
+    <ul className="op-alts">{res.alts.map((a, i) => (
+      <li key={i}><b>Social Security at {opClaims(a.T, C, true)}</b> · {lowerFirst(opTacticsLine(a.T, C))}
+        <span>{opCompact(a.medLegacy) + " left · lasted in " + pctStr(a.successRate, 0)}</span></li>
+    ))}</ul>
+  )) : null;
+  const fine = (
+    <p className="op-fine">{(res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " a year after tax and the usual way on " + money(res.base.spend) +
+      ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
+      : "Every plan lives on the same " + money(res.P.spend) + " a year after tax") + " and runs to age " + (res.age1 + res.years) +
+      ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
+      "Left after tax counts traditional money at " + pctStr(1 - h, 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
+      "Tax is 2026 federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
+  );
+
+  if (!tool) return (
+    <div className={"op-res" + (reveal ? " op-reveal" : "")}>
+      <p className="op-brag">{brag}</p>
+      {res.same ? <><div className="gd-callout ok">{sameNote}</div><Hero res={res} /></> : <><Hero res={res} />{roadmap}{moves}</>}
+      {flow}{taxChart}{balChart}
+      {wrap("Year by year", "average path, today's dollars", <YearTable rows={rb} />, "op-tablesec")}
+      {alts}{fine}
+    </div>
+  );
+
+  // The tool page reads as one argument: the answer, why it wins, then what
+  // to do year by year, and the reference after.
+  // Dimmed on an inner box: the reveal's fill mode holds the outer one's opacity.
+  const dim = stale ? "opacity-55" : undefined;
+  const dimmed = (n: ReactNode) => <div className="min-w-0"><div className={dim}>{n}</div></div>;
   return (
     <div className={"op-res" + (reveal ? " op-reveal" : "")}>
-      <p className="op-brag">Tried <b>every one of {groupDigits(res.of, true)} plans</b> in all <b>{res.windows} historical retirements</b> since {res.first}: {groupDigits(res.runs, true)} retirements simulated.</p>
-      {res.same ? (
-        <>
-          <div className="gd-callout ok"><b>The way you&apos;d run it is already the best plan we found</b> for this goal. Nothing we tried did better, which usually means Social Security
-            {res.married ? " at " + opClaims(res.base.T, { married: true }) : ""} and drawing brokerage, then traditional, then Roth already suits your numbers.</div>
-          <Hero res={res} />
-        </>
-      ) : (
-        <>
-          <Hero res={res} />
-          {wrap("Your roadmap", "on the average path, in today's dollars", <Roadmap res={res} />, "op-roadsec")}
-          {wrap("What makes the difference", { legacy: "median left after tax", last: "markets lasted", spend: "safe spending" }[res.goal], <Moves res={res} />)}
-        </>
-      )}
-      {wrap("Where each year's money comes from", "your roadmap, average path", <>
-        <div className="gd-ch-legend">{[...used.map((k) => sw(k, null, SRC_NAMES[k])), ...(rb.some((r) => r.surplus > 1) ? [sw("reinv", "rei", "Not needed, reinvested")] : []),
-          ...(rb.some((r) => r.conv > 1) ? [sw("conv", "hol", "Converted to Roth")] : []), sw("live", "liv", "What you live on")]}</div>
-        <FlowChart host={host} rows={rb} />
-        <p className="op-cap">The space between the bars and the line is each year&apos;s tax{rb.some((r) => r.health > 1) ? " and health premiums" : ""}.</p>
-      </>)}
-      {!res.same ? wrap("Tax and premiums each year", "the usual way against your roadmap", <>
-        <div className="gd-ch-legend"><span><s className="bg-series-gray"></s>The usual way</span><span><s className="bg-series-plan"></s>Your roadmap</span></div>
-        <LinesChart host={host} kind="tax" label="Tax and premiums each year, the usual way and with the roadmap" series={[
-          { name: "The usual way", color: SERIES.gray, dash: "5 4", pts: r0.map((r) => ({ x: r.age, y: spent(r) })) },
-          { name: "Your roadmap", color: SERIES.plan, w: 2.4, pts: rb.map((r) => ({ x: r.age, y: spent(r) })) }]} />
-        <p className="op-cap">Paying some tax early, in the low-income years, to pay much less later is usually the whole trick.</p>
-      </>) : null}
-      {wrap("Your accounts over time", "average path", <>
-        <div className="gd-ch-legend"><span><s className="bg-series-plan"></s>After tax, your roadmap</span><span><s className="bg-series-gray"></s>After tax, the usual way</span>
-          <span><s className="bg-series-rose"></s>Traditional</span><span><s className="bg-series-teal"></s>Roth</span><span><s className="bg-series-lavender"></s>Brokerage</span></div>
-        <LinesChart host={host} kind="bal" label="Account balances by age, and what they are worth after tax" series={[
-          { name: "Traditional", color: OP_COLORS.trad, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endTrad })) },
-          { name: "Roth", color: OP_COLORS.roth, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endRoth })) },
-          { name: "Brokerage", color: OP_COLORS.brok, w: 1.6, pts: rb.map((r) => ({ x: r.age, y: r.endBrok })) },
-          { name: "After tax, the usual way", color: SERIES.gray, dash: "5 4", w: 2, pts: r0.map((r) => ({ x: r.age, y: net(r) })) },
-          { name: "After tax, your roadmap", color: SERIES.plan, w: 2.8, pts: rb.map((r) => ({ x: r.age, y: net(r) })) }]} />
-        <p className="op-cap">After tax counts traditional money at {pctStr(1 - h, 0)} of its value: it still owes income tax, whoever takes it out.</p>
-      </>)}
-      {wrap("Year by year", "average path, today's dollars", <YearTable rows={rb} />, "op-tablesec")}
-      {res.alts.length && !res.same ? wrap("Other strong plans", "close behind, and different", (
-        <ul className="op-alts">{res.alts.map((a, i) => (
-          <li key={i}><b>Social Security at {opClaims(a.T, C, true)}</b> · {lowerFirst(opTacticsLine(a.T, C))}
-            <span>{opCompact(a.medLegacy) + " left · lasted in " + pctStr(a.successRate, 0)}</span></li>
-        ))}</ul>
-      )) : null}
-      <p className="op-fine">{(res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " a year after tax and the usual way on " + money(res.base.spend) +
-        ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
-        : "Every plan lives on the same " + money(res.P.spend) + " a year after tax") + " and runs to age " + (res.age1 + res.years) +
-        ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
-        "Left after tax counts traditional money at " + pctStr(1 - h, 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
-        "Tax is 2026 federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
+      <Card size="flush" className="min-w-0">
+        {stale}
+        {res.same ? (
+          <p className="m-0 flex items-start gap-2 border-b border-border px-5.5 py-3 text-note max-sm:px-4">
+            <CircleCheckIcon className="mt-0.5 size-4 shrink-0 text-gain" aria-hidden="true" /><span>{sameNote}</span>
+          </p>
+        ) : null}
+        <div className={dim}><Reading res={res} stale={!!stale} /></div>
+        <p className={"op-brag m-0 border-t border-border px-5.5 py-3 text-label text-muted-foreground tabular-nums max-sm:px-4" + (stale ? " opacity-55" : "")}>{brag}</p>
+      </Card>
+      {res.same ? null : dimmed(moves)}
+      {res.same ? null : dimmed(roadmap)}
+      {dimmed(flow)}
+      {taxChart ? dimmed(taxChart) : null}
+      {dimmed(balChart)}
+      {dimmed(<Collapsible className="min-w-0" render={<Card />}>
+        <CardHeader>
+          <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+          <CardDescription>average path, today&apos;s dollars</CardDescription>
+        </CardHeader>
+        <CollapsibleContent keepMounted>
+          <div className="swipehint">Swipe the table sideways to see every column.</div>
+          <div className="scroll op-table"><YearRows rows={rb} id="opYearTable" /></div>
+        </CollapsibleContent>
+      </Collapsible>)}
+      {alts ? dimmed(alts) : null}
+      {dimmed(fine)}
     </div>
   );
 }

@@ -102,6 +102,12 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
      one decimal, so it steps out; the brackets keep Tax, their answer,
      pinned on the right. */
   #txTable th:nth-child(4),#txTable td:nth-child(4){display:none}
+  /* The Optimizer's year by year keeps Left, all accounts (the balance its
+     goals are about) pinned on the right. */
+  #opYearTable th:last-child,#opYearTable td:last-child{position:sticky;right:0;z-index:1;
+    background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
+  #opYearTable thead th:last-child{z-index:3}
+  #opYearTable tbody tr:hover td:last-child{background:var(--panel-2)}
   #txBrackets th:last-child,#txBrackets td:last-child{position:sticky;right:0;z-index:1;
     background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
   #txBrackets thead th:last-child{z-index:3}

@@ -287,6 +287,35 @@ written into DESIGN.md unless it says otherwise.
   drop to a second row whenever they would touch, and its figures are
   tabular Plex.
 
+- **Plan Optimizer (/optimizer): Basic's thirds, the run first.** Inputs a
+  third (about 410px at 1330, the 390px the critique asked for), results two
+  thirds from 1024px; optimizer joins SOLO (lib/site.ts). 22 to 29 fields fit
+  a third as Advanced's 22 do; sticky with its own scroll from 1024px, static
+  below. Inputs card "Your situation": the mode switch on its own row, then
+  four groups under Title heads (Household; Saved on the day you retire, with
+  Copy as the head's action; In retirement; Health, heirs and safety), short
+  fields two-up on every width. Results open with the goal card (the three
+  goals, Find my best plan with the estimate beside it, the method paragraph
+  kept word for word as a note), then #opOut: the starting point before a
+  run, the loader at the reading's height while running, then one reading
+  card (HeroReading: the goal figure amber with the +/- badge and "vs. ... the
+  usual way" as its note; Lifetime tax, Lasted in and Social Security at /
+  Left after tax at Display size, each "was ..." with an arrow and "better" or
+  "a trade-off"; the "Tried every one of ..." line at its foot), What makes
+  the difference directly under it, the roadmap (flat rows on the timeline,
+  no card per stop), the three charts with legends under them, Year by year
+  folded (shadcn Collapsible; on phones Age and Left, all accounts pinned),
+  Other strong plans as ruled rows in Text, fine print at Note size, 78ch.
+  Below 1024px #tab-optimizer is display:contents, so the goal card leads the
+  page, then the inputs, then the result; a PinnedReading (the goal figure
+  and the usual way) leads the inputs once there's a result. Out of date: the
+  figure drops to Text, the result dims, and a band in the reading says why
+  with Run it again. No spending: the field is marked (Loss edge, icon,
+  message), the reason shows under the button, a previous result stays,
+  dimmed. Stop is an outline button beside the running commentary. The
+  readiness guide keeps its own hero and section order; it picks up the
+  token clean-up (goals, roadmap, moves, alternatives, Stop).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -353,6 +382,28 @@ written into DESIGN.md unless it says otherwise.
 - **Income Tax**: dropping the Net pay / Take-home pay switch, or changing
   which figure a bar shows — owner's figures-presentation call; a
   reconciling sentence instead.
+
+- **Plan Optimizer**: fold Pension, Heirs' tax rate and Must last in under
+  "More assumptions" — the e2e walks fill opPension, opPenAge, opPenCola and
+  opTarget directly on both sites with the same steps; a closed fold would
+  fail them. Group heads and the run-first phone order answer the P0.
+- **Plan Optimizer**: cut the lede to one sentence — it describes how the
+  search works (hard stop); kept word for word, moved under the button as a
+  quieter note.
+- **Plan Optimizer**: a CSV for Year by year — a new capability, the owner's
+  call per the critique.
+- **Plan Optimizer**: goal picker as shadcn RadioGroup — Base UI's roving
+  focus and arrow-key selection would change Tab use (SHADCN_PLAN.md's rule);
+  kept as buttons, restyled on tokens, with a clearer selected state.
+- **Plan Optimizer**: a Run button in the pinned bar — PinnedReading is
+  aria-hidden and has no action slot; on phones the goal card with the button
+  leads the page instead, and the stale band in the reading has Run it again.
+- **Plan Optimizer**: the loader's motion (skip, minimum, reduced motion,
+  hit timing, colors, aria-live) — Phase 2; only its card height and Stop
+  changed.
+- **Plan Optimizer**: sentence-case "Warning" in the shared callout — the page
+  no longer uses .gd-callout; the shared callout (guide, others) is left for
+  its own pass.
 
 ## Fixed
 

@@ -98,8 +98,12 @@ export function Progress({ host, R }: { host: Host; R: Run }) {
         <div><b data-opn="runs">0</b><span>retirements simulated</span></div>
         <div><b data-opn="best">—</b><span>{R.goal === "legacy" ? "best so far, left after tax" : "best so far"}</span></div>
       </div>
-      <div className="op-now" data-opn="now">Setting up every combination…</div>
-      <Button variant="quiet" size="inline-xs" className="absolute top-0 right-0 group-[.op-hit]/run:invisible" data-op="stop" data-host={host} onClick={() => stopOptimizer(host)}>Stop</Button>
+      {/* Stop sits with the running commentary, a full-size button (44px
+          under a finger), not a link in the corner. */}
+      <div className="flex items-start gap-4">
+        <div className="op-now min-w-0 flex-1" data-opn="now">Setting up every combination…</div>
+        <Button variant="outline" size="sm" className="shrink-0 group-[.op-hit]/run:invisible" data-op="stop" data-host={host} onClick={() => stopOptimizer(host)}>Stop</Button>
+      </div>
     </div>
   );
 }
