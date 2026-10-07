@@ -82,10 +82,11 @@ export const CARD_ALT: Partial<Record<Slug, string>> = {
 };
 
 /** Pages laid out in one column (the rest put inputs beside results). */
-// The homepage, Advanced, Stages and the Drawdown Simulator (with its
-// strategy pages) lay out their own columns (tools/basic/Basic.tsx,
-// tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx).
-const SOLO = new Set<string>(["home", "advanced", "stages", "tools", "guide", "about", "budget", "debt", "compare"]);
+// The homepage, Advanced, Stages, the Drawdown Simulator (with its strategy
+// pages) and Income Tax lay out their own columns (tools/basic/Basic.tsx,
+// tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx,
+// tools/tax/Tax.tsx).
+const SOLO = new Set<string>(["home", "advanced", "stages", "incometax", "tools", "guide", "about", "budget", "debt", "compare"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug) || TOOL_SUB[slug] === "drawdown";
 }

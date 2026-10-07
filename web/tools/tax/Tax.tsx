@@ -12,7 +12,8 @@ import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/componen
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
-import { Figure, Segmented } from "@/components/common/Readout";
+import { Segmented } from "@/components/common/Readout";
+import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
 import { FED_STD, NIIT, bracketRoom } from "@/lib/engine/typed";
 import { DASH, groupDigits, money, pctStr } from "@/lib/format";
@@ -26,6 +27,9 @@ import { SERIES, baseColor, hatchClass, hatched, svgPaint } from "@/lib/hues";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HatchDefs } from "@/components/charts/HatchDefs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDownIcon, CircleAlertIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal };
 const BKT_COLORS: string[] = [SERIES.rose, SERIES.teal, SERIES.sky, SERIES.lavender, SERIES.gray, hatched(SERIES.gray)]; // trad, roth, brok, ss, pension, other
@@ -229,104 +233,154 @@ export function Tax() {
     }
   }
 
-  return (
-    <>
-      <aside id="asideTax">
-        <Card>
-          <CardHeader><CardTitle>Your situation</CardTitle><CardAction>
-              <Segmented id="segTxMode" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
-            </CardAction></CardHeader>
-          <CardContent>
-            <div id="txGrossWrap" className={split ? "two bottomalign" : undefined} hidden={ret}>
-              <MoneyField id="txGross" labelId="txGrossLabel" label={split ? "Your gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
-              <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label="Spouse's gross income" value={s.gross2} onValueChange={set("gross2")} />
-            </div>
-            <div className="derived txtotal" id="txGrossTotalWrap" hidden={!split}>
-              <div><span>Household gross income</span><span className="num" id="txGrossTotalShow">{split ? money(R.gross) : ""}</span></div>
-            </div>
+  // The answer's tone: amber, unless it has gone below zero (pre-tax savings
+  // larger than what's left after tax), which reads as a loss with a glyph
+  // and a word, never as the answer.
+  const shownNet = ret ? R.net : s.view === "take" ? R.net : R.gross - R.total;
+  const negative = shownNet < 0;
+  const empty = !(R.gross > 0);
+  // With no income yet there's no answer to mark, so the $0 stays in Text.
+  const tone = negative ? "loss" : empty ? "text" : "answer";
+  // Pre-tax savings can't be more than the income they come out of.
+  const preOver = inp.pre > 0 && inp.pre > R.gross;
+  // In the Net pay view the bars and donut show take-home pay; say how the
+  // two relate, with the figures already on the page.
+  const reconcile = !ret && s.view !== "take" && R.pre > 0 && !empty;
 
-            <div id="txRetSources" hidden={!ret}>
-              <MoneyField id="txTrad" label={<Tipped text="Traditional 401(k) / IRA withdrawal" k="bkttrad" />} value={s.trad} onValueChange={set("trad")} />
-              <MoneyField id="txRoth" label={<Tipped text="Roth withdrawal" k="bktroth" />} value={s.roth} onValueChange={set("roth")} />
-              <div className="two bottomalign">
-                <MoneyField id="txBrok" label={<Tipped text="Brokerage" k="bktbrok" />} value={s.brok} onValueChange={set("brok")} />
-                <NumberField id="txGainPct" label={<Tipped text="Gain portion" k="bktgain" />} unit="%" step={5} max={100} value={s.gainPct} onValueChange={set("gainPct")} />
+  return (
+    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+        {/* Phones and narrow screens: the answer leads, and stays under the
+            tab rail while the inputs are on screen. */}
+        <PinnedReading tone={tone} main={{ label: head.netLabel, value: head.net }} side={{ label: "Per month", value: head.month }} />
+
+        <aside id="asideTax" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          <Card>
+            <CardHeader>
+              <CardTitle>Your situation</CardTitle>
+              <CardDescription>A year of pay, or a year of withdrawals in retirement.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4">
+                <Segmented id="segTxMode" size="fill" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
               </div>
-              <MoneyField id="txSS" label={<Tipped text="Social Security benefits" k="bktss" />} value={s.ss} onValueChange={set("ss")} />
-              <div className="two bottomalign">
-                <MoneyField id="txPension" label={<Tipped text="Pension / annuity" k="bktpen" />} value={s.pension} onValueChange={set("pension")} />
-                <SelectField id="txPenType" label="Payer" value={s.penType} onChange={set("penType")}>
-                  <option value="priv">Private employer</option>
-                  <option value="pub">Government / public</option>
+
+              <GroupHead first>Income</GroupHead>
+              <div id="txGrossWrap" className={split ? "two bottomalign max-sm:grid-cols-2" : undefined} hidden={ret}>
+                <MoneyField id="txGross" labelId="txGrossLabel" label={split ? "Your gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
+                <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label="Spouse's gross income" value={s.gross2} onValueChange={set("gross2")} />
+              </div>
+              <div className="derived txtotal" id="txGrossTotalWrap" hidden={!split}>
+                <div><span>Household gross income</span><span className="num" id="txGrossTotalShow">{split ? money(R.gross) : ""}</span></div>
+              </div>
+
+              <div id="txRetSources" hidden={!ret}>
+                <div className="two bottomalign max-sm:grid-cols-2">
+                  <MoneyField id="txTrad" label={<Tipped text="Traditional 401(k) / IRA withdrawal" k="bkttrad" />} value={s.trad} onValueChange={set("trad")} />
+                  <MoneyField id="txRoth" label={<Tipped text="Roth withdrawal" k="bktroth" />} value={s.roth} onValueChange={set("roth")} />
+                </div>
+                <div className="two bottomalign max-sm:grid-cols-2">
+                  <MoneyField id="txBrok" label={<Tipped text="Brokerage" k="bktbrok" />} value={s.brok} onValueChange={set("brok")} />
+                  <NumberField id="txGainPct" label={<Tipped text="Gain portion" k="bktgain" />} unit="%" step={5} max={100} value={s.gainPct} onValueChange={set("gainPct")} />
+                </div>
+                <div className="two bottomalign max-sm:grid-cols-2">
+                  <MoneyField id="txSS" label={<Tipped text="Social Security benefits" k="bktss" />} value={s.ss} onValueChange={set("ss")} />
+                  <MoneyField id="txOther" label={<Tipped text="Other ordinary income" k="bktother" />} value={s.other} onValueChange={set("other")} />
+                </div>
+                <div className="two bottomalign">
+                  <MoneyField id="txPension" label={<Tipped text="Pension / annuity" k="bktpen" />} value={s.pension} onValueChange={set("pension")} />
+                  <SelectField id="txPenType" label="Payer" value={s.penType} onChange={set("penType")}>
+                    <option value="priv">Private employer</option>
+                    <option value="pub">Government / public</option>
+                  </SelectField>
+                </div>
+                <div className="derived txtotal">
+                  <div><span>Gross retirement income</span><span className="num" id="txRetGross">{ret ? money(R.gross) : ""}</span></div>
+                </div>
+              </div>
+
+              <GroupHead>Your return</GroupHead>
+              {/* Two-up where the answers are short; the selects take the
+                  full width on a phone, where half would cut their text. */}
+              <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                <SelectField id="txStatus" label="Filing status" value={s.status}
+                  // "Both spouses" only means anything on a joint return.
+                  onChange={(v) => setState((c) => ({ ...c, status: v, seniors: v !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
+                  <option value="s">Single</option>
+                  <option value="m">Married filing jointly</option>
+                </SelectField>
+                <SelectField id="txSeniors" wrapId="txSeniorWrap" hidden={!ret} label={<Tipped text="Age 65 or older" k="senior" />} value={s.seniors} onChange={set("seniors")}>
+                  <option value="0">No</option>
+                  <option value="1">{joint ? "One spouse" : "Yes"}</option>
+                  <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
+                </SelectField>
+                <SelectField id="txState" className={ret ? "col-span-full" : undefined} label="State" value={s.state} onChange={set("state")}>
+                  {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+                </SelectField>
+                <MoneyField id="txPre" label={<>Pre-tax deductions<TipDot k={ret ? "txpreret" : "txpre"} /></>} value={s.pre} onValueChange={set("pre")}
+                  aria-invalid={preOver || undefined} aria-describedby={preOver ? "txPreWarn" : undefined} />
+                <SelectField id="txDedType" label={<Tipped text="Deduction" k="deduction" />} value={s.dedType} onChange={set("dedType")}>
+                  <option value="std">Standard deduction</option>
+                  <option value="item">Itemized</option>
                 </SelectField>
               </div>
-              <MoneyField id="txOther" label={<Tipped text="Other ordinary income" k="bktother" />} value={s.other} onValueChange={set("other")} />
-              <div className="derived txtotal">
-                <div><span>Gross retirement income</span><span className="num" id="txRetGross">{ret ? money(R.gross) : ""}</span></div>
+              <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" hidden={!preOver}>
+                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span id="txPreWarn" role="alert">{preOver ? "Pre-tax deductions are more than your gross " + (ret ? "retirement income" : "income") + " (" + money(R.gross) + ")." : ""}</span>
               </div>
-            </div>
+              <Field id="txItem" wrapId="txItemWrap" hidden={s.dedType !== "item"} label="Itemized total">
+                <Affixed prefix="$"><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></Affixed>
+                <div className="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
+              </Field>
 
-            <SelectField id="txStatus" label="Filing status" value={s.status}
-              // "Both spouses" only means anything on a joint return.
-              onChange={(v) => setState((c) => ({ ...c, status: v, seniors: v !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
-              <option value="s">Single</option>
-              <option value="m">Married filing jointly</option>
-            </SelectField>
-            <SelectField id="txSeniors" wrapId="txSeniorWrap" hidden={!ret} label={<Tipped text="Age 65 or older" k="senior" />} value={s.seniors} onChange={set("seniors")}>
-              <option value="0">No</option>
-              <option value="1">{joint ? "One spouse" : "Yes"}</option>
-              <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
-            </SelectField>
-            <SelectField id="txState" label="State" value={s.state} onChange={set("state")}>
-              {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-            </SelectField>
-            <MoneyField id="txPre" label={<>Pre-tax deductions<TipDot k={ret ? "txpreret" : "txpre"} /></>} value={s.pre} onValueChange={set("pre")} />
-            <SelectField id="txDedType" label={<Tipped text="Deduction" k="deduction" />} value={s.dedType} onChange={set("dedType")}>
-              <option value="std">Standard deduction</option>
-              <option value="item">Itemized</option>
-            </SelectField>
-            <Field id="txItem" wrapId="txItemWrap" hidden={s.dedType !== "item"} label="Itemized total">
-              <Affixed prefix="$"><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></Affixed>
-              <div className="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>
-            </Field>
-            <div className="derived">
-              <div id="txSSRow" hidden={derived.ssRow == null}><span><Tipped text="Taxable Social Security" k="ss86" /></span><span className="num" id="txSSShow">{derived.ssRow ?? DASH}</span></div>
-              <div><span id="txStdLabel">{derived.stdLabel}</span><span className="num" id="txStdShow">{derived.std}</span></div>
-              <div><span>Taxable income</span><span className="num" id="txTaxable">{money(R.fedTaxable)}</span></div>
-              <div><span id="txMarginalLabel"><Tipped text="Marginal federal rate" k="marginal" /></span><span className="num" id="txMarginal">{derived.marginal}</span></div>
-              <div><span id="txRoomLabel">{derived.roomLabel}</span><span className="num" id="txRoomShow">{derived.room}</span></div>
-              <div id="txZeroRoomRow" hidden={derived.zeroRoom == null}><span>Room in the 0% gains rate</span><span className="num" id="txZeroRoomShow">{derived.zeroRoom ?? ""}</span></div>
-            </div>
-          </CardContent>
-        </Card>
-      </aside>
+              <GroupHead>How the federal tax was figured</GroupHead>
+              <div className="derived mt-0 border-t-0 pt-0">
+                <div id="txSSRow" hidden={derived.ssRow == null}><span><Tipped text="Taxable Social Security" k="ss86" /></span><span className="num" id="txSSShow">{derived.ssRow ?? DASH}</span></div>
+                <div><span id="txStdLabel">{derived.stdLabel}</span><span className="num" id="txStdShow">{derived.std}</span></div>
+                <div><span>Taxable income</span><span className="num" id="txTaxable">{money(R.fedTaxable)}</span></div>
+                <div><span id="txMarginalLabel"><Tipped text="Marginal federal rate" k="marginal" /></span><span className="num" id="txMarginal">{derived.marginal}</span></div>
+                <div><span id="txRoomLabel">{derived.roomLabel}</span><span className="num" id="txRoomShow">{derived.room}</span></div>
+                <div id="txZeroRoomRow" hidden={derived.zeroRoom == null}><span>Room in the 0% gains rate</span><span className="num" id="txZeroRoomShow">{derived.zeroRoom ?? ""}</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
 
-      <div className="stack" id="tab-tax">
-        <Card size="flush">
-          <div className="readout">
-            <div className="txhead">
-              <Segmented id="segTxView" attr="data-view" options={[["net", "Net pay"], ["take", "Take-home pay"]] as const} value={s.view} onChange={set("view")} hidden={ret} />{" "}
-              <span className="txmodelbl" id="txRetLbl" hidden={!ret}>Retirement income</span>{" "}
-              <Badge variant="outline">2026 rates</Badge>
-            </div>
-            <div className="headline">
-              <Figure label={head.netLabel} labelId="txNetLabel" id="txNet" className="v gold" value={head.net} noteId="txNetNote" note={head.netNote} />
-              <Figure label="Per month" id="txMonth" value={head.month} noteId="txMonthNote" note={head.monthNote} />
-              <Figure label={head.thirdLabel} labelId="txThirdLabel" id="txBiweek" value={head.third} noteId="txThirdNote" note={head.thirdNote} />
-            </div>
+      <div className="stack min-w-0 lg:col-span-2" id="tab-tax">
+        <Card size="flush" className="min-w-0">
+          {/* Which pay the reading shows, in a quiet toolbar above it. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
+            <Segmented id="segTxView" attr="data-view" options={[["net", "Net pay"], ["take", "Take-home pay"]] as const} value={s.view} onChange={set("view")} hidden={ret} />
+            <span className="text-label text-muted-foreground" id="txRetLbl" hidden={!ret}>Retirement income</span>
+            <span className="ml-auto"><Badge variant="outline">2026 rates</Badge></span>
           </div>
-          <CardContent>
-            <div className="grid2">
-              <div id="txBars" onMouseLeave={leave}
-                onMouseOver={(e) => {
-                  const b = (e.target as Element).closest(".bar[data-idx]");
-                  if (b) activate(+(b.getAttribute("data-idx") ?? 0));
-                }}>
-                {bars.map((b, i) => (
-                  <ShareBar key={b.label} label={b.label} value={b.v} share={b.share} color={b.c} idx={i} dim={active != null && active !== i} />
-                ))}
-              </div>
-              <div className="piewrap">
+          <HeroReading tone={tone}
+            hero={{
+              label: head.netLabel, labelId: "txNetLabel", id: "txNet", value: head.net, noteId: "txNetNote",
+              note: negative ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <CircleAlertIcon className="size-3.5 shrink-0 text-destructive" aria-hidden="true" />
+                  <span><b className="font-semibold text-foreground">Below zero.</b> {head.netNote}</span>
+                </span>
+              ) : head.netNote,
+            }}
+            figures={[
+              { label: "Per month", id: "txMonth", value: head.month, noteId: "txMonthNote", note: head.monthNote },
+              { label: head.thirdLabel, labelId: "txThirdLabel", id: "txBiweek", value: head.third, noteId: "txThirdNote", note: head.thirdNote },
+            ]} />
+
+          <div className="border-t border-border px-5.5 py-5 max-sm:px-4">
+            {reconcile ? (
+              <p className="mt-0 mb-4 max-w-copy text-note text-muted-foreground tabular-nums" id="txReconcile">
+                Net pay counts your {money(R.pre)} of pre-tax savings as yours. The picture shows take-home
+                pay, {money(R.net)}: what reaches your paycheck once those savings are set aside.
+              </p>
+            ) : null}
+            {/* The donut is the picture and the bars are its legend; hovering
+                either lights the same part in both. */}
+            <div className="flex flex-col items-center gap-6 sm:flex-row" hidden={empty}>
+              <div className="w-full max-w-55 shrink-0 *:block *:h-auto *:w-full">
                 <svg id="txPie" viewBox="0 0 220 220" role="img" aria-label="Share of income by tax and take-home"
                   onMouseOver={(e) => {
                     const c = (e.target as Element).closest("circle[data-idx]");
@@ -337,23 +391,49 @@ export function Tax() {
                   <Donut parts={parts} center={pctStr(R.effTotal, 1)} active={active} />
                 </svg>
               </div>
+              <div id="txBars" className="w-full min-w-0 flex-1" onMouseLeave={leave}
+                onMouseOver={(e) => {
+                  const b = (e.target as Element).closest(".bar[data-idx]");
+                  if (b) activate(+(b.getAttribute("data-idx") ?? 0));
+                }}>
+                {bars.map((b, i) => (
+                  <ShareBar key={b.label} label={b.label} value={b.v} share={b.share} color={b.c} idx={i} dim={active != null && active !== i} />
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Tax breakdown</CardTitle><CardAction><CsvButton table={tableRef} label="Tax breakdown" /></CardAction></CardHeader>
-          <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
-            <table id="txTable" ref={tableRef}>
-              <thead><tr><th>Item</th><th>Amount</th><th><Tipped text="Effective rate" k="effrate" /></th><th>Share of income</th></tr></thead>
-              <tbody>{rows}</tbody>
-            </table>
+            {empty ? (
+              <p className="m-0 text-note text-muted-foreground">{ret ? "Enter a withdrawal to see where each dollar goes." : "Enter your income to see where each dollar goes."}</p>
+            ) : null}
           </div>
         </Card>
 
+        <Card id="txGainPanel" hidden={!(ret && R.gain > 0)}>
+          <CardHeader><CardTitle>Your capital gain, and which band it landed in<TipDot k="ltcgstack" /></CardTitle></CardHeader>
+          <CardContent>
+            <div id="txStackWrap">
+              <svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"
+                dangerouslySetInnerHTML={{ __html: ret && R.gain > 0 ? stackChartSvg(R) : "" }} />
+            </div>
+            <div id="txStackLegend" className="stacklegend">
+              {ret && R.gain > 0 ? (
+                <>
+                  <span><i className="bg-series-gray"></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
+                  {(R.ltcgBands as { amount: number; rate: number }[]).map((b, i) => b.amount > 0 ? (
+                    <span key={i}><i className="bg-(--swatch)" style={{ "--swatch": LTCG_COLORS[i] } as React.CSSProperties}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
+                  ) : null)}
+                </>
+              ) : null}
+            </div>
+          </CardContent>
+          <div className="mcnote" id="txGainNote" dangerouslySetInnerHTML={{ __html: gainNote }} />
+        </Card>
+
         <Card id="txBucketPanel" hidden={!ret}>
-          <CardHeader><CardTitle>Where each dollar came from, and how it was taxed</CardTitle><CardAction><CsvButton table={bucketRef} label="Where each dollar came from, and how it was taxed" /></CardAction></CardHeader>
+          <CardHeader>
+            <CardTitle>Where each dollar came from, and how it was taxed</CardTitle>
+            <CardDescription>Each track is what you took from that source; the filled part went to tax.</CardDescription>
+            <CardAction><CsvButton table={bucketRef} label="Where each dollar came from, and how it was taxed" /></CardAction>
+          </CardHeader>
           <CardContent>
             <div id="txBucketBars">
               {live.length ? live.map((o) => {
@@ -392,25 +472,16 @@ export function Tax() {
           <div className="mcnote" id="txBucketNote" dangerouslySetInnerHTML={{ __html: bucketNote }} />
         </Card>
 
-        <Card id="txGainPanel" hidden={!(ret && R.gain > 0)}>
-          <CardHeader><CardTitle>Your capital gain, and which band it landed in<TipDot k="ltcgstack" /></CardTitle></CardHeader>
-          <CardContent>
-            <div id="txStackWrap">
-              <svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"
-                dangerouslySetInnerHTML={{ __html: ret && R.gain > 0 ? stackChartSvg(R) : "" }} />
-            </div>
-            <div id="txStackLegend" className="stacklegend">
-              {ret && R.gain > 0 ? (
-                <>
-                  <span><i className="bg-series-gray"></i>Ordinary taxable income <b>{money(R.ordTaxable)}</b></span>
-                  {(R.ltcgBands as { amount: number; rate: number }[]).map((b, i) => b.amount > 0 ? (
-                    <span key={i}><i className="bg-(--swatch)" style={{ "--swatch": LTCG_COLORS[i] } as React.CSSProperties}></i>Gain taxed at {pctStr(b.rate, 0)} <b>{money(b.amount)}</b></span>
-                  ) : null)}
-                </>
-              ) : null}
-            </div>
-          </CardContent>
-          <div className="mcnote" id="txGainNote" dangerouslySetInnerHTML={{ __html: gainNote }} />
+        <Card>
+          <CardHeader><CardTitle>Tax breakdown</CardTitle><CardAction><CsvButton table={tableRef} label="Tax breakdown" /></CardAction></CardHeader>
+          {/* On a phone the repeated Share column steps out and the rest fit,
+              so there's nothing to swipe. */}
+          <div className="scroll">
+            <table id="txTable" ref={tableRef}>
+              <thead><tr><th>Item</th><th>Amount</th><th><Tipped text="Effective rate" k="effrate" /></th><th>Share of income</th></tr></thead>
+              <tbody>{rows}</tbody>
+            </table>
+          </div>
         </Card>
 
         <Card>
@@ -430,20 +501,34 @@ export function Tax() {
           </div>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>State rules, and what went into the figure above</CardTitle><CardDescription id="txStateRuleName">{STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? ""}</CardDescription><CardAction><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></CardAction></CardHeader>
-          <div id="txStateRuleWrap">
-            <table id="txStateRules" ref={rulesRef}>
-              <tbody>
-                {(stateRuleRows(s.state, s.status) as [string, string][]).map(([k, v]) => (
-                  <tr key={k}><td className="whitespace-nowrap font-semibold">{k}</td><td>{v}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* The state's rules fold behind their title; what the figures leave
+            out stays in view under them. */}
+        <Collapsible className="min-w-0" render={<Card />}>
+          <CardHeader>
+            <CardTitle><CollapsibleTrigger>State rules, and what went into the figure above<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+            <CardDescription id="txStateRuleName">{STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? ""}</CardDescription>
+            <CardAction><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></CardAction>
+          </CardHeader>
+          <CollapsibleContent keepMounted>
+            <div id="txStateRuleWrap">
+              <table id="txStateRules" ref={rulesRef}>
+                <tbody>
+                  {(stateRuleRows(s.state, s.status) as [string, string][]).map(([k, v]) => (
+                    <tr key={k}><td className="whitespace-nowrap font-semibold">{k}</td><td>{v}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CollapsibleContent>
           <div className="mcnote" id="txStateGaps"><b>Not included in the figures above.</b> {stateGaps(s.state)}</div>
-        </Card>
+        </Collapsible>
       </div>
-    </>
+    </div>
   );
+}
+
+/** A heading over one group of the inputs, on a rule after the first (as on
+    Advanced). */
+function GroupHead({ first, children }: { first?: boolean; children: React.ReactNode }) {
+  return <h3 className={cn("m-0 mb-3 text-sm font-semibold", !first && "mt-1 border-t border-border pt-4")}>{children}</h3>;
 }

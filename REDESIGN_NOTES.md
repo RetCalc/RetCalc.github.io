@@ -260,6 +260,33 @@ written into DESIGN.md unless it says otherwise.
   Gain/Loss 15% tints with check/cross glyphs and a legend; the CAPE "today"
   line and the showdown's comfort line are guide-colored, not amber.
 
+- **Income Tax (/incometax): Basic's thirds.** Inputs a third, results two
+  thirds from 1024px; incometax joins SOLO (lib/site.ts). 7 normal / 14
+  retirement fields fit a third as Advanced's 22 do; the column is sticky
+  with its own scroll from 1024px, static below. Inputs card "Your
+  situation": the mode switch on its own full-width row, then Income
+  (salaries, or the withdrawals two-up: traditional | Roth, brokerage | gain,
+  Social Security | other, pension | payer), Your return (status | state, or
+  status | 65+ with state full width; pre-tax | deduction; selects one column
+  on phones so their text isn't cut), and "How the federal tax was figured"
+  over the derived rows. Results: one reading card with a quiet toolbar (Net
+  pay / Take-home pay, or the mode label, and the 2026 rates badge), the hero
+  (net / take-home / income after tax, amber; Loss with an alert glyph and
+  "Below zero." when negative; Text when there's no income), Per month and
+  Every two weeks (or Effective tax rate) at Display size; then one band, the
+  donut as the picture with the bars as its legend centered beside it. In the
+  Net pay view with pre-tax savings, a sentence above the picture reconciles
+  Net pay with the Take-home pay bar using figures already shown. With no
+  income the band gives way to a one-line prompt (#txPie stays in the DOM).
+  In retirement mode the capital-gain band chart follows the reading, then
+  the per-source card (with a caption for its tracks), the breakdown, the
+  brackets (open), and State rules folded with the "Not included" note in
+  view. Phones get a PinnedReading (the answer, per month); the breakdown's
+  Share of income steps out (the CSV keeps it) so it fits without a swipe,
+  and the brackets pin Tax on the right. The gain chart's two edge labels
+  drop to a second row whenever they would touch, and its figures are
+  tabular Plex.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -310,6 +337,22 @@ written into DESIGN.md unless it says otherwise.
   tour and e2e steps reach those fields directly; group heads instead.
 - **Drawdown**: secondaries side by side on phones — "Ran out in 50 of 835
   retirements" leaves no room at 390px; they stack, as the component allows.
+
+- **Income Tax**: clear the readout to dashes with no income or a negative
+  take-home — figure text (an e2e case pins $0); the $0 is shown in Text and
+  the picture folds to a prompt, the negative in Loss with a glyph and word.
+- **Income Tax**: refuse or change the cap when pre-tax deductions exceed
+  gross — engine behavior; the field carries the error instead.
+- **Income Tax**: fold Federal brackets — the help tour's third part focuses
+  #txBrackets, which a closed fold would hide; kept open.
+- **Income Tax**: reword the "Not included" and state-rule texts — disclosure
+  text; kept, the rules folded and the note visible.
+- **Income Tax**: "All taxes" as a third secondary, and leading retirement
+  mode with the 0% gains room — a figure restated in a new place; the gain
+  chart moves up under the reading instead.
+- **Income Tax**: dropping the Net pay / Take-home pay switch, or changing
+  which figure a bar shows — owner's figures-presentation call; a
+  reconciling sentence instead.
 
 ## Fixed
 
