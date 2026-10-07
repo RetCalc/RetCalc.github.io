@@ -398,7 +398,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <Segmented id="segRCTab" size="chart" attr="data-rct" options={[["plan", "Converting"], ["base", "Doing nothing"]] as const} value={tableView} onChange={setTableView} />
                 {widowRows ? (
                   <span className="inline-flex items-center gap-2 text-label text-muted-foreground" id="rcTableKey">
-                    <i className="inline-block h-3 w-5 border-t border-input bg-muted" aria-hidden="true" />
+                    <i className="inline-block h-3 w-5 border-t border-input bg-muted dark:bg-border" aria-hidden="true" />
                     Shaded rows: after the survivor transition
                   </span>
                 ) : null}

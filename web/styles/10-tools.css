@@ -111,6 +111,9 @@
 /* The years after the survivor starts filing single are shaded (the key sits
    above the table), with one strong rule where they begin. */
 tr.rc-widow > td{background:var(--panel-2)}
+/* Raised barely shows on the dark Surface: the dark theme shades with Rule
+   (text on it stays 10:1, Muted 5.2:1). The sticky first cell on phones too. */
+[data-theme="dark"] tr.rc-widow > td,[data-theme="dark"] .scroll tr.rc-widow > td:first-child{background:var(--ds-rule)}
 tr:not(.rc-widow) + tr.rc-widow > td{box-shadow:inset 0 1px 0 var(--ds-rule-strong)}
 /* ---------- early retirement bridge ---------- */
 #brCompare td:first-child{font-family:var(--sans);letter-spacing:0;min-width:210px}

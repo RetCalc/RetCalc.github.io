@@ -254,6 +254,12 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
                 <tbody>{R && sel ? <CompareRows R={R} sel={sel} onPick={setSelKey} /> : null}</tbody>
               </table>
             </div>
+            {/* The Holds column's marks, named: the same rating as HoldCell. */}
+            <p className="hint m-0 max-w-copy px-4.5 pt-2.5 pb-1.5" id="brHoldKey" hidden={!R}>
+              In Holds to 59½, <CircleCheckIcon className="relative -top-px inline size-3.5 align-middle text-gain" role="img" aria-label="a check" /> marks 95% or more
+              and <CircleXIcon className="relative -top-px inline size-3.5 align-middle text-destructive" role="img" aria-label="a cross" /> under 80%; between, no mark.
+              Pay the 10% penalty isn&apos;t marked: for it only running short counts.
+            </p>
             <div className="hint max-w-copy px-4.5 pt-0 pb-3.5" id="brCompareNote">
               {R ? "Success rates " + (R.mc ? "come from " + BR_TRIALS + " random sequences of historical years" : "come from every start year since " + HIST_START) +
                 ". Tax, penalties, premiums and the balance at 59½ are the steady path at the long-run average return of " +
