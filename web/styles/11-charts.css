@@ -86,10 +86,6 @@ svg{display:block;width:100%;height:auto}
 
   nav[role=tablist]{overflow-x:auto}
   nav[role=tablist] button{margin-right:14px;font-size:14px;white-space:nowrap}
-  .toolcards{margin:20px auto}
-  .toolcard{padding:16px 16px;gap:14px}
-  .toolcard-icon{width:48px;height:48px;padding:8px}
-  .toolcard-name{font-size:14px}
   .stagecard{padding:12px}
   #stageTable{min-width:640px}
   #xYearTable{min-width:660px}
@@ -222,7 +218,6 @@ html.pwa .popup-overlay{
   .tipdot{position:relative;width:17px;height:17px}
   .tipdot::after{content:"";position:absolute;top:50%;left:50%;
     width:44px;height:44px;transform:translate(-50%,-50%)}
-  .toolcard:hover::before{transform:scaleY(0)}
 }
 /* Home-screen web app runs under the clock and battery, so reserve that space.
    The horizontal insets are folded into --gl/--gr at the top of the sheet, so

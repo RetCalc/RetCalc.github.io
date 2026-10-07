@@ -115,48 +115,59 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
 
 /* ---------- tool cards: a rail, not a lift ---------- */
 /* Grouped into three short sections, each a heading over its own grid, so
-   twelve tools scan as three kinds of question. */
-.toolcards{max-width:640px;margin:30px auto;padding:0 var(--gr) 0 var(--gl)}
+   thirteen tools scan as three kinds of question. The picker runs the full
+   width of main, the same edge as the household bar and the article. */
+.toolcards{margin:6px 0 10px}
 .toolgroup + .toolgroup{margin-top:30px}
 .toolgroup-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 12px 2px;
   font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
 .toolgroup-h em{font-style:normal;font-weight:400;letter-spacing:0;text-transform:none;font-size:13px;color:var(--dimmer)}
-.toolgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
-/* Eight cards in one column ran past the fold on a laptop, which left the
-   last two tools effectively hidden on the landing view. Two columns fit the
-   whole set on screen at once. */
+.toolgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+/* Two columns from 900px; cards in a row share one height, and a group's
+   odd last card takes the whole row rather than leaving half of it empty. */
 @media (min-width:900px){
-  .toolcards{max-width:1060px}
   .toolgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .toolgrid > .toolcard:last-child:nth-child(odd){grid-column:1 / -1}
 }
 /* Flat: on hover (and keyboard focus) the card steps up a tone and its edge
-   strengthens. Nothing lifts or glows; the icon acts out its tool. */
-.toolcard{position:relative;display:flex;align-items:center;gap:18px;
-  padding:20px 22px;background:var(--panel);border:1px solid var(--line);
-  border-radius:var(--r-panel);cursor:pointer;
+   strengthens. Nothing lifts or glows; the icon acts out its tool. The icon,
+   name and arrow share the top row; the description gets the card's whole
+   width below, so it wraps to a line or two rather than a narrow column. */
+.toolcard{position:relative;display:flex;flex-direction:column;gap:10px;
+  padding:16px 20px 18px;background:var(--panel);border:1px solid var(--line);
+  border-radius:var(--r-panel);cursor:pointer;color:inherit;
   text-decoration:none;overflow:hidden;
   transition:border-color .16s ease,background-color .16s ease}
 .toolcard:hover,.toolcard:focus-visible{border-color:var(--ds-rule-strong);background:var(--panel-2)}
+.toolcard-top{display:flex;align-items:center;gap:14px;min-width:0}
 /* The icon sits on a flat Raised tile with a rule edge, drawn in its
-   category's series color (--tool-hue, set per tool by ToolIconTile). */
+   category's series color (--tool-hue, set per tool by ToolIconTile). The
+   tool header uses the same tile (.toolhead-icon sets its own size). */
 .toolcard-icon{flex:none;width:54px;height:54px;padding:9px;color:var(--tool-hue,var(--text));
   display:flex;align-items:center;justify-content:center;border-radius:var(--r-card);
   background:var(--panel-2);border:1px solid var(--line);
   transition:border-color .16s ease}
+.toolcard .toolcard-icon{width:42px;height:42px;padding:7px}
 .toolcard:hover .toolcard-icon,.toolcard:focus-visible .toolcard-icon{border-color:var(--ds-rule-strong)}
 .toolcard-icon svg{width:100%;height:100%}
-.toolcard-body{flex:1 1 auto;min-width:0}
-.toolcard-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.toolcard-name{flex:1 1 auto;min-width:0;font-size:15px;font-weight:600;line-height:1.35;color:var(--text)}
 .toolcard-desc{font-size:13px;color:var(--dim);line-height:1.5}
 /* The go-arrow is the logo's own arrow (the "›" in the markup is hidden). It
-   rests dim, and on hover turns to the text color and steps forward. */
-.toolcard-arrow{flex:none;width:38px;height:10px;font-size:0;line-height:0;position:relative}
+   rests dim, and on hover or focus turns to the text color and steps forward. */
+.toolcard-arrow{flex:none;align-self:center;width:38px;height:10px;font-size:0;line-height:0;position:relative}
 .toolcard-arrow::before{content:"";position:absolute;right:7px;top:0;width:30px;height:8px;margin-top:1px;
   background:var(--dimmer);opacity:.7;
   -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
   mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M2 5H33' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M39 5L32 1.5L33.5 5L32 8.5Z M4 5L1 1.5H4L8 5Z M4 5L1 8.5H4L8 5Z'/%3E%3C/svg%3E") center/contain no-repeat;
-  transition:transform .28s cubic-bezier(.2,.7,.3,1),background .2s ease,opacity .2s ease}
+  transition:transform .2s cubic-bezier(.2,.7,.3,1),background .2s ease,opacity .2s ease}
 .toolcard:hover .toolcard-arrow::before,.toolcard:focus-visible .toolcard-arrow::before{transform:translateX(7px);background:var(--text);opacity:1}
+@media (max-width:640px){
+  .toolcard{padding:14px 14px 16px;gap:8px}
+  .toolcard-top{gap:12px}
+  .toolcard .toolcard-icon{width:36px;height:36px;padding:6px}
+  .toolcard-arrow{width:30px}
+  .toolcard-arrow::before{right:2px;width:24px}
+}
 
 /* ---------- pane transitions ----------
    Navigation swaps panes by toggling [hidden], which is instantaneous and

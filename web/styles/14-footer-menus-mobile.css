@@ -146,8 +146,9 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
    A tap leaves :hover set until the next touch, so on a phone the cards
    stayed raised with their edge lit after you'd moved on. */
 @media (hover:none){
-  .toolcard:hover{transform:none;box-shadow:var(--lift-1);border-color:var(--line);background:var(--panel)}
-  .toolcard:hover .toolcard-icon{transform:none;box-shadow:none}
+  .toolcard:hover{border-color:var(--line);background:var(--panel)}
+  .toolcard:hover .toolcard-icon{border-color:var(--line)}
+  .toolcard:hover .toolcard-arrow::before{transform:none;background:var(--dimmer);opacity:.7}
   .popup .popbtn:hover{transform:none}
 }
 

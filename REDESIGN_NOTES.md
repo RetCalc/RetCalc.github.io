@@ -704,8 +704,29 @@ written into DESIGN.md unless it says otherwise.
   sheet 55vh (was 62); folded keeps the way on (Back/Next for help, Back to
   guide on a trip) and drops a figure-only chip line.
 
+- **Tools (/tools): one full-width column, two-column card grid.** No
+  inputs, so no thirds; the picker now runs the full width of main, the
+  same edge as the household bar and the article (it was 1,060px inside
+  1,278). Two columns from 900px, not three: the groups hold 5/4/4 cards,
+  so three columns would leave orphans in every group; a group's odd last
+  card spans the row instead (Healthcare). Each card puts icon, name and
+  arrow on one row and the description at full width below: descriptions
+  went from 2-4 lines to 1-2 on desktop and from 3-7 to 2-4 on a phone
+  (cards 115-154px, were 176; page 2,800px, was 3,200). Trade-off: the
+  critique's ≤88px phone card needs one-line descriptions, which means
+  new copy (the descriptions are shared with tool headers and SEO; the
+  owner's call). A visible "Tools" header (set like a tool header) sits
+  after the household bar; the SEO h1 stays screen-reader only and the
+  visible title is aria-hidden so it isn't read twice.
+
 ## Skipped from critique
 
+- **Tools**: one-sentence descriptions ≤60 characters — new copy shared
+  with the tool headers and SEO (orchestrator call: layout instead).
+- **Tools**: a "Start here" row (Guide, Calculator) or adding 72(t), RMD
+  and strategy pages to the picker — navigation structure.
+- **Tools**: icon motion on focus/tap, ≤250ms beats, arrow-step parity in
+  the icon animations — Phase 2 (the card's arrow now steps on focus too).
 - **Advanced**: mark Time period 0 or negative as an error and dim the
   figures — deciding that those values are invalid changes what's computed
   and shown (the field is built `negative`); the owner decides the rule,
