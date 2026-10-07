@@ -25,7 +25,11 @@ function NativeSelect({
   return (
     <div
       className={cn(
-        "group/native-select relative w-full has-[select:disabled]:opacity-50",
+        "group/native-select relative w-full",
+        /* The joined scenario picker is disabled on pages without a tool
+           (Tools, About, Compare, 404) while its neighbours aren't; it keeps
+           their look there, so the toolbar reads the same on every page. */
+        variant !== "joined" && "has-[select:disabled]:opacity-50",
         className
       )}
       data-slot="native-select-wrapper"

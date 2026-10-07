@@ -29,16 +29,18 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
    Bow and arrow in Text, the bars in Rule with a Muted fill, the target's
    rings in Muted; the bullseye turns Signal Amber when it's hit and stays
    amber while the guide is finished. */
-.gd-prog-wrap{--gap:6px;--tail:30px;--goal:17px;--al:46px;--ah:12px;--gs:18px;
+/* --bow insets the bars by the bow's width, so the bow lines up with the
+   panel's padding and the title instead of overhanging into the padding. */
+.gd-prog-wrap{--gap:6px;--tail:30px;--goal:17px;--al:46px;--ah:12px;--gs:18px;--bow:21px;
   --fly:520ms;--ease:cubic-bezier(.2,.7,.3,1);
-  position:relative;margin-top:14px;padding-right:var(--tail)}
+  position:relative;margin-top:14px;padding-left:var(--bow);padding-right:var(--tail)}
 .gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--gap)}
-.gd-track{position:absolute;left:0;right:var(--tail);top:2.5px;height:0;pointer-events:none;
+.gd-track{position:absolute;left:var(--bow);right:var(--tail);top:2.5px;height:0;pointer-events:none;
   container-type:inline-size;--nock:27px;
   --x:calc((100cqw - 5 * var(--gap)) / 6 * var(--pos,0) + var(--ci,0) * var(--gap))}
 .gd-track.nocked{--x:var(--nock)}
 .gd-track.hit{--x:calc(100cqw + var(--goal) + 1px)}
-/* The bow sits in the card's left padding. Until the first answer the
+/* The bow sits in the wrap's left inset (--bow). Until the first answer the
    string is drawn back with the arrow nocked on it; after that it hangs
    straight, and twangs once on the release. */
 .gd-bow{position:absolute;top:0;left:-21px;width:20px;height:34px;transform:translateY(-50%)}
@@ -255,7 +257,7 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
   .gd-top-row{flex-wrap:nowrap}
   .gd-prog-wrap{margin-top:10px}
   .gd-seg span{display:none}
-  .gd-prog-wrap{--tail:26px;--goal:14px;--al:38px;--ah:10px;--gs:15px}
+  .gd-prog-wrap{--tail:26px;--goal:14px;--al:38px;--ah:10px;--gs:15px;--bow:16px}
   .gd-track{--nock:23px}
   .gd-bow{transform:translateY(-50%) scale(.75);transform-origin:100% 50%}
   .gd-card{padding:20px 18px 18px}

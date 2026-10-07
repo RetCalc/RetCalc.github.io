@@ -272,11 +272,14 @@ export function Mortgage() {
             <CardDescription>For a new loan or one you already have.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="max-w-sm">
+            {/* The switch takes the first of the two columns below; beside it,
+                what turning it on adds, so the row isn't half empty. */}
+            <div className="grid grid-cols-1 items-end gap-x-8 sm:grid-cols-2">
               <SelectField id="moExtrasOn" label={<Tipped text="Extra payments, recasting, or refinancing" k="moextras" />} value={s.extrasOn} onChange={set("extrasOn")}>
                 <option value="0">No, just the basics</option>
                 <option value="1">Yes, show these options</option>
               </SelectField>
+              <p className="m-0 mb-3.5 text-note text-muted-foreground max-sm:-mt-1.5">Paying extra each month or once, recasting after a lump sum, and refinancing, each with its before and after.</p>
             </div>
             {/* Each column: its inputs, then its answer, before against after.
                 From 640px the two answers line up on one row. */}

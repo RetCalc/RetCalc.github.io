@@ -378,7 +378,9 @@ export function Stages() {
             target={portToday} targetLabel={TARGET_LABEL} />
         </div>
 
-        <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2" hidden={!n}>
+        {/* Side by side from 1100px, stretched to one height so the shorter
+            card doesn't leave a hole under it. */}
+        <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2 wide:items-stretch" hidden={!n}>
           <Card>
             <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
             <CardContent id="msBodyS">

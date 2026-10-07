@@ -17,6 +17,7 @@ import type { ReactNode } from "react";
 import { BigValue } from "./BigValue";
 import { useNarrow } from "@/components/charts/useNarrow";
 import { cn } from "@/lib/utils";
+import { DASH } from "@/lib/format";
 
 export interface ReadingFigure {
   label: ReactNode;
@@ -60,18 +61,23 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
   children?: ReactNode;
 }) {
   const narrow = useNarrow();
+  // An empty reading (the hero a dash at the secondaries' size): its labels
+  // line up along the top instead of the secondaries centering on the hero.
+  const placeholder = !sized && hero.value === DASH;
   return (
     <div className={cn("px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5", !under && "wide:flex wide:items-start wide:gap-8", className)} data-readout>
       <div className={cn("min-w-0", !under && "wide:shrink-0")} data-pair>
-        <div className="mb-2.5 text-label text-muted-foreground" id={hero.labelId} data-k>{hero.label}</div>
-        <BigValue className={cn("leading-none font-medium tracking-tight whitespace-nowrap tabular-nums", TONE[tone])}
+        <div className={cn("text-label text-muted-foreground", !placeholder && "mb-2.5")} id={hero.labelId} data-k>{hero.label}</div>
+        {/* A placeholder dash takes the secondary figures' size and spacing,
+            so every dash in an empty reading looks alike and lines up. */}
+        <BigValue className={cn("font-medium tracking-tight whitespace-nowrap tabular-nums", placeholder ? "text-3xl leading-tight sm:text-display" : "leading-none", TONE[tone])}
           id={hero.id} text={hero.value} sized={sized} scale={narrow ? 1.5 : 2} />
         <div className="mt-2.5 min-h-4 text-label text-muted-foreground" id={hero.noteId}>{hero.note}</div>
         {children}
       </div>
       {figures.length ? (
         <div className={cn("mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4", under ? "sm:justify-between sm:gap-x-8"
-          : "wide:mt-0 wide:min-w-0 wide:flex-1 wide:items-center wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8")}>
+          : "wide:mt-0 wide:min-w-0 wide:flex-1 wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8", !under && (placeholder ? "wide:items-start" : "wide:items-center"))}>
           {figures.map((f) => (
             <div key={f.id} id={f.wrapId} data-pair>
               <span className="block text-label text-muted-foreground" id={f.labelId} data-k>{f.label}</span>
@@ -92,13 +98,15 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
     it first inside the inputs column's wrapper, so it unpins where the
     inputs end. The page's scroll padding grows by its height (00-base.css),
     so a field scrolled into view isn't left under it. */
+/* The two values share the last baseline; a dash on the right takes the main
+   value's size, so an empty reading shows one dash style. */
 export function PinnedReading({ main, side, tone = "answer" }: {
   main: { label: ReactNode; value: string };
   side?: { label: ReactNode; value: string };
   tone?: HeroTone;
 }) {
   return (
-    <div className="sticky top-(--navh) z-20 mb-3.5 flex items-end justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true" data-pinned-reading>
+    <div className="sticky top-(--navh) z-20 mb-3.5 flex items-baseline-last justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true" data-pinned-reading>
       <div className="min-w-0">
         <span className="block text-label text-muted-foreground">{main.label}</span>
         <b className={cn("block text-2xl leading-tight font-medium whitespace-nowrap tabular-nums", TONE[tone])}>{main.value}</b>
@@ -106,7 +114,7 @@ export function PinnedReading({ main, side, tone = "answer" }: {
       {side ? (
         <div className="text-right">
           <span className="block text-label text-muted-foreground">{side.label}</span>
-          <span className="block text-body leading-tight font-medium whitespace-nowrap tabular-nums">{side.value}</span>
+          <span className={cn("block leading-tight font-medium whitespace-nowrap tabular-nums", side.value === DASH ? "text-2xl" : "text-body")}>{side.value}</span>
         </div>
       ) : null}
     </div>
