@@ -11,7 +11,7 @@ const fixture = (id: string) => structuredClone(FIXTURES.find((f) => f.id === id
 const ids = (a: Answers, pace: Pace, behind = false) => numbered(a, pace, { behind }).map((s) => s.id);
 const at = (a: Answers, pace: Pace, cur: string, done: Record<string, boolean> = {}) => ({ a, pace, cur, done });
 
-const QUICK = ["about", "income", "spending", "cash", "debt", "savings", "retspend", "number", "lasting", "plan"];
+const QUICK = ["about", "income", "spending", "cash", "debt", "savings", "invested", "retspend", "social", "number", "lasting", "plan"];
 
 test("every step has a chapter, a type, a pace and its minutes", () => {
   assert.equal(new Set(STEPS.map((s) => s.id)).size, STEPS.length);
@@ -24,15 +24,17 @@ test("every step has a chapter, a type, a pace and its minutes", () => {
   assert.equal(STEPS[0].id, "welcome");
 });
 
-test("the Quick check walks its own cards, for a plan on track", () => {
+test("the Quick check walks its own twelve cards, for a plan on track, with the number on card 6", () => {
   assert.deepEqual(ids(fixture("maya-sam"), "quick"), QUICK);
+  assert.equal(QUICK.length, 12);
+  assert.equal(QUICK.indexOf("savings") + 1, 6);
   assert.equal(route(fixture("maya-sam"), "quick")[0].id, "welcome");
 });
 
 test("the Full walkthrough walks every card that applies", () => {
   // retiring at 62: healthcare before 65, no bridge
   assert.deepEqual(ids(fixture("maya-sam"), "full"),
-    ["about", "income", "spending", "cash", "debt", "goals", "savings", "retspend", "number", "lasting", "adjust", "strategy", "health", "optimize", "plan"]);
+    ["about", "income", "spending", "cash", "debt", "goals", "savings", "invested", "accounts", "retspend", "social", "number", "lasting", "adjust", "strategy", "health", "optimize", "plan"]);
   // retiring at 55: both
   assert.ok(ids(fixture("early-55"), "full").includes("health"));
   assert.ok(ids(fixture("early-55"), "full").includes("bridge"));
@@ -51,7 +53,7 @@ test("a plan that falls short brings Adjust your plan into the Quick check", () 
 test("deeper cards are listed on the Quick check, not walked", () => {
   const a = fixture("maya-sam");
   const d = STEPS.filter((s) => deeper(s, a, "quick")).map((s) => s.id);
-  assert.deepEqual(d, ["goals", "adjust", "strategy", "health", "optimize"]);
+  assert.deepEqual(d, ["goals", "accounts", "adjust", "strategy", "health", "optimize"]);
   assert.deepEqual(STEPS.filter((s) => deeper(s, a, "full")), []);
 });
 
@@ -96,5 +98,7 @@ test("switching pace keeps your place, or moves to the next card the pace walks"
   // after finishing the Quick check, the Full walkthrough opens on the first deeper card
   const done = Object.fromEntries(QUICK.map((k) => [k, true]));
   assert.equal(landing({ ...at(a, "quick", "plan", done), finishedAt: "2026-10-07" }, "full"), "goals");
-  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true }) }, "full"), "adjust");
+  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true }) }, "full"), "accounts");
+  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true, accounts: true }) }, "full"), "adjust");
+  assert.equal(landing(at(a, "full", "accounts"), "quick"), "retspend");
 });

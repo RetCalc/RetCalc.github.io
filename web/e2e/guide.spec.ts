@@ -19,7 +19,7 @@ const MAYA = { status: "m", age: 38, spouseAge: 36, retire: 62, state: "IL", inc
   saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, saveTo: "trad", retSpend: 70000, hcIncl: "no" };
 const stateWith = (pace: "quick" | "full", cur = "welcome") => ({ v: 2, pace, cur, a: MAYA, src: {}, done: {}, trip: null, back: null, coachMin: false,
   snapshots: [], moves: {}, lessons: {}, startedAt: "2026-10-07T00:00:00.000Z" });
-const QUICK_CARDS = 10, FULL_CARDS = 15;
+const QUICK_CARDS = 12, FULL_CARDS = 18;
 
 /** Storage set from a page with no scripts of its own, so nothing the
     guide does on loading can write over it. */
@@ -56,10 +56,12 @@ async function walkThrough(page: Page) {
 
 /* ---------- Both paces ---------- */
 
-test("the Quick check, typed from the start, shows the number on card 6", async ({ page }) => {
+test("the Quick check, typed from the start: the number on card 6, done in 12 cards", async ({ page }) => {
   test.setTimeout(120_000);
   await seeded(page, null);
   await page.locator('[data-gd="next"]').click();
+  const tile = (await page.locator("#gdStrip").isVisible()) ? page.locator("#gdStrip") : page.locator("#gdNumber");
+  const step = (n: number) => expect(page.locator("#gdCount")).toHaveText(new RegExp(`^Step ${n} of ${QUICK_CARDS}( ·|$)`));
   // 1 · About you
   await expect(page.locator("#gdCount")).toHaveText(/^Step 1 of \d+ · about \d+ minutes? left$/);
   await page.locator("#gdf-status").selectOption("m");
@@ -86,14 +88,39 @@ test("the Quick check, typed from the start, shows the number on card 6", async 
   // no number yet: savings aren't in
   await expect(page.locator("#gdNumFv")).toHaveCount(0);
   await next(page);
-  // 6 · the first number, with the placeholder spending (doc 3, item 5)
-  await expect(page.locator("#gdCount")).toHaveText(/^Step 6 of /);
+  // 6 · the first number, on the Balanced default, with the placeholder spending (doc 3, item 5)
+  await step(6);
+  // the lesson in their own ages, at the mix the plan assumes until card 7 asks
+  await expect(page.locator('#gdCard [data-lesson="time"]')).toContainText("a dollar saved at 38 is worth $2.88 by 62");
   await page.fill("#gdf-saved", "210000"); await page.fill("#gdf-contrib", "900"); await page.fill("#gdf-employer", "300");
-  await pick(page, "match", "full");
-  await page.locator("#gdf-risk").selectOption("0.0575");
-  const tile = (await page.locator("#gdStrip").isVisible()) ? page.locator("#gdStrip") : page.locator("#gdNumber");
-  await expect(tile).toContainText("$1.52M");
+  await expect(tile).toContainText("$1.21M");
   await expect(tile).toContainText("$1.15M");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("9.3%");
+  await page.locator("#gdCard [data-more]").click();
+  await pick(page, "match", "full");
+  await next(page);
+  // 7 · How it's invested: the number moves with the mix
+  await step(7);
+  await page.locator("#gdf-risk").selectOption("0.0575");
+  await expect(tile).toContainText("$1.52M");
+  await expect(page.locator("#gdCard .gd-mixes tr.on")).toContainText("$1.52M");
+  await next(page);
+  // 8 · Spending in retirement: the placeholder becomes an answer
+  await step(8);
+  await page.fill("#gdf-retSpend", "70000");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("the plan needs about $567,000 at 62: entering it cut that from $1.15M");
+  await expect(tile).toContainText("$567,000");
+  await next(page);
+  // 9 · Social Security, estimated from income (doc 3, calculation 3)
+  await step(9);
+  await expect(page.locator("#gdCard .gd-means")).toContainText("$5,597 a month from 67, $67,159 a year");
+  await expect(page.locator('#gdCard [data-lesson="wait"]')).toContainText("$2,275");
+  await next(page);
+  // 10 · Your number · 11 · Tested against history · 12 · Your plan
+  await step(10); await next(page);
+  await step(11); await next(page);
+  await step(12);
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your retirement readiness");
 });
 
 test("the Quick check and the Full walkthrough walk their own cards", async ({ page }) => {
@@ -120,7 +147,26 @@ test("switching pace keeps every answer and your place", async ({ page }) => {
   await (await routeMap(page)).locator('.gd-map-st[data-go="goals"]').click();
   await expect(page.locator("#gdCount")).toHaveText(/^A deeper card/);
   await next(page);
-  await expect(page.locator("#gdCard .gd-q")).toHaveText("Where do your retirement savings stand?");
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("What have you saved, and what do you add each month?");
+});
+
+test("Where it sits holds Continue while Roth and brokerage add up to more than the savings", async ({ page }) => {
+  await seeded(page, stateWith("full", "accounts"));
+  await page.fill("#gdf-rothNow", "250000");
+  await expect(page.locator("#gdf-rothNow-err")).toContainText("Count each dollar once");
+  await expect(page.locator('#gdCard [data-gd="next"]')).toBeDisabled();
+  await expect(page.locator("#gdCard .gd-why")).toContainText("can't add up to more than your savings");
+  await page.fill("#gdf-rothNow", "40000");
+  await expect(page.locator('#gdCard [data-gd="next"]')).toBeEnabled();
+});
+
+test("a statement figure replaces the Social Security estimate", async ({ page }) => {
+  await seeded(page, stateWith("quick", "social"));
+  await expect(page.locator('#gdCard .gd-means .gd-src[data-src="estimated"]')).toHaveText("estimated");
+  await page.fill("#gdf-ssOwn", "3000"); await page.fill("#gdf-ssOwn2", "2000");
+  await expect(page.locator('#gdCard .gd-means .gd-src[data-src="entered"]')).toHaveText("you entered");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("$5,000 a month from 67");
+  await expect(page.locator('#gdCard [data-lesson="wait"]')).toContainText("$3,720"); // $3,000 at 70
 });
 
 /* ---------- Saved guides and links ---------- */

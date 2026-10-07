@@ -546,3 +546,69 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-slide label{display:block;font-size:13px;color:var(--dim);margin-bottom:4px}
 .gd-slide label b{color:var(--text);font-variant-numeric:tabular-nums}
 .gd-pay{max-width:620px}
+/* Lesson 8: the same saving three ways. Lines differ by dash too. */
+.gd-cmp{max-width:620px}
+.gd-cmp-svg{display:block;width:100%;height:120px;overflow:visible;border-bottom:1px solid var(--ds-rule)}
+.gd-cmp-svg path{fill:none;stroke-width:2;stroke-linejoin:round}
+.gd-cmp .now{stroke:var(--ds-series-teal)}
+.gd-cmp .stop{stroke:var(--ds-series-sky);stroke-dasharray:6 4}
+.gd-cmp .late{stroke:var(--ds-series-lavender);stroke-dasharray:2 3}
+.gd-cmp-ax{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--dimmer);font-variant-numeric:tabular-nums}
+.gd-cmp-key{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:12.5px;color:var(--dim)}
+.gd-cmp-key span{display:inline-flex;align-items:center;gap:8px}
+.gd-cmp-key b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.gd-cmp-key .sw{flex:0 0 20px;width:20px;height:4px;overflow:visible}
+.gd-cmp-key .sw line{stroke-width:2}
+/* Lesson 9: ten-year stretches by mix. */
+.gd-rng{max-width:640px}
+.gd-rng-row{display:grid;grid-template-columns:minmax(96px,30%) 1fr;align-items:center;gap:10px;min-height:26px}
+.gd-rng-row .nm{font-size:12.5px;color:var(--dim);display:flex;align-items:baseline;gap:6px}
+.gd-rng-row .nm b{font-weight:500}
+.gd-rng-row .nm em,.gd-mixes em,.gd-lad-row em{font-style:normal;font-size:11px;color:var(--text);border:1px solid var(--ds-rule-strong);border-radius:999px;padding:0 6px;line-height:16px}
+.gd-rng-row.on .nm b{color:var(--text);font-weight:600}
+.gd-rng-row .tr{position:relative;height:18px}
+.gd-rng-row.head .tr{height:14px}
+.gd-rng-row .tk{position:absolute;left:calc(var(--x) * 1%);transform:translateX(-50%);font-size:10.5px;color:var(--dimmer);font-variant-numeric:tabular-nums;white-space:nowrap}
+.gd-rng-row .zero{position:absolute;top:-4px;bottom:-4px;left:calc(var(--x) * 1%);width:1px;background:var(--ds-rule-strong)}
+.gd-rng-row .bar{position:absolute;top:4px;height:10px;left:calc(var(--a) * 1%);width:calc((var(--b) - var(--a)) * 1%);border-radius:5px;background:var(--ds-series-teal);opacity:.45}
+.gd-rng-row.on .bar{opacity:1}
+.gd-rng-row .med{position:absolute;top:2px;height:14px;left:calc(var(--x) * 1%);width:2px;margin-left:-1px;background:var(--ds-text)}
+.gd-rng-row .asm{position:absolute;top:5px;left:calc(var(--x) * 1%);width:8px;height:8px;margin-left:-4px;transform:rotate(45deg);background:var(--panel);border:1.5px solid var(--ds-text)}
+.gd-rng-key{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:12px;color:var(--dim)}
+.gd-rng-key span{display:inline-flex;align-items:center;gap:6px}
+.gd-rng-key s{display:inline-block;text-decoration:none}
+.gd-rng-key s.bar{width:14px;height:8px;border-radius:4px;background:var(--ds-series-teal)}
+.gd-rng-key s.med{width:2px;height:12px;background:var(--ds-text)}
+.gd-rng-key s.asm{width:7px;height:7px;transform:rotate(45deg);border:1.5px solid var(--ds-text)}
+/* How it's invested: what each mix grows the savings to. */
+.gd-mixes{width:100%;max-width:460px;border-collapse:collapse;margin:0 0 12px;font-size:13px;font-variant-numeric:tabular-nums}
+.gd-mixes th,.gd-mixes td{padding:5px 8px 5px 0;text-align:left;border-bottom:1px solid var(--line-soft);color:var(--dim);font-weight:400}
+.gd-mixes thead th{font-size:11.5px;color:var(--dimmer)}
+.gd-mixes td{text-align:right}
+.gd-mixes thead th:not(:first-child){text-align:right}
+.gd-mixes tbody th em{margin-left:6px}
+.gd-mixes tr.on th,.gd-mixes tr.on td{color:var(--text);font-weight:600}
+/* Lesson 10: the three tax buckets. */
+.gd-bkt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:640px}
+.gd-bkt-box{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--panel-2)}
+.gd-bkt-box .nm{font-size:12px;color:var(--dim)}
+.gd-bkt-box .v{margin:2px 0 6px;font-size:16px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.gd-bkt-box .sh{height:6px;border-radius:3px;background:var(--line-soft);overflow:hidden}
+.gd-bkt-box .sh span{display:block;height:100%;width:calc(var(--w) * 1%);background:var(--ds-series-gray)}
+.gd-bkt-box.trad .sh span{background:var(--ds-series-sky)}
+.gd-bkt-box.roth .sh span{background:var(--ds-series-teal)}
+.gd-bkt-box.brok .sh span{background:var(--ds-series-lavender)}
+.gd-bkt-box .tx{margin-top:6px;font-size:12px;line-height:1.4;color:var(--dim)}
+@media (max-width:640px){ .gd-bkt{grid-template-columns:1fr} .gd-rng-row{grid-template-columns:92px 1fr;gap:8px} }
+/* Lesson 13: the claiming ladder. */
+.gd-lad{display:flex;flex-wrap:wrap;gap:12px 28px;max-width:640px}
+.gd-lad-g{flex:1 1 260px}
+.gd-lad-g .who{font-size:12px;color:var(--dim);margin-bottom:4px}
+.gd-lad-row{display:grid;grid-template-columns:24px 1fr 56px 64px;align-items:center;gap:10px;min-height:24px;font-size:12.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+.gd-lad-row .tr{height:10px}
+.gd-lad-row .bar{display:block;height:100%;width:calc(var(--w) * 1%);border-radius:0 5px 5px 0;background:var(--ds-series-sky);opacity:.55}
+.gd-lad-row.on .bar{opacity:1}
+.gd-lad-row .v{text-align:right}
+.gd-lad-row .v b{color:var(--text);font-weight:600}
+.gd-lad-row.on .age{color:var(--text);font-weight:600}
+.gd-lad-row .pl{display:flex}

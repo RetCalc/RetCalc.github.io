@@ -7,94 +7,13 @@
    steps/index.tsx. From GD_STEPS in src/js/app/30-guide-steps.js. */
 
 import { fmtNum, money, pctStr } from "@/lib/format";
-import { RISKS } from "@/lib/engine/typed";
-import {
-  SAVE_TO, mar, need, pos, riskLabel, saveMo, sim, target, yearsList,
-} from "../calc";
+import { need, riskLabel, saveMo, sim, target, yearsList } from "../calc";
 import { PlanChart, series } from "../chart";
-import {
-  AcctNote, BridgeNote, HcNote, InflNote, PensionNote, RateNote, SSNote, TaxNote,
-} from "../live";
-import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NeedsPlan, NumF, Q, SelF, Task, fill, useGuideView } from "../ui";
+import { BridgeNote, HcNote } from "../live";
+import { After, BackNote, Callout, Choice, H3, Lead, NeedsPlan, Q, Task, useGuideView } from "../ui";
 import { Button } from "@/components/ui/button";
 import { HeroReading } from "@/components/common/Reading";
 import { CircleCheckIcon } from "lucide-react";
-
-export function Savings() {
-  const { v, a } = useGuideView();
-  return (
-    <>
-      <Q>Where do your retirement savings stand?</Q>
-      <Lead>Add up everything set aside for retirement: 401(k), 403(b), IRAs, Roth accounts and any investments you&apos;ve earmarked for it. Your account websites show the balances.</Lead>
-      <Fields>
-        <MoneyF k="saved" label="Saved for retirement so far" full />
-        <MoneyF k="contrib" label="You contribute" per="/mo" hint={pos(v.bgSave) ? "Your budget shows " + money(v.bgSave) + "/mo going to savings." : "From your paycheck and on your own."} />
-        <MoneyF k="employer" label="Your employer adds" per="/mo" hint="Matching or profit sharing. 0 if none." />
-      </Fields>
-      <InflNote a={a} />
-      <H3>Does your employer match what you put in?</H3>
-      <div className="gd-choices two">
-        <Choice k="match" val="full" title="Yes, and I get all of it" /><Choice k="match" val="partial" title="Yes, but I'm not getting all of it" />
-        <Choice k="match" val="none" title="No match, or I'm self-employed" /><Choice k="match" val="unsure" title="Not sure" />
-      </div>
-      <Fields><SelF k="risk" label="How is it invested?" opts={RISKS.map((r) => [r.real, r.label + " · " + r.sub])} num full
-        hint="Target-date funds are usually Balanced or Growth until the last decade before retirement." /></Fields>
-      <RateNote a={a} />
-      <H3>What kind of accounts is it in?</H3>
-      <p className="hint -mt-1 mx-0 mb-2.5 max-w-copy">It changes the tax you&apos;ll pay in retirement: traditional money is taxed when it comes out, Roth money isn&apos;t, and a brokerage account is taxed only on its gains. Leave these blank if it&apos;s all in a regular 401(k) or IRA.</p>
-      <Fields>
-        <MoneyF k="rothNow" label="Of that, in Roth accounts" ph="0" hint="Roth 401(k) and Roth IRA." />
-        <MoneyF k="brokNow" label="In a taxable brokerage account" ph="0" hint="Only money meant for retirement." />
-      </Fields>
-      <AcctNote a={a} />
-      <H3>Where does your monthly saving go?</H3>
-      <div className="gd-choices two">{SAVE_TO.map(([k, t, s]) => <Choice key={k} k="saveTo" val={k} title={t} sub={s} />)}</div>
-      <p className="hint -mt-1 mx-0 mb-0">Your employer&apos;s share goes into a traditional account either way.</p>
-    </>
-  );
-}
-
-export function RetSpend() {
-  const G = useGuideView(), { v, a } = G, picks: [string, number][] = [];
-  if (pos(v.spend)) {
-    picks.push(["Same as today", v.spend * 12]);
-    picks.push(["80% of today", v.spend * 12 * 0.8]);
-    // Only the loan itself goes away; property tax and insurance don't.
-    const loan = pos(v.mortPI) ? v.mortPI : pos(v.bgMort) ? v.bgMort : 0;
-    if (v.home === "mortgage" && v.mortPaid === "yes" && loan > 0 && v.spend > loan) picks.push(["Today, less the loan payment", (v.spend - loan) * 12]);
-  }
-  const m = mar(v);
-  return (
-    <>
-      <Q>What will you spend in retirement?</Q>
-      <Lead>A year of the retirement you want, priced at today&apos;s prices: what you&apos;ll live on, <b>after</b> income tax. Many people spend around 80% of what they do now: no commute, no saving for retirement, often no mortgage. Travel can push it back up.</Lead>
-      {picks.length ? <div className="gd-picks">{picks.map(([lab, val]) => {
-        const r = Math.round(val / 100) * 100;
-        return <Button key={lab} variant="outline" size="sm" data-fill="retSpend" data-v={r} onClick={() => fill(G, "retSpend", r)}>{lab}: <b className="font-semibold tabular-nums">{money(r) + "/yr"}</b></Button>;
-      })}</div> : null}
-      <Fields><MoneyF k="retSpend" label="Yearly spending in retirement" per="/yr" full hint="In today's dollars, after tax. Leave out health insurance before 65 too: the plan prices it." /></Fields>
-      <BackNote step="retspend" />
-      <TaxNote />
-      <SSNote a={a} />
-      <Fields>
-        <MoneyF k="ssOwn" label={m ? "Have a Social Security statement? Your benefit" : "Have a Social Security statement? Your monthly benefit"} per="/mo" full={!m}
-          ph="optional" hint="From ssa.gov/myaccount, at 67. It reflects your real earnings, so it beats our estimate." />
-        {m ? <MoneyF k="ssOwn2" label="Your spouse's benefit" per="/mo" ph="optional" hint="From their own statement, at 67." /> : null}
-        <SelF k="ssClaim" label={m ? "When would you each claim it?" : "When would you claim it?"} num full
-          opts={[["", "At 67, or when I retire if that's later"], ...[62, 63, 64, 65, 66, 67, 68, 69, 70].map((x) =>
-            [x, "At " + x + (x === 62 ? ", the earliest" : x === 67 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")] as [number, string])]}
-          hint={"Each year you wait past 62 raises the benefit for life, up to 70. In this plan it never starts before you retire. The Plan Optimizer, near the end, tries every age for " + (m ? "each of you." : "you.")} />
-      </Fields>
-      <H3>A pension, or other steady income in retirement?</H3>
-      <Fields>
-        <MoneyF k="pension" label="Pension, annuity or part-time pay" per="/mo" ph="optional" hint="In today's dollars. Leave blank if none." />
-        <NumF k="pensionAge" label="Starting at" affix="age" hint="Blank means when you retire." />
-        <SelF k="pensionCola" label="Does it rise with inflation?" opts={[["no", "No, it's a fixed amount"], ["yes", "Yes, it has cost-of-living raises"]]} full />
-      </Fields>
-      <PensionNote a={a} />
-    </>
-  );
-}
 
 export function Outlook() {
   const { v } = useGuideView(), S = sim(v);
@@ -202,7 +121,7 @@ export function Bridge() {
         {" "}opens up without a 10% penalty. There are several legal ways across: living off a taxable account and your Roth contributions,
         {" "}{v.retire! >= 55 ? "72(t) payments and the rule of 55" : "a Roth conversion ladder and 72(t) payments"}. Which works best depends on where your money sits.</Lead>
       <BridgeNote a={a} />
-      <p className="hint -mt-1.5 mx-0 mb-3.5">The split comes from your Retirement savings step. <Button variant="quiet" size="inline" data-go="savings" onClick={() => G.go("savings")}>Change it</Button></p>
+      <p className="hint -mt-1.5 mx-0 mb-3.5">The split comes from your answers on Where it sits. <Button variant="quiet" size="inline" data-go="accounts" onClick={() => G.go("accounts")}>Change it</Button></p>
       <Callout>Your plan already follows the rules: before 59½ it lives on the brokerage account and Roth contributions first, and only pays the 10% penalty if nothing else is left. The Plan Optimizer, next, can build a Roth conversion ladder to open up traditional money early.</Callout>
       {v.retire! >= 55 ? <><H3>Will you leave a job with a 401(k) at 55 or later?</H3>
         <div className="gd-choices two"><Choice k="rule55" val="yes" title="Yes" sub="The rule of 55 lets that 401(k) pay out without the penalty" /><Choice k="rule55" val="no" title="No, or not sure" /></div></> : null}

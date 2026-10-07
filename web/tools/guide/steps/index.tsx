@@ -12,7 +12,9 @@ import { TuneStep } from "../tune";
 import { Welcome, WelcomeFoot } from "./ch0-welcome";
 import { AboutYou } from "./ch1-timeline";
 import { DebtCard, GoalsCard, IncomeCard, SafetyCard, SpendCard } from "./ch2-standing";
-import { Bridge, Health, Lasting, Outlook, RetSpend, Savings } from "./legacy";
+import { AccountsCard, InvestedCard, SavingsCard } from "./ch3-savings";
+import { RetSpendCard, SocialCard } from "./ch4-costs";
+import { Bridge, Health, Lasting, Outlook } from "./legacy";
 
 export interface StepView { Body: () => ReactNode; Foot?: () => ReactNode }
 
@@ -24,8 +26,11 @@ export const VIEWS: Record<string, StepView> = {
   cash: { Body: SafetyCard },
   debt: { Body: DebtCard },
   goals: { Body: GoalsCard },
-  savings: { Body: Savings },
-  retspend: { Body: RetSpend },
+  savings: { Body: SavingsCard },
+  invested: { Body: InvestedCard },
+  accounts: { Body: AccountsCard },
+  retspend: { Body: RetSpendCard },
+  social: { Body: SocialCard },
   number: { Body: Outlook },
   lasting: { Body: Lasting },
   adjust: { Body: TuneStep },

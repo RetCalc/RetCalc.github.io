@@ -345,7 +345,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         ];
         return [
           { h: "Your benefit is entered as a known amount" + (a.ssOwn ? ", from your statement" : ", from the guide's estimate") + ", starting at " + (b ? b.claim : 67) + "." },
-          { h: "Waiting raises a benefit about 8% a year from 67 to 70, and claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Spending in retirement step: the guide works out the new amount." },
+          { h: "Waiting raises a benefit about 8% a year from 67 to 70, and claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
         ];
       },
       ({ s }: Ctx<DrawdownState>) => [
@@ -596,7 +596,7 @@ const TRIPS: Record<string, TripDef<never>> = {
     },
     chip: () => { const t = text("#btReal"); return t && t !== "—" ? "After inflation<br><b>" + escapeHtml(t) + "</b>" : ""; },
     capture: ({ a }: Ctx<Inputs>) => ({ set: { btSeen: true }, msg: "Back from Portfolio Backtest. Remember, history shows the range of what's happened, not a forecast. The guide keeps assuming " +
-      pctStr(a.risk || 0.045, 1) + " a year after inflation; change your mix on the <b>Retirement savings</b> step if you'd like a different one." }),
+      pctStr(a.risk || 0.045, 1) + " a year after inflation; change your mix on the <b>How it's invested</b> card if you'd like a different one." }),
   },
 } as unknown as Record<string, TripDef<never>>;
 

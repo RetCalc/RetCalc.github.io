@@ -114,7 +114,7 @@ export function actions(a: Answers): Action[] {
     A.push({ t: "Set a monthly college number", d: "Find out what to put aside each month, and consider a 529 plan for the tax break.", trip: "college", btn: "Open College Savings" });
   if (!pos(a.ssOwn) && S)
     A.push({ t: "Check your Social Security estimate",
-      d: "We estimated it from today's income. Your statement at ssa.gov/myaccount uses your real earnings record and takes five minutes to get.", go: "retspend", btn: "Add it to your answers" });
+      d: "We estimated it from today's income. Your statement at ssa.gov/myaccount uses your real earnings record and takes five minutes to get.", go: "social", btn: "Add it to your answers" });
   if (S && S.success >= 0.85 && !a.ddTool)
     A.push({ t: "Stress-test how you'll spend it", d: "The Drawdown Simulator tour replays your plan through 1929, 1966 and 2000, and walks through each withdrawal strategy, your stock mix, when to claim Social Security, and big one-time costs.", trip: "drawdown", btn: "Start the tour" });
   return A.slice(0, 6);

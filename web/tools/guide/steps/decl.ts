@@ -82,14 +82,23 @@ export const STEPS: StepDecl[] = [
     prep: (a, put) => { if (a.home === "mortgage" && pos(a.bgHousing)) put("housePay", a.bgHousing, "tool", "budget"); } },
 
   /* 3 · Building your savings */
-  { id: "savings", chapter: 3, title: "Retirement savings", type: "question", pace: "quick", minutes: 2, tool: "basic", sync: true,
+  { id: "savings", chapter: 3, title: "What you have and add", type: "question", pace: "quick", minutes: 1, tool: "basic", sync: true, teaches: ["time"],
     prep: (a, put) => { put("risk", 0.045, "default"); put("saveTo", "trad", "default"); },
-    needs: (a) => need(ok(a.saved) && ok(a.contrib) && !!a.match, "Fill in your savings and contributions, and answer the match question"),
-    commit: (a, put) => put("employer", 0, "default") },
+    needs: (a) => need(ok(a.saved) && ok(a.contrib), "Enter what you've saved and what you add each month, even if it's 0"),
+    // The match question is under More detail; unanswered, it's "not sure",
+    // which the plan's moves then ask about.
+    commit: (a, put) => { put("employer", 0, "default"); put("match", "unsure", "default"); } },
+  { id: "invested", chapter: 3, title: "How it's invested", type: "question", pace: "quick", minutes: 0.5, tool: "backtest", sync: true, teaches: ["real-returns"],
+    prep: (a, put) => put("risk", 0.045, "default") },
+  { id: "accounts", chapter: 3, title: "Where it sits", type: "question", pace: "full", minutes: 1.5, tool: "advanced", teaches: ["buckets"],
+    prep: (a, put) => put("saveTo", "trad", "default"),
+    needs: (a) => need((pos(a.rothNow) ? a.rothNow : 0) + (pos(a.brokNow) ? a.brokNow : 0) <= (ok(a.saved) ? a.saved : 0) + 0.5,
+      "Roth and brokerage can't add up to more than your savings") },
 
   /* 4 · What retirement costs */
-  { id: "retspend", chapter: 4, title: "Spending in retirement", type: "question", pace: "quick", minutes: 2, tool: "budget", sync: true,
-    needs: (a) => need(pos(a.retSpend), "Enter your yearly spending in retirement") },
+  { id: "retspend", chapter: 4, title: "Spending in retirement", type: "question", pace: "quick", minutes: 1, tool: "budget", sync: true, teaches: ["eighty"],
+    needs: (a) => need(pos(a.retSpend), "Enter your yearly spending in retirement, or pick one") },
+  { id: "social", chapter: 4, title: "Social Security", type: "question", pace: "quick", minutes: 1, tool: "optimizer", sync: true, teaches: ["wait"] },
 
   /* 5 · Will it last */
   { id: "number", chapter: 5, title: "Your projection", type: "readout", pace: "quick", minutes: 0.5, tripMinutes: 10, tool: "basic" },

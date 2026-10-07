@@ -36,7 +36,7 @@ export function OptimizeStep() {
         {" "}converting to Roth for different stretches, and staying under the ACA and Medicare income lines. It runs all <b>{groupDigits(E.n, true)}</b> plans through every market since {HIST_START as number}
         {" "}and keeps the best.</p>
       <BackNote step="optimize" />
-      <div className="op-acct"><span>Starting from <b>{money(A.trad)}</b> traditional, <b>{money(A.roth)}</b> Roth and <b>{money(A.brok)}</b> brokerage today, growing to {money(S.fv)} by {fmtNum(S.retire)}.</span><Button variant="quiet" size="inline" data-go="savings" onClick={() => G.go("savings")}>Change the split</Button></div>
+      <div className="op-acct"><span>Starting from <b>{money(A.trad)}</b> traditional, <b>{money(A.roth)}</b> Roth and <b>{money(A.brok)}</b> brokerage today, growing to {money(S.fv)} by {fmtNum(S.retire)}.</span><Button variant="quiet" size="inline" data-go="accounts" onClick={() => G.go("accounts")}>Change the split</Button></div>
       {SA && !H.run ? (
         <Callout cls="ok"><b>Your plan uses a roadmap:</b> Social Security at {opClaims(SA.T, SA.C)}; {lowerFirst(opTacticsLine(SA.T, SA.C))}. Your score and every step use it.
           <div className="mt-2"><Button variant="outline" size="sm" className="mt-2" data-gd="optclear" onClick={() => G.act("optclear")}>Go back to the usual way</Button></div></Callout>

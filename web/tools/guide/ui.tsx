@@ -54,14 +54,14 @@ export function fill(G: GuideView, k: AnswerKey, val: number, kind: SourceKind =
   G.set(k, val as never, !shown, kind);
 }
 
-/** "Go to Retirement savings" when a step needs a projection first. */
+/** "Go to What you have and add" when a step needs a projection first. */
 export function NeedsPlan({ title, msg = "This needs your age, savings and retirement spending first." }: { title: string; msg?: string }) {
   const G = useGuideView();
   return (
     <>
       <Q>{title}</Q>
       <Callout cls="warn">{msg}</Callout>
-      <Button variant="outline" data-go="savings" onClick={() => G.go("savings")}>Go to Retirement savings</Button>
+      <Button variant="outline" data-go="savings" onClick={() => G.go("savings")}>Go to What you have and add</Button>
     </>
   );
 }
@@ -99,7 +99,7 @@ export function MoneyF({ k, label, per, ph, ...o }: FieldOpts & { k: AnswerKey; 
   return (
     <Wrap k={k} label={label} {...o}>
       <Affixed prefix="$" suffix={per}>
-        <DraftInput money nonNeg id={"gdf-" + k} data-a={k} placeholder={ph} value={ok(val) ? val : NaN} format={gdM}
+        <DraftInput money nonNeg id={"gdf-" + k} data-a={k} {...invalid(k, o.err)} placeholder={ph} value={ok(val) ? val : NaN} format={gdM}
           onType={(t) => G.set(k, typed(t) as Answers[typeof k])} /></Affixed>
     </Wrap>
   );
