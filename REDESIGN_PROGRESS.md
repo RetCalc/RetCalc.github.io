@@ -50,7 +50,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Portfolio Backtest | /backtest | done | e74ef68 | Thirds; return per year as hero with after inflation, volatility, deepest fall; gain/loss color by sign only |
 | College Savings | /college | done | defdc37 | Thirds; save per month as hero with the step-down sentence; children as flat rows; field errors, covered state, cost as a plain line on screen |
 | Rent vs. Buy | /rentbuy | done | 9c44273 | Thirds; verdict as hero with ahead-by and break-even sentence; monthly costs moved into the reading; inputs unpinned on desktop; break-even marked on screen only |
-| Budget | /budget | todo | | |
+| Budget | /budget | done | 114c44d | Ledger two thirds + sticky reading third; Left over hero (amber / Loss + Over budget / Text when empty), composition bar, emergency fund beside its field; phone rows name-over-field |
 | Debt Payoff | /debt | todo | | |
 | Mortgage Calculator | /mortgage | todo | | |
 
