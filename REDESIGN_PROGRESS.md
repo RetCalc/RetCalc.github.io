@@ -46,7 +46,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Roth Conversion & RMDs | /roth | done | 202f807 | Thirds; verdict as the headline over three peer figures (net worth relabelled vs doing nothing); conversion plan as a lever card; chart screen-only fixes, print unchanged |
 | RMDs | /rmd | done | 3d2a656 | Roth's page with variant="rmd": Peak RMD leads in amber, year table open on Doing nothing, RMD column first |
 | Healthcare Cost Planner | /healthcare | done | 389e6eb | Thirds; hero reading (net ACA premium, or Medicare at 65+), cliff/IRMAA warnings in the reading, phases side by side from 1100px, what-if and tiers folded |
-| FIRE Calculator | /fire | todo | | |
+| FIRE Calculator | /fire | done | 0c2d028 | Thirds; age at your rate of return as hero, the history answer beside its slider in the reading |
 | Portfolio Backtest | /backtest | todo | | |
 | College Savings | /college | todo | | |
 | Rent vs. Buy | /rentbuy | todo | | |
