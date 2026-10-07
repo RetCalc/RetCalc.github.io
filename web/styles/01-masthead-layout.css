@@ -23,7 +23,8 @@ h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
   body:has(.navbar.stuck) .scenariobar{
     position:fixed;z-index:31;
     top:calc(var(--sb-clear) + (var(--railh, var(--navh)) - 36px) / 2);
-    right:max(var(--gr), calc((100% - 1330px) / 2 + var(--gr)));
+    /* --gdw: the width of a docked help panel beside the page (12-guide.css) */
+    right:calc(var(--gdw, 0px) + max(var(--gr), calc((100% - var(--gdw, 0px) - 1330px) / 2 + var(--gr))));
     animation:railtools-in .18s cubic-bezier(.2,.7,.3,1)}
   /* The header is its own stacking layer (z-index 1), under the rail (30);
      while the rail is pinned the header lifts above it so the controls show.

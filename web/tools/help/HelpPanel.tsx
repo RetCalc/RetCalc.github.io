@@ -9,7 +9,6 @@ import { CoachPanel, revealFor, useFoldOnType, useRereads } from "@/components/s
 import { useActiveTool } from "@/components/tools/ToolState";
 import { helpNow, setHelp, type Help } from "./state";
 import { TOURS } from "./tours";
-import { Button } from "@/components/ui/button";
 
 export default function HelpPanel({ h }: { h: Help }) {
   const active = useActiveTool();
@@ -39,13 +38,13 @@ export default function HelpPanel({ h }: { h: Help }) {
   return (
     <CoachPanel id="thCoach" label="Tool help" sub={"Help · " + T.name} title={T.title} min={h.min}
       onToggle={() => setHelp({ ...h, min: !h.min })} onClose={() => setHelp(null)} closeLabel="Close help"
-      tasks={tasks} next={"<span>Part " + (pi + 1) + " of " + P.length + "</span>" + P[pi].title}
-      part={{ i: pi, titles: P.map((p) => p.title), attr: "data-tp", go: (d) => {
+      tasks={tasks}
+      part={{ i: pi, titles: P.map((p) => p.title), attr: "data-tp", focus: P[pi].focus, done: { id: "thCoachDone", onClick: () => setHelp(null) }, go: (d) => {
         const n = Math.max(0, Math.min(P.length - 1, pi + d));
         setHelp({ ...h, page: n });
         P[n].show?.();
         setTimeout(() => revealFor(P[n].focus), 0);
       } }}
-      chip={chip} foot={<Button variant="outline" className="flex-none" id="thCoachDone" onClick={() => setHelp(null)}>Close help</Button>} />
+      chip={chip} foot={null} />
   );
 }

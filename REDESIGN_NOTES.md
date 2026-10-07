@@ -679,6 +679,31 @@ written into DESIGN.md unless it says otherwise.
   callout; the disabled Continue's reason is Body small Text with a warning
   glyph. Suggested-amount pills are outline Buttons (`.gd-pick` gone).
 
+- **Tool Help and the Guide's coach (CoachPanel, shared): a sidecar from
+  1400px, the floating card below it, a sheet on phones.** From 1400px the
+  panel docks full height at the right (340px, Surface, Rule left edge, no
+  shadow) and the page narrows by its width (body padding via --gdw; the
+  pinned rail's controls and the toast centre on what's left), so it covers
+  nothing. 1400, not the critique's 1100: the tools' breakpoints are
+  viewport-based, and below 1400 the narrowed content (1400 - 340 - gutters
+  = 988px) would drop under the 972px their lg layouts are drawn for (at
+  1100 the inputs column would be ~220px). 1024-1399 keeps the bottom-right
+  card (Raised, Float). Header: the part title as the panel title, one Muted
+  line under it ("Help · Mortgage Calculator · Part 1 of 3"); the tour title
+  and both uppercase eyebrows are gone. Under it a row of segment buttons,
+  one per part (aria-current, a tooltip with the part's title), reusing the
+  part navigation. Back / Next: <next part> sit in the sticky footer (Next
+  truncates); Tool Help's last part has Done (#thCoachDone, closes) instead
+  of the footer's duplicate "Close help" (the header X stays). On a trip
+  Next is outline so Back to guide stays the one primary. Steps in Text,
+  14px. The section a part is about (its existing `focus` selector) is
+  outlined in Text, 2px at 6px offset (wider than the focus ring), fading
+  in, not under reduced motion, not printed; fields ring their row, small
+  figures their block, tables their scroll box (`data-coach-mark`, new,
+  set and cleared by the panel). Trips now outline their parts too. Phone
+  sheet 55vh (was 62); folded keeps the way on (Back/Next for help, Back to
+  guide on a trip) and drops a figure-only chip line.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -981,6 +1006,20 @@ written into DESIGN.md unless it says otherwise.
   shadcn card-radio variant.
 - **Guide**: coach docking in the right gutter on desktop / reserving
   space in the tool — CoachPanel is shared with Tool Help (its own pass).
+
+- **Tool Help**: sidecar from 1100px — from 1400px instead (layouts are
+  viewport-based; narrower content would break the tools' lg grids); the
+  1024-1399 floating card still covers part of the results.
+- **Tool Help**: dropping the chip that repeats the headline figure (or
+  showing a tick count instead) — removing/adding a shown figure; kept,
+  hidden only when folded on a trip-less panel.
+- **Tool Help**: arrow keys between parts (a full tablist) — new behavior;
+  the parts are plain buttons in tab order.
+- **Tool Help**: tour copy pointing at old places ("Left over at the top",
+  "under the chart", Drawdown switching to Advanced without saying so) —
+  tour text is the owner's copy and compared with the old site; unchanged.
+- **Guide coach**: dropping the trip's chip — it is the figure the guide
+  brings back; kept.
 
 ## E2E checks edited
 

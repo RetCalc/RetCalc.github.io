@@ -338,15 +338,6 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-strat-r .c i{display:none}
 .gd-strat-r .c small{display:block;font-family:var(--sans);font-size:11px;color:var(--dimmer);margin-top:2px}
 
-/* The coach's parts, for a tour in several parts */
-.gd-cpage{margin:2px 0 6px}
-.gd-cpage span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
-.gd-cpage b{display:block;font-size:14px;font-weight:600;margin-top:2px}
-.gd-cnav{display:flex;align-items:center;gap:8px;margin:2px 0 10px}
-.gd-cdots{flex:1 1 auto;display:flex;gap:5px;justify-content:center}
-.gd-cdots i{width:6px;height:6px;border-radius:50%;background:var(--line)}
-.gd-cdots i.on{background:var(--text)}
-
 @media (max-width:640px){
   .gd-opts{grid-template-columns:minmax(0,1fr)}
   .gd-strat-h{display:none}
@@ -359,33 +350,72 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 }
 
 /* The coach: the guide's current step, docked over whichever tool it sent
-   you to. Bottom-right card on a wide screen, a bottom sheet on a phone. */
+   you to, and Tool Help (components/shell/CoachPanel.tsx). A floating card
+   at the bottom right on a desktop, a sidecar beside the page from 1400px
+   (the page narrows by its width, so it covers nothing), a bottom sheet on
+   a phone. */
 .gd-coach{position:fixed;z-index:30;right:max(20px,env(safe-area-inset-right,0px));
   bottom:calc(20px + env(safe-area-inset-bottom,0px));width:390px;max-width:calc(100vw - 40px);
   display:flex;flex-direction:column;max-height:calc(100vh - 110px);
-  background:var(--pop);border:1px solid var(--line);
-  border-radius:14px;box-shadow:var(--lift-2)}
-.gd-coach-h{display:flex;align-items:center;gap:10px;padding:11px 12px 10px 16px}
-.gd-coach-h .t{flex:1 1 auto;min-width:0}
-.gd-coach-h .t span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-.gd-coach-h .t b{display:block;font-size:14px;font-weight:600;line-height:1.3;margin-top:2px}
-.gd-coach-b{overflow-y:auto;overscroll-behavior:contain;padding:2px 16px 4px}
-.gd-coach-b .gd-steps{margin:0 0 8px}
-.gd-coach-b .gd-steps li{font-size:13px}
-.gd-coach-b p{margin:0 0 10px;font-size:13px;color:var(--dim);line-height:1.5}
-.gd-coach-f{display:flex;align-items:center;gap:10px;padding:10px 12px 12px 16px;border-top:1px solid var(--line-soft)}
-.gd-chip{flex:1 1 auto;min-width:0;font-size:12px;color:var(--dim);line-height:1.35}
-.gd-chip b{font-family:var(--mono);font-weight:600;color:var(--text);font-size:13px;white-space:nowrap}
+  background:var(--ds-raised);border:1px solid var(--ds-rule);
+  border-radius:14px;box-shadow:var(--ds-float)}
+.gd-coach-h{display:flex;align-items:flex-start;gap:6px;padding:12px 10px 10px 16px}
+.gd-coach-h > div:first-child{padding-top:2px}
+/* The parts as a row of segments: where you are, and a way to jump. */
+.gd-cprog{display:flex;padding:0 16px 6px}
+.gd-cprog button{flex:1 1 0;min-width:0;height:20px;padding:0 2px;border:0;background:none;cursor:pointer;
+  display:flex;align-items:center;border-radius:4px}
+.gd-cprog button i{display:block;width:100%;height:3px;border-radius:2px;background:var(--ds-rule-strong);
+  transition:background-color .15s ease}
+.gd-cprog button:hover i{background:var(--ds-muted)}
+.gd-cprog button[aria-current] i{background:var(--ds-text)}
+.gd-cprog button:focus-visible{outline:2px solid var(--ds-text);outline-offset:2px}
+@media (pointer:coarse){ .gd-cprog button{height:24px} }
+.gd-coach-b{overflow-y:auto;overscroll-behavior:contain;padding:4px 16px 6px;border-top:1px solid var(--ds-rule)}
+.gd-coach-b .gd-steps{margin:4px 0 8px}
+.gd-coach-b .gd-steps li{font-size:14px;color:var(--ds-text)}
+.gd-coach-b p{margin:0 0 10px;font-size:14px;color:var(--ds-text);line-height:1.5}
+.gd-coach-f{border-top:1px solid var(--ds-rule);padding:10px 12px 12px 16px;display:flex;flex-direction:column;gap:10px}
+.gd-cnav{display:flex;align-items:center;gap:8px}
+.gd-coach-fr{display:flex;align-items:center;gap:10px}
+.gd-chip{flex:1 1 auto;min-width:0;font-size:12px;color:var(--ds-muted);line-height:1.35}
+.gd-chip b{font-weight:600;color:var(--ds-text);font-size:14px;white-space:nowrap}
+.gd-chip:empty{display:none}
+/* Folded: the way on stays (Tool Help's Back/Next; a trip's Back to
+   guide), the steps and a figure-only chip line go. */
 .gd-coach.min .gd-coach-b{display:none}
-.gd-coach-next{display:none;padding:0 16px 10px;font-size:12.5px;color:var(--dim);line-height:1.45}
-.gd-coach-next b{color:var(--text);font-weight:600}
-.gd-coach-next span{color:var(--text);font-weight:600;margin-right:4px}
+.gd-coach.min .gd-coach-f:has(.gd-coach-fr button) .gd-cnav,
+.gd-coach.min .gd-coach-fr:not(:has(button)){display:none}
+.gd-coach-next{display:none;padding:0 16px 10px;font-size:13px;color:var(--ds-muted);line-height:1.45}
+.gd-coach-next b{color:var(--ds-text);font-weight:600}
+.gd-coach-next span{color:var(--ds-text);font-weight:600;margin-right:4px}
 .gd-coach.min .gd-coach-next:not([hidden]){display:block}
 body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 44px)}
 body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bottom,0px))}
+/* The sidecar: full height at the right edge, flat (it doesn't float; the
+   page makes room). The page, its pinned rail controls and the toast all
+   centre on what's left. */
+@media (min-width:1400px){
+  .gd-coach{top:0;right:0;bottom:0;width:340px;max-width:none;max-height:none;border-radius:0;
+    border-width:0 0 0 1px;background:var(--ds-surface);box-shadow:none}
+  .gd-coach-h{padding-top:16px}
+  .gd-coach-b{flex:1 1 auto}
+  .gd-coach-f{margin-top:auto}
+  body.gd-on{padding-right:var(--gdw,340px)}
+  body.gd-on main{padding-bottom:44px}
+  body.gd-on .toast{left:calc(50% - var(--gdw,340px) / 2)}
+}
+/* The section a part is about, outlined in Text while the part is open:
+   wider than the focus ring, so the two never read alike. */
+[data-coach-mark]{outline:2px solid var(--ds-text);outline-offset:6px;border-radius:12px;
+  animation:coachmark .3s cubic-bezier(.2,.7,.3,1)}
+@keyframes coachmark{from{outline-color:transparent;outline-offset:12px}}
+@media (prefers-reduced-motion:reduce){ [data-coach-mark]{animation:none} }
+@media print{ [data-coach-mark]{outline:none} }
 @media (max-width:640px){
-  .gd-coach{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:62vh;border-radius:16px 16px 0 0;
+  .gd-coach{left:0;right:0;bottom:0;width:auto;max-width:none;max-height:55vh;border-radius:16px 16px 0 0;
     border-left:0;border-right:0;border-bottom:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .gd-coach-f{padding-bottom:10px}
   html.pwa .gd-coach{bottom:calc(70px + env(safe-area-inset-bottom,0px));padding-bottom:0}
   html.pwa body.gd-on main{padding-bottom:calc(var(--gdh,140px) + 104px + env(safe-area-inset-bottom,0px))}
   html.pwa body.gd-on .toast{bottom:calc(var(--gdh,140px) + 98px + env(safe-area-inset-bottom,0px))}
