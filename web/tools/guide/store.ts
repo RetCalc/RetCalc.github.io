@@ -8,6 +8,7 @@
 
 import { useSyncExternalStore } from "react";
 import { readStored, writeStored } from "@/lib/storage";
+import { migrateAnswers } from "./migrate";
 
 /** Every answer the guide keeps. Numbers are null once a field is cleared. */
 export interface Answers {
@@ -31,8 +32,59 @@ export interface Answers {
   optGoal?: string | null; optC1?: number | null; optC2?: number | null; optF?: number | null; optU?: number | null; optIm?: number | null; optAc?: number | null;
   ddTool?: { rate: string; strat: string } | null; fiAge?: string | null; fiLabel?: string | null;
   advSeen?: boolean | null; stagesSeen?: boolean | null; btSeen?: boolean | null;
+  /* New with v2 (doc 3, Data model): the already-retired on-ramp, the
+     placeholder retirement spending before it's entered, the toolkit cards
+     opened, and Changes ahead's events with the children it asks about. */
+  retired?: boolean | null; spendGuess?: number | null; kitSeen?: Record<string, boolean> | null;
+  events?: ChangeEvent[] | null; kidsNow?: number[] | null; kidsPlanned?: number | null; firstIn?: number | null; spacing?: number | null;
 }
 export type AnswerKey = keyof Answers;
+
+/* ---------- v2 (retcalc.guide.v2), doc 3 "The stored object" ----------
+   The same answers, plus the pace, where each answer came from, dated
+   snapshots, the ticks on the moves list and the lessons checked. migrate.ts
+   turns a v1 state or link into one. */
+export type Pace = "quick" | "full";
+export type SourceKind = "entered" | "tool" | "estimated" | "default";
+/** Where an answer came from: typed or tapped, a tool's result (`tool`
+    names it), worked out by the guide, or a default standing in. */
+export interface Source { kind: SourceKind; tool?: string; at: string }
+export type Sources = Partial<Record<AnswerKey, Source>>;
+/** What finishing a pace records, for Welcome back's "what moved". */
+export interface Snapshot {
+  at: string; pace: Pace;
+  score: number | null; areas: Record<string, number>;
+  fv: number; need: number; success: number; retire: number; spend: number; monthly: number;
+  /** The move ids shown at the time. */
+  moves: string[];
+}
+/** A life change Changes ahead turns into a saving schedule. Ages are
+    yours; amounts are per month in today's dollars. */
+export type ChangeEvent =
+  | { id: string; kind: "child"; born: number; childcare: boolean; earlyCost?: number; schoolCost?: number }
+  | { id: string; kind: "raise"; at: number; extra: number }
+  | { id: string; kind: "parttime"; from: number; to: number; saving: number }
+  | { id: string; kind: "payoff"; at: number; freed: number }
+  | { id: string; kind: "pause"; from: number; to: number; saving: number }
+  | { id: string; kind: "custom"; from: number; to?: number; delta: number; label: string };
+
+export interface GuideStateV2 {
+  v: 2; pace: Pace; cur: string; a: Answers; src: Sources; done: Record<string, boolean>;
+  trip: Trip | null; back: Back | null; coachMin: boolean;
+  /** Newest last; at most SNAPSHOT_CAP. */
+  snapshots: Snapshot[];
+  /** Ticks on the next-moves list, by move id. */
+  moves: Record<string, { done: boolean; at: string }>;
+  /** Lessons whose check question was answered. */
+  lessons: Record<string, boolean>;
+  startedAt: string; finishedAt?: string;
+}
+/** Two years of monthly check-ins; the oldest is dropped past it. */
+export const SNAPSHOT_CAP = 24;
+export const freshGuideV2 = (now: string): GuideStateV2 => ({
+  v: 2, pace: "quick", cur: "welcome", a: {}, src: {}, done: {}, trip: null, back: null, coachMin: false,
+  snapshots: [], moves: {}, lessons: {}, startedAt: now,
+});
 
 /** A trip into a tool: which, from which step, the coach's part, and what
     the tool held when it opened (so its return can say what changed). */
@@ -56,17 +108,8 @@ export interface GuideState {
 const STORE = { key: "guide", version: 1 } as const;
 export const freshGuide = (): GuideState => ({ v: 1, cur: "intro", a: {}, done: {}, trip: null, back: null, coachMin: false });
 
-/* Answers saved before income tax was built in. The Roth and brokerage
-   split used to be asked only on the Getting to 59½ step; and a tax
-   estimate added to retirement spending by hand would now be counted twice. */
-export function migrate(a: Answers & Record<string, unknown>) {
-  if (a.rothNow == null && a.brRothNow != null) a.rothNow = a.brRothNow as number;
-  if (a.brokNow == null && a.brBrokNow != null) a.brokNow = a.brBrokNow as number;
-  delete a.brRothNow; delete a.brBrokNow;
-  const tax = a.retTax as number | undefined;
-  if (a.retTaxAdded && tax && tax > 0 && a.retSpend && a.retSpend > 0) a.retSpend = Math.max(0, a.retSpend - tax);
-  delete a.retTaxAdded; delete a.retTax;
-}
+/** Answers saved before income tax was built in (migrate.ts). */
+export const migrate = migrateAnswers;
 
 let state: GuideState | null = null;
 const listeners = new Set<() => void>();

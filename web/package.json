@@ -10,7 +10,8 @@
     "prebuild": "node scripts/build-worker.mjs",
     "predev": "node scripts/build-worker.mjs",
     "typecheck": "tsc --noEmit",
-    "e2e:smoke": "node scripts/e2e-smoke.mjs"
+    "e2e:smoke": "node scripts/e2e-smoke.mjs",
+    "test:guide": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/guide/tests/*.test.ts\""
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
