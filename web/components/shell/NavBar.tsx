@@ -9,7 +9,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CALC_MODE_NAMES, CALC_PATHS, calcModeFor, tabFor, type CalcMode, type Slug, type Tab } from "@/lib/site";
+import { ALIASES, CALC_MODE_NAMES, CALC_PATHS, SLUGS, calcModeFor, tabFor, type CalcMode, type Slug, type Tab } from "@/lib/site";
 
 const TABS: { tab: Tab; label: string; href: string; controls: string }[] = [
   { tab: "guide", label: "Guide", href: "/guide", controls: "tab-guide" },
@@ -36,7 +36,9 @@ export function NavBar() {
   const path = usePathname();
   const router = useRouter();
   const slug = slugFromPath(path);
-  const tab = tabFor(slug);
+  // An address that isn't a page (the 404) sits under no tab.
+  const known = (slug as string) === "compare" || slug in ALIASES || (SLUGS as string[]).includes(slug);
+  const tab: Tab | null = known ? tabFor(slug) : null;
   const mode = calcModeFor(slug);
 
   // The Calculator tab shows (and returns to) the mode last used.
@@ -91,7 +93,7 @@ export function NavBar() {
   if (lastIdx !== tabIdx) {
     setLastIdx(tabIdx);
     const still = document.documentElement.classList.contains("pwa") || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (!still) setSliding(true);
+    if (!still && tabIdx >= 0 && lastIdx >= 0) setSliding(true);
   }
   useLayoutEffect(() => {
     const btn = tabBtns.current[tabIdx];
@@ -192,7 +194,7 @@ export function NavBar() {
                 // A tool page sits under Tools but isn't the picker panel.
                 aria-controls={isCalc ? `tab-${shownMode}` : selected && t.tab === "tools" && slug !== "tools" ? undefined : t.controls}
                 aria-selected={selected}
-                tabIndex={selected ? undefined : -1}
+                tabIndex={selected || (tab === null && i === 0) ? undefined : -1}
                 aria-haspopup={isCalc ? "menu" : undefined}
                 aria-expanded={isCalc ? open : undefined}
                 onMouseEnter={isCalc ? hoverIn : () => router.prefetch(t.href)}
@@ -243,7 +245,7 @@ export function NavBar() {
               </button>
             );
           })}
-          {markX != null ? <span className="tabmark" aria-hidden="true" style={{ "--mx": markX + "px" } as React.CSSProperties}
+          {markX != null && tabIdx >= 0 ? <span className="tabmark" aria-hidden="true" style={{ "--mx": markX + "px" } as React.CSSProperties}
             onTransitionEnd={(e) => { if (e.propertyName === "transform") setSliding(false); }} /> : null}
         </nav>
         {/* Outside the nav so the phone rail's horizontal scroll can't clip it. */}
