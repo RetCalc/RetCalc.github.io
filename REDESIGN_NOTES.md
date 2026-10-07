@@ -741,6 +741,27 @@ written into DESIGN.md unless it says otherwise.
   animates (DESIGN.md Motion: no height animation; the old 300ms sweep
   broke it). Trade-off: the jump in height on open is instant.
 
+- **Compare (/compare): slots a third, chart two thirds.** No input
+  column: from 1024px the three slots (swatch + letter, scenario select,
+  calculator select on one row) sit in a third with each scenario's
+  reading under its pickers, beside the chart in the other two thirds, so
+  the chart fills its column instead of floating at 900 of 1276px. The
+  slots are peers: no hero, no amber; each shows its balance in today's
+  dollars at Display size (Advanced/Stages "Inflation adjusted",
+  Basic "Value at retirement", the rows that match the chart; the
+  critique suggested Results row 1, but Future value is nominal and would
+  not match the chart) and its difference from A (that row's B − A cell)
+  at 20px under it. Results and Inputs follow full width; each difference
+  column sits beside its scenario (A, B, B − A, C, C − A) so on phones it
+  is next to what it belongs to, the label column pinned as before; a
+  difference column that would be all dashes (calculators that share no
+  rows) is left out, with a note saying why. Inputs mark differing rows
+  with a dot and bold instead of a banded row. Below 1024px the slots
+  stack above the chart. Drawdown compare uses the same slots (success
+  rate with its glyph in its rating color, median ending balance under it).
+  Trade-off: three slot readings stacked in a third, not side by side; the
+  chart beside them was the better use of the width.
+
 ## Skipped from critique
 
 - **Tools**: one-sentence descriptions ≤60 characters — new copy shared
@@ -1080,6 +1101,16 @@ written into DESIGN.md unless it says otherwise.
 - **About**: a hint that the masthead's sun/moon also switches the theme,
   and linking "Each tool is described in its own section below" — new
   copy / editing a sentence (hard stop on wording).
+
+- **Compare**: masthead "No saved scenarios" with Save/Share/Reset live,
+  and the Calculator tab lit with a mode word — needs the shared
+  ScenarioBar/NavBar logic (navigation and shared shell; logged, not done).
+- **Compare**: card titles at 16/500 vs DESIGN.md Title 14/600 — the
+  shared CardTitle sets it for every page; a site-wide call.
+- **Compare**: Drawdown "Failure years" as a count with the list in a
+  disclosure — the count would be a new displayed figure; list kept.
+- **Compare**: percentage differences, a "your plan" slot in amber, a
+  choosable baseline — new figures / new behavior.
 
 ## E2E checks edited
 
