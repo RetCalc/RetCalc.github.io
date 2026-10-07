@@ -99,8 +99,8 @@ confirm each renders and every figure matches its page.
 ## Phase 4: audit
 | Step | Status | Notes |
 |---|---|---|
-| /impeccable audit, site-wide | todo | |
-| Fixes, one commit per kind | todo | |
+| /impeccable audit, site-wide | done | 31 routes, dark/light, axe + DESIGN.md heuristics + overflow 320-1440 + keyboard + touch; 16/20; report in REDESIGN_NOTES.md "Audit (Phase 4)" |
+| Fixes, one commit per kind | done | 47f9c2d article headings by keyboard; a164e40 folded trip coach keeps tour Back/Next; 0595521 help copy; 6f17e69 axe names/roles/contrast; 8ac8a11 404 no active tab. Rest logged |
 
 ## Phase 5: fresh-agent review
 | Step | Status | Notes |

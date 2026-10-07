@@ -778,6 +778,69 @@ written into DESIGN.md unless it says otherwise.
   Trade-off: three slot readings stacked in a third, not side by side; the
   chart beside them was the better use of the width.
 
+## Audit (Phase 4)
+
+Site-wide technical audit, 2026-10-07, on a production build: every route
+in REDESIGN_PROGRESS.md (31), dark and light at 1440, axe-core (WCAG 2.1
+A/AA + best practice), DESIGN.md heuristics (amber places, gain/loss
+colour with sign or icon, tabular numbers, emoji), horizontal overflow at
+320/390/768/1024/1440, the dialog/keyboard script, touch targets (Pixel 7
+touch emulation), the impeccable detector, and a code scan for colours,
+layout transitions and will-change. Score 16/20 (a11y 3, performance 3,
+responsive 3, theming 4, integrity 3). No page scrolls sideways at any
+width; no emoji; no number outside tabular figures; amber only on the key
+result, the primary button, the active tab and "your plan" legend swatches;
+no raw colours outside tokens and the print sheet; every focus stop shows
+a ring (focus check, 1314 stops); every dialog passes the keyboard script.
+
+### Fixed
+- Article headings open from the keyboard: the h2's text sits in a button
+  with aria-expanded/aria-controls; text, level and ids unchanged; chevron
+  no longer wraps on phones (47f9c2d).
+- Guide trips on phones: a folded trip coach keeps its tour's Back/Next
+  (the drawdown tour's `[data-cp="1"]` was hidden, guide.spec timed out on
+  phone; a Phase 1 regression of 8e60269 + 902705e) (a164e40).
+- Help copy pointing at old places: Budget trip "Left over at the top",
+  Rent vs. Buy "break-even under the chart", Drawdown's part that silently
+  switches to Advanced now says so (0595521). Checked and left as true:
+  Budget's "+ Retirement contribution" (the button shows a plus icon),
+  Stages' "Stage by stage, under the chart", Drawdown's "Advanced, at the
+  top of the panel".
+- axe: empty #tipbox tooltip without a name (all pages), the Tools tab's
+  aria-controls to a missing panel (every tool page), Budget's unlabelled
+  emergency-fund months field, Drawdown's unfocusable scrolling year table,
+  Income Tax's 40%-opacity bracket rows (2.5:1) (6f17e69).
+- 404 shows no active tab: a no-tab state of the rail, first tab keeps the
+  tab stop (8ac8a11).
+
+### Logged
+- **Optimizer's amber "Find my best plan" vs the Guide's outline one**:
+  both follow the Four Places Rule. On /optimizer it is the view's one
+  primary action; in the Guide, Continue is the step's one primary, so the
+  optimizer's run button is outline there. No change.
+- **Tool Help floating card, 1024 to 1399px**: covers about a third of the
+  results column (390px card at the right, e.g. Drawdown at 1200). The
+  sidecar can't start lower without breaking the tools' lg grids (decided
+  in 902705e); the card folds with its chevron. Not simple and safe; left.
+- **Tab rail outside a landmark** (axe "region", every page): `nav` carries
+  role=tablist, so it isn't a navigation landmark. The fix (a nav wrapping
+  a tablist div) touches the rail's markup and every `nav[role=tablist]`
+  selector in CSS and e2e; left for a pass of its own.
+- **Toggles with a "?" inside** (axe nested-interactive: Advanced's Split
+  by account type and Glide path, Stages' Split by account type): the
+  TipDot button sits inside the toggle button. Moving it out changes the
+  CheckToggle markup the stage cards lay out by; left for a pass of its own.
+- **Drawdown touch targets**: views and Simple/Advanced tabs are 41-42px
+  tall, and "How the strategies compare" / "Reproduce a classic study" are
+  22px text buttons, under 44px on touch. Guide's Start over is 43px.
+- **Guide factor bars animate width** (styles/12-guide.css .gd-fac .bar i,
+  400ms): the only layout-property transition (detector); scaleX would do.
+- **Positive figures in green without a "+"**: Growth (Basic, Advanced,
+  Stages kv rows and the Stages table) and FIRE's investment gains carry a
+  word but no sign; Drawdown tables' positive returns and "Survived" /
+  "Ran out in year N" carry a word or column header but no glyph. See
+  Skipped from critique.
+
 ## Skipped from critique
 
 - **Tools**: one-sentence descriptions ≤60 characters — new copy shared
@@ -1144,6 +1207,15 @@ written into DESIGN.md unless it says otherwise.
 - **Strategy pages**: moving the article up under the main chart — it would
   push the three views down; it opens by default and "How it works" jumps
   to it. Article h2 left as written (content unchanged).
+
+- **Basic, Advanced, Stages, FIRE** (audit): a "+" before the green Growth /
+  investment-gains figures (DESIGN.md: gain colour with a sign) — changes
+  the text of a shown figure (numbers check, CSV, share); hard stop.
+- **Drawdown** (audit): a check/cross glyph on "Survived" / "Ran out in year
+  N" and a "+" on positive returns in its tables — changes table text the
+  numbers check and CSV read; hard stop.
+- **Site-wide** (audit): wrapping the tab rail in a nav landmark — the
+  rail's markup is navigation structure that CSS and e2e select on; logged.
 
 ## E2E checks edited
 
