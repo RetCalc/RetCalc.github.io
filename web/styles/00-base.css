@@ -97,6 +97,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%;
      home-screen web app) so a field scrolled into view on focus never lands
      hidden underneath it. */
   scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 10px)}
+/* Under 1024px a page's pinned reading (components/common/Reading.tsx)
+   rides under the rail too, so a field scrolled into view clears it as
+   well (about 72px tall). */
+@media (max-width:1023.98px){
+  html:has([data-pinned-reading]){scroll-padding-top:calc(var(--sb-clear) + var(--navh) + 82px)}
+}
 body{
   background:var(--bg);color:var(--text);
   font-family:var(--sans);font-size:15px;line-height:1.5;

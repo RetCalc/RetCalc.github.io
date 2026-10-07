@@ -2,13 +2,18 @@
 
 /* The four holdings in an asset-mix pop-up, and the total under them that
    has to reach 100%. The Drawdown Simulator's and the Portfolio Backtest's
-   pop-ups both use it. */
+   pop-ups both use it, with a bar of the split over the total. */
 
 import { CircleAlertIcon } from "lucide-react";
 import { NumberInput } from "@/components/fields/NumberInput";
 import { parseNum } from "@/lib/format";
 import { DD_ASSETS, ddN } from "./text";
 import { Affixed } from "@/components/fields/Field";
+import { CompositionBar, PartKey, type PartTone } from "@/components/common/Reading";
+
+/* Each holding's swatch, echoing the bar over the total: the chart series
+   in order, since the holdings are categories, not gains or losses. */
+const TONE: Record<keyof MixForm, PartTone> = { stock: "sky", sv: "teal", bond: "lavender", cash: "gray" };
 
 export type MixForm = Record<(typeof DD_ASSETS)[number][0], string>;
 
@@ -23,9 +28,14 @@ export function MixRows({ f, up, totId }: { f: MixForm; up: (k: keyof MixForm) =
   return (
     <>
       {DD_ASSETS.map(([k, , name, desc]) => (
-        <div className="ddmixrow" key={k}><div><b>{name}</b><small>{desc}</small></div>
+        <div className="ddmixrow" key={k}><div><b><PartKey tone={TONE[k]} />{name}</b><small>{desc}</small></div>
           <Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={5} max={100} data-mix={k} aria-label={name} value={f[k]} onValueChange={up(k)} /></Affixed></div>
       ))}
+      {/* The split as typed, out of 100% (or out of the total, when it runs
+          over), so a gap or an overflow shows before the words do. */}
+      <div className="mt-3.5">
+        <CompositionBar parts={DD_ASSETS.map(([k]) => ({ share: parseNum(f[k]) / Math.max(100, t), tone: TONE[k] }))} />
+      </div>
       {/* A total that isn't 100% is an error: Loss, with an icon and the words. */}
       <div className={ok ? "ddmixtot" : "ddmixtot text-loss"} id={totId}>
         {ok ? null : <CircleAlertIcon className="relative -top-px mr-1.5 inline size-3.75 align-middle" aria-hidden="true" />}

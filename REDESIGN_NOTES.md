@@ -455,6 +455,33 @@ written into DESIGN.md unless it says otherwise.
   (only FIRE uses it) keeps its 6px track inside a 24px hit area, 44px
   under a finger; the "NOTE" eyebrow and `.fire-slider-*` rules are gone.
 
+- **Portfolio Backtest (/backtest): Basic's thirds, one reading with its
+  worst beside its best.** Inputs a third, results two thirds from 1024px;
+  backtest joins SOLO. Inputs card "The mix": Asset mix (the custom-mix
+  button), "Quick mix, stocks/bonds" (segments labelled 100/0 ... 0/100,
+  data-mix values unchanged, full width), rebalancing, then a "Period" group:
+  From / Through two-up on every width, a field error under them, the era
+  switch (All / Last 50 / Last 30) under the years, then the facts strip.
+  Results: HeroReading (Return, per year in amber; After inflation,
+  Volatility and Deepest fall at Display size under it, `under` because three
+  secondaries beside the hero wrapped raggedly), Best/Worst/Up years and Grew
+  to/In today's dollars as key/values, and the Advanced hand-off as the card's
+  footer row (#btUseRate now an outline button beside its note, capped to copy
+  width; the hero keeps the amber). Then Growth of $10,000, Rolling returns,
+  Inflation (moved below rolling; its six key/values in a three-column strip
+  over the chart), Year by year (open: e2e clicks its headers). Color: only
+  returns that are a gain or a loss, by sign, with an arrow (Best/Worst year,
+  rolling Worst and Best, the year table's Your mix and Real); asset columns
+  and rolling Median in Text. Phone: PinnedReading (return, after inflation)
+  leads the inputs; the era switch sits under the years because above them
+  the help tour's phone step had no clear spot to click it between the
+  pinned reading and the coach sheet. Shared: the page scroll padding now
+  clears a pinned reading under 1024px (00-base.css, `data-pinned-reading`),
+  so a scrolled-to field no longer lands under it on any page that has one.
+  The mix dialog (shared with Drawdown) gains a composition bar of the four
+  typed shares over the total, with matching swatches (series sky, teal,
+  lavender, gray: categories, not gains).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -628,6 +655,27 @@ written into DESIGN.md unless it says otherwise.
   text, kept word for word under the chart; the field hint is new copy.
 - **FIRE**: 44px hit areas for the "?" tip dots and CSV — shared TipDot and
   CsvButton (site-wide pass).
+
+- **Backtest**: "Put the rest in bonds" in the mix dialog — new behavior in
+  the dialog Drawdown shares; logged as an idea.
+- **Backtest**: correcting From after Through (or the clamp) — model logic;
+  Through now carries a field error saying only From is shown.
+- **Backtest**: Worst as the second column on phones — reordering cells
+  changes the CSV; Worst is already the third column and on screen at 390px.
+- **Backtest**: the rebalance counter reading 0 on yearly rebalancing —
+  logged bug, left.
+- **Backtest**: Year, Your mix, Balance first on phones in the year table —
+  CSV column order; Year stays pinned.
+- **Backtest**: "Worst (lived through)" header, a "+" on gains, a true minus
+  on losses — header copy and figure text; arrows carry the sign instead.
+- **Backtest**: renaming the h1 ("... Calculator") — SEO title, owner call.
+- **Backtest**: a log-scale growth chart, the worst 30-year window as a
+  reading figure — chart capability / content calls.
+- **Backtest**: 44px Segmented and CSV hit areas on touch — shared controls,
+  left for the shared-controls pass.
+- **Backtest**: the mix dialog as a bottom sheet on phones — shared Modal;
+  the scrim already covers the tab rail (checked: the overlay is on top at
+  the rail), so no z-index fix was needed.
 
 ## Fixed
 

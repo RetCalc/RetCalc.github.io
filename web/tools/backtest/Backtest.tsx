@@ -3,9 +3,18 @@
 /* The Portfolio Backtest: what a mix of stocks, small value, bonds and cash
    did through any stretch of history since 1926, with its inflation, rolling
    returns and every year. From src/main/05-backtest.html and
-   src/js/app/22-backtest.js. */
+   src/js/app/22-backtest.js.
+
+   Laid out answer-first (the Backtest critique, 2026-10-06), in Basic's
+   thirds: the mix and the years a third; then one reading whose hero is the
+   return per year, with after inflation, volatility and the deepest fall
+   beside it, the rest of the run under it, and the hand-off to Advanced as
+   its footer. The chart follows, then rolling returns, inflation and every
+   year. Gains and losses are colored only where a return is one, with an
+   arrow. On a phone a compact reading leads and stays pinned. */
 
 import { useMemo, useRef, useState } from "react";
+import { ArrowDownIcon, ArrowUpIcon, ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Legend } from "@/components/charts/Legend";
 import { MultiChart } from "@/components/charts/MultiChart";
@@ -14,7 +23,7 @@ import { Modal } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
-import { BigValue } from "@/components/common/BigValue";
+import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
 import { KV, Segmented } from "@/components/common/Readout";
 import type { BtResult, BtRow } from "@/lib/engine/types";
@@ -28,9 +37,10 @@ import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
+import { cn } from "@/lib/utils";
 
 const GOLD = SERIES.plan, BLUE = SERIES.sky, RED = SERIES.rose;
-const MIXES = [["100", "100"], ["80", "80"], ["60", "60"], ["40", "40"], ["0", "0"]] as const;
+const MIXES = [["100", "100/0"], ["80", "80/20"], ["60", "60/40"], ["40", "40/60"], ["0", "0/100"]] as const;
 const ERAS = [["all", "All"], ["50", "Last 50"], ["30", "Last 30"]] as const;
 
 /* The mix on its button: each holding with a share. */
@@ -61,7 +71,19 @@ function rebalNote(B: BtResult) {
 }
 
 type SortCol = "year" | "stock" | "sv" | "bond" | "cash" | "ret" | "infl" | "real" | "end" | "endReal";
-const signCls = (v: number) => (v < 0 ? "neg" : "pos");
+
+/** A return that is a real gain or loss: Gain or Loss with an arrow (the
+    Never Alone Rule; the column or row names what it is). The figure's
+    text is unchanged, and zero stays in Text. */
+function Signed({ v, children }: { v: number; children: React.ReactNode }) {
+  if (!v) return <>{children}</>;
+  const Icon = v > 0 ? ArrowUpIcon : ArrowDownIcon;
+  return (
+    <span className={cn("whitespace-nowrap", v > 0 ? "text-gain" : "text-destructive")}>
+      <Icon className="relative -top-px mr-0.5 inline size-3 align-middle" aria-hidden="true" />{children}
+    </span>
+  );
+}
 
 export function Backtest() {
   const router = useRouter();
@@ -96,122 +118,119 @@ export function Backtest() {
   const yearCols: [SortCol, string, boolean?][] = [["year", "Year"], ["stock", "Stocks"], ["sv", "Small value", !sv], ["bond", "Bonds"], ["cash", "Cash", !cash],
     ["ret", "Your mix"], ["infl", "Inflation"], ["real", "Real"], ["end", "Balance"], ["endReal", "In today's $"]];
 
-  return (
-    <>
-      <aside id="asideBT">
-        <Card>
-          <CardHeader><CardTitle>The mix<TipDot k="btdata" /></CardTitle></CardHeader>
-          <CardContent>
-            <Field id="btMixBtn" label={<Tipped text="Asset mix" k="btmix" />}>
-              <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>
-                <svg className="text-muted-foreground" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M5 3.5l4.5 4.5L5 12.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></Button>
-              <input type="hidden" id="btStock" value={s.stock} /><input type="hidden" id="btSV" value={s.sv} /><input type="hidden" id="btCash" value={s.cash} />
-              <div className="btquick">Stocks, the rest in bonds:</div>
-              <Segmented id="segBTMix" attr="data-mix" options={MIXES} value={quickMix} onChange={(m) => setState((c) => ({ ...c, stock: m, sv: "0", cash: "0" }))} />
-              <div className="hint" id="btMixNote">{mixNote(B, rb, from)}</div>
-            </Field>
-            <SelectField id="btRebal" label={<Tipped text="Rebalancing" k="btrebal" />} value={s.rebal} onChange={set("rebal")}>
-              <option value="year">Every year</option>
-              <option value="every">Every few years</option>
-              <option value="band">When it drifts from the mix</option>
-              <option value="never">Never</option>
-            </SelectField>
-            <NumberField id="btRebalN" wrapId="btRebalNWrap" hidden={B.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={s.rebalN} onValueChange={set("rebalN")} />
-            <NumberField id="btRebalBand" wrapId="btRebalBandWrap" hidden={B.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={s.rebalBand} onValueChange={set("rebalBand")} />
-            <div className="hint -mt-1.5 mx-0 mb-3" id="btRebalNote">{rebalNote(B)}</div>
-            <div className="two">
-              <NumberField id="btFrom" label={<Tipped text="From" k="bthistory" />} max={BT_LAST} value={s.from} onValueChange={set("from")}
-                onBlur={() => setState((c) => ({ ...c, from: yearClamp(c.from, BT_FIRST) }))} />
-              <NumberField id="btTo" label="Through" max={BT_LAST} value={s.to} onValueChange={set("to")}
-                onBlur={() => setState((c) => ({ ...c, to: yearClamp(c.to, BT_LAST) }))} />
-            </div>
-            <div className="pb-3">
-              <Segmented id="segBTEra" attr="data-era" options={ERAS} value={era}
-                onChange={(e) => setState((c) => ({ ...c, from: String(eraFrom(e)), to: String(BT_LAST) }))} />
-            </div>
-            <div className="derived">
-              <div><span>Years covered</span><span className="num" id="btYears">{B.years + (B.years === 1 ? " yr" : " yrs")}</span></div>
-              <div><span>Rebalanced</span><span className="num" id="btRebalShow">{rb}</span></div>
-              <div><span>Dividends</span><span className="num">Reinvested</span></div>
-            </div>
-          </CardContent>
-        </Card>
-      </aside>
+  /* Through before From: the run shows From alone (the model keeps
+     Through at From or later); the field says so. Only a whole year counts,
+     so typing one digit at a time doesn't flash it. */
+  const toN = Math.round(parseNum(s.to));
+  const badRange = s.to.trim() !== "" && toN >= BT_FIRST && Math.min(BT_LAST, toN) < from;
 
-      <div className="stack" id="tab-backtest">
-        <Card size="flush">
-          <div className="headline">
-            <div>
-              <div className="k">Return, per year</div>
-              <BigValue className="v gold" id="btCagr" text={pctStr(B.cagr, 2)} />
-              <div className="note" id="btCagrNote">{"Compound annual growth, " + B.first + "–" + B.last}</div>
-            </div>
-            <div>
-              <div className="k">After inflation<TipDot k="btreal" /></div>
-              <BigValue id="btReal" text={pctStr(B.realCagr, 2)} />
-              <div className="note" id="btRealNote">{"Inflation averaged " + pctStr(B.inflCagr, 2) + " a year"}</div>
-            </div>
-            <div>
-              <div className="k">Volatility<TipDot k="btvol" /></div>
-              <BigValue id="btVol" text={pctStr(B.vol, 2)} />
-              <div className="note">Standard deviation of annual returns</div>
-            </div>
-          </div>
-          <CardContent>
+  const hero: ReadingFigure = { label: "Return, per year", id: "btCagr", value: pctStr(B.cagr, 2), noteId: "btCagrNote",
+    note: "Compound annual growth, " + B.first + "–" + B.last };
+  const figures: ReadingFigure[] = [
+    { label: <>After inflation<TipDot k="btreal" /></>, id: "btReal", value: pctStr(B.realCagr, 2), noteId: "btRealNote",
+      note: "Inflation averaged " + pctStr(B.inflCagr, 2) + " a year" },
+    { label: <>Volatility<TipDot k="btvol" /></>, id: "btVol", value: pctStr(B.vol, 2), note: "Standard deviation of annual returns" },
+    { label: <>Deepest fall<TipDot k="btdd" /></>, id: "btDD", value: B.maxDD < 0 ? pctStr(B.maxDD, 2) : "None",
+      note: B.maxDD < 0 ? B.ddFrom + "–" + B.ddTo : "" },
+  ];
+
+  return (
+    <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+      <div className="min-w-0 lg:col-span-1 lg:self-stretch">
+        {/* Phones and narrow screens: the answer leads, and stays under the
+            tab rail while the mix and the years are on screen. */}
+        <PinnedReading main={{ label: "Return, per year", value: hero.value }} side={{ label: "After inflation", value: figures[0].value }} />
+
+        <aside id="asideBT" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          <Card>
+            <CardHeader>
+              <CardTitle>The mix<TipDot k="btdata" /></CardTitle>
+              <CardDescription>What a split of stocks, bonds and cash earned through any stretch since 1926.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Field id="btMixBtn" label={<Tipped text="Asset mix" k="btmix" />}>
+                <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>
+                  <ChevronRightIcon className="text-muted-foreground" aria-hidden="true" /></Button>
+                <input type="hidden" id="btStock" value={s.stock} /><input type="hidden" id="btSV" value={s.sv} /><input type="hidden" id="btCash" value={s.cash} />
+                <div role="group" aria-labelledby="btQuickLabel" className="mt-3">
+                  <div className="mb-1.5 text-label text-muted-foreground" id="btQuickLabel">Quick mix, stocks/bonds</div>
+                  <Segmented id="segBTMix" size="fill" attr="data-mix" options={MIXES} value={quickMix} onChange={(m) => setState((c) => ({ ...c, stock: m, sv: "0", cash: "0" }))} />
+                </div>
+                <div className="hint" id="btMixNote">{mixNote(B, rb, from)}</div>
+              </Field>
+              <SelectField id="btRebal" label={<Tipped text="Rebalancing" k="btrebal" />} value={s.rebal} onChange={set("rebal")}>
+                <option value="year">Every year</option>
+                <option value="every">Every few years</option>
+                <option value="band">When it drifts from the mix</option>
+                <option value="never">Never</option>
+              </SelectField>
+              <NumberField id="btRebalN" wrapId="btRebalNWrap" hidden={B.rebal !== "every"} label="Rebalance every" unit="years" max={30} value={s.rebalN} onValueChange={set("rebalN")} />
+              <NumberField id="btRebalBand" wrapId="btRebalBandWrap" hidden={B.rebal !== "band"} label="When any holding is off by more than" unit="points" max={50} value={s.rebalBand} onValueChange={set("rebalBand")} />
+              <div className="hint -mt-1.5 mx-0 mb-3" id="btRebalNote">{rebalNote(B)}</div>
+
+              <div role="group" aria-labelledby="btPeriodLabel" className="mt-1 border-t border-border pt-4">
+                <div className="mb-1.5 text-label text-muted-foreground" id="btPeriodLabel">Period</div>
+                <div className="two max-sm:grid-cols-2">
+                  <NumberField id="btFrom" label={<Tipped text="From" k="bthistory" />} max={BT_LAST} value={s.from} onValueChange={set("from")}
+                    onBlur={() => setState((c) => ({ ...c, from: yearClamp(c.from, BT_FIRST) }))} />
+                  <NumberField id="btTo" label="Through" max={BT_LAST} value={s.to} onValueChange={set("to")}
+                    aria-invalid={badRange || undefined} aria-describedby={badRange ? "btToWarnText" : undefined}
+                    onBlur={() => setState((c) => ({ ...c, to: yearClamp(c.to, BT_LAST) }))} />
+                </div>
+                <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" id="btToWarn" hidden={!badRange}>
+                  <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                  <span id="btToWarnText" role="alert">{badRange ? "Through has to be " + from + " or later. Showing " + from + " only." : ""}</span>
+                </div>
+                <div className="pb-3">
+                  <Segmented id="segBTEra" size="fill" attr="data-era" options={ERAS} value={era}
+                    onChange={(e) => setState((c) => ({ ...c, from: String(eraFrom(e)), to: String(BT_LAST) }))} />
+                </div>
+              </div>
+              <div className="derived">
+                <div><span>Years covered</span><span className="num" id="btYears">{B.years + (B.years === 1 ? " yr" : " yrs")}</span></div>
+                <div><span>Rebalanced</span><span className="num" id="btRebalShow">{rb}</span></div>
+                <div><span>Dividends</span><span className="num">Reinvested</span></div>
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      <div className="stack min-w-0 lg:col-span-2" id="tab-backtest">
+        <Card size="flush" className="min-w-0" id="btReading">
+          <HeroReading hero={hero} figures={figures} under />
+
+          {/* The rest of the run, quietly. */}
+          <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">
             <div className="grid2">
               <div>
-                <KV k="Best year" cls="pos" id="btBest" v={pctStr(B.best.ret, 2) + " in " + B.best.year} />
-                <KV k="Worst year" cls="neg" id="btWorst" v={pctStr(B.worst.ret, 2) + " in " + B.worst.year} />
-                <KV k={<>Deepest fall<TipDot k="btdd" /></>} id="btDD" v={B.maxDD < 0 ? pctStr(B.maxDD, 2) + " (" + B.ddFrom + "–" + B.ddTo + ")" : "None"} />
+                <KV k="Best year" id="btBest" v={<Signed v={B.best.ret}>{pctStr(B.best.ret, 2) + " in " + B.best.year}</Signed>} />
+                <KV k="Worst year" id="btWorst" v={<Signed v={B.worst.ret}>{pctStr(B.worst.ret, 2) + " in " + B.worst.year}</Signed>} />
+                <KV k="Up years" id="btUp" v={B.upYears + " of " + B.years + " (" + Math.round((B.upYears / B.years) * 100) + "%)"} />
               </div>
               <div>
-                <KV k="Up years" id="btUp" v={B.upYears + " of " + B.years + " (" + Math.round((B.upYears / B.years) * 100) + "%)"} />
                 <KV k="Grew to" id="btEnd" v={money(B.endBal)} />
                 <KV k="In today's dollars" id="btEndReal" v={money(B.endReal)} />
               </div>
             </div>
-            <div className="mt-3.5">
-              <Button id="btUseRate" onClick={useInAdvanced}>Use these figures in Advanced</Button>
-              <div className="hint mt-1.5" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
-                pctStr(B.inflCagr, 2) + " inflation to the Advanced tab, so the nominal figure and the inflation it was earned alongside travel together."}</div>
-            </div>
-          </CardContent>
+          </div>
+
+          {/* Taking the figures on to a plan. */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 border-t border-border px-5.5 py-4 max-sm:px-4">
+            <Button variant="outline" id="btUseRate" onClick={useInAdvanced}>Use these figures in Advanced</Button>
+            <p className="m-0 max-w-copy min-w-0 flex-1 basis-64 text-note text-muted-foreground" id="btUseNote">{"Sends " + pctStr(B.cagr, 2) + " return, " + pctStr(B.vol, 2) + " volatility and " +
+              pctStr(B.inflCagr, 2) + " inflation to the Advanced tab, so the nominal figure and the inflation it was earned alongside travel together."}</p>
+          </div>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader><CardTitle>Growth of $10,000</CardTitle></CardHeader>
           <MultiChart id="BT" ariaLabel="Historical growth of the chosen mix" maxX={B.years} xFmt={xFmt} head={head}
             series={[{ name: "Balance", color: GOLD, pts: nom }, { name: "In today's dollars", color: BLUE, pts: real, dash: "5 4", width: 2 }]} />
           <Legend id="legendBT" items={[[GOLD, "Balance"], [BLUE, "In today's dollars"]]} />
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Inflation</CardTitle><CardDescription id="btInflSpan">{B.first + "–" + B.last}</CardDescription></CardHeader>
-          <CardContent>
-            <div className="grid2">
-              <div>
-                <KV k="Average, per year" id="btInfl" v={pctStr(B.inflCagr, 2)} />
-                <KV k="Highest year" id="btInflHigh" v={pctStr(B.inflHigh.infl, 2) + " in " + B.inflHigh.year} />
-                <KV k="Lowest year" id="btInflLow" v={pctStr(B.inflLow.infl, 2) + " in " + B.inflLow.year} />
-              </div>
-              <div>
-                <KV k="Falling-price years" id="btDefl" v={B.deflationYears + " of " + B.years} />
-                <KV k={<>Prices multiplied by<TipDot k="btpricelevel" /></>} id="btPriceLevel" v={B.priceLevel.toFixed(1) + "×"} />
-                <KV k="$100 then is worth" id="btPriceNow" v={money(100 * B.priceLevel) + " today"} />
-              </div>
-            </div>
-          </CardContent>
-          <MultiChart id="BTI" ariaLabel="Annual inflation over the selected period" maxX={B.years} xFmt={xFmt} head={head}
-            yFmt={(v) => (v * 100).toFixed(0) + "%"} valFmt={(v) => pctStr(v, 2)}
-            series={[{ name: "Annual", color: RED, pts: annual, width: 1.9 }, { name: "Ten-year average", color: BLUE, pts: decadeInflation(B), dash: "5 4", width: 2.2 }]} />
-          <Legend id="legendBTI" items={[[RED, "Annual"], [BLUE, "Ten-year average"]]} />
-          <CardContent><div className="hint m-0">A high return in a high-inflation
-            year buys less than a modest one in a quiet year, which is why the headline above
-            shows both. The ten-year line is the one that matters for a plan: single years
-            swing hard, but it is the sustained stretches that reprice a retirement.</div></CardContent>
-        </Card>
-
-        <Card>
+        <Card className="min-w-0">
           <CardHeader><CardTitle>Rolling returns</CardTitle><CardDescription id="btRollNote">{roll === "nom" ? "nominal" : "after inflation"}</CardDescription><CardAction>
               <Segmented id="segBTRoll" attr="data-roll" options={[["nom", "Nominal"], ["real", "Real"]] as const} value={roll} onChange={setRoll} />
               <CsvButton table={rollTable} label="Rolling returns" />
@@ -227,20 +246,48 @@ export function Backtest() {
                   return (
                     <tr key={r.len}>
                       <td>{r.len + (r.len === 1 ? " year" : " years")}</td><td>{r.count}</td>
-                      <td className={w.worst < 0 ? "neg" : ""}>{pctStr(w.worst, 2)}</td><td>{pctStr(w.med, 2)}</td>
-                      <td className="pos">{pctStr(w.best, 2)}</td><td>{Math.round(w.pos * 100) + "%"}</td>
+                      <td><Signed v={w.worst}>{pctStr(w.worst, 2)}</Signed></td><td>{pctStr(w.med, 2)}</td>
+                      <td><Signed v={w.best}>{pctStr(w.best, 2)}</Signed></td><td>{Math.round(w.pos * 100) + "%"}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-          <CardContent><div className="hint m-0">Annualized, every overlapping
+          <CardContent><div className="hint m-0 max-w-copy">Annualized, every overlapping
             window in the range. The worst column is the one that matters: it is the return
             someone actually lived through.</div></CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
+          <CardHeader><CardTitle>Inflation</CardTitle><CardDescription id="btInflSpan">{B.first + "–" + B.last}</CardDescription></CardHeader>
+          <CardContent>
+            <div className="grid gap-x-6 sm:grid-cols-3">
+              <div>
+                <KV k="Average, per year" id="btInfl" v={pctStr(B.inflCagr, 2)} />
+                <KV k={<>Prices multiplied by<TipDot k="btpricelevel" /></>} id="btPriceLevel" v={B.priceLevel.toFixed(1) + "×"} />
+              </div>
+              <div>
+                <KV k="Highest year" id="btInflHigh" v={pctStr(B.inflHigh.infl, 2) + " in " + B.inflHigh.year} />
+                <KV k="Lowest year" id="btInflLow" v={pctStr(B.inflLow.infl, 2) + " in " + B.inflLow.year} />
+              </div>
+              <div>
+                <KV k="Falling-price years" id="btDefl" v={B.deflationYears + " of " + B.years} />
+                <KV k="$100 then is worth" id="btPriceNow" v={money(100 * B.priceLevel) + " today"} />
+              </div>
+            </div>
+          </CardContent>
+          <MultiChart id="BTI" ariaLabel="Annual inflation over the selected period" maxX={B.years} xFmt={xFmt} head={head}
+            yFmt={(v) => (v * 100).toFixed(0) + "%"} valFmt={(v) => pctStr(v, 2)}
+            series={[{ name: "Annual", color: RED, pts: annual, width: 1.9 }, { name: "Ten-year average", color: BLUE, pts: decadeInflation(B), dash: "5 4", width: 2.2 }]} />
+          <Legend id="legendBTI" items={[[RED, "Annual"], [BLUE, "Ten-year average"]]} />
+          <CardContent><div className="hint m-0 max-w-copy">A high return in a high-inflation
+            year buys less than a modest one in a quiet year, which is why the headline above
+            shows both. The ten-year line is the one that matters for a plan: single years
+            swing hard, but it is the sustained stretches that reprice a retirement.</div></CardContent>
+        </Card>
+
+        <Card className="min-w-0">
           <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={yearTable} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll">
@@ -255,13 +302,13 @@ export function Backtest() {
                 {sort.order(B.rows, (r: BtRow, c) => r[c]).map((r) => (
                   <tr key={r.year}>
                     <td>{r.year}</td>
-                    <td className={signCls(r.stock)}>{r.stock.toFixed(2) + "%"}</td>
-                    {sv ? <td className={signCls(r.sv)}>{r.sv.toFixed(2) + "%"}</td> : null}
-                    <td className={signCls(r.bond)}>{r.bond.toFixed(2) + "%"}</td>
-                    {cash ? <td className={signCls(r.cash)}>{r.cash.toFixed(2) + "%"}</td> : null}
-                    <td className={signCls(r.ret)}>{pctStr(r.ret, 2)}</td>
+                    <td>{r.stock.toFixed(2) + "%"}</td>
+                    {sv ? <td>{r.sv.toFixed(2) + "%"}</td> : null}
+                    <td>{r.bond.toFixed(2) + "%"}</td>
+                    {cash ? <td>{r.cash.toFixed(2) + "%"}</td> : null}
+                    <td><Signed v={r.ret}>{pctStr(r.ret, 2)}</Signed></td>
                     <td>{pctStr(r.infl, 2)}</td>
-                    <td className={signCls(r.real)}>{pctStr(r.real, 2)}</td>
+                    <td><Signed v={r.real}>{pctStr(r.real, 2)}</Signed></td>
                     <td>{money(r.end)}</td><td>{money(r.endReal)}</td>
                   </tr>
                 ))}
@@ -271,7 +318,7 @@ export function Backtest() {
         </Card>
       </div>
       {mixOpen ? <MixDialog s={s} close={() => setMixOpen(false)} save={(f) => setState((c) => ({ ...c, stock: f.stock, sv: f.sv, cash: f.cash }))} /> : null}
-    </>
+    </div>
   );
 }
 

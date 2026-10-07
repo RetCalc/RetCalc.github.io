@@ -90,14 +90,15 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
     that leads the inputs and stays under the tab rail while they're on
     screen. It repeats figures shown below, so screen readers skip it. Put
     it first inside the inputs column's wrapper, so it unpins where the
-    inputs end. */
+    inputs end. The page's scroll padding grows by its height (00-base.css),
+    so a field scrolled into view isn't left under it. */
 export function PinnedReading({ main, side, tone = "answer" }: {
   main: { label: ReactNode; value: string };
   side?: { label: ReactNode; value: string };
   tone?: HeroTone;
 }) {
   return (
-    <div className="sticky top-(--navh) z-20 mb-3.5 flex items-end justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true">
+    <div className="sticky top-(--navh) z-20 mb-3.5 flex items-end justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true" data-pinned-reading>
       <div className="min-w-0">
         <span className="block text-label text-muted-foreground">{main.label}</span>
         <b className={cn("block text-2xl leading-tight font-medium whitespace-nowrap tabular-nums", TONE[tone])}>{main.value}</b>
@@ -115,9 +116,14 @@ export function PinnedReading({ main, side, tone = "answer" }: {
 /** What a total is made of, as shares of one thin bar, with a matching
     swatch for each part's label (labels carry the meaning; the swatches
     only echo the bar). Colors by token: "start" (Rule Strong), "in"
-    (Muted), "gain" (Gain, for real growth only). */
-export type PartTone = "start" | "in" | "gain";
-const PART: Record<PartTone, string> = { start: "bg-input", in: "bg-muted-foreground", gain: "bg-gain" };
+    (Muted), "gain" (Gain, for real growth only); parts that are only
+    categories (an asset mix's holdings) take the chart series in their
+    order: "sky", "teal", "lavender", "gray". */
+export type PartTone = "start" | "in" | "gain" | "sky" | "teal" | "lavender" | "gray";
+const PART: Record<PartTone, string> = {
+  start: "bg-input", in: "bg-muted-foreground", gain: "bg-gain",
+  sky: "bg-series-sky", teal: "bg-series-teal", lavender: "bg-series-lavender", gray: "bg-series-gray",
+};
 
 export function CompositionBar({ parts }: { parts: { share: number; tone: PartTone }[] }) {
   return (
