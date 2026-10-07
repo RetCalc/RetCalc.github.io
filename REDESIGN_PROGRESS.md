@@ -60,7 +60,7 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Guide | /guide | done | 8e60269 | Card + 340px rail; score hero reading (rating tone) with lasted/projected/needed; one amber per step; compact phone progress, 44px hits, coach folded on phone trips; route folds; field error; bow-and-arrow still Phase 2 |
 | Tools | /tools | done | 7c1b18e | Full-width picker, visible header; icon+name+arrow row, description full width; equal rows, odd last card spans; icon motion: Phase 2 |
 | About | /about | done | 1b9a0da | Reading column + sticky index from 1100px; What this is first, settings after; sections in picker groups as Collapsible rows (h3 + button), 15px Text prose, fine print quieter, #disclaimer lands |
-| Compare | /compare | todo | | opened from Save; no sitemap entry |
+| Compare | /compare | done | 827f8d0 | Slots a third beside the chart; each slot its balance (today's dollars) + difference from A, no amber; slot errors, mixed-calculator note, differences beside their scenario; Drawdown compare same slots with rating glyph |
 | Tool Help (the docked help panel) | on every tool | done | 902705e | shared CoachPanel: sidecar from 1400px, Back/Next in the footer, clickable parts, the part outlined; Guide trips too |
 | Not found | (404) | done | 381b1b3 | Centered column: message, primary + secondary buttons, four picker cards; Tools tab active logged |
 
