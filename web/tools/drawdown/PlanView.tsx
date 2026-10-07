@@ -16,6 +16,7 @@ import { FanTipRows } from "@/components/charts/TipRows";
 import { fmtAxisMoney } from "@/components/charts/scale";
 import { TipDot } from "@/components/shell/Tooltips";
 import { CsvButton } from "@/components/common/CsvButton";
+import { SignArrow, ToneGlyph } from "@/components/common/Signed";
 import { Html } from "@/components/common/Html";
 import { KV } from "@/components/common/Readout";
 import {
@@ -25,7 +26,7 @@ import { fmtNum, money, pctStr } from "@/lib/format";
 import { useSort } from "@/lib/useSort";
 import type { DDView } from "./Drawdown";
 import type { DdItem } from "./fields";
-import { ageVal, lineWords, outcomeText, pct1, rateClass, seqMeasure, seqPair, startLabel, whyText, swatch } from "./text";
+import { ageVal, lineWords, outcomeText, pct1, rateClass, rateTone, seqMeasure, seqPair, startLabel, whyText, swatch } from "./text";
 import { badgeVariants } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
@@ -234,7 +235,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
                   e.preventDefault();
                   pick(r);
                 }}>
-                <td>{startLabel(r, H!.monthly)}</td><td className={r.depleted ? "neg" : "pos"}>{outcomeText(r, age)}</td>
+                <td>{startLabel(r, H!.monthly)}</td><td className={r.depleted ? "neg" : "pos"}><ToneGlyph tone={r.depleted ? "loss" : "gain"} />{outcomeText(r, age)}</td>
                 <td>{money(r.endReal)}</td><td>{money(r.medRealSpend)}</td><td>{money(r.minRealSpend)}</td>
                 <td>{pctStr(r.avgStock, 1)}</td><td>{pctStr(r.avgBond, 1)}</td><td>{pctStr(r.avgInfl, 1)}</td><td>{r.cape0.toFixed(1)}</td>
               </tr>
@@ -592,7 +593,7 @@ function DetailTable({ run, age, items, tableRef }: { run: DdRun | null; age: nu
             {other ? <td>{r.customIncome > 0 ? money(r.customIncome) : "—"}</td> : null}
             {hasG ? <td>{r.guaranteed > 0 ? money(r.guaranteed) : "—"}</td> : null}
             <td>{money(r.withdrawal)}</td><td>{money(r.spend)}</td><td>{money(realOf(r))}</td>
-            <td className={r.ret >= 0 ? "pos" : "neg"}>{r.ret.toFixed(1)}%</td><td>{money(r.realEnd)}</td>
+            <td className={r.ret > 0 ? "pos" : r.ret < 0 ? "neg" : undefined}><SignArrow v={r.ret} />{r.ret.toFixed(1)}%</td><td>{money(r.realEnd)}</td>
           </tr>
         ))}
       </tbody>
@@ -615,7 +616,7 @@ function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[]
               return (
                 <tr key={i} className={drag === 0 ? "font-semibold" : undefined}>
                   <td>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
-                  <td className={rateClass(r.rate)}>{pctStr(r.rate, 1)}</td><td>{money(r.median)}</td>
+                  <td className={rateClass(r.rate)}><ToneGlyph tone={rateTone(r.rate)} />{pctStr(r.rate, 1)}</td><td>{money(r.median)}</td>
                 </tr>
               );
             })}
@@ -638,7 +639,7 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
           return (
             <tr key={r.age} className={r.current ? "font-semibold" : undefined}>
               <td>Age {r.age}{r.current ? " ◄" : ""}</td><td>{money(r.annual)}/yr</td>
-              <td className={rateClass(R.rate)}>{pctStr(R.rate, 1)}</td><td>{money(R.median)}</td>
+              <td className={rateClass(R.rate)}><ToneGlyph tone={rateTone(R.rate)} />{pctStr(R.rate, 1)}</td><td>{money(R.median)}</td>
             </tr>
           );
         })}

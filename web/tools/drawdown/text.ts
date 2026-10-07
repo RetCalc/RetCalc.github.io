@@ -73,6 +73,8 @@ export function outcomeText(r: DdRun, age: number | null): string {
   return age != null ? "Ran out at age " + ageVal(age, r.depletedYear!) : "Ran out in year " + r.depletedYear;
 }
 export const rateClass = (r: number) => (r >= 0.95 ? "pos" : r >= 0.85 ? "mid" : "neg");
+/** The same rating as a tone, for its glyph (check, warning circle, x). */
+export const rateTone = (r: number) => (r >= 0.95 ? "gain" : r >= 0.85 ? "text" : "loss") as "gain" | "text" | "loss";
 
 /** The setting a search found, in words. */
 export function dialText(id: string, v: number | null, o?: DdOpts): string {

@@ -14,7 +14,7 @@
    arrow. On a phone a compact reading leads and stays pinned. */
 
 import { useMemo, useRef, useState } from "react";
-import { ArrowDownIcon, ArrowUpIcon, ChevronRightIcon, CircleAlertIcon } from "lucide-react";
+import { ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Legend } from "@/components/charts/Legend";
 import { MultiChart } from "@/components/charts/MultiChart";
@@ -25,6 +25,7 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
+import { Signed } from "@/components/common/Signed";
 import { KV, Segmented } from "@/components/common/Readout";
 import type { BtResult, BtRow } from "@/lib/engine/types";
 import { money, parseNum, pctStr } from "@/lib/format";
@@ -37,7 +38,6 @@ import { setNavDir } from "@/lib/nav-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
-import { cn } from "@/lib/utils";
 
 const GOLD = SERIES.plan, BLUE = SERIES.sky, RED = SERIES.rose;
 const MIXES = [["100", "100/0"], ["80", "80/20"], ["60", "60/40"], ["40", "40/60"], ["0", "0/100"]] as const;
@@ -71,19 +71,6 @@ function rebalNote(B: BtResult) {
 }
 
 type SortCol = "year" | "stock" | "sv" | "bond" | "cash" | "ret" | "infl" | "real" | "end" | "endReal";
-
-/** A return that is a real gain or loss: Gain or Loss with an arrow (the
-    Never Alone Rule; the column or row names what it is). The figure's
-    text is unchanged, and zero stays in Text. */
-function Signed({ v, children }: { v: number; children: React.ReactNode }) {
-  if (!v) return <>{children}</>;
-  const Icon = v > 0 ? ArrowUpIcon : ArrowDownIcon;
-  return (
-    <span className={cn("whitespace-nowrap", v > 0 ? "text-gain" : "text-destructive")}>
-      <Icon className="relative -top-px mr-0.5 inline size-3 align-middle" aria-hidden="true" />{children}
-    </span>
-  );
-}
 
 export function Backtest() {
   const router = useRouter();
