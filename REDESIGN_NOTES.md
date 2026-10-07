@@ -543,6 +543,40 @@ written into DESIGN.md unless it says otherwise.
   to see which comes out ahead.", and the cost strip, chart and table fold
   away (elements kept, empty, for e2e).
 
+- **Budget (/budget): Basic's thirds, inverted in weight: the ledger in the
+  two thirds, the reading in the third, sticky.** From 1024px the lines take
+  the wide left two thirds (Budget is all inputs: income, 19 preset lines,
+  custom lines) and the reading sits in the right third as a sticky aside
+  (scrolls on its own if taller than the screen, static below 1024px), so
+  every amount typed shows its effect. Inputs stay on the left as everywhere
+  else. One card "Your budget" with an intro line and CSV: Income first
+  under its own head (field, /yr|/mo, Copy from Income Tax now a ghost
+  button), then the groups as single-column rows with a hairline between
+  lines (two-up only when the list itself is 820px+ wide, a container query;
+  that's tablets 900-1023px), Add custom item and the two pull-ins with plus
+  icons. Below 448px of list width (phones) each line puts its name on its
+  own line with the amount (full width) and period under it: no mid-word
+  breaks. Empty lines show their name and 0 in Muted (state keeps "0").
+  Preset names show a pencil on hover/focus (always, faint, on touch).
+  Reading card: HeroReading `under` with Left over per year (bgLeft, the
+  old headline, the help tour's "Reading it" target) in amber; over budget
+  the label reads "Over budget, per year", Loss with a trending-down glyph
+  before the unchanged note; no income: Text, with "Enter your income to
+  begin" (no green $0). Income and Total spending (per year) at Display
+  size. A CompositionBar of the income: spending (Muted), saving (Sky), left
+  over (amber, new PartTone "answer" in Reading.tsx); over budget it is
+  spending and saving only. Under it the per-month/per-year totals as a
+  plain key/value list (ids kept; left-over rows lose the green, keep Loss
+  when negative). Then Emergency fund: the "Target for [6 mo] of monthly
+  expenses" sentence moved here beside its answer, efTarget at Display size
+  (the dead "v gold" class gone). Phones: PinnedReading (left over, spending
+  per year) leads the ledger. The legacy #tab-budget width rules in
+  03-navigation.css are removed (the page lays out its own grid in SOLO).
+  Segmented `compact` (only Budget uses it) is quieter: chosen option Text at
+  medium weight on the shared thumb, no fill or bold; 44px on touch.
+  DESIGN.md's Layout line listing Budget among "pages without inputs" is
+  corrected.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -773,6 +807,22 @@ written into DESIGN.md unless it says otherwise.
   compared against the old site by help.spec; left for the help pass.
 - **Rent vs. Buy**: 44px hit areas for the "?" dots and CSV — shared TipDot /
   CsvButton.
+
+- **Budget**: per-group subtotals and highlighting the largest lines —
+  new computed figures (hard stop).
+- **Budget**: Left over per month as the hero — bgLeft (per year) is the
+  existing headline figure, the help tour's focus and the share card's;
+  the monthly figure sits in the list right under the bar instead.
+- **Budget**: an income line drawn across the composition bar when over
+  budget — would need a new marker element and label; the hero carries
+  the over-budget state (Loss, glyph, words).
+- **Budget**: the help tour and the Guide coach say "Left over at the top" /
+  "+ Retirement contribution" — tour and coach text are compared against
+  the old site; left for the help pass (on desktop Left over is now top
+  right; the buttons have a plus icon instead of a typed "+").
+- **Budget**: CSV button size on touch — the shared xs Button already grows
+  its hit area to 44px under a finger; visual size unchanged.
+- **Budget**: article label "Budget calculator" — SEO/article copy, owner call.
 
 ## Fixed
 

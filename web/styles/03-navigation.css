@@ -129,26 +129,6 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
   .toolcards{max-width:1060px}
   .toolgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 }
-/* Budget has no sidebar, so in solo mode it gets a centered, generously
-   wide column instead of stretching a form edge-to-edge or sitting narrow
-   with blank space beside it like a sidebar-shaped tool would. Desktop
-   only — mobile's existing layout for this already works well. */
-@media (min-width:641px){
-  #tab-budget{max-width:820px;margin:0 auto;width:100%}
-  #tab-budget .bgrow .desc{font-size:14px}
-}
-/* A single column of 21 budget lines ran very long, and stranded each amount
-   far to the right of the label it belongs to. Two columns halves the page and
-   shortens that eye-trip; the category heading still spans both. */
-@media (min-width:900px){
-  #tab-budget{max-width:1040px}
-  .bggroup{display:grid;grid-template-columns:1fr 1fr;gap:0 30px;align-items:start}
-  .bggroup-h{grid-column:1 / -1}
-  /* The totals and emergency-fund panels are single label/amount pairs. Left
-     at full width they strand each amount a screen away from its label, so
-     they keep a readable measure while the entry grid above uses the space. */
-  #tab-budget .kv,#tab-budget .efrow{max-width:620px}
-}
 /* Flat: on hover (and keyboard focus) the card steps up a tone and its edge
    strengthens. Nothing lifts or glows; the icon acts out its tool. */
 .toolcard{position:relative;display:flex;align-items:center;gap:18px;

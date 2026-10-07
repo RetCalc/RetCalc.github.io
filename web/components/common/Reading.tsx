@@ -118,10 +118,11 @@ export function PinnedReading({ main, side, tone = "answer" }: {
     only echo the bar). Colors by token: "start" (Rule Strong), "in"
     (Muted), "gain" (Gain, for real growth only); parts that are only
     categories (an asset mix's holdings) take the chart series in their
-    order: "sky", "teal", "lavender", "gray". */
-export type PartTone = "start" | "in" | "gain" | "sky" | "teal" | "lavender" | "gray";
+    order: "sky", "teal", "lavender", "gray". "answer" (Signal Amber) marks
+    the part that is the page's key result (Budget's left over). */
+export type PartTone = "start" | "in" | "gain" | "answer" | "sky" | "teal" | "lavender" | "gray";
 const PART: Record<PartTone, string> = {
-  start: "bg-input", in: "bg-muted-foreground", gain: "bg-gain",
+  start: "bg-input", in: "bg-muted-foreground", gain: "bg-gain", answer: "bg-primary",
   sky: "bg-series-sky", teal: "bg-series-teal", lavender: "bg-series-lavender", gray: "bg-series-gray",
 };
 

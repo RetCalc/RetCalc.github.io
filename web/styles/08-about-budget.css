@@ -54,19 +54,45 @@
 .about.disclaimer{border-color:var(--ds-rule-strong)}
 
 /* ---------- budget ---------- */
+/* The ledger: a group head over its lines; each line is its name, then the
+   amount and its period. The list sizes itself to its own width (it sits in
+   the wide column from 1024px, the full width below). */
+#bgList{container-type:inline-size}
+/* The income block (Debt Payoff uses the same two classes). */
 .bgincome{max-width:520px}
 .bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .bggroup{margin-bottom:6px}
-.bggroup-h{font-size:11.5px;color:var(--dim);font-weight:600;
-  padding:12px 0 6px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}
-.bgrow{display:flex;gap:8px;align-items:center;padding:5px 0}
-.bgrow .desc{flex:1 1 auto;min-width:0;font-size:13.5px;color:var(--text)}
-.bgrow span.desc[contenteditable]{cursor:text;border-radius:4px;
+.bggroup-h{font-size:13px;color:var(--text);font-weight:600;
+  padding:18px 0 7px;border-bottom:1px solid var(--line);margin-bottom:2px}
+.bggroup-h.bghead-first{padding-top:0;margin-bottom:12px}
+.bgrow{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line-soft)}
+.bgrow:last-child{border-bottom:0}
+.bgrow .desc{flex:1 1 auto;min-width:0;font-size:14px;color:var(--text);overflow-wrap:normal;word-break:normal}
+.bgrow .bgname{cursor:text;border-radius:4px;
   padding:2px 5px;margin:-2px -5px;border:1px dashed transparent}
-.bgrow span.desc[contenteditable]:hover{border-color:var(--line)}
-.bgrow span.desc[contenteditable]:focus{outline:2px solid var(--ds-focus);outline-offset:2px;border-color:var(--text);
+.bgrow .bgname:hover{border-color:var(--line)}
+.bgrow .bgname:focus{outline:2px solid var(--ds-focus);outline-offset:2px;border-color:var(--text);
   border-style:solid;background:var(--panel)}
-.bgrow .delspace{width:28px;flex:none}
+/* A line with no amount: its name and its 0 in Muted, so the lines in use
+   stand out. Typing in it brings the figure back to Text. */
+.bgrow[data-empty] > span.desc{color:var(--dim)}
+.bgrow[data-empty] input[inputmode=decimal]:not(:focus){color:var(--dim)}
+.bgrow .delspace{width:36px;flex:none}
+@media (pointer:coarse){.bgrow .delspace{width:44px}}
+/* Narrow (a phone): the name gets its own line, the amount and its period
+   under it, so a name never breaks mid-word. (Tailwind's @max-md, which
+   the amount field uses to take the rest of the line.) */
+@container (max-width:447.98px){
+  .bgrow{flex-wrap:wrap;row-gap:4px;padding:7px 0}
+  .bgrow .desc{flex-basis:100%}
+  .bgrow > .delspace{display:none}
+}
+/* Wide: two lines side by side, the group head across both. */
+@container (min-width:820px){
+  .bggroup{display:grid;grid-template-columns:1fr 1fr;gap:0 32px;align-items:start}
+  .bggroup-h{grid-column:1 / -1}
+  .bgrow:nth-last-child(2):nth-child(even){border-bottom:0}
+}
 .freqsel{width:auto;min-width:104px;flex:none}
 
 a.txlink{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}

@@ -252,7 +252,7 @@ The wordmark ("RetCalc", 700, 26px) and the tagline are brand elements, sized in
 
 The page is a centered column up to 1330px wide, with a page gutter of 26px (20px at 900px and below) that also respects the device's safe-area insets. The masthead, the tab rail and the content all align to that same gutter.
 
-Tool pages use a two-column grid: a 340px input column on the left and a fluid results column on the right, 20px apart. The input column is sticky under the tab rail and scrolls on its own when it is taller than the viewport. Results stack vertically, 20px apart, starting with the headline readout. Pages without inputs (Budget, the tool picker, About) use a single centered column at a comfortable measure rather than stretching edge to edge.
+Tool pages use a two-column grid: a 340px input column on the left and a fluid results column on the right, 20px apart. The input column is sticky under the tab rail and scrolls on its own when it is taller than the viewport. Results stack vertically, 20px apart, starting with the headline readout. Pages without inputs (the tool picker, About) use a single centered column at a comfortable measure rather than stretching edge to edge.
 
 Breakpoints: at 900px and below, the input column moves above the results and stops being sticky. At 640px and below, the phone layout takes over: menus become full-width sheets with thumb-sized rows, and the readout's figures stack.
 
