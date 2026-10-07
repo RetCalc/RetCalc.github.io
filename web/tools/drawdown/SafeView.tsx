@@ -11,7 +11,7 @@ import { useState } from "react";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { Scatter } from "@/components/charts/Scatter";
 import { MON } from "@/components/charts/HistNotes";
-import { TipDot } from "@/components/shell/Tooltips";
+import { Tipped } from "@/components/shell/Tooltips";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
 import {
@@ -80,11 +80,11 @@ function NoDial({ name, axis, setAxis }: { name: string; axis: "stock" | "years"
     </>
   );
 }
-const SafeTitle = () => <CardHeader><CardTitle id="ddSafeTitle">The most you could have started with<TipDot k="ddsafe" /></CardTitle></CardHeader>;
-const ValTitle = () => <CardHeader><CardTitle>Valuations at the start<TipDot k="ddvalue" /></CardTitle><CardDescription>Shiller CAPE</CardDescription></CardHeader>;
+const SafeTitle = () => <CardHeader><CardTitle id="ddSafeTitle"><span><Tipped text="The most you could have started with" k="ddsafe" /></span></CardTitle></CardHeader>;
+const ValTitle = () => <CardHeader><CardTitle><span><Tipped text="Valuations at the start" k="ddvalue" /></span></CardTitle><CardDescription>Shiller CAPE</CardDescription></CardHeader>;
 function HeatTitle({ axis, setAxis }: { axis: "stock" | "years"; setAxis: (a: "stock" | "years") => void }) {
   return (
-    <CardHeader><CardTitle>Success grid<TipDot k="ddheat" /></CardTitle><CardAction>
+    <CardHeader><CardTitle><span><Tipped text="Success grid" k="ddheat" /></span></CardTitle><CardAction>
       <SegmentedGroup id="segDDHeat">
         <SegmentedItem data-heat="stock" pressed={axis === "stock"} onClick={() => setAxis("stock")}>By stock share</SegmentedItem>
         <SegmentedItem data-heat="years" pressed={axis === "years"} onClick={() => setAxis("years")}>By years</SegmentedItem>

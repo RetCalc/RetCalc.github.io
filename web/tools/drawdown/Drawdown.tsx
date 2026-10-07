@@ -358,7 +358,7 @@ function Readout({ v, F, pinned, setMode, pin, unpin }: {
           <SegmentedItem data-dd="mc" pressed={mode === "mc"} onClick={() => setMode("mc")}>Monte Carlo</SegmentedItem>
         </SegmentedGroup>
         <Badge variant="outline" id="ddBadge">{F.badge}</Badge>
-        <Button variant="outline" size="sm" className="ml-auto" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
+        <Button variant="outline" size="sm" className="ml-auto max-sm:ml-0 max-sm:w-full" id="ddPin" title="Keep these results to compare your next changes against" onClick={pin}>{pinned ? "Pin again" : "Pin as baseline"}</Button>
       </div>
       <HeroReading tone={F.tone}
         hero={{

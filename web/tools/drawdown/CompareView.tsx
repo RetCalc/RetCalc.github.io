@@ -10,7 +10,7 @@ import { MultiChart, type Series } from "@/components/charts/MultiChart";
 import { Scatter } from "@/components/charts/Scatter";
 import { fmtAxisMoney } from "@/components/charts/scale";
 import { MON } from "@/components/charts/HistNotes";
-import { TipDot } from "@/components/shell/Tooltips";
+import { Tipped } from "@/components/shell/Tooltips";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Html } from "@/components/common/Html";
 import { useJob } from "@/lib/engine/jobs";
@@ -66,7 +66,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
   return (
     <>
       <Card id="ddShowPanel" data-ddtabs="compare">
-        <CardHeader><CardTitle>Strategy showdown<TipDot k="ddshowdown" /></CardTitle><CardDescription>each tuned to the same risk</CardDescription><CardAction><CsvButton table={table} label="Strategy showdown" /></CardAction></CardHeader>
+        <CardHeader><CardTitle><span><Tipped text="Strategy showdown" k="ddshowdown" /></span></CardTitle><CardDescription>each tuned to the same risk</CardDescription><CardAction><CsvButton table={table} label="Strategy showdown" /></CardAction></CardHeader>
         {best ? (
           <div className={cn("grid grid-cols-1 border-b border-border", best.steady && "sm:grid-cols-2")} id="ddShowBest">
             <ShowBest label="Spends the most at this risk" x={best.top} />
@@ -182,7 +182,7 @@ function SpotPanel({ v, res, o, T, charted }: { v: DDView; res: DdShow | null; o
   const age = v.age;
   return (
     <Card id="ddSpotPanel" data-ddtabs="compare" data-empty={res && !win ? "" : undefined}>
-      <CardHeader><CardTitle id="ddSpotTitle">{win ? "Retiring in " + year : "Through a hard start"}<TipDot k="ddspots" /></CardTitle><CardAction>
+      <CardHeader><CardTitle id="ddSpotTitle"><span><Tipped text={win ? "Retiring in " + year : "Through a hard start"} k="ddspots" /></span></CardTitle><CardAction>
         <NativeSelect className="mr-2 w-auto" id="ddSpotYear" aria-label="Retiring in any year" value={pick != null ? String(pick) : ""} onChange={(e) => {
           const n = parseInt(e.target.value, 10);
           setPick(isFinite(n) ? n : null);

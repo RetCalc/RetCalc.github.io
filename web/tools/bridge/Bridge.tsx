@@ -174,7 +174,8 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
                 : "What you'll have on the day you retire, and what you'll spend."}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className={two}>
+              {/* One column on phones: "Married filing jointly" needs the full row. */}
+              <div className="two bottomalign max-sm:grid-cols-1">
                 <NumberField id="brAge" label={<Tipped text="Retire at" k="brage" />} unit="age" max={59} value={s.age} onValueChange={set("age")} />
                 <SelectField id="brStatus" label="Filing status" value={s.status} onChange={setStatus}>
                   <option value="m">Married filing jointly</option>

@@ -14,7 +14,7 @@ import { HistLegend, McLegend } from "@/components/charts/Legend";
 import { Scatter } from "@/components/charts/Scatter";
 import { FanTipRows } from "@/components/charts/TipRows";
 import { fmtAxisMoney } from "@/components/charts/scale";
-import { TipDot } from "@/components/shell/Tooltips";
+import { Tipped } from "@/components/shell/Tooltips";
 import { CsvButton } from "@/components/common/CsvButton";
 import { SignArrow, ToneGlyph } from "@/components/common/Signed";
 import { Html } from "@/components/common/Html";
@@ -108,8 +108,7 @@ export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: Pl
       <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2" data-ddtabs="plan">
         <ScorePanel v={v} R={R} monthly={!!v.lastMonthly} />
         <Card className="min-w-0" data-ddtabs="plan">
-          <CardHeader><CardTitle id="ddIncomeSectionTitle">{hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"}
-            <TipDot k="sequence" /></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
+          <CardHeader><CardTitle id="ddIncomeSectionTitle"><span><Tipped text={hist && view === "year" ? "What your income looked like starting in " + showLabel : "What your income looked like"} k="sequence" /></span></CardTitle><CardDescription>in today&apos;s dollars</CardDescription></CardHeader>
           <CardContent>
             <div id="ddSpendYearView" hidden={view !== "year"}><SpendStats run={run} /></div>
             <div id="ddSpendAllView" hidden={view !== "all"}><SpendStatsAll H={H} o={o} /></div>
@@ -169,7 +168,7 @@ function ScorePanel({ v, R, monthly }: { v: DDView; R: PlanResult | null; monthl
   }
   return (
     <Card id="ddScorePanel" className="min-w-0" data-ddtabs="plan">
-      <CardHeader><CardTitle>Spending scorecard<TipDot k="ddscore" /></CardTitle><CardDescription id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " a year") : ""}</CardDescription></CardHeader>
+      <CardHeader><CardTitle><span><Tipped text="Spending scorecard" k="ddscore" /></span></CardTitle><CardDescription id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " a year") : ""}</CardDescription></CardHeader>
       <CardContent>
         <div id="ddScore">
           {rows.map((r) => (
@@ -284,7 +283,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const eras = DD_ERAS.filter((e) => e.to >= lo && e.from <= hi);
   return (
     <Card id="ddSeqPanel" data-ddtabs="plan">
-      <CardHeader><CardTitle>When you retire<TipDot k="ddseq" /></CardTitle><CardAction>
+      <CardHeader><CardTitle><span><Tipped text="When you retire" k="ddseq" /></span></CardTitle><CardAction>
         <SegmentedGroup id="segDDSeq">
           <SegmentedItem data-ddseq="decade" pressed={dec} onClick={() => setKind("decade")}>By first decade</SegmentedItem>
           <SegmentedItem data-ddseq="year" pressed={!dec} onClick={() => setKind("year")}>By start year</SegmentedItem>

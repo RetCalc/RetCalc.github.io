@@ -293,7 +293,8 @@ export function Optimizer() {
                 <option value="0">No, or it&apos;s rolled over</option>
                 <option value="1">Yes, at 55 or later: rule of 55</option>
               </SelectField>
-              <div className="two bottomalign max-sm:grid-cols-2">
+              {/* One column on phones: "90% of markets" needs the full row. */}
+              <div className="two bottomalign max-sm:grid-cols-1">
                 <NumberField id="opHeir" label={<Tipped text="Heirs' tax rate" k="opheir" />} unit="%" max={50} value={s.heir} onValueChange={set("heir")} />
                 <SelectField id="opTarget" label={<Tipped text="Must last in" k="optarget" />} value={s.target} onChange={set("target")}>
                   <option value="0.9">90% of markets</option>
