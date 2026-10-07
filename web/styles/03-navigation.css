@@ -214,11 +214,5 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
 }
 
 /* ---------- FIRE calculator ---------- */
-.fire-slider-section{margin:8px 0 4px}
-.fire-slider-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:13px}
-.fire-slider-lbl{color:var(--dim)}
-.fire-slider-val{font-family:var(--mono)}
-.fire-slider-ends{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--dimmer)}
-.fire-slider-result{font-size:14px;font-family:var(--mono);color:var(--text);margin-top:6px;font-weight:600}
 .firow-fire td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
 

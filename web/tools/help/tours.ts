@@ -374,7 +374,7 @@ const fire: Tour<FireInputs> = { name: "FIRE Calculator", title: "When could wor
     { title: "Reading the result", focus: "#fiAge", tasks: ({ s, base }) => [
       { h: "<b>FIRE age</b> is when you'd reach the target, <b>Portfolio at FIRE</b> what you'd have then in today's dollars, and <b>Years until FIRE</b> how far away it is." },
       { h: "Raise the <b>Contribution</b> a little and see how many years it takes off. Early on, saving more speeds things up far more than a higher return.", ok: tried(n(s.contrib) !== base.contrib) },
-      { h: "Above the chart, switch <b>Rate band</b> to <b>Historical</b> to see when you'd have reached it in real markets since 1926, with a slider for how sure you want to be." },
+      { h: "At the top of the result, switch <b>Rate band</b> to <b>Historical</b> to see when you'd have reached it in real markets since 1926, with a slider for how sure you want to be." },
       { h: "Retiring early usually needs a plan for health insurance before 65 and for reaching retirement accounts before 59½. The Early Retirement Bridge and Healthcare tools cover both." },
     ] },
   ],

@@ -416,6 +416,45 @@ written into DESIGN.md unless it says otherwise.
   capped at the copy measure. Phones get a PinnedReading (the hero and its
   last secondary).
 
+- **FIRE Calculator (/fire): Basic's thirds, two methods named apart.**
+  Inputs a third, results two thirds from 1024px; fire joins SOLO
+  (lib/site.ts). 11-12 fields fit a third easily, and thirds match the other
+  tools; sticky with its own scroll from 1024px, static below. Inputs card
+  "Your plan" with an intro line: the mode switch, then Title heads You (age;
+  planned retirement age beside it in Coast), Saving, Market (return |
+  inflation; in Historical a hint at the pair, "Not used with market
+  history", wired by aria-describedby, the fields still editable; Stock mix
+  #fiHistMix moves here from the chart card, Historical only) and Goal
+  (target type | withdrawal rate, one column on phones; the target field
+  relabelled "Yearly spending" / "Portfolio target" by type). Results: one
+  reading card. Its quiet toolbar holds the method switch (#segFireChart,
+  moved from the chart header), since it decides which answers show. Hero:
+  the FIRE / Coast FIRE age in amber, labelled "..., at your rate of return"
+  (#fiAgeLabel keeps "FIRE age"; the guide trip reads it), years from now in
+  its note (#fiYears kept there; "Years until FIRE" stops being a peer, it
+  restated the age). Portfolio at FIRE / at coast and Target portfolio (was
+  a key/value row, #fiKVTarget kept) at Display size. In Historical the
+  reading gains a second band, the slider beside its own answer, labelled
+  "FIRE age, in market history" (#fiSuccessAge at Display size, #fiSliderNote
+  under both), so the rate-of-return answer and the history answer are both
+  in view and named as different questions (the orchestrator's call: the
+  headline does not swap figures). A plan that never gets there shows "Not
+  in range" in Loss with a cross and the note (Coast now names the
+  retirement age), plus one band saying what to change; no target shows
+  dashes in Text, a prompt band, and the chart and table fold away.
+  Remaining key/values form a quiet two-column strip; gains green only above
+  $0. Chart: the target rule starts at the plot edge with "Target $X" above
+  it; the FIRE / Coast upright is labelled with its age ("50%: 60.3" in
+  Historical); a dot marks where contributions stop in Coast; all labels
+  data-screen-only (FIRE has no share kit, so nothing is copied today). The
+  ± band sits in the chart header. Year by year folds (shadcn Collapsible,
+  keepMounted) and opens full height, so the highlighted FIRE row shows on
+  the page's own scroll; a caption in Coast says the table keeps saving
+  every year. Phones pin Age and Inflation adj. (Advanced's pattern) and a
+  PinnedReading (FIRE age, portfolio then) leads the inputs. NativeRange
+  (only FIRE uses it) keeps its 6px track inside a 24px hit area, 44px
+  under a finger; the "NOTE" eyebrow and `.fire-slider-*` rules are gone.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -566,6 +605,29 @@ written into DESIGN.md unless it says otherwise.
   link sits inside method text (inline links are exempt; restyle only).
 - **Healthcare**: renaming the page title / article label — SEO copy, the
   owner's call.
+
+- **FIRE**: the headline following the chosen method (the historical age in
+  Historical) — changes which figure the headline shows (orchestrator's
+  call); the headline is labelled "at your rate of return" and the history
+  answer sits beside the slider in the reading instead.
+- **FIRE**: Historical as the default method, and a reachable Coast default
+  (retire at 65 fails with the defaults) — default inputs; the Coast
+  failure now says what to change.
+- **FIRE**: the Coast failure sentence quoting the full-saving age and
+  balance ("you'd reach $1,024,146 only at 66.6") — those are FIRE mode's
+  figures, not shown in Coast; the sentence names the retirement age only.
+- **FIRE**: scroll the FIRE row into view in the table — new behavior; the
+  table opens full height instead, so the row is reached by the page scroll.
+- **FIRE**: "Today's dollars" for the "Inflation adj." header — changes the
+  CSV header, and Advanced keeps "Inflation adj."; kept.
+- **FIRE**: a composition bar (start / contributions / growth) under the
+  reading — optional, and its shares would mix the initial balance (today's
+  dollars) with future-dollar figures; not built.
+- **FIRE**: the method note ("…compounded month by month, 1926–2025… Your
+  rate of return and inflation inputs are ignored in this mode") — method
+  text, kept word for word under the chart; the field hint is new copy.
+- **FIRE**: 44px hit areas for the "?" tip dots and CSV — shared TipDot and
+  CsvButton (site-wide pass).
 
 ## Fixed
 
