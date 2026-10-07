@@ -42,8 +42,8 @@
 .op-shot{display:flex;align-items:center;gap:var(--gap);height:72px;padding-left:4px}
 .op-bow{flex:none;width:var(--bw);height:var(--bh);position:relative}
 .op-bow svg{display:block;width:100%;height:100%;overflow:visible}
-.op-bow .limb{fill:none;stroke:var(--ds-text);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
-.op-bow .str{fill:none;stroke:var(--ds-text);stroke-width:2.2;transform-origin:33px 32px}
+.op-bow .limb{fill:none;stroke:var(--ds-brand-jade);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.op-bow .str{fill:none;stroke:var(--ds-brand-steel);stroke-width:2.2;transform-origin:33px 32px}
 /* Until the release only the drawn string shows, bent back by --pull; at
    the release the straight one takes over and twangs once, and the bow
    kicks. */
@@ -66,8 +66,8 @@
 .op-arrow{position:absolute;left:0;top:50%;width:var(--al);height:var(--ah);
   transform:translateX(var(--x)) translate(-100%,-50%)}
 .op-arrow svg{display:block;width:100%;height:100%;overflow:visible}
-.op-arrow .sh{stroke:var(--ds-text);stroke-width:3.2;stroke-linecap:round}
-.op-arrow .hd{fill:var(--ds-text)}
+.op-arrow .sh{stroke:var(--ds-brand-gold);stroke-width:3.2;stroke-linecap:round}
+.op-arrow .hd{fill:var(--ds-brand-gold)}
 .op-target{position:absolute;top:50%;left:calc(100% + var(--gap) + var(--ts) / 2);width:var(--ts);height:var(--ts);
   transform:translate(-50%,-50%)}
 .op-target svg{display:block;width:100%;height:100%}

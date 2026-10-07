@@ -45,8 +45,8 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
    straight, and twangs once on the release. */
 .gd-bow{position:absolute;top:0;left:-21px;width:20px;height:34px;transform:translateY(-50%)}
 .gd-bow svg{display:block;width:100%;height:100%;overflow:visible}
-.gd-bow .limb{fill:none;stroke:var(--ds-text);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
-.gd-bow .str{fill:none;stroke:var(--ds-text);stroke-width:2.2;transition:opacity .12s}
+.gd-bow .limb{fill:none;stroke:var(--ds-brand-jade);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.gd-bow .str{fill:none;stroke:var(--ds-brand-steel);stroke-width:2.2;transition:opacity .12s}
 .gd-bow .str.drawn{opacity:0}
 .gd-track.nocked .gd-bow .str.drawn{opacity:1}
 .gd-track.nocked .gd-bow .str.rest{opacity:0}
@@ -56,8 +56,8 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-arrow{position:absolute;left:0;top:0;width:var(--al);height:var(--ah);
   transform:translateX(var(--x)) translate(-100%,-50%)}
 .gd-arrow svg,.gd-goal svg{display:block;width:100%;height:100%;overflow:visible}
-.gd-arrow .sh{stroke:var(--ds-text);stroke-width:3.2;stroke-linecap:round}
-.gd-arrow .hd{fill:var(--ds-text)}
+.gd-arrow .sh{stroke:var(--ds-brand-gold);stroke-width:3.2;stroke-linecap:round}
+.gd-arrow .hd{fill:var(--ds-brand-gold)}
 /* The arrow and the fills travel together. .ready goes on once the page
    has drawn the saved progress, so loading the page just places them. A
    move forward also arcs (.fly, set from script for the length of it): the
