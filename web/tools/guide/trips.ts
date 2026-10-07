@@ -25,7 +25,7 @@ import type { HealthcareInputs } from "@/tools/healthcare/model";
 import type { Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { stageFields, type StagesInputs } from "@/tools/stages/model";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
-import { bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
+import { bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pensionItems, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
 import { hasChanges, schedule } from "./schedule";
 import type { Answers, Capture, ChangeEvent, Trip } from "./store";
 
@@ -623,6 +623,35 @@ const TRIPS: Record<string, TripDef<never>> = {
         msg: "From Stages: " + edits.map((e) => (e.kind === "custom" ? "ages " + e.from + " to " + e.to + ", " + (e.delta > 0 ? "+" : "−") + money(Math.abs(e.delta)) + "/mo" : "")).join("; ") +
           ". They're on Changes ahead now as your own edits, and your number uses them." };
     },
+  },
+
+  /* The already-retired on-ramp (doc 2, "Already retired"): the Drawdown
+     Simulator filled from the on-ramp's answers, as a trip fills it, with
+     no plan run first. Social Security already claimed goes in as a known
+     benefit from now; a pension as other income. */
+  retired: {
+    prefill: (a: Answers, s: DrawdownState, trip: Trip) => {
+      if (!ok(a.age) || !pos(a.saved) || !pos(a.retSpend)) return s;
+      const age = Math.round(a.age), spAge = mar(a) && ok(a.spouseAge) ? Math.round(a.spouseAge) : null;
+      const years = Math.max(20, Math.min(60, Math.max(95 - age, spAge != null ? 95 - spAge : 0)));
+      const rate = Math.round((a.retSpend / a.saved) * 10000) / 100;
+      const d: Record<string, unknown> = { initial: Math.round(a.saved), years, strategy: "fixed", stock: 60, stockEnd: "", fee: 0, rate: Math.max(0.01, rate),
+        retireAge: String(age), guardBand: 20, adjust: 10, floor: 10, ceil: 10, yaleWeight: 70, yaleRate: rate, vpwRate: 3.7, vpwFV: 0, spendFloor: 0, spendCeil: 0, legacyGoal: 0,
+        ssMode: "manual", ssWho: mar(a) && pos(a.ssOwn2) ? "couple" : "single", ssAmount: Math.round((a.ssOwn || 0) * 12), ssAmount2: Math.round((a.ssOwn2 || 0) * 12), ssDelay: age };
+      const keep = s.incomeItems.filter((x) => x.name !== "Pension (from the guide)");
+      d.incomeItems = [...keep, ...pensionItems(a, age).map((x) => ({ ...x, name: "Pension (from the guide)" } as DdItem))];
+      trip.base = { seen: {} };
+      return ddWrite(s, d);
+    },
+    tasks: ({ a }: Ctx<DrawdownState>) => [
+      { h: "Your " + (pos(a.saved) ? money(a.saved) : "savings") + " and " + (pos(a.retSpend) ? money(a.retSpend) + " a year" : "spending") + " are loaded as a <b>Starting withdrawal rate</b>" +
+        (pos(a.ssOwn) ? ", with Social Security from now" : "") + (pos(a.pension) ? " and your pension under <b>Other income</b>" : "") + ". The simulator doesn't work out tax, so include it in what you spend." },
+      { h: "<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid." },
+      { h: "Under <b>How each starting year fared</b>, tap a hard one such as <b>1966</b> or <b>1929</b>, and switch the chart to <b>Selected year</b> to watch it play out.", ok: on('#segDDView [data-ddview="year"].on') },
+      { h: "Try <b>Guardrails</b> under <b>Withdrawal strategy</b>: it cuts a little in bad years, and you'll see how much longer the money lasts for it." },
+    ],
+    chip: () => { const t = text("#ddSuccess"); return t && t !== "—" ? "Success rate<br><b>" + t + "</b>" : ""; },
+    capture: () => ({ msg: "Back from the Drawdown Simulator. Your answers stay here, and the simulator keeps your numbers for next time." }),
   },
 
   backtest: {

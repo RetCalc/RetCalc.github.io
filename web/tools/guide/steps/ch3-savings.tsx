@@ -17,7 +17,7 @@ import { RangeBars } from "../charts/RangeBars";
 import { buckets, byMix, compounding, dollarAt, growthParts, mixHistory } from "../figures";
 import { Lesson, Term } from "../lessons/Lesson";
 import { SourceBadge } from "../SourceBadge";
-import { BackNote, Choice, H3, MoneyF, Q, SelF, useGuideView } from "../ui";
+import { BackNote, Choice, H3, MoneyF, Q, SelF, Task, useGuideView } from "../ui";
 import { usePlanJob } from "../usePlan";
 import { rounded } from "../words";
 import { Learn, Means, Numbers } from "../zones";
@@ -105,7 +105,7 @@ function SavingsReadout() {
 
 /* ---------- Card 7 · How it's invested ---------- */
 export function InvestedCard() {
-  const { a } = useGuideView();
+  const { a, g } = useGuideView();
   const H = mixHistory(), i = mixIndex(a.risk), h = H[i];
   const P = growthParts(a);
   return (
@@ -127,6 +127,7 @@ export function InvestedCard() {
           hint="Target-date funds are usually Balanced or Growth until the last decade before retirement; the fund's page shows its share in stocks." /></div>
       </Numbers>
       <Means><MixReadout /></Means>
+      {g.pace === "full" ? <Task id="backtest" head="See what your mix has earned in the Portfolio Backtest" /> : null}
     </>
   );
 }

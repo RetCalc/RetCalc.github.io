@@ -68,7 +68,7 @@ export default function CoachBody() {
         setGuide((x) => { x.trip = null; });
         toast("Guide closed. It's saved under the Guide tab whenever you want to pick it back up.");
       }}
-      tasks={tasks} next={here && nextTask ? "<span>Next</span>" + nextTask.h.replace(/<em>.*?<\/em>/g, "") : undefined}
+      tasks={meta.learn ? [{ h: "<b>Here you'll learn</b> " + meta.learn + "." }, ...tasks] : tasks} next={here && nextTask ? "<span>Next</span>" + nextTask.h.replace(/<em>.*?<\/em>/g, "") : undefined}
       part={here && pages && meta.pages ? { i: pi, titles: meta.pages.map((p) => p.title), focus: meta.pages[pi]?.focus, go: (d) => {
         const n = Math.max(0, Math.min(pages - 1, pi + d));
         setGuide((x) => { if (x.trip) x.trip.page = n; });

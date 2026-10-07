@@ -63,6 +63,11 @@ const need = (yes: boolean, why: string) => (yes ? null : why);
 export const STEPS: StepDecl[] = [
   { id: "welcome", chapter: 0, title: "Welcome", type: "welcome", pace: "quick", minutes: 0.5 },
 
+  /* Already retired: the on-ramp into the Drawdown Simulator (doc 2), the
+     whole route when it's chosen; no plan is run and there's no score. */
+  { id: "retired", chapter: 1, title: "Already retired", type: "question", pace: "quick", minutes: 2, tripMinutes: 10, tool: "drawdown",
+    needs: (a) => need(ok(a.age) && pos(a.saved) && pos(a.retSpend), "Enter your age, your savings and what you spend a year") },
+
   /* 1 · You and your timeline */
   { id: "about", chapter: 1, title: "About you", type: "question", pace: "quick", minutes: 1, sync: true, teaches: ["two-clocks"],
     needs: (a) => need(ok(a.age) && a.age >= 16 && a.age < 100 && ok(a.retire) && a.retire > a.age && a.retire <= 90, "Enter your age and a retirement age after it"),
@@ -90,7 +95,7 @@ export const STEPS: StepDecl[] = [
     // The match question is under More detail; unanswered, it's "not sure",
     // which the plan's moves then ask about.
     commit: (a, put) => { put("employer", 0, "default"); put("match", "unsure", "default"); } },
-  { id: "invested", chapter: 3, title: "How it's invested", type: "question", pace: "quick", minutes: 0.5, tool: "backtest", sync: true, teaches: ["real-returns"],
+  { id: "invested", chapter: 3, title: "How it's invested", type: "question", pace: "quick", minutes: 0.5, tripMinutes: 5, tool: "backtest", sync: true, teaches: ["real-returns"],
     prep: (a, put) => put("risk", 0.045, "default") },
   { id: "accounts", chapter: 3, title: "Where it sits", type: "question", pace: "full", minutes: 1.5, tool: "advanced", teaches: ["buckets"],
     prep: (a, put) => put("saveTo", "trad", "default"),

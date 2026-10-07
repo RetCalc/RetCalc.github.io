@@ -10,11 +10,12 @@ import { Timeline } from "../charts/Timeline";
 import { Lesson, Term } from "../lessons/Lesson";
 import { NumF, Q, SelF, useGuideView } from "../ui";
 import { Learn, Means, Numbers } from "../zones";
+import { Button } from "@/components/ui/button";
 
 const yrs = (n: number) => fmtNum(n) + (n === 1 ? " year" : " years");
 
 export function AboutYou() {
-  const { v, a } = useGuideView();
+  const G = useGuideView(), { v, a } = G;
   const valid = ok(a.age) && ok(a.retire) && a.retire > a.age;
   const end = valid ? a.retire! + yearsFor(a, a.retire!) : 95;
   return (
@@ -38,7 +39,9 @@ export function AboutYou() {
           <NumF k="age" label="Your age" affix="age" />
           {mar(v) ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
           <NumF k="retire" label="Age you'd like to retire" affix="age" hint="A guess is fine. You can try other ages later."
-            err={ok(a.age) && ok(a.retire) && a.retire <= a.age ? <>Your retirement age needs to be later than your age today. This guide is built for the saving years; if you&apos;ve already retired, the <b>Drawdown Simulator</b> is the tool for you.</> : null} />
+            err={ok(a.age) && ok(a.retire) && a.retire <= a.age ? <>Your retirement age needs to be later than your age today. This guide is built for the saving years; if you&apos;ve
+              {" "}already retired, <Button variant="quiet" size="inline" data-gd="retired" onClick={() => { G.set("retired", true, true); G.go("retired"); }}>start from what you have</Button>
+              {" "}and the guide opens the <b>Drawdown Simulator</b> with it.</> : null} />
         </div>
       </Numbers>
       <Means>

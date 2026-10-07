@@ -106,7 +106,8 @@ export function finishTrip(): boolean {
       Object.assign(g.a, c.set);
       for (const k of Object.keys(c.set) as (keyof Answers)[]) mark(g, k, "tool", tripTool(t.id));
     }
-    g.back = c && c.msg ? { step: t.from, msg: c.msg, undo: c.undo || null, undoSrc: c.undo ? undoSrc : null } : null;
+    g.back = c && c.msg ? { step: t.from, msg: c.msg, undo: c.undo || null, undoSrc: c.undo ? undoSrc : null,
+      tool: c.set && Object.keys(c.set).some((k) => !/Seen$/.test(k)) ? tripTool(t.id) : null } : null;
     if (stepById(t.from)) g.cur = t.from;
     g.trip = null;
   });

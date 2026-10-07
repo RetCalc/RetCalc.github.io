@@ -154,6 +154,7 @@ export function Task({ id, head, label, after }: { id: string; head: string; lab
     <div className="gd-task">
       <div className="gd-task-h"><div className="gd-task-ic" aria-hidden="true">{T.tool === "basic" ? BASIC_ICON : <ToolIcon sub={T.tool as ToolSub} />}</div>
         <div><b>{head}</b><span>{T.name + (T.mins ? " · about " + T.mins + " minutes" : "")}</span></div></div>
+      <p className="gd-task-learn">You&apos;ll learn {T.learn}.</p>
       {T.preview?.length ? <ol className="gd-steps">{T.preview.map((t) => <li key={t}>{t}</li>)}</ol> : null}
       <Button variant="outline" size="lg" data-trip={id} onClick={() => G.trip(id)}>{label || "Open " + T.name}<i className="arw" aria-hidden="true"></i></Button>
       {after}
@@ -172,7 +173,7 @@ export function BackNote({ step }: { step: string }) {
   const see = B.see;
   return (
     <div className="gd-callout ok">
-      <Html as="span" html={B.msg} />
+      {B.tool ? <><SourceBadge kind="tool" tool={B.tool} />{" "}</> : null}<Html as="span" html={B.msg} />
       {see ? <><br /><Button variant="outline" size="sm" className="mt-2" data-trip={see.trip} data-from={step} onClick={() => G.trip(see.trip, step)}>
         {see.label}<i className="arw" aria-hidden="true"></i></Button></> : null}
       {B.undo ? <><br /><Button variant="outline" size="sm" className="mt-2" data-gd="undo" onClick={() => G.act("undo")}>Undo</Button></> : null}

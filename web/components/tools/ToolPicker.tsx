@@ -22,6 +22,20 @@ export function ToolCard({ c }: { c: Tool }) {
   );
 }
 
+/* Start here (doc 3, D9): the two ways in for someone who doesn't know
+   which tool to open, above the groups. Neither is in the tool list, so
+   each card has its own simple icon. */
+const START = [
+  { href: "/guide", id: "guide", name: "Retirement Readiness Guide",
+    desc: "One question at a time, in about ten minutes: your number, a readiness score and the moves that matter most, with a lesson on every card.",
+    icon: <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="13" stroke="currentColor" strokeWidth="2" /><circle cx="20" cy="20" r="7" stroke="currentColor" strokeWidth="2" />
+      <circle cx="20" cy="20" r="1.8" fill="currentColor" /><path d="M8 32 18.5 21.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg> },
+  { href: "/", id: "basic", name: "Retirement calculator",
+    desc: "Six questions: what your savings grow to by retirement, in today's dollars, and whether it lasts.",
+    icon: <svg viewBox="0 0 40 40" fill="none"><path d="M5 33h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M7 29 C15 27 22 22 33 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M27 9h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg> },
+];
+
 export function ToolPicker() {
   return (
     <div className="stack solo" role="tabpanel" aria-labelledby="tabbtn-tools" id="tab-toolpicker">
@@ -34,6 +48,21 @@ export function ToolPicker() {
           <p className="toolhead-name" aria-hidden="true">Tools</p>
           <p className="toolhead-desc">Every tool, grouped by the question it answers.</p>
         </div>
+        <section className="toolgroup" aria-label="Start here" data-start="">
+          <h2 className="toolgroup-h"><span>Start here</span><em>Not sure which tool you need? Begin with one of these.</em></h2>
+          <div className="toolgrid">
+            {START.map((c, i) => (
+              <ToolCardLink key={c.id} href={c.href} sub={c.id} i={i}>
+                <div className="toolcard-top">
+                  <span className="toolcard-icon" aria-hidden="true">{c.icon}</span>
+                  <div className="toolcard-name">{c.name}</div>
+                  <div className="toolcard-arrow">&#8250;</div>
+                </div>
+                <div className="toolcard-desc">{c.desc}</div>
+              </ToolCardLink>
+            ))}
+          </div>
+        </section>
         {TOOL_GROUPS.map((g) => (
           <section className="toolgroup" aria-label={g.label} key={g.label}>
             <h2 className="toolgroup-h"><span>{g.title}</span><em>{g.sub}</em></h2>

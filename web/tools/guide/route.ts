@@ -21,7 +21,9 @@ import type { Answers, Pace } from "./store";
 export { CHAPTERS, STEPS, type RouteFacts, type StepDecl } from "./steps/decl";
 
 export const stepById = (id: string) => STEPS.find((s) => s.id === id);
-export const applies = (s: StepDecl, a: Answers) => !s.when || s.when(a);
+/** Already retired (the on-ramp): the route is Welcome and one card. */
+export const applies = (s: StepDecl, a: Answers) =>
+  a.retired ? s.id === "welcome" || s.id === "retired" : s.id !== "retired" && (!s.when || s.when(a));
 /** Whether the pace walks a card, if it applies. */
 export const walks = (s: StepDecl, a: Answers, pace: Pace, facts: RouteFacts = {}) =>
   pace === "full" || s.pace === "quick" || !!s.promote?.(a, facts);

@@ -423,6 +423,79 @@ test("a trip into Budget brings spending back", async ({ page }) => {
   await expect(page.locator('#gdCard .field:has(#gdf-spend) .gd-src[data-src="tool"]')).toHaveText("from Budget");
 });
 
+/* Every trip goes there and back (doc 3, phase 5's gate): the trip box says
+   what you'll learn, the tool opens with the coach, and Back to guide
+   returns to the card it left from. The trips with their own tests above
+   and below (Income Tax, Budget, Drawdown, Stages, Advanced) are left out. */
+const EARLY = { ...(FIXTURES.find((f: { id: string }) => f.id === "early-55")!.a as Record<string, unknown>) };
+const TRIPS: { id: string; cur: string; pace: "quick" | "full"; a?: Record<string, unknown>; path: string }[] = [
+  { id: "debt", cur: "debt", pace: "full", path: "/debt" },
+  { id: "mortOwn", cur: "goals", pace: "full", path: "/mortgage" },
+  { id: "mortBuy", cur: "goals", pace: "full", a: { ...MAYA, home: "buy" }, path: "/mortgage" },
+  { id: "college", cur: "goals", pace: "full", path: "/college" },
+  { id: "backtest", cur: "invested", pace: "full", path: "/backtest" },
+  { id: "basic", cur: "number", pace: "quick", path: "/" },
+  { id: "fire", cur: "adjust", pace: "full", path: "/fire" },
+  { id: "healthcare", cur: "health", pace: "full", path: "/healthcare" },
+  { id: "bridge", cur: "bridge", pace: "full", a: EARLY, path: "/bridge" },
+];
+for (const T of TRIPS) {
+  test(`the ${T.id} trip goes there and back`, async ({ page }) => {
+    test.setTimeout(90_000);
+    await seeded(page, { ...stateWith(T.pace, T.cur), a: T.a ?? MAYA });
+    const q = (await page.locator("#gdCard .gd-q").textContent())!;
+    const box = page.locator(`#gdCard .gd-task:has([data-trip="${T.id}"])`);
+    if (await box.count()) await expect(box.locator(".gd-task-learn")).toContainText("You'll learn");
+    await page.locator(`#gdCard [data-trip="${T.id}"]`).first().click();
+    await expect(page.locator("#gdCoach")).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(new RegExp(T.path.replace("/", "\\/") + "$"));
+    await expect(page.locator("#gdCoach")).toContainText("Here you'll learn");
+    await page.locator("#gdCoachBack").click();
+    await expect(page.locator("#gdCard .gd-q")).toHaveText(q);
+  });
+}
+
+test("already retired: the on-ramp opens the Drawdown Simulator with your numbers, and there's no score", async ({ page }) => {
+  await seeded(page, null);
+  await page.locator('[data-gd="retired"]').click();
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Already retired? Start from what you have");
+  await expect(page.locator("#gdCount")).toHaveText(/^Step 1 of 1/);
+  await page.fill("#gdf-age", "68"); await page.fill("#gdf-saved", "900000"); await page.fill("#gdf-retSpend", "50000"); await page.fill("#gdf-ssOwn", "2500");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("You'd draw about $20,000 a year from savings after $30,000 of Social Security and pensions: 2.2%");
+  const score = (await page.locator("#gdStrip").isVisible()) ? null : page.locator("#gdScore");
+  if (score) await expect(score).toContainText("No score for a retirement under way");
+  await page.locator('#gdCard [data-trip="retired"]').click();
+  await expect(page.locator("#gdCoach")).toBeVisible();
+  await expect(page).toHaveURL(/\/drawdown$/);
+  await expect(page.locator("#ddYears")).toHaveValue("27");
+  await expect(page.locator("#ddSuccess")).not.toHaveText("—");
+  await page.locator("#gdCoachBack").click();
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Already retired? Start from what you have");
+  await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("Back from the Drawdown Simulator");
+  // not retired after all: back on the guide's own route
+  await page.locator('[data-gd="not-retired"]').click();
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("First, your timeline");
+});
+
+test("two toolkit hand-offs open their tools with your numbers and come back to the plan", async ({ page }) => {
+  test.setTimeout(90_000);
+  await seeded(page, stateWith("quick", "plan"));
+  for (const k of ["debt", "healthcare"]) {
+    await page.locator(`[data-kit="${k}"] [data-trip]`).click({ timeout: 30_000 });
+    await expect(page.locator("#gdCoach")).toBeVisible({ timeout: 30_000 });
+    await page.locator("#gdCoachBack").click();
+    await expect(page.locator("#gdCard .gd-q")).toHaveText("Your plan");
+  }
+});
+
+test("the Tools page starts with a Start here row: the guide and the calculator", async ({ page }) => {
+  await page.goto(NEW + "/tools");
+  const row = page.locator("[data-start]");
+  await expect(row.locator(".toolgroup-h")).toContainText("Start here");
+  await expect(row.locator('a[href="/guide"]')).toContainText("Retirement Readiness Guide");
+  await expect(row.locator('a[href="/"]')).toContainText("Retirement calculator");
+});
+
 test("the Drawdown Simulator tour goes there and back", async ({ page }) => {
   test.setTimeout(120_000);
   await seeded(page, stateWith("full", "strategy"));

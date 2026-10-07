@@ -103,3 +103,12 @@ test("switching pace keeps your place, or moves to the next card the pace walks"
   assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true, accounts: true, changes: true }) }, "full"), "adjust");
   assert.equal(landing(at(a, "full", "accounts"), "quick"), "retspend");
 });
+
+test("already retired: the route is the Welcome card and the on-ramp, and nothing else", () => {
+  const a = { ...fixture("maya-sam"), retired: true };
+  assert.deepEqual(route(a, "quick").map((s) => s.id), ["welcome", "retired"]);
+  assert.deepEqual(route(a, "full").map((s) => s.id), ["welcome", "retired"]);
+  assert.equal(current(at(a, "quick", "plan")).id, "retired");
+  // and the on-ramp is on no one else's route
+  assert.ok(!route(fixture("maya-sam"), "full").some((s) => s.id === "retired"));
+});

@@ -23,7 +23,7 @@ const PACES: { id: Pace; title: string; lines: string[] }[] = [
 ];
 
 export function Welcome() {
-  const { g, a, act } = useGuideView();
+  const G = useGuideView(), { g, a, act } = G;
   const started = Object.keys(g.done).length > 0;
   const mins = (p: Pace) => (p === "quick" ? "About " + paceMinutes(a, "quick") + " minutes" : "An hour or more");
   return (
@@ -45,6 +45,8 @@ export function Welcome() {
         })}
       </div>
       <Callout>Switch pace whenever you like; nothing you&apos;ve answered is lost. Your answers stay in this browser only and never leave it.</Callout>
+      <p className="hint mt-3">Already retired?{" "}
+        <Button variant="quiet" size="inline" data-gd="retired" onClick={() => { G.set("retired", true, true); G.go("retired"); }}>Start from what you have instead</Button></p>
     </>
   );
 }

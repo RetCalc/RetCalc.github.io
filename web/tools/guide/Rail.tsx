@@ -51,6 +51,7 @@ export function NumberTile({ g, cur, plan }: { g: GuideState; cur: StepDecl; pla
   // The figures as you arrived on this card, to say what it changed.
   const [entry, setEntry] = useState<{ cur: string; fv: number; need: number | null } | null>(null);
   if (S && need !== undefined && entry?.cur !== cur.id) setEntry({ cur: cur.id, fv: S.fv, need });
+  if (g.a.retired) return <div className="gd-num"><p className="gd-num-empty">The guide&apos;s number is for the saving years. The Drawdown Simulator tests a retirement under way.</p></div>;
   if (!S) {
     return (
       <div className="gd-num" aria-busy={stale || undefined}>
@@ -85,6 +86,7 @@ export function NumberTile({ g, cur, plan }: { g: GuideState; cur: StepDecl; pla
     answers, and each area with its points, its rule and your figure. */
 export function ScoreCard({ g, plan, go, ring }: { g: GuideState; plan: RailPlan; go: (id: string) => void; ring: boolean }) {
   const R = plan.score;
+  if (g.a.retired) return <p className="gd-num-empty">No score for a retirement under way: it measures the saving years.</p>;
   if (!R) return <p className="gd-num-empty">Working it out…</p>;
   const rt = rating(R.score), have = FACTORS.filter((f) => R.P[f.id]).map((f) => f.id);
   return (

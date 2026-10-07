@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { OptimizeStep } from "../optimize";
 import { StrategyStep } from "../strategy";
 import { TuneStep } from "../tune";
+import { RetiredCard, RetiredFoot } from "./ch0-retired";
 import { Welcome, WelcomeFoot } from "./ch0-welcome";
 import { AboutYou } from "./ch1-timeline";
 import { DebtCard, GoalsCard, IncomeCard, SafetyCard, SpendCard } from "./ch2-standing";
@@ -22,6 +23,7 @@ export interface StepView { Body: () => ReactNode; Foot?: () => ReactNode }
 
 export const VIEWS: Record<string, StepView> = {
   welcome: { Body: Welcome, Foot: WelcomeFoot },
+  retired: { Body: RetiredCard, Foot: RetiredFoot },
   about: { Body: AboutYou },
   income: { Body: IncomeCard },
   spending: { Body: SpendCard },

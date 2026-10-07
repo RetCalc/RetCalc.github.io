@@ -105,6 +105,8 @@ export interface Capture { set?: Partial<Answers>; msg: string; undo?: Partial<A
     from, put back with them. */
 export interface Back {
   step: string; msg: string; undo?: Partial<Answers> | null; undoSrc?: Sources | null;
+  /** The tool whose figures came back, for the note's source badge. */
+  tool?: string | null;
   see?: { trip: string; label: string } | null;
 }
 
