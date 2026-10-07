@@ -1,0 +1,646 @@
+{
+  "recorded": "2026-10-07T15:02:27.885Z",
+  "about": "The readiness guide's figures for the fixture households (scripts/baseline/guide-fixtures.mjs), from the harness in guide.mjs, which reproduces the live guide to the cent. Money in today's dollars, to the cent; shares to six places. Only the entries under deliberate may differ in the guide's code, each a decision in doc 3.",
+  "households": {
+    "maya-sam": {
+      "name": "Maya and Sam",
+      "exercises": "A couple, far ahead, retiring before 65",
+      "figures": {
+        "pia1": 3250.71,
+        "pia2": 2345.88,
+        "fv": 1518176.1,
+        "portIncome": 60727.04,
+        "ss": 67159.08,
+        "taxYr": 13165,
+        "hcYr": 8330.58,
+        "hcYears": 5,
+        "lifeTax": 422724.22,
+        "success": 1,
+        "survived": 66,
+        "total": 66,
+        "medianEnd": 5574512.45,
+        "coverage": 1.53774,
+        "need": 567000,
+        "score": 89,
+        "areas": {
+          "outlook": 40,
+          "rate": 20,
+          "cushion": 7,
+          "debt": 12,
+          "flow": 10
+        },
+        "shares": {
+          "outlook": 1,
+          "rate": 1,
+          "cushion": 0.460714,
+          "debt": 0.82,
+          "flow": 1
+        },
+        "levers": {
+          "save+100": {
+            "fv": 1577738.24,
+            "need": 567000,
+            "success": 1,
+            "successPct": 100
+          },
+          "save+250": {
+            "fv": 1667081.43,
+            "need": 567000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-3": {
+            "fv": 1244696.23,
+            "need": 806000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-1": {
+            "fv": 1421874.81,
+            "need": 648000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+1": {
+            "fv": 1620014.72,
+            "need": 478000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+3": {
+            "fv": 1841595.83,
+            "need": 274000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend-5000": {
+            "fv": 1518176.1,
+            "need": 482000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+5000": {
+            "fv": 1518176.1,
+            "need": 799000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+10000": {
+            "fv": 1518176.1,
+            "need": 929000,
+            "success": 1,
+            "successPct": 100
+          }
+        }
+      }
+    },
+    "dan": {
+      "name": "Dan",
+      "exercises": "Behind schedule, the Close the gap branch",
+      "figures": {
+        "pia1": 2825.88,
+        "pia2": 0,
+        "fv": 282580.78,
+        "portIncome": 11303.23,
+        "ss": 33910.56,
+        "taxYr": 235.19,
+        "hcYr": 0,
+        "hcYears": 0,
+        "lifeTax": 7057.17,
+        "success": 0.098592,
+        "survived": 7,
+        "total": 71,
+        "medianEnd": 0,
+        "coverage": 0.865581,
+        "need": 504000,
+        "score": 25,
+        "areas": {
+          "outlook": 0,
+          "rate": 7,
+          "cushion": 3,
+          "debt": 7,
+          "flow": 8
+        },
+        "shares": {
+          "outlook": 0,
+          "rate": 0.363462,
+          "cushion": 0.209302,
+          "debt": 0.466667,
+          "flow": 0.806122
+        },
+        "levers": {
+          "save+100": {
+            "fv": 314948.58,
+            "need": 504000,
+            "success": 0.28169,
+            "successPct": 28
+          },
+          "save+250": {
+            "fv": 363500.28,
+            "need": 504000,
+            "success": 0.535211,
+            "successPct": 54
+          },
+          "retire-3": {
+            "fv": 232714.9,
+            "need": 690000,
+            "success": 0,
+            "successPct": 0
+          },
+          "retire-1": {
+            "fv": 265222.04,
+            "need": 565000,
+            "success": 0,
+            "successPct": 0
+          },
+          "retire+1": {
+            "fv": 300720.66,
+            "need": 457000,
+            "success": 0.486111,
+            "successPct": 49
+          },
+          "retire+3": {
+            "fv": 339486.03,
+            "need": 348000,
+            "success": 0.891892,
+            "successPct": 89
+          },
+          "spend-5000": {
+            "fv": 282580.78,
+            "need": 383000,
+            "success": 0.535211,
+            "successPct": 54
+          },
+          "spend+5000": {
+            "fv": 282580.78,
+            "need": 646000,
+            "success": 0,
+            "successPct": 0
+          },
+          "spend+10000": {
+            "fv": 282580.78,
+            "need": 793000,
+            "success": 0,
+            "successPct": 0
+          }
+        }
+      }
+    },
+    "priya-tom": {
+      "name": "Priya and Tom",
+      "exercises": "Changes ahead, the staged schedule, college overlap",
+      "figures": {
+        "pia1": 4369.46,
+        "pia2": 3938.21,
+        "fv": 8694812.76,
+        "portIncome": 347792.51,
+        "ss": 99692.04,
+        "taxYr": 107131.02,
+        "hcYr": 32254.32,
+        "hcYears": 5,
+        "lifeTax": 3265180.69,
+        "success": 1,
+        "survived": 66,
+        "total": 66,
+        "medianEnd": 39082500.05,
+        "coverage": 1.97016,
+        "need": 1434000,
+        "score": 98,
+        "areas": {
+          "outlook": 40,
+          "rate": 20,
+          "cushion": 13,
+          "debt": 15,
+          "flow": 10
+        },
+        "shares": {
+          "outlook": 1,
+          "rate": 1,
+          "cushion": 0.87037,
+          "debt": 1,
+          "flow": 1
+        },
+        "levers": {
+          "save+100": {
+            "fv": 8774583.91,
+            "need": 1434000,
+            "success": 1,
+            "successPct": 100
+          },
+          "save+250": {
+            "fv": 8894240.63,
+            "need": 1434000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-3": {
+            "fv": 7026768.29,
+            "need": 1880000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-1": {
+            "fv": 8107439.22,
+            "need": 1574000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+1": {
+            "fv": 9315960.28,
+            "need": 1282000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+3": {
+            "fv": 10667456.93,
+            "need": 948000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend-5000": {
+            "fv": 8694812.76,
+            "need": 1309000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+5000": {
+            "fv": 8694812.76,
+            "need": 1576000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+10000": {
+            "fv": 8694812.76,
+            "need": 1722000,
+            "success": 1,
+            "successPct": 100
+          }
+        }
+      }
+    },
+    "renter-29": {
+      "name": "A single renter at 29",
+      "exercises": "Placeholders and badges, the shortest route",
+      "figures": {
+        "pia1": 2132.55,
+        "pia2": 0,
+        "fv": 216419.42,
+        "portIncome": 8656.78,
+        "ss": 25590.56,
+        "taxYr": 27.46,
+        "hcYr": 0,
+        "hcYears": 0,
+        "lifeTax": 1589.9,
+        "success": 1,
+        "survived": 73,
+        "total": 73,
+        "medianEnd": 454318.11,
+        "coverage": 1.036935,
+        "need": 171000,
+        "score": 86,
+        "areas": {
+          "outlook": 40,
+          "rate": 20,
+          "cushion": 4,
+          "debt": 15,
+          "flow": 8
+        },
+        "shares": {
+          "outlook": 1,
+          "rate": 1,
+          "cushion": 0.241935,
+          "debt": 1,
+          "flow": 0.760763
+        },
+        "levers": {
+          "save+100": {
+            "fv": 332292.53,
+            "need": 171000,
+            "success": 1,
+            "successPct": 100
+          },
+          "save+250": {
+            "fv": 506102.19,
+            "need": 171000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-3": {
+            "fv": 184677.71,
+            "need": 258000,
+            "success": 0.414286,
+            "successPct": 41
+          },
+          "retire-1": {
+            "fv": 205369.86,
+            "need": 199000,
+            "success": 0.944444,
+            "successPct": 94
+          },
+          "retire+1": {
+            "fv": 227966.21,
+            "need": 122000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+3": {
+            "fv": 252641.98,
+            "need": 28000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend-5000": {
+            "fv": 216419.42,
+            "need": 56000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+5000": {
+            "fv": 216419.42,
+            "need": 286000,
+            "success": 0.671233,
+            "successPct": 67
+          },
+          "spend+10000": {
+            "fv": 216419.42,
+            "need": 401000,
+            "success": 0.219178,
+            "successPct": 22
+          }
+        }
+      }
+    },
+    "couple-58": {
+      "name": "A couple at 58 with a pension",
+      "exercises": "Pre-retiree, pension lines, Medicare at 65",
+      "figures": {
+        "pia1": 3050,
+        "pia2": 1480,
+        "fv": 1040892.25,
+        "portIncome": 41635.69,
+        "ss": 54900,
+        "taxYr": 7125.42,
+        "hcYr": 9283.92,
+        "hcYears": 3,
+        "lifeTax": 229612.23,
+        "success": 1,
+        "survived": 68,
+        "total": 68,
+        "medianEnd": 2709749.91,
+        "coverage": 1.345493,
+        "need": 627000,
+        "score": 100,
+        "areas": {
+          "outlook": 40,
+          "rate": 20,
+          "cushion": 15,
+          "debt": 15,
+          "flow": 10
+        },
+        "shares": {
+          "outlook": 1,
+          "rate": 1,
+          "cushion": 1,
+          "debt": 1,
+          "flow": 1
+        },
+        "levers": {
+          "save+100": {
+            "fv": 1047248.46,
+            "need": 627000,
+            "success": 1,
+            "successPct": 100
+          },
+          "save+250": {
+            "fv": 1056782.77,
+            "need": 627000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-3": {
+            "fv": 879754.7,
+            "need": 896000,
+            "success": 0.876923,
+            "successPct": 88
+          },
+          "retire-1": {
+            "fv": 985584.47,
+            "need": 721000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+1": {
+            "fv": 1097859.27,
+            "need": 522000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+3": {
+            "fv": 1216971.6,
+            "need": 366000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend-5000": {
+            "fv": 1040892.25,
+            "need": 510000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+5000": {
+            "fv": 1040892.25,
+            "need": 753000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+10000": {
+            "fv": 1040892.25,
+            "need": 883000,
+            "success": 1,
+            "successPct": 100
+          }
+        }
+      }
+    },
+    "early-55": {
+      "name": "A 52-year-old retiring at 55",
+      "exercises": "Getting to 59½, the rule of 55, Healthcare before 65",
+      "figures": {
+        "pia1": 3654.28,
+        "pia2": 0,
+        "fv": 1184303.85,
+        "portIncome": 47372.15,
+        "ss": 43851.38,
+        "taxYr": 6182.26,
+        "hcYr": 9174.34,
+        "hcYears": 10,
+        "lifeTax": 171995.98,
+        "success": 0.885246,
+        "survived": 54,
+        "total": 61,
+        "medianEnd": 1883914.32,
+        "coverage": 1.337937,
+        "need": 1208000,
+        "score": 95,
+        "areas": {
+          "outlook": 36,
+          "rate": 20,
+          "cushion": 15,
+          "debt": 15,
+          "flow": 9
+        },
+        "shares": {
+          "outlook": 0.902869,
+          "rate": 1,
+          "cushion": 0.980769,
+          "debt": 1,
+          "flow": 0.936508
+        },
+        "levers": {
+          "save+100": {
+            "fv": 1188084.83,
+            "need": 1209000,
+            "success": 0.885246,
+            "successPct": 89
+          },
+          "save+250": {
+            "fv": 1193756.3,
+            "need": 1209000,
+            "success": 0.885246,
+            "successPct": 89
+          },
+          "retire-3": null,
+          "retire-1": {
+            "fv": 1102740.69,
+            "need": 1284000,
+            "success": 0.75,
+            "successPct": 75
+          },
+          "retire+1": {
+            "fv": 1269537.35,
+            "need": 1135000,
+            "success": 0.983871,
+            "successPct": 98
+          },
+          "retire+3": {
+            "fv": 1451683.46,
+            "need": 977000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend-5000": {
+            "fv": 1184303.85,
+            "need": 1057000,
+            "success": 0.983607,
+            "successPct": 98
+          },
+          "spend+5000": {
+            "fv": 1184303.85,
+            "need": 1354000,
+            "success": 0.754098,
+            "successPct": 75
+          },
+          "spend+10000": {
+            "fv": 1184303.85,
+            "need": 1499000,
+            "success": 0.540984,
+            "successPct": 54
+          }
+        }
+      }
+    },
+    "self-employed": {
+      "name": "A self-employed saver",
+      "exercises": "The savings-rate wording and the SEP note",
+      "figures": {
+        "pia1": 3092.55,
+        "pia2": 0,
+        "fv": 1127753.35,
+        "portIncome": 45110.13,
+        "ss": 37110.56,
+        "taxYr": 11944.31,
+        "hcYr": 0,
+        "hcYears": 0,
+        "lifeTax": 348155.15,
+        "success": 1,
+        "survived": 71,
+        "total": 71,
+        "medianEnd": 3013443.98,
+        "coverage": 1.210119,
+        "need": 535000,
+        "score": 98,
+        "areas": {
+          "outlook": 40,
+          "rate": 20,
+          "cushion": 13,
+          "debt": 15,
+          "flow": 10
+        },
+        "shares": {
+          "outlook": 1,
+          "rate": 1,
+          "cushion": 0.896825,
+          "debt": 1,
+          "flow": 0.980769
+        },
+        "levers": {
+          "save+100": {
+            "fv": 1178000.35,
+            "need": 535000,
+            "success": 1,
+            "successPct": 100
+          },
+          "save+250": {
+            "fv": 1253370.86,
+            "need": 536000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-3": {
+            "fv": 945174.02,
+            "need": 736000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire-1": {
+            "fv": 1064195.93,
+            "need": 601000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+1": {
+            "fv": 1194170.84,
+            "need": 485000,
+            "success": 1,
+            "successPct": 100
+          },
+          "retire+3": {
+            "fv": 1336106.68,
+            "need": 360000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend-5000": {
+            "fv": 1127753.35,
+            "need": 409000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+5000": {
+            "fv": 1127753.35,
+            "need": 678000,
+            "success": 1,
+            "successPct": 100
+          },
+          "spend+10000": {
+            "fv": 1127753.35,
+            "need": 823000,
+            "success": 1,
+            "successPct": 100
+          }
+        }
+      }
+    }
+  },
+  "deliberate": []
+}
