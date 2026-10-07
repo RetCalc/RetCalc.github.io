@@ -107,8 +107,8 @@ const mortgageTour: Tour<MortgageInputs> = { name: "Mortgage Calculator", title:
     { title: "Extra payments and refinancing", focus: "#moExtrasOn", tasks: ({ s }) => {
       const open = s.extrasOn === "1";
       return [
-        { h: "Under <b>Already have this loan?</b>, choose <b>Yes, show these options</b>. For a loan you already have, enter today's balance as the <b>Home price</b>, 0% down, and the years left as the <b>Length</b>.", ok: open },
-        { h: "Try $100 or $200 in <b>Extra toward principal</b>. The panel on the right shows the interest you'd save and how much sooner you'd be done.", ok: open && n(s.extraMo) > 0 },
+        { h: "Under <b>Extra payments and refinancing</b>, choose <b>Yes, show these options</b>. For a loan you already have, enter today's balance as the <b>Home price</b>, 0% down, and the years left as the <b>Length</b>.", ok: open },
+        { h: "Try $100 or $200 in <b>Extra toward principal</b>. The panel under the fields shows the interest you'd save and how much sooner you'd be done.", ok: open && n(s.extraMo) > 0 },
         { h: "A <b>One-time extra payment</b>, like a bonus, can either finish the loan early or, with a <b>Recast</b>, lower the monthly payment instead." },
         { h: "<b>New rate</b>, <b>New length</b> and <b>Closing costs</b> test a refinance. The break-even is how long the lower payment takes to repay the closing costs: if you might move before then, it isn't worth it." },
         { h: "Paying extra earns a sure return equal to your rate. Above about 6% it often beats investing; below about 4%, investing usually comes out ahead. Build an emergency fund first either way." },

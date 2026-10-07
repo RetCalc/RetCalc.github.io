@@ -963,7 +963,7 @@ export function About({ states }: { states: StateOption[] }) {
           location: property tax alone ranges from well under 0.5% to over 2%
           of value, so replace them with local figures if you have them.</dd>
         </dl>
-        <p>The <b>Already have this loan?</b> toggle below the main inputs opens extra
+        <p>The <b>Extra payments and refinancing</b> card under the payment opens extra
         payments, a recast, and a refinance comparison &mdash; skip it entirely for a
         quick estimate on a home you haven&apos;t bought yet.</p>
         <dl className="gloss">

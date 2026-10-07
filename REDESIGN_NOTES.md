@@ -615,6 +615,40 @@ written into DESIGN.md unless it says otherwise.
   PinnedReading (debt-free, total interest) leads the inputs. Dead
   `.dtrow/.dthead/.dtstrat/.dtwarn` and `.bgincome*` rules removed.
 
+- **Mortgage (/mortgage): Basic's thirds, the payment as the answer, extras
+  beside their answers.** Inputs a third, results two thirds from 1024px;
+  mortgage joins SOLO. One card "The home and loan" with an intro line in
+  four groups (The home, The loan, Monthly costs, Cost of owning); pairs stay
+  two-up on phones; the PMI note sits under PMI / HOA at 13px with an icon;
+  Loan amount and Down payment stay as derived lines under the down
+  payment. Like Rent vs. Buy the column no longer pins on desktop (about
+  1,000px of inputs would scroll inside the page). Results: HeroReading
+  (Monthly payment amber, "Everything included"; Principal & interest and
+  Total interest paid, #moTotInt moved out of the inputs, at Display size),
+  then "Where the payment goes" in the same card: Everything else (#moEsc and
+  its note) on the heading line and the ShareBar list two-up from 640px,
+  padded off the divider. The extras card "Extra payments and refinancing"
+  (was "Already have this loan?", with "For a new loan or one you already
+  have.") keeps the #moExtrasOn select and its options; when on, two
+  columns, Paying extra and Refinancing, each its inputs then its answer in
+  a tinted panel (payoff + "N sooner", Interest saved in Gain with a check,
+  the recast payment "down from" today's P&I; New payment "from" today's
+  P&I, Monthly change "Saves −$334/mo" with a trending-down icon (Costs +$X
+  in Loss with trending-up), break-even, lifetime Saves/Costs with an
+  icon). On phones each answer follows its own inputs, so every extras
+  answer is now after the base result and next to what drives it (the
+  e2e steps only set values by id). Price 0 or a down payment above the
+  price: the field takes the Loss edge (aria-invalid, -describedby, icon,
+  "Enter a home price." / "More than the home price."), the reading drops
+  its amber and dims, one band says what to fix, and the chart and table
+  fold away (kept in the page). Chart: on screen the fill between the two
+  paid lines is gone (BandChart screenOnly.noBand; print/share keep it) and
+  it has a one-line description. Amortization folds (keepMounted, CSV
+  unchanged); on phones Balance is pinned on the right. The help tour, the
+  Guide's "mortOwn" trip and About now name the card "Extra payments and
+  refinancing" (they named the old title); the tour's "panel on the right"
+  reads "panel under the fields".
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -879,6 +913,26 @@ written into DESIGN.md unless it says otherwise.
 - **Debt Payoff**: PinnedReading while the debts are on screen on desktop —
   the shared component is phones/tablets only; desktop keeps the reading
   beside the sticky inputs.
+
+- **Mortgage**: clamping or rejecting a down payment above the price (and
+  a price of 0) — changes what's computed; the field is marked and the
+  reading dimmed instead, figures unchanged.
+- **Mortgage**: a separate PITI ("payment to the lender") figure — a new
+  computed figure.
+- **Mortgage**: "Monthly payment · Everything included" relabelled "Monthly
+  cost of owning" — the note is accurate (everything is included); the
+  label question (a lender doesn't bill upkeep and utilities) is the
+  owner's copy call, and the share card, sheet and tour use the same words.
+- **Mortgage**: "Total paid" (P&I only) renamed "Loan payments" — column
+  label shared with the print summary and CSV; owner's copy call.
+- **Mortgage**: replacing the extras select with a Switch — e2e selects
+  #moExtrasOn by value and the tour names its options; restyled and
+  retitled instead.
+- **Mortgage**: "$334 less a month" wording — figure text kept
+  ("−$334/mo"), with "Saves" and a trending-down icon beside it.
+- **Mortgage**: the payoff date before extras, the base-loan line on the
+  chart, a PMI-end marker — new on-screen figures/data (owner's call).
+- **Mortgage**: "?" tip dots and CSV touch size — shared TipDot/CsvButton.
 
 ## E2E checks edited
 

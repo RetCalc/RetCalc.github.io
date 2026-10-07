@@ -190,7 +190,7 @@ const TRIPS: Record<string, TripDef<never>> = {
     prefill: (a: Answers, s: MortgageInputs) => (a.moState ? { ...s, ...(a.moState as MortgageInputs) } : s),
     tasks: ({ s }: Ctx<MortgageInputs>) => [
       { h: "Enter your loan as it is today: the remaining balance as <b>Home price</b>, <b>Down payment</b> at 0%, your rate, the <b>Length</b> closest to the years you have left, and <b>PMI</b> at 0 unless you still pay it." },
-      { h: "Under <b>Already have this loan?</b>, choose <b>Yes, show these options</b>.", ok: s.extrasOn === "1" },
+      { h: "Under <b>Extra payments and refinancing</b>, choose <b>Yes, show these options</b>.", ok: s.extrasOn === "1" },
       { h: "Try $100 or $200 in <b>Extra toward principal</b> and see how much interest it saves and how much sooner you're done.", ok: s.extrasOn === "1" && parseNum(s.extraMo) > 0 },
       { h: "Paying extra is a guaranteed return equal to your rate. Above about 6%, it often beats investing; below 4%, investing usually wins." },
     ],
