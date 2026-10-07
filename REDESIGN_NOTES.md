@@ -260,6 +260,22 @@ written into DESIGN.md unless it says otherwise.
   Gain/Loss 15% tints with check/cross glyphs and a legend; the CAPE "today"
   line and the showdown's comfort line are guide-colored, not amber.
 
+- **Withdrawal-strategy pages (/4-percent-rule and seven more): Drawdown's
+  thirds, with their own top and tail.** Same columns as /drawdown (inputs a
+  third, results two thirds; PinnedReading leads on phones), so the eight
+  stay identical to the simulator they are. What's specific to arriving on
+  one: the line under the h1 is the page's own preview-card text (CARD_ALT
+  after the page name, e.g. "…How deep did the cuts go?"), shown whole on
+  phones; under it "Run the full simulator" (/drawdown) and "How it works"
+  (jumps to the article); Drawdown's generic "New here?" card is hidden
+  (kept in the DOM, id intact); an "Other strategies" nav above the article
+  lists the eight pages in the picker's order (this one marked, not linked)
+  with "All of them in the full simulator"; the article is open by default.
+  Links only: an edited plan does not travel to /drawdown or another
+  strategy page, and landing pages still reopen on their preset (owner's
+  call). Trade-off: the open article makes the pages ~1,000px taller, but
+  it sits last and is the text that explains the numbers on screen.
+
 - **Income Tax (/incometax): Basic's thirds.** Inputs a third, results two
   thirds from 1024px; incometax joins SOLO (lib/site.ts). 7 normal / 14
   retirement fields fit a third as Advanced's 22 do; the column is sticky
@@ -1111,6 +1127,23 @@ written into DESIGN.md unless it says otherwise.
   disclosure — the count would be a new displayed figure; list kept.
 - **Compare**: percentage differences, a "your plan" slot in amber, a
   choosable baseline — new figures / new behavior.
+
+- **Strategy pages**: a one-line preset summary ("Set up for the 4% rule:
+  $1,000,000 in 60/40, $40,000 the first year…") — new copy with figures;
+  the page's own CARD_ALT line is used instead.
+- **Strategy pages**: a hero secondary that answers each page's question
+  (deepest cut, lowest spending, number of raises, today's CAPE rate) —
+  new figures in the reading; the scorecard below keeps them.
+- **Strategy pages**: carrying an edited plan into /drawdown, or keeping
+  edits on reload — behavior change, owner's call; plain links only.
+- **Strategy pages**: a per-strategy icon instead of Drawdown's — new
+  assets, and tool icons are Phase 2.
+- **Strategy pages**: inputs starting collapsed to a preset summary with
+  "Change the plan" — the help tour and e2e reach the fields directly, and
+  the pinned reading already leads on phones.
+- **Strategy pages**: moving the article up under the main chart — it would
+  push the three views down; it opens by default and "How it works" jumps
+  to it. Article h2 left as written (content unchanged).
 
 ## E2E checks edited
 

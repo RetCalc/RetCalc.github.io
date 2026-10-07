@@ -6,16 +6,19 @@ import { HouseholdBar } from "@/components/household/HouseholdBar";
 import { articleHtml } from "@/lib/articles";
 import { STATE_OPTIONS } from "@/lib/states";
 import { jsonLdFor } from "@/lib/seo";
-import { PAGES, TOOL_SUB, type Slug } from "@/lib/site";
+import { PAGES, TOOL_SUB, isStrategyPage, strategyLede, type Slug } from "@/lib/site";
 import { TOOLS } from "@/lib/tools";
 import { Article } from "./Article";
+import { StrategyLinks, StrategyLedeLinks } from "./StrategyLinks";
 import { ToolHeader } from "./ToolHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {
   const meta = PAGES[slug];
   const sub = TOOL_SUB[slug];
-  const article = articleHtml(slug);
+  // A strategy page opens its article: it explains the very setup on screen.
+  const strategy = isStrategyPage(slug);
+  const article = articleHtml(slug, strategy);
   const ld = JSON.stringify(jsonLdFor(slug)).replace(/</g, "\\u003c");
   return (
     <>
@@ -24,8 +27,10 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
       {/* About keeps it under Appearance; the homepage offers it after the
           result (tools/basic/Basic.tsx). */}
       {slug === "about" || slug === "home" ? null : <HouseholdBar states={STATE_OPTIONS} />}
-      {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={TOOLS[sub].desc} /> : null}
+      {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={strategyLede(slug) ?? TOOLS[sub].desc}
+        full={strategy} more={strategy ? <StrategyLedeLinks hasArticle={!!article} /> : null} /> : null}
       {children}
+      {strategy ? <StrategyLinks current={slug} /> : null}
       {article ? <Article html={article} /> : null}
     </>
   );

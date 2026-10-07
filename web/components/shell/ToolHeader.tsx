@@ -10,8 +10,11 @@ import { setNavDir } from "@/lib/nav-motion";
 import type { ToolSub } from "@/lib/tools";
 import { HelpButton } from "@/tools/help/ToolHelp";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function ToolHeader({ sub, name, desc }: { sub: ToolSub; name: string; desc: string }) {
+/** `more` sits under the description (a strategy page's links); `full`
+    keeps the description whole on phones instead of two lines. */
+export function ToolHeader({ sub, name, desc, more, full }: { sub: ToolSub; name: string; desc: string; more?: React.ReactNode; full?: boolean }) {
   const router = useRouter();
   return (
     <div className="toolback" id="toolBack">
@@ -23,7 +26,8 @@ export function ToolHeader({ sub, name, desc }: { sub: ToolSub; name: string; de
         <ToolIconTile sub={sub} className="toolcard-icon toolhead-icon" id="toolHeadIcon" />
         <div className="toolhead-t">
           <h1 className="toolhead-name" id="toolCrumb">{name}</h1>
-          <p className="toolhead-desc" id="toolHeadDesc">{desc}</p>
+          <p className={cn("toolhead-desc", full && "line-clamp-none")} id="toolHeadDesc">{desc}</p>
+          {more}
         </div>
         <HelpButton tool={sub} />
       </div>

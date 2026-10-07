@@ -212,7 +212,8 @@ export function Drawdown({ landing }: { landing?: string }) {
           }}
           unpin={() => setPinned(null)} />
 
-        <Card id="ddIntro" hidden={introSeen === "1"}>
+        {/* A strategy page's header already says what it's set up to answer. */}
+        <Card id="ddIntro" hidden={introSeen === "1" || !!landing}>
           <CardContent className="flex items-start gap-3.5">
             <div className="min-w-0 flex-auto">
               <div className="mb-1.5 font-semibold text-foreground">New here? Here&apos;s the idea.</div>

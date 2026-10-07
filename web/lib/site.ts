@@ -81,6 +81,21 @@ export const CARD_ALT: Partial<Record<Slug, string>> = {
   "tools": "Retirement Tools: Drawdown, taxes, Roth conversions, healthcare, FIRE, budgets and more."
 };
 
+/** The eight strategy pages (the Drawdown Simulator set up for one
+    strategy), in the strategy picker's order. */
+export const STRATEGY_PAGES = ["4-percent-rule", "ratcheting-withdrawal", "rmd-withdrawal-strategy", "vpw", "guardrails",
+  "risk-based-guardrails", "vanguard-dynamic-spending", "cape-withdrawal"] as const satisfies readonly Slug[];
+export function isStrategyPage(slug: Slug): boolean {
+  return (STRATEGY_PAGES as readonly Slug[]).includes(slug);
+}
+
+/** A strategy page's own line under its heading: its preview card's text
+    after the page's name (the question the page answers). */
+export function strategyLede(slug: Slug): string | null {
+  const alt = isStrategyPage(slug) ? CARD_ALT[slug] : undefined;
+  return alt ? alt.slice(alt.indexOf(": ") + 2) : null;
+}
+
 /** Pages laid out in one column (the rest put inputs beside results). */
 // The homepage, Advanced, Stages, the Drawdown Simulator (with its strategy
 // pages), Income Tax, the Plan Optimizer, the Early Retirement Bridge (with

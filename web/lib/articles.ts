@@ -18,13 +18,14 @@ const raw = cache((slug: Slug): string | null => {
   }
 });
 
-/** The article's HTML as shown: collapsed under its heading, with the
-    chevron that opens it (lib/collapse.ts). Null for a page without one. */
-export const articleHtml = cache((slug: Slug): string | null => {
+/** The article's HTML as shown: collapsed under its heading (open when
+    `open`), with the chevron that opens it (lib/collapse.ts). Null for a
+    page without one. */
+export const articleHtml = cache((slug: Slug, open = false): string | null => {
   const html = raw(slug);
   if (!html) return null;
   return html
-    .replace('class="seo-a panel about"', 'class="seo-a panel about collapsed"')
+    .replace('class="seo-a panel about"', open ? 'class="seo-a panel about"' : 'class="seo-a panel about collapsed"')
     .replace(/<\/h2>/, CHEVRON + "</h2>")
     .replace(/(<div class="body">[\s\S]*<\/div>)(\s*<\/article>)/, '<div class="about-collapse">$1</div>$2');
 });
