@@ -570,12 +570,15 @@ function FlowNotes({ ctx, P, rows }: { ctx: BrCtx; P: { medicaid: number; cliff:
   );
 }
 
-/* Each account's balance by age, on the market the column above picks. */
+/* Each account's balance by age, on the market the column above picks. The
+   total is the accounts' sum, not "your plan", so it takes a series color
+   (lavender) rather than amber. This chart isn't copied into the share card
+   or print summary (they take #chartBR). */
 function Balances({ ctx, rows }: { ctx: BrCtx; rows: BrRow[] }) {
   const S0 = { trad: ctx.trad + ctx.g457, roth: ctx.roth, brok: ctx.brok };
   const mk = (f: (e: BrRow["end"]) => number, start: number) => [{ year: 0, value: start }, ...rows.map((r, i) => ({ year: i + 1, value: f(r.end) }))];
   const series: Series[] = rows.length ? [
-    { name: "Total", color: SERIES.plan, pts: mk((e) => e.total, S0.trad + S0.roth + S0.brok), width: 2.6 },
+    { name: "Total", color: SERIES.lavender, pts: mk((e) => e.total, S0.trad + S0.roth + S0.brok), width: 2.6 },
     { name: "Traditional", color: SERIES.rose, pts: mk((e) => e.trad, S0.trad) },
     { name: "Roth", color: SERIES.teal, pts: mk((e) => e.roth, S0.roth) },
     { name: "Brokerage", color: SERIES.sky, pts: mk((e) => e.brok, S0.brok) },

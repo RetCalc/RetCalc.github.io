@@ -255,7 +255,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const M = seqMeasure(o), mo = H.monthly, n = H.runs[0].dec1.years, dec = kind === "decade";
   const eraYear = new Set(DD_ERAS.map((e) => e.year));
   const pts = H.runs.map((r) => ({
-    x: dec ? r.dec1.port * 100 : r.startYear + (r.startMonth - 1) / 12, y: M.of(r), run: r, miss: r.depleted, cur: r.startIdx === ps.sel,
+    x: dec ? r.dec1.port * 100 : r.startYear + (r.startMonth - 1) / 12, y: M.of(r), run: r, miss: r.depleted, sel: r.startIdx === ps.sel,
     label: dec && r.startMonth === 1 && eraYear.has(r.startYear) ? String(r.startYear) : null,
   }));
   const lo = H.runs[0].startYear, hi = H.runs[H.runs.length - 1].startYear;
@@ -315,7 +315,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
           </>;
         }} />
       <Html className="legend" id="legendDDQ" html={(dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch(SERIES.gain, "Lasted") + swatch(SERIES.loss, "Ran out") +
-        (ps.sel != null ? swatch(SERIES.plan, "The start picked in the table") : "")} />
+        (ps.sel != null ? "<span><i class='box-border rounded-full border-2 border-solid border-foreground bg-transparent'></i>The start picked in the table</span>" : "")} />
       <details className="dderas" id="ddEras" hidden={!eras.length}><summary>What happened in the marked years</summary>
         <div id="ddEraList">{eras.map((e) => <p key={e.year}><b>{e.year}: {e.title}.</b> {e.note}</p>)}</div>
       </details>

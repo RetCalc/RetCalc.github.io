@@ -15,6 +15,9 @@ export interface ScatterPoint {
   label?: string | null;
   /** The plan's own point: gold, larger, labeled first. */
   cur?: boolean;
+  /** A point picked elsewhere (a row in a table), not the plan: it keeps
+      its own color and gets a ring in Text, so amber stays the plan's. */
+  sel?: boolean;
   /** Didn't meet the mark: a hollow coral ring. */
   miss?: boolean;
   color?: string;
@@ -143,8 +146,11 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
             const color = p.cur ? SERIES.plan : p.miss ? SERIES.loss : p.color || SERIES.gain;
             return <circle key={i} cx={px} cy={py} r={(opt.small ? 2.6 : p.cur ? 6.5 : 5) * sw}
               fill={p.miss ? "none" : color} stroke={p.miss ? color : "var(--dotstroke)"}
-              strokeWidth={(p.miss ? 1.8 : 1.5) * sw} opacity={opt.small ? 0.55 : 1} />;
+              strokeWidth={(p.miss ? 1.8 : 1.5) * sw} opacity={opt.small && !p.sel ? 0.55 : 1} />;
           })}
+          {at.filter(({ p }) => p.sel).map(({ px, py }, i) => (
+            <circle key={"s" + i} cx={px} cy={py} r={(opt.small ? 5.5 : 8.5) * sw} fill="none" stroke="var(--text)" strokeWidth={1.8 * sw} />
+          ))}
           {labels.map((l, i) => text(l.x, l.y, l.text, { style: { fill: l.cur ? SERIES.plan : "var(--dim)" }, fontSize: fs * 0.95, fontWeight: l.cur ? 600 : 400 }, "l" + i))}
           <circle cx={hi != null ? at[hi].px : 0} cy={hi != null ? at[hi].py : 0} r={9 * sw} fill="none" stroke={SERIES.plan} strokeWidth={1.6 * sw} opacity={hi != null ? 1 : 0} />
         </>
