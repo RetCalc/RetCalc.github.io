@@ -48,8 +48,9 @@ interface Props<P extends BandPoint> {
       data-print-only (hidden on screen, see styles/11-charts.css), and their
       replacements are marked data-screen-only (left out of the copy). For a
       chart whose copy must not change: the x-axis labelled from `xOffset`,
-      no lower line, and the band as a flat fill instead of a gradient. */
-  screenOnly?: { xOffset?: number; noLoLine?: boolean; flatBand?: boolean };
+      no lower line, the band as a flat fill instead of a gradient, or no
+      band at all (a comparison line that isn't a range, such as a cost). */
+  screenOnly?: { xOffset?: number; noLoLine?: boolean; flatBand?: boolean; noBand?: boolean };
 }
 
 /** The chart's scales and frame, for drawing extra marks on it. */
@@ -144,6 +145,8 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
                   <path d={line((a) => a.p25!)} strokeWidth={1.2 * sw} strokeOpacity={.9} />
                 </g>
               </>
+            ) : so?.noBand ? (
+              <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={`url(#${g("bandFill")})`} data-print-only />
             ) : so?.flatBand ? (
               <>
                 <path d={ribbon((a) => a.hi!, (a) => a.lo!)} fill={`url(#${g("bandFill")})`} data-print-only />

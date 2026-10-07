@@ -482,6 +482,36 @@ written into DESIGN.md unless it says otherwise.
   typed shares over the total, with matching swatches (series sky, teal,
   lavender, gray: categories, not gains).
 
+- **College Savings (/college): Basic's thirds, one monthly figure with how
+  it steps down.** Inputs a third, results two thirds from 1024px; college
+  joins SOLO. Inputs card "College plan" with an intro line: the children as
+  flat rows (Stages' pattern: a hairline between children, "Child N" with a
+  quiet X remove, `.clkid` / `.stagehead button` kept for e2e), each with
+  School type full width, then Annual cost / Years until / Years of college
+  three across where the column is wide enough (from 640px, and from 1280px
+  in the thirds), cost over the two years otherwise; Add a child gets a plus
+  icon; then "The account" (saved, return, tuition inflation, the derived
+  line). Results: HeroReading (Save per month in amber, its note as the
+  sentence with the family step-down; Total projected cost and the third
+  figure, label and "?" unchanged, at Display size, notes wrapped short so
+  the two sit side by side). Fully funded ($0 a month) the hero is Text, not
+  amber, with a Gain badge "Covered by what you've saved" (check + words);
+  figure and note text unchanged. Years 0 or cost 0 mark the field (Loss
+  edge, icon, message; for a family "until then this child is left out");
+  with nothing to plan the figures are dashes in Text, a band names the
+  marked field, and Each child, the chart and the table fold away. Each
+  child is a full-width table (Child, Starts in, Years of college, Total
+  cost) with the left-out line under it. Chart: the cost / still-needed line
+  is a plain Teal line on screen; its fill from $0 is kept only for the
+  print/share copy (BandChart screenOnly.noBand, new, data-print-only).
+  Year by year folds (keepMounted, full height); phones pin Year and Balance
+  (Year fixed at 3.5rem so Balance sits beside it). The preset select shows
+  Custom once the typed cost no longer matches its preset (display only:
+  state and calculation unchanged; picking a preset still fills the cost).
+  "for all 1 children" reads "for 1 child". PinnedReading (save per month,
+  total projected cost) leads the inputs on phones. Dead rules (.clkid-name,
+  #clAddKid margin, the old .clkid field rule) removed.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -676,6 +706,26 @@ written into DESIGN.md unless it says otherwise.
 - **Backtest**: the mix dialog as a bottom sheet on phones — shared Modal;
   the scrim already covers the tab rail (checked: the overlay is on top at
   the rail), so no z-index fix was needed.
+
+- **College Savings**: relabelling the third figure (shortfall at college
+  start for one child, present value today for a family) and aligning it
+  with the print sheet's "Needed when college starts" (the target, not the
+  shortfall) — figure meaning / labels of a figure; kept as is.
+- **College Savings**: the one-child chart running through the college
+  years — new rows from the engine; not built.
+- **College Savings**: a composition bar (saved covers vs still needed) —
+  for one child the total it splits (target at start) isn't on screen, so
+  it would be a new split; not built.
+- **College Savings**: a "+" on Growth cells — changes the figure text;
+  kept green under the "Growth" header.
+- **College Savings**: shorter preset option labels with the dollar figure
+  as a hint — the options carry the preset figures; kept, and the select
+  stays full width.
+- **College Savings**: a segmented switch for the presets, collapsible
+  child rows on phones, the children as a full-width table above both
+  columns at 3+ — new behaviors; flat rows instead.
+- **College Savings**: hiding "covers 0% of it" with nothing saved — a
+  figure; kept. 44px "?" dots and CSV — shared TipDot / CsvButton.
 
 ## Fixed
 

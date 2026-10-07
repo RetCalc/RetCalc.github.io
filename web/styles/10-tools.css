@@ -99,10 +99,6 @@
 .ddmixg h4{margin:0 0 4px;font-size:13.5px;color:var(--text)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}
 .ddgk-check{display:flex;align-items:center;gap:7px;cursor:pointer;flex:0 1 auto;min-width:0}
-/* College: one card per child once there's more than one */
-.clkid-name{font-size:13px;font-weight:600}
-.clkid .field:last-child,.clkid .two:last-child .field{margin-bottom:0}
-#clAddKid{margin:10px 0 16px}
 .dtrow{display:flex;gap:8px;align-items:center;padding:5px 0}
 .dthead{display:flex;gap:8px;align-items:center;padding:0 0 4px;font-size:11px;
   color:var(--dimmer);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
@@ -237,3 +233,6 @@ tr.br-off .br-name{color:var(--dim)}
   .ddpad{padding:4px 14px 14px}
   .ddstats{padding:0 14px 14px}
 }
+/* College: each child's row (e2e finds them by .clkid); the name sits a
+   little closer to its fields than a stage's does. */
+.clkid .stagehead{margin-bottom:8px}
