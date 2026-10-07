@@ -48,6 +48,21 @@ export function taxEst(a: Answers): number {
   return T.net / 12;
 }
 
+/** Retirement spending before it's entered (decision D5): 80% of take-home,
+    a year, to the nearest $500; nothing until take-home is known. */
+export function spendGuess(a: Answers): number {
+  return pos(a.takehome) ? Math.round((0.8 * a.takehome * 12) / 500) * 500 : 0;
+}
+/** The answers the plan runs on: as entered, with the placeholder standing
+    in for retirement spending until it's entered. */
+export function withGuess(a: Answers): Answers {
+  if (pos(a.retSpend)) return a;
+  const g = spendGuess(a);
+  return g > 0 ? { ...a, retSpend: g } : a;
+}
+/** Whether retirement spending is still the placeholder. */
+export const guessing = (a: Answers) => !pos(a.retSpend) && spendGuess(a) > 0;
+
 /** The share of historical retirements a plan has to survive to count as on
     track: 90% unless more margin is asked for on the Adjust step. */
 export const target = (a: Answers) => (a.target === 0.95 || a.target === 1 ? a.target : 0.9);
@@ -248,7 +263,7 @@ export function retPath(S: Sim) {
 
 /* ---------- the score ---------- */
 export const FACTORS = [
-  { id: "outlook", name: "Retirement outlook", w: 40, step: "outlook" },
+  { id: "outlook", name: "Retirement outlook", w: 40, step: "number" },
   { id: "rate", name: "Savings rate", w: 20, step: "savings" },
   { id: "cushion", name: "Emergency fund", w: 15, step: "cash" },
   { id: "debt", name: "Debt", w: 15, step: "debt" },
@@ -257,9 +272,10 @@ export const FACTORS = [
 export type FactorId = (typeof FACTORS)[number]["id"];
 export interface Part { p: number; txt: string; r?: number; m?: number }
 
-export function parts(a: Answers): Partial<Record<FactorId, Part>> {
+/** The five areas. `S` is the plan already run (by the worker, say);
+    left out, it's run here. */
+export function parts(a: Answers, S: Sim | null = sim(a)): Partial<Record<FactorId, Part>> {
   const P: Partial<Record<FactorId, Part>> = {}, inc = gross(a);
-  const S = sim(a);
   if (S) P.outlook = { p: interp(S.success, [[0.25, 0], [0.5, 0.35], [0.7, 0.6], [0.85, 0.85], [0.95, 1]]), txt: pctStr(S.success, 0) + " of historical retirements lasted" };
   if (inc > 0 && ok(a.contrib) && a.match) {
     const r = (saveNow(a) * 12) / inc;
@@ -289,8 +305,8 @@ export function parts(a: Answers): Partial<Record<FactorId, Part>> {
   }
   return P;
 }
-export function score(a: Answers) {
-  const P = parts(a);
+export function score(a: Answers, S?: Sim | null) {
+  const P = S === undefined ? parts(a) : parts(a, S);
   const have = FACTORS.filter((f) => P[f.id]);
   const w = have.reduce((s, f) => s + f.w, 0);
   // One area alone says too little to put a number on.

@@ -14,7 +14,7 @@ import {
   FACTORS, coastNow, fixes, gross, mar, minSpend, months, need, ok, options, parts, pos, rating, saveMo, score, sim, stratName, tactics, target,
 } from "./calc";
 import type { Answers } from "./store";
-import { firstOpen } from "./steps";
+import { firstOpen } from "./route";
 import { tuneState } from "./tune";
 import { BackNote, Callout, H3, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
@@ -79,7 +79,7 @@ export function actions(a: Answers): Action[] {
     A.push({ t: "Close your retirement gap",
       d: "Your plan lasted in " + pctStr(S.success, 0) + " of historical retirements. " +
         (opts.length ? "Any one of these gets it to " + pctStr(goal, 0) + ": " + opts.join(", or ").replace(/, or ([^,]*)$/, ", or $1") + ". A mix of smaller changes works too." : "Saving more, retiring later and spending less all help."),
-      go: "tune", btn: "See the options and apply one" });
+      go: "adjust", btn: "See the options and apply one" });
   } else if (S) {
     // Ahead of target: say what the surplus could buy, not just "you're fine".
     const O = options(a, tuneState().levers), pick = (id: string) => O && O.list.find((o) => o.id === id);
@@ -93,7 +93,7 @@ export function actions(a: Answers): Action[] {
       A.push({ t: "Decide what to do with your surplus",
         d: "You're on course for " + money(S.fv) + " against the " + money(want) + " your plan needs. You could " + bits.join(", or ").replace(/, or ([^,]*)$/, ", or $1") +
           " and still last in " + (goal >= 1 ? "every" : pctStr(goal, 0) + " of") + " historical retirements. Or keep the margin: that's a fine choice too.",
-        go: "tune", btn: "Compare and apply" });
+        go: "adjust", btn: "Compare and apply" });
   }
   if (ok(a.retire) && a.retire < 59.5 && !a.bridge)
     A.push({ t: "Plan how you'll reach your money before 59½",
@@ -125,7 +125,7 @@ export function Results() {
   if (R.score == null) return (
     <>
       <Q>Your retirement readiness</Q>
-      <BackNote step="results" />
+      <BackNote step="plan" />
       <Callout cls="warn">There isn&apos;t enough to score yet. Answer the questions before this one and your score will appear here.</Callout>
       <Button size="lg" data-go={firstOpen(g)} onClick={() => G.go(firstOpen(g))}>Go to the next open question</Button>
     </>
@@ -142,7 +142,7 @@ export function Results() {
   return (
     <>
       <Q>Your retirement readiness</Q>
-      <BackNote step="results" />
+      <BackNote step="plan" />
       <div className="gd-hero">
         <HeroReading className="px-0 pt-1 pb-3 max-sm:px-0 max-sm:pt-1" tone={tone} under
           hero={{ label: "Readiness score", id: "gdScoreNum", value: String(R.score), note: "Out of 100" }}
@@ -161,7 +161,7 @@ export function Results() {
           <H3>Your next moves, in order</H3>
           <ol className="gd-acts">{A.map((x) => (
             <li key={x.t} className="gd-act"><div><b className="gd-act-t">{x.t}</b><Html as="p" html={x.d} />
-              {x.trip ? <Button variant="outline" size="sm" className="mt-2.5" data-trip={x.trip} data-from="results" onClick={() => G.trip(x.trip!, "results")}>{x.btn}<i className="arw" aria-hidden="true"></i></Button> : null}
+              {x.trip ? <Button variant="outline" size="sm" className="mt-2.5" data-trip={x.trip} data-from="plan" onClick={() => G.trip(x.trip!, "plan")}>{x.btn}<i className="arw" aria-hidden="true"></i></Button> : null}
               {x.go ? <Button variant="outline" size="sm" className="mt-2.5" data-go={x.go} onClick={() => G.go(x.go!)}>{x.btn}</Button> : null}</div></li>
           ))}</ol>
         </>
@@ -183,7 +183,7 @@ export function Results() {
               {minSpend(a) ? <KV k="Minimum spending" v={money(minSpend(a)) + " a year"} /> : null}
             </div>
             <div className="mb-4 flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" data-go="tune" onClick={() => G.go("tune")}>Adjust your plan</Button>
+              <Button variant="outline" size="sm" data-go="adjust" onClick={() => G.go("adjust")}>Adjust your plan</Button>
               <Button variant="outline" size="sm" data-go="optimize" onClick={() => G.go("optimize")}>{S.tactics ? "Your roadmap" : "Plan Optimizer"}</Button>
             </div>
           </div>
@@ -206,9 +206,9 @@ export function Results() {
       <H3>Ready for more detail?</H3>
       <p className="hint -mt-1 mx-0 mb-2.5">Advanced, Stages and Portfolio Backtest open with your numbers and the guide panel beside them, walking you through what&apos;s there.</p>
       <div className="gd-more">
-        <Button variant="outline" size="sm" data-trip="advanced" data-from="results" onClick={() => G.trip("advanced", "results")}>Advanced: taxes and account types<i className="arw" aria-hidden="true"></i></Button>
-        <Button variant="outline" size="sm" data-trip="stages" data-from="results" onClick={() => G.trip("stages", "results")}>Stages: plans that change over time<i className="arw" aria-hidden="true"></i></Button>
-        <Button variant="outline" size="sm" data-trip="backtest" data-from="results" onClick={() => G.trip("backtest", "results")}>Portfolio Backtest: what your mix has earned<i className="arw" aria-hidden="true"></i></Button>
+        <Button variant="outline" size="sm" data-trip="advanced" data-from="plan" onClick={() => G.trip("advanced", "plan")}>Advanced: taxes and account types<i className="arw" aria-hidden="true"></i></Button>
+        <Button variant="outline" size="sm" data-trip="stages" data-from="plan" onClick={() => G.trip("stages", "plan")}>Stages: plans that change over time<i className="arw" aria-hidden="true"></i></Button>
+        <Button variant="outline" size="sm" data-trip="backtest" data-from="plan" onClick={() => G.trip("backtest", "plan")}>Portfolio Backtest: what your mix has earned<i className="arw" aria-hidden="true"></i></Button>
       </div>
       <p className="hint">Retirement spending here is what you live on after tax. Each year&apos;s federal and state income tax, Medicare&apos;s income surcharge and health insurance before 65 are worked out from where the money comes from, and paid on top.
         {" "}This score is a rule-of-thumb check, not financial advice, and it leaves out home equity.</p>

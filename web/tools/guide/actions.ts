@@ -21,8 +21,9 @@ import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { STAGES_DEFAULTS } from "@/tools/stages/model";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { mar, ok, pos, saveNow } from "./calc";
-import { current, stepById } from "./steps";
-import { guide, setGuide, type Answers, type GuideState, type Trip } from "./store";
+import { current, stepById } from "./route";
+import { mark, putter, tripTool } from "./sources";
+import { guide, setGuide, type Answers, type GuideState, type Sources, type Trip } from "./store";
 import { TRIP_META } from "./tripMeta";
 import { trip as tripDef } from "./trips";
 
@@ -77,7 +78,7 @@ export function startTrip(id: string, from?: string): { path: string; sync: bool
   let sync = false;
   setGuide((g) => {
     const st = current(g);
-    if (st.commit && (!st.ok || st.ok(g.a))) { st.commit(g.a); sync = !!st.sync; }
+    if (st.commit && !st.needs?.(g.a)) { st.commit(g.a, putter(g)); sync = !!st.sync; }
     const t: Trip = { id, from: from || st.id };
     t.pending = null;
     setToolInputs(meta.store, prefill(t, g.a, toolInputs(meta.store, DEFAULTS[meta.store])));
@@ -91,16 +92,21 @@ export function startTrip(id: string, from?: string): { path: string; sync: bool
 }
 
 /** Back in the guide: what the tool found comes with you, onto the step
-    the trip left from. However you got back (the coach's button, the
-    phone's back gesture), the last reading of the tool is what comes.
-    Returns whether the household bar needs writing. */
+    the trip left from, marked as the tool's. However you got back (the
+    coach's button, the phone's back gesture), the last reading of the tool
+    is what comes. Returns whether the household bar needs writing. */
 export function finishTrip(): boolean {
   const t = guide().trip;
   if (!t) return false;
   const c = t.pending;
   setGuide((g: GuideState) => {
-    if (c?.set) Object.assign(g.a, c.set);
-    g.back = c && c.msg ? { step: t.from, msg: c.msg, undo: c.undo || null } : null;
+    const undoSrc: Sources = {};
+    for (const k of Object.keys(c?.undo ?? {}) as (keyof Answers)[]) if (g.src[k]) undoSrc[k] = g.src[k];
+    if (c?.set) {
+      Object.assign(g.a, c.set);
+      for (const k of Object.keys(c.set) as (keyof Answers)[]) mark(g, k, "tool", tripTool(t.id));
+    }
+    g.back = c && c.msg ? { step: t.from, msg: c.msg, undo: c.undo || null, undoSrc: c.undo ? undoSrc : null } : null;
     if (stepById(t.from)) g.cur = t.from;
     g.trip = null;
   });

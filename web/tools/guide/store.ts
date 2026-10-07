@@ -1,14 +1,15 @@
 "use client";
 
-/* The readiness guide's state: where you are, every answer, which steps are
-   done, any trip into a tool, and the note a step shows on your return.
-   Kept in this browser under its own key; the facts the household bar also
-   holds are written through to it (sync.ts). From gdLoadState(), gdSave()
-   and gdMigrate() in src/js/app/28-guide-core.js. */
+/* The readiness guide's state: your pace and where you are, every answer
+   and where it came from, which steps are done, any trip into a tool, the
+   note a step shows on your return, snapshots, ticks and lessons. Kept in
+   this browser under its own key (retcalc.guide.v2); the facts the household
+   bar also holds are written through to it (actions.ts). A guide saved by
+   v1 is migrated on first open (migrate.ts) and its key left alone. */
 
 import { useSyncExternalStore } from "react";
 import { readStored, writeStored } from "@/lib/storage";
-import { migrateAnswers } from "./migrate";
+import { loadState, migrateAnswers } from "./migrate";
 
 /** Every answer the guide keeps. Numbers are null once a field is cleared. */
 export interface Answers {
@@ -97,34 +98,30 @@ export interface Trip {
 /** What a trip brings back: answers to change, and the note that says so. */
 export interface Capture { set?: Partial<Answers>; msg: string; undo?: Partial<Answers> | null; sync?: boolean }
 /** The note a step shows: HTML the guide writes itself. `see` adds a
-    button into a tool. */
-export interface Back { step: string; msg: string; undo?: Partial<Answers> | null; see?: { trip: string; label: string } | null }
-
-export interface GuideState {
-  v: 1; cur: string; a: Answers; done: Record<string, boolean>;
-  trip: Trip | null; back: Back | null; coachMin: boolean;
+    button into a tool. `undoSrc` is where the undone answers had come
+    from, put back with them. */
+export interface Back {
+  step: string; msg: string; undo?: Partial<Answers> | null; undoSrc?: Sources | null;
+  see?: { trip: string; label: string } | null;
 }
 
-const STORE = { key: "guide", version: 1 } as const;
-export const freshGuide = (): GuideState => ({ v: 1, cur: "intro", a: {}, done: {}, trip: null, back: null, coachMin: false });
+/** The guide as kept: v2 (doc 3, "The stored object"). */
+export type GuideState = GuideStateV2;
+const KEY = "guide", VERSION = 2, OLD = 1;
+const now = () => new Date().toISOString();
+export const freshGuide = (): GuideState => freshGuideV2(now());
 
 /** Answers saved before income tax was built in (migrate.ts). */
 export const migrate = migrateAnswers;
 
 let state: GuideState | null = null;
 const listeners = new Set<() => void>();
-const SERVER = freshGuide();
+const SERVER = freshGuideV2("");
 
+/* v2 if this browser has one; else a guide v1 left (migrated, and v1's key
+   left as it was, for a rollback); else a first visit. */
 function load(): GuideState {
-  const v = readStored<GuideState>(STORE.key, STORE.version);
-  if (v && v.v === 1 && v.a && typeof v.a === "object") {
-    // The Retiring early step became Adjust your plan.
-    if (v.cur === "fire") v.cur = "tune";
-    if (v.back && v.back.step === "fire") v.back = null;
-    migrate(v.a as Answers & Record<string, unknown>);
-    return { ...freshGuide(), ...v };
-  }
-  return freshGuide();
+  return loadState(readStored(KEY, VERSION), readStored(KEY, OLD), now()) ?? freshGuide();
 }
 
 /** The guide as it stands. */
@@ -139,13 +136,16 @@ export function setGuide(f: (g: GuideState) => void): void {
   const g = structuredClone(guide());
   f(g);
   state = g;
-  writeStored(STORE.key, STORE.version, g);
+  writeStored(KEY, VERSION, g);
   listeners.forEach((l) => l());
 }
 
 /** Replaces the whole guide (Start over, a shared plan). */
 export function replaceGuide(g: GuideState): void {
-  setGuide((cur) => Object.assign(cur, g));
+  setGuide((cur) => {
+    for (const k of Object.keys(cur)) delete (cur as unknown as Record<string, unknown>)[k];
+    Object.assign(cur, g);
+  });
 }
 
 export function useGuide(): GuideState {

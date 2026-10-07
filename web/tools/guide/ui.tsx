@@ -14,7 +14,7 @@ import { Html } from "@/components/common/Html";
 import { parseNum } from "@/lib/format";
 import type { ToolSub } from "@/lib/tools";
 import { gdM, ok } from "./calc";
-import type { AnswerKey, Answers, GuideState } from "./store";
+import type { AnswerKey, Answers, GuideState, SourceKind } from "./store";
 import { TRIP_META } from "./tripMeta";
 import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
@@ -30,8 +30,9 @@ export interface GuideView {
   v: Answers;
   /** Draws the card again from the answers now. */
   redraw: () => void;
-  /** Changes one answer; `redraw` draws the card again too. */
-  set: <K extends AnswerKey>(k: K, val: Answers[K], redraw?: boolean) => void;
+  /** Changes one answer, and records where it came from ("entered" unless
+      said otherwise); `redraw` draws the card again too. */
+  set: <K extends AnswerKey>(k: K, val: Answers[K], redraw?: boolean, kind?: SourceKind) => void;
   trip: (id: string, from?: string) => void;
   go: (step: string) => void;
   /** The guide's own buttons: next, prev, undo, apply... */
@@ -42,6 +43,26 @@ export function useGuideView(): GuideView {
   const v = use(GuideCtx);
   if (!v) throw new Error("useGuideView needs the guide around it");
   return v;
+}
+
+/** A suggested figure: into its field if the field is showing, or the card
+    is drawn again with it. Tapping a suggestion enters it, unless it's the
+    guide's own estimate. */
+export function fill(G: GuideView, k: AnswerKey, val: number, kind: SourceKind = "entered") {
+  const shown = typeof document !== "undefined" && !!document.getElementById("gdf-" + k);
+  G.set(k, val as never, !shown, kind);
+}
+
+/** "Go to Retirement savings" when a step needs a projection first. */
+export function NeedsPlan({ title, msg = "This needs your age, savings and retirement spending first." }: { title: string; msg?: string }) {
+  const G = useGuideView();
+  return (
+    <>
+      <Q>{title}</Q>
+      <Callout cls="warn">{msg}</Callout>
+      <Button variant="outline" data-go="savings" onClick={() => G.go("savings")}>Go to Retirement savings</Button>
+    </>
+  );
 }
 
 export function Choice({ k, val, title, sub }: { k: AnswerKey; val: string; title: React.ReactNode; sub?: React.ReactNode }) {

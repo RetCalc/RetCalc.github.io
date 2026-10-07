@@ -1,9 +1,11 @@
 "use client";
 
 /* The Retirement Readiness Guide's page: the progress bar with its arrow,
-   the step card, the score and the route. From src/main/17-guide.html,
-   gdRender(), gdRenderSide() and the guide's controls in
-   src/js/app/30-guide-steps.js and 33-guide-share-controls.js. */
+   the pace switch, the step card, the score and the route. What each card
+   is lives in steps/decl.ts and its screen in steps/index.tsx; the order
+   cards come in, for this person and pace, in route.ts. From
+   src/main/17-guide.html, gdRender(), gdRenderSide() and the guide's
+   controls in src/js/app/30-guide-steps.js and 33-guide-share-controls.js. */
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -12,16 +14,23 @@ import { printSheet } from "@/components/shell/Sheet";
 import { sendLink, useShareKit } from "@/components/shell/share";
 import { useToast } from "@/components/shell/Toast";
 import { decodeHash, encodeHash, useRegisterTool, type ToolDef, type ToolInputs } from "@/components/tools/ToolState";
+import { Segmented } from "@/components/common/Readout";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { useClient } from "@/lib/useClient";
 import { useOptimizer } from "@/tools/optimizer/run";
 import { lowerFirst, opClaims, opTacticsLine } from "@/tools/optimizer/words";
 import { finishTrip, seedFromHousehold, startTrip, syncHousehold } from "./actions";
-import { FACTORS, barColor, mar, ok, rating, score, sim } from "./calc";
+import { FACTORS, barColor, mar, ok, rating, score, sim, target } from "./calc";
+import { cleanLink, deriveSources, doneFromV1, linkPayload, migrateAnswers } from "./migrate";
 import { Ring } from "./results";
+import {
+  CHAPTERS, STEPS, after, applies, before, current, deeper, firstOpen, landing, minutesLeft, numbered, route, stepById,
+  type RouteFacts, type StepDecl,
+} from "./route";
 import { GuideSheet } from "./sheet";
-import { CHAPTERS, STEPS, applies, current, firstOpen, numbered, route, stepById, type Step } from "./steps";
-import { freshGuide, guide, migrate, replaceGuide, setGuide, useGuide, type Answers, type GuideState } from "./store";
+import { mark, putter, setAnswer, stamp } from "./sources";
+import { VIEWS } from "./steps";
+import { freshGuide, guide, replaceGuide, setGuide, useGuide, type Answers, type GuideState, type Pace, type Sources } from "./store";
 import { curOpt, setTune } from "./tune";
 import { GuideCtx, type GuideView } from "./ui";
 import { setNavDir } from "@/lib/nav-motion";
@@ -30,24 +39,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDownIcon, TriangleAlertIcon } from "lucide-react";
 
-/** The guide as a tool, for the header's Save: every answer and which
-    steps are done. Where you were and any trip into a tool are left out. */
+/** The guide as a tool, for the header's Save: every answer, where each
+    came from, which steps are done and the pace. Where you were and any
+    trip into a tool are left out. */
 const GUIDE_DEF: ToolDef<ToolInputs> = { id: "guide", label: "Guide", noun: "plan", defaults: {} };
-
-/** Only plain values come in from a link: numbers, true/false, and short
-    strings of letters, digits and spaces. Nothing that could be markup. */
-function cleanShared(o: unknown): Answers | null {
-  const v = o as { v?: number; a?: Record<string, unknown> } | null;
-  if (!v || v.v !== 1 || !v.a || typeof v.a !== "object") return null;
-  const a: Record<string, unknown> = {};
-  Object.keys(v.a).forEach((k) => {
-    const x = v.a![k];
-    if (!/^[A-Za-z0-9]{1,24}$/.test(k)) return;
-    if ((typeof x === "number" && isFinite(x)) || typeof x === "boolean" || x === null) a[k] = x;
-    else if (typeof x === "string" && /^[A-Za-z0-9 .,%\-]{0,40}$/.test(x)) a[k] = x;
-  });
-  return a as Answers;
-}
 
 /** The plan on one printed page, or why there isn't one yet. */
 function planSheet(): React.ReactNode | string {
@@ -55,10 +50,27 @@ function planSheet(): React.ReactNode | string {
   return score(a).score == null || !sim(a) ? "Answer more of the guide to print a plan" : <GuideSheet a={a} />;
 }
 
-/** Draws a step's arrival: the answers it assumes, and the step. */
+/** What the route needs to know from the plan: whether it falls short. */
+function factsFor(a: Answers): RouteFacts {
+  const S = sim(a);
+  return { behind: !!S && S.success < target(a) - 1e-9 };
+}
+
+/** A card's arrival: the answers it assumes, and the card. */
 function arrive(g: GuideState, id: string) {
   g.cur = id;
-  stepById(id)?.prep?.(g.a);
+  stepById(id)?.prep?.(g.a, putter(g));
+}
+
+/** A guide opened from a link or a saved plan, done up to its plan card. */
+function opened(a: Answers, src: Sources, pace: Pace, done?: Record<string, boolean>): GuideState {
+  const n = freshGuide();
+  n.a = a; n.src = src; n.pace = pace;
+  const L = numbered(a, pace, factsFor(a));
+  if (done) n.done = done;
+  else L.forEach((st) => { if (st.id !== "plan") n.done[st.id] = true; });
+  n.cur = L.every((st) => st.id === "plan" || n.done[st.id]) ? "plan" : firstOpen(n, factsFor(a));
+  return n;
 }
 
 export function Guide() {
@@ -69,9 +81,10 @@ export function Guide() {
   const [focusKey, setFocusKey] = useState(0);
   const card = useRef<HTMLDivElement>(null);
   const sync = () => syncHousehold(guide().a, save);
+  const facts = useMemo(() => factsFor(g.a), [g.a]);
 
   /* On arrival: a trip's result comes back with it; a shared plan opens on
-     its results; a first visit starts from the household bar. */
+     its plan card; a first visit starts from the household bar. */
   const arrived = useRef(false);
   useEffect(() => {
     if (arrived.current) return;
@@ -79,25 +92,22 @@ export function Guide() {
     if (finishTrip()) syncHousehold(guide().a, save);
     const hash = window.location.hash;
     if (hash.startsWith("#g=")) {
-      const a = cleanShared(decodeHash(hash.slice(3)));
+      const L = cleanLink(decodeHash(hash.slice(3)), stamp());
       try { history.replaceState(history.state, "", window.location.pathname + window.location.search); } catch { /* old browsers */ }
-      if (a && Object.keys(a).length && (!Object.keys(guide().done).length ||
-        confirm("This link opens a shared retirement plan in the guide. Replace your own guide answers with it? Your household bar and tools won't change."))) {
-        const n = freshGuide();
-        n.a = a;
-        migrate(n.a as Answers & Record<string, unknown>);
-        numbered(n.a).forEach((st) => { if (st.id !== "results") n.done[st.id] = true; });
-        n.cur = "results";
-        replaceGuide(n);
-      }
+      if (L && Object.keys(L.a).length && (!Object.keys(guide().done).length ||
+        confirm("This link opens a shared retirement plan in the guide. Replace your own guide answers with it? Your household bar and tools won't change.")))
+        replaceGuide(opened(L.a, L.src, L.pace));
     }
-    setGuide((x) => { stepById(current(x).id)?.prep?.(x.a); });
+    setGuide((x) => { stepById(current(x, factsFor(x.a)).id)?.prep?.(x.a, putter(x)); });
     setV(guide().a);
   }, [save]);
   // The household bar loads after the page: a first visit starts from it.
   useEffect(() => {
     if (!profile || Object.keys(guide().a).length) return;
-    setGuide((x) => seedFromHousehold(x.a, profile));
+    setGuide((x) => {
+      seedFromHousehold(x.a, profile);
+      for (const k of Object.keys(x.a) as (keyof Answers)[]) mark(x, k, "entered");
+    });
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the profile arrives after the page
     setV(guide().a);
   }, [profile]);
@@ -118,33 +128,44 @@ export function Guide() {
     router.push(r.path);
   };
   const act = (what: string) => {
-    const cur = current(guide());
+    const x0 = guide(), f = factsFor(x0.a), cur = current(x0, f);
     if (what === "next") {
-      if (cur.ok && !cur.ok(guide().a)) return;
+      if (cur.needs?.(x0.a)) return;
       setGuide((x) => {
-        cur.commit?.(x.a);
-        if (cur.id !== "intro") x.done[cur.id] = true;
-        const L = route(x.a), i = L.findIndex((s) => s.id === cur.id);
+        cur.commit?.(x.a, putter(x));
+        if (cur.type !== "welcome") x.done[cur.id] = true;
+        if (cur.id === "plan") x.finishedAt = stamp();
         x.back = null;
-        arrive(x, (L[i + 1] || L[L.length - 1]).id);
+        arrive(x, after(x, factsFor(x.a)).id);
       });
       if (cur.sync) sync();
     } else if (what === "prev") {
-      setGuide((x) => {
-        const L = route(x.a), i = L.findIndex((s) => s.id === cur.id);
-        x.back = null;
-        arrive(x, L[Math.max(0, i - 1)].id);
-      });
-    } else if (what === "resume") return go(firstOpen(guide()));
-    else if (what === "restart") {
+      setGuide((x) => { x.back = null; arrive(x, before(x, f).id); });
+    } else if (what === "resume") return go(firstOpen(x0, f));
+    else if (what.startsWith("pace:")) {
+      const p = what.slice(5) as Pace;
+      if (p !== "quick" && p !== "full") return;
+      setGuide((x) => { const to = landing(x, p, f); x.pace = p; if (to !== x.cur) arrive(x, to); });
+    } else if (what === "restart") {
       if (!confirm("Start the guide over? Your answers here are cleared. The household bar and the tools keep their numbers.")) return;
       const n = freshGuide();
-      if (profile) seedFromHousehold(n.a, profile);
+      n.pace = x0.pace;
+      if (profile) {
+        seedFromHousehold(n.a, profile);
+        for (const k of Object.keys(n.a) as (keyof Answers)[]) mark(n, k, "entered");
+      }
       replaceGuide(n);
     } else if (what === "undo") {
-      const B = guide().back;
+      const B = x0.back;
       if (!B?.undo) return;
-      setGuide((x) => { Object.assign(x.a, B.undo); x.back = { step: B.step, msg: "Undone. Your answers are back to what they were." }; });
+      setGuide((x) => {
+        Object.assign(x.a, B.undo);
+        for (const k of Object.keys(B.undo!) as (keyof Answers)[]) {
+          const s = B.undoSrc?.[k];
+          if (s) x.src[k] = s; else delete x.src[k];
+        }
+        x.back = { step: B.step, msg: "Undone. Your answers are back to what they were." };
+      });
       sync();
       redraw();
       return;
@@ -156,9 +177,7 @@ export function Guide() {
       if (typeof sheet === "string") toast(sheet); else printSheet(sheet);
       return;
     } else if (what === "share") {
-      const a: Record<string, unknown> = {};
-      Object.entries(guide().a).forEach(([k, x]) => { if (!["bgRows", "debtRows", "moState", "clState", "ddTool"].includes(k)) a[k] = x; });
-      sendLink(window.location.origin + "/guide#g=" + encodeHash({ v: 1, a }), "Link copied. It opens this plan in the guide, with your numbers.", toast);
+      sendLink(window.location.origin + "/guide#g=" + encodeHash(linkPayload(guide())), "Link copied. It opens this plan in the guide, with your numbers.", toast);
       return;
     }
     redraw();
@@ -169,20 +188,23 @@ export function Guide() {
   const applyOpt = () => {
     const a = guide().a, o = curOpt(a);
     if (!o || !o.T || !Object.keys(o.set).length) return;
-    const undo: Partial<Answers> = {}, ch: string[] = [], set = o.set;
-    (Object.keys(set) as (keyof typeof set)[]).forEach((k) => { (undo as Record<string, unknown>)[k] = a[k] ?? null; });
+    const undo: Partial<Answers> = {}, undoSrc: Sources = {}, ch: string[] = [], set = o.set;
+    (Object.keys(set) as (keyof typeof set)[]).forEach((k) => { (undo as Record<string, unknown>)[k] = a[k] ?? null; if (guide().src[k]) undoSrc[k] = guide().src[k]; });
     const success = o.T.success;
     setGuide((x) => {
       const y = x.a;
-      if ("retire" in set) { ch.push("retire at <b>" + fmtNum(set.retire!) + "</b>"); y.retire = set.retire; }
-      if ("contrib" in set) { ch.push("save <b>" + money(set.contrib! + (y.employer || 0)) + "/mo</b>"); y.contrib = set.contrib; }
+      if ("retire" in set) { ch.push("retire at <b>" + fmtNum(set.retire!) + "</b>"); setAnswer(x, "retire", set.retire); }
+      if ("contrib" in set) { ch.push("save <b>" + money(set.contrib! + (y.employer || 0)) + "/mo</b>"); setAnswer(x, "contrib", set.contrib); }
       if ("stopAge" in set) {
         ch.push(set.stopAge == null ? "save until you retire" : set.stopAge <= y.age! ? "<b>stop saving now</b>" : "<b>stop saving at " + fmtNum(set.stopAge) + "</b>");
-        y.stopAge = set.stopAge;
+        setAnswer(x, "stopAge", set.stopAge);
       }
-      if ("retSpend" in set) { ch.push("spend <b>" + money(set.retSpend!) + " a year</b>"); y.retSpend = set.retSpend; }
-      if (ok(y.stopAge) && y.stopAge >= y.retire!) { if (undo.stopAge === undefined) undo.stopAge = y.stopAge; y.stopAge = null; }
-      x.back = { step: "tune", undo, msg: "Applied. Your plan now has you " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") +
+      if ("retSpend" in set) { ch.push("spend <b>" + money(set.retSpend!) + " a year</b>"); setAnswer(x, "retSpend", set.retSpend); }
+      if (ok(y.stopAge) && y.stopAge >= y.retire!) {
+        if (undo.stopAge === undefined) { undo.stopAge = y.stopAge; if (x.src.stopAge) undoSrc.stopAge = x.src.stopAge; }
+        setAnswer(x, "stopAge", null);
+      }
+      x.back = { step: "adjust", undo, undoSrc, msg: "Applied. Your plan now has you " + ch.join(", ").replace(/, ([^,]*)$/, " and $1") +
         ". Your projection, success rate, score and household bar all use it now, and it lasted in <b>" + pctStr(success, 0) + "</b> of historical retirements.",
       see: ok(y.stopAge) ? { trip: "stages", label: "See it in Stages" } : { trip: "basic", label: "See it in Basic" } };
     });
@@ -220,8 +242,8 @@ export function Guide() {
 
   const view: GuideView = {
     g, a: g.a, v, redraw, go, trip, act,
-    set: (k, val, again) => {
-      setGuide((x) => { (x.a as Record<string, unknown>)[k] = val; });
+    set: (k, val, again, kind = "entered") => {
+      setGuide((x) => setAnswer(x, k, val, kind));
       if (again) redraw();
     },
   };
@@ -237,25 +259,23 @@ export function Guide() {
     if (top < rail) window.scrollBy({ top: top - rail, behavior: "auto" });
   }, [focusKey]);
 
-  // The header's Save keeps the plan; loading one starts there.
-  const plan = useMemo(() => ({ v: 1, a: g.a, done: g.done }) as ToolInputs, [g.a, g.done]);
+  // The header's Save keeps the plan; loading one starts there. A plan
+  // saved before v2 ({ v: 1, a, done }) gets its sources worked out.
+  const plan = useMemo(() => ({ v: 2, a: g.a, src: g.src, done: g.done, pace: g.pace }) as ToolInputs, [g.a, g.src, g.done, g.pace]);
   useRegisterTool(GUIDE_DEF, plan, (d) => {
-    const data = d as { a?: Answers; done?: Record<string, boolean> };
+    const data = d as { v?: number; a?: Answers; src?: Sources; done?: Record<string, boolean>; pace?: Pace };
     if (!data || !data.a || typeof data.a !== "object") return;
-    const n = freshGuide();
-    n.a = structuredClone(data.a);
-    migrate(n.a as Answers & Record<string, unknown>);
-    n.done = { ...(data.done || {}) };
-    const L = numbered(n.a);
-    n.cur = L.every((st) => st.id === "results" || n.done[st.id]) ? "results" : firstOpen(n);
+    const a = structuredClone(data.a);
+    migrateAnswers(a as Answers & Record<string, unknown>);
+    const v2 = data.v === 2;
+    const n = opened(a, v2 && data.src ? structuredClone(data.src) : deriveSources(a, stamp()), v2 && data.pace === "quick" ? "quick" : "full",
+      v2 ? { ...(data.done || {}) } : doneFromV1(data.done || {}));
     replaceGuide(n);
     setTune((t) => { t.sel = null; t.draft = null; });
     syncHousehold(n.a, save);
     redraw();
   });
 
-  // The count and the card follow the answers as the card was drawn; the
-  // score and the route follow every keystroke.
   // The header's Share: the plan's link, and the plan on one page.
   useShareKit("guide", {
     link: { title: "Share your plan", run: () => act("share"), desc: ["Text or send your answers and plan", "Opens your answers and plan in the guide"] },
@@ -263,36 +283,40 @@ export function Guide() {
     sheet: () => planSheet(),
   });
 
-  const st = current(g), L = numbered(v), idx = L.indexOf(st);
-  const R = score(g.a), rt = rating(R.score);
+  // The count and the card follow the answers as the card was drawn; the
+  // score and the route follow every keystroke.
+  const st = current(g, facts), L = numbered(v, g.pace, facts), idx = L.findIndex((s) => s.id === st.id);
+  const R = score(g.a), rt = rating(R.score), View = VIEWS[st.id];
+  const left = minutesLeft({ ...g, a: v }, facts), about = "about " + left + (left === 1 ? " minute" : " minutes") + " left";
+  const count = st.type === "welcome" ? "" : idx >= 0 ? "Step " + (idx + 1) + " of " + L.length + " · " + about : "A deeper card · " + about;
   return (
     <GuideCtx value={view}>
       <div className="stack solo" role="tabpanel" id="tab-guide">
-        <Top g={g} st={st} score={R.score} color={rt.color} count={idx >= 0 ? "Step " + (idx + 1) + " of " + L.length : ""} step={idx + 1} steps={L.length} client={client} go={go} />
+        <Top g={g} st={st} facts={facts} score={R.score} color={rt.color} count={count} step={idx + 1} steps={L.length} client={client} go={go} act={act} />
         <div className="gd-grid">
           <div className="panel gd-card" id="gdCard" tabIndex={-1} ref={card}
             onKeyDown={(e) => {
               const t = e.target as HTMLElement;
               if (e.key !== "Enter" || t.tagName !== "INPUT" || t.hasAttribute("data-d")) return;
-              if (st.ok && !st.ok(g.a)) return;
+              if (st.needs?.(g.a)) return;
               e.preventDefault();
               act("next");
             }}>
-            {client ? (
+            {client && View ? (
               <>
-                <st.Body />
-                <div className="gd-foot">{st.Foot ? <st.Foot /> : <Foot st={st} a={g.a} last={idx === L.length - 2} act={act} />}</div>
+                <View.Body />
+                <div className="gd-foot">{View.Foot ? <View.Foot /> : <Foot st={st} a={g.a} last={idx === L.length - 2} act={act} />}</div>
               </>
             ) : null}
           </div>
           <div className="gd-side">
             <Card>
-              <CardHeader><CardTitle>{st.id === "results" ? "What's behind the score" : "Readiness score"}</CardTitle></CardHeader>
-              <CardContent id="gdScore">{client ? <ScoreSide a={g.a} go={go} ring={st.id !== "results"} /> : null}</CardContent>
+              <CardHeader><CardTitle>{st.id === "plan" ? "What's behind the score" : "Readiness score"}</CardTitle></CardHeader>
+              <CardContent id="gdScore">{client ? <ScoreSide a={g.a} go={go} ring={st.id !== "plan"} /> : null}</CardContent>
             </Card>
             <Card>
               <CardHeader><CardTitle>Your route</CardTitle></CardHeader>
-              <CardContent className="px-2.5 pt-2 pb-3" id="gdMap">{client ? <RouteMap g={g} cur={st} go={go} act={act} /> : null}</CardContent>
+              <CardContent className="px-2.5 pt-2 pb-3" id="gdMap">{client ? <RouteMap g={g} cur={st} facts={facts} go={go} act={act} /> : null}</CardContent>
             </Card>
           </div>
         </div>
@@ -301,13 +325,13 @@ export function Guide() {
   );
 }
 
-function Foot({ st, a, last, act }: { st: Step; a: Answers; last: boolean; act: (w: string) => void }) {
-  const isOk = !st.ok || st.ok(a);
+function Foot({ st, a, last, act }: { st: StepDecl; a: Answers; last: boolean; act: (w: string) => void }) {
+  const why = st.needs?.(a) ?? null;
   return (
     <>
       <Button variant="outline" size="lg" data-gd="prev" onClick={() => act("prev")}><i className="arw back" aria-hidden="true"></i>Back</Button><span className="sp"></span>
-      <span className="gd-why" data-why="" hidden={isOk}><TriangleAlertIcon className="size-4 shrink-0" aria-hidden="true" />{st.why ? st.why(a) : ""}</span>
-      <Button size="lg" className="max-sm:flex-auto" data-gd="next" disabled={!isOk} onClick={() => act("next")}>{last ? "See my score" : "Continue"}<i className="arw" aria-hidden="true"></i></Button>
+      <span className="gd-why" data-why="" hidden={!why}><TriangleAlertIcon className="size-4 shrink-0" aria-hidden="true" />{why ?? ""}</span>
+      <Button size="lg" className="max-sm:flex-auto" data-gd="next" disabled={!!why} onClick={() => act("next")}>{last ? "See my score" : "Continue"}<i className="arw" aria-hidden="true"></i></Button>
     </>
   );
 }
@@ -331,25 +355,28 @@ function ScoreSide({ a, go, ring }: { a: Answers; go: (id: string) => void; ring
   );
 }
 
-function RouteMap({ g, cur, go, act }: { g: GuideState; cur: Step; go: (id: string) => void; act: (w: string) => void }) {
-  // The steps that hang on the retirement age stay out until it's known.
+/* The route: each chapter's cards, the one you're on, those done, and on
+   the Quick check the deeper cards it skips, marked and still open to you. */
+function RouteMap({ g, cur, facts, go, act }: { g: GuideState; cur: StepDecl; facts: RouteFacts; go: (id: string) => void; act: (w: string) => void }) {
+  // The cards that hang on the retirement age stay out until it's known.
   const known = ok(g.a.retire);
   return (
     <>
-      {CHAPTERS.map((c, ci) => {
-        const list = STEPS.filter((s) => s.ch === ci && (known || !s.when));
-        const live = list.filter((s) => applies(s, g.a)), d = live.filter((s) => g.done[s.id]).length;
-        const here = cur.ch === ci || (cur.ch < 0 && ci === 0);
+      {CHAPTERS.map((c, i) => {
+        const ch = i + 1, list = STEPS.filter((s) => s.chapter === ch && (known || !s.when));
+        const walked = list.filter((s) => applies(s, g.a) && !deeper(s, g.a, g.pace, facts)), d = walked.filter((s) => g.done[s.id]).length;
+        const here = cur.chapter === ch || (cur.chapter === 0 && ch === 1);
         return (
           <div key={c + (here ? ":here" : "")} className="gd-map-chw"><Collapsible defaultOpen={here}>
-            <div className="gd-map-ch"><CollapsibleTrigger>{c}<span className="gd-map-n">{d} of {live.length}</span><ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></div>
+            <div className="gd-map-ch"><CollapsibleTrigger>{c}<span className="gd-map-n">{walked.length ? d + " of " + walked.length : "deeper"}</span><ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></div>
             <CollapsibleContent>
               {list.map((s) => {
-                const na = !applies(s, g.a), cls = na ? "na" : s.id === cur.id ? "cur" : g.done[s.id] ? "done" : "";
+                const na = !applies(s, g.a), deep = !na && deeper(s, g.a, g.pace, facts);
+                const cls = na ? "na" : s.id === cur.id ? "cur" : g.done[s.id] ? "done" : deep ? "deep" : "";
                 return (
                   <button key={s.id} type="button" className={"gd-map-st " + cls} disabled={na} data-go={na ? undefined : s.id} onClick={() => go(s.id)}
                     aria-current={s.id === cur.id ? "step" : undefined}>
-                    <i aria-hidden="true"></i>{s.title}{na ? <span className="tag">not needed</span> : null}</button>
+                    <i aria-hidden="true"></i>{s.title}{na ? <span className="tag">not needed</span> : deep && s.id !== cur.id ? <span className="tag">deeper · open</span> : null}</button>
                 );
               })}
             </CollapsibleContent>
@@ -361,21 +388,24 @@ function RouteMap({ g, cur, go, act }: { g: GuideState; cur: Step; go: (id: stri
   );
 }
 
-/* The top bar: the score in brief, the step count, a bar for each chapter,
-   and the arrow whose tip rides the end of the fill. Bars grow in step
-   with the arrow; motion only for moves forward made on this page, not for
-   the state it loads in. */
-function Top({ g, st, score: s, color, count, step, steps, client, go }: { g: GuideState; st: Step; score: number | null; color: string; count: string; step: number; steps: number; client: boolean; go: (id: string) => void }) {
-  const L = route(g.a);
-  const hit = st.id === "results" || L.every((x) => x.id === "results" || x.id === "intro" || g.done[x.id]);
+/* The top bar: the pace switch, the score in brief, the step count and the
+   time left, a bar for each chapter, and the arrow whose tip rides the end
+   of the fill. Bars grow in step with the arrow; motion only for moves
+   forward made on this page, not for the state it loads in. */
+function Top({ g, st, facts, score: s, color, count, step, steps, client, go, act }: {
+  g: GuideState; st: StepDecl; facts: RouteFacts; score: number | null; color: string; count: string; step: number; steps: number;
+  client: boolean; go: (id: string) => void; act: (w: string) => void;
+}) {
+  const L = route(g.a, g.pace, facts), n = CHAPTERS.length;
+  const hit = st.id === "plan" || L.every((x) => x.id === "plan" || x.type === "welcome" || g.done[x.id]);
   const segs = CHAPTERS.map((c, ci) => {
-    const list = L.filter((x) => x.ch === ci), d = list.filter((x) => g.done[x.id]).length;
+    const list = L.filter((x) => x.chapter === ci + 1), d = list.filter((x) => g.done[x.id]).length;
     return { c, ci, list, d, fill: hit ? 1 : list.length ? d / list.length : 0 };
   });
   let far: { ci: number; f: number } | null = null;
   segs.forEach((x) => { if (x.d) far = { ci: x.ci, f: x.d / x.list.length }; });
   const F = far as { ci: number; f: number } | null;
-  const pos = hit ? 7 : F ? F.ci + F.f : 0;
+  const pos = hit ? n : F ? F.ci + F.f : 0;
   /* A move forward flies: the arrow travels (a transform transition), the
      string twangs on the first release, and a fresh finish holds the
      bullseye until the arrow lands, then plays the impact. Under reduced
@@ -421,22 +451,24 @@ function Top({ g, st, score: s, color, count, step, steps, client, go }: { g: Gu
       tr.classList.remove("loose", "inflight", "impact");
     };
   }, [pos, hit, client]);
+  const first = (x: (typeof segs)[number]) => (x.list[0] ? x.list[0].id : "welcome");
   return (
     <div className="panel gd-top">
       <div className="gd-top-row">
         <div className="gd-title">Retirement Readiness Guide</div>
+        {client ? <Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /> : null}
         <div className="gd-mini" id="gdMini">{client && s != null ? <>Score <b className="text-(color:--ink)" style={{ "--ink": color } as React.CSSProperties}>{s}</b></> : null}</div>
         <div className="gd-count" id="gdCount">{client ? count : ""}</div>
       </div>
       <div className="gd-prog-wrap" ref={wrap}>
         <div className="gd-prog" id="gdProg">{client ? segs.map((x) => (
-          <button key={x.c} type="button" className={"gd-seg" + (st.ch === x.ci ? " on" : "")} data-go={x.list[0] ? x.list[0].id : "intro"}
-            aria-label={x.c + ": " + x.d + " of " + x.list.length + " done"} onClick={() => go(x.list[0] ? x.list[0].id : "intro")}>
+          <button key={x.c} type="button" className={"gd-seg" + (st.chapter === x.ci + 1 ? " on" : "")} data-go={first(x)}
+            aria-label={x.c + ": " + x.d + " of " + x.list.length + " done"} onClick={() => go(first(x))}>
             <i><b style={{ "--f": x.fill.toFixed(4) } as React.CSSProperties}></b></i><span>{x.c}</span></button>
         )) : null}</div>
         <div className={"gd-track" + (client && !F && !hit ? " nocked" : "") + (client && hit ? " hit" : "")} id="gdTrack" ref={track}
           role="progressbar" aria-label="Guide progress" aria-valuemin={0} aria-valuemax={client ? steps : undefined}
-          aria-valuenow={client ? step : undefined} aria-valuetext={client ? count || "Not started" : undefined}
+          aria-valuenow={client ? Math.max(0, step) : undefined} aria-valuetext={client ? count || "Not started" : undefined}
           style={client && F && !hit ? { "--pos": pos.toFixed(4), "--ci": F.ci } as React.CSSProperties : undefined}>
           <span className="gd-bow" aria-hidden="true"><svg viewBox="18 5 32 54"><path className="str rest" d="M33 7 L33 57" /><path className="str drawn" d="M33 7 L21 32 L33 57" />
             <path className="limb" d="M33 7 C31 10 34 13 39 17 Q53 32 39 47 C34 51 31 54 33 57" /></svg></span>

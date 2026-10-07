@@ -9,9 +9,8 @@ import { fmtNum, money, pctStr } from "@/lib/format";
 import { STRATS, minSpend, pos, sim, strats, target, yearsList } from "./calc";
 import { MinNote } from "./live";
 import type { Answers } from "./store";
-import { NeedsPlan, fill } from "./steps";
 import { Button } from "@/components/ui/button";
-import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, Q, Task, useGuideView } from "./ui";
+import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NeedsPlan, Q, Task, fill, useGuideView } from "./ui";
 
 function StratTable({ a }: { a: Answers }) {
   const S = sim(a);

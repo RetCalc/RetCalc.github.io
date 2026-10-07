@@ -18,6 +18,9 @@ async function walk(oldPage: Page, page: Page, info: TestInfo, name: string, ste
     await p.evaluate(() => localStorage.clear());
     await open(p, url, "#seoArticles");
   }
+  // The old site had one route, the Full walkthrough's; the new guide
+  // starts on the Quick check.
+  await page.locator('#gdCard [data-pace="full"]').click();
   let batch: Step[] = [];
   for (const s of steps) {
     if (s[0] !== "check") { batch.push(s as Step); continue; }
@@ -196,4 +199,87 @@ test("the plan prints on one page", async ({ page }) => {
   await expect.poll(() => page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);
   await expect(page.locator("#sheet h1")).toHaveText("Retirement Readiness Plan");
   await expect(page.locator("#sheet .sh-chart svg")).toHaveCount(1);
+});
+
+/* ---------- The overhaul (new-only) ----------
+   Maya and Sam (scripts/baseline/guide-fixtures.mjs) answer every question,
+   so each card's Continue is open and a walk is the route itself. */
+const MAYA = { status: "m", age: 38, spouseAge: 36, retire: 62, state: "IL", income: 95000, income2: 60000,
+  thKnow: "yes", takehome: 9200, bgKnow: "yes", spend: 7000, cash: 12000, debtHas: "yes", debtSrc: "quick", debtTotal: 18000, debtHi: 9000,
+  home: "mortgage", mortPaid: "no", housePay: 2100, college: "yes", kidAge: 6, collegeMo: 300,
+  saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, saveTo: "trad", retSpend: 70000, hcIncl: "no" };
+const stateWith = (pace: "quick" | "full", cur = "welcome") => ({ v: 2, pace, cur, a: MAYA, src: {}, done: {}, trip: null, back: null, coachMin: false,
+  snapshots: [], moves: {}, lessons: {}, startedAt: "2026-10-07T00:00:00.000Z" });
+/** Storage set from a page with no scripts of its own, so nothing the
+    guide does on loading can write over it. */
+async function stored(page: Page, items: Record<string, unknown>) {
+  await page.goto(NEW + "/robots.txt");
+  await page.evaluate((o) => { localStorage.clear(); for (const [k, v] of Object.entries(o)) localStorage.setItem(k, JSON.stringify(v)); }, items);
+}
+async function seeded(page: Page, state: unknown) {
+  await stored(page, state ? { "retcalc.guide.v2": state } : {});
+  await page.goto(NEW + "/guide");
+  await expect(page.locator("#gdCard .gd-q")).toBeVisible();
+}
+/** Continue from the Welcome card to the plan, reading each card's count. */
+async function walkThrough(page: Page) {
+  const counts: string[] = [];
+  await page.locator('[data-gd="next"]').click();
+  for (let i = 0; i < 30; i++) {
+    counts.push((await page.locator("#gdCount").textContent()) ?? "");
+    if ((await page.locator("#gdCard .gd-q").textContent()) === "Your retirement readiness") break;
+    await page.locator('#gdCard [data-gd="next"]').click();
+  }
+  return counts;
+}
+
+test("the Quick check and the Full walkthrough walk their own cards", async ({ page }) => {
+  test.setTimeout(120_000);
+  await seeded(page, stateWith("quick"));
+  await expect(page.locator('.gd-top [data-pace="quick"].on')).toHaveCount(1);
+  const quick = await walkThrough(page);
+  expect(quick.length).toBe(11);
+  expect(quick[0]).toMatch(/^Step 1 of 11 · about \d+ minutes? left$/);
+  expect(quick.at(-1)).toMatch(/^Step 11 of 11/);
+  await seeded(page, stateWith("full"));
+  const full = await walkThrough(page);
+  expect(full.length).toBe(17);
+  expect(full.at(-1)).toMatch(/^Step 17 of 17/);
+});
+
+test("switching pace keeps every answer and your place", async ({ page }) => {
+  await seeded(page, stateWith("full", "debt"));
+  await expect(page.locator("#gdCount")).toHaveText(/^Step 6 of 17/);
+  await page.locator('.gd-top [data-pace="quick"]').click();
+  await expect(page.locator("#gdCount")).toHaveText(/^Step 6 of 11/);
+  await expect(page.locator("#gdf-debtTotal")).toHaveValue("18,000");
+  // a deeper card stays open from the route, and says so
+  await page.locator('#gdMap [data-go="college"]').click();
+  await expect(page.locator("#gdCount")).toHaveText(/^A deeper card/);
+  await page.locator('#gdCard [data-gd="next"]').click();
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Where do your retirement savings stand?");
+});
+
+test("a guide saved by v1 opens migrated, and v1's key is left alone", async ({ page }) => {
+  const v1 = { v: 1, cur: "outlook", a: { ...MAYA, spendSrc: "budget" }, done: { about: true, income: true, takehome: true }, trip: null, back: null, coachMin: false };
+  await stored(page, { "retcalc.guide.v1": v1 });
+  await page.goto(NEW + "/guide");
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your retirement projection");
+  await expect(page.locator('.gd-top [data-pace="full"].on')).toHaveCount(1);
+  const kept = await page.evaluate(() => localStorage.getItem("retcalc.guide.v1"));
+  expect(JSON.parse(kept!)).toEqual(v1);
+  const v2 = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
+  expect(v2.v).toBe(2);
+  expect(v2.src.spend).toMatchObject({ kind: "tool", tool: "budget" });
+  expect(v2.done).toEqual({ about: true, income: true });
+});
+
+test("a v2 link opens on the plan card with its pace", async ({ page }) => {
+  await stored(page, {});
+  const link = { v: 2, a: MAYA, src: { spend: { kind: "tool", tool: "budget", at: "2026-10-07T00:00:00.000Z" } }, pace: "quick" };
+  await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(link)).toString("base64url"));
+  await expect(page.locator(".gd-q")).toHaveText("Your retirement readiness");
+  await expect(page.locator('.gd-top [data-pace="quick"].on')).toHaveCount(1);
+  const v2 = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
+  expect(v2.src.spend).toMatchObject({ kind: "tool", tool: "budget" });
 });

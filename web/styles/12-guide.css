@@ -18,12 +18,12 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-count{margin-left:auto;font-size:12px;color:var(--dimmer);font-family:var(--mono)}
 .gd-mini{display:none;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
 .gd-mini b{font-family:var(--mono);font-size:15px;color:var(--text)}
-/* ---- The progress bar: the logo's bow and arrow on six chapter bars ----
+/* ---- The progress bar: the logo's bow and arrow on seven chapter bars ----
    One set of measures places everything: --gap between the bars, --tail
    (room past the last bar for the target) and --goal (the target's centre
    past the track's end). The track spans the bars only and is a size
    container, so the arrow's tip sits at
-     (100cqw - 5 gaps) / 6 * position + chapters passed * gap
+     (100cqw - 6 gaps) / 7 * position + chapters passed * gap
    which is exactly where the fill of the chapter it's in ends, at any
    width. The arrow moves by transform and the fills grow by scaleX.
    Bow and arrow in Text, the bars in Rule with a Muted fill, the target's
@@ -34,10 +34,10 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-prog-wrap{--gap:6px;--tail:30px;--goal:17px;--al:46px;--ah:12px;--gs:18px;--bow:21px;
   --fly:520ms;--ease:cubic-bezier(.2,.7,.3,1);
   position:relative;margin-top:14px;padding-left:var(--bow);padding-right:var(--tail)}
-.gd-prog{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:var(--gap)}
+.gd-prog{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:var(--gap)}
 .gd-track{position:absolute;left:var(--bow);right:var(--tail);top:2.5px;height:0;pointer-events:none;
   container-type:inline-size;--nock:27px;
-  --x:calc((100cqw - 5 * var(--gap)) / 6 * var(--pos,0) + var(--ci,0) * var(--gap))}
+  --x:calc((100cqw - 6 * var(--gap)) / 7 * var(--pos,0) + var(--ci,0) * var(--gap))}
 .gd-track.nocked{--x:var(--nock)}
 .gd-track.hit{--x:calc(100cqw + var(--goal) + 1px)}
 /* The bow sits in the wrap's left inset (--bow). Until the first answer the
@@ -125,6 +125,10 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-choice .t{min-width:0}
 .gd-choice .t b{display:block;font-weight:600;font-size:14.5px;line-height:1.35}
 .gd-choice .t span{display:block;font-size:12.5px;color:var(--dimmer);margin-top:2px;line-height:1.45}
+/* The Welcome card's two paces: the time, then three lines on each. */
+.gd-pace .t .gd-pace-time{color:var(--text);font-size:13px;margin-top:3px}
+.gd-pace ul{margin:8px 0 0;padding:0 0 0 16px;font-size:13px;color:var(--dim);line-height:1.5}
+.gd-pace li + li{margin-top:3px}
 .gd-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 16px;max-width:560px;margin-bottom:6px}
 .gd-fields .full{grid-column:1 / -1}
 .gd-fields .field{margin-bottom:12px}
@@ -240,6 +244,9 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-map-st.cur{color:var(--text);background:var(--panel-2);font-weight:600}
 .gd-map-st.cur i{border-color:var(--text);border-width:2px}
 .gd-map-st.na{color:var(--dimmer);text-decoration:line-through;text-decoration-color:var(--line)}
+/* A deeper card the Quick check lists without walking: greyed, still open. */
+.gd-map-st.deep{color:var(--dimmer)}
+.gd-map-st.deep i{border-style:dashed;border-color:var(--ds-rule-strong)}
 .gd-map-st.na i{border-style:dashed}
 .gd-map-st .tag{margin-left:auto;font-size:10.5px;color:var(--dimmer);font-weight:400}
 .gd-map-foot{padding:10px 8px 2px;border-top:1px solid var(--line-soft);margin-top:4px}
@@ -254,7 +261,8 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 @media (max-width:640px){
   .gd-top{padding:10px 16px 12px}
   .gd-title{display:none}
-  .gd-top-row{flex-wrap:nowrap}
+  .gd-top-row{flex-wrap:wrap;row-gap:8px}
+  .gd-count{flex:1 1 100%;margin-left:0;order:3}
   .gd-prog-wrap{margin-top:10px}
   .gd-seg span{display:none}
   .gd-prog-wrap{--tail:26px;--goal:14px;--al:38px;--ah:10px;--gs:15px;--bow:16px}

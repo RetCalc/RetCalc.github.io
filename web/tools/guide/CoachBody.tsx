@@ -13,7 +13,7 @@ import { CoachPanel, revealFor, useFoldOnType, useRereads } from "@/components/s
 import { useToast } from "@/components/shell/Toast";
 import { useActiveTool } from "@/components/tools/ToolState";
 import { prefill, tripBoot } from "./actions";
-import { numbered, stepById } from "./steps";
+import { numbered, stepById } from "./route";
 import { guide, setGuide, useGuide, type Trip } from "./store";
 import { TRIP_META } from "./tripMeta";
 import { trip as tripDef, type Task } from "./trips";
@@ -59,7 +59,7 @@ export default function CoachBody() {
   });
 
   if (!showing || !t || !meta) return null;
-  const from = stepById(t.from), L = numbered(g.a), i = from ? L.indexOf(from) : -1;
+  const from = stepById(t.from), L = numbered(g.a, g.pace), i = from ? L.indexOf(from) : -1;
   const nextTask = tasks.find((k) => k.ok === false);
   return (
     <CoachPanel id="gdCoach" label="Guide step" sub={"Guide" + (i >= 0 ? " · step " + (i + 1) + " of " + L.length : "")} title={meta.title}

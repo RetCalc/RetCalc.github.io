@@ -14,8 +14,7 @@ import { fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { gdM, need, ok, options, overFrom, pos, sim, target, type Levers, type Opt, type OptSet, type Sim } from "./calc";
 import { PlanChart, series } from "./chart";
 import type { Answers } from "./store";
-import { NeedsPlan } from "./steps";
-import { BackNote, Callout, Q, useGuideView } from "./ui";
+import { BackNote, Callout, NeedsPlan, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
 import { Label } from "@/components/ui/label";
@@ -186,7 +185,7 @@ export function TuneStep() {
         It reaches {money(S.fv)} and lasted in {pctStr(S.success, 0)} of historical retirements
         {want > 0 ? "; lasting in " + (goal >= 1 ? "every one" : pctStr(goal, 0)) + " takes about " + money(want) : ""}.{" "}
         {!O.ahead ? "Each option below closes the gap on its own." : big ? "That's more than it needs, and there's more than one way to use the extra." : "It's close to its target, so the options are small."}</p>
-      <BackNote step="tune" />
+      <BackNote step="adjust" />
       <div className="gd-target"><span>Aim for plans that lasted in</span>
         {([[0.9, "90%"], [0.95, "95%"], [1, "every one"]] as const).map(([x, lab]) => (
           <Button key={x} variant="outline" size="sm" data-target={x} aria-pressed={goal === x} onClick={() => G.set("target", x, true)}>{lab}</Button>
@@ -219,7 +218,7 @@ export function TuneStep() {
       </div>
       <div className="gd-cmp" id="gdCmp"><Compare a={a} /></div>
       <p className="hint mt-3.5">Prefer the classic FIRE math, with a 4% rule instead of market history?{" "}
-        <Button variant="quiet" size="inline" data-trip="fire" data-from="tune" onClick={() => G.trip("fire", "tune")}>Open the FIRE Calculator</Button></p>
+        <Button variant="quiet" size="inline" data-trip="fire" data-from="adjust" onClick={() => G.trip("fire", "adjust")}>Open the FIRE Calculator</Button></p>
     </>
   );
 }

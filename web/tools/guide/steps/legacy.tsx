@@ -1,88 +1,27 @@
 "use client";
 
-/* The steps, in the order a planner would take them: about you, cash flow,
-   safety net, big goals, retirement, and your plan. Each has its card, what
-   it needs before Continue, and what it settles on the way out. From
-   GD_STEPS in src/js/app/30-guide-steps.js. */
+/* Today's cards, as the guide had them before the overhaul: each chapter's
+   package moves its cards out of here into steps/chN-*.tsx as it rewrites
+   them (doc 3, "Files, today and after"). What each card needs and settles
+   is declared in steps/decl.ts; the screens are bound by id in
+   steps/index.tsx. From GD_STEPS in src/js/app/30-guide-steps.js. */
 
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { RISKS } from "@/lib/engine/typed";
 import { STATE_OPTIONS } from "@/lib/states";
 import {
   SAVE_TO, mar, need, ok, pos, riskLabel, saveMo, sim, target, taxEst, yearsList,
-} from "./calc";
-import { PlanChart, series } from "./chart";
+} from "../calc";
+import { PlanChart, series } from "../chart";
 import {
   AboutNote, AcctNote, BridgeNote, CashNote, FlowNote, HcNote, HouseNote, IncomeNote, InflNote, PensionNote, RateNote, SSNote, TaxNote,
-} from "./live";
-import { OptimizeStep } from "./optimize";
-import { Results, ResultsFoot } from "./results";
-import type { Answers, GuideState } from "./store";
-import { StrategyStep } from "./strategy";
-import { TuneStep } from "./tune";
-import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NumF, Q, SelF, Task, useGuideView } from "./ui";
+} from "../live";
+import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NeedsPlan, NumF, Q, SelF, Task, fill, useGuideView } from "../ui";
 import { Button } from "@/components/ui/button";
 import { HeroReading } from "@/components/common/Reading";
 import { CircleCheckIcon } from "lucide-react";
 
-export const CHAPTERS = ["About you", "Cash flow", "Safety net", "Big goals", "Retirement", "Your plan"];
-
-export interface Step {
-  id: string; ch: number; title: string;
-  /** Steps that only apply to some plans (healthcare before 65, the bridge). */
-  when?: (a: Answers) => boolean;
-  /** What Continue needs, and what it says until then. */
-  ok?: (a: Answers) => boolean;
-  why?: (a: Answers) => string;
-  /** Settles answers on the way out. */
-  commit?: (a: Answers) => void;
-  /** Writes the household bar on the way out. */
-  sync?: boolean;
-  /** Answers the card assumes on arrival (a default mix, say). */
-  prep?: (a: Answers) => void;
-  Body: () => React.ReactNode;
-  Foot?: () => React.ReactNode;
-}
-
-/** "Go to Retirement savings" when a step needs a projection first. */
-export function NeedsPlan({ title, msg = "This needs your age, savings and retirement spending first." }: { title: string; msg?: string }) {
-  const G = useGuideView();
-  return (
-    <>
-      <Q>{title}</Q>
-      <Callout cls="warn">{msg}</Callout>
-      <Button variant="outline" data-go="savings" onClick={() => G.go("savings")}>Go to Retirement savings</Button>
-    </>
-  );
-}
-
-function Intro() {
-  const { g } = useGuideView();
-  const started = Object.keys(g.done).length > 0;
-  return (
-    <>
-      <Q>{started ? "Welcome back" : "How ready are you for retirement?"}</Q>
-      <Lead>This guide goes through your money one question at a time: what you earn, what you spend, what you owe and what you&apos;ve saved.
-        {" "}When you don&apos;t know an answer, it opens the tool on this site that finds it, tells you exactly what to fill in, and brings the result back here.</Lead>
-      <ul className="gd-perks">
-        <li><i>1</i><span><b>A readiness score out of 100</b> that updates as you answer, and shows what&apos;s pulling it down.</span></li>
-        <li><i>2</i><span><b>A tour of the tools that apply to you.</b> No mortgage? No kids? Those get skipped.</span></li>
-        <li><i>3</i><span><b>A plan you can adjust, with taxes built in.</b> Ahead of schedule? See what retiring sooner, coasting or spending more would look like, and apply it. Behind? Pick the fix that suits you. Then the Plan Optimizer finds the best way to claim Social Security, draw down your accounts and convert to Roth.</span></li>
-        <li><i>4</i><span><b>A short, ordered list</b> of what to do next, with the tool for each step.</span></li>
-      </ul>
-      <Callout>Plan on 20 to 40 minutes, depending on how many tools you open. Stop whenever you like: your answers are kept in this browser only and never leave it.</Callout>
-    </>
-  );
-}
-function IntroFoot() {
-  const { g, act } = useGuideView();
-  return Object.keys(g.done).length > 0
-    ? <><Button variant="outline" size="lg" data-gd="restart" onClick={() => act("restart")}>Start over</Button><span className="sp"></span>
-      <Button size="lg" className="max-sm:flex-auto" data-gd="resume" onClick={() => act("resume")}>Pick up where you left off<i className="arw" aria-hidden="true"></i></Button></>
-    : <><span className="sp"></span><Button size="lg" className="max-sm:flex-auto" data-gd="next" onClick={() => act("next")}>Let&apos;s begin<i className="arw" aria-hidden="true"></i></Button></>;
-}
-
-function About() {
+export function About() {
   const { v, a } = useGuideView();
   return (
     <>
@@ -101,7 +40,7 @@ function About() {
   );
 }
 
-function Income() {
+export function Income() {
   const { v, a } = useGuideView();
   return (
     <>
@@ -116,7 +55,7 @@ function Income() {
   );
 }
 
-function TakeHome() {
+export function TakeHome() {
   const G = useGuideView(), { v } = G, est = taxEst(v);
   const showField = v.thKnow === "yes" || pos(v.takehome);
   return (
@@ -130,21 +69,14 @@ function TakeHome() {
       <BackNote step="takehome" />
       {v.thKnow === "no" ? <Task id="tax" head="Find it with the Income Tax tool" label={pos(v.takehome) ? "Open Income Tax again" : null}
         after={est > 0 && !pos(v.takehome) ? <div className="mt-3 text-note"><Button variant="quiet" size="inline" data-fill="takehome" data-v={Math.round(est)}
-          onClick={() => fill(G, "takehome", Math.round(est))}>Or skip the tool and use a quick estimate: about {money(est)}/mo</Button></div> : null} /> : null}
+          onClick={() => fill(G, "takehome", Math.round(est), "estimated")}>Or skip the tool and use a quick estimate: about {money(est)}/mo</Button></div> : null} /> : null}
       {showField ? <Fields><MoneyF k="takehome" label="Monthly take-home pay" per="/mo"
         hint={mar(v) ? "For the two of you together." : "Paid every two weeks? Multiply one paycheck by 26, then divide by 12."} /></Fields> : null}
     </>
   );
 }
 
-/** A suggested figure: into its field if the field is showing, or the card
-    is drawn again with it. */
-export function fill(G: ReturnType<typeof useGuideView>, k: keyof Answers, val: number) {
-  const shown = typeof document !== "undefined" && !!document.getElementById("gdf-" + k);
-  G.set(k, val as never, !shown);
-}
-
-function Spending() {
+export function Spending() {
   const { v, a } = useGuideView();
   const showField = v.bgKnow === "yes" || pos(v.spend);
   return (
@@ -163,7 +95,7 @@ function Spending() {
   );
 }
 
-function Cash() {
+export function Cash() {
   const { a } = useGuideView();
   return (
     <>
@@ -175,7 +107,7 @@ function Cash() {
   );
 }
 
-function Debt() {
+export function Debt() {
   const G = useGuideView(), { v } = G;
   return (
     <>
@@ -200,7 +132,7 @@ function Debt() {
   );
 }
 
-function Home() {
+export function Home() {
   const { v, a } = useGuideView();
   const optional = <After>Optional. Continue whenever you&apos;re ready.</After>;
   return (
@@ -235,7 +167,7 @@ function Home() {
   );
 }
 
-function College() {
+export function College() {
   const { v } = useGuideView();
   return (
     <>
@@ -255,7 +187,7 @@ function College() {
   );
 }
 
-function Savings() {
+export function Savings() {
   const { v, a } = useGuideView();
   return (
     <>
@@ -289,7 +221,7 @@ function Savings() {
   );
 }
 
-function RetSpend() {
+export function RetSpend() {
   const G = useGuideView(), { v, a } = G, picks: [string, number][] = [];
   if (pos(v.spend)) {
     picks.push(["Same as today", v.spend * 12]);
@@ -331,7 +263,7 @@ function RetSpend() {
   );
 }
 
-function Outlook() {
+export function Outlook() {
   const { v } = useGuideView(), S = sim(v);
   if (!S) return <NeedsPlan title="Your retirement projection" />;
   const spendNeed = S.spend + S.taxYr, port = S.portIncome, ss = S.ss.total, pen = S.pension;
@@ -353,7 +285,7 @@ function Outlook() {
       <Q>Your retirement projection</Q>
       <Lead>Where your current path leads by {fmtNum(S.retire)}, in today&apos;s dollars, if a {riskLabel(S.real)} mix earns about {pctStr(S.real, 1)} a year after inflation and your saving keeps pace with inflation
         {S.stop != null ? (coast ? ". You've stopped saving, so it grows on its own from here" : " until you stop saving at " + fmtNum(S.stop)) : ""}.</Lead>
-      <BackNote step="outlook" />
+      <BackNote step="number" />
       <HeroReading className="mb-3 px-0 pt-1 pb-2 max-sm:px-0 max-sm:pt-1"
         hero={{ label: "Savings at " + fmtNum(S.retire), id: "gdOutFv", value: money(S.fv), note: coast ? "What you have grows to" : "What " + money(saveMo(v)) + "/mo grows to" }}
         figures={[
@@ -383,7 +315,7 @@ function Outlook() {
   );
 }
 
-function Lasting() {
+export function Lasting() {
   const { v } = useGuideView(), S = sim(v);
   if (!S) return <NeedsPlan title="Will your money last?" />;
   const r = S.success;
@@ -411,7 +343,7 @@ function Lasting() {
   );
 }
 
-function Health() {
+export function Health() {
   const { v, a } = useGuideView(), gap = 65 - Math.round(v.retire!);
   return (
     <>
@@ -428,7 +360,7 @@ function Health() {
   );
 }
 
-function Bridge() {
+export function Bridge() {
   const G = useGuideView(), { v, a } = G, gap = Math.ceil(59.5 - v.retire!);
   return (
     <>
@@ -447,53 +379,3 @@ function Bridge() {
   );
 }
 
-export const STEPS: Step[] = [
-  { id: "intro", ch: -1, title: "Welcome", Body: Intro, Foot: IntroFoot },
-  { id: "about", ch: 0, title: "About you", Body: About, sync: true,
-    ok: (a) => ok(a.age) && a.age >= 16 && a.age < 100 && ok(a.retire) && a.retire > a.age && a.retire <= 90,
-    why: () => "Enter your age and a retirement age after it",
-    commit: (a) => { if (!a.status) a.status = "s"; } },
-  { id: "income", ch: 1, title: "Your income", Body: Income, sync: true, ok: (a) => ok(a.income), why: () => "Enter your yearly income" },
-  { id: "takehome", ch: 1, title: "Take-home pay", Body: TakeHome, ok: (a) => pos(a.takehome),
-    why: (a) => (a.thKnow === "no" ? "Open the Income Tax tool, or use the estimate" : "Enter your monthly take-home") },
-  { id: "spending", ch: 1, title: "Monthly spending", Body: Spending, ok: (a) => pos(a.spend),
-    why: (a) => (a.bgKnow === "no" ? "Build your budget first" : "Enter your monthly spending") },
-  { id: "cash", ch: 2, title: "Emergency fund", Body: Cash, ok: (a) => ok(a.cash), why: () => "Enter your cash savings, even if it's 0" },
-  { id: "debt", ch: 2, title: "Debt", Body: Debt, ok: (a) => a.debtHas === "no" || (a.debtHas === "yes" && ok(a.debtTotal)),
-    why: (a) => (a.debtHas === "yes" ? "List your debts, or enter the total" : "Choose an answer") },
-  { id: "home", ch: 3, title: "Housing", Body: Home, ok: (a) => !!a.home, why: () => "Choose an answer",
-    prep: (a) => { if (a.home === "mortgage" && !ok(a.housePay) && pos(a.bgHousing)) a.housePay = a.bgHousing; } },
-  { id: "college", ch: 3, title: "College", Body: College, ok: (a) => !!a.college, why: () => "Choose an answer" },
-  { id: "savings", ch: 4, title: "Retirement savings", Body: Savings, sync: true,
-    prep: (a) => { if (a.risk == null) a.risk = 0.045; if (!a.saveTo) a.saveTo = "trad"; },
-    ok: (a) => ok(a.saved) && ok(a.contrib) && !!a.match, why: () => "Fill in your savings and contributions, and answer the match question",
-    commit: (a) => { if (!ok(a.employer)) a.employer = 0; } },
-  { id: "retspend", ch: 4, title: "Spending in retirement", Body: RetSpend, sync: true, ok: (a) => pos(a.retSpend), why: () => "Enter your yearly spending in retirement" },
-  { id: "outlook", ch: 4, title: "Your projection", Body: Outlook },
-  { id: "lasting", ch: 4, title: "Will it last?", Body: Lasting },
-  { id: "tune", ch: 5, title: "Adjust your plan", Body: TuneStep },
-  { id: "strategy", ch: 5, title: "Drawing it down", Body: StrategyStep },
-  { id: "health", ch: 5, title: "Healthcare before 65", Body: Health, when: (a) => ok(a.retire) && a.retire < 65,
-    prep: (a) => { if (!a.hcIncl) a.hcIncl = "no"; } },
-  { id: "bridge", ch: 5, title: "Getting to 59½", Body: Bridge, when: (a) => ok(a.retire) && a.retire < 59.5 },
-  { id: "optimize", ch: 5, title: "Plan Optimizer", Body: OptimizeStep },
-  { id: "results", ch: 5, title: "Score and plan", Body: Results, Foot: ResultsFoot },
-];
-
-export const stepById = (id: string) => STEPS.find((s) => s.id === id);
-export const applies = (s: Step, a: Answers) => !s.when || s.when(a);
-export const route = (a: Answers) => STEPS.filter((s) => applies(s, a));
-export const numbered = (a: Answers) => route(a).filter((s) => s.id !== "intro");
-export function firstOpen(g: GuideState): string {
-  const L = numbered(g.a);
-  return (L.find((s) => !g.done[s.id]) || L[L.length - 1]).id;
-}
-/** The step to show: the one you're on, or the next that applies. */
-export function current(g: GuideState): Step {
-  let st = stepById(g.cur) || STEPS[0];
-  if (!applies(st, g.a)) {
-    const i = STEPS.indexOf(st);
-    st = STEPS.slice(i).find((s) => applies(s, g.a)) || STEPS[STEPS.length - 1];
-  }
-  return st;
-}

@@ -15,8 +15,7 @@ import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal } from "@/to
 import { lowerFirst, opClaims, opTacticsLine } from "@/tools/optimizer/words";
 import { accts, sim, tactics } from "./calc";
 import type { Answers } from "./store";
-import { NeedsPlan } from "./steps";
-import { BackNote, Callout, H3, Q, useGuideView } from "./ui";
+import { BackNote, Callout, H3, NeedsPlan, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
 
 export const optGoal = (a: Answers): Goal => (a.optGoal === "last" || a.optGoal === "spend" ? a.optGoal : "legacy");

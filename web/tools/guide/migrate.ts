@@ -11,6 +11,7 @@
 import type {
   AnswerKey, Answers, Back, ChangeEvent, GuideStateV2, Pace, Snapshot, Source, SourceKind, Sources, Trip,
 } from "./store";
+import { BOOKKEEPING } from "./sources";
 
 const SNAPSHOT_CAP = 24;
 
@@ -52,13 +53,6 @@ export function doneFromV1(done: Record<string, boolean>): Record<string, boolea
   return Object.fromEntries(Object.entries(out).filter(([, v]) => v));
 }
 
-/* Keys that record how the guide got somewhere (which choice led to a
-   field, a tool's saved rows) rather than an answer of the person's: they
-   carry no source. */
-const BOOKKEEPING = new Set<string>([
-  "thKnow", "bgKnow", "spendSrc", "debtSrc", "bgRows", "debtRows", "moState", "clState", "ddTool",
-  "hcSeen", "hcAdded", "advSeen", "stagesSeen", "btSeen", "kitSeen", "retired",
-]);
 const present = (v: unknown) => v != null && v !== "" && !(typeof v === "number" && !isFinite(v));
 
 /** Where each answer of a v1 guide came from, as far as the old trips left
