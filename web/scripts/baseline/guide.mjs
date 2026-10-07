@@ -139,15 +139,24 @@ const HARNESS = {
   need: (a, S) => hNeed(S, a.target === 0.95 || a.target === 1 ? a.target : 0.9),
   score: (a, S) => hScore(a, S),
   pias,
+  levers: (a, S) => Object.fromEntries(LEVERS.map((L) => {
+    const T = hSim(a, L.over(S));
+    return [L.id, T ? { fv: T.fv, need: HARNESS.need(a, T), success: T.success } : null];
+  })),
 };
 
 /* ---------- the guide's own code ---------- */
 const G = await import("@/tools/guide/calc");
+const GL = await import("@/tools/guide/levers");
 const LIVE = {
   sim: (a, over) => G.sim(a, over),
   need: (a, S) => G.need(a, S),
   score: (a) => { const R = G.score(a); return { score: R.score, P: Object.fromEntries(Object.entries(R.P).map(([k, v]) => [k, v.p])) }; },
   pias: (a, retire) => { const p = G.pias(a, retire); return { pia1: p.pia1, pia2: p.pia2 }; },
+  levers: (a) => {
+    const R = GL.leverRows(a);
+    return Object.fromEntries(GL.LEVERS.map((L, i) => [L.id, R.rows[i]]));
+  },
 };
 
 /* ---------- the figures ---------- */
@@ -165,12 +174,9 @@ function figures(X, a) {
     need: X.need(a, S), score: sc.score,
     areas: Object.fromEntries(Object.entries(WEIGHTS).map(([k, w]) => [k, k in sc.P ? Math.round(sc.P[k] * w) : null])),
     shares: Object.fromEntries(Object.keys(WEIGHTS).map((k) => [k, k in sc.P ? share(sc.P[k]) : null])),
-    levers: {},
+    levers: Object.fromEntries(Object.entries(X.levers(a, S)).map(([id, T]) =>
+      [id, T ? { fv: cents(T.fv), need: T.need, success: share(T.success), successPct: Math.round(T.success * 100) } : null])),
   };
-  for (const L of LEVERS) {
-    const T = X.sim(a, L.over(S));
-    out.levers[L.id] = T ? { fv: cents(T.fv), need: X.need(a, T), success: share(T.success), successPct: Math.round(T.success * 100) } : null;
-  }
   return out;
 }
 const runAll = (X) => Object.fromEntries(FIXTURES.map((f) => [f.id, figures(X, f.a)]));
