@@ -41,8 +41,8 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Drawdown Simulator | /drawdown | done | 7cfb953 | thirds, hero reading (success rate in its rating tone), views as tabs each with its own answer, plan as a story, token heat grid; strategy pages share it |
 | Income Tax | /incometax | done | 36ede43 | thirds, hero reading (pay or income after tax), donut + bars as one band with a reconciling note, field error on pre-tax, gain chart up and unclipped, state rules folded |
 | Plan Optimizer | /optimizer | done | 75d7a3a | thirds, run first on phones, hero reading + moves under it, stale dims; loader motion still Phase 2 |
-| Early Retirement Bridge | /bridge | todo | | |
-| 72(t) | /72t | todo | | Bridge's page; checked with it |
+| Early Retirement Bridge | /bridge | done | f6fa405 | Thirds; hero reading (best plan, holds, cost, at 59½); sticky Following head with the market switch; detail folds |
+| 72(t) | /72t | done | 9078406 | Bridge's page with variant="72t": 72(t) terms lead the inputs and facts |
 | Roth Conversion & RMDs | /roth | todo | | |
 | RMDs | /rmd | todo | | Roth's page; checked with it |
 | Healthcare Cost Planner | /healthcare | todo | | |
