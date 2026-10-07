@@ -70,22 +70,14 @@ tbody tr:hover{background:var(--panel-2)}
 main.solo{grid-template-columns:minmax(0,1fr)}
 
 /* ---------- healthcare cost planner ---------- */
-.hc-stats{display:flex;gap:12px;margin-bottom:16px}
-.hc-stats .hc-stat{flex:1;background:var(--panel-2);border-radius:8px;padding:12px 14px}
-.hc-stats .hc-stat .v{font-family:var(--mono);font-size:26px;font-weight:600;
-  letter-spacing:-.02em;color:var(--text);white-space:nowrap}
-.hc-stats .hc-stat .optlabel{margin-top:3px}
-.hc-section{margin-top:18px;padding-top:14px;border-top:1px solid var(--line-soft)}
-.hc-section-label{font-size:11px;color:var(--dimmer);text-transform:uppercase;
-  letter-spacing:.08em;font-weight:700;margin-bottom:8px}
-.hc-tier-row{display:flex;justify-content:space-between;align-items:baseline;
+.hc-tier-row{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
   padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:14px}
 .hc-tier-row:last-child{border-bottom:0}
 .hc-tier-row span:first-child{color:var(--dim)}
-.hc-tier-row span:last-child{font-family:var(--mono);font-weight:600;color:var(--text)}
-.hc-tier-row.hc-tier-sel span:first-child{color:var(--text);font-weight:600}
-.hc-tier-row.hc-tier-sel{background:var(--panel-2);border:1px solid var(--ds-rule-strong);border-radius:var(--r-well);padding-left:8px;padding-right:8px}
-.hc-tier-row.hc-tier-sel span:last-child{color:var(--text)}
+.hc-tier-row b{color:var(--text);font-weight:600}
+.hc-tier-row span:last-child{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text);white-space:nowrap}
+/* The tier the credit is priced on: a check and Text, not a box. */
+.hc-tier-row.hc-tier-sel span:first-child{color:var(--text)}
 .hc-insight{margin-top:12px;font-size:13px;line-height:1.5}
 .hc-insight b{color:var(--text)}
 .hc-note{font-size:12px;color:var(--dimmer);margin-top:14px;line-height:1.5;

@@ -386,6 +386,36 @@ written into DESIGN.md unless it says otherwise.
   nothing with the RMD column first, so RMDs by age show on arrival. Same
   figures, inputs and default strategy as /roth.
 
+- **Healthcare Cost Planner (/healthcare): Basic's thirds, then the two
+  phases side by side.** Inputs a third, results two thirds from 1024px;
+  healthcare joins SOLO (lib/site.ts). Its 8 fields fit a third easily, and
+  thirds keep it in line with the other tools; the two-thirds column is
+  wide enough to put "Before 65: the ACA bridge" and "From 65: Medicare"
+  side by side from 1100px (`wide`), so the timeline reads left to right
+  (stacked below 1100px). Inputs card "Your situation" with an intro line:
+  retirement age | state, status | household, spouse's age (married only),
+  then Title heads Income (MAGI; Copy from Income Tax as the button, Open
+  Income Tax as a quiet link; Social Security) and Your own quote (the
+  benchmark premium, kept open: healthcare.spec types into it). Results open
+  with one reading card: the net ACA premium as the amber hero (its old tile
+  label as the note), Years on the ACA bridge and Medicare from 65 (the
+  couple's range when married, else per person) at Display size. Retiring
+  at 65 or later, Medicare leads in amber with Per person (couple) or Part B
+  premium (single) beside it, the "no ACA bridge" sentence becomes a band in
+  the reading (it carries #hcACABody, which the help tour focuses) and the
+  Medicare card spans the row. The 400% cliff warning and the next-IRMAA-
+  tier warning (now the Warning callout, was a Note) move from the bottom of
+  their cards to the reading's foot, text unchanged. With no income: dashes
+  in Text, a prompt band with an info icon, and a hint under the MAGI field
+  ("The one figure this needs"), not an error. The `.hc-stats` tiles go;
+  uppercase labels become sentence-case h3 heads; "If Congress restores the
+  enhanced credits" and "Plan tier comparison" fold (shadcn Collapsible,
+  keepMounted); tier rows lose the medal emoji, Silver gets a check and
+  Text instead of a box; the IRMAA badge keeps its colors (premium tax
+  credit stays green, owner's call) and gains a check / alert icon; prose
+  capped at the copy measure. Phones get a PinnedReading (the hero and its
+  last secondary).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -514,6 +544,28 @@ written into DESIGN.md unless it says otherwise.
   from the shared tool list; left for the owner.
 - **Roth Conversion**: 44px CSV button and the article disclosure's label —
   shared CsvButton size and the shared article component, not this page's.
+
+- **Healthcare**: a default income so a first visit has an answer — data
+  change; an empty reading and a hint at the MAGI field instead.
+- **Healthcare**: thousands separators on the tool's money figures
+  ("$3291/mo", "~$907–$1067/mo") — figure format; the hero repeats them as
+  they are.
+- **Healthcare**: the "$0/mo" net premium in the Medicaid range, beside the
+  sentence saying subsidies don't apply — figure / content for the owner;
+  the hero shows the same value the tile did.
+- **Healthcare**: "Your own quote" (benchmark premium) as a closed
+  disclosure — healthcare.spec types into hcManualPremium on both sites;
+  kept open under its own head.
+- **Healthcare**: a timeline from retirement to 65 to Medicare, total cost to
+  65, distance to both thresholds together, an "if restored" switch on the
+  reading — new figures or behavior; not built.
+- **Healthcare**: credit rows in Text instead of green — the owner keeps the
+  premium tax credit green.
+- **Healthcare**: 44px hit areas for the "?" tip dots and the in-sentence
+  healthcare.gov link — the dots are the shared TipDot (site-wide pass); the
+  link sits inside method text (inline links are exempt; restyle only).
+- **Healthcare**: renaming the page title / article label — SEO copy, the
+  owner's call.
 
 ## Fixed
 
