@@ -342,6 +342,10 @@ written into DESIGN.md unless it says otherwise.
   balances the hero and figures are dashes in Text, the sentence band is the
   prompt with an icon, and everything under the reading folds away (Send
   buttons with it). Phones get a PinnedReading (best plan, holds up in).
+  /72t renders the same tool with `variant="72t"` (app/72t/page.tsx): the
+  72(t) method and rate lead the inputs under their own head right after the
+  situation, and "Most 72(t) could pay" leads the facts strip. Same figures,
+  plans, order and default selection as /bridge.
 
 ## Skipped from critique
 

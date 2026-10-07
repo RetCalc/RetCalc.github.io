@@ -5,5 +5,5 @@ import { Bridge } from "@/tools/bridge/Bridge";
 export const metadata = metadataFor("72t");
 
 export default function Page() {
-  return <PageShell slug="72t"><Bridge /></PageShell>;
+  return <PageShell slug="72t"><Bridge variant="72t" /></PageShell>;
 }

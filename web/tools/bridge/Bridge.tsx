@@ -67,7 +67,11 @@ function HoldCell({ hold, of }: { hold: number; of: number }) {
    outer two so the switch fits the width. */
 const PATHS = [["above", "Above"], ["avg", "Average"], ["below", "Below"]] as const;
 
-export function Bridge() {
+/** `variant="72t"`: the /72t page, the same tool led by its 72(t) terms (the
+    method and rate right after the situation, the most a 72(t) could pay
+    first among the facts). */
+export function Bridge({ variant }: { variant?: "72t" } = {}) {
+  const t72 = variant === "72t";
   const { state: s, set, setState } = useToolState(BRIDGE_DEF);
   const router = useRouter();
   const toast = useToast();
@@ -145,6 +149,15 @@ export function Bridge() {
   const rows = P?.run.rows ?? [];
   const F = readingFigures(R);
   const two = "two bottomalign max-sm:grid-cols-2";
+  const sepp = (
+    <div className={two}>
+      <SelectField id="brSeppMethod" label={<Tipped text="72(t) method" k="brseppmethod" />} value={s.seppMethod} onChange={set("seppMethod")}>
+        <option value="amort">Amortization</option>
+        <option value="rmd">RMD</option>
+      </SelectField>
+      <NumberField id="brSeppRate" label={<Tipped text="72(t) interest rate" k="brsepprate" />} unit="%" step={0.25} max={12} value={s.seppRate} onValueChange={set("seppRate")} />
+    </div>
+  );
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
@@ -157,7 +170,8 @@ export function Bridge() {
           <Card>
             <CardHeader>
               <CardTitle>Your situation</CardTitle>
-              <CardDescription>What you&apos;ll have on the day you retire, and what you&apos;ll spend.</CardDescription>
+              <CardDescription>{t72 ? "What you'll have on the day you retire, what you'll spend, and the 72(t) terms."
+                : "What you'll have on the day you retire, and what you'll spend."}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className={two}>
@@ -174,6 +188,8 @@ export function Bridge() {
                 <Affixed prefix="$" suffix="/yr"><MoneyInput id="brSpend" nonNeg value={s.spend} onValueChange={set("spend")} /></Affixed>
                 <div className="hint" id="brSpendNote">{aca ? "Leave out health insurance: each plan adds the premium its income level earns." : ""}</div>
               </Field>
+
+              {t72 ? <><GroupHead>72(t) payments</GroupHead>{sepp}</> : null}
 
               <GroupHead>Your accounts at retirement</GroupHead>
               <MoneyField id="brTrad" label={<Tipped text="Traditional 401(k) / IRA" k="brtrad" />} value={s.trad} onValueChange={set("trad")} />
@@ -213,20 +229,14 @@ export function Bridge() {
               <SelectField id="brFill" label={<Tipped text="Blended plan converts" k="brfill" />} value={s.fill} onChange={set("fill")}>
                 {FILLS.map(([v, label]) => <option key={v} value={v} disabled={v === "aca" && !aca}>{label}</option>)}
               </SelectField>
-              <div className={two}>
-                <SelectField id="brSeppMethod" label={<Tipped text="72(t) method" k="brseppmethod" />} value={s.seppMethod} onChange={set("seppMethod")}>
-                  <option value="amort">Amortization</option>
-                  <option value="rmd">RMD</option>
-                </SelectField>
-                <NumberField id="brSeppRate" label={<Tipped text="72(t) interest rate" k="brsepprate" />} unit="%" step={0.25} max={12} value={s.seppRate} onValueChange={set("seppRate")} />
-              </div>
+              {t72 ? null : sepp}
             </CardContent>
           </Card>
         </aside>
       </div>
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-bridge">
-        <Reading R={R} F={F} ctx={ctx} seppMax={seppMax} mode={mode} setMode={setMode} />
+        <Reading R={R} F={F} ctx={ctx} seppMax={seppMax} mode={mode} setMode={setMode} t72={t72} />
 
         {/* Nothing to compare or follow until there's a plan. */}
         <div className="stack" hidden={!R}>
@@ -354,10 +364,11 @@ function readingFigures(R: BridgeRun | null) {
   return { best: R.best.name, hold: pctStr(h, 0), cost: money(R.best.steady.cost), end: money(R.best.steady.end.total), tone: "answer" as const, holdTone, h };
 }
 
-function Reading({ R, F, ctx, seppMax, mode, setMode }: {
+function Reading({ R, F, ctx, seppMax, mode, setMode, t72 }: {
   R: BridgeRun | null; F: ReturnType<typeof readingFigures>; ctx: BrCtx; seppMax: number;
-  mode: "hist" | "mc"; setMode: (m: "hist" | "mc") => void;
+  mode: "hist" | "mc"; setMode: (m: "hist" | "mc") => void; t72: boolean;
 }) {
+  const seppFact = <Fact k="Most 72(t) could pay" id="brSeppMax">{seppMax > 0 ? money(seppMax) + "/yr" : DASH}</Fact>;
   const b = R?.best, t = b?.test, st = b?.steady;
   const ages = ctx.age + (ctx.nB > 1 ? "–" + (ctx.age + ctx.nB - 1) : "");
   const pen = R?.plans.find((p) => p.key === "pen");
@@ -407,9 +418,10 @@ function Reading({ R, F, ctx, seppMax, mode, setMode }: {
       </div>
       {/* What the inputs already settle, before any plan runs. */}
       <dl className="m-0 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border px-5.5 py-3.5 max-sm:px-4 sm:grid-cols-4">
+        {t72 ? seppFact : null}
         <Fact k="Locked until 59½" id="brLockYears">{fmtNum(ctx.nB) + (ctx.nB === 1 ? " year" : " years") + ", ages " + fmtNum(ctx.age) + (ctx.nB > 1 ? "–" + fmtNum(ctx.age + ctx.nB - 1) : "")}</Fact>
         <Fact k={<Tipped text="Rule of 55" k="brk401" />} id="brR55State">{!(ctx.k401 > 0) ? "No 401(k) entered" : ctx.r55 ? "Eligible" : "Not until " + ctx.r55Age}</Fact>
-        <Fact k="Most 72(t) could pay" id="brSeppMax">{seppMax > 0 ? money(seppMax) + "/yr" : DASH}</Fact>
+        {t72 ? null : seppFact}
         <Fact k={<Tipped text="Average return, this mix" k="brsteady" />} id="brSteadyRet">{pctStr(ctx.real, 1) + " real"}</Fact>
       </dl>
     </Card>
