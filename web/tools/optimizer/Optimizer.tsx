@@ -11,7 +11,7 @@ import { MoneyField, NumberField, SelectField } from "@/components/fields/Field"
 import { useHousehold, useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
-import { TipDot, Tipped } from "@/components/shell/Tooltips";
+import { Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { plAtRetire } from "@/lib/engine/typed-plan";
@@ -197,7 +197,7 @@ export function Optimizer() {
             </CardHeader>
             <CardContent>
               <div className="field mb-4">
-                <Label className="mb-1.5"><span>Start from<TipDot k="opmode" /></span></Label>
+                <Label className="mb-1.5"><span><Tipped text="Start from" k="opmode" /></span></Label>
                 <Segmented id="opModeSeg" size="fill" attr="data-opmode" options={[["ret", "Retirement day"], ["now", "Today"]] as const}
                   value={v.now ? "now" : "ret"} onChange={setMode} />
                 <input type="hidden" id="opMode" value={s.mode} />
@@ -218,7 +218,7 @@ export function Optimizer() {
                 <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="age" max={95} value={s.spAge} onValueChange={set("spAge")} />
               </div>
               <div className={"two bottomalign max-sm:grid-cols-2" + (v.now || !v.married ? " one" : "")} id="opRetRow">
-                <NumberField id="opRetire" label={<><span id="opRetireLbl">{v.now ? "Retire at" : "Your age at retirement"}</span><TipDot k="opretire" /></>}
+                <NumberField id="opRetire" label={<span id="opRetireLbl"><Tipped text={v.now ? "Retire at" : "Your age at retirement"} k="opretire" /></span>}
                   unit="age" max={90} value={s.retire} onValueChange={set("retire")} />
                 <NumberField id="opSpRet" hidden={v.now || !v.married} label="Spouse's age then" unit="age" max={95} value={s.spRet} onValueChange={set("spRet")} />
               </div>

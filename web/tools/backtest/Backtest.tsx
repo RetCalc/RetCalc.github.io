@@ -21,7 +21,7 @@ import { MultiChart } from "@/components/charts/MultiChart";
 import { Field, NumberField, SelectField } from "@/components/fields/Field";
 import { Modal } from "@/components/shell/Modal";
 import { useToast } from "@/components/shell/Toast";
-import { TipDot, Tipped } from "@/components/shell/Tooltips";
+import { Tipped } from "@/components/shell/Tooltips";
 import { setToolInputs, toolInputs, useToolState } from "@/components/tools/ToolState";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
@@ -114,10 +114,10 @@ export function Backtest() {
   const hero: ReadingFigure = { label: "Return, per year", id: "btCagr", value: pctStr(B.cagr, 2), noteId: "btCagrNote",
     note: "Compound annual growth, " + B.first + "–" + B.last };
   const figures: ReadingFigure[] = [
-    { label: <>After inflation<TipDot k="btreal" /></>, id: "btReal", value: pctStr(B.realCagr, 2), noteId: "btRealNote",
+    { label: <Tipped text="After inflation" k="btreal" />, id: "btReal", value: pctStr(B.realCagr, 2), noteId: "btRealNote",
       note: "Inflation averaged " + pctStr(B.inflCagr, 2) + " a year" },
-    { label: <>Volatility<TipDot k="btvol" /></>, id: "btVol", value: pctStr(B.vol, 2), note: "Standard deviation of annual returns" },
-    { label: <>Deepest fall<TipDot k="btdd" /></>, id: "btDD", value: B.maxDD < 0 ? pctStr(B.maxDD, 2) : "None",
+    { label: <Tipped text="Volatility" k="btvol" />, id: "btVol", value: pctStr(B.vol, 2), note: "Standard deviation of annual returns" },
+    { label: <Tipped text="Deepest fall" k="btdd" />, id: "btDD", value: B.maxDD < 0 ? pctStr(B.maxDD, 2) : "None",
       note: B.maxDD < 0 ? B.ddFrom + "–" + B.ddTo : "" },
   ];
 
@@ -131,7 +131,7 @@ export function Backtest() {
         <aside id="asideBT" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
             <CardHeader>
-              <CardTitle>The mix<TipDot k="btdata" /></CardTitle>
+              <CardTitle><span><Tipped text="The mix" k="btdata" /></span></CardTitle>
               <CardDescription>What a split of stocks, bonds and cash earned through any stretch since 1926.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -252,7 +252,7 @@ export function Backtest() {
             <div className="grid gap-x-6 sm:grid-cols-3">
               <div>
                 <KV k="Average, per year" id="btInfl" v={pctStr(B.inflCagr, 2)} />
-                <KV k={<>Prices multiplied by<TipDot k="btpricelevel" /></>} id="btPriceLevel" v={B.priceLevel.toFixed(1) + "×"} />
+                <KV k={<Tipped text="Prices multiplied by" k="btpricelevel" />} id="btPriceLevel" v={B.priceLevel.toFixed(1) + "×"} />
               </div>
               <div>
                 <KV k="Highest year" id="btInflHigh" v={pctStr(B.inflHigh.infl, 2) + " in " + B.inflHigh.year} />

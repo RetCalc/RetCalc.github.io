@@ -10,7 +10,7 @@ import { ShareBar } from "@/components/charts/Legend";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
-import { Tipped, TipDot } from "@/components/shell/Tooltips";
+import { Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
@@ -317,7 +317,7 @@ export function Tax() {
                 <SelectField id="txState" className={ret ? "col-span-full" : undefined} label="State" value={s.state} onChange={set("state")}>
                   {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
                 </SelectField>
-                <MoneyField id="txPre" label={<>Pre-tax deductions<TipDot k={ret ? "txpreret" : "txpre"} /></>} value={s.pre} onValueChange={set("pre")}
+                <MoneyField id="txPre" label={<Tipped text="Pre-tax deductions" k={ret ? "txpreret" : "txpre"} />} value={s.pre} onValueChange={set("pre")}
                   aria-invalid={preOver || undefined} aria-describedby={preOver ? "txPreWarn" : undefined} />
                 <SelectField id="txDedType" label={<Tipped text="Deduction" k="deduction" />} value={s.dedType} onChange={set("dedType")}>
                   <option value="std">Standard deduction</option>
@@ -408,7 +408,7 @@ export function Tax() {
         </Card>
 
         <Card id="txGainPanel" hidden={!(ret && R.gain > 0)}>
-          <CardHeader><CardTitle>Your capital gain, and which band it landed in<TipDot k="ltcgstack" /></CardTitle></CardHeader>
+          <CardHeader><CardTitle><span><Tipped text="Your capital gain, and which band it landed in" k="ltcgstack" /></span></CardTitle></CardHeader>
           <CardContent>
             <div id="txStackWrap">
               <svg id="txStack" viewBox="0 0 720 150" role="img" aria-label="Ordinary income and capital gain stacked against the 0%, 15% and 20% capital gain bands"

@@ -560,7 +560,10 @@ function DistPanel({ v, R }: { v: DDView; R: PlanResult | null }) {
   const isMc = R?.kind === "mc";
   return (
     <Card id="ddDistPanel" data-ddtabs="plan">
-      <CardHeader><CardTitle id="ddDistTitle">{!R || bal ? "Spread of ending balances" : "Spread of spending"}</CardTitle><CardAction>
+      {/* On a phone the controls drop under the title, as on the other chart
+          cards (components/tools/Projection.tsx). */}
+      <CardHeader className="max-sm:grid-cols-1"><CardTitle id="ddDistTitle">{!R || bal ? "Spread of ending balances" : "Spread of spending"}</CardTitle>
+        <CardAction className="max-sm:col-start-1 max-sm:row-span-1 max-sm:row-start-2 max-sm:justify-self-start">
         <SegmentedGroup id="segDDDist">
           <SegmentedItem data-dddist="bal" pressed={bal} onClick={() => setKind("bal")}>Balance</SegmentedItem>
           <SegmentedItem data-dddist="spend" pressed={!bal} onClick={() => setKind("spend")}>Spending</SegmentedItem>
@@ -593,7 +596,7 @@ function DetailTable({ run, age, items, tableRef }: { run: DdRun | null; age: nu
             {other ? <td>{r.customIncome > 0 ? money(r.customIncome) : "—"}</td> : null}
             {hasG ? <td>{r.guaranteed > 0 ? money(r.guaranteed) : "—"}</td> : null}
             <td>{money(r.withdrawal)}</td><td>{money(r.spend)}</td><td>{money(realOf(r))}</td>
-            <td className={r.ret > 0 ? "pos" : r.ret < 0 ? "neg" : undefined}><SignArrow v={r.ret} />{r.ret.toFixed(1)}%</td><td>{money(r.realEnd)}</td>
+            <td className={cn("whitespace-nowrap", r.ret > 0 ? "pos" : r.ret < 0 ? "neg" : undefined)}><SignArrow v={r.ret} />{r.ret.toFixed(1)}%</td><td>{money(r.realEnd)}</td>
           </tr>
         ))}
       </tbody>
@@ -616,7 +619,7 @@ function Sensitivity({ rows, label }: { rows: { rate: number; median: number }[]
               return (
                 <tr key={i} className={drag === 0 ? "font-semibold" : undefined}>
                   <td>{drag === 0 ? label : drag > 0 ? "-" + drag + "% / yr" : "+" + -drag + "% / yr"}</td>
-                  <td className={rateClass(r.rate)}><ToneGlyph tone={rateTone(r.rate)} />{pctStr(r.rate, 1)}</td><td>{money(r.median)}</td>
+                  <td className={cn("whitespace-nowrap", rateClass(r.rate))}><ToneGlyph tone={rateTone(r.rate)} />{pctStr(r.rate, 1)}</td><td>{money(r.median)}</td>
                 </tr>
               );
             })}
@@ -639,7 +642,7 @@ function SSCompare({ v, res }: { v: DDView; res: { rate: number; median: number 
           return (
             <tr key={r.age} className={r.current ? "font-semibold" : undefined}>
               <td>Age {r.age}{r.current ? " ◄" : ""}</td><td>{money(r.annual)}/yr</td>
-              <td className={rateClass(R.rate)}><ToneGlyph tone={rateTone(R.rate)} />{pctStr(R.rate, 1)}</td><td>{money(R.median)}</td>
+              <td className={cn("whitespace-nowrap", rateClass(R.rate))}><ToneGlyph tone={rateTone(R.rate)} />{pctStr(R.rate, 1)}</td><td>{money(R.median)}</td>
             </tr>
           );
         })}

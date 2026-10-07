@@ -79,11 +79,12 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
 /* ---------- wide tables on phones ----------
    A table wider than the screen scrolls sideways inside its panel. Its first
    column (the age, year or item each row is about) stays pinned while the
-   figures slide under it, with a hairline marking the edge. The pinned cells
+   figures slide under it, with a hairline in Rule Strong marking the edge (Rule
+   was too faint to show where a figure slid under it). The pinned cells
    need their own fill, so they follow the row's hover and selected tints. */
 @media (max-width:640px){
   .scroll th:first-child,.scroll td:first-child{position:sticky;left:0;z-index:1;
-    background:var(--panel);box-shadow:inset -1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset -1px 0 0 var(--ds-rule-strong)}
   .scroll thead th:first-child{z-index:3}
   .scroll tbody tr:hover td:first-child{background:var(--panel-2)}
   .scroll .ddrow.sel td:first-child,.scroll tr.rc-widow > td:first-child,.scroll tr.firow-fire > td:first-child,#fiTable tr.firow-fire > td:last-child{background:var(--panel-2)}
@@ -96,7 +97,7 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
      Stage and End balance; FIRE's keeps Age and Inflation adj. (the
      balance its target is in). */
   :is(#qYearTable,#yearTable,#xYearTable,#stageTable,#fiTable) th:last-child,:is(#qYearTable,#yearTable,#xYearTable,#stageTable,#fiTable) td:last-child{position:sticky;right:0;z-index:1;
-    background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset 1px 0 0 var(--ds-rule-strong)}
   :is(#qYearTable,#yearTable,#xYearTable,#stageTable,#fiTable) thead th:last-child{z-index:3}
   :is(#qYearTable,#yearTable,#xYearTable,#stageTable,#fiTable) tbody tr:hover td:last-child{background:var(--panel-2)}
   /* Income Tax: the breakdown's Share of income repeats Effective rate at
@@ -106,38 +107,38 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   /* The Optimizer's year by year keeps Left, all accounts (the balance its
      goals are about) pinned on the right. */
   #opYearTable th:last-child,#opYearTable td:last-child{position:sticky;right:0;z-index:1;
-    background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset 1px 0 0 var(--ds-rule-strong)}
   #opYearTable thead th:last-child{z-index:3}
   #opYearTable tbody tr:hover td:last-child{background:var(--panel-2)}
   /* The Bridge's year by year keeps Balance pinned on the right; its
      comparison's Plan column narrows so Holds shows beside it. */
   #brTable th:last-child,#brTable td:last-child{position:sticky;right:0;z-index:1;
-    background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset 1px 0 0 var(--ds-rule-strong)}
   #brTable thead th:last-child{z-index:3}
   #brTable tbody tr:hover td:last-child{background:var(--panel-2)}
   #brCompare td:first-child{min-width:150px;white-space:normal}
   /* The Mortgage's amortization keeps Balance (what's left on the loan)
      pinned on the right; the year's payments slide under it. */
   #moTable th:last-child,#moTable td:last-child{position:sticky;right:0;z-index:1;
-    background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset 1px 0 0 var(--ds-rule-strong)}
   #moTable thead th:last-child{z-index:3}
   #moTable tbody tr:hover td:last-child{background:var(--panel-2)}
   /* College's year by year keeps Year and Balance (the account) pinned on
      the left; Year gets a fixed width so Balance can sit right beside it. */
   #clTable th:first-child,#clTable td:first-child{box-sizing:border-box;width:3.5rem;min-width:3.5rem;max-width:3.5rem;box-shadow:none}
   #clTable th:nth-child(2),#clTable td:nth-child(2){position:sticky;left:3.5rem;z-index:1;
-    background:var(--panel);box-shadow:inset -1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset -1px 0 0 var(--ds-rule-strong)}
   #clTable thead th:nth-child(2){z-index:3}
   #clTable tbody tr:hover td:nth-child(2){background:var(--panel-2)}
   /* Rent vs. Buy's year by year keeps Year and Difference (who's ahead)
      pinned on the left; the net worths slide under Difference. */
   #rbTable th:first-child,#rbTable td:first-child{box-sizing:border-box;width:3.5rem;min-width:3.5rem;max-width:3.5rem;box-shadow:none}
   #rbTable th:nth-child(4),#rbTable td:nth-child(4){position:sticky;left:3.5rem;z-index:1;
-    background:var(--panel);box-shadow:inset -1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset -1px 0 0 var(--ds-rule-strong)}
   #rbTable thead th:nth-child(4){z-index:3}
   #rbTable tbody tr:hover td:nth-child(4){background:var(--panel-2)}
   #txBrackets th:last-child,#txBrackets td:last-child{position:sticky;right:0;z-index:1;
-    background:var(--panel);box-shadow:inset 1px 0 0 var(--line-soft)}
+    background:var(--panel);box-shadow:inset 1px 0 0 var(--ds-rule-strong)}
   #txBrackets thead th:last-child{z-index:3}
   #txBrackets tbody tr:hover td:last-child{background:var(--panel-2)}
 }
