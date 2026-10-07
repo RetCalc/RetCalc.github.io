@@ -69,14 +69,14 @@ Critique one representative, apply to all, check each.
 
 | Page | Route | Status | Commit | Notes |
 |---|---|---|---|---|
-| The 4% rule | /4-percent-rule | todo | | representative |
-| Guardrails | /guardrails | todo | | |
-| Risk-based guardrails | /risk-based-guardrails | todo | | |
-| Ratcheting | /ratcheting-withdrawal | todo | | |
-| VPW | /vpw | todo | | |
-| Vanguard dynamic spending | /vanguard-dynamic-spending | todo | | |
-| CAPE-based | /cape-withdrawal | todo | | |
-| RMD-based | /rmd-withdrawal-strategy | todo | | |
+| The 4% rule | /4-percent-rule | done | d632d7c | representative; own lede (CARD_ALT), full-simulator + How it works links, generic intro hidden, Other strategies nav, article open |
+| Guardrails | /guardrails | done | d632d7c | shared template; checked desktop/phone, dark/light: preset, lede, no overflow |
+| Risk-based guardrails | /risk-based-guardrails | done | d632d7c | shared template; checked, no page fix |
+| Ratcheting | /ratcheting-withdrawal | done | d632d7c | shared template; checked, no page fix |
+| VPW | /vpw | done | d632d7c | shared template; checked, no page fix |
+| Vanguard dynamic spending | /vanguard-dynamic-spending | done | d632d7c | shared template; checked, no page fix |
+| CAPE-based | /cape-withdrawal | done | d632d7c | shared template; checked, no page fix |
+| RMD-based | /rmd-withdrawal-strategy | done | d632d7c | shared template; checked, no page fix |
 
 Not a page: `/[slug]` serves placeholders for pages that don't have their
 own route yet; every page has one now, so it renders nothing.
