@@ -11,6 +11,7 @@ import { TuneStep } from "../tune";
 import { Welcome, WelcomeFoot } from "./ch0-welcome";
 import { AboutYou } from "./ch1-timeline";
 import { DebtCard, GoalsCard, IncomeCard, SafetyCard, SpendCard } from "./ch2-standing";
+import { ChangesCard } from "./ch3-changes";
 import { AccountsCard, InvestedCard, SavingsCard } from "./ch3-savings";
 import { RetSpendCard, SocialCard } from "./ch4-costs";
 import { LastingCard, NumberCard } from "./ch5-lasts";
@@ -30,6 +31,7 @@ export const VIEWS: Record<string, StepView> = {
   savings: { Body: SavingsCard },
   invested: { Body: InvestedCard },
   accounts: { Body: AccountsCard },
+  changes: { Body: ChangesCard },
   retspend: { Body: RetSpendCard },
   social: { Body: SocialCard },
   number: { Body: NumberCard },

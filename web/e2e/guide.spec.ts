@@ -20,7 +20,7 @@ const MAYA = { status: "m", age: 38, spouseAge: 36, retire: 62, state: "IL", inc
   saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, saveTo: "trad", retSpend: 70000, hcIncl: "no" };
 const stateWith = (pace: "quick" | "full", cur = "welcome") => ({ v: 2, pace, cur, a: MAYA, src: {}, done: {}, trip: null, back: null, coachMin: false,
   snapshots: [], moves: {}, lessons: {}, startedAt: "2026-10-07T00:00:00.000Z" });
-const QUICK_CARDS = 12, FULL_CARDS = 18;
+const QUICK_CARDS = 12, FULL_CARDS = 19;
 
 /** Storage set from a page with no scripts of its own, so nothing the
     guide does on loading can write over it. */
@@ -240,6 +240,62 @@ test("a second visit shows what moved since the snapshot", async ({ page }) => {
   await page.locator('#gdCard [data-go="plan"]').click();
   await expect(page.locator("#gdCard .gd-q")).toHaveText("Your plan");
   await expect(page.locator(".gd-since")).toContainText("Emergency fund");
+});
+
+/* ---------- Changes ahead and the hand-offs ---------- */
+
+const PRIYA = { ...(FIXTURES.find((f: { id: string }) => f.id === "priya-tom")!.a as Record<string, unknown>) };
+
+test("Changes ahead: two children planned turn into a schedule, and the number moves with it", async ({ page }) => {
+  await seeded(page, { ...stateWith("full", "changes"), a: PRIYA });
+  await expect(page.locator("#gdCard .gd-means")).toContainText("Your saving schedule appears once");
+  await page.fill("#gdf-kidsPlanned", "2"); await page.fill("#gdf-firstIn", "3"); await page.fill("#gdf-spacing", "3");
+  const rows = page.locator("[data-stage-row]");
+  await expect(rows).toHaveCount(7);
+  await expect(rows.first()).toContainText("Before children");
+  await expect(page.locator('[data-stage-row="35"] input')).toHaveValue("7,500");
+  await expect(page.locator("[data-changes]")).toContainText("against $8.69M saving today's $10,000 every month", { timeout: 30_000 });
+  await expect(page.locator("[data-changes]")).toContainText("you're on course for $6.88M at 60");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("Your second starts college at 56, 4 years before you retire");
+  // a hand edit becomes your own, kept as a change
+  await page.fill('[data-stage-row="35"] input', "8000");
+  await expect(page.locator('[data-event="custom"]')).toContainText("Your edit, ages 35 to 38");
+  // another change, as a small form
+  await page.locator('[data-ev-add="raise"]').click();
+  await expect(page.locator('[data-event="raise"]')).toBeVisible();
+  // four years apart, the second child's college years run past 60, and the plan card asks about them
+  await page.fill("#gdf-spacing", "4");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("starts college at 57, 3 years before you retire: those years overlap your retirement");
+  await page.evaluate(() => { const g = JSON.parse(localStorage.getItem("retcalc.guide.v2")!); g.cur = "plan"; localStorage.setItem("retcalc.guide.v2", JSON.stringify(g)); });
+  await page.reload();
+  await expect(page.locator('[data-move="college-overlap"]')).toBeVisible({ timeout: 30_000 });
+});
+
+test("the Full walkthrough hands off to Stages with the guide's stages, and its figure is the guide's number", async ({ page }) => {
+  test.setTimeout(120_000);
+  await seeded(page, { ...stateWith("full", "number"), a: { ...PRIYA, kidsPlanned: 2, firstIn: 3, spacing: 3 } });
+  const fv = (await page.locator("#gdOutFv").textContent())!;
+  expect(fv).toBe("$6,884,235");
+  await page.locator('#gdCard [data-trip="stages"]').click();
+  await expect(page.locator("#gdCoach")).toBeVisible();
+  await expect(page.locator('[data-name="0"]')).toHaveText("Before children");
+  await expect(page.locator("#xFVreal")).toHaveText(fv);
+  // a changed stage comes back as your own edit, with an undo
+  await page.fill('[data-f="contrib"][data-i="1"]', "8,000");
+  await page.locator("#gdCoachBack").click();
+  await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("From Stages: ages 35 to 38, +$500/mo");
+  await expect(page.locator('#gdCard [data-gd="undo"]')).toBeVisible();
+  // and Advanced, beside it, goes there and back
+  await page.locator('#gdCard [data-trip="advanced"]').click();
+  await expect(page.locator("#gdCoach")).toBeVisible();
+  await page.locator("#gdCoachBack").click();
+  await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("Back from Advanced");
+});
+
+test("the Quick check hands off to Basic from Your number", async ({ page }) => {
+  await seeded(page, stateWith("quick", "number"));
+  await expect(page.locator('#gdCard [data-trip="basic"]')).toBeVisible();
+  await expect(page.locator('#gdCard [data-trip="stages"]')).toHaveCount(0);
 });
 
 /* ---------- Saved guides and links ---------- */

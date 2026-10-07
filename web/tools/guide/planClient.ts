@@ -18,6 +18,7 @@
 import { plKey } from "@/lib/engine/typed-plan";
 import { minSpend, planIn, tactics, target } from "./calc";
 import { ALL_LEVERS, runPlanJob, type JobArgs, type JobKind } from "./planJobs";
+import { hasChanges, schedule } from "./schedule";
 import type { Answers } from "./store";
 
 export interface Ask { kind: JobKind; a: Answers; args?: JobArgs; slot?: string; prio?: number }
@@ -49,8 +50,10 @@ const times: Timing[] = [];
    input for the plan (planIn) and any optimizer choices, as calc.ts keys its
    own cache, plus whatever else that job reads. */
 function planSig(a: Answers, over?: JobArgs["over"], base?: boolean) {
-  const T = base ? null : tactics(a);
-  return JSON.stringify(planIn(a, over)) + "|" + (T ? plKey(T) : "");
+  const T = base ? null : tactics(a), I = planIn(a, over);
+  // Changes ahead: the schedule the plan is built from (calc.ts's sim keys it the same way).
+  const S = I && !over?.flat && hasChanges(a) ? schedule(a, { retire: I.retire, monthly: I.monthly, stop: I.stopAge }).map((s) => [s.from, s.to, s.monthly]) : null;
+  return JSON.stringify(I) + "|" + (T ? plKey(T) : "") + (S ? "|" + JSON.stringify(S) : "");
 }
 export function planKey(kind: JobKind, a: Answers, args: JobArgs = {}): string {
   switch (kind) {

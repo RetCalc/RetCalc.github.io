@@ -13,6 +13,7 @@ import {
   FACTORS, accts, gross, mar, months, need, ok, options, parts, pos, saveMo, score, sim, tactics, target, withGuess,
   type FactorId, type Levers, type OptSet, type Part, type Sim,
 } from "./calc";
+import { collegeWindows } from "./schedule";
 import { headroom } from "./score";
 import type { Answers, Sources } from "./store";
 
@@ -118,6 +119,12 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     out.push({ id: "healthcare", when: "When you're ready", t: "Get to know the " + money(S.hcYr) + " a year for health insurance before 65",
       d: "That's marketplace coverage after the subsidy your plan's income earns. The Healthcare Cost Planner shows how the subsidy moves with income, and what Medicare costs after.",
       trip: "healthcare", btn: "Open Healthcare Cost Planner" });
+  // A child's college years that run past the retirement date (doc 3, 2b).
+  const cross = collegeWindows(a).filter((w) => ok(a.retire) && w.from < a.retire && w.to > a.retire);
+  if (cross.length)
+    out.push({ id: "college-overlap", when: "This year", t: "Check the college years that overlap retirement at " + fmtNum(a.retire!),
+      d: "A child starts college at " + cross.map((w) => w.from).join(" and ") + ", so those years run past the day you stop work. Make sure the college line is funded before then, or plan for it from savings.",
+      trip: "college", btn: "Open College Savings" });
   if (a.college === "yes" && !pos(a.collegeMo))
     out.push({ id: "college", when: "This year", t: "Set a monthly college number", d: "Find out what to put aside each month, and consider a 529 plan for the tax break.", trip: "college", btn: "Open College Savings" });
   if (!pos(a.ssOwn) && S)

@@ -8,6 +8,7 @@
 
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { HeroReading } from "@/components/common/Reading";
+import { Button } from "@/components/ui/button";
 import { CircleCheckIcon } from "lucide-react";
 import { riskLabel, target, withGuess, yearsList, type Sim } from "../calc";
 import { PlanChart, series } from "../chart";
@@ -27,7 +28,7 @@ const times = (x: number) => (Math.round(x * 10) / 10).toString().replace(/\.0$/
 
 /* ---------- Card 10 · Your number ---------- */
 export function NumberCard() {
-  const { a, g } = useGuideView();
+  const G = useGuideView(), { a, g } = G;
   const plan = usePlanJob<Sim>("sim", withGuess(a)), need = usePlanJob<number>("need", withGuess(a));
   const S = plan.res, want = need.res;
   if (S === undefined) return <><Q>Your number</Q><p className="gd-means-empty">Working it out…</p></>;
@@ -68,7 +69,15 @@ export function NumberCard() {
           <b>Built on</b> your answers{src.estimated.length ? <>, with estimates for {and(src.estimated)}</> : null}
           {src.defaults.length ? <>, and defaults for {and(src.defaults)}</> : null}. Each is marked where it&apos;s asked, and any of them can be changed.</p>
       </Means>
-      <Task id="basic" head="See it in the Basic calculator" after={<After>Optional. Any change you make there can come back with you.</After>} />
+      {g.pace === "full" ? (
+        // The Full walkthrough hands off to Stages first, with the guide's own
+        // stages written in, and Advanced beside it (decided 7 Oct; doc 1).
+        <>
+          <Task id="stages" head="See your saving stage by stage in Stages" label={a.stagesSeen ? "Open Stages again" : null}
+            after={<After>Optional. Stages and Advanced go deeper on the saving years; the guide&apos;s number stays the one for retirement.</After>} />
+          <p className="hint mt-2">Or <Button variant="quiet" size="inline" data-trip="advanced" data-from="number" onClick={() => G.trip("advanced", "number")}>try fees, raises and account types in Advanced</Button>.</p>
+        </>
+      ) : <Task id="basic" head="See it in the Basic calculator" after={<After>Optional. Any change you make there can come back with you.</After>} />}
     </>
   );
 }

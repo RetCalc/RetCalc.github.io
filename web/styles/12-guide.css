@@ -667,3 +667,24 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-kit-all a{color:var(--text);text-decoration:underline;text-decoration-color:var(--ds-rule-strong);text-underline-offset:3px}
 @media (max-width:640px){ .gd-kit{grid-template-columns:1fr} }
 .gd-summary{margin:6px 0 12px}
+/* Lesson 11: the saving schedule by age. */
+.gd-sched{max-width:640px}
+.gd-sched-bars{position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));align-items:end;gap:1px;height:110px;border-bottom:1px solid var(--ds-rule)}
+.gd-sched-bars span{display:block;height:calc(var(--h) * 1%);background:var(--ds-series-teal);border-radius:2px 2px 0 0;min-height:1px}
+.gd-sched-bars .flat{position:absolute;left:0;right:0;bottom:calc(var(--h) * 1%);border-top:1.5px dashed var(--ds-text)}
+.gd-sched-ax{position:relative;height:16px;margin-top:3px;font-size:11px;color:var(--dimmer);font-variant-numeric:tabular-nums}
+.gd-sched-ax span{position:absolute;left:calc(var(--x) * 1%)}
+.gd-sched-ax .end{left:auto;right:0}
+.gd-sched-key{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:6px;font-size:12px;color:var(--dim)}
+.gd-sched-key span{display:inline-flex;align-items:center;gap:6px}
+.gd-sched-key s{display:inline-block;text-decoration:none}
+.gd-sched-key s.bar{width:10px;height:10px;border-radius:2px;background:var(--ds-series-teal)}
+.gd-sched-key s.flat{width:16px;border-top:1.5px dashed var(--ds-text)}
+/* Changes ahead: each change as a small form, and the stages table. */
+.gd-ev{border:1px solid var(--line);border-radius:10px;padding:10px 12px 2px;margin:8px 0;max-width:640px}
+.gd-ev-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:13.5px;color:var(--text)}
+.gd-stages td{vertical-align:middle;white-space:nowrap}
+.gd-stages tbody th .nm{display:block;margin-bottom:3px}
+.gd-stages thead th:first-child{text-align:left}
+.gd-stages tbody th{max-width:220px}
+.gd-stage-in{min-width:124px;max-width:150px;margin-left:auto}

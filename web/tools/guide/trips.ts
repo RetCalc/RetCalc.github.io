@@ -26,7 +26,8 @@ import type { Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { stageFields, type StagesInputs } from "@/tools/stages/model";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
 import { bridgeSpend, bridgeSplit, coastNow, ddOpts, gdM, gross, mar, minSpend, mixFor, ok, pos, riskLabel, saveMo, saveNow, sim, stratName } from "./calc";
-import type { Answers, Capture, Trip } from "./store";
+import { hasChanges, schedule } from "./schedule";
+import type { Answers, Capture, ChangeEvent, Trip } from "./store";
 
 export interface Task { h: string; ok?: boolean }
 type Inputs = Record<string, unknown>;
@@ -55,6 +56,13 @@ const g = (v: number) => groupDigits(Math.round(v || 0), true);
    plan, so a second tour keeps whatever you changed there, but a plan
    adjusted in the guide since then comes through. */
 const filled: Record<string, string | boolean> = {};
+/** Changes ahead's schedule, when the answers have one. */
+function guideSchedule(a: Answers) {
+  if (!hasChanges(a) || !ok(a.age) || !ok(a.retire) || !(a.retire > a.age)) return null;
+  const stop = ok(a.stopAge) && a.stopAge < a.retire ? Math.max(a.age, a.stopAge) : null;
+  const L = schedule(a, { monthly: saveMo(a), stop });
+  return L.length ? L : null;
+}
 export function planSig(a: Answers) {
   return [a.age, a.retire, a.saved, saveMo(a), a.stopAge, a.risk, a.retSpend, a.debtMonths, a.debtMin, a.collegeMo, a.kidAge].join("|");
 }
@@ -512,13 +520,14 @@ const TRIPS: Record<string, TripDef<never>> = {
       const mode = q("#segSingle [data-mode].on");
       return [
         { h: "Your plan is carried over: savings as <b>Starting value</b>, your monthly saving, <b>Time period</b> until retirement, and a <b>Rate of return</b> for your mix, before inflation. Figures are in future dollars unless marked <b>inflation adjusted</b>." },
+        { h: "Plainly: Advanced leaves out Social Security and the guide's year-by-year taxes and health premiums, using one flat tax rate instead, so its numbers are for your savings alone. The guide's number stays the one for the retirement years." +
+          (ok(a.stopAge) && a.stopAge < a.retire! ? " It also saves right up to retirement; your plan to stop at " + fmtNum(a.stopAge) + " shows in <b>Stages</b>." : "") +
+          (hasChanges(a) ? " It saves one flat amount; your changes ahead show in <b>Stages</b>." : "") },
         { h: "<b>Contribution growth</b> raises what you save each year. It's set to match inflation; try 4% or 5% if you expect raises." },
         { h: "Turn on <b>Split by account type</b> to enter traditional, Roth and brokerage balances separately, plus your employer match. The <b>By account type</b> table then shows the tax on what you'd withdraw.", ok: s.acOn ? true : undefined },
         { h: "Set <b>Fees</b> to your funds' expense ratio (about 0.05% for index funds, 0.5% to 1% for managed ones) to see what they cost over decades.", ok: parseNum(String(s.fees)) > 0 ? true : undefined },
         { h: "<b>Work backwards from a target</b> starts at your retirement spending. It shows the contribution, or the timeline, that gets you there; <b>Use this contribution</b> applies it." },
         { h: "Above the chart, switch <b>Rate band</b> to <b>Historical</b> or <b>Monte Carlo</b> to see the plan in real and random markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined },
-        { h: "Unlike the guide, Advanced leaves out Social Security, so its numbers are for your savings alone." +
-          (ok(a.stopAge) && a.stopAge < a.retire! ? " It also saves right up to retirement; your plan to stop at " + fmtNum(a.stopAge) + " shows in <b>Stages</b>." : "") },
       ];
     },
     chip: () => { const t = text("#rFVreal"); return t && t !== "—" ? "Inflation adjusted<br><b>" + escapeHtml(t) + "</b>" : ""; },
@@ -526,14 +535,26 @@ const TRIPS: Record<string, TripDef<never>> = {
   },
 
   stages: {
-    prefill: (a: Answers, s: StagesInputs) => {
-      if (filled.stages === planSig(a)) return s;
+    prefill: (a: Answers, s: StagesInputs, trip: Trip) => {
+      const sched = guideSchedule(a), sig = planSig(a) + (sched ? "|" + JSON.stringify(sched.map((x) => [x.from, x.to, x.monthly])) : "");
+      if (filled.stages === sig) return s;
       stagesFrom = "";
       if (s.saOn || !ok(a.age) || !ok(a.retire) || !(a.retire > a.age)) return s;
-      filled.stages = planSig(a);
+      filled.stages = sig;
       const yrs = Math.round(a.retire - a.age), mo = Math.round(saveMo(a)), infl = BASIC_INFL as number;
       const grossR = (1 + (a.risk || 0.045)) * (1 + infl) - 1;
       const st = (name: string, years: number, contrib: number, adj?: boolean) => ({ ...stageFields({ years, contrib, period: "Monthly", growth: infl, nominal: grossR, vol: 0.15, adj: !!adj }), name });
+      // Changes ahead's schedule, stage by stage and named as the guide names
+      // them, each in today's dollars ("Inflation adjusted"), so Stages shows
+      // the guide's own number (doc 3, phase 4).
+      if (sched) {
+        const list = sched.map((x, i) => st(x.label, x.to - x.from, x.monthly, i > 0));
+        stagesFrom = "your " + sched.length + " stages from Changes ahead: " + sched.map((x) => x.label.toLowerCase() + " (" + money(x.monthly) + "/mo)").join(", ");
+        stagesN = list.length;
+        trip.base = { sched: sched.map((x) => ({ from: x.from, to: x.to, monthly: x.monthly })) };
+        return { ...s, initial: g(a.saved || 0), inflation: String(+(infl * 100).toFixed(6)), withdrawal: "4", taxRate: "10", fees: "0", stages: list,
+          solveFor: "After-Tax Withdrawal", target: pos(a.retSpend) ? g(a.retSpend) : s.target };
+      }
       let list;
       const dy = pos(a.debtMonths) ? Math.ceil(a.debtMonths / 12) : 0;
       const cy = a.college === "yes" && ok(a.kidAge) && pos(a.collegeMo) ? Math.max(1, Math.round(22 - a.kidAge)) : 0;
@@ -573,7 +594,35 @@ const TRIPS: Record<string, TripDef<never>> = {
       ];
     },
     chip: () => { const t = text("#xFVreal"); return t && t !== "—" ? "Inflation adjusted<br><b>" + escapeHtml(t) + "</b>" : ""; },
-    capture: () => ({ set: { stagesSeen: true }, msg: "Back from Stages. Your guide answers are unchanged, and your stages stay there for next time." }),
+    capture: ({ a, s, trip }: Ctx<StagesInputs>) => {
+      const base = (trip.base as { sched?: { from: number; to: number; monthly: number }[] } | undefined)?.sched;
+      const quiet = { set: { stagesSeen: true }, msg: "Back from Stages. Your guide answers are unchanged, and your stages stay there for next time." };
+      if (!base || !base.length || !ok(a.age)) return quiet;
+      // Each year's saving in today's dollars, as Stages now has it.
+      const infl = BASIC_INFL as number, age0 = base[0].from, now: number[] = [];
+      let t = 0;
+      for (const x of s.stages) {
+        const n = Math.max(0, Math.round(parseNum(x.years))), per = ((PPY as Record<string, number>)[x.period] || 12) / 12, c = parseNum(x.contrib) * per;
+        const real = x.adj || t === 0 ? c : c / Math.pow(1 + infl, t);
+        for (let k = 0; k < n; k++) now.push(Math.round(real));
+        t += n;
+      }
+      const was: number[] = [];
+      for (const x of base) for (let y = x.from; y < x.to; y++) was.push(x.monthly);
+      const edits: ChangeEvent[] = [];
+      for (let i = 0; i < was.length && i < now.length;) {
+        if (now[i] === was[i]) { i++; continue; }
+        let j = i;
+        while (j < was.length && j < now.length && now[j] - was[j] === now[i] - was[i]) j++;
+        edits.push({ id: "stg-" + (age0 + i) + "-" + (age0 + j), kind: "custom", from: age0 + i, to: age0 + j, delta: now[i] - was[i], label: "" });
+        i = j;
+      }
+      if (!edits.length) return quiet;
+      const events = [...(a.events || []).filter((e) => !e.id.startsWith("stg-")), ...edits];
+      return { set: { stagesSeen: true, events }, undo: { events: a.events ?? null },
+        msg: "From Stages: " + edits.map((e) => (e.kind === "custom" ? "ages " + e.from + " to " + e.to + ", " + (e.delta > 0 ? "+" : "−") + money(Math.abs(e.delta)) + "/mo" : "")).join("; ") +
+          ". They're on Changes ahead now as your own edits, and your number uses them." };
+    },
   },
 
   backtest: {

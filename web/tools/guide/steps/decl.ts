@@ -97,6 +97,9 @@ export const STEPS: StepDecl[] = [
     needs: (a) => need((pos(a.rothNow) ? a.rothNow : 0) + (pos(a.brokNow) ? a.brokNow : 0) <= (ok(a.saved) ? a.saved : 0) + 0.5,
       "Roth and brokerage can't add up to more than your savings") },
 
+  { id: "changes", chapter: 3, title: "Changes ahead", type: "question", pace: "full", minutes: 4, tripMinutes: 10, tool: "stages", sync: true, teaches: ["not-flat"],
+    needs: (a) => need(!(a.events || []).some((e) => ("to" in e && "from" in e && e.to != null && e.to <= e.from)), "Each change needs an end age after its start") },
+
   /* 4 · What retirement costs */
   { id: "retspend", chapter: 4, title: "Spending in retirement", type: "question", pace: "quick", minutes: 1, tool: "budget", sync: true, teaches: ["eighty"],
     needs: (a) => need(pos(a.retSpend), "Enter your yearly spending in retirement, or pick one") },

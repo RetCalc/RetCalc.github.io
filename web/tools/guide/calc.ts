@@ -10,6 +10,7 @@ import {
 } from "@/lib/engine/typed-plan";
 import type { PlHist, PlPlan, PlPrep, PlRow, PlTactics, PlToday } from "@/lib/engine/types";
 import { groupDigits, money, pctStr } from "@/lib/format";
+import { atRetireScheduled, hasChanges, householdAtRetire, schedule, type Stage } from "./schedule";
 import type { Answers } from "./store";
 
 export const ok = (v: unknown): v is number => typeof v === "number" && isFinite(v);
@@ -164,7 +165,9 @@ function saveSplit(a: Answers, mine: number) {
 
 /** A different retirement age, monthly saving (yours and your employer's),
     stop age or spending: how the options on the Adjust step are found. */
-export interface Over { retire?: number; monthly?: number; stopAge?: number | null; spend?: number }
+export interface Over { retire?: number; monthly?: number; stopAge?: number | null; spend?: number;
+  /** The plan without Changes ahead: today's saving every year. */
+  flat?: boolean }
 
 /** The plan engine's inputs from the answers. */
 export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: number }) | null {
@@ -188,7 +191,7 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
     spend, pia1: pia.pia1, pia2: pia.pia2, claim1: claim, claim2: claim,
     pension: pos(a.pension) ? a.pension * 12 : 0, pensionAge: ok(a.pensionAge) ? a.pensionAge : null,
     pensionCola: a.pensionCola === "yes", aca: retire < 65 && a.hcIncl !== "yes",
-    household: mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: retMix(a),
+    household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: retMix(a),
     years: yearsFor(a, retire), target: target(a), strategy: "fixed", minSpend: 0, fromYear: HIST_START as number,
     monthly,
   };
@@ -200,6 +203,9 @@ export interface Sim {
   stop: number | null; saveYears: number; mix: number; inc: IncomeItem[]; pension: number; path: number[];
   H: PlHist; D: { rows: PlRow[] }; success: number; taxYr: number; hcYr: number; hcYears: number; lifeTax: number;
   portIncome: number; coverage: number;
+  /** The saving schedule the plan was built from, when there is one
+      (left off a plan without one, so it's the same object as before). */
+  sched?: Stage[];
   retPath?: { p10: number; p50: number; p90: number }[];
   strats?: StratResult[]; stratsFloor?: number;
 }
@@ -224,9 +230,12 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
   const I = planIn(a, over);
   if (!I) return null;
   const Tq = base ? null : tactics(a);
-  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "");
+  // Saving that changes over time (Changes ahead) builds the plan from its
+  // schedule; without it, as today.
+  const sched = !over?.flat && hasChanges(a) ? schedule(a, { retire: I.retire, monthly: I.monthly, stop: I.stopAge }) : null;
+  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "") + (sched ? "|" + JSON.stringify(sched.map((s) => [s.from, s.to, s.monthly])) : "");
   return cached(key, () => {
-    const P = plAtRetire(I), C = plPrep(P);
+    const P = sched ? atRetireScheduled(I, sched) : plAtRetire(I), C = plPrep(P);
     let T = plBaseTactics(C);
     if (Tq) T = { ...Tq, c1: Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1)),
       c2: C.married ? Math.max(plClaimMin(C.age2!), Math.min(70, Tq.c2)) : Math.max(plClaimMin(C.age1), Math.min(70, Tq.c1)) };
@@ -239,7 +248,7 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
       monthly: I.monthly, real: I.real, stop: I.stopAge, saveYears: (I.stopAge == null ? I.retire : I.stopAge) - I.age,
       mix: I.mix, inc: pensionItems(a, I.retire), pension: I.pension, path: (P as unknown as { path: number[] }).path, H, D,
       success: H.successRate, taxYr: D.rows.length ? tx / D.rows.length : 0, hcYr: hn ? hc / hn : 0, hcYears: hn,
-      lifeTax: H.medTax, portIncome: P.fv * 0.04, coverage: 0 };
+      lifeTax: H.medTax, portIncome: P.fv * 0.04, coverage: 0, ...(sched ? { sched } : {}) };
     out.coverage = (out.portIncome + ss.total + I.pension) / (I.spend + out.taxYr);
     return out;
   });

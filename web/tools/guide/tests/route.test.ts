@@ -34,7 +34,7 @@ test("the Quick check walks its own twelve cards, for a plan on track, with the 
 test("the Full walkthrough walks every card that applies", () => {
   // retiring at 62: healthcare before 65, no bridge
   assert.deepEqual(ids(fixture("maya-sam"), "full"),
-    ["about", "income", "spending", "cash", "debt", "goals", "savings", "invested", "accounts", "retspend", "social", "number", "lasting", "adjust", "strategy", "health", "optimize", "plan"]);
+    ["about", "income", "spending", "cash", "debt", "goals", "savings", "invested", "accounts", "changes", "retspend", "social", "number", "lasting", "adjust", "strategy", "health", "optimize", "plan"]);
   // retiring at 55: both
   assert.ok(ids(fixture("early-55"), "full").includes("health"));
   assert.ok(ids(fixture("early-55"), "full").includes("bridge"));
@@ -53,7 +53,7 @@ test("a plan that falls short brings Adjust your plan into the Quick check", () 
 test("deeper cards are listed on the Quick check, not walked", () => {
   const a = fixture("maya-sam");
   const d = STEPS.filter((s) => deeper(s, a, "quick")).map((s) => s.id);
-  assert.deepEqual(d, ["goals", "accounts", "adjust", "strategy", "health", "optimize"]);
+  assert.deepEqual(d, ["goals", "accounts", "changes", "adjust", "strategy", "health", "optimize"]);
   assert.deepEqual(STEPS.filter((s) => deeper(s, a, "full")), []);
 });
 
@@ -99,6 +99,7 @@ test("switching pace keeps your place, or moves to the next card the pace walks"
   const done = Object.fromEntries(QUICK.map((k) => [k, true]));
   assert.equal(landing({ ...at(a, "quick", "plan", done), finishedAt: "2026-10-07" }, "full"), "goals");
   assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true }) }, "full"), "accounts");
-  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true, accounts: true }) }, "full"), "adjust");
+  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true, accounts: true }) }, "full"), "changes");
+  assert.equal(landing({ ...at(a, "quick", "plan", { ...done, goals: true, accounts: true, changes: true }) }, "full"), "adjust");
   assert.equal(landing(at(a, "full", "accounts"), "quick"), "retspend");
 });

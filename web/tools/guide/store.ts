@@ -38,6 +38,9 @@ export interface Answers {
      opened, and Changes ahead's events with the children it asks about. */
   retired?: boolean | null; spendGuess?: number | null; kitSeen?: Record<string, boolean> | null;
   events?: ChangeEvent[] | null; kidsNow?: number[] | null; kidsPlanned?: number | null; firstIn?: number | null; spacing?: number | null;
+  /** Paid childcare before school, and the monthly costs per child when
+      they replace the defaults (doc 3, section 3, item 13). */
+  childcare?: boolean | null; childEarly?: number | null; childSchool?: number | null;
 }
 export type AnswerKey = keyof Answers;
 
