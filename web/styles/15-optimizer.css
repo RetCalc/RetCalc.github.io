@@ -23,69 +23,67 @@
 .op-out{display:flex;flex-direction:column;gap:20px;min-width:0}
 .op-out:empty{display:none}
 
-/* ---- the flight ---- */
-.op-run{position:relative;padding:18px 4px 6px;margin:6px 0 4px}
-/* Room on the left for the arrow's tail when the string is drawn back. */
-.op-shot{display:flex;align-items:center;gap:10px;height:72px;padding-left:46px}
-.op-bow{flex:none;width:40px;height:68px;position:relative}
+/* ---- the flight ----
+   The guide's bow and arrow, bigger, in the same colours: bow and arrow in
+   Text, the lane in Rule with a Muted fill, the target's rings in Muted, and
+   the bullseye Signal Amber the moment it's hit. One set of measures places
+   everything: --bw the bow, --gap between bow, lane and target, --al/--ah
+   the arrow, --ts the target, --nock where the arrow's tip rests on the
+   string, --draw how far the string comes back. The lane is a size
+   container, so the tip (the arrow box's right edge) sits at
+   --nock + p × (lane − --nock), and the fill ends exactly under it. Script
+   sets --p (how far it has flown) and --pull (the draw); everything moves
+   by transform. */
+.op-run{--bw:40px;--bh:68px;--gap:10px;--al:92px;--ah:24px;--ts:52px;--nock:57px;--draw:15px;
+  --ease:cubic-bezier(.2,.7,.3,1);
+  position:relative;padding:18px 4px 6px;margin:6px 0 4px;border-radius:var(--r-card)}
+.op-run[tabindex]{cursor:pointer}
+.op-run:focus-visible{outline:2px solid var(--ds-focus);outline-offset:4px}
+.op-shot{display:flex;align-items:center;gap:var(--gap);height:72px;padding-left:4px}
+.op-bow{flex:none;width:var(--bw);height:var(--bh);position:relative}
 .op-bow svg{display:block;width:100%;height:100%;overflow:visible}
-.op-bow .limb{fill:none;stroke:var(--jade);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;
-  transform-box:fill-box;transform-origin:0 50%;transform:scale(calc(1 + var(--pull,0) * .06),calc(1 - var(--pull,0) * .07))}
-.op-bow .str{fill:none;stroke:var(--steel);stroke-width:2.2;transition:opacity .08s}
-/* Until the release only the drawn string shows (script bends it back); at
-   the release the straight one takes over and twangs, and the bow kicks. */
-.op-run .op-bow .str.rest{opacity:0}
-.op-run.op-loosed .op-bow .str.rest{opacity:1;transform-origin:33px 32px;animation:opTwang .5s ease-out}
+.op-bow .limb{fill:none;stroke:var(--ds-text);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.op-bow .str{fill:none;stroke:var(--ds-text);stroke-width:2.2;transform-origin:33px 32px}
+/* Until the release only the drawn string shows, bent back by --pull; at
+   the release the straight one takes over and twangs once, and the bow
+   kicks. */
+.op-bow .str.drawn{transform:scaleX(var(--pull,0))}
+.op-bow .str.rest{opacity:0}
 .op-run.op-loosed .op-bow .str.drawn{opacity:0}
-.op-run.op-loosed .op-bow{animation:opRecoil .4s ease-out}
-.op-run.op-loosed .op-bow .limb{transition:transform .12s cubic-bezier(.2,1.6,.4,1)}
-@keyframes opTwang{15%{transform:translateX(5px)}35%{transform:translateX(-3px)}60%{transform:translateX(1.5px)}80%{transform:translateX(-.6px)}}
-@keyframes opRecoil{20%{transform:translateX(-4px) rotate(-3deg)}55%{transform:translateX(1px) rotate(1deg)}}
-.op-lane{position:relative;flex:1;min-width:0;height:100%;--p:0}
-.op-lane::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;
-  background:repeating-linear-gradient(90deg,var(--line) 0 7px,transparent 7px 13px)}
-.op-fill{position:absolute;left:0;top:50%;height:4px;margin-top:-2px;border-radius:3px;
-  width:calc(var(--p) * 100%);background:linear-gradient(90deg,rgba(79,191,149,.15),var(--jade))}
-/* A streak just behind the arrow while it flies, brightest as it leaves. */
-.op-trail{position:absolute;top:50%;height:2px;margin-top:-1px;border-radius:2px;
-  width:clamp(0px,calc(var(--p) * 100% - 58px),90px);left:max(0px,calc(var(--p) * 100% - 148px));
-  background:linear-gradient(90deg,transparent,var(--gold));opacity:.7}
-.op-run.op-loosed .op-trail{animation:opStreak .6s ease-out}
-@keyframes opStreak{0%{opacity:0}15%{opacity:1}100%{opacity:.7}}
-.op-arrow{position:absolute;top:50%;left:calc(var(--p) * 100%);width:92px;height:24px;
-  transform:translate(-62px,-50%)}
-.op-arrow svg{display:block;width:100%;height:100%;overflow:visible;animation:opBob 1.1s ease-in-out infinite}
-.op-arrow .sh{stroke:var(--gold);stroke-width:3.2;stroke-linecap:round}
-.op-arrow .hd{fill:var(--gold)}
-/* Nocked: the arrow's tail sits on the string and comes back with it. */
-.op-run:not(.op-loosed) .op-arrow{left:0;transform:translate(calc(-78px - var(--pull,0) * 15px),-50%)}
-.op-run:not(.op-loosed) .op-arrow svg{animation:none}
-.op-run:not(.op-loosed) .op-trail{opacity:0}
-.op-run.op-full .op-arrow svg{animation:opTense .12s linear infinite}
-@keyframes opTense{0%,100%{transform:translateY(0)}50%{transform:translateY(-.6px)}}
-/* The release: off the string in a blink, then the flight. */
-.op-run.op-loosed .op-arrow{transition:transform .14s cubic-bezier(.1,.9,.3,1)}
-@keyframes opBob{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-3px) rotate(-2.5deg)}70%{transform:translateY(2px) rotate(1.5deg)}}
-.op-target{flex:none;width:52px;height:52px;position:relative}
+.op-run.op-loosed .op-bow .str.rest{opacity:1;animation:opTwang .3s var(--ease)}
+.op-run.op-loosed .op-bow{animation:opRecoil .24s var(--ease)}
+@keyframes opTwang{25%{transform:translateX(4px)}55%{transform:translateX(-2px)}80%{transform:translateX(.8px)}}
+@keyframes opRecoil{35%{transform:translateX(-3px) rotate(-2deg)}}
+/* The lane leaves room on its right for the target. */
+.op-lane{position:relative;flex:1;min-width:0;height:100%;margin-right:calc(var(--gap) + var(--ts));container-type:inline-size}
+.op-lane::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--ds-rule)}
+.op-fill,.op-arrow{--x:calc(var(--nock) + var(--p,0) * (100cqw - var(--nock)))}
+.op-run:not(.op-loosed) .op-arrow{--x:calc(var(--nock) - var(--pull,0) * var(--draw))}
+.op-run:not(.op-loosed) .op-fill{--x:0px}
+.op-run.op-hit .op-arrow{--x:calc(100cqw + var(--gap) + var(--ts) / 2 + 1px)}
+.op-fill{position:absolute;left:0;right:0;top:50%;height:4px;margin-top:-2px;border-radius:3px;overflow:hidden}
+.op-fill b{position:absolute;inset:0;background:var(--ds-muted);transform:translateX(calc(var(--x) - 100%))}
+.op-arrow{position:absolute;left:0;top:50%;width:var(--al);height:var(--ah);
+  transform:translateX(var(--x)) translate(-100%,-50%)}
+.op-arrow svg{display:block;width:100%;height:100%;overflow:visible}
+.op-arrow .sh{stroke:var(--ds-text);stroke-width:3.2;stroke-linecap:round}
+.op-arrow .hd{fill:var(--ds-text)}
+.op-target{position:absolute;top:50%;left:calc(100% + var(--gap) + var(--ts) / 2);width:var(--ts);height:var(--ts);
+  transform:translate(-50%,-50%)}
 .op-target svg{display:block;width:100%;height:100%}
-.op-target .rg{fill:none;stroke:var(--dimmer);stroke-width:2.2;transition:stroke .3s}
-.op-target .eye{fill:var(--dimmer);transition:fill .3s}
-.op-target::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--gold);opacity:0}
-.op-target::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--jade);opacity:0}
-/* On impact: the arrow stops at the bullseye and quivers, the target jolts,
-   two rings burst out of it, and the rings light up. */
-.op-run.op-hit .op-arrow{left:calc(100% + 36px);transform:translate(-92px,-50%);transition:left .18s ease-out}
-.op-run.op-hit .op-arrow svg{transform-origin:100% 50%;animation:opQuiver .55s .05s ease-out}
-.op-run.op-hit .op-trail{opacity:0;transition:opacity .3s}
-.op-run.op-hit .op-target{animation:opJolt .5s .05s ease-out}
-.op-run.op-hit .op-target .rg,.op-run.op-hit .op-target .eye{stroke:var(--gold)}
-.op-run.op-hit .op-target .eye{fill:var(--gold)}
-.op-run.op-hit .op-target::after{animation:opBurst .8s .05s ease-out}
-.op-run.op-hit .op-target::before{animation:opBurst 1s .2s ease-out}
-.op-run.op-hit .op-fill{box-shadow:0 0 14px rgba(79,191,149,.55);transition:box-shadow .4s}
-@keyframes opQuiver{20%{transform:rotate(-7deg)}40%{transform:rotate(5deg)}60%{transform:rotate(-3deg)}80%{transform:rotate(1.5deg)}}
-@keyframes opJolt{25%{transform:translateX(5px) scale(1.18)}60%{transform:translateX(-1px) scale(.96)}}
-@keyframes opBurst{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(2.6)}}
+.op-target .rg{fill:none;stroke:var(--ds-muted);stroke-width:2.2}
+.op-target .eye{fill:var(--ds-muted)}
+/* The hit, over in under 400ms: the arrow strikes from the end of the lane
+   into the bullseye (100ms), then the bullseye turns amber, the target
+   gives once and the arrow shivers where it stuck (240ms); the answer
+   follows at once. */
+.op-run.op-hit .op-arrow{transition:transform .1s var(--ease)}
+.op-run.op-impact .op-target .eye{fill:var(--ds-amber)}
+.op-run.op-impact .op-target{animation:opJolt .24s var(--ease)}
+.op-run.op-impact .op-arrow svg{transform-origin:100% 50%;animation:opQuiver .24s var(--ease)}
+@keyframes opJolt{35%{transform:translate(-50%,-50%) translateX(2px) scale(1.12)}}
+@keyframes opQuiver{25%{transform:rotate(-5deg)}55%{transform:rotate(3deg)}80%{transform:rotate(-1deg)}}
+.op-skip{margin-top:2px}
 /* The counters: three figures on one rule-divided strip, at Headline size. */
 .op-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:18px 0 14px;
   border:1px solid var(--ds-rule);border-radius:var(--r-card);overflow:hidden;background:var(--ds-rule)}
@@ -94,22 +92,26 @@
   font-variant-numeric:tabular-nums;color:var(--ds-text);white-space:nowrap}
 .op-stats span{display:block;font-size:11.5px;color:var(--ds-muted);margin-top:3px}
 .op-now{font-size:13px;color:var(--ds-muted);min-height:3em;line-height:1.5;font-variant-numeric:tabular-nums}
+/* Reduced motion: no draw, flight, twang or jolt (there's no flight to
+   begin with: the answer shows when the search is done). The arrow jumps
+   in tenths and the bullseye simply changes colour. */
 @media (prefers-reduced-motion:reduce){
-  .op-arrow svg,.op-run.op-loosed .op-bow .str.rest,.op-run.op-hit .op-target,.op-run.op-loosed .op-bow,.op-run.op-full .op-arrow svg,
-  .op-run.op-hit .op-target::after,.op-run.op-hit .op-target::before,.op-run.op-hit .op-arrow svg{animation:none}
-  .op-trail{display:none}
+  .op-run.op-loosed .op-bow,.op-run.op-loosed .op-bow .str.rest,.op-run.op-impact .op-target,.op-run.op-impact .op-arrow svg{animation:none}
+  .op-run.op-hit .op-arrow{transition:none}
 }
 
 /* ---- the answer ---- */
 .op-res{display:flex;flex-direction:column;gap:20px;min-width:0}
 #tab-guide .op-res{gap:6px;margin-top:10px}
-.op-reveal > *{animation:opUp .55s cubic-bezier(.2,.7,.3,1) both}
-.op-reveal > *:nth-child(2){animation-delay:.07s}
-.op-reveal > *:nth-child(3){animation-delay:.14s}
-.op-reveal > *:nth-child(4){animation-delay:.21s}
-.op-reveal > *:nth-child(5){animation-delay:.28s}
-.op-reveal > *:nth-child(n+6){animation-delay:.34s}
-@keyframes opUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* The answer arrives in place, readable and clickable at once: a short
+   rise, the parts a few steps apart, all within 250ms. */
+.op-reveal > *{animation:opUp .18s cubic-bezier(.2,.7,.3,1) both}
+.op-reveal > *:nth-child(2){animation-delay:.02s}
+.op-reveal > *:nth-child(3){animation-delay:.04s}
+.op-reveal > *:nth-child(4){animation-delay:.05s}
+.op-reveal > *:nth-child(5){animation-delay:.06s}
+.op-reveal > *:nth-child(n+6){animation-delay:.07s}
+@keyframes opUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){ .op-reveal > *{animation:none} }
 .op-brag b{color:var(--ds-text);font-weight:600}
 /* The guide's headline (the tool page uses the shared hero reading). */
@@ -223,11 +225,8 @@ details.op-table .scroll{margin-top:8px}
   .op-big .v{font-size:36px}
   .op-stats > div{padding:10px 12px}
   .op-stats b{font-size:15px}
-  .op-shot{height:58px;padding-left:34px}
-  .op-bow{width:30px;height:52px}
-  .op-arrow{width:70px;height:18px;transform:translate(-48px,-50%)}
-  .op-run:not(.op-loosed) .op-arrow{transform:translate(calc(-60px - var(--pull,0) * 11px),-50%)}
-  .op-target{width:40px;height:40px}
+  .op-shot{height:58px}
+  .op-run{--bw:30px;--bh:51px;--gap:8px;--al:70px;--ah:18px;--ts:40px;--nock:44px;--draw:11px}
   .op-road{--agew:48px}
   .op-ph dl{grid-template-columns:1fr}
   .op-ph dt{margin-top:4px}

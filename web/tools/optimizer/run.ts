@@ -16,14 +16,40 @@ import type { PlDone, PlPlan, PlProgress, PlTactics } from "@/lib/engine/types";
 export type Host = "tool" | "guide";
 export type Goal = "legacy" | "last" | "spend";
 
-/** The whole shot never takes less than this, so a quick search still gets its flight. */
+/** The first shot in a session never takes less than this, so a quick
+    search still gets its flight. It is display pacing only: the search runs
+    at its own speed, and its answer is the same either way. */
 export const OP_MIN_MS = 5000;
+/** Every later shot in the session: the flight is familiar by then. */
+export const OP_MIN_AGAIN_MS = 2000;
 export const OP_DRAW_MS = 700, OP_HOLD_MS = 260;
-export const OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;
+/** After the arrow reaches the end of the lane: into the bullseye, then the
+    target's reaction. Under 400ms between landing and the answer. */
+export const OP_STRIKE_MS = 100, OP_IMPACT_MS = 240;
+
+/** Whether a shot has already been seen in this tab's session (session
+    storage, so a reload keeps it; module state where storage is blocked). */
+const SHOT_KEY = "rc-op-shot";
+let shotSeen = false;
+function sawShot(): boolean {
+  if (shotSeen) return true;
+  try { shotSeen = sessionStorage.getItem(SHOT_KEY) === "1"; } catch { /* blocked: module state only */ }
+  return shotSeen;
+}
+function markShot() {
+  shotSeen = true;
+  try { sessionStorage.setItem(SHOT_KEY, "1"); } catch { /* blocked: module state only */ }
+}
+const reducedMotion = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch { return false; } };
 
 export interface Run {
   id: number; P: PlPlan; goal: Goal; sig: string; t0: number;
   prog: PlProgress | null; done: PlDone | null;
+  /** The shot's pacing: the minimum (0 under reduced motion), when the
+      string is fully drawn, and when it's let go, all from t0. */
+  min: number; draw: number; loose: number;
+  /** Asked to skip the flight: the answer shows the moment it's in. */
+  skip: boolean;
   /** How far the arrow has flown, 0 to 1, and when it landed. */
   shown: number; hitAt: number; nowAt: number;
   /** How the best plan so far improved, so the counters can replay it in step with the arrow. */
@@ -134,7 +160,13 @@ export function startOptimizer(host: Host, P: PlPlan, goal: Goal) {
     const C = plPrep({ ...P, strategy: "fixed" });
     combos = plCombos(C, plBaseTactics(C));
   } catch { /* the commentary does without */ }
-  const run: Run = { id, P, goal, sig: opSig(P, goal), t0: performance.now(), prog: null, done: null, shown: 0, hitAt: 0, nowAt: 0, log: [], combos };
+  // The first shot draws back slowly and holds; later ones are quicker
+  // about it, in proportion to their shorter minimum.
+  const again = sawShot(), still = reducedMotion();
+  const min = still ? 0 : again ? OP_MIN_AGAIN_MS : OP_MIN_MS, k = again ? 0.6 : 1;
+  const draw = still ? 0 : Math.round(OP_DRAW_MS * k), loose = still ? 0 : Math.round((OP_DRAW_MS + OP_HOLD_MS) * k);
+  const run: Run = { id, P, goal, sig: opSig(P, goal), t0: performance.now(), min, draw, loose, skip: false,
+    prog: null, done: null, shown: 0, hitAt: 0, nowAt: 0, log: [], combos };
   const w = getWorker();
   if (w) {
     try { w.postMessage({ type: "run", id, P, goal }); } catch { runHere(id, P, goal); }
@@ -155,7 +187,16 @@ export function stopOptimizer(host: Host, quiet = false) {
 export function finish(host: Host) {
   const R = OP[host].run;
   if (!R || !R.done) return;
+  markShot();
   put(host, { run: null, res: { ...R.done, sig: R.sig, P: R.P }, fresh: true });
+}
+
+/** Skip the flight: the answer now, or the moment it's in. */
+export function skipFlight(host: Host) {
+  const R = OP[host].run;
+  if (!R) return;
+  R.skip = true;
+  if (R.done) finish(host);
 }
 
 /** The result has been shown once; it doesn't reveal itself again. */

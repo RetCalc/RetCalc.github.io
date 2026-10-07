@@ -21,7 +21,7 @@ import { STATE_OPTIONS } from "@/lib/states";
 import { copyFrom, opSources, sourceDesc } from "./copy";
 import { OP_DEF, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
 import { RISKS } from "@/lib/engine/typed";
-import { Progress } from "./Progress";
+import { OptimizerStatus, Progress } from "./Progress";
 import { OptimizerResult, heroFigure } from "./Result";
 import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal, type Host } from "./run";
 import { OP_GOALS } from "./words";
@@ -329,6 +329,7 @@ export function Optimizer() {
             <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">Every age from 62 to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
           </CardContent>
         </Card>
+        <OptimizerStatus host="tool" />
         <div id="opOut" className="op-out min-w-0" ref={out}>{body}</div>
       </div>
     </div>

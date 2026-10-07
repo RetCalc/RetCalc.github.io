@@ -9,7 +9,7 @@ import { HIST_START } from "@/lib/engine/typed";
 import { plKey } from "@/lib/engine/typed-plan";
 import { fmtNum, groupDigits, money } from "@/lib/format";
 import { OpGoals } from "@/tools/optimizer/Optimizer";
-import { Progress } from "@/tools/optimizer/Progress";
+import { OptimizerStatus, Progress } from "@/tools/optimizer/Progress";
 import { OptimizerResult } from "@/tools/optimizer/Result";
 import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal } from "@/tools/optimizer/run";
 import { lowerFirst, opClaims, opTacticsLine } from "@/tools/optimizer/words";
@@ -47,6 +47,7 @@ export function OptimizeStep() {
       <div className="op-go"><Button size="lg" variant="outline" data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
         {H.res && !stale ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
         <span className="hint">{groupDigits(E.runs, true)} retirements to simulate, about {E.secs} seconds. Nothing leaves your browser.</span></div>
+      <OptimizerStatus host="guide" />
       {H.run ? <Progress host="guide" R={H.run} /> : H.res ? (
         <>
           {stale ? <Callout cls="warn">Your answers or the goal changed since this ran. Run it again to see the best plan for them now.</Callout> : null}
