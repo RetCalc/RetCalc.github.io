@@ -512,6 +512,37 @@ written into DESIGN.md unless it says otherwise.
   total projected cost) leads the inputs on phones. Dead rules (.clkid-name,
   #clAddKid margin, the old .clkid field rule) removed.
 
+- **Rent vs. Buy (/rentbuy): Basic's thirds, a verdict with its margin and
+  break-even.** Inputs a third, results two thirds from 1024px; rentbuy
+  joins SOLO. Inputs card "Your situation" with an intro line: Time horizon
+  first (it frames "Better after N years"), then Buying, Renting and
+  Assumptions behind hairline group heads. Nothing folds: e2e types into Tax
+  on gains and Filing status, and the help tour names Closing and Selling
+  costs on its first step. The input column no longer pins on desktop
+  (static): at 1006px it overflowed its 824px sticky scroller at 1440x900
+  and hid the tax fields; it now scrolls with the page, which is about as
+  long. Trade-off: the inputs leave the screen when you scroll to the chart.
+  Results: HeroReading (verdict word in amber; "Ahead by $X" under it at
+  Body in Text, the rbWinNote span keeping "by $X" so the help chip is
+  unchanged; Break-even as a label and sentence under that, "--" now an em
+  dash; Buyer and Renter net worth at Display size in Text with their notes
+  word for word, wrapped short so they sit side by side). In the same card
+  a two-column strip: "Each month, to start" (Buying all in, Renting (the
+  rent input echoed), Principal & interest) and "Up front" (Loan amount,
+  Renter invests), the derived figures moved out of the inputs with their
+  ids. The "Every month, whichever side costs less..." explainer is the
+  chart's description, word for word. The chart marks the break-even year
+  on the buyer line (tick + "Break-even", data-screen-only, so the
+  print/share copy is unchanged). Year by year folds (keepMounted); headers
+  spelled out (Buyer net worth, Renter net worth, Mortgage balance), which
+  changes the screen CSV's header row only (print uses its own headers in
+  share.tsx). Phones: PinnedReading (verdict, ahead by) leads the inputs;
+  the table pins Year (3.5rem) and Difference. Price 0: the field is
+  marked (Loss edge, icon, "Enter a home price to compare."), the hero is a
+  Text dash, the label keeps the horizon, one band says "Enter a home price
+  to see which comes out ahead.", and the cost strip, chart and table fold
+  away (elements kept, empty, for e2e).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -726,6 +757,22 @@ written into DESIGN.md unless it says otherwise.
   columns at 3+ — new behaviors; flat rows instead.
 - **College Savings**: hiding "covers 0% of it" with nothing saved — a
   figure; kept. 44px "?" dots and CSV — shared TipDot / CsvButton.
+
+- **Rent vs. Buy**: both chart lines start at $0 in year 0 (the renter
+  really starts with the down payment invested) — plotted values; a figure
+  change, left.
+- **Rent vs. Buy**: a true minus and a direction-naming header ("Buying ahead
+  by") in the Difference column — figure text; kept "-$30,195" under
+  "Difference", now pinned on phones.
+- **Rent vs. Buy**: shorter counting notes under the net worths, a new
+  article label — copy, owner call; kept.
+- **Rent vs. Buy**: folding the costs/taxes group — e2e types into the tax
+  fields; nothing folded (the column unpins instead).
+- **Rent vs. Buy**: the help tour still says the break-even is "under the
+  chart" (it never was; now it's under the verdict) — tour text is
+  compared against the old site by help.spec; left for the help pass.
+- **Rent vs. Buy**: 44px hit areas for the "?" dots and CSV — shared TipDot /
+  CsvButton.
 
 ## Fixed
 
