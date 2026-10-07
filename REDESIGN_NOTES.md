@@ -839,7 +839,76 @@ a ring (focus check, 1314 stops); every dialog passes the keyboard script.
   Stages kv rows and the Stages table) and FIRE's investment gains carry a
   word but no sign; Drawdown tables' positive returns and "Survived" /
   "Ran out in year N" carry a word or column header but no glyph. See
-  Skipped from critique.
+  Skipped from critique. (Drawdown's: done with icons in Phase 5, 0fbbc72.)
+
+## Fresh-eyes review (Phase 5)
+
+Round 1 by a fresh agent (redesign-baseline/review/round1-findings.md),
+triaged by the orchestrator. Numbers check unchanged after every commit.
+
+### Fixed
+- **Drawdown and strategy pages, "How each starting year/month fared"**
+  clipped "CAPE at start" at 1440 (860px min-width in an 843px column): the
+  figures stay on one line and long headers wrap; fits at 1440 down to
+  1100, scrolls narrower, phones unchanged. **Return sensitivity** (and the
+  claiming-age table) run edge to edge with the site's cells (3c96ed2).
+- **Never Alone on Drawdown's tables** (audit had logged these as hard
+  stops): Outcome gets a check / x, the year-by-year Return Backtest's
+  up/down arrow, the success rates in Return sensitivity and claiming ages
+  the rating glyph (check from 95%, warning circle from 85%, x below), not
+  an arrow, since a success rate is a rating. All aria-hidden SVGs beside
+  the figure: no "+", no text glyph, so innerText, CSV and numbers are
+  identical. A zero return goes from green to Text (no arrow to carry).
+  Backtest's arrow cell is shared as components/common/Signed.tsx (0fbbc72).
+- **Amber outside its four places**: the scatter's "start picked in the
+  table" is a Text ring around its own Lasted/Ran out dot (new Scatter
+  `sel`; the showdown's plan point stays amber); Bridge/72(t) "Total" is
+  the accounts' sum, so lavender. Neither chart is copied into the print
+  summary or share card (#chartDD / #chartBR are), so those are unchanged
+  (e29dbc7).
+- **Phone layout**: Drawdown card titles keep their "?" with the last word
+  (Tipped in a span, eight titles); "Pin as baseline" full width; Bridge /
+  72(t) Filing status and Optimizer "Must last in" take the full row
+  (88378a5).
+- **Empty states and consistency**: an empty hero reading's dash takes the
+  secondaries' size and spacing and the labels line up (Healthcare); the
+  pinned reading shares one baseline and one dash size; the scenario
+  picker no longer dims where it's disabled (Tools, About, Compare, 404;
+  still disabled); Mortgage's extras select takes the first column with a
+  line beside it; Stages' Milestones / Take it further stretch to one
+  height; the Guide's bars are inset by the bow so it lines up with the
+  title (e6dee25).
+- **Bridge "Ways to 59½" marks**: the rule (check from 95%, cross under
+  80%, none between; the penalty path unrated) is consistent, now named in
+  a key line under the table; no row's mark changed. **RMD dark survivor
+  shading** uses Rule instead of Raised (text 11:1, Muted 5.2:1), swatch
+  too (074cfeb).
+- **Strategy pages' disclosures**: "What happened in the marked years" and
+  the FAQ use the article heading's chevron instead of the browser's
+  triangle; still details/summary, ids and text unchanged (245a13b).
+
+### Logged
+- **RMD year table open by default** (9): on purpose, Phase 1 (3d2a656):
+  RMD's page leads with the table on Doing nothing.
+- **Sticky input column cut off at viewport height** (14): deliberate
+  sticky behaviour; a fade at its foot is optional later polish.
+- **Household bar position, Basic vs Advanced/Stages** (15): Basic is the
+  reference and isn't redesigned in this pass.
+- **Budget's layout and its Text "$0" empty state** (18): Phase 1
+  decisions (114c44d).
+- **Budget's amber "Left over" swatch**: kept. It echoes the key result,
+  Reading.tsx's documented PartTone "answer".
+- **Stages "Not on track" badge** (3): not added. Advanced's badge is its
+  Coast FIRE state (C.state); Stages computes no on-track comparison
+  (stagesCompute returns the final-stage solve, not a verdict), so it
+  would be a new computed status: hard stop.
+- **Bridge / 72(t) "Premiums" select on phones**: it already has the full
+  row; "ACA plan, with the subsidy your income earns" needs 306px and the
+  row gives 282px at 390px wide. Fitting it means a shorter option label
+  (not allowed) or a font under 16px (iOS zooms the page). The reviewer
+  listed it under Healthcare; Healthcare's selects all fit.
+- **Hover ring on scatters** stays amber (transient pointer feedback, not a
+  series); not raised by the reviewer.
 
 ## Skipped from critique
 
@@ -1214,6 +1283,10 @@ a ring (focus check, 1314 stops); every dialog passes the keyboard script.
 - **Drawdown** (audit): a check/cross glyph on "Survived" / "Ran out in year
   N" and a "+" on positive returns in its tables — changes table text the
   numbers check and CSV read; hard stop.
+  Done instead without a text change (Phase 5, 0fbbc72): aria-hidden SVG
+  icons beside the figures (check/x on Outcome, arrows on Return, rating
+  glyphs on the success rates); no "+" and no text glyph, so innerText, the
+  CSV and the numbers check are unchanged. See "Fresh-eyes review (Phase 5)".
 - **Site-wide** (audit): wrapping the tab rail in a nav landmark — the
   rail's markup is navigation structure that CSS and e2e select on; logged.
 
