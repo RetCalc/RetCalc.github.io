@@ -84,7 +84,7 @@ own route yet; every page has one now, so it renders nothing.
 ## Phase 2: motion
 | Piece | Status | Commit | Notes |
 |---|---|---|---|
-| Tool-picker icon animations | todo | | |
+| Tool-picker icon animations | done | 8597d84 | one 240ms transform beat per icon on hover/focus/tap (.is-beat on touch), no stroke drawing or loops; reduced motion = Muted tile edge |
 | Guide bow-and-arrow progress | todo | | |
 | Optimizer bow-and-arrow loader | todo | | |
 | Page transitions, tab switches, press, panels | todo | | |
