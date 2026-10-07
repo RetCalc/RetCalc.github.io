@@ -50,7 +50,12 @@ interface Props<P extends BandPoint> {
       chart whose copy must not change: the x-axis labelled from `xOffset`,
       no lower line, the band as a flat fill instead of a gradient, or no
       band at all (a comparison line that isn't a range, such as a cost). */
-  screenOnly?: { xOffset?: number; noLoLine?: boolean; flatBand?: boolean; noBand?: boolean };
+  screenOnly?: { xOffset?: number; noLoLine?: boolean; flatBand?: boolean; noBand?: boolean;
+    /** The plan line (and its arrowhead) stops at this x: where the plan
+        itself finishes, rather than running on along zero. */
+    baseEnd?: number;
+    /** The x values are months: tick whole years, labelled 0, 1, 2... */
+    yearTicks?: boolean };
 }
 
 /** The chart's scales and frame, for drawing extra marks on it. */
@@ -107,7 +112,12 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
             </defs>
 
             <YAxis size={size} ticks={AX.ticks} Y={Y} />
-            {so?.xOffset != null ? (
+            {so?.yearTicks ? (
+              <>
+                <g data-print-only><XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} /></g>
+                <g data-screen-only><XAxis size={size} count={maxX} every={12} X={X} label={(m) => m / 12} /></g>
+              </>
+            ) : so?.xOffset != null ? (
               <>
                 <g data-print-only><XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} /></g>
                 <g data-screen-only><XAxis size={size} count={maxX} X={X} label={(y) => y + so.xOffset!} /></g>
@@ -172,7 +182,13 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
               <>
                 <path d={line((a) => a.hi!)} fill="none" stroke={cHi} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} />
                 {noLoLine ? null : <path d={line((a) => a.lo!)} fill="none" stroke={cLo} strokeWidth={1.8 * sw} strokeLinejoin="round" opacity={.9} data-print-only={so?.noLoLine || undefined} />}
-                <path d={line((a) => a.base)} fill="none" stroke={cBase} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />
+                {so?.baseEnd != null ? (
+                  <>
+                    <path d={line((a) => a.base)} fill="none" stroke={cBase} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} data-print-only />
+                    <path d={pathD(pts.filter((a) => a.year <= so.baseEnd!).map((a) => [X(a.year), Y(a.base)]))} fill="none" stroke={cBase} strokeWidth={2.6 * sw}
+                      strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} data-screen-only />
+                  </>
+                ) : <path d={line((a) => a.base)} fill="none" stroke={cBase} strokeWidth={2.6 * sw} strokeLinejoin="round" markerEnd={`url(#${g("tip")})`} />}
               </>
             )}
 

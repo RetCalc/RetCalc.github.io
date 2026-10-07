@@ -577,6 +577,44 @@ written into DESIGN.md unless it says otherwise.
   DESIGN.md's Layout line listing Budget among "pages without inputs" is
   corrected.
 
+- **Debt Payoff (/debt): Basic's thirds, the debts as labelled cards, the
+  date as the answer.** Inputs a third, results two thirds from 1024px (debt
+  was already in SOLO; the old `stack solo` single column is gone). Inputs
+  card "Your debts" with an intro line, sticky with its own scroll from
+  1024px (static below): each debt a flat card on a hairline (Stages'
+  pattern), name field and a quiet X (lucide, 44px on touch, aria-label
+  "Remove <name>") on line one, Balance / Rate / Minimum with visible
+  labels on line two (three across when the list is 320px+ wide, a container
+  query; Balance full width over Rate and Minimum in the 1024px thirds); the
+  "?" tips on the first debt only. Add a debt has a plus icon and now
+  focuses and selects the new debt's name (the old focusLast selector
+  matched nothing). A debt with no balance says "Not counted until it has a
+  balance." Then "Your plan": Extra payment with Copy from Budget beside it,
+  and the Avalanche/Snowball switch full width with its one-liner under it.
+  Results: HeroReading (Debt-free in amber, Total interest and Saved vs.
+  minimums at Display size; Saved in Gain with a check before its note).
+  Stalled plan (the logged bug): "Never", the $3.7B interest and the
+  verdict/warning wording are unchanged; only the hero's tone moves from
+  amber to Text (Text over Loss: Loss would need its own glyph and word,
+  and the figure itself is the open decision). Underwater minimum: that
+  debt's Minimum takes the Loss edge (aria-invalid, aria-describedby) with
+  an icon and "This minimum doesn't cover a month's interest." under it;
+  the existing #dtWarn sentence, word for word, becomes a Warning callout
+  (new shadcn Alert, `warning` variant: Loss 15% over Surface, triangle
+  icon) under the reading. Then the race card "Avalanche vs. snowball": the
+  verdict sentence at Body leads (was 11.5px muted), the table under it
+  marks your approach (check icon labelled "Your plan", Text weight; no
+  amber), minimums only quieter, figures kept on one line. The chart, screen
+  only: the plan line and its arrowhead stop at the plan's payoff month and
+  the x-axis ticks whole years (BandChart `screenOnly.baseEnd` /
+  `yearTicks`, ChartFrame XAxis `every`, all new and opt-in); the print
+  copy's markup is unchanged (checked: the copied SVG is byte-identical).
+  Payoff order's Debt column is left-aligned; the schedule folds
+  (Collapsible, keepMounted, CSV unchanged). With nothing owed, the cards
+  below the reading fold away (kept in the page, empty). Phones:
+  PinnedReading (debt-free, total interest) leads the inputs. Dead
+  `.dtrow/.dthead/.dtstrat/.dtwarn` and `.bgincome*` rules removed.
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -823,6 +861,32 @@ written into DESIGN.md unless it says otherwise.
 - **Budget**: CSV button size on touch — the shared xs Button already grows
   its hit area to 44px under a finger; visual size unchanged.
 - **Budget**: article label "Budget calculator" — SEO/article copy, owner call.
+
+- **Debt Payoff**: the stalled-plan display ("Never", the capped interest,
+  "the two orderings land in the same place", the roll-over warning) —
+  logged bug, open decision; only the hero's tone changed (amber to Text).
+- **Debt Payoff**: undo for removing a debt — a new behavior, not an
+  existing mechanism.
+- **Debt Payoff**: the +$100 lever as its own figure and first-debt notches
+  on the chart — new presentation of figures the critique lists as
+  questions; the lever stays in the verdict sentence.
+- **Debt Payoff**: a note that the schedule is thinned — text about how the
+  table is built; the schedule is folded instead.
+- **Debt Payoff**: "blended rate" explained, card-description and "Copy
+  from Budget" wording — kept (tool name; the tour compares the button).
+- **Debt Payoff**: segmented height matched to fields, "?" and CSV hit
+  areas — shared components (Segmented, TipDot, CsvButton).
+- **Debt Payoff**: PinnedReading while the debts are on screen on desktop —
+  the shared component is phones/tablets only; desktop keeps the reading
+  beside the sticky inputs.
+
+## E2E checks edited
+
+- **Debt Payoff** (e2e/debt.spec.ts, "added and removed debts"): the remove
+  step's selector `button[aria-label="Remove"]` became
+  `button[aria-label^="Remove"]` (the button is now named "Remove <debt>";
+  the old site's "Remove" still matches). Same step on both sites; no
+  assertion changed.
 
 ## Fixed
 

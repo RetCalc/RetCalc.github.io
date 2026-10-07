@@ -222,10 +222,6 @@ html.pwa .popup-overlay{
   .tipdot{position:relative;width:17px;height:17px}
   .tipdot::after{content:"";position:absolute;top:50%;left:50%;
     width:44px;height:44px;transform:translate(-50%,-50%)}
-  /* Everything below was under 40px on a touch screen. These grow for real
-     rather than overflowing an invisible pad, which would have sat on top of
-     the field beside them and stolen taps meant for it. */
-  .dtrow .delspace,.dthead .delspace{width:40px}
   .toolcard:hover::before{transform:scaleY(0)}
 }
 /* Home-screen web app runs under the clock and battery, so reserve that space.

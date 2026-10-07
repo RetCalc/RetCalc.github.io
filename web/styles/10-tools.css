@@ -99,27 +99,9 @@
 .ddmixg h4{margin:0 0 4px;font-size:13.5px;color:var(--text)}
 .ddgk-final{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:12px;color:var(--dim)}
 .ddgk-check{display:flex;align-items:center;gap:7px;cursor:pointer;flex:0 1 auto;min-width:0}
-.dtrow{display:flex;gap:8px;align-items:center;padding:5px 0}
-.dthead{display:flex;gap:8px;align-items:center;padding:0 0 4px;font-size:11px;
-  color:var(--dimmer);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
-.dtrow .desc,.dthead .desc{flex:1 1 auto;min-width:0}
-.dtrow .c1,.dthead .c1{flex:0 0 120px;width:120px}
-.dtrow .c2,.dthead .c2{flex:0 0 88px;width:88px}
-.dtrow .c3,.dthead .c3{flex:0 0 110px;width:110px}
-.dthead .c1,.dthead .c2,.dthead .c3{text-align:right;padding-right:10px}
-.dtrow .delspace,.dthead .delspace{width:28px;flex:none}
-.dtstrat{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px}
-.dtwarn{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:12.5px;
-  line-height:1.5;color:var(--text);background:rgba(226,121,95,.12);
-  border:1px solid rgba(226,121,95,.4)}
-@media (max-width:720px){
-  .dtrow{flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line-soft)}
-  .dtrow .desc{flex:1 1 100%}
-  .dtrow .c1{flex:1 1 40%;width:auto}
-  .dtrow .c2{flex:1 1 22%;width:auto}
-  .dtrow .c3{flex:1 1 28%;width:auto}
-  .dthead{display:none}
-}
+/* Debt Payoff's rows, laid out in Debt.tsx with utilities; the classes stay
+   as hooks for e2e (#dtList .dtrow .c1 input) and the help tour. */
+.dtrow,.dtrow .c1,.dtrow .c2,.dtrow .c3{min-width:0}
 
 /* ---------- csv export ---------- */
 .csvbar{display:flex;justify-content:flex-end;padding:0 16px 8px}

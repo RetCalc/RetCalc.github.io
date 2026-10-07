@@ -58,9 +58,6 @@
    amount and its period. The list sizes itself to its own width (it sits in
    the wide column from 1024px, the full width below). */
 #bgList{container-type:inline-size}
-/* The income block (Debt Payoff uses the same two classes). */
-.bgincome{max-width:520px}
-.bgincome-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .bggroup{margin-bottom:6px}
 .bggroup-h{font-size:13px;color:var(--text);font-weight:600;
   padding:18px 0 7px;border-bottom:1px solid var(--line);margin-bottom:2px}

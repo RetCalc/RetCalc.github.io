@@ -49,8 +49,10 @@ export function YAxis({ size, ticks, Y, fmt = fmtAxisMoney }: { size: ChartSize;
 
 /** Labels along the bottom: about 12 across (6 on a phone), from 0 to
     `last` (which is `count` itself unless given). */
-export function XAxis({ size, count, last = count, X, label }: { size: ChartSize; count: number; last?: number; X: (i: number) => number; label: (i: number) => React.ReactNode }) {
-  const step = Math.max(1, Math.ceil(count / (size.narrow ? 6 : 12)));
+export function XAxis({ size, count, last = count, X, label, every }: { size: ChartSize; count: number; last?: number; X: (i: number) => number; label: (i: number) => React.ReactNode;
+  /** Ticks only on multiples of this (12 for months shown as years). */
+  every?: number }) {
+  const step = every ? every * Math.max(1, Math.ceil(count / every / (size.narrow ? 6 : 12))) : Math.max(1, Math.ceil(count / (size.narrow ? 6 : 12)));
   const at: number[] = [];
   for (let i = 0; i <= last; i += step) at.push(i);
   return (
