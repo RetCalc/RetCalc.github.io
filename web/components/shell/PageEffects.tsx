@@ -10,7 +10,11 @@
      the panels that come in rise a few pixels as they fade in (.pane-in,
      styles/03-navigation.css). Only on a switch, never on an update.
    - Every figure recomputes as you type; the screen-reader live region
-     reports the headline figures once they settle, not each keystroke. */
+     reports the headline figures once they settle, not each keystroke.
+   - iOS zooms toward a focused field even when its font is 16px. Pinning
+     maximum-scale while a field has focus stops that; the viewport goes back
+     on blur so pinch-zoom still works everywhere else (the old site's
+     02-accounts-advanced.js did the same). */
 
 import { useEffect } from "react";
 
@@ -55,7 +59,37 @@ function announce() {
   if (parts.length) live.textContent = parts.join(". ");
 }
 
+const typed = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.matches("input, select, textarea") || t.isContentEditable);
+
+function noFocusZoom() {
+  const vp = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  if (!vp) return () => {};
+  const base = vp.content, locked = base + ", maximum-scale=1";
+  let restore: ReturnType<typeof setTimeout>;
+  const lock = (e: FocusEvent) => {
+    if (!typed(e.target)) return;
+    clearTimeout(restore);
+    if (vp.content !== locked) vp.content = locked;
+  };
+  const unlock = (e: FocusEvent) => {
+    if (!typed(e.target)) return;
+    clearTimeout(restore);
+    // a short wait, so tabbing from field to field doesn't flicker the viewport
+    restore = setTimeout(() => { vp.content = base; }, 250);
+  };
+  document.addEventListener("focusin", lock);
+  document.addEventListener("focusout", unlock);
+  return () => {
+    document.removeEventListener("focusin", lock);
+    document.removeEventListener("focusout", unlock);
+    clearTimeout(restore);
+    vp.content = base;
+  };
+}
+
 export function PageEffects() {
+  useEffect(noFocusZoom, []);
   useEffect(() => {
     const main = document.getElementById("main");
     if (!main) return;
