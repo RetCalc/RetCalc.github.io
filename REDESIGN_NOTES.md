@@ -197,6 +197,12 @@ written into DESIGN.md unless it says otherwise.
 
 ## Layout decisions
 
+- **Stages, lower cards (round 2, a1340ee): Milestones full width, Take it
+  further a slim strip under it.** Side by side, Take it further either
+  left a hole (top-aligned) or stood three-quarters empty (stretched); its
+  one line and one button read best as a strip: text left, button right
+  from 640px, stacked on phones. Advanced keeps its own pair.
+
 - **Advanced (/advanced): Basic's thirds.** Inputs a third of the width,
   results two thirds, from 1024px (`lg:grid-cols-3`; Advanced joins SOLO in
   lib/site.ts and lays out its own grid). The inputs are one card in three
@@ -909,8 +915,35 @@ triaged by the orchestrator. Numbers check unchanged after every commit.
   listed it under Healthcare; Healthcare's selects all fit.
 - **Hover ring on scatters** stays amber (transient pointer feedback, not a
   series); not raised by the reviewer.
+- **Round 2: the spread chart's repeated "$0 $0 $0" x-axis ticks** (VPW,
+  Risk-based guardrails, where every ending balance is near zero): fixing
+  them means changing the tick formatter, which alters figures shown on a
+  chart; hard stop (also under Skipped from critique).
+- **Round 2: Healthcare's "Open Income Tax" ghost button** kept: it is
+  DESIGN.md's ghost button.
+
+### Fixed in round 2
+- **Phone layout** (2883b79): the spread card's controls drop under its
+  title below sm; labels ending in "?" keep the dot with their last word
+  (Optimizer "Your age at retirement" / "Retire at" / "Start from", Income
+  Tax "Pre-tax deductions" and the capital gain title, five Backtest
+  labels; found by grep); Drawdown's icon cells don't wrap; sticky table
+  columns on phones edge in Rule Strong (all pinned columns, so Stages' End
+  balance shows where Start slides under it).
+- **Card pairs** (a1340ee): Drawdown's scorecard and income cards at one
+  height; Stages' Milestones full width with Take it further as a slim
+  strip below (see Layout decisions).
+- **Empty space** (3a959d3): an empty hero drops its empty note line (the
+  Healthcare reading shrinks to its content, light and dark); Return
+  sensitivity and the claiming-age table lose the extra 14px under the
+  last row. The year-by-year table's foot is the card's own padding below
+  a scrolling table, left as is.
 
 ## Skipped from critique
+
+- **Drawdown and strategy pages** (round 2 review): de-duplicating the
+  spread chart's "$0 $0 $0" x-axis ticks — changes the tick formatter, so
+  figures shown on a chart; hard stop.
 
 - **Tools**: one-sentence descriptions ≤60 characters — new copy shared
   with the tool headers and SEO (orchestrator call: layout instead).

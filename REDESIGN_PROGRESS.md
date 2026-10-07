@@ -107,7 +107,7 @@ confirm each renders and every figure matches its page.
 |---|---|---|
 | Review round 1 | todo | print summaries and share cards not in its inputs |
 | Fixes | done | 3c96ed2 tables fit, edge to edge; 0fbbc72 Never Alone icons (SVG, no text change); e29dbc7 amber; 88378a5 phone layout; e6dee25 empty states and consistency; 074cfeb Bridge marks key, RMD shading; 245a13b chevrons. Logged items in REDESIGN_NOTES.md "Fresh-eyes review (Phase 5)"; e2e pass/fail per test unchanged |
-| Review round 2 on the fixed pages | todo | |
+| Review round 2 on the fixed pages | done | round 2 findings fixed (2883b79 phone layout, a1340ee card pairs, 3a959d3 empty space), re-shot in pages-after3; $0 ticks and the ghost button logged |
 
 ## Finish
 | Step | Status | Notes |
