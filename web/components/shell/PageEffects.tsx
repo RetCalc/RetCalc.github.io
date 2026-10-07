@@ -62,21 +62,28 @@ function announce() {
 const typed = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.matches("input, select, textarea") || t.isContentEditable);
 
+// Next puts a new viewport tag in on every page change, so the live one is
+// looked up each time rather than kept.
+const LOCK = ", maximum-scale=1";
+const viewport = () => document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+
 function noFocusZoom() {
-  const vp = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
-  if (!vp) return () => {};
-  const base = vp.content, locked = base + ", maximum-scale=1";
   let restore: ReturnType<typeof setTimeout>;
+  const unpin = () => {
+    const vp = viewport();
+    if (vp?.content.endsWith(LOCK)) vp.content = vp.content.slice(0, -LOCK.length);
+  };
   const lock = (e: FocusEvent) => {
     if (!typed(e.target)) return;
     clearTimeout(restore);
-    if (vp.content !== locked) vp.content = locked;
+    const vp = viewport();
+    if (vp && !vp.content.includes("maximum-scale")) vp.content += LOCK;
   };
   const unlock = (e: FocusEvent) => {
     if (!typed(e.target)) return;
     clearTimeout(restore);
     // a short wait, so tabbing from field to field doesn't flicker the viewport
-    restore = setTimeout(() => { vp.content = base; }, 250);
+    restore = setTimeout(unpin, 250);
   };
   document.addEventListener("focusin", lock);
   document.addEventListener("focusout", unlock);
@@ -84,7 +91,7 @@ function noFocusZoom() {
     document.removeEventListener("focusin", lock);
     document.removeEventListener("focusout", unlock);
     clearTimeout(restore);
-    vp.content = base;
+    unpin();
   };
 }
 
