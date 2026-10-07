@@ -316,6 +316,33 @@ written into DESIGN.md unless it says otherwise.
   readiness guide keeps its own hero and section order; it picks up the
   token clean-up (goals, roadmap, moves, alternatives, Stop).
 
+- **Early Retirement Bridge (/bridge, /72t): Basic's thirds, one plan
+  followed.** Inputs a third, results two thirds from 1024px; bridge and 72t
+  join SOLO (lib/site.ts). 19-20 fields fit a third as Advanced's 22 do;
+  sticky with its own scroll from 1024px, static below. Inputs card "Your
+  situation": the situation's four fields, then Title group heads (Your
+  accounts at retirement, Income, Health insurance, How the plans work),
+  short fields two-up on every width. The derived block leaves the inputs
+  for a four-up key/value strip at the foot of the reading (ids kept).
+  Results in three tiers: one reading card (Historical / Monte Carlo moved
+  from the table into its quiet toolbar; the best plan as the amber hero
+  with its how-line; Holds up in in its rating tone with a check / alert /
+  cross glyph, Cost of the bridge and At 59½ at Display size; the verdict as
+  the reading's sentence). The three secondaries sit under the hero at every
+  width (HeroReading's new `under`): beside a word-sized hero they wrapped
+  into a ragged stack. Then the decision: Ways to 59½ (selected row with a
+  check and aria-current, hold cells with glyphs, Penalties plain). Then
+  "Following <plan>": a sticky head holding the market switch (#segBRPath,
+  moved; full width on phones with "Above / Average / Below"), over What
+  you'll have at 59½ with the Send buttons, the flow chart, balances (the
+  view switch on its own row, not squeezing the title), the ladder and Year
+  by year (folded; Age and Balance pinned on phones). Card titles drop the
+  plan and market (the head says them); the market moves to each
+  description. The rules fold behind their title. With no spending or
+  balances the hero and figures are dashes in Text, the sentence band is the
+  prompt with an icon, and everything under the reading folds away (Send
+  buttons with it). Phones get a PinnedReading (best plan, holds up in).
+
 ## Skipped from critique
 
 - **Advanced**: mark Time period 0 or negative as an error and dim the
@@ -404,6 +431,22 @@ written into DESIGN.md unless it says otherwise.
 - **Plan Optimizer**: sentence-case "Warning" in the shared callout — the page
   no longer uses .gd-callout; the shared callout (guide, others) is left for
   its own pass.
+
+- **Early Retirement Bridge**: fold "How the plans work" on phones —
+  bridge.spec types into brFill and brSeppMethod on both sites with the same
+  steps; a closed fold would fail them. The pinned reading answers the P0.
+- **Early Retirement Bridge**: the reading following the picked plan instead
+  of the best one — the headline, share card and print summary say "Best way
+  to 59½"; the sticky Following head names the picked plan instead.
+- **Early Retirement Bridge**: scroll the Following head into view when a row
+  is picked — new behavior; the head is sticky, and the row gets a check.
+- **Early Retirement Bridge**: six plan cards instead of the table on phones,
+  and leading the 72(t) row on /72t — the plan table keeps its text and
+  order (CSV, coach, e2e); the Plan column narrows so Holds shows.
+- **Early Retirement Bridge**: a 72(t)-specific tool description on /72t —
+  the header copy comes from the shared tool list; left for the owner.
+- **Early Retirement Bridge**: a "Runs short" badge in year-table rows — it
+  would add text to the CSV; a cross glyph labelled "Runs short" instead.
 
 ## Fixed
 

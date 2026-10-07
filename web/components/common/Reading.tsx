@@ -29,6 +29,9 @@ export interface ReadingFigure {
   extra?: ReactNode;
   /** An id for the figure's whole block. */
   wrapId?: string;
+  /** A secondary that is a rating keeps its rating's color (with a glyph
+      and a word in its note, per the Never Alone Rule); others are Text. */
+  tone?: Exclude<HeroTone, "answer">;
 }
 
 /** The hero's color: amber when it's the page's answer (the Four Places
@@ -43,20 +46,23 @@ const TONE: Record<HeroTone, string> = {
   text: "text-foreground",
 };
 
-export function HeroReading({ hero, tone = "answer", sized = true, figures = [], className, children }: {
+export function HeroReading({ hero, tone = "answer", sized = true, figures = [], under = false, className, children }: {
   hero: ReadingFigure;
   tone?: HeroTone;
   /** False while the value is a dash: it then keeps the readout's own size. */
   sized?: boolean;
   figures?: ReadingFigure[];
+  /** Keep the secondary figures under the hero at every width (three
+      secondaries beside a wide hero would wrap into a ragged stack). */
+  under?: boolean;
   className?: string;
   /** Anything that belongs under the hero in its zone (a badge, a link). */
   children?: ReactNode;
 }) {
   const narrow = useNarrow();
   return (
-    <div className={cn("px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5 wide:flex wide:items-start wide:gap-8", className)} data-readout>
-      <div className="min-w-0 wide:shrink-0" data-pair>
+    <div className={cn("px-5.5 pt-6.5 pb-5 max-sm:px-4 max-sm:pt-5", !under && "wide:flex wide:items-start wide:gap-8", className)} data-readout>
+      <div className={cn("min-w-0", !under && "wide:shrink-0")} data-pair>
         <div className="mb-2.5 text-label text-muted-foreground" id={hero.labelId} data-k>{hero.label}</div>
         <BigValue className={cn("leading-none font-medium tracking-tight whitespace-nowrap tabular-nums", TONE[tone])}
           id={hero.id} text={hero.value} sized={sized} scale={narrow ? 1.5 : 2} />
@@ -64,11 +70,12 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
         {children}
       </div>
       {figures.length ? (
-        <div className="mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4 wide:mt-0 wide:min-w-0 wide:flex-1 wide:items-center wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8">
+        <div className={cn("mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4", under ? "sm:justify-between sm:gap-x-8"
+          : "wide:mt-0 wide:min-w-0 wide:flex-1 wide:items-center wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8")}>
           {figures.map((f) => (
             <div key={f.id} id={f.wrapId} data-pair>
               <span className="block text-label text-muted-foreground" id={f.labelId} data-k>{f.label}</span>
-              <BigValue className="text-3xl leading-tight font-medium tabular-nums sm:text-display" id={f.id} text={f.value} sized={false} />
+              <BigValue className={cn("text-3xl leading-tight font-medium tabular-nums sm:text-display", f.tone && TONE[f.tone])} id={f.id} text={f.value} sized={false} />
               {f.extra}
               {f.note != null ? <span className="block text-label text-muted-foreground" id={f.noteId}>{f.note}</span> : null}
             </div>
