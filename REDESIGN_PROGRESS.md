@@ -43,8 +43,8 @@ under "Skipped from critique" in REDESIGN_NOTES.md.
 | Plan Optimizer | /optimizer | done | 75d7a3a | thirds, run first on phones, hero reading + moves under it, stale dims; loader motion still Phase 2 |
 | Early Retirement Bridge | /bridge | done | f6fa405 | Thirds; hero reading (best plan, holds, cost, at 59½); sticky Following head with the market switch; detail folds |
 | 72(t) | /72t | done | 9078406 | Bridge's page with variant="72t": 72(t) terms lead the inputs and facts |
-| Roth Conversion & RMDs | /roth | todo | | |
-| RMDs | /rmd | todo | | Roth's page; checked with it |
+| Roth Conversion & RMDs | /roth | done | 202f807 | Thirds; verdict as the headline over three peer figures (net worth relabelled vs doing nothing); conversion plan as a lever card; chart screen-only fixes, print unchanged |
+| RMDs | /rmd | done | 3d2a656 | Roth's page with variant="rmd": Peak RMD leads in amber, year table open on Doing nothing, RMD column first |
 | Healthcare Cost Planner | /healthcare | todo | | |
 | FIRE Calculator | /fire | todo | | |
 | Portfolio Backtest | /backtest | todo | | |
