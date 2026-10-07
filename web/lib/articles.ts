@@ -20,7 +20,8 @@ const raw = cache((slug: Slug): string | null => {
 
 /** The article's HTML as shown: collapsed under its heading (open when
     `open`). The heading's text sits in a button (with the chevron) that
-    opens it from the mouse or the keyboard (lib/collapse.ts). Null for a
+    opens it from the mouse or the keyboard (lib/collapse.ts); FAQ questions
+    get the same chevron. Null for a
     page without one. */
 export const articleHtml = cache((slug: Slug, open = false): string | null => {
   const html = raw(slug);
@@ -31,7 +32,10 @@ export const articleHtml = cache((slug: Slug, open = false): string | null => {
       /<h2>([\s\S]*?)<\/h2>/,
       `<h2><button type="button" class="seo-a-toggle" aria-expanded="${open}" aria-controls="seoBody">$1${CHEVRON}</button></h2>`,
     )
-    .replace(/(<div class="body">[\s\S]*<\/div>)(\s*<\/article>)/, '<div class="about-collapse" id="seoBody">$1</div>$2');
+    .replace(/(<div class="body">[\s\S]*<\/div>)(\s*<\/article>)/, '<div class="about-collapse" id="seoBody">$1</div>$2')
+    // Each FAQ question takes the same chevron as the heading, in place of
+    // the browser's triangle (details/summary keep the keyboard working).
+    .replace(/<summary>([\s\S]*?)<\/summary>/g, `<summary>$1${CHEVRON}</summary>`);
 });
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };

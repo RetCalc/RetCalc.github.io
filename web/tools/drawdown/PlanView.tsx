@@ -8,6 +8,7 @@
    and the tables in src/js/app/15-drawdown.js, 15b and 15d. */
 
 import { useRef, useState } from "react";
+import { ChevronDownIcon } from "lucide-react";
 import { BandChart, type BandPoint } from "@/components/charts/BandChart";
 import { Histogram, roundBins } from "@/components/charts/Histogram";
 import { HistLegend, McLegend } from "@/components/charts/Legend";
@@ -315,7 +316,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
         }} />
       <Html className="legend" id="legendDDQ" html={(dec ? "" : "<span class='ddleg-k'>" + M.axis + ":</span> ") + swatch(SERIES.gain, "Lasted") + swatch(SERIES.loss, "Ran out") +
         (ps.sel != null ? "<span><i class='box-border rounded-full border-2 border-solid border-foreground bg-transparent'></i>The start picked in the table</span>" : "")} />
-      <details className="dderas" id="ddEras" hidden={!eras.length}><summary>What happened in the marked years</summary>
+      <details className="dderas" id="ddEras" hidden={!eras.length}><summary>What happened in the marked years<ChevronDownIcon className="size-3.5" aria-hidden="true" /></summary>
         <div id="ddEraList">{eras.map((e) => <p key={e.year}><b>{e.year}: {e.title}.</b> {e.note}</p>)}</div>
       </details>
     </Card>
