@@ -7,9 +7,9 @@
 
 import { useState } from "react";
 import { FACTORS, barColor, guessing, ok, rating, retPath, type Part, type Sim } from "./calc";
-import { Ring } from "./results";
+import { Ring } from "./Ring";
 import { CHAPTERS, STEPS, applies, deeper, type RouteFacts, type StepDecl } from "./route";
-import { RULES, confidence, confidenceLine } from "./score";
+import { RULES, confidence, confidenceLine, headroom } from "./score";
 import { SourceBadge } from "./SourceBadge";
 import type { GuideState } from "./store";
 import { rounded } from "./words";
@@ -93,13 +93,14 @@ export function ScoreCard({ g, plan, go, ring }: { g: GuideState; plan: RailPlan
         <div className="n">{R.score == null ? (R.n ? "Your score appears once two areas are answered." : "Your score appears as you answer.") : R.n < FACTORS.length ? "From " + R.n + " of " + FACTORS.length + " areas so far" : "All five areas answered"}</div>
         {R.score != null ? <div className="n gd-conf">{confidenceLine(confidence(g.a, g.src, have))}</div> : null}</div></div>
       <div className="gd-facs">{FACTORS.map((f) => {
-        const p = R.P[f.id];
+        const p = R.P[f.id], h = headroom(f.id, p, g.a), to = p?.bad ?? f.step;
         return (
-          <button key={f.id} type="button" className={"gd-fac" + (p ? "" : " na")} data-go={f.step} onClick={() => go(f.step)}>
+          <button key={f.id} type="button" className={"gd-fac" + (p ? "" : " na") + (p?.bad ? " bad" : "")} data-go={to} onClick={() => go(to)}>
             <div className="top"><span>{f.name}</span><em>{p ? Math.round(p.p * f.w) + " / " + f.w : "—"}</em></div>
             <div className="bar"><i className="w-(--w) bg-(--swatch)" style={{ "--w": (p ? p.p * 100 : 0).toFixed(0) + "%", "--swatch": p ? barColor(p.p) : "transparent" } as React.CSSProperties}></i></div>
             <div className="sub">{p ? p.txt : "Not answered yet"}</div>
-            <div className="rule">{RULES[f.id]}</div></button>
+            <div className="rule">{RULES[f.id]}</div>
+            {h ? <div className="head">Up to {h.pts} more: {h.line}.</div> : null}</button>
         );
       })}</div>
     </>

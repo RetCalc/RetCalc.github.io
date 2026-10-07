@@ -14,6 +14,7 @@ import { fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { gdM, need, ok, options, overFrom, pos, sim, target, type Levers, type Opt, type OptSet, type Sim } from "./calc";
 import { PlanChart, series } from "./chart";
 import type { Answers } from "./store";
+import { LeversLesson } from "./steps/ch6-stronger";
 import { BackNote, Callout, NeedsPlan, Q, useGuideView } from "./ui";
 import { Button } from "@/components/ui/button";
 import { Affixed } from "@/components/fields/Field";
@@ -179,6 +180,7 @@ export function TuneStep() {
   return (
     <>
       <Q>{!O.ahead ? "Close the gap" : big ? "You're ahead. Put it to work?" : "Fine-tune your plan"}</Q>
+      <LeversLesson ahead={O.ahead} />
       <p className="gd-lead">Your plan now: retire at <b>{fmtNum(S.retire)}</b>,{" "}
         {S.stop != null && S.stop <= a.age! ? <><b>coast</b> with no new saving</> : <>save <b>{money(S.monthly) + "/mo"}</b>{S.stop != null ? " until " + fmtNum(S.stop) : ""}</>}
         , then spend <b>{money(S.spend) + " a year"}</b>.{" "}

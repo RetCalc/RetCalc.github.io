@@ -21,12 +21,12 @@ export function Compound({ C }: { C: C }) {
     { c: late, label: "Started at " + fmt(late.from) + ", " + yrs(C.gap) + " late" },
   ];
   return (
-    <div className="gd-cmp" role="img" aria-label={words.map((w) => w.label + ": " + money(w.c.fv) + " at " + fmt(now.to)).join(". ") + "."}>
-      <svg className="gd-cmp-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+    <div className="gd-curves" role="img" aria-label={words.map((w) => w.label + ": " + money(w.c.fv) + " at " + fmt(now.to)).join(". ") + "."}>
+      <svg className="gd-curves-svg" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
         {words.map((w) => <path key={w.c.id} className={w.c.id} d={d(w.c.path)} vectorEffect="non-scaling-stroke" />)}
       </svg>
-      <div className="gd-cmp-ax" aria-hidden="true"><span>{fmt(now.from)}</span><span>{fmt(now.to)}</span></div>
-      <div className="gd-cmp-key" aria-hidden="true">
+      <div className="gd-curves-ax" aria-hidden="true"><span>{fmt(now.from)}</span><span>{fmt(now.to)}</span></div>
+      <div className="gd-curves-key" aria-hidden="true">
         {words.map((w) => (
           <span key={w.c.id}><svg className={"sw " + w.c.id} viewBox="0 0 20 4"><line x1="0" y1="2" x2="20" y2="2" /></svg>{w.label} <b>{money(w.c.fv)}</b></span>
         ))}

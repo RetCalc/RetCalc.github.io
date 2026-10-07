@@ -5,7 +5,7 @@
    are bound to these by id in steps/index.tsx; this file holds no React, so
    route.ts and its tests walk every route from the declarations alone. */
 
-import { ok, pos } from "../calc";
+import { gross, ok, pos } from "../calc";
 import type { AnswerKey, Answers, Pace, SourceKind } from "../store";
 
 export type StepType = "welcome" | "question" | "lesson" | "readout" | "decision" | "trip" | "summary";
@@ -70,7 +70,9 @@ export const STEPS: StepDecl[] = [
 
   /* 2 · Where you stand */
   { id: "income", chapter: 2, title: "Income and take-home", type: "question", pace: "quick", minutes: 1, tripMinutes: 3, tool: "tax", sync: true,
-    teaches: ["take-home"], needs: (a) => need(ok(a.income), "Enter your yearly income") },
+    teaches: ["take-home"],
+    needs: (a) => !ok(a.income) ? "Enter your yearly income"
+      : ok(a.takehome) && !pos(a.takehome) && gross(a) > 0 ? "Your take-home needs to be more than $0, or leave it blank for our estimate" : null },
   { id: "spending", chapter: 2, title: "What you spend", type: "question", pace: "quick", minutes: 1, tripMinutes: 15, tool: "budget",
     teaches: ["keystone"], needs: (a) => need(pos(a.spend), "Enter your monthly spending, or use the slider") },
   { id: "cash", chapter: 2, title: "Your safety net", type: "question", pace: "quick", minutes: 0.5, tool: "budget",
@@ -101,20 +103,20 @@ export const STEPS: StepDecl[] = [
   { id: "social", chapter: 4, title: "Social Security", type: "question", pace: "quick", minutes: 1, tool: "optimizer", sync: true, teaches: ["wait"] },
 
   /* 5 · Will it last */
-  { id: "number", chapter: 5, title: "Your projection", type: "readout", pace: "quick", minutes: 0.5, tripMinutes: 10, tool: "basic" },
-  { id: "lasting", chapter: 5, title: "Will it last?", type: "readout", pace: "quick", minutes: 0.5, tool: "drawdown" },
+  { id: "number", chapter: 5, title: "Your number", type: "readout", pace: "quick", minutes: 0.5, tripMinutes: 3, tool: "basic", teaches: ["income-sources"] },
+  { id: "lasting", chapter: 5, title: "Tested against history", type: "readout", pace: "quick", minutes: 0.5, tool: "drawdown", teaches: ["sequence"] },
 
   /* 6 · Make it stronger (deeper; Adjust joins the Quick check when the plan falls short) */
-  { id: "adjust", chapter: 6, title: "Adjust your plan", type: "decision", pace: "full", minutes: 2, tool: "stages",
+  { id: "adjust", chapter: 6, title: "Adjust your plan", type: "decision", pace: "full", minutes: 2, tool: "stages", teaches: ["levers"],
     promote: (_a, f) => !!f.behind },
-  { id: "strategy", chapter: 6, title: "Drawing it down", type: "decision", pace: "full", minutes: 2, tripMinutes: 10, tool: "drawdown" },
-  { id: "health", chapter: 6, title: "Healthcare before 65", type: "decision", pace: "full", minutes: 1, tripMinutes: 4, tool: "healthcare",
+  { id: "strategy", chapter: 6, title: "How you'll draw it down", type: "decision", pace: "full", minutes: 2, tripMinutes: 10, tool: "drawdown", teaches: ["flexible"] },
+  { id: "health", chapter: 6, title: "Healthcare before 65", type: "decision", pace: "full", minutes: 1, tripMinutes: 4, tool: "healthcare", teaches: ["cliff"],
     when: (a) => ok(a.retire) && a.retire < 65,
     prep: (a, put) => put("hcIncl", "no", "default") },
-  { id: "bridge", chapter: 6, title: "Getting to 59½", type: "decision", pace: "full", minutes: 1, tripMinutes: 6, tool: "bridge",
+  { id: "bridge", chapter: 6, title: "Getting to 59½", type: "decision", pace: "full", minutes: 1, tripMinutes: 6, tool: "bridge", teaches: ["ways-across"],
     when: (a) => ok(a.retire) && a.retire < 59.5 },
   { id: "optimize", chapter: 6, title: "Plan Optimizer", type: "decision", pace: "full", minutes: 2, tool: "optimizer" },
 
   /* 7 · Your plan and toolkit */
-  { id: "plan", chapter: 7, title: "Score and plan", type: "summary", pace: "quick", minutes: 1 },
+  { id: "plan", chapter: 7, title: "Your plan", type: "summary", pace: "quick", minutes: 1 },
 ];

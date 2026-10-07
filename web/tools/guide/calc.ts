@@ -280,13 +280,22 @@ export const FACTORS = [
   { id: "flow", name: "Monthly cash flow", w: 10, step: "spending" },
 ] as const;
 export type FactorId = (typeof FACTORS)[number]["id"];
-export interface Part { p: number; txt: string; r?: number; m?: number }
+export interface Part {
+  p: number; txt: string; r?: number; m?: number;
+  /** An answer the area can't use: the card that fixes it. The area stays
+      in the score with no points until then, rather than dropping out and
+      lifting the score (doc 3, section 3, item 7, correction 1). */
+  bad?: string;
+}
 
 /** The five areas. `S` is the plan already run (by the worker, say);
-    left out, it's run here. */
+    left out, it's run here. An area is left out only while it's
+    unanswered; an answer it can't use scores it at no points, marked. */
 export function parts(a: Answers, S: Sim | null = sim(a)): Partial<Record<FactorId, Part>> {
   const P: Partial<Record<FactorId, Part>> = {}, inc = gross(a);
   if (S) P.outlook = { p: interp(S.success, [[0.25, 0], [0.5, 0.35], [0.7, 0.6], [0.85, 0.85], [0.95, 1]]), txt: pctStr(S.success, 0) + " of historical retirements lasted" };
+  else if (ok(a.age) && ok(a.retire) && a.retire <= a.age && ok(a.saved) && ok(a.contrib))
+    P.outlook = { p: 0, txt: "Needs a retirement age after your age today", bad: "about" };
   if (inc > 0 && ok(a.contrib) && a.match) {
     const r = (saveNow(a) * 12) / inc;
     let p = interp(r, [[0, 0], [0.05, 0.35], [0.1, 0.7], [0.15, 1]]);
@@ -301,7 +310,7 @@ export function parts(a: Answers, S: Sim | null = sim(a)): Partial<Record<Factor
   if (ok(a.cash) && pos(a.spend)) {
     const m = a.cash / a.spend;
     P.cushion = { p: interp(m, [[0, 0], [1, 0.3], [3, 0.75], [6, 1]]), m, txt: months(m) + (m === 1 ? " month" : " months") + " of spending" };
-  }
+  } else if (ok(a.cash) && ok(a.spend)) P.cushion = { p: 0, txt: "Needs your monthly spending", bad: "spending" };
   if (a.debtHas === "no") P.debt = { p: 1, txt: "Nothing owed besides any mortgage" };
   else if (a.debtHas === "yes" && ok(a.debtTotal) && inc > 0) {
     const hi = Math.min(a.debtHi || 0, a.debtTotal), lo = a.debtTotal - hi;
@@ -312,6 +321,10 @@ export function parts(a: Answers, S: Sim | null = sim(a)): Partial<Record<Factor
     const m = (a.takehome - a.spend) / a.takehome;
     P.flow = { p: interp(m, [[-0.05, 0], [0, 0.25], [0.1, 0.75], [0.2, 1]]), m,
       txt: a.takehome >= a.spend ? money(a.takehome - a.spend) + "/mo not spent" : money(a.spend - a.takehome) + "/mo over take-home" };
+  } else if (ok(a.takehome) && ok(a.spend) && (pos(a.takehome) || inc > 0)) {
+    // With no income from work and no take-home, cash flow is unanswered
+    // rather than scored (doc 2, "Not working, or income 0").
+    P.flow = pos(a.spend) ? { p: 0, txt: "Needs your take-home pay", bad: "income" } : { p: 0, txt: "Needs your monthly spending", bad: "spending" };
   }
   return P;
 }

@@ -10,6 +10,8 @@ import { STRATS, minSpend, pos, sim, strats, target, yearsList } from "./calc";
 import { MinNote } from "./live";
 import type { Answers } from "./store";
 import { Button } from "@/components/ui/button";
+import { Lesson, Term } from "./lessons/Lesson";
+import { Learn } from "./zones";
 import { After, BackNote, Callout, Choice, Fields, H3, Lead, MoneyF, NeedsPlan, Q, Task, fill, useGuideView } from "./ui";
 
 function StratTable({ a }: { a: Answers }) {
@@ -60,6 +62,13 @@ export function StrategyStep() {
   return (
     <>
       <Q>How will you spend it down?</Q>
+      <Learn>
+        <Lesson id="flexible">
+          <p>A fixed plan spends the same every year, raised with prices, whatever markets do. Flexible rules spend less after a bad year and more after a good one:
+            {" "}<Term k="guardrails">guardrails</Term> cut or raise spending when the withdrawal rate drifts too far, and <Term k="vpwrate">VPW</Term> spends a share
+            {" "}that grows as the years left shrink. They last longer because they cut, so they buy safety only if you&apos;d really live on the leaner years.</p>
+        </Lesson>
+      </Learn>
       <Lead>So far your plan spends the same amount every year, raised with inflation, whatever markets do. It&apos;s the simplest approach and the most cautious test.
         {" "}Most retirees flex a little instead. Here&apos;s how six common approaches would have handled your plan ({money(S.fv)} at {fmtNum(S.retire)}, aiming to spend {money(S.spend)}
         {" "}a year) in every retirement since {S.H.first}.</Lead>

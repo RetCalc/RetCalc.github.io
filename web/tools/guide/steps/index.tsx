@@ -6,7 +6,6 @@
 
 import type { ReactNode } from "react";
 import { OptimizeStep } from "../optimize";
-import { Results, ResultsFoot } from "../results";
 import { StrategyStep } from "../strategy";
 import { TuneStep } from "../tune";
 import { Welcome, WelcomeFoot } from "./ch0-welcome";
@@ -14,7 +13,9 @@ import { AboutYou } from "./ch1-timeline";
 import { DebtCard, GoalsCard, IncomeCard, SafetyCard, SpendCard } from "./ch2-standing";
 import { AccountsCard, InvestedCard, SavingsCard } from "./ch3-savings";
 import { RetSpendCard, SocialCard } from "./ch4-costs";
-import { Bridge, Health, Lasting, Outlook } from "./legacy";
+import { LastingCard, NumberCard } from "./ch5-lasts";
+import { BridgeCard, HealthCard } from "./ch6-stronger";
+import { PlanCard, PlanFoot } from "./ch7-plan";
 
 export interface StepView { Body: () => ReactNode; Foot?: () => ReactNode }
 
@@ -31,12 +32,12 @@ export const VIEWS: Record<string, StepView> = {
   accounts: { Body: AccountsCard },
   retspend: { Body: RetSpendCard },
   social: { Body: SocialCard },
-  number: { Body: Outlook },
-  lasting: { Body: Lasting },
+  number: { Body: NumberCard },
+  lasting: { Body: LastingCard },
   adjust: { Body: TuneStep },
   strategy: { Body: StrategyStep },
-  health: { Body: Health },
-  bridge: { Body: Bridge },
+  health: { Body: HealthCard },
+  bridge: { Body: BridgeCard },
   optimize: { Body: OptimizeStep },
-  plan: { Body: Results, Foot: ResultsFoot },
+  plan: { Body: PlanCard, Foot: PlanFoot },
 };

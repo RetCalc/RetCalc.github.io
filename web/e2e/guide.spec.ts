@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { NEW } from "../playwright.config";
+import { FIXTURES } from "../scripts/baseline/guide-fixtures.mjs";
 
 /* The Retirement Readiness Guide (doc 3, "End-to-end"): both paces, the
    number appearing on the sixth card, the pace switch, old and new saved
@@ -48,7 +49,7 @@ async function walkThrough(page: Page) {
   await page.locator('[data-gd="next"]').click();
   for (let i = 0; i < 30; i++) {
     counts.push((await page.locator("#gdCount").textContent()) ?? "");
-    if ((await page.locator("#gdCard .gd-q").textContent()) === "Your retirement readiness") break;
+    if ((await page.locator("#gdCard .gd-q").textContent()) === "Your plan") break;
     await next(page);
   }
   return counts;
@@ -120,7 +121,8 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await step(10); await next(page);
   await step(11); await next(page);
   await step(12);
-  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your retirement readiness");
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your plan");
+  await expect(page.locator("#gdScoreNum")).toHaveAttribute("data-score", "89");
 });
 
 test("the Quick check and the Full walkthrough walk their own cards", async ({ page }) => {
@@ -169,13 +171,84 @@ test("a statement figure replaces the Social Security estimate", async ({ page }
   await expect(page.locator('#gdCard [data-lesson="wait"]')).toContainText("$3,720"); // $3,000 at 70
 });
 
+/* ---------- Will it last, make it stronger, your plan ---------- */
+
+const DAN = { ...(FIXTURES.find((f: { id: string }) => f.id === "dan")!.a as Record<string, unknown>) };
+
+test("Your number and Tested against history, from the engine's own figures", async ({ page }) => {
+  await seeded(page, stateWith("quick", "number"));
+  await expect(page.locator("#gdOutFv")).toHaveText("$1,518,176");
+  await expect(page.locator("#gdOutNeed")).toHaveText("$567,000");
+  await expect(page.locator("#gdOutCover")).toHaveText("2.7×");
+  await expect(page.locator('[data-lesson="income-sources"]')).toContainText("$60,727");
+  await expect(page.locator("[data-sources]")).toContainText("estimates for Social Security (from income), and defaults for 60% in stocks in retirement and money lasting to 95 for the younger of you");
+  await next(page);
+  await expect(page.locator("#gdLastRate")).toHaveText("100%");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("66 of 66 starting years");
+  await expect(page.locator('[data-lesson="sequence"]')).toContainText("Retiring in 1966");
+});
+
+test("the lever table matches the fixtures: Maya and Sam ahead, Dan behind", async ({ page }) => {
+  test.setTimeout(120_000);
+  await seeded(page, stateWith("full", "adjust"));
+  const row = (id: string) => page.locator(`[data-lever-row="${id}"]`);
+  await expect(row("save+100")).toContainText("$1,577,738", { timeout: 60_000 });
+  await expect(row("retire+1")).toContainText("$478,000");
+  await expect(row("spend+10000")).toContainText("$929,000");
+  await seeded(page, { ...stateWith("quick", "adjust"), a: DAN });
+  await expect(page.locator("#gdCount")).toHaveText(/^Step \d+ of 13/); // Adjust joins Dan's Quick check
+  await expect(row("save+250")).toContainText("54%", { timeout: 60_000 });
+  await expect(row("retire+3")).toContainText("89%");
+});
+
+test("the plan card: the number and the score, the moves in order with ticks that stay, the toolkit", async ({ page }) => {
+  await seeded(page, stateWith("quick", "plan"));
+  await expect(page.locator("#gdProjected")).toHaveText("$1.52M");
+  await expect(page.locator("#gdNeeded")).toHaveText("$567,000");
+  await expect(page.locator("#gdScoreNum")).toHaveAttribute("data-score", "89");
+  await expect(page.locator(".gd-move").first()).toHaveAttribute("data-move", "cushion", { timeout: 30_000 });
+  await expect(page.locator(".gd-move").nth(1)).toHaveAttribute("data-move", "debt");
+  await expect(page.locator(".gd-move").nth(2)).toHaveAttribute("data-move", "surplus");
+  expect((await page.locator("[data-kit]").evaluateAll((l) => l.map((e) => e.getAttribute("data-kit")))).sort()).toEqual(["debt", "drawdown", "healthcare", "optimizer"]);
+  // what's going well never names an area a move is working on (correction 2)
+  await expect(page.locator(".gd-wins")).not.toContainText("Debt");
+  await page.locator('[data-move="debt"] [data-slot="checkbox"]').click();
+  await page.reload();
+  await expect(page.locator('[data-move="debt"]')).toHaveClass(/done/, { timeout: 30_000 });
+  // each area says what it still has to give (correction 3)
+  const score = (await page.locator("#gdStrip").isVisible()) ? null : page.locator("#gdScore");
+  if (score) await expect(score.locator('[data-go="cash"] .head')).toHaveText("Up to 8 more: 3 months earns 11; 6 months earns 15.");
+});
+
+test("a second visit shows what moved since the snapshot", async ({ page }) => {
+  // finish once: save a snapshot
+  await seeded(page, { ...stateWith("quick", "plan"), a: { ...MAYA, cash: 6000 } });
+  await page.locator('[data-gd="snapshot"]').click({ timeout: 30_000 });
+  const saved = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
+  expect(saved.snapshots).toHaveLength(1);
+  expect(saved.finishedAt).toBeTruthy();
+  // come back: Welcome back, bring the cash up to date, see what moved
+  await page.goto(NEW + "/robots.txt");
+  await page.goto(NEW + "/guide");
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Welcome back");
+  await page.fill("#gdf-cash", "12000");
+  await page.locator('[data-gd="moved"]').click();
+  const moved = page.locator("[data-moved]");
+  await expect(moved).toContainText("Emergency fund", { timeout: 30_000 });
+  await expect(moved).toContainText("+3 points");
+  await expect(moved).toContainText("Readiness score");
+  await page.locator('#gdCard [data-go="plan"]').click();
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your plan");
+  await expect(page.locator(".gd-since")).toContainText("Emergency fund");
+});
+
 /* ---------- Saved guides and links ---------- */
 
 test("a guide saved by v1 opens migrated, and v1's key is left alone", async ({ page }) => {
   const v1 = { v: 1, cur: "outlook", a: { ...MAYA, spendSrc: "budget" }, done: { about: true, income: true, takehome: true }, trip: null, back: null, coachMin: false };
   await stored(page, { "retcalc.guide.v1": v1 });
   await page.goto(NEW + "/guide");
-  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your retirement projection");
+  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your number");
   await expect(page.locator('.gd-top [data-pace="full"].on')).toHaveCount(1);
   const kept = await page.evaluate(() => localStorage.getItem("retcalc.guide.v1"));
   expect(JSON.parse(kept!)).toEqual(v1);
@@ -195,8 +268,8 @@ test("a shared v1 link opens the plan on its results, after asking in the site's
   await other.goto(url);
   await other.locator(".popbtn", { hasText: "Replace my answers" }).click();
   expect(native).toBe(false);
-  await expect(other.locator(".gd-q")).toHaveText("Your retirement readiness");
-  await expect(other.locator(".gd-hero .r")).not.toHaveText("");
+  await expect(other.locator(".gd-q")).toHaveText("Your plan");
+  await expect(other.locator("#gdScoreNum")).not.toHaveText("");
   await expect(other).toHaveURL(NEW + "/guide");
 });
 
@@ -204,7 +277,7 @@ test("a v2 link opens on the plan card with its pace", async ({ page }) => {
   await stored(page, {});
   const link = { v: 2, a: MAYA, src: { spend: { kind: "tool", tool: "budget", at: "2026-10-07T00:00:00.000Z" } }, pace: "quick" };
   await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(link)).toString("base64url"));
-  await expect(page.locator(".gd-q")).toHaveText("Your retirement readiness");
+  await expect(page.locator(".gd-q")).toHaveText("Your plan");
   await expect(page.locator('.gd-top [data-pace="quick"].on')).toHaveCount(1);
   const v2 = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
   expect(v2.src.spend).toMatchObject({ kind: "tool", tool: "budget" });
@@ -214,7 +287,7 @@ test("the plan prints on one page", async ({ page }) => {
   const plan = { v: 1, a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } };
   await stored(page, {});
   await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
-  await expect(page.locator(".gd-q")).toHaveText("Your retirement readiness");
+  await expect(page.locator(".gd-q")).toHaveText("Your plan");
   await page.evaluate(() => { (window as unknown as { printed: number }).printed = 0; window.print = () => { (window as unknown as { printed: number }).printed++; }; });
   await page.locator('[data-gd="print"]').click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { printed: number }).printed)).toBe(1);

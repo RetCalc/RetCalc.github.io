@@ -483,6 +483,8 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-num-note,.gd-num-moved,.gd-num-empty{margin:4px 0 0;font-size:12.5px;line-height:1.45;color:var(--dim)}
 .gd-num-moved{color:var(--text)}
 .gd-fac .rule{font-size:11.5px;color:var(--dimmer);margin-top:2px;line-height:1.4}
+.gd-fac .head{font-size:11.5px;color:var(--dim);margin-top:2px;line-height:1.4}
+.gd-fac.bad .sub{color:var(--text)}
 .gd-conf{color:var(--dim)}
 /* The phone's strip: the rail, folded under the progress bar. */
 .gd-strip{display:none}
@@ -547,18 +549,18 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-slide label b{color:var(--text);font-variant-numeric:tabular-nums}
 .gd-pay{max-width:620px}
 /* Lesson 8: the same saving three ways. Lines differ by dash too. */
-.gd-cmp{max-width:620px}
-.gd-cmp-svg{display:block;width:100%;height:120px;overflow:visible;border-bottom:1px solid var(--ds-rule)}
-.gd-cmp-svg path{fill:none;stroke-width:2;stroke-linejoin:round}
-.gd-cmp .now{stroke:var(--ds-series-teal)}
-.gd-cmp .stop{stroke:var(--ds-series-sky);stroke-dasharray:6 4}
-.gd-cmp .late{stroke:var(--ds-series-lavender);stroke-dasharray:2 3}
-.gd-cmp-ax{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--dimmer);font-variant-numeric:tabular-nums}
-.gd-cmp-key{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:12.5px;color:var(--dim)}
-.gd-cmp-key span{display:inline-flex;align-items:center;gap:8px}
-.gd-cmp-key b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
-.gd-cmp-key .sw{flex:0 0 20px;width:20px;height:4px;overflow:visible}
-.gd-cmp-key .sw line{stroke-width:2}
+.gd-curves{max-width:620px}
+.gd-curves-svg{display:block;width:100%;height:120px;overflow:visible;border-bottom:1px solid var(--ds-rule)}
+.gd-curves-svg path{fill:none;stroke-width:2;stroke-linejoin:round}
+.gd-curves .now{stroke:var(--ds-series-teal)}
+.gd-curves .stop{stroke:var(--ds-series-sky);stroke-dasharray:6 4}
+.gd-curves .late{stroke:var(--ds-series-lavender);stroke-dasharray:2 3}
+.gd-curves-ax{display:flex;justify-content:space-between;margin-top:3px;font-size:11px;color:var(--dimmer);font-variant-numeric:tabular-nums}
+.gd-curves-key{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:12.5px;color:var(--dim)}
+.gd-curves-key span{display:inline-flex;align-items:center;gap:8px}
+.gd-curves-key b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.gd-curves-key .sw{flex:0 0 20px;width:20px;height:4px;overflow:visible}
+.gd-curves-key .sw line{stroke-width:2}
 /* Lesson 9: ten-year stretches by mix. */
 .gd-rng{max-width:640px}
 .gd-rng-row{display:grid;grid-template-columns:minmax(96px,30%) 1fr;align-items:center;gap:10px;min-height:26px}
@@ -612,3 +614,56 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-lad-row .v b{color:var(--text);font-weight:600}
 .gd-lad-row.on .age{color:var(--text);font-weight:600}
 .gd-lad-row .pl{display:flex}
+/* Lesson 15: three starts. */
+.gd-starts .a{stroke:var(--ds-series-rose)}
+.gd-starts .b{stroke:var(--ds-series-sky);stroke-dasharray:6 4}
+.gd-starts .c{stroke:var(--ds-series-teal);stroke-dasharray:2 3}
+.gd-cover-key b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+/* Your number: what the number rests on. */
+.gd-sources{margin:10px 0 4px;font-size:12.5px;line-height:1.55;color:var(--dim);max-width:66ch}
+.gd-sources b{color:var(--text);font-weight:600}
+/* Lesson 16: the lever table. */
+.gd-levers{margin:4px 0 6px}
+.gd-levers thead th:first-child{text-align:left}
+.gd-levers tr.now th,.gd-levers tr.now td{color:var(--text);font-weight:600}
+/* Your plan: the number and the score, side by side, equal weight. */
+.gd-hero2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:2px 0 16px}
+.gd-box{border:1px solid var(--line);border-radius:var(--r-card);padding:14px 16px;background:var(--panel-2)}
+.gd-box .k{margin:0;font-size:12px;font-weight:500;color:var(--dim)}
+.gd-box .v{margin:4px 0 6px;font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--text)}
+.gd-box .v.key{color:var(--ds-amber)}
+.gd-box p{margin:0 0 4px;font-size:13px;line-height:1.5;color:var(--dim)}
+.gd-box p b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.gd-box-score{display:flex;align-items:center;gap:12px;margin:6px 0 8px}
+.gd-box-score .r{font-size:15px;font-weight:600}
+.gd-box-score .n{font-size:12.5px;color:var(--dim);margin-top:2px}
+@media (max-width:640px){ .gd-hero2{grid-template-columns:1fr} }
+/* What moved since the last snapshot. */
+.gd-since{margin:0 0 12px}
+.gd-moved{list-style:none;margin:0 0 6px;padding:0;max-width:560px}
+.gd-moved li{display:grid;grid-template-columns:1fr auto;gap:0 12px;padding:6px 0;border-bottom:1px solid var(--line-soft);font-size:13px;color:var(--dim)}
+.gd-moved li b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.gd-moved li em{grid-column:1 / -1;font-style:normal;font-size:11.5px;color:var(--dimmer);font-variant-numeric:tabular-nums}
+/* Your next moves, a checklist. */
+.gd-moves{list-style:none;margin:0 0 14px;padding:0;max-width:680px}
+.gd-move{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line-soft)}
+.gd-move > [data-slot=checkbox]{margin-top:4px}
+.gd-move .b{min-width:0;flex:1}
+.gd-move .t{display:block;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer}
+.gd-move p{margin:3px 0 6px;font-size:13.5px;line-height:1.55;color:var(--dim)}
+.gd-move p b{color:var(--text);font-weight:600}
+.gd-move .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:12px;color:var(--dimmer)}
+.gd-move .meta .when,.gd-move .meta .pts{border:1px solid var(--ds-rule-strong);border-radius:999px;padding:0 8px;line-height:20px;color:var(--dim)}
+.gd-move.done .t{text-decoration:line-through;text-decoration-color:var(--ds-rule-strong);color:var(--dim)}
+.gd-move.done p{color:var(--dimmer)}
+@media (pointer:coarse){ .gd-move > [data-slot=checkbox]{margin-top:2px} }
+/* Your toolkit. */
+.gd-kit{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:720px}
+.gd-kit-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.gd-kit-card b{font-size:14px;color:var(--text)}
+.gd-kit-card .why{font-size:12px;color:var(--dim)}
+.gd-kit-card p{margin:0 0 6px;font-size:13px;line-height:1.5;color:var(--dim)}
+.gd-kit-all{margin:10px 0 14px;font-size:13px}
+.gd-kit-all a{color:var(--text);text-decoration:underline;text-decoration-color:var(--ds-rule-strong);text-underline-offset:3px}
+@media (max-width:640px){ .gd-kit{grid-template-columns:1fr} }
+.gd-summary{margin:6px 0 12px}

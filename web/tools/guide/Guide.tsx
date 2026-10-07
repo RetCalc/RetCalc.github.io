@@ -28,6 +28,7 @@ import { Rail, type RailPlan } from "./Rail";
 import { GuideSheet } from "./sheet";
 import { mark, putter, refreshEstimates, setAnswer, stamp } from "./sources";
 import { VIEWS } from "./steps";
+import { WelcomeBack } from "./steps/ch7-plan";
 import { freshGuide, guide, replaceGuide, setGuide, useGuide, type Answers, type GuideState, type Pace, type Sources } from "./store";
 import { curOpt, setTune } from "./tune";
 import { Strip, Top } from "./Top";
@@ -45,8 +46,8 @@ const GUIDE_DEF: ToolDef<ToolInputs> = { id: "guide", label: "Guide", noun: "pla
 
 /** The plan on one printed page, or why there isn't one yet. */
 function planSheet(): React.ReactNode | string {
-  const a = guide().a;
-  return score(a).score == null || !sim(a) ? "Answer more of the guide to print a plan" : <GuideSheet a={a} />;
+  const { a, src } = guide(), b = withGuess(a);
+  return score(b).score == null || !sim(b) ? "Answer more of the guide to print a plan" : <GuideSheet a={a} src={src} />;
 }
 
 /** What the route needs to know from the plan: whether it falls short. */
@@ -79,6 +80,9 @@ export function Guide() {
   const H = useOptimizer("guide");
   const [v, setV] = useState<Answers>(() => guide().a);
   const [focusKey, setFocusKey] = useState(0);
+  // Welcome back: a visit to a finished plan, not on the way back from a
+  // trip or through a link, opens with the last snapshot and what moved.
+  const [returning, setReturning] = useState(false);
   const card = useRef<HTMLDivElement>(null);
   const sync = () => syncHousehold(guide().a, save);
   const popup = usePopup();
@@ -102,8 +106,11 @@ export function Guide() {
   useEffect(() => {
     if (arrived.current) return;
     arrived.current = true;
-    if (finishTrip()) syncHousehold(guide().a, save);
+    const fromTrip = finishTrip();
+    if (fromTrip) syncHousehold(guide().a, save);
     const hash = window.location.hash;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- known only once the page has the stored guide
+    if (!fromTrip && !hash.startsWith("#g=") && guide().snapshots.length && guide().finishedAt) setReturning(true);
     if (hash.startsWith("#g=")) {
       const L = cleanLink(decodeHash(hash.slice(3)), stamp());
       try { history.replaceState(history.state, "", window.location.pathname + window.location.search); } catch { /* old browsers */ }
@@ -132,6 +139,7 @@ export function Guide() {
 
   const redraw = () => setV(guide().a);
   const go = (id: string) => {
+    setReturning(false);
     const st = stepById(id);
     if (!st || !applies(st, guide().a)) return;
     setGuide((x) => { if (x.back && x.back.step !== id) x.back = null; arrive(x, id); });
@@ -146,6 +154,7 @@ export function Guide() {
     router.push(r.path);
   };
   const act = (what: string) => {
+    setReturning(false);
     const x0 = guide(), f = factsNow.current, cur = current(x0, f);
     if (what === "next") {
       if (cur.needs?.(x0.a)) return;
@@ -312,7 +321,7 @@ export function Guide() {
   const st = current(g, facts), L = numbered(v, g.pace, facts), idx = L.findIndex((s) => s.id === st.id);
   const rt = rating(railPlan.score?.score ?? null), View = VIEWS[st.id];
   const left = minutesLeft({ ...g, a: v }, facts), about = "about " + left + (left === 1 ? " minute" : " minutes") + " left";
-  const count = st.type === "welcome" ? "" : idx >= 0 ? "Step " + (idx + 1) + " of " + L.length + " · " + about : "A deeper card · " + about;
+  const count = returning || st.type === "welcome" ? "" : idx >= 0 ? "Step " + (idx + 1) + " of " + L.length + " · " + about : "A deeper card · " + about;
   return (
     <GuideCtx value={view}>
       <div className="stack solo" role="tabpanel" id="tab-guide">
@@ -328,7 +337,8 @@ export function Guide() {
               e.preventDefault();
               act("next");
             }}>
-            {client && View ? (
+            {client && returning && g.snapshots.length ? <WelcomeBack done={() => setReturning(false)} />
+              : client && View ? (
               <>
                 <View.Body />
                 <div className="gd-foot">{View.Foot ? <View.Foot /> : <Foot st={st} a={g.a} last={idx === L.length - 2} act={act} />}</div>

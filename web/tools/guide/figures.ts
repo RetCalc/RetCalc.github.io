@@ -7,7 +7,7 @@
 import { BASIC_INFL, RISKS, backtest } from "@/lib/engine/typed";
 import { plAtRetire, plSSParts } from "@/lib/engine/typed-plan";
 import type { PlToday } from "@/lib/engine/types";
-import { accts, ok, saveMo } from "./calc";
+import { accts, ok, saveMo, type Sim } from "./calc";
 import type { Answers } from "./store";
 
 const INFL = BASIC_INFL as number;
@@ -119,4 +119,23 @@ export const LADDER_AGES = [62, 64, 67, 70];
     early, 5/12 beyond; 8% a year after 67). */
 export function ladder(pia: number, ages = LADDER_AGES) {
   return ages.map((age) => ({ age, mo: plSSParts({ P: { pia1: pia, pia2: 0 }, married: false, gap: 0 }, { c1: age, c2: age }).own1 / 12 }));
+}
+
+export interface Start { id: "a" | "b" | "c"; label: string; year: number; path: number[]; out: number | null; end: number }
+/** Lesson 15's three retirements, from the engine's own paths: the plan
+    started in 1966 and in 1982, and in its median year (the start whose
+    ending balance is the middle one). A start the record is too short for
+    is left out; the median stands in when both are. */
+export function threeStarts(S: Sim): Start[] {
+  const runs = S.H.runs.filter((r) => r.path), r0 = Math.round(S.retire);
+  const at = (y: number) => runs.find((r) => r.startYear === y);
+  const byEnd = runs.slice().sort((x, y) => x.end - y.end), med = byEnd[Math.floor(byEnd.length / 2)];
+  const pick: [Start["id"], string, typeof med | undefined][] = [["a", "Retiring in 1966", at(1966)], ["b", "Retiring in 1982", at(1982)],
+    ["c", med ? "A middle year, " + med.startYear : "", med]];
+  const seen = new Set<number>();
+  return pick.filter(([, , r]) => r && !seen.has(r.startYear) && (seen.add(r.startYear), true)).map(([id, label, r]) => {
+    const path = [S.fv, ...Array.from(r!.path!, (v) => Math.max(0, v))];
+    const i = path.findIndex((v, k) => k > 0 && v <= 0.5);
+    return { id, label, year: r!.startYear, path, out: i > 0 ? r0 + i : null, end: Math.max(0, r!.end) };
+  });
 }
