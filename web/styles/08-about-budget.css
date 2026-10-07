@@ -10,23 +10,14 @@
 .panel.about > h2{border-radius:var(--r-bezel) var(--r-bezel) 0 0}
 .panel.about.collapsed > h2{border-bottom-color:transparent;border-radius:var(--r-bezel)}
 .panel.about .about-chevron{margin-left:auto;flex:none;color:var(--dimmer);
-  transition:transform .22s cubic-bezier(.2,.7,.3,1);display:flex}
+  transition:transform .2s cubic-bezier(.2,.7,.3,1);display:flex}
 .panel.about.collapsed .about-chevron{transform:rotate(-90deg)}
-/* Sweep open/closed instead of snapping. The body is wrapped at init in a
-   one-row grid, and the row is animated between 0fr and 1fr — that measures
-   the content itself, so nothing here has to read scrollHeight or guess a
-   max-height that breaks when the text reflows. The inner overflow:hidden is
-   what actually clips during the sweep, padding included. Browsers without
-   animatable grid-template-rows fall back to the instant toggle this
-   replaced, which is no worse than before. */
+/* Opening a section shows it at once and its text settles in: a fade and
+   a 4px drop (lib/collapse.ts adds .reveal on open). The height changes in
+   one step; closing is instant. */
 .about-collapse{overflow:hidden}
-.about-collapse > .body{opacity:1;transition:opacity .2s ease .06s}
-/* Collapsed at rest is display:none, exactly as before the sweep existed, so
-   a shut section ends flush at the heading with no leftover strip. The sweep
-   itself runs on an inline height + display:block, which outranks this rule
-   for the duration of the animation and is cleared when it finishes. */
+.about-collapse.reveal > .body{animation:reveal-in .2s cubic-bezier(.2,.7,.3,1)}
 .panel.about.collapsed > .about-collapse{display:none}
-.panel.about.collapsed .about-collapse > .body{opacity:0;transition-delay:0s}
 .about p{margin:0 0 12px;font-size:13.5px;line-height:1.7;color:var(--dim)}
 .about p:last-child{margin-bottom:0}
 .about b{color:var(--text);font-weight:600}

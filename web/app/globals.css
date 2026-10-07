@@ -112,7 +112,7 @@
   --container-copy: 64ch;
   --container-copy-narrow: 60ch;
   /* The keyframes are in styles/11-charts.css. */
-  --animate-chart-fade-up: chartFadeUp .35s ease-out;
+  --animate-chart-fade-up: chartFadeUp .25s cubic-bezier(.2,.7,.3,1);
 }
 
 /* Colors that stay the same in both themes. */

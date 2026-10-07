@@ -49,13 +49,13 @@ tbody tr:hover{background:var(--panel-2)}
 /* The segmented switch is components/ui/segmented.tsx. A single raised thumb
    glides under the active option instead of each button repainting its own
    highlight. It's positioned by a small script (PageEffects) from the active
-   button's box, so it tracks segments of unequal width. */
+   button's box, so it tracks segments of unequal width. Only the slide is
+   animated (transform); the width takes the new option's at once. */
 .seg > .seg-thumb{position:absolute;top:0;left:0;height:100%;width:0;
   border-radius:calc(var(--r-well) - 1px);
   background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);
   opacity:0;pointer-events:none;z-index:0;
-  transition:transform .24s cubic-bezier(.2,.8,.3,1),
-    width .24s cubic-bezier(.2,.8,.3,1),opacity .16s ease}
+  transition:transform .2s cubic-bezier(.2,.7,.3,1),opacity .16s cubic-bezier(.2,.7,.3,1)}
 .seg > .seg-thumb.ready{opacity:1}
 .modeopt{display:flex;align-items:center;gap:8px}
 .mcnote{font-size:12.5px;line-height:1.5}

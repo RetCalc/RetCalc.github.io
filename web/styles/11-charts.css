@@ -38,9 +38,10 @@ svg{display:block;width:100%;height:auto}
   background:var(--pop);color:var(--text);border:1px solid var(--line);
   padding:12px 18px;border-radius:var(--r-card);font-size:13px;
   box-shadow:var(--lift-2);
-  opacity:0;transition:opacity .22s ease,transform .22s cubic-bezier(.2,.8,.3,1);
+  opacity:0;transition:opacity .15s cubic-bezier(.2,.7,.3,1),transform .15s cubic-bezier(.2,.7,.3,1);
   pointer-events:none;z-index:20}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* It rises 8px as it fades in (220ms) and leaves faster (150ms). */
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);transition-duration:.22s}
 /* A glyph says at a glance whether it worked (a check, in gain) or is a
    nudge to set something up first (an info mark), next to the words. */
 .toast .toast-ic{width:17px;height:17px;flex:none}
@@ -158,6 +159,9 @@ svg{display:block;width:100%;height:auto}
     transform:scaleX(0);transition:transform .22s cubic-bezier(.2,.7,.3,1)}
   html.pwa nav[role=tablist] button[aria-selected="true"]::after{opacity:1;transform:scaleX(1)}
   html.pwa nav[role=tablist] button:not([aria-selected="true"]):hover::after{opacity:0}
+  /* The bottom bar marks its tab with its own top-edge bar instead. */
+  html.pwa nav[role=tablist] .tabmark{display:none}
+  html.pwa nav[role=tablist] button[aria-selected="true"]::after{transition:transform .22s cubic-bezier(.2,.7,.3,1)}
   /* Calculator stacks its open mode under its name, and its chevron points
      up, since the menu rises out of the bar. The menu is a sheet sitting just
      above the bar, where the thumb already is. */
@@ -223,6 +227,4 @@ html.pwa .popup-overlay{
    The horizontal insets are folded into --gl/--gr at the top of the sheet, so
    the masthead and the tab rail get them too rather than main alone. */
 header{padding-top:var(--sb-clear)}
-@media (prefers-reduced-motion:reduce){
-  *{transition:none!important;animation:none!important}
-}
+/* (the site-wide reduced-motion guard is at the end of 00-base.css) */

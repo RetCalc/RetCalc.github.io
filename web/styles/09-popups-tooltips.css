@@ -75,7 +75,7 @@
   color:var(--text);border:1px solid var(--line);border-radius:var(--r-card);padding:11px 13px;
   font-size:12.5px;line-height:1.6;box-shadow:var(--lift-2);
   opacity:0;transform:translateY(4px);pointer-events:none;
-  transition:opacity .14s ease,transform .14s ease}
+  transition:opacity .15s cubic-bezier(.2,.7,.3,1),transform .15s cubic-bezier(.2,.7,.3,1)}
 .tipbox.on{opacity:1;transform:none}
 .tipdot:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
 

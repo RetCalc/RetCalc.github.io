@@ -420,8 +420,8 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 /* The section a part is about, outlined in Text while the part is open:
    wider than the focus ring, so the two never read alike. */
 [data-coach-mark]{outline:2px solid var(--ds-text);outline-offset:6px;border-radius:12px;
-  animation:coachmark .3s cubic-bezier(.2,.7,.3,1)}
-@keyframes coachmark{from{outline-color:transparent;outline-offset:12px}}
+  animation:coachmark .2s cubic-bezier(.2,.7,.3,1)}
+@keyframes coachmark{from{outline-color:transparent}}
 @media (prefers-reduced-motion:reduce){ [data-coach-mark]{animation:none} }
 @media print{ [data-coach-mark]{outline:none} }
 @media (max-width:640px){

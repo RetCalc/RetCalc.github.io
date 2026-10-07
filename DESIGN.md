@@ -374,6 +374,19 @@ The large figures in the headline readouts count from their old value to the new
 - Toasts arriving and leaving.
 - The tool-picker icons.
 
+As built (everything below eases `cubic-bezier(.2,.7,.3,1)` and moves only transform and opacity):
+- **Tab rail:** on a tab change one arrow (`.tabmark`, placed by `NavBar`) slides along the rail from the old tab to the new one in 240ms, then hands back to the picked tab's own arrow, so the rail at rest is drawn exactly as before. A faint preview arrow shows on hover and on keyboard focus. The home-screen app's bottom bar keeps its own top-edge marker (a 220ms scaleX).
+- **Pane enter** (`PaneMotion`, styles/03-navigation.css): a page change fades the new panes in as they rise 6px (220ms); into a tool 10px (240ms); back out to the picker they drop 6px from above. The picker's cards arrive in sequence, 180ms each, the stagger stopping at the sixth card so all of it ends by 250ms. Not on the first page of a visit.
+- **Drawdown's three views:** on a switch, the panels that come in get the same 6px rise (`PageEffects` watches the stack's `data-tab`); never on an input update.
+- **Tool icon glide:** a React `<ViewTransition>` shared between the picker card's tile and the tool header's (forward only, `transitionTypes={["nav-forward"]}`), 250ms; the page cross-fades under it in 200ms. Tab switches start no view transition.
+- **Press:** buttons (`button.tsx`), `.btn`, choice cards and tool cards give 1px (translate, 150ms); a button that opens a menu doesn't.
+- **Panels:** About's rows (`CollapsibleContent variant="reveal"`), the article under each tool, "Calculation details" and the Drawdown eras note open at their full height at once, and the text fades in and drops 4px (200ms); closing is instant (About's rows fade out in 150ms). Folded tables of figures (`variant="plain"`, the Guide and Optimizer year tables) open at once. Chevrons turn in 200ms. The article's old 300ms height sweep is gone.
+- **Menus and dialogs:** the Calculator menu and select menus drop in 150–160ms (opacity, 4px, scale .98), the phone select sheet rises in 240ms, dialogs pop in 200ms over a 160ms scrim fade; all close at once.
+- **Segmented thumb:** slides to the new option in 200ms (transform); its width takes the new option's at once.
+- **Toast:** rises 8px as it fades in (220ms) and leaves in 150ms. Tooltips fade and rise 4px in 150ms.
+- **Charts** fade up 6px once when they first appear (250ms). The help panel's outline on the part it describes fades in (200ms, color only; it used to shrink in).
+- **Reduced motion:** one guard at the end of styles/00-base.css turns every animation and transition off, pseudo-elements included, and the view transitions run at 0s; the tab arrow simply appears under the new tab.
+
 ### Where it isn't
 - Figures of any kind (tables, chart values, totals), other than the headline count above.
 - Inputs while someone is typing, and validation (no shaking fields).
@@ -384,7 +397,7 @@ The large figures in the headline readouts count from their old value to the new
 ### Tool-picker icons
 **One style for all of them: "one beat, acting out the verb".** On hover, focus or tap, one part of the icon (never the whole tile) performs the tool's verb in a single small gesture and settles back to rest: at most about 3px of travel, 10° of rotation, or 10% of scale, eased out, finished inside 250ms including any stagger. The tile itself only changes its border color. The arrow at the right of the card steps forward a few pixels at the same time.
 
-As built: the beats live in `web/styles/04-tool-icons-header.css` (the class on each SVG part, in `web/components/tools/ToolIcon.tsx`, picks the part that moves). Every beat is a single out-and-back transform keyframe peaking at 40%, eased `cubic-bezier(.2,.7,.3,1)` and played once, so nothing loops. It plays on real hover (`@media (hover:hover)`, so a phone tap never leaves a card lit), on `:focus-visible`, and on tap: a touch or pen `pointerdown` gives the card `.is-beat` for 260ms (`ToolCardLink.tsx`). The card's edge and fill step up a tone, the tile's edge turns Rule Strong, and the arrow turns Text and steps 7px forward. Nothing lifts, scales or glows. Only cards play it (the /tools picker and the 404 page's four cards); the tool header's tile stays still. Under reduced motion nothing moves: the tile's edge turns Muted, the arrow turns Text in place, and the name is Text as always. The card keeps its separate press acknowledgement (`.toolcard:active`, scale .988, off under reduced motion).
+As built: the beats live in `web/styles/04-tool-icons-header.css` (the class on each SVG part, in `web/components/tools/ToolIcon.tsx`, picks the part that moves). Every beat is a single out-and-back transform keyframe peaking at 40%, eased `cubic-bezier(.2,.7,.3,1)` and played once, so nothing loops. It plays on real hover (`@media (hover:hover)`, so a phone tap never leaves a card lit), on `:focus-visible`, and on tap: a touch or pen `pointerdown` gives the card `.is-beat` for 260ms (`ToolCardLink.tsx`). The card's edge and fill step up a tone, the tile's edge turns Rule Strong, and the arrow turns Text and steps 7px forward. Nothing lifts, scales or glows. Only cards play it (the /tools picker and the 404 page's four cards); the tool header's tile stays still. Under reduced motion nothing moves: the tile's edge turns Muted, the arrow turns Text in place, and the name is Text as always. The card keeps its separate press acknowledgement (`.toolcard:active`): the same 1px press-down as every button, off under reduced motion.
 
 | Tool | The beat | Duration |
 |---|---|---|

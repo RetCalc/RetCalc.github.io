@@ -5,6 +5,10 @@
    - Each segmented switch (.seg) gets one raised highlight that slides to
      the chosen option, instead of the highlight blinking from one to the
      next. Measured off the active button, so unequal widths line up.
+   - A page's own views (Drawdown's three, a stack carrying data-tab whose
+     panels say which views they belong to with data-ddtabs): on a switch,
+     the panels that come in rise a few pixels as they fade in (.pane-in,
+     styles/03-navigation.css). Only on a switch, never on an update.
    - Every figure recomputes as you type; the screen-reader live region
      reports the headline figures once they settle, not each keystroke. */
 
@@ -68,8 +72,23 @@ export function PageEffects() {
       timer = setTimeout(announce, 700);
     });
     obs.observe(main, { subtree: true, childList: true, characterData: true });
+    const views = new MutationObserver((muts) => {
+      for (const m of muts) {
+        const el = m.target as HTMLElement, now = el.dataset.tab, was = m.oldValue;
+        if (!now || now === was) continue;
+        el.querySelectorAll<HTMLElement>("[data-ddtabs]").forEach((p) => {
+          const of = p.dataset.ddtabs!.split(" ");
+          if (!of.includes(now) || (was && of.includes(was))) return;
+          p.classList.remove("pane-in");
+          void p.offsetWidth; // replays on a quick switch back
+          p.classList.add("pane-in");
+        });
+      }
+    });
+    views.observe(main, { subtree: true, attributes: true, attributeFilter: ["data-tab"], attributeOldValue: true });
     return () => {
       obs.disconnect();
+      views.disconnect();
       clearTimeout(timer);
     };
   }, []);

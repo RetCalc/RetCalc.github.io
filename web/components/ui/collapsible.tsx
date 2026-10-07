@@ -22,7 +22,7 @@ function CollapsibleTrigger({
       data-slot="collapsible-trigger"
       data-variant={variant}
       className={cn(
-        "cursor-pointer items-center gap-2 text-left outline-none pointer-coarse:min-h-11 hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring [&>svg]:size-4 [&>svg]:flex-none [&>svg]:text-muted-foreground [&>svg]:transition-transform data-panel-open:[&>svg]:rotate-180 motion-reduce:[&>svg]:transition-none",
+        "cursor-pointer items-center gap-2 text-left outline-none pointer-coarse:min-h-11 hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring [&>svg]:size-4 [&>svg]:flex-none [&>svg]:text-muted-foreground [&>svg]:transition-transform [&>svg]:duration-200 [&>svg]:ease-[cubic-bezier(.2,.7,.3,1)] data-panel-open:[&>svg]:rotate-180 motion-reduce:[&>svg]:transition-none",
         variant === "inline" && "-mx-1 -my-1 inline-flex rounded-md px-1 py-1 focus-visible:outline-offset-2",
         variant === "row" && "flex min-h-13 w-full justify-between gap-4 bg-transparent px-4.5 py-3 text-sm leading-snug font-semibold text-foreground transition-colors hover:bg-muted focus-visible:-outline-offset-2 motion-reduce:transition-none",
         className
@@ -33,7 +33,9 @@ function CollapsibleTrigger({
 }
 
 /* "reveal": the opened body fades in and drops 4px into place (opacity and
-   transform only; the height changes at once, per DESIGN.md Motion). */
+   transform only; the height changes at once, per DESIGN.md Motion), and
+   fades out a little faster on closing. Prose panels use it (About).
+   "plain" opens and shuts at once: the folded tables of figures. */
 function CollapsibleContent({
   className,
   variant = "plain",

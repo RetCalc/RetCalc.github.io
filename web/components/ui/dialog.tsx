@@ -20,7 +20,7 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
 }
 
 const dialogContentVariants = cva(
-  "popup relative m-auto w-full rounded-(--r-bezel) border border-border bg-card px-6 pt-5.5 pb-4.5 text-card-foreground shadow-(--ds-float) outline-none animate-[popIn_.2s_cubic-bezier(.2,.8,.3,1)] motion-reduce:animate-none",
+  "popup relative m-auto w-full rounded-(--r-bezel) border border-border bg-card px-6 pt-5.5 pb-4.5 text-card-foreground shadow-(--ds-float) outline-none animate-[popIn_.2s_cubic-bezier(.2,.7,.3,1)] motion-reduce:animate-none",
   {
     variants: {
       size: {

@@ -8,7 +8,7 @@
    tap on the tab opens the menu. */
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CALC_MODE_NAMES, CALC_PATHS, calcModeFor, tabFor, type CalcMode, type Slug, type Tab } from "@/lib/site";
 
 const TABS: { tab: Tab; label: string; href: string; controls: string }[] = [
@@ -77,6 +77,40 @@ export function NavBar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /* A tab change slides the marker (the logo's arrow) from the old tab to
+     the new one: a single arrow (.tabmark) travels along the rail, then
+     hands back to the picked tab's own arrow, so the rail at rest is drawn
+     exactly as before. It tracks the picked tab's centre (Calculator's
+     width changes with its mode; the phone rail scrolls). Not in the
+     home-screen app's bottom bar, which has its own top-edge marker, and
+     not under reduced motion, where the arrow just appears. */
+  const [markX, setMarkX] = useState<number | null>(null);
+  const [sliding, setSliding] = useState(false);
+  const tabIdx = TABS.findIndex((t) => t.tab === tab);
+  const [lastIdx, setLastIdx] = useState(tabIdx);
+  if (lastIdx !== tabIdx) {
+    setLastIdx(tabIdx);
+    const still = document.documentElement.classList.contains("pwa") || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!still) setSliding(true);
+  }
+  useLayoutEffect(() => {
+    const btn = tabBtns.current[tabIdx];
+    if (!btn) return;
+    const measure = () => {
+      const nav = btn.parentElement!, b = btn.getBoundingClientRect();
+      setMarkX(b.left - nav.getBoundingClientRect().left - nav.clientLeft + nav.scrollLeft + b.width / 2);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    tabBtns.current.forEach((b) => b && ro.observe(b));
+    return () => ro.disconnect();
+  }, [tabIdx, shownMode]);
+  useEffect(() => {
+    if (!sliding) return;
+    const t = setTimeout(() => setSliding(false), 320); // in case transitionend never comes
+    return () => clearTimeout(t);
+  }, [sliding, markX]);
+
   const place = () => {
     const nb = calcBtn.current?.closest(".navbar"), m = menuRef.current;
     if (!nb || !m || !calcBtn.current) return;
@@ -140,7 +174,7 @@ export function NavBar() {
       <div className={`sbcover${stuck ? " stuck" : ""}`} id="sbCover" aria-hidden="true" />
       <div className="calcscrim" id="calcScrim" hidden={menu !== "open"} onClick={() => closeMenu()} />
       <div ref={navbar} className={`navbar${stuck ? " stuck" : ""}${open ? " menu-open" : ""}`}>
-        <nav role="tablist" aria-label="Sections">
+        <nav role="tablist" aria-label="Sections" className={sliding ? "sliding" : undefined}>
           {TABS.map((t, i) => {
             const selected = t.tab === tab;
             const isCalc = t.tab === "calc";
@@ -208,6 +242,8 @@ export function NavBar() {
               </button>
             );
           })}
+          {markX != null ? <span className="tabmark" aria-hidden="true" style={{ "--mx": markX + "px" } as React.CSSProperties}
+            onTransitionEnd={(e) => { if (e.propertyName === "transform") setSliding(false); }} /> : null}
         </nav>
         {/* Outside the nav so the phone rail's horizontal scroll can't clip it. */}
         <div className="calcmenu left-(--x)" id="calcMenu" role="menu" aria-labelledby="tabbtn-calc" hidden={!open}

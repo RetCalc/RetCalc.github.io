@@ -61,7 +61,7 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
 .selmenu.sheet{left:0;right:0;bottom:0;top:auto;width:auto;min-width:0;max-width:none;max-height:72vh;
   padding:0 10px calc(12px + env(safe-area-inset-bottom,0px));border-radius:18px 18px 0 0;
   border-left:0;border-right:0;border-bottom:0;transform-origin:bottom center;
-  animation:selsheet-in .24s cubic-bezier(.2,.8,.3,1)}
+  animation:selsheet-in .24s cubic-bezier(.2,.7,.3,1)}
 @keyframes selsheet-in{from{transform:translateY(100%)}to{transform:none}}
 .selmenu-h{position:sticky;top:0;z-index:1;background:var(--pop);padding:8px 8px 10px;
   font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dimmer)}
