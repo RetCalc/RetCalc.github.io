@@ -53,7 +53,7 @@ export function SavingsCard() {
             {" "}{rate(real)} a year after inflation, a dollar saved at {fmtNum(age)} is worth <b>${A.toFixed(2)}</b> by {fmtNum(retire)}.</p>
           {C ? <p>That&apos;s why the years matter more than the amount. {money(mo)} a month from now comes to <b>{money(C.curves[0].fv)}</b> by {fmtNum(retire)}.
             {" "}Stop after {yrs(kept)} and it&apos;s still {money(C.curves[1].fv)}; start {yrs(C.gap)} late and save for the same {yrs(kept)}, and it&apos;s {money(C.curves[2].fv)}.</p> : null}
-          {a.match === "none" ? <p>Self-employed? A SEP IRA or a solo 401(k) lets you put in far more than an IRA alone, since you contribute as both the employer and the employee.</p> : null}
+          {a.match === "none" ? <p>Self-employed? Consider a SEP IRA or a solo 401(k): either lets you put in far more than an IRA alone, since you contribute as both the employer and the employee.</p> : null}
         </Lesson>
       </Learn>
       <BackNote step="savings" />

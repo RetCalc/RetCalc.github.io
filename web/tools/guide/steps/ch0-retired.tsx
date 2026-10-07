@@ -9,7 +9,6 @@
 
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { Button } from "@/components/ui/button";
-import { STATE_OPTIONS } from "@/lib/states";
 import { accts, mar, ok, pos } from "../calc";
 import { BackNote, Callout, Lead, MoneyF, NumF, Q, SelF, Task, useGuideView } from "../ui";
 import { Means, Numbers } from "../zones";
@@ -24,21 +23,22 @@ export function RetiredCard() {
       <Lead>This guide is built for the saving years. For a retirement under way, the <b>Drawdown Simulator</b> is the tool: it replays your savings and
         {" "}spending through every market since 1926. Enter what you have, and it opens with your numbers.</Lead>
       <BackNote step="retired" />
-      <Numbers more={<div className="gd-fields">
-        <MoneyF k="pension" label="A pension or annuity" per="/mo" ph="optional" />
-        <SelF k="pensionCola" label="Does it rise with inflation?" opts={[["no", "No, it's a fixed amount"], ["yes", "Yes, it has cost-of-living raises"]]} />
-        <SelF k="state" label="State" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} full />
-      </div>} moreLabel="A pension, and your state">
+      <Numbers moreLabel="Household, account types, Social Security and pensions" moreOpen={m || pos(v.ssOwn) || pos(v.rothNow) || pos(v.brokNow) || pos(v.pension)} more={<>
         <div className="gd-fields">
           <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse or partner"]]} redraw full />
-          <NumF k="age" label="Your age" affix="age" />
           {m ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
-          <MoneyF k="saved" label="Your savings, in all" full hint="Every retirement account and investment you'll live on." />
-          <MoneyF k="rothNow" label="Of that, in Roth accounts" ph="0" />
+          <MoneyF k="rothNow" label="Of your savings, in Roth accounts" ph="0" />
           <MoneyF k="brokNow" label="In taxable brokerage accounts" ph="0" />
-          <MoneyF k="retSpend" label="What you spend a year" per="/yr" full hint="Include income tax: the simulator doesn't work it out." />
           <MoneyF k="ssOwn" label="Social Security you get now" per="/mo" ph="not yet" hint="Leave blank if you haven't claimed." />
           {m ? <MoneyF k="ssOwn2" label="Your spouse's" per="/mo" ph="not yet" /> : null}
+          <MoneyF k="pension" label="A pension or annuity" per="/mo" ph="optional" />
+          <SelF k="pensionCola" label="Does it rise with inflation?" opts={[["no", "No, it's a fixed amount"], ["yes", "Yes, it has cost-of-living raises"]]} />
+        </div>
+      </>}>
+        <div className="gd-fields">
+          <NumF k="age" label="Your age" affix="age" />
+          <MoneyF k="saved" label="Your savings, in all" hint="Every retirement account and investment you'll live on." />
+          <MoneyF k="retSpend" label="What you spend a year" per="/yr" full hint="Include income tax: the simulator doesn't work it out." />
         </div>
       </Numbers>
       <Means>

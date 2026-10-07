@@ -249,7 +249,7 @@ const PRIYA = { ...(FIXTURES.find((f: { id: string }) => f.id === "priya-tom")!.
 test("Changes ahead: two children planned turn into a schedule, and the number moves with it", async ({ page }) => {
   await seeded(page, { ...stateWith("full", "changes"), a: PRIYA });
   await expect(page.locator("#gdCard .gd-means")).toContainText("Your saving schedule appears once");
-  await page.fill("#gdf-kidsPlanned", "2"); await page.fill("#gdf-firstIn", "3"); await page.fill("#gdf-spacing", "3");
+  await page.fill("#gdf-kidsPlanned", "2"); await page.fill("#gdf-firstIn", "3"); // then one every 3 years, the default
   const rows = page.locator("[data-stage-row]");
   await expect(rows).toHaveCount(7);
   await expect(rows.first()).toContainText("Before children");
@@ -264,6 +264,7 @@ test("Changes ahead: two children planned turn into a schedule, and the number m
   await page.locator('[data-ev-add="raise"]').click();
   await expect(page.locator('[data-event="raise"]')).toBeVisible();
   // four years apart, the second child's college years run past 60, and the plan card asks about them
+  await page.locator("#gdCard [data-more]").click();
   await page.fill("#gdf-spacing", "4");
   await expect(page.locator("#gdCard .gd-means")).toContainText("starts college at 57, 3 years before you retire: those years overlap your retirement");
   await page.evaluate(() => { const g = JSON.parse(localStorage.getItem("retcalc.guide.v2")!); g.cur = "plan"; localStorage.setItem("retcalc.guide.v2", JSON.stringify(g)); });
@@ -460,7 +461,9 @@ test("already retired: the on-ramp opens the Drawdown Simulator with your number
   await page.locator('[data-gd="retired"]').click();
   await expect(page.locator("#gdCard .gd-q")).toHaveText("Already retired? Start from what you have");
   await expect(page.locator("#gdCount")).toHaveText(/^Step 1 of 1/);
-  await page.fill("#gdf-age", "68"); await page.fill("#gdf-saved", "900000"); await page.fill("#gdf-retSpend", "50000"); await page.fill("#gdf-ssOwn", "2500");
+  await page.fill("#gdf-age", "68"); await page.fill("#gdf-saved", "900000"); await page.fill("#gdf-retSpend", "50000");
+  await page.locator("#gdCard [data-more]").click();
+  await page.fill("#gdf-ssOwn", "2500");
   await expect(page.locator("#gdCard .gd-means")).toContainText("You'd draw about $20,000 a year from savings after $30,000 of Social Security and pensions: 2.2%");
   const score = (await page.locator("#gdStrip").isVisible()) ? null : page.locator("#gdScore");
   if (score) await expect(score).toContainText("No score for a retirement under way");

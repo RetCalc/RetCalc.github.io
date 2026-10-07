@@ -133,7 +133,22 @@ export function ChangesCard() {
         </Lesson>
       </Learn>
       <BackNote step="changes" />
-      <Numbers>
+      <Numbers moreLabel="Spacing, childcare and costs" moreOpen={a.childcare === false || pos(a.childEarly) || pos(a.childSchool)} more={kids.length ? (
+        <>
+          {pos(a.kidsPlanned) && a.kidsPlanned > 1 ? <div className="gd-fields"><NumF k="spacing" label="Then one every" affix="years" hint="3 years unless you say otherwise." /></div> : null}
+          <H3>Paid childcare before school?</H3>
+          <div className="gd-choices two">
+            <button type="button" className={"gd-choice" + (a.childcare !== false ? " on" : "")} data-set="childcare" data-val="yes" aria-pressed={a.childcare !== false} onClick={() => G.set("childcare", true, true)}>
+              <i className="dot" aria-hidden="true"></i><span className="t"><b>Yes</b><span>{money(CHILD_COST.care)} a month per child, to age 6</span></span></button>
+            <button type="button" className={"gd-choice" + (a.childcare === false ? " on" : "")} data-set="childcare" data-val="no" aria-pressed={a.childcare === false} onClick={() => G.set("childcare", false, true)}>
+              <i className="dot" aria-hidden="true"></i><span className="t"><b>No</b><span>{money(CHILD_COST.noCare)} a month per child, to age 6</span></span></button>
+          </div>
+          <div className="gd-fields">
+            <MoneyF k="childEarly" label="A child before school costs" per="/mo" ph={String(a.childcare !== false ? CHILD_COST.care : CHILD_COST.noCare)} />
+            <MoneyF k="childSchool" label="At school, to 18" per="/mo" ph={String(CHILD_COST.school)} />
+          </div>
+        </>
+      ) : null}>
         <H3>Children</H3>
         <div className="gd-fields">
           <div className="field full"><Label className="mb-1.5" htmlFor="gdf-kidsNow"><span>Children you have now: their ages</span></Label>
@@ -141,25 +156,11 @@ export function ChangesCard() {
               onChange={(e) => G.set("kidsNow", e.target.value.split(/[^0-9]+/).filter(Boolean).map(Number).filter((n) => n < 30).slice(0, 12))} />
             <div className="hint">Leave blank if none. Today&apos;s saving already pays for them; the plan raises it as they grow up.</div></div>
           <NumF k="kidsPlanned" label="Children planned" affix="children" hint="0 if none." />
-          {pos(a.kidsPlanned) ? <><NumF k="firstIn" label="The first in about" affix="years" /><NumF k="spacing" label="Then one every" affix="years" /></> : null}
+          {pos(a.kidsPlanned) ? <NumF k="firstIn" label="The first in about" affix="years" /> : null}
         </div>
-        {kids.length ? (
-          <>
-            <H3>Paid childcare before school?</H3>
-            <div className="gd-choices two">
-              <button type="button" className={"gd-choice" + (a.childcare !== false ? " on" : "")} data-set="childcare" data-val="yes" aria-pressed={a.childcare !== false} onClick={() => G.set("childcare", true, true)}>
-                <i className="dot" aria-hidden="true"></i><span className="t"><b>Yes</b><span>{money(CHILD_COST.care)} a month per child, to age 6</span></span></button>
-              <button type="button" className={"gd-choice" + (a.childcare === false ? " on" : "")} data-set="childcare" data-val="no" aria-pressed={a.childcare === false} onClick={() => G.set("childcare", false, true)}>
-                <i className="dot" aria-hidden="true"></i><span className="t"><b>No</b><span>{money(CHILD_COST.noCare)} a month per child, to age 6</span></span></button>
-            </div>
-            <div className="gd-fields">
-              <MoneyF k="childEarly" label="A child before school costs" per="/mo" ph={String(a.childcare !== false ? CHILD_COST.care : CHILD_COST.noCare)} />
-              <MoneyF k="childSchool" label="At school, to 18" per="/mo" ph={String(CHILD_COST.school)} />
-            </div>
-            <p className="hint mx-0 mt-0 mb-3">{pos(a.childEarly) && pos(a.childSchool) ? <SourceBadge kind="entered" /> : <SourceBadge kind="estimated" />} Estimated from {CHILD_SOURCE}.
-              {" "}A second or later child costs 20% less. Overwrite either with your own figure.</p>
-          </>
-        ) : null}
+        {kids.length ? <p className="hint mx-0 mt-0 mb-3">{pos(a.childEarly) && pos(a.childSchool) ? <SourceBadge kind="entered" /> : <SourceBadge kind="estimated" />} Each child costs
+          {" "}{money(pos(a.childEarly) ? a.childEarly : a.childcare !== false ? CHILD_COST.care : CHILD_COST.noCare)} a month before school{a.childcare !== false && !pos(a.childEarly) ? ", with childcare" : ""} and
+          {" "}{money(pos(a.childSchool) ? a.childSchool : CHILD_COST.school)} at school, 20% less from the second. Estimated from {CHILD_SOURCE}; change them under <b>Spacing, childcare and costs</b>.</p> : null}
         <H3>Other changes</H3>
         <div className="gd-picks">{KINDS.map((k) => (
           <Button key={k.kind} variant="outline" size="sm" data-ev-add={k.kind} onClick={() => G.set("events", [...(a.events || []), blank(k.kind, a)], true)}>+ {k.label}</Button>
