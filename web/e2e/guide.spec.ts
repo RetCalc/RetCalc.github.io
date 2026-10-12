@@ -337,7 +337,7 @@ test("a v2 link opens on the plan card with its pace", async ({ page }) => {
 });
 
 test("the plan prints on one page", async ({ page }) => {
-  const plan = { v: 1, a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } };
+  const plan = { v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } };
   await stored(page, {});
   await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
   await expect(page.locator(".gd-q")).toHaveText("Your plan");
