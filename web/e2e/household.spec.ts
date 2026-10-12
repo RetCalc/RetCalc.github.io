@@ -10,8 +10,8 @@ const PROFILE: Household = { status: "m", age: 45, spouseAge: null, retire: null
   income: 150000, income2: 60000, spend: null };
 
 test("a saved household fills the tools that take it", async ({ page }) => {
-  await page.goto(NEW + "/tools");
-  await page.locator("#hhEdit").click();
+  // About has the household form open; elsewhere it's a panel from the header or a tool bar.
+  await page.goto(NEW + "/about");
   await page.locator("#hhStatus").selectOption("m");
   await page.locator("#hhAge").fill("45");
   await page.locator("#hhState").selectOption("CA");
@@ -22,6 +22,7 @@ test("a saved household fills the tools that take it", async ({ page }) => {
   const filled = HOUSEHOLD_TOOLS.filter((t) => t.takes(PROFILE)).map((t) => t.name);
   await expect(page.locator("#toast")).toContainText(`Filled in ${filled.length} tools: ${filled.join(", ")}`);
 
+  await page.goto(NEW + "/tools");
   await page.locator("a.toolcard[data-pick=tax]").click();
   await expect(page.locator("#txStatus")).toHaveValue("m");
   await expect(page.locator("#txGross")).toHaveValue("150,000");

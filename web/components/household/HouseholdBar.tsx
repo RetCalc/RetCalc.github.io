@@ -184,7 +184,7 @@ export function HouseholdStatus() {
   const edit = <Button variant="link" size="inline" onClick={() => setPanelOpen(true)}>Edit household</Button>;
   if (isEmptyHousehold(profile)) {
     return (
-      <p className="hh-st" id="hhStatus">
+      <p className="hh-st" id="hhLink">
         <HomeIcon aria-hidden="true" /><span>Enter your household once and every tool starts from it.</span>
         <Button variant="link" size="inline" onClick={() => setPanelOpen(true)}>Set up</Button>
       </p>
@@ -193,17 +193,17 @@ export function HouseholdStatus() {
   // Nothing in the household for this tool yet: still a way to it (a phone's header has no household button).
   if (!link.takes) {
     return (
-      <p className="hh-st" id="hhStatus" data-state="none">
+      <p className="hh-st" id="hhLink" data-state="none">
         <HomeIcon aria-hidden="true" /><span>Your household has nothing for this tool yet</span>{edit}
       </p>
     );
   }
   return link.matches ? (
-    <p className="hh-st" id="hhStatus" data-state="match">
+    <p className="hh-st" id="hhLink" data-state="match">
       <HomeIcon aria-hidden="true" /><span>Using your household</span>{edit}
     </p>
   ) : (
-    <p className="hh-st" id="hhStatus" data-state="changed">
+    <p className="hh-st" id="hhLink" data-state="changed">
       <HomeIcon aria-hidden="true" /><span>Changed from your household</span>
       <Button variant="link" size="inline" onClick={() => { link.apply(); toast("Filled in from your household"); }}>Use household numbers</Button>
       {edit}
