@@ -6,6 +6,9 @@ header{background:none}
 .masthead{max-width:1330px;margin:0 auto;padding:24px var(--gr) 20px var(--gl);
   display:flex;gap:24px;align-items:center;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:15px;position:relative}
+/* The brand is a link home: it keeps its own colors, not a link's. */
+a.brand,a.brand:visited{color:var(--text);text-decoration:none}
+a.brand:focus-visible{outline:2px solid var(--ds-focus);outline-offset:4px;border-radius:8px}
 .brandmark{width:60px;height:60px;flex:none;display:block;overflow:visible}
 h1{font-size:19px;font-weight:600;margin:0;letter-spacing:-.021em}
 .wordmark .brandname{font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.05}
