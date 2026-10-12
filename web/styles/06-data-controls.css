@@ -115,3 +115,18 @@ html[data-theme="light"] .gd-callout.ok::before{
 html[data-theme="light"] .gd-callout.bad::before{
   content:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6.5' fill='none' stroke='%23b02f29' stroke-width='1.5'/%3E%3Cpath d='m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8' stroke='%23b02f29' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") "\00a0 Problem"}
 
+
+/* ---------- table glyphs (components/common/Signed.tsx) ----------
+   The Never Alone Rule's icons (lucide's arrow-up/down and circle-check /
+   alert / x, drawn the same) as one empty <i> each, painted by a CSS mask in
+   the cell's own color. A table of hundreds of rows (Drawdown's starting
+   years) then carries no SVG per row, which kept the page slow to open. */
+.glyph{display:inline-block;position:relative;top:-1px;vertical-align:middle;background-color:currentColor;
+  -webkit-mask:var(--glyph) center/contain no-repeat;mask:var(--glyph) center/contain no-repeat}
+.glyph-arrow{width:12px;height:12px;margin-right:2px}
+.glyph-tone{width:14px;height:14px;margin-right:4px}
+.glyph-up{--glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 7-7 7 7'/%3E%3Cpath d='M12 19V5'/%3E%3C/svg%3E")}
+.glyph-down{--glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14'/%3E%3Cpath d='m19 12-7 7-7-7'/%3E%3C/svg%3E")}
+.glyph-check{--glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m16 9-5.5 5.5L8 12'/%3E%3C/svg%3E")}
+.glyph-alert{--glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' x2='12' y1='8' y2='12'/%3E%3Cline x1='12' x2='12.01' y1='16' y2='16'/%3E%3C/svg%3E")}
+.glyph-x{--glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m15 9-6 6'/%3E%3Cpath d='m9 9 6 6'/%3E%3C/svg%3E")}

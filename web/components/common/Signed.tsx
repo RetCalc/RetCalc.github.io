@@ -1,19 +1,18 @@
 /* Glyphs for the Never Alone Rule (DESIGN.md): a figure in Gain or Loss
-   carries an icon as well as its color. Each icon is an aria-hidden SVG
-   beside the figure, so the figure's text (innerText, the CSV, the numbers
-   check) is unchanged: no "+" sign and no text glyph is added. */
+   carries an icon as well as its color. Each icon is an empty aria-hidden
+   <i> beside the figure, so the figure's text (innerText, the CSV, the
+   numbers check) is unchanged: no "+" sign and no text glyph is added. The
+   icons are lucide's shapes painted by a CSS mask (.glyph in
+   styles/06-data-controls.css), not an SVG each: Drawdown's table has
+   hundreds of rows, and an SVG per row made the page slow to open. */
 
-import { ArrowDownIcon, ArrowUpIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const ARROW = "relative -top-px mr-0.5 inline size-3 align-middle";
 
 /** The up or down arrow of a real gain or loss; nothing for zero. For a
     cell that already carries its color. */
 export function SignArrow({ v }: { v: number }) {
   if (!v) return null;
-  const Icon = v > 0 ? ArrowUpIcon : ArrowDownIcon;
-  return <Icon className={ARROW} aria-hidden="true" />;
+  return <i className={cn("glyph glyph-arrow", v > 0 ? "glyph-up" : "glyph-down")} aria-hidden="true" />;
 }
 
 /** A return that is a real gain or loss: Gain or Loss with an arrow (the
@@ -27,11 +26,10 @@ export function Signed({ v, children }: { v: number; children: React.ReactNode }
   );
 }
 
-const TONE_ICON = { gain: CircleCheckIcon, text: CircleAlertIcon, loss: CircleXIcon } as const;
+const TONE_GLYPH = { gain: "glyph-check", text: "glyph-alert", loss: "glyph-x" } as const;
 
 /** A pass/fail or a rating's glyph: a check for gain, a warning circle for
     plain text, an x for loss. For a cell that already carries its color. */
-export function ToneGlyph({ tone }: { tone: keyof typeof TONE_ICON }) {
-  const Icon = TONE_ICON[tone];
-  return <Icon className="relative -top-px mr-1 inline size-3.5 align-middle" aria-hidden="true" />;
+export function ToneGlyph({ tone }: { tone: keyof typeof TONE_GLYPH }) {
+  return <i className={cn("glyph glyph-tone", TONE_GLYPH[tone])} aria-hidden="true" />;
 }
