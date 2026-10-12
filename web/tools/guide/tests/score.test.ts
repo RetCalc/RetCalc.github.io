@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { guessing, need, score, sim, spendGuess, withGuess } from "../calc";
 import { RULES, confidence, confidenceLine } from "../score";
-import { deriveSources } from "../migrate";
+import { deriveSources } from "./derive-sources";
 import type { Answers } from "../store";
 import { FIXTURES } from "../../../scripts/baseline/guide-fixtures.mjs";
 

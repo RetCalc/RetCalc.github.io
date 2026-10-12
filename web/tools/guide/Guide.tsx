@@ -22,7 +22,7 @@ import { useOptimizer } from "@/tools/optimizer/run";
 import { lowerFirst, opClaims, opTacticsLine } from "@/tools/optimizer/words";
 import { finishTrip, seedFromHousehold, startTrip, syncHousehold } from "./actions";
 import { mar, ok, rating, score, sim, target, withGuess, type Sim } from "./calc";
-import { cleanLink, deriveSources, doneFromV1, linkPayload, migrateAnswers } from "./migrate";
+import { cleanLink, linkPayload } from "./links";
 import { after, applies, before, current, firstOpen, landing, minutesLeft, numbered, stepById, type RouteFacts, type StepDecl } from "./route";
 import { Rail, type RailPlan } from "./Rail";
 import { GuideSheet } from "./sheet";
@@ -293,16 +293,12 @@ export function Guide() {
   }, [focusKey]);
 
   // The header's Save keeps the plan; loading one starts there. A plan
-  // saved before v2 ({ v: 1, a, done }) gets its sources worked out.
+  // saved before v2 ({ v: 1, a, done }) isn't opened.
   const plan = useMemo(() => ({ v: 2, a: g.a, src: g.src, done: g.done, pace: g.pace }) as ToolInputs, [g.a, g.src, g.done, g.pace]);
   useRegisterTool(GUIDE_DEF, plan, (d) => {
     const data = d as { v?: number; a?: Answers; src?: Sources; done?: Record<string, boolean>; pace?: Pace };
-    if (!data || !data.a || typeof data.a !== "object") return;
-    const a = structuredClone(data.a);
-    migrateAnswers(a as Answers & Record<string, unknown>);
-    const v2 = data.v === 2;
-    const n = opened(a, v2 && data.src ? structuredClone(data.src) : deriveSources(a, stamp()), v2 && data.pace === "quick" ? "quick" : "full",
-      v2 ? { ...(data.done || {}) } : doneFromV1(data.done || {}));
+    if (!data || data.v !== 2 || !data.a || typeof data.a !== "object") return;
+    const n = opened(structuredClone(data.a), data.src ? structuredClone(data.src) : {}, data.pace === "quick" ? "quick" : "full", { ...(data.done || {}) });
     replaceGuide(n);
     setTune((t) => { t.sel = null; t.draft = null; });
     syncHousehold(n.a, save);

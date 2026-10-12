@@ -301,23 +301,19 @@ test("the Quick check hands off to Basic from Your number", async ({ page }) => 
 
 /* ---------- Saved guides and links ---------- */
 
-test("a guide saved by v1 opens migrated, and v1's key is left alone", async ({ page }) => {
+test("a guide saved by v1 isn't carried over: its key is cleared and the guide starts fresh", async ({ page }) => {
   const v1 = { v: 1, cur: "outlook", a: { ...MAYA, spendSrc: "budget" }, done: { about: true, income: true, takehome: true }, trip: null, back: null, coachMin: false };
   await stored(page, { "retcalc.guide.v1": v1 });
   await page.goto(NEW + "/guide");
-  await expect(page.locator("#gdCard .gd-q")).toHaveText("Your number");
-  await expect(page.locator('.gd-top [data-pace="full"].on')).toHaveCount(1);
-  const kept = await page.evaluate(() => localStorage.getItem("retcalc.guide.v1"));
-  expect(JSON.parse(kept!)).toEqual(v1);
-  const v2 = JSON.parse((await page.evaluate(() => localStorage.getItem("retcalc.guide.v2")))!);
-  expect(v2.v).toBe(2);
-  expect(v2.src.spend).toMatchObject({ kind: "tool", tool: "budget" });
-  expect(v2.done).toEqual({ about: true, income: true });
+  await expect(page.locator("#gdCard .gd-q")).not.toHaveText("Your number");
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("retcalc.guide.v1"))).toBeNull();
+  const v2 = await page.evaluate(() => localStorage.getItem("retcalc.guide.v2"));
+  if (v2) expect(JSON.parse(v2).done).toEqual({});
 });
 
-test("a shared v1 link opens the plan on its results, after asking in the site's dialog", async ({ page, context }) => {
+test("a shared link opens the plan on its results, after asking in the site's dialog", async ({ page, context }) => {
   await seeded(page, { ...stateWith("quick", "income"), done: { about: true } });
-  const url = NEW + "/guide#g=" + Buffer.from(JSON.stringify({ v: 1, a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full",
+  const url = NEW + "/guide#g=" + Buffer.from(JSON.stringify({ v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full",
     retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } })).toString("base64url");
   const other = await context.newPage();
   let native = false;

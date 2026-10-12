@@ -5,11 +5,13 @@
    note a step shows on your return, snapshots, ticks and lessons. Kept in
    this browser under its own key (retcalc.guide.v2); the facts the household
    bar also holds are written through to it (actions.ts). A guide saved by
-   v1 is migrated on first open (migrate.ts) and its key left alone. */
+   v1 (before 7 October 2026) isn't carried over: its key is cleared and the
+   guide starts fresh. Every page reads this file (the coach on a trip), so
+   it stays light: reading a saved state back is stored.ts. */
 
 import { useSyncExternalStore } from "react";
 import { readStored, writeStored } from "@/lib/storage";
-import { loadState, migrateAnswers } from "./migrate";
+import { normalizeV2 } from "./stored";
 
 /** Every answer the guide keeps. Numbers are null once a field is cleared. */
 export interface Answers {
@@ -46,8 +48,7 @@ export type AnswerKey = keyof Answers;
 
 /* ---------- v2 (retcalc.guide.v2), doc 3 "The stored object" ----------
    The same answers, plus the pace, where each answer came from, dated
-   snapshots, the ticks on the moves list and the lessons checked. migrate.ts
-   turns a v1 state or link into one. */
+   snapshots, the ticks on the moves list and the lessons checked. */
 export type Pace = "quick" | "full";
 export type SourceKind = "entered" | "tool" | "estimated" | "default";
 /** Where an answer came from: typed or tapped, a tool's result (`tool`
@@ -116,17 +117,15 @@ const KEY = "guide", VERSION = 2, OLD = 1;
 const now = () => new Date().toISOString();
 export const freshGuide = (): GuideState => freshGuideV2(now());
 
-/** Answers saved before income tax was built in (migrate.ts). */
-export const migrate = migrateAnswers;
-
 let state: GuideState | null = null;
 const listeners = new Set<() => void>();
 const SERVER = freshGuideV2("");
 
-/* v2 if this browser has one; else a guide v1 left (migrated, and v1's key
-   left as it was, for a rollback); else a first visit. */
+/* v2 if this browser has one, else a first visit. A v1 guide left from
+   before the overhaul is cleared, not migrated (the owner's call). */
 function load(): GuideState {
-  return loadState(readStored(KEY, VERSION), readStored(KEY, OLD), now()) ?? freshGuide();
+  if (readStored(KEY, OLD) != null) writeStored(KEY, OLD, null);
+  return normalizeV2(readStored(KEY, VERSION), now()) ?? freshGuide();
 }
 
 /** The guide as it stands. */
