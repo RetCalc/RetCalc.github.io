@@ -61,7 +61,7 @@ svg{display:block;width:100%;height:auto}
 /* Phone. Inputs go to 16px because iOS zooms the page when a focused field is
    smaller than that, and the zoom never fully reverses. */
 @media (max-width:640px){
-  :root{--gut:14px;--navh:43px}
+  :root{--gut:14px;--navh:59px}
   main{padding:14px var(--gr) 30px var(--gl);gap:14px}
   .stack{gap:14px}
   .masthead{padding:16px var(--gr) 14px var(--gl);gap:14px}

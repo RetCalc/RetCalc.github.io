@@ -58,7 +58,7 @@
   --gl:max(var(--gut),env(safe-area-inset-left,0px));
   --gr:max(var(--gut),env(safe-area-inset-right,0px));
   /* Height of the sticky tab rail, so sticky things below it can clear it. */
-  --navh:44px;
+  --navh:69px; /* the one-row header: 68px and its 1px rule (03-navigation.css) */
   /* iOS's status-bar blur material in the home-screen webapp turned out to
      run taller than the official safe-area-inset-top value, leaving the
      masthead and tab rail rendered right under the frost instead of clear of
