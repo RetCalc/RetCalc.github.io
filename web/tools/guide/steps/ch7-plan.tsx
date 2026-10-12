@@ -163,7 +163,7 @@ export function PlanCard() {
             : <Button variant="outline" size="sm" data-go={k.go} onClick={() => G.go(k.go!)}>Open it on your plan</Button>}
         </div>
       ))}</div>
-      <p className="gd-kit-all"><Link href="/tools">All 20 tools, by what they answer</Link></p>
+      <p className="gd-kit-all"><Link href="/tools">All the tools, by what they answer</Link></p>
       <div className="gd-more-detail gd-summary"><Collapsible>
         <CollapsibleTrigger data-more="summary">Plan summary, sources and method<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger>
         <CollapsibleContent>

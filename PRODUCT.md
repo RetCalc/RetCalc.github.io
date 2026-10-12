@@ -20,7 +20,7 @@ Both are served by the same pages: simple on the first screen, depth on demand.
 
 ## Product Purpose
 
-RetCalc (retcalc.app) is a free, privacy-first retirement and financial planning suite built around a compound interest calculator, with about 20 connected tools. Tagline: "Know your number."
+RetCalc (retcalc.app) is a free, privacy-first retirement and financial planning suite built around a compound interest calculator, with a guide and 13 connected planning tools. Tagline: "Know your number."
 
 It exists to give people a trustworthy number about their own retirement without handing over their data, paying, or signing up. Success is a visitor who leaves knowing their number, understanding roughly why, and able to go deeper when they want to.
 
