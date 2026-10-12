@@ -29,6 +29,7 @@ import type { DDView } from "./Drawdown";
 import type { DdItem } from "./fields";
 import { ageVal, lineWords, outcomeText, pct1, rateClass, rateTone, seqMeasure, seqPair, startLabel, whyText, swatch } from "./text";
 import { badgeVariants } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
@@ -206,18 +207,38 @@ function sortValue(r: DdHistRun, col: string, age: number | null): number | stri
     default: return r.startIdx;
   }
 }
+/* The table opens on its first rows; Show all draws the rest. Drawing all
+   of them (835 monthly starts) made the page slow to open and to update, and
+   most visits never scroll that far. Sorting still covers every start, and
+   the CSV always has them all. */
+const FIRST_ROWS = 50;
+
 function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const sort = useSort<string>("year", 1);
   const table = useRef<HTMLTableElement>(null);
   const age = v.age;
   const runs = H ? sort.order(H.runs, (r, c) => sortValue(r, c, age)) : [];
+  const [all, setAll] = useState(false);
+  // A start picked elsewhere (the chart) that falls past the first rows opens the table.
+  const [seen, setSeen] = useState(ps.sel);
+  if (ps.sel !== seen) {
+    setSeen(ps.sel);
+    if (!all && runs.findIndex((r) => r.startIdx === ps.sel) >= FIRST_ROWS) setAll(true);
+  }
+  const shown = all ? runs : runs.slice(0, FIRST_ROWS);
+  const cells = (r: DdHistRun) => [startLabel(r, H!.monthly), outcomeText(r, age), money(r.endReal), money(r.medRealSpend), money(r.minRealSpend),
+    pctStr(r.avgStock, 1), pctStr(r.avgBond, 1), pctStr(r.avgInfl, 1), r.cape0.toFixed(1)];
+  const csv = () => {
+    const head = table.current ? [...table.current.querySelectorAll("thead th")].map((th) => (th.textContent || "").replace(/\s+/g, " ").trim()) : [];
+    return runs.length ? [head, ...runs.map(cells)] : null;
+  };
   const pick = (r: DdHistRun) => {
     ps.setSel(r.startIdx);
     ps.setView("year");
   };
   return (
     <Card id="ddYearsPanel" data-ddtabs="plan" hidden={v.mode === "mc"}>
-      <CardHeader><CardTitle id="ddYearsTitle">{H?.monthly ? "How each starting month fared" : "How each starting year fared"}</CardTitle><CardAction><CsvButton table={table} label="How each starting year fared" /></CardAction></CardHeader>
+      <CardHeader><CardTitle id="ddYearsTitle">{H?.monthly ? "How each starting month fared" : "How each starting year fared"}</CardTitle><CardAction><CsvButton rows={csv} label="How each starting year fared" /></CardAction></CardHeader>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
       <div className="scroll">
         <table id="ddStartTable" ref={table}>
@@ -227,22 +248,35 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
             ))}
           </tr></thead>
           <tbody>
-            {runs.map((r) => (
-              <tr key={r.startIdx} className={"ddrow" + (r.startIdx === ps.sel ? " sel" : "")} data-start={r.startIdx} tabIndex={0}
-                onClick={() => pick(r)}
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter" && e.key !== " ") return;
-                  e.preventDefault();
-                  pick(r);
-                }}>
-                <td>{startLabel(r, H!.monthly)}</td><td className={r.depleted ? "neg" : "pos"}><ToneGlyph tone={r.depleted ? "loss" : "gain"} />{outcomeText(r, age)}</td>
-                <td>{money(r.endReal)}</td><td>{money(r.medRealSpend)}</td><td>{money(r.minRealSpend)}</td>
-                <td>{pctStr(r.avgStock, 1)}</td><td>{pctStr(r.avgBond, 1)}</td><td>{pctStr(r.avgInfl, 1)}</td><td>{r.cape0.toFixed(1)}</td>
-              </tr>
-            ))}
+            {shown.map((r) => {
+              const c = cells(r);
+              return (
+                <tr key={r.startIdx} className={"ddrow" + (r.startIdx === ps.sel ? " sel" : "")} data-start={r.startIdx} tabIndex={0}
+                  onClick={() => pick(r)}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" && e.key !== " ") return;
+                    e.preventDefault();
+                    pick(r);
+                  }}>
+                  <td>{c[0]}</td><td className={r.depleted ? "neg" : "pos"}><ToneGlyph tone={r.depleted ? "loss" : "gain"} />{c[1]}</td>
+                  {c.slice(2).map((x, i) => <td key={i}>{x}</td>)}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+      {runs.length > FIRST_ROWS ? (
+        <CardContent className="pt-3">
+          <Button variant="outline" size="sm" id="ddStartMore" aria-controls="ddStartTable" aria-expanded={all}
+            onClick={() => {
+              setAll(!all);
+              if (all) document.getElementById("ddYearsPanel")?.scrollIntoView({ block: "start" });
+            }}>
+            {all ? "Show fewer" : "Show all " + runs.length + " starts"}
+          </Button>
+        </CardContent>
+      ) : null}
     </Card>
   );
 }

@@ -314,7 +314,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         ];
       },
       () => [
-        { h: "<b>How each starting year fared</b> lists every retirement tested. Tap a hard one, like <b>1966</b> or <b>1929</b>, or sort by <b>Ending balance</b> to find the worst." },
+        { h: "<b>How each starting year fared</b> lists every retirement tested. Sort by <b>Ending balance</b> to bring the worst to the top, then tap one." },
         { h: "Above the chart, switch to <b>Selected year</b> to watch that retirement play out.", ok: on('#segDDView [data-ddview="year"].on') },
         { h: "<b>What your income looked like</b> and <b>Year by year</b> show what you'd have lived on, and where the balance went, each year." },
         { h: "Retiring into a falling market early on does the most damage: it's called sequence risk, and it's why averages alone mislead." },

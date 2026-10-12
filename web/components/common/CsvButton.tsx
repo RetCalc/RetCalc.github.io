@@ -2,7 +2,8 @@
 
 /* The CSV button in a panel's heading. By default it saves the table it's
    pointed at, exactly as on screen; a tool with a list that isn't a table
-   (the Budget) passes its own rows. From src/js/app/19-widgets-theme.js. */
+   (the Budget), or a table that draws only some of its rows (Drawdown's
+   starts), passes its own rows. From src/js/app/19-widgets-theme.js. */
 
 import { useToast } from "@/components/shell/Toast";
 import { encodeShare, useActiveTool } from "@/components/tools/ToolState";
@@ -17,7 +18,7 @@ function cellText(el: Element): string {
 
 type Props = { label: string; title?: string; id?: string } & (
   | { table: React.RefObject<HTMLTableElement | null>; rows?: never; filename?: never }
-  | { rows: () => string[][] | null; filename: string; table?: never }
+  | { rows: () => string[][] | null; filename?: string; table?: never }
 );
 
 export function CsvButton({ label, title = "Download this table as a CSV", id, ...from }: Props) {
