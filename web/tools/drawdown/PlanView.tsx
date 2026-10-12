@@ -231,6 +231,10 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
   const shown = all ? runs : runs.slice(0, FIRST_ROWS);
   const cells = (r: DdHistRun) => [startLabel(r, H!.monthly), outcomeText(r, age), money(r.endReal), money(r.medRealSpend), money(r.minRealSpend),
     pctStr(r.avgStock, 1), pctStr(r.avgBond, 1), pctStr(r.avgInfl, 1), r.cape0.toFixed(1)];
+  /* Each column's longest text over every start, in a collapsed row: the
+     columns size as if every row were drawn, so they match the full table
+     and don't move when Show all opens it. */
+  const widest = shown.length < runs.length ? runs.map(cells).reduce((w, c) => w.map((x, i) => (c[i].length > x.length ? c[i] : x))) : null;
   const csv = () => {
     const head = table.current ? [...table.current.querySelectorAll("thead th")].map((th) => (th.textContent || "").replace(/\s+/g, " ").trim()) : [];
     return runs.length ? [head, ...runs.map(cells)] : null;
@@ -267,6 +271,11 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
               );
             })}
           </tbody>
+          {widest ? (
+            <tfoot aria-hidden="true" className="collapse">
+              <tr><td>{widest[0]}</td><td><ToneGlyph tone="loss" />{widest[1]}</td>{widest.slice(2).map((x, i) => <td key={i}>{x}</td>)}</tr>
+            </tfoot>
+          ) : null}
         </table>
       </div>
       {runs.length > FIRST_ROWS ? (
