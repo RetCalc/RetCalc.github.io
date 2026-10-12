@@ -11,14 +11,29 @@ import { createContext, use, useEffect, useMemo, useRef, useState } from "react"
 import { HOUSEHOLD_STORE, HOUSEHOLD_TOOLS, type SavedHousehold } from "@/lib/household";
 import { readStored, writeStored } from "@/lib/storage";
 
+/** The open tool's tie to the household: whether its inputs still match
+    what the household fills in, and a way to fill them in again. */
+export interface HouseholdLink {
+  tool: string;
+  /** The household gives this tool something to fill. */
+  takes: boolean;
+  /** The tool's inputs are what filling them in would give. */
+  matches: boolean;
+  /** Fills the household's numbers in again. */
+  apply: () => void;
+}
+
 interface HouseholdState {
   /** null until read from this browser, and when nothing is saved. */
   profile: SavedHousehold | null;
   /** Saves the profile (null clears it); returns the tools it fills. */
   save: (h: SavedHousehold | null) => string[];
-  /** Whether the bar shows at the top of the page; hiding it lasts this visit. */
-  shown: boolean;
-  setShown: (v: boolean) => void;
+  /** The household panel (the profile's form, over the page). */
+  panelOpen: boolean;
+  setPanelOpen: (v: boolean) => void;
+  /** The open tool's link, null on a page with no tool that takes it. */
+  link: HouseholdLink | null;
+  setLink: (l: HouseholdLink | null) => void;
 }
 
 const HouseholdContext = createContext<HouseholdState | null>(null);
@@ -32,29 +47,43 @@ export function useHousehold(): HouseholdState {
 /* When each tool last took the profile in: {tool: savedAt}. */
 const APPLIED = { key: "household-applied", version: 1 } as const;
 
-/** Runs `apply` once for each profile saved since this tool last took one
-    in: on opening the tool, and when the profile is saved while it's open. */
-export function useHouseholdFill(tool: string, apply: (h: SavedHousehold) => void): void {
-  const { profile } = useHousehold();
-  const latest = useRef(apply);
+const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/** Ties a tool to the household. `fill` gives the tool's inputs with the
+    household's numbers written in (and nothing else changed). It runs once
+    for each profile saved since this tool last took one in: on opening the
+    tool, and when the profile is saved while it's open. Running it on the
+    current inputs also tells whether they still match the household, which
+    the tool bar shows, with a way to fill them in again. */
+export function useHouseholdFill<S>(tool: string, state: S, setState: (f: (c: S) => S) => void, fill: (h: SavedHousehold, c: S) => S): void {
+  const { profile, setLink } = useHousehold();
+  const latest = useRef(fill);
   useEffect(() => {
-    latest.current = apply;
+    latest.current = fill;
   });
   const savedAt = profile?.savedAt;
   useEffect(() => {
     if (!profile || savedAt == null) return;
     const applied = readStored<Record<string, number>>(APPLIED.key, APPLIED.version) ?? {};
     if ((applied[tool] ?? 0) >= savedAt) return;
-    latest.current(profile);
+    setState((c) => latest.current(profile, c));
     writeStored(APPLIED.key, APPLIED.version, { ...applied, [tool]: savedAt });
     // profile changes only when savedAt does
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tool, savedAt]);
+
+  const takes = !!profile && (HOUSEHOLD_TOOLS.find((t) => t.id === tool)?.takes(profile) ?? false);
+  const matches = !!profile && same(fill(profile, state), state);
+  useEffect(() => {
+    setLink({ tool, takes, matches, apply: () => { if (profile) setState((c) => latest.current(profile, c)); } });
+  }, [tool, takes, matches, profile, setState, setLink]);
+  useEffect(() => () => setLink(null), [setLink]);
 }
 
 export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<SavedHousehold | null>(null);
-  const [shown, setShown] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [link, setLink] = useState<HouseholdLink | null>(null);
 
   // Browser storage only exists after the page has loaded.
   useEffect(() => {
@@ -65,15 +94,17 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<HouseholdState>(
     () => ({
       profile,
-      shown,
-      setShown,
+      panelOpen,
+      setPanelOpen,
+      link,
+      setLink,
       save: (h) => {
         writeStored(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version, h);
         setProfile(h);
         return h ? HOUSEHOLD_TOOLS.filter((t) => t.takes(h)).map((t) => t.name) : [];
       },
     }),
-    [profile, shown],
+    [profile, panelOpen, link],
   );
   return <HouseholdContext value={value}>{children}</HouseholdContext>;
 }

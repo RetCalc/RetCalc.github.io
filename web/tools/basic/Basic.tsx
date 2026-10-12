@@ -20,7 +20,6 @@ import { BandChart, type ChartGeometry } from "@/components/charts/BandChart";
 import { Legend } from "@/components/charts/Legend";
 import { BandTipRows } from "@/components/charts/TipRows";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
-import { HouseholdBar } from "@/components/household/HouseholdBar";
 import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped } from "@/components/shell/Tooltips";
 import { useShareKit } from "@/components/shell/share";
@@ -32,7 +31,6 @@ import { KV } from "@/components/common/Readout";
 import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
-import { STATE_OPTIONS } from "@/lib/states";
 import { basicShare } from "./share";
 import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
@@ -90,7 +88,7 @@ export function Basic() {
       return age > 0 && ret > 0 && ret - age > 100 ? { ...next, retire: String(age + 100) } : next;
     });
 
-  useHouseholdFill("basic", (h) => setState((c) => {
+  useHouseholdFill("basic", s, setState, (h, c) => {
     const age = h.age != null && h.age > 0 && h.age < 120 ? Math.round(h.age) : null;
     const retire = h.retire != null && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
     const next: BasicInputs = { ...c };
@@ -99,7 +97,7 @@ export function Basic() {
     if (h.saved != null) next.saved = dollarsField(h.saved);
     if (h.monthly != null) Object.assign(next, { contrib: dollarsField(h.monthly), period: "Monthly" });
     return next;
-  }));
+  });
 
   useShareKit(BASIC_DEF.id, basicShare(s));
 
@@ -254,8 +252,6 @@ export function Basic() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* The household offer, now that there's an answer to carry over. */}
-      <div className="min-w-0 lg:col-span-3" id="hhHomeSlot"><HouseholdBar states={STATE_OPTIONS} /></div>
     </div>
   );
 }

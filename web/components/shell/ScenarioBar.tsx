@@ -1,7 +1,9 @@
 "use client";
 
-/* The masthead's saved-scenario picker and its Save, Share and Reset
-   buttons. They act on whichever tool is open (components/tools/ToolState).
+/* A tool's saved-scenario picker and its Save, Share and Reset buttons, in
+   the tool bar over the tool (ToolBar). They act on whichever tool is open
+   (components/tools/ToolState), and say whose they are ("Saved tax
+   scenarios").
    Ported from src/js/app/23-scenarios.js, 21-share-links.js and
    25-share-card.js. The Share menu offers what the page hands it
    (share.ts): its summary and image card, where it has them. */
@@ -72,7 +74,7 @@ export function ScenarioBar() {
 
   return (
     <div className="scgroup">
-      <NativeSelect variant="joined" className="w-auto min-w-52.5 max-sm:min-w-0 max-sm:flex-1" id="scenarioPick" aria-label="Saved scenarios" value={cur?.name ?? ""} disabled={!tool}
+      <NativeSelect variant="joined" className="w-auto min-w-52.5 max-sm:min-w-0 max-sm:flex-1" id="scenarioPick" aria-label={tool ? `Saved ${tool.def.noun}s` : "Saved scenarios"} value={cur?.name ?? ""} disabled={!tool}
         onChange={(e) => {
           if (!tool || !id) return;
           const s = list.find((x) => x.name === e.target.value);
@@ -85,13 +87,13 @@ export function ScenarioBar() {
         }}>
         {list.length ? (
           <>
-            <option value="">Unsaved</option>
+            <option value="">{`Saved ${tool?.def.noun ?? "scenario"}s`}</option>
             {list.map((s) => (
               <option key={s.name} value={s.name}>{s.name === cur?.name && edited ? `${s.name} (edited)` : s.name}</option>
             ))}
           </>
         ) : (
-          <option value="">No saved scenarios</option>
+          <option value="">{tool ? `No saved ${tool.def.noun}s` : "No saved scenarios"}</option>
         )}
       </NativeSelect>
       <button className="btn" id="btnScenario" type="button" aria-label="Save or delete a scenario" title="Save or delete"

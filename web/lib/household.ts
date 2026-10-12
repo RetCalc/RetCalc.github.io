@@ -32,20 +32,20 @@ export const has = (v: number | null): v is number => v != null && isFinite(v);
 
 /** The tools that take the profile in, in the order the save confirmation
     lists them, and whether a given profile gives each anything to fill
-    (from hhApply() in src/js/app/27-household.js). Each tool is added as
-    it's ported; its fill runs via useHouseholdFill. */
-export const HOUSEHOLD_TOOLS: { name: string; takes: (h: Household) => boolean }[] = [
-  { name: "Basic", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly)) },
-  { name: "Advanced", takes: (h) => !!((h.age && h.retire && h.retire > h.age) || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
-  { name: "Stages", takes: (h) => has(h.saved) || (h.spend != null && h.spend > 0) },
-  { name: "FIRE", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
-  { name: "Drawdown", takes: (h) => !!((h.retire && h.retire > 0 && h.retire < 120) || has(h.income)) },
-  { name: "Roth", takes: () => true },
-  { name: "Early Retirement Bridge", takes: (h) => !!(h.retire || h.state || (h.spend != null && h.spend > 0) || h.status) },
-  { name: "Plan Optimizer", takes: (h) => !!(h.age || h.retire || has(h.saved) || (h.spend != null && h.spend > 0) || h.state) },
-  { name: "Healthcare", takes: () => true },
-  { name: "Income Tax", takes: () => true },
-  { name: "Budget", takes: (h) => has(h.income) && (h.income! + (h.status === "m" && has(h.income2) ? h.income2! : 0)) > 0 },
+    (from hhApply() in src/js/app/27-household.js). `id` is the key each
+    tool passes to useHouseholdFill. */
+export const HOUSEHOLD_TOOLS: { id: string; name: string; takes: (h: Household) => boolean }[] = [
+  { id: "basic", name: "Basic", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly)) },
+  { id: "advanced", name: "Advanced", takes: (h) => !!((h.age && h.retire && h.retire > h.age) || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
+  { id: "stages", name: "Stages", takes: (h) => has(h.saved) || (h.spend != null && h.spend > 0) },
+  { id: "fire", name: "FIRE", takes: (h) => !!(h.age || h.retire || has(h.saved) || has(h.monthly) || (h.spend != null && h.spend > 0)) },
+  { id: "drawdown", name: "Drawdown", takes: (h) => !!((h.retire && h.retire > 0 && h.retire < 120) || has(h.income)) },
+  { id: "roth", name: "Roth", takes: () => true },
+  { id: "bridge", name: "Early Retirement Bridge", takes: (h) => !!(h.retire || h.state || (h.spend != null && h.spend > 0) || h.status) },
+  { id: "optimizer", name: "Plan Optimizer", takes: (h) => !!(h.age || h.retire || has(h.saved) || (h.spend != null && h.spend > 0) || h.state) },
+  { id: "healthcare", name: "Healthcare", takes: () => true },
+  { id: "tax", name: "Income Tax", takes: () => true },
+  { id: "budget", name: "Budget", takes: (h) => has(h.income) && (h.income! + (h.status === "m" && has(h.income2) ? h.income2! : 0)) > 0 },
 ];
 
 export function isEmptyHousehold(h: Household | null): boolean {

@@ -1,15 +1,14 @@
-/* What every page has inside <main>, in the old site's order: the main
-   heading (the tool's own name on a tool's page), the household bar, the
-   tool header, the page's content, and its "about this tool" article. */
+/* What every page has inside <main>: the main heading (the tool's own name
+   on a tool's page), the tool header, the tool bar (household status and
+   saved scenarios), the page's content, and its "about this tool" article. */
 
-import { HouseholdBar } from "@/components/household/HouseholdBar";
 import { articleHtml } from "@/lib/articles";
-import { STATE_OPTIONS } from "@/lib/states";
 import { jsonLdFor } from "@/lib/seo";
-import { PAGES, TOOL_SUB, isStrategyPage, strategyLede, type Slug } from "@/lib/site";
+import { PAGES, TOOL_SUB, hasToolControls, isStrategyPage, strategyLede, type Slug } from "@/lib/site";
 import { TOOLS } from "@/lib/tools";
 import { Article } from "./Article";
 import { StrategyLinks, StrategyLedeLinks } from "./StrategyLinks";
+import { ToolBar } from "./ToolBar";
 import { ToolHeader } from "./ToolHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -24,11 +23,10 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
       {sub ? null : <h1 className="srlive" id="pageH1">{meta.h1 ?? "RetCalc"}</h1>}
-      {/* About keeps it under Appearance; Basic offers it after the result
-          (tools/basic/Basic.tsx). */}
-      {slug === "about" || slug === "calculator" ? null : <HouseholdBar states={STATE_OPTIONS} />}
       {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={strategyLede(slug) ?? TOOLS[sub].desc}
         full={strategy} more={strategy ? <StrategyLedeLinks hasArticle={!!article} /> : null} /> : null}
+      {/* The tool's household status and its saved scenarios. */}
+      {hasToolControls(slug) ? <ToolBar /> : null}
       {children}
       {strategy ? <StrategyLinks current={slug} /> : null}
       {article ? <Article html={article} /> : null}

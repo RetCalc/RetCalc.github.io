@@ -70,7 +70,7 @@ export function Optimizer() {
   const setGoal = (g: Goal) => { goalMemory.goal = g; setGoalState(g); };
   const out = useRef<HTMLDivElement>(null);
 
-  useHouseholdFill("optimizer", (h) => setState((c) => {
+  useHouseholdFill("optimizer", s, setState, (h, c) => {
     const married = h.status === "m", m = (v: number) => dollarsField(v), next: OptimizerInputs = { ...c, status: married ? "m" : "s" };
     const age = h.age && h.age > 0 ? Math.round(h.age) : null, retire = h.retire && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
     if (age) next.age = String(age);
@@ -96,7 +96,7 @@ export function Optimizer() {
     if (has(h.income)) { next.inc1 = m(h.income!); next.ss1 = ""; }
     if (has(h.income2)) { next.inc2 = m(h.income2!); next.ss2 = ""; }
     return next;
-  }));
+  });
 
   const v = opView(s);
   // the plan at retirement, and how big its search is: worked out once per change

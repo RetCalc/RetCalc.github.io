@@ -1,40 +1,54 @@
 /* ---------- household profile ---------- */
-/* One slim bar above every tool. Collapsed it's a single line of what's on
-   file; open, it's the handful of facts most tools ask for. */
+/* One form, in two places: the household panel (opened from the header's
+   household button or a tool's status line) and About, where it sits open.
+   Spouse fields show only for "Me and a spouse". */
 .hh{grid-column:1 / -1;background:var(--panel);border:1px solid var(--line);
   border-radius:var(--r-panel);box-shadow:var(--lift-1);min-width:0}
-.hh-bar{display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;min-width:0}
 .hh-ic{width:28px;height:28px;flex:none;border-radius:8px;display:grid;place-items:center;
   color:var(--text);background:var(--panel-2);border:1px solid var(--line)}
 .hh-ic svg{width:16px;height:16px;display:block}
-.hh-sum{flex:1 1 auto;min-width:0;font-size:13px;color:var(--dim);line-height:1.4}
-.hh-sum b{color:var(--text);font-weight:600;margin-right:8px}
-.hh-sum .hh-bits span + span::before{content:"\00b7";margin:0 7px;color:var(--dimmer)}
-.hh-sum .hh-bits{font-size:13px;font-variant-numeric:tabular-nums;color:var(--text)}
-.hh-sum .hh-short{display:none}
-.hh-body{border-top:1px solid var(--line-soft);padding:14px 14px 12px}
+.hh-body{padding:14px 14px 12px}
 .hh-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px 12px}
 .hh-grid .field{margin-bottom:10px}
 .hh-foot{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
 .hh-foot .hint{flex:1 1 320px;margin:0}
 .hh-btns{display:flex;gap:7px;margin-left:auto}
-.hh:not(.married) .hh-sp{display:none}
-/* On About the card is the place to edit the profile, so it can't be hidden */
-/* The masthead house lights up while the bar is showing. */
+.hh-body:not(.married) .hh-sp{display:none}
 @media (max-width:1100px){ .hh-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:640px){
   .hh-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .hh-bar{padding:9px 10px 9px 12px;align-items:center}
-  /* a full profile runs to five lines at this width; two is enough to
-     recognize it, and Edit shows the rest */
-  .hh-sum{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
-    overflow:hidden;font-size:12.5px}
-  .hh-sum .hh-bits{font-size:12.5px}
-  /* collapsed on a phone: the compact line alone, without the label */
-  .hh-sum .hh-long,.hh-sum b:has(+ .hh-long){display:none}
-  .hh-sum .hh-short{display:inline}
-  .hh-sum .hh-short span + span::before{margin:0 5px}
   .hh-btns{width:100%}
+}
+
+/* The panel: a heading, then the form in three columns. */
+.hh-panel-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px}
+.hh-panel-head h2{margin:0;font-size:17px;font-weight:600;letter-spacing:-.01em}
+.hh-panel-head p{margin:2px 0 0;font-size:13px;color:var(--ds-muted)}
+.popup .hh-body{padding:12px 0 0}
+.popup .hh-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){ .popup .hh-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+
+/* The header's household button: the profile at a glance. On a narrow
+   screen just the house; on a phone it leaves the header (each tool's
+   status line opens the panel instead). */
+.hh-chip{display:flex;min-width:0}
+.hh-chip button{max-width:260px}
+.hh-chip-t{overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+@media (max-width:1100px){ .hh-chip-t{display:none} }
+@media (max-width:640px){ .hh-chip{display:none} }
+
+/* ---------- the tool bar ----------
+   Over each tool: its tie to the household on the left, its saved
+   scenarios on the right. */
+.toolbar{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:10px 20px;
+  flex-wrap:wrap;min-width:0}
+.toolbar .scgroup{margin-left:auto}
+.hh-st{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:0;font-size:13.5px;color:var(--ds-muted);min-width:0}
+.hh-st > svg{width:16px;height:16px;flex:none;color:var(--ds-brand-jade)}
+.hh-st[data-state="changed"] > svg{color:var(--ds-amber)}
+.hh-st[data-state="changed"] > span{color:var(--ds-text)}
+@media (max-width:640px){
+  .toolbar .scgroup{flex:1 1 100%;margin-left:0}
 }
 
 /* ---------- account types (Advanced) ---------- */

@@ -234,7 +234,7 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
 .firow-fire td{background:var(--panel-2);box-shadow:inset 0 1px 0 var(--ds-rule-strong),inset 0 -1px 0 var(--ds-rule-strong)}
 
 
-/* ---------- one-row header (the homepage) ----------
+/* ---------- the header: one row, pinned whole ----------
    No masthead: the rail carries the logo on the left and the theme button on
    the right, and the whole row pins. See-through over the page until you
    scroll, then Surface with the Float shadow like the rail. The tabs keep

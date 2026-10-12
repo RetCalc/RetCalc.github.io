@@ -56,7 +56,7 @@ export function Stages() {
   const [band, setBand] = useState("2");
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
-  useHouseholdFill("stages", (h) => setState((c) => {
+  useHouseholdFill("stages", s, setState, (h, c) => {
     const next = { ...c };
     if (c.saOn) {
       if (has(h.income)) next.saSalary = dollarsField(h.income!);
@@ -65,7 +65,7 @@ export function Stages() {
     } else if (has(h.saved)) next.initial = dollarsField(h.saved!);
     if (h.spend != null && h.spend > 0) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: dollarsField(h.spend) });
     return next;
-  }));
+  });
 
   const setStages = (f: (list: StageInputs[]) => StageInputs[]) => setState((c) => ({ ...c, stages: f(c.stages) }));
   const editStage: StageEdit = (i, f) => setStages((list) => list.map((st, j) => (j === i ? f(st) : st)));

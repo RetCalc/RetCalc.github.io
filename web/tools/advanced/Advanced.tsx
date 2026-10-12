@@ -61,7 +61,7 @@ export function Advanced() {
   const [dialog, setDialog] = useState<"conv" | "growth" | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
-  useHouseholdFill("advanced", (h) => setState((c) => {
+  useHouseholdFill("advanced", s, setState, (h, c) => {
     const age = has(h.age) && h.age! > 0 && h.age! < 120 ? Math.round(h.age!) : null;
     const retire = has(h.retire) && h.retire! > 0 && h.retire! < 120 ? Math.round(h.retire!) : null;
     const yrs = age && retire && retire > age ? Math.min(100, retire - age) : null;
@@ -79,7 +79,7 @@ export function Advanced() {
     if (h.spend != null && h.spend > 0) Object.assign(next, { solveFor: "After-Tax Withdrawal", target: dollarsField(h.spend) });
     if (next.glideOn) next.glideYears = glideYearsFor(next.years, next.glideYears);
     return next;
-  }));
+  });
 
   /* The glide can't run longer than the plan; its field follows the years. */
   const setTiming = (k: "years" | "glideYears") => (v: string) => setState((c) => {

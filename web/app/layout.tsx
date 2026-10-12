@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { HouseholdProvider } from "@/components/household/HouseholdProvider";
+import { HouseholdPanel } from "@/components/household/HouseholdBar";
+import { STATE_OPTIONS } from "@/lib/states";
 import { Footer } from "@/components/shell/Footer";
 import { Main } from "@/components/shell/Main";
-import { Masthead } from "@/components/shell/Masthead";
 import { NavBar } from "@/components/shell/NavBar";
 import { PageEffects } from "@/components/shell/PageEffects";
 import { SheetHost } from "@/components/shell/Sheet";
@@ -83,8 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <PopupProvider>
           <ToolRegistryProvider>
           <HouseholdProvider>
-            <Masthead />
-            <NavBar />
+            <NavBar states={STATE_OPTIONS} />
             <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
             <Main>{children}</Main>
             <PaneMotion />
@@ -95,6 +95,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <GuideCoach />
             <ToolHelp />
             <SheetHost />
+            <HouseholdPanel states={STATE_OPTIONS} />
             {/* Cloudflare Web Analytics, the current site's token; it follows
                 page changes on its own. Production only, so previews aren't
                 counted as visits. */}

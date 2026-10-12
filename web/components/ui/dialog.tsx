@@ -31,6 +31,8 @@ const dialogContentVariants = cva(
         guide: "max-w-195 px-6.5 pb-5 max-sm:px-4 max-sm:pt-4.5 max-sm:pb-4.5",
         /* the classic studies */
         study: "wide max-w-160",
+        /* the household panel: the profile's form, two columns of fields */
+        household: "wide max-w-170 max-sm:px-4 max-sm:pt-4.5",
       },
     },
     defaultVariants: { size: "default" },

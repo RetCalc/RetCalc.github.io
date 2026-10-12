@@ -48,10 +48,9 @@ export function Budget() {
 
   // The household's income, as take-home pay under the same 2026 rules the
   // Income Tax tool uses, before any retirement saving.
-  useHouseholdFill("budget", (h) => {
+  useHouseholdFill("budget", s, setState, (h, c) => {
     const net = budgetHouseholdNet(h, () => toolInputs("tax", TAX_DEFAULTS).state);
-    if (net == null) return;
-    setState((c) => ({ ...c, income: dollarsField(net / c.incomeFreq) }));
+    return net == null ? c : { ...c, income: dollarsField(net / c.incomeFreq) };
   });
 
   /* Another tool sending a line in: update a row with the same name rather

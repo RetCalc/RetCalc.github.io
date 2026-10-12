@@ -82,7 +82,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
   const [tracesOn, setTracesOn] = useState(true);
   const compareRef = useRef<HTMLTableElement>(null), ladderRef = useRef<HTMLTableElement>(null), tableRef = useRef<HTMLTableElement>(null);
 
-  useHouseholdFill("bridge", (h) => setState((c) => {
+  useHouseholdFill("bridge", s, setState, (h, c) => {
     const married = h.status === "m";
     const retire = h.retire != null && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
     const next: BridgeInputs = { ...c, status: married ? "m" : "s" };
@@ -91,7 +91,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
     if (h.state && STATE_OPTIONS.some((o) => o.code === h.state)) next.state = h.state;
     if (h.spend != null && h.spend > 0) next.spend = dollarsField(h.spend);
     return next;
-  }));
+  });
 
   // A couple is at least two people for the poverty line.
   const setStatus = (v: string) => setState((c) => {

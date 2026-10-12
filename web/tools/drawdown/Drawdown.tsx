@@ -85,7 +85,7 @@ export function Drawdown({ landing }: { landing?: string }) {
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const detailTable = useRef<HTMLTableElement>(null);
 
-  useHouseholdFill("drawdown", (h) => setState((c) => {
+  useHouseholdFill("drawdown", s, setState, (h, c) => {
     const has = (x: number | null) => x != null && isFinite(x);
     const married = h.status === "m";
     const retire = has(h.retire) && h.retire! > 0 && h.retire! < 120 ? Math.round(h.retire!) : null;
@@ -94,7 +94,7 @@ export function Drawdown({ landing }: { landing?: string }) {
     if (has(h.income)) d.ssIncome = h.income;
     if (married && has(h.income2)) d.ssIncome2 = h.income2;
     return ddWrite(c, d);
-  }));
+  });
 
   /* Every run works from the inputs a moment behind the typing, so the
      fields keep up with the keyboard. */

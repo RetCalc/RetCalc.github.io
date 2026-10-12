@@ -1,18 +1,11 @@
 "use client";
 
-/* The top bar: the brand (a link home), the saved-scenario controls, and
-   the household and theme buttons. Markup from src/page.html. Pages with no
-   tool leave out the scenario controls and the household button; a page
-   with the one-row header has no masthead at all (NavBar carries the brand
-   and theme button there). */
+/* The header's brand (a link home) and theme button, used by NavBar, which
+   is the whole header. Markup from src/page.html. */
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useHousehold } from "@/components/household/HouseholdProvider";
-import { hasToolControls, oneRowHeader, slugFromPath } from "@/lib/site";
 import { setThemeChoice, useTheme } from "@/lib/theme";
 import { Brandmark } from "./Brandmark";
-import { ScenarioBar } from "./ScenarioBar";
 import { Button } from "@/components/ui/button";
 
 const SUN = (
@@ -41,23 +34,6 @@ export function ThemeButton() {
   );
 }
 
-function HouseholdButton() {
-  const { shown, setShown } = useHousehold();
-  const label = shown ? "Hide your household bar" : "Show your household bar";
-  return (
-    <Button variant="outline" size="icon" id="btnHousehold" aria-pressed={shown} aria-label={label} title={label}
-      onClick={() => {
-        setShown(!shown);
-        if (shown) return;
-        // The homepage offers the bar after its result, not at the top.
-        if (location.pathname === "/calculator") requestAnimationFrame(() => document.getElementById("hhCard")?.scrollIntoView({ behavior: "smooth", block: "start" }));
-        else window.scrollTo({ top: 0, behavior: "smooth" });
-      }}>
-      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
-    </Button>
-  );
-}
-
 /** The logo and name, linking to the homepage. */
 export function BrandLink({ tagline = true }: { tagline?: boolean }) {
   return (
@@ -68,23 +44,5 @@ export function BrandLink({ tagline = true }: { tagline?: boolean }) {
         {tagline ? <div className="tagline">Know your number.</div> : null}
       </div>
     </Link>
-  );
-}
-
-export function Masthead() {
-  const slug = slugFromPath(usePathname());
-  if (oneRowHeader(slug)) return null;
-  const tool = hasToolControls(slug);
-  return (
-    <header>
-      <div className="masthead">
-        <BrandLink />
-        <div className="scenariobar">
-          {tool ? <ScenarioBar /> : null}
-          {tool ? <HouseholdButton /> : null}
-          <ThemeButton />
-        </div>
-      </div>
-    </header>
   );
 }

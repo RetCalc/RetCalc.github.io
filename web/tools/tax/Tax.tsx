@@ -89,12 +89,12 @@ export function Tax() {
   const tableRef = useRef<HTMLTableElement>(null), bucketRef = useRef<HTMLTableElement>(null), bracketRef = useRef<HTMLTableElement>(null), rulesRef = useRef<HTMLTableElement>(null);
 
   // The household's filing status, state and incomes.
-  useHouseholdFill("tax", (h) => setState((c) => ({
+  useHouseholdFill("tax", s, setState, (h, c) => ({
     ...c, status: h.status === "m" ? "m" : "s",
     gross2: groupDigits(h.status === "m" && h.income2 != null ? h.income2 : 0, true),
     ...(h.income != null ? { gross: groupDigits(h.income, true) } : {}),
     ...(h.state ? { state: h.state } : {}),
-  })));
+  }));
 
   const ret = s.mode === "retire";
   const joint = s.status === "m";

@@ -1,9 +1,14 @@
 "use client";
 
-/* The household bar at the top of each page: a one-line summary that opens
-   into a short form. Markup from src/main/00-household.html. */
+/* The household profile's faces. One form (HouseholdForm) is used in two
+   places: the household panel, which opens over any page from the header's
+   household button or a tool's status line, and About, where it sits open
+   under Appearance. Each tool shows its tie to the household in its tool
+   bar (HouseholdStatus): using the household's numbers, or changed from
+   them with a way back. Markup from src/main/00-household.html. */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { HomeIcon } from "lucide-react";
 import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { useToast } from "@/components/shell/Toast";
 import { groupDigits, parseOptional } from "@/lib/format";
@@ -11,6 +16,7 @@ import { householdSummary, isEmptyHousehold, type Household } from "@/lib/househ
 import type { StateOption } from "@/lib/states";
 import { useHousehold } from "./HouseholdProvider";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 
 type Form = Record<"age" | "spouseAge" | "retire" | "saved" | "monthly" | "income" | "income2" | "spend", string> & {
   status: "s" | "m";
@@ -43,31 +49,25 @@ function fromForm(f: Form): Household {
   };
 }
 
-const HOUSE_ICON = (
-  <svg viewBox="0 0 20 20" fill="none">
-    <path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M5.2 8v8.2h9.6V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-    <path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-  </svg>
-);
-
-/** `states` comes from the server (lib/states.ts), so this bar never needs
-    the calculation engine. */
-/** `inAbout`: on the About page, under Appearance, where it can't be hidden. */
-export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbout?: boolean }) {
-  const { profile, save, shown, setShown } = useHousehold();
+/** The household's fields, Save (which fills the tools in) and Clear.
+    `onDone` runs after a save or clear (the panel closes). */
+function HouseholdForm({ states, onDone, autoFocus }: { states: StateOption[]; onDone?: () => void; autoFocus?: boolean }) {
+  const { profile, save } = useHousehold();
   const toast = useToast();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<Form>(() => toForm(null));
+  const [form, setForm] = useState<Form>(() => toForm(profile));
   const firstField = useRef<HTMLInputElement>(null);
   const set = <K extends keyof Form>(k: K) => (v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
 
-  const openForm = () => {
+  // The profile is read from the browser after the page loads.
+  const savedAt = profile?.savedAt;
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- show the stored profile once it's read
     setForm(toForm(profile));
-    setOpen(true);
-    setTimeout(() => firstField.current?.focus({ preventScroll: true }), 0);
-  };
-  const close = () => setOpen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedAt]);
+  useEffect(() => {
+    if (autoFocus) firstField.current?.focus({ preventScroll: true });
+  }, [autoFocus]);
 
   const onSave = () => {
     const h = fromForm(form);
@@ -76,7 +76,7 @@ export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbo
       return;
     }
     const done = save({ ...h, savedAt: Date.now() });
-    setOpen(false);
+    onDone?.();
     if (!done.length) toast("Saved. Add a few numbers to fill in the tools.");
     else toast(`Filled in ${done.length}${done.length === 1 ? " tool: " : " tools: "}${done.join(", ")}`);
   };
@@ -86,79 +86,127 @@ export function HouseholdBar({ states, inAbout }: { states: StateOption[]; inAbo
         !confirm("Clear your household profile? Numbers already filled in to each tool stay as they are.")) return;
     save(null);
     setForm(toForm(null));
-    setOpen(false);
+    onDone?.();
     toast("Household profile cleared");
   };
 
-  const empty = isEmptyHousehold(profile);
-  const sum = profile && !empty ? householdSummary(profile, (c) => states.find((s) => s.code === c)?.name) : null;
-
   return (
-    <section className={`hh${(open ? form.status : profile?.status) === "m" ? " married" : ""}`} id="hhCard" aria-label="Your household" hidden={!shown && !inAbout}>
-      <div className="hh-bar">
-        <span className="hh-ic" aria-hidden="true">{HOUSE_ICON}</span>
-        <div className="hh-sum" id="hhSummary">
-          <b>Your household</b>
-          {sum ? (
-            <>
-              <span className="hh-bits hh-long">{sum.long.map((b) => <span key={b}>{b}</span>)}</span>
-              <span className="hh-bits hh-short">{sum.short.map((b) => <span key={b}>{b}</span>)}</span>
-            </>
-          ) : (
-            "Enter a few details once and every tool starts from your numbers."
-          )}
-        </div>
-        <Button variant="outline" size="sm" id="hhEdit" aria-expanded={open} aria-controls="hhBody"
-          onClick={() => (open ? close() : openForm())}>
-          {open ? "Close" : empty ? "Set up" : "Edit"}
-        </Button>{" "}
-        {inAbout ? null : (
-          <Button variant="ghost" size="icon-sm" id="hhHide" aria-label="Hide your household bar" title="Hide"
-            onClick={() => {
-              setOpen(false);
-              setShown(false);
-              toast("Hidden. The house button at the top brings it back.");
-            }}>
-            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-          </Button>
-        )}
+    <div className={`hh-body${form.status === "m" ? " married" : ""}`} id="hhBody"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+          e.preventDefault();
+          onSave();
+        }
+      }}>
+      <div className="hh-grid">
+        <SelectField id="hhStatus" label="Household" value={form.status} onChange={(v) => set("status")(v as Form["status"])}>
+          <option value="s">Just me</option>
+          <option value="m">Me and a spouse</option>
+        </SelectField>
+        <NumberField inputRef={firstField} id="hhAge" label="Your age" unit="age" value={form.age} onValueChange={set("age")} />
+        <NumberField id="hhSpouseAge" className="hh-sp" label="Spouse's age" unit="age" value={form.spouseAge} onValueChange={set("spouseAge")} />
+        <NumberField id="hhRetire" label="Retire at" unit="age" value={form.retire} onValueChange={set("retire")} />
+        <SelectField id="hhState" label="State" value={form.state} onChange={set("state")}>
+          <option value="">Not set</option>
+          {states.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
+        </SelectField>
+        <MoneyField id="hhSaved" label="Retirement savings" value={form.saved} onValueChange={set("saved")} />
+        <MoneyField id="hhMonthly" label="You save each month" value={form.monthly} onValueChange={set("monthly")} />
+        <MoneyField id="hhIncome" label="Your gross income" unit="/yr" value={form.income} onValueChange={set("income")} />
+        <MoneyField id="hhIncome2" className="hh-sp" label="Spouse's gross income" unit="/yr" value={form.income2} onValueChange={set("income2")} />
+        <MoneyField id="hhSpend" label="Spending in retirement" unit="/yr" value={form.spend} onValueChange={set("spend")} />
       </div>
-      <div className="hh-body" id="hhBody" hidden={!open}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
-            e.preventDefault();
-            onSave();
-          } else if (e.key === "Escape") close();
-        }}>
-        <div className="hh-grid">
-          <SelectField id="hhStatus" label="Household" value={form.status} onChange={(v) => set("status")(v as Form["status"])}>
-            <option value="s">Just me</option>
-            <option value="m">Me and a spouse</option>
-          </SelectField>
-          <NumberField inputRef={firstField} id="hhAge" label="Your age" unit="age" value={form.age} onValueChange={set("age")} />
-          <NumberField id="hhSpouseAge" className="hh-sp" label="Spouse's age" unit="age" value={form.spouseAge} onValueChange={set("spouseAge")} />
-          <NumberField id="hhRetire" label="Retire at" unit="age" value={form.retire} onValueChange={set("retire")} />
-          <SelectField id="hhState" label="State" value={form.state} onChange={set("state")}>
-            <option value="">Not set</option>
-            {states.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
-          </SelectField>
-          <MoneyField id="hhSaved" label="Retirement savings" value={form.saved} onValueChange={set("saved")} />
-          <MoneyField id="hhMonthly" label="You save each month" value={form.monthly} onValueChange={set("monthly")} />
-          <MoneyField id="hhIncome" label="Your gross income" unit="/yr" value={form.income} onValueChange={set("income")} />
-          <MoneyField id="hhIncome2" className="hh-sp" label="Spouse's gross income" unit="/yr" value={form.income2} onValueChange={set("income2")} />
-          <MoneyField id="hhSpend" label="Spending in retirement" unit="/yr" value={form.spend} onValueChange={set("spend")} />
+      <div className="hh-foot">
+        <div className="hint">Any field can stay blank. Saving fills these numbers in to the
+          calculators and the tools that use them. You can still change any tool afterwards
+          without touching this. Stored in this browser only.</div>
+        <div className="hh-btns">
+          <Button variant="outline" className="max-sm:flex-auto" id="hhClear" onClick={onClear}>Clear</Button>{" "}
+          {onDone ? <><DialogClose render={<Button variant="outline" className="max-sm:flex-auto" id="hhCancel" />}>Close</DialogClose>{" "}</> : null}
+          <Button className="max-sm:flex-auto" id="hhFill" onClick={onSave}>Save and fill in tools</Button>
         </div>
-        <div className="hh-foot">
-          <div className="hint">Any field can stay blank. Filling in replaces those numbers in
-            Basic, Advanced, Stages and the tools that use them. You can still change any
-            tool afterwards without touching this. Stored in this browser only.</div>
-          <div className="hh-btns">
-            <Button variant="outline" className="max-sm:flex-auto" id="hhClear" onClick={onClear}>Clear</Button>{" "}
-            <Button variant="outline" className="max-sm:flex-auto" id="hhCancel" onClick={close}>Close</Button>{" "}
-            <Button className="max-sm:flex-auto" id="hhFill" onClick={onSave}>Save and fill in tools</Button>
+      </div>
+    </div>
+  );
+}
+
+/** About: the form, open under Appearance. */
+export function HouseholdBar({ states }: { states: StateOption[]; inAbout?: boolean }) {
+  return (
+    <section className="hh" id="hhCard" aria-label="Your household">
+      <HouseholdForm states={states} />
+    </section>
+  );
+}
+
+/** The household panel, over any page. Rendered once, in the layout. */
+export function HouseholdPanel({ states }: { states: StateOption[] }) {
+  const { panelOpen, setPanelOpen } = useHousehold();
+  return (
+    <Dialog open={panelOpen} onOpenChange={setPanelOpen}>
+      <DialogContent size="household" aria-labelledby="hhPanelTitle">
+        <div className="hh-panel-head">
+          <span className="hh-ic" aria-hidden="true"><HomeIcon /></span>
+          <div>
+            <h2 id="hhPanelTitle">Your household</h2>
+            <p>Enter a few details once and every tool starts from your numbers.</p>
           </div>
         </div>
-      </div>
-    </section>
+        <HouseholdForm states={states} onDone={() => setPanelOpen(false)} autoFocus />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** The header's household button: who's in it at a glance, or an invitation. */
+export function HouseholdChip({ states }: { states: StateOption[] }) {
+  const { profile, setPanelOpen } = useHousehold();
+  const empty = isEmptyHousehold(profile);
+  const sum = profile && !empty ? householdSummary(profile, (c) => states.find((s) => s.code === c)?.name) : null;
+  const label = sum ? sum.short.slice(0, 2).join(" · ") : "Set up your household";
+  return (
+    <span className="hh-chip">
+      <Button variant="outline" id="btnHousehold" aria-haspopup="dialog"
+        aria-label={sum ? "Your household: " + sum.long.join(", ") + ". Edit" : "Set up your household"}
+        onClick={() => setPanelOpen(true)}>
+        <HomeIcon data-icon="inline-start" aria-hidden="true" />
+        <span className="hh-chip-t">{label}</span>
+      </Button>
+    </span>
+  );
+}
+
+/** A tool's tie to the household, in its tool bar. */
+export function HouseholdStatus() {
+  const { profile, link, setPanelOpen } = useHousehold();
+  const toast = useToast();
+  if (!link) return null;
+  const edit = <Button variant="link" size="inline" onClick={() => setPanelOpen(true)}>Edit household</Button>;
+  if (isEmptyHousehold(profile)) {
+    return (
+      <p className="hh-st" id="hhStatus">
+        <HomeIcon aria-hidden="true" /><span>Enter your household once and every tool starts from it.</span>
+        <Button variant="link" size="inline" onClick={() => setPanelOpen(true)}>Set up</Button>
+      </p>
+    );
+  }
+  // Nothing in the household for this tool yet: still a way to it (a phone's header has no household button).
+  if (!link.takes) {
+    return (
+      <p className="hh-st" id="hhStatus" data-state="none">
+        <HomeIcon aria-hidden="true" /><span>Your household has nothing for this tool yet</span>{edit}
+      </p>
+    );
+  }
+  return link.matches ? (
+    <p className="hh-st" id="hhStatus" data-state="match">
+      <HomeIcon aria-hidden="true" /><span>Using your household</span>{edit}
+    </p>
+  ) : (
+    <p className="hh-st" id="hhStatus" data-state="changed">
+      <HomeIcon aria-hidden="true" /><span>Changed from your household</span>
+      <Button variant="link" size="inline" onClick={() => { link.apply(); toast("Filled in from your household"); }}>Use household numbers</Button>
+      {edit}
+    </p>
   );
 }

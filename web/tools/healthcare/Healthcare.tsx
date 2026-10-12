@@ -77,7 +77,7 @@ export function Healthcare() {
   const router = useRouter();
   const toast = useToast();
 
-  useHouseholdFill("healthcare", (h) => setState((c) => {
+  useHouseholdFill("healthcare", s, setState, (h, c) => {
     const married = h.status === "m";
     const retire = h.retire != null && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
     const next: HealthcareInputs = { ...c, status: married ? "m" : "s" };
@@ -87,7 +87,7 @@ export function Healthcare() {
       next.spouseAge = String(Math.round(h.spouseAge + (retire - h.age)));
     if (h.state && HC_STATES.some(([code]) => code === h.state)) next.state = h.state;
     return next;
-  }));
+  });
 
   const {
     joint, household, state, magi, acaMagi, bridgeYears, pctFPL, acaAge, spouseOn, acaAge2, kids, grossMonthly, std, enh, usingStateEst,

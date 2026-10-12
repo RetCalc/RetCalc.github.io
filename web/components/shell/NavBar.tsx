@@ -1,9 +1,10 @@
 "use client";
 
-/* The tab rail under the masthead: Guide, Calculator (with its Basic /
-   Advanced / Stages menu), Tools, About. Ported from src/js/app/09-navigation.js.
-   On a page with the one-row header (the homepage) there is no masthead:
-   the rail itself carries the logo and the theme button, pinned whole.
+/* The site header, one row pinned whole: the logo (a link home), the tabs
+   (Guide, Calculator with its Basic / Advanced / Stages menu, Tools,
+   About), and on the right the household button and the theme button.
+   Ported from src/js/app/09-navigation.js. A tool's own controls (saved
+   scenarios, its household status) are in its tool bar, not here.
 
    With a mouse, the Calculator menu opens on hover and the tab itself goes
    straight to the mode last used. Touch screens have no hover, so there a
@@ -11,7 +12,9 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ALIASES, CALC_MODE_NAMES, CALC_PATHS, SLUGS, calcModeFor, oneRowHeader, slugFromPath, tabFor, type CalcMode, type Tab } from "@/lib/site";
+import { ALIASES, CALC_MODE_NAMES, CALC_PATHS, SLUGS, calcModeFor, slugFromPath, tabFor, type CalcMode, type Tab } from "@/lib/site";
+import type { StateOption } from "@/lib/states";
+import { HouseholdChip } from "@/components/household/HouseholdBar";
 import { BrandLink, ThemeButton } from "./Masthead";
 
 export { slugFromPath };
@@ -32,7 +35,7 @@ function canHover() {
   return window.matchMedia?.("(hover:hover) and (pointer:fine)").matches ?? false;
 }
 
-export function NavBar() {
+export function NavBar({ states }: { states: StateOption[] }) {
   const path = usePathname();
   const router = useRouter();
   const slug = slugFromPath(path);
@@ -40,7 +43,6 @@ export function NavBar() {
   const known = (slug as string) === "compare" || slug in ALIASES || (SLUGS as string[]).includes(slug);
   const tab: Tab | null = known ? tabFor(slug) : null;
   const mode = calcModeFor(slug);
-  const row = oneRowHeader(slug);
 
   // The Calculator tab shows (and returns to) the mode last used.
   const [lastMode, setLastMode] = useState<CalcMode>("simple");
@@ -66,10 +68,10 @@ export function NavBar() {
       queued = false;
       const nb = navbar.current;
       if (!nb) return;
-      // pinned at var(--sb-clear), not always 0. The one-row header starts
-      // pinned (nothing above it), so it reads as stuck once the page moves.
+      // pinned at var(--sb-clear), not always 0. The header starts pinned
+      // (nothing above it), so it reads as stuck once the page moves.
       const off = parseFloat(getComputedStyle(nb).top) || 0;
-      setStuck(nb.getBoundingClientRect().top <= off + 0.5 && (!row || window.scrollY > 4));
+      setStuck(nb.getBoundingClientRect().top <= off + 0.5 && window.scrollY > 4);
     };
     const onScroll = () => {
       if (queued) return;
@@ -79,7 +81,7 @@ export function NavBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     check();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [row]);
+  }, []);
 
   /* A tab change slides the marker (the logo's arrow) from the old tab to
      the new one: a single arrow (.tabmark) travels along the rail, then
@@ -177,8 +179,8 @@ export function NavBar() {
     <>
       <div className={`sbcover${stuck ? " stuck" : ""}`} id="sbCover" aria-hidden="true" />
       <div className="calcscrim" id="calcScrim" hidden={menu !== "open"} onClick={() => closeMenu()} />
-      <div ref={navbar} className={`navbar${row ? " oneline" : ""}${stuck ? " stuck" : ""}${open ? " menu-open" : ""}`}>
-        {row ? <BrandLink tagline={false} /> : null}
+      <div ref={navbar} className={`navbar oneline${stuck ? " stuck" : ""}${open ? " menu-open" : ""}`}>
+        <BrandLink tagline={false} />
         <nav role="tablist" aria-label="Sections" className={sliding ? "sliding" : undefined}>
           {TABS.map((t, i) => {
             const selected = t.tab === tab;
@@ -251,7 +253,7 @@ export function NavBar() {
           {markX != null && tabIdx >= 0 ? <span className="tabmark" aria-hidden="true" style={{ "--mx": markX + "px" } as React.CSSProperties}
             onTransitionEnd={(e) => { if (e.propertyName === "transform") setSliding(false); }} /> : null}
         </nav>
-        {row ? <div className="navrow-end"><ThemeButton /></div> : null}
+        <div className="navrow-end"><HouseholdChip states={states} /><ThemeButton /></div>
         {/* Outside the nav so the phone rail's horizontal scroll can't clip it. */}
         <div className="calcmenu left-(--x)" id="calcMenu" role="menu" aria-labelledby="tabbtn-calc" hidden={!open}
           ref={menuRef} style={{ "--x": menuLeft + "px" } as React.CSSProperties} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>

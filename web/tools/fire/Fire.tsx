@@ -61,7 +61,7 @@ export function Fire() {
   const [tracesOn, setTracesOn] = useState(true);
   const tableRef = useRef<HTMLTableElement>(null);
 
-  useHouseholdFill("fire", (h) => setState((c) => {
+  useHouseholdFill("fire", s, setState, (h, c) => {
     const next: FireInputs = { ...c };
     const age = h.age != null && h.age > 0 && h.age < 120 ? Math.round(h.age) : null;
     const retire = h.retire != null && h.retire > 0 && h.retire < 120 ? Math.round(h.retire) : null;
@@ -71,7 +71,7 @@ export function Fire() {
     if (h.monthly != null) Object.assign(next, { contrib: dollarsField(h.monthly), period: "Monthly" });
     if (h.spend != null && h.spend > 0) Object.assign(next, { target: dollarsField(h.spend), solveFor: "withdrawal" });
     return next;
-  }));
+  });
 
   const { p, S, cr, histYear, displayYear, gains, keep, coastGap } = fireCompute(s);
   const coast = p.mode === "coast";

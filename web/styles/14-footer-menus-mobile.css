@@ -150,19 +150,4 @@ body.gd-on .sitefoot-in{padding-bottom:calc(var(--gdh,140px) + 40px)}
   .popup .popbtn:hover{transform:none}
 }
 
-/* ---------- phone masthead ----------
-   Household and theme join the logo's row, and the scenario toolbar gets the
-   whole second row to itself, so the picker has room to say what's loaded.
-   .scenariobar steps aside (display:contents) so its children can sit in the
-   masthead's grid directly; nothing moves in the markup. */
-@media (max-width:640px){
-  .masthead{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px 8px}
-  .scenariobar{display:contents}
-  .brand{grid-column:1;grid-row:1;min-width:0}
-  .wordmark{min-width:0}
-  .wordmark .brandname{font-size:clamp(16px,5vw,20px);white-space:nowrap}
-  #btnHousehold{grid-column:2;grid-row:1}
-  #btnTheme{grid-column:3;grid-row:1}
-  .scgroup{grid-column:1 / -1;grid-row:2}
-}
 

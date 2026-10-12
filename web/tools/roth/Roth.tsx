@@ -60,7 +60,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
   const [tableView, setTableView] = useState<"plan" | "base">(rmdPage ? "base" : "plan");
   const tableRef = useRef<HTMLTableElement>(null);
 
-  useHouseholdFill("roth", (h) => setState((c) => {
+  useHouseholdFill("roth", s, setState, (h, c) => {
     const next: RothInputs = { ...c, status: h.status === "m" ? "m" : "s" };
     const age = h.age != null && h.age > 0 && h.age < 120 ? Math.round(h.age) : null;
     if (age) next.age = String(age);
@@ -68,7 +68,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
     if (h.state) next.state = h.state;
     if (h.spend != null && h.spend > 0) next.spend = groupDigits(h.spend, true);
     return next;
-  }));
+  });
 
   const married = s.status === "m";
   const strat = s.strategy;

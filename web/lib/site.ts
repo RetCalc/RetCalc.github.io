@@ -116,14 +116,8 @@ export function tabFor(slug: Slug): Tab | null {
   return "tools";
 }
 
-/** Pages whose header is one row (logo, tabs, theme) pinned as a whole.
-    Only the homepage for now; the rest keep the masthead over the tab rail. */
-export function oneRowHeader(slug: Slug): boolean {
-  return slug === "home";
-}
-
-/** Pages with no tool on them, so no saved-scenario controls or household
-    button in the header (those act on the open tool). */
+/** Pages with a tool on them, which get the tool bar (household status and
+    saved scenarios, ToolBar.tsx). */
 export function hasToolControls(slug: Slug): boolean {
   return slug !== "home" && slug !== "about" && slug !== "tools";
 }
