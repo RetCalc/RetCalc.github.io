@@ -400,6 +400,8 @@ As built (everything below eases `cubic-bezier(.2,.7,.3,1)` and moves only trans
 | Tool | The animation | Length |
 |---|---|---|
 | Optimizer | The arrow flies into the target; the ring pulses | 0.6s |
+| Start here: Guide | The arrow steps into the target, then the rings ripple out | 0.76s |
+| Start here: Retirement calculator | The growth line draws itself up; the arrowhead lands at its tip | 0.62s |
 | Drawdown | The projection line redraws; two sample points pop in after it | 0.6s |
 | Income Tax | A magnifier scans over the return and back | 0.62s |
 | Roth | Money flows along the pipe into the Roth bucket, which bounces as it lands | 0.6s |

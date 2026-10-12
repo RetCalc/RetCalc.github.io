@@ -125,6 +125,23 @@
   .op-ic-arrow,.op-ic-ring{transform-box:fill-box;transform-origin:center}
   .toolcard:is(:hover,:focus-visible,.is-beat) .op-ic-arrow{animation:op-ic-fly .5s cubic-bezier(.3,.7,.3,1)}
   .toolcard:is(:hover,:focus-visible,.is-beat) .op-ic-ring{animation:op-ic-ring .6s ease-out}
+
+  /* Start here, the Guide: the arrow comes in a step at a time (the guide
+     goes one question at a time), then the rings ripple out from the eye. */
+  @keyframes gd-ic-step{0%{transform:translate(-7px,7px);opacity:0}20%{opacity:1}35%{transform:translate(-3.5px,3.5px)}50%{transform:translate(-3.5px,3.5px)}75%{transform:translate(.8px,-.8px)}100%{transform:none}}
+  @keyframes gd-ic-ripple{0%,60%{transform:scale(1)}80%{transform:scale(1.18)}100%{transform:scale(1)}}
+  .gd-ic-arrow,.gd-ic-inner,.gd-ic-outer{transform-box:view-box;transform-origin:20px 20px}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .gd-ic-arrow{animation:gd-ic-step .6s cubic-bezier(.3,.7,.3,1)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .gd-ic-inner{animation:gd-ic-ripple .6s ease-out}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .gd-ic-outer{animation:gd-ic-ripple .68s ease-out .08s}
+
+  /* Start here, the calculator: the growth line draws itself up, and the
+     arrowhead lands at its tip. */
+  @keyframes bc-ic-draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+  @keyframes bc-ic-head{0%,55%{transform:scale(0);opacity:0}80%{transform:scale(1.2);opacity:1}100%{transform:scale(1)}}
+  .bc-ic-head{transform-box:view-box;transform-origin:33px 9px}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .bc-ic-line{stroke-dasharray:100;animation:bc-ic-draw .55s cubic-bezier(.35,0,.25,1)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .bc-ic-head{animation:bc-ic-head .62s ease-out}
 }
 
 /* ---------- back to the tool picker, and the tool's header ---------- */

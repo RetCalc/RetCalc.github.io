@@ -24,16 +24,17 @@ export function ToolCard({ c }: { c: Tool }) {
 
 /* Start here (doc 3, D9): the two ways in for someone who doesn't know
    which tool to open, above the groups. Neither is in the tool list, so
-   each card has its own simple icon. */
+   each card has its own simple icon; their class names drive the hover
+   animations in styles/04-tool-icons-header.css, like the tools' icons. */
 const START = [
   { href: "/guide", id: "guide", name: "Retirement Readiness Guide",
     desc: "One question at a time, in about ten minutes: your number, a readiness score and the moves that matter most, with a lesson on every card.",
-    icon: <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="13" stroke="currentColor" strokeWidth="2" /><circle cx="20" cy="20" r="7" stroke="currentColor" strokeWidth="2" />
-      <circle cx="20" cy="20" r="1.8" fill="currentColor" /><path d="M8 32 18.5 21.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg> },
+    icon: <svg viewBox="0 0 40 40" fill="none"><circle className="gd-ic-outer" cx="20" cy="20" r="13" stroke="currentColor" strokeWidth="2" /><circle className="gd-ic-inner" cx="20" cy="20" r="7" stroke="currentColor" strokeWidth="2" />
+      <circle cx="20" cy="20" r="1.8" fill="currentColor" /><path className="gd-ic-arrow" d="M8 32 18.5 21.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg> },
   { href: "/", id: "basic", name: "Retirement calculator",
     desc: "Six questions: what your savings grow to by retirement, in today's dollars, and whether it lasts.",
-    icon: <svg viewBox="0 0 40 40" fill="none"><path d="M5 33h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M7 29 C15 27 22 22 33 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M27 9h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg> },
+    icon: <svg viewBox="0 0 40 40" fill="none"><path d="M5 33h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path className="bc-ic-line" pathLength="100" d="M7 29 C15 27 22 22 33 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path className="bc-ic-head" d="M27 9h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg> },
 ];
 
 export function ToolPicker() {
