@@ -86,6 +86,9 @@ export type PlanResult =
 export interface PlanSel {
   sel: number | null; setSel: (i: number) => void;
   view: "all" | "year"; setView: (v: "all" | "year") => void;
+  /** Starts picked on the chart so far: the table opens to show one past
+      its first rows (an automatic pick, the worst start, doesn't). */
+  chartPicks: number; pickOnChart: (i: number) => void;
 }
 
 export function PlanView({ v, R, ps }: { v: DDView; R: PlanResult | null; ps: PlanSel }) {
@@ -219,10 +222,10 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
   const age = v.age;
   const runs = H ? sort.order(H.runs, (r, c) => sortValue(r, c, age)) : [];
   const [all, setAll] = useState(false);
-  // A start picked elsewhere (the chart) that falls past the first rows opens the table.
-  const [seen, setSeen] = useState(ps.sel);
-  if (ps.sel !== seen) {
-    setSeen(ps.sel);
+  // A start picked on the chart that falls past the first rows opens the table.
+  const [seen, setSeen] = useState(ps.chartPicks);
+  if (ps.chartPicks !== seen) {
+    setSeen(ps.chartPicks);
     if (!all && runs.findIndex((r) => r.startIdx === ps.sel) >= FIRST_ROWS) setAll(true);
   }
   const shown = all ? runs : runs.slice(0, FIRST_ROWS);
@@ -334,7 +337,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
           marks: dec ? null : DD_ERAS.filter((e) => e.year >= lo && e.year <= hi).map((e) => ({ x: e.year, label: String(e.year) })),
         }}
         onPick={(p) => {
-          ps.setSel(p.run.startIdx);
+          ps.pickOnChart(p.run.startIdx);
           ps.setView("year");
         }}
         tip={(p) => {

@@ -80,6 +80,7 @@ export function Drawdown({ landing }: { landing?: string }) {
   const [tracesOn, setTracesOn] = useState(true);
   const [pinned, setPinned] = useState<{ state: Record<string, unknown>; label: string } | null>(null);
   const [sel, setSel] = useState<number | null>(null);
+  const [chartPicks, setChartPicks] = useState(0);
   const [view, setView] = useState<"all" | "year">("all");
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const detailTable = useRef<HTMLTableElement>(null);
@@ -263,7 +264,7 @@ export function Drawdown({ landing }: { landing?: string }) {
             </CardContent>
           </Card>
 
-          <PlanView v={v} R={R} ps={{ sel, setSel, view, setView }} />
+          <PlanView v={v} R={R} ps={{ sel, setSel, view, setView, chartPicks, pickOnChart: (i) => { setSel(i); setChartPicks((n) => n + 1); } }} />
           <CompareView v={v} T={T} active={tab === "compare"} />
           <SafeView v={v} T={T} active={tab === "safe"} />
         </div>
