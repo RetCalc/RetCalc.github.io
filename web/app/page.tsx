@@ -1,8 +1,10 @@
-/* The homepage, to come (HOMEPAGE_BRIEF.md). The Basic calculator, which
-   used to live here, is at /calculator. */
+/* The homepage: an introduction to the site, with no tool on it
+   (components/home/Home.tsx). The Basic calculator, which used to live
+   here, is at /calculator. */
 
-import Link from "next/link";
-import { metadataFor } from "@/lib/seo";
+import { Home } from "@/components/home/Home";
+import { homeData } from "@/components/home/data";
+import { jsonLdFor, metadataFor } from "@/lib/seo";
 
 export const metadata = metadataFor("home");
 
@@ -11,11 +13,12 @@ export const metadata = metadataFor("home");
 const FORWARD = `if(location.hash.indexOf("#s=")===0)location.replace("/calculator"+location.hash)`;
 
 export default function HomePage() {
+  const ld = JSON.stringify(jsonLdFor("home")).replace(/</g, "\\u003c");
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: FORWARD }} />
-      <h1>RetCalc</h1>
-      <p><Link href="/calculator">Open the Calculator</Link></p>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
+      <Home data={homeData()} />
     </>
   );
 }

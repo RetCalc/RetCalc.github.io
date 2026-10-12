@@ -457,6 +457,26 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 - **Reduced motion:** no minimum, no draw and no flight: the answer shows as soon as the search is done (measured 18 to 26ms after). While it runs, the arrow jumps in tenths of the real progress, and no keyframe or transition plays. The skip line and the loader's focus stop are left out, as there is nothing to skip.
 - **Rough edges:** the estimate beside the run button ("about N seconds") still has the 5-second minimum as its floor on later runs; it's a shown figure, so it was left as is. On the hit the arrowhead sits over the target's rings, as on the Guide.
 
+## Homepage
+
+The homepage (`/`, `web/components/home/`, styles in `web/styles/16-home.css`) is the one page allowed past this system,: nothing in `16-home.css` is used by another page, and no tool inherits it. It persuades where the tools instrument, so it may use what they may not: display type up to 112px (`clamp(52px, 8.4vw, 112px)`, "Know your" over an amber "number."), the three main paths (Calculator, Guide, Drawdown Simulator) on Surface tiles tinted toward amber, Brand Jade and Brand Steel, and motion driven by the scroll. Colors are still the tokens; no new value is added.
+
+### Structure
+- **An age line.** The tools hang off a vertical line at the age you'd reach for them: the Calculator and Guide in your 30s, FIRE in your 40s, the Bridge at 52 to 59½, Healthcare until 65, the Optimizer at 62 to 70, Drawdown at 65, Roth and RMDs at 73. The everyday tools (Income Tax, Rent vs. Buy, Mortgage, Budget, then a list) follow in a grid.
+- **Live views, never screenshots.** Every picture is a small SVG of what the tool shows, drawn from the engine's own figures when the site is built (`data.ts`): the tool's defaults or the page's example household, so the tool opens on what the homepage promised.
+
+### Motion
+- A tile's chart draws once about 90% of it is on screen below the header, and resets when it drops back below the fold, so scrolling up replays it. The line fills with the scroll and its nodes light in amber as the reading line passes.
+- Under reduced motion, or without JavaScript, everything shows as it ends.
+
+### Header
+The homepage uses the one-row header (`.navbar.oneline`): logo left, tabs centered, theme button right, the whole row pinned, see-through until you scroll. The owner wants it site-wide later; until then it is the homepage's.
+
+### Copy (the owner's rules)
+- Never "20+ tools": it's "a calculator, a guide and 13 planning tools". The 72(t), RMD and strategy pages are not separate tools.
+- Drawdown has 15 withdrawal strategies.
+- No stat panels, amber bands or legend fine print.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -469,6 +489,7 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 - **Do** check every text/background pair for 4.5:1 in both modes with the contrast script.
 - **Do** keep the bow-and-arrow brand motif on the Guide and the Plan Optimizer, driven by real progress.
 - **Do** give every tool-picker icon one short beat of motion on hover, focus and tap, with a color-only fallback under reduced motion.
+- **Do** keep the homepage's display type, tinted tiles and scroll motion on the homepage (see Homepage); they are not for the tools.
 
 ### Don't:
 - **Don't** use amber outside its four places: key result, primary button, active tab, your plan.

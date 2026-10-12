@@ -1,0 +1,175 @@
+/* ---------- the homepage (components/home/Home.tsx) ----------
+   The one page allowed past DESIGN.md (HOMEPAGE_BRIEF.md): display type,
+   tinted tiles, and charts that draw as they come into view. The tools are
+   laid along an age line in the order you'd use them. Colors are the design
+   tokens; nothing here is used by another page.
+
+   Motion: Home.tsx sets data-rv="pre" on text until it scrolls into view,
+   and data-draw="pending" / "go" on each chart's tile: "go" once about 90%
+   of it is on screen, back to "pending" when it drops below the fold again,
+   so scrolling up and down replays it. Without JavaScript, or with reduced
+   motion, everything simply shows. */
+
+.hm{grid-column:1 / -1;min-width:0;--hm-ease:cubic-bezier(.16,1,.3,1);
+  --hm-path:color-mix(in srgb,var(--ds-muted) 40%,transparent)}
+.hm h2,.hm h3,.hm p{margin:0}
+.hm a{color:inherit;text-decoration:none}
+
+/* text that eases in */
+.hm [data-rv]{transition:opacity .9s var(--hm-ease),transform .9s var(--hm-ease),filter .9s var(--hm-ease);
+  transition-delay:calc(var(--d,0) * 90ms)}
+.hm [data-rv="pre"]{opacity:0;transform:translateY(26px);filter:blur(6px)}
+
+/* hero */
+.hm-hero{display:grid;grid-template-columns:1.3fr 1fr;gap:24px 64px;align-items:end;
+  padding:clamp(40px,7vw,96px) 0 clamp(32px,4vw,56px)}
+.hm-display{font-size:clamp(52px,8.4vw,112px);line-height:.94;letter-spacing:-.045em;font-weight:600;
+  color:var(--ds-text);text-wrap:balance}
+.hm-display em{font-style:normal;color:var(--ds-amber)}
+.hm-lede{font-size:clamp(18px,1.6vw,21px);line-height:1.5;color:var(--ds-muted);max-width:40ch;text-wrap:pretty}
+.hm-lede b{color:var(--ds-text);font-weight:500}
+.hm-btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+@media (max-width:900px){.hm-hero{grid-template-columns:1fr}}
+
+/* section heads */
+.hm-h2{font-size:clamp(32px,4.4vw,58px);line-height:1.02;letter-spacing:-.035em;font-weight:600;
+  color:var(--ds-text);text-wrap:balance}
+.hm-h3{font-size:clamp(22px,2.2vw,28px);line-height:1.12;letter-spacing:-.025em;font-weight:600;
+  color:var(--ds-text);text-wrap:balance}
+.hm-body{color:var(--ds-muted);font-size:17px;line-height:1.55;max-width:52ch}
+.hm-head{display:grid;grid-template-columns:1.1fr 1fr;gap:16px 56px;align-items:end;
+  margin:clamp(40px,6vw,80px) 0 clamp(36px,5vw,64px)}
+.hm-head.hm-later{margin-top:clamp(96px,11vw,150px);margin-bottom:28px}
+@media (max-width:900px){.hm-head{grid-template-columns:1fr}}
+
+/* tiles */
+.hm-tile{position:relative;display:flex;flex-direction:column;gap:12px;min-width:0;padding:24px;
+  border:1px solid var(--ds-rule);border-radius:22px;background:var(--ds-surface);overflow:hidden;
+  transition:transform .5s var(--hm-ease),border-color .3s,box-shadow .5s var(--hm-ease)}
+a.hm-tile:hover{transform:translateY(-3px);border-color:var(--ds-rule-strong);box-shadow:var(--ds-float)}
+a.hm-tile:focus-visible{outline:2px solid var(--ds-focus);outline-offset:3px}
+.hm-tile p{color:var(--ds-muted);max-width:46ch}
+.hm-kick{font-size:13px;font-weight:600;color:var(--ds-muted)}
+.hm-name{font-weight:600;font-size:17px;letter-spacing:-.01em;color:var(--ds-text);display:flex;align-items:center;gap:8px}
+.hm-go{margin-top:auto;display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ds-text)}
+.hm-go svg{width:16px;height:16px;transition:transform .25s var(--hm-ease)}
+a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
+.hm-mini{margin-top:auto;padding-top:6px}
+.hm-amber{background:linear-gradient(160deg,color-mix(in srgb,var(--ds-amber) 20%,var(--ds-surface)),var(--ds-surface) 85%);
+  border-color:color-mix(in srgb,var(--ds-amber) 30%,var(--ds-rule))}
+.hm-jade{background:linear-gradient(160deg,color-mix(in srgb,var(--ds-brand-jade) 19%,var(--ds-surface)),var(--ds-surface) 85%);
+  border-color:color-mix(in srgb,var(--ds-brand-jade) 28%,var(--ds-rule))}
+.hm-steel{background:linear-gradient(160deg,color-mix(in srgb,var(--ds-brand-steel) 19%,var(--ds-surface)),var(--ds-surface) 85%);
+  border-color:color-mix(in srgb,var(--ds-brand-steel) 26%,var(--ds-rule))}
+.hm-c-amber{color:var(--ds-amber)} .hm-c-jade{color:var(--ds-brand-jade)} .hm-c-steel{color:var(--ds-brand-steel)}
+.hm-c-lav{color:var(--ds-series-lavender)} .hm-c-sky{color:var(--ds-series-sky)} .hm-c-teal{color:var(--ds-series-teal)}
+
+.hm-readout{margin-top:6px}
+.hm-readout .k{font-size:15px;color:var(--ds-muted);font-weight:500}
+.hm-readout .v{font-size:clamp(44px,5vw,64px);font-weight:500;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--ds-text)}
+.hm-readout .v.amber{color:var(--ds-amber)}
+
+/* the timeline */
+.hm-tl{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr);row-gap:clamp(36px,5vw,64px)}
+.hm-spine,.hm-fill{position:absolute;left:calc(50% - 1px);width:2px;top:0;border-radius:2px}
+.hm-spine{bottom:0;background:var(--ds-rule)}
+.hm-fill{height:var(--fill,0px);background:linear-gradient(var(--ds-amber),var(--ds-brand-jade) 45%,var(--ds-brand-steel))}
+.hm-node{grid-column:2;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding-top:22px}
+.hm-node i{width:14px;height:14px;border-radius:50%;background:var(--ds-ground);border:2px solid var(--ds-rule-strong);
+  transition:background .4s,border-color .4s,transform .4s var(--hm-ease)}
+.hm-node span{margin-top:10px;padding:2px 6px;border-radius:6px;background:var(--ds-ground);font-size:13px;font-weight:600;
+  color:var(--ds-muted);font-variant-numeric:tabular-nums;white-space:nowrap;transition:color .4s}
+.hm-node[data-on] i{background:var(--ds-amber);border-color:var(--ds-amber);transform:scale(1.15)}
+.hm-node[data-on] span{color:var(--ds-text)}
+.hm-left{grid-column:1} .hm-right{grid-column:3}
+.hm-wide{grid-column:1 / -1;z-index:1}
+.hm-r1{grid-row:1} .hm-r2{grid-row:2} .hm-r3{grid-row:3} .hm-r4{grid-row:4} .hm-r5{grid-row:5}
+.hm-r6{grid-row:6} .hm-r7{grid-row:7} .hm-r8{grid-row:8} .hm-r9{grid-row:9} .hm-r10{grid-row:10}
+
+.hm-split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:32px;align-items:center}
+.hm-split.hm-dd{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.hm-split > div{display:grid;gap:12px}
+.hm-guide{display:grid;grid-template-columns:112px 1fr;gap:20px;align-items:center}
+.hm-steps{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:14px;color:var(--ds-muted)}
+.hm-steps li{display:flex;gap:9px;align-items:center}
+.hm-steps b{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--ds-rule-strong);display:inline-grid;
+  place-items:center;font-size:10px;flex:none}
+.hm-steps b svg{width:11px;height:11px;stroke-width:3}
+.hm-steps .done b{background:var(--ds-brand-jade);border-color:var(--ds-brand-jade);color:var(--ds-ground)}
+.hm-steps .now{color:var(--ds-text);font-weight:500}
+.hm-steps .now b{border-color:var(--ds-brand-jade)}
+
+@media (max-width:900px){
+  .hm-tl{grid-template-columns:44px minmax(0,1fr);row-gap:28px}
+  .hm-spine,.hm-fill{left:21px}
+  .hm-node{grid-column:1}
+  .hm-node span{writing-mode:vertical-rl;transform:rotate(180deg);padding:6px 2px;font-size:12px}
+  .hm-left,.hm-right,.hm-wide{grid-column:2}
+  /* the wide tiles' age sits beside them, not above */
+  .hm-tl .hm-node.hm-r1{grid-row:2} .hm-tl .hm-node.hm-r8{grid-row:9}
+  .hm-split,.hm-split.hm-dd{grid-template-columns:1fr;gap:16px}
+}
+
+/* the everyday tools */
+.hm-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px}
+.hm-s6{grid-column:span 6} .hm-s4{grid-column:span 4}
+@media (max-width:980px){.hm-s6{grid-column:span 12} .hm-s4{grid-column:span 6}}
+@media (max-width:620px){.hm-s4{grid-column:span 12}}
+.hm-links{display:grid;margin-top:auto}
+.hm-links a{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--ds-rule);
+  font-weight:500;color:var(--ds-text)}
+.hm-links a svg{width:15px;height:15px;color:var(--ds-muted);transition:transform .25s var(--hm-ease),color .25s}
+.hm-links a:hover,.hm-links a:hover svg{color:var(--ds-amber)}
+.hm-links a:hover svg{transform:translateX(3px)}
+.hm-links a:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
+
+/* close */
+.hm-close{display:grid;grid-template-columns:1.2fr 1fr;gap:24px 64px;align-items:center;
+  padding:clamp(40px,4.5vw,64px) 0 clamp(24px,3vw,40px)}
+.hm-close .hm-h2{max-width:16ch}
+@media (max-width:900px){.hm-close{grid-template-columns:1fr}}
+
+/* charts: live SVG views of the tools */
+.hm svg.hm-chart{display:block;width:100%;height:auto;overflow:visible}
+.hm-chart text{fill:var(--ds-muted);font:500 11px var(--sans);font-variant-numeric:tabular-nums}
+.hm-chart text.hm-t-ink{fill:var(--ds-text)}
+.hm-chart text.hm-t-big{fill:var(--ds-text);font-size:14px;font-weight:600}
+.hm-chart .hm-grid-l{stroke:var(--ds-rule);stroke-width:1}
+.hm-chart .hm-ln{fill:none;stroke:var(--ds-amber);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.hm-chart .hm-ln.hm-thin{stroke-width:2}
+.hm-chart .hm-path{fill:none;stroke:var(--hm-path);stroke-width:1.15}
+.hm-chart .hm-fail{fill:none;stroke:var(--ds-loss);stroke-width:1.6}
+.hm-chart .hm-area{fill:color-mix(in srgb,var(--ds-amber) 14%,transparent)}
+.hm-chart .hm-dash{stroke:var(--ds-muted);stroke-dasharray:4 4;opacity:.7}
+.hm-chart .hm-mark{stroke:var(--ds-amber);stroke-dasharray:3 3}
+.hm-chart .hm-dot{fill:var(--ds-amber)}
+.hm-chart .hm-ring{fill:none;stroke:var(--ds-amber);stroke-width:1.5}
+.hm-chart .hm-cloud{fill:var(--ds-muted);opacity:.4}
+.hm-chart .hm-track{fill:none;stroke:var(--ds-rule);stroke-width:9}
+.hm-chart .hm-score{fill:none;stroke:var(--ds-brand-jade);stroke-width:9;stroke-linecap:round}
+.hm-chart text.hm-score-n{fill:var(--ds-text);font-size:31px;font-weight:600}
+.hm-chart text.hm-score-l{font-size:10.5px}
+.hm-chart .f-sky{fill:var(--ds-series-sky)} .hm-chart .f-teal{fill:var(--ds-series-teal)}
+.hm-chart .f-lav{fill:var(--ds-series-lavender)} .hm-chart .f-rose{fill:var(--ds-series-rose)}
+.hm-chart .f-gray{fill:var(--ds-series-gray)} .hm-chart .f-amber{fill:var(--ds-amber)}
+.hm-chart .s-sky{stroke:var(--ds-series-sky)} .hm-chart .s-teal{stroke:var(--ds-series-teal)}
+.hm-chart .o-soft{opacity:.55} .hm-chart .o-band{opacity:.85}
+
+/* The wide charts shrink to half size on a phone; their labels don't. */
+@media (max-width:640px){
+  .hm-wide-chart text{font-size:19px}
+  .hm-wide-chart text.hm-t-big{font-size:23px}
+  .hm-tax text{font-size:15px} .hm-tax text.hm-t-big{font-size:19px}
+}
+
+/* draw on view */
+.hm-chart .draw{stroke-dasharray:1;stroke-dashoffset:0}
+.hm-chart .fade{transition:opacity .6s var(--hm-ease);transition-delay:var(--dl,0s)}
+[data-draw="pending"] .hm-chart .draw{stroke-dashoffset:1}
+[data-draw="pending"] .hm-chart .fade{opacity:0}
+[data-draw="go"] .hm-chart .draw{transition:stroke-dashoffset var(--dur,1.6s) var(--hm-ease);transition-delay:var(--dl,0s)}
+.hm-chart .hm-score.draw{stroke-dasharray:var(--score) 1}
+
+@media (prefers-reduced-motion:reduce){
+  .hm [data-rv],.hm-tile,.hm-node i,.hm-node span,.hm-chart .fade,[data-draw="go"] .hm-chart .draw{transition:none}
+}
