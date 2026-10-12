@@ -108,7 +108,7 @@ export function ToolIcon({ sub }: { sub: ToolSub }) {
 }
 
 /** A tool's icon in its tile, on its card and in its page's header, in its
-    category's series color (TOOL_HUE, through --tool-hue): the
+    section's series color (TOOL_HUE, through --tool-hue): the
     same tile on both sides of opening a tool, so it glides from the card
     up into the header (a shared view transition, forward only). */
 export function ToolIconTile({ sub, className, id }: { sub: ToolSub; className: string; id?: string }) {

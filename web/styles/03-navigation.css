@@ -156,7 +156,7 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
 .toolcard:focus-visible,.toolcard.is-beat{border-color:var(--ds-rule-strong);background:var(--panel-2)}
 .toolcard-top{display:flex;align-items:center;gap:14px;min-width:0}
 /* The icon sits on a flat Raised tile with a rule edge, drawn in its
-   category's series color (--tool-hue, set per tool by ToolIconTile). The
+   section's series color (--tool-hue, set per tool by ToolIconTile). The
    tool header uses the same tile (.toolhead-icon sets its own size). */
 .toolcard-icon{flex:none;width:54px;height:54px;padding:9px;color:var(--tool-hue,var(--text));
   display:flex;align-items:center;justify-content:center;border-radius:var(--r-card);

@@ -140,17 +140,16 @@ export const TOOLS: Record<ToolSub, ToolCard> = Object.fromEntries(
   TOOL_GROUPS.flatMap((g) => g.cards.map((c) => [c.sub, c])),
 ) as Record<ToolSub, ToolCard>;
 
-/** The four kinds of tool, each with one chart series color for its icon
-    (DESIGN.md: the series tokens, never rose or amber). The tool list's
-    three sections stay as they are; the taxes-and-healthcare tools sit in
-    two of them, and share a color across both. */
-export type ToolHue = "sky" | "lavender" | "teal" | "gray";
-export const TOOL_CATEGORIES: { label: string; hue: ToolHue; tools: ToolSub[] }[] = [
-  { label: "Planning retirement", hue: "sky", tools: ["optimizer", "drawdown", "bridge"] },
-  { label: "Taxes and healthcare", hue: "lavender", tools: ["roth", "healthcare", "tax"] },
-  { label: "Saving and investing", hue: "teal", tools: ["fire", "backtest", "college", "rentbuy"] },
-  { label: "Everyday money", hue: "gray", tools: ["budget", "debt", "mortgage"] },
-];
+/** Each section of the tool list has one chart series color for its
+    icons (DESIGN.md: the series tokens, never rose or amber), so a tool's
+    color always matches the section it's listed in (the owner's call,
+    2026-10-12). Start here, above the sections, stays in Text. */
+export type ToolHue = "sky" | "teal" | "lavender";
+const SECTION_HUE: Record<string, ToolHue> = {
+  "Retirement income": "sky",
+  "Saving and investing": "teal",
+  "Everyday money": "lavender",
+};
 export const TOOL_HUE = Object.fromEntries(
-  TOOL_CATEGORIES.flatMap((c) => c.tools.map((t) => [t, c.hue])),
+  TOOL_GROUPS.flatMap((g) => g.cards.map((c) => [c.sub, SECTION_HUE[g.label]])),
 ) as Record<ToolSub, ToolHue>;
