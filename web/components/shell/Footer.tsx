@@ -11,7 +11,7 @@ const EMAIL = ["contact", "retcalc.app"].join("@");
 
 const LINKS = [
   { label: "Guide", foot: "guide", href: "/guide" },
-  { label: "Calculator", foot: "calc", href: "/" },
+  { label: "Calculator", foot: "calc", href: "/calculator" },
   { label: "Tools", foot: "tools", href: "/tools" },
   { label: "About", foot: "about", href: "/about" },
 ];

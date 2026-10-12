@@ -114,7 +114,7 @@ function CompareSaved() {
           {enough ? null : <>
             <InfoIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <p className="m-0 max-w-copy">You have {total ? "one saved scenario" : "no saved scenarios"}. Compare needs at least two: set up a plan
-              on <Link href="/" className={LINK}>Basic</Link>, <Link href="/advanced" className={LINK}>Advanced</Link> or <Link href="/stages" className={LINK}>Stages</Link>, save
+              on <Link href="/calculator" className={LINK}>Basic</Link>, <Link href="/advanced" className={LINK}>Advanced</Link> or <Link href="/stages" className={LINK}>Stages</Link>, save
               it with Save or delete (the disk button in the bar above), then change it and save again.</p>
           </>}
         </div>

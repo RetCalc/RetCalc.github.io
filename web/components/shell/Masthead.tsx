@@ -1,9 +1,15 @@
 "use client";
 
-/* The top bar: the brand, the saved-scenario controls, and the household
-   and theme buttons. Markup from src/page.html. */
+/* The top bar: the brand (a link home), the saved-scenario controls, and
+   the household and theme buttons. Markup from src/page.html. Pages with no
+   tool leave out the scenario controls and the household button; a page
+   with the one-row header has no masthead at all (NavBar carries the brand
+   and theme button there). */
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useHousehold } from "@/components/household/HouseholdProvider";
+import { hasToolControls, oneRowHeader, slugFromPath } from "@/lib/site";
 import { setThemeChoice, useTheme } from "@/lib/theme";
 import { Brandmark } from "./Brandmark";
 import { ScenarioBar } from "./ScenarioBar";
@@ -21,7 +27,7 @@ const MOON = (
   </svg>
 );
 
-function ThemeButton() {
+export function ThemeButton() {
   const theme = useTheme();
   // The button offers whichever theme isn't showing. Before hydration the
   // theme isn't known yet, so it renders empty, as the old site's did.
@@ -44,7 +50,7 @@ function HouseholdButton() {
         setShown(!shown);
         if (shown) return;
         // The homepage offers the bar after its result, not at the top.
-        if (location.pathname === "/") requestAnimationFrame(() => document.getElementById("hhCard")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+        if (location.pathname === "/calculator") requestAnimationFrame(() => document.getElementById("hhCard")?.scrollIntoView({ behavior: "smooth", block: "start" }));
         else window.scrollTo({ top: 0, behavior: "smooth" });
       }}>
       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.2 9.2L10 3.6l6.8 5.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /><path d="M5.2 8v8.2h9.6V8" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /><path d="M8.4 16.2v-4.3h3.2v4.3" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" /></svg>
@@ -52,20 +58,30 @@ function HouseholdButton() {
   );
 }
 
+/** The logo and name, linking to the homepage. */
+export function BrandLink({ tagline = true }: { tagline?: boolean }) {
+  return (
+    <Link href="/" className="brand" aria-label="RetCalc home">
+      <Brandmark />
+      <div className="wordmark">
+        <div className="brandname">RetCalc</div>
+        {tagline ? <div className="tagline">Know your number.</div> : null}
+      </div>
+    </Link>
+  );
+}
+
 export function Masthead() {
+  const slug = slugFromPath(usePathname());
+  if (oneRowHeader(slug)) return null;
+  const tool = hasToolControls(slug);
   return (
     <header>
       <div className="masthead">
-        <div className="brand">
-          <Brandmark />
-          <div className="wordmark">
-            <div className="brandname">RetCalc</div>
-            <div className="tagline">Know your number.</div>
-          </div>
-        </div>
+        <BrandLink />
         <div className="scenariobar">
-          <ScenarioBar />
-          <HouseholdButton />
+          {tool ? <ScenarioBar /> : null}
+          {tool ? <HouseholdButton /> : null}
           <ThemeButton />
         </div>
       </div>

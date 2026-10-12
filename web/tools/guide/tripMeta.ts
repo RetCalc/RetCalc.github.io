@@ -42,7 +42,7 @@ export const TRIP_META: Record<string, TripMeta> = {
     preview: ["Years until college is set from your child's age.",
       "You pick a type of school and add what's already saved.",
       "The tool gives the monthly amount to set aside."] },
-  basic: { tool: "basic", path: "/", store: "basic", name: "Basic calculator", mins: 3, title: "Explore your projection", learn: "how saving more or retiring later moves what you'll have",
+  basic: { tool: "basic", path: "/calculator", store: "basic", name: "Basic calculator", mins: 3, title: "Explore your projection", learn: "how saving more or retiring later moves what you'll have",
     preview: ["Your age, savings and monthly saving are filled in.",
       "You see what your savings grow to by retirement, in today's dollars.",
       "You try saving more or retiring later, and the guide can keep the change."] },

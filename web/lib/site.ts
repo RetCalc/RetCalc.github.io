@@ -12,7 +12,7 @@ export const SLUGS = Object.keys(PAGES) as Slug[];
 
 /** The three Calculator modes and their addresses. */
 export type CalcMode = "simple" | "single" | "series";
-export const CALC_PATHS: Record<CalcMode, string> = { simple: "/", single: "/advanced", series: "/stages" };
+export const CALC_PATHS: Record<CalcMode, string> = { simple: "/calculator", single: "/advanced", series: "/stages" };
 export const CALC_MODE_NAMES: Record<CalcMode, string> = { simple: "Basic", single: "Advanced", series: "Stages" };
 
 /** The tab each page belongs to (lights up in the navigation bar). */
@@ -97,25 +97,45 @@ export function strategyLede(slug: Slug): string | null {
 }
 
 /** Pages laid out in one column (the rest put inputs beside results). */
-// The homepage, Advanced, Stages, the Drawdown Simulator (with its strategy
+// The homepage, Basic, Advanced, Stages, the Drawdown Simulator (with its strategy
 // pages), Income Tax, the Plan Optimizer, the Early Retirement Bridge (with
-// /72t), Roth Conversion (with /rmd), College Savings and Rent vs. Buy lay out their own columns (tools/basic/Basic.tsx,
+// /72t), Roth Conversion (with /rmd), College Savings and Rent vs. Buy lay out their own columns (components/home/Home.tsx, tools/basic/Basic.tsx,
 // tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx,
 // tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx, tools/roth/Roth.tsx).
-const SOLO = new Set<string>(["home", "advanced", "stages", "incometax", "optimizer", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare"]);
+const SOLO = new Set<string>(["home", "calculator", "advanced", "stages", "incometax", "optimizer", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug) || TOOL_SUB[slug] === "drawdown";
 }
 
-export function tabFor(slug: Slug): Tab {
+/** The homepage sits under no tab: the logo is the way back to it. */
+export function tabFor(slug: Slug): Tab | null {
+  if (slug === "home") return null;
   if (slug === "guide") return "guide";
   if (slug === "about") return "about";
-  if (slug === "home" || slug === "advanced" || slug === "stages" || (slug as string) === "compare") return "calc";
+  if (slug === "calculator" || slug === "advanced" || slug === "stages" || (slug as string) === "compare") return "calc";
   return "tools";
 }
 
+/** Pages whose header is one row (logo, tabs, theme) pinned as a whole.
+    Only the homepage for now; the rest keep the masthead over the tab rail. */
+export function oneRowHeader(slug: Slug): boolean {
+  return slug === "home";
+}
+
+/** Pages with no tool on them, so no saved-scenario controls or household
+    button in the header (those act on the open tool). */
+export function hasToolControls(slug: Slug): boolean {
+  return slug !== "home" && slug !== "about" && slug !== "tools";
+}
+
 export function calcModeFor(slug: Slug): CalcMode | null {
-  return slug === "home" ? "simple" : slug === "advanced" ? "single" : slug === "stages" ? "series" : null;
+  return slug === "calculator" ? "simple" : slug === "advanced" ? "single" : slug === "stages" ? "series" : null;
+}
+
+/** The page an address shows ("/" is the homepage). */
+export function slugFromPath(path: string): Slug {
+  const seg = path.replace(/^\/+|\/+$/g, "");
+  return (seg || "home") as Slug;
 }
 
 export function pathFor(slug: Slug): string {

@@ -31,7 +31,7 @@ const START = [
     desc: "One question at a time, in about ten minutes: your number, a readiness score and the moves that matter most, with a lesson on every card.",
     icon: <svg viewBox="0 0 40 40" fill="none"><circle className="gd-ic-outer" cx="20" cy="20" r="13" stroke="currentColor" strokeWidth="2" /><circle className="gd-ic-inner" cx="20" cy="20" r="7" stroke="currentColor" strokeWidth="2" />
       <circle cx="20" cy="20" r="1.8" fill="currentColor" /><path className="gd-ic-arrow" d="M8 32 18.5 21.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg> },
-  { href: "/", id: "basic", name: "Retirement calculator",
+  { href: "/calculator", id: "basic", name: "Retirement calculator",
     desc: "Six questions: what your savings grow to by retirement, in today's dollars, and whether it lasts.",
     icon: <svg viewBox="0 0 40 40" fill="none"><path d="M5 33h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path className="bc-ic-line" pathLength="100" d="M7 29 C15 27 22 22 33 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
       <path className="bc-ic-head" d="M27 9h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg> },

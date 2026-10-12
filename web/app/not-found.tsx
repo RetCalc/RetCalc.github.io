@@ -15,7 +15,7 @@ export default function NotFound() {
         <h1 className="toolhead-name" id="pageH1">Page not found</h1>
         <p className="mt-2 mb-0 text-body text-muted-foreground">There&apos;s no page at this address. The link may be mistyped or out of date.</p>
         <div className="mt-5 flex flex-wrap gap-2.5">
-          <Link href="/" className={buttonVariants({ variant: "default" })}>Open the calculator</Link>
+          <Link href="/calculator" className={buttonVariants({ variant: "default" })}>Open the calculator</Link>
           <Link href="/tools" className={buttonVariants({ variant: "secondary" })}>See all tools</Link>
         </div>
         <section className="toolgroup mt-10" aria-label="Popular tools">

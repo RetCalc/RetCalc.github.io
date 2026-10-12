@@ -117,8 +117,9 @@ export async function compareTool(page: Page, info: TestInfo, slug: string, root
   const oldPage = await page.context().newPage();
   log("second page open");
   for (const c of cases) {
-    await open(oldPage, `${OLD}/${slug === "home" ? "index" : slug}.html`, hide);
-    await open(page, `${NEW}/${slug === "home" ? "" : slug}`, hide);
+    // Basic was the old site's index.html; on this one it's /calculator.
+    await open(oldPage, `${OLD}/${slug === "calculator" ? "index" : slug}.html`, hide);
+    await open(page, `${NEW}/${slug}`, hide);
     await apply(oldPage, c.steps);
     await apply(page, c.steps);
     await compareShown(oldPage, page, info, c.name, roots);

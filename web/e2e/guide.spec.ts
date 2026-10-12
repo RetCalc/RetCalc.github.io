@@ -431,7 +431,7 @@ const TRIPS: { id: string; cur: string; pace: "quick" | "full"; a?: Record<strin
   { id: "mortBuy", cur: "goals", pace: "full", a: { ...MAYA, home: "buy" }, path: "/mortgage" },
   { id: "college", cur: "goals", pace: "full", path: "/college" },
   { id: "backtest", cur: "invested", pace: "full", path: "/backtest" },
-  { id: "basic", cur: "number", pace: "quick", path: "/" },
+  { id: "basic", cur: "number", pace: "quick", path: "/calculator" },
   { id: "fire", cur: "adjust", pace: "full", path: "/fire" },
   { id: "healthcare", cur: "health", pace: "full", path: "/healthcare" },
   { id: "bridge", cur: "bridge", pace: "full", a: EARLY, path: "/bridge" },
@@ -492,7 +492,7 @@ test("the Tools page starts with a Start here row: the guide and the calculator"
   const row = page.locator("[data-start]");
   await expect(row.locator(".toolgroup-h")).toContainText("Start here");
   await expect(row.locator('a[href="/guide"]')).toContainText("Retirement Readiness Guide");
-  await expect(row.locator('a[href="/"]')).toContainText("Retirement calculator");
+  await expect(row.locator('a[href="/calculator"]')).toContainText("Retirement calculator");
 });
 
 test("the Drawdown Simulator tour goes there and back", async ({ page }) => {

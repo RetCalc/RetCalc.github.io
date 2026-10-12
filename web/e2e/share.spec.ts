@@ -4,10 +4,10 @@ import { apply, open, snapshot, type Step } from "./compare";
 
 /* The Share menu's one-page summary and image card, on both sites: the
    printed page's words, and the words drawn on the card. */
-const url = (base: string, slug: string) => (base === OLD ? `${OLD}/${slug === "home" ? "index" : slug}.html` : `${NEW}/${slug === "home" ? "" : slug}`);
+const url = (base: string, slug: string) => (base === OLD ? `${OLD}/${slug === "calculator" ? "index" : slug}.html` : `${NEW}/${slug}`);
 
 const TOOLS: [slug: string, card: boolean, steps?: Step[]][] = [
-  ["home", true], ["advanced", true], ["stages", false], ["incometax", true], ["mortgage", true],
+  ["calculator", true], ["advanced", true], ["stages", false], ["incometax", true], ["mortgage", true],
   ["college", true], ["rentbuy", true], ["drawdown", true], ["roth", false], ["debt", false], ["bridge", true],
   ["budget", true, [["bgIncomeIn", "6000"], ['[data-f="amount"][data-i="0"]', "1800"], ['[data-f="amount"][data-i="11"]', "600"], ['[data-f="amount"][data-i="17"]', "500"]]],
 ];

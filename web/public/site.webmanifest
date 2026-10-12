@@ -1,7 +1,7 @@
 {
   "name": "RetCalc",
   "short_name": "RetCalc",
-  "start_url": "/",
+  "start_url": "/calculator",
   "display": "standalone",
   "background_color": "#080b16",
   "theme_color": "#080b16",

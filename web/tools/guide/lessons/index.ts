@@ -15,7 +15,7 @@ const T = {
   debt: { id: "debt", name: "Debt Payoff", path: "/debt" },
   mortgage: { id: "mortgage", name: "Mortgage Calculator", path: "/mortgage" },
   college: { id: "college", name: "College Savings", path: "/college" },
-  basic: { id: "basic", name: "Basic calculator", path: "/" },
+  basic: { id: "basic", name: "Basic calculator", path: "/calculator" },
   stages: { id: "stages", name: "Stages", path: "/stages" },
   advanced: { id: "advanced", name: "Advanced", path: "/advanced" },
   backtest: { id: "backtest", name: "Portfolio Backtest", path: "/backtest" },

@@ -9,7 +9,7 @@ const vp = () => document.querySelector<HTMLMetaElement>('meta[name="viewport"]'
 
 test("a field reached after a page change pins the viewport while focused", async ({ page }) => {
   test.skip((page.viewportSize()?.width ?? 1280) > 640, "phone only");
-  await page.goto(NEW + "/");
+  await page.goto(NEW + "/calculator");
   for (const path of ["/budget", "/fire"]) {
     await page.evaluate((h) => (window as unknown as { next: { router: { push: (h: string) => void } } }).next.router.push(h), path);
     await page.waitForURL("**" + path);

@@ -1,6 +1,6 @@
 "use client";
 
-/* The Basic calculator (the home page): six questions, a balance at
+/* The Basic calculator (/calculator): six questions, a balance at
    retirement in today's dollars, and the income it could pay. Ported from
    src/js/app/20-basic.js and the Basic parts of src/main/02-calculator-inputs.html
    and 03-calculator-results.html.

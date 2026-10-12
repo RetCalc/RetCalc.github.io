@@ -53,8 +53,9 @@ function facts(html) {
 
 let bad = 0;
 for (const slug of slugs) {
+  // The old site's "home" (index.html) is Basic, which now lives at /calculator.
   const old = facts(readFileSync(join(ROOT, slug === "home" ? "index.html" : `${slug}.html`), "utf8"));
-  const res = await fetch(`${BASE}${slug === "home" ? "/" : "/" + slug}`);
+  const res = await fetch(`${BASE}${slug === "home" ? "/calculator" : "/" + slug}`);
   const now = facts(await res.text());
   const keys = new Set([...Object.keys(old), ...Object.keys(now)]);
   const same = (k) => {

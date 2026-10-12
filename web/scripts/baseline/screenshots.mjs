@@ -24,7 +24,7 @@ const OUT = resolve(WEB, "..", "redesign-baseline", process.env.SHOTS ?? "screen
 const BASE = process.env.BASE ?? "http://localhost:3200";
 
 export const PAGES = {
-  home: "/", advanced: "/advanced", stages: "/stages", tools: "/tools", drawdown: "/drawdown",
+  home: "/", calculator: "/calculator", advanced: "/advanced", stages: "/stages", tools: "/tools", drawdown: "/drawdown",
   incometax: "/incometax", roth: "/roth", mortgage: "/mortgage", guide: "/guide", about: "/about",
 };
 /* Tool pages with a chart beyond the main ten. */
