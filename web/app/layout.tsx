@@ -23,12 +23,22 @@ import { IBM_Plex_Sans } from "next/font/google";
 
 /* The site's one typeface, served from this site (next/font downloads it at
    build time, so visitors never contact Google) with a metric-matched
-   fallback while it loads. Exposed as --font-plex-sans for styles/00-base.css. */
+   fallback while it loads. Exposed as --font-plex-sans for styles/00-base.css.
+   The italic is a second face of the same family, not preloaded: the browser
+   fetches it only when a page shows italic text, which few pages do, so a
+   first visit no longer downloads it up front. */
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
-  style: ["normal", "italic"],
+  style: ["normal"],
   display: "swap",
   variable: "--font-plex-sans",
+});
+const plexItalic = IBM_Plex_Sans({
+  subsets: ["latin"],
+  style: ["italic"],
+  display: "swap",
+  preload: false,
+  variable: "--font-plex-italic",
 });
 
 /** The production deployment, the one retcalc.app serves. */
@@ -64,7 +74,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // The theme script sets data-theme before React loads, so the server's
     // <html> and the browser's differ by that one attribute, on purpose.
-    <html lang="en" className={plexSans.variable} suppressHydrationWarning>
+    <html lang="en" className={plexSans.variable + " " + plexItalic.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
