@@ -361,7 +361,7 @@ name (§10), which gives the site a credentialed person without it being the
 owner. Owner's own check: their employer's outside-activities policy, which
 matters more if the site ever takes ads or affiliate links.
 
-### T2.2 Sources in every article — Agent  [ ]
+### T2.2 Sources in every article — Agent  [x] 2026-10-13 (lists; in-text links not done)
 
 Add a short "Sources" list at the end of each article in
 `web/content/articles/`, linking primary sources, and link them where the
@@ -386,7 +386,16 @@ claim is made. Starting points:
 Check each link resolves and says what's claimed. Prefer the primary
 document over a news article about it.
 
-### T2.3 Dates on articles — Agent  [ ]
+Done: a "Sources" list before the Questions in 26 of 28 articles, each link
+fetched and its title checked (SSA, BLS and Bogleheads block scripted
+requests, so those were confirmed by search results instead of a fetch).
+Every list ends with a link to the About page. Left without: `tools` (an
+index) and `debt` (no outside claim to cite). Not done: linking a source at
+the sentence that makes the claim. Add that as articles are touched.
+Re-check the links when an article is next reviewed; IRS and CMS addresses
+move.
+
+### T2.3 Dates on articles — Agent  [x] 2026-10-13
 
 Show "Last reviewed {Month YYYY}" at the top of each article's body, from a
 per-article date (a map in `web/lib/articles.ts` or a `data-reviewed`
@@ -394,12 +403,25 @@ attribute on the `<article>`). Use it for `dateModified` (T1.6) and the
 sitemap's `lastmod` (T1.4). Update a date only when the article is
 actually reviewed.
 
-### T2.4 Methodology page section — Agent  [ ]
+Done: `data-reviewed="YYYY-MM-DD"` on each article's `<article>` tag;
+`lib/articles.ts` shows "Last reviewed {Month YYYY}" at the top of the body
+and `lib/seo.ts` uses it as `dateModified`. All 26 articles with sources are
+set to 2026-10-13, meaning their sources were added and their figures checked
+against the calculators that day. **Only change a date when the article has
+actually been re-read and its sources re-checked.** The sitemap's `lastmod`
+still comes from commits (T1.4), not from this date.
+
+### T2.4 Methodology page section — Agent  [~] 2026-10-13 section added
 
 The About page already explains the data and assumptions. Make sure it has,
 under clear headings: data sources and their date range, what the tools
 assume (fees, rebalancing, inflation, taxes), what they don't model, and
 how corrections are made. Link to it from each tool's footer line.
+
+Done: a "Data and assumptions" card on the About page (linked from its
+index), with where the numbers come from, what every tool assumes, what they
+don't model, and how corrections are handled. Each article's Sources list
+links to About. Not done: a link from each tool's footer line.
 
 ### T2.5 "Educational, not advice" — Agent  [ ]
 
@@ -686,3 +708,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.9 | — | Live-site check: 404s, trailing slash, http, www and old addresses all behave; no change needed |
 | 2026-10-13 | C1 | — | Deferred by the owner until the baseline and indexing are in |
 | 2026-10-13 | T2.1 | (this branch) | No named author, by the owner's choice; About page gets "Who makes this" (independent, free, no ads). Q3 and Q8 answered |
+| 2026-10-13 | T2.2, T2.3, T2.4 | (this branch) | Sources in 26 articles, "Last reviewed" dates and `dateModified`, "Data and assumptions" card on About |
