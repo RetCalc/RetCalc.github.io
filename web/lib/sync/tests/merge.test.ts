@@ -1,7 +1,7 @@
 /* The merge rules of account sync (ACCOUNTS_PLAN.md, "How syncing works"). */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mergeItem, mergeScenarios } from "../merge";
+import { dropTwinCopies, mergeItem, mergeScenarios, same } from "../merge";
 
 const c = (value: unknown, at = 0, version = 1) => ({ value, at, version });
 
@@ -65,4 +65,45 @@ test("scenario lists merge in both directions when each side has something new",
   assert.equal(m.toLocal, true);
   assert.equal(m.toAccount, true);
   assert.equal((m.value as unknown[]).length, 2);
+});
+
+test("the same value with its fields in another order is the same", () => {
+  assert.equal(same({ a: 1, b: { c: 2, d: [1, { e: 3, f: 4 }] } }, { b: { d: [1, { f: 4, e: 3 }], c: 2 }, a: 1 }), true);
+  assert.equal(same({ a: 1 }, { a: 2 }), false);
+});
+
+test("a scenario that came back from the account reordered is not copied", () => {
+  // jsonb returns object keys in its own order
+  const out = mergeScenarios([{ name: "Test Basic 1", data: { age: "32", retire: "65", saved: "60,000" } }],
+    [{ name: "Test Basic 1", data: { saved: "60,000", age: "32", retire: "65" } }]);
+  assert.deepEqual(out.map((s) => s.name), ["Test Basic 1"]);
+});
+
+test("syncing again and again never adds copies", () => {
+  let local = [{ name: "Plan", data: { a: 1, b: 2 } }], account = [{ name: "Plan", data: { b: 2, a: 1 } }];
+  for (let i = 0; i < 5; i++) {
+    const m = mergeItem("scenarios-basic", { version: 1, value: local, at: i }, { version: 1, value: account, at: i })!;
+    local = m.value as typeof local; account = m.value as typeof account;
+  }
+  assert.deepEqual(local.map((s) => s.name), ["Plan"]);
+});
+
+test("copies an earlier version made of an unchanged scenario are cleaned up", () => {
+  const d = { age: "32" }, r = { age: "32" };
+  const list = [
+    { name: "Test Basic 1", data: d },
+    { name: "Test Basic 1 (from this device)", data: r },
+    { name: "Test Basic 1 (from this device) (from this device)", data: { age: "32" } },
+    { name: "Other", data: { age: "40" } },
+  ];
+  assert.deepEqual(dropTwinCopies(list).map((s) => s.name), ["Test Basic 1", "Other"]);
+  const m = mergeItem("scenarios-basic", { version: 1, value: list, at: 1 }, { version: 1, value: list, at: 1 })!;
+  assert.deepEqual((m.value as { name: string }[]).map((s) => s.name), ["Test Basic 1", "Other"]);
+  assert.equal(m.toLocal, true);
+  assert.equal(m.toAccount, true);
+});
+
+test("a real clash is still kept as a copy, and isn't dropped later", () => {
+  const list = mergeScenarios([{ name: "Plan", data: { a: 1 } }], [{ name: "Plan", data: { a: 2 } }]);
+  assert.deepEqual(dropTwinCopies(list).map((s) => s.name), ["Plan", "Plan (from this device)"]);
 });
