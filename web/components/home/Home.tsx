@@ -30,10 +30,10 @@ export function Home({ data }: { data: HomeData }) {
   return (
     <div className="hm" ref={root}>
       <section className="hm-hero" aria-labelledby="hmTitle">
-        <h1 className="hm-display" id="hmTitle" data-rv="">Know your<br /><em>number.</em></h1>
+        <h1 className="hm-display" id="hmTitle" data-rv="">The complete <em>retirement planning</em> toolkit.</h1>
         <div>
           <p className="hm-lede" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
-            Retirement planning tools that run in your browser and check your plan against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
+            Calculators for saving, withdrawals, taxes, Roth conversions, healthcare and Social Security, each checked against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
           </p>
           <div className="hm-btns" data-rv="" style={{ "--d": 2 } as React.CSSProperties}>
             <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>

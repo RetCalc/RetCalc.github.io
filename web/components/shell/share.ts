@@ -179,7 +179,7 @@ export function cardSVG(d: CardData): string {
     chartBlock + rowSvg + verdict +
     '<line x1="90" y1="' + (footY - 20) + '" x2="990" y2="' + (footY - 20) + '" stroke="' + line + '" stroke-width="1"/>' +
     '<text x="90" y="' + footY + '" font-family="' + sans + '" font-size="20" fill="' + dim + '">Projections, not predictions. Not financial advice.</text>' +
-    '<text x="990" y="' + (footY - 1) + '" font-family="' + sans + '" font-size="22" text-anchor="end"><tspan fill="' + gold + '">Know your number.</tspan><tspan dx="12" font-weight="600" fill="' + jade + '">retcalc.app</tspan></text>' +
+    '<text x="990" y="' + (footY - 1) + '" font-family="' + sans + '" font-size="22" text-anchor="end"><tspan font-weight="600" fill="' + jade + '">retcalc.app</tspan></text>' +
     "</svg>";
 }
 

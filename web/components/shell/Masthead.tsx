@@ -41,7 +41,7 @@ export function BrandLink({ tagline = true }: { tagline?: boolean }) {
       <Brandmark />
       <div className="wordmark">
         <div className="brandname">RetCalc</div>
-        {tagline ? <div className="tagline">Know your number.</div> : null}
+        {tagline ? <div className="tagline">The complete retirement planning toolkit.</div> : null}
       </div>
     </Link>
   );

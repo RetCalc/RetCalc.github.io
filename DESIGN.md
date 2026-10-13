@@ -1,6 +1,6 @@
 ---
 name: RetCalc
-description: Know your number.
+description: The complete retirement planning toolkit.
 colors:
   graphite-ground: "#0E1116"
   graphite-surface: "#151A21"
@@ -460,7 +460,7 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 
 ## Homepage
 
-The homepage (`/`, `web/components/home/`, styles in `web/styles/16-home.css`) is the one page allowed past this system,: nothing in `16-home.css` is used by another page, and no tool inherits it. It persuades where the tools instrument, so it may use what they may not: display type up to 112px (`clamp(52px, 8.4vw, 112px)`, "Know your" over an amber "number."), the three main paths (Calculator, Guide, Drawdown Simulator) on Surface tiles tinted toward amber, Brand Jade and Brand Steel, and motion driven by the scroll. Colors are still the tokens; no new value is added.
+The homepage (`/`, `web/components/home/`, styles in `web/styles/16-home.css`) is the one page allowed past this system,: nothing in `16-home.css` is used by another page, and no tool inherits it. It persuades where the tools instrument, so it may use what they may not: display type up to 88px (`clamp(44px, 6.2vw, 88px)`: the tagline, "The complete retirement planning toolkit.", with "retirement planning" in amber), the three main paths (Calculator, Guide, Drawdown Simulator) on Surface tiles tinted toward amber, Brand Jade and Brand Steel, and motion driven by the scroll. Colors are still the tokens; no new value is added.
 
 ### Structure
 - **An age line.** The tools hang off a vertical line at the age you'd reach for them: the Calculator and Guide in your 30s, FIRE in your 40s, the Bridge at 52 to 59½, Healthcare until 65, the Optimizer at 62 to 70, Drawdown at 65, Roth and RMDs at 73. The everyday tools (Income Tax, Rent vs. Buy, Mortgage, Budget, then a list) follow in a grid.

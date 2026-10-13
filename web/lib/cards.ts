@@ -20,8 +20,8 @@ export interface Card {
 const SINCE = "against every retirement since 1926.";
 
 export const CARDS: Partial<Record<Slug, Card>> = {
-  home: { title: "Know your number.", art: "fan",
-    text: "Free retirement calculators and planning tools, tested against every market since 1926." },
+  home: { title: "The complete retirement planning toolkit.", art: "fan",
+    text: "Free calculators for saving, spending and taxes in retirement, tested against every market since 1926." },
   calculator: { title: "Retirement Calculator", art: "growth",
     text: "See how much you'll have saved by the time you retire." },
   advanced: { title: "Advanced Retirement Calculator", art: "accounts",
@@ -85,5 +85,5 @@ export const CARDS: Partial<Record<Slug, Card>> = {
 
 /** The card's words as one line, for the image's alt text. */
 export function cardAlt(c: Card): string {
-  return (c.title.startsWith("Know") ? "RetCalc: " : "") + c.title.replace(/\.$/, "") + ". " + c.text;
+  return (c === CARDS.home ? "RetCalc: " : "") + c.title.replace(/\.$/, "") + ". " + c.text;
 }

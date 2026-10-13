@@ -11,14 +11,14 @@ import { Art } from "./art";
 import s from "./og.module.css";
 
 export function OgCard({ card, data }: { card: Card; data: HomeData }) {
-  const home = card.title.startsWith("Know your");
+  const home = card.art === "fan" && card.title.startsWith("The complete");
   return (
     <div className={s.card} data-og-card="">
       <div className={s.copy}>
         <div className={s.brand}><Brandmark /><span>RetCalc</span></div>
         <div className={s.mid}>
           {home
-            ? <h1 className={s.display}>Know your <em>number.</em></h1>
+            ? <h1 className={s.display}>The complete <em>retirement planning</em> toolkit.</h1>
             : <h1 className={s.title}>{card.title}</h1>}
           <p className={s.text}>{card.text}</p>
         </div>
