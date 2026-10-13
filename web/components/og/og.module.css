@@ -1,0 +1,20 @@
+/* The link-preview card (OgCard.tsx), 1200 by 630. The renderer takes it
+   out of the page around it before the screenshot, in dark mode. */
+.card{position:fixed;inset:0 auto auto 0;width:1200px;height:630px;box-sizing:border-box;overflow:hidden;
+  background:var(--ds-ground);color:var(--ds-text);font-family:var(--sans)}
+
+.copy{position:absolute;left:64px;top:56px;bottom:52px;width:500px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:700;letter-spacing:-.025em}
+.brand :global(.brandmark){width:50px;height:50px}
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:6px}
+.title{margin:0;font-size:60px;line-height:1.02;font-weight:650;letter-spacing:-.032em;text-wrap:balance}
+.display{margin:0;font-size:100px;line-height:.96;font-weight:650;letter-spacing:-.045em}
+.display em{font-style:normal;color:var(--ds-amber)}
+.text{margin:24px 0 0;font-size:27px;line-height:1.36;color:var(--ds-muted);text-wrap:pretty}
+.foot{display:flex;align-items:baseline;gap:14px;font-size:20px;color:var(--ds-muted)}
+.foot b{color:var(--ds-text);font-weight:600}
+
+/* The picture's panel runs off the right edge. */
+.art{position:absolute;left:620px;top:48px;bottom:48px;right:-40px;overflow:hidden;
+  background:var(--ds-surface);border:1px solid var(--ds-rule);border-radius:28px}
+.art > svg{display:block;width:580px;height:534px;max-width:none}

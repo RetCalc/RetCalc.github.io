@@ -217,6 +217,7 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 
 ### Print and share
 - The printed summary and the share image card use their own fixed palettes, separate from the screen theme. They are restyled in a separate, later pass; until then a theme change must never leak into them by accident.
+- **Link-preview cards** (the 1200×630 picture a shared link shows) are marketing, not instruments: the brand mark and wordmark, the tool's plain name as the headline, one plain sentence of what it does, and an illustration on a Surface panel that runs off the right edge. Each card must make sense on its own, with no site around it. Illustrations have no axes, labels or figures (the only text allowed is an identity like "59½"); amber is the plan line and its arrowhead. Words in `web/lib/cards.ts`, pictures in `web/components/og/art.tsx`, saved by `node scripts/og/render.mjs` from the dev server into `web/public/og/` and `web/public/og.png`. Rerender every card after changing any of them.
 
 ### Named Rules
 **The Four Places Rule.** Amber appears only on the key result, the primary button, the active tab, and "your plan" in charts. Not on links, headings, hover states, icons, focus rings, or decoration. If a fifth place seems to need it, it doesn't. Two exemptions, and only these: the brand mark keeps its own colors, and the brand motif's bullseye turns amber at the moment it is hit.
