@@ -22,7 +22,9 @@
    applies to traditional money taken before 59½, Roth conversions wait five
    years before they can be spent early, required minimum distributions start
    at 73 or 75, and ACA marketplace premiums before 65 follow each year's
-   income, cliff included.
+   income, cliff included. From 65, when the plan is pricing health coverage,
+   each person on Medicare pays the standard Part B premium plus an average
+   Part D plan (Medigap varies too much by state and insurer to assume).
 
    A couple is one household: one pool of each account type, with the 59½
    line and required distributions following your age, and both of you
@@ -30,6 +32,11 @@
 
 var PL_EARLY = 59;          // a year that starts before 59 ends before 59½
 var PL_HEIR = 0.24;         // default tax rate heirs pay on inherited traditional money
+/* Average standalone Part D premium, 2026, a month (CMS estimate). Standard
+   Part B comes from the IRMAA table. Together they are what a year of
+   Medicare costs each person 65+ when the plan is pricing health coverage
+   (the same switch that adds ACA premiums before 65). */
+var PL_MED_PARTD = 35;
 
 /* Real returns of a stock/bond mix by calendar year from 1926, inflation
    alongside, and their long-run averages: the steady path runs at the
@@ -182,6 +189,7 @@ function plPrep(P){
   C.rate = C.total0 > 0 ? C.spend / C.total0 : 0;
   C.early = new Uint8Array(n); C.seniors = new Uint8Array(n);
   C.rmdDiv = new Float64Array(n); C.acaGross = new Float64Array(n);
+  C.med = new Float64Array(n);
   var d = C.age2 == null ? 0 : C.age2 - C.age1;
   C.gap = d;
   // A benchmark premium the household found is for the ages at retirement;
@@ -206,6 +214,9 @@ function plPrep(P){
         if (a2 != null && a2 < 65) g += hcGrossPremium(C.state, a2, 0);
       }
       C.acaGross[y] = g;
+      // Medicare from 65: standard Part B plus an average Part D plan, per
+      // person, under the same "price health coverage" switch as the ACA.
+      C.med[y] = (IRMAA.partB + PL_MED_PARTD) * 12 * C.seniors[y];
     }
   }
   return C;
@@ -339,7 +350,7 @@ function plEv(C, Y, x){
   var tax = plTax(C.cache, Y.seniors, Y.ss, ord, gain);
   var agi = plAgi(ord, gain, Y.ss, C.status);
   var magi = ord + gain + Y.ss;
-  var hl = Y.aca ? plHealth(C, Y.y, magi) : 0;
+  var hl = (Y.aca ? plHealth(C, Y.y, magi) : 0) + Y.med;
   var irm = Y.people > 0 ? irmaaAnnual(Y.look >= 0 ? Y.look : agi, C.status, Y.people) : 0;
   var pen = penBase * C.penRate;
   plE.net = Y.cash + x - Y.w - tax - hl - irm - pen;
@@ -378,8 +389,8 @@ function plSolve(C, Y, total){
    `off`. `out` asks for detail: out.path (end-of-year total, real),
    out.lived (what was actually lived on), out.rows (everything, for the
    year-by-year table). Returns the run's summary. */
-var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, ss:0, aca:0, people:0,
-  look:-1, cash:0, w:0};
+var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, ss:0, aca:0, med:0,
+  people:0, look:-1, cash:0, w:0};
 function plRun(C, K, R, PI, off, out){
   var n = C.years, st = C.status, P = C.P;
   var trad = C.trad, roth = C.roth, rAcc = C.rothBasis, brok = C.brok, bBasis = C.brokBasis;
@@ -435,6 +446,7 @@ function plRun(C, K, R, PI, off, out){
     Y.baseOrd = pension + (Y.conv ? D : M);
     Y.seniors = seniors; Y.ss = ss;
     Y.aca = C.acaGross[y] > 0 ? 1 : 0;
+    Y.med = C.med[y];
     Y.people = seniors;
     Y.look = m2;
     Y.cash = ss + pension + M;
@@ -491,7 +503,7 @@ function plRun(C, K, R, PI, off, out){
     if (rows){
       rows.push({y:y, age:a1, age2:C.age2 == null ? null : C.age2 + y, spend:w, lived:livedY,
         ss:ss, pension:pension, rmd:M, trad:M + plTk[0] + plTk[2], conv:Cv, brok:plTk[1],
-        roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, health:plE.health, irmaa:plE.irm,
+        roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, health:plE.health, med:Y.med, irmaa:plE.irm,
         agi:plE.agi, magi:plE.magi, ord:plE.ord, gain:plE.gain,
         taxable:plOrdTaxable(plE.ord, plE.gain, ss, st, seniors),
         fplPct:Y.aca ? plE.magi / C.fpl : null, short:short, surplus:surplus,

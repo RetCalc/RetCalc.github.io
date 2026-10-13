@@ -730,8 +730,11 @@ const SS_PROV = {t1:{s:25000, m:32000}, t2:{s:34000, m:44000}};
    exception handled here, because its subtraction is a clean full exemption
    at 65 and over. */
 const SS_TAX_STATES = {CO:1, CT:1, MN:1, MT:1, NM:1, RI:1, UT:1, VT:1};
-const MORT_RATE_ASOF = "Freddie Mac weekly average, 3 September 2026";
-const MORT_RATE_30 = 6.71;
+/* A rounded recent 30-year average -- a reasonable starting point, not a live
+   quote. Rates move weekly and this constant is not kept current, so the
+   pages describe it as a starting point and ask for the user's own rate. */
+const MORT_RATE_ASOF = "a rounded recent national average, not updated weekly";
+const MORT_RATE_30 = 7.25;
 
 /* sd/pe: [single, married]. pec = exemption delivered as a credit instead.
    sdc = standard deduction delivered as a credit. */
@@ -854,7 +857,8 @@ function marginalRate(income, brackets){
      exLessSS  "gross" or "taxable" -- the exclusion is reduced dollar for
                dollar by Social Security received on that basis
      exCap     AGI above which the exclusion is lost
-     exPhase   "cliff" (default), "lin" over exRange, or "nj"
+     exPhase   "cliff" (default), "lin" over exRange, or "nj" (New Jersey's
+               own schedule: a share of retirement income by income band)
      exRange   dollars over which a linear phase-out runs
      sdAge     extra deduction per person 65 or older
      peAge     extra personal exemption per person 65 or older
@@ -863,7 +867,9 @@ function marginalRate(income, brackets){
                (or rate-scaled) phase-out above cap
      ssFullAge 1 = benefits are fully exempt once a person is 65 or older
      ssCap     AGI below which Social Security is fully exempt
-     ssRange   dollars over which that exemption phases out
+     ssRange   dollars over which that exemption phases out linearly
+     ssStep    the subtraction instead falls 10% per this many dollars of
+               AGI (or part) over ssCap -- Minnesota's step phase-out
      ssPct     share of federally taxable benefits still taxed above the cap
      ssCredit  {rate, cap, phase} credit offsetting the tax on benefits
      cgPct     share of long-term gain excluded from the state base
@@ -904,32 +910,32 @@ const RET_STATE = {
       note:"Indiana taxes pension and retirement-account income at the flat rate, with an extra $1,000 exemption per person at 65."},
   IA:{exAmt:[1e12,1e12], exAge:1, exSrc:"tp",
       note:"Iowa has exempted all retirement income -- pensions, annuities, 401(k) and IRA withdrawals -- for taxpayers 55 and over since 2023."},
-  KS:{pubFull:1, sdAge:[2320,2320],
-      note:"Kansas exempts federal, state and local government pensions in full, taxes private pensions and retirement-account withdrawals, and adds a $2,320 standard deduction per person at 65."},
+  KS:{pubFull:1, sdAge:[850,700],
+      note:"Kansas exempts federal, state and local government pensions in full, taxes private pensions and retirement-account withdrawals, and adds an extra standard deduction at 65: $850 single, $700 per spouse (K.S.A. 79-32,119)."},
   KY:{exAmt:[31110,31110], exPer:1, exSrc:"tp",
       note:"Kentucky excludes $31,110 per person of pension and retirement-account income, at any age."},
   LA:{pubFull:1, exAmt:[12000,12000], exPer:1, exAge:1, exSrc:"tp",
       note:"Louisiana exempts federal and state government pensions in full, and exempts $12,000 per person of other retirement income at 65 and over."},
-  ME:{exAmt:[35000,35000], exPer:1, exSrc:"tp", exLessSS:"gross", sdAge:[2050,1650],
-      note:"Maine's pension income deduction is up to $35,000 per person and covers retirement-account withdrawals, but it is reduced dollar for dollar by the Social Security you receive -- a large benefit can consume it outright."},
-  MD:{exAmt:[39500,39500], exPer:1, exAge:1, exSrc:"p", exLessSS:"gross", peAge:1000,
-      note:"Maryland's $39,500 pension exclusion at 65 covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maryland's county income taxes -- roughly 2.25% to 3.2% on top of the state rate -- are not included here."},
+  ME:{exAmt:[49824,49824], exPer:1, exSrc:"tp", exLessSS:"gross",
+      exCap:[125000,250000], exPhase:"lin", exRange:100000, sdAge:[2050,1650],
+      note:"Maine's pension income deduction is up to $49,824 per person for 2026 (pegged to the maximum annual Social Security benefit) and covers retirement-account withdrawals, but it is reduced dollar for dollar by the Social Security you receive, and it phases out above $125,000 of AGI single or $250,000 joint."},
+  MD:{exAmt:[40600,40600], exPer:1, exAge:1, exSrc:"p", exLessSS:"gross", peAge:1000,
+      note:"Maryland's $40,600 pension exclusion at 65 (2026) covers employer plans but not IRAs, and is reduced by the Social Security you receive. Maryland's county income taxes -- roughly 2.25% to 3.2% on top of the state rate -- are not included here."},
   MA:{pubFull:1, peAge:700,
       note:"Massachusetts exempts Massachusetts and federal government pensions in full, taxes private pensions and retirement-account withdrawals at 5%, and adds a $700 exemption per person at 65."},
-  MI:{exAmt:[68000,136000], exSrc:"tp",
-      note:"Michigan's retirement and pension deduction is fully restored for tax year 2026, the last step of the 2023 phase-in: roughly $68,000 single and $136,000 joint of pension and retirement-account income comes out of the base."},
-  MN:{ssCap:[85000,109000], ssRange:30000,
-      note:"Minnesota exempts Social Security in full below about $85,000 of AGI single or $109,000 joint and phases the subtraction out above that. Pension and retirement-account income is taxed at ordinary rates."},
+  MI:{exAmt:[65987,131794], exSrc:"tp",
+      note:"Michigan's retirement and pension deduction is fully restored for tax year 2026, the last step of the 2023 phase-in: $65,987 single and $131,794 joint of pension and retirement-account income comes out of the base."},
+  MN:{ssCap:[86410,110780], ssStep:4000,
+      note:"Minnesota exempts Social Security in full below $86,410 of AGI single or $110,780 joint (2026), and the subtraction falls 10% for each $4,000 over -- gone $40,000 above the line. Pension and retirement-account income is taxed at ordinary rates."},
   MS:{penFull:1, tradFull:1,
       note:"Mississippi exempts all qualified retirement income -- pensions, annuities, 401(k) and IRA withdrawals -- once you have reached the plan's retirement age."},
-  MO:{exAmt:[47000,47000], exPer:1, exSrc:"pub", exCap:[85000,100000],
-      exPhase:"lin", exRange:47000,
-      note:"Missouri exempts up to about $47,000 per person of public pension income, withdrawn dollar for dollar above $85,000 of AGI single or $100,000 joint. Its separate $6,000 private pension exemption cuts off at $25,000 / $32,000 and is not modeled."},
+  MO:{exAmt:[49824,49824], exPer:1, exSrc:"pub",
+      note:"Missouri exempts public pension income up to the maximum Social Security benefit (about $49,800 per person for 2026), with no income limit since 2024 (SB 190). Its separate $6,000 private pension exemption cuts off at $25,000 / $32,000 and is not modeled."},
   MT:{sdAge:[5800,5800], cgB:{s:[[0,.03],[20500,.041]], m:[[0,.03],[41000,.041]]},
       note:"Montana is one of the states that still taxes Social Security, on the federal taxable amount. It gives an extra $5,800 subtraction per person at 65 and taxes long-term gain at reduced rates of 3.0% and 4.1%."},
   NE:{note:"Nebraska finished exempting Social Security in 2024. Pension and retirement-account income is taxed at ordinary rates."},
-  NJ:{exAmt:[75000,100000], exAge:1, exSrc:"tp", exCap:[150000,150000], exPhase:"nj", peAge:1000,
-      note:"New Jersey's pension and retirement income exclusion is $75,000 single or $100,000 joint from age 62, but it is a hard income test: full below $150,000 of gross income, half to $175,000, a quarter to $200,000, and nothing above."},
+  NJ:{exAmt:[75000,100000], exAge:1, exSrc:"tp", exCap:[100000,100000], exPhase:"nj", peAge:1000,
+      note:"New Jersey's pension and retirement income exclusion is $75,000 single or $100,000 joint from age 62, under a hard income test: the full exclusion below $100,000 of gross income, then a share of retirement income itself -- 50% joint (37.5% single) to $125,000, half that to $150,000 -- and nothing at all above $150,000."},
   NM:{ssCap:[100000,150000], exAmt:[8000,8000], exPer:1, exAge:1, exSrc:"all",
       exCap:[28500,51000], cgPct:.40,
       note:"New Mexico exempts Social Security below $100,000 of AGI single or $150,000 joint and taxes it above. It excludes 40% of net capital gain, and gives an $8,000 exemption at 65 that only survives at quite low incomes."},
@@ -946,9 +952,9 @@ const RET_STATE = {
       note:"Oregon taxes pension and retirement-account income at ordinary rates. Its retirement income credit applies only at low household incomes and is not modeled, nor are Portland-area local taxes."},
   PA:{penFull:1, tradFull:1,
       note:"Pennsylvania does not tax retirement income at all once you have retired -- pensions, annuities, 401(k) and IRA distributions are all outside the base. Interest, dividends and capital gain are still taxed at 3.07%."},
-  RI:{ssCap:[108000,135000], exAmt:[20000,20000], exPer:1, exAge:1, exSrc:"tp",
-      exCap:[108000,135000],
-      note:"Rhode Island exempts Social Security and up to $20,000 per person of pension and retirement-account income, but both require full retirement age and both cut off above roughly $108,000 of AGI single or $135,000 joint."},
+  RI:{ssCap:[107000,133500], exAmt:[50000,50000], exPer:1, exAge:1, exSrc:"tp",
+      exCap:[107000,133500],
+      note:"Rhode Island exempts Social Security and up to $50,000 per person of pension, 401(k) and annuity income (raised from $20,000 for 2025), but both require Social Security's full retirement age and both cut off above $107,000 of AGI single or $133,500 joint. IRA withdrawals don't qualify for the pension exclusion, which this tool doesn't separate from other traditional withdrawals."},
   SC:{sdAge:[15000,15000], cgPct:.44,
       note:"South Carolina's age-65 deduction is $15,000 per person against any income, which absorbs its separate $10,000 retirement deduction. It also excludes 44% of net long-term capital gain."},
   UT:{ssCredit:{rate:.045, cap:[54000,90000], phase:.025},
@@ -997,6 +1003,10 @@ function stateRetireTax(S, c){
     else if (R.ssCap){
       const cap = R.ssCap[idx], range = R.ssRange || 0;
       if (c.agi <= cap) ssIn = 0;
+      else if (R.ssStep)
+        // Minnesota: the subtraction falls 10% for each full or partial step
+        // of AGI over the threshold, so it is gone ten steps above it.
+        ssIn = c.taxableSS * Math.min(1, Math.ceil((c.agi - cap) / R.ssStep) * .10);
       else if (range > 0 && c.agi < cap + range)
         ssIn = c.taxableSS * ((c.agi - cap) / range);
       if (c.agi > cap && R.ssPct) ssIn = Math.min(ssIn, c.taxableSS * R.ssPct);
@@ -1009,7 +1019,8 @@ function stateRetireTax(S, c){
   let pension = c.pension;
   if (R.penFull) pension = 0;
   else if (R.pubFull && c.penPublic){
-    // Missouri's public-pension exemption is the one with an income test.
+    // A pubFull state with exCap (and no exAmt) would income-test this;
+    // none currently does, but the machinery stays for the next one.
     const cap = R.exCap && !R.exAmt ? R.exCap[idx] : Infinity;
     if (c.agi <= cap) pension = 0;
   }
@@ -1031,9 +1042,14 @@ function stateRetireTax(S, c){
     if (R.exCap){
       const cap = R.exCap[idx];
       if (R.exPhase === "nj"){
-        // New Jersey steps the exclusion down rather than phasing it linearly.
-        const g = c.grossForTest;
-        room *= g <= cap ? 1 : g <= cap + 25000 ? .5 : g <= cap + 50000 ? .25 : 0;
+        /* New Jersey: the full exclusion only below $100,000 of income. From
+           there it becomes a share of the retirement income itself -- 50%
+           joint / 37.5% single to $125,000, half that to $150,000 -- and
+           zero above $150,000 (N.J.S.A. 54A:6-10; GIT-1&2). */
+        const g = c.grossForTest, qual = trad + pension;
+        if (g > cap + 50000) room = 0;
+        else if (g > cap + 25000) room = Math.min(room, qual * (st === "m" ? .25 : .1875));
+        else if (g > cap) room = Math.min(room, qual * (st === "m" ? .5 : .375));
       } else if (R.exPhase === "lin"){
         const range = R.exRange || 1;
         room *= c.agi <= cap ? 1
@@ -4436,7 +4452,9 @@ function ddJob(job, a){
    applies to traditional money taken before 59½, Roth conversions wait five
    years before they can be spent early, required minimum distributions start
    at 73 or 75, and ACA marketplace premiums before 65 follow each year's
-   income, cliff included.
+   income, cliff included. From 65, when the plan is pricing health coverage,
+   each person on Medicare pays the standard Part B premium plus an average
+   Part D plan (Medigap varies too much by state and insurer to assume).
 
    A couple is one household: one pool of each account type, with the 59½
    line and required distributions following your age, and both of you
@@ -4444,6 +4462,11 @@ function ddJob(job, a){
 
 var PL_EARLY = 59;          // a year that starts before 59 ends before 59½
 var PL_HEIR = 0.24;         // default tax rate heirs pay on inherited traditional money
+/* Average standalone Part D premium, 2026, a month (CMS estimate). Standard
+   Part B comes from the IRMAA table. Together they are what a year of
+   Medicare costs each person 65+ when the plan is pricing health coverage
+   (the same switch that adds ACA premiums before 65). */
+var PL_MED_PARTD = 35;
 
 /* Real returns of a stock/bond mix by calendar year from 1926, inflation
    alongside, and their long-run averages: the steady path runs at the
@@ -4596,6 +4619,7 @@ function plPrep(P){
   C.rate = C.total0 > 0 ? C.spend / C.total0 : 0;
   C.early = new Uint8Array(n); C.seniors = new Uint8Array(n);
   C.rmdDiv = new Float64Array(n); C.acaGross = new Float64Array(n);
+  C.med = new Float64Array(n);
   var d = C.age2 == null ? 0 : C.age2 - C.age1;
   C.gap = d;
   // A benchmark premium the household found is for the ages at retirement;
@@ -4620,6 +4644,9 @@ function plPrep(P){
         if (a2 != null && a2 < 65) g += hcGrossPremium(C.state, a2, 0);
       }
       C.acaGross[y] = g;
+      // Medicare from 65: standard Part B plus an average Part D plan, per
+      // person, under the same "price health coverage" switch as the ACA.
+      C.med[y] = (IRMAA.partB + PL_MED_PARTD) * 12 * C.seniors[y];
     }
   }
   return C;
@@ -4753,7 +4780,7 @@ function plEv(C, Y, x){
   var tax = plTax(C.cache, Y.seniors, Y.ss, ord, gain);
   var agi = plAgi(ord, gain, Y.ss, C.status);
   var magi = ord + gain + Y.ss;
-  var hl = Y.aca ? plHealth(C, Y.y, magi) : 0;
+  var hl = (Y.aca ? plHealth(C, Y.y, magi) : 0) + Y.med;
   var irm = Y.people > 0 ? irmaaAnnual(Y.look >= 0 ? Y.look : agi, C.status, Y.people) : 0;
   var pen = penBase * C.penRate;
   plE.net = Y.cash + x - Y.w - tax - hl - irm - pen;
@@ -4792,8 +4819,8 @@ function plSolve(C, Y, total){
    `off`. `out` asks for detail: out.path (end-of-year total, real),
    out.lived (what was actually lived on), out.rows (everything, for the
    year-by-year table). Returns the run's summary. */
-var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, ss:0, aca:0, people:0,
-  look:-1, cash:0, w:0};
+var plY = {y:0, order:null, conv:0, pen:0, gs:0, baseOrd:0, seniors:0, ss:0, aca:0, med:0,
+  people:0, look:-1, cash:0, w:0};
 function plRun(C, K, R, PI, off, out){
   var n = C.years, st = C.status, P = C.P;
   var trad = C.trad, roth = C.roth, rAcc = C.rothBasis, brok = C.brok, bBasis = C.brokBasis;
@@ -4849,6 +4876,7 @@ function plRun(C, K, R, PI, off, out){
     Y.baseOrd = pension + (Y.conv ? D : M);
     Y.seniors = seniors; Y.ss = ss;
     Y.aca = C.acaGross[y] > 0 ? 1 : 0;
+    Y.med = C.med[y];
     Y.people = seniors;
     Y.look = m2;
     Y.cash = ss + pension + M;
@@ -4905,7 +4933,7 @@ function plRun(C, K, R, PI, off, out){
     if (rows){
       rows.push({y:y, age:a1, age2:C.age2 == null ? null : C.age2 + y, spend:w, lived:livedY,
         ss:ss, pension:pension, rmd:M, trad:M + plTk[0] + plTk[2], conv:Cv, brok:plTk[1],
-        roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, health:plE.health, irmaa:plE.irm,
+        roth:plTk[3] + plTk[4], tax:plE.tax, pen:plE.pen, health:plE.health, med:Y.med, irmaa:plE.irm,
         agi:plE.agi, magi:plE.magi, ord:plE.ord, gain:plE.gain,
         taxable:plOrdTaxable(plE.ord, plE.gain, ss, st, seniors),
         fplPct:Y.aca ? plE.magi / C.fpl : null, short:short, surplus:surplus,
@@ -11980,7 +12008,7 @@ function readDD(){ return ddOptsFromState(readDDState()); }
    kind of job is a lane with one job at a time: a newer request waits for
    the running one, replacing any already waiting, and a result that a newer
    request has overtaken is dropped. */
-var DD_WORKER_URL = "/assets/plan.df5b426da2.js";
+var DD_WORKER_URL = "/assets/plan.fafe5f6bdf.js";
 var ddWorker = null, ddWorkerDead = false, ddJobSeq = 0, ddLanes = {};
 function ddGetWorker(){
   if (ddWorker || ddWorkerDead) return ddWorker;
@@ -21319,7 +21347,7 @@ document.querySelectorAll("a.mailme").forEach(a => {
    the progress with the fill behind it, and lands in the target when the
    answer is in. The whole shot never takes less than OP_MIN_MS, so a quick
    search still gets its flight. */
-var OP_WORKER_URL = "/assets/plan.df5b426da2.js";
+var OP_WORKER_URL = "/assets/plan.fafe5f6bdf.js";
 var OP_MIN_MS = 5000;
 var OP_DRAW_MS = 700, OP_HOLD_MS = 260;          // drawing the string back, then holding it
 var OP_LOOSE_MS = OP_DRAW_MS + OP_HOLD_MS;

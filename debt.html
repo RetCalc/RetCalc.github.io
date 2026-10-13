@@ -214,7 +214,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/app.7ba55de3b7.css">
-<link rel="preload" href="/assets/app.e481f4ab51.js" as="script">
+<link rel="preload" href="/assets/app.1549d64b75.js" as="script">
 <script>
   /* Until the app script (a separate, cached file) has run, the page holds
      the Basic calculator's static layout whatever the address. Keeping the
@@ -2814,7 +2814,10 @@ window.onerror = function(msg){
           and required distributions follow your age, and both of you live to the end of
           the plan, which favors claiming later (a survivor keeping the larger benefit
           isn't modeled). Brackets and thresholds are held at 2026 levels in today's
-          dollars. It doesn't use 72(t) payments or 457(b) plans (the Early Retirement
+          dollars. When it prices health coverage, years before 65 pay the ACA
+          marketplace premium the year's income earns, and years from 65 pay the
+          standard Part B premium plus an average Part D plan per person (Medigap
+          isn't assumed). It doesn't use 72(t) payments or 457(b) plans (the Early Retirement
           Bridge compares those), and it doesn't change your retirement age, saving or
           spending: the readiness guide's Adjust your plan step does that.</dd>
         </dl>
@@ -3306,9 +3309,10 @@ window.onerror = function(msg){
           <dt>Down payment</dt>
           <dd>Enter a percentage or a dollar amount; the other updates itself.</dd>
           <dt>Interest rate</dt>
-          <dd>Pre-filled with 6.71%, the Freddie Mac national average for a 30-year
-          fixed loan as of 3 September 2026. Rates move weekly, and your own depends on
-          credit score, term, points and lender, so replace it with a current quote.</dd>
+          <dd>Pre-filled with a rounded recent national average for a 30-year fixed
+          loan &mdash; a starting point, not a live figure. Rates move weekly, and your
+          own depends on credit score, term, points and lender, so replace it with a
+          current quote.</dd>
           <dt>PMI</dt>
           <dd>Private mortgage insurance, charged when you put down less than 20%.
           Typically 0.3&ndash;1.5% of the loan a year. Modeled here as ending once the
@@ -5635,7 +5639,7 @@ window.onerror = function(msg){
 <div id="sheet" aria-hidden="true"></div>
 <div class="tipbox" id="tipbox" role="tooltip"></div>
 
-<script src="/assets/app.e481f4ab51.js"></script>
+<script src="/assets/app.1549d64b75.js"></script>
 <!-- Cloudflare Web Analytics: cookieless pageview counting, including moves
      between tools inside the app. Records the page and referrer; never reads
      or transmits anything the user types. -->

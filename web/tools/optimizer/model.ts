@@ -58,7 +58,7 @@ export function opToolIn(s: OptimizerInputs): PlToday {
     real: parseFloat(s.risk) || 0.045, infl: BASIC_INFL as number,
     spend: num(s.spend, 0, 1e8, 0), pia1, pia2, claim1: claim, claim2: claim,
     pension: num(s.pension, 0, 1e8, 0), pensionAge: s.penAge.trim() === "" ? null : Math.round(num(s.penAge, 40, 90, retire)),
-    pensionCola: s.penCola === "1", aca: s.aca === "1" && retire < 65, household: m ? 2 : 1,
+    pensionCola: s.penCola === "1", aca: s.aca === "1", household: m ? 2 : 1,
     rule55: s.rule55 === "1", heirRate: num(s.heir, 0, 50, 24) / 100, mix: num(s.mix, 0, 100, 60),
     years, target: parseFloat(s.target) || 0.9, strategy: "fixed", minSpend: 0, fromYear: HIST_START as number,
   };

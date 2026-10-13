@@ -15,7 +15,7 @@ import { Tipped } from "@/components/shell/Tooltips";
 import { useToolState } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { plAtRetire } from "@/lib/engine/typed-plan";
-import { dollarsField, groupDigits, money, parseNum, pctStr } from "@/lib/format";
+import { dollarsField, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { copyFrom, opSources, sourceDesc } from "./copy";
@@ -285,8 +285,8 @@ export function Optimizer() {
               </SelectField>
 
               <GroupHead>Health, heirs and safety</GroupHead>
-              <SelectField id="opAca" wrapId="opAcaWrap" hidden={!(v.retire < 65)} label={<Tipped text="Health insurance before 65" k="opaca" />} value={s.aca} onChange={set("aca")}>
-                <option value="1">ACA plan, with the subsidy income earns</option>
+              <SelectField id="opAca" wrapId="opAcaWrap" label={<Tipped text="Health insurance" k="opaca" />} value={s.aca} onChange={set("aca")}>
+                <option value="1">{v.retire < 65 ? "Priced: ACA before 65, Medicare after" : "Priced: Medicare premiums from 65"}</option>
                 <option value="0">Already in my spending</option>
               </SelectField>
               <SelectField id="opRule55" wrapId="opRule55Wrap" hidden={!(v.retire >= 55 && v.retire < 60)} label={<Tipped text="Leaving a job with a 401(k)" k="oprule55" />} value={s.rule55} onChange={set("rule55")}>
@@ -327,7 +327,7 @@ export function Optimizer() {
                 <span>Enter your spending in retirement first, under In retirement.</span>
               </p>
             ) : null}
-            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">Every age from 62 to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
+            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">Every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
           </CardContent>
         </Card>
         <OptimizerStatus host="tool" />

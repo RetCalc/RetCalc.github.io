@@ -150,6 +150,62 @@ group("Retirement tax: Social Security, capital gains, NIIT, senior deduction");
   near(T.state, 0, .01, "Illinois exempts retirement withdrawals");
 })();
 
+/* State retirement rules refreshed in the October 2026 audit. Each check pins
+   a figure worked from the state's own published rule; the sources are in the
+   RET_STATE notes. */
+group("State retirement rules: RI, NJ, MO, ME, MN, KS 2025-26 updates");
+(function () {
+  var base = { status: "m", idx: 1, seniors: 2, trad: 0, pension: 0, penPublic: false, other: 0,
+               gain: 0, taxableSS: 0, ssGross: 0, agi: 0, pre: 0, dedType: "std", item: 0, grossForTest: 0 };
+  function st(code, o) {
+    var c = Object.assign({}, base, o, { code: code });
+    if (o.grossForTest == null) c.grossForTest = c.trad + c.pension + c.other + c.gain;
+    if (o.agi == null) c.agi = c.grossForTest + c.taxableSS;
+    return stateRetireTax(STATES[code], c);
+  }
+  // Rhode Island: $50,000 per person from 2025, cut off above $133,500 joint.
+  near(st("RI", { pension: 120000 }).excluded, 100000, .01, "RI: $50,000 each, $100,000 joint");
+  near(st("RI", { pension: 150000 }).excluded, 0, .01, "RI: nothing above the income cap");
+  // New Jersey: full below $100k, then a share of retirement income itself.
+  near(st("NJ", { trad: 80000 }).excluded, 80000, .01, "NJ: full exclusion below $100k");
+  near(st("NJ", { trad: 110000 }).excluded, 55000, .01, "NJ: 50% of retirement income to $125k");
+  near(st("NJ", { trad: 140000 }).excluded, 35000, .01, "NJ: 25% to $150k");
+  near(st("NJ", { trad: 160000 }).excluded, 0, .01, "NJ: nothing above $150k");
+  near(st("NJ", { status: "s", idx: 0, seniors: 1, trad: 110000 }).excluded, 41250, .01, "NJ single: 37.5% in the middle band");
+  // Missouri: public pensions exempt with no income test since 2024 (SB 190).
+  near(st("MO", { pension: 40000, penPublic: true, other: 160000 }).excluded, 40000, .01, "MO: public pension exempt at any income");
+  near(st("MO", { status: "s", idx: 0, seniors: 1, pension: 60000, penPublic: true }).excluded, 49824, .01, "MO: capped at the max Social Security benefit");
+  // Maine: $49,824 for 2026, phased out over $100k of AGI above the threshold.
+  near(st("ME", { status: "s", idx: 0, seniors: 1, trad: 60000 }).excluded, 49824, .01, "ME: 2026 ceiling");
+  near(st("ME", { status: "s", idx: 0, seniors: 1, trad: 60000, other: 115000 }).excluded, 49824 * .5, .01, "ME: half gone $50k over the single threshold");
+  // Minnesota: the subtraction falls 10% per $4,000 (or part) over the line.
+  var mn = st("MN", { status: "s", idx: 0, seniors: 1, taxableSS: 20000, ssGross: 24000, other: 76410, agi: 96410 });
+  near(mn.ssIn, 6000, .01, "MN: 3 steps over = 30% of taxable benefits back in");
+  near(st("MN", { status: "s", idx: 0, seniors: 1, taxableSS: 20000, ssGross: 24000, other: 60000, agi: 80000 }).ssIn, 0, .01, "MN: fully exempt below the threshold");
+  // Kansas: the age-65 extra standard deduction is $850 single, $700 a spouse.
+  var ks = st("KS", { status: "s", idx: 0, seniors: 1, pension: 50000 });
+  near(ks.ded, 3605 + 9160 + 850, .01, "KS: standard deduction + exemption + $850 at 65");
+})();
+
+group("Plan engine: Medicare premiums from 65 when the plan prices coverage");
+(function () {
+  function prep(aca) {
+    return plPrep({ status: "s", state: "TX", age1: 70, age2: null, years: 5, trad: 500000, roth: 0,
+      rothBasis: 0, brok: 0, brokBasis: 0, spend: 40000, pia1: 0, pia2: 0, claim1: 70, claim2: 70,
+      pension: 0, pensionAge: null, pensionCola: false, aca: aca, household: 1, rule55: false,
+      heirRate: .24, mix: 60, rmdAge: 75, fromYear: 1926, strategy: "fixed", minSpend: 0 });
+  }
+  near(prep(true).med[0], (202.90 + 35) * 12, .01, "standard Part B plus average Part D, a person");
+  near(prep(false).med[0], 0, .01, "nothing when spending already includes premiums");
+  var C = plPrep({ status: "m", state: "TX", age1: 63, age2: 61, years: 6, trad: 500000, roth: 0,
+    rothBasis: 0, brok: 0, brokBasis: 0, spend: 40000, pia1: 0, pia2: 0, claim1: 67, claim2: 67,
+    pension: 0, pensionAge: null, pensionCola: false, aca: true, household: 2, rule55: false,
+    heirRate: .24, mix: 60, rmdAge: 75, fromYear: 1926, strategy: "fixed", minSpend: 0 });
+  near(C.med[0], 0, .01, "none before 65 (the ACA covers those years)");
+  near(C.med[2], (202.90 + 35) * 12, .01, "one spouse on Medicare at 65");
+  near(C.med[4], (202.90 + 35) * 24, .01, "both from the year the younger turns 65");
+})();
+
 /* ---------------- Social Security ---------------- */
 group("Social Security: 2026 bend points, claiming ages, spousal benefits");
 (function () {
@@ -1227,7 +1283,7 @@ group("Plan Optimizer");
   ok(R.best.stats.medLegacy >= R.base.stats.medLegacy, "the best plan leaves at least as much as the usual way");
   ok(R.best.stats.successRate >= R.base.stats.successRate - 1e-9, "and lasts as often");
   var T = R.best.T;
-  eq(T.c1 + "," + T.f + "," + T.u + "," + T.ac, "70,3,1,1", "Maria: claim at 70, fill the 12% bracket, convert until Social Security, under the ACA cliff");
+  eq(T.c1 + "," + T.f + "," + T.u + "," + T.ac, "70,3,2,1", "Maria: claim at 70, fill the 12% bracket, convert until RMDs begin, under the ACA cliff");
   says("optimizer", dollars(R.base.stats.medTax));
   says("optimizer", dollars(R.base.stats.medLegacy));
   says("optimizer", dollars(R.best.stats.medTax));

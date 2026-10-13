@@ -171,7 +171,7 @@ export function About({ states }: { states: StateOption[] }) {
               payroll-tax limits from the IRS and the Social Security Administration;
               state rules as of January 1, 2026; Medicare premiums and IRMAA brackets from
               CMS; ACA premiums and subsidies from KFF benchmark premiums and HHS poverty
-              guidelines; mortgage rates from Freddie Mac&apos;s weekly average.</li>
+              guidelines; the mortgage tools start from a rounded recent Freddie Mac average, kept as a starting point rather than updated weekly.</li>
             </ul>
             <h3>What every tool assumes</h3>
             <p>Figures are in today&apos;s dollars unless a tool says otherwise. The
@@ -568,7 +568,10 @@ export function About({ states }: { states: StateOption[] }) {
               and required distributions follow your age, and both of you live to the end of
               the plan, which favors claiming later (a survivor keeping the larger benefit
               isn&apos;t modeled). Brackets and thresholds are held at 2026 levels in today&apos;s
-              dollars. It doesn&apos;t use 72(t) payments or 457(b) plans (the Early Retirement
+              dollars. When it prices health coverage, years before 65 pay the ACA
+              marketplace premium the year&apos;s income earns, and years from 65 pay the
+              standard Part B premium plus an average Part D plan per person (Medigap
+              isn&apos;t assumed). It doesn&apos;t use 72(t) payments or 457(b) plans (the Early Retirement
               Bridge compares those), and it doesn&apos;t change your retirement age, saving or
               spending: the readiness guide&apos;s Adjust your plan step does that.</dd>
             </dl>
@@ -1252,9 +1255,10 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Down payment</dt>
               <dd>Enter a percentage or a dollar amount; the other updates itself.</dd>
               <dt>Interest rate</dt>
-              <dd>Pre-filled with 6.71%, the Freddie Mac national average for a 30-year
-              fixed loan as of 3 September 2026. Rates move weekly, and your own depends on
-              credit score, term, points and lender, so replace it with a current quote.</dd>
+              <dd>Pre-filled with a rounded recent national average for a 30-year fixed
+              loan — a starting point, not a live figure. Rates move weekly, and your own
+              depends on credit score, term, points and lender, so replace it with a
+              current quote.</dd>
               <dt>PMI</dt>
               <dd>Private mortgage insurance, charged when you put down less than 20%.
               Typically 0.3&ndash;1.5% of the loan a year. Modeled here as ending once the
