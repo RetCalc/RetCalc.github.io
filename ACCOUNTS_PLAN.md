@@ -267,8 +267,8 @@ to contact@ untouched; sender `RetCalc <signin@retcalc.app>`). Both code
 templates are set and tested: a first sign-in gets "Confirm signup" (the
 welcome version, `supabase/templates/confirmation.html`), later ones get
 "Magic link or OTP". Hosted projects default to 8-digit codes; set Email OTP
-Length to 6 under Authentication → Sign In / Providers → Email. Step 5
-(Vercel env vars) is still to do.
+Length to 6 under Authentication → Sign In / Providers → Email. Step 5 (Vercel env vars, Config type,
+all environments) done too.
 
 ## Built so far (branch `accounts`, not live)
 
@@ -303,6 +303,22 @@ On the live Supabase project (2026-10-12):
   "Your session has expired" with only the publishable key.
 - `web/.env.local` (git-ignored) holds the URL and publishable key for local
   development.
+
+Sign-in built (commit c1e78c9, branch only):
+- Header "Sign in" / account menu (`components/account/AccountButton.tsx`),
+  dialog with Google and the emailed code plus the optional first-name step
+  (`SignInDialog.tsx`), session and sync (`AccountProvider.tsx`), and
+  `/account` with name, what's stored, download and delete
+  (`AccountPage.tsx`).
+- Checked in a browser with the email call faked (no emails sent): every
+  step renders, a wrong code says so, Google redirects with the right
+  callback, phone header swaps the theme button for the account button,
+  no console errors.
+- Still to test for real, on the preview: a real code and a real Google
+  sign-in, sync across two browsers, sign-out both ways, delete.
+- Still to do before announcing: the privacy copy ("…unless you sign in")
+  and a privacy page (step 6), the weekly backup Action, DMARC, and moving
+  Google's consent screen from Testing to In production.
 
 ## Checked against Supabase's current docs (2026-10-12)
 
