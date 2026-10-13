@@ -26,7 +26,7 @@ export function Footer() {
       <div className="sitefoot-in">
         <div className="sitefoot-brand">
           <Brandmark />
-          <div><b>RetCalc</b><span>Know your number.</span></div>
+          <div><b>RetCalc</b><span>The complete retirement planning toolkit.</span></div>
         </div>
         <div className="sitefoot-txt">
           <p>An educational tool, not financial or tax advice. Past returns don&apos;t predict future ones, and tax figures are estimates.{" "}

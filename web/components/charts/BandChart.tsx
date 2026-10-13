@@ -1,6 +1,6 @@
 "use client";
 
-/* The site's main chart: one line (the plan, ending in the logo's arrowhead)
+/* The site's main chart: one line (the plan, ending in a small dot)
    inside a shaded band, a higher and a lower line at the band's edges, or
    percentile fans for market-history and Monte Carlo runs. Hover, or touch
    and drag on a phone, shows the year under the pointer. Ported from
@@ -51,7 +51,7 @@ interface Props<P extends BandPoint> {
       no lower line, the band as a flat fill instead of a gradient, or no
       band at all (a comparison line that isn't a range, such as a cost). */
   screenOnly?: { xOffset?: number; noLoLine?: boolean; flatBand?: boolean; noBand?: boolean;
-    /** The plan line (and its arrowhead) stops at this x: where the plan
+    /** The plan line (and its end dot) stops at this x: where the plan
         itself finishes, rather than running on along zero. */
     baseEnd?: number;
     /** The x values are months: tick whole years, labelled 0, 1, 2... */
@@ -104,9 +104,9 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
                   <stop offset="100%" stopColor={cHi} stopOpacity={b} />
                 </linearGradient>
               ))}
-              {/* The plan's own line ends in the logo's arrowhead. */}
-              <marker id={g("tip")} viewBox="0 0 10 10" refX="6.5" refY="5" markerWidth="4.2" markerHeight="4.2" orient="auto">
-                <path d="M0 .6 L10 5 L0 9.4 L2.6 5 Z" fill={cBase} />
+              {/* The plan's own line ends in a small dot (sized to the line). */}
+              <marker id={g("tip")} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="1.9" markerHeight="1.9">
+                <circle cx="5" cy="5" r="5" fill={cBase} />
               </marker>
               {traces?.lines.length ? <clipPath id={g("trc")}><rect x={L} y={T} width={pw} height={ph} /></clipPath> : null}
             </defs>

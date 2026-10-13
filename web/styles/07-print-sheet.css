@@ -79,7 +79,7 @@
      text on the page. */
   .sh-foot{font-size:7.5px;color:#666;line-height:1.45;border-top:1px solid #ccc;
     padding-top:5px}
-  .sh-foot::after{content:"RetCalc \00b7  retcalc.app \00b7  Know your number.";
+  .sh-foot::after{content:"RetCalc \00b7  retcalc.app \00b7  The complete retirement planning toolkit.";
     display:block;margin-top:4px;color:#9a7a3a;font-weight:600;letter-spacing:.01em}
 }
 

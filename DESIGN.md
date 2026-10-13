@@ -1,6 +1,6 @@
 ---
 name: RetCalc
-description: Know your number.
+description: The complete retirement planning toolkit.
 colors:
   graphite-ground: "#0E1116"
   graphite-surface: "#151A21"
@@ -328,7 +328,7 @@ The key result, and the reason the page exists. It opens the results column as t
 - On phones the table scrolls sideways inside its own container, with its first column pinned. Where the last column is the answer (the homepage's Balance), it's pinned too, and a column that repeats another (Year beside Age) steps out on phones; the CSV keeps every column.
 
 ### Charts
-- Plan line in Signal Amber, ending in the logo's arrowhead. Comparison series in Sky, Teal, then Rose, Lavender, Gray. Ranges as bands at 15 to 25% opacity of their series.
+- Plan line in Signal Amber, ending in a small dot (about twice the line's width; the arrowhead was dropped on 2026-10-13 as it read as a trend past the last year). Comparison series in Sky, Teal, then Rose, Lavender, Gray. Ranges as bands at 15 to 25% opacity of their series.
 - Gridlines in Rule; axis labels in Label/Muted, tabular.
 - Legend below the chart: swatch plus text. Toggleable entries fade and strike through when off.
 - Tooltips: Raised fill, Rule border, 14px radius, Float shadow, tabular figures.
@@ -460,7 +460,7 @@ The bow and arrow is RetCalc's own sign: the logo is a bow with an arrow nocked,
 
 ## Homepage
 
-The homepage (`/`, `web/components/home/`, styles in `web/styles/16-home.css`) is the one page allowed past this system,: nothing in `16-home.css` is used by another page, and no tool inherits it. It persuades where the tools instrument, so it may use what they may not: display type up to 112px (`clamp(52px, 8.4vw, 112px)`, "Know your" over an amber "number."), the three main paths (Calculator, Guide, Drawdown Simulator) on Surface tiles tinted toward amber, Brand Jade and Brand Steel, and motion driven by the scroll. Colors are still the tokens; no new value is added.
+The homepage (`/`, `web/components/home/`, styles in `web/styles/16-home.css`) is the one page allowed past this system,: nothing in `16-home.css` is used by another page, and no tool inherits it. It persuades where the tools instrument, so it may use what they may not: display type up to 88px (`clamp(44px, 6.2vw, 88px)`: the tagline, "The complete retirement planning toolkit.", with "retirement planning" in amber), the three main paths (Calculator, Guide, Drawdown Simulator) on Surface tiles tinted toward amber, Brand Jade and Brand Steel, and motion driven by the scroll. Colors are still the tokens; no new value is added.
 
 ### Structure
 - **An age line.** The tools hang off a vertical line at the age you'd reach for them: the Calculator and Guide in your 30s, FIRE in your 40s, the Bridge at 52 to 59½, Healthcare until 65, the Optimizer at 62 to 70, Drawdown at 65, Roth and RMDs at 73. The everyday tools (Income Tax, Rent vs. Buy, Mortgage, Budget, then a list) follow in a grid.
