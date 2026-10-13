@@ -4,7 +4,7 @@
 "home": {
 "h1": "RetCalc",
 "title": "RetCalc: Free Retirement Planning Toolkit",
-"desc": "Free retirement planning toolkit: a calculator, a guide and 13 tools, tested against every market since 1926. No account needed; runs in your browser."
+"desc": "Free retirement planning toolkit: a calculator, a guide and tools for withdrawals, taxes and more, tested against every market since 1926. No account needed."
 },
 "calculator": {
 "h1": "Retirement Calculator",
@@ -44,7 +44,7 @@
 "drawdown": {
 "h1": "Retirement Withdrawal Calculator",
 "title": "Retirement Withdrawal Calculator: Will My Money Last?",
-"desc": "Test 15 withdrawal strategies, from the 4% rule to guardrails, against every retirement since 1926, with Social Security and pensions. No account needed."
+"desc": "Test the 4% rule, guardrails and other withdrawal strategies against every retirement since 1926, with Social Security and pensions. No account needed."
 },
 "4-percent-rule": {
 "h1": "4% Rule Calculator",
