@@ -73,10 +73,8 @@ using an API you aren't sure of).
   `src/main/26-about-this-tool.html`, not `web/content/articles/`. An edit to
   a figure in `web/content/articles/` is not tested today. Task T1.10 fixes
   this; do it before editing any article's numbers.
-- `web/scripts/seo-compare.mjs` compares the new site's `<head>`s with the
-  old site's. It was the migration's check and will report every title or
-  description changed here as a difference. That's expected; T1.1 retires
-  it.
+- `src/page-meta.json` (the old site's copy) no longer matches
+  `web/lib/page-meta.json`, and that's intended. Edit only the `web/` one.
 - Pages are `noindex` everywhere except the production deployment
   (`LIVE` in `web/app/layout.tsx`). Don't "fix" the noindex you see locally
   or on previews.
@@ -187,14 +185,14 @@ using an API you aren't sure of).
 Each is a small change. One commit per task, so each can be tied to its
 effect in Search Console.
 
-### T1.1 Shorter titles — Agent  [ ]
+### T1.1 Shorter titles — Agent  [x] 2026-10-13
 
 Change `title` in `web/lib/page-meta.json` to fit in about 60 characters,
 search words first. Proposed (owner may adjust; unlisted pages already fit):
 
 | Slug | Proposed title (chars) |
 | --- | --- |
-| home | RetCalc: Free Retirement Calculators Tested Since 1926 (54) |
+| home | RetCalc: Free Retirement Planning Toolkit (41), the owner's wording |
 | calculator | Free Retirement Calculator: Will Your Savings Last? (51) |
 | advanced | Advanced Retirement Calculator: Taxes, Fees & History (53) |
 | drawdown | Retirement Withdrawal Calculator: Will My Money Last? (53) |
@@ -221,17 +219,15 @@ Notes:
   trailing " | RetCalc" if present, else use the part before the first ":".
 - The link-preview cards use `web/lib/cards.ts`, not these titles; no new
   images needed.
-- Retire `web/scripts/seo-compare.mjs` (delete it, or make it compare against
-  `web/lib/page-meta.json` rather than `src/page-meta.json`) and update the
-  mention in `MIGRATION.md`.
+- `seo-compare.mjs` was deleted and `MIGRATION.md` updated.
 
 Done when: every title ≤ 60 characters; lint, typecheck, build pass.
 
-### T1.2 Shorter descriptions — Agent  [ ]
+### T1.2 Shorter descriptions — Agent  [x] 2026-10-13
 
 Rewrite each `desc` in `web/lib/page-meta.json` to 140–155 characters. Lead
 with what the page answers, then the proof ("tested against every
-retirement since 1926"), then "Free, no signup." where it fits. Match the
+retirement since 1926"), then "No account needed." where it fits. Match the
 voice in `PRODUCT.md`. Done when: every description is 120–155 characters.
 
 ### T1.3 Visible main headings — Owner decision → Agent  [ ]
@@ -530,7 +526,7 @@ can draft posts and messages for the owner to send.
 
   > Hi {name}, I built a free tool that tests {their method} against every
   > US retirement since 1926: {link}. It reproduces your {specific result}
-  > and shows {one new finding}. No signup or ads. If it's useful to your
+  > and shows {one new finding}. Free, no account needed. If it's useful to your
   > readers, I'd be glad if you linked it; corrections welcome too.
 
 - [ ] **L5 Journalist requests.** Qwoted and Featured.com have free tiers.
@@ -627,3 +623,4 @@ site back. Prices are approximate; check current pricing.
 | Date | Task | Commit | What changed / result |
 | --- | --- | --- | --- |
 | 2026-10-13 | — | — | Plan written from an audit of `main` at `89131a8` |
+| 2026-10-13 | T1.1, T1.2 | (this branch) | All 31 titles ≤ 60 characters and descriptions 120–155, in `web/lib/page-meta.json`; `jsonLdFor` names the app from the title without ` \| RetCalc`, else the part before the colon; `seo-compare.mjs` deleted. Home title is "RetCalc: Free Retirement Planning Toolkit" by the owner's choice |
