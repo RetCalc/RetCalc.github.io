@@ -45,7 +45,7 @@ export function OptimizeStep() {
       <OpGoals host="guide" goal={goal} onPick={(g) => G.set("optGoal", g, true)} />
       <div className="op-go"><Button size="lg" variant="outline" data-op="run" data-host="guide" disabled={!!H.run} onClick={() => startOptimizer("guide", S.P, goal)}>
         {H.res && !stale ? "Run it again" : "Find my best plan"}<i className="arw" aria-hidden="true"></i></Button>
-        <span className="hint">{groupDigits(E.runs, true)} retirements to simulate, about {E.secs} seconds. Nothing leaves your browser.</span></div>
+        <span className="hint">{groupDigits(E.runs, true)} retirements to simulate, about {E.secs} seconds. It all runs in your browser.</span></div>
       <OptimizerStatus host="guide" />
       {H.run ? <Progress host="guide" R={H.run} /> : H.res ? (
         <>

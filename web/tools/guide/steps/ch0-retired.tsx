@@ -51,7 +51,7 @@ export function RetiredCard() {
         )}
       </Means>
       <Task id="retired" head="Open the Drawdown Simulator with these numbers" />
-      <Callout>No score here: it measures the saving years. Your answers stay in this browser, so you can come back.</Callout>
+      <Callout>No score here: it measures the saving years. Your answers are saved in this browser (and your account, if you sign in), so you can come back.</Callout>
     </>
   );
 }

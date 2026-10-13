@@ -14,6 +14,7 @@ const LINKS = [
   { label: "Calculator", foot: "calc", href: "/calculator" },
   { label: "Tools", foot: "tools", href: "/tools" },
   { label: "About", foot: "about", href: "/about" },
+  { label: "Privacy", foot: "privacy", href: "/privacy" },
 ];
 
 export function Footer() {

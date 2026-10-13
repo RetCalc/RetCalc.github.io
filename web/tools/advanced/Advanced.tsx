@@ -347,7 +347,7 @@ export function Advanced() {
                 </div>
               </div>
               <p className="mt-0.5 mb-0 flex items-center gap-1.5 text-label text-muted-foreground">
-                <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser.</p>
+                <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser unless you sign in to save it.</p>
             </CardContent>
           </Card>
         </aside>

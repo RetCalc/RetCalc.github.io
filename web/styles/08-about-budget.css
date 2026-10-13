@@ -135,3 +135,16 @@ a.txlink{color:var(--text);text-decoration:underline;text-decoration-color:var(-
 a.txlink:hover{text-decoration-color:currentColor}
 /* A growth field set per account shows the blend; clicking it edits the rates. */
 
+
+/* ---------- privacy (app/privacy) ---------- */
+.privacy{display:grid;gap:16px;max-width:720px;margin:8px auto 0;width:100%}
+.privacy h1{font-size:30px;font-weight:600;letter-spacing:-.02em;margin:8px 0 0}
+.privacy-lede{margin:0;font-size:16px;line-height:1.55;color:var(--ds-muted)}
+.privacy p,.privacy li{font-size:14.5px;line-height:1.6;color:var(--ds-text)}
+.privacy p{margin:0 0 10px}
+.privacy p:last-child{margin-bottom:0}
+.privacy ul{margin:0 0 10px;padding-left:20px}
+.privacy li{margin:3px 0}
+.privacy a{color:var(--ds-text);text-decoration:underline;text-underline-offset:3px}
+.privacy code{font-size:13px}
+.privacy-fine{font-size:12.5px;color:var(--ds-muted);margin:0}

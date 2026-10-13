@@ -397,7 +397,7 @@ export function About({ states }: { states: StateOption[] }) {
             opens the tool on this site that finds it, filled in with what you&apos;ve told the
             guide, and a panel docked over the tool lists what to do there and ticks items
             off as you go. <b>Back to guide</b> brings the result with you. Your answers
-            are kept in this browser only, and the facts the household bar also holds
+            are kept in this browser (and in your account, if you sign in), and the facts the household bar also holds
             (ages, state, income, savings, spending) are written through to it.</p>
             <p>As you answer, a readiness score out of 100 builds from five areas:
             the retirement outlook (40 points), savings rate (20), emergency fund (15),
@@ -523,8 +523,8 @@ export function About({ states }: { states: StateOption[] }) {
               The tax is the Income Tax tool&apos;s whole 2026 federal and state retirement
               return, read from a cache so thousands of plans run in seconds. Conversions
               before 59½ can be spent after five years, as a conversion ladder. The search
-              runs in your browser, off the page&apos;s main thread, and nothing you enter is
-              sent anywhere.</dd>
+              runs in your browser, off the page&apos;s main thread, and sends nothing
+              anywhere.</dd>
 
               <dt>The three goals</dt>
               <dd><b>Leave the most</b> picks the plan with the most left after tax in the
