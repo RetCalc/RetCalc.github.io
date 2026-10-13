@@ -254,6 +254,12 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
   .navbar.oneline .wordmark{display:none}
   .navbar.oneline nav[role=tablist]{justify-self:stretch}
   .navbar.oneline nav[role=tablist] button{margin-right:10px}
+  /* In the browser the tabs spread across the space between the logo and
+     the account button, a size up from the desktop rail. (The home-screen
+     app's bottom bar, below, sets its own.) */
+  html:not(.pwa) .navbar.oneline nav[role=tablist]{justify-content:space-evenly;gap:0}
+  html:not(.pwa) .navbar.oneline nav[role=tablist] button{margin-right:0;padding-inline:clamp(2px,1.2vw,6px);font-size:clamp(13.5px,4.3vw,17.5px)}
+  @media (max-width:340px){ html:not(.pwa) .navbar.oneline nav[role=tablist] button{font-size:13px;padding-inline:1px} }
   /* No room for the mode beside Calculator; its menu still says which. */
   .navbar.oneline .calc-mode{display:none}
   /* The home-screen app docks the whole row at the bottom as a tab bar (see
