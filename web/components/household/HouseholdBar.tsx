@@ -119,7 +119,7 @@ function HouseholdForm({ states, onDone, autoFocus }: { states: StateOption[]; o
       <div className="hh-foot">
         <div className="hint">Any field can stay blank. Saving fills these numbers in to the
           calculators and the tools that use them. You can still change any tool afterwards
-          without touching this. Stored in this browser only.</div>
+          without touching this. Stored in this browser, and in your account if you sign in.</div>
         <div className="hh-btns">
           <Button variant="outline" className="max-sm:flex-auto" id="hhClear" onClick={onClear}>Clear</Button>{" "}
           {onDone ? <><DialogClose render={<Button variant="outline" className="max-sm:flex-auto" id="hhCancel" />}>Close</DialogClose>{" "}</> : null}

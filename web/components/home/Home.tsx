@@ -162,7 +162,7 @@ export function Home({ data }: { data: HomeData }) {
       <section className="hm-close" aria-labelledby="hmClose">
         <h2 className="hm-h2" id="hmClose" data-rv="">Find out where you stand.</h2>
         <div data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
-          <p className="hm-body">Free, and no account needed. Everything you enter stays in your browser.</p>
+          <p className="hm-body">Free, and no account needed. Everything you enter stays in your browser unless you sign in to save it.</p>
           <div className="hm-btns">
             <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
             <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>

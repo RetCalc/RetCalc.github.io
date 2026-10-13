@@ -8,7 +8,7 @@
    25-share-card.js. The Share menu offers what the page hands it
    (share.ts): its summary and image card, where it has them. */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { encodeShare, readScenarios, useActiveTool, writeScenarios, type Scenario } from "@/components/tools/ToolState";
 import { usePopup, type PopupOption } from "./Popup";
@@ -27,8 +27,14 @@ export function ScenarioBar() {
   const router = useRouter();
   // Which saved scenario is loaded, per tool, and its inputs when loaded.
   const [loaded, setLoaded] = useState<Record<string, { name: string; data: unknown }>>({});
-  // Re-read the list after a save or delete.
+  // Re-read the list after a save or delete, or when the account brings
+  // in saved scenarios (lib/sync).
   const [, setRev] = useState(0);
+  useEffect(() => {
+    const onSynced = () => setRev((r) => r + 1);
+    window.addEventListener("retcalc:synced", onSynced);
+    return () => window.removeEventListener("retcalc:synced", onSynced);
+  }, []);
 
   const id = tool?.def.id;
   const list: Scenario[] = id ? readScenarios(id) : [];

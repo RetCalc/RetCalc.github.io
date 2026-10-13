@@ -173,7 +173,7 @@ export function Optimizer() {
             <div className="text-label text-muted-foreground tabular-nums">{I.status === "m" ? money(I.pia1) + " + " + money(I.pia2) + ", before any spousal top-up" : "Before claiming earlier or later"}</div>
           </div>
         </div>
-        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground">Pick a goal above and press <b className="font-semibold text-foreground">Find my best plan</b>. The search runs in your browser: nothing you enter is sent anywhere.</p>
+        <p className="mt-5 mb-0 border-t border-border pt-4 text-note text-muted-foreground">Pick a goal above and press <b className="font-semibold text-foreground">Find my best plan</b>. The search runs entirely in your browser.</p>
       </CardContent>
     </Card>
   );

@@ -4,12 +4,12 @@
 "home": {
 "h1": "RetCalc",
 "title": "RetCalc: Free Retirement Planning Tools, Tested Against Every Market Since 1926",
-"desc": "Free retirement planning that runs in your browser: a calculator, a guide and 13 planning tools, checked against every market since 1926. No account needed, and nothing you enter leaves your browser."
+"desc": "Free retirement planning that runs in your browser: a calculator, a guide and 13 planning tools, checked against every market since 1926. No account needed, and nothing you enter leaves your browser unless you sign in."
 },
 "calculator": {
 "h1": "Retirement Calculator",
 "title": "Free Retirement Calculator: Will Your Savings Last? | RetCalc",
-"desc": "Free retirement calculator: see what your savings grow to by retirement in today's dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Nothing leaves your browser."
+"desc": "Free retirement calculator: see what your savings grow to by retirement in today's dollars, then test withdrawals, taxes, Roth conversions, healthcare and FIRE. Private: it runs in your browser."
 },
 "advanced": {
 "h1": "Advanced Retirement Calculator",
@@ -35,6 +35,11 @@
 "h1": "About RetCalc",
 "title": "About RetCalc: How the Calculators Work",
 "desc": "How RetCalc's calculators work, where the tax rules and historical market data come from, and what each tool assumes."
+},
+"privacy": {
+"h1": "Privacy",
+"title": "Privacy | RetCalc",
+"desc": "What RetCalc keeps and where: nothing without an account, and only your household, saved scenarios and Guide answers if you choose to sign in. Never sold."
 },
 "drawdown": {
 "h1": "Retirement Withdrawal Calculator",

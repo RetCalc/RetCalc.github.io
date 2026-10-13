@@ -22,18 +22,18 @@ Both are served by the same pages: simple on the first screen, depth on demand.
 
 RetCalc (retcalc.app) is a free, privacy-first retirement and financial planning suite built around a compound interest calculator, with a guide and 13 connected planning tools. Tagline: "Know your number."
 
-It exists to give people a trustworthy number about their own retirement without handing over their data, paying, or signing up. Success is a visitor who leaves knowing their number, understanding roughly why, and able to go deeper when they want to.
+It exists to give people a trustworthy number about their own retirement without handing over their data, paying, or having to sign up. Success is a visitor who leaves knowing their number, understanding roughly why, and able to go deeper when they want to.
 
 ## Positioning
 
-Everything runs in the browser. There are no logins, no database and no payments; nothing a visitor types leaves their browser. Unlike account-based planners in the same category (ProjectionLab is the reference), RetCalc asks for nothing up front, and the tools share one household and one set of saved scenarios so a plan can move from tool to tool. Results are tested against every historical market since 1926, not only an average return.
+Everything runs in the browser, with no payments. An account is optional (since 2026-10, ACCOUNTS_PLAN.md): without one, nothing a visitor types leaves their browser; with one, only the household, saved scenarios and Guide answers sync to it, so they follow the person to other devices. Unlike account-based planners in the same category (ProjectionLab is the reference), RetCalc asks for nothing up front, and the tools share one household and one set of saved scenarios so a plan can move from tool to tool. Results are tested against every historical market since 1926, not only an average return.
 
 ## Operating Context
 
 - Used on desktops and phones, in both dark and light themes, with a System / Dark / Light switch. It can also be installed to a phone's home screen as a web app (from the code).
 - Every tool has its own URL and a written article explaining it, read by search engines as well as visitors.
 - Outputs leave the site as a printed one-page summary, a share link, a share summary, a share image card, and CSV exports.
-- Inputs, saved scenarios and the household are kept only in the visitor's browser storage (from the code).
+- Inputs, saved scenarios and the household are kept in the visitor's browser storage; a signed-in visitor's household, saved scenarios and Guide answers also sync to their account (Supabase, ACCOUNTS_PLAN.md).
 - Hosted on Vercel from `main`; production counts visits with Cloudflare Web Analytics (from the code, MIGRATION.md).
 
 ## Capabilities and Constraints
@@ -65,7 +65,7 @@ Everything runs in the browser. There are no logins, no database and no payments
 - **Logo:** kept exactly as it is, in shape and in its gold, jade and steel.
 - **Bow-and-arrow motif:** the Guide's progress bar and the Plan Optimizer's loading bar are brand elements and stay. They are not gamification.
 - **Statements:**
-  - "Nothing leaves your browser."
+  - "Nothing leaves your browser unless you sign in to save it." (The calculations always run in the browser.)
   - The disclaimers: an educational tool, not financial or tax advice; past returns don't predict future ones.
 - **Voice:** precise, calm, trustworthy, numbers-first. A serious instrument, not a fintech app. Some playfulness is welcome in small moments.
 - **Never:**
@@ -89,7 +89,7 @@ Everything runs in the browser. There are no logins, no database and no payments
 
 1. **The answer comes first.** Every tool leads with its key result; explanation and depth follow for whoever wants them.
 2. **Trust is earned by honesty.** Show the assumptions, the historical range and the disclaimers. Never overstate certainty, never sell.
-3. **Private by construction.** Nothing a visitor enters leaves their browser, and nothing asks them to sign up.
+3. **Private by construction.** Every calculation runs in the browser. Nothing a visitor enters leaves it unless they choose an optional account, and nothing requires signing up. The account keeps only the household, saved scenarios and Guide answers, never sells them, and can be downloaded or deleted at any time (/privacy).
 4. **One plan, many tools.** The household, scenarios and comparisons carry across tools, so the suite works as one planner.
 5. **The numbers are sacred.** Presentation can change freely; the calculations and the figures they produce cannot change without a deliberate, separate decision.
 

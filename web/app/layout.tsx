@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { HouseholdProvider } from "@/components/household/HouseholdProvider";
 import { HouseholdPanel } from "@/components/household/HouseholdBar";
+import { AccountProvider } from "@/components/account/AccountProvider";
+import { SignInDialog } from "@/components/account/SignInDialog";
 import { STATE_OPTIONS } from "@/lib/states";
 import { Footer } from "@/components/shell/Footer";
 import { Main } from "@/components/shell/Main";
@@ -84,6 +86,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <PopupProvider>
           <ToolRegistryProvider>
           <HouseholdProvider>
+          <AccountProvider>
             <NavBar states={STATE_OPTIONS} />
             <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
             <Main>{children}</Main>
@@ -96,6 +99,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <ToolHelp />
             <SheetHost />
             <HouseholdPanel states={STATE_OPTIONS} />
+            <SignInDialog />
             {/* Cloudflare Web Analytics, the current site's token; it follows
                 page changes on its own. Production only, so previews aren't
                 counted as visits. */}
@@ -103,6 +107,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Script src="https://static.cloudflareinsights.com/beacon.min.js" strategy="afterInteractive"
                 data-cf-beacon='{"token": "43d7ad6321b545f2bb8d2e02569490ee"}' />
             ) : null}
+          </AccountProvider>
           </HouseholdProvider>
           </ToolRegistryProvider>
           </PopupProvider>
