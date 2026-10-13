@@ -14,7 +14,7 @@
 "advanced": {
 "h1": "Advanced Retirement Calculator",
 "title": "Advanced Retirement Calculator: Taxes, Fees & History",
-"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, then test the plan against every market since 1926. No account needed."
+"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, then test it against every market since 1926 or 5,000 random ones."
 },
 "stages": {
 "h1": "Multi-Stage Retirement Savings Calculator",
@@ -24,7 +24,7 @@
 "guide": {
 "h1": "Retirement Readiness Guide",
 "title": "Retirement Readiness Check: Are You on Track? | RetCalc",
-"desc": "A guided retirement check-up: your number, a readiness score out of 100, and your plan tested against every market since 1926. No account needed."
+"desc": "A guided retirement check-up: your number, a readiness score out of 100, and your plan tested against every market since 1926, and the moves that matter."
 },
 "tools": {
 "h1": "Financial Planning Calculators",
@@ -44,7 +44,7 @@
 "drawdown": {
 "h1": "Retirement Withdrawal Calculator",
 "title": "Retirement Withdrawal Calculator: Will My Money Last?",
-"desc": "Test the 4% rule, guardrails and other withdrawal strategies against every retirement since 1926, with Social Security and pensions. No account needed."
+"desc": "Test the 4% rule, guardrails and other strategies against every retirement since 1926, with Social Security and pensions. See how often each lasts."
 },
 "4-percent-rule": {
 "h1": "4% Rule Calculator",
@@ -118,7 +118,7 @@
 },
 "fire": {
 "title": "FIRE Calculator & Coast FIRE Calculator | RetCalc",
-"desc": "Find your FIRE number and the age you could reach financial independence, or when you could stop saving with Coast FIRE. No account needed."
+"desc": "Find your FIRE number and the age you could reach independence, or when you could stop saving with Coast FIRE, on steady or historical returns."
 },
 "backtest": {
 "h1": "Portfolio Backtest Calculator",
