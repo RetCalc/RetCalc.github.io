@@ -10,7 +10,7 @@
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { ACCOUNTS_ON, accountClient } from "@/lib/sync/account";
-import { startSync, type SyncResult } from "@/lib/sync/engine";
+import { startSync, syncNow, type SyncResult } from "@/lib/sync/engine";
 import { isSynced } from "@/lib/storage";
 
 export interface Account {
@@ -42,7 +42,10 @@ interface AccountState {
   verifyCode: (email: string, code: string) => Promise<string | null>;
   signInWithGoogle: () => Promise<string | null>;
   setFirstName: (name: string | null) => Promise<string | null>;
-  signOut: (keepOnDevice: boolean) => Promise<void>;
+  /** Saves the latest changes to the account, signs out, and removes the
+      synced items from this browser. Returns false if the final save
+      failed and `force` wasn't set (nothing has changed yet). */
+  signOut: (force?: boolean) => Promise<boolean>;
   client: SupabaseClient | null;
 }
 
@@ -160,25 +163,28 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     return null;
   }, [client]);
 
-  const signOut = useCallback(async (keepOnDevice: boolean) => {
-    if (!client) return;
+  const signOut = useCallback(async (force = false) => {
+    if (!client) return true;
+    // Everything changed here goes to the account first, since this
+    // browser's copy is about to be removed.
+    const last = await syncNow(client);
+    if (!last.ok && !force) return false;
     stopSync.current?.();
     stopSync.current = null;
     await client.auth.signOut({ scope: "local" });
     setAccount(null);
     setSync("idle");
-    if (!keepOnDevice) {
-      // A shared computer: take this browser's copy of the synced items away
-      // too (the account keeps everything), then start the page fresh.
-      try {
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-          const k = localStorage.key(i);
-          const m = k?.startsWith("retcalc.") ? /^retcalc\.(.+)\.v\d+$/.exec(k) : null;
-          if (k && (k === "retcalc.sync-stamps.v1" || (m && isSynced(m[1])))) localStorage.removeItem(k);
-        }
-      } catch { /* storage blocked: nothing was kept anyway */ }
-      window.location.reload();
-    }
+    // Signed out, the household, saved scenarios and Guide live only in the
+    // account: take them out of this browser, then start the page fresh.
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        const m = k?.startsWith("retcalc.") ? /^retcalc\.(.+)\.v\d+$/.exec(k) : null;
+        if (k && (k === "retcalc.sync-stamps.v1" || k === "retcalc.household-applied.v1" || (m && isSynced(m[1])))) localStorage.removeItem(k);
+      }
+    } catch { /* storage blocked: nothing was kept anyway */ }
+    window.location.reload();
+    return true;
   }, [client]);
 
   const value = useMemo<AccountState>(() => ({

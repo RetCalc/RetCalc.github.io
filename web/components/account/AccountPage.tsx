@@ -72,15 +72,15 @@ export function AccountPage() {
   const remove = async () => {
     if (!client) return;
     const c = await showPopup("Delete your account?", [
-      { label: "Delete my account and its data", desc: "Signs out every device and erases your account. This can't be undone. What's saved in this browser stays here." },
+      { label: "Delete my account and its data", desc: "Signs out every device and erases your account and everything synced to it, here too. This can't be undone." },
     ]);
     if (c !== 0) return;
     setBusy(true);
     const { error } = await client.functions.invoke("delete-account", { method: "POST" });
     setBusy(false);
     if (error) { toast("Couldn't delete the account. Try again in a minute.", "warn"); return; }
-    await signOut(true);
     toast("Your account is deleted");
+    await signOut(true);
   };
 
   return (
@@ -127,7 +127,7 @@ export function AccountPage() {
       <Card>
         <CardHeader>
           <CardTitle>Delete your account</CardTitle>
-          <CardDescription>Signs out every device and erases your account and everything synced to it. This browser keeps its own copy until you clear it.</CardDescription>
+          <CardDescription>Signs out every device and erases your account and everything synced to it, including the copy in this browser. Download your data first if you want to keep it.</CardDescription>
         </CardHeader>
         <CardContent><Button variant="destructive" onClick={remove} disabled={busy}><Trash2Icon data-icon="inline-start" />Delete my account</Button></CardContent>
       </Card>

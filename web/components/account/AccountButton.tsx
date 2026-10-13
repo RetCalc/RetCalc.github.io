@@ -83,12 +83,12 @@ export function AccountButton() {
           <DropdownMenuItem render={<Link href="/account" />} onClick={() => router.prefetch("/account")}><UserRoundIcon />Account</DropdownMenuItem>
           {themeItem}
           <DropdownMenuItem onClick={async () => {
-            const c = await showPopup("Sign out", [
-              { label: "Sign out, keep my data here", desc: "Your household, scenarios and Guide stay in this browser" },
-              { label: "Sign out and remove it from this device", desc: "For a shared computer. Your account keeps everything" },
+            if (await signOut()) return;
+            const c = await showPopup("Your latest changes aren't saved to your account", [
+              { label: "Sign out anyway", desc: "Changes since the last sync are lost. Everything else is safe in your account" },
+              { label: "Stay signed in", desc: "Try again when you're back online" },
             ]);
             if (c === 0) await signOut(true);
-            else if (c === 1) await signOut(false);
           }}><LogOutIcon />Sign out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

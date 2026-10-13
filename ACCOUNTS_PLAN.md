@@ -123,9 +123,12 @@ well over 50,000 people.
 - **Signed in:** every write goes to localStorage first (instant, works
   offline), then to the account. On sign-in and when the tab regains focus,
   the account's newer values replace local ones.
-- **Signing out:** the account is untouched. The person chooses whether this
-  browser keeps a copy ("Keep on this device" / "Remove from this device"),
-  which matters on a shared computer.
+- **Signing out (owner's decision, 2026-10-12):** the latest changes are
+  synced to the account first, then the household, saved scenarios and
+  Guide are removed from this browser, with no choice to make. They come back
+  on signing in again. If that last sync fails (offline), the person is
+  warned and can stay signed in or sign out anyway. Deleting the account
+  clears this browser's copy too.
 - **Conflicts:** last write wins per key, by `updated_at`. That fits the data:
   one person, one profile, small lists, rarely edited on two devices at once.
 
@@ -212,7 +215,7 @@ $0 on the chosen setup; $20/mo for Vercel Pro only if the site ever earns money.
   plus a test that a second account can't read the first's rows.
 - **A bad merge loses a scenario:** merging never deletes; clashes keep both.
 - **Supabase is down:** local storage keeps working; sync catches up later.
-- **A shared computer:** the sign-out choice to remove this device's copy.
+- **A shared computer:** signing out always removes this device's copy.
 - **Keys:** only the publishable key ships to the browser; the secret key
   lives only in the Edge Function's environment.
 - **A deleted account still signed in somewhere:** sessions are revoked before
