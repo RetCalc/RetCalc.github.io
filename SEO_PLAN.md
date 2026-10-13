@@ -413,7 +413,12 @@ Before building any new page, check search demand: Search Console queries
 no spend needed), Google Trends, and the "People also ask" box. Record the
 target query and why in §11's content list.
 
-### C1. Seven more strategy pages — Agent  [ ]
+### C1. Seven more strategy pages — Agent  [ ] deferred 2026-10-13
+
+**Deferred by the owner (2026-10-13).** Reasons: 14 existing pages are still
+"Discovered, currently not indexed", some of the seven have little demand,
+and each page adds upkeep. Revisit once those pages are indexed and Search
+Console shows real queries; then build two or three by demand, not all seven.
 
 The engine already runs these. Proposed slugs and targets (confirm demand
 first; build the strongest first):
@@ -671,3 +676,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.10, T1.8 | (this branch) | `tests/run.py --web` reads the live articles. T1.8's placeholder module not built: the facts are already single-sourced and tested; a yearly checklist replaces it |
 | 2026-10-13 | T1.6 (part) | (this branch) | BreadcrumbList on every page but home and Privacy; Organization and dateModified still open (Q7, T2.3) |
 | 2026-10-13 | T1.9 | — | Live-site check: 404s, trailing slash, http, www and old addresses all behave; no change needed |
+| 2026-10-13 | C1 | — | Deferred by the owner until the baseline and indexing are in |
