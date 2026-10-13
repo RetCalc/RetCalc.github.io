@@ -233,18 +233,14 @@ with what the page answers, then the proof ("tested against every
 retirement since 1926"), then "No account needed." where it fits. Match the
 voice in `PRODUCT.md`. Done when: every description is 120–155 characters.
 
-### T1.3 Visible main headings — Owner decision → Agent  [ ]
+### T1.3 Visible main headings — closed 2026-10-13, no change
 
-Ask the owner: "Show a visible page heading on Calculator, Guide, Tools and
-About (today it's there for screen readers only)? And add a line under the
-homepage's 'Know your number.' with search words, e.g. 'Free retirement
-calculator and planning tools, tested against every market since 1926'?"
-
-If yes: in `PageShell.tsx` stop hiding the `<h1>` for those pages (style it
-like `ToolHeader`'s name, per `DESIGN.md`); on the homepage, the hero's
-first paragraph or an eyebrow line above the `<h1>` carries the words (keep
-the `<h1>` text the owner chose). Check phone and desktop screenshots, light
-and dark.
+Decided by the owner: the `<h1>` on `/calculator`, `/guide`, `/tools` and
+`/about` stays visually hidden (`srlive` in `PageShell.tsx`). Search engines
+read it either way, the gain from showing it is small, and those pages go
+straight to the tool. The homepage part is moot: its `<h1>` became "The
+complete retirement planning toolkit." with the tagline change, and the lede
+below it names the tools and "every market since 1926".
 
 ### T1.4 Sitemap `lastmod` — Agent  [x] 2026-10-13
 
@@ -610,7 +606,7 @@ site back. Prices are approximate; check current pricing.
 
 | # | Question | Blocks |
 | --- | --- | --- |
-| Q1 | Visible headings on Calculator, Guide, Tools, About, and a search-words line on the homepage? | T1.3 |
+| Q1 | ~~Visible headings on Calculator, Guide, Tools, About~~ Decided 2026-10-13: leave hidden | T1.3 |
 | Q2 | ~~Where strategy pages are linked~~ Not from `/tools` (they aren't separate tools). Homepage link still open, leaning no | T1.5 |
 | Q3 | Name or pen name, background line, photo, contact for "Who builds RetCalc" | T2.1 |
 | Q4 | ~~Approve the title list in T1.1~~ Done 2026-10-13, home edited by the owner | T1.1 |
@@ -644,3 +640,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.5 (part) | (this branch) | "Related tools" added to the eight strategy articles; `/tools` group and compare-view links ruled out, see T1.5 |
 | 2026-10-13 | T1.4 | (this branch) | `lastmod` in the sitemap, from `web/lib/lastmod.json` (`web/scripts/lastmod.mjs`); test checks every page has a date |
 | 2026-10-13 | T0.1–T0.3 | — | Search Console (retcalc account), Bing and Ahrefs set up; sitemap in both; indexing requested for six pages. Baseline (T0.4) not yet recorded |
+| 2026-10-13 | T1.3 | — | Closed with no change: headings stay hidden (owner's call); homepage `<h1>` already carries the search words |
