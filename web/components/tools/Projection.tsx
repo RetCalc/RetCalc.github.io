@@ -73,7 +73,7 @@ export function ProjectionSummary({ p, R, lastPeriod, fvNote, realNote }: {
 }
 
 /** The same figures as a hero reading (DESIGN.md, "Hero reading"): the
-    after-tax income a year as the answer, the inflation-adjusted and future
+    after-tax income a year as the answer, the future and inflation-adjusted
     balances beside it, then what the balance is made of and the totals.
     `children` get a band under the reading (the target and its verdict). */
 export function ProjectionReading({ p, R, lastPeriod, fvNote, realNote, id, children }: {
@@ -86,8 +86,8 @@ export function ProjectionReading({ p, R, lastPeriod, fvNote, realNote, id, chil
       <HeroReading
         hero={{ label: "After-tax income, per year", id: p + "Monthly", value: money(R.afterTax), note: "Inflation adjusted, first year of retirement" }}
         figures={[
-          { label: "Inflation adjusted", id: p + "FVreal", value: money(R.fvReal), noteId: p + "FVrealnote", note: realNote },
           { label: "Future value", id: p + "FV", value: money(R.fv), noteId: p + "FVnote", note: fvNote },
+          { label: "Inflation adjusted", id: p + "FVreal", value: money(R.fvReal), noteId: p + "FVrealnote", note: realNote },
         ]} />
       {children ? <div className="border-t border-border px-4.5 py-3 max-sm:px-3.5">{children}</div> : null}
       <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">
