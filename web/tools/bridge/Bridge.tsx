@@ -270,7 +270,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
           {/* One plan, followed through one market: the head names both and
               holds the market switch, and stays in view over the detail. */}
           <div className="stack">
-            <div className="sticky top-(--navh) z-10 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-(--r-panel) border border-border bg-card px-5.5 py-3 max-sm:px-4" id="brFollow">
+            <div className="sticky top-(--pin-top) z-10 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-(--r-panel) border border-border bg-card px-5.5 py-3 max-sm:px-4" id="brFollow">
               <span className="text-body text-muted-foreground">Following</span>
               <b className="text-body font-semibold text-foreground">{sel ? sel.name : ""}</b>
               <span className="ml-auto max-sm:ml-0 max-sm:w-full">

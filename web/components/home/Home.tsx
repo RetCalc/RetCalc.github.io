@@ -240,14 +240,17 @@ function useHomeMotion(root: React.RefObject<HTMLDivElement | null>) {
       rvs.forEach((n) => n.setAttribute("data-rv", "pre"));
       draws.forEach((n) => n.setAttribute("data-draw", "pending"));
     }
-    const header = () => {
-      const nb = document.querySelector<HTMLElement>(".navbar");
-      return nb ? Math.max(0, nb.getBoundingClientRect().bottom) : 0;
+    /* The part of the screen the header leaves: below it, or above it in
+       the home-screen app, where it's a tab bar along the bottom. */
+    const view = (): [number, number] => {
+      const r = document.querySelector<HTMLElement>(".navbar")?.getBoundingClientRect();
+      if (!r) return [0, innerHeight];
+      return r.top > innerHeight / 2 ? [0, r.top] : [Math.max(0, r.bottom), innerHeight];
     };
     let queued = false;
     const tick = () => {
       queued = false;
-      const vh = innerHeight, top = header();
+      const [top, vh] = view();
       if (!still) {
         for (const n of rvs) {
           const r = n.getBoundingClientRect();

@@ -107,7 +107,7 @@ export function PinnedReading({ main, side, tone = "answer" }: {
   tone?: HeroTone;
 }) {
   return (
-    <div className="sticky top-(--navh) z-20 mb-3.5 flex items-baseline-last justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true" data-pinned-reading>
+    <div className="sticky top-(--pin-top) z-20 mb-3.5 flex items-baseline-last justify-between gap-4 rounded-(--r-panel) border border-border bg-card px-4 py-3 lg:hidden" aria-hidden="true" data-pinned-reading>
       <div className="min-w-0">
         <span className="block text-label text-muted-foreground">{main.label}</span>
         <b className={cn("block text-2xl leading-tight font-medium whitespace-nowrap tabular-nums", TONE[tone])}>{main.value}</b>
