@@ -68,11 +68,11 @@ using an API you aren't sure of).
 
 **Known traps**
 
-- `python3 tests/run.py` checks the figures quoted in the articles against
-  the calculators, but it reads the articles from the **old** file
-  `src/main/26-about-this-tool.html`, not `web/content/articles/`. An edit to
-  a figure in `web/content/articles/` is not tested today. Task T1.10 fixes
-  this; do it before editing any article's numbers.
+- `python3 tests/run.py --web` checks the figures quoted in the articles
+  against the calculators, reading `web/content/articles/*.html` (T1.10,
+  done). Plain `python3 tests/run.py` still reads the old site's file. A
+  changed figure in an article without a matching check isn't caught, so
+  add a `says(...)` check in `tests/math.test.js` for any new figure.
 - `src/page-meta.json` (the old site's copy) no longer matches
   `web/lib/page-meta.json`, and that's intended. Edit only the `web/` one.
 - Pages are `noindex` everywhere except the production deployment
@@ -308,15 +308,16 @@ measure first. Likely places, to confirm with measurements, not assume:
 Use the `vercel-react-best-practices` skill. Don't change any calculated
 figure; the baselines in CI must still pass.
 
-### T1.8 Stale facts from one place — Agent  [ ]
+### T1.8 Stale facts from one place — closed 2026-10-13, replaced
 
-Move figures that change on a schedule into one data module (e.g.
-`web/lib/facts.ts`): today's CAPE (and its "as of" month), the tax year,
-contribution limits, IRMAA tiers, the RMD start age. Articles that quote
-them get the value inserted when `web/lib/articles.ts` loads them (e.g. a
-`{{cape}}` placeholder). Tools already using such numbers read from the same
-module, so the page and the tool can't disagree. Note in the module when
-each value needs updating (see C4's calendar).
+Looked at before building. The facts that change on a schedule already live
+in one place, `web/lib/engine/math.js`, which the tools and the articles'
+test both read, and with T1.10 every figure an article quotes is checked
+against it. Change a constant and `tests/run.py --web` fails on the exact
+article sentence that quotes the old value. A `{{placeholder}}` layer would
+only hide that, because the derived figures (a withdrawal rate at today's
+CAPE, a dollar amount at a bracket) have to be rewritten by hand anyway.
+Instead there is a checklist: see "Yearly update checklist" under C4.
 
 ### T1.9 404 and stray addresses — Agent  [ ]
 
@@ -324,13 +325,12 @@ Verify on the live site: the 404 page returns status 404 (not 200); a
 trailing slash (`/drawdown/`) redirects to `/drawdown`; `http://` redirects to
 `https://`. Fix any that don't.
 
-### T1.10 Test the new site's articles — Agent  [ ]
+### T1.10 Test the new site's articles — Agent  [x] 2026-10-13
 
-Make `tests/run.py --web` read articles from `web/content/articles/*.html`
-(each file is one `<article ... data-page="slug">`, so the same regex works
-on the concatenated files) instead of `src/main/26-about-this-tool.html`.
-Run it; fix any article whose worked example no longer matches. Do this
-before T2.2, C1 or C2.
+`tests/run.py --web` now reads `web/content/articles/*.html` (the
+calculator's article is still called `home` in the tests, as on the old
+site). All 939 checks pass against the live articles, and a deliberately
+changed figure in `72t.html` made it fail, so the check is reading them.
 
 ---
 
@@ -497,6 +497,27 @@ Each links to the tool that uses those numbers (Income Tax, Healthcare,
 Optimizer). The numbers come from T1.8's data module, so the pages and the
 tools update together. Add a reminder to the progress log each year.
 
+#### Yearly update checklist
+
+Everything is in `web/lib/engine/math.js` (search for the name). Change the
+constant, run `python3 tests/run.py --web`, and let each failure show which
+article sentence to update.
+
+| Fact | Search for | Articles that quote it |
+| --- | --- | --- |
+| Federal brackets, standard deduction, FICA limits | `FED_2026`, `LTCG_2026` | `incometax`, `roth`, `advanced`, `guide`, `tools` |
+| State retirement-income rules | `state retirement rules, tax year` | `incometax`, `roth` |
+| Medicare Part B and IRMAA tiers | `2026 Medicare IRMAA` | `healthcare` |
+| ACA poverty level, benchmark premiums, subsidy percentages | `Federal poverty level for 2026` | `healthcare` |
+| Social Security bend points, tax cap, full retirement age | `SS_BEND1` | `guide`, `optimizer` |
+| RMD start age | the function holding `? 75 : 73` | `rmd`, `roth`, `rmd-withdrawal-strategy` |
+| Today's CAPE and its date | `CAPE_NOW` | `4-percent-rule`, `cape-withdrawal` (and the figures derived from it) |
+| Mortgage rate and its date | `MORT_RATE_ASOF` | `mortgage` |
+
+Then: the year in titles and descriptions (`web/lib/page-meta.json`, e.g.
+"2026 Income Tax Calculator" and "2026 taxes"), the year in the articles'
+headings, `node web/scripts/lastmod.mjs`, and a note in the progress log.
+
 ### C5. Question guides that lead to tools — Agent  [ ]
 
 Short articles (700–1,200 words) answering a common question with a
@@ -641,3 +662,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.4 | (this branch) | `lastmod` in the sitemap, from `web/lib/lastmod.json` (`web/scripts/lastmod.mjs`); test checks every page has a date |
 | 2026-10-13 | T0.1–T0.3 | — | Search Console (retcalc account), Bing and Ahrefs set up; sitemap in both; indexing requested for six pages. Baseline (T0.4) not yet recorded |
 | 2026-10-13 | T1.3 | — | Closed with no change: headings stay hidden (owner's call); homepage `<h1>` already carries the search words |
+| 2026-10-13 | T1.10, T1.8 | (this branch) | `tests/run.py --web` reads the live articles. T1.8's placeholder module not built: the facts are already single-sourced and tested; a yearly checklist replaces it |

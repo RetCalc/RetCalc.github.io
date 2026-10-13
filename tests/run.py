@@ -33,6 +33,7 @@ CONSTANTS = ["PMI_DEFAULT", "BR_SLT",
              "DEFAULTS", "BASIC_INFL", "GD_FACTORS", "RC_DEFAULTS",
              "DEBT_DEFAULTS", "RISK_LEVELS", "DD_LANDING"]
 ARTICLES = os.path.join(ROOT, "src", "main", "26-about-this-tool.html")
+WEB_ARTICLES = os.path.join(ROOT, "web", "content", "articles")
 
 
 def balanced(src, start, open_ch, close_ch):
@@ -72,11 +73,18 @@ def articles():
     """Each page's "about this tool" article as plain text, keyed by page, so
     the tests can check that a worked example's figures are what the
     calculator gives."""
-    html = open(ARTICLES, encoding="utf-8").read()
+    if "--web" in sys.argv:
+        # the live site's articles, one file per page
+        html = "".join(open(p, encoding="utf-8").read() for p in sorted(glob.glob(os.path.join(WEB_ARTICLES, "*.html"))))
+    else:
+        html = open(ARTICLES, encoding="utf-8").read()
     out = {}
     for m in re.finditer(r'<article[^>]*data-page="([^"]+)"[^>]*>(.*?)</article>', html, re.S):
         text = re.sub(r"<[^>]+>", " ", m.group(2)).replace("&amp;", "&")
         out[m.group(1)] = re.sub(r"\s+", " ", text)
+    # the tests still call the calculator's article "home", as the old site did
+    if "calculator" in out and "home" not in out:
+        out["home"] = out["calculator"]
     return "var ARTICLES = %s;" % json.dumps(out)
 
 
