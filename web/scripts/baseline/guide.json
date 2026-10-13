@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-07T15:02:27.885Z",
+  "recorded": "2026-10-13T20:12:25.940Z",
   "about": "The readiness guide's figures for the fixture households (scripts/baseline/guide-fixtures.mjs), from the harness in guide.mjs, which reproduces the live guide to the cent. Money in today's dollars, to the cent; shares to six places. Only the entries under deliberate may differ in the guide's code, each a decision in doc 3.",
   "households": {
     "maya-sam": {
@@ -11,16 +11,16 @@
         "fv": 1518176.1,
         "portIncome": 60727.04,
         "ss": 67159.08,
-        "taxYr": 13165,
-        "hcYr": 8330.58,
+        "taxYr": 12280.74,
+        "hcYr": 12247.12,
         "hcYears": 5,
-        "lifeTax": 422724.22,
+        "lifeTax": 401311.75,
         "success": 1,
         "survived": 66,
         "total": 66,
-        "medianEnd": 5574512.45,
-        "coverage": 1.53774,
-        "need": 567000,
+        "medianEnd": 5007331.6,
+        "coverage": 1.554266,
+        "need": 694000,
         "score": 89,
         "areas": {
           "outlook": 40,
@@ -39,55 +39,55 @@
         "levers": {
           "save+100": {
             "fv": 1577738.24,
-            "need": 567000,
+            "need": 694000,
             "success": 1,
             "successPct": 100
           },
           "save+250": {
             "fv": 1667081.43,
-            "need": 567000,
+            "need": 694000,
             "success": 1,
             "successPct": 100
           },
           "retire-3": {
             "fv": 1244696.23,
-            "need": 806000,
+            "need": 939000,
             "success": 1,
             "successPct": 100
           },
           "retire-1": {
             "fv": 1421874.81,
-            "need": 648000,
+            "need": 775000,
             "success": 1,
             "successPct": 100
           },
           "retire+1": {
             "fv": 1620014.72,
-            "need": 478000,
+            "need": 617000,
             "success": 1,
             "successPct": 100
           },
           "retire+3": {
             "fv": 1841595.83,
-            "need": 274000,
+            "need": 443000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 1518176.1,
-            "need": 482000,
+            "need": 549000,
             "success": 1,
             "successPct": 100
           },
           "spend+5000": {
             "fv": 1518176.1,
-            "need": 799000,
+            "need": 914000,
             "success": 1,
             "successPct": 100
           },
           "spend+10000": {
             "fv": 1518176.1,
-            "need": 929000,
+            "need": 1043000,
             "success": 1,
             "successPct": 100
           }
@@ -103,16 +103,16 @@
         "fv": 282580.78,
         "portIncome": 11303.23,
         "ss": 33910.56,
-        "taxYr": 235.19,
+        "taxYr": 467.7,
         "hcYr": 0,
         "hcYears": 0,
-        "lifeTax": 7057.17,
-        "success": 0.098592,
-        "survived": 7,
+        "lifeTax": 14031.07,
+        "success": 0.014085,
+        "survived": 1,
         "total": 71,
         "medianEnd": 0,
-        "coverage": 0.865581,
-        "need": 504000,
+        "coverage": 0.861745,
+        "need": 585000,
         "score": 25,
         "areas": {
           "outlook": 0,
@@ -131,55 +131,55 @@
         "levers": {
           "save+100": {
             "fv": 314948.58,
-            "need": 504000,
-            "success": 0.28169,
-            "successPct": 28
+            "need": 585000,
+            "success": 0.070423,
+            "successPct": 7
           },
           "save+250": {
             "fv": 363500.28,
-            "need": 504000,
-            "success": 0.535211,
-            "successPct": 54
+            "need": 585000,
+            "success": 0.323944,
+            "successPct": 32
           },
           "retire-3": {
             "fv": 232714.9,
-            "need": 690000,
+            "need": 762000,
             "success": 0,
             "successPct": 0
           },
           "retire-1": {
             "fv": 265222.04,
-            "need": 565000,
+            "need": 644000,
             "success": 0,
             "successPct": 0
           },
           "retire+1": {
             "fv": 300720.66,
-            "need": 457000,
-            "success": 0.486111,
-            "successPct": 49
+            "need": 536000,
+            "success": 0.194444,
+            "successPct": 19
           },
           "retire+3": {
             "fv": 339486.03,
-            "need": 348000,
-            "success": 0.891892,
-            "successPct": 89
+            "need": 414000,
+            "success": 0.72973,
+            "successPct": 73
           },
           "spend-5000": {
             "fv": 282580.78,
-            "need": 383000,
-            "success": 0.535211,
-            "successPct": 54
+            "need": 452000,
+            "success": 0.267606,
+            "successPct": 27
           },
           "spend+5000": {
             "fv": 282580.78,
-            "need": 646000,
+            "need": 730000,
             "success": 0,
             "successPct": 0
           },
           "spend+10000": {
             "fv": 282580.78,
-            "need": 793000,
+            "need": 878000,
             "success": 0,
             "successPct": 0
           }
@@ -195,16 +195,16 @@
         "fv": 8694812.76,
         "portIncome": 347792.51,
         "ss": 99692.04,
-        "taxYr": 107131.02,
+        "taxYr": 106206.38,
         "hcYr": 32254.32,
         "hcYears": 5,
-        "lifeTax": 3265180.69,
+        "lifeTax": 3233691.52,
         "success": 1,
         "survived": 66,
         "total": 66,
-        "medianEnd": 39082500.05,
-        "coverage": 1.97016,
-        "need": 1434000,
+        "medianEnd": 38627171.21,
+        "coverage": 1.978214,
+        "need": 1567000,
         "score": 98,
         "areas": {
           "outlook": 40,
@@ -223,55 +223,55 @@
         "levers": {
           "save+100": {
             "fv": 8774583.91,
-            "need": 1434000,
+            "need": 1567000,
             "success": 1,
             "successPct": 100
           },
           "save+250": {
             "fv": 8894240.63,
-            "need": 1434000,
+            "need": 1567000,
             "success": 1,
             "successPct": 100
           },
           "retire-3": {
             "fv": 7026768.29,
-            "need": 1880000,
+            "need": 1927000,
             "success": 1,
             "successPct": 100
           },
           "retire-1": {
             "fv": 8107439.22,
-            "need": 1574000,
+            "need": 1705000,
             "success": 1,
             "successPct": 100
           },
           "retire+1": {
             "fv": 9315960.28,
-            "need": 1282000,
+            "need": 1409000,
             "success": 1,
             "successPct": 100
           },
           "retire+3": {
             "fv": 10667456.93,
-            "need": 948000,
+            "need": 1086000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 8694812.76,
-            "need": 1309000,
+            "need": 1419000,
             "success": 1,
             "successPct": 100
           },
           "spend+5000": {
             "fv": 8694812.76,
-            "need": 1576000,
+            "need": 1706000,
             "success": 1,
             "successPct": 100
           },
           "spend+10000": {
             "fv": 8694812.76,
-            "need": 1722000,
+            "need": 1831000,
             "success": 1,
             "successPct": 100
           }
@@ -287,27 +287,27 @@
         "fv": 216419.42,
         "portIncome": 8656.78,
         "ss": 25590.56,
-        "taxYr": 27.46,
+        "taxYr": 0,
         "hcYr": 0,
         "hcYears": 0,
-        "lifeTax": 1589.9,
-        "success": 1,
-        "survived": 73,
+        "lifeTax": 76.18,
+        "success": 0.849315,
+        "survived": 62,
         "total": 73,
-        "medianEnd": 454318.11,
-        "coverage": 1.036935,
-        "need": 171000,
-        "score": 86,
+        "medianEnd": 251747.55,
+        "coverage": 1.037798,
+        "need": 236000,
+        "score": 65,
         "areas": {
-          "outlook": 40,
-          "rate": 20,
+          "outlook": 34,
+          "rate": 5,
           "cushion": 4,
           "debt": 15,
           "flow": 8
         },
         "shares": {
-          "outlook": 1,
-          "rate": 1,
+          "outlook": 0.848858,
+          "rate": 0.242308,
           "cushion": 0.241935,
           "debt": 1,
           "flow": 0.760763
@@ -315,57 +315,57 @@
         "levers": {
           "save+100": {
             "fv": 332292.53,
-            "need": 171000,
+            "need": 236000,
             "success": 1,
             "successPct": 100
           },
           "save+250": {
             "fv": 506102.19,
-            "need": 171000,
+            "need": 236000,
             "success": 1,
             "successPct": 100
           },
           "retire-3": {
             "fv": 184677.71,
-            "need": 258000,
-            "success": 0.414286,
-            "successPct": 41
+            "need": 325000,
+            "success": 0.028571,
+            "successPct": 3
           },
           "retire-1": {
             "fv": 205369.86,
-            "need": 199000,
-            "success": 0.944444,
-            "successPct": 94
+            "need": 265000,
+            "success": 0.652778,
+            "successPct": 65
           },
           "retire+1": {
             "fv": 227966.21,
-            "need": 122000,
+            "need": 186000,
             "success": 1,
             "successPct": 100
           },
           "retire+3": {
             "fv": 252641.98,
-            "need": 28000,
+            "need": 90000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 216419.42,
-            "need": 56000,
+            "need": 121000,
             "success": 1,
             "successPct": 100
           },
           "spend+5000": {
             "fv": 216419.42,
-            "need": 286000,
-            "success": 0.671233,
-            "successPct": 67
+            "need": 351000,
+            "success": 0.479452,
+            "successPct": 48
           },
           "spend+10000": {
             "fv": 216419.42,
-            "need": 401000,
-            "success": 0.219178,
-            "successPct": 22
+            "need": 467000,
+            "success": 0.054795,
+            "successPct": 5
           }
         }
       }
@@ -379,16 +379,16 @@
         "fv": 1040892.25,
         "portIncome": 41635.69,
         "ss": 54900,
-        "taxYr": 7125.42,
+        "taxYr": 6672.45,
         "hcYr": 9283.92,
         "hcYears": 3,
-        "lifeTax": 229612.23,
+        "lifeTax": 211660.56,
         "success": 1,
         "survived": 68,
         "total": 68,
-        "medianEnd": 2709749.91,
-        "coverage": 1.345493,
-        "need": 627000,
+        "medianEnd": 2303222.42,
+        "coverage": 1.352691,
+        "need": 755000,
         "score": 100,
         "areas": {
           "outlook": 40,
@@ -407,57 +407,57 @@
         "levers": {
           "save+100": {
             "fv": 1047248.46,
-            "need": 627000,
+            "need": 755000,
             "success": 1,
             "successPct": 100
           },
           "save+250": {
             "fv": 1056782.77,
-            "need": 627000,
+            "need": 755000,
             "success": 1,
             "successPct": 100
           },
           "retire-3": {
             "fv": 879754.7,
-            "need": 896000,
-            "success": 0.876923,
-            "successPct": 88
+            "need": 989000,
+            "success": 0.738462,
+            "successPct": 74
           },
           "retire-1": {
             "fv": 985584.47,
-            "need": 721000,
+            "need": 820000,
             "success": 1,
             "successPct": 100
           },
           "retire+1": {
             "fv": 1097859.27,
-            "need": 522000,
+            "need": 650000,
             "success": 1,
             "successPct": 100
           },
           "retire+3": {
             "fv": 1216971.6,
-            "need": 366000,
+            "need": 504000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 1040892.25,
-            "need": 510000,
+            "need": 629000,
             "success": 1,
             "successPct": 100
           },
           "spend+5000": {
             "fv": 1040892.25,
-            "need": 753000,
+            "need": 886000,
             "success": 1,
             "successPct": 100
           },
           "spend+10000": {
             "fv": 1040892.25,
-            "need": 883000,
-            "success": 1,
-            "successPct": 100
+            "need": 1024000,
+            "success": 0.926471,
+            "successPct": 93
           }
         }
       }
@@ -471,26 +471,26 @@
         "fv": 1184303.85,
         "portIncome": 47372.15,
         "ss": 43851.38,
-        "taxYr": 6182.26,
+        "taxYr": 5847.17,
         "hcYr": 9174.34,
         "hcYears": 10,
-        "lifeTax": 171995.98,
-        "success": 0.885246,
-        "survived": 54,
+        "lifeTax": 162266.12,
+        "success": 0.836066,
+        "survived": 51,
         "total": 61,
-        "medianEnd": 1883914.32,
-        "coverage": 1.337937,
-        "need": 1208000,
-        "score": 95,
+        "medianEnd": 1625516.93,
+        "coverage": 1.344544,
+        "need": 1253000,
+        "score": 92,
         "areas": {
-          "outlook": 36,
+          "outlook": 33,
           "rate": 20,
           "cushion": 15,
           "debt": 15,
           "flow": 9
         },
         "shares": {
-          "outlook": 0.902869,
+          "outlook": 0.826776,
           "rate": 1,
           "cushion": 0.980769,
           "debt": 1,
@@ -499,50 +499,50 @@
         "levers": {
           "save+100": {
             "fv": 1188084.83,
-            "need": 1209000,
-            "success": 0.885246,
-            "successPct": 89
+            "need": 1253000,
+            "success": 0.852459,
+            "successPct": 85
           },
           "save+250": {
             "fv": 1193756.3,
-            "need": 1209000,
-            "success": 0.885246,
-            "successPct": 89
+            "need": 1254000,
+            "success": 0.852459,
+            "successPct": 85
           },
           "retire-3": null,
           "retire-1": {
             "fv": 1102740.69,
-            "need": 1284000,
-            "success": 0.75,
-            "successPct": 75
+            "need": 1324000,
+            "success": 0.716667,
+            "successPct": 72
           },
           "retire+1": {
             "fv": 1269537.35,
-            "need": 1135000,
-            "success": 0.983871,
-            "successPct": 98
+            "need": 1183000,
+            "success": 0.967742,
+            "successPct": 97
           },
           "retire+3": {
             "fv": 1451683.46,
-            "need": 977000,
+            "need": 1037000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 1184303.85,
-            "need": 1057000,
-            "success": 0.983607,
-            "successPct": 98
+            "need": 1107000,
+            "success": 0.967213,
+            "successPct": 97
           },
           "spend+5000": {
             "fv": 1184303.85,
-            "need": 1354000,
-            "success": 0.754098,
-            "successPct": 75
+            "need": 1397000,
+            "success": 0.672131,
+            "successPct": 67
           },
           "spend+10000": {
             "fv": 1184303.85,
-            "need": 1499000,
+            "need": 1544000,
             "success": 0.540984,
             "successPct": 54
           }
@@ -558,16 +558,16 @@
         "fv": 1127753.35,
         "portIncome": 45110.13,
         "ss": 37110.56,
-        "taxYr": 11944.31,
+        "taxYr": 11563.22,
         "hcYr": 0,
         "hcYears": 0,
-        "lifeTax": 348155.15,
+        "lifeTax": 341611.42,
         "success": 1,
         "survived": 71,
         "total": 71,
-        "medianEnd": 3013443.98,
-        "coverage": 1.210119,
-        "need": 535000,
+        "medianEnd": 2739036.58,
+        "coverage": 1.216945,
+        "need": 617000,
         "score": 98,
         "areas": {
           "outlook": 40,
@@ -586,55 +586,55 @@
         "levers": {
           "save+100": {
             "fv": 1178000.35,
-            "need": 535000,
+            "need": 617000,
             "success": 1,
             "successPct": 100
           },
           "save+250": {
             "fv": 1253370.86,
-            "need": 536000,
+            "need": 617000,
             "success": 1,
             "successPct": 100
           },
           "retire-3": {
             "fv": 945174.02,
-            "need": 736000,
+            "need": 808000,
             "success": 1,
             "successPct": 100
           },
           "retire-1": {
             "fv": 1064195.93,
-            "need": 601000,
+            "need": 680000,
             "success": 1,
             "successPct": 100
           },
           "retire+1": {
             "fv": 1194170.84,
-            "need": 485000,
+            "need": 564000,
             "success": 1,
             "successPct": 100
           },
           "retire+3": {
             "fv": 1336106.68,
-            "need": 360000,
+            "need": 432000,
             "success": 1,
             "successPct": 100
           },
           "spend-5000": {
             "fv": 1127753.35,
-            "need": 409000,
+            "need": 478000,
             "success": 1,
             "successPct": 100
           },
           "spend+5000": {
             "fv": 1127753.35,
-            "need": 678000,
+            "need": 760000,
             "success": 1,
             "successPct": 100
           },
           "spend+10000": {
             "fv": 1127753.35,
-            "need": 823000,
+            "need": 906000,
             "success": 1,
             "successPct": 100
           }

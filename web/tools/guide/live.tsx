@@ -155,7 +155,7 @@ export function BridgeNote({ a }: { a: Answers }) {
 export function HcNote({ a }: { a: Answers }) {
   const S = sim(a);
   if (!S) return null;
-  if (a.hcIncl === "yes") return <Callout>Your plan won&apos;t add premiums before 65. Make sure the {money(S.spend)} a year you entered really covers them: marketplace plans can run hundreds a month each without a subsidy.</Callout>;
+  if (a.hcIncl === "yes") return <Callout>Your plan won&apos;t add health premiums — not marketplace coverage before 65, not Medicare after. Make sure the {money(S.spend)} a year you entered really covers them: marketplace plans can run hundreds a month each without a subsidy.</Callout>;
   if (!(S.hcYr > 0)) return <Callout cls="ok">In your plan, income stays low enough before 65 that coverage comes through Medicaid or a full subsidy.</Callout>;
   return (
     <Callout>In your plan: about <b>{money(S.hcYr) + " a year"}</b> for {S.hcYears + (S.hcYears === 1 ? " year" : " years")}, after the subsidy its income earns.

@@ -298,6 +298,9 @@ export function Mortgage() {
               </div>
               <div className="min-w-0 border-t border-border pt-4 max-sm:order-3 sm:order-2">
                 <GroupHead first>Refinancing</GroupHead>
+                {/* The comparison runs from today, on the loan as entered, so an
+                    existing loan has to be described as it stands now. */}
+                <p className="m-0 mb-3.5 text-note text-muted-foreground">Comparing a loan you already have? Describe it as it stands today: set the price and down payment so the loan amount equals your current balance, and the length to the years left.</p>
                 <div className="two bottomalign max-sm:grid-cols-2">
                   <NumberField id="moRefiRate" label="New rate" unit="%" step={0.125} value={s.refiRate} onValueChange={set("refiRate")} />
                   <SelectField id="moRefiTerm" label="New length" value={s.refiTerm} onChange={set("refiTerm")}>{TERMS}</SelectField>

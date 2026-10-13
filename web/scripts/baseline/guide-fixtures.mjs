@@ -86,15 +86,21 @@ export const LEVERS = [
 /* The figures the documents already published (build brief, section 6),
    checked whenever the baseline is recorded: the harness must reproduce
    them to the dollar before anything is saved. */
+/* Refreshed October 2026, when the plan engine started pricing Medicare
+   premiums (standard Part B + an average Part D plan) for the years from 65:
+   taxes, needs and success rates moved for every household with 65+ years,
+   and in mixed-age years the older spouse's premiums raise the withdrawals
+   that set the younger spouse's ACA subsidy. The figures before that change
+   were the build brief's (doc section 6). */
 export const PUBLISHED = {
-  "maya-sam": { pia1: 3251, pia2: 2346, fv: 1518176, portIncome: 60727, ss: 67159, taxYr: 13165, hcYr: 8331, hcYears: 5,
-    lifeTax: 422724, survived: 66, total: 66, need: 567000, score: 89,
+  "maya-sam": { pia1: 3251, pia2: 2346, fv: 1518176, portIncome: 60727, ss: 67159, taxYr: 12281, hcYr: 12247, hcYears: 5,
+    lifeTax: 401312, survived: 66, total: 66, need: 694000, score: 89,
     "areas.outlook": 40, "areas.rate": 20, "areas.cushion": 7, "areas.debt": 12, "areas.flow": 10,
-    "levers.save+100.fv": 1577738, "levers.retire+1.fv": 1620015, "levers.retire+1.need": 478000, "levers.spend-5000.need": 482000,
-    "levers.retire-1.fv": 1421875, "levers.retire-1.need": 648000, "levers.spend+10000.need": 929000 },
-  dan: { pia1: 2826, fv: 282581, portIncome: 11303, ss: 33911, taxYr: 235, hcYears: 0, lifeTax: 7057, survived: 7, total: 71,
-    need: 504000, score: 25, "areas.outlook": 0, "areas.rate": 7, "areas.cushion": 3, "areas.debt": 7, "areas.flow": 8,
-    "levers.save+100.successPct": 28, "levers.save+250.successPct": 54, "levers.retire+1.successPct": 49,
-    "levers.retire+3.successPct": 89, "levers.spend-5000.successPct": 54 },
+    "levers.save+100.fv": 1577738, "levers.retire+1.fv": 1620015, "levers.retire+1.need": 617000, "levers.spend-5000.need": 549000,
+    "levers.retire-1.fv": 1421875, "levers.retire-1.need": 775000, "levers.spend+10000.need": 1043000 },
+  dan: { pia1: 2826, fv: 282581, portIncome: 11303, ss: 33911, taxYr: 468, hcYears: 0, lifeTax: 14031, survived: 1, total: 71,
+    need: 585000, score: 25, "areas.outlook": 0, "areas.rate": 7, "areas.cushion": 3, "areas.debt": 7, "areas.flow": 8,
+    "levers.save+100.successPct": 7, "levers.save+250.successPct": 32, "levers.retire+1.successPct": 19,
+    "levers.retire+3.successPct": 73, "levers.spend-5000.successPct": 27 },
   "priya-tom": { fv: 8694813 },
 };

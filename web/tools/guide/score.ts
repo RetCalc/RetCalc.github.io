@@ -92,7 +92,7 @@ const DEFAULT_WORDS: Partial<Record<AnswerKey, (a: Answers) => string>> = {
   saveTo: () => "new saving going to traditional accounts",
   employer: () => "no employer contribution",
   match: () => "the match as not sure",
-  hcIncl: () => "health insurance before 65 priced by the plan",
+  hcIncl: () => "health insurance priced by the plan",
   status: () => "a household of one",
 };
 

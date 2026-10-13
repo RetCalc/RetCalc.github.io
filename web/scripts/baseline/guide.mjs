@@ -71,7 +71,7 @@ function planIn(a, over = {}) { // mirrors gdPlanIn / calc.ts planIn
     saveTrad: sp.t + emp, saveRoth: sp.r, saveBrok: sp.b, real: a.risk || 0.045, infl: BASIC_INFL, spend,
     pia1, pia2, claim1: claim, claim2: claim, pension: pos(a.pension) ? a.pension * 12 : 0,
     pensionAge: ok(a.pensionAge) ? a.pensionAge : null, pensionCola: a.pensionCola === "yes",
-    aca: retire < 65 && a.hcIncl !== "yes", household: mar ? 2 : 1, rule55: a.rule55 === "yes", heirRate: E.PL_HEIR,
+    aca: a.hcIncl !== "yes", household: mar ? 2 : 1, rule55: a.rule55 === "yes", heirRate: E.PL_HEIR,
     mix, years: Math.max(20, Math.min(60, end)), target, strategy: "fixed", minSpend: 0, fromYear: E.HIST_START, monthly };
 }
 function hSim(a, over) { // mirrors gdSim / calc.ts sim, without optimizer choices
@@ -80,7 +80,7 @@ function hSim(a, over) { // mirrors gdSim / calc.ts sim, without optimizer choic
   const P = E.plAtRetire(I), C = E.plPrep(P), T = E.plBaseTactics(C);
   const H = E.plHistory(C, T, { paths: true }), D = E.plDetail(C, T), S = E.plSSParts(C, T);
   let tx = 0, hc = 0, hn = 0;
-  D.rows.forEach((r) => { tx += r.tax + r.irmaa; if (r.health > 0) { hc += r.health; hn++; } });
+  D.rows.forEach((r) => { const aca = r.health - r.med; tx += r.tax + r.irmaa; if (aca > 0) { hc += aca; hn++; } });
   const taxYr = D.rows.length ? tx / D.rows.length : 0;
   return { I, P, T, H, fv: P.fv, success: H.successRate, taxYr, hcYr: hn ? hc / hn : 0, hcYears: hn, lifeTax: H.medTax,
     ss: S.total, portIncome: P.fv * 0.04, spend: I.spend, retire: I.retire, monthly: I.monthly, years: C.years, medianEnd: H.medianEnd,

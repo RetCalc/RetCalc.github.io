@@ -190,7 +190,7 @@ export function planIn(a: Answers, over: Over = {}): (PlToday & { monthly: numbe
     saveTrad: sp.t + emp, saveRoth: sp.r, saveBrok: sp.b, real: a.risk || 0.045, infl: BASIC_INFL as number,
     spend, pia1: pia.pia1, pia2: pia.pia2, claim1: claim, claim2: claim,
     pension: pos(a.pension) ? a.pension * 12 : 0, pensionAge: ok(a.pensionAge) ? a.pensionAge : null,
-    pensionCola: a.pensionCola === "yes", aca: retire < 65 && a.hcIncl !== "yes",
+    pensionCola: a.pensionCola === "yes", aca: a.hcIncl !== "yes",
     household: hasChanges(a) && !over.flat ? householdAtRetire(a, retire) : mar(a) ? 2 : 1, rule55: a.rule55 === "yes", heirRate: PL_HEIR, mix: retMix(a),
     years: yearsFor(a, retire), target: target(a), strategy: "fixed", minSpend: 0, fromYear: HIST_START as number,
     monthly,
@@ -243,7 +243,9 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
     const ss = ssOf(a, C, T, I.retire);
     // Tax and health premiums in a typical year, from the steady path.
     let tx = 0, hc = 0, hn = 0;
-    D.rows.forEach((r) => { tx += r.tax + r.irmaa; if (r.health > 0) { hc += r.health; hn++; } });
+    // The healthcare step's note tells the pre-65 marketplace story, so the
+    // Medicare share of each year's premiums stays out of its average.
+    D.rows.forEach((r) => { const aca = r.health - r.med; tx += r.tax + r.irmaa; if (aca > 0) { hc += aca; hn++; } });
     const out: Sim = { key, I, P, C, T, tactics: !!Tq, fv: P.fv, years: C.years, ss, spend: I.spend, retire: I.retire,
       monthly: I.monthly, real: I.real, stop: I.stopAge, saveYears: (I.stopAge == null ? I.retire : I.stopAge) - I.age,
       mix: I.mix, inc: pensionItems(a, I.retire), pension: I.pension, path: (P as unknown as { path: number[] }).path, H, D,

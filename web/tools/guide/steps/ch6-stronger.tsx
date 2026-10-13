@@ -85,7 +85,7 @@ export function HealthCard() {
       </Learn>
       <BackNote step="health" />
       <H3>Is health insurance already in your retirement spending?</H3>
-      <div className="gd-choices two"><Choice k="hcIncl" val="no" title="No, price it for me" sub="The usual answer" /><Choice k="hcIncl" val="yes" title="Yes, it's included" sub="Your plan won't add premiums" /></div>
+      <div className="gd-choices two"><Choice k="hcIncl" val="no" title="No, price it for me" sub="ACA before 65, Medicare after" /><Choice k="hcIncl" val="yes" title="Yes, it's included" sub="Your plan won't add premiums" /></div>
       <HcNote a={a} />
       <Task id="healthcare" head="Explore it in the Healthcare Cost Planner" after={<After>Optional. It shows how the subsidy moves with income, and Medicare&apos;s costs after 65.</After>} />
     </>

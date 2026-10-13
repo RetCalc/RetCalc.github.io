@@ -32,11 +32,13 @@ test("the placeholder is 80% of take-home, to the nearest $500, until spending i
   assert.equal(spendGuess(r), r.retSpend);
 });
 
-test("with the placeholder, the plan needs $1,145,000 for Maya and Sam (doc 3, section 3, item 5)", () => {
+test("with the placeholder, the plan needs $1,255,000 for Maya and Sam (doc 3, section 3, item 5)", () => {
+  // Up from $1,145,000 in October 2026, when the plan started pricing
+  // Medicare premiums (Part B + average Part D) for the years from 65.
   const a = { ...fixture("maya-sam"), retSpend: null }, S = sim(withGuess(a))!;
   assert.equal(Math.round(S.fv), 1518176);
   assert.equal(S.spend, 88500);
-  assert.equal(need(withGuess(a), S), 1145000);
+  assert.equal(need(withGuess(a), S), 1255000);
 });
 
 test("the score with the worker's plan is the score worked out here", () => {

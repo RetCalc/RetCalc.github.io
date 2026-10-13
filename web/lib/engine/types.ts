@@ -185,7 +185,7 @@ export interface PlPrep { P: PlPlan; married: boolean; gap: number; rmdAge: numb
 export interface PlStats { successRate: number; survived: number; total: number; medLegacy: number; p10Legacy: number; medTax: number; failYears: number[]; maxSpend?: number }
 export interface PlRow {
   age: number; spend: number; ss: number; pension: number; rmd: number; trad: number; conv: number; brok: number; roth: number;
-  tax: number; pen: number; health: number; irmaa: number; taxable: number; fplPct: number | null; short: number; surplus: number;
+  tax: number; pen: number; health: number; med: number; irmaa: number; taxable: number; fplPct: number | null; short: number; surplus: number;
   endTrad: number; endRoth: number; endBrok: number; end: number;
 }
 export interface PlSide { T: PlTactics; stats: PlStats; detail: { rows: PlRow[] }; spend: number }
