@@ -123,6 +123,9 @@
 .acct-lede b{color:var(--ds-text);font-weight:500;word-break:break-all}
 /* Google's own button, centered; it keeps the button's height while it loads. */
 .acct-gsi{display:flex;justify-content:center;min-height:44px;width:100%}
+/* Google's button is an iframe with a light page inside; on a dark page the
+   browser paints a white box behind it unless the frame is told it's light too. */
+.acct-gsi iframe{color-scheme:light}
 .acct-or{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ds-muted)}
 .acct-or::before,.acct-or::after{content:"";flex:1;height:1px;background:var(--ds-rule)}
 .acct-form{display:grid;gap:8px}
