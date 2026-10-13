@@ -259,9 +259,9 @@ Values in `<angle brackets>` come from the step before.
    `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, the
    two values from step 1.
 
-When step 1 is done I can link the repo to the project
-(`npx supabase link`), push the migration (`npx supabase db push`, which
-asks for the database password) and deploy the delete-account function.
+Step 1 is done (project `dlnwkvamjdcefoukpaqw`, created 2026-10-12 with the
+Data API on, automatic table exposure off and automatic RLS on). Steps 2–5
+are still to do.
 
 ## Built so far (branch `accounts`, not live)
 
@@ -281,6 +281,21 @@ asks for the database password) and deploy the delete-account function.
   sync engine (`engine.ts`). Nothing calls the engine until the sign-in UI
   exists (step 3 of the work), which waits for a real project to test against.
 - `web/.env.example` with the two variable names.
+
+On the live Supabase project (2026-10-12):
+- Repo linked (`supabase/.temp`, not committed); both migrations pushed.
+- `user_data` checked live: RLS on, the four policies, `authenticated` has
+  select/insert/update/delete, `anon` has nothing (a signed-out API read is
+  refused with "permission denied").
+- Supabase's security advisor: no issues, after the second migration
+  revoked public EXECUTE on `rls_auto_enable()` (the function behind
+  "automatic RLS", flagged by advisors 0028/0029). A throwaway table created
+  in a rolled-back transaction still got RLS switched on automatically.
+- `delete-account` deployed (bundled server-side, `--use-api`, since there's
+  no Docker here). Without a signed-in user it refuses: 401 with no token,
+  "Your session has expired" with only the publishable key.
+- `web/.env.local` (git-ignored) holds the URL and publishable key for local
+  development.
 
 ## Checked against Supabase's current docs (2026-10-12)
 
