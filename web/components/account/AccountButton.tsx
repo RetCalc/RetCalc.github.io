@@ -53,7 +53,7 @@ export function AccountButton() {
           <DropdownMenuTrigger render={<Button variant="outline" size="icon" aria-label="Sign in or change theme" />}>
             <UserRoundIcon aria-hidden="true" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56" data-acct-menu="">
             <DropdownMenuItem onClick={() => setStep({ at: "start" })}><UserRoundIcon />Sign in</DropdownMenuItem>
             {themeItem}
           </DropdownMenuContent>
@@ -71,7 +71,7 @@ export function AccountButton() {
           <CircleUserRoundIcon data-icon="inline-start" aria-hidden="true" />
           <span className="acct-who">{who}</span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuContent align="end" className="w-64" data-acct-menu="">
           <DropdownMenuGroup>
             <DropdownMenuLabel>
               <span className="acct-hi">{account.firstName ? `Hi, ${account.firstName}` : "Signed in"}</span>

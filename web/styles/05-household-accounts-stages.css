@@ -150,3 +150,17 @@
 /* A phone's header: the account button stands in for the theme button,
    whose switch is in the account menu. */
 @media (max-width:640px){ .navrow-end:has(.acct-btn) .theme-slot{display:none} }
+/* The menu's Account item is a link: it keeps the menu's ink, not the
+   browser's link blue (or visited purple) and underline. */
+a[data-slot=dropdown-menu-item],a[data-slot=dropdown-menu-item]:visited{color:inherit;text-decoration:none}
+/* On a phone the account menu is a size up, with thumb-sized rows.
+   !important because the menu's look is Tailwind utilities, a layer above. */
+@media (max-width:640px){
+  [data-acct-menu]{width:min(300px,calc(100vw - 24px)) !important;padding:6px !important}
+  [data-acct-menu] [data-slot=dropdown-menu-label]{padding:10px 12px 12px !important}
+  [data-acct-menu] .acct-hi{font-size:18px}
+  [data-acct-menu] .acct-mail{font-size:15px;margin-top:2px}
+  [data-acct-menu] .acct-sync{font-size:14px;margin-top:6px}
+  [data-acct-menu] [data-slot=dropdown-menu-item]{min-height:50px;padding:0 12px !important;gap:14px !important;font-size:17px !important}
+  [data-acct-menu] [data-slot=dropdown-menu-item] svg{width:21px !important;height:21px !important}
+}
