@@ -4,7 +4,7 @@
 import type { Metadata } from "next";
 import { articleFaq } from "@/lib/articles";
 import { CARDS, cardAlt } from "@/lib/cards";
-import { PAGES, SITE, urlFor, type Slug } from "@/lib/site";
+import { PAGES, SITE, TOOL_SUB, isStrategyPage, urlFor, type Slug } from "@/lib/site";
 
 function card(slug: Slug): { url: string; alt: string } {
   const c = slug !== "home" ? CARDS[slug] : undefined;
@@ -39,6 +39,26 @@ function appName(title: string): string {
   return title.split(":")[0];
 }
 
+/** The page's place in the site, for the BreadcrumbList: the strategy pages
+    sit under the Drawdown Simulator, /72t and /rmd under the tool they open,
+    Advanced and Stages under the Calculator, the other tools under Tools. */
+function crumbs(slug: Slug): Slug[] {
+  if (slug === "home") return [];
+  if (isStrategyPage(slug)) return ["home", "drawdown", slug];
+  if (slug === "72t") return ["home", "tools", "bridge", slug];
+  if (slug === "rmd") return ["home", "tools", "roth", slug];
+  if (slug === "advanced" || slug === "stages") return ["home", "calculator", slug];
+  if (TOOL_SUB[slug]) return ["home", "tools", slug];
+  return ["home", slug];
+}
+
+/** The name a page goes by in a breadcrumb: its main heading, else its title's name. */
+function crumbName(slug: Slug): string {
+  if (slug === "home") return "RetCalc";
+  if (slug === "tools") return "Tools";
+  return PAGES[slug].h1 ?? appName(PAGES[slug].title);
+}
+
 /** schema.org data for the page: the calculator itself, the site's name on
     the home page (Google shows it above the address), and the article's FAQ. */
 export function jsonLdFor(slug: Slug): object {
@@ -50,6 +70,13 @@ export function jsonLdFor(slug: Slug): object {
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   }];
   if (slug === "home") graph.unshift({ "@type": "WebSite", name: "RetCalc", url });
+  const trail = crumbs(slug);
+  if (trail.length) {
+    graph.push({
+      "@type": "BreadcrumbList",
+      itemListElement: trail.map((s, i) => ({ "@type": "ListItem", position: i + 1, name: crumbName(s), item: urlFor(s) })),
+    });
+  }
   const faq = articleFaq(slug);
   if (faq.length) {
     graph.push({
