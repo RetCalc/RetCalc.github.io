@@ -90,7 +90,24 @@ def engine(name):
     return open(os.path.join(ROOT, "src", "js", name + ".js"), encoding="utf-8").read()
 
 
+def lastmod_ok():
+    """With --web: every page has a sitemap date in web/lib/lastmod.json
+    (written by web/scripts/lastmod.mjs)."""
+    import json, re
+    pages = json.load(open(os.path.join(ROOT, "web", "lib", "page-meta.json"), encoding="utf-8"))["pages"]
+    path = os.path.join(ROOT, "web", "lib", "lastmod.json")
+    dates = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
+    bad = [k for k in pages if not re.fullmatch(r"\d{4}-\d\d-\d\d", str(dates.get(k, "")))]
+    if bad:
+        print("  FAIL  Sitemap dates missing for: " + ", ".join(bad) + " (run node web/scripts/lastmod.mjs)")
+        return False
+    print("  ok    Sitemap: every page has a lastmod date")
+    return True
+
+
 def main():
+    if "--web" in sys.argv and not lastmod_ok():
+        return 1
     math = engine("math")
     src = "".join(open(p, encoding="utf-8").read()
                   for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))

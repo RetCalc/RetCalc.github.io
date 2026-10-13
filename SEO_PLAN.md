@@ -243,13 +243,23 @@ first paragraph or an eyebrow line above the `<h1>` carries the words (keep
 the `<h1>` text the owner chose). Check phone and desktop screenshots, light
 and dark.
 
-### T1.4 Sitemap `lastmod` — Agent  [ ]
+### T1.4 Sitemap `lastmod` — Agent  [x] 2026-10-13
 
-In `web/app/sitemap.ts`, add `lastModified` per page: the date of the last
-commit touching the page's article or its tool folder (worked out at build
-time, e.g. a small script that writes a JSON of dates, run in `prebuild`),
-falling back to the build date. Don't set it to the build date for every
-page; search engines learn to ignore a `lastmod` that always changes.
+`web/app/sitemap.ts` serves each page's date from `web/lib/lastmod.json`.
+`node scripts/lastmod.mjs` (from `web/`) writes that file: for each page, the
+date of the last commit that touched its article, its route or its tool's
+folder, or today if any of those has uncommitted changes. It is not the build
+date. The dates are committed rather than worked out at build time, because
+Vercel's clone is shallow and would give every page the same date.
+
+- **Run it before committing a change to a page's article or tool**
+  (`node scripts/lastmod.mjs check` says whether it's out of date).
+  `tests/run.py --web` only checks that every page has a date, so a forgotten
+  run leaves a stale date, not a failure.
+- Shared code (components, the calculation engine) isn't counted, so a
+  change there doesn't move every page's date.
+- A new page needs a row in the script's `TOOL_DIR` if its tool's folder
+  isn't `tools/<slug>`.
 
 ### T1.5 Internal links — Agent  [~] partly done 2026-10-13
 
@@ -629,3 +639,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | — | — | Plan written from an audit of `main` at `89131a8` |
 | 2026-10-13 | T1.1, T1.2 | (this branch) | All 31 titles ≤ 60 characters and descriptions 120–155, in `web/lib/page-meta.json`; `jsonLdFor` names the app from the title without ` \| RetCalc`, else the part before the colon; `seo-compare.mjs` deleted. Home title is "RetCalc: Free Retirement Planning Toolkit" by the owner's choice |
 | 2026-10-13 | T1.5 (part) | (this branch) | "Related tools" added to the eight strategy articles; `/tools` group and compare-view links ruled out, see T1.5 |
+| 2026-10-13 | T1.4 | (this branch) | `lastmod` in the sitemap, from `web/lib/lastmod.json` (`web/scripts/lastmod.mjs`); test checks every page has a date |
