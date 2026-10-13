@@ -252,6 +252,12 @@ otp_expiry = 3600
 subject = "Your RetCalc sign-in code"
 content_path = "./supabase/templates/magic_link.html"
 
+# The first sign-in with a new email confirms the address with the same
+# 6-digit code, so it gets a welcome version of the same email.
+[auth.email.template.confirmation]
+subject = "Welcome to RetCalc: your sign-in code"
+content_path = "./supabase/templates/confirmation.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

@@ -259,9 +259,16 @@ Values in `<angle brackets>` come from the step before.
    `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, the
    two values from step 1.
 
-Step 1 is done (project `dlnwkvamjdcefoukpaqw`, created 2026-10-12 with the
-Data API on, automatic table exposure off and automatic RLS on). Steps 2–5
-are still to do.
+Done (2026-10-12): step 1 (project `dlnwkvamjdcefoukpaqw`, Data API on,
+automatic table exposure off, automatic RLS on), step 2 (URLs), step 3
+(Google enabled, checked: the authorize call goes to accounts.google.com with
+the right callback) and step 4 (Resend verified, records live, incoming mail
+to contact@ untouched; sender `RetCalc <signin@retcalc.app>`). Both code
+templates are set and tested: a first sign-in gets "Confirm signup" (the
+welcome version, `supabase/templates/confirmation.html`), later ones get
+"Magic link or OTP". Hosted projects default to 8-digit codes; set Email OTP
+Length to 6 under Authentication → Sign In / Providers → Email. Step 5
+(Vercel env vars) is still to do.
 
 ## Built so far (branch `accounts`, not live)
 
