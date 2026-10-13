@@ -31,13 +31,21 @@ export function metadataFor(slug: Slug): Metadata {
   };
 }
 
+/** The app's name for structured data: the title without its " | RetCalc"
+    ending, or, for titles that don't end that way, the part before the colon. */
+function appName(title: string): string {
+  const brand = " | RetCalc";
+  if (title.endsWith(brand)) return title.slice(0, -brand.length);
+  return title.split(":")[0];
+}
+
 /** schema.org data for the page: the calculator itself, the site's name on
     the home page (Google shows it above the address), and the article's FAQ. */
 export function jsonLdFor(slug: Slug): object {
   const { title, desc } = PAGES[slug];
   const url = urlFor(slug);
   const graph: object[] = [{
-    "@type": "WebApplication", name: title.split(" | ")[0], url, description: desc,
+    "@type": "WebApplication", name: appName(title), url, description: desc,
     applicationCategory: "FinanceApplication", operatingSystem: "Any", browserRequirements: "Requires JavaScript",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   }];

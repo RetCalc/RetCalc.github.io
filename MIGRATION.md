@@ -67,7 +67,7 @@ web/
   content/articles/       each page's "about this tool" article, HTML moved unchanged
   e2e/                    Playwright old-vs-new checks, one file per tool
   styles/                 today's CSS, split the same way it is now
-  scripts/                html2jsx.py (markup into JSX), seo-compare.mjs (old vs new <head>s)
+  scripts/                html2jsx.py (markup into JSX)
 ```
 
 Rules that keep it from turning into a tangle again:
@@ -142,7 +142,7 @@ Each phase ends with a commit on `nextjs-migration` and its gate passing.
 - [x] Household bar and its shared context
 - [x] All 29 routes exist (placeholder bodies, real tool list on /tools, each page's article), each with its metadata
 - [x] Sitemap, robots.txt, preview cards (today's images, copied), `.html` and /single, /series redirects
-- [x] SEO comparison: `node web/scripts/seo-compare.mjs` — 29 of 29 pages match
+- [x] SEO comparison: every page's `<head>` matched the old site's, 29 of 29 (the script was retired when the titles and descriptions were rewritten, see `SEO_PLAN.md` T1.1)
 - Moved to the phase that needs them: Playwright (phase 3); the saved-scenario, share and
   reset buttons (each tool, phases 3 to 5); tooltips (phase 3); the card-to-header icon
   animation (phase 5, with the view-transitions skill)
