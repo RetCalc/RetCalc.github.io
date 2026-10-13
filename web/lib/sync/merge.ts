@@ -32,6 +32,19 @@ function canon(v: unknown): unknown {
 }
 export const same = (a: unknown, b: unknown) => JSON.stringify(canon(a)) === JSON.stringify(canon(b));
 
+/** A short fingerprint of a value, whatever its key order: what this
+    browser remembers about the last version both sides agreed on. */
+export function fingerprint(v: unknown): string {
+  const s = JSON.stringify(canon(v)) ?? "";
+  let h1 = 0x811c9dc5, h2 = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 16777619) >>> 0;
+    h2 = (Math.imul(h2, 31) + c) >>> 0;
+  }
+  return s.length.toString(36) + "." + h1.toString(36) + "." + h2.toString(36);
+}
+
 /** A name with any number of " (from this device)" / " (from this device 2)"
     suffixes, back to the name it was copied from. */
 const SUFFIX = / \(from this device(?: \d+)?\)$/;
@@ -84,8 +97,29 @@ export function mergeScenarios(local: Scenario[], account: Scenario[]): Scenario
   return out;
 }
 
-/** Combines this browser's copy of `key` with the account's. */
-export function mergeItem(key: string, local: Copy | null, account: Copy | null): Merged | null {
+/** One side wins outright. A saved-scenario list also sheds copies an
+    earlier version made, which may mean both sides need the cleaned list. */
+function take(key: string, win: Copy, from: "local" | "account"): Merged {
+  if (key.startsWith("scenarios-") && Array.isArray(win.value)) {
+    const value = dropTwinCopies(win.value as Scenario[]);
+    if (value.length !== (win.value as Scenario[]).length) return { version: win.version, value, toLocal: true, toAccount: true };
+  }
+  return { version: win.version, value: win.value, toLocal: from === "account", toAccount: from === "local" };
+}
+
+/** Combines this browser's copy of `key` with the account's. `base` is the
+    fingerprint of the version both last agreed on (null on a first sign-in,
+    or for an item this browser never synced). If only one side moved away
+    from it, that side wins outright, so a deletion or an edit made on one
+    device carries over to the others. Only when both changed, or there's no
+    base, do the rules below combine the two. */
+export function mergeItem(key: string, local: Copy | null, account: Copy | null, base: string | null = null): Merged | null {
+  if (local && account && local.version === account.version && base) {
+    const l = fingerprint(local.value), a = fingerprint(account.value);
+    if (l === a) return take(key, account, "account").toAccount ? take(key, account, "account") : { version: local.version, value: local.value, toLocal: false, toAccount: false };
+    if (l === base) return take(key, account, "account");
+    if (a === base) return take(key, local, "local");
+  }
   if (!local && !account) return null;
   if (!account) return { version: local!.version, value: local!.value, toLocal: false, toAccount: true };
   if (!local) return { version: account.version, value: account.value, toLocal: true, toAccount: false };

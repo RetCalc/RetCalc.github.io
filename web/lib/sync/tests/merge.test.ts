@@ -1,7 +1,7 @@
 /* The merge rules of account sync (ACCOUNTS_PLAN.md, "How syncing works"). */
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dropTwinCopies, mergeItem, mergeScenarios, same } from "../merge";
+import { dropTwinCopies, fingerprint, mergeItem, mergeScenarios, same } from "../merge";
 
 const c = (value: unknown, at = 0, version = 1) => ({ value, at, version });
 
@@ -106,4 +106,38 @@ test("copies an earlier version made of an unchanged scenario are cleaned up", (
 test("a real clash is still kept as a copy, and isn't dropped later", () => {
   const list = mergeScenarios([{ name: "Plan", data: { a: 1 } }], [{ name: "Plan", data: { a: 2 } }]);
   assert.deepEqual(dropTwinCopies(list).map((s) => s.name), ["Plan", "Plan (from this device)"]);
+});
+
+test("a deletion on this device carries over (the account still has the agreed version)", () => {
+  const agreed = [{ name: "A", data: 1 }, { name: "B", data: 2 }], here = [{ name: "A", data: 1 }];
+  const m = mergeItem("scenarios-basic", { version: 1, value: here, at: 2 }, { version: 1, value: agreed, at: 1 }, fingerprint(agreed))!;
+  assert.deepEqual((m.value as { name: string }[]).map((s) => s.name), ["A"]);
+  assert.equal(m.toAccount, true);
+  assert.equal(m.toLocal, false);
+});
+
+test("a deletion on another device carries over here", () => {
+  const agreed = [{ name: "A", data: 1 }, { name: "B", data: 2 }], account = [{ name: "B", data: 2 }];
+  const m = mergeItem("scenarios-basic", { version: 1, value: agreed, at: 1 }, { version: 1, value: account, at: 2 }, fingerprint(agreed))!;
+  assert.deepEqual((m.value as { name: string }[]).map((s) => s.name), ["B"]);
+  assert.equal(m.toLocal, true);
+});
+
+test("an edit on one side wins over the agreed version, for any item", () => {
+  const agreed = { age: 40, savedAt: 1 };
+  const m = mergeItem("household", { version: 1, value: agreed, at: 9 }, { version: 1, value: { age: 41, savedAt: 1 }, at: 1 }, fingerprint(agreed))!;
+  assert.deepEqual(m.value, { age: 41, savedAt: 1 });
+  assert.equal(m.toLocal, true);
+});
+
+test("both sides changed: scenario lists are combined, nothing lost", () => {
+  const agreed = [{ name: "A", data: 1 }];
+  const m = mergeItem("scenarios-basic", { version: 1, value: [...agreed, { name: "B", data: 2 }], at: 2 },
+    { version: 1, value: [...agreed, { name: "C", data: 3 }], at: 2 }, fingerprint(agreed))!;
+  assert.deepEqual((m.value as { name: string }[]).map((s) => s.name).sort(), ["A", "B", "C"]);
+});
+
+test("the agreed version is the same however its fields are ordered", () => {
+  assert.equal(fingerprint({ a: 1, b: [{ c: 1, d: 2 }] }), fingerprint({ b: [{ d: 2, c: 1 }], a: 1 }));
+  assert.notEqual(fingerprint({ a: 1 }), fingerprint({ a: 2 }));
 });

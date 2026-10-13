@@ -87,6 +87,30 @@ export function localSyncedItems(): LocalItem[] {
   return out;
 }
 
+/* What each synced item looked like the last time this browser and the
+   account agreed on it (a fingerprint, lib/sync/merge.ts). It's how a merge
+   tells "deleted here" from "never had it": whichever side moved away from
+   this agreed version is the one that changed. */
+const BASES = `${PREFIX}sync-base.v1`;
+
+export function readBase(key: string): string | null {
+  try {
+    return (JSON.parse(localStorage.getItem(BASES) ?? "{}") as Record<string, string>)[key] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeBase(key: string, fingerprint: string): void {
+  try {
+    const all = JSON.parse(localStorage.getItem(BASES) ?? "{}") as Record<string, string>;
+    all[key] = fingerprint;
+    localStorage.setItem(BASES, JSON.stringify(all));
+  } catch {
+    /* not remembered: the next sync merges both ways instead */
+  }
+}
+
 /** Writes an item that came from the account, without echoing it back. */
 export function writeFromAccount(key: string, version: number, value: unknown, at: number): void {
   try {

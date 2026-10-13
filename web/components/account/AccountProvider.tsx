@@ -180,7 +180,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
         const m = k?.startsWith("retcalc.") ? /^retcalc\.(.+)\.v\d+$/.exec(k) : null;
-        if (k && (k === "retcalc.sync-stamps.v1" || k === "retcalc.household-applied.v1" || (m && isSynced(m[1])))) localStorage.removeItem(k);
+        if (k && (k === "retcalc.sync-stamps.v1" || k === "retcalc.sync-base.v1" || k === "retcalc.household-applied.v1" || (m && isSynced(m[1])))) localStorage.removeItem(k);
       }
     } catch { /* storage blocked: nothing was kept anyway */ }
     window.location.reload();

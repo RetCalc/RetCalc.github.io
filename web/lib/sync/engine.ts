@@ -10,9 +10,9 @@
 
    Nothing calls these yet: the sign-in UI does (ACCOUNTS_PLAN.md, step 3). */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { localSyncedItems, onSyncedWrite, writeFromAccount } from "@/lib/storage";
+import { localSyncedItems, onSyncedWrite, readBase, writeBase, writeFromAccount } from "@/lib/storage";
 import { pullAll, push } from "./account";
-import { mergeItem, type Copy } from "./merge";
+import { fingerprint, mergeItem, type Copy } from "./merge";
 
 /** Sent on window when items arrive from the account; detail: their keys. */
 export const SYNCED_EVENT = "retcalc:synced";
@@ -39,10 +39,12 @@ export async function syncNow(c: SupabaseClient): Promise<SyncResult> {
     const changed: string[] = [];
     for (const key of new Set([...local.keys(), ...account.keys()])) {
       const l = local.get(key), a = account.get(key);
-      const m = mergeItem(key, l ? (l as Copy) : null, a ? (a as Copy) : null);
+      const m = mergeItem(key, l ? (l as Copy) : null, a ? (a as Copy) : null, readBase(key));
       if (!m) continue;
       if (m.toLocal) { writeFromAccount(key, m.version, m.value, Date.now()); pulled++; changed.push(key); }
       if (m.toAccount) { await push(c, key, m.version, m.value); pushed++; }
+      // Both sides now hold this: the version to measure the next changes from.
+      writeBase(key, fingerprint(m.value));
     }
     // Whatever shows a changed item re-reads it (the household, the open
     // tool's saved scenarios, the Guide).
@@ -60,7 +62,10 @@ export function startSync(c: SupabaseClient, onResult?: (r: SyncResult) => void)
     timers.set(key, setTimeout(() => {
       timers.delete(key);
       push(c, key, version, value).then(
-        () => onResult?.({ ok: true, pulled: 0, pushed: 1 }),
+        () => {
+          if (value != null) writeBase(key, fingerprint(value));
+          onResult?.({ ok: true, pulled: 0, pushed: 1 });
+        },
         (e) => onResult?.({ ok: false, pulled: 0, pushed: 0, error: String(e) }),
       );
     }, 800));
