@@ -1,35 +1,20 @@
 /* The link-preview card (OgCard.tsx), 1200 by 630. The renderer takes it
-   out of the page around it before the screenshot. Colors are the dark theme's
-   tokens; the renderer asks for dark mode. */
-.card{position:fixed;inset:0 auto auto 0;width:1200px;height:630px;box-sizing:border-box;
-  display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:56px;padding:60px 64px 56px;
-  background:var(--ds-ground);color:var(--ds-text);font-family:var(--sans);overflow:hidden}
+   out of the page around it before the screenshot, in dark mode. */
+.card{position:fixed;inset:0 auto auto 0;width:1200px;height:630px;box-sizing:border-box;overflow:hidden;
+  background:var(--ds-ground);color:var(--ds-text);font-family:var(--sans)}
 
-.copy{display:flex;flex-direction:column;min-width:0}
+.copy{position:absolute;left:64px;top:56px;bottom:52px;width:500px;display:flex;flex-direction:column}
 .brand{display:flex;align-items:center;gap:14px;font-size:30px;font-weight:700;letter-spacing:-.025em}
-.brand :global(.brandmark){width:52px;height:52px}
-.mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0 12px}
-.kick{font-size:22px;font-weight:600;color:var(--ds-muted);margin-bottom:14px}
-.title{margin:0;font-size:58px;line-height:1.04;font-weight:650;letter-spacing:-.03em;text-wrap:balance}
-.display{margin:0;font-size:96px;line-height:.98;font-weight:650;letter-spacing:-.045em}
+.brand :global(.brandmark){width:50px;height:50px}
+.mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:6px}
+.title{margin:0;font-size:60px;line-height:1.02;font-weight:650;letter-spacing:-.032em;text-wrap:balance}
+.display{margin:0;font-size:100px;line-height:.96;font-weight:650;letter-spacing:-.045em}
 .display em{font-style:normal;color:var(--ds-amber)}
-.text{margin:22px 0 0;font-size:24px;line-height:1.4;color:var(--ds-muted);max-width:30ch;text-wrap:pretty}
-.foot{display:flex;align-items:baseline;gap:14px;font-size:19px;color:var(--ds-muted)}
+.text{margin:24px 0 0;font-size:27px;line-height:1.36;color:var(--ds-muted);text-wrap:pretty}
+.foot{display:flex;align-items:baseline;gap:14px;font-size:20px;color:var(--ds-muted)}
 .foot b{color:var(--ds-text);font-weight:600}
 
-.panel{display:flex;flex-direction:column;justify-content:center;gap:26px;min-width:0;
-  background:var(--ds-surface);border:1px solid var(--ds-rule);border-radius:24px;padding:36px 36px 34px}
-.reading{display:flex;flex-direction:column;gap:6px}
-.v{font-size:72px;line-height:1;font-weight:600;letter-spacing:-.03em;color:var(--ds-amber);font-variant-numeric:tabular-nums}
-.k{font-size:19px;line-height:1.35;color:var(--ds-muted);max-width:28ch}
-
-/* Each chart's labels are set in its own units; these keep them readable at
-   the card's size. */
-.chart{min-width:0}
-.chart :global(svg.hm-chart){width:100%;height:auto;overflow:visible}
-.score{width:300px;margin:0 auto}
-.fire :global(svg.hm-chart){overflow:hidden}
-
-.grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:16px}
-.mini{display:flex;flex-direction:column;justify-content:space-between;gap:14px;padding:18px 18px 16px;border:1px solid var(--ds-rule);border-radius:16px;background:var(--ds-ground)}
-.mini span{font-size:18px;font-weight:600;color:var(--ds-text)}
+/* The picture's panel runs off the right edge. */
+.art{position:absolute;left:620px;top:48px;bottom:48px;right:-40px;overflow:hidden;
+  background:var(--ds-surface);border:1px solid var(--ds-rule);border-radius:28px}
+.art > svg{display:block;width:580px;height:534px;max-width:none}
