@@ -66,6 +66,8 @@
      The *1.35 is a multiply, not an add, so it's still exactly 0 wherever
      there's no inset to begin with (a normal Safari tab, or desktop). */
   --sb-clear:calc(env(safe-area-inset-top,0px) * 2);
+  /* Where a sticky bar pins: under the status-bar clearance and the rail. */
+  --pin-top:calc(var(--sb-clear) + var(--navh));
 
   /* Depth. Surfaces are flat at rest, so the bevel, the plateau's lift and
      the well's inset are empty (a transparent shadow, so lists that combine

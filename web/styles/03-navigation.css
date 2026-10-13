@@ -256,8 +256,22 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
   .navbar.oneline nav[role=tablist] button{margin-right:10px}
   /* No room for the mode beside Calculator; its menu still says which. */
   .navbar.oneline .calc-mode{display:none}
-  /* The home-screen app keeps its bottom tab bar; the logo and theme button
-     have no place there. */
-  html.pwa .navbar.oneline{display:block;min-height:0;padding:0 0 env(safe-area-inset-bottom,0px)}
-  html.pwa .navbar.oneline .brand,html.pwa .navbar.oneline .navrow-end{display:none}
+  /* The home-screen app docks the whole row at the bottom as a tab bar (see
+     11-charts.css): the four tabs share the width, and the account button
+     (or the theme button, with no accounts) closes the row. The logo has no
+     place there. */
+  html.pwa .navbar.oneline{display:flex;align-items:stretch;gap:0;min-height:0;
+    padding:0 env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+  html.pwa .navbar.oneline .brand{display:none}
+  html.pwa .navbar.oneline nav[role=tablist]{flex:1 1 0;min-width:0}
+  html.pwa .navbar.oneline nav[role=tablist] button{margin-right:0;padding:10px 1px 9px}
+  html.pwa .navbar.oneline .calc-mode{display:flex}
+  html.pwa .navbar.oneline .navrow-end{flex:none;gap:0;padding:0 10px 0 2px}
+  /* There the button drops its outline and reads like a tab: plain icon,
+     Muted until its menu is open. !important because the button's look is
+     Tailwind utilities, a layer above this sheet. */
+  html.pwa .navrow-end :is(.acct-btn,.theme-slot) > button{width:46px !important;height:46px !important;border-radius:50% !important;
+    border-color:transparent !important;background:transparent !important;box-shadow:none !important;color:var(--dim)}
+  html.pwa .navrow-end :is(.acct-btn,.theme-slot) > button svg{width:22px;height:22px}
+  html.pwa .navrow-end :is(.acct-btn,.theme-slot) > button[aria-expanded=true]{color:var(--text);background:var(--panel-2) !important}
 }

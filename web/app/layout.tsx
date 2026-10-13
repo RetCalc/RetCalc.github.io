@@ -17,7 +17,7 @@ import { ToolRegistryProvider } from "@/components/tools/ToolState";
 import { GuideCoach } from "@/tools/guide/Coach";
 import { ToolHelp } from "@/tools/help/ToolHelp";
 import { SITE } from "@/lib/site";
-import { THEME_SCRIPT } from "@/lib/theme-script";
+import { STANDALONE_SCRIPT, THEME_SCRIPT } from "@/lib/theme-script";
 
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
@@ -80,6 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={plexSans.variable + " " + plexItalic.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: STANDALONE_SCRIPT }} />
       </head>
       <body>
         <ToastProvider>
