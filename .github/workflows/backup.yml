@@ -42,9 +42,12 @@ jobs:
       - name: Dump
         run: |
           mkdir backup
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/roles.sql --role-only
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/schema.sql
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/data.sql --data-only --use-copy -s auth,public
+          # A failure is repeated as an annotation, so it shows on the run's
+          # summary page without opening the log (GitHub masks the secrets).
+          dump() { supabase db dump --db-url "$SUPABASE_DB_URL" "$@" 2> err.txt || { echo "::error::db dump $*: $(tail -c 600 err.txt | tr '\n' ' ')"; exit 1; }; }
+          dump -f backup/roles.sql --role-only
+          dump -f backup/schema.sql
+          dump -f backup/data.sql --data-only --use-copy -s auth,public
           grep -q "user_data" backup/data.sql || { echo "::error::data.sql has no user_data table"; exit 1; }
           ls -l backup
       - name: Encrypt
