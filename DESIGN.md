@@ -328,7 +328,7 @@ The key result, and the reason the page exists. It opens the results column as t
 - On phones the table scrolls sideways inside its own container, with its first column pinned. Where the last column is the answer (the homepage's Balance), it's pinned too, and a column that repeats another (Year beside Age) steps out on phones; the CSV keeps every column.
 
 ### Charts
-- Plan line in Signal Amber, ending in the logo's arrowhead. Comparison series in Sky, Teal, then Rose, Lavender, Gray. Ranges as bands at 15 to 25% opacity of their series.
+- Plan line in Signal Amber, ending in a small dot (about twice the line's width; the arrowhead was dropped on 2026-10-13 as it read as a trend past the last year). Comparison series in Sky, Teal, then Rose, Lavender, Gray. Ranges as bands at 15 to 25% opacity of their series.
 - Gridlines in Rule; axis labels in Label/Muted, tabular.
 - Legend below the chart: swatch plus text. Toggleable entries fade and strike through when off.
 - Tooltips: Raised fill, Rule border, 14px radius, Float shadow, tabular figures.

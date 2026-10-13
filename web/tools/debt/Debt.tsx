@@ -154,7 +154,7 @@ export function Debt() {
     const at = (R: DebtResult, m: number) => (m >= R.months.length ? 0 : R.months[Math.min(m, R.months.length - 1)].balance);
     const pts = [];
     for (let m = 0; m < span; m++) pts.push({ year: m, base: at(pick, m), hi: at(mn, m), lo: Math.min(at(pick, m), at(mn, m)) });
-    /* On screen the plan's line (and its arrowhead) ends where the plan
+    /* On screen the plan's line (and its end dot) ends where the plan
        does, and the axis counts years; the printed summary copies this
        chart, so the original line and month ticks stay for it. */
     body = (
