@@ -146,17 +146,20 @@ using an API you aren't sure of).
 
 ## 3. Phase 0: Measure and protect the move (owner, this week, free)
 
-- [ ] **T0.1 Owner: Google Search Console.** Add retcalc.app as a *Domain*
+- [x] **T0.1 Owner: Google Search Console.** Add retcalc.app as a *Domain*
   property, verified with a DNS TXT record at the DNS host (Cloudflare,
   per `MIGRATION.md`; DNS only, so this changes nothing about serving).
   Then: Sitemaps → submit `https://retcalc.app/sitemap.xml`; URL Inspection →
   "Request indexing" for `/`, `/calculator`, `/drawdown`, `/4-percent-rule`,
   `/guide`.
-- [ ] **T0.2 Owner: Bing Webmaster Tools.** Sign in and use "Import from
+  *Done 2026-10-13: set up on the retcalc Google account (it was on the owner's personal account before). Sitemap submitted; indexing requested for `/`, `/calculator`, `/privacy`, `/drawdown`, `/4-percent-rule` and `/guide`. First report (as of 10/8): 15 indexed, 14 "Discovered, currently not indexed".*
+- [x] **T0.2 Owner: Bing Webmaster Tools.** Sign in and use "Import from
   Google Search Console". Bing's index also feeds ChatGPT search,
   DuckDuckGo and others.
-- [ ] **T0.3 Owner: Ahrefs Webmaster Tools** (free for verified sites).
+  *Done 2026-10-13: imported from Search Console; sitemap submitted by hand (the import brought none). Bing's inspection of `/` still showed the old description, which clears on re-crawl.*
+- [x] **T0.3 Owner: Ahrefs Webmaster Tools** (free for verified sites).
   Connect via Search Console. Gives backlinks and a monthly site audit.
+  *Done 2026-10-13: connected through Search Console. Ahrefs' own web analytics script was skipped: Cloudflare Web Analytics is already on the site.*
 - [ ] **T0.4 Owner: record a baseline** in §12's baseline table:
   - pages indexed (Search Console → Indexing → Pages)
   - last 28 days clicks and impressions, top 20 queries, top pages
@@ -608,9 +611,9 @@ site back. Prices are approximate; check current pricing.
 | # | Question | Blocks |
 | --- | --- | --- |
 | Q1 | Visible headings on Calculator, Guide, Tools, About, and a search-words line on the homepage? | T1.3 |
-| Q2 | Where strategy pages are linked from the homepage | T1.5 |
+| Q2 | ~~Where strategy pages are linked~~ Not from `/tools` (they aren't separate tools). Homepage link still open, leaning no | T1.5 |
 | Q3 | Name or pen name, background line, photo, contact for "Who builds RetCalc" | T2.1 |
-| Q4 | Approve the title list in T1.1 (or edit it) | T1.1 |
+| Q4 | ~~Approve the title list in T1.1~~ Done 2026-10-13, home edited by the owner | T1.1 |
 | Q5 | "Can I retire at X?" pages: yes/no, and where they sit in the navigation | C2 |
 | Q6 | Where question guides live (`/learn`, the Guide, or not at all) | C5 |
 | Q7 | Any social or community profiles to list in `Organization.sameAs` | T1.6 |
@@ -640,3 +643,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.1, T1.2 | (this branch) | All 31 titles ≤ 60 characters and descriptions 120–155, in `web/lib/page-meta.json`; `jsonLdFor` names the app from the title without ` \| RetCalc`, else the part before the colon; `seo-compare.mjs` deleted. Home title is "RetCalc: Free Retirement Planning Toolkit" by the owner's choice |
 | 2026-10-13 | T1.5 (part) | (this branch) | "Related tools" added to the eight strategy articles; `/tools` group and compare-view links ruled out, see T1.5 |
 | 2026-10-13 | T1.4 | (this branch) | `lastmod` in the sitemap, from `web/lib/lastmod.json` (`web/scripts/lastmod.mjs`); test checks every page has a date |
+| 2026-10-13 | T0.1–T0.3 | — | Search Console (retcalc account), Bing and Ahrefs set up; sitemap in both; indexing requested for six pages. Baseline (T0.4) not yet recorded |
