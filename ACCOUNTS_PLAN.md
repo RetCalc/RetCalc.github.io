@@ -317,8 +317,15 @@ Sign-in built (commit c1e78c9, branch only):
   step renders, a wrong code says so, Google redirects with the right
   callback, phone header swaps the theme button for the account button,
   no console errors.
-- Still to test for real, on the preview: a real code and a real Google
-  sign-in, sync across two browsers, sign-out both ways, delete.
+- Tested by the owner on the preview (2026-10-12): email-code sign-in, the
+  first-name step, the account menu, sync to the account, a second device,
+  sign-out (clears this browser) and back in, deletion carrying over
+  between two devices. Fixed along the way: scenarios copied on every sync
+  (jsonb reorders keys; values are now compared by content, and leftover
+  copies are cleaned up) and deletions coming back (each browser now keeps
+  a fingerprint of the last agreed version; the side that changed wins).
+- Still to test: Google sign-in (add a test user while the consent screen
+  is in Testing), and Delete my account (last, since it erases the account).
 - Still to do before announcing: the privacy copy ("…unless you sign in")
   and a privacy page (step 6), the weekly backup Action, DMARC, and moving
   Google's consent screen from Testing to In production.
