@@ -324,8 +324,18 @@ Sign-in built (commit c1e78c9, branch only):
   (jsonb reorders keys; values are now compared by content, and leftover
   copies are cleaned up) and deletions coming back (each browser now keeps
   a fingerprint of the last agreed version; the side that changed wins).
-- Still to test: Google sign-in (add a test user while the consent screen
-  is in Testing), and Delete my account (last, since it erases the account).
+- Google sign-in tested by the owner (redirect version). It showed
+  "to continue to dlnwkvamjdcefoukpaqw.supabase.co", so "Continue with
+  Google" now uses Google's own button (Google Identity Services +
+  signInWithIdToken with a hashed nonce): Google shows retcalc.app instead,
+  free (a Supabase custom domain would be $10/mo on a paid plan). Google's
+  script loads only when the sign-in dialog opens; if it can't load, the
+  redirect sign-in is the fallback. Needs `NEXT_PUBLIC_GOOGLE_CLIENT_ID` and
+  each site's address in the OAuth client's Authorized JavaScript origins
+  (retcalc.app, the branch alias retcalc-git-accounts-ret-calc.vercel.app,
+  http://localhost:3100 and http://localhost). Optional later: Google brand
+  verification when publishing the consent screen.
+- Still to test: Delete my account (last, since it erases the account).
 - Still to do before announcing: the privacy copy ("…unless you sign in")
   and a privacy page (step 6), the weekly backup Action, DMARC, and moving
   Google's consent screen from Testing to In production.

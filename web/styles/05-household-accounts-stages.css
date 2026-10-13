@@ -121,6 +121,8 @@
 .acct h2{margin:0;font-size:18px;font-weight:600;letter-spacing:-.01em}
 .acct-lede{margin:-6px 0 2px;font-size:14px;color:var(--ds-muted);line-height:1.5}
 .acct-lede b{color:var(--ds-text);font-weight:500;word-break:break-all}
+/* Google's own button, centered; it keeps the button's height while it loads. */
+.acct-gsi{display:flex;justify-content:center;min-height:44px;width:100%}
 .acct-or{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ds-muted)}
 .acct-or::before,.acct-or::after{content:"";flex:1;height:1px;background:var(--ds-rule)}
 .acct-form{display:grid;gap:8px}

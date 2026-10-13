@@ -6,6 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAccount } from "./AccountProvider";
+import { GoogleButton } from "./GoogleButton";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -33,7 +34,7 @@ export function SignInDialog() {
 }
 
 function Start() {
-  const { sendCode, signInWithGoogle } = useAccount();
+  const { sendCode } = useAccount();
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -41,9 +42,7 @@ function Start() {
     <div className="acct">
       <h2 id="acctTitle">Sign in to RetCalc</h2>
       <p className="acct-lede">Save your household, scenarios and Guide to an account so they follow you to any device. Optional: everything works without one.</p>
-      <Button variant="outline" size="lg" className="w-full" onClick={async () => { setErr(null); setBusy(true); const e = await signInWithGoogle(); if (e) { setErr(e); setBusy(false); } }} disabled={busy}>
-        {GOOGLE}Continue with Google
-      </Button>
+      <GoogleButton fallbackIcon={GOOGLE} onError={setErr} />
       <div className="acct-or" aria-hidden="true"><span>or</span></div>
       <form className="acct-form" onSubmit={async (e) => {
         e.preventDefault();

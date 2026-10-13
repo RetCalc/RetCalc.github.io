@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         <CardContent>
           <ul>
             <li><b>Supabase</b> stores accounts and synced data, in the United States (US East). The database only lets you reach your own data.</li>
-            <li><b>Google</b>, if you choose &ldquo;Continue with Google&rdquo;, confirms who you are and shares your email address and name with us. We don&apos;t get access to anything else in your Google account.</li>
+            <li><b>Google</b>, if you choose &ldquo;Continue with Google&rdquo;, confirms who you are and shares your email address and name with us. We don&apos;t get access to anything else in your Google account. Google&apos;s sign-in button loads only when you open Sign in, never on an ordinary page view.</li>
             <li><b>Resend</b> sends the sign-in code to your email address.</li>
             <li><b>Vercel</b> and <b>Cloudflare</b> host and deliver the site. Like any website, they handle basic request details such as your IP address to serve pages.</li>
             <li><b>Cloudflare Web Analytics</b> counts visits without cookies and without identifying you.</li>
