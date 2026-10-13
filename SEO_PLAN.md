@@ -251,17 +251,21 @@ time, e.g. a small script that writes a JSON of dates, run in `prebuild`),
 falling back to the build date. Don't set it to the build date for every
 page; search engines learn to ignore a `lastmod` that always changes.
 
-### T1.5 Internal links — Agent  [ ]
+### T1.5 Internal links — Agent  [~] partly done 2026-10-13
 
-- `/tools` page: add a "Withdrawal strategies" group listing the 8 strategy
-  pages (and later the new ones from C1), using `STRATEGY_PAGES` so it stays
-  in step.
-- Homepage: link the strategy pages from the Drawdown tile or a short row
-  under it (owner to approve placement; `HOMEPAGE_BRIEF.md`).
-- Each article: end with a "Related tools" paragraph of 2–4 links
-  (e.g. Roth → RMD, Healthcare, Income Tax; Bridge → 72(t), Healthcare,
-  Roth). Plain `<a href="/slug">` links; `Article.tsx` already turns them
-  into in-app navigation.
+- ~~`/tools` page: a "Withdrawal strategies" group.~~ Ruled out by the owner:
+  the strategy pages are the Drawdown Simulator set up for one strategy, not
+  separate tools, so they don't belong in the tool list (and the site's tool
+  count doesn't include them).
+- ~~Links from the compare view's table.~~ Not built: the table is filled in
+  by the worker after the page loads, so its links wouldn't be in the HTML a
+  crawler reads. `/drawdown`'s own article already links all eight strategy
+  pages (checked on the live site).
+- [x] The eight strategy articles had no "Related tools" section (and four had
+  no internal links at all); each now has one with four links.
+- [x] Every other article already had a "Related tools" or "Go further" list.
+- [ ] Homepage link to the strategy pages: owner's call; leaning no, for the
+  same reason as `/tools`.
 
 ### T1.6 More structured data — Agent  [ ]
 
@@ -624,3 +628,4 @@ site back. Prices are approximate; check current pricing.
 | --- | --- | --- | --- |
 | 2026-10-13 | — | — | Plan written from an audit of `main` at `89131a8` |
 | 2026-10-13 | T1.1, T1.2 | (this branch) | All 31 titles ≤ 60 characters and descriptions 120–155, in `web/lib/page-meta.json`; `jsonLdFor` names the app from the title without ` \| RetCalc`, else the part before the colon; `seo-compare.mjs` deleted. Home title is "RetCalc: Free Retirement Planning Toolkit" by the owner's choice |
+| 2026-10-13 | T1.5 (part) | (this branch) | "Related tools" added to the eight strategy articles; `/tools` group and compare-view links ruled out, see T1.5 |
