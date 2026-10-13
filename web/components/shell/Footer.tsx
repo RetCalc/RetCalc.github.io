@@ -2,6 +2,7 @@
 
 /* The site footer. Markup from src/page.html. */
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useClient } from "@/lib/useClient";
 import { Brandmark } from "./Brandmark";
@@ -39,11 +40,10 @@ export function Footer() {
         </div>
         <nav className="sitefoot-nav text-note" aria-label="Site">
           {LINKS.map((l) => (
-            <Button key={l.foot} variant="link" size="inline" data-foot={l.foot}
-              onClick={() => {
-                router.push(l.href);
-                window.scrollTo({ top: 0 });
-              }}>{l.label}</Button>
+            // Real links, so crawlers (Google's brand check looks for the
+            // privacy link on the homepage) and middle-click both work.
+            <Button key={l.foot} variant="link" size="inline" data-foot={l.foot} nativeButton={false}
+              render={<Link href={l.href} onClick={() => window.scrollTo({ top: 0 })} />}>{l.label}</Button>
           ))}
         </nav>
       </div>
