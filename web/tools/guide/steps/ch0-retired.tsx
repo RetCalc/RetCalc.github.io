@@ -25,7 +25,7 @@ export function RetiredCard() {
       <BackNote step="retired" />
       <Numbers moreLabel="Household, account types, Social Security and pensions" moreOpen={m || pos(v.ssOwn) || pos(v.rothNow) || pos(v.brokNow) || pos(v.pension)} more={<>
         <div className="gd-fields">
-          <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse or partner"]]} redraw full />
+          <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse"]]} redraw full />
           {m ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
           <MoneyF k="rothNow" label="Of your savings, in Roth accounts" ph="0" />
           <MoneyF k="brokNow" label="In taxable brokerage accounts" ph="0" />

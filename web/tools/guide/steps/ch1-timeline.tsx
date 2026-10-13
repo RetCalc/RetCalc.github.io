@@ -35,7 +35,7 @@ export function AboutYou() {
         <SelF k="state" label="State" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} full
           hint="For state income tax and healthcare costs." /></div>}>
         <div className="gd-fields">
-          <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse or partner"]]} redraw full />
+          <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse"]]} redraw full />
           <NumF k="age" label="Your age" affix="age" />
           {mar(v) ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
           <NumF k="retire" label="Age you'd like to retire" affix="age" hint="A guess is fine. You can try other ages later."
