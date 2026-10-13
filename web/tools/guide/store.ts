@@ -128,6 +128,15 @@ function load(): GuideState {
   return normalizeV2(readStored(KEY, VERSION), now()) ?? freshGuide();
 }
 
+/* A newer Guide arrived from the account (lib/sync): show it. */
+if (typeof window !== "undefined") {
+  window.addEventListener("retcalc:synced", (e) => {
+    if (!(e as CustomEvent<string[]>).detail?.includes(KEY)) return;
+    state = load();
+    listeners.forEach((l) => l());
+  });
+}
+
 /** The guide as it stands. */
 export function guide(): GuideState {
   if (!state) state = typeof window === "undefined" ? SERVER : load();

@@ -10,11 +10,19 @@ const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 let client: SupabaseClient | null | undefined;
 
+/** Whether accounts are set up on this build (the env vars were set). The
+    same on the server and in the browser, so pages render alike in both. */
+export const ACCOUNTS_ON = !!(URL_ && KEY);
+
 /** The Supabase client, or null when accounts aren't set up (no env vars)
     or outside a browser. */
 export function accountClient(): SupabaseClient | null {
   if (client !== undefined) return client;
-  client = typeof window !== "undefined" && URL_ && KEY ? createClient(URL_, KEY) : null;
+  // PKCE: Google sends back ?code=..., never tokens in the address's
+  // #fragment, which the site's share links (#s=..., #g=...) use.
+  client = typeof window !== "undefined" && URL_ && KEY
+    ? createClient(URL_, KEY, { auth: { flowType: "pkce", detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } })
+    : null;
   return client;
 }
 

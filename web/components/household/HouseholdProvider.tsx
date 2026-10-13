@@ -85,10 +85,14 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   const [panelOpen, setPanelOpen] = useState(false);
   const [link, setLink] = useState<HouseholdLink | null>(null);
 
-  // Browser storage only exists after the page has loaded.
+  // Browser storage only exists after the page has loaded. A household
+  // arriving from the account (lib/sync) is read in the same way.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one read of browser storage after hydration
-    setProfile(readStored<SavedHousehold>(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version));
+    const read = () => setProfile(readStored<SavedHousehold>(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version));
+    read();
+    const onSynced = (e: Event) => { if ((e as CustomEvent<string[]>).detail?.includes(HOUSEHOLD_STORE.key)) read(); };
+    window.addEventListener("retcalc:synced", onSynced);
+    return () => window.removeEventListener("retcalc:synced", onSynced);
   }, []);
 
   const value = useMemo<HouseholdState>(

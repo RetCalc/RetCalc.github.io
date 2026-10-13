@@ -15,6 +15,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ALIASES, CALC_MODE_NAMES, CALC_PATHS, SLUGS, calcModeFor, slugFromPath, tabFor, type CalcMode, type Tab } from "@/lib/site";
 import type { StateOption } from "@/lib/states";
 import { HouseholdChip } from "@/components/household/HouseholdBar";
+import { AccountButton } from "@/components/account/AccountButton";
 import { BrandLink, ThemeButton } from "./Masthead";
 
 export { slugFromPath };
@@ -253,7 +254,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
           {markX != null && tabIdx >= 0 ? <span className="tabmark" aria-hidden="true" style={{ "--mx": markX + "px" } as React.CSSProperties}
             onTransitionEnd={(e) => { if (e.propertyName === "transform") setSliding(false); }} /> : null}
         </nav>
-        <div className="navrow-end"><HouseholdChip states={states} /><ThemeButton /></div>
+        <div className="navrow-end"><HouseholdChip states={states} /><AccountButton /><span className="theme-slot"><ThemeButton /></span></div>
         {/* Outside the nav so the phone rail's horizontal scroll can't clip it. */}
         <div className="calcmenu left-(--x)" id="calcMenu" role="menu" aria-labelledby="tabbtn-calc" hidden={!open}
           ref={menuRef} style={{ "--x": menuLeft + "px" } as React.CSSProperties} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>

@@ -14,6 +14,9 @@ import { localSyncedItems, onSyncedWrite, writeFromAccount } from "@/lib/storage
 import { pullAll, push } from "./account";
 import { mergeItem, type Copy } from "./merge";
 
+/** Sent on window when items arrive from the account; detail: their keys. */
+export const SYNCED_EVENT = "retcalc:synced";
+
 /** What a sync did, for a status line ("Synced", "Couldn't reach your account"). */
 export interface SyncResult { ok: boolean; pulled: number; pushed: number; error?: string }
 
@@ -33,13 +36,17 @@ export async function syncNow(c: SupabaseClient): Promise<SyncResult> {
     if (!u.user) return { ok: true, pulled: 0, pushed: 0 };
     const local = newest(localSyncedItems()), account = newest(await pullAll(c));
     let pulled = 0, pushed = 0;
+    const changed: string[] = [];
     for (const key of new Set([...local.keys(), ...account.keys()])) {
       const l = local.get(key), a = account.get(key);
       const m = mergeItem(key, l ? (l as Copy) : null, a ? (a as Copy) : null);
       if (!m) continue;
-      if (m.toLocal) { writeFromAccount(key, m.version, m.value, Date.now()); pulled++; }
+      if (m.toLocal) { writeFromAccount(key, m.version, m.value, Date.now()); pulled++; changed.push(key); }
       if (m.toAccount) { await push(c, key, m.version, m.value); pushed++; }
     }
+    // Whatever shows a changed item re-reads it (the household, the open
+    // tool's saved scenarios, the Guide).
+    if (changed.length) window.dispatchEvent(new CustomEvent(SYNCED_EVENT, { detail: changed }));
     return { ok: true, pulled, pushed };
   } catch (e) {
     return { ok: false, pulled: 0, pushed: 0, error: e instanceof Error ? e.message : String(e) };
