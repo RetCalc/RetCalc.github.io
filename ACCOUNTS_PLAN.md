@@ -335,10 +335,21 @@ Sign-in built (commit c1e78c9, branch only):
   (retcalc.app, the branch alias retcalc-git-accounts-ret-calc.vercel.app,
   http://localhost:3100 and http://localhost). Optional later: Google brand
   verification when publishing the consent screen.
+  Tested by the owner with Google's button: works, and dark mode no longer
+  shows a white box behind it.
+- Weekly backup: `.github/workflows/backup.yml` dumps roles, schema and data
+  (auth + public) every Monday, encrypts the dump with a passphrase (the repo
+  is public, so artifacts are downloadable by anyone signed in to GitHub) and
+  keeps it 90 days. Needs two repository secrets, `SUPABASE_DB_URL` (Session
+  pooler connection string; the direct one is IPv6-only, which GitHub's
+  runners can't reach) and `BACKUP_PASSPHRASE`. Schedules run only from main,
+  so it also runs whenever the workflow file changes, to try it on a branch.
+- DMARC: a `_dmarc` TXT record in Cloudflare, starting at `p=none`
+  (reports only), tightened to `p=quarantine` once reports show only Resend
+  and Cloudflare sending as retcalc.app.
 - Still to test: Delete my account (last, since it erases the account).
-- Still to do before announcing: the privacy copy ("…unless you sign in")
-  and a privacy page (step 6), the weekly backup Action, DMARC, and moving
-  Google's consent screen from Testing to In production.
+- Still to do before announcing: moving Google's consent screen from
+  Testing to In production.
 
 ## Checked against Supabase's current docs (2026-10-12)
 

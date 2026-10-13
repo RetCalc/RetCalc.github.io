@@ -1,0 +1,60 @@
+# Weekly backup of the accounts database (ACCOUNTS_PLAN.md). Supabase's Free
+# plan keeps no backups, so this saves one copy a week: the roles, the
+# schema, and the data (the auth schema, which holds who has an account, and
+# public.user_data, which holds what they've synced).
+#
+# The repo is public, and anyone signed in to GitHub can download a public
+# repo's run artifacts, so the dump is encrypted before upload and only the
+# encrypted file is kept (90 days, the most GitHub allows here).
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL     the Session pooler connection string, password filled in
+#   BACKUP_PASSPHRASE   a long random passphrase; also kept in a password manager
+#
+# To restore, download the artifact, then:
+#   openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in retcalc-backup.tar.gz.enc -out retcalc-backup.tar.gz
+# and load roles.sql, schema.sql, data.sql into a fresh project with psql.
+name: Accounts backup
+on:
+  schedule:
+    - cron: "17 9 * * 1" # Mondays, 09:17 UTC
+  workflow_dispatch:
+  # Also runs when this file changes, so it can be tried on a branch before
+  # it reaches main (schedules only run from main).
+  push:
+    paths: [.github/workflows/backup.yml]
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Check the secrets are set
+        run: |
+          [ -n "$SUPABASE_DB_URL" ] || { echo "::error::SUPABASE_DB_URL secret is missing"; exit 1; }
+          [ -n "$BACKUP_PASSPHRASE" ] || { echo "::error::BACKUP_PASSPHRASE secret is missing"; exit 1; }
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.120.0
+      - name: Dump
+        run: |
+          mkdir backup
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/data.sql --data-only --use-copy -s auth,public
+          grep -q "user_data" backup/data.sql || { echo "::error::data.sql has no user_data table"; exit 1; }
+          ls -l backup
+      - name: Encrypt
+        run: |
+          tar -czf - backup | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:BACKUP_PASSPHRASE -out retcalc-backup.tar.gz.enc
+          rm -rf backup
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retcalc-backup-${{ github.run_number }}
+          path: retcalc-backup.tar.gz.enc
+          retention-days: 90
+          if-no-files-found: error
