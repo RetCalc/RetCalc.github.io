@@ -1415,6 +1415,13 @@ export function About({ states }: { states: StateOption[] }) {
         </Group>
         <section className="about-group about-fine" id="about-fineprint" aria-labelledby="about-fineprint-h">
           <h2 className="toolgroup-h" id="about-fineprint-h">Fine print</h2>
+          <div className="about" id="about-who">
+            <h3>Who makes this</h3>
+            <p>RetCalc is an independent project. It&apos;s free to use and has no ads.
+            Every figure comes from a published source or from the historical record
+            described above, each tool says what it assumes, and the numbers quoted in
+            the articles are checked against the calculators before anything is published.</p>
+          </div>
           <div className="about" id="about-contact">
             <h3>Contact</h3>
             <p>Found a bug, a number that looks off, or have an idea for a tool? Email{" "}
