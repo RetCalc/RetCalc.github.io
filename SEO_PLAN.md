@@ -323,11 +323,13 @@ only hide that, because the derived figures (a withdrawal rate at today's
 CAPE, a dollar amount at a bracket) have to be rewritten by hand anyway.
 Instead there is a checklist: see "Yearly update checklist" under C4.
 
-### T1.9 404 and stray addresses — Agent  [ ]
+### T1.9 404 and stray addresses — Agent  [x] 2026-10-13, all passed
 
-Verify on the live site: the 404 page returns status 404 (not 200); a
-trailing slash (`/drawdown/`) redirects to `/drawdown`; `http://` redirects to
-`https://`. Fix any that don't.
+Checked on the live site: unknown addresses return a real 404 (and the 404
+page is `noindex`); a trailing slash (`/drawdown/`) redirects to `/drawdown`;
+`http://` redirects to `https://`; `www` redirects to the bare domain; the
+old `.html` addresses and `/single` redirect to their new pages. All are
+permanent (308) redirects. Nothing to fix.
 
 ### T1.10 Test the new site's articles — Agent  [x] 2026-10-13
 
@@ -668,3 +670,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.3 | — | Closed with no change: headings stay hidden (owner's call); homepage `<h1>` already carries the search words |
 | 2026-10-13 | T1.10, T1.8 | (this branch) | `tests/run.py --web` reads the live articles. T1.8's placeholder module not built: the facts are already single-sourced and tested; a yearly checklist replaces it |
 | 2026-10-13 | T1.6 (part) | (this branch) | BreadcrumbList on every page but home and Privacy; Organization and dateModified still open (Q7, T2.3) |
+| 2026-10-13 | T1.9 | — | Live-site check: 404s, trailing slash, http, www and old addresses all behave; no change needed |
