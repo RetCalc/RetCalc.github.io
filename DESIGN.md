@@ -217,6 +217,7 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 
 ### Print and share
 - The printed summary and the share image card use their own fixed palettes, separate from the screen theme. They are restyled in a separate, later pass; until then a theme change must never leak into them by accident.
+- **Link-preview cards** (the 1200×630 picture a shared link shows) are drawn in the dark theme's tokens with the homepage's chart views: the brand mark and wordmark, the tool's name in Muted, its question as a headline, one line under it, and the tool's chart on a Surface panel, with at most one amber figure (the homepage's reading) above it. Words in `web/lib/cards.ts`, layout in `web/components/og/`, images saved by `node scripts/og/render.mjs` from the dev server into `web/public/og/` and `web/public/og.png`. Rerender after changing a card's words or a chart.
 
 ### Named Rules
 **The Four Places Rule.** Amber appears only on the key result, the primary button, the active tab, and "your plan" in charts. Not on links, headings, hover states, icons, focus rings, or decoration. If a fifth place seems to need it, it doesn't. Two exemptions, and only these: the brand mark keeps its own colors, and the brand motif's bullseye turns amber at the moment it is hit.

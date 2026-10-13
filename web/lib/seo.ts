@@ -3,11 +3,12 @@
    engines see no change when the site switches over. */
 import type { Metadata } from "next";
 import { articleFaq } from "@/lib/articles";
-import { CARD_ALT, PAGES, SITE, urlFor, type Slug } from "@/lib/site";
+import { CARDS, cardAlt } from "@/lib/cards";
+import { PAGES, SITE, urlFor, type Slug } from "@/lib/site";
 
 function card(slug: Slug): { url: string; alt: string } {
-  const alt = CARD_ALT[slug];
-  return alt ? { url: `${SITE}/og/${slug}.jpg`, alt } : { url: `${SITE}/og.png`, alt: "RetCalc: know your number." };
+  const c = slug !== "home" ? CARDS[slug] : undefined;
+  return c ? { url: `${SITE}/og/${slug}.jpg`, alt: cardAlt(c) } : { url: `${SITE}/og.png`, alt: cardAlt(CARDS.home!) };
 }
 
 export function metadataFor(slug: Slug): Metadata {

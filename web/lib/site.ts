@@ -50,35 +50,16 @@ export const TOOL_SUB: Partial<Record<Slug, ToolSub>> = {
 /** Old addresses, sent on to their new ones. */
 export const ALIASES: Record<string, Slug> = { single: "advanced", series: "stages" };
 
-/** The link-preview card's alt text, per page; home and about use the site card. */
-export const CARD_ALT: Partial<Record<Slug, string>> = {
-  "drawdown": "Drawdown Simulator: Will your money last? Test withdrawal strategies against every retirement since 1926.",
-  "4-percent-rule": "4% Rule Calculator: Does 4% still work? Test it against every retirement since 1926, and find your own safe rate.",
-  "guardrails": "Guardrails Calculator: Guyton-Klinger guardrails: start higher, cut when markets fall. How deep did the cuts go?",
-  "vpw": "VPW Calculator: Variable percentage withdrawal: spend it all by the end, never run out. How low did it go?",
-  "vanguard-dynamic-spending": "Vanguard Dynamic Spending: A share of the portfolio, but spending moves at most +5% or −2.5% a year. Tested since 1926.",
-  "risk-based-guardrails": "Risk-Based Guardrails: Change spending only when the odds of lasting leave a band. How often did it move, and how far?",
-  "rmd-withdrawal-strategy": "RMD Withdrawal Strategy: Spend the balance divided by the IRS life-expectancy divisor, every year. Tested since 1926.",
-  "ratcheting-withdrawal": "Ratcheting Withdrawals: The 4% rule with raises: 10% more whenever the portfolio is up 50%. How often did they come?",
-  "cape-withdrawal": "CAPE-Based Withdrawals: Spend more when stocks are cheap, less when they're dear. Today's rate, and how it did since 1926.",
-  "optimizer": "Plan Optimizer: When to claim, what to withdraw, what to convert: thousands of plans, every market since 1926.",
-  "bridge": "Early Retirement Bridge: Retiring before 59½? Compare a Roth ladder, 72(t), the rule of 55 and your brokerage.",
-  "72t": "72(t) Calculator: Penalty-free IRA payments before 59½, sized and tested against every market since 1926.",
-  "backtest": "Portfolio Backtest: Pick a mix of stocks, small value, bonds and cash and see what it did, every year back to 1926.",
-  "incometax": "Income Tax: Your 2026 federal, state and FICA tax, on a salary or on a year of retirement withdrawals.",
-  "roth": "Roth Conversion & RMDs: Project required distributions to 100, then test a conversion schedule against doing nothing.",
-  "rmd": "RMD Calculator: Your required minimum distributions every year to 100, and what converting first would save.",
-  "mortgage": "Mortgage Calculator: Your monthly payment, how the balance falls, and the amortization year by year.",
-  "college": "College Savings: How much to save each month to cover tuition, from state school to elite.",
-  "rentbuy": "Rent vs. Buy: Buyer and renter net worth over any horizon, down payment and home value included.",
-  "budget": "Budget: Lay out your income and expenses, see what's left, and find out where your money goes.",
-  "debt": "Debt Payoff: List what you owe, then watch the avalanche and snowball methods race to your payoff date.",
-  "healthcare": "Healthcare Cost Planner: ACA premiums and subsidies before Medicare, then Part B, Part D and IRMAA by income.",
-  "fire": "FIRE Calculator: Find when your portfolio reaches financial independence, or when you can coast.",
-  "advanced": "Advanced Calculator: Growth, inflation, taxes, fees and market swings, with account types and a glide path.",
-  "stages": "Stages Calculator: Save in stages, with different contributions, returns and mixes as life changes.",
-  "guide": "Retirement Readiness Guide: One question at a time: a readiness score out of 100, a plan, and what to do next.",
-  "tools": "Retirement Tools: Drawdown, taxes, Roth conversions, healthcare, FIRE, budgets and more."
+/** Each strategy page's line under its heading, after the page's name. */
+const STRATEGY_LEDE: Partial<Record<Slug, string>> = {
+  "4-percent-rule": "Does 4% still work? Test it against every retirement since 1926, and find your own safe rate.",
+  "guardrails": "Guyton-Klinger guardrails: start higher, cut when markets fall. How deep did the cuts go?",
+  "vpw": "Variable percentage withdrawal: spend it all by the end, never run out. How low did it go?",
+  "vanguard-dynamic-spending": "A share of the portfolio, but spending moves at most +5% or −2.5% a year. Tested since 1926.",
+  "risk-based-guardrails": "Change spending only when the odds of lasting leave a band. How often did it move, and how far?",
+  "rmd-withdrawal-strategy": "Spend the balance divided by the IRS life-expectancy divisor, every year. Tested since 1926.",
+  "ratcheting-withdrawal": "The 4% rule with raises: 10% more whenever the portfolio is up 50%. How often did they come?",
+  "cape-withdrawal": "Spend more when stocks are cheap, less when they're dear. Today's rate, and how it did since 1926."
 };
 
 /** The eight strategy pages (the Drawdown Simulator set up for one
@@ -89,11 +70,9 @@ export function isStrategyPage(slug: Slug): boolean {
   return (STRATEGY_PAGES as readonly Slug[]).includes(slug);
 }
 
-/** A strategy page's own line under its heading: its preview card's text
-    after the page's name (the question the page answers). */
+/** A strategy page's own line under its heading (the question the page answers). */
 export function strategyLede(slug: Slug): string | null {
-  const alt = isStrategyPage(slug) ? CARD_ALT[slug] : undefined;
-  return alt ? alt.slice(alt.indexOf(": ") + 2) : null;
+  return isStrategyPage(slug) ? STRATEGY_LEDE[slug] ?? null : null;
 }
 
 /** Pages laid out in one column (the rest put inputs beside results). */
