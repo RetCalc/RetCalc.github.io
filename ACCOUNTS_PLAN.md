@@ -347,7 +347,8 @@ Sign-in built (commit c1e78c9, branch only):
 - DMARC: a `_dmarc` TXT record in Cloudflare, starting at `p=none`
   (reports only), tightened to `p=quarantine` once reports show only Resend
   and Cloudflare sending as retcalc.app.
-- Still to test: Delete my account (last, since it erases the account).
+- Delete my account tested by the owner (2026-10-12): works, and the second
+  device is signed out too. All testing done; ready to merge when asked.
 - Google's consent screen is In production (2026-10-12): Branding filled
   in (no logo, so no review needed), not brand-verified. Brand verification
   is optional and checks retcalc.app/privacy, so only after the merge.
