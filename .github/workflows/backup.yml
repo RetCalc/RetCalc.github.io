@@ -8,7 +8,8 @@
 # encrypted file is kept (90 days, the most GitHub allows here).
 #
 # Repository secrets (Settings → Secrets and variables → Actions):
-#   SUPABASE_DB_URL     the Session pooler connection string, password filled in
+#   SUPABASE_DB_URL     the Session pooler connection string (port 5432 on
+#                       aws-0-us-east-1.pooler.supabase.com), password filled in
 #   BACKUP_PASSPHRASE   a long random passphrase; also kept in a password manager
 #
 # To restore, download the artifact, then:
