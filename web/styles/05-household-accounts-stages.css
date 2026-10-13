@@ -27,6 +27,9 @@
 .popup .hh-body{padding:12px 0 0}
 .popup .hh-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:640px){ .popup .hh-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* On the Account page the form is only as wide as the page's 640px column. */
+.acct-page .hh-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){ .acct-page .hh-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 /* The header's household button: the profile at a glance. On a narrow
    screen just the house; on a phone it leaves the header (each tool's
