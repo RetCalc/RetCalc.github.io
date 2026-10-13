@@ -276,11 +276,15 @@ Vercel's clone is shallow and would give every page the same date.
 - [ ] Homepage link to the strategy pages: owner's call; leaning no, for the
   same reason as `/tools`.
 
-### T1.6 More structured data — Agent  [ ]
+### T1.6 More structured data — Agent  [~] breadcrumbs done 2026-10-13
 
 In `web/lib/seo.ts`:
-- `BreadcrumbList` on every page except home: Home › Tools › {page} for
-  tools and strategy pages, Home › Calculator › {mode} for calculator modes.
+- [x] `BreadcrumbList` on every page except home and Privacy (`crumbs()` in
+  `seo.ts`). Strategy pages sit under the Drawdown Simulator
+  (RetCalc › Retirement Withdrawal Calculator › VPW Calculator), not under
+  Tools, since they aren't separate tools; `/72t` and `/rmd` under the tool
+  they open; Advanced and Stages under the Calculator; other tools under
+  Tools. Check with Google's Rich Results Test once live.
 - `Organization` on the homepage (name, url, logo `https://retcalc.app/icon-512.png`,
   `sameAs` with any profiles the owner has, e.g. the GitHub repo).
 - When articles get dates (T2.3), add `dateModified` to the page's
@@ -663,3 +667,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T0.1–T0.3 | — | Search Console (retcalc account), Bing and Ahrefs set up; sitemap in both; indexing requested for six pages. Baseline (T0.4) not yet recorded |
 | 2026-10-13 | T1.3 | — | Closed with no change: headings stay hidden (owner's call); homepage `<h1>` already carries the search words |
 | 2026-10-13 | T1.10, T1.8 | (this branch) | `tests/run.py --web` reads the live articles. T1.8's placeholder module not built: the facts are already single-sourced and tested; a yearly checklist replaces it |
+| 2026-10-13 | T1.6 (part) | (this branch) | BreadcrumbList on every page but home and Privacy; Organization and dateModified still open (Q7, T2.3) |
