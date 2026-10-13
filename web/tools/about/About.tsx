@@ -10,11 +10,10 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { ChevronDownIcon } from "lucide-react";
 import { HouseholdBar } from "@/components/household/HouseholdBar";
 import type { StateOption } from "@/lib/states";
-import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
+import { ThemeRow } from "@/components/common/ThemeRow";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segmented";
 
 /* The sections, in the order they're read: the calculator and the Guide,
    the picker's three groups of tools in the picker's order, the methods
@@ -72,8 +71,8 @@ function Index() {
   return (
     <nav className="about-index" aria-label="On this page">
       <a className={link} href="#about-what">What this is</a>
-      <a className={link} href="#about-method">Data and assumptions</a>
       <a className={link} href="#about-settings">Your settings</a>
+      <a className={link} href="#about-method">Data and assumptions</a>
       {GROUPS.map((g) => (
         <div key={g.key} className="mt-4">
           <a className="toolgroup-h about-index-h" href={"#about-" + g.key}>{g.label}</a>
@@ -98,23 +97,6 @@ function MailMe({ user, domain }: { user: string; domain: string }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- only assembled once the page is in a browser
   useEffect(() => setAddr(user + "@" + domain), [user, domain]);
   return <a className="mailme" href={addr ? "mailto:" + addr : "#"}>{addr ?? user + " [at] " + domain}</a>;
-}
-
-function ThemeRow() {
-  const choice = useThemeChoice();
-  const opts: [ThemeChoice, string][] = [["system", "System"], ["dark", "Dark"], ["light", "Light"]];
-  return (
-    <div className="themerow">
-      <span>Theme</span>
-      {/* On a phone the switch (the chart size: 44px options sharing the
-          width) takes the rest of the row. */}
-      <div className="flex max-w-80 min-w-0 flex-1 justify-end sm:flex-none">
-        <SegmentedGroup id="segTheme" size="chart">
-          {opts.map(([k, label]) => <SegmentedItem key={k} data-theme={k} pressed={choice === k} onClick={() => setThemeChoice(k)}>{label}</SegmentedItem>)}
-        </SegmentedGroup>
-      </div>
-    </div>
-  );
 }
 
 export function About({ states }: { states: StateOption[] }) {
@@ -168,6 +150,13 @@ export function About({ states }: { states: StateOption[] }) {
             any other tool. A shared link opens with its own numbers, not your profile.</p>
           </div></CardContent>
         </Card>
+        <section className="about-group" id="about-settings" aria-labelledby="about-settings-h">
+          <h2 className="toolgroup-h" id="about-settings-h">Your settings</h2>
+          <div className="grid gap-3">
+            <Card size="sm"><CardContent><ThemeRow /></CardContent></Card>
+            <div id="hhAboutSlot"><HouseholdBar states={states} inAbout /></div>
+          </div>
+        </section>
         <Card id="about-method">
           <CardHeader><CardTitle>Data and assumptions</CardTitle></CardHeader>
           <CardContent><div className="about">
@@ -203,13 +192,6 @@ export function About({ states }: { states: StateOption[] }) {
             released, so a changed calculation can&apos;t quietly leave an article behind.</p>
           </div></CardContent>
         </Card>
-        <section className="about-group" id="about-settings" aria-labelledby="about-settings-h">
-          <h2 className="toolgroup-h" id="about-settings-h">Your settings</h2>
-          <div className="grid gap-3">
-            <Card size="sm"><CardContent><ThemeRow /></CardContent></Card>
-            <div id="hhAboutSlot"><HouseholdBar states={states} inAbout /></div>
-          </div>
-        </section>
         <Group id="calculator">
           <Section id="projection">
             <ul>
