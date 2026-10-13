@@ -348,8 +348,9 @@ Sign-in built (commit c1e78c9, branch only):
   (reports only), tightened to `p=quarantine` once reports show only Resend
   and Cloudflare sending as retcalc.app.
 - Still to test: Delete my account (last, since it erases the account).
-- Still to do before announcing: moving Google's consent screen from
-  Testing to In production.
+- Google's consent screen is In production (2026-10-12): Branding filled
+  in (no logo, so no review needed), not brand-verified. Brand verification
+  is optional and checks retcalc.app/privacy, so only after the merge.
 
 ## Checked against Supabase's current docs (2026-10-12)
 
