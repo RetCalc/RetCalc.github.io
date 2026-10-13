@@ -4,7 +4,7 @@
 "home": {
 "h1": "RetCalc",
 "title": "RetCalc: Free Retirement Planning Toolkit",
-"desc": "Free retirement planning toolkit: a calculator, a guide and 13 tools, tested against every market since 1926. No signup, and it runs in your browser."
+"desc": "Free retirement planning toolkit: a calculator, a guide and 13 tools, tested against every market since 1926. No account needed; runs in your browser."
 },
 "calculator": {
 "h1": "Retirement Calculator",
@@ -14,7 +14,7 @@
 "advanced": {
 "h1": "Advanced Retirement Calculator",
 "title": "Advanced Retirement Calculator: Taxes, Fees & History",
-"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, then test the plan against every market since 1926. Free, no signup."
+"desc": "Project retirement savings with fees, account types, employer match and 2026 taxes, then test the plan against every market since 1926. No account needed."
 },
 "stages": {
 "h1": "Multi-Stage Retirement Savings Calculator",
@@ -24,7 +24,7 @@
 "guide": {
 "h1": "Retirement Readiness Guide",
 "title": "Retirement Readiness Check: Are You on Track? | RetCalc",
-"desc": "A guided retirement check-up: your number, a readiness score out of 100, and your plan tested against every market since 1926. Free, no signup."
+"desc": "A guided retirement check-up: your number, a readiness score out of 100, and your plan tested against every market since 1926. No account needed."
 },
 "tools": {
 "h1": "Financial Planning Calculators",
@@ -44,7 +44,7 @@
 "drawdown": {
 "h1": "Retirement Withdrawal Calculator",
 "title": "Retirement Withdrawal Calculator: Will My Money Last?",
-"desc": "Test 15 withdrawal strategies, from the 4% rule to guardrails, against every retirement since 1926, with Social Security and pensions. Free, no signup."
+"desc": "Test 15 withdrawal strategies, from the 4% rule to guardrails, against every retirement since 1926, with Social Security and pensions. No account needed."
 },
 "4-percent-rule": {
 "h1": "4% Rule Calculator",
@@ -118,7 +118,7 @@
 },
 "fire": {
 "title": "FIRE Calculator & Coast FIRE Calculator | RetCalc",
-"desc": "Find your FIRE number and the age you could reach financial independence, or when you could stop saving with Coast FIRE. Free, no signup."
+"desc": "Find your FIRE number and the age you could reach financial independence, or when you could stop saving with Coast FIRE. No account needed."
 },
 "backtest": {
 "h1": "Portfolio Backtest Calculator",

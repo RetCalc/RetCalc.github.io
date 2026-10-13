@@ -227,7 +227,7 @@ Done when: every title ≤ 60 characters; lint, typecheck, build pass.
 
 Rewrite each `desc` in `web/lib/page-meta.json` to 140–155 characters. Lead
 with what the page answers, then the proof ("tested against every
-retirement since 1926"), then "Free, no signup." where it fits. Match the
+retirement since 1926"), then "No account needed." where it fits. Match the
 voice in `PRODUCT.md`. Done when: every description is 120–155 characters.
 
 ### T1.3 Visible main headings — Owner decision → Agent  [ ]
@@ -526,7 +526,7 @@ can draft posts and messages for the owner to send.
 
   > Hi {name}, I built a free tool that tests {their method} against every
   > US retirement since 1926: {link}. It reproduces your {specific result}
-  > and shows {one new finding}. No signup or ads. If it's useful to your
+  > and shows {one new finding}. Free, no account needed. If it's useful to your
   > readers, I'd be glad if you linked it; corrections welcome too.
 
 - [ ] **L5 Journalist requests.** Qwoted and Featured.com have free tiers.
