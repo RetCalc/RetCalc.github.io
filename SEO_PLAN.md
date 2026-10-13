@@ -345,13 +345,21 @@ changed figure in `72t.html` made it fail, so the check is reading them.
 Probably the biggest single lever, because Google holds money advice to its
 strictest standard.
 
-### T2.1 Who runs RetCalc — Owner decision → Agent  [ ]
+### T2.1 Who runs RetCalc — decided 2026-10-13: no named author  [x]
 
-Ask the owner: what name (real name or a consistent pen name), a one-line
-background, an optional photo, and a contact email. Then add to the About
-page (`web/tools/about/About.tsx`) a short "Who builds RetCalc" section:
-who, why it exists, that it's free and independent, no ads or affiliate
-links (if true), and how to report an error.
+The owner works at a public accounting firm and doesn't want their name
+attached, to avoid any conflict. So the site speaks as RetCalc: no name, no
+bio, no photo, and no invented persona or credentials (a fake author is a fake
+signal; ground rule 2). The trust comes from sources (T2.2), review dates
+(T2.3), the methodology section (T2.4), a visible way to report errors, and
+the changelog (T2.6). Done: a "Who makes this" block on the About page
+("an independent project... free to use and has no ads"). The contact
+address, `contact@retcalc.app`, was already there.
+
+Options kept for later: a paid CFP or CFA reviewer credited by their own
+name (§10), which gives the site a credentialed person without it being the
+owner. Owner's own check: their employer's outside-activities policy, which
+matters more if the site ever takes ads or affiliate links.
 
 ### T2.2 Sources in every article — Agent  [ ]
 
@@ -640,12 +648,12 @@ site back. Prices are approximate; check current pricing.
 | --- | --- | --- |
 | Q1 | ~~Visible headings on Calculator, Guide, Tools, About~~ Decided 2026-10-13: leave hidden | T1.3 |
 | Q2 | ~~Where strategy pages are linked~~ Not from `/tools` (they aren't separate tools). Homepage link still open, leaning no | T1.5 |
-| Q3 | Name or pen name, background line, photo, contact for "Who builds RetCalc" | T2.1 |
+| Q3 | ~~Name or pen name for "Who builds RetCalc"~~ Decided 2026-10-13: no named author | T2.1 |
 | Q4 | ~~Approve the title list in T1.1~~ Done 2026-10-13, home edited by the owner | T1.1 |
 | Q5 | "Can I retire at X?" pages: yes/no, and where they sit in the navigation | C2 |
 | Q6 | Where question guides live (`/learn`, the Guide, or not at all) | C5 |
 | Q7 | Any social or community profiles to list in `Organization.sameAs` | T1.6 |
-| Q8 | Is RetCalc staying free of ads and affiliate links? (Affects T2.1's wording and hosting cost) | T2.1 |
+| Q8 | ~~Staying free of ads and affiliate links?~~ No ads for now (2026-10-13); the About page says so. Revisit before adding any, since it affects the owner's employer question and Vercel's plan (§10) | T2.1 |
 
 **Content list** (fill in as pages are planned; one row per page):
 
@@ -677,3 +685,4 @@ site back. Prices are approximate; check current pricing.
 | 2026-10-13 | T1.6 (part) | (this branch) | BreadcrumbList on every page but home and Privacy; Organization and dateModified still open (Q7, T2.3) |
 | 2026-10-13 | T1.9 | — | Live-site check: 404s, trailing slash, http, www and old addresses all behave; no change needed |
 | 2026-10-13 | C1 | — | Deferred by the owner until the baseline and indexing are in |
+| 2026-10-13 | T2.1 | (this branch) | No named author, by the owner's choice; About page gets "Who makes this" (independent, free, no ads). Q3 and Q8 answered |
