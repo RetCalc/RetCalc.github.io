@@ -61,6 +61,7 @@ main.solo .seo{grid-column:1 / -1}
 /* About's gold headings, in sentence case: long articles read more easily
    without capitals, and "72(t)" stays lowercase. */
 .seo-a.about h3{text-transform:none;letter-spacing:0;font-size:13.5px}
+.seo-a .body .reviewed{font-size:12px;color:var(--dimmer);margin:0 0 10px}
 .seo-a .body li{font-size:13.5px;line-height:1.7;color:var(--dim);margin-bottom:6px}
 .seo-a .body ul{margin:0 0 12px}
 .seo-a a{color:var(--text);text-decoration:underline;text-decoration-color:var(--dimmer);text-underline-offset:3px}

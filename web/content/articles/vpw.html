@@ -1,4 +1,4 @@
-<article class="seo-a panel about" data-page="vpw">
+<article class="seo-a panel about" data-page="vpw" data-reviewed="2026-10-13">
     <h2>VPW calculator: variable percentage withdrawal, tested since 1926</h2>
     <div class="body">
     <p>Variable percentage withdrawal (VPW) is a way of spending a portfolio that can't run out early and is meant to use it all by the end. Each year you take a percentage of what's left, and the percentage rises as the years left shrink. This page opens the Drawdown Simulator set up for VPW and runs it through every retirement since 1926.</p>
@@ -20,6 +20,13 @@
       <li><a href="/4-percent-rule">4% rule calculator</a>: how often a fixed 4% has lasted since 1926, and the safe rate for your own mix.</li>
       <li><a href="/rmd-withdrawal-strategy">RMD withdrawal strategy</a>: the balance divided by the IRS life-expectancy divisor, every year.</li>
       <li><a href="/guardrails">Guyton-Klinger guardrails</a>: start higher, then cut or raise when the withdrawal rate drifts.</li>
+    </ul>
+    <h3>Sources</h3>
+    <ul>
+      <li><a href="https://www.bogleheads.org/wiki/Variable_percentage_withdrawal">Bogleheads wiki, Variable percentage withdrawal</a>: the method, and how each year&rsquo;s percentage is worked out.</li>
+      <li><a href="https://www.financialplanningassociation.org/sites/default/files/2021-04/MAR04%20Determining%20Withdrawal%20Rates%20Using%20Historical%20Data.pdf">Bengen, &ldquo;Determining Withdrawal Rates Using Historical Data&rdquo;, <i>Journal of Financial Planning</i> (1994)</a>: the original 4% rule study.</li>
+      <li><a href="https://shillerdata.com/">Robert Shiller&rsquo;s online data (Yale)</a>: stock prices, dividends, 10-year yields and the CAPE ratio.</li>
+      <li><a href="/about">About RetCalc</a>: the data, assumptions and limits behind every tool.</li>
     </ul>
     <h3>Questions</h3>
     <details><summary>How is the VPW percentage calculated?</summary><p>It's the payment on an annuity due: the balance times r ÷ ((1 − (1 + r)<sup>−n</sup>) × (1 + r)), where n is the years left and r the mix's expected return after inflation. With r = 3.8% and 35 years left, that's 5.02%.</p></details>

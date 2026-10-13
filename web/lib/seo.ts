@@ -2,7 +2,7 @@
    tags and structured data. The same output as build.py's head(), so search
    engines see no change when the site switches over. */
 import type { Metadata } from "next";
-import { articleFaq } from "@/lib/articles";
+import { articleFaq, articleReviewed } from "@/lib/articles";
 import { CARDS, cardAlt } from "@/lib/cards";
 import { PAGES, SITE, TOOL_SUB, isStrategyPage, urlFor, type Slug } from "@/lib/site";
 
@@ -68,6 +68,7 @@ export function jsonLdFor(slug: Slug): object {
     "@type": "WebApplication", name: appName(title), url, description: desc,
     applicationCategory: "FinanceApplication", operatingSystem: "Any", browserRequirements: "Requires JavaScript",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    ...(articleReviewed(slug) ? { dateModified: articleReviewed(slug) } : {}),
   }];
   if (slug === "home") graph.unshift({ "@type": "WebSite", name: "RetCalc", url });
   const trail = crumbs(slug);

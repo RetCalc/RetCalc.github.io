@@ -26,7 +26,10 @@ const raw = cache((slug: Slug): string | null => {
 export const articleHtml = cache((slug: Slug, open = false): string | null => {
   const html = raw(slug);
   if (!html) return null;
+  const reviewed = articleReviewed(slug);
   return html
+    // "Last reviewed" opens the article's body, from its data-reviewed date.
+    .replace(/(<div class="body">)/, reviewed ? `$1\n    <p class="reviewed">Last reviewed ${reviewedLabel(reviewed)}.</p>` : "$1")
     .replace('class="seo-a panel about"', open ? 'class="seo-a panel about"' : 'class="seo-a panel about collapsed"')
     .replace(
       /<h2>([\s\S]*?)<\/h2>/,
@@ -37,6 +40,20 @@ export const articleHtml = cache((slug: Slug, open = false): string | null => {
     // the browser's triangle (details/summary keep the keyboard working).
     .replace(/<summary>([\s\S]*?)<\/summary>/g, `<summary>$1${CHEVRON}</summary>`);
 });
+
+/** The date (YYYY-MM-DD) an article was last reviewed, from its
+    data-reviewed attribute; null when it has none. Only set it when the
+    article, its sources and its figures have actually been checked. */
+export const articleReviewed = cache((slug: Slug): string | null => {
+  const m = raw(slug)?.match(/<article[^>]*data-reviewed="(\d{4}-\d\d-\d\d)"/);
+  return m ? m[1] : null;
+});
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function reviewedLabel(date: string): string {
+  const [y, m] = date.split("-");
+  return `${MONTHS[+m - 1]} ${y}`;
+}
 
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " " };
 function plain(html: string): string {

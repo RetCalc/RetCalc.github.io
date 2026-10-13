@@ -72,6 +72,7 @@ function Index() {
   return (
     <nav className="about-index" aria-label="On this page">
       <a className={link} href="#about-what">What this is</a>
+      <a className={link} href="#about-method">Data and assumptions</a>
       <a className={link} href="#about-settings">Your settings</a>
       {GROUPS.map((g) => (
         <div key={g.key} className="mt-4">
@@ -165,6 +166,41 @@ export function About({ states }: { states: StateOption[] }) {
             and it fills them in again each time you open the site or reset a tool. It&apos;s
             a one-way fill: changing a number inside a tool never changes the profile or
             any other tool. A shared link opens with its own numbers, not your profile.</p>
+          </div></CardContent>
+        </Card>
+        <Card id="about-method">
+          <CardHeader><CardTitle>Data and assumptions</CardTitle></CardHeader>
+          <CardContent><div className="about">
+            <h3>Where the numbers come from</h3>
+            <ul>
+              <li><b>Market history:</b> monthly, January 1926 to December 2025. US stock
+              prices, dividends and 10-year Treasury yields are from Robert Shiller&apos;s
+              dataset (Yale); inflation is CPI-U from the Bureau of Labor Statistics;
+              small-cap value and cash returns, from July 1926, are from the Kenneth R.
+              French Data Library (Dartmouth) and Treasury bill series.</li>
+              <li><b>Taxes and benefits:</b> 2026 federal brackets, standard deductions and
+              payroll-tax limits from the IRS and the Social Security Administration;
+              state rules as of January 1, 2026; Medicare premiums and IRMAA brackets from
+              CMS; ACA premiums and subsidies from KFF benchmark premiums and HHS poverty
+              guidelines; mortgage rates from Freddie Mac&apos;s weekly average.</li>
+            </ul>
+            <h3>What every tool assumes</h3>
+            <p>Figures are in today&apos;s dollars unless a tool says otherwise. The
+            historical tests use one country&apos;s record, annual rebalancing, and no
+            fees, trading costs or taxes unless a tool adds them. Stocks are the S&amp;P
+            500 with dividends reinvested and bonds are 10-year Treasuries, not a
+            particular fund. Tax law is taken as it stands in 2026.</p>
+            <h3>What they don&apos;t model</h3>
+            <p>Tax credits, local taxes and many special cases; financial aid and
+            scholarships; changes to tax law or benefits after 2026; and anything about
+            your health, how long you&apos;ll live, or how you&apos;ll actually react to a
+            bad market. Past returns are context, not a forecast. Each tool&apos;s section
+            below lists its own assumptions and what it leaves out.</p>
+            <h3>Corrections</h3>
+            <p>If a number looks wrong, <a href="#about-contact">email it in</a>. Confirmed
+            errors are fixed on the page, and the figures quoted in the articles are
+            checked against the calculators by an automated test before anything is
+            released, so a changed calculation can&apos;t quietly leave an article behind.</p>
           </div></CardContent>
         </Card>
         <section className="about-group" id="about-settings" aria-labelledby="about-settings-h">
