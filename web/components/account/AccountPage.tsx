@@ -15,6 +15,9 @@ import { useToast } from "@/components/shell/Toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { HouseholdBar } from "@/components/household/HouseholdBar";
+import { ThemeRow } from "@/components/common/ThemeRow";
+import type { StateOption } from "@/lib/states";
 
 /** What each synced key is, in words. */
 function label(key: string): string {
@@ -24,7 +27,7 @@ function label(key: string): string {
   return key;
 }
 
-export function AccountPage() {
+export function AccountPage({ states }: { states: StateOption[] }) {
   const { configured, ready, account, client, setStep, setFirstName, signOut, sync } = useAccount();
   const showPopup = usePopup();
   const toast = useToast();
@@ -44,19 +47,35 @@ export function AccountPage() {
     return () => { live = false; };
   }, [client, account, sync]);
 
+  // Theme and household are kept in this browser, so they're here signed in or not.
+  const settings = (
+    <Card>
+      <CardHeader><CardTitle>Your settings</CardTitle></CardHeader>
+      <CardContent>
+        <div className="grid gap-3">
+          <Card size="sm"><CardContent><ThemeRow /></CardContent></Card>
+          <HouseholdBar states={states} />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   if (!configured) {
-    return <Card><CardHeader><CardTitle>Accounts aren&apos;t available here</CardTitle><CardDescription>Everything you save stays in this browser.</CardDescription></CardHeader></Card>;
+    return <div className="acct-page"><Card><CardHeader><CardTitle>Accounts aren&apos;t available here</CardTitle><CardDescription>Everything you save stays in this browser.</CardDescription></CardHeader></Card>{settings}</div>;
   }
   if (!ready) return null;
   if (!account) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>You&apos;re not signed in</CardTitle>
-          <CardDescription>An account is optional. It keeps your household, saved scenarios and Guide on any device.</CardDescription>
-        </CardHeader>
-        <CardContent><Button onClick={() => setStep({ at: "start" })}>Sign in</Button></CardContent>
-      </Card>
+      <div className="acct-page">
+        <Card>
+          <CardHeader>
+            <CardTitle>You&apos;re not signed in</CardTitle>
+            <CardDescription>An account is optional. It keeps your household, saved scenarios and Guide on any device.</CardDescription>
+          </CardHeader>
+          <CardContent><Button onClick={() => setStep({ at: "start" })}>Sign in</Button></CardContent>
+        </Card>
+        {settings}
+      </div>
     );
   }
 
@@ -106,6 +125,8 @@ export function AccountPage() {
           </form>
         </CardContent>
       </Card>
+
+      {settings}
 
       <Card>
         <CardHeader>
