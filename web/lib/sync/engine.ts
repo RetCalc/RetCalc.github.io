@@ -10,9 +10,9 @@
 
    Nothing calls these yet: the sign-in UI does (ACCOUNTS_PLAN.md, step 3). */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { localSyncedItems, onSyncedWrite, readBase, writeBase, writeFromAccount } from "@/lib/storage";
+import { localSyncedItems, onSyncedWrite, readBase, readStored, writeBase, writeFromAccount } from "@/lib/storage";
 import { pullAll, push } from "./account";
-import { fingerprint, mergeItem, type Copy } from "./merge";
+import { fingerprint, mergeItem, mergeScenarios, type Copy, type Scenario } from "./merge";
 
 /** Sent on window when items arrive from the account; detail: their keys. */
 export const SYNCED_EVENT = "retcalc:synced";
@@ -37,14 +37,28 @@ export async function syncNow(c: SupabaseClient): Promise<SyncResult> {
     const local = newest(localSyncedItems()), account = newest(await pullAll(c));
     let pulled = 0, pushed = 0;
     const changed: string[] = [];
+    // Copies a merge set aside rather than lose, by the tool whose list they join.
+    const kept: Record<string, Scenario[]> = {};
     for (const key of new Set([...local.keys(), ...account.keys()])) {
       const l = local.get(key), a = account.get(key);
       const m = mergeItem(key, l ? (l as Copy) : null, a ? (a as Copy) : null, readBase(key));
       if (!m) continue;
       if (m.toLocal) { writeFromAccount(key, m.version, m.value, Date.now()); pulled++; changed.push(key); }
       if (m.toAccount) { await push(c, key, m.version, m.value); pushed++; }
+      if (m.keep) (kept[key] ??= []).push(m.keep);
       // Both sides now hold this: the version to measure the next changes from.
       writeBase(key, fingerprint(m.value));
+    }
+    // The Guide a merge didn't keep as the Guide is a saved plan now, in this
+    // browser and the account (the same list the toolbar's Save writes).
+    for (const [tool, extra] of Object.entries(kept)) {
+      const key = `scenarios-${tool}`, version = 1, have = readStored<Scenario[]>(key, version) ?? [];
+      const value = mergeScenarios(extra, have);
+      writeFromAccount(key, version, value, Date.now());
+      await push(c, key, version, value);
+      writeBase(key, fingerprint(value));
+      pushed++;
+      if (!changed.includes(key)) changed.push(key);
     }
     // Whatever shows a changed item re-reads it (the household, the open
     // tool's saved scenarios, the Guide).

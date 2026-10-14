@@ -119,7 +119,11 @@ well over 50,000 people.
   - household: keep the newer one (it carries `savedAt`), and say which was kept;
   - saved scenarios: combine the lists by name; on a clash keep the newer and
     rename the older "(from this device)";
-  - Guide: keep the newer.
+  - Guide: the one further along stays the Guide (the account's if they're
+    level), and the other is kept as a saved plan, "Plan from this device,
+    <date>" or "Plan from your account, <date>", so neither is lost. Once the
+    two have synced before and both change, the newer write stays and the
+    other is kept the same way. A Guide with no answers isn't kept.
 - **Signed in:** every write goes to localStorage first (instant, works
   offline), then to the account. On sign-in and when the tab regains focus,
   the account's newer values replace local ones.

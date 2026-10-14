@@ -2,7 +2,9 @@
    signing in and when the account has something newer (ACCOUNTS_PLAN.md,
    "How syncing works"). Pure functions, tested in tests/merge.test.ts.
    A merge never throws anything away: when both sides changed a saved
-   scenario of the same name, both are kept. */
+   scenario of the same name, both are kept; when both sides hold a
+   different Guide, one stays the Guide and the other is kept as a saved
+   plan. */
 
 /** One side's copy: the stored value, its storage version, and when it was
     written (ms; 0 when unknown). */
@@ -15,9 +17,12 @@ export interface Merged {
   toLocal: boolean;
   /** The account needs the merged value. */
   toAccount: boolean;
+  /** A copy the merge would otherwise drop, to be kept as a saved scenario
+      of the same tool (the losing Guide becomes a saved plan). */
+  keep?: Scenario;
 }
 
-interface Scenario { name: string; data: unknown }
+export interface Scenario { name: string; data: unknown }
 
 /** The same value, whatever order its fields are in. The database (jsonb)
     stores objects with its own key order, so text comparison would call an
@@ -97,6 +102,51 @@ export function mergeScenarios(local: Scenario[], account: Scenario[]): Scenario
   return out;
 }
 
+/* ---------- the Guide ---------- */
+type GuideLike = { a?: Record<string, unknown>; done?: Record<string, unknown>; src?: unknown; pace?: unknown };
+const asGuide = (v: unknown): GuideLike | null => (v && typeof v === "object" && (v as GuideLike).a && typeof (v as GuideLike).a === "object" ? (v as GuideLike) : null);
+const answered = (g: GuideLike) => Object.values(g.a ?? {}).filter((x) => x != null && x !== "").length;
+/** How far along a Guide is: cards finished, then answers given. */
+function progress(g: GuideLike): [number, number] {
+  return [Object.values(g.done ?? {}).filter(Boolean).length, answered(g)];
+}
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** "Oct 14, 15:05": the day a saved plan was made, for its name. */
+function stamp(at: number): string {
+  const d = new Date(at);
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+/** A Guide as a saved plan: what the toolbar's Save keeps (answers, where
+    they came from, cards done and the pace). */
+const asPlan = (g: GuideLike) => ({ v: 2, a: g.a, src: g.src ?? {}, done: g.done ?? {}, pace: g.pace === "quick" ? "quick" : "full" });
+
+/** Two different Guides: one stays the Guide, the other is kept as a saved
+    plan (the same shape the Guide's own Save makes), so signing in never
+    replaces a finished plan with a barely started one or the reverse.
+    With a version both last agreed on, both sides have changed it, so the
+    newer write stays. With none (a first sign-in), the one further along
+    stays, and the account's if they're level. A Guide with no answers
+    isn't worth keeping. */
+function mergeGuide(local: Copy, account: Copy, base: string | null, now: number): Merged | null {
+  const l = asGuide(local.value), a = asGuide(account.value);
+  if (!l || !a) return null;
+  let winner: "local" | "account";
+  if (base) winner = local.at > account.at ? "local" : "account";
+  else {
+    const [pl, pa] = [progress(l), progress(a)];
+    winner = pl[0] !== pa[0] ? (pl[0] > pa[0] ? "local" : "account") : pl[1] > pa[1] ? "local" : "account";
+  }
+  const win = winner === "local" ? local : account, lose = winner === "local" ? account : local;
+  const kept = winner === "local" ? a : l, stays = winner === "local" ? l : a;
+  const merged: Merged = { version: win.version, value: win.value, toLocal: winner === "account", toAccount: winner === "local" };
+  if (answered(kept) === 0) return merged;
+  const data = asPlan(kept);
+  if (same(data, asPlan(stays))) return merged;
+  merged.keep = { name: `Plan from ${lose === local ? "this device" : "your account"}, ${stamp(lose.at || now)}`, data };
+  return merged;
+}
+
 /** One side wins outright. A saved-scenario list also sheds copies an
     earlier version made, which may mean both sides need the cleaned list. */
 function take(key: string, win: Copy, from: "local" | "account"): Merged {
@@ -113,7 +163,7 @@ function take(key: string, win: Copy, from: "local" | "account"): Merged {
     from it, that side wins outright, so a deletion or an edit made on one
     device carries over to the others. Only when both changed, or there's no
     base, do the rules below combine the two. */
-export function mergeItem(key: string, local: Copy | null, account: Copy | null, base: string | null = null): Merged | null {
+export function mergeItem(key: string, local: Copy | null, account: Copy | null, base: string | null = null, now: number = Date.now()): Merged | null {
   if (local && account && local.version === account.version && base) {
     const l = fingerprint(local.value), a = fingerprint(account.value);
     if (l === a) return take(key, account, "account").toAccount ? take(key, account, "account") : { version: local.version, value: local.value, toLocal: false, toAccount: false };
@@ -125,6 +175,10 @@ export function mergeItem(key: string, local: Copy | null, account: Copy | null,
   if (!local) return { version: account.version, value: account.value, toLocal: true, toAccount: false };
   if (local.version === account.version && same(local.value, account.value) && !key.startsWith("scenarios-"))
     return { version: local.version, value: local.value, toLocal: false, toAccount: false };
+  if (key === "guide" && local.version === account.version) {
+    const g = mergeGuide(local, account, base, now);
+    if (g) return g;
+  }
   // A newer storage format can't be merged with an older one: the newer wins.
   if (local.version !== account.version) {
     const win = local.version > account.version ? local : account;

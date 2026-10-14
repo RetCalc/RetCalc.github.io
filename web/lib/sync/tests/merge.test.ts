@@ -141,3 +141,51 @@ test("the agreed version is the same however its fields are ordered", () => {
   assert.equal(fingerprint({ a: 1, b: [{ c: 1, d: 2 }] }), fingerprint({ b: [{ d: 2, c: 1 }], a: 1 }));
   assert.notEqual(fingerprint({ a: 1 }), fingerprint({ a: 2 }));
 });
+
+/* ---------- Guide conflicts: nothing is thrown away ---------- */
+const guideState = (done: string[], a: Record<string, unknown>) => ({ v: 2, pace: "full", cur: "plan", a, src: {}, done: Object.fromEntries(done.map((d) => [d, true])), startedAt: "x" });
+const FULL = guideState(["about", "income", "spending", "cash", "debt", "savings"], { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000 });
+const PARTIAL = guideState([], { age: 30, retire: 60 });
+
+test("a thin guide made signed out, on first sign-in, does not replace the finished one in the account", () => {
+  const m = mergeItem("guide", c(PARTIAL, 2000, 2), c(FULL, 1000, 2), null)!;
+  assert.deepEqual(m.value, FULL);
+  assert.equal(m.toAccount, false);
+  assert.equal(m.toLocal, true);
+  assert.equal(m.keep?.data && (m.keep.data as { a: unknown }).a !== undefined, true);
+  assert.deepEqual((m.keep!.data as { a: unknown }).a, PARTIAL.a);
+});
+
+test("the other way round, the finished one here stays and the account's thin one is kept as a plan", () => {
+  const m = mergeItem("guide", c(FULL, 1000, 2), c(PARTIAL, 2000, 2), null)!;
+  assert.deepEqual(m.value, FULL);
+  assert.equal(m.toAccount, true);
+  assert.match(m.keep!.name, /^Plan from your account, /);
+  assert.deepEqual((m.keep!.data as { a: unknown }).a, PARTIAL.a);
+});
+
+test("both changed since they last agreed: the newer write stays, the other is kept as a plan", () => {
+  const m = mergeItem("guide", c(PARTIAL, 5000, 2), c(FULL, 4000, 2), "someold.fingerprint.x")!;
+  assert.deepEqual(m.value, PARTIAL);
+  assert.equal(m.toAccount, true);
+  assert.match(m.keep!.name, /^Plan from your account, /);
+  assert.deepEqual((m.keep!.data as { done: unknown }).done, FULL.done);
+});
+
+test("only one side changed since they last agreed: it wins outright with nothing to keep", () => {
+  const m = mergeItem("guide", c(PARTIAL, 5000, 2), c(FULL, 4000, 2), fingerprint(FULL))!;
+  assert.deepEqual(m.value, PARTIAL);
+  assert.equal(m.keep, undefined);
+});
+
+test("a Guide with no answers isn't kept, and one that matches the winner isn't either", () => {
+  assert.equal(mergeItem("guide", c(guideState([], {}), 9000, 2), c(FULL, 1000, 2), null)!.keep, undefined);
+  const twin = { ...FULL, cur: "adjust", startedAt: "y" };
+  assert.equal(mergeItem("guide", c(twin, 9000, 2), c(FULL, 1000, 2), null)!.keep, undefined);
+});
+
+test("the plan kept by a merge is the shape the toolbar's Save loads", () => {
+  const k = mergeItem("guide", c(PARTIAL, 2000, 2), c(FULL, 1000, 2), null)!.keep!;
+  assert.deepEqual(Object.keys(k.data as object).sort(), ["a", "done", "pace", "src", "v"]);
+  assert.equal((k.data as { v: number }).v, 2);
+});

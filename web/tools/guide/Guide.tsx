@@ -140,6 +140,13 @@ export function Guide() {
   }, [profile]);
 
   const redraw = () => setV(guide().a);
+  // A Guide that arrives from the account (signing in, or another device)
+  // replaces the one on this page; the fields show it, not what was here.
+  useEffect(() => {
+    const onSynced = (e: Event) => { if ((e as CustomEvent<string[]>).detail?.includes("guide")) setV(guide().a); };
+    window.addEventListener("retcalc:synced", onSynced);
+    return () => window.removeEventListener("retcalc:synced", onSynced);
+  }, []);
   const go = (id: string) => {
     setReturning(false);
     const st = stepById(id);
