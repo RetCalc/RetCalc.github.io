@@ -23,11 +23,12 @@ function beat(e: React.PointerEvent<HTMLAnchorElement>) {
 
 /* A chart card's chart plays while the card has .play: from the start, then
    again each time the card is pointed at, focused or tapped (the class is
-   taken off and put back, which restarts its animations). */
+   taken off and put back, which restarts its animations), a little faster
+   then (.quick). */
 function replay(el: HTMLElement) {
   el.classList.remove("play");
   void el.offsetWidth;
-  el.classList.add("play");
+  el.classList.add("play", "quick");
 }
 
 export function ToolCardLink({ href, sub, i, className, charted, children }: {
