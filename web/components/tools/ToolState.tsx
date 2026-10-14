@@ -23,6 +23,10 @@ export interface ToolDef<S extends ToolInputs> {
   /** What one saved scenario is called: "mortgage scenario". */
   noun: string;
   defaults: S;
+  /** Whether the inputs hold work worth asking about before a saved
+      scenario replaces them (the Guide's answers). Left off, loading a
+      scenario replaces them without asking. */
+  hasWork?: (state: S) => boolean;
 }
 
 export interface Scenario {

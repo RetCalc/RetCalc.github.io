@@ -43,7 +43,11 @@ import { TriangleAlertIcon } from "lucide-react";
 /** The guide as a tool, for the header's Save: every answer, where each
     came from, which steps are done and the pace. Where you were and any
     trip into a tool are left out. */
-const GUIDE_DEF: ToolDef<ToolInputs> = { id: "guide", label: "Guide", noun: "plan", defaults: {} };
+const GUIDE_DEF: ToolDef<ToolInputs> = {
+  id: "guide", label: "Guide", noun: "plan", defaults: {},
+  // Any answer given is work a loaded plan would replace.
+  hasWork: (s) => Object.values((s as { a?: Record<string, unknown> }).a ?? {}).some((x) => x != null && x !== ""),
+};
 
 /** The plan on one printed page, or why there isn't one yet. */
 function planSheet(): React.ReactNode | string {

@@ -88,6 +88,9 @@ export function ScenarioBar() {
             setLoaded((l) => ({ ...l, [id]: undefined as never }));
             return;
           }
+          // Replacing work that isn't saved under any name can't be undone.
+          if (tool.def.hasWork?.(tool.state) && !(cur && !edited) && !list.some((x) => same(x.data, tool.state)) &&
+              !confirm(`Load "${s.name}"? Your current ${tool.def.noun} isn't saved, and loading replaces it. Save it first (the save button beside this list) to keep it.`)) return;
           tool.load(s.data as never);
           setLoaded((l) => ({ ...l, [id]: { name: s.name, data: { ...tool.def.defaults, ...(s.data as object) } } }));
         }}>
