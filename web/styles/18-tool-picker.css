@@ -5,7 +5,11 @@
    cards keep .toolcard's look, hover and icon animations (03-navigation.css,
    04-tool-icons-header.css). */
 :root[data-tools-view="compact"] .tp-charts{display:none}
-:root:not([data-tools-view="compact"]) .tp-compact{display:none}
+:root[data-tools-view="charts"] .tp-compact{display:none}
+/* Without the script (JavaScript off): compact on a phone, charts wider, as
+   the default is (lib/tools-view-script.ts, TOOLS_VIEW_PHONE). */
+@media (max-width:640px){:root:not([data-tools-view]) .tp-charts{display:none}}
+@media (min-width:641px){:root:not([data-tools-view]) .tp-compact{display:none}}
 
 .tp-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px;margin-bottom:28px}
 .tp-switch svg{width:15px;height:15px;margin-right:6px;flex:none}

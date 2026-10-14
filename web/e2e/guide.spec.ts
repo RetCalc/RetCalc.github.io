@@ -515,10 +515,16 @@ test("two toolkit hand-offs open their tools with your numbers and come back to 
 
 test("the Tools page remembers Charts or Compact, from the first paint", async ({ page }) => {
   await page.goto(NEW + "/tools");
-  // Nothing remembered: the chart cards, Drawdown Simulator first.
+  // Nothing chosen yet: compact tiles on a phone, chart cards (Drawdown Simulator first) wider.
+  const phone = (page.viewportSize()?.width ?? 1280) <= 640;
+  await expect(page.locator(phone ? ".tp-compact" : ".tp-charts")).toBeVisible();
+  await expect(page.locator(phone ? ".tp-charts" : ".tp-compact")).toBeHidden();
+  await expect(page.locator((phone ? ".tp-compact" : ".tp-charts") + " a.toolcard").first()).toHaveAttribute("data-pick", "drawdown");
+  // Charts chosen on a phone stays charts; then compact is remembered too.
+  await page.locator('.tp-switch button[data-view="charts"]').click();
   await expect(page.locator(".tp-charts")).toBeVisible();
-  await expect(page.locator(".tp-compact")).toBeHidden();
-  await expect(page.locator(".tp-charts a.toolcard").first()).toHaveAttribute("data-pick", "drawdown");
+  await page.reload();
+  await expect(page.locator(".tp-charts")).toBeVisible();
   await page.locator('.tp-switch button[data-view="compact"]').click();
   await expect(page.locator(".tp-compact")).toBeVisible();
   await expect(page.locator(".tp-compact a.toolcard")).toHaveCount(13);
