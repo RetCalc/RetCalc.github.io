@@ -42,7 +42,6 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "When should I claim Social Security?",
         "path": "optimizer",
         "name": "Plan Optimizer",
-        "badge": "New",
         "desc": "Tries thousands of ways to claim Social Security, draw down your accounts and convert to Roth, in every market since 1926, and finds the one that leaves you the most.",
         "i": 1
       },
