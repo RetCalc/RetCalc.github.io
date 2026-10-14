@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-06T14:49:47.764Z",
+  "recorded": "2026-10-14T18:08:15.321Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -410,9 +410,9 @@
       "id": "Mortgage: defaults: $450,000, 20% down, 30 years",
       "out": {
         "loan": 360000,
-        "monthlyPI": 2325.3892,
-        "monthlyTotal": 3562.8892,
-        "totalInterest": 477140.1088,
+        "monthlyPI": 2455.8346,
+        "monthlyTotal": 3693.3346,
+        "totalInterest": 524100.459,
         "payoffMonth": 360,
         "pmiPaid": 0,
         "recastPI": null,
@@ -420,7 +420,7 @@
         "monthsSooner": null
       },
       "fields": {
-        "R": "20a5e5d85afe6ae2",
+        "R": "6b2b84f721aa88f4",
         "RF": "74234e98afe7498f",
         "base": "74234e98afe7498f"
       }
@@ -429,19 +429,19 @@
       "id": "Mortgage: 10% down with PMI, $300/month extra, $10,000 at month 24, recast, refinance to 5.5%",
       "out": {
         "loan": 405000,
-        "monthlyPI": 2616.0628,
-        "monthlyTotal": 4056.0628,
-        "totalInterest": 382522.8081,
-        "payoffMonth": 277,
-        "pmiPaid": 9922.5,
-        "recastPI": 2499.2481,
-        "interestSaved": 154259.8143,
-        "monthsSooner": 83
+        "monthlyPI": 2762.8139,
+        "monthlyTotal": 4202.8139,
+        "totalInterest": 415813.7247,
+        "payoffMonth": 275,
+        "pmiPaid": 10327.5,
+        "recastPI": 2639.4331,
+        "interestSaved": 173799.2916,
+        "monthsSooner": 85
       },
       "fields": {
-        "R": "f2a20179b4c089f0",
-        "RF": "a0583117951c8596",
-        "base": "0fe5b79e1e8ca828"
+        "R": "cf7c1cc62ef7c788",
+        "RF": "9352dc35256e2625",
+        "base": "d1bda7431c00a20b"
       }
     },
     {
@@ -542,16 +542,16 @@
       "id": "Rent vs. Buy: defaults: $450,000 home vs $1,800 rent, 30 years",
       "out": {
         "breakEven": null,
-        "monthlyBuy": 3262.8892,
-        "monthlyPI": 2325.3892,
+        "monthlyBuy": 3393.3346,
+        "monthlyPI": 2455.8346,
         "initialInvest": 103500,
         "lastYear": {
           "year": 30,
           "buyerNW": 1347906.5612,
-          "renterNW": 2022173.7976,
+          "renterNW": 2159618.2803,
           "homeVal": 1459528.8795,
           "balance": 0,
-          "monthBuy": 5366.0744,
+          "monthBuy": 5496.5198,
           "monthRent": 4487.2858
         }
       },
@@ -559,25 +559,25 @@
         "breakEven": "74234e98afe7498f",
         "initialInvest": "798c9f896871dd52",
         "loan": "e6ba348d1464969b",
-        "monthlyBuy": "823adb386a79f110",
-        "pi": "b9fbb8969797b7e1",
-        "years": "4b9ebeb74371c29a"
+        "monthlyBuy": "56593ab35178d2dd",
+        "pi": "2ce3cf81251c5386",
+        "years": "cdb3d7aa27ae56c8"
       }
     },
     {
       "id": "Rent vs. Buy: $700,000 home vs $3,000 rent, 7 years, single, 2% appreciation",
       "out": {
         "breakEven": null,
-        "monthlyBuy": 4992.2721,
-        "monthlyPI": 3617.2721,
+        "monthlyBuy": 5195.1872,
+        "monthlyPI": 3820.1872,
         "initialInvest": 161000,
         "lastYear": {
           "year": 7,
-          "buyerNW": 271876.0699,
-          "renterNW": 432163.8385,
+          "buyerNW": 267578.7584,
+          "renterNW": 453304.2155,
           "homeVal": 804079.9674,
-          "balance": 508081.4984,
-          "monthBuy": 5196.7149,
+          "balance": 512378.8099,
+          "monthBuy": 5399.63,
           "monthRent": 3624.0939
         }
       },
@@ -585,9 +585,9 @@
         "breakEven": "74234e98afe7498f",
         "initialInvest": "632aa073b82bacb5",
         "loan": "d9df77227d1ee59d",
-        "monthlyBuy": "8bf6c56f00d78f2d",
-        "pi": "e287a756f579b902",
-        "years": "2aa4ff1a7264318c"
+        "monthlyBuy": "9fa6348964ba8844",
+        "pi": "09f5c7adef7cbd8f",
+        "years": "bb07f42fa9f39b3a"
       }
     },
     {
@@ -913,9 +913,9 @@
           "successRate": 1,
           "survived": 66,
           "total": 66,
-          "medLegacy": 4461362.574,
-          "p10Legacy": 2688895.7452,
-          "medTax": 177698.3066,
+          "medLegacy": 4008520.0543,
+          "p10Legacy": 2247420.198,
+          "medTax": 167401.8452,
           "failYears": []
         },
         "steps": 2,
@@ -924,9 +924,9 @@
       "fields": {
         "age1": "81b8a03f97e8787c",
         "age2": "39fa9ec190eee7b6",
-        "alts": "8bf82ef8f1253ae9",
-        "base": "baceb5d58f36518f",
-        "best": "80625193eef571bb",
+        "alts": "8bd54d9a677032ad",
+        "base": "b7fd374e8bd0451c",
+        "best": "6879b5ecb0f5ecc4",
         "first": "255ac64f2a9b3741",
         "floor": "8139b33952401b3e",
         "goal": "e4c13c4401d43136",
@@ -935,7 +935,7 @@
         "rmdAge": "f369cb89fc627e66",
         "runs": "e7443aa7265ea3ba",
         "same": "fcbcf165908dd18a",
-        "steps": "09d66c6acf024caf",
+        "steps": "98aa53ad73c6355f",
         "target": "8139b33952401b3e",
         "tried": "666d6fe53a66bf91",
         "type": "58bf5b5478e5d1fb",
@@ -948,14 +948,14 @@
       "out": {
         "tried": 549,
         "windows": 66,
-        "bestSpend": 132500,
+        "bestSpend": 130250,
         "bestStats": {
           "successRate": 0.9091,
           "survived": 60,
           "total": 66,
-          "medLegacy": 4220426.588,
-          "p10Legacy": 26755.9694,
-          "medTax": 1017866.8607,
+          "medLegacy": 4247380.4448,
+          "p10Legacy": 17225.663,
+          "medTax": 1019661.8052,
           "failYears": [
             1965,
             1966,
@@ -964,7 +964,7 @@
             1969,
             1973
           ],
-          "maxSpend": 132500
+          "maxSpend": 130250
         },
         "steps": 2,
         "alts": 0
@@ -973,8 +973,8 @@
         "age1": "39fa9ec190eee7b6",
         "age2": "74234e98afe7498f",
         "alts": "4f53cda18c2baa0c",
-        "base": "c3db018249ec2973",
-        "best": "d0e42819bdb5b4a9",
+        "base": "af1a9115b775e659",
+        "best": "ba88157da1bfbbe5",
         "first": "255ac64f2a9b3741",
         "floor": "8139b33952401b3e",
         "goal": "cd05eba3b23c89e8",
@@ -983,7 +983,7 @@
         "rmdAge": "f369cb89fc627e66",
         "runs": "95c10a939dbf59e1",
         "same": "fcbcf165908dd18a",
-        "steps": "556115f153195aa1",
+        "steps": "0d5af124fe8b194b",
         "target": "8139b33952401b3e",
         "tried": "068814875fcdfb8f",
         "type": "58bf5b5478e5d1fb",
@@ -996,33 +996,33 @@
       "out": {
         "atRetirement": 1446013.8923,
         "success": 1,
-        "coverage": 1.3965,
-        "taxPerYear": 12196.051,
+        "coverage": 1.4055,
+        "taxPerYear": 11605.8922,
         "score": 98,
-        "needAtRetirement": 851000
+        "needAtRetirement": 965000
       },
       "fields": {
-        "S": "8f3f30294e5e54e5",
-        "need": "9df7d368e00eb21d",
+        "S": "db698cac5a776ed1",
+        "need": "b78f75a797895126",
         "sc": "cf1beef94f7af3dd",
-        "strats": "65fdb35adba9ad20"
+        "strats": "e260acdbcba63b73"
       }
     },
     {
       "id": "Guide: single, 55, little saved, retiring at 67",
       "out": {
         "atRetirement": 221473.6049,
-        "success": 0.5479,
+        "success": 0.3836,
         "coverage": 0.8935,
         "taxPerYear": 0,
-        "score": 52,
-        "needAtRetirement": 314000
+        "score": 39,
+        "needAtRetirement": 380000
       },
       "fields": {
-        "S": "59e578c7d5393bd9",
-        "need": "cf2920863c0b18cb",
-        "sc": "0ca3872e18413035",
-        "strats": "59aae64015084f5d"
+        "S": "cdea86922098f3c7",
+        "need": "df61f9f8bfae765c",
+        "sc": "f5f05cd352878bbb",
+        "strats": "a39024f98c725afe"
       }
     }
   ]
