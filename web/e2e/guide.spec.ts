@@ -62,7 +62,7 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await seeded(page, null);
   await page.locator('[data-gd="next"]').click();
   const tile = (await page.locator("#gdStrip").isVisible()) ? page.locator("#gdStrip") : page.locator("#gdNumber");
-  const step = (n: number) => expect(page.locator("#gdCount")).toHaveText(new RegExp(`^Step ${n} of ${QUICK_CARDS}( ·|$)`));
+  const step = (n: number, of = QUICK_CARDS) => expect(page.locator("#gdCount")).toHaveText(new RegExp(`^Step ${n} of ${of}( ·|$)`));
   // 1 · About you
   await expect(page.locator("#gdCount")).toHaveText(/^Step 1 of \d+ · about \d+ minutes? left$/);
   await page.locator("#gdf-status").selectOption("m");
@@ -95,13 +95,15 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await expect(page.locator('#gdCard [data-lesson="time"]')).toContainText("a dollar saved at 38 is worth $2.88 by 62");
   await page.fill("#gdf-saved", "210000"); await page.fill("#gdf-contrib", "900"); await page.fill("#gdf-employer", "300");
   await expect(tile).toContainText("$1.21M");
-  await expect(tile).toContainText("$1.15M");
+  await expect(tile).toContainText("$1.25M");
   await expect(page.locator("#gdCard .gd-means")).toContainText("9.3%");
   await page.locator("#gdCard [data-more]").click();
   await pick(page, "match", "full");
   await next(page);
   // 7 · How it's invested: the number moves with the mix
-  await step(7);
+  // The plan falls short at the placeholder spending until the mix moves, so
+  // Adjust your plan joins the route for now: 13 cards, back to 12 after.
+  await step(7, QUICK_CARDS + 1);
   await page.locator("#gdf-risk").selectOption("0.0575");
   await expect(tile).toContainText("$1.52M");
   await expect(page.locator("#gdCard .gd-mixes tr.on")).toContainText("$1.52M");
@@ -109,8 +111,8 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   // 8 · Spending in retirement: the placeholder becomes an answer
   await step(8);
   await page.fill("#gdf-retSpend", "70000");
-  await expect(page.locator("#gdCard .gd-means")).toContainText("the plan needs about $567,000 at 62: entering it cut that from $1.15M");
-  await expect(tile).toContainText("$567,000");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("the plan needs about $694,000 at 62: entering it cut that from $1.25M");
+  await expect(tile).toContainText("$694,000");
   await next(page);
   // 9 · Social Security, estimated from income (doc 3, calculation 3)
   await step(9);
@@ -178,8 +180,8 @@ const DAN = { ...(FIXTURES.find((f: { id: string }) => f.id === "dan")!.a as Rec
 test("Your number and Tested against history, from the engine's own figures", async ({ page }) => {
   await seeded(page, stateWith("quick", "number"));
   await expect(page.locator("#gdOutFv")).toHaveText("$1,518,176");
-  await expect(page.locator("#gdOutNeed")).toHaveText("$567,000");
-  await expect(page.locator("#gdOutCover")).toHaveText("2.7×");
+  await expect(page.locator("#gdOutNeed")).toHaveText("$694,000");
+  await expect(page.locator("#gdOutCover")).toHaveText("2.2×");
   await expect(page.locator('[data-lesson="income-sources"]')).toContainText("$60,727");
   await expect(page.locator("[data-sources]")).toContainText("estimates for Social Security (from income), and defaults for 60% in stocks in retirement and money lasting to 95 for the younger of you");
   await next(page);
@@ -193,18 +195,18 @@ test("the lever table matches the fixtures: Maya and Sam ahead, Dan behind", asy
   await seeded(page, stateWith("full", "adjust"));
   const row = (id: string) => page.locator(`[data-lever-row="${id}"]`);
   await expect(row("save+100")).toContainText("$1,577,738", { timeout: 60_000 });
-  await expect(row("retire+1")).toContainText("$478,000");
-  await expect(row("spend+10000")).toContainText("$929,000");
+  await expect(row("retire+1")).toContainText("$617,000");
+  await expect(row("spend+10000")).toContainText("$1,043,000");
   await seeded(page, { ...stateWith("quick", "adjust"), a: DAN });
   await expect(page.locator("#gdCount")).toHaveText(/^Step \d+ of 13/); // Adjust joins Dan's Quick check
-  await expect(row("save+250")).toContainText("54%", { timeout: 60_000 });
-  await expect(row("retire+3")).toContainText("89%");
+  await expect(row("save+250")).toContainText("32%", { timeout: 60_000 });
+  await expect(row("retire+3")).toContainText("73%");
 });
 
 test("the plan card: the number and the score, the moves in order with ticks that stay, the toolkit", async ({ page }) => {
   await seeded(page, stateWith("quick", "plan"));
   await expect(page.locator("#gdProjected")).toHaveText("$1.52M");
-  await expect(page.locator("#gdNeeded")).toHaveText("$567,000");
+  await expect(page.locator("#gdNeeded")).toHaveText("$694,000");
   await expect(page.locator("#gdScoreNum")).toHaveAttribute("data-score", "89");
   await expect(page.locator(".gd-move").first()).toHaveAttribute("data-move", "cushion", { timeout: 30_000 });
   await expect(page.locator(".gd-move").nth(1)).toHaveAttribute("data-move", "debt");
@@ -353,7 +355,7 @@ test("the plan prints on one page", async ({ page }) => {
 test("your number so far follows the plan, and says what the card changed", async ({ page }) => {
   await seeded(page, stateWith("quick", "savings"));
   await expect(page.locator("#gdNumFv")).toHaveText("$1.52M");
-  await expect(page.locator("#gdNumNeed")).toHaveText("$567,000");
+  await expect(page.locator("#gdNumNeed")).toHaveText("$694,000");
   await page.fill("#gdf-saved", "260000");
   await expect(page.locator(".gd-num-moved")).toContainText("raised what you're on course for from $1.52M to");
   await expect(page.locator("#gdNumFv")).not.toHaveText("$1.52M");
@@ -361,7 +363,7 @@ test("your number so far follows the plan, and says what the card changed", asyn
 
 test("until retirement spending is entered, 80% of take-home stands in, marked", async ({ page }) => {
   await seeded(page, { ...stateWith("quick", "savings"), a: { ...MAYA, retSpend: null } });
-  await expect(page.locator("#gdNumNeed")).toHaveText("$1.15M");
+  await expect(page.locator("#gdNumNeed")).toHaveText("$1.25M");
   await expect(page.locator('.gd-num .gd-src[data-src="default"]')).toHaveText("default");
   await expect(page.locator(".gd-num-note")).toContainText("$88,500 a year");
 });

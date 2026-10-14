@@ -35,6 +35,12 @@ const STILL = ".navbar,.sbcover,aside,.gd-top,.gd-side,thead th{position:static!
 export async function open(page: Page, url: string, hide = "") {
   log("goto " + url);
   await page.goto(url);
+  // Each case starts from the defaults. The new site keeps a tab's tool
+  // inputs through a reload, so what an earlier case typed is cleared.
+  if (url.startsWith(NEW)) {
+    await page.evaluate(() => { try { sessionStorage.clear(); } catch { /* none kept */ } });
+    await page.reload();
+  }
   log("loaded " + url);
   // The old site hides its page until its script has run.
   await page.waitForFunction(() => !document.documentElement.classList.contains("booting"), null, { timeout: 30_000 });

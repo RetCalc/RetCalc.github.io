@@ -38,7 +38,9 @@ async function card(p: Page) {
   return p.evaluate(async () => {
     const svg = await (window as unknown as { cardSvg: Blob }).cardSvg.text();
     const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
-    return [...doc.documentElement.children].filter((e) => e.tagName === "text").map((e) => e.textContent);
+    // The old card's footer led with "Know your number."; the tagline was
+    // retired from the card on purpose (2026-10-13), so it isn't compared.
+    return [...doc.documentElement.children].filter((e) => e.tagName === "text").map((e) => (e.textContent ?? "").replace(/^Know your number\./, ""));
   });
 }
 
