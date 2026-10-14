@@ -140,7 +140,7 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
 .hm-chart .hm-path{fill:none;stroke:var(--hm-path);stroke-width:1.15}
 .hm-chart .hm-fail{fill:none;stroke:var(--ds-loss);stroke-width:1.6}
 .hm-chart .hm-area{fill:color-mix(in srgb,var(--ds-amber) 14%,transparent)}
-.hm-chart .hm-dash{stroke:var(--ds-muted);stroke-dasharray:4 4;opacity:.7}
+.hm-chart .hm-dash{fill:none;stroke:var(--ds-muted);stroke-dasharray:4 4;opacity:.7}
 .hm-chart .hm-mark{stroke:var(--ds-amber);stroke-dasharray:3 3}
 .hm-chart .hm-dot{fill:var(--ds-amber)}
 .hm-chart .hm-ring{fill:none;stroke:var(--ds-amber);stroke-width:1.5}

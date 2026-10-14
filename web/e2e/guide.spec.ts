@@ -513,12 +513,24 @@ test("two toolkit hand-offs open their tools with your numbers and come back to 
   }
 });
 
-test("the Tools page starts with a Start here row: the guide and the calculator", async ({ page }) => {
+test("the Tools page remembers Charts or Compact, from the first paint", async ({ page }) => {
   await page.goto(NEW + "/tools");
-  const row = page.locator("[data-start]");
-  await expect(row.locator(".toolgroup-h")).toContainText("Start here");
-  await expect(row.locator('a[href="/guide"]')).toContainText("Retirement Readiness Guide");
-  await expect(row.locator('a[href="/calculator"]')).toContainText("Retirement calculator");
+  // Nothing remembered: the chart cards, Drawdown Simulator first.
+  await expect(page.locator(".tp-charts")).toBeVisible();
+  await expect(page.locator(".tp-compact")).toBeHidden();
+  await expect(page.locator(".tp-charts a.toolcard").first()).toHaveAttribute("data-pick", "drawdown");
+  await page.locator('.tp-switch button[data-view="compact"]').click();
+  await expect(page.locator(".tp-compact")).toBeVisible();
+  await expect(page.locator(".tp-compact a.toolcard")).toHaveCount(13);
+  // Out to a tool and back, and a fresh load: still compact.
+  await page.locator('.tp-compact a.toolcard[data-pick="mortgage"]').click();
+  await page.waitForURL("**/mortgage");
+  await page.goBack();
+  await expect(page.locator(".tp-compact")).toBeVisible();
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-tools-view", "compact");
+  await expect(page.locator(".tp-charts")).toBeHidden();
+  await expect(page.locator('.tp-switch button[data-view="compact"]')).toHaveAttribute("aria-pressed", "true");
 });
 
 test("the Drawdown Simulator tour goes there and back", async ({ page }) => {

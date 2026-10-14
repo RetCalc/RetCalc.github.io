@@ -1,0 +1,80 @@
+/* ---------- the tool list (/tools): chart cards or compact tiles ----------
+   components/tools/ToolsBrowser.tsx. Both views are on the page; html's
+   data-tools-view (set before first paint from what this browser remembers,
+   lib/tools-view.ts) shows one. With nothing remembered, the charts. The
+   cards keep .toolcard's look, hover and icon animations (03-navigation.css,
+   04-tool-icons-header.css). */
+:root[data-tools-view="compact"] .tp-charts{display:none}
+:root:not([data-tools-view="compact"]) .tp-compact{display:none}
+
+.tp-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px;margin-bottom:28px}
+.tp-switch svg{width:15px;height:15px;margin-right:6px;flex:none}
+
+/* ---------- charts: twelve columns; the Drawdown Simulator leads ---------- */
+.tp-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.tp-lead{grid-column:span 8}
+.tp-third{grid-column:span 4}
+.tp-half{grid-column:span 6}
+.toolcard.tp-card{gap:10px}
+/* The homepage sets the fan's path color on its own root (.hm); here, on the chart's box. */
+.tp-chart{margin-top:auto;padding-top:6px;--hm-path:color-mix(in srgb,var(--ds-muted) 40%,transparent)}
+/* A chart fills its card's width, up to a height that keeps the cards in a
+   row even; past that it centers. */
+.tp-chart .hm-chart{display:block;width:100%;height:auto;max-height:160px;overflow:visible}
+.tp-lead-body{flex:1;display:grid;grid-template-columns:minmax(0,.75fr) minmax(0,1.25fr);gap:24px;align-items:center}
+.tp-lead-q{margin:0 0 8px;font-size:clamp(22px,2.2vw,28px);font-weight:600;letter-spacing:-.025em;line-height:1.12;color:var(--text);text-wrap:balance}
+.tp-lead-read{margin-top:16px}
+.tp-lead-v{font-size:44px;font-weight:500;letter-spacing:-.02em;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--text)}
+.tp-lead .tp-chart{margin-top:0;padding-top:0}
+.tp-lead .tp-chart .hm-chart{max-height:none}
+/* The fan is drawn 640 wide and shown at about half that: its labels grow to stay legible. */
+@media (min-width:761px){.tp-lead .hm-wide-chart text{font-size:15px}}
+@media (max-width:1099px){
+  .tp-lead{grid-column:1 / -1}
+  .tp-third{grid-column:span 6}
+}
+@media (max-width:760px){.tp-lead-body{grid-template-columns:minmax(0,1fr);gap:16px}}
+@media (max-width:640px){
+  .tp-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+  .tp-lead,.tp-third,.tp-half{grid-column:auto}
+  .tp-lead-v{font-size:35px}
+}
+
+/* The charts play while their card has .play (ToolCardLink): as the page
+   opens, and again on hover, focus or a tap. Lines draw, bars grow from
+   their base, the Optimizer's plans scatter in and the best one lands, end
+   dots pop. Under reduced motion they're simply there. */
+.tp-chart .hm-dot,.tp-chart .hm-cloud,.tp-chart .hm-ring,.tp-chart[data-bars] rect,.tp-chart[data-bars="up"] g.fade{transform-box:fill-box;transform-origin:center}
+.tp-chart[data-bars="up"] g.fade{transform-origin:50% 100%}
+.tp-chart[data-bars="across"] rect{transform-origin:0 50%}
+@media (prefers-reduced-motion:no-preference){
+  .toolcard.play .hm-chart .draw{animation:tp-draw var(--dur,1.4s) cubic-bezier(.2,.7,.3,1) var(--dl,0s) backwards}
+  .toolcard.play .hm-chart .fade{animation:tp-fade .5s cubic-bezier(.2,.7,.3,1) var(--dl,0s) backwards}
+  .toolcard.play .hm-chart .hm-dot{animation:tp-pop .45s cubic-bezier(.2,.7,.3,1) var(--dl,1.1s) backwards}
+  .toolcard.play .hm-chart .hm-cloud{animation:tp-pop .4s cubic-bezier(.2,.7,.3,1) var(--dl,0s) backwards}
+  .toolcard.play .hm-chart .hm-ring{animation:tp-ring .6s cubic-bezier(.2,.7,.3,1) .75s backwards}
+  .toolcard.play .tp-chart[data-bars="up"] g.fade{animation:tp-grow-up .55s cubic-bezier(.2,.7,.3,1) var(--dl,0s) backwards}
+  .toolcard.play .tp-chart[data-bars="across"] .fade rect,
+  .toolcard.play .tp-chart[data-bars="across"] rect.fade{animation:tp-grow-across .6s cubic-bezier(.2,.7,.3,1) var(--dl,0s) backwards}
+}
+@keyframes tp-draw{from{stroke-dashoffset:1}}
+@keyframes tp-fade{from{opacity:0}}
+@keyframes tp-pop{from{opacity:0;transform:scale(0)}}
+@keyframes tp-ring{0%{opacity:0;transform:scale(2.2)}70%{opacity:1;transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes tp-grow-up{from{transform:scaleY(0)}}
+@keyframes tp-grow-across{from{transform:scaleX(0)}}
+
+/* ---------- compact: a column per section, small tiles, one screen ---------- */
+.tp-compact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start}
+.tp-col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.tp-col .toolgroup-h{flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:4px}
+.toolcard.tp-tile{flex-direction:row;align-items:center;gap:12px;padding:10px 12px 10px 10px}
+.tp-tile .toolcard-icon{width:38px;height:38px;padding:6px}
+.tp-tile-text{flex:1 1 auto;min-width:0}
+.tp-tile .toolcard-name{font-size:14.5px;line-height:1.3}
+.tp-tile .toolcard-desc{line-height:1.35;margin-top:1px}
+@media (max-width:1000px){
+  .tp-compact{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tp-col:last-child{grid-column:1 / -1}
+}
+@media (max-width:640px){.tp-compact{grid-template-columns:minmax(0,1fr)}}

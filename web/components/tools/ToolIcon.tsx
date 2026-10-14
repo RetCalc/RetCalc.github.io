@@ -110,11 +110,15 @@ export function ToolIcon({ sub }: { sub: ToolSub }) {
 /** A tool's icon in its tile, on its card and in its page's header, in its
     section's series color (TOOL_HUE, through --tool-hue): the
     same tile on both sides of opening a tool, so it glides from the card
-    up into the header (a shared view transition, forward only). */
-export function ToolIconTile({ sub, className, id }: { sub: ToolSub; className: string; id?: string }) {
+    up into the header (a shared view transition, forward only). The tool
+    list keeps both of its views on the page, so only the one showing passes
+    glide: two tiles can't share one transition name. */
+export function ToolIconTile({ sub, className, id, glide = true }: { sub: ToolSub; className: string; id?: string; glide?: boolean }) {
+  const tile = <span className={className} id={id} aria-hidden="true" style={{ "--tool-hue": `var(--ds-series-${TOOL_HUE[sub]})` } as React.CSSProperties}><ToolIcon sub={sub} /></span>;
+  if (!glide) return tile;
   return (
     <ViewTransition name={"toolicon-" + sub} share={{ "nav-forward": "toolicon", default: "none" }} default="none">
-      <span className={className} id={id} aria-hidden="true" style={{ "--tool-hue": `var(--ds-series-${TOOL_HUE[sub]})` } as React.CSSProperties}><ToolIcon sub={sub} /></span>
+      {tile}
     </ViewTransition>
   );
 }

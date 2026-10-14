@@ -23,7 +23,7 @@ test("a saved household fills the tools that take it", async ({ page }) => {
   await expect(page.locator("#toast")).toContainText(`Filled in ${filled.length} tools: ${filled.join(", ")}`);
 
   await page.goto(NEW + "/tools");
-  await page.locator("a.toolcard[data-pick=tax]").click();
+  await page.locator("a.toolcard[data-pick=tax]:visible").click();
   await expect(page.locator("#txStatus")).toHaveValue("m");
   await expect(page.locator("#txGross")).toHaveValue("150,000");
   await expect(page.locator("#txGross2")).toHaveValue("60,000");
@@ -36,6 +36,6 @@ test("a saved household fills the tools that take it", async ({ page }) => {
   // Edits after the fill stay put when the tool is opened again.
   await page.locator("#bgIncomeIn").fill("1000");
   await page.locator("#btnToolBack").click();
-  await page.locator("a.toolcard[data-pick=budget]").click();
+  await page.locator("a.toolcard[data-pick=budget]:visible").click();
   await expect(page.locator("#bgIncomeIn")).toHaveValue("1,000");
 });
