@@ -207,7 +207,7 @@ export function RentBuyChart({ rb, w = 520, h = 150 }: { rb: HomeData["rentbuy"]
     ? [x(be - 1), y(rb.buy[be - 1]), `Buying pulls ahead in year ${be}`]
     : [x(n - 1), y(Math.max(lb, lr)), `${lr > lb ? "Renting" : "Buying"} ahead by ${money(Math.abs(lr - lb))} after ${n} years`];
   return (
-    <svg className="hm-chart hm-wide-chart" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+    <svg className="hm-chart hm-wide-chart hm-rb" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
       <Key items={[["Buying", "f-teal"], ["Renting", "f-sky"]]} />
       <path className="hm-ln hm-thin s-sky draw" pathLength={1} style={{ "--dur": "1.5s" } as React.CSSProperties} d={d(rb.rent.map((v, i): Pt => [x(i), y(v)]))} />
       <path className="hm-ln hm-thin s-teal draw" pathLength={1} style={{ "--dur": "1.5s", "--dl": ".15s" } as React.CSSProperties} d={d(rb.buy.map((v, i): Pt => [x(i), y(v)]))} />
