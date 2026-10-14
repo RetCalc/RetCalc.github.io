@@ -8,6 +8,7 @@ import { paceMinutes } from "../route";
 import type { Pace } from "../store";
 import { Callout, Lead, Q, useGuideView } from "../ui";
 import { Button } from "@/components/ui/button";
+import { ReportThumb } from "../report/Thumb";
 
 const PACES: { id: Pace; title: string; lines: string[] }[] = [
   { id: "quick", title: "Quick check", lines: [
@@ -43,6 +44,10 @@ export function Welcome() {
             </button>
           );
         })}
+      </div>
+      <div className="rp-offer my-4">
+        <ReportThumb />
+        <p><b>Either pace ends with your full report.</b>A full-color plan in your own numbers, to print or save as a PDF: what you&apos;ll have, how it holds up against every market since 1926, Social Security, taxes and health insurance, and your next moves.</p>
       </div>
       <Callout>Switch pace whenever you like; nothing you&apos;ve answered is lost. Your answers are saved in this browser, and to your account only if you sign in.</Callout>
       <p className="hint mt-3">Already retired?{" "}

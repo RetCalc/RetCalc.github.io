@@ -21,7 +21,7 @@ import { XIcon } from "lucide-react";
 import { gdM, ok, pos, saveMo, withGuess, type Sim } from "../calc";
 import { ScheduleBars } from "../charts/Schedule";
 import { Lesson, Term } from "../lessons/Lesson";
-import { CHILD_COST, CHILD_SOURCE, children, collegeWindows, hasChanges, householdAtRetire, householdByAge, schedule, type Stage } from "../schedule";
+import { CHILD_COST, CHILD_SOURCE, children, collegeWindows, hasChanges, householdAtRetire, householdByAge, schedule, shortfall, type Stage } from "../schedule";
 import { SourceBadge } from "../SourceBadge";
 import type { Answers, ChangeEvent } from "../store";
 import { BackNote, Callout, H3, MoneyF, NumF, Q, useGuideView } from "../ui";
@@ -112,7 +112,7 @@ function StageCell({ s }: { s: Stage }) {
   return (
     <div className="gd-stage-in"><Affixed prefix="$" suffix="/mo">
       <DraftInput money nonNeg id={"gdst-" + s.from} data-stage={s.from} aria-label={"Saving from " + s.from + " to " + s.to} value={s.monthly} format={gdM} onType={put} />
-    </Affixed></div>
+    </Affixed>{s.short ? <span className="gd-stage-short" data-stage-short={s.from}>{money(s.short)}/mo short</span> : null}</div>
   );
 }
 
@@ -179,7 +179,7 @@ function ChangesMeans() {
   if (!on) return <Means><p className="gd-means-empty">Your saving schedule appears once a child or another change is in. With none, the plan keeps today&apos;s saving every year.</p></Means>;
   const L = scheduleOf(a), S = withJ.res, F = flatJ.res, kids = children(a), W = collegeWindows(a), ret = Math.round(a.retire || 65);
   const H = householdByAge(a).filter((h, i, all) => !i || h.n !== all[i - 1].n);
-  const floored = L.some((s) => s.floored);
+  const SF = shortfall(L);
   return (
     <Means stale={(withJ.stale || flatJ.stale) && !!S}>
       {S && F ? <ul className="gd-read" data-changes="">
@@ -197,7 +197,9 @@ function ChangesMeans() {
           ))}</tbody>
         </table>
       ) : null}
-      {floored ? <Callout cls="warn">* The costs in that stage come to more than you save, so it reads $0 rather than a negative figure; the rest would come from your budget.</Callout> : null}
+      {SF.list.length ? <Callout cls="warn">* {kids.length ? "The children cost" : "These changes cost"} more than the {money(saveMo(a))} a month you save now
+        {" "}({and(SF.list.map((x) => money(x.short) + " a month from " + x.from + " to " + x.to))}). Saving can&apos;t go below $0, so that has to come from your budget:
+        {" "}about <b>{rounded(SF.total)}</b> in all, in today&apos;s dollars. Trim spending in those years, or build savings outside retirement before they start.</Callout> : null}
       <ul className="gd-read">
         {H.length > 1 ? <li>Your household before 65: {and(H.map((h, i) => (i ? h.n + " from " + h.age : h.n + " now")))}. {ret < 65 ? "The plan prices health insurance before Medicare for a household of " + householdAtRetire(a, ret) + "." : ""}</li> : null}
         {W.map((w, i) => (

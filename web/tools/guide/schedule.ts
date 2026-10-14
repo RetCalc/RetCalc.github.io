@@ -55,6 +55,8 @@ export interface Stage {
   src: SourceKind;
   /** The costs ahead come to more than the saving: it reads $0. */
   floored?: boolean;
+  /** How far short, a month, when floored: what the budget has to cover. */
+  short?: number;
 }
 export interface SchedOpts {
   /** A different retirement age (Adjust your plan). */
@@ -107,7 +109,7 @@ export function schedule(a: Answers, o: SchedOpts): Stage[] {
   const kids = children(a), ev = (a.events || []).filter((e) => e.kind !== "child");
   // Today's saving already pays for the children you have; planned ones come off it.
   const costNow = kids.filter((c) => !c.planned).reduce((s, c) => s + childCost(c, age), 0);
-  const years: { t: number; v: number; label: string; src: SourceKind; floored: boolean }[] = [];
+  const years: { t: number; v: number; label: string; src: SourceKind; floored: boolean; short: number }[] = [];
   for (let t = age; t < end; t++) {
     let v = o.monthly - (kids.reduce((s, c) => s + childCost(c, t), 0) - costNow), src: SourceKind = "entered";
     if (kids.some((c) => childCost(c, t) !== childCost(c, age) && !(c.early && c.school))) src = "estimated";
@@ -119,22 +121,31 @@ export function schedule(a: Answers, o: SchedOpts): Stage[] {
     for (const e of ev) if (e.kind === "custom" && t >= e.from && (e.to == null || t < e.to)) { v += e.delta; src = "entered"; }
     if (o.stop != null && t >= o.stop) { v = 0; src = "entered"; }
     const floored = v < 0;
-    years.push({ t, v: Math.max(0, Math.round(v)), label: labelAt(a, kids, t, ev), src, floored });
+    years.push({ t, v: Math.max(0, Math.round(v)), label: labelAt(a, kids, t, ev), src, floored, short: floored ? Math.ceil(-v) : 0 });
   }
   const out: Stage[] = [];
   for (const y of years) {
     const last = out[out.length - 1];
-    if (last && last.monthly === y.v && last.label === y.label) { last.to = y.t + 1; if (y.floored) last.floored = true; if (y.src === "estimated") last.src = "estimated"; }
-    else out.push({ from: y.t, to: y.t + 1, monthly: y.v, label: y.label, src: y.src, ...(y.floored ? { floored: true } : {}) });
+    // A stage keeps one shortfall, so years short by different amounts stay apart.
+    if (last && last.monthly === y.v && last.label === y.label && (last.short ?? 0) === y.short) { last.to = y.t + 1; if (y.src === "estimated") last.src = "estimated"; }
+    else out.push({ from: y.t, to: y.t + 1, monthly: y.v, label: y.label, src: y.src, ...(y.floored ? { floored: true, short: y.short } : {}) });
   }
   // Neighbours with the same saving merge even when their words differ.
   const merged: Stage[] = [];
   for (const s of out) {
     const last = merged[merged.length - 1];
-    if (last && last.monthly === s.monthly) { last.to = s.to; last.floored = last.floored || s.floored; if (s.src === "estimated") last.src = "estimated"; }
+    if (last && last.monthly === s.monthly && (last.short ?? 0) === (s.short ?? 0)) { last.to = s.to; if (s.src === "estimated") last.src = "estimated"; }
     else merged.push({ ...s });
   }
   return merged;
+}
+
+/** The stages the budget has to help with: the children (or other changes)
+    cost more than today's saving, so saving reads $0 and the rest comes
+    from spending. `total` is every month of it, in today's dollars. */
+export function shortfall(L: Pick<Stage, "from" | "to" | "short">[]) {
+  const list = L.filter((s) => (s.short ?? 0) > 0) as (Pick<Stage, "from" | "to"> & { short: number })[];
+  return { list, total: list.reduce((t, s) => t + s.short * 12 * (s.to - s.from), 0), most: list.reduce((m, s) => Math.max(m, s.short), 0) };
 }
 
 /** Household size at each of your ages up to 65: adults, plus each child

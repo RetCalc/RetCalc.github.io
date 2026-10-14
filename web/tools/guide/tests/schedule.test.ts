@@ -10,7 +10,7 @@ import { BASIC_INFL } from "@/lib/engine/typed";
 import { plAtRetire } from "@/lib/engine/typed-plan";
 import type { PlToday } from "@/lib/engine/types";
 import { planIn, saveMo, sim } from "../calc";
-import { atRetireScheduled, children, collegeWindows, householdAtRetire, householdByAge, schedule, scheduleValue } from "../schedule";
+import { atRetireScheduled, children, collegeWindows, householdAtRetire, householdByAge, schedule, scheduleValue, shortfall } from "../schedule";
 import type { Answers } from "../store";
 import { FIXTURES } from "../../../scripts/baseline/guide-fixtures.mjs";
 
@@ -77,6 +77,21 @@ test("the other changes: a raise, a payoff, part-time years, a spouse's pause, a
   const F = schedule(b, { monthly: 1000 });
   assert.equal(F[0].monthly, 0);
   assert.ok(F[0].floored);
+});
+
+test("a stage the saving can't cover says how far short it is, and the budget's share adds up", () => {
+  // Maya and Sam with a second child in three years: today's $1,200 a month,
+  // then childcare ($2,000 for a second child) on top of the first child's
+  // school years, which today's spending already covers.
+  const a: Answers = { ...fx("maya-sam").a, kidsNow: [6], kidsPlanned: 1, firstIn: 3, childcare: true };
+  const L = schedule(a, { monthly: saveMo(a) });
+  assert.deepEqual(brief(L), [[38, 41, 1200], [41, 47, 0], [47, 51, 0], [51, 60, 1500], [60, 62, 2700]]);
+  assert.equal(L[1].short, 800);
+  assert.ok(L[1].floored);
+  assert.equal(L[2].short, undefined, "exactly covered is not short");
+  const SF = shortfall(L);
+  assert.equal(SF.total, 800 * 12 * 6);
+  assert.equal(SF.most, 800);
 });
 
 test("the plan the engine tests is built from the schedule, and Over.flat is the plan without it", () => {

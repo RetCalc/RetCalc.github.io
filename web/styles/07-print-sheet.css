@@ -1,11 +1,13 @@
 /* ---------- printable one-page summary ---------- */
-#sheet{display:none}
+/* Off screen rather than display:none, at the printed width, so a chart
+   in it measures the width it will print at instead of a fallback. */
+#sheet{position:fixed;left:-10000px;top:0;width:7.5in;visibility:hidden;pointer-events:none}
 @media print{
   html,body{background:#fff !important;color:#111 !important}
   body::before{display:none !important}
   header,main,.toast,nav,.navbar,#srLive{display:none !important}
   #sheet{display:block !important;font-family:var(--sans);color:#111;
-    max-width:7.5in;margin:0 auto}
+    position:static;width:auto;visibility:visible;max-width:7.5in;margin:0 auto}
   @page{size:letter portrait;margin:0.45in}
 
   /* Masthead: name of the report, a right-aligned context line, and a thin
@@ -63,7 +65,13 @@
     padding:1.5px 5px;border-bottom:1px solid #eee;white-space:nowrap}
   .sh-table tr:nth-child(even) td{background:#fafafa}
 
-  /* The guide's plan: its chart in print ink, and the to-do list. */
+  /* The guide's plan: its chart at its own drawn shape (the 1.35in cap would
+     have it spill over the cards and columns), in print ink, and the to-do
+     list. */
+  .sh-chart.sh-plan{height:auto;display:block;padding:6px 7px 2px}
+  #sheet .sh-plan .gd-chart{min-height:0}
+  #sheet .sh-plan svg{width:100%;height:auto;overflow:hidden}
+  #sheet .sh-plan .gd-tip{display:none}
   #sheet .gd-chart .grid{stroke:#e2e5e3} #sheet .gd-chart .ax{fill:#666e73}
   #sheet .gd-chart .mark{stroke:#bbb} #sheet .gd-chart .ln.p{stroke:#16855c}
   #sheet .gd-chart .band.p{fill:#16855c;fill-opacity:.12}

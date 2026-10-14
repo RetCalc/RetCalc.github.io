@@ -194,7 +194,8 @@ export function PlanCard() {
       </Collapsible></div>
       <div className="gd-share">
         <Button size="lg" data-gd="snapshot" disabled={!now || savedToday} onClick={save}>{savedToday ? "Snapshot saved" : "Save a snapshot and finish"}</Button>
-        <Button variant="outline" data-gd="print" onClick={() => G.act("print")}>Print or save as PDF</Button>
+        <Button variant="outline" data-gd="report" onClick={() => G.act("report")}>Your full report</Button>
+        <Button variant="outline" data-gd="print" onClick={() => G.act("print")}>Print one page</Button>
         <Button variant="outline" data-gd="share" onClick={() => G.act("share")}>Copy a link to this plan</Button>
         <span className="hint">The link carries your answers, so share it only with people you&apos;d show your finances to.</span></div>
       {g.pace === "quick" ? <Callout>The Quick check is done. The Full walkthrough adds the deeper cards and the trips into the tools, and keeps every answer.{" "}

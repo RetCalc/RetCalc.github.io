@@ -205,7 +205,11 @@ export function Guide() {
     } else if (what === "apply") return applyOpt();
     else if (what === "optapply") return optApply();
     else if (what === "optclear") return optClear();
-    else if (what === "print") {
+    else if (what === "report") {
+      const sheet = planSheet();
+      if (typeof sheet === "string") toast(sheet); else router.push("/guide/report");
+      return;
+    } else if (what === "print") {
       const sheet = planSheet();
       if (typeof sheet === "string") toast(sheet); else printSheet(sheet);
       return;

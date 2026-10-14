@@ -13,7 +13,7 @@ import {
   FACTORS, accts, gross, mar, months, need, ok, options, parts, pos, saveMo, score, sim, tactics, target, withGuess,
   type FactorId, type Levers, type OptSet, type Part, type Sim,
 } from "./calc";
-import { collegeWindows } from "./schedule";
+import { children, collegeWindows, shortfall } from "./schedule";
 import { headroom } from "./score";
 import type { Answers, Sources } from "./store";
 
@@ -119,6 +119,16 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     out.push({ id: "healthcare", when: "When you're ready", t: "Get to know the " + money(S.hcYr) + " a year for health insurance before 65",
       d: "That's marketplace coverage after the subsidy your plan's income earns. The Healthcare Cost Planner shows how the subsidy moves with income, and what Medicare costs after.",
       trip: "healthcare", btn: "Open Healthcare Cost Planner" });
+  // Changes ahead that cost more than today's saving: the stages read $0,
+  // and what's left over has to come from the budget.
+  const SF = S?.sched ? shortfall(S.sched) : null;
+  if (SF && SF.list.length) {
+    const first = SF.list[0], last = SF.list[SF.list.length - 1];
+    out.push({ id: "short", when: "This year", t: "Plan for the " + money(SF.most) + " a month your saving can't cover",
+      d: "From " + first.from + " to " + last.to + ", " + (children(a).length ? "the children cost" : "your changes ahead cost") + " more than the " + money(saveMo(a)) +
+        " a month you save now, so retirement saving stops and about " + money(SF.total) + " in all has to come from your budget. Find it in your spending now, or build savings outside retirement before then.",
+      trip: "budget", btn: "Open Budget" });
+  }
   // A child's college years that run past the retirement date (doc 3, 2b).
   const cross = collegeWindows(a).filter((w) => ok(a.retire) && w.from < a.retire && w.to > a.retire);
   if (cross.length)

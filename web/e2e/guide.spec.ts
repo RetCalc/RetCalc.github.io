@@ -350,6 +350,25 @@ test("the plan prints on one page", async ({ page }) => {
   await expect(page.locator("#sheet .sh-chart svg")).toHaveCount(1);
 });
 
+test("the full report opens from the plan card, every page under the band with RetCalc on it", async ({ page }) => {
+  const plan = { v: 2, pace: "full", a: { age: 45, retire: 62, income: 100000, saved: 300000, contrib: 1000, match: "full", retSpend: 60000, cash: 20000, spend: 5000, takehome: 6500, debtHas: "no" } };
+  await stored(page, {});
+  await page.goto(NEW + "/guide#g=" + Buffer.from(JSON.stringify(plan)).toString("base64url"));
+  await expect(page.locator(".gd-q")).toHaveText("Your plan");
+  await page.locator('[data-gd="report"]').click();
+  await expect(page).toHaveURL(NEW + "/guide/report");
+  await expect(page.locator(".rp-page").first()).toBeVisible({ timeout: 30_000 });
+  const n = await page.locator(".rp-page").count();
+  expect(n).toBeGreaterThanOrEqual(9);
+  await expect(page.locator(".rp-page .rp-band .rp-brand")).toHaveCount(n);
+  // a retirement before 65 gets the health insurance page
+  await expect(page.locator(".rp-band h2", { hasText: "Health insurance before Medicare" })).toHaveCount(1);
+  // a name typed in shows on the cover, and stays in this browser
+  await page.fill("#rp-you", "Maya");
+  await expect(page.locator(".rp-band h1")).toHaveText("Maya");
+  expect(await page.evaluate(() => localStorage.getItem("retcalc.report.v1"))).toContain("Maya");
+});
+
 /* ---------- The shell ---------- */
 
 test("your number so far follows the plan, and says what the card changed", async ({ page }) => {

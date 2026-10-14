@@ -48,14 +48,14 @@ export function GuideSheet({ a, src }: { a: Answers; src: Sources }) {
         {S.tactics ? ", with the Plan Optimizer's roadmap applied (" + opTacticsLine(S.T, S.C).toLowerCase() + ")" : ""}.
         {why.estimated.length ? " Estimated: " + and(why.estimated) + "." : ""}{why.defaults.length ? " Defaults: " + and(why.defaults) + "." : ""}
         {" "}This is a rule-of-thumb plan, not financial advice.</>}>
-      <div className="sh-chart"><PlanDrawing id="sheet" series={[series(S, a.age!, "Your plan", "p")]} caption="Your retirement savings over time, in today's dollars" /></div>
+      <div className="sh-chart sh-plan"><PlanDrawing id="sheet" series={[series(S, a.age!, "Your plan", "p")]} caption="Your retirement savings over time, in today's dollars" /></div>
       <div className="sh-cols">
         <SheetSection t="Your plan" rows={plan} />
         <SheetSection t="Your numbers" rows={nums} />
         <SheetSection t="Score by area" rows={FACTORS.filter((f) => R.P[f.id]).map((f) => [f.name, Math.round(R.P[f.id]!.p * f.w) + " / " + f.w])} />
       </div>
       {list.length ? <div className="sh-moves"><div className="sh-t">Your next moves, in order</div><ol>{list.map((x) => <li key={x.id}><b>{x.t}.</b> <Html as="span" html={x.d} /> <i>{x.when}</i></li>)}</ol></div> : null}
-      {kit.length ? <div className="sh-moves"><div className="sh-t">Your toolkit</div><ol>{kit.map((k) => <li key={k.id}><b>{k.name}.</b> {k.why}: {k.q}.</li>)}</ol></div> : null}
+      {kit.length ? <div className="sh-moves"><div className="sh-t">Your toolkit</div><ol>{kit.map((k) => <li key={k.id}><b>{k.name}.</b> {k.why}: {k.q}{/[?.!]$/.test(k.q) ? "" : "."}</li>)}</ol></div> : null}
     </SheetPage>
   );
 }

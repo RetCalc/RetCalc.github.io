@@ -11,6 +11,7 @@
    it. The age line fills with the scroll and its nodes light as the reading
    line passes them. Reduced motion shows everything as it ends. */
 
+import { ReportThumb } from "@/tools/guide/report/Thumb";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
@@ -83,6 +84,10 @@ export function Home({ data }: { data: HomeData }) {
                 <li className="now"><b aria-hidden="true">3</b>Retirement age</li>
                 <li><b aria-hidden="true">4</b>Your plan</li>
               </ul>
+            </div>
+            <div className="rp-offer">
+              <ReportThumb />
+              <p><b>It ends with your full report.</b>A full-color plan to print or save as a PDF: your savings against every market since 1926, Social Security, taxes, health insurance and your next moves.</p>
             </div>
             <Go>Start the guide</Go>
           </Link>

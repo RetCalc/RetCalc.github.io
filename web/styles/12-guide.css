@@ -688,5 +688,6 @@ body.gd-on .toast{bottom:calc(var(--gdh,140px) + 34px + env(safe-area-inset-bott
 .gd-stages thead th:first-child{text-align:left}
 .gd-stages tbody th{max-width:220px}
 .gd-stage-in{min-width:124px;max-width:150px;margin-left:auto}
+.gd-stage-short{display:block;margin-top:4px;font-size:11.5px;font-weight:600;color:var(--ds-loss);text-align:right;font-variant-numeric:tabular-nums}
 /* The trip box's "you'll learn" line. */
 .gd-task-learn{margin:2px 0 8px;font-size:13.5px;line-height:1.5;color:var(--text);max-width:62ch}
