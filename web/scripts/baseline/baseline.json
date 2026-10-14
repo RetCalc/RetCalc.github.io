@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-14T18:08:15.321Z",
+  "recorded": "2026-10-14T20:22:48.733Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -996,16 +996,16 @@
       "out": {
         "atRetirement": 1446013.8923,
         "success": 1,
-        "coverage": 1.4055,
-        "taxPerYear": 11605.8922,
+        "coverage": 1.439,
+        "taxPerYear": 9472.6114,
         "score": 98,
-        "needAtRetirement": 965000
+        "needAtRetirement": 924000
       },
       "fields": {
-        "S": "db698cac5a776ed1",
-        "need": "b78f75a797895126",
+        "S": "d3fdcd80ab28eee6",
+        "need": "8687fbfca8bdf1d5",
         "sc": "cf1beef94f7af3dd",
-        "strats": "e260acdbcba63b73"
+        "strats": "0945edb3cd94a083"
       }
     },
     {
@@ -1019,10 +1019,10 @@
         "needAtRetirement": 380000
       },
       "fields": {
-        "S": "cdea86922098f3c7",
+        "S": "a5ca85f2b391d27a",
         "need": "df61f9f8bfae765c",
         "sc": "f5f05cd352878bbb",
-        "strats": "a39024f98c725afe"
+        "strats": "527c72e4b619ddab"
       }
     }
   ]
