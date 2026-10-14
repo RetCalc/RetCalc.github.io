@@ -75,7 +75,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
     <SignFlip value={st.nominal} onFlip={setF("nominal")} />
     <NumberInput data-f="nominal" data-i={i} step={0.5} value={st.nominal} aria-label={aria + " rate of return"} onValueChange={setF("nominal")} />
     </Affixed>,
-  <div className="hint mt-1 mx-0 mb-0" data-realrate={i}>{pctStr((1 + num.nominal - fees) / (1 + inflation) - 1, 2) + " Real"}</div>);
+  <div className="hint mt-1 mx-0 mb-0 text-right" data-realrate={i}>{pctStr((1 + num.nominal - fees) / (1 + inflation) - 1, 2) + " Real"}</div>);
   const contrib = field("contrib", "Contribution", <Affixed prefix="$"><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></Affixed>);
   const freq = field("freq", "How often", <NativeSelect data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></NativeSelect>,
     <Button variant="link" size="inline-xs" className="mt-1.75 justify-self-start" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</Button>);
@@ -102,7 +102,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   /* Flat rows in the inputs column, on a rule between stages: the stage's
      length and return (and on the final stage its glide path), then what it
      puts in. Two fields a row on every width. */
-  const row = "two bottomalign max-sm:grid-cols-2";
+  const row = "two items-start max-sm:grid-cols-2";
   return (
     <div className="stagecard m-0 rounded-none border-x-0 border-t border-b-0 border-border bg-transparent px-0 pt-3.5 pb-1 first:border-t-0 first:pt-0" id={"stage" + i}>
       <StageHead name={st.name} fallback={"Stage " + (i + 1)} aria={aria} span={span} remove={() => remove(i)} quiet

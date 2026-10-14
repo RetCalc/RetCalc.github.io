@@ -32,6 +32,14 @@ import { CircleAlertIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 
+/* Social Security can't start before 62; 67 is the usual full-retirement age. */
+const SS_MIN_AGE = 62, SS_DEFAULT_AGE = 67;
+const clampSSAge = (c: DrawdownState): DrawdownState => {
+  const raw = String(c.ssDelay).trim();
+  const val = raw === "" ? SS_DEFAULT_AGE : Math.max(SS_MIN_AGE, Math.round(parseNum(raw)));
+  return String(val) !== raw ? { ...c, ssDelay: String(val) } : c;
+};
+
 export function Inputs({ v, fromNote, periods, open }: {
   v: DDView; fromNote: string; periods: string;
   open: (dialog: { kind: "mix" | "guide" | "study" } | { kind: "item"; list: "incomeItems" | "expenseItems"; index: number | null }) => void;
@@ -237,8 +245,11 @@ export function Inputs({ v, fromNote, periods, open }: {
               value={str("retireAge")} onValueChange={(val) => setState((c) => {
                 const next: DrawdownState = { ...c, retireAge: val };
                 const a = parseNum(val);
-                // "Starts after 0 years" carries over as "starts at this age"
-                if (val.trim() !== "" && a > 0 && parseNum(c.ssDelay as string) === 0) next.ssDelay = String(Math.round(a));
+                // Switching to "starts at age": an untouched 0 becomes the full-retirement age.
+                // Switching back to "starts after": an age left in the field goes back to 0 years.
+                const delay = parseNum(c.ssDelay as string);
+                if (val.trim() !== "" && a > 0) { if (delay === 0) next.ssDelay = String(SS_DEFAULT_AGE); }
+                else if (delay >= SS_MIN_AGE) next.ssDelay = "0";
                 return next;
               })} />
             <NumberField id="ddYears" label="Years in retirement" unit="yrs" max={60} value={str("years")} onValueChange={set("years")} onBlur={clampFrom} />
@@ -442,7 +453,8 @@ export function Inputs({ v, fromNote, periods, open }: {
             </div>
             <Field id="ddSSDelay" wrapId="ddSSDelayWrap" hidden={ssMode === "none" || (ssMode === "est" && age != null)}
               label={<span className="tipglue"><span id="ddSSDelayLabel">{ssAgeMode ? "Starts at age" : "Starts after"}</span><TipDot k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>
-              <Affixed suffix="yrs"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")} /></Affixed>
+              <Affixed suffix="yrs"><NumberInput id="ddSSDelay" nonNeg max={ssAgeMode ? 120 : 30} value={str("ssDelay")} onValueChange={set("ssDelay")}
+                onBlur={() => ssAgeMode && setState(clampSSAge)} /></Affixed>
             </Field>
             <div className="field mt-3.5">
               <Label className="mb-1.5"><span><Tipped text="Other income" k="customincome" /></span></Label>
