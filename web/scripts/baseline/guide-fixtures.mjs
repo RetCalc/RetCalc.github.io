@@ -20,7 +20,7 @@ export const FIXTURES = [
       thKnow: "yes", takehome: 9200, bgKnow: "yes", spend: 7000, cash: 12000,
       debtHas: "yes", debtSrc: "quick", debtTotal: 18000, debtHi: 9000,
       home: "mortgage", mortPaid: "no", housePay: 2100, college: "yes", kidAge: 6, collegeMo: 300,
-      saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, saveTo: "trad",
+      saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, splitTrad: 100, splitRoth: 0, splitBrok: 0,
       retSpend: 70000, hcIncl: "no" },
   },
   {
@@ -28,14 +28,14 @@ export const FIXTURES = [
     a: { status: "s", age: 47, retire: 65, state: "TX", income: 78000,
       thKnow: "yes", takehome: 4900, bgKnow: "yes", spend: 4300, cash: 3000,
       debtHas: "yes", debtSrc: "quick", debtTotal: 22000, debtHi: 14000, home: "rent", college: "no",
-      saved: 62000, contrib: 300, employer: 150, match: "partial", risk: 0.045, saveTo: "trad", retSpend: 52000 },
+      saved: 62000, contrib: 300, employer: 150, match: "partial", risk: 0.045, splitTrad: 100, splitRoth: 0, splitBrok: 0, retSpend: 52000 },
   },
   {
     id: "priya-tom", name: "Priya and Tom", exercises: "Changes ahead, the staged schedule, college overlap",
     a: { status: "m", age: 32, spouseAge: 33, retire: 60, state: "TX", income: 240000, income2: 150000,
       thKnow: "yes", takehome: 18500, bgKnow: "yes", spend: 9000, cash: 40000, debtHas: "no",
       home: "mortgage", mortPaid: "yes", housePay: 3800, college: "no",
-      saved: 150000, contrib: 8500, employer: 1500, match: "full", risk: 0.0575, saveTo: "half",
+      saved: 150000, contrib: 8500, employer: 1500, match: "full", risk: 0.0575, splitTrad: 50, splitRoth: 50, splitBrok: 0,
       retSpend: 120000, hcIncl: "no" },
     // Two children, the first in three years and the second three after,
     // both in paid childcare before school.
@@ -45,27 +45,27 @@ export const FIXTURES = [
     id: "renter-29", name: "A single renter at 29", exercises: "Placeholders and badges, the shortest route",
     a: { status: "s", age: 29, retire: 67, income: 52000,
       thKnow: "no", takehome: 3461, bgKnow: "yes", spend: 3100, cash: 2500, debtHas: "no", home: "rent", college: "no",
-      saved: 8000, contrib: 150, employer: 0, match: "none", risk: 0.045, saveTo: "trad", retSpend: 33000 },
+      saved: 8000, contrib: 150, employer: 0, match: "none", risk: 0.045, splitTrad: 100, splitRoth: 0, splitBrok: 0, retSpend: 33000 },
   },
   {
     id: "couple-58", name: "A couple at 58 with a pension", exercises: "Pre-retiree, pension lines, Medicare at 65",
     a: { status: "m", age: 58, spouseAge: 57, retire: 63, state: "PA", income: 110000, income2: 48000,
       thKnow: "yes", takehome: 8600, bgKnow: "yes", spend: 6800, cash: 45000, debtHas: "no", home: "own", college: "no",
-      saved: 780000, rothNow: 60000, brokNow: 90000, contrib: 1600, employer: 550, match: "full", risk: 0.03, saveTo: "trad",
+      saved: 780000, rothNow: 60000, brokNow: 90000, contrib: 1600, employer: 550, match: "full", risk: 0.03, splitTrad: 100, splitRoth: 0, splitBrok: 0,
       retSpend: 78000, ssOwn: 3050, ssOwn2: 1480, pension: 1500, pensionCola: "no", hcIncl: "no" },
   },
   {
     id: "early-55", name: "A 52-year-old retiring at 55", exercises: "Getting to 59½, the rule of 55, Healthcare before 65",
     a: { status: "s", age: 52, retire: 55, state: "CO", income: 135000,
       thKnow: "yes", takehome: 6300, bgKnow: "yes", spend: 5200, cash: 30000, debtHas: "no", home: "own", college: "no",
-      saved: 950000, rothNow: 140000, brokNow: 260000, contrib: 2000, employer: 650, match: "full", risk: 0.045, saveTo: "half",
+      saved: 950000, rothNow: 140000, brokNow: 260000, contrib: 2000, employer: 650, match: "full", risk: 0.045, splitTrad: 50, splitRoth: 50, splitBrok: 0,
       retSpend: 62000, rule55: "yes", hcIncl: "no" },
   },
   {
     id: "self-employed", name: "A self-employed saver", exercises: "The savings-rate wording and the SEP note",
     a: { status: "s", age: 41, retire: 65, state: "FL", income: 88000,
       thKnow: "yes", takehome: 5200, bgKnow: "yes", spend: 4200, cash: 20000, debtHas: "no", home: "rent", college: "no",
-      saved: 165000, rothNow: 30000, contrib: 1300, employer: 0, match: "none", risk: 0.045, saveTo: "trad", retSpend: 56000 },
+      saved: 165000, rothNow: 30000, contrib: 1300, employer: 0, match: "none", risk: 0.045, splitTrad: 100, splitRoth: 0, splitBrok: 0, retSpend: 56000 },
   },
 ];
 

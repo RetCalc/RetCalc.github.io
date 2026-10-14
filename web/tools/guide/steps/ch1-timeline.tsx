@@ -31,11 +31,11 @@ export function AboutYou() {
             {" "}67 is <Term k="fra">full retirement age</Term>, and 75 starts required withdrawals.</p>
         </Lesson>
       </Learn>
-      <Numbers more={<div className="gd-fields">
-        <SelF k="state" label="State" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} full
-          hint="For state income tax and healthcare costs." /></div>}>
+      <Numbers>
         <div className="gd-fields">
           <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse"]]} redraw full />
+          <SelF k="state" label="State you live in" opts={[["", "Choose your state"], ...STATE_OPTIONS.map((o) => [o.code, o.name] as [string, string])]} redraw full
+            hint="Your state's income tax sets your take-home pay and what retirement costs in tax, and its rules shape healthcare costs." />
           <NumF k="age" label="Your age" affix="age" />
           {mar(v) ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
           <NumF k="retire" label="Age you'd like to retire" affix="age" hint="A guess is fine. You can try other ages later."
@@ -67,7 +67,6 @@ function TimelineReadout() {
         : <li>You&apos;d retire at or after 65, so Medicare covers you from the start.</li>}
       {before59 > 0 ? <li>That&apos;s {yrs(before59)} before 59½, when retirement accounts open without a penalty. <b>Getting to 59½</b> joins your route to plan the years between.</li> : null}
       <li>Social Security can start at 62{retire <= 62 ? "" : ", or whenever you choose after"}; the full benefit comes at 67, and waiting to 70 pays the most.</li>
-      {!a.state ? <li>Taxes follow Illinois&apos;s rules until you choose your state, under More detail.</li> : null}
     </ul>
   );
 }

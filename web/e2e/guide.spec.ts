@@ -17,7 +17,7 @@ import { FIXTURES } from "../scripts/baseline/guide-fixtures.mjs";
 const MAYA = { status: "m", age: 38, spouseAge: 36, retire: 62, state: "IL", income: 95000, income2: 60000,
   thKnow: "yes", takehome: 9200, bgKnow: "yes", spend: 7000, cash: 12000, debtHas: "yes", debtSrc: "quick", debtTotal: 18000, debtHi: 9000,
   home: "mortgage", mortPaid: "no", housePay: 2100, college: "yes", kidAge: 6, collegeMo: 300,
-  saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, saveTo: "trad", retSpend: 70000, hcIncl: "no" };
+  saved: 210000, rothNow: 40000, contrib: 900, employer: 300, match: "full", risk: 0.0575, splitTrad: 100, splitRoth: 0, splitBrok: 0, retSpend: 70000, hcIncl: "no" };
 const stateWith = (pace: "quick" | "full", cur = "welcome") => ({ v: 2, pace, cur, a: MAYA, src: {}, done: {}, trip: null, back: null, coachMin: false,
   snapshots: [], moves: {}, lessons: {}, startedAt: "2026-10-07T00:00:00.000Z" });
 const QUICK_CARDS = 12, FULL_CARDS = 19;
@@ -68,10 +68,15 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await page.locator("#gdf-status").selectOption("m");
   await page.fill("#gdf-age", "38"); await page.fill("#gdf-spouseAge", "36"); await page.fill("#gdf-retire", "62");
   await expect(page.locator("#gdCard .gd-means")).toContainText("24 years to save");
+  // The state is on the card, not under More detail, and Continue waits for it
+  await expect(page.locator('#gdCard [data-gd="next"]')).toBeDisabled();
+  await page.locator("#gdf-state").selectOption("IL");
   await next(page);
   // 2 · Income and take-home: estimated, marked, until the real figure is typed
   await page.fill("#gdf-income", "95000"); await page.fill("#gdf-income2", "60000");
+  // The estimate is by the state chosen on the first card
   await expect(page.locator('#gdCard .gd-means .gd-src[data-src="estimated"]')).toHaveText("estimated");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("Illinois income tax");
   await page.locator("#gdCard [data-more]").click();
   await page.fill("#gdf-takehome", "9200");
   await expect(page.locator('#gdCard .gd-means .gd-src[data-src="entered"]')).toHaveText("you entered");

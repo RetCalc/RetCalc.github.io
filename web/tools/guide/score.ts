@@ -89,7 +89,8 @@ export function headroom(id: FactorId, P: Part | undefined, a: Answers): { pts: 
 /** What a default stands in for, as the sources line names it. */
 const DEFAULT_WORDS: Partial<Record<AnswerKey, (a: Answers) => string>> = {
   risk: (a) => "a " + (a.risk === 0.045 ? "balanced" : "chosen") + " mix while saving",
-  saveTo: () => "new saving going to traditional accounts",
+  splitTrad: (a) => "new saving split " + [[a.splitTrad, "traditional"], [a.splitRoth, "Roth"], [a.splitBrok, "taxable"]]
+    .filter(([p]) => (p as number) > 0).map(([p, w]) => p + "% " + w).join(", ").replace(/, ([^,]*)$/, " and $1"),
   employer: () => "no employer contribution",
   match: () => "the match as not sure",
   hcIncl: () => "health insurance priced by the plan",

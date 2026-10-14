@@ -26,7 +26,11 @@ export interface Answers {
   home?: string | null; mortPaid?: string | null; housePay?: number | null; mortPI?: number | null; moState?: Record<string, unknown> | null;
   college?: string | null; kidAge?: number | null; collegeMo?: number | null; clState?: Record<string, unknown> | null;
   saved?: number | null; contrib?: number | null; employer?: number | null; match?: string | null; risk?: number | null;
-  rothNow?: number | null; brokNow?: number | null; saveTo?: string | null;
+  rothNow?: number | null; brokNow?: number | null;
+  /** Where each month's saving goes, in percent of what you put in (split.ts). */
+  splitTrad?: number | null; splitRoth?: number | null; splitBrok?: number | null;
+  /** The four-way choice the split replaced; read from guides saved before it, then dropped. */
+  saveTo?: string | null;
   retSpend?: number | null; ssOwn?: number | null; ssOwn2?: number | null; ssClaim?: number | null;
   pension?: number | null; pensionAge?: number | null; pensionCola?: string | null;
   stopAge?: number | null; target?: number | null; retMix?: number | null; minSpend?: number | null; strategy?: string | null;

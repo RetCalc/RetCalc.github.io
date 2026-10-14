@@ -6,18 +6,19 @@
    the savings are taxed, which changes the tax the plan pays rather than
    the number. Changes ahead joins this chapter in phase 4. */
 
+import { CircleAlertIcon } from "lucide-react";
 import { useState } from "react";
 import { RISKS } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { NativeRange } from "@/components/ui/native-range";
-import { SAVE_TO, coastNow, gross, ok, parts, pos, riskLabel, saveNow, withGuess, type Sim } from "../calc";
+import { coastNow, gross, ok, parts, pos, riskLabel, saveNow, splitOff, splitPcts, withGuess, type Sim } from "../calc";
 import { Buckets } from "../charts/Buckets";
 import { Compound } from "../charts/Compound";
 import { RangeBars } from "../charts/RangeBars";
 import { buckets, byMix, compounding, dollarAt, growthParts, mixHistory } from "../figures";
 import { Lesson, Term } from "../lessons/Lesson";
 import { SourceBadge } from "../SourceBadge";
-import { BackNote, Choice, H3, MoneyF, Q, SelF, Task, useGuideView } from "../ui";
+import { BackNote, Choice, H3, MoneyF, NumF, Q, SelF, Task, useGuideView } from "../ui";
 import { usePlanJob } from "../usePlan";
 import { rounded } from "../words";
 import { Learn, Means, Numbers } from "../zones";
@@ -63,9 +64,7 @@ export function SavingsCard() {
           <Choice k="match" val="full" title="Yes, and I get all of it" /><Choice k="match" val="partial" title="Yes, but I'm not getting all of it" />
           <Choice k="match" val="none" title="No match, or I'm self-employed" /><Choice k="match" val="unsure" title="Not sure" />
         </div>
-        <H3>Where does your monthly saving go?</H3>
-        <div className="gd-choices two">{SAVE_TO.map(([k, t, s]) => <Choice key={k} k="saveTo" val={k} title={t} sub={s} />)}</div>
-        <p className="hint mx-0 mt-0 mb-1">Your employer&apos;s share goes into a traditional account either way.</p>
+        <SaveSplit />
       </>} moreOpen={v.match === "partial"}>
         <div className="gd-fields">
           <MoneyF k="saved" label="Saved for retirement so far" full
@@ -75,6 +74,31 @@ export function SavingsCard() {
         </div>
       </Numbers>
       <Means><SavingsReadout /></Means>
+    </>
+  );
+}
+/* ---------- Where the monthly saving goes ---------- */
+/** What you put in each month, split across the three tax buckets by
+    percentage, with what each share comes to in dollars. */
+function SaveSplit() {
+  const { a } = useGuideView();
+  const mine = pos(a.contrib) ? a.contrib : 0, pcts = splitPcts(a), off = splitOff(a);
+  const dollars = (p: number) => (mine > 0 ? "= " + money(Math.round((mine * p) / 100)) + "/mo" : undefined);
+  return (
+    <>
+      <H3>Where does your monthly saving go?</H3>
+      <p className="hint mx-0 mt-0 mb-2">Split what you put in each month across the three, so they add up to 100%.
+        Traditional is a 401(k), 403(b) or IRA; Roth is a Roth 401(k) or Roth IRA; taxable is a brokerage account outside a retirement plan.</p>
+      <div className="gd-fields three">
+        <NumF k="splitTrad" label="Traditional" affix="%" hint={dollars(pcts[0])} />
+        <NumF k="splitRoth" label="Roth" affix="%" hint={dollars(pcts[1])} />
+        <NumF k="splitBrok" label="Taxable" affix="%" hint={dollars(pcts[2])} />
+      </div>
+      {off != null ? (
+        <div className="mt-0 mb-2 flex items-start gap-2 text-note text-destructive"><CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <span role="alert">These add up to {fmtNum(Math.round(off * 10) / 10)}%. They need to add up to 100%.</span></div>
+      ) : mine > 0 ? <p className="hint mx-0 mt-0 mb-1">Of the {money(mine)} a month you put in. Your employer&apos;s share goes into a traditional account either way.</p>
+        : <p className="hint mx-0 mt-0 mb-1">Enter what you contribute each month, above, to see these in dollars. Your employer&apos;s share goes into a traditional account either way.</p>}
     </>
   );
 }
@@ -93,6 +117,8 @@ function SavingsReadout() {
         : r != null ? <li>You&apos;re putting in <b>{money(P.monthly)} a month</b>, <b>{pctStr(r, 1)}</b> of gross income counting your employer&apos;s share.
           {r >= 0.15 ? " That meets the usual 15% target." : <> The usual target is 15%: about {money((inc * 0.15) / 12)} a month for you.</>}</li>
           : <li><b>{money(P.monthly)} a month</b> going in.</li>}
+      {!coast && pos(a.contrib) && splitOff(a) == null ? <li>Of the <b>{money(a.contrib)}</b> a month you put in, <b>{money(Math.round((a.contrib * splitPcts(a)[0]) / 100))}</b> goes to traditional,
+        {" "}<b>{money(Math.round((a.contrib * splitPcts(a)[1]) / 100))}</b> to Roth and <b>{money(Math.round((a.contrib * splitPcts(a)[2]) / 100))}</b> to a taxable account{pos(a.employer) ? <>, plus your employer&apos;s {money(a.employer)} to traditional</> : ""}.</li> : null}
       <li>By {fmtNum(a.retire!)}, at the {riskLabel(P.real)} mix&apos;s {rate(P.real)} a year after inflation: today&apos;s <b>{money(a.saved!)}</b> grows to <b>{money(P.fromSaved)}</b>
         {coast ? "." : <>, and what you add comes to <b>{money(P.fromSaving)}</b>.</>} Together, <b>{rounded(P.total)}</b>: your number so far, in today&apos;s dollars.</li>
       {rp ? <li>Savings rate scores {Math.round(rp.p * 20)} of 20{rp.p >= 1 && r != null && r < 0.15 ? ": under 15%, but your plan already lasts" : ""}.</li> : null}
@@ -176,9 +202,7 @@ export function AccountsCard() {
           <MoneyF k="rothNow" label="Of that, in Roth accounts" ph="0" hint="Roth 401(k) and Roth IRA." err={overErr(a)} />
           <MoneyF k="brokNow" label="In a taxable brokerage account" ph="0" hint="Only money meant for retirement." />
         </div>
-        <H3>Where does your monthly saving go?</H3>
-        <div className="gd-choices two">{SAVE_TO.map(([k, t, s]) => <Choice key={k} k="saveTo" val={k} title={t} sub={s} />)}</div>
-        <p className="hint mx-0 mt-0 mb-1">Your employer&apos;s share goes into a traditional account either way.</p>
+        <SaveSplit />
       </Numbers>
       <AccountsMeans />
     </>

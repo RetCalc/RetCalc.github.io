@@ -31,36 +31,42 @@ export function IncomeCard() {
     <>
       <Q>What do you earn, and what reaches your account?</Q>
       <Learn>
-        <Lesson id="take-home" figure={P ? <PayBar P={P} /> : null} caption={P ? "A month of your pay by the 2026 rules, before a 401(k) or health insurance." : null}>
+        <Lesson id="take-home" figure={P ? <PayBar P={P} /> : null} caption={P ? "A month of your pay by the 2026 rules for " + P.stateName + ", before a 401(k) or health insurance." : null}>
           <p>Your salary is the gross: the headline figure on an offer letter. Less of it reaches your bank account. Federal and state income tax come
             {" "}out, then Social Security and Medicare, then anything your employer takes before paying you, like 401(k) contributions and health insurance.</p>
           <p>What&apos;s left is your <Term k="takehome">take-home pay</Term>. It&apos;s what your spending has to fit inside, so it&apos;s the figure the next cards use.</p>
         </Lesson>
       </Learn>
       <BackNote step="income" />
-      <Numbers moreOpen={!!mine} more={<>
+      <Numbers moreOpen={!!mine} more={
         <div className="gd-fields"><MoneyF k="takehome" label="Your actual take-home" per="/mo"
           hint={mar(v) ? "For the two of you together, from your pay stubs." : "From your pay stub. Paid every two weeks? One paycheck × 26 ÷ 12."} /></div>
-        {full ? <Task id="tax" head="Work it out with the Income Tax tool" label={s?.kind === "tool" ? "Open Income Tax again" : null} /> : null}
-      </>} moreLabel="Know your real take-home?">
+      } moreLabel="Know your real take-home?">
         <div className="gd-fields">
           <MoneyF k="income" label="Your gross income" per="/yr" hint="Self-employed? Use net profit. Not working? Enter 0." />
           {mar(v) ? <MoneyF k="income2" label="Spouse's gross income" per="/yr" /> : null}
         </div>
+        {full ? <Task id="tax" head="Adjust for deductions in the Income Tax tool" label={s?.kind === "tool" ? "Open Income Tax again" : null} /> : null}
       </Numbers>
-      <Means>
-        {!ok(a.income) ? <p className="gd-means-empty">What reaches your account appears once your income is in.</p>
-          : !(gross(a) > 0) ? <p className="gd-means-empty">With no income from work, the cards ahead skip take-home and the savings rate.</p>
-            : (
-              <ul className="gd-read">
-                <li>{mine ? "You take home " : "About "}<b>{money(a.takehome || 0)}</b> a month{mine ? "" : " reaches your account"} from <b>{money(gross(a))}</b> a year{mar(a) ? " between you" : ""}. <SourceBadge s={s} /></li>
-                {mine && Math.abs(taxEst(a) - (a.takehome || 0)) >= 100 ? <li>The tax rules alone would leave about {money(taxEst(a))}; the {money(Math.abs(taxEst(a) - (a.takehome || 0)))} between is
-                  {taxEst(a) > (a.takehome || 0) ? " likely what comes out before you're paid, such as 401(k) contributions and health insurance." : " likely deductions the estimate doesn't know about."}</li>
-                  : !mine ? <li>That&apos;s before any 401(k) or health insurance taken from your pay. If your pay stub shows less, enter it under <b>Know your real take-home?</b></li> : null}
-              </ul>
-            )}
-      </Means>
+      <Means><TakeHomeReadout /></Means>
     </>
+  );
+}
+function TakeHomeReadout() {
+  const { a, g } = useGuideView(), full = g.pace === "full";
+  const s = g.src.takehome, mine = s ? s.kind !== "estimated" : pos(a.takehome), P = payParts(a);
+  if (!ok(a.income)) return <p className="gd-means-empty">What reaches your account appears once your income is in.</p>;
+  if (!(gross(a) > 0)) return <p className="gd-means-empty">With no income from work, the cards ahead skip take-home and the savings rate.</p>;
+  if (!mine && !P) return <p className="gd-means-empty">Choose your state on the first card, About you, and the tax comes out by its rules.</p>;
+  const est = taxEst(a), off = Math.abs(est - (a.takehome || 0));
+  return (
+    <ul className="gd-read">
+      <li>{mine ? "You take home " : "About "}<b>{money(a.takehome || 0)}</b> a month{mine ? "" : " reaches your account"} from <b>{money(gross(a))}</b> a year{mar(a) ? " between you" : ""}. <SourceBadge s={s} /></li>
+      {!mine && P ? <li>Worked out for {P.stateName} on the 2026 rules, a month: <b>{money(P.federal)}</b> federal income tax, {P.stateNone ? <>no {P.stateName} income tax on wages</> : <><b>{money(P.state)}</b> {P.stateName} income tax</>}, and <b>{money(P.fica)}</b> Social Security and Medicare. It takes the standard deduction and nothing out of your pay before tax.</li> : null}
+      {mine && est > 0 && off >= 100 ? <li>The tax rules alone would leave about {money(est)}; the {money(off)} between is
+        {est > (a.takehome || 0) ? " likely what comes out before you're paid, such as 401(k) contributions and health insurance." : " likely deductions the estimate doesn't know about."}</li> : null}
+      {!mine ? <li>That&apos;s before any 401(k) or health insurance taken from your pay. {full ? "Add them, and any itemized deductions, in the Income Tax tool above, or enter the figure from your pay stub under " : "If your pay stub shows less, enter it under "}<b>Know your real take-home?</b></li> : null}
+    </ul>
   );
 }
 

@@ -52,7 +52,9 @@ export function refreshEstimates(g: { a: Answers; src: Sources }) {
   const s = g.src.takehome;
   if (s && s.kind !== "estimated") return;
   if (!s && !empty(g.a.takehome)) return;
-  if (!ok(g.a.income)) return;
+  // The estimate is by the person's state's rules, so it waits for one. One
+  // already worked out (a guide saved before the state was asked here) stays.
+  if (!ok(g.a.income) || !g.a.state) return;
   const est = Math.round(taxEst(g.a));
   if (est > 0) { if (g.a.takehome !== est) setAnswer(g, "takehome", est, "estimated"); }
   else { g.a.takehome = null; delete g.src.takehome; }

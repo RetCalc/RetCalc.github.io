@@ -4,6 +4,7 @@
    the coach on a trip). Pure: no React and no storage, so the unit tests
    (tests/links.test.ts) run it as it is. */
 
+import { migrateSplit } from "./split";
 import type { AnswerKey, Answers, GuideStateV2, Pace, Snapshot, Source, SourceKind, Sources, Trip, Back } from "./store";
 
 const SNAPSHOT_CAP = 24;
@@ -19,10 +20,12 @@ export const isPace = (v: unknown): v is Pace => PACES.includes(v as Pace);
     and anything malformed dropped, or null when it isn't one. */
 export function normalizeV2(o: unknown, now: string): GuideStateV2 | null {
   if (!isObj(o) || o.v !== 2 || !isObj(o.a)) return null;
+  const a = o.a as Answers, srcIn = isObj(o.src) ? (o.src as Sources) : undefined;
+  migrateSplit(a, srcIn);
   const snaps = Array.isArray(o.snapshots) ? (o.snapshots.filter(isObj) as unknown as Snapshot[]) : [];
   return {
     v: 2, pace: isPace(o.pace) ? o.pace : "quick", cur: typeof o.cur === "string" ? o.cur : "welcome",
-    a: o.a as Answers, src: cleanSources(o.src, o.a as Answers, now), done: isObj(o.done) ? (o.done as Record<string, boolean>) : {},
+    a, src: cleanSources(srcIn, a, now), done: isObj(o.done) ? (o.done as Record<string, boolean>) : {},
     trip: isObj(o.trip) ? (o.trip as unknown as Trip) : null, back: isObj(o.back) ? (o.back as unknown as Back) : null, coachMin: !!o.coachMin,
     snapshots: snaps.slice(-SNAPSHOT_CAP), moves: isObj(o.moves) ? (o.moves as GuideStateV2["moves"]) : {},
     lessons: isObj(o.lessons) ? (o.lessons as Record<string, boolean>) : {},

@@ -5,7 +5,8 @@
    are bound to these by id in steps/index.tsx; this file holds no React, so
    route.ts and its tests walk every route from the declarations alone. */
 
-import { gross, ok, pos } from "../calc";
+import { gross, ok, pos, splitOff } from "../calc";
+import { SPLIT_DEFAULT, SPLIT_KEYS } from "../split";
 import type { AnswerKey, Answers, Pace, SourceKind } from "../store";
 
 export type StepType = "welcome" | "question" | "lesson" | "readout" | "decision" | "trip" | "summary";
@@ -59,6 +60,9 @@ export const CHAPTERS = [
 ];
 
 const need = (yes: boolean, why: string) => (yes ? null : why);
+/** The monthly split starts as 50% traditional, 25% Roth and 25% taxable, written only where none is given. */
+const splitPrep: StepDecl["prep"] = (a, put) => { if (!SPLIT_KEYS.some((k) => ok(a[k]))) SPLIT_KEYS.forEach((k) => put(k, SPLIT_DEFAULT[k], "default")); };
+const splitNeeds = (a: Answers) => { const t = splitOff(a); return t == null ? null : "Your split adds up to " + Math.round(t * 10) / 10 + "%; it needs to add up to 100%"; };
 
 export const STEPS: StepDecl[] = [
   { id: "welcome", chapter: 0, title: "Welcome", type: "welcome", pace: "quick", minutes: 0.5 },
@@ -70,7 +74,8 @@ export const STEPS: StepDecl[] = [
 
   /* 1 · You and your timeline */
   { id: "about", chapter: 1, title: "About you", type: "question", pace: "quick", minutes: 1, sync: true, teaches: ["two-clocks"],
-    needs: (a) => need(ok(a.age) && a.age >= 16 && a.age < 100 && ok(a.retire) && a.retire > a.age && a.retire <= 90, "Enter your age and a retirement age after it"),
+    needs: (a) => need(ok(a.age) && a.age >= 16 && a.age < 100 && ok(a.retire) && a.retire > a.age && a.retire <= 90, "Enter your age and a retirement age after it")
+      ?? need(!!a.state, "Choose your state, so tax is worked out by its rules"),
     commit: (a, put) => put("status", "s", "default") },
 
   /* 2 · Where you stand */
@@ -90,16 +95,16 @@ export const STEPS: StepDecl[] = [
 
   /* 3 · Building your savings */
   { id: "savings", chapter: 3, title: "What you have and add", type: "question", pace: "quick", minutes: 1, tool: "basic", sync: true, teaches: ["time"],
-    prep: (a, put) => { put("risk", 0.045, "default"); put("saveTo", "trad", "default"); },
-    needs: (a) => need(ok(a.saved) && ok(a.contrib), "Enter what you've saved and what you add each month, even if it's 0"),
+    prep: (a, put) => { put("risk", 0.045, "default"); splitPrep(a, put); },
+    needs: (a) => need(ok(a.saved) && ok(a.contrib), "Enter what you've saved and what you add each month, even if it's 0") ?? splitNeeds(a),
     // The match question is under More detail; unanswered, it's "not sure",
     // which the plan's moves then ask about.
     commit: (a, put) => { put("employer", 0, "default"); put("match", "unsure", "default"); } },
   { id: "invested", chapter: 3, title: "How it's invested", type: "question", pace: "quick", minutes: 0.5, tripMinutes: 5, tool: "backtest", sync: true, teaches: ["real-returns"],
     prep: (a, put) => put("risk", 0.045, "default") },
   { id: "accounts", chapter: 3, title: "Where it sits", type: "question", pace: "full", minutes: 1.5, tool: "advanced", teaches: ["buckets"],
-    prep: (a, put) => put("saveTo", "trad", "default"),
-    needs: (a) => need((pos(a.rothNow) ? a.rothNow : 0) + (pos(a.brokNow) ? a.brokNow : 0) <= (ok(a.saved) ? a.saved : 0) + 0.5,
+    prep: splitPrep,
+    needs: (a) => splitNeeds(a) ?? need((pos(a.rothNow) ? a.rothNow : 0) + (pos(a.brokNow) ? a.brokNow : 0) <= (ok(a.saved) ? a.saved : 0) + 0.5,
       "Roth and brokerage can't add up to more than your savings") },
 
   { id: "changes", chapter: 3, title: "Changes ahead", type: "question", pace: "full", minutes: 4, tripMinutes: 10, tool: "stages", sync: true, teaches: ["not-flat"],

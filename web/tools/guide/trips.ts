@@ -85,11 +85,13 @@ const TRIPS: Record<string, TripDef<never>> = {
       { h: "<b>Per month</b> is your monthly take-home. Tap <b>Back to guide</b> and it comes with you." },
     ],
     chip: ({ s }: Ctx<TaxInputs>) => { const R = runTax(taxInput(s)); return R.gross > 0 ? "Take-home<br><b>" + money(R.net / 12) + "/mo</b>" : ""; },
-    capture: ({ s }: Ctx<TaxInputs>) => {
+    capture: ({ a, s }: Ctx<TaxInputs>) => {
       const R = runTax(taxInput(s));
       if (!(R.gross > 0)) return null;
       const v = Math.round(R.net / 12);
-      return { set: { takehome: v, txPre: taxInput(s).pre }, msg: "From Income Tax: <b>" + money(v) + "/mo</b> take-home pay. If your pay stub says something different, use that instead." };
+      // A state changed in the tool comes back too, so the guide's tax and the tool's agree.
+      const st = taxInput(s).state, changed = st && st !== a.state;
+      return { set: { takehome: v, txPre: taxInput(s).pre, ...(changed ? { state: st } : {}) }, msg: "From Income Tax: <b>" + money(v) + "/mo</b> take-home pay. If your pay stub says something different, use that instead." };
     },
   },
 

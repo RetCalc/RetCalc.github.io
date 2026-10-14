@@ -11,6 +11,7 @@ import {
 import type { PlHist, PlPlan, PlPrep, PlRow, PlTactics, PlToday } from "@/lib/engine/types";
 import { groupDigits, money, pctStr } from "@/lib/format";
 import { atRetireScheduled, hasChanges, householdAtRetire, schedule, type Stage } from "./schedule";
+import { SPLIT_DEFAULT, SPLIT_KEYS } from "./split";
 import type { Answers } from "./store";
 
 export const ok = (v: unknown): v is number => typeof v === "number" && isFinite(v);
@@ -40,13 +41,24 @@ export function riskLabel(real: number): string {
   return (RISKS.find((x) => Math.abs(x.real - real) < 1e-6) || RISKS[2]).label.toLowerCase();
 }
 
-/** Monthly take-home from the salary alone, through the Income Tax tool's
-    2026 rules: the fallback when someone skips that step. */
-export function taxEst(a: Answers): number {
+/** The Income Tax tool's 2026 rules run on the salary alone: the standard
+    deduction, nothing taken before tax, and the person's own state. Null
+    without an income or a state, since a state's rules are most of the
+    difference between two people's take-home. */
+type TaxRun = { federal: number; state: number; fica: number; net: number; stateName: string; stateNone: boolean };
+function taxRun(a: Answers): { gross: number; T: TaxRun } | null {
   const g1 = a.income || 0, g2 = mar(a) ? a.income2 || 0 : 0;
-  if (!(g1 + g2 > 0)) return 0;
-  const T = (computeTax as (o: object) => { net: number })({ status: mar(a) ? "m" : "s", gross: g1, gross2: g2, pre: 0, dedType: "std", item: 0, state: a.state || "IL" });
-  return T.net / 12;
+  if (!(g1 + g2 > 0) || !a.state) return null;
+  const T = (computeTax as (o: object) => TaxRun)({ status: mar(a) ? "m" : "s", gross: g1, gross2: g2, pre: 0, dedType: "std", item: 0, state: a.state });
+  return { gross: g1 + g2, T };
+}
+
+/** Monthly take-home from the salary alone, through the Income Tax tool's
+    2026 rules for the person's state: the fallback when someone skips that
+    step. 0 until a state is chosen. */
+export function taxEst(a: Answers): number {
+  const R = taxRun(a);
+  return R ? R.T.net / 12 : 0;
 }
 
 /** Retirement spending before it's entered (decision D5): 80% of take-home,
@@ -64,14 +76,16 @@ export function withGuess(a: Answers): Answers {
 /** Whether retirement spending is still the placeholder. */
 export const guessing = (a: Answers) => !pos(a.retSpend) && spendGuess(a) > 0;
 
-/** Where a year's pay goes, by the Income Tax tool's 2026 rules: federal
-    and state income tax, Social Security and Medicare, and what's left. A
-    month of each, for lesson 2's bar. Null without an income. */
-export function payParts(a: Answers): { gross: number; federal: number; state: number; fica: number; net: number } | null {
-  const g1 = a.income || 0, g2 = mar(a) ? a.income2 || 0 : 0;
-  if (!(g1 + g2 > 0)) return null;
-  const T = (computeTax as (o: object) => { federal: number; state: number; fica: number; net: number })({ status: mar(a) ? "m" : "s", gross: g1, gross2: g2, pre: 0, dedType: "std", item: 0, state: a.state || "IL" });
-  return { gross: (g1 + g2) / 12, federal: T.federal / 12, state: T.state / 12, fica: T.fica / 12, net: T.net / 12 };
+/** Where a year's pay goes, by the Income Tax tool's 2026 rules for the
+    person's state: federal and state income tax, Social Security and
+    Medicare, and what's left. A month of each, for lesson 2's bar. Null
+    without an income and a state. */
+export interface PayParts { gross: number; federal: number; state: number; fica: number; net: number; stateName: string; stateNone: boolean }
+export function payParts(a: Answers): PayParts | null {
+  const R = taxRun(a);
+  if (!R) return null;
+  const { T } = R;
+  return { gross: R.gross / 12, federal: T.federal / 12, state: T.state / 12, fica: T.fica / 12, net: T.net / 12, stateName: T.stateName, stateNone: T.stateNone };
 }
 
 /** The share of historical retirements a plan has to survive to count as on
@@ -145,22 +159,36 @@ export function yearsFor(a: Answers, retire: number): number {
 
 /* Where the money sits: the Roth and brokerage amounts from the Retirement
    savings step, the rest traditional. */
-export const SAVE_TO: [key: string, title: string, sub: string][] = [["trad", "Mostly pre-tax", "A traditional 401(k), 403(b) or IRA"],
-  ["roth", "Mostly Roth", "A Roth 401(k) or Roth IRA"],
-  ["half", "About half and half", "Some of each"],
-  ["brok", "Mostly a taxable account", "A brokerage account outside a retirement plan"]];
 export function accts(a: Answers) {
   const saved = Math.max(0, a.saved || 0);
   const roth = Math.min(saved, pos(a.rothNow) ? a.rothNow : 0);
   const brok = Math.min(saved - roth, pos(a.brokNow) ? a.brokNow : 0);
   return { trad: saved - roth - brok, roth, brok };
 }
+
+/* Where the monthly saving goes: a percentage for each of the three
+   buckets, which should add to 100 (split.ts). */
+/** The three percentages as entered, each 0 until it's typed. */
+export const splitPcts = (a: Answers): [trad: number, roth: number, brok: number] => SPLIT_KEYS.map((k) => (pos(a[k]) ? a[k] : 0)) as [number, number, number];
+/** Whether any of the three has been given. */
+export const hasSplit = (a: Answers) => SPLIT_KEYS.some((k) => ok(a[k]));
+/** The total of the three, when it isn't 100. Null while they add up. */
+export function splitOff(a: Answers): number | null {
+  if (!hasSplit(a)) return null;
+  const t = splitPcts(a).reduce((x, y) => x + y, 0);
+  return Math.abs(t - 100) < 0.05 ? null : t;
+}
+/** What fraction of each month's saving goes to each bucket. The three
+    percentages are scaled to fill the month if they don't add to 100, so
+    the plan never loses or invents money; with none given, the default. */
+export function splitShares(a: Answers): { t: number; r: number; b: number } {
+  const [t, r, b] = hasSplit(a) ? splitPcts(a) : [SPLIT_DEFAULT.splitTrad, SPLIT_DEFAULT.splitRoth, SPLIT_DEFAULT.splitBrok];
+  const sum = t + r + b;
+  return sum > 0 ? { t: t / sum, r: r / sum, b: b / sum } : { t: 1, r: 0, b: 0 };
+}
 function saveSplit(a: Answers, mine: number) {
-  const to = a.saveTo || "trad";
-  if (to === "roth") return { t: 0, r: mine, b: 0 };
-  if (to === "half") return { t: mine / 2, r: mine / 2, b: 0 };
-  if (to === "brok") return { t: 0, r: 0, b: mine };
-  return { t: mine, r: 0, b: 0 };
+  const f = splitShares(a);
+  return { t: mine * f.t, r: mine * f.r, b: mine * f.b };
 }
 
 /** A different retirement age, monthly saving (yours and your employer's),

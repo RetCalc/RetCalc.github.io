@@ -51,8 +51,9 @@ function planIn(a, over = {}) { // mirrors gdPlanIn / calc.ts planIn
   let stop = has("stopAge") ? over.stopAge : a.stopAge;
   if (!ok(stop) || stop >= retire) stop = null; if (stop != null) stop = Math.max(a.age, stop);
   const emp = Math.min(Math.max(0, monthly), a.employer || 0), mine = Math.max(0, monthly - emp);
-  const to = a.saveTo || "trad";
-  const sp = to === "roth" ? { t: 0, r: mine, b: 0 } : to === "half" ? { t: mine / 2, r: mine / 2, b: 0 } : to === "brok" ? { t: 0, r: 0, b: mine } : { t: mine, r: 0, b: 0 };
+  const pc = [a.splitTrad, a.splitRoth, a.splitBrok].map((x) => (pos(x) ? x : 0)), any = [a.splitTrad, a.splitRoth, a.splitBrok].some(ok);
+  const [pt, pr, pb] = any ? pc : [50, 25, 25], ps = pt + pr + pb || 1;
+  const sp = ps > 0 && (pt + pr + pb) > 0 ? { t: (mine * pt) / ps, r: (mine * pr) / ps, b: (mine * pb) / ps } : { t: mine, r: 0, b: 0 };
   const saved = Math.max(0, a.saved || 0), roth = Math.min(saved, pos(a.rothNow) ? a.rothNow : 0);
   const brok = Math.min(saved - roth, pos(a.brokNow) ? a.brokNow : 0), trad = saved - roth - brok;
   const yrs1 = Math.max(1, Math.min(35, Math.round(retire) - 22));

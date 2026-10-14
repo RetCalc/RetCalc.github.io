@@ -33,6 +33,7 @@ import { freshGuide, guide, replaceGuide, setGuide, useGuide, type Answers, type
 import { curOpt, setTune } from "./tune";
 import { Strip, Top } from "./Top";
 import { GuideCtx, type GuideView } from "./ui";
+import { migrateSplit } from "./split";
 import { usePlanJob } from "./usePlan";
 import { usePopup } from "@/components/shell/Popup";
 import { setNavDir } from "@/lib/nav-motion";
@@ -66,6 +67,7 @@ function arrive(g: GuideState, id: string) {
 /** A guide opened from a link or a saved plan, done up to its plan card. */
 function opened(a: Answers, src: Sources, pace: Pace, done?: Record<string, boolean>): GuideState {
   const n = freshGuide();
+  migrateSplit(a, src);
   n.a = a; n.src = src; n.pace = pace;
   const L = numbered(a, pace, factsFor(a));
   if (done) n.done = done;
