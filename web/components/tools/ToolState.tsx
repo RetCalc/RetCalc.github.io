@@ -11,7 +11,7 @@
    saved, shared and restored is exactly what was on screen. */
 
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { readStored, writeStored } from "@/lib/storage";
+import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
 
 export type ToolInputs = Record<string, string | string[] | unknown>;
 
@@ -101,17 +101,51 @@ function withDefaults<S extends ToolInputs>(defaults: S, data: ToolInputs): S {
 }
 
 /* Each tool's inputs, kept for this visit as you move between pages, the way
-   the old single-page site kept them on screen. A reload starts fresh, as
-   it did there. Other tools read these too ("Copy from Budget"). */
+   the old single-page site kept them on screen. A reload keeps them too:
+   each change is also written to the tab's session storage, and read back
+   once the page has loaded (never while rendering, so the page still
+   matches what the server sent). A closed tab or a new one starts fresh.
+   Other tools read these too ("Copy from Budget"). */
 const memory = new Map<string, ToolInputs>();
+
+/* Every tool this tab has stored, as retcalc.tool-<id>.v1 in session storage. */
+const IDS = "tool-ids";
+const toolKey = (id: string) => `tool-${id}`;
+let restored = false;
+/** The tools' inputs a reload would otherwise have lost, by tool, until
+    that tool's page takes its own (see useToolState). */
+const pending = new Map<string, ToolInputs>();
+
+/** Reads the tab's stored inputs into memory, once per page load. */
+function restoreSession(): void {
+  if (restored || typeof window === "undefined") return;
+  restored = true;
+  for (const id of readSession<string[]>(IDS, 1) ?? []) {
+    const data = readSession<ToolInputs>(toolKey(id), 1);
+    if (data && !memory.has(id)) {
+      memory.set(id, data);
+      pending.set(id, data);
+    }
+  }
+}
+
+function remember(id: string, data: ToolInputs): void {
+  memory.set(id, data);
+  pending.delete(id);
+  writeSession(toolKey(id), 1, data);
+  const ids = readSession<string[]>(IDS, 1) ?? [];
+  if (!ids.includes(id)) writeSession(IDS, 1, [...ids, id]);
+}
 
 /** A tool's inputs as last left, or `fallback` if it hasn't been opened. */
 export function toolInputs<S extends ToolInputs>(id: string, fallback: S): S {
+  restoreSession();
   return (memory.get(id) as S | undefined) ?? fallback;
 }
 /** Changes another tool's inputs; it shows them when next opened. */
 export function setToolInputs(id: string, data: ToolInputs): void {
-  memory.set(id, data);
+  restoreSession();
+  remember(id, data);
 }
 
 /** A tool's inputs. `set("price")(text)` updates one; `update({...})` several. */
@@ -119,11 +153,36 @@ export function setToolInputs(id: string, data: ToolInputs): void {
     sets up its strategy). */
 export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s: S) => S) {
   const [state, setState] = useState<S>(() => {
-    const s = toolInputs(def.id, def.defaults);
+    // Memory only: reading session storage here would differ from the
+    // server's render. The effect below fills that in.
+    const s = (memory.get(def.id) as S | undefined) ?? def.defaults;
     return opening ? opening(s) : s;
   });
+  /* After a reload the page was rendered from defaults, to match the
+     server's; this fills in what the tab had stored. A strategy page still
+     sets up its own strategy. */
+  const openingRef = useRef(opening);
   useEffect(() => {
-    memory.set(def.id, state);
+    openingRef.current = opening;
+  });
+  const filled = useRef(false);
+  useEffect(() => {
+    restoreSession();
+    const saved = pending.get(def.id);
+    if (!saved) return;
+    pending.delete(def.id);
+    filled.current = true;
+    const s = withDefaults(def.defaults, saved);
+    setState(openingRef.current ? openingRef.current(s) : s);
+  }, [def]);
+  useEffect(() => {
+    // The defaults this page rendered with must not overwrite what was
+    // just read back.
+    if (filled.current) {
+      filled.current = false;
+      return;
+    }
+    remember(def.id, state);
   }, [def.id, state]);
 
   // A share link for this tool opens with its inputs.

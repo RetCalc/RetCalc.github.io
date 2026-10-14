@@ -6,6 +6,10 @@
    Ported from src/js/app/09-navigation.js. A tool's own controls (saved
    scenarios, its household status) are in its tool bar, not here.
 
+   Tools works like a tab that keeps its place: from another tab it reopens
+   the tool last used, and clicked again from that tool it goes to the
+   picker.
+
    With a mouse, the Calculator menu opens on hover and the tab itself goes
    straight to the mode last used. Touch screens have no hover, so there a
    tap on the tab opens the menu. */
@@ -49,6 +53,12 @@ export function NavBar({ states }: { states: StateOption[] }) {
   const [lastMode, setLastMode] = useState<CalcMode>("simple");
   const shownMode = mode ?? lastMode;
   if (mode && mode !== lastMode) setLastMode(mode);
+
+  // The Tools tab reopens the tool last used (a page under Tools other
+  // than the picker); from that tool it goes to the picker.
+  const [lastTool, setLastTool] = useState<string | null>(null);
+  if (tab === "tools" && slug !== "tools" && path !== lastTool) setLastTool(path);
+  const hrefFor = (t: Tab, fallback: string) => (t === "tools" && tab !== "tools" && lastTool ? lastTool : fallback);
 
   const [menu, setMenu] = useState<"closed" | "hover" | "open">("closed");
   const [menuLeft, setMenuLeft] = useState(10);
@@ -203,11 +213,11 @@ export function NavBar({ states }: { states: StateOption[] }) {
                 tabIndex={selected || (tab === null && i === 0) ? undefined : -1}
                 aria-haspopup={isCalc ? "menu" : undefined}
                 aria-expanded={isCalc ? open : undefined}
-                onMouseEnter={isCalc ? hoverIn : () => router.prefetch(t.href)}
+                onMouseEnter={isCalc ? hoverIn : () => router.prefetch(hrefFor(t.tab, t.href))}
                 onMouseLeave={isCalc ? hoverOut : undefined}
                 onClick={(e) => {
                   if (!isCalc) {
-                    go(t.href);
+                    go(hrefFor(t.tab, t.href));
                     return;
                   }
                   if (canHover() && e.detail !== 0) {
@@ -234,7 +244,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
                   tabBtns.current[j]?.focus();
                   // Arrowing onto Calculator only lands there, so it doesn't
                   // get in the way of reaching Tools.
-                  if (TABS[j].tab !== "calc") go(TABS[j].href);
+                  if (TABS[j].tab !== "calc") go(hrefFor(TABS[j].tab, TABS[j].href));
                 }}
               >
                 {isCalc ? (

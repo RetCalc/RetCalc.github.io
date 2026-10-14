@@ -28,6 +28,26 @@ export function writeStored(key: string, version: number, value: unknown): void 
   }
 }
 
+/* What lasts for one tab's visit (a reload keeps it; a closed tab or a new
+   one doesn't): the tools' inputs, so a refresh doesn't empty them. Never
+   synced to an account. */
+export function readSession<T>(key: string, version: number): T | null {
+  try {
+    const raw = sessionStorage.getItem(`${PREFIX}${key}.v${version}`);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function writeSession(key: string, version: number, value: unknown): void {
+  try {
+    sessionStorage.setItem(`${PREFIX}${key}.v${version}`, JSON.stringify(value));
+  } catch {
+    /* not remembered; the page still works */
+  }
+}
+
 /* ---------- account sync (lib/sync, ACCOUNTS_PLAN.md) ----------
    The items a signed-in person's account keeps a copy of. Everything else
    (theme, which tools took the household in, small per-device choices)
