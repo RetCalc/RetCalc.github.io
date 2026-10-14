@@ -39,6 +39,11 @@
 }
 @media (max-width:760px){.tp-lead-body{grid-template-columns:minmax(0,1fr);gap:16px}}
 @media (max-width:640px){
+  /* The homepage enlarges its wide charts' labels on a phone, where it shows
+     them at half size (16-home.css); here Rent vs. Buy and Income Tax get the
+     card's full width, so their labels come back to the size of the rest. */
+  .tp-half .hm-wide-chart text{font-size:15px}
+  .tp-half .hm-wide-chart text.hm-t-big{font-size:16px}
   .tp-grid{grid-template-columns:minmax(0,1fr);gap:10px}
   .tp-lead,.tp-third,.tp-half{grid-column:auto}
   .tp-lead-v{font-size:35px}
