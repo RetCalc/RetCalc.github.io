@@ -40,6 +40,28 @@ colors:
   brand-gold-deep: "#B0813A"
   brand-jade-deep: "#219B73"
   brand-steel-deep: "#6A8BC1"
+  rp-ink: "#1B1D1A"
+  rp-ink2: "#4D5249"
+  rp-band: "#111111"
+  rp-white: "#FFFFFF"
+  rp-land: "#EEF1E6"
+  rp-grid: "#D6DCCB"
+  rp-rule: "#E3E7DA"
+  rp-rule2: "#C7CCBE"
+  rp-forest: "#3E7B3A"
+  rp-forest-text: "#3E5B2E"
+  rp-woods: "#9DBB86"
+  rp-woods-light: "#C9D9B5"
+  rp-trail: "#B23A22"
+  rp-water: "#2F6E9E"
+  rp-sky: "#7FA7C8"
+  rp-rose: "#B5657E"
+  rp-slate: "#55606B"
+  rp-sand: "#D8B76A"
+  rp-clay: "#C8792F"
+  rp-dusk: "#6B5E9C"
+  rp-gray: "#8A9187"
+  rp-ember: "#7A1F12"
 typography:
   display:
     fontFamily: "IBM Plex Sans, system-ui, sans-serif"
@@ -216,7 +238,26 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 - The same three colors also draw the bow-and-arrow brand motif's bow and arrow today; in the redesign the motif uses its own colors (see Brand Motif).
 
 ### Print and share
-- The printed summary and the share image card use their own fixed palettes, separate from the screen theme. They are restyled in a separate, later pass; until then a theme change must never leak into them by accident.
+- The one-page printed summary (`web/styles/07-print-sheet.css`) and the share image card use their own fixed palettes, separate from the screen theme. They are restyled in a separate, later pass; until then a theme change must never leak into them by accident.
+- **The Guide's full report** (`/guide/report`, a multi-page US Letter packet; direction C, the National Park Service Unigrid brochure, `.impeccable/surfaces/guide-report.md`) has its own fixed print palette, the `rp-*` tokens above, set as `--rp-*` custom properties on `.rp` in `web/styles/17-report.css` and read by the charts through the `C` object in `web/tools/guide/report/charts.tsx`. The sheets keep it in both themes, as paper does (`color-scheme: light`, `print-color-adjust: exact`); only the bar above the sheets (back link, names, print button) follows the site theme.
+  - **Ink** (`rp-ink`) is text and figures; **Ink 2** (`rp-ink2`) is body copy, captions, axis labels and table heads. **Band** (`rp-band`, near-black) is the title band, the foot band, section-head and row-top rules, and the numbered markers. Sheets are **White**.
+  - **Land** (`rp-land`) is the map's ground. **Grid** draws chart gridlines; **Rule** and **Rule 2** are table and list hairlines and the dotted contents leaders.
+  - **Forest**, **Woods** and **Woods Light** are the history ranges on the map (the middle eight in ten, then every start), Forest is also a history bar that lasted; **Forest Text** labels them. **Trail** is the plan line and the worst history, a run that ran out (a cross) and what you spend (a dashed line). **Ember** is pension cost in the money-out bars; **Gray** is a comparison path.
+  - **Phases** (the trail by age): saving Forest, early retirement Rose, the Medicare years Clay, Social Security early Sky, Social Security Water, required withdrawals Slate. **Income sources**: Social Security Water, pension Dusk, pre-tax Forest, Roth Woods, taxable Sand. **Money out**: spent Ink, tax Trail, health Clay, pension cost Ember, surplus Sand. Children in college take Sand, Clay, Dusk, Water in order. On the band, **Sand** also sets the one-line "because" under a page title.
+  - Word tags: **estimated** is `#6B4A00` on `#F3E3C0`, **default** is `#3F443A` on `#E1E4DB`. Band text is `#E9E9E3`; the page-number divider is `#555`.
+- **Public Sans is the report's face**, loaded through next/font on `web/app/guide/report/page.tsx` only (`--rp-font-face`). It is the one exception to the site's one-typeface rule, and it stays on the report's sheets: 800 for heads and figures, 600 to 700 for labels, tabular lining figures throughout. Scale: cover title 46px; page title 30px; lead heading 23px; ruled figure 30px (22px small); section head 13px over a 2px band rule; body 12.5px (11.5px small); tables 11px with 10px heads; axis labels 9.5px.
+- **Sheet anatomy.** Every sheet is 8.5 × 11in with .45in side margins and carries the black band: title left, the RetCalc mark in its original colors, the wordmark and the page number right (a hairline before the number). The cover's band is tall (1.25in) with the household's name, the date line and the tagline; inner pages use the slim band (.86in) with an optional "because" line. Every sheet ends in a black foot band: the plan name and date left, a note right (on inner pages "Every figure in today's dollars. Dashed figures are estimated."; on the cover the disclaimer). The cover is a full-width map on Land with a white legend box (1.5px band border) and a scale bar, then three columns. Inner pages run a lead (heading, plain paragraph), ruled section heads, and charts beside a narrower column of figures or text. Pages 2 to 8 are the story, conditional pages only when they apply; the last pages are the advisor's appendix (answers, method, glossary, year by year).
+- **Chart conventions.** Fixed-size SVG drawn for the page, every figure from the report model. Gridlines in Grid, a heavier zero line; axis labels in Ink 2 at 9.5px, money as `$1.5M`, `$400K`, `$2.5K`. Bars are flat fills with no strokes, rounding or gradients; series lines carry no markers. The plan line is Trail, 3px; spending and comparison lines are dashed; a target is a dashed Ink outline. Keys sit under the chart as small square swatches, dash and line samples. The readiness score is a 100-point bar split by area, each area's width its weight, earned part filled (Forest when full, Clay when not) on a Rule track, with points written under each part.
+- **Report rules** (from the finish review, all in the build):
+  - No score ring, dial or colored rating gauge: the score is the split bar and a ruled ratings table, your band highlighted.
+  - Figures in a row are ruled type (a 2px band rule above, no fill), never filled boxes.
+  - Land fills only the map, the trail box and at most one sidebar a page; elsewhere it marks a highlighted table row (your score band, key ages in the year by year).
+  - Numbered black markers (white numerals, 18px circle) are only for trail stops and the ordered moves list.
+  - Phase colors don't reuse income-source colors. Today two are shared: Water (the Social Security phase and Social Security income, the same money) and Forest (the saving years and pre-tax savings); the phases no longer borrow Sand, Dusk or Woods.
+  - An estimated figure carries a dashed underline (1.5px, 2px on a large figure), and the answers page tags each estimate and default with a word tag.
+  - Every sheet has the black band, title left, mark, wordmark and page number right.
+  - Printing hides the site and prints only the sheets, edge to edge on their own named page (`@page rp`), so the one-page summary keeps its margins; on iOS each sheet sits in a wider frame so it doesn't run onto a second page.
+- **The report thumbnail** (`web/tools/guide/report/Thumb.tsx`, on the homepage's Guide tile and the Guide's welcome card) is three fanned pages, the front one the cover in the report's own colors (band, Land, Woods, the Trail line, black stops). Illustration only, no figures; it keeps those colors in both themes, and only its page edge follows the site's strong rule.
 - **Link-preview cards** (the 1200×630 picture a shared link shows) are marketing, not instruments: the brand mark and wordmark, the tool's plain name as the headline, one plain sentence of what it does, and an illustration on a Surface panel that runs off the right edge. Each card must make sense on its own, with no site around it. Illustrations have no axes, labels or figures (the only text allowed is an identity like "59½"); amber is the plan line and its arrowhead. Words in `web/lib/cards.ts`, pictures in `web/components/og/art.tsx`, saved by `node scripts/og/render.mjs` from the dev server into `web/public/og/` and `web/public/og.png`. Rerender every card after changing any of them.
 
 ### Named Rules

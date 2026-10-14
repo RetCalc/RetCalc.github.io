@@ -12,17 +12,18 @@ import type { PhaseId, ReportModel } from "./model";
 export const C = {
   ink: "var(--rp-ink)", ink2: "var(--rp-ink2)", land: "var(--rp-land)", grid: "var(--rp-grid)", rule: "var(--rp-rule)", white: "var(--rp-white)", band: "var(--rp-band)",
   forest: "var(--rp-forest)", forestText: "var(--rp-forest-text)", woods: "var(--rp-woods)", woodsLight: "var(--rp-woods-light)", trail: "var(--rp-trail)", water: "var(--rp-water)",
-  sand: "var(--rp-sand)", clay: "var(--rp-clay)", dusk: "var(--rp-dusk)", sky: "var(--rp-sky)", gray: "var(--rp-gray)", ember: "var(--rp-ember)",
+  sand: "var(--rp-sand)", clay: "var(--rp-clay)", dusk: "var(--rp-dusk)", rose: "var(--rp-rose)", slate: "var(--rp-slate)", sky: "var(--rp-sky)", gray: "var(--rp-gray)", ember: "var(--rp-ember)",
 };
 
-export const PHASE_COLOR: Record<PhaseId, string> = { save: C.forest, early: C.sand, medicare: C.clay, ssEarly: C.sky, ss: C.water, rmd: C.dusk };
+export const PHASE_COLOR: Record<PhaseId, string> = { save: C.forest, early: C.rose, medicare: C.clay, ssEarly: C.sky, ss: C.water, rmd: C.slate };
 export const SOURCE_COLOR: Record<string, string> = { ss: C.water, pension: C.dusk, trad: C.forest, roth: C.woods, brok: C.sand };
 export const OUT_COLOR: Record<string, string> = { spent: C.ink, tax: C.trail, health: C.clay, pen: C.ember, surplus: C.sand };
 
 /** $1.5M, $400K, $0: axis labels. */
 export function axis(v: number): string {
   if (v >= 1e6) return "$" + (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + "M";
-  if (v >= 1e3) return "$" + Math.round(v / 1e3) + "K";
+  if (v >= 1e4) return "$" + Math.round(v / 1e3) + "K";
+  if (v >= 1e3) return "$" + +(v / 1e3).toFixed(1) + "K";
   return "$" + Math.round(v);
 }
 /** Gridline steps up to a little past `max`. */
@@ -41,6 +42,19 @@ const Grid = ({ list, Y, x1, x2 }: { list: number[]; Y: (v: number) => number; x
   <>{list.map((v) => <g key={v}><line x1={x1} x2={x2} y1={Y(v)} y2={Y(v)} stroke={C.grid} strokeWidth={v ? 0.6 : 1} />
     <text x={x1 - 6} y={Y(v) + 3.5} textAnchor="end" className="rp-ax">{axis(v)}</text></g>)}</>
 );
+/** Stop markers that would land on each other step up out of the way, each
+    keeping a leader line to its true point. */
+function dodge(pts: { x: number; y: number }[], r = 10, step = 24) {
+  const placed: { x: number; y: number }[] = [];
+  return pts.map((p) => {
+    let y = p.y;
+    for (let k = 1; k <= 6 && placed.some((q) => Math.hypot(q.x - p.x, q.y - y) < 2 * r + 2); k++) y = p.y - step * k;
+    placed.push({ x: p.x, y });
+    return { x: p.x, y, y0: p.y };
+  });
+}
+const Leader = ({ x, y, y0 }: { x: number; y: number; y0: number }) => (y === y0 ? null
+  : <g><line x1={x} x2={x} y1={y0} y2={y + 10} stroke={C.band} strokeWidth={1.2} /><circle cx={x} cy={y0} r={2.6} fill={C.band} stroke={C.white} strokeWidth={1} /></g>);
 const StopMark = ({ x, y, n }: { x: number; y: number; n: number }) => (
   <g><circle cx={x} cy={y} r={10} fill={C.band} stroke={C.white} strokeWidth={2} />
     <text x={x} y={y + 3.6} textAnchor="middle" className="rp-stopn" fill={C.white}>{n}</text></g>
@@ -66,8 +80,8 @@ export function LifeMap({ M, w = 732, h = 470 }: { M: ReportModel; w?: number; h
       <polygon points={poly(M.band.map((b) => ({ age: b.age, v: b.hi }))) + " " + poly(back(M.band).map((b) => ({ age: b.age, v: b.lo })))} fill={C.woods} />
       <line x1={X(M.retire)} x2={X(M.retire)} y1={pt} y2={h - pb} stroke={C.ink2} strokeDasharray="2 3" />
       <polyline points={poly(M.accum) + " " + poly(M.band.map((b) => ({ age: b.age, v: b.mid })))} fill="none" stroke={C.trail} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
-      {M.stops.map((s, i) => <StopMark key={i} x={X(s.age)} y={Y(valAt(s.age))} n={i + 1} />)}
-      <T x={X(M.retire) + 14} y={Y(M.S.fv) - 14} w={800} s={13}>{rounded(M.S.fv)} at {M.retire}</T>
+      {dodge(M.stops.map((s) => ({ x: X(s.age), y: Y(valAt(s.age)) }))).map((d, i) => <g key={i}><Leader {...d} /><StopMark x={d.x} y={d.y} n={i + 1} /></g>)}
+      <T x={X(M.retire) - 14} y={Y(M.S.fv) - 14} a="end" w={800} s={13}>{rounded(M.S.fv)} at {M.retire}</T>
       {last ? <><T x={X(x1) - 4} y={Y(last.hi) - 8} a="end" s={10} c={C.forestText}>Best 10% of histories</T>
         <T x={X(x1) - 4} y={Math.min(h - pb - 4, Y(last.lo) + 16)} a="end" s={10} c={C.forestText}>Worst 10%</T></> : null}
     </svg>
@@ -76,25 +90,21 @@ export function LifeMap({ M, w = 732, h = 470 }: { M: ReportModel; w?: number; h
 
 /** The trail by age: each phase of the plan as a colored stretch, with the
     numbered stops. */
-export function Trail({ M, w = 708, h = 164 }: { M: ReportModel; w?: number; h?: number }) {
-  const x0 = M.phases[0].from, x1 = M.end + 1, y = 82, X = (v: number) => 8 + ((v - x0) / Math.max(1, x1 - x0)) * (w - 16);
-  // Labels take the first of four rows (above, below, further above,
-  // further below) where they don't run into one already placed.
-  const rowsY = [y - 18, y + 46, y - 36, y + 64], taken: [number, number][][] = [[], [], [], []];
-  const place = M.stops.map((s, i) => {
-    const tw = s.t.length * 6.3, x = X(s.age), anchor = i === 0 ? "start" : i === M.stops.length - 1 ? "end" : "middle";
-    const lo = anchor === "start" ? x : anchor === "end" ? x - tw : x - tw / 2, hi = lo + tw;
-    const r = [0, 1, 2, 3].find((k) => taken[k].every(([a, b]) => hi + 8 < a || lo - 8 > b)) ?? i % 4;
-    taken[r].push([lo, hi]);
-    return { x, anchor: anchor as "start" | "middle" | "end", y: rowsY[r] };
-  });
+export function Trail({ M, w = 708 }: { M: ReportModel; w?: number }) {
+  const x0 = M.phases[0].from, x1 = M.end + 1, X = (v: number) => 8 + ((v - x0) / Math.max(1, x1 - x0)) * (w - 16);
+  // As much room above the trail as the stepped-up markers need.
+  const tall = dodge(M.stops.map((s) => ({ x: X(s.age), y: 0 }))), y = 14 - Math.min(0, ...tall.map((d) => d.y));
+  const marks0 = tall.map((d) => ({ x: d.x, y: d.y + y, y0: d.y0 + y }));
+  // The stops are numbered like the cover's map; the list under the trail
+  // is their key.
+  const h = y + 36;
   const marks: number[] = [];
   for (let g = Math.ceil(x0 / 5) * 5; g < x1; g += 5) marks.push(g);
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label="The phases of your plan by age">
       {M.phases.map((p) => <line key={p.from} x1={X(p.from)} x2={X(p.to)} y1={y} y2={y} stroke={PHASE_COLOR[p.id]} strokeWidth={12} />)}
       {marks.map((g) => <g key={g}><line x1={X(g)} x2={X(g)} y1={y + 9} y2={y + 15} stroke={C.band} />{g % 10 === 0 ? <text x={X(g)} y={y + 28} textAnchor="middle" className="rp-ax">{g}</text> : null}</g>)}
-      {M.stops.map((s, i) => <g key={i}><StopMark x={place[i].x} y={y} n={i + 1} /><T x={place[i].x} y={place[i].y} a={place[i].anchor} w={700}>{s.t}</T></g>)}
+      {marks0.map((d, i) => <g key={i}><Leader {...d} /><StopMark x={d.x} y={d.y} n={i + 1} /></g>)}
     </svg>
   );
 }
@@ -182,7 +192,7 @@ export function NeedBars({ M, w = 330, h = 150 }: { M: ReportModel; w?: number; 
   const max = Math.max(M.S.fv, M.need) * 1.08, X = (v: number) => (v / max) * w, diff = M.S.fv - M.need;
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label="Your savings at retirement against what the plan needs">
-      <T x={0} y={13} w={700}>On course for at {M.retire}</T>
+      <T x={0} y={13} w={700}>Your savings at {M.retire}</T>
       <rect x={0} y={20} width={X(M.S.fv)} height={38} fill={diff >= 0 ? C.forest : C.clay} />
       <T x={8} y={44} w={800} s={15} c={C.white}>{money(M.S.fv)}</T>
       <T x={0} y={86} w={700}>What a plan like yours needs</T>
@@ -215,35 +225,22 @@ export function LifetimeBars({ M, w = 708, h = 120 }: { M: ReportModel; w?: numb
   );
 }
 
-/** The score as a ring: each area's share of its points. */
-export function ScoreRing({ M }: { M: ReportModel }) {
-  const r = 78, c = 2 * Math.PI * r, col = [C.forest, C.water, C.clay, C.sand, C.dusk];
-  const starts = M.factors.map((_, i) => M.factors.slice(0, i).reduce((t, f) => t + (f.w / 100) * c, 0));
+const SHORT: Record<string, string> = { outlook: "Retirement outlook", rate: "Savings rate", cushion: "Emergency fund", debt: "Debt", flow: "Cash flow" };
+/** The score as its hundred points: a stretch for each area as wide as
+    the points it's worth, filled as far as this plan earns them. */
+export function ScoreBar({ M, w = 732, h = 74 }: { M: ReportModel; w?: number; h?: number }) {
+  const starts = M.factors.map((_, i) => M.factors.slice(0, i).reduce((t, f) => t + (f.w / 100) * w, 0));
   return (
-    <svg viewBox="0 0 200 200" width={200} height={200} role="img" aria-label={"Readiness score " + M.R.score + " out of 100"}>
-      <circle cx={100} cy={100} r={r} fill="none" stroke={C.rule} strokeWidth={22} />
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={"Readiness score " + M.R.score + " of 100, by area"}>
       {M.factors.map((f, i) => {
-        const p = M.R.P[f.id]?.p ?? 0, got = (p * f.w) / 100 * c;
-        return <circle key={f.id} cx={100} cy={100} r={r} fill="none" stroke={col[i]} strokeWidth={22}
-          strokeDasharray={got + " " + (c - got)} strokeDashoffset={-starts[i]} transform="rotate(-90 100 100)" />;
+        const p = M.R.P[f.id]?.p ?? 0, sw = (f.w / 100) * w, x0 = starts[i], full = p >= 0.999;
+        return <g key={f.id}>
+          <rect x={x0} y={20} width={sw - 3} height={24} fill={C.rule} />
+          <rect x={x0} y={20} width={Math.max(0, (sw - 3) * p)} height={24} fill={full ? C.forest : C.clay} />
+          <T x={x0} y={12} w={700} s={10.5}>{SHORT[f.id] ?? f.name}</T>
+          <T x={x0} y={62} w={800} s={13}>{Math.round(p * f.w)}<tspan className="rp-tx" style={{ "--fw": 500, "--fs": "10.5px" } as React.CSSProperties} fill={C.ink2}> of {f.w}{full ? "" : ", " + (f.w - Math.round(p * f.w)) + " to earn"}</tspan></T>
+        </g>;
       })}
-      <T x={100} y={104} a="middle" w={800} s={44}>{M.R.score}</T>
-      <T x={100} y={126} a="middle" s={12} c={C.ink2}>out of 100</T>
-    </svg>
-  );
-}
-export const RING_COLORS = [C.forest, C.water, C.clay, C.sand, C.dusk];
-
-/** The rating bands, with where this plan sits. */
-export function RatingScale({ score, w = 732 }: { score: number; w?: number }) {
-  const bands: [number, number, string, string][] = [[0, 30, "Needs attention", C.trail], [30, 50, "Needs work", C.clay], [50, 70, "Getting there", C.sand], [70, 85, "Nearly there", C.woods], [85, 101, "On track", C.forest]];
-  const X = (v: number) => (Math.min(v, 100) / 100) * w, sx = Math.min(w - 30, Math.max(30, X(score)));
-  return (
-    <svg viewBox={`0 0 ${w} 92`} width={w} height={92} role="img" aria-label={"The rating bands; your score is " + score}>
-      {bands.map(([f, t, n, c]) => <g key={n}><rect x={X(f)} y={26} width={X(t) - X(f)} height={22} fill={c} stroke={C.white} strokeWidth={2} />
-        <T x={X(f) + 6} y={68} w={700}>{n}</T><T x={X(f) + 6} y={83} w={500} s={10} c={C.ink2}>{t > 100 ? f + " and up" : f + " to " + (t - 1)}</T></g>)}
-      <path d={`M${X(score)} 22 l-7 -10 h14 z`} fill={C.band} />
-      <T x={sx} y={9} a="middle" w={800}>You, {score}</T>
     </svg>
   );
 }
@@ -265,7 +262,7 @@ export function Stairs({ M, w = 708, h = 230 }: { M: ReportModel; w?: number; h?
           {s.monthly > 0 ? <rect x={x + 1} y={Y(s.monthly)} width={bw - 2} height={Y(0) - Y(s.monthly)} fill={C.forest} />
             : <rect x={x + 1} y={Y(0) - 6} width={bw - 2} height={6} fill={short ? C.trail : C.gray} />}
           <T x={x + bw / 2} y={(s.monthly > 0 ? Y(s.monthly) : Y(0) - 6) - 7} a="middle" w={800} s={bw < 60 ? 10 : 12} c={short ? C.trail : C.ink}>
-            {s.monthly > 0 ? money(s.monthly) : short ? "$0, " + money(short) + " short" : "$0"}</T>
+            {s.monthly > 0 ? money(s.monthly) : short ? "Paused, " + money(short) + "/mo short" : "Paused"}</T>
         </g>;
       })}
       <T x={X(Ch.sched[0].to) + 6} y={Y(Ch.monthly) - 5} s={10}>{money(Ch.monthly)} you save today</T>
@@ -288,7 +285,7 @@ export function HomeStrip({ M, w = 708 }: { M: ReportModel; w?: number }) {
   );
 }
 export function TwoPaths({ M, w = 430, h = 220 }: { M: ReportModel; w?: number; h?: number }) {
-  const Ch = M.changes!, flat = Ch.flat!, pl = 50, pr = 10, pt = 14, pb = 24, x0 = M.accum[0].age, x1 = M.retire;
+  const Ch = M.changes!, flat = Ch.flat!, pl = 50, pr = 62, pt = 14, pb = 24, x0 = M.accum[0].age, x1 = M.retire;
   const { top, list } = ticks(Math.max(flat.fv, M.S.fv) * 1.05);
   const X = (v: number) => pl + ((v - x0) / Math.max(1, x1 - x0)) * (w - pl - pr), Y = (v: number) => pt + (1 - v / top) * (h - pt - pb);
   const line = (p: number[]) => p.map((v, i) => X(x0 + i) + "," + Y(v)).join(" ");
@@ -300,8 +297,8 @@ export function TwoPaths({ M, w = 430, h = 220 }: { M: ReportModel; w?: number; 
       <Grid list={list} Y={Y} x1={pl} x2={w - pr} />
       <polyline points={line(flat.path)} fill="none" stroke={C.gray} strokeWidth={2.6} strokeDasharray="5 4" />
       <polyline points={line(M.S.path)} fill="none" stroke={C.trail} strokeWidth={2.6} />
-      <T x={X(x1) - 4} y={Y(flat.fv) + (higher ? -8 : 18)} a="end" w={700} c={C.ink2}>{rounded(flat.fv)} without the changes</T>
-      <T x={X(x1) - 4} y={Y(M.S.fv) + (higher ? 18 : -8)} a="end" w={800} c={C.trail}>{rounded(M.S.fv)} with them</T>
+      <T x={X(x1) + 6} y={Y(flat.fv) + (higher ? 0 : 10)} w={700} c={C.ink2}>{rounded(flat.fv)}</T>
+      <T x={X(x1) + 6} y={Y(M.S.fv) + (higher ? 10 : 0)} w={800} c={C.trail}>{rounded(M.S.fv)}</T>
       {marks.map((g) => <text key={g} x={X(g)} y={h - 6} textAnchor="middle" className="rp-ax">{g}</text>)}
     </svg>
   );
@@ -396,8 +393,8 @@ export function StackBars({ rows, parts, line, w = 430, h = 220, max: maxIn }: {
 }
 
 /** One person's benefit claiming at each age from 62 to 70, the plan's own age marked. */
-export function ClaimLadder({ list, pick, w = 330, h = 190 }: { list: { age: number; v: number }[]; pick: number; w?: number; h?: number }) {
-  const pl = 46, pb = 22, pt = 18, { top, list: tk } = ticks(Math.max(...list.map((x) => x.v / 12)) * 1.08, 3);
+export function ClaimLadder({ list, pick, max, w = 330, h = 190 }: { list: { age: number; v: number }[]; pick: number; max?: number; w?: number; h?: number }) {
+  const pl = 46, pb = 22, pt = 18, { top, list: tk } = ticks((max ?? Math.max(...list.map((x) => x.v))) / 12 * 1.08, 3);
   const bw = (w - pl) / list.length, Y = (v: number) => pt + (1 - v / top) * (h - pt - pb);
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label="The monthly benefit for each claiming age from 62 to 70">
@@ -419,7 +416,7 @@ export function DebtLines({ order, months, w = 708 }: { order: { desc: string; a
   for (let m = 0; m <= months; m += step) marks.push(m);
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label="When each debt is paid off">
-      {marks.map((m) => <g key={m}><line x1={X(m)} x2={X(m)} y1={0} y2={h - 20} stroke={C.rule} /><text x={X(m)} y={h - 6} textAnchor="middle" className="rp-ax">{m ? (m % 12 === 0 ? m / 12 + (m === 12 ? " year" : " years") : m + " mo") : "Now"}</text></g>)}
+      {marks.map((m) => <g key={m}><line x1={X(m)} x2={X(m)} y1={0} y2={h - 20} stroke={C.rule} /><text x={X(m)} y={h - 6} textAnchor={X(m) > w - 40 ? "end" : "middle"} className="rp-ax">{m ? (m % 12 === 0 ? m / 12 + (m === 12 ? " year" : " years") : m + " mo") : "Now"}</text></g>)}
       {order.map((d, i) => {
         const y = 4 + i * rh, hiRate = d.apr >= 8;
         return <g key={i}><T x={0} y={y + 15} w={700}>{d.desc}</T><T x={pl - 10} y={y + 15} a="end" w={500} s={10} c={C.ink2}>{d.apr.toFixed(1)}%</T>

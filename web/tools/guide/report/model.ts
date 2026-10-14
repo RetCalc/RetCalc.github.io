@@ -226,7 +226,8 @@ export function reportModel(a0: Answers, src: Sources, levers: Levers, names: Re
   add("moves", "Your next moves");
   add("sources", "Assumptions and sources");
   // The year-by-year table runs over as many pages as it needs.
-  const PER = 36;
+  // At most 36 rows a sheet, split evenly so the last sheet isn't a few rows.
+  const PER = Math.ceil(rows.length / Math.max(1, Math.ceil(rows.length / 36)));
   for (let i = 0; i < rows.length; i += PER) add("years", i ? "Year by year, continued" : "Year by year");
 
   return {

@@ -11,8 +11,8 @@ import { opTacticsLine } from "@/tools/optimizer/words";
 import { householdAtRetire } from "../schedule";
 import { rounded } from "../words";
 import {
-  C, ClaimLadder, CollegeBars, CollegeTimeline, DebtLines, HistoryBars, StackBars, HomeStrip, IncomeBars, IncomeKey, LifeMap, LifetimeBars, NeedBars, OUT_COLOR, PHASE_COLOR, RING_COLORS,
-  RatingScale, ReportMark, ScoreRing, Stairs, Trail, TwoPaths, YearBars, collegeColor,
+  C, ClaimLadder, CollegeBars, CollegeTimeline, DebtLines, HistoryBars, StackBars, HomeStrip, IncomeBars, IncomeKey, LifeMap, LifetimeBars, NeedBars, OUT_COLOR, PHASE_COLOR,
+  ReportMark, ScoreBar, Stairs, Trail, TwoPaths, YearBars, collegeColor, SOURCE_COLOR,
 } from "./charts";
 import type { PageInfo, ReportModel } from "./model";
 
@@ -143,7 +143,7 @@ function Road({ M, p }: { M: ReportModel; p: PageInfo }) {
       <div className="rp-landbox"><Trail M={M} />
         <div className="rp-key">{M.phases.filter((x, i, all) => all.findIndex((y) => y.id === x.id) === i).map((x) => <span key={x.id}><i style={{ "--sw": PHASE_COLOR[x.id] } as React.CSSProperties} />{x.name}</span>)}</div></div>
       <div className="rp-wide">
-        <div><Sec>Each year of retirement, by where the money comes from</Sec><IncomeBars M={M} /><IncomeKey M={M} /></div>
+        <div><Sec>Each year of retirement, by where the money comes from</Sec><IncomeBars M={M} h={280} /><IncomeKey M={M} /></div>
         <div><Sec>Year one</Sec>
           <Side><div className="rp-fig">{money(fromSavings)}</div>comes out of your savings: {money(r0.spend - r0.ss - r0.pension > 0 ? r0.spend - r0.ss - r0.pension : 0)} toward spending, {money(r0.tax + r0.irmaa)} in tax{r0.health > 0 ? " and " + money(r0.health) + " for health insurance" : ""}.
             {surplus ? <><h5 className="gap">From {M.rmdAge}</h5>Required withdrawals take out more than you spend. What&apos;s left after tax is reinvested in a brokerage account.</> : null}</Side></div>
@@ -228,7 +228,7 @@ function Last({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p} foot="Past returns don't predict future ones.">
       <Lead h={<>We ran your retirement through every starting year from {H.first} to {M.runs[M.runs.length - 1].y}. {fails.length ? <>It lasted in {H.survived} of {H.total}.</> : <>It lasted in all {H.total}.</>}</>}>
-        Each run uses what really happened to stocks, bonds and inflation from that year on, with {M.S.mix}% in stocks, your spending rising with inflation, and each year&apos;s tax and health insurance paid on top. Starts like 1929, 1966 and 2000 are the bad luck a plan has to survive.
+        Each run uses what really happened to stocks, bonds and inflation from that year on, with {M.S.mix}% in stocks, your spending rising with inflation, and each year&apos;s tax and health insurance paid on top. {(() => { const hard = [1929, 1937, 1966, 1973, 2000].filter((y) => M.runs.some((r) => r.y === y)); return hard.length > 1 ? <>Starts like {and(hard.map(String))} are the bad luck a plan has to survive.</> : null; })()}
       </Lead>
       <Sec>What was left at {M.end}, by the year retirement started</Sec>
       <HistoryBars M={M} />
@@ -264,7 +264,8 @@ function Money({ M, p }: { M: ReportModel; p: PageInfo }) {
       </Lead>
       <Sec>Every dollar of retirement, in and out</Sec>
       <LifetimeBars M={M} />
-      <div className="rp-key">{M.money.out.filter((x) => x[1] >= 500).map(([t, v, k]) => <span key={k}><i style={{ "--sw": OUT_COLOR[k] } as React.CSSProperties} />{t} {rounded(v)}</span>)}</div>
+      <div className="rp-key"><b>In</b>{M.money.in.filter((x) => x[1] >= 500).map(([t, v, k]) => <span key={k}><i style={{ "--sw": SOURCE_COLOR[k] } as React.CSSProperties} />{t} {rounded(v)}</span>)}</div>
+      <div className="rp-key"><b>Out</b>{M.money.out.filter((x) => x[1] >= 500).map(([t, v, k]) => <span key={k}><i style={{ "--sw": OUT_COLOR[k] } as React.CSSProperties} />{t} {rounded(v)}</span>)}</div>
       <div className="rp-wide">
         <div><Sec>Income tax each year</Sec><YearBars M={M} f={(r) => r.tax + r.irmaa} color={C.trail} />
           <p className="rp-small">The Medicare surcharge, when there is one, is counted with the tax.</p></div>
@@ -303,10 +304,10 @@ function Health({ M, p }: { M: ReportModel; p: PageInfo }) {
         <Side><div className="rp-fig">{money(Hh.avg)}</div>a year on average before Medicare</Side>
       </div>
       <Sec>What you can do</Sec>
-      <ol className="rp-poi">
-        <li><span className="rp-num">1</span><span><b>Get real quotes a year before you retire.</b> The figures here are estimates after the subsidy; real prices depend on your county and the plan you pick.</span></li>
-        <li><span className="rp-num">2</span><span><b>Watch your income in these years.</b> Taking more out of traditional accounts, or converting to Roth, raises income and shrinks the subsidy. The Healthcare Cost Planner shows the trade.</span></li>
-        {M.who.married && Hh.med2 !== Hh.med1 ? <li><span className="rp-num">3</span><span><b>Plan for the years one of you is on Medicare and the other isn&apos;t.</b> The household subsidy changes when the first of you moves to Medicare.</span></li> : null}
+      <ol className="rp-poi plain">
+        <li><span><b>Get real quotes a year before you retire.</b> The figures here are estimates after the subsidy; real prices depend on your county and the plan you pick.</span></li>
+        <li><span><b>Watch your income in these years.</b> Taking more out of traditional accounts, or converting to Roth, raises income and shrinks the subsidy. The Healthcare Cost Planner shows the trade.</span></li>
+        {M.who.married && Hh.med2 !== Hh.med1 ? <li><span><b>Plan for the years one of you is on Medicare and the other isn&apos;t.</b> The household subsidy changes when the first of you moves to Medicare.</span></li> : null}
       </ol>
     </Sheet>
   );
@@ -321,26 +322,37 @@ function Score({ M, p }: { M: ReportModel; p: PageInfo }) {
       <Lead h={<>{M.R.score} out of 100: {M.rating.label.toLowerCase()}{weak.length ? <>, with {num(weak.length)} {weak.length === 1 ? "area" : "areas"} still to finish</> : null}.</>}>
         The readiness score adds up five areas, weighted by how much each matters to a retirement. The outlook, whether the plan lasts, counts for the most. Emergency savings and debt are smaller, but they&apos;re the ones that can derail a plan before it reaches retirement.
       </Lead>
+      <Sec>Your {M.R.score} points, area by area</Sec>
+      <ScoreBar M={M} />
       <div className="rp-scoregrid">
         <div>{M.factors.map((f) => {
           const P = M.R.P[f.id];
           if (!P) return null;
           const pts = Math.round(P.p * f.w), m = byArea(f.id);
           return <div key={f.id} className="rp-area"><div><h5>{f.name}</h5><div className="w">worth {f.w} points</div></div>
-            <div><div className="rp-meter"><b style={{ "--sw": P.p >= 0.999 ? C.forest : C.clay, "--w": P.p * 100 + "%" } as React.CSSProperties} /></div>
-              <div className="txt">{cap(P.txt)}. {P.p >= 0.999 ? "Full marks." : m ? "Next: " + m.t.charAt(0).toLowerCase() + m.t.slice(1) + "." : ""}</div></div>
+            <div className="txt">{cap(P.txt)}. {P.p >= 0.999 ? "Full marks." : m ? "Next: " + m.t.charAt(0).toLowerCase() + m.t.slice(1) + "." : ""}</div>
             <div className="pts">{pts}<small> / {f.w}</small></div></div>;
         })}</div>
-        <div><ScoreRing M={M} />
-          <div className="rp-key center">{M.factors.map((f, i) => <span key={f.id}><i style={{ "--sw": RING_COLORS[i] } as React.CSSProperties} />{f.name}</span>)}</div>
-          {M.R.score < 100 && fixes.length ? <Side className="gap"><h5>The next {100 - M.R.score} points</h5>{cap(and(fixes.map((m) => m!.t.charAt(0).toLowerCase() + m!.t.slice(1))))}. {fixes.length > 1 ? "Both are" : "It's"} on page {pageOf(M, "moves")}.</Side> : null}</div>
+        <div>{M.R.score < 100 && fixes.length ? <Side><h5>The next {100 - M.R.score} points</h5>{cap(and(fixes.map((m) => m!.t.charAt(0).toLowerCase() + m!.t.slice(1))))}. {fixes.length > 1 ? "They're" : "It's"} on page {pageOf(M, "moves")}.</Side>
+          : <Side><h5>Full marks</h5>Every area is where it should be. Keep it there as life changes.</Side>}</div>
       </div>
       <Sec>What the score means</Sec>
-      <RatingScale score={M.R.score} />
+      <table className="rp-t"><thead><tr><th>Score</th><th className="l">Rating</th><th className="l">What it says</th></tr></thead><tbody>
+        {RATINGS.map(([lo, hi, n, d]) => { const on = M.R.score >= lo && M.R.score <= hi;
+          return <tr key={n} className={on ? "hl" : undefined}><td>{hi >= 100 ? lo + " and up" : lo + " to " + hi}</td><td className="l"><b>{n}</b>{on ? <> &middot; your plan, {M.R.score}</> : null}</td><td className="l">{d}</td></tr>; })}
+      </tbody></table>
       <p className="rp-small">The score never rewards taking more risk: it moves only with what you save, spend, owe and keep in reserve.</p>
     </Sheet>
   );
 }
+
+const RATINGS: [number, number, string, string][] = [
+  [85, 100, "On track", "The plan lasts in at least 90% of history and the basics are in place."],
+  [70, 84, "Nearly there", "A strong plan with one or two areas to finish."],
+  [50, 69, "Getting there", "The foundations are there; the plan needs more saving or a later date."],
+  [30, 49, "Needs work", "Several areas need attention before the plan holds up."],
+  [0, 29, "Needs attention", "Start with the first move on the list: it does the most."],
+];
 
 /* ---------- next moves ---------- */
 const WHEN: [string, string][] = [["This month", "Quick ones"], ["This year", "The ones that move the score"], ["When you're ready", "Before you retire"]];
@@ -461,11 +473,11 @@ function Bridge({ M, p }: { M: ReportModel; p: PageInfo }) {
             : B.move ? <><h5>{B.move.t}</h5><Html as="span" html={B.move.d} /></> : <>The Early Retirement Bridge compares the ways to reach your savings before 59½ through every market since {M.S.H.first}.</>}</Side></div>
       </div>
       <Sec>The ways to reach the money early</Sec>
-      <ol className="rp-poi">
-        {M.retire >= 55 ? <li><span className="rp-num">1</span><span><b>The rule of 55.</b> Leave the job in or after the year you turn 55 and that employer&apos;s 401(k) pays out without the penalty. Other accounts don&apos;t qualify.</span></li> : null}
-        <li><span className="rp-num">{M.retire >= 55 ? 2 : 1}</span><span><b>72(t) payments.</b> Equal yearly payments from an IRA, set by IRS formula, for five years or to 59½, whichever is longer. Change them and the penalty comes back.</span></li>
-        <li><span className="rp-num">{M.retire >= 55 ? 3 : 2}</span><span><b>A Roth ladder.</b> Convert some traditional money to Roth each year; each conversion can come out penalty-free five years later.</span></li>
-        <li><span className="rp-num">{M.retire >= 55 ? 4 : 3}</span><span><b>Live off the brokerage account and Roth contributions</b> first, and leave the traditional accounts to grow until 59½.</span></li>
+      <ol className="rp-poi plain">
+        {M.retire >= 55 ? <li><span><b>The rule of 55.</b> Leave the job in or after the year you turn 55 and that employer&apos;s 401(k) pays out without the penalty. Other accounts don&apos;t qualify.</span></li> : null}
+        <li><span><b>72(t) payments.</b> Equal yearly payments from an IRA, set by IRS formula, for five years or to 59½, whichever is longer. Change them and the penalty comes back.</span></li>
+        <li><span><b>A Roth ladder.</b> Convert some traditional money to Roth each year; each conversion can come out penalty-free five years later.</span></li>
+        <li><span><b>Live off the brokerage account and Roth contributions</b> first, and leave the traditional accounts to grow until 59½.</span></li>
       </ol>
     </Sheet>
   );
@@ -473,7 +485,8 @@ function Bridge({ M, p }: { M: ReportModel; p: PageInfo }) {
 
 /* ---------- Social Security for a couple ---------- */
 function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
-  const Q = M.social!, total = Q.a1 + Q.a2, from = Math.max(M.retire, M.firstClaim - 2), ssRows = M.rows.filter((r) => r.age >= from && r.age < from + 16);
+  const Q = M.social!, total = Q.a1 + Q.a2, ssRows = M.rows.filter((r) => r.age >= M.firstClaim);
+  const ladderMax = Math.max(...Q.ladder1.map((x) => x.v), ...Q.ladder2.map((x) => x.v));
   const one = (n: 1 | 2) => {
     const name = cap(n === 1 ? M.who.first : M.who.second), a = n === 1 ? Q.a1 : Q.a2, pia = n === 1 ? Q.pia1 : Q.pia2, c = n === 1 ? Q.claim1 : Q.claim2, own = n === 1 ? Q.own1 : Q.own2;
     return <div><Sec>{name === "You" ? "Your benefit" : name}</Sec>
@@ -481,7 +494,7 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
         <Side><div className="rp-fig"><Est on={!own}>{money(pia)}</Est></div>a month at full retirement age, 67</Side></div>
       <p className="rp-small">{own ? "From your Social Security statement." : "Estimated from income. Your statement at ssa.gov/myaccount has the real figure."}</p>
       <h6 className="rp-mini">Claiming at each age from 62 to 70</h6>
-      <ClaimLadder list={n === 1 ? Q.ladder1 : Q.ladder2} pick={c} /></div>;
+      <ClaimLadder list={n === 1 ? Q.ladder1 : Q.ladder2} pick={c} max={ladderMax} /></div>;
   };
   return (
     <Sheet M={M} p={p}>
@@ -491,7 +504,8 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
       <div className="rp-g2">{one(1)}{one(2)}</div>
       <div className="rp-wide">
         <div><Sec>Social Security each year, by {M.who.axisIn}</Sec>
-          <StackBars rows={ssRows} h={190} parts={[{ f: (r) => r.ss, color: C.water }]} /></div>
+          <StackBars rows={ssRows} h={190} parts={[{ f: (r) => r.ss, color: C.water }]} line={{ f: (r) => (r.ss > 0 ? Q.survivor : 0), color: C.trail }} />
+          <div className="rp-key"><span><i style={{ "--sw": C.water } as React.CSSProperties} />Both of you, to {M.end}</span><span><i className="dash" style={{ "--sw": C.trail } as React.CSSProperties} />What one of you keeps, alone</span></div></div>
         <div><Sec>When one of you dies</Sec>
           <Side><div className="rp-fig">{money(Q.survivor / 12)}</div>a month for the survivor: the larger of the two benefits carries on and the smaller one stops, so the household&apos;s Social Security falls from {money(total / 12)}.
             <h5 className="gap">Why it matters</h5>The higher earner&apos;s claiming age sets the survivor&apos;s benefit too, which is why waiting often pays off for couples. The Plan Optimizer tries every pair of claiming ages.</Side></div>
@@ -523,10 +537,10 @@ function Pension({ M, p }: { M: ReportModel; p: PageInfo }) {
         {M.rows.filter((r) => r.pension > 0 && (r.age - Pn.from) % 5 === 0).map((r) => <tr key={r.age}><td>{r.age}</td><td>{money(r.pension / 12)}</td><td>{r.ss >= 1 ? money(r.ss / 12) : "–"}</td><td>{pctStr((r.pension + r.ss) / Math.max(1, r.spend), 0)}</td></tr>)}
       </tbody></table>
       <Sec>Worth checking with the plan</Sec>
-      <ol className="rp-poi">
-        <li><span className="rp-num">1</span><span><b>{Pn.cola ? "How the raise is set." : "Whether there's any raise at all."}</b> {Pn.cola ? "Some plans cap the yearly raise; a cap below inflation shrinks it slowly." : "Some plans add one now and then; the plan here assumes none."}</span></li>
-        {M.who.married ? <li><span className="rp-num">2</span><span><b>Whether it continues for {M.who.second}.</b> A joint-and-survivor option keeps paying after the first death, for a smaller check now. The plan assumes it pays as entered, for life.</span></li> : null}
-        <li><span className="rp-num">{M.who.married ? 3 : 2}</span><span><b>Lump sum or monthly.</b> If you&apos;re offered a lump sum, compare it with what the monthly payments would cost to buy; the Drawdown Simulator can test both.</span></li>
+      <ol className="rp-poi plain">
+        <li><span><b>{Pn.cola ? "How the raise is set." : "Whether there's any raise at all."}</b> {Pn.cola ? "Some plans cap the yearly raise; a cap below inflation shrinks it slowly." : "Some plans add one now and then; the plan here assumes none."}</span></li>
+        {M.who.married ? <li><span><b>Whether it continues for {M.who.second}.</b> A joint-and-survivor option keeps paying after the first death, for a smaller check now. The plan assumes it pays as entered, for life.</span></li> : null}
+        <li><span><b>Lump sum or monthly.</b> If you&apos;re offered a lump sum, compare it with what the monthly payments would cost to buy; the Drawdown Simulator can test both.</span></li>
       </ol>
     </Sheet>
   );
@@ -591,7 +605,7 @@ function Debt({ M, p }: { M: ReportModel; p: PageInfo }) {
           <Side><div className="rp-fig">{D.min ? money(D.min) : "–"}</div>{D.min ? "a month in minimum payments" : "minimum payments not entered"}</Side></div>}
       {area ? <><Sec>Debt in your score</Sec>
         <div className="rp-wide"><div><p className="rp-body">{cap(area.txt)}: {Math.round(area.p * 15)} of 15 points.{area.p < 0.999 ? " Clearing the high-rate debt earns the rest." : ""}</p></div><div /></div></> : null}
-      {D.moves.length ? <><Sec>The moves</Sec><ol className="rp-poi">{D.moves.map((m, i) => <li key={m.id}><span className="rp-num">{i + 1}</span><span><b>{m.t}.</b> <Html as="span" html={m.d} /></span></li>)}</ol></> : null}
+      {D.moves.length ? <><Sec>The moves</Sec><ol className="rp-poi plain">{D.moves.map((m) => <li key={m.id}><span><b>{m.t}.</b> <Html as="span" html={m.d} /></span></li>)}</ol></> : null}
     </Sheet>
   );
 }
