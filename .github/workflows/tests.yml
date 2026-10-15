@@ -1,23 +1,11 @@
 # Runs on every push and pull request, as a second line of defense behind
 # the local pre-commit hook (which isn't copied when the repo is cloned):
-# the calculation tests, and a check that the built index.html matches src/.
-# A red check here means a number on the site changed, or index.html was
-# edited directly instead of through src/.
+# the calculation tests against web/lib/engine, the figures baselines, lint
+# and a production build. A red check here means a number on the site
+# changed, or the build broke.
 name: Calculation tests
 on: [push, pull_request]
 jobs:
-  math:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: python3 tests/run.py
-      - run: python3 build.py --check
-
-  # The Next.js rebuild in web/ (MIGRATION.md): the same calculation tests
-  # against its copy of the engine, then lint and a production build.
   web:
     runs-on: ubuntu-latest
     defaults:
@@ -32,8 +20,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - run: python3 ../tests/run.py --web
       - run: npm ci
+      - run: python3 ../tests/run.py
       # Every tool's figures, and the readiness guide's for its fixture
       # households, unchanged; then the guide's own unit tests.
       - run: node scripts/baseline/numbers.mjs check

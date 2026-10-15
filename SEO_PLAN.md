@@ -35,10 +35,9 @@ possible. The paid extras that are worth it are listed separately at the end
 **Where things are**
 
 The live site, retcalc.app, is the Next.js app in `web/`, served by Vercel
-from `main` (switched 2026-10-05, see `MIGRATION.md`). The repo root also
-still holds the old static site (`src/`, `build.py`, the root `*.html`).
-**Don't make SEO changes in `src/` or the root HTML files**; they aren't
-served any more.
+from `main` (switched 2026-10-05, see `MIGRATION.md`). The old static site
+was removed from this repo on 2026-10-15 and kept in the private repo
+RetCalc/retcalc-v1.
 
 | What | File |
 | --- | --- |
@@ -68,13 +67,11 @@ using an API you aren't sure of).
 
 **Known traps**
 
-- `python3 tests/run.py --web` checks the figures quoted in the articles
+- `python3 tests/run.py` checks the figures quoted in the articles
   against the calculators, reading `web/content/articles/*.html` (T1.10,
-  done). Plain `python3 tests/run.py` still reads the old site's file. A
+  done). A
   changed figure in an article without a matching check isn't caught, so
   add a `says(...)` check in `tests/math.test.js` for any new figure.
-- `src/page-meta.json` (the old site's copy) no longer matches
-  `web/lib/page-meta.json`, and that's intended. Edit only the `web/` one.
 - Pages are `noindex` everywhere except the production deployment
   (`LIVE` in `web/app/layout.tsx`). Don't "fix" the noindex you see locally
   or on previews.
@@ -174,7 +171,9 @@ using an API you aren't sure of).
 - [ ] **T0.6 Owner: links that meant the calculator.** In Search Console →
   Links (and Ahrefs), find sites linking to `/` that clearly meant the
   calculator, and ask them to link to `/calculator`.
-- [ ] **T0.7 Owner: retire GitHub Pages, after the watch.** Now: check
+- [ ] **T0.7 Owner: retire GitHub Pages, after the watch.** The old build
+  left the repo on 2026-10-15 (now RetCalc/retcalc-v1); what's left is
+  turning Pages off (repo Settings → Pages). Before that: check
   that `https://retcalc.github.io/` redirects to `https://retcalc.app/`, so
   the old copy can't compete in search. Pages is the move's rollback
   (`MIGRATION.md`, "Rollback"), so leave it on until T0.5's watch ends

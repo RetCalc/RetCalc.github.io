@@ -10,7 +10,7 @@
 
    Run it before committing a change to a page's article or tool (it needs
    the full git history, so it can't run on the shallow clone a deploy
-   makes). tests/run.py --web checks that every page has a date.
+   makes). tests/run.py checks that every page has a date.
    Shared code (components, the calculation engine) is not counted: a change
    there would move every page's date at once. */
 

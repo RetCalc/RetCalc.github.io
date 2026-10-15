@@ -1,7 +1,7 @@
-# The e2e smoke set: every check that passed in full (numbers, page size
-# and pixels) on the last complete run, 2026-10-06 at f62dc2f, 72 of 176.
-# The rest fail by design while the redesign is under way: they compare
-# against the old site's look. Run with: node scripts/e2e-smoke.mjs
+# The e2e smoke set: checks that passed in full on the last complete run,
+# 2026-10-06 at f62dc2f. The old-vs-new comparisons it left out were retired
+# with the old site (2026-10-15), so this is now most of the suite.
+# Run with: node scripts/e2e-smoke.mjs
 # One check per line: <project> | <spec file> | <test title>
 desktop | about.spec.ts | the contact address is put together in the browser
 desktop | backtest.spec.ts | the figures go to Advanced
@@ -16,7 +16,6 @@ desktop | drawdown.spec.ts | an income source can be added, turned off and remov
 desktop | drawdown.spec.ts | the spread of spending copes with every start spending the same
 desktop | drawdown.spec.ts | the strategy guide and studies set the plan
 desktop | guide.spec.ts | a reload in the middle of a trip fills the tool in again
-desktop | guide.spec.ts | a shared guide link opens the plan on its results
 desktop | guide.spec.ts | the plan prints on one page
 desktop | household.spec.ts | a saved household fills the tools that take it
 desktop | optimizer.spec.ts | a search can be stopped
@@ -24,18 +23,6 @@ desktop | optimizer.spec.ts | the optimizer charts show the age under the pointe
 desktop | rentbuy.spec.ts | rent vs. buy clears without a price
 desktop | roth.spec.ts | the Roth chart switches to tax paid
 desktop | share.spec.ts | a tool without a summary offers only its link
-desktop | share.spec.ts | advanced summary and card match the current site
-desktop | share.spec.ts | bridge summary and card match the current site
-desktop | share.spec.ts | budget summary and card match the current site
-desktop | share.spec.ts | college summary and card match the current site
-desktop | share.spec.ts | debt summary and card match the current site
-desktop | share.spec.ts | drawdown summary and card match the current site
-desktop | share.spec.ts | home summary and card match the current site
-desktop | share.spec.ts | incometax summary and card match the current site
-desktop | share.spec.ts | mortgage summary and card match the current site
-desktop | share.spec.ts | rentbuy summary and card match the current site
-desktop | share.spec.ts | roth summary and card match the current site
-desktop | share.spec.ts | stages summary and card match the current site
 desktop | stages.spec.ts | Advanced hands its plan to Stages
 desktop | stages.spec.ts | a stage can be renamed
 desktop | tooltips.spec.ts | a ? shows its explanation
@@ -52,25 +39,12 @@ phone | drawdown.spec.ts | an income source can be added, turned off and removed
 phone | drawdown.spec.ts | the spread of spending copes with every start spending the same
 phone | drawdown.spec.ts | the strategy guide and studies set the plan
 phone | guide.spec.ts | a reload in the middle of a trip fills the tool in again
-phone | guide.spec.ts | a shared guide link opens the plan on its results
 phone | guide.spec.ts | the plan prints on one page
 phone | household.spec.ts | a saved household fills the tools that take it
 phone | optimizer.spec.ts | a search can be stopped
 phone | rentbuy.spec.ts | rent vs. buy clears without a price
 phone | roth.spec.ts | the Roth chart switches to tax paid
 phone | share.spec.ts | a tool without a summary offers only its link
-phone | share.spec.ts | advanced summary and card match the current site
-phone | share.spec.ts | bridge summary and card match the current site
-phone | share.spec.ts | budget summary and card match the current site
-phone | share.spec.ts | college summary and card match the current site
-phone | share.spec.ts | debt summary and card match the current site
-phone | share.spec.ts | drawdown summary and card match the current site
-phone | share.spec.ts | home summary and card match the current site
-phone | share.spec.ts | incometax summary and card match the current site
-phone | share.spec.ts | mortgage summary and card match the current site
-phone | share.spec.ts | rentbuy summary and card match the current site
-phone | share.spec.ts | roth summary and card match the current site
-phone | share.spec.ts | stages summary and card match the current site
 phone | stages.spec.ts | Advanced hands its plan to Stages
 phone | stages.spec.ts | a stage can be renamed
 phone | tooltips.spec.ts | a ? shows its explanation

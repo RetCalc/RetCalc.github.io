@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
-"""Run the calculation tests against the math in src/.
+"""Run the calculation tests against the site's engine, web/lib/engine/.
 
-The engine is src/js/math.js (between its ===MATH START=== and ===MATH END===
-markers), the Drawdown Simulator's engine, src/js/drawdown.js (between
-===DRAWDOWN START=== and ===DRAWDOWN END===) and the retirement plan engine,
-src/js/plan.js (between ===PLAN START=== and ===PLAN END===); a few
-calculators live in the app script, src/js/app/*.js.
-This takes the engine block, the named extras and the text of the "about
-this tool" articles (whose worked examples the tests check), puts them in
-one script with tests/math.test.js, and runs it with whichever
-JavaScript engine is here: jsc (built into macOS) or node (CI). The exit
-code is nonzero when any test fails, which is what the pre-commit hook and
-the GitHub workflow check.
-
-With --web, the engine is taken from web/lib/engine/ instead: the same code,
-moved into the Next.js app as modules during the migration, with its
-`export` keywords dropped so it runs as one script like the original.
+The engine is web/lib/engine/math.js (between its ===MATH START=== and
+===MATH END=== markers), the Drawdown Simulator's engine, drawdown.js
+(between ===DRAWDOWN START=== and ===DRAWDOWN END===), the retirement plan
+engine, plan.js (between ===PLAN START=== and ===PLAN END===), and a few
+calculators in calculators.js, bridge.js and landing.js; their top-level
+`export` keywords are dropped so it all runs as one script. A few defaults
+the tests check live in the tools' TypeScript; tests/web-extras.mjs prints
+those (it needs node). This puts all of it, the text of the "about this
+tool" articles (whose worked examples the tests check) and
+tests/math.test.js in one script, and runs it with whichever JavaScript
+engine is here: jsc (built into macOS) or node (CI). The exit code is
+nonzero when any test fails, which is what the pre-commit hook and the
+GitHub workflow check.
 
     python3 tests/run.py
-    python3 tests/run.py --web
 """
 import glob, json, os, re, shutil, subprocess, sys, tempfile
 
@@ -27,13 +24,10 @@ JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Help
 
 # Calculators outside the engine block that the tests cover, and the
 # constants they read.
-FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "collegePlanCalc", "collegeWalk", "brLE", "brAmortFactor", "projectBasic",
-             "gdRating"]
-CONSTANTS = ["PMI_DEFAULT", "BR_SLT",
-             "DEFAULTS", "BASIC_INFL", "GD_FACTORS", "RC_DEFAULTS",
-             "DEBT_DEFAULTS", "RISK_LEVELS", "DD_LANDING"]
-ARTICLES = os.path.join(ROOT, "src", "main", "26-about-this-tool.html")
-WEB_ARTICLES = os.path.join(ROOT, "web", "content", "articles")
+FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "collegePlanCalc", "collegeWalk", "brLE", "brAmortFactor", "projectBasic"]
+CONSTANTS = ["PMI_DEFAULT", "BR_SLT", "DEFAULTS", "BASIC_INFL", "RISK_LEVELS", "DD_LANDING"]
+WEB = os.path.join(ROOT, "web")
+ARTICLES = os.path.join(WEB, "content", "articles")
 
 
 def balanced(src, start, open_ch, close_ch):
@@ -52,7 +46,7 @@ def balanced(src, start, open_ch, close_ch):
 def function(src, name):
     m = re.search(r"\nfunction %s\(" % re.escape(name), src)
     if not m:
-        sys.exit("tests/run.py: function %s not found in src/js/app/" % name)
+        sys.exit("tests/run.py: function %s not found in web/lib/engine/" % name)
     body = src.index("{", m.end())
     return src[m.start() + 1:balanced(src, body, "{", "}")]
 
@@ -60,7 +54,7 @@ def function(src, name):
 def constant(src, name):
     m = re.search(r"\n(?:const|let|var) %s\s*=\s*" % re.escape(name), src)
     if not m:
-        sys.exit("tests/run.py: constant %s not found in src/js/app/" % name)
+        sys.exit("tests/run.py: constant %s not found in web/lib/engine/" % name)
     i = m.end()
     if src[i] in "[{":
         end = balanced(src, i, src[i], "]" if src[i] == "[" else "}")
@@ -73,11 +67,7 @@ def articles():
     """Each page's "about this tool" article as plain text, keyed by page, so
     the tests can check that a worked example's figures are what the
     calculator gives."""
-    if "--web" in sys.argv:
-        # the live site's articles, one file per page
-        html = "".join(open(p, encoding="utf-8").read() for p in sorted(glob.glob(os.path.join(WEB_ARTICLES, "*.html"))))
-    else:
-        html = open(ARTICLES, encoding="utf-8").read()
+    html = "".join(open(p, encoding="utf-8").read() for p in sorted(glob.glob(os.path.join(ARTICLES, "*.html"))))
     out = {}
     for m in re.finditer(r'<article[^>]*data-page="([^"]+)"[^>]*>(.*?)</article>', html, re.S):
         text = re.sub(r"<[^>]+>", " ", m.group(2)).replace("&amp;", "&")
@@ -89,17 +79,32 @@ def articles():
 
 
 def engine(name):
-    """One engine file's text: src/js/<name>.js, or with --web the module in
-    web/lib/engine/, its top-level `export ` keywords removed."""
-    if "--web" in sys.argv:
-        text = open(os.path.join(ROOT, "web", "lib", "engine", name + ".js"), encoding="utf-8").read()
-        text = re.sub(r"^import [^;]*;\n", "", text, flags=re.M | re.S)
-        return re.sub(r"^export ", "", text, flags=re.M)
-    return open(os.path.join(ROOT, "src", "js", name + ".js"), encoding="utf-8").read()
+    """One engine module's text, web/lib/engine/<name>.js, its imports and
+    top-level `export ` keywords removed."""
+    text = open(os.path.join(WEB, "lib", "engine", name + ".js"), encoding="utf-8").read()
+    text = re.sub(r"^import [^;]*;\n", "", text, flags=re.M | re.S)
+    return re.sub(r"^export ", "", text, flags=re.M)
+
+
+def node():
+    """node, from PATH or where it's installed on the site owner's Mac."""
+    return shutil.which("node") or next((p for p in [os.path.expanduser("~/.local/node/bin/node")] if os.path.exists(p)), None)
+
+
+def extras():
+    """The defaults the tests check that live in the tools' TypeScript."""
+    exe = node()
+    if not exe:
+        sys.exit("tests/run.py: node is needed to read the tools' defaults (tests/web-extras.mjs)")
+    out = subprocess.run([exe, "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", os.path.join(ROOT, "tests", "web-extras.mjs")],
+                         capture_output=True, text=True)
+    if out.returncode:
+        sys.exit("tests/run.py: tests/web-extras.mjs failed\n" + out.stderr)
+    return out.stdout
 
 
 def lastmod_ok():
-    """With --web: every page has a sitemap date in web/lib/lastmod.json
+    """Every page has a sitemap date in web/lib/lastmod.json
     (written by web/scripts/lastmod.mjs)."""
     import json, re
     pages = json.load(open(os.path.join(ROOT, "web", "lib", "page-meta.json"), encoding="utf-8"))["pages"]
@@ -114,15 +119,10 @@ def lastmod_ok():
 
 
 def main():
-    if "--web" in sys.argv and not lastmod_ok():
+    if not lastmod_ok():
         return 1
     math = engine("math")
-    src = "".join(open(p, encoding="utf-8").read()
-                  for p in sorted(glob.glob(os.path.join(ROOT, "src", "js", "app", "*.js"))))
-    if "--web" in sys.argv:
-        # Calculators already moved into the new app are taken from there;
-        # the rest still come from src/js/app/ until their tool is ported.
-        src = "\n" + engine("calculators") + "\n" + engine("bridge") + "\n" + engine("landing") + "\n" + src
+    src = "\n" + engine("calculators") + "\n" + engine("bridge") + "\n" + engine("landing") + "\n"
     a, b = math.index("// ===MATH START==="), math.index("// ===MATH END===")
     dd = engine("drawdown")
     e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")
@@ -131,6 +131,7 @@ def main():
     parts = [math[a:b], dd[e:f], plan[c:d]]
     parts += [constant(src, c) for c in CONSTANTS]
     parts += [function(src, f) for f in FUNCTIONS]
+    parts.append(extras())
     parts.append(articles())
     parts.append(open(os.path.join(ROOT, "tests", "math.test.js"), encoding="utf-8").read())
 

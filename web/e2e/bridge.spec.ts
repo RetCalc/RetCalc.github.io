@@ -1,22 +1,5 @@
 import { expect, test } from "@playwright/test";
 import { NEW } from "../playwright.config";
-import { compareTool, type Case } from "./compare";
-
-const cases: Case[] = [
-  { name: "defaults", steps: [] },
-  { name: "rule of 55, single in Texas", steps: [["brAge", "56"], ["brStatus", "s"], ["brState", "TX"], ["brSpend", "45000"]] },
-  { name: "no health insurance, fill the 12% bracket", steps: [["brAca", "0"], ["brFill", "b12"]] },
-  { name: "Monte Carlo", steps: [["click", '#segBR [data-brmode="mc"]']] },
-  { name: "below-average market, ladder plan", steps: [["click", '#brCompare tr[data-plan="ladder"]'], ["click", '#segBRPath [data-brpath="below"]']] },
-  { name: "balances across history", steps: [["click", '#segBRBal [data-brbal="hist"]']] },
-  { name: "72(t) by RMD, 457(b), part-time work", steps: [["brSeppMethod", "rmd"], ["brG457", "200000"], ["brWork", "30000"], ["brWorkUntil", "52"]] },
-  { name: "young retiree, small brokerage", steps: [["brAge", "40"], ["brBrok", "50000"], ["brRothBasis", "20000"], ["brPremium", "1400"]] },
-];
-
-for (const slug of ["bridge", "72t"])
-  test(`${slug} matches the current site`, async ({ page }, info) => {
-    await compareTool(page, info, slug, ["#asideBR", "#tab-bridge"], slug === "bridge" ? cases : cases.slice(0, 2));
-  });
 
 /* The old site left the last plan's results up once spending was cleared;
    the new one clears them. */

@@ -3,7 +3,7 @@
    the default PMI rate from 12-mortgage.js, and the Basic calculator's
    projection and defaults from 20-basic.js and 00-core.js. Moved without changes to the
    math: only `export` is added. Tested by tests/math.test.js
-   (python3 tests/run.py --web). */
+   (python3 tests/run.py). */
 
 import { PPY } from "./math.js";
 

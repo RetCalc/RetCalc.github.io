@@ -2,7 +2,7 @@
 /* Builds public/engine-worker.js: the engine (math.js, drawdown.js and
    plan.js, between their START and END markers, `export` dropped) and
    lib/engine/worker-glue.js, as one plain script a Web Worker can load. The
-   same assembly tests/run.py makes, and build.py made for the old site.
+   same assembly tests/run.py makes, and build.py made for the first version.
    Runs before `next build` and `next dev` (package.json).
 
    After them come the readiness guide's plan jobs (decision D7: new job

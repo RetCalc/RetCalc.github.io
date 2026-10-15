@@ -1,5 +1,10 @@
 # Next.js migration plan
 
+**Done.** retcalc.app has been the Next.js site in `web/` since 2026-10-05,
+and the old static site left this repo on 2026-10-15 for the private repo
+RetCalc/retcalc-v1. What follows is the record of how the move was made;
+paths to `src/`, `build.py` and the root HTML files refer to that repo now.
+
 RetCalc is being rebuilt in Next.js on the `nextjs-migration` branch, one tool
 at a time, while the current site on `main` stays live on GitHub Pages.
 retcalc.app switches to the new site only when every page gives the same
@@ -236,13 +241,17 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
   Then in GitHub (repo Settings → Pages) re-save `retcalc.app` as the custom domain if it was
   dropped, and tick Enforce HTTPS once the certificate is issued (can take up to an hour).
   For a bad update to the new site alone, use Vercel's Instant Rollback instead: no DNS change.
-- [ ] Search Console and analytics watched for two weeks
-- [ ] Then: remove the old build from the repo; `web/` becomes the root
+- [x] Search Console and analytics watched; the owner called it fine on 2026-10-15
+- [x] Old build removed from the repo (2026-10-15), kept in RetCalc/retcalc-v1. `web/`
+      stays where it is, so Vercel's Root Directory doesn't change. The old-vs-new browser
+      checks went with it; their new-site-only checks stay in `web/e2e`
+- [ ] Owner: turn GitHub Pages off (repo Settings → Pages)
 
 ## Progress log
 
 | Date | Phase | What changed |
 | --- | --- | --- |
+| 2026-10-15 | 6 | Old static site moved to RetCalc/retcalc-v1 and removed here: `src/`, `build.py`, the root HTML, `assets/`, `og/`. Calculation tests read only `web/` (the Roth, Debt and Guide defaults through `tests/web-extras.mjs`); old-vs-new e2e comparisons retired, 958 math checks unchanged |
 | 2026-10-05 | 6 | Switched: retcalc.app served by Vercel from `main`. HTTPS, `www` redirect, old `.html` addresses redirected, robots and sitemap (29 pages), canonical tags and Cloudflare analytics checked on the live domain. Two-week watch starts |
 | 2026-10-05 | 5 | Share menu (printable summary and image card on every tool), About page, page-change motion and the icon glide. Review against the Vercel skills: tool help and guide coach load on first use (tours and trips off every page), shared pieces for print rows, sortable headings (now keyboard-usable), panel folding, the Bridge routes checklist and repeated helpers. web-design-guidelines: keyboard fixes applied, wording and visual items left for the redesign. vercel-optimize: code scan clean (0 findings); its traffic audit needs Observability Plus (paid), so skipped. 174 old-vs-new checks pass on desktop and phone; SEO check 29 of 29 |
 | 2026-10-05 | 4 | Review against the Vercel skills: the Save menu no longer pulls the engine onto every page (tools and about back to 192 KB); the Bridge and plan engines load only on the Bridge (every calculator page about 12 KB lighter); Advanced and Stages share their headline and chart panel; shared helpers for field dollars, the Income Tax handoff, the glide note, chart paths. All 55 checks unchanged |
