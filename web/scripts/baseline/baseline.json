@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-15T20:35:35.177Z",
+  "recorded": "2026-10-15T21:44:56.740Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -709,6 +709,21 @@
         "emergency": "0f5c4073947d75e6",
         "net": "b0a9367934f5c3f7",
         "totals": "d7500756b3464ae5"
+      }
+    },
+    {
+      "id": "Budget: Paycheck tab: $95,000 every two weeks, Illinois, part filled, then Fill in order",
+      "out": {
+        "deposit": 2453.7123,
+        "taxes": 795.9808,
+        "left": 1091.4046,
+        "filledSaved": 1869.43,
+        "filledTaxes": 587.1883
+      },
+      "fields": {
+        "afterFill": "5e75ffd33e9c79dc",
+        "asSet": "92024898d349a31d",
+        "filled": "0ce7adfe8850634f"
       }
     },
     {

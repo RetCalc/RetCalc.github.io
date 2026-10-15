@@ -21,6 +21,7 @@ const { DEBT_DEFAULTS, debtCompute } = await import("@/tools/debt/model");
 const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
 const { BUDGET_DEFAULTS, budgetCompute, budgetHouseholdNet } = await import("@/tools/budget/model");
+const { paycheckFill, paycheckInput, paycheckRun } = await import("@/tools/budget/paycheck-math");
 const { healthcareCompute } = await import("@/tools/healthcare/model");
 const { FIRE_DEFAULTS, fireCompute, fireBandPoints, fireHistRuns } = await import("@/tools/fire/model");
 const { BRIDGE_DEFAULTS, bridgeInput } = await import("@/tools/bridge/model");
@@ -173,6 +174,14 @@ function budget(fields, household) {
     out: { ...totals, householdTakeHome: net, leftShare: pct, emergencyMonths: ef, emergencyTarget: efTarget } };
 }
 
+/* The Budget's Paycheck tab: one paycheck as set, and after Fill in order. */
+function paycheck(fields) {
+  const pi = paycheckInput({ ...BUDGET_DEFAULTS, ...fields }, TAX_DEFAULTS.state);
+  const asSet = paycheckRun(pi), filled = paycheckFill(pi), afterFill = paycheckRun(pi, filled);
+  return { full: { asSet, filled, afterFill },
+    out: { deposit: asSet.deposit, taxes: asSet.taxes, left: asSet.left, filledSaved: afterFill.saved, filledTaxes: afterFill.taxes } };
+}
+
 function healthcare(fields) {
   const H = healthcareCompute({ retireAge: "62", status: "s", household: "2", spouseAge: "62", state: "IL", income: "", ss: "", premium: "", ...fields });
   const { acaMagi, fpl, grossMonthly, std, enh, tier, partB, partD, totalLow, totalHigh } = H;
@@ -271,6 +280,10 @@ export const MORE_SCENARIOS = [
       { "Rent / Mortgage": "2,100", "Utilities": "220", "Groceries": "650", "Car insurance": "140", "Travel": "4,000", "Savings & investments": "500" })[r.desc] ?? "0" })) }) },
   { tool: "Budget", name: "income filled from the household: married, $150,000 + $70,000, California",
     run: () => budget({}, { status: "m", income: 150000, income2: 70000, state: "CA" }) },
+  { tool: "Budget", name: "Paycheck tab: $95,000 every two weeks, Illinois, part filled, then Fill in order",
+    run: () => paycheck({ pcGross: "95,000", pcFreq: "26", pcState: "IL", pcMatch: "219.23", pcHsa: "100", pcEf: "150", pcRothIra: "100",
+      rows: BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: ({ "Rent / Mortgage": "1,650", "Groceries": "560", "Health insurance": "184",
+        "Savings & investments": "500", "Travel": "2,400" })[r.desc] ?? r.amount })) }) },
 
   { tool: "Healthcare", name: "single, retire at 60, $55,000 MAGI, Illinois",
     run: () => healthcare({ retireAge: "60", status: "s", household: "1", income: "55,000" }) },
