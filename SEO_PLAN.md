@@ -116,7 +116,7 @@ using an API you aren't sure of).
 | G6 | Sitemap has no `lastmod` | `web/app/sitemap.ts` returns only `url` |
 | G7 | Facts written into text that will go stale | "Shiller's CAPE is 41" in `4-percent-rule.html` and `cape-withdrawal.html`; "2026" in titles and tax content |
 | G8 | Room for more strategy pages at almost no cost | The Drawdown Simulator has 15 strategies (`web/tools/drawdown/text.ts`); 7 have no page |
-| G9 | The old GitHub Pages site still builds on every push to `main`. It's kept on purpose as the rollback (`MIGRATION.md`), but should go once the move is confirmed | A "pages build and deployment" run follows each push. Verify `retcalc.github.io` redirects to retcalc.app meanwhile |
+| G9 | (Fixed 2026-10-15: old site archived, Pages unpublished.) The old GitHub Pages site still builds on every push to `main`. It's kept on purpose as the rollback (`MIGRATION.md`), but should go once the move is confirmed | A "pages build and deployment" run follows each push. Verify `retcalc.github.io` redirects to retcalc.app meanwhile |
 | G10 | Article figures aren't tested against the new site's articles | See "Known traps" in §0 |
 
 ---
@@ -171,14 +171,8 @@ using an API you aren't sure of).
 - [ ] **T0.6 Owner: links that meant the calculator.** In Search Console →
   Links (and Ahrefs), find sites linking to `/` that clearly meant the
   calculator, and ask them to link to `/calculator`.
-- [ ] **T0.7 Owner: retire GitHub Pages, after the watch.** The old build
-  left the repo on 2026-10-15 (now RetCalc/retcalc-v1); what's left is
-  turning Pages off (repo Settings → Pages). Before that: check
-  that `https://retcalc.github.io/` redirects to `https://retcalc.app/`, so
-  the old copy can't compete in search. Pages is the move's rollback
-  (`MIGRATION.md`, "Rollback"), so leave it on until T0.5's watch ends
-  cleanly; then turn it off (repo Settings → Pages), together with
-  `MIGRATION.md`'s "remove the old build from the repo" step.
+- [x] **T0.7 Owner: retire GitHub Pages.** Done 2026-10-15: the old build
+  moved to RetCalc/retcalc-v1 and the owner unpublished the Pages site.
 
 ---
 

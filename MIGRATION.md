@@ -245,7 +245,7 @@ vercel-optimize audits reviewed; site owner clicks through the preview.
 - [x] Old build removed from the repo (2026-10-15), kept in RetCalc/retcalc-v1. `web/`
       stays where it is, so Vercel's Root Directory doesn't change. The old-vs-new browser
       checks went with it; their new-site-only checks stay in `web/e2e`
-- [ ] Owner: turn GitHub Pages off (repo Settings → Pages)
+- [x] GitHub Pages unpublished by the owner (2026-10-15)
 
 ## Progress log
 
