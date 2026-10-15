@@ -117,6 +117,13 @@ body{
 header,main,.toast{position:relative;z-index:1}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 ::selection{background:color-mix(in srgb,var(--ds-text) 22%,transparent)}
+/* Native parts (a thin scrollbar, checkboxes, form controls) take their
+   colors from color-scheme. The head script sets data-theme before first
+   paint but not the color-scheme meta, which starts as "dark light" and so
+   follows the computer's own setting; tying it to data-theme here keeps a
+   light page's scrollbars light on a dark-mode PC from the first paint. */
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
 ::-webkit-scrollbar{width:11px;height:11px}
 ::-webkit-scrollbar-track{background:var(--sunk)}
 ::-webkit-scrollbar-thumb{background:var(--ds-rule-strong);border-radius:7px;border:3px solid var(--sunk)}
