@@ -8,7 +8,10 @@ The site at retcalc.app: Next.js on Vercel, deployed from `main`.
     python3 ../tests/run.py          # the calculation tests, against lib/engine/
 
 `lib/engine/` is the calculation engine. Import it from `@/lib/engine`, never
-from one of its files directly.
+from one of its files directly. Its figures are in `lib/engine/data/`: each
+tax year's in a file of its own (a new year is added beside the last, never
+over it; only the Income Tax tool offers older years), and the market
+history and IRS tables that don't change by year.
 The look is Tailwind v4 and shadcn/ui, checked by @shadcn/lint (`npm run lint`
 fails on any warning; `npm run typecheck` too). Components come from
 `npx shadcn@latest add <name>` into `components/ui/`, and their look lives

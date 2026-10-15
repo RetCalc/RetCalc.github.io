@@ -1,7 +1,9 @@
 "use client";
 
-/* Income Tax: 2026 federal, state and FICA tax on a salary, or, in
-   retirement mode, on a year of withdrawals from each kind of account.
+/* Income Tax: federal, state and FICA tax on a salary, or, in retirement
+   mode, on a year of withdrawals from each kind of account, by a tax year's
+   rules: the newest, or an earlier one picked under Your return. It is the
+   one tool with a choice of year.
    Ported from src/js/app/11-income-tax.js and src/main/10-tax-inputs.html,
    18-income-tax.html. */
 
@@ -15,10 +17,11 @@ import { useToolState } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
-import { FED_STD, NIIT, bracketRoom } from "@/lib/engine/typed";
+import { NIIT, bracketRoom, yearData } from "@/lib/engine/typed";
 import { DASH, groupDigits, money, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
-import { TAX_DEF, runTax, taxInput } from "./model";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { TAX_DEF, runTax, taxInput, taxYears } from "./model";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
 import { useShareKit } from "@/components/shell/share";
@@ -99,8 +102,12 @@ export function Tax() {
   const ret = s.mode === "retire";
   const joint = s.status === "m";
   const split = !ret && joint;
-  const inp = taxInput(s);
+  const inp = taxInput(s, true);
   const R = runTax(inp);
+  // The tax year. The picker only shows once there's more than one; a new
+  // year's state figures can lag (the year before's, until the states publish).
+  const years = taxYears(), year = inp.year, stateYear = yearData(year).states.year;
+  const stateLag = stateYear !== year;
 
   // ---- what each mode shows
   let head: { netLabel: string; netNote: string; monthNote: string; thirdLabel: string; thirdNote: string; net: string; month: string; third: string };
@@ -108,7 +115,7 @@ export function Tax() {
   let bars: Bar[], parts: Part[], rows: React.ReactNode;
 
   const room = (taxable: number) => {
-    const br = bracketRoom(taxable, inp.status);
+    const br = bracketRoom(taxable, inp.status, year);
     return { roomLabel: br ? "Room before " + pctStr(br.nextRate, 0) : "Room before next bracket", room: br ? money(br.room) : "Top bracket" };
   };
   const noRoom = { roomLabel: "Room before next bracket", room: DASH };
@@ -139,7 +146,7 @@ export function Tax() {
       net: money(shown), month: money(shown / 12), third: money(shown / 26),
     };
     derived = {
-      stdLabel: "Standard deduction", std: money((FED_STD as Record<string, number>)[inp.status]), ssRow: null,
+      stdLabel: "Standard deduction", std: money(yearData(year).fedStd[inp.status]), ssRow: null,
       marginal: pctStr(R.marginal, 0), ...(R.gross > 0 ? room(R.fedTaxable) : noRoom), zeroRoom: null,
     };
     bars = [
@@ -300,6 +307,12 @@ export function Tax() {
               </div>
 
               <GroupHead>Your return</GroupHead>
+              <Field id="txYear" wrapId="txYearWrap" hidden={years.length < 2} label="Tax year">
+                <NativeSelect id="txYear" className="w-full" value={String(year)} onChange={(e) => set("year")(e.target.value)}>
+                  {years.map((y) => <NativeSelectOption key={y} value={String(y)}>{y}</NativeSelectOption>)}
+                </NativeSelect>
+                {stateLag ? <div className="hint" id="txYearNote">State figures are {stateYear}&apos;s until the states publish {year}&apos;s.</div> : null}
+              </Field>
               {/* Two-up where the answers are short; the selects take the
                   full width on a phone, where half would cut their text. */}
               <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
@@ -353,7 +366,7 @@ export function Tax() {
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
             <Segmented id="segTxView" attr="data-view" options={[["net", "Net pay"], ["take", "Take-home pay"]] as const} value={s.view} onChange={set("view")} hidden={ret} />
             <span className="text-label text-muted-foreground" id="txRetLbl" hidden={!ret}>Retirement income</span>
-            <span className="ml-auto"><Badge variant="outline">2026 rates</Badge></span>
+            <span className="ml-auto"><Badge variant="outline">{year} rates</Badge></span>
           </div>
           <HeroReading tone={tone}
             hero={{
@@ -506,14 +519,14 @@ export function Tax() {
         <Collapsible className="min-w-0" render={<Card />}>
           <CardHeader>
             <CardTitle><CollapsibleTrigger>State rules, and what went into the figure above<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-            <CardDescription id="txStateRuleName">{STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? ""}</CardDescription>
+            <CardDescription id="txStateRuleName">{(STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? "") + (stateLag ? ", by " + stateYear + "'s state rules" : "")}</CardDescription>
             <CardAction><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></CardAction>
           </CardHeader>
           <CollapsibleContent keepMounted>
             <div id="txStateRuleWrap">
               <table id="txStateRules" ref={rulesRef}>
                 <tbody>
-                  {(stateRuleRows(s.state, s.status) as [string, string][]).map(([k, v]) => (
+                  {(stateRuleRows(s.state, s.status, year) as [string, string][]).map(([k, v]) => (
                     <tr key={k}><td className="whitespace-nowrap font-semibold">{k}</td><td>{v}</td></tr>
                   ))}
                 </tbody>

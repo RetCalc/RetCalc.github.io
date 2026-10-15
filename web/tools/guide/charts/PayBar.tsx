@@ -1,4 +1,4 @@
-/* Lesson 2's figure: where a month's pay goes, by the 2026 rules, before
+/* Lesson 2's figure: where a month's pay goes, by the newest year's rules, before
    anything taken out for a 401(k) or health insurance. One stacked bar and
    its key, each part named with its dollars (color is never alone). */
 

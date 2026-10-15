@@ -7,10 +7,11 @@
    loads math.js and drawdown.js (which read each other's names) in the
    order that works. */
 import {
-  FED_2026, FED_STD, SENIOR_ADDL, SENIOR_BONUS, SS_PROV, computeRetireTax, ultDivisor,
-  rmdStartAge, IRMAA, irmaaAnnual, HIST_START, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
+  SS_PROV, computeRetireTax, ultDivisor,
+  rmdStartAge, irmaaAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart,
   ssEstimate, ssSpousalAdj, hcFPL, hcAgeMultiplier, hcGrossPremium, hcCalcACA
 } from "./math.js";
+import { yearData, HIST_START } from "./data/index.js";
 
 // ===PLAN START===
 /* ---------- the retirement plan engine ----------
@@ -46,11 +47,6 @@ import {
 
 export var PL_EARLY = 59;          // a year that starts before 59 ends before 59½
 export var PL_HEIR = 0.24;         // default tax rate heirs pay on inherited traditional money
-/* Average standalone Part D premium, 2026, a month (CMS estimate). Standard
-   Part B comes from the IRMAA table. Together they are what a year of
-   Medicare costs each person 65+ when the plan is pricing health coverage
-   (the same switch that adds ACA premiums before 65). */
-export var PL_MED_PARTD = 35;
 
 /* Real returns of a stock/bond mix by calendar year from 1926, inflation
    alongside, and their long-run averages: the steady path runs at the
@@ -141,7 +137,8 @@ export function plSSTax(ss, otherAgi, st){
 export function plAgi(ord, gain, ss, st){ return ord + gain + plSSTax(ss, ord + gain, st); }
 export function plOrdTaxable(ord, gain, ss, st, seniors){
   var tss = plSSTax(ss, ord + gain, st), oa = ord + tss, agi = oa + gain;
-  var ded = FED_STD[st] + SENIOR_ADDL[st] * seniors;
+  var Y = yearData(), SENIOR_BONUS = Y.seniorBonus;
+  var ded = Y.fedStd[st] + Y.seniorAddl[st] * seniors;
   if (seniors > 0) ded += seniors * Math.max(0, SENIOR_BONUS.amount - SENIOR_BONUS.rate * Math.max(0, agi - SENIOR_BONUS.start[st]));
   return Math.max(0, oa - ded);
 }
@@ -159,16 +156,16 @@ export function plLargest(f, max){
 
 /* ---- health insurance before 65 ----
    The benchmark Silver premium for each of you still under 65, less the
-   premium tax credit the year's income earns (2026 rules: the 400% cliff is
-   back). Below 138% of the poverty line an expansion state moves you to
-   Medicaid; below 100% in a state that didn't expand there's no help at all.
-   ACA income counts all of Social Security, taxable or not. */
-export var PL_NOEXP = {AL:1, FL:1, GA:1, KS:1, MS:1, SC:1, TN:1, TX:1, WI:1, WY:1};
+   premium tax credit the year's income earns (the newest year's rules; for
+   2026 the 400% cliff is back). Below 138% of the poverty line an expansion
+   state moves you to Medicaid; below 100% in a state that didn't expand
+   (yearData().states.noExpansion) there's no help at all. ACA income counts
+   all of Social Security, taxable or not. */
 export function plHealth(C, y, magi){
   var gross = C.acaGross[y];
   if (!(gross > 0)) return 0;
   var pct = magi / C.fpl;
-  if (pct < 1.38 && !PL_NOEXP[C.state]) return 0;
+  if (pct < 1.38 && !yearData().states.noExpansion[C.state]) return 0;
   if (pct < 1) return gross * 12;
   return hcCalcACA(magi, gross, pct, false).net * 12;
 }
@@ -208,7 +205,7 @@ export function plPrep(P){
   C.gap = d;
   // A benchmark premium the household found is for the ages at retirement;
   // later years scale by each person's own step on the age curve.
-  var m0 = 0;
+  var m0 = 0, MED = yearData().medicare;
   if (P.premium > 0){
     if (C.age1 < 65) m0 += hcAgeMultiplier(C.age1);
     if (C.age2 != null && C.age2 < 65) m0 += hcAgeMultiplier(C.age2);
@@ -230,7 +227,7 @@ export function plPrep(P){
       C.acaGross[y] = g;
       // Medicare from 65: standard Part B plus an average Part D plan, per
       // person, under the same "price health coverage" switch as the ACA.
-      C.med[y] = (IRMAA.partB + PL_MED_PARTD) * 12 * C.seniors[y];
+      C.med[y] = (MED.irmaa.partB + MED.partD) * 12 * C.seniors[y];
     }
   }
   return C;
@@ -248,7 +245,7 @@ export var PL_FILLS = ["none", "zero", "b10", "b12", "b22", "b24"];
 export function plFillLevel(st, f){
   if (!(f > 0)) return -1;
   if (f === 1) return 0;
-  var b = FED_2026[st];
+  var b = yearData().fed[st];
   return b[f - 1][0];     // zero-based: f 2 -> top of 10% (start of 12%), ...
 }
 export function plClaimMin(age){ return Math.max(62, Math.min(70, Math.round(age))); }
@@ -410,6 +407,7 @@ export function plRun(C, K, R, PI, off, out){
   var trad = C.trad, roth = C.roth, rAcc = C.rothBasis, brok = C.brok, bBasis = C.brokBasis;
   var pend = C.pend; pend.fill(0);
   var m1 = -1, m2 = -1;               // AGI one and two years back, for IRMAA
+  var irmLine = yearData().medicare.irmaa.tiers[0][st] - 2000;
   var cum = 1, prev = C.spend, lastGain = 0;
   var tax = 0, pen = 0, health = 0, irm = 0, conv = 0, shortSum = 0, depleted = 0, lived = 0;
   var path = out && out.path, livedArr = out && out.lived, rows = out && out.rows;
@@ -438,7 +436,7 @@ export function plRun(C, K, R, PI, off, out){
     if (fillOn){
       D = M + plLargest(function(t){ return plOrdTaxable(pension + M + t, g0, ss, st, seniors) - lvl; }, trad - M);
       if (K.capIr[y]){
-        var lim = IRMAA.tiers[0][st] - 2000;
+        var lim = irmLine;
         D = Math.min(D, M + plLargest(function(t){ return plAgi(pension + M + t, g0, ss, st) - lim; }, trad - M));
       }
       if (K.capAca[y]) D = Math.min(D, Math.max(M, C.fpl * 4 - 1500 - pension - ss - g0));
@@ -472,7 +470,7 @@ export function plRun(C, K, R, PI, off, out){
       for (var it = 0; it < 3; it++){
         var over = 0;
         if (K.capAca[y] && Y.aca) over = Math.max(over, plE.magi - (C.fpl * 4 - 1500));
-        if (K.capIr[y]) over = Math.max(over, plE.agi - (IRMAA.tiers[0][st] - 2000));
+        if (K.capIr[y]) over = Math.max(over, plE.agi - irmLine);
         if (!(over > 1)) break;
         var cut = Math.min(flex, over + 250);
         D -= cut; flex -= cut;

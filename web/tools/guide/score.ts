@@ -4,6 +4,7 @@
    estimates and defaults, and what each area still has to give. The points
    themselves are calc.ts's (parts and score). */
 
+import { NEWEST_YEAR } from "@/lib/engine/typed";
 import { money } from "@/lib/format";
 import { FACTORS, gross, guessing, pos, type FactorId, type Part } from "./calc";
 import type { AnswerKey, Answers, Sources } from "./store";
@@ -103,7 +104,7 @@ const DEFAULT_WORDS: Partial<Record<AnswerKey, (a: Answers) => string>> = {
     on the Quick check (all traditional, 60% stocks in retirement, to 95). */
 export function planSources(a: Answers, src: Sources) {
   const estimated: string[] = [], defaults: string[] = [];
-  if (src.takehome?.kind === "estimated") estimated.push("take-home (from the 2026 tax rules)");
+  if (src.takehome?.kind === "estimated") estimated.push("take-home (from the " + NEWEST_YEAR + " tax rules)");
   if (!pos(a.ssOwn) || (a.status === "m" && !pos(a.ssOwn2))) estimated.push("Social Security (from income)");
   if (guessing(a)) defaults.push("retirement spending at 80% of take-home");
   for (const k of Object.keys(DEFAULT_WORDS) as AnswerKey[]) if (src[k]?.kind === "default" && a[k] != null) defaults.push(DEFAULT_WORDS[k]!(a));

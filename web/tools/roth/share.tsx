@@ -5,7 +5,7 @@
 
 import { SheetPage, SheetSection, SheetTable, sampled, type SheetRows } from "@/components/shell/Sheet";
 import { copyChart, type ShareKit } from "@/components/shell/share";
-import { STATES, runRoth } from "@/lib/engine/typed";
+import { runRoth, yearData } from "@/lib/engine/typed";
 import { DASH, fmtNum, money, pctStr } from "@/lib/format";
 import { STRATEGIES, rothInput, type RothInputs } from "./model";
 
@@ -16,7 +16,7 @@ export function rothShare(s: RothInputs): ShareKit {
       if (!(inp.trad > 0)) return "Enter a traditional balance first";
       const plan = runRoth(inp, true), base = runRoth(inp, false);
       const taxSaved = base.lifeTaxPV - plan.lifeTaxPV, nwDelta = plan.endAfterTax - base.endAfterTax;
-      const st = (STATES as Record<string, { n?: string }>)[inp.state];
+      const st = yearData().states.tax[inp.state];
       const strat: SheetRows = [["Strategy", STRATEGIES[inp.strategy]]];
       if (inp.strategy === "brk") strat.push(["Fill to", pctStr(inp.bracket, 0) + " bracket"]);
       if (inp.strategy === "irm") strat.push(["Stay within", "IRMAA tier " + inp.irmaaTarget]);

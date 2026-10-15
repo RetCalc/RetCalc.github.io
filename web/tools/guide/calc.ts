@@ -41,7 +41,7 @@ export function riskLabel(real: number): string {
   return (RISKS.find((x) => Math.abs(x.real - real) < 1e-6) || RISKS[2]).label.toLowerCase();
 }
 
-/** The Income Tax tool's 2026 rules run on the salary alone: the standard
+/** The Income Tax tool's rules (the newest year's) run on the salary alone: the standard
     deduction, nothing taken before tax, and the person's own state. Null
     without an income or a state, since a state's rules are most of the
     difference between two people's take-home. */
@@ -54,7 +54,7 @@ function taxRun(a: Answers): { gross: number; T: TaxRun } | null {
 }
 
 /** Monthly take-home from the salary alone, through the Income Tax tool's
-    2026 rules for the person's state: the fallback when someone skips that
+    newest year's rules for the person's state: the fallback when someone skips that
     step. 0 until a state is chosen. */
 export function taxEst(a: Answers): number {
   const R = taxRun(a);
@@ -76,7 +76,7 @@ export function withGuess(a: Answers): Answers {
 /** Whether retirement spending is still the placeholder. */
 export const guessing = (a: Answers) => !pos(a.retSpend) && spendGuess(a) > 0;
 
-/** Where a year's pay goes, by the Income Tax tool's 2026 rules for the
+/** Where a year's pay goes, by the Income Tax tool's newest rules for the
     person's state: federal and state income tax, Social Security and
     Medicare, and what's left. A month of each, for lesson 2's bar. Null
     without an income and a state. */

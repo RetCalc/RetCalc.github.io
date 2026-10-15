@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/shell/Toast";
 import { CsvButton } from "@/components/common/CsvButton";
 import type { AccountResult } from "@/lib/accounts";
-import { STATES } from "@/lib/engine/typed";
+import { yearData } from "@/lib/engine/typed";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { sendYearToTax } from "@/tools/tax/handoff";
 import { SERIES } from "@/lib/hues";
@@ -28,7 +28,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
   const toast = useToast();
   const table = useRef<HTMLTableElement>(null);
   const a = B.a;
-  const st = (STATES as Record<string, { n: string; none?: number }>)[a.state];
+  const st = yearData().states.tax[a.state];
   const toTax = (e: React.MouseEvent) => {
     e.preventDefault();
     sendYearToTax({ status: a.status, state: a.state, trad: B.w.trad, roth: B.w.roth, brok: B.w.brok, gainShare: B.gainPct, seniors: B.seniors });
@@ -59,7 +59,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
         </table>
       </div>
       <div className="mcnote mt-3" id={id + "Note"}>
-        {"Taxed with 2026 " + (a.status === "m" ? "married filing jointly" : "single") + " brackets" +
+        {"Taxed with " + yearData().year + " " + (a.status === "m" ? "married filing jointly" : "single") + " brackets" +
           (st && !st.none ? " and " + st.n + " state tax" : st ? ", no state income tax" : "") +
           (B.seniors ? ", with the age 65+ deduction" : "") + "."}
         {B.w.brok > 0 ? <>{" "}<b>{pctStr(B.gainPct, 0)}</b> of the brokerage balance is growth by then, so only that share of each sale is taxed.</> : null}

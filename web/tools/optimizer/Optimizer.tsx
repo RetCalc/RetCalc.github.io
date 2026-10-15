@@ -20,7 +20,7 @@ import { has } from "@/lib/household";
 import { STATE_OPTIONS } from "@/lib/states";
 import { copyFrom, opSources, sourceDesc } from "./copy";
 import { OP_DEF, opSetMode, opToolIn, opView, type OptimizerInputs } from "./model";
-import { RISKS } from "@/lib/engine/typed";
+import { NEWEST_YEAR, RISKS } from "@/lib/engine/typed";
 import { OptimizerStatus, Progress } from "./Progress";
 import { OptimizerResult, heroFigure } from "./Result";
 import { opEstimate, opSig, startOptimizer, useOptimizer, type Goal, type Host } from "./run";
@@ -327,7 +327,7 @@ export function Optimizer() {
                 <span>Enter your spending in retirement first, under In retirement.</span>
               </p>
             ) : null}
-            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">Every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with 2026 federal and state tax worked out year by year, and the best one wins.</p>
+            <p className="mt-4 mb-0 max-w-copy border-t border-border pt-4 text-note text-muted-foreground">Every age from {fmtNum(Math.max(62, Math.min(70, v.retire)))} {v.retire > 62 ? "(your retirement age) " : ""}to 70 for each of you to claim Social Security. Every order for drawing down your accounts. Every level of Roth conversion, for every stretch of years, with and without staying under the ACA and Medicare income lines. Each plan runs through every market since 1926, with {NEWEST_YEAR} federal and state tax worked out year by year, and the best one wins.</p>
           </CardContent>
         </Card>
         <OptimizerStatus host="tool" />

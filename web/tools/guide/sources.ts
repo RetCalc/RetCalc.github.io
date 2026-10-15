@@ -46,7 +46,7 @@ export const putter = (g: { a: Answers; src: Sources }) =>
 export const tripTool = (id: string) => (id === "mortBuy" || id === "mortOwn" ? "mortgage" : id);
 
 /** The figures the guide estimates for the person, kept current while
-    they're still its own: take-home from income by the 2026 tax rules,
+    they're still its own: take-home from income by the newest tax year's rules,
     until it's typed or brought back from Income Tax (doc 2, card 2). */
 export function refreshEstimates(g: { a: Answers; src: Sources }) {
   const s = g.src.takehome;

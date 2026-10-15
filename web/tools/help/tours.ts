@@ -83,7 +83,7 @@ const tax: Tour<TaxInputs> = { name: "Income Tax", title: "How your taxes are fi
     } },
   ],
   chip: ({ s }) => {
-    const R = runTax(taxInput(s));
+    const R = runTax(taxInput(s, true));
     if (!(R.gross > 0)) return "";
     return s.mode === "retire" ? "Total tax<br><b>" + money(R.total) + "/yr</b>" : "Take-home<br><b>" + money(R.net / 12) + "/mo</b>";
   } };

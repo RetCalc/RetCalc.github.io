@@ -19,5 +19,4 @@ export const brSeppBase = typed<(ctx: BrCtx) => number>(E.brSeppBase);
 export const brSeppMax = typed<(ctx: BrCtx, method?: string) => number>(E.brSeppMax);
 export const brSeppEnd = typed<(ctx: BrCtx) => number>(E.brSeppEnd);
 export const BR_CATS = E.BR_CATS as { k: string; name: string; c: string }[];
-export const BR_NOEXP = E.BR_NOEXP as Record<string, unknown>;
 export const { BR_TRIALS, BR_UNLOCK } = E as unknown as { BR_TRIALS: number; BR_UNLOCK: number };

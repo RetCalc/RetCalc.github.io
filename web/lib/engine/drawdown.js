@@ -6,10 +6,11 @@
    through typed.ts (core.js), not this file: math.js and drawdown.js read
    each other's names, and core.js loads them in the order that works. */
 import {
-  mulberry32, ultDivisor, HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, histAnnual,
-  HIST_STOCK, HIST_BOND, HIST_INFL, HIST_M_CAPE, HIST_FF_START, HIST_M_CASH, HIST_M_SV,
-  CAPE_NOW, pmtStart, ssDrawdownStreams
+  mulberry32, ultDivisor, histAnnual, HIST_STOCK, HIST_BOND, HIST_INFL, pmtStart, ssDrawdownStreams
 } from "./math.js";
+import {
+  HIST_START, HIST_M_STOCK, HIST_M_BOND, HIST_M_INFL, HIST_M_CAPE, HIST_FF_START, HIST_M_CASH, HIST_M_SV, CAPE_NOW
+} from "./data/index.js";
 
 // ===DRAWDOWN START===
 /* ---------- the Drawdown Simulator's engine ----------

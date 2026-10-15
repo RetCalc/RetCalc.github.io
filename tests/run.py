@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Run the calculation tests against the site's engine, web/lib/engine/.
 
-The engine is web/lib/engine/math.js (between its ===MATH START=== and
+The engine's figures come first: web/lib/engine/data/, each tax year's file
+and the year-independent ones, in the order data/index.js imports them. The
+engine is web/lib/engine/math.js (between its ===MATH START=== and
 ===MATH END=== markers), the Drawdown Simulator's engine, drawdown.js
 (between ===DRAWDOWN START=== and ===DRAWDOWN END===), the retirement plan
 engine, plan.js (between ===PLAN START=== and ===PLAN END===), and a few
@@ -25,7 +27,7 @@ JSC = "/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Help
 # Calculators outside the engine block that the tests cover, and the
 # constants they read.
 FUNCTIONS = ["rentBuyCalc", "collegeSavingsCalc", "collegePlanCalc", "collegeWalk", "brLE", "brAmortFactor", "projectBasic"]
-CONSTANTS = ["PMI_DEFAULT", "BR_SLT", "DEFAULTS", "BASIC_INFL", "RISK_LEVELS", "DD_LANDING"]
+CONSTANTS = ["PMI_DEFAULT", "DEFAULTS", "BASIC_INFL", "RISK_LEVELS", "DD_LANDING"]
 WEB = os.path.join(ROOT, "web")
 ARTICLES = os.path.join(WEB, "content", "articles")
 
@@ -86,6 +88,23 @@ def engine(name):
     return re.sub(r"^export ", "", text, flags=re.M)
 
 
+def data(name="index", seen=None):
+    """The engine's figures, web/lib/engine/data/<name>.js and the files it
+    imports, each after the ones it needs, as plain script: imports, the
+    index's re-exports and the `export ` keywords removed."""
+    seen = set() if seen is None else seen
+    if name in seen:
+        return []
+    seen.add(name)
+    text = open(os.path.join(WEB, "lib", "engine", "data", name + ".js"), encoding="utf-8").read()
+    out = []
+    for dep in re.findall(r'^(?:import|export \*) [^;]*?from "\./([\w-]+)\.js";', text, flags=re.M):
+        out += data(dep, seen)
+    text = re.sub(r"^(?:import|export \*) [^;]*;\n", "", text, flags=re.M)
+    out.append(re.sub(r"^export ", "", text, flags=re.M))
+    return out
+
+
 def node():
     """node, from PATH or where it's installed on the site owner's Mac."""
     return shutil.which("node") or next((p for p in [os.path.expanduser("~/.local/node/bin/node")] if os.path.exists(p)), None)
@@ -128,7 +147,7 @@ def main():
     e, f = dd.index("// ===DRAWDOWN START==="), dd.index("// ===DRAWDOWN END===")
     plan = engine("plan")
     c, d = plan.index("// ===PLAN START==="), plan.index("// ===PLAN END===")
-    parts = [math[a:b], dd[e:f], plan[c:d]]
+    parts = data() + [math[a:b], dd[e:f], plan[c:d]]
     parts += [constant(src, c) for c in CONSTANTS]
     parts += [function(src, f) for f in FUNCTIONS]
     parts.append(extras())

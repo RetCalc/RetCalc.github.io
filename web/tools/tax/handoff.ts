@@ -18,5 +18,7 @@ export function sendYearToTax(y: {
     trad: dollarsField(y.trad), roth: dollarsField(y.roth), brok: dollarsField(y.brok),
     gainPct: String(Math.round(y.gainShare * 1000) / 10), seniors: String(y.seniors || 0),
     ss: "0", pension: "0", other: "0", pre: "0", dedType: "std", item: "0",
+    // The senders use the newest year's rules.
+    year: TAX_DEFAULTS.year,
   });
 }

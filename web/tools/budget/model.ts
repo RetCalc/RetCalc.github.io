@@ -65,7 +65,7 @@ export function budgetCompute(b: BudgetInputs) {
   return { incomeYr, spentYr, savedYr, leftYr, pct, ef, efTarget: (spentYr / 12) * ef };
 }
 
-/** The household's income as take-home pay, under the same 2026 rules the
+/** The household's income as take-home pay, under the same (newest year's) rules the
     Income Tax tool uses, before any retirement saving; null with no income.
     taxState gives the Income Tax tool's state, asked for only when the
     household has none. */

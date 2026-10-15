@@ -2,7 +2,8 @@
    since 1926, when the plan first reaches its target (or, for Coast FIRE,
    when it could stop contributing and still get there). Moved unchanged from
    src/js/app/35-fire.js; only the exports and imports are added. */
-import { HIST_M_BOND, HIST_M_INFL, HIST_M_STOCK, PPY } from "./math.js";
+import { PPY } from "./math.js";
+import { HIST_M_BOND, HIST_M_INFL, HIST_M_STOCK } from "./data/index.js";
 
 export function fiComputeCrossings(p, maxYears){
   var avail = HIST_M_STOCK.length;

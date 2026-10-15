@@ -25,7 +25,7 @@ import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/com
 import { KV } from "@/components/common/Readout";
 import { DASH, dollarsField, money, parseNum } from "@/lib/format";
 import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
-import { HC_MEDIGAP_HIGH, HC_MEDIGAP_LOW, HC_PARTD_BASE, HC_STATES, HEALTHCARE_DEF, healthcareCompute, type HealthcareInputs } from "./model";
+import { HC_STATES, HC_YEAR, HEALTHCARE_DEF, healthcareCompute, type HealthcareInputs } from "./model";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -156,7 +156,7 @@ export function Healthcare() {
             <p className={lead}>Your income of {money(acaMagi)}{incNote} is <b>{pctFPLStr} of the federal poverty level</b> for a {household}-person household — this ratio drives your subsidy. {std.eligible
               ? "The ACA sets what you're expected to contribute toward health coverage at " + (std.pct * 100).toFixed(2) + "% of your income. The government covers whatever the Silver plan costs above that amount, in the form of a monthly premium tax credit applied at enrollment."
               : "That income is above the 400% FPL cutoff, so there is no credit and you would pay the Silver plan's full list price. The enhanced credits that removed this cutoff (capping your share at 8.5% of income) expired after 2025."}</p>
-            <h3 className={cn(head, "mt-4 mb-1 pt-3.5")}>2026 ACA rules</h3>
+            <h3 className={cn(head, "mt-4 mb-1 pt-3.5")}>{HC_YEAR.year} ACA rules</h3>
             <KV k={<>Benchmark Silver plan {usingStateEst ? <Sub>({state} est., {coveredDesc}) — the reference used to price your credit</Sub> : <Sub>your entered premium</Sub>}</>} v={"$" + r(grossMonthly) + "/mo"} />
             {!std.eligible ? (
               <>
@@ -190,7 +190,7 @@ export function Healthcare() {
             ? "Benchmark Silver premium is a state-level estimate for " + state + " scaled by age, for " + coveredDesc + ". " +
               (kids ? "Children are priced as under-15 enrollees; at lower incomes many qualify for CHIP or Medicaid instead. " : "")
             : "Using your entered benchmark premium. "}
-          Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the sidebar for precision. Credits for 2026 use the IRS&apos;s 2026 contribution percentages and the 2025 poverty guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025; the House passed an extension in January 2026, but it has not become law.
+          Enter your actual quote from <a href="https://healthcare.gov" target="_blank">healthcare.gov</a> in the sidebar for precision. Credits for {HC_YEAR.year} use the IRS&apos;s {HC_YEAR.year} contribution percentages and the {HC_YEAR.year - 1} poverty guidelines. The enhanced credits of 2021–2025, which removed the 400% FPL cliff and capped contributions at 8.5% of income, expired at the end of 2025; the House passed an extension in January 2026, but it has not become law.
         </div>
       </>
     );
@@ -210,14 +210,14 @@ export function Healthcare() {
           </Badge>
         </div>
         <KV k={<>Part B premium{hasIrmaa ? <> <Sub>includes IRMAA surcharge</Sub></> : null}</>} v={"$" + partB.toFixed(0) + "/mo per person"} />
-        <KV k={<>Part D estimate <Sub>{partDIrmaa > 0 ? "~$" + HC_PARTD_BASE + " avg plan + $" + partDIrmaa.toFixed(0) + " IRMAA" : "avg plan, no IRMAA"}</Sub></>} v={"~$" + r(partD) + "/mo per person"} />
-        <KV k={<>Medigap Plan G <Sub>varies by state, insurer &amp; age</Sub></>} v={"~$" + HC_MEDIGAP_LOW + "–$" + HC_MEDIGAP_HIGH + "/mo per person"} />
+        <KV k={<>Part D estimate <Sub>{partDIrmaa > 0 ? "~$" + HC_YEAR.medicare.partD + " avg plan + $" + partDIrmaa.toFixed(0) + " IRMAA" : "avg plan, no IRMAA"}</Sub></>} v={"~$" + r(partD) + "/mo per person"} />
+        <KV k={<>Medigap Plan G <Sub>varies by state, insurer &amp; age</Sub></>} v={"~$" + HC_YEAR.medicare.medigap.low + "–$" + HC_YEAR.medicare.medigap.high + "/mo per person"} />
         <div className="kv total"><span className="k">Estimated total per person</span><span className="v">~${r(totalLow)}–${r(totalHigh)}/mo</span></div>
         {joint ? <KV k={<>For the couple <Sub>both at same IRMAA tier</Sub></>} v={"~$" + r(totalLow * 2) + "–$" + r(totalHigh * 2) + "/mo"} /> : null}
         {prev ? (
           <div className="hc-insight max-w-copy">Your income is <b>{money(magi - prev[joint ? 1 : 0], 0)} above</b> the {TIER_NAMES[tier]} threshold (${prev[joint ? 1 : 0].toLocaleString()}). Reducing MAGI below that threshold saves <b>${r(save)}/mo per person</b> (${r(save * people * 12).toLocaleString()}/yr{joint ? " for the couple" : ""}) in Medicare premiums. Roth conversions and capital gains realizations both count toward IRMAA.</div>
         ) : null}
-        <div className={note}>Medicare costs use CMS&apos;s 2026 figures: a $202.90 standard Part B premium and 2026 IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>
+        <div className={note}>Medicare costs use CMS&apos;s {HC_YEAR.year} figures: a ${HC_YEAR.medicare.irmaa.partB.toFixed(2)} standard Part B premium and {HC_YEAR.year} IRMAA tiers. Medicare applies the surcharge based on your income from <b>two years prior</b>, so income in retirement year 1 may not affect Part B until year 3. Part D estimate is a national average plus IRMAA; your actual plan premium varies. Medigap Plan G estimates are rough national ranges at age 65, and state, insurer, and enrollment age make a significant difference. Medicare Advantage (Part C) plans often have lower monthly premiums but different cost-sharing and network rules.</div>
       </>
     );
   }

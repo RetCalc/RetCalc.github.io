@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-/* Builds public/engine-worker.js: the engine (math.js, drawdown.js and
+/* Builds public/engine-worker.js: the engine's figures (lib/engine/data/,
+   each file after the ones it imports), the engine (math.js, drawdown.js and
    plan.js, between their START and END markers, `export` dropped) and
    lib/engine/worker-glue.js, as one plain script a Web Worker can load. The
    same assembly tests/run.py makes, and build.py made for the first version.
@@ -8,8 +9,8 @@
    After them come the readiness guide's plan jobs (decision D7: new job
    types on this worker, not a second one): tools/guide/plan.worker.ts and
    everything it imports, each module turned into CommonJS by TypeScript and
-   kept in a small module table. The three engine files already above aren't
-   copied again: importing one gives the worker's own globals, so the
+   kept in a small module table. The three engine files and the figures
+   already above aren't copied again: importing one gives the worker's own globals, so the
    guide's sums run on the same engine as the optimizer's. */
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
@@ -24,6 +25,16 @@ const block = (name, tag) => {
   return text.slice(a, b);
 };
 const ENGINE = { math: block("math", "MATH"), drawdown: block("drawdown", "DRAWDOWN"), plan: block("plan", "PLAN") };
+/** The figures in lib/engine/data/, from `name` on, each file after the
+    ones it imports: imports and the index's re-exports removed. */
+function data(name = "index", seen = new Set()) {
+  if (seen.has(name)) return [];
+  seen.add(name);
+  const text = readFileSync(join(WEB, "lib", "engine", "data", name + ".js"), "utf8");
+  const deps = [...text.matchAll(/^(?:import|export \*) [^;]*?from "\.\/([\w-]+)\.js";/gm)].map((m) => m[1]);
+  return [...deps.flatMap((d) => data(d, seen)), text.replace(/^(?:import|export \*) [^;]*;\n/gm, "")];
+}
+const DATA = data().join("\n");
 
 /* ---------- the guide's modules ---------- */
 const isFile = (p) => { try { return statSync(p).isFile(); } catch { return false; } };
@@ -49,6 +60,8 @@ function bundle(entry) {
     if (mods.has(id)) return id;
     const eng = /^lib\/engine\/(math|drawdown|plan)\.js$/.exec(id);
     if (eng) { mods.set(id, globalsModule(ENGINE[eng[1]])); return id; }
+    // Any of the figures' files: every figure, as the worker's globals.
+    if (/^lib\/engine\/data\//.test(id)) { mods.set(id, globalsModule(DATA)); return id; }
     mods.set(id, "");
     const out = ts.transpileModule(readFileSync(abs, "utf8"), {
       fileName: abs, reportDiagnostics: false,
@@ -71,7 +84,7 @@ function bundle(entry) {
 
 const out = [
   "/* Built by scripts/build-worker.mjs from web/lib/engine and web/tools/guide; don't edit. */",
-  ...Object.values(ENGINE).map((code) => code.replace(/^export /gm, "")),
+  ...[DATA, ...Object.values(ENGINE)].map((code) => code.replace(/^export /gm, "")),
   readFileSync(join(WEB, "lib", "engine", "worker-glue.js"), "utf8"),
   bundle("tools/guide/plan.worker.ts"),
 ].join("\n;\n");

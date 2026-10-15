@@ -5,21 +5,14 @@
    from src/js/app/36-bridge.js without changes to the math: the exports and
    imports are added, and brMCSeqs takes its random seed as an argument. */
 import { money } from "../format";
-import { FED_2026, FED_STD, HIST_START, computeRetireTax, hcAgeMultiplier, hcCalcACA, hcFPL, hcGrossPremium, mulberry32 } from "./math.js";
-import { PL_NOEXP, plMix } from "./plan.js";
+import { computeRetireTax, hcAgeMultiplier, hcCalcACA, hcFPL, hcGrossPremium, mulberry32 } from "./math.js";
+import { plMix } from "./plan.js";
+import { BR_SLT, HIST_START, yearData } from "./data/index.js";
 
 
-/* IRS Single Life Table, Treas. Reg. 1.401(a)(9)-9(b), in force from 2022.
-   Notice 2022-6 lets 72(t) payments use it, and it gives the shortest life
-   expectancy of the three allowed tables, so the largest payment. */
-export var BR_SLT = {30:55.3, 31:54.4, 32:53.4, 33:52.5, 34:51.5, 35:50.5, 36:49.6, 37:48.6,
-  38:47.7, 39:46.7, 40:45.7, 41:44.8, 42:43.8, 43:42.9, 44:41.9, 45:41.0, 46:40.0,
-  47:39.0, 48:38.1, 49:37.1, 50:36.2, 51:35.3, 52:34.3, 53:33.4, 54:32.5, 55:31.6,
-  56:30.6, 57:29.8, 58:28.9, 59:28.0};
+/* Life expectancy for 72(t) payments, from the IRS Single Life Table
+   (BR_SLT, data/tables.js). */
 export function brLE(age){ return BR_SLT[Math.max(30, Math.min(59, Math.round(age)))]; }
-/* States that have not expanded Medicaid to 138% of the poverty line: the
-   plan engine's table (below 100% in these there is no subsidy at all). */
-export var BR_NOEXP = PL_NOEXP;
 export var BR_UNLOCK = 59.5, BR_FICA = 0.0765, BR_CUSHION = 0.03, BR_TRIALS = 300;
 /* Where a plan can draw from before 59½, the penalized sources last. */
 export var BR_PEN = ["tradPen", "rungEarly", "rothEarn"];
@@ -95,7 +88,7 @@ export function brTax(ctx, ord, gain, w){
 
 /* ---- health insurance ----
    The benchmark Silver premium for the adults on the plan, less the premium
-   tax credit the year's MAGI earns, using the Healthcare tool's 2026 tables
+   tax credit the year's MAGI earns, using the Healthcare tool's tables (the newest year's)
    (the enhanced credits have expired, so the 400% cliff is back). Below 138%
    of the poverty line an expansion state moves you to Medicaid. */
 export function brHealth(ctx, age, magi){
@@ -104,7 +97,7 @@ export function brHealth(ctx, age, magi){
     ? ctx.premium * hcAgeMultiplier(age) / hcAgeMultiplier(ctx.age)
     : hcGrossPremium(ctx.state, age, 0) * ctx.adults;
   var pct = magi / ctx.fpl;
-  if (pct < 1.38 && !BR_NOEXP[ctx.state]) return {cost:0, kind:"medicaid", pct:pct};
+  if (pct < 1.38 && !yearData().states.noExpansion[ctx.state]) return {cost:0, kind:"medicaid", pct:pct};
   if (pct < 1) return {cost:gross * 12, kind:"gap", pct:pct};
   var r = hcCalcACA(magi, gross, pct, false);
   return {cost:r.net * 12, kind:r.eligible ? "aca" : "cliff", pct:pct};
@@ -151,7 +144,7 @@ export function brSeppMax(ctx, method){
 }
 export function brSeppEnd(ctx){ return Math.max(59, ctx.age + 4); }
 export function brFillTarget(ctx, mode){
-  var std = FED_STD[ctx.status], b = FED_2026[ctx.status];
+  var Y = yearData(), std = Y.fedStd[ctx.status], b = Y.fed[ctx.status];
   if (mode === "zero") return std;
   if (mode === "b10") return std + b[1][0];
   if (mode === "b12") return std + b[2][0];

@@ -8,7 +8,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { GdChart } from "@/components/charts/GdChart";
-import { STATES } from "@/lib/engine/typed";
+import { yearData } from "@/lib/engine/typed";
 import { PL_HEIR, plMix } from "@/lib/engine/typed-plan";
 import type { PlRow, PlStats } from "@/lib/engine/types";
 import { groupDigits, money, pctStr } from "@/lib/format";
@@ -369,7 +369,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
   const h = heir(res), net = (r: PlRow) => r.endRoth + r.endBrok + r.endTrad * (1 - h);
   const spent = (r: PlRow) => r.tax + r.pen + r.irmaa + r.health;
   const C = who(res);
-  const state = (STATES as Record<string, { n: string }>)[res.P.state];
+  const state = yearData().states.tax[res.P.state];
   // Legends sit under their charts (DESIGN.md, Charts).
   const legend = (items: ReactNode) => <div className={cn("gd-ch-legend", tool && "mt-2 mb-0")}>{items}</div>;
   const brag = <>Tried <b>every one of {groupDigits(res.of, true)} plans</b> in all <b>{res.windows} historical retirements</b> since {res.first}: {groupDigits(res.runs, true)} retirements simulated.</>;
@@ -421,7 +421,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
       : "Every plan lives on the same " + money(res.P.spend) + " a year after tax") + " and runs to age " + (res.age1 + res.years) +
       ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
       "Left after tax counts traditional money at " + pctStr(1 - h, 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
-      "Tax is 2026 federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
+      "Tax is " + yearData().year + " federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
   );
 
   if (!tool) return (

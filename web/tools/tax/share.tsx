@@ -6,12 +6,14 @@
 
 import { SheetChart, SheetPage, SheetSection, SheetTable, type SheetRows } from "@/components/shell/Sheet";
 import { copyChart, type ShareKit } from "@/components/shell/share";
-import { FED_STD } from "@/lib/engine/typed";
+import { yearData } from "@/lib/engine/typed";
 import { money, pctStr } from "@/lib/format";
 import { runTax, taxInput, type TaxInputs } from "./model";
 
 export function taxShare(s: TaxInputs): ShareKit {
-  const inp = taxInput(s), ret = inp.mode === "retire";
+  const inp = taxInput(s, true), ret = inp.mode === "retire";
+  // A new year can run on the year before's state figures until the states publish.
+  const stateYear = yearData(inp.year).states.year;
   return {
     sheet: () => {
       if (!(inp.gross + inp.gross2 > 0)) return "Enter your income first";
@@ -31,7 +33,7 @@ export function taxShare(s: TaxInputs): ShareKit {
       if (ret && R.seniors > 0) situation.push(["Age 65 or older", R.seniors === 2 ? "Both spouses" : "Yes"]);
       situation.push(["State", R.stateName || "None"]);
       if (inp.pre > 0) situation.push(["Pre-tax deductions", money(inp.pre)]);
-      situation.push(["Deduction", inp.dedType === "item" ? "Itemized (" + money(inp.item) + ")" : "Standard (" + money(ret ? R.fedDed : (FED_STD as Record<string, number>)[inp.status]) + ")"]);
+      situation.push(["Deduction", inp.dedType === "item" ? "Itemized (" + money(inp.item) + ")" : "Standard (" + money(ret ? R.fedDed : yearData(inp.year).fedStd[inp.status]) + ")"]);
       if (ret && R.ssGross > 0) situation.push(["Taxable Social Security", money(R.taxableSS)]);
       situation.push(["Taxable income", money(R.fedTaxable)]);
       const out: SheetRows = ret
@@ -48,10 +50,11 @@ export function taxShare(s: TaxInputs): ShareKit {
           ...(inp.pre > 0 ? [["Net pay (before pre-tax)", money(R.gross - R.total)]] as SheetRows : [])];
       const chart = copyChart("#txPie");
       return (
-        <SheetPage title={ret ? "Retirement Tax Summary" : "Income Tax Summary"} sub="Tax year 2026"
+        <SheetPage title={ret ? "Retirement Tax Summary" : "Income Tax Summary"} sub={"Tax year " + inp.year}
           big={[[ret ? "Income after tax" : "Take-home pay", money(R.net), "per year"], ["Total tax", money(R.total), pctStr(R.effTotal, 1) + " effective"],
             ["Per month", money(R.net / 12), ret ? "after tax" : "take-home"]]}
-          foot="Based on published 2026 federal and state rates. Omits credits, local taxes and many special cases. Not tax advice.">
+          foot={"Based on published " + (stateYear === inp.year ? inp.year + " federal and state rates" : inp.year + " federal and " + stateYear + " state rates") +
+            ". Omits credits, local taxes and many special cases. Not tax advice."}>
           <div className="flex gap-4 mb-2.5 items-stretch">
             {chart ? <SheetChart html={chart} className="w-36 flex-none m-0" /> : null}
             <div className="flex-1 flex gap-4">
@@ -69,7 +72,7 @@ export function taxShare(s: TaxInputs): ShareKit {
     card: () => {
       const R = runTax(inp);
       return { title: ret ? "My tax in retirement" : "My take-home pay", bigLabel: ret ? "Income after tax, per year" : "Take-home, per year", big: money(R.net),
-        sub: money(R.gross) + (ret ? " withdrawn · " : " gross · ") + (R.stateName || "no state tax") + " · tax year 2026",
+        sub: money(R.gross) + (ret ? " withdrawn · " : " gross · ") + (R.stateName || "no state tax") + " · tax year " + inp.year,
         rows: ret
           ? [["Federal, ordinary income", money(R.fedOrdinary)], ["Federal, long-term gains", money(R.ltcg)], ["Net investment income tax", money(R.niit)],
             ["State tax", money(R.state)], ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Per month", money(R.net / 12)]]

@@ -22,8 +22,8 @@ import { useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
-import { HIST_START, LTCG_2026, STATES } from "@/lib/engine/typed";
-import { BR_CATS, BR_NOEXP, BR_TRIALS, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engine/typed-bridge";
+import { HIST_START, yearData } from "@/lib/engine/typed";
+import { BR_CATS, BR_TRIALS, brSeppBase, brSeppEnd, brSeppMax } from "@/lib/engine/typed-bridge";
 import type { BrCtx, BrEnd, BrRow } from "@/lib/engine/types";
 import { useMcSeed } from "@/lib/mc-seed";
 import { DASH, dollarsField, fmtNum, money, parseNum, pctStr } from "@/lib/format";
@@ -44,7 +44,7 @@ import { Segmented as SegmentedGroup, SegmentedItem } from "@/components/ui/segm
 import { CheckIcon, ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, InfoIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const stateName = (code: string) => (STATES as Record<string, { n: string }>)[code]?.n || code;
+const stateName = (code: string) => yearData().states.tax[code]?.n || code;
 /* Where each year's spending comes from, in the chart series. The engine
    lists the categories (with colors of its own, unused here). */
 const CAT_COLOR: Record<string, string> = {
@@ -633,7 +633,7 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
       <div className="hint pt-0 px-4.5 pb-3.5" id="brLadderNote">
         {conv.length ? "Converted before 59½: " + money(conv.reduce((a, r) => a + r.C, 0)) +
           ". A conversion's five-year clock starts on January 1 of the year you make it, so a " +
-          "conversion made any time in 2026 is penalty-free from January 1, 2031. The tax column is " +
+          "conversion made any time in " + yearData().year + " is penalty-free from January 1, " + (yearData().year + 5) + ". The tax column is " +
           "the whole year's tax, conversion included." : ""}
       </div>
     </Card>
@@ -662,7 +662,7 @@ function YearRows({ rows, ctx }: { rows: BrRow[]; ctx: BrCtx }) {
 
 function Rules({ ctx }: { ctx: BrCtx }) {
   const stN = stateName(ctx.state), seppEnd = brSeppEnd(ctx);
-  const ltcg = (LTCG_2026 as Record<string, number[]>)[ctx.status][0];
+  const ltcg = yearData().ltcg[ctx.status][0];
   const rules: [string, string][] = [
     ["The 10% before 59½", "Money out of a 401(k) or IRA before 59½ owes a 10% additional tax on " +
       "top of income tax (IRC §72(t)), unless an exception applies. The plans here are built out of " +
@@ -699,7 +699,7 @@ function Rules({ ctx }: { ctx: BrCtx }) {
     "withdrawals, 72(t) payments and capital gains all count; Roth withdrawals and the cost basis of " +
     "what you sell don't. For a household of " + Math.max(ctx.household, ctx.adults) + ", the subsidy " +
     "disappears entirely above " + money(ctx.fpl * 4) + " (400% of the poverty line)" +
-    (BR_NOEXP[ctx.state] ? ", and below " + money(ctx.fpl) + " " + stN + " offers no subsidy or Medicaid for most adults."
+    (yearData().states.noExpansion[ctx.state] ? ", and below " + money(ctx.fpl) + " " + stN + " offers no subsidy or Medicaid for most adults."
       : ", and below " + money(ctx.fpl * 1.38) + " (138%) " + stN + " covers adults through Medicaid instead.") +
     " The blended plan counts that cost when it picks how much to convert."]);
   rules.push(["0% capital gains", "Long-term gains are taxed at 0% while taxable income, gains included, stays under " +

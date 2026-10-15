@@ -42,6 +42,9 @@ function pct1(x) { return (Math.round(x * 1000) / 10).toFixed(1) + "%"; }
 function says(page, s) { ok(ARTICLES[page].indexOf(s) >= 0, "/" + page + " article says " + s); }
 
 out("RetCalc calculation tests");
+/* The newest tax year's figures (web/lib/engine/data/), which every tool
+   but Income Tax uses. */
+var YD = yearData();
 
 /* ---------------- accumulation engine ---------------- */
 group("Future value: project() matches the annuity formula");
@@ -94,19 +97,20 @@ group("Monte Carlo: lognormal draws keep the mean and volatility entered");
 /* ---------------- tax ---------------- */
 group("Tax data: 2026 federal figures (Rev. Proc. 2025-32) and table shape");
 (function () {
-  eq(FED_STD.s, 16100, "standard deduction, single");
-  eq(FED_STD.m, 32200, "standard deduction, joint");
-  eq(FED_2026.s[1][0], 12400, "12% bracket starts, single");
-  eq(FED_2026.m[6][0], 768700, "37% bracket starts, joint");
-  eq(FICA.ssCap, 184500, "Social Security wage base");
-  eq(LTCG_2026.s[0], 49450, "0% gain band, single");
-  eq(SENIOR_ADDL.s, 2050, "age-65 add-on, single");
+  var YD = yearData(2026);
+  eq(YD.fedStd.s, 16100, "standard deduction, single");
+  eq(YD.fedStd.m, 32200, "standard deduction, joint");
+  eq(YD.fed.s[1][0], 12400, "12% bracket starts, single");
+  eq(YD.fed.m[6][0], 768700, "37% bracket starts, joint");
+  eq(YD.fica.ssCap, 184500, "Social Security wage base");
+  eq(YD.ltcg.s[0], 49450, "0% gain band, single");
+  eq(YD.seniorAddl.s, 2050, "age-65 add-on, single");
   ["s", "m"].forEach(function (k) {
-    var b = FED_2026[k];
+    var b = YD.fed[k];
     for (var i = 1; i < b.length; i++) ok(b[i][0] > b[i - 1][0] && b[i][1] > b[i - 1][1], "federal brackets ascend (" + k + ")");
   });
-  Object.keys(STATES).forEach(function (code) {
-    var S = STATES[code];
+  Object.keys(YD.states.tax).forEach(function (code) {
+    var S = YD.states.tax[code];
     if (S.none) return;
     ["s", "m"].forEach(function (k) {
       var b = S.b[k];
@@ -152,7 +156,7 @@ group("Retirement tax: Social Security, capital gains, NIIT, senior deduction");
 
 /* State retirement rules refreshed in the October 2026 audit. Each check pins
    a figure worked from the state's own published rule; the sources are in the
-   RET_STATE notes. */
+   notes in states.retire (web/lib/engine/data/2026.js). */
 group("State retirement rules: RI, NJ, MO, ME, MN, KS 2025-26 updates");
 (function () {
   var base = { status: "m", idx: 1, seniors: 2, trad: 0, pension: 0, penPublic: false, other: 0,
@@ -161,7 +165,7 @@ group("State retirement rules: RI, NJ, MO, ME, MN, KS 2025-26 updates");
     var c = Object.assign({}, base, o, { code: code });
     if (o.grossForTest == null) c.grossForTest = c.trad + c.pension + c.other + c.gain;
     if (o.agi == null) c.agi = c.grossForTest + c.taxableSS;
-    return stateRetireTax(STATES[code], c);
+    return stateRetireTax(YD.states.tax[code], c);
   }
   // Rhode Island: $50,000 per person from 2025, cut off above $133,500 joint.
   near(st("RI", { pension: 120000 }).excluded, 100000, .01, "RI: $50,000 each, $100,000 joint");
@@ -209,7 +213,8 @@ group("Plan engine: Medicare premiums from 65 when the plan prices coverage");
 /* ---------------- Social Security ---------------- */
 group("Social Security: 2026 bend points, claiming ages, spousal benefits");
 (function () {
-  eq(SS_BEND1, 1286, "first bend point"); eq(SS_BEND2, 7749, "second bend point");
+  var YD = yearData(2026);
+  eq(YD.ss.bend1, 1286, "first bend point"); eq(YD.ss.bend2, 7749, "second bend point");
   near(ssEstimate(80000, 35, 67).monthly, .9 * 1286 + .32 * (80000 / 12 - 1286), .01, "PIA at full retirement age");
   near(ssEstimate(80000, 35, 62).adjustment, .70, 1e-9, "claiming at 62: 30% less");
   near(ssEstimate(80000, 35, 70).adjustment, 1.24, 1e-9, "claiming at 70: 24% more");
@@ -751,7 +756,7 @@ group("72(t): payment formulas and the /72t worked example");
   var b = 900000;
   for (var y = 0; y < 34; y++) b = b * 1.05 - 900000 * f;
   near(b * Math.pow(1.05, n - 34) - 900000 * f * (Math.pow(1.05, n - 34) - 1) / .05, 0, 1, "payments exhaust the balance at life expectancy");
-  var split = 40000 / f, tax = 0, taxable = 40000 - FED_STD.s, br = FED_2026.s;
+  var split = 40000 / f, tax = 0, taxable = 40000 - YD.fedStd.s, br = YD.fed.s;
   for (var i = 0; i < br.length; i++) {
     var top = i + 1 < br.length ? br[i + 1][0] : Infinity;
     if (taxable > br[i][0]) tax += (Math.min(taxable, top) - br[i][0]) * br[i][1];
@@ -1015,7 +1020,7 @@ group("Articles: Bridge");
   says("bridge", "$540,000 in all");
   says("bridge", "five years of spending from other sources first, " + dollars(5 * 60000));
   says("bridge", "from the whole $1,000,000 is " + dollars(1e6 * brAmortFactor(.05, 50)) + " a year");
-  says("bridge", "taxable income stays under " + dollars(LTCG_2026.m[0]));
+  says("bridge", "taxable income stays under " + dollars(YD.ltcg.m[0]));
   says("bridge", "ACA credits stop above " + dollars(hcFPL(2) * 4) + " for a household of two");
 })();
 
@@ -1029,8 +1034,8 @@ group("Articles: Roth conversions and RMDs");
     disc: d.disc / 100, irmaaOn: true };
   var P = runRoth(inp, true), B = runRoth(inp, false);
   says("roth", "that's " + dollars(P.rows[0].conv) + " in the first year");
-  near(P.rows[0].conv, FED_2026.m[3][0] + FED_STD.m, .01, "fills the 22% bracket: its top plus the standard deduction");
-  says("roth", "22% bracket for a couple (" + dollars(FED_2026.m[3][0]) + ") plus the " + dollars(FED_STD.m));
+  near(P.rows[0].conv, YD.fed.m[3][0] + YD.fedStd.m, .01, "fills the 22% bracket: its top plus the standard deduction");
+  says("roth", "22% bracket for a couple (" + dollars(YD.fed.m[3][0]) + ") plus the " + dollars(YD.fedStd.m));
   var lastConv = P.rows.filter(function (r) { return r.conv > 0; }).pop();
   says("roth", "By " + lastConv.age + " the traditional accounts are empty, " + dollars(P.totalConv) + " converted");
   eq(P.peakRMD, 0, "no RMDs with conversions");
@@ -1049,7 +1054,7 @@ group("Articles: Roth conversions and RMDs");
   says("rmd", "about " + dollars(d.ss + d.spSS) + " of Social Security");
   says("rmd", "peak at " + dollars(B.peakRMD) + " in a single year");
   says("rmd", "a $1,000,000 balance means an RMD of about " + dollars(1e6 / ultDivisor(75)));
-  says("rmd", "IRMAA line (" + dollars(IRMAA.tiers[0].m) + " joint)");
+  says("rmd", "IRMAA line (" + dollars(YD.medicare.irmaa.tiers[0].m) + " joint)");
 })();
 
 group("Articles: Healthcare");
@@ -1065,8 +1070,8 @@ group("Articles: Healthcare");
   says("healthcare", "pay the full " + dollars(over.net) + " a month, " + dollars(over.net * 12) + " a year");
   says("healthcare", "costs them " + dollars((over.net - under.net) * 12) + " in premiums");
   says("healthcare", dollars(hcFPL(1) * 4) + " for one person and " + dollars(fpl * 4) + " for a household of two");
-  says("healthcare", "$" + (IRMAA.tiers[1].b - IRMAA.partB).toFixed(2) + " a month more per person");
-  says("healthcare", "$" + IRMAA.partB.toFixed(2) + " a month in 2026");
+  says("healthcare", "$" + (YD.medicare.irmaa.tiers[1].b - YD.medicare.irmaa.partB).toFixed(2) + " a month more per person");
+  says("healthcare", "$" + YD.medicare.irmaa.partB.toFixed(2) + " a month in 2026");
 })();
 
 group("Articles: FIRE");
@@ -1120,7 +1125,7 @@ group("Articles: Backtest");
 group("Articles: Income tax");
 (function () {
   var T = computeTax({ status: "s", gross: 100000, pre: 0, dedType: "std", item: 0, state: "IL" });
-  says("incometax", "less the " + dollars(FED_STD.s) + " standard deduction leaves " + dollars(100000 - FED_STD.s) + " taxable");
+  says("incometax", "less the " + dollars(YD.fedStd.s) + " standard deduction leaves " + dollars(100000 - YD.fedStd.s) + " taxable");
   says("incometax", "comes to " + dollars(T.federal));
   says("incometax", "7.65% of wages, " + dollars(T.fica));
   says("incometax", "a small exemption, " + dollars(T.state));
@@ -1135,13 +1140,13 @@ group("Articles: Income tax");
     penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, state: "IL", _noMarginal: true });
   says("incometax", "pays " + dollars(R.federal) + " of federal tax");
   eq(R.state, 0, "Illinois taxes none of it");
-  var b = FED_2026.s, m = FED_2026.m;
+  var b = YD.fed.s, m = YD.fed.m;
   says("incometax", "10% to " + dollars(b[1][0]) + ", 12% to " + dollars(b[2][0]) + ", 22% to " + dollars(b[3][0]) + ", 24% to " + dollars(b[4][0]) +
     ", 32% to " + dollars(b[5][0]) + ", 35% to " + dollars(b[6][0]));
   says("incometax", "10% to " + dollars(m[1][0]) + ", 12% to " + dollars(m[2][0]) + ", 22% to " + dollars(m[3][0]) + ", 24% to " + dollars(m[4][0]) +
     ", 32% to " + dollars(m[5][0]) + ", 35% to " + dollars(m[6][0]));
-  says("incometax", "under " + dollars(LTCG_2026.s[0]) + " single or " + dollars(LTCG_2026.m[0]) + " joint");
-  says("incometax", "wages up to " + dollars(FICA.ssCap));
+  says("incometax", "under " + dollars(YD.ltcg.s[0]) + " single or " + dollars(YD.ltcg.m[0]) + " joint");
+  says("incometax", "wages up to " + dollars(YD.fica.ssCap));
 })();
 
 group("Articles: Mortgage and rent vs. buy");

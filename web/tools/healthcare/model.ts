@@ -1,7 +1,7 @@
 /* The Healthcare Cost Planner's inputs and Medicare tables. From
    src/js/app/34-healthcare.js and src/main/22-healthcare-inputs.html. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { HC_AGE40_MULT, HC_STATE_PREMIUM_40, IRMAA, hcCalcACA, hcFPL, hcGrossPremium, ssTaxable } from "@/lib/engine/typed";
+import { HC_AGE40_MULT, hcCalcACA, hcFPL, hcGrossPremium, ssTaxable, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 
 /* Its own state list, as the old page had it ("DC", in this order). */
@@ -14,14 +14,12 @@ export type HealthcareInputs = typeof HEALTHCARE_DEFAULTS;
 
 export const HEALTHCARE_DEF: ToolDef<HealthcareInputs> = { id: "healthcare", label: "Healthcare", noun: "healthcare plan", defaults: HEALTHCARE_DEFAULTS };
 
-/** Medicare IRMAA, 2026, the same CMS table the Roth tool uses:
+/** The newest year's Medicare and ACA figures (data/): this tool has no
+    choice of year. */
+export const HC_YEAR = yearData();
+/** Medicare IRMAA, the same CMS table the Roth tool uses:
     [individual MAGI max, joint MAGI max, Part B monthly, Part D IRMAA monthly]. */
-export const HC_IRMAA: [number, number, number, number][] =
-  (IRMAA as { tiers: { s: number; m: number; b: number; partD: number }[] }).tiers.map((t) => [t.s, t.m, t.b, t.partD]);
-/** Average standalone Part D premium, 2026 (CMS estimate, before IRMAA). */
-export const HC_PARTD_BASE = 35;
-/** Medigap Plan G at 65, a rough national range. */
-export const HC_MEDIGAP_LOW = 120, HC_MEDIGAP_HIGH = 200;
+export const HC_IRMAA: [number, number, number, number][] = HC_YEAR.medicare.irmaa.tiers.map((t) => [t.s, t.m, t.b, t.partD]);
 
 export function irmaaTier(magi: number, joint: boolean): number {
   const col = joint ? 1 : 0;
@@ -62,7 +60,7 @@ export function healthcareCompute(s: HealthcareInputs) {
   const spouseOn = joint && spouseAge < 65;
   const acaAge2 = Math.min(64, Math.max(21, spouseAge));
   const kids = Math.min(3, Math.max(0, household - (joint ? 2 : 1)));
-  const childPrem = (((HC_STATE_PREMIUM_40 as Record<string, number>)[state] || 500) / (HC_AGE40_MULT as number)) * 0.765;
+  const childPrem = ((HC_YEAR.aca.premium40[state] || 500) / (HC_AGE40_MULT as number)) * 0.765;
   const grossMonthly = manualPremium > 0 ? manualPremium
     : hcGrossPremium(state, acaAge, 0) + (spouseOn ? hcGrossPremium(state, acaAge2, 0) : 0) + kids * childPrem;
   const std = hcCalcACA(acaMagi, grossMonthly, pctFPL, false);
@@ -77,8 +75,9 @@ export function healthcareCompute(s: HealthcareInputs) {
   // ── Medicare ──
   const tier = irmaaTier(magi, joint);
   const [, , partB, partDIrmaa] = HC_IRMAA[tier];
-  const partD = HC_PARTD_BASE + partDIrmaa;
-  const totalLow = partB + partD + HC_MEDIGAP_LOW, totalHigh = partB + partD + HC_MEDIGAP_HIGH;
+  const { partD: partDBase, medigap } = HC_YEAR.medicare;
+  const partD = partDBase + partDIrmaa;
+  const totalLow = partB + partD + medigap.low, totalHigh = partB + partD + medigap.high;
   const hasIrmaa = tier > 0;
   const people = joint ? 2 : 1;
   const prev = hasIrmaa ? HC_IRMAA[tier - 1] : null;

@@ -1,14 +1,15 @@
 /* The Income Tax tool's state rules table: everything the tax modes did at
-   the state level, said in English, generated from the same STATES and
-   RET_STATE data the calculation runs on. Moved unchanged from
-   src/js/app/11-income-tax.js; only the two exports at the end replace the
-   function that wrote the table into the page. */
-import { STATES, RET_STATE, SS_TAX_STATES } from "@/lib/engine/core";
+   the state level, said in English, generated from the same state figures
+   (the year's states.tax and states.retire) the calculation runs on. Moved
+   unchanged from src/js/app/11-income-tax.js; only the two exports at the
+   end replace the function that wrote the table into the page, and the
+   year's figures are passed along. */
+import { yearData } from "@/lib/engine/core";
 import { money } from "@/lib/format";
 
 /* ---------- the state rules table ----------
    Everything the two tax modes just did at the state level, said in English.
-   The rows are generated from the same STATES and RET_STATE data the
+   The rows are generated from the same states.tax and states.retire data the
    calculation runs on, so the table cannot drift away from the numbers above
    it. The same six rows show in both modes: someone still working wants to
    know what retirement will cost in the state they are in, and someone
@@ -80,9 +81,9 @@ function ruleGain(code, S, R){
 }
 
 /* Row 3: Social Security. */
-function ruleSS(code, S, R){
+function ruleSS(code, S, R, taxed){
   if (S.none) return "Not taxed.";
-  if (!SS_TAX_STATES[code])
+  if (!taxed)
     return "Fully exempt. Benefits are subtracted from the state base no matter " +
       "how large they are or what else you earn.";
   let out = "Taxed, on the amount that is taxable federally under \u00a786. ";
@@ -257,14 +258,16 @@ const GAPS_UNIVERSAL = "Everywhere: state credits that phase out on income " +
   "minimum taxes, differences between state and federal itemized deductions, " +
   "part-year and non-resident apportionment, and estate or inheritance taxes.";
 
-/** The six rows of the state rules table for a state and filing status. */
-export function stateRuleRows(code, st){
-  const S = STATES[code] || {none:1, n:"None"};
-  const R = RET_STATE[code] || {};
+/** The six rows of the state rules table for a state and filing status, by
+    a tax year's state figures (the newest year's when `year` is left off). */
+export function stateRuleRows(code, st, year){
+  const SD = yearData(year).states;
+  const S = SD.tax[code] || {none:1, n:"None"};
+  const R = SD.retire[code] || {};
   return [
     ["Ordinary income", ruleOrdinary(code, S, st)],
     ["Long-term capital gain", ruleGain(code, S, R)],
-    ["Social Security", ruleSS(code, S, R)],
+    ["Social Security", ruleSS(code, S, R, !!SD.ssTaxed[code])],
     ["Pension / annuity", rulePension(code, S, R)],
     ["Traditional 401(k) / IRA", ruleTrad(code, S, R)],
     ["Age 65 and over", ruleSenior(code, S, R)]

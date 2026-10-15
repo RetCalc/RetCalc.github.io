@@ -204,3 +204,32 @@ export interface PlHist {
   first: number; medLegacy: number; p10Legacy: number; medTax: number; medianEnd: number; worstEnd: number; partial: boolean;
 }
 export interface PlSS { own1: number; own2: number; top1: number; top2: number; both1: number; total: number }
+
+/* ---- a year's figures (data/<year>.js, through yearData()) ---- */
+/** [single, married filing jointly]. */
+type Pair = [number, number];
+type Brackets = [number, number][];
+/** One state's income tax: brackets, standard deduction, exemptions and
+    credits (keys as data/2026.js explains them). */
+export interface StateTax {
+  n: string; none?: 1; sd?: Pair; pe?: Pair; pec?: Pair; sdc?: Pair; peAge?: number; agiCap?: Pair;
+  b?: { s: Brackets; m: Brackets };
+}
+/** A state's retirement rules (keys as data/2026.js explains them). */
+export type StateRetire = { note?: string } & Record<string, unknown>;
+export interface IrmaaTier { s: number; m: number; mult: number; b: number; partD: number }
+export interface YearData {
+  year: number;
+  fed: { s: Brackets; m: Brackets };
+  fedStd: { s: number; m: number };
+  fica: { ssRate: number; ssCap: number; medRate: number; addlRate: number; addlThreshold: { s: number; m: number } };
+  ltcg: { s: Pair; m: Pair };
+  seniorAddl: { s: number; m: number };
+  seniorBonus: { amount: number; rate: number; start: { s: number; m: number } };
+  ss: { bend1: number; bend2: number };
+  /** The states' figures, with the year they are for: a new tax year can use
+      the year before's until the states publish. */
+  states: { year: number; tax: Record<string, StateTax>; retire: Record<string, StateRetire>; ssTaxed: Record<string, 1>; noExpansion: Record<string, 1> };
+  medicare: { irmaa: { partB: number; tiers: IrmaaTier[] }; partD: number; medigap: { low: number; high: number } };
+  aca: { fplBase: number[]; fplPerAddl: number; premium40: Record<string, number>; cliff: number; contrib: [number, number, number, number][] };
+}

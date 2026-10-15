@@ -46,7 +46,7 @@ export function Budget() {
   const setRow = (i: number, patch: Partial<BudgetRow>) =>
     setState((c) => ({ ...c, rows: c.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
 
-  // The household's income, as take-home pay under the same 2026 rules the
+  // The household's income, as take-home pay under the same (newest year's) rules the
   // Income Tax tool uses, before any retirement saving.
   useHouseholdFill("budget", s, setState, (h, c) => {
     const net = budgetHouseholdNet(h, () => toolInputs("tax", TAX_DEFAULTS).state);

@@ -7,6 +7,7 @@
    and says what the answers mean in the person's own figures. The trips
    into the tools that find these numbers are on the Full walkthrough. */
 
+import { NEWEST_YEAR } from "@/lib/engine/typed";
 import { money, pctStr } from "@/lib/format";
 import { gross, mar, months, ok, parts, payParts, pos, taxEst } from "../calc";
 import { PayBar } from "../charts/PayBar";
@@ -31,7 +32,7 @@ export function IncomeCard() {
     <>
       <Q>What do you earn, and what reaches your account?</Q>
       <Learn>
-        <Lesson id="take-home" figure={P ? <PayBar P={P} /> : null} caption={P ? "A month of your pay by the 2026 rules for " + P.stateName + ", before a 401(k) or health insurance." : null}>
+        <Lesson id="take-home" figure={P ? <PayBar P={P} /> : null} caption={P ? "A month of your pay by the " + NEWEST_YEAR + " rules for " + P.stateName + ", before a 401(k) or health insurance." : null}>
           <p>Your salary is the gross: the headline figure on an offer letter. Less of it reaches your bank account. Federal and state income tax come
             {" "}out, then Social Security and Medicare, then anything your employer takes before paying you, like 401(k) contributions and health insurance.</p>
           <p>What&apos;s left is your <Term k="takehome">take-home pay</Term>. It&apos;s what your spending has to fit inside, so it&apos;s the figure the next cards use.</p>
@@ -62,7 +63,7 @@ function TakeHomeReadout() {
   return (
     <ul className="gd-read">
       <li>{mine ? "You take home " : "About "}<b>{money(a.takehome || 0)}</b> a month{mine ? "" : " reaches your account"} from <b>{money(gross(a))}</b> a year{mar(a) ? " between you" : ""}. <SourceBadge s={s} /></li>
-      {!mine && P ? <li>Worked out for {P.stateName} on the 2026 rules, a month: <b>{money(P.federal)}</b> federal income tax, {P.stateNone ? <>no {P.stateName} income tax on wages</> : <><b>{money(P.state)}</b> {P.stateName} income tax</>}, and <b>{money(P.fica)}</b> Social Security and Medicare. It takes the standard deduction and nothing out of your pay before tax.</li> : null}
+      {!mine && P ? <li>Worked out for {P.stateName} on the {NEWEST_YEAR} rules, a month: <b>{money(P.federal)}</b> federal income tax, {P.stateNone ? <>no {P.stateName} income tax on wages</> : <><b>{money(P.state)}</b> {P.stateName} income tax</>}, and <b>{money(P.fica)}</b> Social Security and Medicare. It takes the standard deduction and nothing out of your pay before tax.</li> : null}
       {mine && est > 0 && off >= 100 ? <li>The tax rules alone would leave about {money(est)}; the {money(off)} between is
         {est > (a.takehome || 0) ? " likely what comes out before you're paid, such as 401(k) contributions and health insurance." : " likely deductions the estimate doesn't know about."}</li> : null}
       {!mine ? <li>That&apos;s before any 401(k) or health insurance taken from your pay. {full ? "Add them, and any itemized deductions, in the Income Tax tool above, or enter the figure from your pay stub under " : "If your pay stub shows less, enter it under "}<b>Know your real take-home?</b></li> : null}

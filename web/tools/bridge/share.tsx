@@ -6,7 +6,7 @@
 
 import { SheetPage, SheetSection, SheetTable, type SheetRows } from "@/components/shell/Sheet";
 import { copyChart, type ShareKit } from "@/components/shell/share";
-import { HIST_START, STATES } from "@/lib/engine/typed";
+import { HIST_START, yearData } from "@/lib/engine/typed";
 import { DASH, fmtNum, money, pctStr } from "@/lib/format";
 import { holdPct, lowerName, type BridgeRun, type RunPlan } from "./run";
 
@@ -17,7 +17,7 @@ export function bridgeShare(R: BridgeRun | null, sel: RunPlan | null): ShareKit 
       if (!R || !sel) return "Enter your balances first";
       const ctx = R.ctx, b = R.best, st = b.steady, e = sel.steady.end;
       const situation: SheetRows = [["Retire at", fmtNum(ctx.age)], ["Filing status", ctx.status === "m" ? "Married filing jointly" : "Single"],
-        ["State", (STATES as Record<string, { n: string }>)[ctx.state]?.n || ctx.state], ["Spending, after tax", money(ctx.spend) + "/yr"],
+        ["State", yearData().states.tax[ctx.state]?.n || ctx.state], ["Spending, after tax", money(ctx.spend) + "/yr"],
         ["Traditional", money(ctx.trad) + (ctx.k401 > 0 ? " (" + money(ctx.k401) + " in the 401(k) you're leaving)" : "")],
         ["Roth", money(ctx.roth) + " (" + money(ctx.rothBasis) + " contributions)"], ["Brokerage", money(ctx.brok) + " at " + pctStr(ctx.basisPct, 0) + " basis"]];
       if (ctx.g457 > 0) situation.push(["457(b)", money(ctx.g457)]);
@@ -32,7 +32,7 @@ export function bridgeShare(R: BridgeRun | null, sel: RunPlan | null): ShareKit 
           big={[["Best way to 59½", b.name, b.desc], ["Holds up in", holdPct(b.test.hold, b.test.of), R.mc ? "random markets" : "retirements since " + HIST_START],
             ["Cost of the bridge", money(st.cost), "tax, penalties" + (ctx.aca ? ", premiums" : "") + " to 59½"]]}
           chart={copyChart("#chartBR")}
-          foot="Estimates only, in today's dollars, with 2026 tax rules and ACA tables held fixed in real terms. 72(t) and conversion rules are strict; confirm a plan with a tax professional. Not tax advice.">
+          foot={"Estimates only, in today's dollars, with " + yearData().year + " tax rules and ACA tables held fixed in real terms. 72(t) and conversion rules are strict; confirm a plan with a tax professional. Not tax advice."}>
           <div className="sh-cols">
             <SheetSection t="Your situation" rows={situation} />
             <SheetSection t="Ways to 59½" rows={R.live.map((p) => [p.name, holdPct(p.test.hold, p.test.of) + " hold · " + money(p.steady.cost) + " cost · " + money(p.steady.end.total) + " at 59½"])} />

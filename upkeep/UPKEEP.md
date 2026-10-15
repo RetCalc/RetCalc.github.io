@@ -60,7 +60,7 @@ one the update should cause, and only then re-record.
   commit ("Numbers baseline: re-record for ...").
 - `node scripts/baseline/guide.mjs check`: the Guide's fixture households.
   Same rule.
-- `npm run test:guide`, `npm run lint`, `npm run typecheck`, `npm run build`.
+- `npm run test:guide`, `npm run test:tax`, `npm run lint`, `npm run typecheck`, `npm run build`.
 - `npx playwright test --project=desktop e2e/guide.spec.ts`: it quotes a few
   Guide figures (the Quick check's "plan needs" amounts).
 - `node scripts/lastmod.mjs` when an article changed, so the sitemap dates
@@ -75,39 +75,70 @@ one the update should cause, and only then re-record.
 Covers `federal-tax`, `ss-wage-base`, `medicare-b-irmaa`,
 `medicare-d-medigap`, `aca`, `rmd-tables` and `year-labels`.
 
+A new tax year is **added beside the old one, never written over it**. Each
+year's figures live in their own file, `web/lib/engine/data/<year>.js`, and
+the engine reads them through `yearData(year)`. The Income Tax tool is the
+only place that offers older years: its Tax year picker appears on its own
+once there are two years, and defaults to the newest. Every other tool
+(Healthcare, Roth, Bridge, Optimizer, Drawdown, Advanced, Stages, the Guide)
+always uses the newest year and names it from the data.
+
 1. Gather the coming year's figures once they're published: the IRS revenue
    procedure (brackets, standard deduction, capital-gains breakpoints, the
    age-65 extra deduction), the SSA fact sheet (wage base, bend points), the
    CMS Part B and IRMAA fact sheet, the Part D estimate, KFF benchmark
    premiums, the IRS applicable percentages, and the HHS poverty guidelines
    for the coverage year.
-2. Prepare them on a branch ahead of time; switch on or right after
-   January 1, so the site never shows next year's rules too early.
-3. Rename year-bearing names: `FED_2026` and `LTCG_2026` become the new year,
-   with every import of them. Roll the hard-coded year in `rmdStartAge`.
-4. Find every "2026" about the rules (not about history):
+2. Add the year: copy `data/2026.js` to `data/2027.js`, rename its export
+   `YEAR_2027` with `year: 2027`, and change its figures and their source
+   comments. Leave `2026.js` exactly as it is.
+3. Register it in `data/years.js`: an `import { YEAR_2027 } from "./2027.js";`
+   and an `addYear(YEAR_2027);`. That's all the wiring there is; the tests,
+   the worker build and the picker follow from there.
+4. The states usually publish in February, after the IRS. Until then the new
+   year keeps the old state figures: `states: YEAR_2026.states` in
+   `2027.js` (with `import { YEAR_2026 } from "./2026.js";`). Their own
+   `states.year` stays 2026, and Income Tax says the state figures are
+   2026's. The state-taxes procedure below replaces them later.
+5. Prepare it on a branch ahead of time; merge on or right after January 1.
+   The newest year is what every other tool uses, so the site never shows
+   next year's rules too early.
+6. `rmdStartAge` counts birth years back from the newest year, so it rolls
+   on its own. The life tables (`data/tables.js`) only change when the IRS
+   changes them.
+7. Find every "2026" about the rules (not about history) that is still
+   static text:
    `grep -rn 2026 web --include=*.ts --include=*.tsx --include=*.js --include=*.json --include=*.html`.
-   That covers page titles and descriptions (`lib/page-meta.json`), card
-   text (`lib/cards.ts`), the footer, tool badges and headings, the Guide's
-   copy and the articles. Leave dates of past events alone.
-5. Re-render the preview cards if their text named the year.
-6. Run the checks above; expect the tax-dependent figures to move.
+   The tools name the year from the data; what's left is page titles and
+   descriptions (`lib/page-meta.json`), card text (`lib/cards.ts`), the
+   footer, the homepage tile, the glossary, the About page and the articles.
+   Leave dates of past events alone, and leave `data/2026.js` alone.
+8. Re-render the preview cards if their text named the year.
+9. Add checks for the new year's published figures to `tests/math.test.js`
+   beside the 2026 ones (`yearData(2027)`), and run the checks above; expect
+   the tax-dependent figures in every tool but a 2026 Income Tax to move.
+   `npm run test:tax` adds a made-up year after the newest and checks the
+   picker and the switch still work.
 
 ### State taxes (February and March)
 
 Covers `state-tax` and `state-retirement`. When the Tax Foundation's
-January 1 survey is out, compare every state's brackets, standard deduction
-and exemptions with `STATES`; then go through each state's retirement rules
-(`RET_STATE`, `SS_TAX_STATES`, `PL_NOEXP`), including the dollar amounts
+January 1 survey is out, give the newest year its own state figures: in
+`data/<year>.js`, replace a borrowed `states: YEAR_<last>.states` with a
+copy of them, set its `states.year` to the new year, and compare every
+state's brackets, standard deduction and exemptions with `states.tax`; then
+go through each state's retirement rules (`states.retire`,
+`states.ssTaxed`, `states.noExpansion`), including the dollar amounts
 quoted in their notes. Keep Illinois's special handling (its comment in
-`STATES`). Then the checks above.
+`states.tax`). Never edit an earlier year's state figures for a new year's
+changes. Then the checks above.
 
 ### Market history (February and March)
 
 Covers `market-history` and `french-data`. Both must end on the same month.
 
 1. Append the past year's 12 months to `HIST_M_STOCK`, `HIST_M_BOND`,
-   `HIST_M_INFL` and `HIST_M_CAPE` from Shiller's data and BLS CPI-U, the
+   `HIST_M_INFL` and `HIST_M_CAPE` (`web/lib/engine/data/history.js`) from Shiller's data and BLS CPI-U, the
    same way the existing months were made (the comment above
    `HIST_M_STOCK` says how). Then `HIST_M_CASH` and `HIST_M_SV` from the
    French library.
@@ -121,7 +152,7 @@ Covers `market-history` and `french-data`. Both must end on the same month.
 
 ### Today's CAPE (monthly)
 
-Covers `cape-now`. Set `CAPE_NOW` to the latest monthly reading on
+Covers `cape-now`. In `web/lib/engine/data/history.js`, set `CAPE_NOW` to the latest monthly reading on
 multpl.com and `CAPE_NOW_ASOF` to its date, written like "31 October 2026".
 `check.py` reads the date from there and sets the next due date to 36 days
 after it, so `items.json` needs no edit.

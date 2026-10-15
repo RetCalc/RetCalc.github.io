@@ -7,6 +7,7 @@ import * as E from "./core.js";
 import type {
   Coast, FinalStageSolve, FvFactors, GoalSolve, MCResult, Plan, RetireTax, SeriesGlobals, Series, SolveYears, Stage,
   BasicResult, HistRuns, Projection, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult, BtInput, BtResult,
+  YearData,
 } from "./types";
 
 const typed = <F>(f: unknown) => f as F;
@@ -20,7 +21,15 @@ export const debtDur = typed<(months: number) => string>(E.debtDur);
 export const collegeSavingsCalc = typed<(i: CollegeInput) => CollegeResult>(E.collegeSavingsCalc);
 export const collegePlanCalc = typed<(i: CollegeInput) => CollegePlan | null>(E.collegePlanCalc);
 export const rentBuyCalc = typed<(i: Record<string, number | string>) => RentBuyResult>(E.rentBuyCalc);
-export const bracketRoom = typed<(taxable: number, status: string) => { nextRate: number; room: number } | null>(E.bracketRoom);
+export const bracketRoom = typed<(taxable: number, status: string, year?: number) => { nextRate: number; room: number } | null>(E.bracketRoom);
+
+/** A year's tax, Medicare and ACA figures (data/): the newest year's when
+    none is asked for. Only the Income Tax tool asks for an older one. */
+export const yearData = typed<(year?: number) => YearData>(E.yearData);
+/** The years there are figures for, newest first. */
+export const dataYears = typed<() => number[]>(E.dataYears);
+/** The newest year there are figures for: the one every tool but Income Tax uses. */
+export const NEWEST_YEAR = E.NEWEST_YEAR as number;
 
 export const backtest = typed<(o: BtInput) => BtResult>(E.backtest);
 export const HIST_YEARS = (E.HIST_STOCK as number[]).length;
@@ -49,7 +58,7 @@ export const fiComputeCoastCrossings = typed<(p: object) => { crossings: number[
 export const fiYearsFromCrossings = typed<(crossings: number[], total: number, pct: number) => number | null>(E.fiYearsFromCrossings);
 
 
-export const { HC_AGE40_MULT, HC_STATE_PREMIUM_40, IRMAA, BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, STATES, FED_STD, NIIT, computeTax, computeRetireTax, HIST_START, LTCG_2026 } = E;
+export const { HC_AGE40_MULT, BASIC_BAND, BASIC_DEFAULTS, BASIC_INFL, DEFAULTS, RISK_LEVELS, DEBT_CAP, MORT_RATE_30, PMI_DEFAULT, PPY, NIIT, computeTax, computeRetireTax, HIST_START } = E;
 /** Contributions per year for each period name ("Monthly" → 12). */
 export const PER_YEAR = PPY as Record<string, number>;
 /** The guide's and optimizer's risk levels, each with its real return. */

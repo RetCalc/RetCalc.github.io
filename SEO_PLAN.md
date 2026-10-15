@@ -533,20 +533,22 @@ tools update together. Add a reminder to the progress log each year.
 
 #### Yearly update checklist
 
-Everything is in `web/lib/engine/math.js` (search for the name). Change the
-constant, run `python3 tests/run.py --web`, and let each failure show which
+The figures are in `web/lib/engine/data/`: each tax year's in its own file
+(`2026.js`), added beside the old ones rather than replacing them (see
+`upkeep/UPKEEP.md`), and the rest in `history.js` and `tables.js`. Change
+the figure, run `python3 tests/run.py --web`, and let each failure show which
 article sentence to update.
 
 | Fact | Search for | Articles that quote it |
 | --- | --- | --- |
-| Federal brackets, standard deduction, FICA limits | `FED_2026`, `LTCG_2026` | `incometax`, `roth`, `advanced`, `guide`, `tools` |
-| State retirement-income rules | `state retirement rules, tax year` | `incometax`, `roth` |
-| Medicare Part B and IRMAA tiers | `2026 Medicare IRMAA` | `healthcare` |
-| ACA poverty level, benchmark premiums, subsidy percentages | `Federal poverty level for 2026` | `healthcare` |
-| Social Security bend points, tax cap, full retirement age | `SS_BEND1` | `guide`, `optimizer` |
-| RMD start age | the function holding `? 75 : 73` | `rmd`, `roth`, `rmd-withdrawal-strategy` |
-| Today's CAPE and its date | `CAPE_NOW` | `4-percent-rule`, `cape-withdrawal` (and the figures derived from it) |
-| Mortgage rate and its date | `MORT_RATE_ASOF` | `mortgage` |
+| Federal brackets, standard deduction, FICA limits | `fed:`, `ltcg:`, `fica:` in `data/<year>.js` | `incometax`, `roth`, `advanced`, `guide`, `tools` |
+| State retirement-income rules | `state retirement rules, tax year` in `data/<year>.js` | `incometax`, `roth` |
+| Medicare Part B and IRMAA tiers | `Medicare IRMAA` in `data/<year>.js` | `healthcare` |
+| ACA poverty level, benchmark premiums, subsidy percentages | `aca:` in `data/<year>.js` | `healthcare` |
+| Social Security bend points, tax cap, full retirement age | `ss:` and `fica.ssCap` in `data/<year>.js`, `SS_FRA` in `math.js` | `guide`, `optimizer` |
+| RMD start age | `rmdStartAge` in `math.js` | `rmd`, `roth`, `rmd-withdrawal-strategy` |
+| Today's CAPE and its date | `CAPE_NOW` in `data/history.js` | `4-percent-rule`, `cape-withdrawal` (and the figures derived from it) |
+| Mortgage rate and its date | `MORT_RATE_ASOF` in `data/tables.js` | `mortgage` |
 
 Then: the year in titles and descriptions (`web/lib/page-meta.json`, e.g.
 "2026 Income Tax Calculator" and "2026 taxes"), the year in the articles'

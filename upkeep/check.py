@@ -9,7 +9,7 @@
     python3 upkeep/check.py --today 2027-01-05   # as if it were another day
 
 Two items take their dates from the code rather than items.json: today's
-CAPE (CAPE_NOW_ASOF in web/lib/engine/math.js) and the article reviews
+CAPE (CAPE_NOW_ASOF in web/lib/engine/data/history.js) and the article reviews
 (each article's data-reviewed date). See upkeep/UPKEEP.md.
 """
 import csv, datetime as dt, glob, json, os, re, sys
@@ -28,7 +28,7 @@ def day(s):
 def derive(item):
     """Fill in the dates of the items that read them from the code."""
     if item.get("derive") == "cape":
-        src = open(os.path.join(ROOT, "web", "lib", "engine", "math.js"), encoding="utf-8").read()
+        src = open(os.path.join(ROOT, "web", "lib", "engine", "data", "history.js"), encoding="utf-8").read()
         m = re.search(r'CAPE_NOW\s*=\s*([\d.]+),\s*CAPE_NOW_ASOF\s*=\s*"(\d{1,2}) (\w+) (\d{4})"', src)
         if m:
             asof = dt.date(int(m.group(4)), MONTHS.index(m.group(3)) + 1, int(m.group(2)))

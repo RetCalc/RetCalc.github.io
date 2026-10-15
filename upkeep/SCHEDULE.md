@@ -13,7 +13,7 @@ Generated from `upkeep/items.json` by `python3 upkeep/check.py --write` on 2026-
 | 🟢 OK | **Medicare Part B premium and IRMAA tiers** | Healthcare | 2026 | 2026-10-13 | 2026-12-01 | Yearly. Switch on January 1 | CMS Medicare Parts A and B premiums and deductibles fact sheet, usually out in October or November |
 | 🟢 OK | **Medicare Part D and Medigap cost estimates** | Healthcare | 2026 | 2026-10-13 | 2026-12-01 | Yearly, in the fall | CMS Part D premium announcement (summer); KFF or insurer surveys for Medigap |
 | 🟢 OK | **ACA marketplace premiums and subsidies** | Healthcare | 2026 coverage | 2026-09-29 | 2026-12-15 | Yearly, for the coming coverage year | KFF Marketplace Average Benchmark Premiums (late October or November); HHS poverty guidelines (January, used for the next coverage year); IRS applicable-percentage revenue procedure (summer) |
-| 🟢 OK | **RMD and life-expectancy tables** | Taxes | 2026 | 2026-09-29 | 2027-01-02 | Yearly check. The tables rarely change (last in 2022), but rmdStartAge's year must roll every January | IRS Publication 590-B |
+| 🟢 OK | **RMD and life-expectancy tables** | Taxes | 2026 | 2026-09-29 | 2027-01-02 | Yearly check. The tables rarely change (last in 2022); rmdStartAge rolls with the newest tax year | IRS Publication 590-B |
 | 🟢 OK | **The tax year named in the site's text** | Taxes | 2026 | 2026-10-13 | 2027-01-02 | Yearly, on January 1, together with the federal switch | Follows the tax items above |
 | 🟢 OK | **Article reviews ('Last reviewed' month)** | Articles | 26 articles; oldest review 2026-10-13 (26 of them) | 2026-10-13 | 2027-01-11 | Each article every 90 days (set max_age_days to change it) | The article's own sources and the site's current figures |
 | 🟢 OK | **72(t) interest rate default** | Other defaults | 5% | 2026-10-13 | 2027-01-15 | Quarterly check; only matters if 120% of the mid-term rate goes above 5% | IRS Applicable Federal Rates (monthly revenue rulings) |
@@ -36,7 +36,7 @@ Generated from `upkeep/items.json` by `python3 upkeep/check.py --write` on 2026-
 - **Medicare Part B premium and IRMAA tiers.** The standard Part B premium and the income tiers that raise Part B and Part D for higher earners.
 - **Medicare Part D and Medigap cost estimates.** The average standalone Part D premium and the rough monthly range for a Medigap Plan G policy at 65.
 - **ACA marketplace premiums and subsidies.** Average benchmark Silver premium by state, the poverty line the subsidies are measured against, the subsidy percentages, and whether the enhanced credits are back.
-- **RMD and life-expectancy tables.** The IRS Uniform Lifetime Table (RMDs), the Single Life table (72(t) payments), and the RMD starting age, which works out birth year from a hard-coded 2026.
+- **RMD and life-expectancy tables.** The IRS Uniform Lifetime Table (RMDs), the Single Life table (72(t) payments), and the RMD starting age, which works out birth year from the newest tax year in web/lib/engine/data/.
 - **The tax year named in the site's text.** Every place the site says '2026' about its rules: page titles and descriptions, tool badges and headings, the footer, preview cards, articles and FAQs.
 - **Article reviews ('Last reviewed' month).** Each tool page's article shows the month it was last reviewed. A review means checking its figures, sources and links still hold; only then move its date.
 - **72(t) interest rate default.** The rate the Bridge's 72(t) payment starts with: up to the greater of 5% or 120% of the federal mid-term rate.
