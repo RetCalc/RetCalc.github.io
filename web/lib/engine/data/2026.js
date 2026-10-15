@@ -27,6 +27,20 @@ export var YEAR_2026 = {
   fica: {ssRate:.062, ssCap:184500, medRate:.0145, addlRate:.009,
          addlThreshold:{s:200000, m:250000}},
 
+  /* Contribution limits, per person (IRS Notice 2025-67 for the 401(k) and
+     IRA; Rev. Proc. 2025-19 for the HSA, whose family limit is one per
+     household). catch50 is the extra from 50, catch60 the larger one at
+     60 to 63 that replaces it; the HSA's catch-up starts at 55.
+     iraPhase: the traditional IRA deduction phases out across these MAGI
+     ranges when you're covered by a plan at work (cov), or on a joint
+     return when only your spouse is (spouse). */
+  limits: {
+    k401: {base:24500, catch50:8000, catch60:11250},
+    ira: {base:7500, catch50:1100},
+    hsa: {self:4400, family:8750, catch55:1000},
+    iraPhase: {cov:{s:[81000, 91000], m:[129000, 149000]}, spouse:[242000, 252000]}
+  },
+
   /* ---------- retirement-specific 2026 data ----------
      Long-term capital gain / qualified dividend breakpoints are the maximum
      zero-rate and maximum 15% amounts from IRS Rev. Proc. 2025-32 sec. 3.03,
@@ -267,6 +281,28 @@ export var YEAR_2026 = {
        exception handled here, because its subtraction is a clean full exemption
        at 65 and over. */
     ssTaxed: {CO:1, CT:1, MN:1, MT:1, NM:1, RI:1, UT:1, VT:1},
+
+    /* Pre-tax deductions a state does not let off its own tax: listed here,
+       the money stays in the state base even though it comes off federally.
+       Every state not listed, and every deduction not named, follows the
+       federal treatment. The keys are the Income Tax tool's buckets:
+         k401    elective deferrals to a 401(k), 403(b) or 457
+         ira     a deductible traditional IRA contribution
+         hsa     HSA contributions, through payroll or not
+         health  health, dental and vision premiums through a Section 125 plan
+       Sources: PA Personal Income Tax Guide, Gross Compensation (deferrals
+       to retirement plans are compensation; qualified Section 125 health
+       premiums are not); NJ Division of Taxation TB-39(R) (no Section 125
+       exclusion for salary reduction) and NJ-1040 instructions (IRA and HSA
+       contributions not deductible; only 401(k) deferrals excluded, so
+       403(b) and 457 deferrals are taxed: the rules row says so); California
+       FTB Pub 1001 (no HSA deduction); Massachusetts DOR (no IRA deduction). */
+    preTaxed: {
+      PA: {k401:1, ira:1},
+      NJ: {ira:1, hsa:1, health:1},
+      CA: {hsa:1},
+      MA: {ira:1}
+    },
 
     /* States that have not expanded Medicaid to 138% of the poverty line:
        below 100% in these there is no ACA subsidy and no Medicaid for most

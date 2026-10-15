@@ -72,7 +72,7 @@ one the update should cause, and only then re-record.
 
 ### The new tax year (prepare in November and December, switch January 1)
 
-Covers `federal-tax`, `ss-wage-base`, `medicare-b-irmaa`,
+Covers `federal-tax`, `contribution-limits`, `ss-wage-base`, `medicare-b-irmaa`,
 `medicare-d-medigap`, `aca`, `rmd-tables` and `year-labels`.
 
 A new tax year is **added beside the old one, never written over it**. Each
@@ -86,7 +86,8 @@ always uses the newest year and names it from the data.
 1. Gather the coming year's figures once they're published: the IRS revenue
    procedure (brackets, standard deduction, capital-gains breakpoints, the
    age-65 extra deduction), the SSA fact sheet (wage base, bend points), the
-   CMS Part B and IRMAA fact sheet, the Part D estimate, KFF benchmark
+   IRS retirement-plan limits notice and HSA revenue procedure (`limits`),
+   the CMS Part B and IRMAA fact sheet, the Part D estimate, KFF benchmark
    premiums, the IRS applicable percentages, and the HHS poverty guidelines
    for the coverage year.
 2. Add the year: copy `data/2026.js` to `data/2027.js`, rename its export
@@ -128,7 +129,7 @@ January 1 survey is out, give the newest year its own state figures: in
 copy of them, set its `states.year` to the new year, and compare every
 state's brackets, standard deduction and exemptions with `states.tax`; then
 go through each state's retirement rules (`states.retire`,
-`states.ssTaxed`, `states.noExpansion`), including the dollar amounts
+`states.ssTaxed`, `states.noExpansion`, `states.preTaxed`), including the dollar amounts
 quoted in their notes. Keep Illinois's special handling (its comment in
 `states.tax`). Never edit an earlier year's state figures for a new year's
 changes. Then the checks above.

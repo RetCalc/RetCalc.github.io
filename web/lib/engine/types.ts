@@ -227,9 +227,18 @@ export interface YearData {
   seniorAddl: { s: number; m: number };
   seniorBonus: { amount: number; rate: number; start: { s: number; m: number } };
   ss: { bend1: number; bend2: number };
+  /** Contribution limits per person, and the IRA deduction's phase-out ranges. */
+  limits: {
+    k401: { base: number; catch50: number; catch60: number };
+    ira: { base: number; catch50: number };
+    hsa: { self: number; family: number; catch55: number };
+    iraPhase: { cov: { s: Pair; m: Pair }; spouse: Pair };
+  };
   /** The states' figures, with the year they are for: a new tax year can use
       the year before's until the states publish. */
-  states: { year: number; tax: Record<string, StateTax>; retire: Record<string, StateRetire>; ssTaxed: Record<string, 1>; noExpansion: Record<string, 1> };
+  states: { year: number; tax: Record<string, StateTax>; retire: Record<string, StateRetire>; ssTaxed: Record<string, 1>;
+    /** Pre-tax deductions a state keeps in its base, by kind. */
+    preTaxed: Record<string, Partial<Record<"k401" | "ira" | "hsa" | "health", 1>>>; noExpansion: Record<string, 1> };
   medicare: { irmaa: { partB: number; tiers: IrmaaTier[] }; partD: number; medigap: { low: number; high: number } };
   aca: { fplBase: number[]; fplPerAddl: number; premium40: Record<string, number>; cliff: number; contrib: [number, number, number, number][] };
 }

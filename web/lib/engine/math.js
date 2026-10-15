@@ -903,6 +903,69 @@ export function stateRetireTax(S, c){
           note:R.note || "", ssTaxed};
 }
 
+/** The kinds of pre-tax deduction the Income Tax tool asks for, in order. */
+export const PRE_KINDS = ["k401", "ira", "hsa", "health", "other"];
+
+/**
+ * What a household's pre-tax deductions, by kind and earner, take off each tax.
+ *   k401    401(k), 403(b) or 457 deferrals: off income tax, not FICA
+ *   ira     a traditional IRA: off income tax, as far as the deduction allows.
+ *           Covered by a plan at work (a 401(k) line above zero, as inferred
+ *           here), it phases out across the year's limits.iraPhase ranges.
+ *   hsa     HSA contributions, taken as through payroll: off income tax and FICA
+ *   health  health, dental and vision premiums through work (Section 125):
+ *           off income tax and FICA
+ *   other   anything else pre-tax: off income tax, not FICA
+ * A state in the year's states.preTaxed keeps the kinds it names in its base.
+ * @param {Array<Object>} ded - [you, spouse], each {k401, ira, hsa, health, other}
+ * @param {number[]} wages - [your gross, spouse's gross]
+ * @param {"s"|"m"} st - filing status
+ * @param {string} state - two-letter state code
+ * @param {Object} Y - the year's figures (yearData)
+ * @returns {{people: Object[], paid: number, fed: number, addBack: number,
+ *   ficaOff: number[], magi: number}} people: each earner's amounts, with the
+ *   IRA's deductible part (iraDed), its limit (iraMax) and whether they're
+ *   taken as covered at work; paid: everything set aside; fed: what comes off
+ *   federal income tax; addBack: what the state puts back; ficaOff: what
+ *   comes off each earner's FICA wages; magi: the income the IRA test reads.
+ */
+export function preTaxSplit(ded, wages, st, state, Y){
+  const n = st === "m" ? 2 : 1, L = Y.limits;
+  const v = x => Math.max(0, +x || 0);
+  const people = [0, 1].map(i => {
+    const d = i < n ? ded[i] || {} : {};
+    return {k401:v(d.k401), ira:v(d.ira), hsa:v(d.hsa), health:v(d.health), other:v(d.other)};
+  });
+  // Income for the IRA test: AGI before the IRA deduction itself.
+  const payroll = people.reduce((a, p) => a + p.k401 + p.hsa + p.health + p.other, 0);
+  const magi = Math.max(0, wages[0] + (n > 1 ? wages[1] : 0) - payroll);
+  // Covered first, for both: one's IRA test reads the other's coverage.
+  people.forEach(p => { p.covered = p.k401 > 0; });
+  people.forEach((p, i) => {
+    const other = people[1 - i];
+    const range = p.covered ? L.iraPhase.cov[st] : st === "m" && other.covered ? L.iraPhase.spouse : null;
+    // Over the base limit reads as a catch-up from 50.
+    const limit = p.ira > L.ira.base ? L.ira.base + L.ira.catch50 : L.ira.base;
+    let max = limit;
+    if (range){
+      const f = Math.min(1, Math.max(0, (magi - range[0]) / (range[1] - range[0])));
+      // IRS worksheet: rounded up to $10, and at least $200 until it's gone.
+      max = f >= 1 ? 0 : Math.max(200, Math.ceil(limit * (1 - f) / 10) * 10);
+      max = Math.min(max, limit);
+    }
+    p.iraMax = max;
+    p.iraDed = Math.min(p.ira, max);
+  });
+  const sum = (k) => people.reduce((a, p) => a + p[k], 0);
+  const paid = PRE_KINDS.reduce((a, k) => a + sum(k), 0);
+  const fed = sum("k401") + sum("iraDed") + sum("hsa") + sum("health") + sum("other");
+  const keep = (Y.states.preTaxed || {})[state] || {};
+  const addBack = (keep.k401 ? sum("k401") : 0) + (keep.ira ? sum("iraDed") : 0) +
+                  (keep.hsa ? sum("hsa") : 0) + (keep.health ? sum("health") : 0);
+  const ficaOff = people.map((p, i) => Math.min(p.hsa + p.health, Math.max(0, wages[i] || 0)));
+  return {people, paid, fed, addBack, ficaOff, magi};
+}
+
 /**
  * @param {Object} inp
  * @param {"s"|"m"} inp.status - filing status: single or married
@@ -912,7 +975,11 @@ export function stateRetireTax(S, c){
  *   only). Summed with inp.gross for tax purposes, but kept separate for FICA: the
  *   Social Security wage-base cap applies per earner, so running the household total
  *   through the cap once (the pre-split behavior) understates a two-earner couple's tax.
- * @param {number} inp.pre - pre-tax deductions (e.g. 401k), in dollars
+ * @param {number} inp.pre - pre-tax deductions (e.g. 401k), in dollars: one household
+ *   figure, off income tax (federal and state) but not FICA. Ignored when inp.ded is given.
+ * @param {Array<Object>} [inp.ded] - each earner's pre-tax deductions by kind, instead
+ *   of inp.pre: [you, spouse], each {k401, ira, hsa, health, other} in dollars (the
+ *   spouse's only on a joint return). See preTaxSplit for how each kind is treated.
  * @param {"std"|"item"} inp.dedType - standard vs. itemized deduction
  * @param {number} inp.item - itemized deduction total, in dollars (used only if dedType is "item")
  * @param {string} inp.state - two-letter state code, a key into the year's states.tax
@@ -925,7 +992,11 @@ export function computeTax(inp){
   const earner1 = Math.max(0, inp.gross);
   const earner2 = Math.max(0, inp.gross2 || 0);
   const gross = earner1 + earner2;
-  const pre = Math.min(Math.max(0, inp.pre), gross);
+  // What comes off before each tax. One household figure (pre) comes off
+  // federal and state income tax alike; by kind (ded), each comes off what
+  // the law lets it, per earner for FICA.
+  const P = inp.ded ? preTaxSplit(inp.ded, [earner1, earner2], st, inp.state, Y) : null;
+  const pre = P ? Math.min(P.fed, gross) : Math.min(Math.max(0, inp.pre), gross);
   const afterPre = gross - pre;
 
   // federal
@@ -946,7 +1017,8 @@ export function computeTax(inp){
     // rather than phasing it out, once AGI crosses a threshold. afterPre is
     // this tool's stand-in for federal AGI (gross minus pre-tax deferrals).
     if (S.agiCap && afterPre > S.agiCap[idx]) ded = 0;
-    stateTaxable = Math.max(0, afterPre - ded);
+    // A state that keeps some deductions in its base starts higher.
+    stateTaxable = Math.max(0, afterPre + (P ? P.addBack : 0) - ded);
     state = bracketTax(stateTaxable, S.b[st]).tax;
     if (S.pec) state = Math.max(0, state - S.pec[idx]);
     if (S.sdc) state = Math.max(0, state - S.sdc[idx]);
@@ -960,17 +1032,24 @@ export function computeTax(inp){
   // so aggregating doesn't change it, and the 0.9% Additional Medicare surtax
   // is genuinely a joint-return test against combined income (IRC 3101(b)(2)),
   // so that one correctly stays on the household total either way.
-  const ss1 = Math.min(earner1, FICA.ssCap) * FICA.ssRate;
-  const ss2 = Math.min(earner2, FICA.ssCap) * FICA.ssRate;
+  // HSA contributions and health premiums through a Section 125 plan come
+  // off FICA wages too, each earner's off their own.
+  const wage1 = earner1 - (P ? P.ficaOff[0] : 0), wage2 = earner2 - (P ? P.ficaOff[1] : 0);
+  const ss1 = Math.min(wage1, FICA.ssCap) * FICA.ssRate;
+  const ss2 = Math.min(wage2, FICA.ssCap) * FICA.ssRate;
   const ss = ss1 + ss2;
-  const med = gross * FICA.medRate;
-  const addl = Math.max(0, gross - FICA.addlThreshold[st]) * FICA.addlRate;
+  const med = (wage1 + wage2) * FICA.medRate;
+  const addl = Math.max(0, wage1 + wage2 - FICA.addlThreshold[st]) * FICA.addlRate;
   const fica = ss + med + addl;
 
   const total = federal + state + fica;
-  const net = gross - total - pre;
+  // Take-home: what's left once the taxes and everything set aside before
+  // the paycheck (deductible or not) are out.
+  const setAside = P ? Math.min(P.paid, gross) : pre;
+  const net = gross - total - setAside;
   const rate = v => gross > 0 ? v / gross : 0;
-  return {gross, earner1, earner2, pre, afterPre, fedDed, fedTaxable, federal, state, stateTaxable,
+  return {gross, earner1, earner2, pre: setAside, preFed: pre, afterPre, fedDed, fedTaxable, federal, state, stateTaxable,
+          preTax: P,
           fica, ss, ss1, ss2, med, addl, total, net, takeHome: net,
           effFed:rate(federal), effState:rate(state), effFica:rate(fica),
           effTotal:rate(total), effNet:rate(net),

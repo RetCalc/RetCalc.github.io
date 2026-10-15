@@ -11,7 +11,7 @@ import { money } from "@/lib/format";
    Everything the two tax modes just did at the state level, said in English.
    The rows are generated from the same states.tax and states.retire data the
    calculation runs on, so the table cannot drift away from the numbers above
-   it. The same six rows show in both modes: someone still working wants to
+   it. The same seven rows show in both modes: someone still working wants to
    know what retirement will cost in the state they are in, and someone
    retired wants to know how ordinary income is treated. */
 
@@ -196,6 +196,30 @@ function ruleSenior(code, S, R){
       "deduction, exemption or credit at 65.";
 }
 
+/* Row 7: pre-tax deductions going in, by kind, from the year's
+   states.preTaxed: what comes off the state's tax the way it comes off the
+   federal, and what stays in its base. */
+const PRE_NAMES = {k401:"401(k), 403(b) and 457 deferrals", ira:"a deductible traditional IRA",
+  hsa:"HSA contributions", health:"health, dental and vision premiums paid through work"};
+function rulePreTax(code, S, keep){
+  if (S.none) return "No income tax, so they save federal tax and, for HSA contributions and " +
+    "premiums through work, FICA, but nothing at the state level.";
+  const kinds = Object.keys(PRE_NAMES);
+  const taxed = kinds.filter(k => keep[k]), off = kinds.filter(k => !keep[k]);
+  // The names have commas of their own, so the list runs on semicolons.
+  const list = ks => ks.map(k => PRE_NAMES[k]).join("; ");
+  if (!taxed.length) return "Follows the federal treatment. All of these come off the state " +
+    "base too: " + list(off) + ".";
+  let out = "Come off the state base: " + list(off) + ". Stay taxed by " + (S.n || "the state") +
+    " in the year you contribute: " + list(taxed) + ".";
+  if (code === "NJ") out += " Of retirement-plan deferrals only 401(k)s come off; 403(b) and " +
+    "457 deferrals stay taxed, and the figure above treats the line as a 401(k).";
+  if (code === "PA") out += " In return, Pennsylvania doesn't tax plan or IRA withdrawals " +
+    "after 59½: the money was taxed going in.";
+  if (code === "MA") out += " What you put in comes back tax-free first when you withdraw.";
+  return out;
+}
+
 /* What is knowingly missing. Two or three real items per state, not a
    disclaimer wall: the point is that you know where to go look. */
 const STATE_GAPS = {
@@ -258,7 +282,7 @@ const GAPS_UNIVERSAL = "Everywhere: state credits that phase out on income " +
   "minimum taxes, differences between state and federal itemized deductions, " +
   "part-year and non-resident apportionment, and estate or inheritance taxes.";
 
-/** The six rows of the state rules table for a state and filing status, by
+/** The seven rows of the state rules table for a state and filing status, by
     a tax year's state figures (the newest year's when `year` is left off). */
 export function stateRuleRows(code, st, year){
   const SD = yearData(year).states;
@@ -270,7 +294,8 @@ export function stateRuleRows(code, st, year){
     ["Social Security", ruleSS(code, S, R, !!SD.ssTaxed[code])],
     ["Pension / annuity", rulePension(code, S, R)],
     ["Traditional 401(k) / IRA", ruleTrad(code, S, R)],
-    ["Age 65 and over", ruleSenior(code, S, R)]
+    ["Age 65 and over", ruleSenior(code, S, R)],
+    ["Pre-tax deductions", rulePreTax(code, S, (SD.preTaxed || {})[code] || {})]
   ];
 }
 /** What's knowingly left out, for a state, then for every state. */

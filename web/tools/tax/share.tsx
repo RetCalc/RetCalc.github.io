@@ -8,7 +8,7 @@ import { SheetChart, SheetPage, SheetSection, SheetTable, type SheetRows } from 
 import { copyChart, type ShareKit } from "@/components/shell/share";
 import { yearData } from "@/lib/engine/typed";
 import { money, pctStr } from "@/lib/format";
-import { runTax, taxInput, type TaxInputs } from "./model";
+import { PRE_ROWS, runTax, taxInput, type TaxInputs } from "./model";
 
 export function taxShare(s: TaxInputs): ShareKit {
   const inp = taxInput(s, true), ret = inp.mode === "retire";
@@ -33,6 +33,11 @@ export function taxShare(s: TaxInputs): ShareKit {
       if (ret && R.seniors > 0) situation.push(["Age 65 or older", R.seniors === 2 ? "Both spouses" : "Yes"]);
       situation.push(["State", R.stateName || "None"]);
       if (inp.pre > 0) situation.push(["Pre-tax deductions", money(inp.pre)]);
+      // Broken down by kind: each kind's household total under it.
+      if (inp.ded) for (const r of PRE_ROWS) {
+        const v = inp.ded.reduce((a, p) => a + (p[r.kind] || 0), 0);
+        if (v > 0) situation.push(["  " + r.name, money(v)]);
+      }
       situation.push(["Deduction", inp.dedType === "item" ? "Itemized (" + money(inp.item) + ")" : "Standard (" + money(ret ? R.fedDed : yearData(inp.year).fedStd[inp.status]) + ")"]);
       if (ret && R.ssGross > 0) situation.push(["Taxable Social Security", money(R.taxableSS)]);
       situation.push(["Taxable income", money(R.fedTaxable)]);

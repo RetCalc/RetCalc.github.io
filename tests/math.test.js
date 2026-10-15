@@ -1122,6 +1122,60 @@ group("Articles: Backtest");
   says("backtest", "2008 came close, at about −" + Math.round(-HIST_STOCK[2008 - 1926]) + "%");
 })();
 
+group("Income tax: pre-tax deductions by kind");
+(function () {
+  var Z = { k401: 0, ira: 0, hsa: 0, health: 0, other: 0 };
+  var run = function (state, ded, gross, st, gross2) {
+    return computeTax({ status: st || "s", gross: gross || 100000, gross2: gross2 || 0, pre: 0, dedType: "std", item: 0, state: state, ded: ded });
+  };
+  var one = computeTax({ status: "s", gross: 100000, pre: 10000, dedType: "std", item: 0, state: "IL" });
+  var oth = run("IL", [Object.assign({}, Z, { other: 10000 })]);
+  eq(oth.total, one.total, "Other by kind taxes like the one figure");
+  eq(oth.net, one.net, "Other by kind leaves the same take-home");
+  var k = run("IL", [Object.assign({}, Z, { k401: 10000 })]);
+  eq(k.fica, one.fica, "a 401(k) deferral leaves FICA alone");
+  var none = run("IL", [Z]);
+  var h = run("IL", [Object.assign({}, Z, { hsa: 4400 })]);
+  near(none.fica - h.fica, 4400 * 0.0765, 0.01, "an HSA through payroll saves 7.65% FICA");
+  var p = run("IL", [Object.assign({}, Z, { health: 2400 })]);
+  near(none.fica - p.fica, 2400 * 0.0765, 0.01, "health premiums through work save 7.65% FICA");
+  // States that keep a kind in their base.
+  var pa0 = run("PA", [Z]), pa = run("PA", [Object.assign({}, Z, { k401: 10000, ira: 5000, hsa: 3000 })]);
+  near(pa0.state - pa.state, 3000 * 0.0307, 0.01, "Pennsylvania lets only the HSA off its tax");
+  var ca0 = run("CA", [Z]), ca = run("CA", [Object.assign({}, Z, { hsa: 4400 })]);
+  eq(ca.state, ca0.state, "California keeps HSA contributions in its base");
+  ok(ca.federal < ca0.federal, "an HSA still lowers federal tax in California");
+  var nj0 = run("NJ", [Z]), nj = run("NJ", [Object.assign({}, Z, { k401: 10000, ira: 5000, hsa: 3000, health: 2000 })]);
+  var nj401 = run("NJ", [Object.assign({}, Z, { k401: 10000 })]);
+  eq(nj.state, nj401.state, "New Jersey lets only the 401(k) off its tax");
+  ok(nj401.state < nj0.state, "New Jersey excludes 401(k) deferrals");
+  var ma = run("MA", [Object.assign({}, Z, { ira: 5000 })]), ma0 = run("MA", [Z]);
+  eq(ma.state, ma0.state, "Massachusetts gives no IRA deduction");
+  // The IRA's income test, with a plan at work inferred from a 401(k) line.
+  var L = YD.limits;
+  var r = run("IL", [Object.assign({}, Z, { k401: 10000, ira: 7500 })], 95000);
+  eq(r.preTax.magi, 85000, "the IRA test reads income after payroll deductions");
+  eq(r.preTax.people[0].iraDed, Math.ceil(7500 * (1 - (85000 - L.iraPhase.cov.s[0]) / (L.iraPhase.cov.s[1] - L.iraPhase.cov.s[0])) / 10) * 10,
+    "a covered single filer's IRA deduction phases out");
+  eq(r.pre, 17500, "the whole IRA still leaves the paycheck");
+  eq(r.preFed, 10000 + r.preTax.people[0].iraDed, "only the deductible part comes off federal tax");
+  var u = run("IL", [Object.assign({}, Z, { ira: 7500 })], 95000);
+  eq(u.preTax.people[0].iraDed, 7500, "no plan at work, no phase-out");
+  var sp = run("IL", [Object.assign({}, Z, { ira: 7500 }), Object.assign({}, Z, { k401: 20000 })], 150000, "m", 100000);
+  eq(sp.preTax.people[0].iraDed, 7500, "spouse covered, under the spousal range: full deduction");
+  var sp2 = run("IL", [Object.assign({}, Z, { ira: 7500 }), Object.assign({}, Z, { k401: 1000 })], 200000, "m", 100000);
+  eq(sp2.preTax.people[0].iraDed, 0, "spouse covered, over the spousal range: none");
+  // FICA per earner: one spouse's HSA lowers only their own wages.
+  var c0 = run("IL", [Z, Z], 200000, "m", 50000);
+  var c1 = run("IL", [Z, Object.assign({}, Z, { hsa: 4000 })], 200000, "m", 50000);
+  eq(c1.ss1, c0.ss1, "the spouse's HSA leaves your Social Security tax alone");
+  near(c0.ss2 - c1.ss2, 4000 * 0.062, 0.01, "and lowers the spouse's");
+  var cap = run("IL", [Object.assign({}, Z, { hsa: 4000 }), Z], 250000, "m", 50000);
+  eq(cap.ss1, YD.fica.ssCap * YD.fica.ssRate, "an HSA doesn't cut Social Security tax above the wage cap");
+  var sgl = run("IL", [Z, Object.assign({}, Z, { k401: 20000 })]);
+  eq(sgl.pre, 0, "a single return ignores a spouse's deductions");
+})();
+
 group("Articles: Income tax");
 (function () {
   var T = computeTax({ status: "s", gross: 100000, pre: 0, dedType: "std", item: 0, state: "IL" });

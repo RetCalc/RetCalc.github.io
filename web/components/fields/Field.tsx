@@ -38,13 +38,15 @@ export function Field({ id, label, labelId, wrapId, hidden, className, children 
 /** An input with its "$" in front and its unit after. The addons follow
     the input in the markup, so Tab reaches the input first; `align` puts
     them on their side. */
-export function Affixed({ prefix, suffix, children, className }: { prefix?: ReactNode; suffix?: ReactNode; children: ReactNode; className?: string }) {
+export function Affixed({ prefix, suffix, action, children, className }: { prefix?: ReactNode; suffix?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <InGroup value={true}>
       <InputGroup className={className}>
         {children}
         {prefix ? <InputGroupAddon><InputGroupText>{prefix}</InputGroupText></InputGroupAddon> : null}
         {suffix ? <InputGroupAddon align="inline-end"><InputGroupText>{suffix}</InputGroupText></InputGroupAddon> : null}
+        {/* A button at the end of the field (an InputGroupButton). */}
+        {action ? <InputGroupAddon align="inline-end">{action}</InputGroupAddon> : null}
       </InputGroup>
     </InGroup>
   );

@@ -13,11 +13,43 @@ export const TAX_DEFAULTS = {
   gross: g(100000), gross2: g(0), status: "s", state: "IL", pre: g(0), dedType: "std", item: g(0),
   trad: g(40000), roth: g(10000), brok: g(20000), gainPct: "40", ss: g(30000), pension: g(0),
   penType: "priv", other: g(0), seniors: "1",
+  /** Normal mode's pre-tax deductions by kind and earner (the Pre-tax
+      deductions pop-up), in place of the one figure in `pre` while
+      `itemize` is on. The spouse's (…2) count only on a joint return. */
+  itemize: false,
+  k401: g(0), ira: g(0), hsa: g(0), health: g(0), dother: g(0),
+  k4012: g(0), ira2: g(0), hsa2: g(0), health2: g(0), dother2: g(0),
   /** The tax year: the newest there are figures for, unless picked. Saved
       and shared with the rest, so a scenario keeps its year's rules. */
   year: String(NEWEST_YEAR),
 };
 export type TaxInputs = typeof TAX_DEFAULTS;
+
+/** The pop-up's rows: the kind, the engine's name for it, and each earner's field. */
+export const PRE_ROWS = [
+  { kind: "k401", you: "k401", spouse: "k4012", name: "Traditional 401(k), 403(b) or 457", desc: "Your own deferrals, not the employer match. Off income tax, not FICA." },
+  { kind: "ira", you: "ira", spouse: "ira2", name: "Traditional IRA", desc: "Deductible as far as the income limits allow when you have a plan at work." },
+  { kind: "hsa", you: "hsa", spouse: "hsa2", name: "HSA", desc: "Through payroll: off income tax and FICA." },
+  { kind: "health", you: "health", spouse: "health2", name: "Health, dental and vision premiums", desc: "Paid through work before tax. Off income tax and FICA." },
+  { kind: "other", you: "dother", spouse: "dother2", name: "Other pre-tax", desc: "FSAs, commuter benefits and the like. Off income tax, not FICA." },
+] as const;
+export type PreField = (typeof PRE_ROWS)[number]["you" | "spouse"];
+
+/** Whether the pre-tax deductions come by kind: Normal mode with the
+    pop-up's breakdown in use. Retirement mode keeps the one figure. */
+export const itemized = (t: TaxInputs) => t.mode === "normal" && !!t.itemize;
+
+/** The breakdown as the engine takes it: [you, spouse], each by kind. */
+export function preBuckets(t: TaxInputs) {
+  const n = (v: string) => parseNum(v);
+  const joint = t.status === "m";
+  return [0, 1].map((i) => Object.fromEntries(PRE_ROWS.map((r) => [r.kind, i === 1 && !joint ? 0 : n(t[i ? r.spouse : r.you])]))) as Record<string, number>[];
+}
+
+/** The breakdown's total, for the field that shows it. */
+export function preTotal(t: TaxInputs): number {
+  return preBuckets(t).reduce((a, p) => a + Object.values(p).reduce((x, y) => x + y, 0), 0);
+}
 
 export const TAX_DEF: ToolDef<TaxInputs> = { id: "tax", label: "Tax", noun: "tax scenario", defaults: TAX_DEFAULTS };
 
@@ -50,7 +82,8 @@ export function taxInput(t: TaxInputs, ownYear = false) {
     gross: t.mode === "retire" ? trad + roth + brok + ss + pension + other : n(t.gross),
     gross2, trad, roth, brok, ss, pension, other,
     penPublic: t.penType === "pub", gainPct: n(t.gainPct) / 100, seniors,
-    status: status as "s" | "m", state: t.state, pre: n(t.pre), dedType: t.dedType as "std" | "item", item: n(t.item),
+    status: status as "s" | "m", state: t.state,
+    pre: itemized(t) ? preTotal(t) : n(t.pre), ded: itemized(t) ? preBuckets(t) : undefined, dedType: t.dedType as "std" | "item", item: n(t.item),
     year: ownYear ? taxYearOf(t) : taxYears()[0],
   };
 }

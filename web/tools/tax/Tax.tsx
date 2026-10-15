@@ -21,7 +21,8 @@ import { NIIT, bracketRoom, yearData } from "@/lib/engine/typed";
 import { DASH, groupDigits, money, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { TAX_DEF, runTax, taxInput, taxYears } from "./model";
+import { PRE_ROWS, TAX_DEF, itemized, runTax, taxInput, taxYears } from "./model";
+import { PreTaxDialog } from "./PreTaxDialog";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
 import { useShareKit } from "@/components/shell/share";
@@ -31,7 +32,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HatchDefs } from "@/components/charts/HatchDefs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDownIcon, CircleAlertIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon, CircleAlertIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { InputGroupButton } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
 const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal };
@@ -81,6 +84,7 @@ export function Tax() {
   const { state: s, set, setState } = useToolState(TAX_DEF);
   useShareKit(TAX_DEF.id, taxShare(s));
   const [active, setActive] = useState<number | null>(null);
+  const [preOpen, setPreOpen] = useState(false);
   const deactivate = useRef<ReturnType<typeof setTimeout>>(undefined);
   const activate = (i: number) => {
     clearTimeout(deactivate.current);
@@ -124,10 +128,20 @@ export function Tax() {
       <tr className="font-semibold"><td>All taxes</td><td>{money(R.total)}</td><td>{pctStr(R.effTotal, 2)}</td><td></td></tr>
       <tr><td>{afterLabel}</td><td>{money(R.net)}</td><td>{pctStr(R.effNet, 2)}</td><td></td></tr>
       {R.pre > 0 ? <tr><td>Pre-tax deductions</td><td>{money(R.pre)}</td><td>{pctStr(R.gross ? R.pre / R.gross : 0, 2)}</td><td></td></tr> : null}
+      {/* Broken down by kind: each kind's household total, indented under it. */}
+      {byKind.map((k) => (
+        <tr key={k.kind} className="text-muted-foreground"><td className="pl-6">{k.name}</td><td>{money(k.v)}</td><td>{pctStr(R.gross ? k.v / R.gross : 0, 2)}</td><td></td></tr>
+      ))}
       <tr className="font-semibold border-t-2 border-t-line"><td>{grossLabel}</td><td>{money(R.gross)}</td><td>100.00%</td><td></td></tr>
     </>
   );
   const share = (v: number) => (R.gross ? v / R.gross : 0);
+  // The pre-tax deductions by kind, when they come that way.
+  type PrePerson = Record<string, number>;
+  const prePeople = (R.preTax?.people ?? []) as PrePerson[];
+  const byKind = itemized(s) ? PRE_ROWS.map((r) => ({ kind: r.kind, name: r.name, v: prePeople.reduce((a, p) => a + (p[r.kind] || 0), 0) })).filter((k) => k.v > 0) : [];
+  // An IRA the income test doesn't let off in full: said under the table.
+  const iraKept = prePeople.reduce((a, p) => a + (p.ira || 0) - (p.iraDed || 0), 0);
   const stateLabel = "State income tax" + (R.stateNone ? " (none)" : "");
   const stateRow = <TxRow k={"State income tax" + (R.stateName ? " · " + R.stateName : "")} v={R.state} eff={R.effState} c={TAX_COLORS.state} />;
 
@@ -139,9 +153,9 @@ export function Tax() {
     head = {
       netLabel: s.view === "take" ? "Take-home pay" : "Net pay",
       netNote: R.gross > 0
-        ? s.view === "take" ? pctStr(R.gross ? R.net / R.gross : 0, 1) + " of gross, after pre-tax savings" : pctStr(R.gross ? netPay / R.gross : 0, 1) + " of gross, after taxes"
+        ? s.view === "take" ? pctStr(R.gross ? R.net / R.gross : 0, 1) + " of gross, after pre-tax deductions" : pctStr(R.gross ? netPay / R.gross : 0, 1) + " of gross, after taxes"
         : "Enter your income to begin",
-      monthNote: s.view === "take" ? "In your paycheck, after pre-tax savings" : "After all taxes",
+      monthNote: s.view === "take" ? "In your paycheck, after pre-tax deductions" : "After all taxes",
       thirdLabel: "Every two weeks", thirdNote: "26 paychecks a year",
       net: money(shown), month: money(shown / 12), third: money(shown / 26),
     };
@@ -155,10 +169,10 @@ export function Tax() {
       { label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state },
       { label: "FICA (Social Security + Medicare)", v: R.fica, share: R.effFica, c: TAX_COLORS.fica },
     ];
-    if (R.pre > 0) bars.push({ label: "Pre-tax savings", v: R.pre, share: share(R.pre), c: hatched(SERIES.gray) });
+    if (R.pre > 0) bars.push({ label: "Pre-tax deductions", v: R.pre, share: share(R.pre), c: hatched(SERIES.gray) });
     parts = [{ v: R.net, c: TAX_COLORS.net, label: "Take-home pay" }, { v: R.federal, c: TAX_COLORS.fed, label: "Federal tax" },
       { v: R.state, c: TAX_COLORS.state, label: "State tax" }, { v: R.fica, c: TAX_COLORS.fica, label: "FICA" }];
-    if (R.pre > 0) parts.push({ v: R.pre, c: hatched(SERIES.gray), label: "Pre-tax savings" });
+    if (R.pre > 0) parts.push({ v: R.pre, c: hatched(SERIES.gray), label: "Pre-tax deductions" });
     // The Social Security wage cap applies per earner, so a joint return
     // shows a line for each rather than one shared cap.
     rows = (
@@ -256,6 +270,7 @@ export function Tax() {
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+      {preOpen && !ret ? <PreTaxDialog s={s} setState={setState} close={() => setPreOpen(false)} /> : null}
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the inputs are on screen. */}
@@ -330,8 +345,22 @@ export function Tax() {
                 <SelectField id="txState" className={ret ? "col-span-full" : undefined} label="State" value={s.state} onChange={set("state")}>
                   {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
                 </SelectField>
-                <MoneyField id="txPre" label={<Tipped text="Pre-tax deductions" k={ret ? "txpreret" : "txpre"} />} value={s.pre} onValueChange={set("pre")}
-                  aria-invalid={preOver || undefined} aria-describedby={preOver ? "txPreWarn" : undefined} />
+                {/* Normal mode can break the figure down by kind in a pop-up;
+                    once it is, the field shows the total and opens it. */}
+                {itemized(s) ? (
+                  <Field id="txPreBtn" label={<Tipped text="Pre-tax deductions" k="txpre" />}>
+                    <Button variant="outline" size="lg" className="w-full justify-between" id="txPreBtn" onClick={() => setPreOpen(true)}
+                      aria-invalid={preOver || undefined} aria-describedby={preOver ? "txPreWarn" : undefined}>
+                      <span className="min-w-0 flex-1 truncate text-left tabular-nums">{money(R.pre)}<span className="text-muted-foreground max-xl:hidden"> · split</span></span>
+                      <ChevronRightIcon className="text-muted-foreground" aria-hidden="true" /></Button>
+                  </Field>
+                ) : (
+                  <Field id="txPre" label={<Tipped text="Pre-tax deductions" k={ret ? "txpreret" : "txpre"} />}>
+                    <Affixed prefix="$" action={ret ? undefined : <InputGroupButton id="txPreSplit" title="Break it down by kind: 401(k), IRA, HSA, health premiums" onClick={() => setPreOpen(true)}>Split</InputGroupButton>}>
+                      <MoneyInput id="txPre" nonNeg value={s.pre} onValueChange={set("pre")}
+                        aria-invalid={preOver || undefined} aria-describedby={preOver ? "txPreWarn" : undefined} /></Affixed>
+                  </Field>
+                )}
                 <SelectField id="txDedType" label={<Tipped text="Deduction" k="deduction" />} value={s.dedType} onChange={set("dedType")}>
                   <option value="std">Standard deduction</option>
                   <option value="item">Itemized</option>
@@ -386,8 +415,8 @@ export function Tax() {
           <div className="border-t border-border px-5.5 py-5 max-sm:px-4">
             {reconcile ? (
               <p className="mt-0 mb-4 max-w-copy text-note text-muted-foreground tabular-nums" id="txReconcile">
-                Net pay counts your {money(R.pre)} of pre-tax savings as yours. The picture shows take-home
-                pay, {money(R.net)}: what reaches your paycheck once those savings are set aside.
+                Net pay counts your {money(R.pre)} of pre-tax deductions as yours. The picture shows take-home
+                pay, {money(R.net)}: what reaches your paycheck once those are set aside.
               </p>
             ) : null}
             {/* The donut is the picture and the bars are its legend; hovering
@@ -495,6 +524,11 @@ export function Tax() {
               <tbody>{rows}</tbody>
             </table>
           </div>
+          {iraKept > 0.5 && !ret ? (
+            <div className="mcnote" id="txIraNote">
+              {money(iraKept)} of the traditional IRA isn&apos;t deductible at this income with a plan at work, so it doesn&apos;t lower the tax. It still goes in, after tax.
+            </div>
+          ) : null}
         </Card>
 
         <Card>
