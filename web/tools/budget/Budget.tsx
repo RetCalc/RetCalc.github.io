@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Paycheck } from "./Paycheck";
 
 
 export function Budget() {
@@ -48,9 +49,14 @@ export function Budget() {
 
   // The household's income, as take-home pay under the same (newest year's) rules the
   // Income Tax tool uses, before any retirement saving.
+  // The Paycheck tab takes your own pay, filing status and state from it too.
   useHouseholdFill("budget", s, setState, (h, c) => {
     const net = budgetHouseholdNet(h, () => toolInputs("tax", TAX_DEFAULTS).state);
-    return net == null ? c : { ...c, income: dollarsField(net / c.incomeFreq) };
+    const pay = {
+      ...(h.income != null && h.income > 0 ? { pcGross: dollarsField(h.income) } : {}),
+      pcStatus: h.status === "m" ? "m" : "s", ...(h.state ? { pcState: h.state } : {}),
+    };
+    return net == null ? { ...c, ...pay } : { ...c, income: dollarsField(net / c.incomeFreq), ...pay };
   });
 
   /* Another tool sending a line in: update a row with the same name rather
@@ -101,7 +107,24 @@ export function Budget() {
     return rows;
   };
 
+  // The two tabs: the budget itself, and where each paycheck goes.
+  const tabs = (
+    <div className="col-span-full">
+      <Segmented id="segBgView" attr="data-bgview" options={[["budget", "Budget"], ["paycheck", "Paycheck"]] as const} value={s.view} onChange={set("view")} />
+    </div>
+  );
+  if (s.view === "paycheck") return (
+    <>
+      {tabs}
+      <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
+        <Paycheck s={s} set={set} setState={setState} />
+      </div>
+    </>
+  );
+
   return (
+    <>
+    {tabs}
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-budget">
       <div className="min-w-0 lg:col-span-2">
         {/* Phones and narrow screens: the answer leads, and stays under the
@@ -271,5 +294,6 @@ export function Budget() {
         </aside>
       </div>
     </div>
+    </>
   );
 }

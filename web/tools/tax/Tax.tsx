@@ -27,10 +27,10 @@ import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { stateGaps, stateRuleRows } from "./stateRules";
 import { useShareKit } from "@/components/shell/share";
 import { taxShare } from "./share";
-import { SERIES, baseColor, hatchClass, hatched, svgPaint } from "@/lib/hues";
+import { SERIES, baseColor, hatchClass, hatched } from "@/lib/hues";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { HatchDefs } from "@/components/charts/HatchDefs";
+import { Donut, type DonutPart } from "@/components/charts/Donut";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDownIcon, ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal };
 const BKT_COLORS: string[] = [SERIES.rose, SERIES.teal, SERIES.sky, SERIES.lavender, SERIES.gray, hatched(SERIES.gray)]; // trad, roth, brok, ss, pension, other
 
-interface Part { v: number; c: string; label: string }
+type Part = DonutPart;
 interface Bar { label: string; v: number; share: number; c: string }
 
 /* One row of the tax breakdown table. */
@@ -51,33 +51,6 @@ const TxRow = ({ k, v, eff, c }: { k: string; v: number; eff: number; c: string 
 /* A table row's key: the source's swatch, hatched or plain. */
 function Key({ c }: { c: string }) {
   return <i className={"tipsw bg-(--swatch)" + hatchClass(c)} style={{ "--swatch": baseColor(c) } as React.CSSProperties}></i>;
-}
-
-/* The donut: each slice dims the others on hover, and its label and amount
-   take the center. The bars beside it do the same. */
-function Donut({ parts, center, active }: { parts: Part[]; center: string; active: number | null }) {
-  const R = 100, C = 110, sw = 30, circ = 2 * Math.PI * (R - sw / 2);
-  const tot = parts.reduce((a, x) => a + x.v, 0) || 1;
-  // Where each slice starts, as a share of the ring.
-  const starts = parts.map((_, i) => parts.slice(0, i).reduce((a, x) => a + Math.max(0, x.v / tot), 0));
-  const pt = active != null ? parts[active] : null;
-  return (
-    <>
-      <defs><HatchDefs prefix="txh" colors={parts.map((p) => p.c)} /></defs>
-      {parts.map((p, i) => {
-        const frac = p.v / tot, off = starts[i];
-        if (frac <= 0) return null;
-        return (
-          <circle key={i} cx={C} cy={C} r={R - sw / 2} fill="none" stroke={svgPaint(p.c, "txh")} strokeWidth={sw}
-            strokeDasharray={(frac * circ).toFixed(2) + " " + circ.toFixed(2)} strokeDashoffset={(-off * circ).toFixed(2)}
-            transform={`rotate(-90 ${C} ${C})`} data-idx={i}
-            className={active == null || active === i ? "transition-opacity duration-150 cursor-pointer" : "transition-opacity duration-150 cursor-pointer opacity-18"} />
-        );
-      })}
-      <text id="txPieLbl" x="110" y="104" textAnchor="middle" fontSize="13" fill="var(--dim)" className="font-sans pointer-events-none">{pt ? pt.label : "All taxes"}</text>
-      <text id="txPieVal" x="110" y="128" textAnchor="middle" fontSize="22" fontWeight="600" fill="var(--text)" className="font-mono pointer-events-none">{pt ? money(pt.v) : center}</text>
-    </>
-  );
 }
 
 export function Tax() {
@@ -430,7 +403,7 @@ export function Tax() {
                     else leave();
                   }}
                   onMouseLeave={leave}>
-                  <Donut parts={parts} center={pctStr(R.effTotal, 1)} active={active} />
+                  <Donut parts={parts} center={pctStr(R.effTotal, 1)} centerLabel="All taxes" active={active} ids={{ label: "txPieLbl", value: "txPieVal" }} hatch="txh" />
                 </svg>
               </div>
               <div id="txBars" className="w-full min-w-0 flex-1" onMouseLeave={leave}

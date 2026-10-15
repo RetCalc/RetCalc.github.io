@@ -13,6 +13,7 @@
     "e2e:smoke": "node scripts/e2e-smoke.mjs",
     "test:rls": "node scripts/supabase/rls-check.mjs",
     "test:sync": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"lib/sync/tests/*.test.ts\"",
+    "test:budget": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/budget/tests/*.test.ts\"",
     "test:tax": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/tax/tests/*.test.ts\"",
     "test:guide": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/test-hooks.mjs --test --test-reporter=spec \"tools/guide/tests/*.test.ts\""
   },

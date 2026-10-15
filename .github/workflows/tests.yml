@@ -27,5 +27,7 @@ jobs:
       - run: node scripts/baseline/numbers.mjs check
       - run: node scripts/baseline/guide.mjs check
       - run: npm run test:guide
+      - run: npm run test:budget
+      - run: npm run test:tax
       - run: npm run lint
       - run: npm run build
