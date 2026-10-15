@@ -22,8 +22,6 @@ import { setToolInputs, toolInputs } from "@/components/tools/ToolState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { DASH, dollarsField, groupDigits, money } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
@@ -103,16 +101,16 @@ export function Paycheck({ s, set, setState }: {
               </SelectField>
 
               <GroupHead>Through work</GroupHead>
-              <div className="mb-3 flex items-start gap-2.5">
-                <Checkbox id="pcHealthWork" checked={s.pcHealthWork} onCheckedChange={(on) => set("pcHealthWork")(!!on)} />
-                <Label htmlFor="pcHealthWork">Health, dental and vision premiums come out of my pay</Label>
-              </div>
-              {s.pcHealthWork ? (
-                <Field id="pcHealth" label="Premiums, per check">
-                  <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText(pi.health) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
-                  {healthDerived && healthRow > 0 ? <div className="hint">From the Budget&apos;s Health insurance row, {money(healthRow)} a month</div> : null}
-                </Field>
-              ) : null}
+              {/* The mock's one field: the Budget's Health insurance row per check
+                  until typed over; 0 means not through work, and the row stays
+                  an expense. */}
+              <Field id="pcHealth" label="Health, dental and vision premiums, per check">
+                <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText(pi.health) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
+                {healthRow > 0 ? (
+                  <div className="hint">{healthDerived ? <>From the Budget&apos;s Health insurance row, {money(healthRow)} a month. 0 if it isn&apos;t through work.</>
+                    : pi.health === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : null}</div>
+                ) : null}
+              </Field>
               <div className="grid grid-cols-2 items-end gap-x-2.5">
                 <NumberField id="pcMatchRate" label="Employer 401(k) match" unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
                 <NumberField id="pcMatchUpTo" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo} onValueChange={set("pcMatchUpTo")} />
@@ -158,7 +156,7 @@ export function Paycheck({ s, set, setState }: {
                   if (b) setActive(+(b.getAttribute("data-idx") ?? 0));
                 }}>
                 {parts.map((x, i) => x.v > 0.004 ? (
-                  <ShareBar key={x.label} label={x.label} value={x.v} share={r.check > 0 ? x.v / r.check : 0} color={x.c} idx={i} dim={active != null && active !== i} />
+                  <ShareBar key={x.label} label={x.label} value={x.v} share={r.check > 0 ? x.v / r.check : 0} color={x.c} idx={i} dim={active != null && active !== i} pct />
                 ) : null)}
               </div>
             </div>

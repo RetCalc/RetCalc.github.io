@@ -41,10 +41,9 @@ const PAYCHECK_DEFAULTS = {
   pcStatus: "s",
   /** Blank: the Income Tax tool's state. */
   pcState: "",
-  /** Health premiums are paid through work (so they come out before tax, and
-      the Budget's Health insurance row moves here). */
-  pcHealthWork: true,
-  /** Per check. Blank: the Budget's Health insurance row, per check. */
+  /** Health premiums through work, per check. Blank: the Budget's Health
+      insurance row, per check, which then moves here. Set to 0 (not
+      through work) and that row stays in the budget. */
   pcHealth: "",
   pcMatchRate: "50",
   pcMatchUpTo: "6",

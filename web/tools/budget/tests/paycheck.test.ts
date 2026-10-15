@@ -30,8 +30,8 @@ test("the budget comes across without the saving row, and health premiums move a
   near(pi.spendYear, (1650 + 165 + 560 + 150) * 12 + 2400);
   near(pi.health, (184 * 12) / 26);
   assert.equal(pi.state, "IL");
-  // Not through work: the row stays in the budget and nothing comes out before tax.
-  const off = paycheckInput(budget({ pcHealthWork: false }), "TX");
+  // Premiums set to 0 (not through work): the row stays in the budget and nothing comes out before tax.
+  const off = paycheckInput(budget({ pcHealth: "0" }), "TX");
   assert.equal(off.health, 0);
   near(off.spendYear, pi.spendYear + 184 * 12);
   // No state of its own: the Income Tax tool's.

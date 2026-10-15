@@ -49,10 +49,11 @@ export function McLegend({ id, extra, noDet, children }: { id?: string; extra?: 
 }
 
 /** One labeled bar. `dim` fades it back while another one is pointed at. */
-export function ShareBar({ label, value, share, color, idx, dim }: { label: string; value: number; share: number; color: string; idx?: number; dim?: boolean }) {
+/** `pct` adds the bar's share as a percentage beside the amount. */
+export function ShareBar({ label, value, share, color, idx, dim, pct }: { label: string; value: number; share: number; color: string; idx?: number; dim?: boolean; pct?: boolean }) {
   return (
     <div className={dim ? "bar opacity-25" : "bar"} data-idx={idx}>
-      <div className="lbl"><span>{label}</span><b>{money(value)}</b></div>
+      <div className="lbl"><span>{label}</span><b>{money(value)}{pct ? <span className="ml-2 font-normal text-muted-foreground">{Math.round(share * 100)}%</span> : null}</b></div>
       <div className="track">
         <div className={"fill w-(--w) bg-(--swatch)" + hatchClass(color)}
           style={{ "--w": (Math.max(0, Math.min(1, share)) * 100).toFixed(1) + "%", "--swatch": baseColor(color) } as React.CSSProperties}></div>

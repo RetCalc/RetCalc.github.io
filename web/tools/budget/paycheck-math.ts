@@ -43,7 +43,7 @@ const HEALTH_SLOT = PRESET_DESCS.indexOf("Health insurance");
     moved (the health premiums field holds it). */
 export function rowRole(b: BudgetInputs, r: BudgetRow, i: number): "count" | "save" | "work" {
   if (PLANNED_HERE.includes(r.desc)) return "save";
-  if (b.pcHealthWork && !r.custom && i === HEALTH_SLOT) return "work";
+  if (healthThroughWork(b) && !r.custom && i === HEALTH_SLOT) return "work";
   return "count";
 }
 
@@ -66,6 +66,10 @@ export interface PcInput {
   amounts: PcAmounts;
 }
 
+/** Whether health premiums come out of the paycheck: unless they're set
+    to 0, which keeps the Budget's Health insurance row as an expense. */
+export const healthThroughWork = (b: BudgetInputs) => b.pcHealth.trim() === "" || parseNum(b.pcHealth) > 0;
+
 /** The Budget's Health insurance row as a monthly figure (0 when blank). */
 export function healthRowMonthly(b: BudgetInputs): number {
   const r = b.rows[HEALTH_SLOT];
@@ -84,7 +88,7 @@ export function pcOrder(raw: string): PcStep[] {
 export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
   const p = [52, 26, 24, 12].includes(+b.pcFreq) ? +b.pcFreq : 26;
   const spendYear = b.rows.reduce((a, r, i) => a + (rowRole(b, r, i) === "count" ? annualize(r) : 0), 0);
-  const health = !b.pcHealthWork ? 0 : b.pcHealth.trim() === "" ? (healthRowMonthly(b) * 12) / p : parseNum(b.pcHealth);
+  const health = b.pcHealth.trim() === "" ? (healthRowMonthly(b) * 12) / p : parseNum(b.pcHealth);
   const amounts = Object.fromEntries(PC_STEPS.map((s) => [s, Math.max(0, parseNum(b[pcAmountKey(s)]))])) as PcAmounts;
   return {
     gross: Math.max(0, parseNum(b.pcGross)), p, status: b.pcStatus === "m" ? "m" : "s", state: b.pcState || taxState,
