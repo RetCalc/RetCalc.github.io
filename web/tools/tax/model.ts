@@ -19,6 +19,10 @@ export const TAX_DEFAULTS = {
   itemize: false,
   k401: g(0), ira: g(0), hsa: g(0), health: g(0), dother: g(0),
   k4012: g(0), ira2: g(0), hsa2: g(0), health2: g(0), dother2: g(0),
+  /** How the pop-up shows each line's amounts, in PRE_ROWS order: per
+      paycheck ("check", with prePay paychecks a year), per month or per
+      year. They're kept as a year of each either way. */
+  preUnits: "year,year,year,year,year", prePay: "26",
   /** The tax year: the newest there are figures for, unless picked. Saved
       and shared with the rest, so a scenario keeps its year's rules. */
   year: String(NEWEST_YEAR),

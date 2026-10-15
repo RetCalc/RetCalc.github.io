@@ -198,6 +198,8 @@ export function Paycheck({ s, set, setState }: {
               k401: amountText(r.k401 * pi.p), ira: "0", hsa: amountText(r.hsa * pi.p), health: amountText(r.health * pi.p), dother: "0",
               k4012: "0", ira2: "0", hsa2: "0", health2: "0", dother2: "0",
               pre: amountText((r.k401 + r.hsa + r.health) * pi.p),
+              // Its pop-up shows them per paycheck, on this pay schedule.
+              preUnits: "check,year,check,check,year", prePay: String(pi.p),
             });
             router.push("/incometax");
           }} />
