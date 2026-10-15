@@ -113,6 +113,9 @@ const FIRST_SCENARIOS = [
     run: () => tax({}) },
   { tool: "Income Tax", name: "married, California, $180,000 + $95,000, $23,000 pre-tax, itemized $40,000",
     run: () => tax({ status: "m", state: "CA", gross: "180,000", gross2: "95,000", pre: "23,000", dedType: "item", item: "40,000" }) },
+  { tool: "Income Tax", name: "married, Pennsylvania, $150,000 + $100,000, pre-tax deductions by kind",
+    run: () => tax({ status: "m", state: "PA", gross: "150,000", gross2: "100,000", itemize: true,
+      k401: "20,000", ira: "7,500", hsa: "4,400", health: "2,400", k4012: "30,000", hsa2: "5,000" }) },
   { tool: "Income Tax", name: "retirement mode defaults",
     run: () => tax({ mode: "retire" }) },
 

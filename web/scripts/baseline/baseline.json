@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-14T20:22:48.733Z",
+  "recorded": "2026-10-15T20:35:35.177Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -225,6 +225,8 @@
         "med": "b0193ceb57d22ae3",
         "net": "4b8281ce62fc8ff1",
         "pre": "5feceb66ffc86f38",
+        "preFed": "5feceb66ffc86f38",
+        "preTax": "74234e98afe7498f",
         "ss": "350326701b83f92f",
         "ss1": "350326701b83f92f",
         "ss2": "5feceb66ffc86f38",
@@ -268,6 +270,8 @@
         "med": "5aaa2bd0029944c5",
         "net": "b62de841e2da753f",
         "pre": "9ea50d033486770a",
+        "preFed": "9ea50d033486770a",
+        "preTax": "74234e98afe7498f",
         "ss": "22c4a38b0f53e677",
         "ss1": "3dfbfa571165c5a2",
         "ss2": "704f069acc2c5e2e",
@@ -277,6 +281,51 @@
         "stateTaxable": "6ab5ad374b5ce53a",
         "takeHome": "b62de841e2da753f",
         "total": "d6cd72dcd05e7adc"
+      }
+    },
+    {
+      "id": "Income Tax: married, Pennsylvania, $150,000 + $100,000, pre-tax deductions by kind",
+      "out": {
+        "federal": 23744,
+        "state": 7312.74,
+        "fica": 18222.3,
+        "total": 49279.04,
+        "net": 131420.96,
+        "takeHome": 131420.96,
+        "effectiveRate": 0.1971,
+        "marginal": 0.22
+      },
+      "fields": {
+        "addl": "5feceb66ffc86f38",
+        "afterPre": "4438804c0e0a3716",
+        "bands": "8cbe50e8aefa04ae",
+        "earner1": "89d295d75a9717e8",
+        "earner2": "3bb78535cc9555ff",
+        "effFed": "6e23335adbde2fdb",
+        "effFica": "f47055272ae9937f",
+        "effNet": "aa4db30e51bd1a02",
+        "effState": "87cf534d7414251a",
+        "effTotal": "ff261203707ec309",
+        "fedDed": "337da8c04d6f0844",
+        "fedTaxable": "298ed86ff976db05",
+        "federal": "faeeba4ba4d9eea7",
+        "fica": "6feff0f5ca4a56a1",
+        "gross": "f5b32f00fe05eee9",
+        "marginal": "dc08a4e8bbdd4019",
+        "med": "3db57ca01c40619b",
+        "net": "24056cd28aa2f1c1",
+        "pre": "beeb52eabb5c2818",
+        "preFed": "d7bb7c0292169ad3",
+        "preTax": "ea722a60a370ada0",
+        "ss": "b4797bf53dc71b8c",
+        "ss1": "0dc9faaad3dba0bf",
+        "ss2": "704f069acc2c5e2e",
+        "state": "e10b676f00f0d629",
+        "stateName": "8300f7b6125084e7",
+        "stateNone": "fcbcf165908dd18a",
+        "stateTaxable": "bb2383ea355ca7ae",
+        "takeHome": "24056cd28aa2f1c1",
+        "total": "ecb432b8d92e7410"
       }
     },
     {
