@@ -19,6 +19,10 @@ import { compareNav } from "@/lib/compare-nav";
 import { NativeSelect } from "@/components/ui/native-select";
 
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+/* The longest name a new saved scenario can have. Older or synced names can
+   be longer; the picker's width is capped either way, so a long one is cut
+   short in the box (the list shows it whole). */
+const NAME_MAX = 60;
 
 export function ScenarioBar() {
   const tool = useActiveTool();
@@ -43,7 +47,11 @@ export function ScenarioBar() {
 
   const save = () => {
     if (!tool || !id) return;
-    const name = prompt(`Name this ${tool.def.noun}:`, cur?.name ?? "");
+    let name = prompt(`Name this ${tool.def.noun}:`, cur?.name ?? "");
+    // The browser's prompt can't stop at a length, so a long name is offered
+    // back cut to the limit.
+    while (name && name.trim().length > NAME_MAX)
+      name = prompt(`Names can be up to ${NAME_MAX} characters (that one was ${name.trim().length}). Name this ${tool.def.noun}:`, name.trim().slice(0, NAME_MAX).trim());
     if (!name?.trim()) return;
     const trimmed = name.trim();
     const i = list.findIndex((s) => s.name === trimmed);
@@ -80,7 +88,7 @@ export function ScenarioBar() {
 
   return (
     <div className="scgroup">
-      <NativeSelect variant="joined" className="w-auto min-w-52.5 max-sm:min-w-0 max-sm:flex-1" id="scenarioPick" aria-label={tool ? `Saved ${tool.def.noun}s` : "Saved scenarios"} value={cur?.name ?? ""} disabled={!tool}
+      <NativeSelect variant="joined" className="w-auto min-w-52.5 max-w-72 max-sm:max-w-none max-sm:min-w-0 max-sm:flex-1" id="scenarioPick" aria-label={tool ? `Saved ${tool.def.noun}s` : "Saved scenarios"} value={cur?.name ?? ""} disabled={!tool}
         onChange={(e) => {
           if (!tool || !id) return;
           const s = list.find((x) => x.name === e.target.value);
