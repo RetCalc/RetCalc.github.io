@@ -100,7 +100,11 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await expect(page.locator('#gdCard [data-lesson="time"]')).toContainText("a dollar saved at 38 is worth $2.88 by 62");
   await page.fill("#gdf-saved", "210000"); await page.fill("#gdf-contrib", "900"); await page.fill("#gdf-employer", "300");
   await expect(tile).toContainText("$1.21M");
-  await expect(tile).toContainText("$1.25M");
+  // The Quick check never asks where the monthly saving goes, so it runs on
+  // the 50/25/25 default (traditional, Roth, taxable). Less of the money is
+  // taxed coming out than at the old all-traditional default, so the plan
+  // needs $1.22M rather than $1.25M.
+  await expect(tile).toContainText("$1.22M");
   await expect(page.locator("#gdCard .gd-means")).toContainText("9.3%");
   await page.locator("#gdCard [data-more]").click();
   await pick(page, "match", "full");
@@ -116,8 +120,9 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   // 8 · Spending in retirement: the placeholder becomes an answer
   await step(8);
   await page.fill("#gdf-retSpend", "70000");
-  await expect(page.locator("#gdCard .gd-means")).toContainText("the plan needs about $694,000 at 62: entering it cut that from $1.25M");
-  await expect(tile).toContainText("$694,000");
+  // $686,000 on the 50/25/25 default split, as on card 6 ($694,000 all traditional)
+  await expect(page.locator("#gdCard .gd-means")).toContainText("the plan needs about $686,000 at 62: entering it cut that from $1.22M");
+  await expect(tile).toContainText("$686,000");
   await next(page);
   // 9 · Social Security, estimated from income (doc 3, calculation 3)
   await step(9);

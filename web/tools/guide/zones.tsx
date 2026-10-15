@@ -2,7 +2,7 @@
 
 /* The three zones every card has, in a fixed order (doc 1, "The shell";
    doc 2, parts 4 to 6): Learn, one idea with its figure and links; Your
-   numbers, at most three fields with More detail for the rest; and What
+   numbers, the card's fields with More detail for the optional ones; and What
    this means, the live readout in the person's own figures. */
 
 import { useId, type ReactNode } from "react";

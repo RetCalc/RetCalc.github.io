@@ -3,9 +3,8 @@ import { NEW } from "../playwright.config";
 import { FIXTURES } from "../scripts/baseline/guide-fixtures.mjs";
 
 /* The guide's quality checks (doc 3, "Accessibility" and "Content"; doc 1's
-   success table): every card in both themes has no axe violations; no card
-   shows more than three numbers to fill in by default; every lesson stays
-   under 120 words; on a touch screen every control is at least 44px; the
+   success table): every card in both themes has no axe violations; every
+   lesson stays under 120 words; on a touch screen every control is at least 44px; the
    keyboard reaches every choice, the pace switch, More detail and the
    route; focus arrives on each new question; and nothing moves under
    reduced motion. axe-core is the copy eslint-plugin-jsx-a11y already
@@ -58,14 +57,13 @@ for (const theme of ["dark", "light"]) {
   });
 }
 
-test("no card asks for more than three numbers by default, and every lesson is under 120 words", async ({ page }) => {
+/* Cards once had to show at most three numbers by default; the owner dropped
+   that limit on 2026-10-15 so Where it sits can show the monthly split. */
+test("every lesson is under 120 words", async ({ page }) => {
   test.setTimeout(180_000);
   const over: string[] = [];
   for (const c of CARDS) {
     await open(page, c.cur, c.a);
-    const n = await page.evaluate(() => [...document.querySelectorAll<HTMLInputElement>("#gdCard input:not([type=range]):not([type=checkbox]):not([type=hidden])")]
-      .filter((el) => el.offsetParent !== null && !el.closest(".gd-means")).length);
-    if (n > 3) over.push(c.name + ": " + n + " fields");
     const words = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>("#gdCard .gd-lesson-b")].map((el) => el.innerText.trim().split(/\s+/).length));
     for (const w of words) if (w > 120) over.push(c.name + ": a lesson of " + w + " words");
   }
