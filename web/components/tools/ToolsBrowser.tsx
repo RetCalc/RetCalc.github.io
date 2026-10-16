@@ -3,10 +3,12 @@
 /* The tool list (/tools), shown one of two ways, chosen with the switch at
    its top and remembered in this browser (lib/tools-view.ts):
 
-   - Charts: a card per tool with a small chart of what it shows, the
-     homepage's own charts (components/home/charts.tsx) on the homepage's
-     figures. The Drawdown Simulator leads, wide. Each chart plays as the
-     page opens and again when its card is pointed at, focused or tapped.
+   - Charts: a card per tool with a small chart of what it shows, mostly
+     the homepage's own charts (components/home/charts.tsx) on the homepage's
+     figures, and the picker's own for the Backtest, Rent vs. Buy, College
+     Savings and Debt Payoff (picker-charts.tsx). The Drawdown Simulator
+     leads, wide. Each chart plays as the page opens and again when its card
+     is pointed at, focused or tapped.
    - Compact: small tiles, one column per section, so every tool fits on one
      desktop screen.
 
@@ -23,8 +25,9 @@ import { ToolIconTile } from "./ToolIcon";
 import { Badge } from "@/components/ui/badge";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import {
-  BacktestChart, BridgeChart, BudgetChart, CloudChart, CollegeChart, DebtChart, FanChart, FireChart, HealthChart, MortgageChart, RentBuyChart, RothChart, TaxChart,
+  BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, HealthChart, MortgageChart, RothChart, TaxChart,
 } from "@/components/home/charts";
+import { BacktestSliders, CollegeStairs, DebtDownhill, RentBuyBlueprint } from "./picker-charts";
 
 /** Each tool's chart, and how its bars grow when it plays (lines draw on their own). */
 function chartFor(sub: ToolSub, data: PickerData): { chart: React.ReactNode; bars?: "up" | "across" } {
@@ -35,13 +38,13 @@ function chartFor(sub: ToolSub, data: PickerData): { chart: React.ReactNode; bar
     case "roth": return { chart: <RothChart />, bars: "up" };
     case "healthcare": return { chart: <HealthChart /> };
     case "fire": return { chart: <FireChart /> };
-    case "backtest": return { chart: <BacktestChart bt={data.backtest} /> };
-    case "college": return { chart: <CollegeChart /> };
-    case "rentbuy": return { chart: <RentBuyChart rb={data.rentbuy} /> };
+    case "backtest": return { chart: <BacktestSliders /> };
+    case "college": return { chart: <CollegeStairs /> };
+    case "rentbuy": return { chart: <RentBuyBlueprint buy={data.rentbuy.buy} rent={data.rentbuy.rent} /> };
     case "tax": return { chart: <TaxChart tax={data.tax} />, bars: "across" };
     case "budget": return { chart: <BudgetChart />, bars: "across" };
     case "mortgage": return { chart: <MortgageChart years={data.mortgage} />, bars: "up" };
-    case "debt": return { chart: <DebtChart /> };
+    case "debt": return { chart: <DebtDownhill /> };
   }
 }
 

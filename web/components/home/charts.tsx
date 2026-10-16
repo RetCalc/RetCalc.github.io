@@ -253,62 +253,8 @@ export function BudgetChart({ w = 340, h = 130 }) {
 }
 
 /* The tool list's chart cards (components/tools/ToolsBrowser.tsx) show the
-   charts above, and these three for the tools the homepage has no tile for,
-   drawn the same way. */
-
-/** Portfolio Backtest: $10,000 in the tool's default mix, year by year, after inflation. */
-export function BacktestChart({ bt, w = 340, h = 120 }: { bt: { first: number; last: number; mix: string; values: number[] }; w?: number; h?: number }) {
-  const n = bt.values.length, end = bt.values[n - 1];
-  const x = scale(0, n - 1, 8, w - 8), y = scale(0, Math.max(...bt.values), h - 18, 22);
-  const pts = bt.values.map((v, i): Pt => [x(i), y(v)]);
-  return (
-    <svg className="hm-chart" viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`$10,000 in ${bt.mix} in ${bt.first} grew to ${money(end)} by ${bt.last}, after inflation.`}>
-      <text x={8} y={12}>$10,000 in {bt.mix}, after inflation</text>
-      <line className="hm-grid-l" x1={8} x2={w - 8} y1={h - 18} y2={h - 18} />
-      <path className="hm-area fade" style={{ "--dl": ".5s" } as React.CSSProperties} d={d(pts) + `L${x(n - 1)} ${h - 18}L8 ${h - 18}Z`} />
-      <path className="hm-ln hm-thin draw" pathLength={1} d={d(pts)} />
-      <circle className="hm-dot fade" style={{ "--dl": "1.3s" } as React.CSSProperties} cx={x(n - 1)} cy={y(end)} r={4.5} />
-      <text className="hm-t-ink fade" style={{ "--dl": "1.3s" } as React.CSSProperties} x={x(n - 1) - 10} y={y(end) + 4} textAnchor="end">{money(end)}</text>
-      <text x={8} y={h - 3}>{bt.first}</text>
-      <text x={w - 8} y={h - 3} textAnchor="end">{bt.last}</text>
-    </svg>
-  );
-}
-
-/** College Savings: monthly saving building toward four years of tuition. */
-export function CollegeChart({ w = 340, h = 120 }) {
-  const x = scale(0, 18, 8, w - 8), y = scale(0, 1, h - 16, 30), pts: Pt[] = [];
-  for (let a = 0; a <= 18; a++) pts.push([x(a), y((Math.pow(1.06, a) - 1) / (Math.pow(1.06, 18) - 1))]);
-  return (
-    <svg className="hm-chart" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      <line className="hm-dash" x1={8} x2={w - 8} y1={y(1)} y2={y(1)} />
-      <text x={8} y={y(1) - 8}>Four years of tuition</text>
-      <path className="hm-area fade" style={{ "--dl": ".5s" } as React.CSSProperties} d={d(pts) + `L${x(18)} ${h - 16}L8 ${h - 16}Z`} />
-      <path className="hm-ln draw" pathLength={1} d={d(pts)} />
-      <circle className="hm-dot fade" style={{ "--dl": "1.3s" } as React.CSSProperties} cx={x(18)} cy={y(1)} r={5} />
-      <text x={8} y={h - 2}>Birth</text>
-      <text x={w - 8} y={h - 2} textAnchor="end">18</text>
-    </svg>
-  );
-}
-
-/** Debt Payoff: the avalanche (highest rate first) clears the debt before the snowball. */
-export function DebtChart({ w = 340, h = 120 }) {
-  const x = scale(0, 26, 8, w - 8), y = scale(0, 1, h - 20, 10);
-  const left = (t: number, end: number, k: number) => Math.max(0, 1 - Math.pow(Math.min(1, t / end), k));
-  const av: Pt[] = [], sb: Pt[] = [];
-  for (let t = 0; t <= 26; t++) { if (t <= 19) av.push([x(t), y(left(t, 19, 1.6))]); sb.push([x(t), y(left(t, 24, 1.35))]); }
-  return (
-    <svg className="hm-chart" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      <line className="hm-grid-l" x1={8} x2={w - 8} y1={y(0)} y2={y(0)} />
-      <path className="hm-dash" d={d(sb)} />
-      <path className="hm-ln draw" pathLength={1} d={d(av)} />
-      <circle className="hm-dot fade" style={{ "--dl": "1.3s" } as React.CSSProperties} cx={x(19)} cy={y(0)} r={5} />
-      <text className="fade" style={{ "--dl": "1.3s" } as React.CSSProperties} x={x(19)} y={h - 3} textAnchor="middle">Avalanche: debt-free</text>
-      <text x={x(11) + 8} y={y(left(11, 24, 1.35)) - 8}>Snowball</text>
-    </svg>
-  );
-}
+   charts above, and their own for the Portfolio Backtest, Rent vs. Buy,
+   College Savings and Debt Payoff (components/tools/picker-charts.tsx). */
 
 function Key({ items }: { items: [string, string][] }) {
   return (
