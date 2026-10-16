@@ -65,9 +65,12 @@ export interface PcInput {
   two: boolean;
   /** Periods a year: paychecks, or 12 with two incomes. */
   p: number;
+  /** Each person's paychecks a year (with two incomes, for their own check). */
+  pays: [number, number];
   status: "s" | "m";
   state: string;
-  /** Health premiums through work, per period: through your job, and your spouse's. */
+  /** Health premiums through work, per period: through your job, and your
+      spouse's (typed per check on each one's own schedule). */
   health: [number, number];
   match: { rate: number; upTo: number }[];
   hsa: HsaCov;
@@ -103,14 +106,18 @@ export function pcOrder(raw: string): PcStep[] {
     used while the tab has none of its own. */
 export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
   const two = b.pcStatus === "m2";
-  const p = two ? 12 : [52, 26, 24, 12].includes(+b.pcFreq) ? +b.pcFreq : 26;
+  const sched = (v: string) => ([52, 26, 24, 12].includes(+v) ? +v : 26);
+  const pays: [number, number] = [sched(b.pcFreq), sched(b.pcFreq2)];
+  const p = two ? 12 : pays[0];
   const spendYear = b.rows.reduce((a, r, i) => a + (rowRole(b, r, i) === "count" ? annualize(r) : 0), 0);
   const n = (v: string) => Math.max(0, parseNum(v));
-  const health1 = b.pcHealth.trim() === "" ? (healthRowMonthly(b) * 12) / p : n(b.pcHealth);
+  // Premiums are typed per check on each person's schedule; with two
+  // incomes they're carried as a month.
+  const health1 = b.pcHealth.trim() === "" ? (healthRowMonthly(b) * 12) / p : (n(b.pcHealth) * pays[0]) / (two ? 12 : pays[0]);
   const amounts = Object.fromEntries(PC_STEPS.map((s) => [s, n(b[pcAmountKey(s)])])) as PcAmounts;
   return {
-    gross: n(b.pcGross), gross2: two ? n(b.pcGross2) : 0, two, p, status: b.pcStatus === "s" ? "s" : "m", state: b.pcState || taxState,
-    health: [health1, two ? n(b.pcHealth2) : 0],
+    gross: n(b.pcGross), gross2: two ? n(b.pcGross2) : 0, two, p, pays, status: b.pcStatus === "s" ? "s" : "m", state: b.pcState || taxState,
+    health: [health1, two ? (n(b.pcHealth2) * pays[1]) / 12 : 0],
     match: [{ rate: n(b.pcMatchRate), upTo: n(b.pcMatchUpTo) }, { rate: n(b.pcMatchRate2), upTo: n(b.pcMatchUpTo2) }],
     hsa: b.pcHsaFamily ? "family" : two && b.pcHsaBoth ? "self2" : "self",
     efCap: n(b.pcEfCap), roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth },
@@ -174,6 +181,8 @@ export function pcCap(pi: PcInput, s: PcStep, a: PcAmounts): number {
     fund's is only where Fill stops). */
 export const pcHasLimit = (s: PcStep) => s !== "ef" && s !== "brok";
 
+export interface PcPerson { gross: number; k401: number; roth401: number; hsa: number; health: number; fed: number; state: number; fica: number; deposit: number }
+
 export interface PcRun {
   /** Gross pay a period: both together, and each person's. */
   check: number;
@@ -188,6 +197,11 @@ export interface PcRun {
   saved: number;
   /** The employers' match, per period. */
   match: number;
+  /** Each person's own check, per period ([you, spouse]): their pay and what
+      comes out of it, down to what they deposit. The joint income tax is
+      shared in proportion to each one's taxable pay; Social Security and
+      Medicare are each person's own. */
+  people: PcPerson[];
   stateName: string;
   /** Pre-tax money the state keeps in its base, a year. */
   stateAddBack: number;
@@ -202,7 +216,8 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const R = computeTax({
     status: pi.status, gross: pi.gross, gross2: pi.gross2, pre: 0, dedType: "std", item: 0, state: pi.state,
     ded: [0, 1].map((i) => ({ k401: k401s[i] * p, ira: 0, hsa: hsas[i] * p, health: healths[i] * p, other: 0 })),
-  }) as { federal: number; state: number; fica: number; stateName: string; preTax: { addBack: number } | null };
+  }) as { federal: number; state: number; fica: number; ss1: number; ss2: number; addl: number; stateName: string;
+    preTax: { addBack: number; ficaOff: number[] } | null };
   const gross1 = pi.gross / p, gross2 = pi.gross2 / p, check = gross1 + gross2;
   const sum = (x: number[]) => x[0] + x[1];
   const k401 = sum(k401s), roth401 = sum(roth401s), hsa = sum(hsas), health = sum(healths);
@@ -212,10 +227,24 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const left = toAssign - a.ef - a.rothIra - a.brok;
   const deferred = [k401s[0] + roth401s[0], k401s[1] + roth401s[1]];
   const matchOf = (i: number, g: number) => (Math.min(deferred[i], (pi.match[i].upTo / 100) * g) * pi.match[i].rate) / 100;
+  // Each person's check: the joint income tax shared by taxable pay; FICA
+  // their own (Medicare on their FICA wages, the surtax shared by them).
+  const grosses = [pi.gross, pi.gross2];
+  const taxable = [0, 1].map((i) => Math.max(0, grosses[i] - (k401s[i] + hsas[i] + healths[i]) * p));
+  const tShare = (i: number) => (taxable[0] + taxable[1] > 0 ? taxable[i] / (taxable[0] + taxable[1]) : i === 0 ? 1 : 0);
+  const ficaWage = [0, 1].map((i) => Math.max(0, grosses[i] - (R.preTax?.ficaOff[i] ?? 0)));
+  const medRate = yearData().fica.medRate;
+  const fShare = (i: number) => (ficaWage[0] + ficaWage[1] > 0 ? ficaWage[i] / (ficaWage[0] + ficaWage[1]) : 0);
+  const people = [0, 1].map((i): PcPerson => {
+    const g = grosses[i] / p, f = R.federal * tShare(i) / p, st = R.state * tShare(i) / p;
+    const fc = ((i ? R.ss2 : R.ss1) + ficaWage[i] * medRate + R.addl * fShare(i)) / p;
+    return { gross: g, k401: k401s[i], roth401: roth401s[i], hsa: hsas[i], health: healths[i], fed: f, state: st, fica: fc,
+      deposit: g - k401s[i] - roth401s[i] - hsas[i] - healths[i] - f - st - fc };
+  });
   return {
     check, gross1, gross2, k401s, roth401s, hsas, healths, k401, roth401, hsa, health, fed, state, fica, taxes: fed + state + fica,
     deposit, spend, toAssign, ef: a.ef, rothIra: a.rothIra, brok: a.brok, left,
-    saved: PC_STEPS.reduce((t, s) => t + a[s], 0), match: matchOf(0, gross1) + (pi.two ? matchOf(1, gross2) : 0),
+    saved: PC_STEPS.reduce((t, s) => t + a[s], 0), match: matchOf(0, gross1) + (pi.two ? matchOf(1, gross2) : 0), people,
     stateName: R.stateName, stateAddBack: R.preTax?.addBack ?? 0,
   };
 }

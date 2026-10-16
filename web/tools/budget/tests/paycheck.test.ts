@@ -141,14 +141,25 @@ test("two incomes: premiums come off the FICA of the job they come through", () 
   // You're over the Social Security wage cap; your spouse isn't.
   const you = paycheckRun(paycheckInput(two({ pcGross: "250,000", pcGross2: "60,000", pcHealth: "500", pcHealth2: "0" }), "IL"));
   const spouse = paycheckRun(paycheckInput(two({ pcGross: "250,000", pcGross2: "60,000", pcHealth: "0", pcHealth2: "500" }), "IL"));
-  // Through your job they save only Medicare (and the surtax); through your spouse's, Social Security too.
-  near(you.fica - spouse.fica, 500 * 0.062, 0.01);
+  // Typed per check (every two weeks): $500 a check is $1,083.33 a month. Through your job
+  // they save only Medicare (and the surtax); through your spouse's, Social Security too.
+  near(you.fica - spouse.fica, (500 * 26 / 12) * 0.062, 0.01);
   // Both through work: both count, and the Budget's row moves up.
-  const both = paycheckInput(two({ pcHealth: "300", pcHealth2: "200" }), "IL");
-  assert.deepEqual(both.health, [300, 200]);
+  const both = paycheckInput(two({ pcHealth: "300", pcHealth2: "200", pcFreq2: "24" }), "IL");
+  // Each on its own schedule: yours every two weeks, your spouse's twice a month.
+  near(both.health[0], 300 * 26 / 12); near(both.health[1], 200 * 24 / 12);
   // Both 0: not through work, and the Budget's Health insurance row stays a bill.
   const none = paycheckInput(two({ pcHealth: "0", pcHealth2: "0" }), "IL");
   near(none.spendYear, both.spendYear + 184 * 12);
+});
+
+test("two incomes: each person's check adds up to the household's", () => {
+  const pi = paycheckInput(two({ pcMatch: "1,000", pcHsa: "300", pcHsaFamily: true, pcHealth: "100", pcHealth2: "80", pcMatchRoth: true }), "IL");
+  const r = paycheckRun(pi), [y, sp] = r.people;
+  for (const k of ["gross", "k401", "roth401", "hsa", "health", "fed", "state", "fica", "deposit"] as const) near(y[k] + sp[k], k === "gross" ? r.check : k === "deposit" ? r.deposit : (r as unknown as Record<string, number>)[k], 0.01);
+  // Social Security is each person's own: 6.2% of their pay less their HSA and premiums.
+  near(y.fica + sp.fica, r.fica, 0.01);
+  assert.ok(y.fed > sp.fed, "the higher earner carries more of the joint tax");
 });
 
 test("two incomes: HSA limits follow the coverage", () => {

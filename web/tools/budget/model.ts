@@ -38,6 +38,8 @@ const PAYCHECK_DEFAULTS = {
   pcGross: "",
   /** Paychecks a year: 52, 26, 24 or 12. */
   pcFreq: "26",
+  /** The spouse's paychecks a year, with two incomes. */
+  pcFreq2: "26",
   /** "s" single, "m" married with this one income, "m2" married with two
       incomes (planned by the month, each person's lines their own). */
   pcStatus: "s",
