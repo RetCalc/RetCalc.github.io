@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { annualize, type BudgetInputs } from "./model";
 import {
-  PC_LINES, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcLineName, pcPreTax, pcRothKey, rowRole,
+  PC_LINES, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcPreTax, pcRothKey, pcSplit, rowRole,
   type PcAmounts, type PcRun, type PcStep,
 } from "./paycheck-math";
 
@@ -115,19 +115,23 @@ export function Paycheck({ s, set, setState }: {
               {/* The mock's one field: the Budget's Health insurance row per check
                   until typed over; 0 means not through work, and the row stays
                   an expense. */}
-              <Field id="pcHealth" label={"Health, dental and vision premiums, per " + per}>
-                <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText(pi.health) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
-                {healthRow > 0 ? (
+              {/* With two incomes, one field per job: premiums come off the
+                  Social Security and Medicare of the person they come through. */}
+              <Field id="pcHealth" label={(two ? "Premiums through your job" : "Health, dental and vision premiums") + ", per " + per}>
+                <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText(pi.health[0]) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
+                {two ? null : healthRow > 0 ? (
                   <div className="hint">{healthDerived ? <>From the Budget&apos;s Health insurance row, {money(healthRow)} a month. 0 if it isn&apos;t through work.</>
-                    : pi.health === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : null}</div>
+                    : pi.health[0] === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : null}</div>
                 ) : null}
               </Field>
-              {/* Whose job they come through decides whose Social Security and Medicare they come off. */}
-              {two && pi.health > 0 ? (
-                <SelectField id="pcHealthFrom" label="Through" value={s.pcHealthFrom} onChange={set("pcHealthFrom")}>
-                  <option value="1">Your job</option>
-                  <option value="2">Your spouse&apos;s job</option>
-                </SelectField>
+              {two ? (
+                <Field id="pcHealth2" label="Premiums through your spouse's job, per month">
+                  <Affixed prefix="$"><MoneyInput id="pcHealth2" nonNeg value={s.pcHealth2} onValueChange={set("pcHealth2")} /></Affixed>
+                  {healthRow > 0 ? (
+                    <div className="hint">{healthDerived ? <>Health, dental and vision. Yours starts from the Budget&apos;s Health insurance row, {money(healthRow)} a month. Both 0 if not through work.</>
+                      : pi.health[0] + pi.health[1] === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : <>Health, dental and vision.</>}</div>
+                  ) : <div className="hint">Health, dental and vision.</div>}
+                </Field>
               ) : null}
               <div className="grid grid-cols-2 items-end gap-x-2.5">
                 <NumberField id="pcMatchRate" label={two ? "Your 401(k) match" : "Employer 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
@@ -139,8 +143,12 @@ export function Paycheck({ s, set, setState }: {
                   <NumberField id="pcMatchUpTo2" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo2} onValueChange={set("pcMatchUpTo2")} />
                 </div>
               ) : null}
-              <SelectField id="pcHsaCov" label="HSA coverage" value={s.pcHsaFamily ? "family" : "self"} onChange={(v) => set("pcHsaFamily")(v === "family")}>
-                <option value="self">Self-only</option>
+              {/* With two incomes the HSA's limit depends on whose coverage: one
+                  self-only plan, one each, or family (one shared limit). */}
+              <SelectField id="pcHsaCov" label="HSA coverage" value={pi.hsa}
+                onChange={(v) => setState((c) => ({ ...c, pcHsaFamily: v === "family", pcHsaBoth: v === "self2" }))}>
+                <option value="self">{two ? "Self-only, one of you" : "Self-only"}</option>
+                {two ? <option value="self2">Self-only, each of you</option> : null}
                 <option value="family">Family</option>
               </SelectField>
 
@@ -215,7 +223,7 @@ export function Paycheck({ s, set, setState }: {
             // don't change the tax, so they stay here.
             // With two incomes, each person's lines go to their own column.
             const yr = (v: number) => amountText(v * pi.p);
-            const health = [pi.healthFrom === 1 ? r.health : 0, pi.healthFrom === 2 ? r.health : 0];
+            const health = r.healths;
             setToolInputs("tax", {
               ...toolInputs("tax", TAX_DEFAULTS), mode: "normal", view: "net", gross: dollarsField(pi.gross), gross2: two ? dollarsField(pi.gross2) : "0",
               status: pi.status, state: pi.state, itemize: true, year: TAX_DEFAULTS.year,
@@ -307,12 +315,16 @@ function Lines({ s, set, setState, pi, setOrder }: {
   return (
     <ol className="m-0 list-none p-0" id="pcLines">
       {order.map((k, i) => {
-        const line = { ...PC_LINES[k], name: pcLineName(k, pi.two) }, v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
+        const line = PC_LINES[k], v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
         // Shown as Fill keeps it: whole cents, rounded down.
         const capShown = Math.floor(cap * 100 + 1e-6) / 100;
         const over = pcHasLimit(k) && v > cap + 0.005;
         const pre = pcPreTax(pi, k);
-        const cost = v > 0 && pre ? " · costs your deposit " : "";
+        const cost = v > 0 && pre ? (pi.two ? " · costs your deposits " : " · costs your deposit ") : "";
+        // With two incomes, how the line divides between you (an HSA on one
+        // self-only plan is all yours, so it isn't shown).
+        const half = k === "match" || k === "k401max" || k === "rothIra" || (k === "hsa" && pi.hsa !== "self") ? pcSplit(pi)[k] : null;
+        const split = pi.two && v > 0 && half ? " · you " + cents(half[0]) + ", spouse " + cents(half[1]) : "";
         const rothKey = pcRothKey(k);
         // Where a dragged line would land: a rule above or below this one.
         const mark = drag && drag.over === i && drag.from !== i ? (drag.after ? "after" : "before") : null;
@@ -362,16 +374,18 @@ function Lines({ s, set, setState, pi, setOrder }: {
                     </span>
                   ) : over ? (
                     <span className="inline-flex items-center gap-1 text-destructive"><CircleAlertIcon className="size-3.5" aria-hidden="true" />Over the {cents(cap)} limit</span>
-                  ) : k.startsWith("match") ? "Full match " + cents(capShown)
+                  ) : k === "match" ? (pi.two ? "Both full matches " : "Full match ") + cents(capShown)
                     : k === "brok" ? "The rest"
-                    : k.startsWith("k401max") ? "Limit " + cents(capShown) + " with the match"
-                    : k.startsWith("hsa") && pi.hsaFamily && pi.two ? "Family limit, shared: up to " + cents(capShown)
+                    : k === "k401max" ? "Limit " + cents(capShown) + (pi.two ? " for both, with the matches" : " with the match")
+                    : k === "hsa" && pi.two ? (pi.hsa === "family" ? "Family limit " : pi.hsa === "self2" ? "Two self-only limits " : "Self-only limit ") + cents(capShown)
+                    : k === "rothIra" && pi.two ? "Two limits " + cents(capShown)
                     : "Limit " + cents(capShown)}
+                  {split}
                   {cost ? <>{cost}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
                 </div>
               </div>
               <Affixed prefix="$" className="sm:w-34 sm:flex-none">
-                <MoneyInput nonNeg data-amt={k} aria-label={line.name + ", per check"} value={s[pcAmountKey(k)]}
+                <MoneyInput nonNeg data-amt={k} aria-label={line.name + ", per " + (pi.two ? "month" : "check")} value={s[pcAmountKey(k)]}
                   onValueChange={(val) => setState((c) => ({ ...c, [pcAmountKey(k)]: val }))} />
               </Affixed>
             </div>
@@ -398,8 +412,6 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   const p = pi.p, two = pi.two, monthly = p !== 12;
   const heads = two ? ["Per month", "Per year"] : monthly ? ["Per check", "Per month", "Per year"] : ["Per check", "Per year"];
   const vals = (v: number) => (monthly ? [v, (v * p) / 12, v * p] : [v, v * p]);
-  /** "Your …" / "Spouse's …" with two incomes. */
-  const whose = (i: number, what: string) => (two ? (i ? "Spouse's " : "Your ") + what : what.charAt(0).toUpperCase() + what.slice(1));
   type Row = { kind: "sec" | "item" | "sub" | "total" | "hi"; label: string; v?: number; tag?: string; toggle?: boolean };
   const rows: Row[] = [];
   const sec = (label: string, toggle?: boolean) => rows.push({ kind: "sec", label, toggle });
@@ -408,9 +420,11 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   if (two) { ln("item", "Your gross pay", r.gross1); ln("item", "Spouse's gross pay", r.gross2); } else ln("item", "Gross pay", r.check);
   if (r.k401 || r.hsa || r.health) {
     sec("Before tax");
-    [0, 1].forEach((i) => { if (r.k401s[i]) ln("item", whose(i, "traditional 401(k)"), -r.k401s[i]); });
-    [0, 1].forEach((i) => { if (r.hsas[i]) ln("item", whose(i, "HSA"), -r.hsas[i], "excluded from FICA"); });
-    if (r.health) ln("item", "Health, dental and vision" + (two ? (pi.healthFrom === 2 ? ", through your spouse's job" : ", through your job") : ""), -r.health, "excluded from FICA");
+    if (r.k401) ln("item", "Traditional 401(k)", -r.k401);
+    if (r.hsa) ln("item", "HSA", -r.hsa, "excluded from FICA");
+    // Premiums are two inputs with two incomes, one per job.
+    if (two) [0, 1].forEach((i) => { if (r.healths[i]) ln("item", "Health, dental and vision, " + (i ? "your spouse's job" : "your job"), -r.healths[i], "excluded from FICA"); });
+    else if (r.health) ln("item", "Health, dental and vision", -r.health, "excluded from FICA");
   }
   sec("Taxes");
   ln("item", "Federal income tax", -r.fed);
@@ -418,7 +432,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   ln("item", "Social Security and Medicare" + (two ? ", both of you" : ""), -r.fica);
   if (r.roth401) {
     sec("After tax");
-    [0, 1].forEach((i) => { if (r.roth401s[i]) ln("item", two ? (i ? "Spouse's " : "Your ") + "Roth 401(k)" : "Roth 401(k)", -r.roth401s[i]); });
+    ln("item", "Roth 401(k)", -r.roth401);
   }
   ln("total", two ? "Deposits to your bank" : "Deposit to your bank", r.deposit);
   sec("Your budget", true);
@@ -428,11 +442,10 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   for (const { row } of budgetLines) ln("sub", (row.desc || "Custom") + (row.freq === 1 ? " (" + money(annualize(row)) + " a year)" : ""), -annualize(row) / p);
   const subEnd = rows.length;
   ln("total", "Free to save or invest", r.toAssign);
-  if (r.ef || r.rothIra || r.rothIra2 || r.brok) {
+  if (r.ef || r.rothIra || r.brok) {
     sec(two ? "From your deposits" : "From your deposit");
     if (r.ef) ln("item", "Emergency fund", -r.ef);
-    if (r.rothIra) ln("item", two ? "Your Roth IRA" : "Roth IRA", -r.rothIra);
-    if (r.rothIra2) ln("item", "Spouse's Roth IRA", -r.rothIra2);
+    if (r.rothIra) ln("item", "Roth IRA", -r.rothIra);
     if (r.brok) ln("item", "Taxable brokerage", -r.brok);
   }
   ln("hi", short ? "Short" : "Unassigned", Math.abs(r.left) < 0.01 ? 0 : r.left);
@@ -440,7 +453,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   // The CSV has every row, budget lines included, whether or not they're shown.
   const csv = () => empty ? null : [["Line", ...heads], ...rows.map((x) => x.v == null ? [x.label] : [(x.kind === "sub" ? "  " : "") + x.label, ...vals(x.v).map((y) => y.toFixed(2))])];
   // The Roth IRA's income test reads the household's income on a joint return.
-  const rothIra = pi.amounts.rothIra + pi.amounts.rothIra2 > 0 && pi.gross + pi.gross2 > (pi.status === "m" ? 242000 : 153000);
+  const rothIra = pi.amounts.rothIra > 0 && pi.gross + pi.gross2 > (pi.status === "m" ? 242000 : 153000);
 
   return (
     <Card className="min-w-0" hidden={empty}>

@@ -49,19 +49,22 @@ const PAYCHECK_DEFAULTS = {
       insurance row, per check, which then moves here. Set to 0 (not
       through work) and that row stays in the budget. */
   pcHealth: "",
-  /** With two incomes, whose job the premiums come through: "1" yours, "2" your spouse's. */
-  pcHealthFrom: "1",
+  /** With two incomes, premiums through your spouse's job, per month
+      (pcHealth is then yours, per month). */
+  pcHealth2: "0",
   pcMatchRate: "50",
   pcMatchUpTo: "6",
   pcMatchRate2: "50",
   pcMatchUpTo2: "6",
   pcHsaFamily: false,
+  /** With two incomes and no family coverage: self-only for each of you
+      (two self-only limits), not just one of you. */
+  pcHsaBoth: false,
   /** The lines' order, comma separated. */
-  pcOrder: "match,match2,hsa,hsa2,ef,rothIra,rothIra2,k401max,k401max2,brok",
+  pcOrder: "match,hsa,ef,rothIra,k401max,brok",
   pcMatch: "0", pcHsa: "0", pcEf: "0", pcRothIra: "0", pcK401max: "0", pcBrok: "0",
-  pcMatch2: "0", pcHsa2: "0", pcRothIra2: "0", pcK401max2: "0",
   /** The 401(k) lines' kind: Roth when true, traditional when false. */
-  pcMatchRoth: false, pcK401maxRoth: false, pcMatch2Roth: false, pcK401max2Roth: false,
+  pcMatchRoth: false, pcK401maxRoth: false,
   /** Where Fill stops the emergency fund, per check. */
   pcEfCap: "200",
 };
