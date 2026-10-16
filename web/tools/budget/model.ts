@@ -38,22 +38,30 @@ const PAYCHECK_DEFAULTS = {
   pcGross: "",
   /** Paychecks a year: 52, 26, 24 or 12. */
   pcFreq: "26",
-  /** "s" single, "m" married with this one income. */
+  /** "s" single, "m" married with this one income, "m2" married with two
+      incomes (planned by the month, each person's lines their own). */
   pcStatus: "s",
+  /** The spouse's gross pay, a year (two incomes only). */
+  pcGross2: "",
   /** Blank: the Income Tax tool's state. */
   pcState: "",
   /** Health premiums through work, per check. Blank: the Budget's Health
       insurance row, per check, which then moves here. Set to 0 (not
       through work) and that row stays in the budget. */
   pcHealth: "",
+  /** With two incomes, whose job the premiums come through: "1" yours, "2" your spouse's. */
+  pcHealthFrom: "1",
   pcMatchRate: "50",
   pcMatchUpTo: "6",
+  pcMatchRate2: "50",
+  pcMatchUpTo2: "6",
   pcHsaFamily: false,
   /** The lines' order, comma separated. */
-  pcOrder: "match,hsa,ef,rothIra,k401max,brok",
+  pcOrder: "match,match2,hsa,hsa2,ef,rothIra,rothIra2,k401max,k401max2,brok",
   pcMatch: "0", pcHsa: "0", pcEf: "0", pcRothIra: "0", pcK401max: "0", pcBrok: "0",
+  pcMatch2: "0", pcHsa2: "0", pcRothIra2: "0", pcK401max2: "0",
   /** The 401(k) lines' kind: Roth when true, traditional when false. */
-  pcMatchRoth: false, pcK401maxRoth: false,
+  pcMatchRoth: false, pcK401maxRoth: false, pcMatch2Roth: false, pcK401max2Roth: false,
   /** Where Fill stops the emergency fund, per check. */
   pcEfCap: "200",
 };

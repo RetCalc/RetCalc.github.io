@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { annualize, type BudgetInputs } from "./model";
 import {
-  PC_LINES, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcPreTax, rowRole,
+  PC_LINES, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcLineName, pcPreTax, pcRothKey, rowRole,
   type PcAmounts, type PcRun, type PcStep,
 } from "./paycheck-math";
 
@@ -53,11 +53,14 @@ export function Paycheck({ s, set, setState }: {
   const pi = paycheckInput(s, taxState);
   const r = paycheckRun(pi);
   const base = paycheckRun(pi, PC_ZERO);
-  const empty = !(pi.gross > 0);
-  const short = !empty && r.left < -0.005;
+  // Married, two incomes: the household by the month; otherwise one paycheck.
+  const two = pi.two, per = two ? "month" : "check";
+  const empty = !(pi.gross + pi.gross2 > 0);
+  const short = !empty && r.left <= -0.01;
   const taxCut = base.taxes - r.taxes;
-  // Unassigned, with a fraction of a cent either way shown as nothing.
-  const left = Math.abs(r.left) < 0.005 ? 0 : r.left;
+  // Unassigned, with less than a cent either way shown as nothing: amounts
+  // are kept in cents, and taxes and pay aren't.
+  const left = Math.abs(r.left) < 0.01 ? 0 : r.left;
   const [active, setActive] = useState<number | null>(null);
 
   const setAmounts = (a: PcAmounts) =>
@@ -80,22 +83,30 @@ export function Paycheck({ s, set, setState }: {
     <>
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         <PinnedReading tone={empty ? "text" : short ? "loss" : "answer"}
-          main={{ label: "Saved and invested, each check", value: empty ? DASH : money(r.saved) }}
+          main={{ label: "Saved and invested, each " + per, value: empty ? DASH : money(r.saved) }}
           side={{ label: short ? "Short" : "Unassigned", value: empty ? DASH : money(left) }} />
         <aside id="asidePaycheck" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader><CardTitle>Your paycheck</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{two ? "Your paychecks" : "Your paycheck"}</CardTitle></CardHeader>
             <CardContent>
-              <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
+              {two ? (
+                <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                  <MoneyField id="pcGross" label="Your gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
+                  <MoneyField id="pcGross2" label="Spouse's gross pay, per year" value={s.pcGross2} onValueChange={set("pcGross2")} />
+                </div>
+              ) : <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />}
               <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                <SelectField id="pcFreq" label="Paid" value={s.pcFreq} onChange={set("pcFreq")}>
-                  {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </SelectField>
-                <SelectField id="pcStatus" label="Filing status" value={s.pcStatus} onChange={set("pcStatus")}>
+                <SelectField id="pcStatus" className={two ? "col-span-full" : undefined} label="Filing status" value={s.pcStatus} onChange={set("pcStatus")}>
                   <option value="s">Single</option>
                   <option value="m">Married, one income</option>
+                  <option value="m2">Married, two incomes</option>
+                </SelectField>
+                {/* Two paychecks can come on different schedules, so two incomes go by the month. */}
+                <SelectField id="pcFreq" label="Paid" hidden={two} value={s.pcFreq} onChange={set("pcFreq")}>
+                  {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </SelectField>
               </div>
+              {two ? <div className="hint -mt-1.5 mb-3.5">Two incomes are planned by the month, taxed together as a joint return.</div> : null}
               <SelectField id="pcState" label="State" value={pi.state} onChange={set("pcState")}>
                 {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
               </SelectField>
@@ -104,23 +115,36 @@ export function Paycheck({ s, set, setState }: {
               {/* The mock's one field: the Budget's Health insurance row per check
                   until typed over; 0 means not through work, and the row stays
                   an expense. */}
-              <Field id="pcHealth" label="Health, dental and vision premiums, per check">
+              <Field id="pcHealth" label={"Health, dental and vision premiums, per " + per}>
                 <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText(pi.health) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
                 {healthRow > 0 ? (
                   <div className="hint">{healthDerived ? <>From the Budget&apos;s Health insurance row, {money(healthRow)} a month. 0 if it isn&apos;t through work.</>
                     : pi.health === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : null}</div>
                 ) : null}
               </Field>
+              {/* Whose job they come through decides whose Social Security and Medicare they come off. */}
+              {two && pi.health > 0 ? (
+                <SelectField id="pcHealthFrom" label="Through" value={s.pcHealthFrom} onChange={set("pcHealthFrom")}>
+                  <option value="1">Your job</option>
+                  <option value="2">Your spouse&apos;s job</option>
+                </SelectField>
+              ) : null}
               <div className="grid grid-cols-2 items-end gap-x-2.5">
-                <NumberField id="pcMatchRate" label="Employer 401(k) match" unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
+                <NumberField id="pcMatchRate" label={two ? "Your 401(k) match" : "Employer 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
                 <NumberField id="pcMatchUpTo" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo} onValueChange={set("pcMatchUpTo")} />
               </div>
+              {two ? (
+                <div className="grid grid-cols-2 items-end gap-x-2.5">
+                  <NumberField id="pcMatchRate2" label="Spouse's 401(k) match" unit="%" step={5} max={200} value={s.pcMatchRate2} onValueChange={set("pcMatchRate2")} />
+                  <NumberField id="pcMatchUpTo2" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo2} onValueChange={set("pcMatchUpTo2")} />
+                </div>
+              ) : null}
               <SelectField id="pcHsaCov" label="HSA coverage" value={s.pcHsaFamily ? "family" : "self"} onChange={(v) => set("pcHsaFamily")(v === "family")}>
                 <option value="self">Self-only</option>
                 <option value="family">Family</option>
               </SelectField>
 
-              <BudgetFromTab s={s} p={pi.p} onEdit={() => set("view")("budget")} />
+              <BudgetFromTab s={s} p={pi.p} per={per} onEdit={() => set("view")("budget")} />
             </CardContent>
           </Card>
         </aside>
@@ -129,11 +153,11 @@ export function Paycheck({ s, set, setState }: {
       <div className="stack min-w-0 lg:col-span-2" id="tab-paycheck">
         <Card size="flush" className="min-w-0">
           <HeroReading tone={empty ? "text" : "answer"} sized={!empty}
-            hero={{ label: "Saved and invested, each check", id: "pcSaved", value: empty ? DASH : money(r.saved), noteId: "pcSavedNote",
-              note: empty ? "Enter your gross pay to begin" : ((r.saved / r.check) * 100).toFixed(1) + "% of gross pay" + (r.match > 0 ? ", plus " + money(r.match) + " from your employer" : "") }}
+            hero={{ label: "Saved and invested, each " + per, id: "pcSaved", value: empty ? DASH : money(r.saved), noteId: "pcSavedNote",
+              note: empty ? "Enter your gross pay to begin" : ((r.saved / r.check) * 100).toFixed(1) + "% of gross pay" + (r.match > 0 ? ", plus " + money(r.match) + (two ? " in employer matches" : " from your employer") : "") }}
             figures={[
               { label: "Free before saving", id: "pcFree", value: empty ? DASH : money(base.toAssign), note: "Pay, less taxes and your budget, with nothing saved" },
-              { label: short ? "Short each check" : "Still unassigned", id: "pcLeft", value: empty ? DASH : money(left),
+              { label: short ? "Short each " + per : "Still unassigned", id: "pcLeft", value: empty ? DASH : money(left),
                 note: empty ? "" : short ? "More is assigned than the deposit covers" : Math.abs(r.left) < 0.5 ? "Every dollar has a place" : "Not yet given a place" },
             ]} />
           <div className="border-t border-border px-5.5 py-5 max-sm:px-4" hidden={empty}>
@@ -147,7 +171,7 @@ export function Paycheck({ s, set, setState }: {
                     setActive(c ? +(c.getAttribute("data-idx") ?? 0) : null);
                   }}
                   onMouseLeave={() => setActive(null)}>
-                  <Donut parts={parts} center={money(r.check)} centerLabel="Each check" active={active} hatch="pch" />
+                  <Donut parts={parts} center={money(r.check)} centerLabel={two ? "Each month" : "Each check"} active={active} hatch="pch" />
                 </svg>
               </div>
               <div className="w-full min-w-0 flex-1" onMouseLeave={() => setActive(null)}
@@ -176,7 +200,7 @@ export function Paycheck({ s, set, setState }: {
                 <Button variant="outline" id="pcClear" onClick={() => setAmounts(PC_ZERO)}>Clear</Button>
               </div>
               <div className="flex gap-7 max-sm:w-full max-sm:justify-between" aria-live="polite">
-                <FootStat label="Tax saved, each check" value={empty ? DASH : cents(Math.max(0, taxCut))} id="pcTaxSaved" />
+                <FootStat label={"Tax saved, each " + per} value={empty ? DASH : cents(Math.max(0, taxCut))} id="pcTaxSaved" />
                 <FootStat label={short ? "Short" : "Unassigned"} id="pcUnassigned" value={empty ? DASH : cents(left)}
                   tone={short ? "loss" : r.left > 0.5 ? "answer" : undefined} />
               </div>
@@ -189,15 +213,18 @@ export function Paycheck({ s, set, setState }: {
             // Income Tax, filled in from here: the pay and the pre-tax
             // deductions by kind, a year of each. Roth and after-tax saving
             // don't change the tax, so they stay here.
+            // With two incomes, each person's lines go to their own column.
+            const yr = (v: number) => amountText(v * pi.p);
+            const health = [pi.healthFrom === 1 ? r.health : 0, pi.healthFrom === 2 ? r.health : 0];
             setToolInputs("tax", {
-              ...toolInputs("tax", TAX_DEFAULTS), mode: "normal", view: "net", gross: dollarsField(pi.gross), gross2: "0",
+              ...toolInputs("tax", TAX_DEFAULTS), mode: "normal", view: "net", gross: dollarsField(pi.gross), gross2: two ? dollarsField(pi.gross2) : "0",
               status: pi.status, state: pi.state, itemize: true, year: TAX_DEFAULTS.year,
               // To the cent, so Income Tax shows the same tax as the stub.
-              k401: amountText(r.k401 * pi.p), ira: "0", hsa: amountText(r.hsa * pi.p), health: amountText(r.health * pi.p), dother: "0",
-              k4012: "0", ira2: "0", hsa2: "0", health2: "0", dother2: "0",
-              pre: amountText((r.k401 + r.hsa + r.health) * pi.p),
-              // Its pop-up shows them per paycheck, on this pay schedule.
-              preUnits: "check,year,check,check,year", prePay: String(pi.p),
+              k401: yr(r.k401s[0]), ira: "0", hsa: yr(r.hsas[0]), health: yr(health[0]), dother: "0",
+              k4012: yr(r.k401s[1]), ira2: "0", hsa2: yr(r.hsas[1]), health2: yr(health[1]), dother2: "0",
+              pre: yr(r.k401 + r.hsa + r.health),
+              // Its pop-up shows them per paycheck on this schedule, or per month with two incomes.
+              preUnits: two ? "month,year,month,month,year" : "check,year,check,check,year", prePay: String(pi.p),
             });
             router.push("/incometax");
           }} />
@@ -222,7 +249,7 @@ function FootStat({ label, value, id, tone }: { label: string; value: string; id
 
 /* The budget as it comes across: its total a check, and its rows on demand,
    with the ones this tab plans or moves marked and left out. */
-function BudgetFromTab({ s, p, onEdit }: { s: BudgetInputs; p: number; onEdit: () => void }) {
+function BudgetFromTab({ s, p, per, onEdit }: { s: BudgetInputs; p: number; per: string; onEdit: () => void }) {
   const [open, setOpen] = useState(false);
   const counted = s.rows.map((r, i) => ({ r, i, role: rowRole(s, r, i) })).filter((x) => annualize(x.r) > 0);
   const spendYear = counted.reduce((a, x) => a + (x.role === "count" ? annualize(x.r) : 0), 0);
@@ -234,7 +261,7 @@ function BudgetFromTab({ s, p, onEdit }: { s: BudgetInputs; p: number; onEdit: (
         <Button variant="link" size="inline" onClick={onEdit}>Edit it there</Button>
       </div>
       <div className="flex items-baseline justify-between gap-2 text-note">
-        <span>Bills and spending</span><b className="font-medium tabular-nums" id="pcBudget">{cents(spendYear / p)} a check</b>
+        <span>Bills and spending</span><b className="font-medium tabular-nums" id="pcBudget">{cents(spendYear / p)} a {per}</b>
       </div>
       <div className="mb-1.5 text-label text-muted-foreground">
         {spendYear > 0 ? money(spendYear / 12) + " a month, from " + used + (used === 1 ? " line" : " lines") + " of your Budget" : "Nothing in your Budget yet"}
@@ -280,11 +307,13 @@ function Lines({ s, set, setState, pi, setOrder }: {
   return (
     <ol className="m-0 list-none p-0" id="pcLines">
       {order.map((k, i) => {
-        const line = PC_LINES[k], v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
+        const line = { ...PC_LINES[k], name: pcLineName(k, pi.two) }, v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
+        // Shown as Fill keeps it: whole cents, rounded down.
+        const capShown = Math.floor(cap * 100 + 1e-6) / 100;
         const over = pcHasLimit(k) && v > cap + 0.005;
         const pre = pcPreTax(pi, k);
         const cost = v > 0 && pre ? " · costs your deposit " : "";
-        const rothKey = k === "match" ? "pcMatchRoth" : "pcK401maxRoth";
+        const rothKey = pcRothKey(k);
         // Where a dragged line would land: a rule above or below this one.
         const mark = drag && drag.over === i && drag.from !== i ? (drag.after ? "after" : "before") : null;
         return (
@@ -328,14 +357,16 @@ function Lines({ s, set, setState, pi, setOrder }: {
                 <div className="mt-0.5 text-label text-muted-foreground" data-note>
                   {k === "ef" ? (
                     <span className="inline-flex flex-wrap items-center gap-1.5">Fill stops at
-                      <Affixed prefix="$" className="w-28"><MoneyInput nonNeg aria-label="Emergency fund: where Fill stops, per check" value={s.pcEfCap} onValueChange={set("pcEfCap")} /></Affixed>
+                      <Affixed prefix="$" className="w-28"><MoneyInput nonNeg aria-label={"Emergency fund: where Fill stops, per " + (pi.two ? "month" : "check")} value={s.pcEfCap} onValueChange={set("pcEfCap")} /></Affixed>
+                      {pi.two ? "a month" : "a check"}
                     </span>
                   ) : over ? (
                     <span className="inline-flex items-center gap-1 text-destructive"><CircleAlertIcon className="size-3.5" aria-hidden="true" />Over the {cents(cap)} limit</span>
-                  ) : k === "match" ? "Full match " + cents(cap)
+                  ) : k.startsWith("match") ? "Full match " + cents(capShown)
                     : k === "brok" ? "The rest"
-                    : k === "k401max" ? "Limit " + cents(cap) + " with the match"
-                    : "Limit " + cents(cap)}
+                    : k.startsWith("k401max") ? "Limit " + cents(capShown) + " with the match"
+                    : k.startsWith("hsa") && pi.hsaFamily && pi.two ? "Family limit, shared: up to " + cents(capShown)
+                    : "Limit " + cents(capShown)}
                   {cost ? <>{cost}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
                 </div>
               </div>
@@ -362,26 +393,34 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   s: BudgetInputs; pi: ReturnType<typeof paycheckInput>; r: PcRun; empty: boolean; short: boolean; openTax: () => void;
 }) {
   const [showBudget, setShowBudget] = useState(false);
-  const p = pi.p, monthly = p !== 12;
-  const heads = monthly ? ["Per check", "Per month", "Per year"] : ["Per check", "Per year"];
+  // Per check, per month (unless paid monthly, when the two are the same) and
+  // per year; with two incomes, per month and per year.
+  const p = pi.p, two = pi.two, monthly = p !== 12;
+  const heads = two ? ["Per month", "Per year"] : monthly ? ["Per check", "Per month", "Per year"] : ["Per check", "Per year"];
   const vals = (v: number) => (monthly ? [v, (v * p) / 12, v * p] : [v, v * p]);
+  /** "Your …" / "Spouse's …" with two incomes. */
+  const whose = (i: number, what: string) => (two ? (i ? "Spouse's " : "Your ") + what : what.charAt(0).toUpperCase() + what.slice(1));
   type Row = { kind: "sec" | "item" | "sub" | "total" | "hi"; label: string; v?: number; tag?: string; toggle?: boolean };
   const rows: Row[] = [];
   const sec = (label: string, toggle?: boolean) => rows.push({ kind: "sec", label, toggle });
   const ln = (kind: Row["kind"], label: string, v: number, tag?: string) => rows.push({ kind, label, v, tag });
-  sec("Earnings"); ln("item", "Gross pay", r.check);
+  sec("Earnings");
+  if (two) { ln("item", "Your gross pay", r.gross1); ln("item", "Spouse's gross pay", r.gross2); } else ln("item", "Gross pay", r.check);
   if (r.k401 || r.hsa || r.health) {
     sec("Before tax");
-    if (r.k401) ln("item", "Traditional 401(k)", -r.k401);
-    if (r.hsa) ln("item", "HSA", -r.hsa, "excluded from FICA");
-    if (r.health) ln("item", "Health, dental and vision", -r.health, "excluded from FICA");
+    [0, 1].forEach((i) => { if (r.k401s[i]) ln("item", whose(i, "traditional 401(k)"), -r.k401s[i]); });
+    [0, 1].forEach((i) => { if (r.hsas[i]) ln("item", whose(i, "HSA"), -r.hsas[i], "excluded from FICA"); });
+    if (r.health) ln("item", "Health, dental and vision" + (two ? (pi.healthFrom === 2 ? ", through your spouse's job" : ", through your job") : ""), -r.health, "excluded from FICA");
   }
   sec("Taxes");
   ln("item", "Federal income tax", -r.fed);
   ln("item", (r.stateName || "State") + " income tax", -r.state, r.stateAddBack > 0 ? "keeps " + money(r.stateAddBack) + "/yr of pre-tax in its base" : undefined);
-  ln("item", "Social Security and Medicare", -r.fica);
-  if (r.roth401) { sec("After tax"); ln("item", "Roth 401(k)", -r.roth401); }
-  ln("total", "Deposit to your bank", r.deposit);
+  ln("item", "Social Security and Medicare" + (two ? ", both of you" : ""), -r.fica);
+  if (r.roth401) {
+    sec("After tax");
+    [0, 1].forEach((i) => { if (r.roth401s[i]) ln("item", two ? (i ? "Spouse's " : "Your ") + "Roth 401(k)" : "Roth 401(k)", -r.roth401s[i]); });
+  }
+  ln("total", two ? "Deposits to your bank" : "Deposit to your bank", r.deposit);
   sec("Your budget", true);
   ln("item", "Bills and spending", -r.spend);
   const budgetLines = s.rows.map((row, i) => ({ row, i })).filter(({ row, i }) => rowRole(s, row, i) === "count" && annualize(row) > 0);
@@ -389,17 +428,19 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   for (const { row } of budgetLines) ln("sub", (row.desc || "Custom") + (row.freq === 1 ? " (" + money(annualize(row)) + " a year)" : ""), -annualize(row) / p);
   const subEnd = rows.length;
   ln("total", "Free to save or invest", r.toAssign);
-  if (r.ef || r.rothIra || r.brok) {
-    sec("From your deposit");
+  if (r.ef || r.rothIra || r.rothIra2 || r.brok) {
+    sec(two ? "From your deposits" : "From your deposit");
     if (r.ef) ln("item", "Emergency fund", -r.ef);
-    if (r.rothIra) ln("item", "Roth IRA", -r.rothIra);
+    if (r.rothIra) ln("item", two ? "Your Roth IRA" : "Roth IRA", -r.rothIra);
+    if (r.rothIra2) ln("item", "Spouse's Roth IRA", -r.rothIra2);
     if (r.brok) ln("item", "Taxable brokerage", -r.brok);
   }
-  ln("hi", short ? "Short" : "Unassigned", Math.abs(r.left) < 0.005 ? 0 : r.left);
+  ln("hi", short ? "Short" : "Unassigned", Math.abs(r.left) < 0.01 ? 0 : r.left);
 
   // The CSV has every row, budget lines included, whether or not they're shown.
   const csv = () => empty ? null : [["Line", ...heads], ...rows.map((x) => x.v == null ? [x.label] : [(x.kind === "sub" ? "  " : "") + x.label, ...vals(x.v).map((y) => y.toFixed(2))])];
-  const rothIra = pi.amounts.rothIra > 0 && pi.gross > (pi.status === "m" ? 242000 : 153000);
+  // The Roth IRA's income test reads the household's income on a joint return.
+  const rothIra = pi.amounts.rothIra + pi.amounts.rothIra2 > 0 && pi.gross + pi.gross2 > (pi.status === "m" ? 242000 : 153000);
 
   return (
     <Card className="min-w-0" hidden={empty}>

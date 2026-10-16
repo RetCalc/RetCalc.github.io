@@ -67,7 +67,7 @@ test("pre-tax lines cost the deposit less than they put away", () => {
   near(pcCostPer(pi, "hsa"), 1 - 0.22 - 0.0495 - 0.0765, 0.001);
   // A Roth IRA comes out of the deposit, after it lands: it doesn't change it.
   near(pcCostPer(pi, "rothIra"), 0, 1e-9);
-  near(pcCostPer({ ...pi, roth: { match: true, k401max: false } }, "match"), 1, 1e-9);
+  near(pcCostPer({ ...pi, roth: { ...pi.roth, match: true } }, "match"), 1, 1e-9);
 });
 
 test("Fill assigns every cent, in order, within each line's limit", () => {
@@ -78,11 +78,13 @@ test("Fill assigns every cent, in order, within each line's limit", () => {
   for (const gross of ["72,500", "95,000", "130,000", "210,000"]) for (const state of ["IL", "CA", "PA", "TX"]) for (const o of orders) {
     const pi = paycheckInput(budget({ pcGross: gross, pcState: state, pcOrder: o.join(",") }), "IL");
     const a = paycheckFill(pi), r = paycheckRun(pi, a);
-    assert.ok(r.left > -0.005, `${gross} ${state} ${o}: short ${r.left}`);
-    assert.ok(Math.abs(r.left) < 0.005, `${gross} ${state} ${o}: ${r.left} left unassigned`);
-    for (const s of PC_STEPS) if (s !== "brok") assert.ok(a[s] <= pcCap(pi, s, a) + 1e-9, `${s} over its cap`);
+    assert.ok(r.left >= 0, `${gross} ${state} ${o}: short ${r.left}`);
+    assert.ok(r.left >= 0 && r.left < 0.01, `${gross} ${state} ${o}: ${r.left} left unassigned`);
+    for (const s of pi.order) if (s !== "brok") assert.ok(a[s] <= pcCap(pi, s, a) + 1e-9, `${s} over its cap`);
+    // One paycheck: the spouse's lines aren't shown, and nothing goes on them.
+    assert.equal(a.match2 + a.hsa2 + a.rothIra2 + a.k401max2, 0);
     // No stray cent: brokerage only gets money when every line above it is full.
-    if (a.brok > 0) for (const s of o.slice(0, o.indexOf("brok"))) near(a[s], pcCap(pi, s, a), 0.005);
+    if (a.brok > 0) for (const s of pi.order.slice(0, pi.order.indexOf("brok"))) near(a[s], pcCap(pi, s, a), 0.01);
     near(a.match + a.k401max, Math.min(a.match + a.k401max, L.k401.base / 26), 1e-9);
   }
 });
@@ -100,5 +102,64 @@ test("a budget bigger than the pay leaves Fill with nothing to give", () => {
 });
 
 test("a stored order with lines missing or repeated is put right", () => {
-  assert.deepEqual(pcOrder("brok,ef,brok,junk"), ["brok", "ef", "match", "hsa", "rothIra", "k401max"]);
+  assert.deepEqual(pcOrder("brok,ef,brok,junk"), ["brok", "ef", "match", "match2", "hsa", "hsa2", "rothIra", "rothIra2", "k401max", "k401max2"]);
+  // An order saved before two incomes: each spouse's line lands right after its counterpart.
+  assert.deepEqual(pcOrder("hsa,match,ef,rothIra,k401max,brok"), ["hsa", "hsa2", "match", "match2", "ef", "rothIra", "rothIra2", "k401max", "k401max2", "brok"]);
+});
+
+/* Married, two incomes: the household by the month. */
+const two = (patch: Partial<BudgetInputs> = {}) =>
+  budget({ pcStatus: "m2", pcGross: "120,000", pcGross2: "80,000", pcState: "IL", ...patch });
+
+test("two incomes: the month adds up, taxed jointly", () => {
+  const pi = paycheckInput(two({ pcMatch: "300", pcMatch2: "200", pcHsa: "100", pcHsa2: "50", pcEf: "150", pcRothIra: "200", pcRothIra2: "100" }), "IL");
+  assert.equal(pi.p, 12);
+  assert.ok(pi.order.includes("match2") && pi.order.includes("rothIra2"));
+  const r = paycheckRun(pi);
+  near(r.check, 200000 / 12);
+  near(r.gross1, 10000); near(r.gross2, 80000 / 12);
+  near(r.deposit, r.check - r.k401 - r.hsa - r.health - r.taxes - r.roth401);
+  near(r.left, r.deposit - r.spend - r.ef - r.rothIra - r.rothIra2 - r.brok);
+  assert.deepEqual(r.k401s, [300, 200]);
+  // Each person's match on their own pay: 50% of what they defer, up to 6% of it.
+  near(r.match, 300 * 0.5 + 200 * 0.5);
+  // The spending is a month of the budget.
+  near(r.spend, pi.spendYear / 12);
+});
+
+test("two incomes: premiums come off the FICA of the job they come through", () => {
+  // You're over the Social Security wage cap; your spouse isn't.
+  const you = paycheckRun(paycheckInput(two({ pcGross: "250,000", pcGross2: "60,000", pcHealth: "500", pcHealthFrom: "1" }), "IL"));
+  const spouse = paycheckRun(paycheckInput(two({ pcGross: "250,000", pcGross2: "60,000", pcHealth: "500", pcHealthFrom: "2" }), "IL"));
+  // Through your job they save only Medicare (and the surtax); through your spouse's, Social Security too.
+  near(you.fica - spouse.fica, 500 * 0.062, 0.01);
+});
+
+test("two incomes on family HSA coverage share one family limit", () => {
+  const pi = paycheckInput(two({ pcHsaFamily: true, pcOrder: "hsa,hsa2,match,match2,ef,rothIra,rothIra2,k401max,k401max2,brok" }), "IL");
+  const a = paycheckFill(pi);
+  near(a.hsa + a.hsa2, L.hsa.family / 12, 0.01);
+  near(a.hsa, L.hsa.family / 12, 0.01);
+  assert.equal(a.hsa2, 0);
+  // Self-only: each their own.
+  const b = paycheckFill(paycheckInput(two({ pcHsaFamily: false, pcOrder: pi.order.join(",") }), "IL"));
+  near(b.hsa, L.hsa.self / 12, 0.01); near(b.hsa2, L.hsa.self / 12, 0.01);
+});
+
+test("two incomes: Fill assigns every cent, in order, within each person's limits", () => {
+  for (const [g1, g2] of [["70,000", "45,000"], ["120,000", "80,000"], ["260,000", "190,000"]]) for (const state of ["IL", "CA", "NJ"]) {
+    const pi = paycheckInput(two({ pcGross: g1, pcGross2: g2, pcState: state }), "IL");
+    const a = paycheckFill(pi), r = paycheckRun(pi, a);
+    assert.ok(r.left >= 0 && r.left < 0.01, `${g1}+${g2} ${state}: ${r.left} left`);
+    for (const s of pi.order) if (s !== "brok") assert.ok(a[s] <= pcCap(pi, s, a) + 1e-9, `${s} over its cap`);
+    assert.ok(a.match + a.k401max <= L.k401.base / 12 + 1e-9 && a.match2 + a.k401max2 <= L.k401.base / 12 + 1e-9);
+    if (a.brok > 0) for (const s of pi.order.slice(0, pi.order.indexOf("brok"))) near(a[s], pcCap(pi, s, a), 0.01);
+  }
+});
+
+test("one income keeps the spouse's lines out, whatever was typed on them", () => {
+  const pi = paycheckInput(budget({ pcStatus: "m", pcMatch2: "500", pcRothIra2: "200", pcGross2: "80,000" }), "IL");
+  assert.equal(pi.gross2, 0);
+  assert.ok(!pi.order.includes("match2"));
+  assert.equal(pi.amounts.match2 + pi.amounts.rothIra2, 0);
 });

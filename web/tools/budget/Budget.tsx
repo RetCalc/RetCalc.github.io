@@ -48,10 +48,15 @@ export function Budget() {
     setState((c) => ({ ...c, rows: c.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
 
   // The household's own pay, filing status and state go to the Paycheck tab.
-  useHouseholdFill("budget", s, setState, (h, c) => ({
-    ...c, ...(h.income != null && h.income > 0 ? { pcGross: dollarsField(h.income) } : {}),
-    pcStatus: h.status === "m" ? "m" : "s", ...(h.state ? { pcState: h.state } : {}),
-  }));
+  // Married with a second income: the two-income household.
+  useHouseholdFill("budget", s, setState, (h, c) => {
+    const two = h.status === "m" && h.income2 != null && h.income2 > 0;
+    return {
+      ...c, ...(h.income != null && h.income > 0 ? { pcGross: dollarsField(h.income) } : {}),
+      ...(two ? { pcGross2: dollarsField(h.income2!) } : {}),
+      pcStatus: h.status !== "m" ? "s" : two ? "m2" : "m", ...(h.state ? { pcState: h.state } : {}),
+    };
+  });
 
   /* Another tool sending a line in: update a row with the same name rather
      than adding a second one. */
