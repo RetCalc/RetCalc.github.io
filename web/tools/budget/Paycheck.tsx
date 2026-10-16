@@ -203,7 +203,7 @@ export function Paycheck({ s, set, setState }: {
         <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Where the rest goes</CardTitle>
-            <CardDescription>Rank these in the order you&apos;d fund them. Fill in this order puts in as much as each line allows, top to bottom, rerunning your taxes as it goes. Or type your own amounts.</CardDescription>
+            <CardDescription>Rank these in the order you&apos;d fund them. Fill in this order puts in as much as each line allows, top to bottom, rerunning your taxes as it goes. Or type your own amounts{two ? ", a month for the two of you." : "."}</CardDescription>
           </CardHeader>
           <CardContent>
             <Lines s={s} set={set} setState={setState} pi={pi} setOrder={setOrder} />
@@ -389,7 +389,9 @@ function Lines({ s, set, setState, pi, setOrder }: {
                   {cost ? <>{cost}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
                 </div>
               </div>
-              <Affixed prefix="$" className="sm:w-34 sm:flex-none">
+              {/* With two incomes the lines are a month, the checks below are each
+                  person's own: say so at the box. */}
+              <Affixed prefix="$" suffix={pi.two ? "/mo" : undefined} className="sm:w-34 sm:flex-none">
                 <MoneyInput nonNeg data-amt={k} aria-label={line.name + ", per " + (pi.two ? "month" : "check")} value={s[pcAmountKey(k)]}
                   onValueChange={(val) => setState((c) => ({ ...c, [pcAmountKey(k)]: val }))} />
               </Affixed>
