@@ -1190,6 +1190,30 @@ group("Articles: Income tax");
   says("incometax", "drops Taylor's federal tax to " + dollars(K.federal) + " and Illinois tax to " + dollars(K.state));
   says("incometax", "Take-home falls by only " + dollars(T.takeHome - K.takeHome));
   eq(K.fica, T.fica, "FICA unchanged by a 401(k) contribution");
+  // Split by kind: the same 401(k), plus an HSA and premiums through payroll.
+  var kinds = function (state, more) {
+    return computeTax({ status: "s", gross: 100000, pre: 0, dedType: "std", item: 0, state: state,
+      ded: [Object.assign({ k401: 10000, ira: 0, hsa: 4400, health: 2400, other: 0 }, more || {})] });
+  };
+  var lump = computeTax({ status: "s", gross: 100000, pre: 16800, dedType: "std", item: 0, state: "IL" });
+  var D = kinds("IL");
+  says("incometax", "Entered as one " + dollars(lump.pre) + " figure, FICA stays at " + dollars(lump.fica));
+  says("incometax", "the " + dollars(4400 + 2400) + " of HSA and premiums comes off FICA as well, which falls to " + dollars(D.fica));
+  says("incometax", "take-home rises by " + dollars(D.net - lump.net));
+  says("incometax", "Federal tax is " + dollars(D.federal) + " and Illinois tax " + dollars(D.state) + " either way");
+  eq(D.federal, lump.federal, "the split leaves federal tax as it was");
+  eq(D.state, lump.state, "and Illinois tax");
+  var YP = YD.limits.iraPhase.cov;
+  says("incometax", "phases out between " + dollars(YP.s[0]) + " and " + dollars(YP.s[1]) + " of income single, or " + dollars(YP.m[0]) + " and " + dollars(YP.m[1]) + " joint");
+  eq(JSON.stringify(YD.states.preTaxed), JSON.stringify({ PA: { k401: 1, ira: 1 }, NJ: { ira: 1, hsa: 1, health: 1 }, CA: { hsa: 1 }, MA: { ira: 1 } }),
+    "the article's list of states that keep kinds in their base");
+  eq(JSON.stringify(YD.states.preTaxed), JSON.stringify({ PA: { k401: 1, ira: 1 }, NJ: { ira: 1, hsa: 1, health: 1 }, CA: { hsa: 1 }, MA: { ira: 1 } }),
+    "the article's list of states that keep kinds in their base");
+  says("incometax", "leaves " + dollars(kinds("NJ").preTax.addBack) + " more in the state's taxable income");
+  var I = kinds("IL", { ira: 7500 });
+  says("incometax", "only " + dollars(I.preTax.people[0].iraDed) + " of it would be deductible");
+  says("incometax", dollars(I.preTax.magi) + " of income after the 401(k), HSA and premiums is inside the phase-out");
+  ok(I.preTax.magi > YP.s[0] && I.preTax.magi < YP.s[1], "Taylor's IRA income is inside the single phase-out");
   var R = computeRetireTax({ status: "m", seniors: 2, trad: 60000, roth: 0, brok: 0, gainPct: 0, ss: 48000, pension: 0,
     penPublic: false, other: 0, pre: 0, dedType: "std", item: 0, state: "IL", _noMarginal: true });
   says("incometax", "pays " + dollars(R.federal) + " of federal tax");
