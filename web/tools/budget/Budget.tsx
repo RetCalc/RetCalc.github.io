@@ -55,6 +55,8 @@ export function Budget() {
       ...c, ...(h.income != null && h.income > 0 ? { pcGross: dollarsField(h.income) } : {}),
       ...(two ? { pcGross2: dollarsField(h.income2!) } : {}),
       pcStatus: h.status !== "m" ? "s" : two ? "m2" : "m", ...(h.state ? { pcState: h.state } : {}),
+      // Two incomes start with an HSA each, as switching to it does.
+      ...(two && c.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}),
     };
   });
 

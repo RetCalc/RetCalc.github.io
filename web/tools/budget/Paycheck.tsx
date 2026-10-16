@@ -96,7 +96,9 @@ export function Paycheck({ s, set, setState }: {
                 </div>
               ) : <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />}
               <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                <SelectField id="pcStatus" className={two ? "col-span-full" : undefined} label="Filing status" value={s.pcStatus} onChange={set("pcStatus")}>
+                {/* Switching to two incomes starts the HSA on one each: two earners usually each have their own plan. */}
+                <SelectField id="pcStatus" className={two ? "col-span-full" : undefined} label="Filing status" value={s.pcStatus}
+                  onChange={(v) => setState((c) => ({ ...c, pcStatus: v, ...(v === "m2" && c.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}) }))}>
                   <option value="s">Single</option>
                   <option value="m">Married, one income</option>
                   <option value="m2">Married, two incomes</option>
