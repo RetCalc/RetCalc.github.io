@@ -128,7 +128,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "q": "Where does my money go?",
         "path": "budget",
         "name": "Budget",
-        "desc": "Lay out your income and expenses, see what's left, and find out where your money goes.",
+        "desc": "Lay out your expenses, then see how each paycheck covers them and where the rest goes.",
         "i": 10
       },
       {

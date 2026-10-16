@@ -102,22 +102,19 @@ const TRIPS: Record<string, TripDef<never>> = {
       // copy of the lines and puts them back if the budget is blank again.
       if (Array.isArray(a.bgRows) && a.bgRows.length && s.rows.every((r) => !(parseNum(r.amount) > 0)))
         next = { ...next, rows: (a.bgRows as BudgetRow[]).map((r) => ({ ...r })) };
-      if (pos(a.takehome)) next = { ...next, incomeFreq: 12, income: gdM(a.takehome) };
       return next;
     },
     tasks: ({ s }: Ctx<BudgetInputs>) => {
       const B = budgetNums(s);
       return [
-        { h: "<b>Income after taxes</b> holds your take-home pay, set to <b>/mo</b>.", ok: B.inc > 0 },
         { h: "With your last two or three months of statements open, work down the list and fill in what you spend on each line. Skip lines that don't apply." +
           (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: B.lines >= 5 },
         { h: "For bills that come once or twice a year (insurance, travel, gifts, car repairs), tap <b>/yr</b> on the line and enter the yearly total." },
-        { h: "Money you move into savings or investments goes on <b>Savings &amp; investments</b>. It counts as saving, not spending.", ok: B.saved > 0 ? true : undefined },
         { h: "Something missing? <b>Add custom item</b> sits under the list." },
-        { h: "<b>Left over</b>, beside the list (below it on a phone), is what's free each month for debt and saving." },
+        { h: "Then the <b>Paycheck</b> tab, at the top: enter your gross pay and it shows how each paycheck covers this budget and what's free for debt and saving.", ok: B.paid ? true : undefined },
       ];
     },
-    chip: ({ s }: Ctx<BudgetInputs>) => { const B = budgetNums(s); return B.spent > 0 ? "Spending <b>" + money(B.spent / 12) + "/mo</b><br>Left over <b>" + money(B.left / 12) + "/mo</b>" : ""; },
+    chip: ({ s }: Ctx<BudgetInputs>) => { const B = budgetNums(s); return B.spent > 0 ? "Spending <b>" + money(B.spent / 12) + "/mo</b>" + (B.paid ? "<br>Unassigned <b>" + money(B.left / 12) + "/mo</b>" : "") : ""; },
     capture: ({ a, s }: Ctx<BudgetInputs>) => {
       const B = budgetNums(s);
       if (!(B.spent > 0)) return null;
@@ -130,7 +127,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         spendSrc: "budget", bgRows: s.rows.map((r) => ({ ...r })) };
       if (!pos(a.takehome) && B.inc > 0) set.takehome = Math.round(B.inc / 12);
       return { set, msg: "From your budget: <b>" + money(spend) + "/mo</b> in spending" + (bgSave > 0 ? " and <b>" + money(bgSave) + "/mo</b> going to savings" : "") +
-        ", with <b>" + money(B.left / 12) + "/mo</b> left over." };
+        (B.paid ? ", with <b>" + money(B.left / 12) + "/mo</b> still unassigned on the Paycheck tab." : ".") };
     },
   },
 

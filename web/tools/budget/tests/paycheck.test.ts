@@ -5,7 +5,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { yearData } from "@/lib/engine/typed";
-import { BUDGET_DEFAULTS, type BudgetInputs } from "../model";
+import { BUDGET_DEFAULTS, budgetCompute, dropPlanned, type BudgetInputs } from "../model";
 import { PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcOrder, rowRole, type PcStep } from "../paycheck-math";
 
 const L = yearData().limits;
@@ -16,9 +16,19 @@ function budget(patch: Partial<BudgetInputs> = {}): BudgetInputs {
     "Travel": ["2,400", 1], "Savings & investments": ["500", 12], "Other debt payments": ["150", 12],
   };
   const rows = BUDGET_DEFAULTS.rows.map((r) => (set[r.desc] ? { ...r, amount: set[r.desc][0], freq: set[r.desc][1] } : r));
+  // A saving line as a budget saved before the Paycheck tab still has it.
+  rows.push({ group: "Saving & debt", desc: "Savings & investments", amount: "500", freq: 12, custom: false });
   return { ...BUDGET_DEFAULTS, rows, pcGross: "95,000", pcState: "IL", ...patch };
 }
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
+
+test("a saving line from before the Paycheck tab is dropped, and never counted", () => {
+  const b = budget();
+  assert.ok(b.rows.some((r) => r.desc === "Savings & investments"));
+  assert.ok(!dropPlanned(b).rows.some((r) => r.desc === "Savings & investments"));
+  near(budgetCompute(b).totalYr, budgetCompute(dropPlanned(b)).totalYr);
+  assert.ok(!BUDGET_DEFAULTS.rows.some((r) => r.desc === "Savings & investments"));
+});
 
 test("the budget comes across without the saving row, and health premiums move above the taxes", () => {
   const b = budget();

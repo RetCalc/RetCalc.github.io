@@ -9,7 +9,7 @@
    every change reruns the taxes. All amounts here are per paycheck. */
 import { computeTax, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
-import { PRESET_DESCS, annualize, type BudgetInputs, type BudgetRow } from "./model";
+import { PRESET_DESCS, annualize, isPlannedRow, type BudgetInputs, type BudgetRow } from "./model";
 
 /** The lines, in their default order. */
 export const PC_STEPS = ["match", "hsa", "ef", "rothIra", "k401max", "brok"] as const;
@@ -33,16 +33,12 @@ const AMT_KEY: Record<PcStep, keyof BudgetInputs> = {
 };
 export const pcAmountKey = (s: PcStep) => AMT_KEY[s] as "pcMatch";
 
-/** The Budget rows the tab plans itself, left out of its spending: the
-    saving rows (this tab is where the saving goes). College savings stays
-    in: nothing here plans it. */
-const PLANNED_HERE = ["Savings & investments", "Retirement contribution"];
 const HEALTH_SLOT = PRESET_DESCS.indexOf("Health insurance");
 
 /** How a Budget row comes across: counted, left out (this tab plans it), or
     moved (the health premiums field holds it). */
 export function rowRole(b: BudgetInputs, r: BudgetRow, i: number): "count" | "save" | "work" {
-  if (PLANNED_HERE.includes(r.desc)) return "save";
+  if (isPlannedRow(r)) return "save";
   if (healthThroughWork(b) && !r.custom && i === HEALTH_SLOT) return "work";
   return "count";
 }
@@ -197,3 +193,13 @@ export function pcCostPer(pi: PcInput, s: PcStep): number {
 /** Whether line `s` is pre-tax as set (the HSA, or a traditional 401(k) line). */
 export const pcPreTax = (pi: PcInput, s: PcStep) =>
   !!PC_LINES[s].pre || (!!PC_LINES[s].k401 && !pi.roth[s as "match" | "k401max"]);
+
+/** A month of the Paycheck tab as it's set, for tools that read it (Debt
+    Payoff's extra payment, the Guide): what's deposited and what's still
+    unassigned. Null until it has a gross pay. */
+export function paycheckMonthly(b: BudgetInputs, taxState: string): { deposit: number; left: number } | null {
+  const pi = paycheckInput(b, taxState);
+  if (!(pi.gross > 0)) return null;
+  const r = paycheckRun(pi);
+  return { deposit: (r.deposit * pi.p) / 12, left: (r.left * pi.p) / 12 };
+}

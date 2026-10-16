@@ -50,7 +50,7 @@ const tax: Tour<TaxInputs> = { name: "Income Tax", title: "How your taxes are fi
       ];
       if (!ret) {
         T.push({ h: "<b>Gross income</b> is your pay before anything comes out: the top line of your pay stub, for the whole year. A married couple enters each spouse's pay separately." });
-        T.push({ h: "<b>Pre-tax deductions</b> is what your employer takes out before tax: 401(k), 403(b) and HSA contributions. It lowers your income tax, though not Social Security or Medicare tax.", ok: tried(n(s.pre) > 0) });
+        T.push({ h: "<b>Pre-tax deductions</b> is what your employer takes out before tax: 401(k), 403(b) and HSA contributions. As one figure it lowers income tax only; <b>Split</b> breaks it down by kind, and HSA contributions and health premiums then come off Social Security and Medicare too.", ok: tried(n(s.pre) > 0) });
       } else {
         T.push({ h: "Each kind of income is taxed its own way. <b>Traditional</b> withdrawals are taxed like a paycheck. <b>Roth</b> withdrawals are tax-free. From a <b>Brokerage</b> account only the growth, the <b>Gain portion</b>, is taxed, at lower capital-gain rates." });
         T.push({ h: "Only part of <b>Social Security</b> is ever taxed (at most 85%), and none of it at lower incomes. <b>Age 65 or older</b> adds extra deductions, so answer it for each of you." });
@@ -119,28 +119,24 @@ const mortgageTour: Tour<MortgageInputs> = { name: "Mortgage Calculator", title:
 
 const budget: Tour<BudgetInputs> = { name: "Budget", title: "Build a budget that works",
   pages: [
-    { title: "Your income", focus: "#bgIncomeIn", tasks: ({ s }) => [
-      { h: "<b>Income after taxes</b> is what actually lands in your bank account, not your salary. Choose <b>/mo</b> or <b>/yr</b> for how you typed it.", ok: tried(n(s.income) > 0) },
-      { h: "Not sure? <b>Copy from Income Tax</b> brings over your pay after taxes from that tool." },
-      { h: "If you save through a 401(k) at work, count your pay before that comes out, then enter the 401(k) on the savings line. That way it shows up as saving instead of disappearing." },
-    ] },
     { title: "Your spending", focus: "#bgList", tasks: ({ s }) => {
       const B = budgetNums(s);
       return [
         { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine; a guess beats a blank." + (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: tried(B.lines >= 5) },
         { h: "For bills that come once or twice a year, like car insurance, travel, gifts or repairs, tap <b>/yr</b> on the line and enter the yearly total. They're the ones budgets usually forget." },
         { h: "Click any item's name to rename it, and <b>Add custom item</b> for anything missing. Skip lines that don't apply." },
-        { h: "<b>Savings &amp; investments</b> counts as saving, not spending. <b>+ Retirement contribution</b> and <b>+ College savings</b> bring those amounts in from the other tools.", ok: tried(B.saved > 0) },
+        { h: "Saving isn't a line here: the <b>Paycheck</b> tab plans it from what's left after these. <b>+ College savings</b> brings that goal in from its tool." },
       ];
     } },
-    { title: "Reading it", focus: "#bgLeft", tasks: () => [
-      { h: "<b>Total spending</b> is everything but saving. <b>Left over</b> is what's free after spending and saving. Below zero means spending more than comes in, which usually means debt is growing." },
-      { h: "A common starting point is the 50/30/20 split: about half on needs, 30% on wants and 20% to savings and extra debt payments. Treat it as a gauge, not a rule." },
+    { title: "Reading it", focus: "#bgTotal", tasks: () => [
+      { h: "<b>Your budget, per month</b> is every line added up, with yearly bills spread over the year. <b>Where it goes</b> splits it by group, largest first." },
+      { h: "A common starting point is the 50/30/20 split of take-home pay: about half on needs, 30% on wants and 20% to savings and extra debt payments. Treat it as a gauge, not a rule." },
+      { h: "Then the <b>Paycheck</b> tab, at the top: your gross pay, what taxes take, how each check covers this budget, and where the rest goes." },
       { h: "<b>Emergency fund</b> sizes a cash cushion from your spending. Three to six months is typical; more if your income is irregular or you're the only earner." },
       { h: "<b>CSV</b>, next to the title, downloads the budget as a spreadsheet." },
     ] },
   ],
-  chip: ({ s }) => { const B = budgetNums(s); return B.inc > 0 || B.spent > 0 ? "Left over<br><b>" + money(B.left / 12) + "/mo</b>" : ""; } };
+  chip: ({ s }) => { const B = budgetNums(s); return B.spent + B.saved > 0 ? "Budget<br><b>" + money((B.spent + B.saved) / 12) + "/mo</b>" : ""; } };
 
 const college: Tour<CollegeInputs> = { name: "College Savings", title: "Saving for college",
   pages: [

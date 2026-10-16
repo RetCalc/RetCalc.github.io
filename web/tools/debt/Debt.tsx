@@ -28,7 +28,9 @@ import type { DebtResult } from "@/lib/engine/types";
 import { DASH, fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { useClient } from "@/lib/useClient";
 import { cn } from "@/lib/utils";
-import { BUDGET_DEFAULTS, budgetTotals } from "@/tools/budget/model";
+import { BUDGET_DEFAULTS } from "@/tools/budget/model";
+import { paycheckMonthly } from "@/tools/budget/paycheck-math";
+import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { DEBT_DEF, debtCompute, debtList, type DebtRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { debtShare } from "./share";
@@ -244,13 +246,19 @@ export function Debt() {
                 <Affixed prefix="$" suffix="/mo" className="flex-auto basis-35"><MoneyInput id="dtExtra" nonNeg value={s.extra} onValueChange={set("extra")} /></Affixed>
                 <Button variant="outline" id="dtCopyBudget"
                   onClick={() => {
-                    const leftMo = budgetTotals(toolInputs("budget", BUDGET_DEFAULTS)).leftYr / 12;
-                    if (!(leftMo > 0)) {
-                      toast("No money left over in the budget to put at debt");
+                    // What's still unassigned on the Budget's Paycheck tab: pay,
+                    // less taxes, the budget and the saving planned there.
+                    const pay = paycheckMonthly(toolInputs("budget", BUDGET_DEFAULTS), toolInputs("tax", TAX_DEFAULTS).state);
+                    if (!pay) {
+                      toast("Enter your gross pay on the Budget's Paycheck tab first");
                       return;
                     }
-                    setState((c) => ({ ...c, extra: groupDigits(leftMo.toFixed(0), true) }));
-                    toast("Using " + money(leftMo, 0) + "/mo left over from your budget");
+                    if (!(pay.left > 0.5)) {
+                      toast("Nothing is unassigned on your Paycheck tab to put at debt");
+                      return;
+                    }
+                    setState((c) => ({ ...c, extra: groupDigits(pay.left.toFixed(0), true) }));
+                    toast("Using " + money(pay.left, 0) + "/mo still unassigned on your Paycheck tab");
                   }}>Copy from Budget</Button>
               </div>
               <div className="mt-4">

@@ -8,7 +8,10 @@ import { mcSeed } from "@/lib/mc-seed";
 import { parseNum } from "@/lib/format";
 import { bridgeInput, type BridgeInputs } from "@/tools/bridge/model";
 import { runBridge, type BridgeRun } from "@/tools/bridge/run";
-import { annualize, isSavingsRow, type BudgetInputs } from "@/tools/budget/model";
+import { annualize, isPlannedRow, isSavingsRow, type BudgetInputs } from "@/tools/budget/model";
+import { paycheckMonthly } from "@/tools/budget/paycheck-math";
+import { toolInputs } from "@/components/tools/ToolState";
+import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { debtList, type DebtInputs } from "@/tools/debt/model";
 import { mortgageInput, type Inputs as MortgageInputs } from "@/tools/mortgage/model";
 
@@ -17,14 +20,18 @@ export const q = (sel: string) => (typeof document === "undefined" ? null : docu
 export const on = (sel: string) => !!q(sel);
 export const text = (sel: string) => (q(sel)?.textContent || "").trim();
 
+/** The budget's spending and goals, a year, and, once the Paycheck tab has
+    a gross pay, what it deposits and what's still unassigned there, a year
+    (0 until then: the Budget tab has no income of its own). */
 export function budgetNums(s: BudgetInputs) {
-  const inc = parseNum(s.income) * s.incomeFreq;
   let spent = 0, saved = 0, lines = 0;
   s.rows.forEach((r) => {
+    if (isPlannedRow(r)) return;
     if (isSavingsRow(r)) saved += annualize(r);
     else { spent += annualize(r); if (parseNum(r.amount) > 0) lines++; }
   });
-  return { inc, spent, saved, lines, left: inc - spent - saved };
+  const pay = paycheckMonthly(s, toolInputs("tax", TAX_DEFAULTS).state);
+  return { inc: pay ? pay.deposit * 12 : 0, spent, saved, lines, left: pay ? pay.left * 12 : 0, paid: !!pay };
 }
 export function debtNums(s: DebtInputs) {
   const live = debtList(s.rows).filter((d) => d.balance > 0);

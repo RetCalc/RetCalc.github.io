@@ -147,7 +147,7 @@
 "budget": {
 "h1": "Budget Calculator",
 "title": "Budget Calculator: Income, Spending & Savings | RetCalc",
-"desc": "Build a monthly budget from your take-home pay, see what's left for saving and debt, and size your emergency fund. Export it as a spreadsheet."
+"desc": "Build a monthly budget line by line and size your emergency fund, then see how each paycheck covers it after taxes and where the rest should go. Export it as a spreadsheet."
 },
 "debt": {
 "h1": "Debt Payoff Calculator",

@@ -1,9 +1,10 @@
 /* The Budget tool's inputs and totals, apart from its screen so other tools
-   can read them ("Copy from Budget" in Debt Payoff). From src/js/app/13-budget.js. */
+   can read them (the Guide's budget step, Tool Help). The Budget tab is what
+   you spend, and nothing else: no income and no saving. Pay, taxes and
+   saving are the Paycheck tab's (paycheck-math.ts), which reads these lines.
+   From src/js/app/13-budget.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { computeTax } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
-import type { Household } from "@/lib/household";
 
 /* Grouped presets. freq is the row's default: 12 = a monthly figure, 1 = an
    annual one. Travel and gifts default to annual, as people think of them. */
@@ -22,8 +23,8 @@ export const BUDGET_PRESETS = [
   { group: "Lifestyle", items: [
     { desc: "Activities & hobbies", freq: 12 }, { desc: "Subscriptions", freq: 12 },
     { desc: "Travel", freq: 1 }, { desc: "Gifts", freq: 1 }] },
-  { group: "Saving & debt", items: [
-    { desc: "Savings & investments", freq: 12 }, { desc: "Other debt payments", freq: 12 }] },
+  { group: "Debt", items: [
+    { desc: "Other debt payments", freq: 12 }] },
 ];
 
 export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean }
@@ -60,9 +61,6 @@ const PAYCHECK_DEFAULTS = {
 export const BUDGET_DEFAULTS = {
   /** Which tab is showing: the budget itself, or the Paycheck tab. */
   view: "budget" as "budget" | "paycheck",
-  income: "",
-  /** 1 = income typed as annual, 12 = as monthly */
-  incomeFreq: 1,
   rows: BUDGET_PRESETS.flatMap((g) => g.items.map((it): BudgetRow => ({ group: g.group, desc: it.desc, amount: "0", freq: it.freq, custom: false }))),
   efMonths: "6",
   ...PAYCHECK_DEFAULTS,
@@ -71,37 +69,41 @@ export type BudgetInputs = typeof BUDGET_DEFAULTS;
 
 export const BUDGET_DEF: ToolDef<BudgetInputs> = { id: "budget", label: "Budget", noun: "budget", defaults: BUDGET_DEFAULTS };
 
-/* Money set aside rather than spent: kept out of spending and the emergency
-   fund, and shown as saving instead. */
-const SAVINGS = ["Savings & investments", "Retirement contribution", "College savings"];
-export const isSavingsRow = (r: { desc: string }) => SAVINGS.includes(r.desc);
+/** Saving lines from before the Paycheck tab ("Savings & investments", and
+    "Retirement contribution" from Basic, Advanced or Stages). Saving is
+    planned on the Paycheck tab now, so they're dropped as a budget opens
+    (dropPlanned) and never counted. */
+export const PLANNED_ON_PAYCHECK = ["Savings & investments", "Retirement contribution"];
+export const isPlannedRow = (r: { desc: string }) => PLANNED_ON_PAYCHECK.includes(r.desc);
+export const dropPlanned = <B extends { rows: BudgetRow[] }>(b: B): B =>
+  b.rows.some(isPlannedRow) ? { ...b, rows: b.rows.filter((r) => !isPlannedRow(r)) } : b;
+
+/* A goal set aside for, not spent: counted in the budget's total, but kept
+   out of the emergency fund, which covers spending. */
+const SET_ASIDE = ["College savings"];
+export const isSavingsRow = (r: { desc: string }) => SET_ASIDE.includes(r.desc);
 export const annualize = (r: BudgetRow) => parseNum(r.amount) * r.freq;
 
+/** A year of the budget: everything (totalYr), and the spending in it (the
+    rest, less goals set aside for), a year. */
 export function budgetTotals(b: BudgetInputs) {
-  const incomeYr = parseNum(b.income) * b.incomeFreq;
-  const spentYr = b.rows.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
-  const savedYr = b.rows.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
-  return { incomeYr, spentYr, savedYr, leftYr: incomeYr - spentYr - savedYr };
+  const rows = b.rows.filter((r) => !isPlannedRow(r));
+  const spentYr = rows.reduce((a, r) => a + (isSavingsRow(r) ? 0 : annualize(r)), 0);
+  const savedYr = rows.reduce((a, r) => a + (isSavingsRow(r) ? annualize(r) : 0), 0);
+  return { spentYr, savedYr, totalYr: spentYr + savedYr };
 }
 
-/** The totals, the share of income left over, and the emergency fund: its
-    months (6 when blank) and the spending it covers. */
+/** The totals, and the emergency fund: its months (6 when blank) and the
+    spending it covers. */
 export function budgetCompute(b: BudgetInputs) {
-  const { incomeYr, spentYr, savedYr, leftYr } = budgetTotals(b);
-  const pct = incomeYr > 0 ? leftYr / incomeYr : 0;
+  const { spentYr, savedYr, totalYr } = budgetTotals(b);
   const ef = Math.max(1, Math.round(parseNum(b.efMonths)) || 6);
-  return { incomeYr, spentYr, savedYr, leftYr, pct, ef, efTarget: (spentYr / 12) * ef };
+  return { spentYr, savedYr, totalYr, ef, efTarget: (spentYr / 12) * ef };
 }
 
-/** The household's income as take-home pay, under the same (newest year's) rules the
-    Income Tax tool uses, before any retirement saving; null with no income.
-    taxState gives the Income Tax tool's state, asked for only when the
-    household has none. */
-export function budgetHouseholdNet(h: Household, taxState: () => string): number | null {
-  const married = h.status === "m";
-  const inc2 = married && h.income2 != null ? h.income2 : 0;
-  if (h.income == null || !(h.income + inc2 > 0)) return null;
-  const T = computeTax({ status: married ? "m" : "s", gross: h.income, gross2: inc2, pre: 0, dedType: "std", item: 0,
-    state: h.state || taxState() }) as { net: number };
-  return T.net;
+/** Spending by group, a year each, largest first. */
+export function budgetGroups(b: BudgetInputs): { group: string; yr: number }[] {
+  const g: Record<string, number> = {};
+  for (const r of b.rows) if (!isPlannedRow(r) && annualize(r) > 0) g[r.group || "Custom"] = (g[r.group || "Custom"] || 0) + annualize(r);
+  return Object.entries(g).map(([group, yr]) => ({ group, yr })).sort((x, y) => y.yr - x.yr);
 }
