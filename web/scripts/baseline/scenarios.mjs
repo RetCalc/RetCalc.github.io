@@ -20,7 +20,7 @@ const { MORTGAGE_DEFAULTS, mortgageCompute } = await import("@/tools/mortgage/mo
 const { DEBT_DEFAULTS, debtCompute } = await import("@/tools/debt/model");
 const { RENTBUY_DEFAULTS, rentBuyInput } = await import("@/tools/rentbuy/model");
 const { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } = await import("@/tools/college/model");
-const { BUDGET_DEFAULTS, budgetCompute, budgetHouseholdNet } = await import("@/tools/budget/model");
+const { BUDGET_DEFAULTS, budgetCompute, budgetGroups } = await import("@/tools/budget/model");
 const { paycheckFill, paycheckInput, paycheckRun } = await import("@/tools/budget/paycheck-math");
 const { healthcareCompute } = await import("@/tools/healthcare/model");
 const { FIRE_DEFAULTS, fireCompute, fireBandPoints, fireHistRuns } = await import("@/tools/fire/model");
@@ -165,13 +165,13 @@ function college(fields) {
   };
 }
 
-function budget(fields, household) {
-  const { incomeYr, spentYr, savedYr, leftYr, pct, ef, efTarget } = budgetCompute({ ...BUDGET_DEFAULTS, ...fields });
-  const totals = { incomeYr, spentYr, savedYr, leftYr };
-  // The household's take-home pay, as the screen fills it in as income.
-  const net = household ? budgetHouseholdNet(household, () => TAX_DEFAULTS.state) : null;
-  return { full: { totals, net, emergency: { pct, ef, efTarget } },
-    out: { ...totals, householdTakeHome: net, leftShare: pct, emergencyMonths: ef, emergencyTarget: efTarget } };
+/* The Budget tab: spending only (pay and saving are the Paycheck tab's). */
+function budget(fields) {
+  const b = { ...BUDGET_DEFAULTS, ...fields };
+  const { spentYr, savedYr, totalYr, ef, efTarget } = budgetCompute(b);
+  const totals = { spentYr, savedYr, totalYr };
+  return { full: { totals, groups: budgetGroups(b), emergency: { ef, efTarget } },
+    out: { ...totals, emergencyMonths: ef, emergencyTarget: efTarget } };
 }
 
 /* The Budget's Paycheck tab: one paycheck as set, and after Fill in order. */
@@ -275,11 +275,10 @@ export const MORE_SCENARIOS = [
     run: () => college({ saved: "40,000", kids: [
       { preset: "59000", cost: "59,000", years: "10", collegeYrs: "4" }, { preset: "82000", cost: "82,000", years: "4", collegeYrs: "4" }] }) },
 
-  { tool: "Budget", name: "$6,500/month income with typical rows",
-    run: () => budget({ income: "6,500", incomeFreq: 12, rows: BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: (
-      { "Rent / Mortgage": "2,100", "Utilities": "220", "Groceries": "650", "Car insurance": "140", "Travel": "4,000", "Savings & investments": "500" })[r.desc] ?? "0" })) }) },
-  { tool: "Budget", name: "income filled from the household: married, $150,000 + $70,000, California",
-    run: () => budget({}, { status: "m", income: 150000, income2: 70000, state: "CA" }) },
+  { tool: "Budget", name: "typical rows, spending only, with college savings",
+    run: () => budget({ rows: [...BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: (
+      { "Rent / Mortgage": "2,100", "Utilities": "220", "Groceries": "650", "Car insurance": "140", "Travel": "4,000" })[r.desc] ?? "0" })),
+      { group: "Custom", desc: "College savings", amount: "300", freq: 12, custom: true }] }) },
   { tool: "Budget", name: "Paycheck tab: $95,000 every two weeks, Illinois, part filled, then Fill in order",
     run: () => paycheck({ pcGross: "95,000", pcFreq: "26", pcState: "IL", pcMatch: "219.23", pcHsa: "100", pcEf: "150", pcRothIra: "100",
       rows: BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: ({ "Rent / Mortgage": "1,650", "Groceries": "560", "Health insurance": "184",

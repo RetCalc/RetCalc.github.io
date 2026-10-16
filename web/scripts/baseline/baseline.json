@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-15T21:44:56.740Z",
+  "recorded": "2026-10-16T14:25:57.470Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -676,39 +676,18 @@
       }
     },
     {
-      "id": "Budget: $6,500/month income with typical rows",
+      "id": "Budget: typical rows, spending only, with college savings",
       "out": {
-        "incomeYr": 78000,
         "spentYr": 41320,
-        "savedYr": 6000,
-        "leftYr": 30680,
-        "householdTakeHome": null,
-        "leftShare": 0.3933,
+        "savedYr": 3600,
+        "totalYr": 44920,
         "emergencyMonths": 6,
         "emergencyTarget": 20660
       },
       "fields": {
-        "emergency": "1ad02e54bef192a1",
-        "net": "74234e98afe7498f",
-        "totals": "2c89ecee73cfae70"
-      }
-    },
-    {
-      "id": "Budget: income filled from the household: married, $150,000 + $70,000, California",
-      "out": {
-        "incomeYr": 0,
-        "spentYr": 0,
-        "savedYr": 0,
-        "leftYr": 0,
-        "householdTakeHome": 160429.164,
-        "leftShare": 0,
-        "emergencyMonths": 6,
-        "emergencyTarget": 0
-      },
-      "fields": {
-        "emergency": "0f5c4073947d75e6",
-        "net": "b0a9367934f5c3f7",
-        "totals": "d7500756b3464ae5"
+        "emergency": "e3f79620c8d63636",
+        "groups": "78726953db1da403",
+        "totals": "055ed5c881137e7a"
       }
     },
     {
