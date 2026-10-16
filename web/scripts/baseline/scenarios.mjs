@@ -279,6 +279,10 @@ export const MORE_SCENARIOS = [
     run: () => budget({ rows: [...BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: (
       { "Rent / Mortgage": "2,100", "Utilities": "220", "Groceries": "650", "Car insurance": "140", "Travel": "4,000" })[r.desc] ?? "0" })),
       { group: "Custom", desc: "College savings", amount: "300", freq: 12, custom: true }] }) },
+  { tool: "Budget", name: "Paycheck tab, married, two incomes: $120,000 + $80,000, New Jersey, family HSA, spouse's premiums, Fill in order",
+    run: () => paycheck({ pcStatus: "m2", pcGross: "120,000", pcGross2: "80,000", pcState: "NJ", pcHsaFamily: true, pcHealthFrom: "2",
+      pcMatchRate2: "100", pcMatchUpTo2: "4", pcK401max2Roth: true, pcMatch: "500", pcHsa2: "300", pcEf: "200",
+      rows: BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: ({ "Rent / Mortgage": "2,400", "Groceries": "900", "Health insurance": "450", "Travel": "4,000" })[r.desc] ?? r.amount })) }) },
   { tool: "Budget", name: "Paycheck tab: $95,000 every two weeks, Illinois, part filled, then Fill in order",
     run: () => paycheck({ pcGross: "95,000", pcFreq: "26", pcState: "IL", pcMatch: "219.23", pcHsa: "100", pcEf: "150", pcRothIra: "100",
       rows: BUDGET_DEFAULTS.rows.map((r) => ({ ...r, amount: ({ "Rent / Mortgage": "1,650", "Groceries": "560", "Health insurance": "184",

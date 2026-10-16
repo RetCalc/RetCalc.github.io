@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-16T14:25:57.470Z",
+  "recorded": "2026-10-16T19:49:32.343Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -691,18 +691,33 @@
       }
     },
     {
+      "id": "Budget: Paycheck tab, married, two incomes: $120,000 + $80,000, New Jersey, family HSA, spouse's premiums, Fill in order",
+      "out": {
+        "deposit": 11596.425,
+        "taxes": 3820.2417,
+        "left": 7763.0917,
+        "filledSaved": 9403.35,
+        "filledTaxes": 3179.9753
+      },
+      "fields": {
+        "afterFill": "6f21b7cdf7152350",
+        "asSet": "cf330cc161f7aa22",
+        "filled": "352fcf73cd76fba9"
+      }
+    },
+    {
       "id": "Budget: Paycheck tab: $95,000 every two weeks, Illinois, part filled, then Fill in order",
       "out": {
         "deposit": 2453.7123,
         "taxes": 795.9808,
         "left": 1091.4046,
-        "filledSaved": 1869.43,
-        "filledTaxes": 587.1883
+        "filledSaved": 1869.42,
+        "filledTaxes": 587.1897
       },
       "fields": {
-        "afterFill": "5e75ffd33e9c79dc",
-        "asSet": "92024898d349a31d",
-        "filled": "0ce7adfe8850634f"
+        "afterFill": "83989400fc1d9611",
+        "asSet": "7926492f8267f8cd",
+        "filled": "83deb6a2e6e0509a"
       }
     },
     {
