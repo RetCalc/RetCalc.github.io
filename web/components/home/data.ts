@@ -21,7 +21,12 @@ export interface HomeData {
   /** Share of every monthly start since 1926 that lasted 30 years. */
   lasted: number;
   tax: { gross: number; takeHome: number; federal: number; fica: number; state: number; stateName: string };
-  rentbuy: { buy: number[]; rent: number[]; breakEven: number | null };
+  /** Buyer and renter net worth after 30 years, for Rent vs. Buy's blueprint (on
+      this page and /tools). An illustrative case, rent $2,300 rising 4% a year
+      with the rest the tool's defaults, where buying pulls ahead (in year 10):
+      at the defaults renting stays ahead, and the picture is there to show a
+      comparison, not a verdict. No figures show. */
+  rentbuy: { buy: number; rent: number };
   /** Each year's mortgage payments: [interest, principal]. */
   mortgage: [number, number][];
 }
@@ -45,7 +50,7 @@ export function homeData(): HomeData {
 
   const t = runTax(taxInput({ ...TAX_DEFAULTS, gross: "140,000" }));
 
-  const rb = rentBuyCalc(rentBuyInput(RENTBUY_DEFAULTS));
+  const rb = rentBuyCalc(rentBuyInput({ ...RENTBUY_DEFAULTS, rent: "2300", rentInc: "4" })).years;
   const m = mortgage(mortgageInput(MORTGAGE_DEFAULTS));
 
   return {
@@ -53,7 +58,7 @@ export function homeData(): HomeData {
     fan,
     lasted: H.successRate,
     tax: { gross: t.gross, takeHome: t.takeHome, federal: t.federal, fica: t.fica, state: t.state, stateName: TAX_DEFAULTS.state },
-    rentbuy: { buy: rb.years.map((y) => y.buyerNW), rent: rb.years.map((y) => y.renterNW), breakEven: rb.breakEven },
+    rentbuy: { buy: rb[rb.length - 1].buyerNW, rent: rb[rb.length - 1].renterNW },
     mortgage: m.years.map((y) => [y.interest, y.principal]),
   };
 }

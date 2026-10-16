@@ -197,28 +197,6 @@ export function TaxChart({ tax, w = 520, h = 140 }: { tax: HomeData["tax"]; w?: 
   );
 }
 
-/** Rent vs. Buy: net worth each way, with the tool's defaults, and who is
-    ahead at the end (or the year buying pulls ahead, when it does). */
-export function RentBuyChart({ rb, w = 520, h = 150 }: { rb: HomeData["rentbuy"]; w?: number; h?: number }) {
-  const n = rb.buy.length, all = [...rb.buy, ...rb.rent], lb = rb.buy[n - 1], lr = rb.rent[n - 1];
-  const x = scale(0, n - 1, 8, w - 8), y = scale(Math.min(...all), Math.max(...all), h - 8, 46);
-  const be = rb.breakEven;
-  const [px, py, label] = be != null
-    ? [x(be - 1), y(rb.buy[be - 1]), `Buying pulls ahead in year ${be}`]
-    : [x(n - 1), y(Math.max(lb, lr)), `${lr > lb ? "Renting" : "Buying"} ahead by ${money(Math.abs(lr - lb))} after ${n} years`];
-  return (
-    <svg className="hm-chart hm-wide-chart hm-rb" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      <Key items={[["Buying", "f-teal"], ["Renting", "f-sky"]]} />
-      <path className="hm-ln hm-thin s-sky draw" pathLength={1} style={{ "--dur": "1.5s" } as React.CSSProperties} d={d(rb.rent.map((v, i): Pt => [x(i), y(v)]))} />
-      <path className="hm-ln hm-thin s-teal draw" pathLength={1} style={{ "--dur": "1.5s", "--dl": ".15s" } as React.CSSProperties} d={d(rb.buy.map((v, i): Pt => [x(i), y(v)]))} />
-      <g className="fade" style={{ "--dl": "1.4s" } as React.CSSProperties}>
-        <circle className="hm-dot" cx={px} cy={py} r={5} />
-        <text className="hm-t-big" x={be != null ? px + 10 : px - 10} y={be != null ? py + 20 : py - 12} textAnchor={be != null ? "start" : "end"}>{label}</text>
-      </g>
-    </svg>
-  );
-}
-
 /** Mortgage: each year's payments split into interest and principal. */
 export function MortgageChart({ years, w = 340, h = 130 }: { years: HomeData["mortgage"]; w?: number; h?: number }) {
   const top = Math.max(...years.map(([i, p]) => i + p)), bw = (w - 16) / years.length, y = scale(0, top, h - 8, 22);

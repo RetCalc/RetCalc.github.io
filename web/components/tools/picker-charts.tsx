@@ -1,6 +1,7 @@
-/* The tool list's own chart cards, where a tool's card shows something the
-   homepage doesn't: the Portfolio Backtest, Rent vs. Buy, College Savings and
-   Debt Payoff. They're illustrations, not readouts: no figures on them.
+/* The tool list's own chart cards: the Portfolio Backtest, Rent vs. Buy,
+   College Savings and Debt Payoff. They're illustrations, not readouts: no
+   figures on them. The homepage's Rent vs. Buy tile shows the blueprint too,
+   drawn as it scrolls into view (styles/16-home.css).
 
    Their moving parts (.tp-kf) play keyframes from the stylesheet
    (styles/18-tool-picker.css) while their card has .play, as the page opens

@@ -160,9 +160,6 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
   .hm-wide-chart text{font-size:19px}
   .hm-wide-chart text.hm-t-big{font-size:23px}
   .hm-tax text{font-size:15px} .hm-tax text.hm-t-big{font-size:19px}
-  /* Rent vs. Buy shows wider than the other wide charts (a full tile), so its
-     labels need less help, and its ahead-by note would crowd the key. */
-  .hm-rb text{font-size:15px} .hm-rb text.hm-t-big{font-size:16px}
 }
 
 /* draw on view */
@@ -172,7 +169,16 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
 [data-draw="pending"] .hm-chart .fade{opacity:0}
 [data-draw="go"] .hm-chart .draw{transition:stroke-dashoffset var(--dur,1.6s) var(--hm-ease);transition-delay:var(--dl,0s)}
 .hm-chart .hm-score.draw{stroke-dasharray:var(--score) 1}
+/* Rent vs. Buy's blueprint (components/tools/picker-charts.tsx, styled in
+   18-tool-picker.css): its sketches draw like the rest, its measuring tapes
+   rise and their ticks show, each part at its own --dl for its own --du. */
+.hm-chart .tpk-draw{--dur:var(--du)}
+[data-draw="pending"] .hm-chart .tpk-grow-y{transform:scaleY(0)}
+[data-draw="pending"] .hm-chart .tpk-show{opacity:0}
+[data-draw="go"] .hm-chart .tpk-grow-y{transition:transform var(--du) var(--hm-ease) var(--dl,0s)}
+[data-draw="go"] .hm-chart .tpk-show{transition:opacity var(--du) var(--hm-ease) var(--dl,0s)}
 
 @media (prefers-reduced-motion:reduce){
-  .hm [data-rv],.hm-tile,.hm-node i,.hm-node span,.hm-chart .fade,[data-draw="go"] .hm-chart .draw{transition:none}
+  .hm [data-rv],.hm-tile,.hm-node i,.hm-node span,.hm-chart .fade,[data-draw="go"] .hm-chart .draw,
+  [data-draw="go"] .hm-chart :is(.tpk-grow-y,.tpk-show){transition:none}
 }

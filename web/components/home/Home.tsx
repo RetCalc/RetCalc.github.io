@@ -18,8 +18,9 @@ import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import type { HomeData } from "./data";
 import {
-  BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, GrowthChart, HealthChart, MortgageChart, RentBuyChart, RothChart, ScoreRing, TaxChart,
+  BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, GrowthChart, HealthChart, MortgageChart, RothChart, ScoreRing, TaxChart,
 } from "./charts";
+import { RentBuyBlueprint } from "@/components/tools/picker-charts";
 
 const fmtMoney = (v: number) => (v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : "$" + Math.round(v / 1000).toLocaleString("en-US") + "K");
 
@@ -142,7 +143,7 @@ export function Home({ data }: { data: HomeData }) {
           </Tile>
           <Tile href="/rentbuy" className="hm-s6" name="Rent vs. Buy Analysis" d={1}
             text="Your net worth if you buy, against renting and investing the difference, over any number of years.">
-            <RentBuyChart rb={data.rentbuy} />
+            <RentBuyBlueprint buy={data.rentbuy.buy} rent={data.rentbuy.rent} />
           </Tile>
           <Tile href="/mortgage" className="hm-s4" name="Mortgage Calculator"
             text="Your payment, the interest over the life of the loan, and what extra payments save.">

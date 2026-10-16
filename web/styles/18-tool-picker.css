@@ -85,36 +85,38 @@
    and Debt Payoff's downhill line. A moving part (.tp-kf) names its keyframes
    with a class below and says when it starts and how long it runs (--dl,
    --du); its resting style is its last frame. The easing runs between each
-   pair of keyframes, as the rest of the picker's do at its pace. */
-.tp-chart .tpk-amber{--c:var(--ds-amber)} .tp-chart .tpk-lav{--c:var(--ds-series-lavender)}
-.tp-chart .tpk-sky{--c:var(--ds-series-sky)} .tp-chart .tpk-gray{--c:var(--ds-series-gray)}
-.tp-chart .tpk-ln{fill:none;stroke:var(--c);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tp-chart .tpk-ln.tpk-bold{stroke-width:2.8}
-.tp-chart .tpk-ln.tpk-thick{stroke-width:4}
-.tp-chart .tpk-skel{fill:var(--ds-rule-strong);opacity:.55}
-.tp-chart .tpk-box{fill:none;stroke:var(--ds-rule);stroke-width:1.2}
-.tp-chart .tpk-track{stroke:var(--ds-rule);stroke-width:4;stroke-linecap:round}
-.tp-chart .tpk-knob{fill:var(--panel);stroke:var(--c);stroke-width:2.4}
-.tp-chart .tpk-blueprint{stroke:color-mix(in srgb,var(--ds-series-sky) 12%,transparent);stroke-width:1}
-.tp-chart .tpk-ground{stroke:var(--ds-rule-strong);stroke-width:1.4}
-.tp-chart .tpk-sketch{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.tp-chart .tpk-sketch-buy{stroke:var(--ds-series-teal)}
-.tp-chart .tpk-sketch-rent{stroke:var(--ds-series-sky)}
-.tp-chart .tpk-tape-buy{fill:var(--ds-series-teal)}
-.tp-chart .tpk-tape-rent{fill:var(--ds-series-sky)}
-.tp-chart .tpk-tick{stroke:var(--panel);stroke-width:1}
-.tp-chart .tpk-step{fill:color-mix(in srgb,var(--ds-amber) 70%,transparent)}
-.tp-chart .tpk-cap{fill:var(--ds-amber)}
-.tp-chart .tpk-tassel{stroke:var(--ds-amber);stroke-width:1.4}
-.tp-chart .tpk-owed{fill:color-mix(in srgb,var(--ds-series-rose) 22%,transparent)}
-.tp-chart .tpk-payoff{fill:none;stroke:var(--ds-series-teal);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
-.tp-chart .tpk-ring{fill:var(--panel);stroke:var(--ds-series-teal);stroke-width:2.2}
-.tp-chart .tpk-paid{fill:var(--ds-series-teal)}
+   pair of keyframes, as the rest of the picker's do at its pace. The look and
+   resting places below hold wherever these charts are drawn: the homepage's
+   Rent vs. Buy tile shows the blueprint too, drawn on scroll (16-home.css). */
+.hm-chart .tpk-amber{--c:var(--ds-amber)} .hm-chart .tpk-lav{--c:var(--ds-series-lavender)}
+.hm-chart .tpk-sky{--c:var(--ds-series-sky)} .hm-chart .tpk-gray{--c:var(--ds-series-gray)}
+.hm-chart .tpk-ln{fill:none;stroke:var(--c);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hm-chart .tpk-ln.tpk-bold{stroke-width:2.8}
+.hm-chart .tpk-ln.tpk-thick{stroke-width:4}
+.hm-chart .tpk-skel{fill:var(--ds-rule-strong);opacity:.55}
+.hm-chart .tpk-box{fill:none;stroke:var(--ds-rule);stroke-width:1.2}
+.hm-chart .tpk-track{stroke:var(--ds-rule);stroke-width:4;stroke-linecap:round}
+.hm-chart .tpk-knob{fill:var(--panel);stroke:var(--c);stroke-width:2.4}
+.hm-chart .tpk-blueprint{stroke:color-mix(in srgb,var(--ds-series-sky) 12%,transparent);stroke-width:1}
+.hm-chart .tpk-ground{stroke:var(--ds-rule-strong);stroke-width:1.4}
+.hm-chart .tpk-sketch{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.hm-chart .tpk-sketch-buy{stroke:var(--ds-series-teal)}
+.hm-chart .tpk-sketch-rent{stroke:var(--ds-series-sky)}
+.hm-chart .tpk-tape-buy{fill:var(--ds-series-teal)}
+.hm-chart .tpk-tape-rent{fill:var(--ds-series-sky)}
+.hm-chart .tpk-tick{stroke:var(--panel);stroke-width:1}
+.hm-chart .tpk-step{fill:color-mix(in srgb,var(--ds-amber) 70%,transparent)}
+.hm-chart .tpk-cap{fill:var(--ds-amber)}
+.hm-chart .tpk-tassel{stroke:var(--ds-amber);stroke-width:1.4}
+.hm-chart .tpk-owed{fill:color-mix(in srgb,var(--ds-series-rose) 22%,transparent)}
+.hm-chart .tpk-payoff{fill:none;stroke:var(--ds-series-teal);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.hm-chart .tpk-ring{fill:var(--panel);stroke:var(--ds-series-teal);stroke-width:2.2}
+.hm-chart .tpk-paid{fill:var(--ds-series-teal)}
 /* Resting places, and where the moving parts turn. */
-.tp-chart .tpk-bt-fill{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(var(--fc))}
-.tp-chart .tpk-bt-l1,.tp-chart .tpk-bt-l2{opacity:.2}
-.tp-chart .tpk-grow-y{transform-box:fill-box;transform-origin:50% 100%}
-.tp-chart .tpk-pop,.tp-chart .tpk-cap-drop{transform-box:fill-box;transform-origin:center}
+.hm-chart .tpk-bt-fill{transform-box:fill-box;transform-origin:0 50%;transform:scaleX(var(--fc))}
+.hm-chart .tpk-bt-l1,.hm-chart .tpk-bt-l2{opacity:.2}
+.hm-chart .tpk-grow-y{transform-box:fill-box;transform-origin:50% 100%}
+.hm-chart .tpk-pop,.hm-chart .tpk-cap-drop{transform-box:fill-box;transform-origin:center}
 @media (prefers-reduced-motion:no-preference){
   .toolcard.play .tp-chart .hm-chart .tp-kf{animation-duration:calc(var(--du,1.6s)*var(--tp-pace,1));animation-delay:calc(var(--dl,0s)*var(--tp-pace,1));
     animation-timing-function:cubic-bezier(.45,.05,.25,1);animation-fill-mode:both}
