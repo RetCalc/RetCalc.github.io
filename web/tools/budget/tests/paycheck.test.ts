@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { yearData } from "@/lib/engine/typed";
 import { BUDGET_DEFAULTS, budgetCompute, dropPlanned, type BudgetInputs } from "../model";
-import { PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcOrder, pcSplit, rowRole, type PcStep } from "../paycheck-math";
+import { PC_PLANS, PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcMost, pcOrder, pcPlanOrder, pcSplit, rowRole, type PcStep } from "../paycheck-math";
 
 const L = yearData().limits;
 /** A budget like the mock's: $95,000, every two weeks, Illinois. */
@@ -88,7 +88,7 @@ test("Fill assigns every cent, in order, within each line's limit", () => {
 });
 
 test("Fill stops the emergency fund where it's told", () => {
-  const pi = paycheckInput(budget({ pcEfCap: "20", pcOrder: "ef,match,hsa,rothIra,k401max,brok" }), "IL");
+  const pi = paycheckInput(budget({ pcEfOn: true, pcEfCap: "20", pcOrder: "ef,match,hsa,rothIra,k401max,brok" }), "IL");
   assert.equal(paycheckFill(pi).ef, 20);
   assert.equal(paycheckFill({ ...pi, efCap: 0 }).ef, 0);
 });
@@ -112,7 +112,8 @@ const two = (patch: Partial<BudgetInputs> = {}) =>
 test("two incomes: one line per kind, each split between you", () => {
   const pi = paycheckInput(two({ pcMatch: "1,000", pcHsa: "300", pcHsaFamily: true, pcEf: "150", pcRothIra: "400", pcK401max: "500" }), "IL");
   assert.equal(pi.p, 12);
-  assert.deepEqual(pi.order, [...PC_STEPS]);
+  // An amount on the emergency fund keeps its line on.
+  assert.deepEqual(pi.order, ["match", "ef", "hsa", "rothIra", "k401max", "brok"]);
   const r = paycheckRun(pi), sp = pcSplit(pi);
   near(r.check, 200000 / 12); near(r.gross1, 10000); near(r.gross2, 80000 / 12);
   near(r.deposit, r.check - r.k401 - r.hsa - r.health - r.taxes - r.roth401);
@@ -193,4 +194,46 @@ test("one income keeps the spouse's pay and premiums out, whatever was typed", (
   assert.equal(pi.gross2, 0);
   assert.equal(pi.health[1], 0);
   assert.equal(pcCap(pi, "rothIra", pi.amounts), L.ira.base / 26);
+});
+
+test("the emergency fund is off until added, and a saved amount keeps it on", () => {
+  assert.ok(!paycheckInput(budget(), "IL").order.includes("ef"));
+  assert.equal(paycheckInput(budget({ pcEf: "150" }), "IL").amounts.ef, 150);
+  assert.ok(paycheckInput(budget({ pcEfOn: true }), "IL").order.includes("ef"));
+});
+
+test("plans: each fills its own order, and leaves out what it skips", () => {
+  const pi = paycheckInput(budget({ pcEfOn: true, pcEfCap: "100" }), "IL");
+  const flex = paycheckFill(pi, [...PC_PLANS.flex.order]);
+  assert.equal(flex.hsa, 0); assert.equal(flex.k401max, 0);
+  near(flex.ef, 100); near(flex.match, pcCap(pi, "match", flex));
+  assert.deepEqual(pcPlanOrder("flex"), ["match", "ef", "rothIra", "brok", "hsa", "k401max"]);
+  const tax = paycheckFill({ ...pi, roth: { match: false, k401max: false } }, [...PC_PLANS.tax.order]);
+  // Max tax breaks fills the 401(k) to its limit before a Roth IRA.
+  near(tax.match + tax.k401max, Math.min(L.k401.base / 26, tax.match + tax.k401max));
+  assert.ok(paycheckRun(pi, tax).taxes < paycheckRun(pi, flex).taxes);
+});
+
+test("Max fills a line as far as the check allows, the others as they are", () => {
+  const pi = paycheckInput(budget({ pcMatch: "219.23", pcRothIra: "100" }), "IL");
+  near(pcMost(pi, "hsa"), L.hsa.self / 26, 0.01);
+  const room = pcMost(pi, "brok");
+  assert.ok(Math.abs(paycheckRun(pi, { ...pi.amounts, brok: room }).left) < 0.01);
+});
+
+test("two incomes: the HSA comes out of the pay under the Social Security wage cap first", () => {
+  const cap = yearData().fica.ssCap;
+  // You earn over the cap, your spouse under: the HSA favors your spouse's pay.
+  const fam = paycheckInput(two({ pcGross: String(cap + 50000), pcGross2: "80,000", pcHsaFamily: true, pcHsa: "600" }), "IL");
+  const sp = pcSplit(fam);
+  assert.equal(sp.hsaFirst, 1); assert.deepEqual(sp.hsa, [0, 600]);
+  // Self-only each: your spouse's own limit first, the rest on yours.
+  const each = paycheckInput(two({ pcGross: String(cap + 50000), pcGross2: "80,000", pcHsaBoth: true, pcHsa: "500" }), "IL");
+  near(pcSplit(each).hsa[1], L.hsa.self / 12); near(pcSplit(each).hsa[0], 500 - L.hsa.self / 12);
+  // And it saves Social Security tax against an even split.
+  const even = paycheckRun({ ...fam, gross: 80000 + 1, gross2: 80000 }, fam.amounts);
+  assert.equal(pcSplit({ ...fam, gross: 80000 + 1, gross2: 80000 }).hsaFirst, null);
+  assert.ok(even.fica > 0);
+  // Both under the cap: evenly.
+  assert.equal(pcSplit(paycheckInput(two({ pcHsaFamily: true, pcHsa: "600" }), "IL")).hsaFirst, null);
 });

@@ -63,7 +63,11 @@ const PAYCHECK_DEFAULTS = {
       (two self-only limits), not just one of you. */
   pcHsaBoth: false,
   /** The lines' order, comma separated. */
-  pcOrder: "match,hsa,ef,rothIra,k401max,brok",
+  pcOrder: "match,ef,hsa,rothIra,k401max,brok",
+  /** The plan the sliders were last set from ("" once one is moved by hand). */
+  pcPlan: "",
+  /** An emergency fund line: off until added. */
+  pcEfOn: false,
   pcMatch: "0", pcHsa: "0", pcEf: "0", pcRothIra: "0", pcK401max: "0", pcBrok: "0",
   /** The 401(k) lines' kind: Roth when true, traditional when false. */
   pcMatchRoth: false, pcK401maxRoth: false,

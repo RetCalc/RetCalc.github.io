@@ -3,25 +3,28 @@
 /* The Budget's Paycheck tab: one paycheck from gross pay through the taxes
    and the budget, and where what's left goes. The facts sit on the left
    (pay, schedule, filing status, state, what comes out through work, the
-   budget as it comes across); the decisions sit on the right, as lines in
-   the order you'd fund them, with Fill to do it for you. Every change reruns
-   the taxes (paycheck-math.ts, on the Income Tax engine), and the itemized
-   paycheck under it is the receipt. Designed in the mock of 2026-10-15. */
+   budget as it comes across); the decisions sit on the right, as a slider
+   per goal, with a plan to set them all at once and live figures above
+   them. Every change reruns the taxes (paycheck-math.ts, on the Income Tax
+   engine), and the itemized paycheck under it is the receipt. Designed in
+   the mocks of 2026-10-15 (the tab) and 2026-10-18 (the sliders). */
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDownIcon, ArrowUpIcon, CircleAlertIcon, GripVerticalIcon } from "lucide-react";
 import { Donut, type DonutPart } from "@/components/charts/Donut";
 import { ShareBar } from "@/components/charts/Legend";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { CsvButton } from "@/components/common/CsvButton";
+import { BigValue } from "@/components/common/BigValue";
+import { TipDot } from "@/components/shell/Tooltips";
+import { NativeRange } from "@/components/ui/native-range";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { setToolInputs, toolInputs } from "@/components/tools/ToolState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DASH, dollarsField, groupDigits, money } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
@@ -29,8 +32,8 @@ import { cn } from "@/lib/utils";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { annualize, type BudgetInputs } from "./model";
 import {
-  PC_LINES, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcPreTax, pcRothKey, pcSplit, rowRole,
-  type PcAmounts, type PcRun, type PcStep,
+  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
+  pcPlanOrder, pcPreTax, pcRothKey, pcSplit, rowRole, type PcPlan, type PcRun, type PcStep,
 } from "./paycheck-math";
 
 type SetState = (fn: (c: BudgetInputs) => BudgetInputs) => void;
@@ -57,15 +60,11 @@ export function Paycheck({ s, set, setState }: {
   const two = pi.two, per = two ? "month" : "check";
   const empty = !(pi.gross + pi.gross2 > 0);
   const short = !empty && r.left <= -0.01;
-  const taxCut = base.taxes - r.taxes;
   // Unassigned, with less than a cent either way shown as nothing: amounts
   // are kept in cents, and taxes and pay aren't.
   const left = Math.abs(r.left) < 0.01 ? 0 : r.left;
   const [active, setActive] = useState<number | null>(null);
 
-  const setAmounts = (a: PcAmounts) =>
-    setState((c) => ({ ...c, ...Object.fromEntries(pi.order.map((k) => [pcAmountKey(k), amountText(a[k])])) }));
-  const setOrder = (o: PcStep[]) => set("pcOrder")(o.join(","));
 
   // The health premiums' field: the Budget's row per check until typed over.
   const healthDerived = s.pcHealth.trim() === "";
@@ -202,26 +201,7 @@ export function Paycheck({ s, set, setState }: {
           </div>
         </Card>
 
-        <Card className="min-w-0">
-          <CardHeader>
-            <CardTitle>Where the rest goes</CardTitle>
-            <CardDescription>Rank these in the order you&apos;d fund them. Fill in this order puts in as much as each line allows, top to bottom, rerunning your taxes as it goes. Or type your own amounts{two ? ", a month for the two of you." : "."}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Lines s={s} set={set} setState={setState} pi={pi} setOrder={setOrder} />
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5 border-t border-border pt-4">
-              <div className="flex gap-2.5">
-                <Button id="pcFill" disabled={empty} onClick={() => setAmounts(paycheckFill(pi))}>Fill in this order</Button>
-                <Button variant="outline" id="pcClear" onClick={() => setAmounts(PC_ZERO)}>Clear</Button>
-              </div>
-              <div className="flex gap-7 max-sm:w-full max-sm:justify-between" aria-live="polite">
-                <FootStat label={"Tax saved, each " + per} value={empty ? DASH : cents(Math.max(0, taxCut))} id="pcTaxSaved" />
-                <FootStat label={short ? "Short" : "Unassigned"} id="pcUnassigned" value={empty ? DASH : cents(left)}
-                  tone={short ? "loss" : r.left > 0.5 ? "answer" : undefined} />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <Sliders s={s} set={set} setState={setState} pi={pi} r={r} base={base} empty={empty} />
 
         <Itemized s={s} pi={pi} r={r} empty={empty} short={short}
           openTax={() => {
@@ -251,15 +231,6 @@ export function Paycheck({ s, set, setState }: {
 /** A heading over one group of the inputs, on a rule (as on Income Tax). */
 function GroupHead({ children }: { children: React.ReactNode }) {
   return <h3 className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">{children}</h3>;
-}
-
-function FootStat({ label, value, id, tone }: { label: string; value: string; id: string; tone?: "answer" | "loss" }) {
-  return (
-    <div className="flex flex-col items-end max-sm:items-start">
-      <span className="text-label text-muted-foreground">{label}</span>
-      <span id={id} className={cn("text-lg font-medium tabular-nums", tone === "answer" && "text-primary", tone === "loss" && "text-destructive")}>{value}</span>
-    </div>
-  );
 }
 
 /* The budget as it comes across: its total a check, and its rows on demand,
@@ -300,112 +271,134 @@ function BudgetFromTab({ s, p, per, onEdit }: { s: BudgetInputs; p: number; per:
   );
 }
 
-/* The lines, in order: drag one by its grip on a desktop, or move it with
-   the arrows on a phone (and from the keyboard). Each line's amount is
-   typed or filled, with its limit and, for pre-tax money, what it really
-   costs the deposit. */
-function Lines({ s, set, setState, pi, setOrder }: {
+/* Where the rest goes: a slider per goal, with live figures above them.
+   A plan sets them all at once (and puts them in its order); a slider, a
+   typed amount or Max sets one. The emergency fund is a line only once
+   added. With two incomes every amount is a month, split between you. */
+function Sliders({ s, set, setState, pi, r, base, empty }: {
   s: BudgetInputs; set: <K extends keyof BudgetInputs>(k: K) => (v: BudgetInputs[K]) => void; setState: SetState;
-  pi: ReturnType<typeof paycheckInput>; setOrder: (o: PcStep[]) => void;
+  pi: ReturnType<typeof paycheckInput>; r: PcRun; base: PcRun; empty: boolean;
 }) {
-  const order = pi.order;
-  // The line being dragged, and the line it's over (and which half).
-  const [drag, setDrag] = useState<{ from: number; over: number | null; after: boolean } | null>(null);
-  const grabbed = useRef(false);
-  const move = (from: number, to: number) => {
-    if (to < 0 || to >= order.length || to === from) return;
-    const o = [...order];
-    const [m] = o.splice(from, 1);
-    o.splice(to, 0, m);
-    setOrder(o);
+  const two = pi.two, per = two ? "month" : "check";
+  const left = Math.abs(r.left) < 0.01 ? 0 : r.left, short = !empty && r.left <= -0.01;
+  const taxCut = base.taxes - r.taxes;
+  /** Set one line by hand: the plan no longer describes it. */
+  const setLine = (k: PcStep, v: number) => setState((c) => ({ ...c, [pcAmountKey(k)]: amountText(Math.max(0, v)), pcPlan: "" }));
+  /* A plan: its 401(k) setting, every line filled in its order (the ones it
+     leaves out at nothing), and the sliders shown in that order. */
+  const applyPlan = (k: PcPlan) => {
+    const plan = PC_PLANS[k];
+    const roth = plan.traditional ? { match: false, k401max: false } : pi.roth;
+    const a = paycheckFill({ ...pi, roth }, [...plan.order]);
+    setState((c) => ({
+      ...c, ...Object.fromEntries(PC_STEPS.map((x) => [pcAmountKey(x), amountText(a[x])])),
+      ...(plan.traditional ? { pcMatchRoth: false, pcK401maxRoth: false } : {}),
+      pcOrder: pcPlanOrder(k).join(","), pcPlan: k,
+    }));
   };
+  const clear = () => setState((c) => ({ ...c, ...Object.fromEntries(PC_STEPS.map((x) => [pcAmountKey(x), "0"])), pcPlan: "" }));
+  const plan = (s.pcPlan in PC_PLANS ? s.pcPlan : "") as PcPlan | "";
+  const sp = pcSplit(pi);
   return (
-    <ol className="m-0 list-none p-0" id="pcLines">
-      {order.map((k, i) => {
-        const line = PC_LINES[k], v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
-        // Shown as Fill keeps it: whole cents, rounded down.
-        const capShown = Math.floor(cap * 100 + 1e-6) / 100;
-        const over = pcHasLimit(k) && v > cap + 0.005;
-        const pre = pcPreTax(pi, k);
-        const cost = v > 0 && pre ? (pi.two ? " · costs your deposits " : " · costs your deposit ") : "";
-        // With two incomes, how the line divides between you (an HSA on one
-        // self-only plan is all yours, so it isn't shown).
-        const half = k === "match" || k === "k401max" || k === "rothIra" || (k === "hsa" && pi.hsa !== "self") ? pcSplit(pi)[k] : null;
-        const split = pi.two && v > 0 && half ? " · you " + cents(half[0]) + ", spouse " + cents(half[1]) : "";
-        const rothKey = pcRothKey(k);
-        // Where a dragged line would land: a rule above or below this one.
-        const mark = drag && drag.over === i && drag.from !== i ? (drag.after ? "after" : "before") : null;
-        return (
-          <li key={k} data-line={k} draggable={!!drag && drag.from === i}
-            className={cn("group/row relative flex items-start gap-2.5 border-t border-border py-2.5 first:border-t-0",
-              drag?.from === i && "opacity-40",
-              mark === "before" && "before:absolute before:inset-x-0 before:-top-px before:h-0.5 before:rounded-full before:bg-primary",
-              mark === "after" && "after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-full after:bg-primary")}
-            onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", String(i)); }}
-            onDragOver={(e) => {
-              if (!drag) return;
-              e.preventDefault();
-              const box = e.currentTarget.getBoundingClientRect();
-              const after = e.clientY > box.top + box.height / 2;
-              if (drag.over !== i || drag.after !== after) setDrag({ from: drag.from, over: i, after });
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              if (drag && drag.over != null) {
-                const at = drag.over + (drag.after ? 1 : 0);
-                move(drag.from, at > drag.from ? at - 1 : at);
-              }
-              setDrag(null);
-            }}
-            onDragEnd={() => { setDrag(null); grabbed.current = false; }}>
-            <span className="hidden cursor-grab pt-2 text-muted-foreground active:cursor-grabbing sm:block" title="Drag to reorder" aria-hidden="true"
-              onPointerDown={() => { grabbed.current = true; setDrag({ from: i, over: null, after: false }); }}
-              onPointerUp={() => { if (grabbed.current) { grabbed.current = false; setDrag(null); } }}>
-              <GripVerticalIcon className="size-4" />
-            </span>
-            <span className="w-5 flex-none pt-2 text-center text-label text-muted-foreground tabular-nums">{i + 1}</span>
-            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-start sm:gap-2.5">
-              <div className="min-w-0 flex-1 pt-1">
-                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                  <b className="font-medium">{line.name}</b>
-                  {line.k401 ? (
-                    <Segmented size="compact" attr="data-kind" options={[["trad", "Traditional"], ["roth", "Roth"]] as const}
-                      value={s[rothKey] ? "roth" : "trad"} onChange={(v) => set(rothKey)(v === "roth")} />
-                  ) : null}
+    <Card className="min-w-0">
+      <CardHeader><CardTitle>Where the rest goes</CardTitle></CardHeader>
+      <CardContent>
+        {/* The figures: they tick to each new value as a slider moves. */}
+        <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-(--r-field) border border-border max-sm:grid-cols-2" aria-live="polite">
+          <Stat label="Saved and invested" value={empty ? DASH : money(r.saved)} tone="answer" id="pcSaved2" note={"each " + per} />
+          <Stat label="Available to save" value={empty ? DASH : money(r.saved + r.left)} id="pcAvail" />
+          <Stat label={<>Taxes <TipDot k="pctaxes" /></>} value={empty ? DASH : money(r.taxes)} id="pcTaxes" note={!empty && taxCut > 0.005 ? cents(taxCut) + " saved" : undefined} />
+          <Stat label={short ? "Short" : "Unassigned"} value={empty ? DASH : cents(left)} id="pcUnassigned" tone={short ? "loss" : left === 0 && !empty ? "gain" : undefined} />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-label text-muted-foreground">Start from a plan:</span>
+          {(Object.keys(PC_PLANS) as PcPlan[]).map((k) => (
+            <Button key={k} size="sm" variant={plan === k ? "secondary" : "outline"} aria-pressed={plan === k} disabled={empty} onClick={() => applyPlan(k)}>{PC_PLANS[k].name}</Button>
+          ))}
+          <Button size="sm" variant="ghost" id="pcClear" onClick={clear}>Clear</Button>
+        </div>
+        <p className="mt-1.5 mb-1 text-note text-muted-foreground" id="pcPlanNote">
+          {plan ? <>{PC_PLANS[plan].note}{pi.efOn ? (plan === "tax" ? ", with the emergency fund before the Roth IRA." : ", with the emergency fund right after the match.") : "."}</>
+            : "A plan sets every slider at once; drag from there."}
+        </p>
+
+        <div id="pcSliders">
+          {pi.order.map((k) => {
+            const line = PC_LINES[k], v = pi.amounts[k], cap = pcCap(pi, k, pi.amounts);
+            // To the cent, so all the way right is exactly the limit (and a full line looks full).
+            const toCents = (x: number) => Math.floor(x * 100 + 1e-6) / 100;
+            const room = Math.max(0, r.left);
+            const max = Math.max(0.01, k === "brok" ? toCents(v + room) : k === "ef" ? toCents(Math.max(cap, v + room)) : toCents(cap));
+            const over = pcHasLimit(k) && v > cap + 0.005;
+            const half = two && v > 0 && (k === "match" || k === "k401max" || k === "rothIra" || (k === "hsa" && pi.hsa !== "self")) ? sp[k as "match"] : null;
+            const rothKey = pcRothKey(k);
+            const limit = k === "match" ? (two ? "Both full matches " : "Limit ") + cents(toCents(cap))
+              : k === "k401max" ? "Limit " + cents(toCents(cap)) + (two ? " for both, with the matches" : "")
+              : k === "hsa" && two ? (pi.hsa === "family" ? "Family limit " : pi.hsa === "self2" ? "Two self-only limits " : "Self-only limit ") + cents(toCents(cap))
+              : k === "rothIra" && two ? "Two limits " + cents(toCents(cap))
+              : k === "brok" ? "Whatever's left" : "Limit " + cents(toCents(cap));
+            return (
+              <div key={k} data-line={k} className="flex items-center gap-4 border-t border-border py-3 first:border-t-0 max-sm:flex-wrap max-sm:gap-x-3 max-sm:gap-y-2">
+                {/* A desktop: name, slider and amount on one line, the caption under the name and slider.
+                    A phone: name and amount, then the slider, then the caption, each the full width. */}
+                <div className="min-w-0 flex-1 max-sm:contents">
+                  <div className="flex items-center gap-4 max-sm:contents">
+                    <div className="flex w-80 flex-none items-center gap-2.5 whitespace-nowrap max-sm:order-1 max-sm:w-auto max-sm:min-w-0 max-sm:flex-1 max-sm:flex-wrap max-sm:whitespace-normal">
+                      <b className="font-medium">{line.name}</b>
+                      {line.k401 ? (
+                        <Segmented size="compact" attr="data-kind" options={[["trad", "Traditional"], ["roth", "Roth"]] as const}
+                          value={s[rothKey] ? "roth" : "trad"} onChange={(x) => setState((c) => ({ ...c, [rothKey]: x === "roth", pcPlan: "" }))} />
+                      ) : null}
+                      {k === "ef" ? <Button variant="quiet" size="inline" onClick={() => setState((c) => ({ ...c, pcEfOn: false, pcEf: "0" }))}>Remove</Button> : null}
+                    </div>
+                    <NativeRange className="flex-1 max-sm:order-3 max-sm:basis-full" min={0} max={max} step={0.01} value={Math.min(v, max)} fill={v / max} disabled={empty}
+                      aria-label={line.name + ", per " + per} data-slider={k} onChange={(e) => setLine(k, parseFloat(e.target.value))} />
+                  </div>
+                  <div className="mt-0.5 truncate text-label text-muted-foreground max-sm:order-4 max-sm:mt-0 max-sm:basis-full max-sm:whitespace-normal" data-note>
+                    {k === "ef" ? (
+                      <span className="inline-flex items-center gap-1.5">Plans fill it to
+                        <Affixed prefix="$" className="w-24"><MoneyInput nonNeg aria-label={"Emergency fund: how much a plan puts in, per " + per} value={s.pcEfCap} onValueChange={set("pcEfCap")} /></Affixed>
+                        a {per}</span>
+                    ) : <>
+                      {limit}
+                      {over ? <span className="text-destructive"> · over the limit</span> : null}
+                      {half ? " · you " + cents(half[0]) + ", spouse " + cents(half[1]) : null}
+                      {v > 0 && pcPreTax(pi, k) ? <>{two ? " · costs your deposits " : " · costs your deposit "}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
+                    </>}
+                  </div>
                 </div>
-                <div className="mt-0.5 text-label text-muted-foreground" data-note>
-                  {k === "ef" ? (
-                    <span className="inline-flex flex-wrap items-center gap-1.5">Fill stops at
-                      <Affixed prefix="$" className="w-28"><MoneyInput nonNeg aria-label={"Emergency fund: where Fill stops, per " + (pi.two ? "month" : "check")} value={s.pcEfCap} onValueChange={set("pcEfCap")} /></Affixed>
-                      {pi.two ? "a month" : "a check"}
-                    </span>
-                  ) : over ? (
-                    <span className="inline-flex items-center gap-1 text-destructive"><CircleAlertIcon className="size-3.5" aria-hidden="true" />Over the {cents(cap)} limit</span>
-                  ) : k === "match" ? (pi.two ? "Both full matches " : "Full match ") + cents(capShown)
-                    : k === "brok" ? "The rest"
-                    : k === "k401max" ? "Limit " + cents(capShown) + (pi.two ? " for both, with the matches" : " with the match")
-                    : k === "hsa" && pi.two ? (pi.hsa === "family" ? "Family limit " : pi.hsa === "self2" ? "Two self-only limits " : "Self-only limit ") + cents(capShown)
-                    : k === "rothIra" && pi.two ? "Two limits " + cents(capShown)
-                    : "Limit " + cents(capShown)}
-                  {split}
-                  {cost ? <>{cost}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
+                <div className="flex flex-none items-center gap-1.5 max-sm:order-2">
+                  <Affixed prefix="$" suffix={two ? "/mo" : undefined} className={two ? "w-36" : "w-30"}>
+                    <MoneyInput nonNeg data-amt={k} aria-label={line.name + ", per " + per} value={s[pcAmountKey(k)]}
+                      onValueChange={(x) => setState((c) => ({ ...c, [pcAmountKey(k)]: x, pcPlan: "" }))} />
+                  </Affixed>
+                  <Button variant="outline" size="sm" disabled={empty} title="As much as this line takes, or what's left" onClick={() => setLine(k, pcMost(pi, k))}>Max</Button>
                 </div>
               </div>
-              {/* With two incomes the lines are a month, the checks below are each
-                  person's own: say so at the box. */}
-              <Affixed prefix="$" suffix={pi.two ? "/mo" : undefined} className="sm:w-34 sm:flex-none">
-                <MoneyInput nonNeg data-amt={k} aria-label={line.name + ", per " + (pi.two ? "month" : "check")} value={s[pcAmountKey(k)]}
-                  onValueChange={(val) => setState((c) => ({ ...c, [pcAmountKey(k)]: val }))} />
-              </Affixed>
-            </div>
-            <div className="flex flex-col gap-1 sm:flex-row sm:pointer-fine:opacity-0 sm:pointer-fine:group-focus-within/row:opacity-100">
-              <Button variant="outline" size="icon-sm" aria-label={"Move " + line.name + " up"} disabled={i === 0} onClick={() => move(i, i - 1)}><ArrowUpIcon aria-hidden="true" /></Button>
-              <Button variant="outline" size="icon-sm" aria-label={"Move " + line.name + " down"} disabled={i === order.length - 1} onClick={() => move(i, i + 1)}><ArrowDownIcon aria-hidden="true" /></Button>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
+            );
+          })}
+        </div>
+        {!pi.efOn ? (
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 border-t border-border pt-3 text-note text-muted-foreground">
+            <span>Still building an emergency fund?</span>
+            <Button variant="link" size="inline" id="pcEfAdd" onClick={() => setState((c) => ({ ...c, pcEfOn: true }))}>+ Add an emergency fund</Button>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** One of the figures over the sliders: it ticks to each new value. */
+function Stat({ label, value, id, tone, note }: { label: React.ReactNode; value: string; id: string; tone?: "answer" | "gain" | "loss"; note?: string }) {
+  return (
+    <div className="min-w-0 border-border px-3.5 py-3 not-first:border-l max-sm:nth-3:border-l-0 max-sm:nth-[n+3]:border-t">
+      <div className="k text-label text-muted-foreground">{label}</div>
+      <BigValue text={value} id={id} sized={false}
+        className={cn("text-2xl font-medium tracking-tight whitespace-nowrap tabular-nums max-sm:text-xl", tone === "answer" && "text-primary", tone === "gain" && "text-gain", tone === "loss" && "text-destructive")} />
+      <div className="min-h-4 text-label text-muted-foreground">{note}</div>
+    </div>
   );
 }
 
@@ -422,7 +415,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   // shared (the budget, the saving from your deposits) fills only those two.
   const p = pi.p, two = pi.two, monthly = p !== 12;
   const heads = two ? ["Your check", "Spouse's check", "Per month", "Per year"] : monthly ? ["Per check", "Per month", "Per year"] : ["Per check", "Per year"];
-  type Row = { kind: "sec" | "item" | "sub" | "total" | "hi"; label: string; v?: number; tag?: string; toggle?: boolean; per?: number[] };
+  type Row = { kind: "sec" | "item" | "sub" | "total" | "hi"; label: string; v?: number; tag?: string; tip?: string; toggle?: boolean; per?: number[] };
   /** A row's cells: null where a check column has nothing (a shared line). */
   const vals = (x: Row): (number | null)[] => {
     const v = x.v ?? 0;
@@ -438,7 +431,12 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   if (r.k401 || r.hsa || r.health) {
     sec("Before tax");
     if (r.k401) ln("item", "Traditional 401(k)", -r.k401, undefined, each("k401"));
-    if (r.hsa) ln("item", "HSA", -r.hsa, "excluded from FICA", each("hsa"));
+    if (r.hsa) {
+      ln("item", "HSA", -r.hsa, "excluded from FICA", each("hsa"));
+      // With two incomes, one above the Social Security wage cap: why more of the HSA comes out of the other's pay.
+      const hs = pcSplit(pi);
+      if (pi.two && hs.hsaFirst != null && Math.abs(hs.hsa[0] - hs.hsa[1]) >= 0.01) rows[rows.length - 1].tip = "pchsasplit";
+    }
     if (r.health) ln("item", "Health, dental and vision", -r.health, "excluded from FICA", each("health"));
   }
   sec("Taxes");
@@ -497,7 +495,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
               return (
                 <tr key={j} className={cn(x.kind === "total" && "font-semibold border-t-2 border-t-line", x.kind === "hi" && "font-semibold border-t-2 border-t-line", x.kind === "sub" && "text-muted-foreground")}>
                   <td className={cn(x.kind === "item" && "pl-6", x.kind === "sub" && "pl-9", x.kind === "hi" && (short ? "text-destructive" : "text-primary"))}>
-                    {x.label}{x.tag ? <Badge variant="outline" className="ml-2">{x.tag}</Badge> : null}
+                    {x.label}{x.tag ? <Badge variant="outline" className="ml-2">{x.tag}</Badge> : null}{x.tip ? <TipDot k={x.tip} /> : null}
                   </td>
                   {vals(x).map((y, c) => {
                     // The check columns in cents (red when taken out); months and years in dollars.

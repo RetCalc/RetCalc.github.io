@@ -8,14 +8,20 @@ import { cn } from "@/lib/utils"
    change. A 6px track in the strong edge's tone inside a taller hit area
    (24px, 44px under a finger), and a thumb in the text color that grows
    under the pointer; no glow. */
-function NativeRange({ className, ...props }: Omit<React.ComponentProps<"input">, "type">) {
+function NativeRange({ className, fill, style, ...props }: Omit<React.ComponentProps<"input">, "type"> & {
+  /** Fills the track up to the thumb in the answer color: how far along
+      the range the value is, 0 to 1 (the Paycheck tab's sliders). */
+  fill?: number
+}) {
   return (
     <input
       type="range"
       data-slot="native-range"
+      style={fill == null ? style : ({ ...style, "--fill": (Math.max(0, Math.min(1, fill)) * 100).toFixed(2) + "%" } as React.CSSProperties)}
       className={cn(
         "m-0 block h-6 w-full cursor-pointer appearance-none bg-transparent outline-none pointer-coarse:h-11",
         "[&::-webkit-slider-runnable-track]:h-1.5 [&::-webkit-slider-runnable-track]:rounded-[3px] [&::-webkit-slider-runnable-track]:bg-input",
+        fill != null && "[&::-webkit-slider-runnable-track]:bg-[linear-gradient(to_right,var(--primary)_var(--fill),var(--input)_var(--fill))] [&::-moz-range-progress]:h-1.5 [&::-moz-range-progress]:rounded-[3px] [&::-moz-range-progress]:bg-primary",
         "[&::-webkit-slider-thumb]:-mt-[7px] [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-3 [&::-webkit-slider-thumb]:border-solid [&::-webkit-slider-thumb]:border-card [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:transition-transform hover:[&::-webkit-slider-thumb]:scale-115 active:[&::-webkit-slider-thumb]:scale-115 focus-visible:[&::-webkit-slider-thumb]:shadow-[0_0_0_2px_var(--card),0_0_0_4px_var(--ring)]",
         "[&::-moz-range-track]:h-1.5 [&::-moz-range-track]:rounded-[3px] [&::-moz-range-track]:bg-input",
         "[&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-3 [&::-moz-range-thumb]:border-solid [&::-moz-range-thumb]:border-card [&::-moz-range-thumb]:bg-foreground focus-visible:[&::-moz-range-thumb]:shadow-[0_0_0_2px_var(--card),0_0_0_4px_var(--ring)]",

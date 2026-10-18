@@ -14,8 +14,10 @@
    the taxes are figured jointly, and each line is the household's, split
    between the two of you (pcSplit) for the tax and each person's limits:
    the 401(k) match line fills the higher match first, the line beyond it
-   goes in proportion to each person's room under their own limit, and the
-   HSA and Roth IRA go evenly. */
+   goes in proportion to each person's room under their own limit, the Roth
+   IRA goes evenly, and so does the HSA, unless only one of you earns under
+   the Social Security wage cap: then it comes out of that pay first, where
+   it skips Social Security tax too. */
 import { computeTax, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 import { PRESET_DESCS, annualize, isPlannedRow, type BudgetInputs, type BudgetRow } from "./model";
@@ -75,6 +77,8 @@ export interface PcInput {
   match: { rate: number; upTo: number }[];
   hsa: HsaCov;
   efCap: number;
+  /** Whether there's an emergency fund line (it's added, or has money on it). */
+  efOn: boolean;
   roth: { match: boolean; k401max: boolean };
   /** The budget's spending a year, after what this tab plans or moves. */
   spendYear: number;
@@ -114,14 +118,15 @@ export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
   // Premiums are typed per check on each person's schedule; with two
   // incomes they're carried as a month.
   const health1 = b.pcHealth.trim() === "" ? (healthRowMonthly(b) * 12) / p : (n(b.pcHealth) * pays[0]) / (two ? 12 : pays[0]);
-  const amounts = Object.fromEntries(PC_STEPS.map((s) => [s, n(b[pcAmountKey(s)])])) as PcAmounts;
+  const efOn = !!b.pcEfOn || n(b.pcEf) > 0;
+  const amounts = Object.fromEntries(PC_STEPS.map((s) => [s, s === "ef" && !efOn ? 0 : n(b[pcAmountKey(s)])])) as PcAmounts;
   return {
     gross: n(b.pcGross), gross2: two ? n(b.pcGross2) : 0, two, p, pays, status: b.pcStatus === "s" ? "s" : "m", state: b.pcState || taxState,
     health: [health1, two ? (n(b.pcHealth2) * pays[1]) / 12 : 0],
     match: [{ rate: n(b.pcMatchRate), upTo: n(b.pcMatchUpTo) }, { rate: n(b.pcMatchRate2), upTo: n(b.pcMatchUpTo2) }],
     hsa: b.pcHsaFamily ? "family" : two && b.pcHsaBoth ? "self2" : "self",
-    efCap: n(b.pcEfCap), roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth },
-    spendYear, order: pcOrder(b.pcOrder), amounts,
+    efCap: n(b.pcEfCap), efOn, roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth },
+    spendYear, order: pcOrder(b.pcOrder).filter((s) => s !== "ef" || efOn), amounts,
   };
 }
 
@@ -137,6 +142,9 @@ function matchCaps(pi: PcInput): [number, number] {
 export interface PcSplit {
   /** Each line's amount, [you, spouse], per period. */
   match: [number, number]; k401max: [number, number]; hsa: [number, number]; rothIra: [number, number];
+  /** Whose pay the HSA favors to save Social Security tax (0 you, 1 your
+      spouse): the one under the wage cap when the other is over it. */
+  hsaFirst: 0 | 1 | null;
 }
 
 /** How the household's lines divide between the two of you (all yours with
@@ -145,7 +153,7 @@ export interface PcSplit {
     proportion to their room left under their own limit; the HSA (two
     people's) and Roth IRA evenly. */
 export function pcSplit(pi: PcInput, a: PcAmounts = pi.amounts): PcSplit {
-  if (!pi.two) return { match: [a.match, 0], k401max: [a.k401max, 0], hsa: [a.hsa, 0], rothIra: [a.rothIra, 0] };
+  if (!pi.two) return { match: [a.match, 0], k401max: [a.k401max, 0], hsa: [a.hsa, 0], rothIra: [a.rothIra, 0], hsaFirst: null };
   const L = limits(), mc = matchCaps(pi);
   const first = pi.match[1].rate > pi.match[0].rate ? 1 : 0, second = 1 - first;
   const m: [number, number] = [0, 0];
@@ -155,8 +163,20 @@ export function pcSplit(pi: PcInput, a: PcAmounts = pi.amounts): PcSplit {
   const room = [0, 1].map((i) => Math.max(0, L.k401.base / pi.p - m[i]));
   const rooms = room[0] + room[1];
   const x: [number, number] = rooms > 0 ? [(a.k401max * room[0]) / rooms, (a.k401max * room[1]) / rooms] : [a.k401max / 2, a.k401max / 2];
-  const hsa: [number, number] = pi.hsa === "self" ? [a.hsa, 0] : [a.hsa / 2, a.hsa / 2];
-  return { match: m, k401max: x, hsa, rothIra: [a.rothIra / 2, a.rothIra / 2] };
+  // HSA money through payroll also skips the 6.2% Social Security tax, but
+  // only on pay under the wage cap. With one of you over it, it comes out of
+  // the other's pay first: all of a family limit, or up to their own
+  // self-only limit. Otherwise it splits evenly.
+  const cap = yearData().fica.ssCap, over = [pi.gross >= cap, pi.gross2 >= cap];
+  const hsaFirst: 0 | 1 | null = pi.hsa !== "self" && over[0] !== over[1] ? (over[0] ? 1 : 0) : null;
+  let hsa: [number, number];
+  if (pi.hsa === "self") hsa = [a.hsa, 0];
+  else if (hsaFirst == null) hsa = [a.hsa / 2, a.hsa / 2];
+  else {
+    const own = pi.hsa === "family" ? a.hsa : Math.min(a.hsa, L.hsa.self / pi.p);
+    hsa = hsaFirst === 0 ? [own, a.hsa - own] : [a.hsa - own, own];
+  }
+  return { match: m, k401max: x, hsa, rothIra: [a.rothIra / 2, a.rothIra / 2], hsaFirst };
 }
 
 /** Where Fill stops a line, per period (Infinity for brokerage). The 401(k)
@@ -269,29 +289,57 @@ function most(pi: PcInput, a: PcAmounts, s: PcStep, cap: number): number {
   return paycheckRun(pi, t).left > -0.005 ? up : Math.floor(lo * 100) / 100;
 }
 
-/** Fill in order: each line, top to bottom, as much as it allows, rerunning
-    the taxes as it goes. Brokerage takes what's left. */
-export function paycheckFill(pi: PcInput): PcAmounts {
+/** Fill in order: each line of `order` (the lines shown, by default), top
+    to bottom, as much as it allows, rerunning the taxes as it goes;
+    brokerage takes what's left. Lines not in `order` get nothing. */
+export function paycheckFill(pi: PcInput, order: PcStep[] = pi.order): PcAmounts {
   const a = { ...PC_ZERO };
-  for (const s of pi.order) if (s !== "brok") a[s] = most(pi, a, s, pcCap(pi, s, a));
+  const ord = order.filter((s) => s !== "ef" || pi.efOn);
+  for (const s of ord) if (s !== "brok") a[s] = most(pi, a, s, pcCap(pi, s, a));
   // Every line in whole cents, as it's kept, never over its limit.
-  for (const s of pi.order) if (s !== "brok") a[s] = Math.min(Math.round(a[s] * 100), Math.floor(pcCap(pi, s, a) * 100 + 1e-6)) / 100;
+  for (const s of ord) if (s !== "brok") a[s] = Math.min(Math.round(a[s] * 100), Math.floor(pcCap(pi, s, a) * 100 + 1e-6)) / 100;
   // Rounding up can leave it a fraction of a cent short: the last line
   // filled gives back a cent at a time until it isn't.
-  const last = [...pi.order].reverse().find((s) => s !== "brok" && a[s] > 0);
+  const last = [...ord].reverse().find((s) => s !== "brok" && a[s] > 0);
   for (let i = 0; last && i < 20 && paycheckRun(pi, a).left < 0; i++) a[last] = Math.max(0, Math.round(a[last] * 100 - 1) / 100);
   // A line the money ran out on takes what cents are left, as far as they go;
   // brokerage gets money only once every line above it is full.
   const full = (s: PcStep) => a[s] >= Math.floor(pcCap(pi, s, a) * 100 + 1e-6) / 100 - 1e-9;
-  const partial = pi.order.find((s) => s !== "brok" && !full(s));
+  const partial = ord.find((s) => s !== "brok" && !full(s));
   if (partial) {
     for (let i = 0; i < 100 && !full(partial); i++) {
       a[partial] = Math.round(a[partial] * 100 + 1) / 100;
       if (paycheckRun(pi, a).left < 0) { a[partial] = Math.round(a[partial] * 100 - 1) / 100; break; }
     }
-  } else if (pi.order.includes("brok")) a.brok = Math.max(0, Math.floor(paycheckRun(pi, a).left * 100 + 1e-6) / 100);
+  } else if (ord.includes("brok")) a.brok = Math.max(0, Math.floor(paycheckRun(pi, a).left * 100 + 1e-6) / 100);
   return a;
 }
+
+/** A line's Max: as much as it takes (to its limit, or what's left for
+    brokerage) without going short, in whole cents, the others as they are. */
+export function pcMost(pi: PcInput, s: PcStep): number {
+  const a = { ...pi.amounts, [s]: 0 };
+  if (s === "brok") return Math.max(0, Math.floor(paycheckRun(pi, a).left * 100 + 1e-6) / 100);
+  const c = pcCap(pi, s, a), v = most(pi, a, s, c);
+  return Math.min(Math.round(v * 100), Math.floor(c * 100 + 1e-6)) / 100;
+}
+
+/** The plans a slider card starts from: an order to fill in, and whether
+    the 401(k) lines go traditional. Lines a plan leaves out get nothing.
+    The emergency fund, when there is one, comes right after the match
+    (before the Roth IRA when maximizing tax breaks). */
+export const PC_PLANS = {
+  usual: { name: "The usual order", order: ["match", "ef", "hsa", "rothIra", "k401max", "brok"] as PcStep[], traditional: false,
+    note: "The full 401(k) match, then the HSA, a Roth IRA, the rest of the 401(k) and brokerage" },
+  tax: { name: "Max tax breaks", order: ["match", "hsa", "k401max", "ef", "rothIra", "brok"] as PcStep[], traditional: true,
+    note: "Everything pre-tax first: the match, the HSA and the 401(k) to its limit, all traditional. Then a Roth IRA and brokerage" },
+  flex: { name: "Stay flexible", order: ["match", "ef", "rothIra", "brok"] as PcStep[], traditional: false,
+    note: "The match, then money you can reach before retirement: a Roth IRA (contributions can come back out) and brokerage. No HSA or extra 401(k)" },
+} as const;
+export type PcPlan = keyof typeof PC_PLANS;
+
+/** A plan's display order: its own lines, then the ones it leaves out. */
+export const pcPlanOrder = (k: PcPlan): PcStep[] => [...PC_PLANS[k].order, ...PC_STEPS.filter((s) => !PC_PLANS[k].order.includes(s))];
 
 /** What a dollar on line `s` costs the deposit: under a dollar for
     pre-tax money, since part of it would have gone to tax. */
