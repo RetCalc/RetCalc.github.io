@@ -21,14 +21,14 @@ export function toStages({ p, a }: AdvancedPlan, s: AdvancedInputs, coastYears: 
     : "Replace the stages currently on the Stages tab with these numbers?")) return null;
 
   // The stage contribution is yours alone; Stages adds the match back on top.
-  const mine = a ? a.tradC + a.rothC + a.brokC : p.contrib;
+  const mine = a ? a.tradC + a.rothC + a.brokC + a.hsaC : p.contrib;
   const split = !a ? {} : {
-    ...(mine > 0 ? { sTrad: a.tradC / mine, sRoth: a.rothC / mine } : { sTrad: 1, sRoth: 0 }),
+    ...(mine > 0 ? { sTrad: a.tradC / mine, sRoth: a.rothC / mine, ...(a.hsaC > 0 ? { sHsa: a.hsaC / mine } : {}) } : { sTrad: 1, sRoth: 0 }),
     ...(a.gRates ? { gRates: { ...a.gRates } } : {}),
   };
   const m = (v: number) => groupDigits(v || 0, true);
   const acct = !a ? { saOn: false } : {
-    saOn: true, saTradBal: m(a.tradBal), saRothBal: m(a.rothBal), saBrokBal: m(a.brokBal),
+    saOn: true, saTradBal: m(a.tradBal), saRothBal: m(a.rothBal), saBrokBal: m(a.brokBal), saHsaBal: a.hsaBal > 0 ? m(a.hsaBal) : "",
     saBrokBasis: a.brokBasis == null ? "" : m(a.brokBasis), saSalary: m(a.salary),
     saMatchPct: String(a.matchPct || 0), saMatchCap: String(a.matchCap == null ? 6 : a.matchCap),
     saStatus: a.status, saState: a.state,

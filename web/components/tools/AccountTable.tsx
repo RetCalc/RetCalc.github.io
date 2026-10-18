@@ -50,6 +50,13 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
                 <td>{money(B.tax.buckets[i].tax)}</td><td>{money(B.w[r.k] - B.tax.buckets[i].tax)}</td>
               </tr>
             ))}
+            {/* The HSA, when there is one: kept for health care, so nothing's withdrawn from it (or taxed). */}
+            {B.real.hsa > 0 ? (
+              <tr>
+                <td><i className="acdot bg-(--swatch)" style={{ "--swatch": SERIES.lavender } as React.CSSProperties}></i>HSA</td>
+                <td>{money(B.real.hsa)}</td><td>{pctStr(B.shares.hsa, 0)}</td><td>{money(B.w.hsa)}</td><td>{money(0)}</td><td>{money(B.w.hsa)}</td>
+              </tr>
+            ) : null}
           </tbody>
           <tfoot>
             <tr><td>Total</td><td>{money(B.totalReal)}</td><td></td><td>{money(B.wTotal)}</td>
@@ -63,6 +70,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
           (st && !st.none ? " and " + st.n + " state tax" : st ? ", no state income tax" : "") +
           (B.seniors ? ", with the age 65+ deduction" : "") + "."}
         {B.w.brok > 0 ? <>{" "}<b>{pctStr(B.gainPct, 0)}</b> of the brokerage balance is growth by then, so only that share of each sale is taxed.</> : null}
+        {B.real.hsa > 0 && B.w.hsa === 0 ? " The HSA is kept for health care, tax-free, so the first year's withdrawal comes from the other accounts." : null}
         {B.matchTotal > 0 ? <>{" "}Your employer puts in <b>{money(B.matchTotal)}</b> over the {fmtNum(years)} years, before growth.</> : null}
         {" "}Social Security and other income aren&apos;t included here and would raise the tax; the{" "}
         <a href="#" className="txlink" data-txfrom={id} onClick={toTax}>Income Tax tool</a> can add them.

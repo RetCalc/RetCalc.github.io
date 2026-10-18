@@ -70,9 +70,9 @@ export function GrowthRatesDialog({ title, init, blend, apply, note, onClose }: 
   note?: string; onClose: () => void;
 }) {
   const pct = (v: number) => String(+(v * 100).toFixed(4));
-  const [f, setF] = useState({ t: pct(init.t), r: pct(init.r), b: pct(init.b) });
-  const rates = { t: parseNum(f.t) / 100, r: parseNum(f.r) / 100, b: parseNum(f.b) / 100 };
-  const row = (k: "t" | "r" | "b", label: string) => (
+  const [f, setF] = useState({ t: pct(init.t), r: pct(init.r), b: pct(init.b), h: pct(init.h ?? init.t) });
+  const rates = { t: parseNum(f.t) / 100, r: parseNum(f.r) / 100, b: parseNum(f.b) / 100, h: parseNum(f.h) / 100 };
+  const row = (k: "t" | "r" | "b" | "h", label: string) => (
     <div className="formfield"><Label className="mb-1.5" htmlFor={"gr_" + k}><span>{label}</span></Label>
       <Affixed suffix="%/yr"><NumberInput id={"gr_" + k} step={0.5} value={f[k]} onValueChange={(v) => setF((c) => ({ ...c, [k]: v }))} /></Affixed>
     </div>
@@ -85,7 +85,7 @@ export function GrowthRatesDialog({ title, init, blend, apply, note, onClose }: 
     <Modal size="wide" onClose={onClose} focus="#gr_t">
       <ModalTop title={title} onClose={onClose} />
       <div className="formhint">How much each account&apos;s contribution rises each year. The contribution growth field shows the blend: the single rate that ends at the same total.{note ? " " + note : ""}</div>
-      {row("t", "Traditional")}{row("r", "Roth")}{row("b", "Taxable brokerage")}
+      {row("t", "Traditional")}{row("r", "Roth")}{row("b", "Taxable brokerage")}{row("h", "HSA")}
       <div className="kv total mt-1 mx-0 mb-3.5"><span className="k">Blended</span><span className="v" id="gr_blend">{pctStr(blend(rates), 2)}</span></div>
       <div className="formactions">
         <Button variant="outline" className="flex-1" data-gr="one" onClick={() => done(null)}>Use one rate</Button>

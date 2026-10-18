@@ -523,7 +523,7 @@ const TRIPS: Record<string, TripDef<never>> = {
           (ok(a.stopAge) && a.stopAge < a.retire! ? " It also saves right up to retirement; your plan to stop at " + fmtNum(a.stopAge) + " shows in <b>Stages</b>." : "") +
           (hasChanges(a) ? " It saves one flat amount; your changes ahead show in <b>Stages</b>." : "") },
         { h: "<b>Contribution growth</b> raises what you save each year. It's set to match inflation; try 4% or 5% if you expect raises." },
-        { h: "Turn on <b>Split by account type</b> to enter traditional, Roth and brokerage balances separately, plus your employer match. The <b>By account type</b> table then shows the tax on what you'd withdraw.", ok: s.acOn ? true : undefined },
+        { h: "Turn on <b>Split by account type</b> to enter traditional, Roth, brokerage and HSA balances separately, plus your employer match. The <b>By account type</b> table then shows the tax on what you'd withdraw.", ok: s.acOn ? true : undefined },
         { h: "Set <b>Fees</b> to your funds' expense ratio (about 0.05% for index funds, 0.5% to 1% for managed ones) to see what they cost over decades.", ok: parseNum(String(s.fees)) > 0 ? true : undefined },
         { h: "<b>Work backwards from a target</b> starts at your retirement spending. It shows the contribution, or the timeline, that gets you there; <b>Use this contribution</b> applies it." },
         { h: "Above the chart, switch <b>Rate band</b> to <b>Historical</b> or <b>Monte Carlo</b> to see the plan in real and random markets.", ok: mode ? mode.getAttribute("data-mode") !== "band" : undefined },

@@ -85,12 +85,12 @@ export function Stages() {
     if (!split) {
       // Start with the whole balance in traditional and every stage's
       // contribution there too, so nothing moves until you split it.
-      const blank = (["saTradBal", "saRothBal", "saBrokBal"] as const).every((k) => !(parseNum(s[k]) > 0));
+      const blank = (["saTradBal", "saRothBal", "saBrokBal", "saHsaBal"] as const).every((k) => !(parseNum(s[k]) > 0));
       const tax = toolInputs("tax", TAX_DEFAULTS), H = profile;
       setState((c) => ({
         ...c, saOn: true, stages: c.stages.map(dropTyped),
         ...(blank ? {
-          saTradBal: dollarsField(parseNum(c.initial)), saRothBal: "0", saBrokBal: "0", saBrokBasis: "", saSalary: dollarsField(H?.income || 0),
+          saTradBal: dollarsField(parseNum(c.initial)), saRothBal: "0", saBrokBal: "0", saHsaBal: "0", saBrokBasis: "", saSalary: dollarsField(H?.income || 0),
           saMatchPct: "0", saMatchCap: "6", saStatus: H?.status || tax.status, saState: H?.state || tax.state,
         } : {}),
       }));
@@ -246,6 +246,9 @@ export function Stages() {
                   <div className="two bottomalign max-sm:grid-cols-2">
                     <MoneyField id="saBrokBal" label="Brokerage" value={s.saBrokBal} onValueChange={set("saBrokBal")} />
                     <MoneyField id="saBrokBasis" label={<Tipped text="Cost basis" k="acbasis" />} value={s.saBrokBasis} onValueChange={set("saBrokBasis")} />
+                  </div>
+                  <div className="two bottomalign max-sm:grid-cols-2">
+                    <MoneyField id="saHsaBal" label={<Tipped text="HSA" k="achsa" />} value={s.saHsaBal} onValueChange={set("saHsaBal")} />
                   </div>
                   <div className="mb-3.5 border-t border-border pt-2.5" aria-live="polite">
                     <div className="actot flex-row items-baseline justify-between"><span className="k">Total starting balance</span><span className="v pr-0" id="saTotBal">{P.B ? money(g.initial) : ""}</span></div>
@@ -461,7 +464,7 @@ function AcHead({ note, rule, children }: { note?: string; rule?: boolean; child
 
 /** The cached split amounts go when a stage is rebuilt from its numbers. */
 function dropTyped(st: StageInputs): StageInputs {
-  const { cT: _t, cR: _r, cB: _b, ...rest } = st;
+  const { cT: _t, cR: _r, cB: _b, cH: _h, ...rest } = st;
   return rest;
 }
 

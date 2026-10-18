@@ -17,9 +17,11 @@ import type { EffStage } from "@/tools/stages/model";
 import type { AdvancedPlan } from "./model";
 import { solvePlan } from "./model";
 
-/* Split by account type, the three starting balances rather than one total. */
+/* Split by account type, the starting balances rather than one total (the
+   HSA's when it has one). */
 const startRows = (a: Accounts | null | undefined, total: number): SheetRows =>
-  a ? [["Traditional balance", money(a.tradBal)], ["Roth balance", money(a.rothBal)], ["Brokerage balance", money(a.brokBal)]] : [["Starting value", money(total)]];
+  a ? [["Traditional balance", money(a.tradBal)], ["Roth balance", money(a.rothBal)], ["Brokerage balance", money(a.brokBal)],
+    ...(a.hsaBal > 0 ? [["HSA balance", money(a.hsaBal)] as [string, string]] : [])] : [["Starting value", money(total)]];
 
 export type ProjectionView =
   | { kind: "advanced"; P: AdvancedPlan; R: Projection; target: string; solveFor: string; mode: string }
@@ -44,7 +46,7 @@ export function projectionShare(v: ProjectionView): ShareKit {
       } else {
         const p = v.P.p as Plan & { gross: number; fees: number }, a = v.P.a;
         inputs = [...startRows(a, p.initial), [a ? "Contribution, with match" : "Contribution", money(p.contrib, 2) + " " + p.period.toLowerCase()],
-          ["Contribution growth", pctStr(p.growth, 2) + " / yr" + (a?.gRates ? " blended (traditional " + pctStr(a.gRates.t, 2) + ", Roth " + pctStr(a.gRates.r, 2) + ", taxable " + pctStr(a.gRates.b, 2) + ")" : "")],
+          ["Contribution growth", pctStr(p.growth, 2) + " / yr" + (a?.gRates ? " blended (traditional " + pctStr(a.gRates.t, 2) + ", Roth " + pctStr(a.gRates.r, 2) + ", taxable " + pctStr(a.gRates.b, 2) + (a.hsaC > 0 ? ", HSA " + pctStr(a.gRates.h ?? a.gRates.t, 2) : "") + ")" : "")],
           ["Time period", fmtNum(p.years) + " years"], ["Rate of return", pctStr(p.gross, 2)]];
         if (p.fees > 0) inputs.push(["Fees", "−" + pctStr(p.fees, 2)]);
         inputs.push(["Inflation", pctStr(p.inflation, 2)], ["Withdrawal rate", pctStr(p.withdrawal, 2)], [a ? "Tax on withdrawals, calculated" : "Effective tax rate", pctStr(p.taxRate, 2)]);

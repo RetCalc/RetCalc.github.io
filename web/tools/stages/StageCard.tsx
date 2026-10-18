@@ -15,6 +15,7 @@ import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/to
 import { StageHead } from "@/components/tools/StageHead";
 import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import { PeriodOptions } from "@/lib/periods";
+import { withHsaRate } from "@/lib/accounts";
 import { glideNote, pctField } from "@/tools/advanced/model";
 import { stageGlideYears, stageGrowthBlend, stageSplit, type StageInputs, type StageNum } from "./model";
 import { Button } from "@/components/ui/button";
@@ -45,11 +46,11 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   /* The split amounts are the stage's total and its split. */
   const sp = stageSplit(st);
   const amt = (x: number) => groupDigits(Math.round(parseNum(st.contrib) * x * 100) / 100, true);
-  const shown = { cT: st.cT ?? amt(sp.t), cR: st.cR ?? amt(sp.r), cB: st.cB ?? amt(sp.b) };
-  const setSplit = (k: "cT" | "cR" | "cB") => (v: string) => up((c) => {
+  const shown = { cT: st.cT ?? amt(sp.t), cR: st.cR ?? amt(sp.r), cB: st.cB ?? amt(sp.b), cH: st.cH ?? amt(sp.h) };
+  const setSplit = (k: "cT" | "cR" | "cB" | "cH") => (v: string) => up((c) => {
     const typed = { ...shown, [k]: v };
-    const t = parseNum(typed.cT), r = parseNum(typed.cR), b = parseNum(typed.cB), sum = t + r + b;
-    return { ...c, ...typed, contrib: String(sum), ...(sum > 0 ? { sTrad: t / sum, sRoth: r / sum } : {}) };
+    const t = parseNum(typed.cT), r = parseNum(typed.cR), b = parseNum(typed.cB), h = parseNum(typed.cH), sum = t + r + b + h;
+    return { ...c, ...typed, contrib: String(sum), ...(sum > 0 ? { sTrad: t / sum, sRoth: r / sum, sHsa: h / sum } : {}) };
   });
 
   const blended = split && !!st.gRates;
@@ -88,7 +89,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   split ? <Button variant="link" size="inline-xs" className="mt-1.75 justify-self-start" data-grate={i} onClick={() => setDialog("growth")}>{st.gRates ? "Edit by account" : "Set by account"}</Button> : null);
   const vol = field("vol", "Volatility", <Affixed suffix="%/yr"><NumberInput data-f="vol" data-i={i} nonNeg value={st.vol} aria-label={aria + " volatility"} onValueChange={setF("vol")} /></Affixed>,
     undefined, mc ? "stagevol" : "stagevol hidden");
-  const acct = (k: "cT" | "cR" | "cB", lbl: string) => field(k, lbl, <Affixed prefix="$">
+  const acct = (k: "cT" | "cR" | "cB" | "cH", lbl: string) => field(k, lbl, <Affixed prefix="$">
     <MoneyInput data-f={k} data-i={i} nonNeg value={shown[k]} aria-label={aria + " " + lbl + " contribution"} onValueChange={setSplit(k)} /></Affixed>);
 
   /* Defaults to 3 points below this stage's own rate over its final 5 years,
@@ -136,11 +137,13 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
       {split ? (
         <>
           <div className={row}>{acct("cT", "Traditional")}{acct("cR", "Roth")}</div>
-          <div className={row}>{acct("cB", "Taxable")}
+          <div className={row}>{acct("cB", "Taxable")}{acct("cH", "HSA")}</div>
+          <div className={row}>
             {field("total", "Total", <Affixed prefix="$">
-              <InputGroupInput variant="numeric" type="text" readOnly tabIndex={-1} data-stotal={i} aria-label={aria + " total contribution"} value={groupDigits(Math.round(parseNum(st.contrib) * 100) / 100, true)} /></Affixed>)}</div>
+              <InputGroupInput variant="numeric" type="text" readOnly tabIndex={-1} data-stotal={i} aria-label={aria + " total contribution"} value={groupDigits(Math.round(parseNum(st.contrib) * 100) / 100, true)} /></Affixed>)}
+            {freq}</div>
           {adjRow}
-          <div className={row}>{freq}{growth}</div>
+          <div className={row}>{growth}{vol}</div>
         </>
       ) : (
         <>
@@ -149,21 +152,20 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
           <div className={row}>{growth}{vol}</div>
         </>
       )}
-      {split ? <div className={row}>{vol}</div> : null}
 
       {dialog === "conv" ? (
         <ConverterDialog title={label + " contribution"} amount={num.contrib} period={st.period} onClose={() => setDialog(null)}
           apply={(v, period) => up((c) => {
             if (!split) return { ...c, contrib: groupDigits(v, true), period };
             // split by account: scale each account, in whole dollars
-            const t = Math.round(v * sp.t), r = Math.round(v * sp.r), b = Math.round(v * sp.b), sum = t + r + b;
-            const { cT: _t, cR: _r, cB: _b, ...rest } = c;
-            return { ...rest, contrib: groupDigits(sum, true), period, ...(sum > 0 ? { sTrad: t / sum, sRoth: r / sum } : {}) };
+            const t = Math.round(v * sp.t), r = Math.round(v * sp.r), b = Math.round(v * sp.b), h = Math.round(v * sp.h), sum = t + r + b + h;
+            const { cT: _t, cR: _r, cB: _b, cH: _h, ...rest } = c;
+            return { ...rest, contrib: groupDigits(sum, true), period, ...(sum > 0 ? { sTrad: t / sum, sRoth: r / sum, sHsa: h / sum } : {}) };
           })} />
       ) : null}
       {dialog === "growth" && split ? (
         <GrowthRatesDialog title={label + " contribution growth"} onClose={() => setDialog(null)}
-          init={st.gRates || { t: num.growth, r: num.growth, b: num.growth }}
+          init={withHsaRate(st.gRates || { t: num.growth, r: num.growth, b: num.growth })}
           blend={(rates) => stageGrowthBlend(num, fees, rates)}
           note={matchOn ? "Your employer match rises at the blended rate." : ""}
           apply={(rates) => {

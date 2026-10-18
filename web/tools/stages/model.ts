@@ -3,27 +3,28 @@
    are read by the Budget (lib/retirement-contribs.ts). From
    src/js/app/08-stages.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { finishAccounts, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
+import { finishAccounts, growthBlend, seniorsAt, targetRate, withHsaRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
 import { PPY, finalStageSolve, projectSeries } from "@/lib/engine/typed";
 import type { Plan, SeriesGlobals, Stage } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { pctField } from "@/tools/advanced/model";
 
-/** One stage card, as typed. `sTrad` and `sRoth` split its contribution
-    across accounts; `cT`/`cR`/`cB` are the split amounts as typed, kept only
-    while one is being edited. */
+/** One stage card, as typed. `sTrad`, `sRoth` and `sHsa` split its
+    contribution across accounts (the brokerage takes the rest);
+    `cT`/`cR`/`cB`/`cH` are the split amounts as typed, kept only while one
+    is being edited. */
 export interface StageInputs {
   name?: string;
   years: string; contrib: string; period: string; growth: string; nominal: string; vol: string;
   adj: boolean;
   glideOn: boolean; glideEnd: string; glideYears: string;
-  sTrad?: number; sRoth?: number; gRates?: GrowthRates | null;
-  cT?: string; cR?: string; cB?: string;
+  sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates | null;
+  cT?: string; cR?: string; cB?: string; cH?: string;
 }
 
 /** A stage from numbers, as buildStages() showed one. */
-export function stageFields(st: Omit<Stage, "glide"> & { glide?: { on: boolean; endRate?: number; years?: number }; sTrad?: number; sRoth?: number; gRates?: GrowthRates }): StageInputs {
+export function stageFields(st: Omit<Stage, "glide"> & { glide?: { on: boolean; endRate?: number; years?: number }; sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates }): StageInputs {
   const glideOn = !!st.glide?.on;
   return {
     years: String(st.years), contrib: groupDigits(st.contrib, true), period: st.period,
@@ -31,6 +32,7 @@ export function stageFields(st: Omit<Stage, "glide"> & { glide?: { on: boolean; 
     glideOn, glideEnd: glideOn && st.glide?.endRate != null ? pctField(st.glide.endRate) : "",
     glideYears: glideOn && st.glide?.years ? String(st.glide.years) : "",
     ...(st.sTrad != null ? { sTrad: st.sTrad, sRoth: st.sRoth } : {}),
+    ...(st.sHsa ? { sHsa: st.sHsa } : {}),
     ...(st.gRates ? { gRates: st.gRates } : {}),
   };
 }
@@ -41,7 +43,7 @@ const DEFAULT_STAGES = [
 ];
 
 export const STAGE_ACCOUNT_FIELDS = {
-  saTradBal: "", saRothBal: "", saBrokBal: "", saBrokBasis: "", saSalary: "", saMatchPct: "", saMatchCap: "", saStatus: "s", saState: "AL",
+  saTradBal: "", saRothBal: "", saBrokBal: "", saBrokBasis: "", saHsaBal: "", saSalary: "", saMatchPct: "", saMatchCap: "", saStatus: "s", saState: "AL",
 };
 
 export const STAGES_DEFAULTS = {
@@ -71,7 +73,7 @@ const rate = (s: string) => parseNum(s) / 100;
 
 /** A stage in numbers: the engine's Stage plus its account split. */
 export interface StageNum extends Stage {
-  sTrad?: number; sRoth?: number; gRates?: GrowthRates | null;
+  sTrad?: number; sRoth?: number; sHsa?: number; gRates?: GrowthRates | null;
 }
 
 /** Glide years held between 1 and the stage's length, as the field shows
@@ -87,16 +89,18 @@ export function readStage(st: StageInputs): StageNum {
     years: Math.min(100, parseNum(st.years)), contrib: parseNum(st.contrib), period: st.period,
     growth: rate(st.growth), nominal: rate(st.nominal), vol: rate(st.vol), adj: st.adj, name: st.name,
     glide: st.glideOn ? { on: true, endRate: rate(st.glideEnd), years: Math.max(1, Math.round(parseNum(st.glideYears))) } : { on: false },
-    sTrad: st.sTrad, sRoth: st.sRoth, gRates: st.gRates,
+    sTrad: st.sTrad, sRoth: st.sRoth, sHsa: st.sHsa, gRates: st.gRates,
   };
 }
 
 /* A stage with no split yet puts everything in traditional. Roth is capped
-   at what's left after traditional; the brokerage takes the remainder. */
-export function stageSplit(st: { sTrad?: number; sRoth?: number }) {
+   at what's left after traditional, the HSA at what's left after both; the
+   brokerage takes the remainder. */
+export function stageSplit(st: { sTrad?: number; sRoth?: number; sHsa?: number }) {
   const t = Math.max(0, Math.min(1, st.sTrad == null ? 1 : st.sTrad));
   const r = Math.max(0, Math.min(1 - t, st.sRoth == null ? 0 : st.sRoth));
-  return { t, r, b: Math.max(0, 1 - t - r) };
+  const h = Math.max(0, Math.min(1 - t - r, st.sHsa ?? 0));
+  return { t, r, h, b: Math.max(0, 1 - t - r - h) };
 }
 
 export interface Globals extends SeriesGlobals {
@@ -145,14 +149,14 @@ export function stageGrowthBlend(st: StageNum, fee: number, rates: GrowthRates):
     glide: st.glide?.on ? { ...st.glide, endRate: (st.glide.endRate ?? 0) - fee } : st.glide,
   } as unknown as Plan;
   const s = stageSplit(st);
-  return growthBlend(e, st.years, { t: s.t, r: s.r, b: s.b }, rates);
+  return growthBlend(e, st.years, { t: s.t, r: s.r, b: s.b, h: s.h }, rates);
 }
 
 export function readStageAccounts(s: StagesInputs): Accounts {
   const n = parseNum;
   return {
-    tradBal: n(s.saTradBal), rothBal: n(s.saRothBal), brokBal: n(s.saBrokBal),
-    tradC: 0, rothC: 0, brokC: 0,
+    tradBal: n(s.saTradBal), rothBal: n(s.saRothBal), brokBal: n(s.saBrokBal), hsaBal: n(s.saHsaBal),
+    tradC: 0, rothC: 0, brokC: 0, hsaC: 0,
     brokBasis: s.saBrokBasis.trim() === "" ? null : n(s.saBrokBasis),
     salary: n(s.saSalary), matchPct: n(s.saMatchPct), matchCap: n(s.saMatchCap), status: s.saStatus, state: s.saState,
   };
@@ -176,21 +180,24 @@ export function stagesPlan(s: StagesInputs, household: Household | null): Stages
   if (!s.saOn) return { g, stages, eff: effectiveStages(g, stages), B: null };
   for (const st of stages) if (st.gRates) st.growth = stageGrowthBlend(st, g.fees, st.gRates);
   const a = readStageAccounts(s);
-  g.initial = a.tradBal + a.rothBal + a.brokBal;
+  g.initial = a.tradBal + a.rothBal + a.brokBal + a.hsaBal;
   g.acct = a;
   const eff = effectiveStages(g, stages);
   // of every dollar a stage puts in, 1/mf is yours (split three ways) and the rest is match
   const mfOf = (i: number) => eff[i].mf || 1;
-  const gOf = (k: "t" | "r" | "b") => (i: number) => (stages[i].gRates ? stages[i].gRates![k] : eff[i].growth);
+  const gOf = (k: "t" | "r" | "b" | "h") => (i: number) => (stages[i].gRates ? withHsaRate(stages[i].gRates!)[k] : eff[i].growth);
   const slice = (bal: number, share: (i: number) => number, grow?: (i: number) => number) =>
     projectSeries({ ...g, initial: bal }, eff.map((st, i) => ({ ...st, contrib: st.contrib * share(i), growth: grow ? grow(i) : st.growth })));
   const T = slice(a.tradBal, (i) => stageSplit(stages[i]).t / mfOf(i), gOf("t"));
   const Ro = slice(a.rothBal, (i) => stageSplit(stages[i]).r / mfOf(i), gOf("r"));
   const Br = slice(a.brokBal, (i) => stageSplit(stages[i]).b / mfOf(i), gOf("b"));
+  // The HSA's slice only when there's something in it: a plan without one runs as it always did.
+  const anyHsa = a.hsaBal > 0 || stages.some((st) => stageSplit(st).h > 0);
+  const Hs = anyHsa ? slice(a.hsaBal, (i) => stageSplit(stages[i]).h / mfOf(i), gOf("h")) : null;
   const Mt = slice(0, (i) => (mfOf(i) - 1) / mfOf(i));
   const years = T.totalYears;
   const basis0 = a.brokBasis == null ? a.brokBal : a.brokBasis;
-  const B = finishAccounts(a, { trad: T.fv + Mt.fv, roth: Ro.fv, brok: Br.fv }, basis0 + Br.contribTotal,
+  const B = finishAccounts(a, { trad: T.fv + Mt.fv, roth: Ro.fv, brok: Br.fv, hsa: Hs ? Hs.fv : 0 }, basis0 + Br.contribTotal,
     Math.pow(1 + g.inflation, years), g.withdrawal, seniorsAt(a, years, household));
   B.matchTotal = Mt.contribTotal;
   B.rothIn = Ro.contribTotal;

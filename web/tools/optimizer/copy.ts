@@ -30,6 +30,7 @@ export function opSources(profile: Household | null): Source[] {
       const notes = [];
       if (Math.abs(p.growth - p.inflation) > 0.0025) notes.push("Advanced raises your saving " + pctStr(p.growth, 1) + " a year; here it keeps pace with inflation");
       if (p.glide?.on) notes.push("the glide path isn't carried over");
+      if (a.hsaBal > 0 || a.hsaC > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
       out.push({ label: "Advanced", B, a, years: p.years, defl: Math.pow(1 + p.inflation, p.years), notes,
         saving: { t: mo(a.tradC + matchPer(a, ppy)), r: mo(a.rothC), b: mo(a.brokC), real: (1 + p.nominal) / (1 + p.inflation) - 1 } });
     }
@@ -44,8 +45,9 @@ export function opSources(profile: Household | null): Source[] {
         const ppy = (PPY as Record<string, number>)[e.period], sp = stageSplit(stages[0]), mine = Math.max(0, e.mine), mo = (v: number) => (v * ppy) / 12;
         saving = { t: mo(mine * sp.t + mine * (e.mf - 1)), r: mo(mine * sp.r), b: mo(mine * sp.b), real: (1 + e.nominal) / (1 + g.inflation) - 1 };
       }
-      out.push({ label: "Stages", B, a: g.acct, years, defl: Math.pow(1 + g.inflation, years), saving,
-        notes: stages.length > 1 ? ["only stage 1's saving comes across; Retirement day mode keeps every stage"] : [] });
+      const notes = stages.length > 1 ? ["only stage 1's saving comes across; Retirement day mode keeps every stage"] : [];
+      if (B.real.hsa > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
+      out.push({ label: "Stages", B, a: g.acct, years, defl: Math.pow(1 + g.inflation, years), saving, notes });
     }
   }
   return out;
@@ -90,7 +92,8 @@ export function copyFrom(s: OptimizerInputs, pick: Source, profile: Household | 
       next.retire = String(Math.round(profile.age + pick.years));
       if (a.status === "m" && profile.spouseAge && profile.spouseAge > 0) next.spRet = String(Math.round(profile.spouseAge + pick.years));
     } else notes.push("check your age at retirement: " + pick.label + " counts years, not ages");
+    if (B.real.hsa > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
   }
-  const tot = now ? a.tradBal + a.rothBal + a.brokBal : B.totalReal;
+  const tot = now ? a.tradBal + a.rothBal + a.brokBal : B.totalReal - B.real.hsa;
   return { next, msg: "Copied " + opCompact(tot) + (now ? " today" : " at retirement") + " from " + pick.label + (notes.length ? ". Note: " + notes.join("; ") + "." : "") };
 }

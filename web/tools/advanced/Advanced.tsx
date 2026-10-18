@@ -22,7 +22,7 @@ import { toolInputs, useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
-import { growthBlend, matchPer, spreadTotal, type GrowthRates } from "@/lib/accounts";
+import { growthBlend, matchPer, spreadTotal, withHsaRate, type GrowthRates } from "@/lib/accounts";
 import { goalSolve, historicalRuns, monteCarlo, project, PER_YEAR } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
@@ -103,11 +103,11 @@ export function Advanced() {
     if (!acOn) {
       // Seed from what's on screen, so switching modes doesn't change the
       // answer until you start splitting it up.
-      const blank = (["tradBal", "tradC", "rothBal", "rothC", "brokBal", "brokC"] as const).every((k) => !(parseNum(s[k]) > 0));
+      const blank = (["tradBal", "tradC", "rothBal", "rothC", "brokBal", "brokC", "hsaBal", "hsaC"] as const).every((k) => !(parseNum(s[k]) > 0));
       if (blank) {
         const tax = toolInputs("tax", TAX_DEFAULTS), H = profile;
         setState((c) => ({
-          ...c, acOn: true, tradBal: dollarsField(parseNum(c.initial)), tradC: dollarsField(parseNum(c.contrib)), rothBal: "0", rothC: "0", brokBal: "0", brokC: "0",
+          ...c, acOn: true, tradBal: dollarsField(parseNum(c.initial)), tradC: dollarsField(parseNum(c.contrib)), rothBal: "0", rothC: "0", brokBal: "0", brokC: "0", hsaBal: "0", hsaC: "0",
           brokBasis: "", salary: dollarsField(H?.income || 0), matchPct: "0", matchCap: "6",
           acStatus: H?.status || tax.status, acState: H?.state || tax.state, gRates: null,
         }));
@@ -142,7 +142,7 @@ export function Advanced() {
   const withTotal = (c: AdvancedInputs, total: number): AdvancedInputs => {
     if (!c.acOn) return { ...c, contrib: groupDigits(total, true) };
     const t = spreadTotal(advancedPlan(c, profile).a!, PER_YEAR[c.period], total);
-    return { ...c, tradC: dollarsField(t.trad), rothC: dollarsField(t.roth), brokC: dollarsField(t.brok) };
+    return { ...c, tradC: dollarsField(t.trad), rothC: dollarsField(t.roth), brokC: dollarsField(t.brok), hsaC: dollarsField(t.hsa) };
   };
 
   const applyContribution = () => {
@@ -176,8 +176,8 @@ export function Advanced() {
 
   const growthDialog = dialog === "growth" && acOn ? (
     <GrowthRatesDialog title="Contribution growth by account" onClose={() => setDialog(null)}
-      init={s.gRates || { t: parseNum(s.growth) / 100, r: parseNum(s.growth) / 100, b: parseNum(s.growth) / 100 }}
-      blend={(rates) => { const a = P.a!; return growthBlend(p, p.years, { t: a.tradC, r: a.rothC, b: a.brokC }, rates); }}
+      init={withHsaRate(s.gRates || { t: parseNum(s.growth) / 100, r: parseNum(s.growth) / 100, b: parseNum(s.growth) / 100 })}
+      blend={(rates) => { const a = P.a!; return growthBlend(p, p.years, { t: a.tradC, r: a.rothC, b: a.brokC, h: a.hsaC }, rates); }}
       note={parseNum(s.matchPct) > 0 ? "Your employer match rises at the blended rate." : ""}
       apply={(rates: GrowthRates | null) => {
         setState((c) => ({ ...c, gRates: rates, growth: rates ? c.growth : String(+(p.growth * 100).toFixed(2)) }));
@@ -207,7 +207,7 @@ export function Advanced() {
       <Button variant="link" size="inline-xs" className="mt-1.75" id="acGrowthBtn" hidden={!acOn} onClick={() => setDialog("growth")}>{blended ? "Edit rates by account" : "Set by account"}</Button>
     </div>
   );
-  const acMoney = (id: "tradBal" | "tradC" | "rothBal" | "rothC" | "brokBal" | "brokC", label: string, contrib?: boolean) => (
+  const acMoney = (id: "tradBal" | "tradC" | "rothBal" | "rothC" | "brokBal" | "brokC" | "hsaBal" | "hsaC", label: string, contrib?: boolean) => (
     <div className="field">
       <Label className="mb-1.5" htmlFor={"ac" + id[0].toUpperCase() + id.slice(1)}><span>{label}</span></Label>
       <Affixed prefix="$" suffix={contrib ? per : undefined}>
@@ -216,7 +216,7 @@ export function Advanced() {
     </div>
   );
   const a = P.a, B = P.B;
-  const mine = a ? a.tradC + a.rothC + a.brokC : 0;
+  const mine = a ? a.tradC + a.rothC + a.brokC + a.hsaC : 0;
   // The calculated rate stays in its (hidden) field after the split is
   // turned off, as it did on the old site.
   const acRate = B ? B.effRate : s.tradBal !== "" ? advancedPlan({ ...typed, acOn: true }, profile).B!.effRate : null;
@@ -259,8 +259,10 @@ export function Advanced() {
                   <AcHead note="gains taxed when sold">Taxable brokerage</AcHead>
                   <div className="two max-sm:grid-cols-2">{acMoney("brokBal", "Balance")}{acMoney("brokC", "You add", true)}</div>
                   <MoneyField id="acBrokBasis" label={<Tipped text="Cost basis" k="acbasis" />} value={s.brokBasis} onValueChange={set("brokBasis")} />
+                  <AcHead note="tax-free for health care">HSA</AcHead>
+                  <div className="two max-sm:grid-cols-2">{acMoney("hsaBal", "Balance")}{acMoney("hsaC", "You add", true)}</div>
                   <div className="mb-3.5 grid grid-cols-2 gap-x-2.5 border-t border-border pt-2.5" aria-live="polite">
-                    <div className="actot"><span className="k">Total balance</span><span className="v" id="acTotBal">{a ? money(a.tradBal + a.rothBal + a.brokBal) : ""}</span></div>
+                    <div className="actot"><span className="k">Total balance</span><span className="v" id="acTotBal">{a ? money(a.tradBal + a.rothBal + a.brokBal + a.hsaBal) : ""}</span></div>
                     <div className="actot"><span className="k">Total added</span><span className="v" id="acTotAdd">{a ? money(mine) + per : ""}</span>
                       <span className="actsub" id="acTotSub">{B?.match ? "+ " + money(B.match) + per + " match" : ""}</span></div>
                   </div>

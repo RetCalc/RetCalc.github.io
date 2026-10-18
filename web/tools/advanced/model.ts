@@ -32,7 +32,7 @@ export function advancedFields(p: PlainPlan) {
     fills them in, the state included; until then it sits on the list's
     first entry, as on the old site). */
 export const ACCOUNT_FIELDS = {
-  tradBal: "", tradC: "", rothBal: "", rothC: "", brokBal: "", brokC: "", brokBasis: "",
+  tradBal: "", tradC: "", rothBal: "", rothC: "", brokBal: "", brokC: "", brokBasis: "", hsaBal: "", hsaC: "",
   salary: "", matchPct: "", matchCap: "", acStatus: "s", acState: "AL",
 };
 
@@ -52,6 +52,7 @@ const rate = (s: string) => parseNum(s) / 100;
 export function readAccounts(s: typeof ACCOUNT_FIELDS & { gRates: GrowthRates | null }): Accounts {
   return {
     tradBal: n(s.tradBal), tradC: n(s.tradC), rothBal: n(s.rothBal), rothC: n(s.rothC), brokBal: n(s.brokBal), brokC: n(s.brokC),
+    hsaBal: n(s.hsaBal), hsaC: n(s.hsaC),
     brokBasis: s.brokBasis.trim() === "" ? null : n(s.brokBasis),
     salary: n(s.salary), matchPct: n(s.matchPct), matchCap: n(s.matchCap),
     status: s.acStatus, state: s.acState, gRates: s.gRates ?? undefined,
@@ -99,10 +100,10 @@ export function advancedPlan(s: AdvancedInputs, household: Household | null): Ad
   };
   if (!s.acOn) return { p, a: null, B: null };
   const a = readAccounts(s);
-  if (a.gRates) p.growth = growthBlend(p, p.years, { t: a.tradC, r: a.rothC, b: a.brokC }, a.gRates);
+  if (a.gRates) p.growth = growthBlend(p, p.years, { t: a.tradC, r: a.rothC, b: a.brokC, h: a.hsaC }, a.gRates);
   const B = accountBreakdown(p, a, seniorsAt(a, p.years, household));
-  p.initial = a.tradBal + a.rothBal + a.brokBal;
-  p.contrib = a.tradC + a.rothC + a.brokC + (B.match ?? 0);
+  p.initial = a.tradBal + a.rothBal + a.brokBal + a.hsaBal;
+  p.contrib = a.tradC + a.rothC + a.brokC + a.hsaC + (B.match ?? 0);
   p.taxRate = B.effRate;
   return { p, a, B };
 }
