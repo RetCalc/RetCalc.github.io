@@ -306,7 +306,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
       <CardContent>
         {/* The figures: they tick to each new value as a slider moves. */}
         <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-(--r-field) border border-border max-sm:grid-cols-2" aria-live="polite">
-          <Stat label="Saved and invested" value={empty ? DASH : money(r.saved)} tone="answer" id="pcSaved2" note={"each " + per} />
+          <Stat label="Saved and invested" value={empty ? DASH : money(r.saved)} tone="answer" id="pcSaved2" note={!empty && r.match > 0.005 ? cents(r.saved + r.match) + " with match" : undefined} />
           <Stat label="Available to save" value={empty ? DASH : money(r.saved + r.left)} id="pcAvail" />
           <Stat label={<>Taxes <TipDot k="pctaxes" /></>} value={empty ? DASH : money(r.taxes)} id="pcTaxes" note={!empty && taxCut > 0.005 ? cents(taxCut) + " saved" : undefined} />
           <Stat label={short ? "Short" : "Unassigned"} value={empty ? DASH : cents(left)} id="pcUnassigned" tone={short ? "loss" : left === 0 && !empty ? "gain" : undefined} />
@@ -434,10 +434,12 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   const ln = (kind: Row["kind"], label: string, v: number, tag?: string, per?: number[]) => rows.push({ kind, label, v, tag, per });
   /** Each person's share of a line, negated like the line. */
   const each = (k: keyof PcRun["people"][number], sign = -1) => (two ? r.people.map((x) => sign * x[k]) : undefined);
+  // With two incomes, why the 401(k) columns differ (the split favors the bigger match, then each one's room).
+  const k401Tip = (v: [number, number]) => { if (two && Math.abs(v[0] - v[1]) >= 0.01) rows[rows.length - 1].tip = "pc401ksplit"; };
   sec("Earnings"); ln("item", "Gross pay", r.check, undefined, each("gross", 1));
   if (r.k401 || r.hsa || r.health) {
     sec("Before tax");
-    if (r.k401) ln("item", "Traditional 401(k)", -r.k401, undefined, each("k401"));
+    if (r.k401) { ln("item", "Traditional 401(k)", -r.k401, undefined, each("k401")); k401Tip(r.k401s); }
     if (r.hsa) {
       ln("item", "HSA", -r.hsa, "excluded from FICA", each("hsa"));
       // With two incomes, one above the Social Security wage cap: why more of the HSA comes out of the other's pay.
@@ -452,7 +454,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   ln("item", "Social Security and Medicare", -r.fica, undefined, each("fica"));
   if (r.roth401) {
     sec("After tax");
-    ln("item", "Roth 401(k)", -r.roth401, undefined, each("roth401"));
+    ln("item", "Roth 401(k)", -r.roth401, undefined, each("roth401")); k401Tip(r.roth401s);
   }
   ln("total", two ? "Deposits to your bank" : "Deposit to your bank", r.deposit, undefined, each("deposit", 1));
   sec("Your budget", true);
