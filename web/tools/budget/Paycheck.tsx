@@ -30,6 +30,13 @@ import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
 import { cn } from "@/lib/utils";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
+import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
+import { STAGES_DEFAULTS } from "@/tools/stages/model";
+import { useHousehold } from "@/components/household/HouseholdProvider";
+import { usePopup } from "@/components/shell/Popup";
+import { useToast } from "@/components/shell/Toast";
+import { PERIOD_ADV } from "@/lib/periods";
+import { advancedHasSaving, intoAdvanced, intoStages, paycheckCopy, stagesHasSaving } from "./to-calculator";
 import { annualize, type BudgetInputs } from "./model";
 import {
   PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
@@ -284,6 +291,36 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const two = pi.two, per = two ? "month" : "check";
   const left = Math.abs(r.left) < 0.01 ? 0 : r.left, short = !empty && r.left <= -0.01;
   const taxCut = base.taxes - r.taxes;
+  const router = useRouter(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
+  /* Copy to a calculator: the saving, account by account, into Advanced or
+     Stages split by account type (asking first if that would replace
+     saving already there), then on to it. */
+  const copyOut = async () => {
+    const c = paycheckCopy(pi), total = c.trad + c.roth + c.brok + c.hsa;
+    if (!(total > 0)) { toast("Nothing is going into an account yet"); return; }
+    const amount = money(total, 2) + " " + PERIOD_ADV[c.period];
+    const i = await showPopup("Copy your saving into which calculator?", [
+      { label: "Advanced", desc: amount + ", split by account type" },
+      { label: "Stages", desc: amount + ", in the first stage" },
+    ]);
+    if (i < 0) return;
+    // Taxes in retirement, if the split starts here: the household's, else this paycheck's.
+    const seed = { status: profile?.status || pi.status, state: profile?.state || pi.state };
+    const to = i === 0 ? { id: "advanced", name: "Advanced", path: "/advanced" } : { id: "stages", name: "Stages", path: "/stages" };
+    if (i === 0) {
+      const cur = toolInputs("advanced", ADVANCED_DEFAULTS);
+      if (advancedHasSaving(cur) && await showPopup("Replace the saving in Advanced?", [
+        { label: "Replace it", desc: "Its \u201cYou add\u201d amounts and employer match. Balances stay as they are." }]) < 0) return;
+      setToolInputs("advanced", intoAdvanced(cur, c, seed));
+    } else {
+      const cur = toolInputs("stages", STAGES_DEFAULTS);
+      if (stagesHasSaving(cur) && await showPopup("Replace the saving in Stages?", [
+        { label: "Replace it", desc: "The first stage's contribution and the employer match. Balances and other stages stay as they are." }]) < 0) return;
+      setToolInputs("stages", intoStages(cur, c, seed));
+    }
+    router.push(to.path);
+    toast("Copied " + amount + " into " + to.name);
+  };
   /** Set one line by hand: the plan no longer describes it. */
   const setLine = (k: PcStep, v: number) => setState((c) => ({ ...c, [pcAmountKey(k)]: amountText(Math.max(0, v)), pcPlan: "" }));
   /* A plan: its 401(k) and IRA settings, every line filled in its order
@@ -302,7 +339,12 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const sp = pcSplit(pi);
   return (
     <Card className="min-w-0">
-      <CardHeader><CardTitle>Where the rest goes</CardTitle></CardHeader>
+      <CardHeader>
+        <CardTitle>Where the rest goes</CardTitle>
+        <CardAction>
+          <Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced or Stages" onClick={copyOut}>Copy to a calculator</Button>
+        </CardAction>
+      </CardHeader>
       <CardContent>
         {/* The figures: they tick to each new value as a slider moves. */}
         <div className="mb-4 grid grid-cols-4 overflow-hidden rounded-(--r-field) border border-border max-sm:grid-cols-2" aria-live="polite">
