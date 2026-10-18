@@ -6,7 +6,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { yearData } from "@/lib/engine/typed";
 import { BUDGET_DEFAULTS, budgetCompute, dropPlanned, type BudgetInputs } from "../model";
-import { PC_PLANS, PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcMost, pcOrder, pcPlanOrder, pcSplit, rowRole, type PcStep } from "../paycheck-math";
+import { PC_PLANS, PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcMost, pcOrder, pcPlanApply, pcPlanOrder, pcRothRoom, pcSplit, rowRole, type PcStep } from "../paycheck-math";
 
 const L = yearData().limits;
 /** A budget like the mock's: $95,000, every two weeks, Illinois. */
@@ -65,8 +65,8 @@ test("pre-tax lines cost the deposit less than they put away", () => {
   const pi = paycheckInput(budget({ pcMatch: "250", pcHsa: "100" }), "IL");
   near(pcCostPer(pi, "match"), 1 - 0.22 - 0.0495, 0.001);
   near(pcCostPer(pi, "hsa"), 1 - 0.22 - 0.0495 - 0.0765, 0.001);
-  // A Roth IRA comes out of the deposit, after it lands: it doesn't change it.
-  near(pcCostPer(pi, "rothIra"), 0, 1e-9);
+  // A Roth IRA comes out of the deposit, after it lands: dollar for dollar.
+  near(pcCostPer(pi, "rothIra"), 1, 1e-9);
   near(pcCostPer({ ...pi, roth: { ...pi.roth, match: true } }, "match"), 1, 1e-9);
 });
 
@@ -208,7 +208,7 @@ test("plans: each fills its own order, and leaves out what it skips", () => {
   assert.equal(flex.hsa, 0); assert.equal(flex.k401max, 0);
   near(flex.ef, 100); near(flex.match, pcCap(pi, "match", flex));
   assert.deepEqual(pcPlanOrder("flex"), ["match", "ef", "rothIra", "brok", "hsa", "k401max"]);
-  const tax = paycheckFill({ ...pi, roth: { match: false, k401max: false } }, [...PC_PLANS.tax.order]);
+  const tax = paycheckFill({ ...pi, roth: { match: false, k401max: false, rothIra: true } }, [...PC_PLANS.tax.order]);
   // Max tax breaks fills the 401(k) to its limit before a Roth IRA.
   near(tax.match + tax.k401max, Math.min(L.k401.base / 26, tax.match + tax.k401max));
   assert.ok(paycheckRun(pi, tax).taxes < paycheckRun(pi, flex).taxes);
@@ -236,4 +236,49 @@ test("two incomes: the HSA comes out of the pay under the Social Security wage c
   assert.ok(even.fica > 0);
   // Both under the cap: evenly.
   assert.equal(pcSplit(paycheckInput(two({ pcHsaFamily: true, pcHsa: "600" }), "IL")).hsaFirst, null);
+});
+
+test("a traditional IRA comes off the tax while it's deductible", () => {
+  // $60,000 with a 401(k): under the 2026 range, all of it deductible.
+  const low = paycheckInput(budget({ pcGross: "60,000", pcMatch: "100", pcRothIra: "200", pcIraRoth: false }), "IL");
+  const r = paycheckRun(low), roth = paycheckRun({ ...low, roth: { ...low.roth, rothIra: true } });
+  near(r.iraTrad, 200); near(r.iraDed, 200);
+  near(roth.taxes - r.taxes, 200 * (0.12 + 0.0495), 0.01);
+  near(pcCostPer(low, "rothIra"), 1 - 0.12 - 0.0495, 0.001);
+  // Over the range with a 401(k), traditional or Roth: none of it.
+  const high = paycheckInput(budget({ pcGross: "120,000", pcMatch: "100", pcMatchRoth: true, pcRothIra: "200", pcIraRoth: false }), "IL");
+  near(paycheckRun(high).iraDed, 0);
+  // No 401(k) at work: deductible at any income.
+  near(paycheckRun({ ...high, amounts: { ...high.amounts, match: 0 } }).iraDed, 200);
+});
+
+test("the Roth IRA's income range: reduced, then a backdoor, never capped", () => {
+  const room = (gross: string, patch: Partial<BudgetInputs> = {}) => {
+    const pi = paycheckInput(budget({ pcGross: gross, pcRothIra: "300", ...patch }), "IL");
+    return pcRothRoom(pi, paycheckRun(pi));
+  };
+  assert.deepEqual(room("140,000"), { direct: L.ira.base, limit: L.ira.base, over: false, reduced: false });
+  // $160,500 single: halfway through $153,000 to $168,000.
+  assert.equal(room("160,500", { pcHealth: "0" }).direct, Math.ceil(L.ira.base / 2 / 10) * 10);
+  assert.equal(room("200,000", { pcHealth: "0" }).over, true);
+  // Pre-tax 401(k) money lowers the income it reads.
+  assert.equal(room("170,000", { pcHealth: "0", pcK401max: "700" }).over, false);
+  // The line keeps its full limit either way.
+  const pi = paycheckInput(budget({ pcGross: "200,000" }), "IL");
+  assert.equal(pcCap(pi, "rothIra", pi.amounts), L.ira.base / 26);
+});
+
+test("Max tax breaks: a traditional IRA only while it's deductible", () => {
+  const low = pcPlanApply(paycheckInput(budget({ pcGross: "60,000" }), "IL"), "tax");
+  assert.equal(low.roth.rothIra, false); assert.deepEqual([low.roth.match, low.roth.k401max], [false, false]);
+  const high = pcPlanApply(paycheckInput(budget({ pcGross: "150,000", pcIraRoth: false }), "IL"), "tax");
+  assert.equal(high.roth.rothIra, true);
+  // The other plans put the IRA on Roth.
+  assert.equal(pcPlanApply(paycheckInput(budget({ pcIraRoth: false }), "IL"), "usual").roth.rothIra, true);
+});
+
+test("a line's cost is for the amount on it, even at a deduction's limit", () => {
+  // A traditional IRA at its limit: the next dollar wouldn't be deductible, but these all are.
+  const pi = paycheckInput(budget({ pcGross: "60,000", pcMatch: "100", pcRothIra: String(L.ira.base / 26), pcIraRoth: false }), "IL");
+  near(pcCostPer(pi, "rothIra"), 1 - 0.12 - 0.0495, 0.001);
 });

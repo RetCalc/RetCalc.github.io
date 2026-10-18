@@ -33,12 +33,14 @@ export var YEAR_2026 = {
      60 to 63 that replaces it; the HSA's catch-up starts at 55.
      iraPhase: the traditional IRA deduction phases out across these MAGI
      ranges when you're covered by a plan at work (cov), or on a joint
-     return when only your spouse is (spouse). */
+     return when only your spouse is (spouse). rothPhase: direct Roth IRA
+     contributions phase out across these MAGI ranges (the same notice). */
   limits: {
     k401: {base:24500, catch50:8000, catch60:11250},
     ira: {base:7500, catch50:1100},
     hsa: {self:4400, family:8750, catch55:1000},
-    iraPhase: {cov:{s:[81000, 91000], m:[129000, 149000]}, spouse:[242000, 252000]}
+    iraPhase: {cov:{s:[81000, 91000], m:[129000, 149000]}, spouse:[242000, 252000]},
+    rothPhase: {s:[153000, 168000], m:[242000, 252000]}
   },
 
   /* ---------- retirement-specific 2026 data ----------

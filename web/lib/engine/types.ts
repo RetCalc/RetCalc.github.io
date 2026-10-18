@@ -233,6 +233,7 @@ export interface YearData {
     ira: { base: number; catch50: number };
     hsa: { self: number; family: number; catch55: number };
     iraPhase: { cov: { s: Pair; m: Pair }; spouse: Pair };
+    rothPhase: { s: Pair; m: Pair };
   };
   /** The states' figures, with the year they are for: a new tax year can use
       the year before's until the states publish. */

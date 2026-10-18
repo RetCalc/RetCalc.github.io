@@ -925,7 +925,8 @@ export const PRE_KINDS = ["k401", "ira", "hsa", "health", "other"];
  * @returns {{people: Object[], paid: number, fed: number, addBack: number,
  *   ficaOff: number[], magi: number}} people: each earner's amounts, with the
  *   IRA's deductible part (iraDed), its limit (iraMax) and whether they're
- *   taken as covered at work; paid: everything set aside; fed: what comes off
+ *   taken as covered at work (a person's `covered`, when given, says so
+ *   outright: a Roth 401(k) counts as much as a traditional one); paid: everything set aside; fed: what comes off
  *   federal income tax; addBack: what the state puts back; ficaOff: what
  *   comes off each earner's FICA wages; magi: the income the IRA test reads.
  */
@@ -934,13 +935,13 @@ export function preTaxSplit(ded, wages, st, state, Y){
   const v = x => Math.max(0, +x || 0);
   const people = [0, 1].map(i => {
     const d = i < n ? ded[i] || {} : {};
-    return {k401:v(d.k401), ira:v(d.ira), hsa:v(d.hsa), health:v(d.health), other:v(d.other)};
+    return {k401:v(d.k401), ira:v(d.ira), hsa:v(d.hsa), health:v(d.health), other:v(d.other), coveredIn:d.covered};
   });
   // Income for the IRA test: AGI before the IRA deduction itself.
   const payroll = people.reduce((a, p) => a + p.k401 + p.hsa + p.health + p.other, 0);
   const magi = Math.max(0, wages[0] + (n > 1 ? wages[1] : 0) - payroll);
   // Covered first, for both: one's IRA test reads the other's coverage.
-  people.forEach(p => { p.covered = p.k401 > 0; });
+  people.forEach(p => { p.covered = p.coveredIn == null ? p.k401 > 0 : !!p.coveredIn; delete p.coveredIn; });
   people.forEach((p, i) => {
     const other = people[1 - i];
     const range = p.covered ? L.iraPhase.cov[st] : st === "m" && other.covered ? L.iraPhase.spouse : null;

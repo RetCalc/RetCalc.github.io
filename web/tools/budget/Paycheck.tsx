@@ -32,8 +32,8 @@ import { cn } from "@/lib/utils";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { annualize, type BudgetInputs } from "./model";
 import {
-  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckFill, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
-  pcPlanOrder, pcPreTax, pcRothKey, pcSplit, rowRole, type PcPlan, type PcRun, type PcStep,
+  PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
+  pcPlanApply, pcPlanOrder, pcRothRoom, pcPreTax, pcRothKey, pcSplit, rowRole, type PcPlan, type PcRun, type PcStep,
 } from "./paycheck-math";
 
 type SetState = (fn: (c: BudgetInputs) => BudgetInputs) => void;
@@ -206,18 +206,20 @@ export function Paycheck({ s, set, setState }: {
         <Itemized s={s} pi={pi} r={r} empty={empty} short={short}
           openTax={() => {
             // Income Tax, filled in from here: the pay and the pre-tax
-            // deductions by kind, a year of each. Roth and after-tax saving
-            // don't change the tax, so they stay here.
+            // deductions by kind, a year of each (a traditional IRA among
+            // them). Roth and after-tax saving don't change the tax, so they
+            // stay here.
             // With two incomes, each person's lines go to their own column.
             const yr = (v: number) => amountText(v * pi.p);
             const health = r.healths;
+            const ira = pi.roth.rothIra ? [0, 0] : pcSplit(pi).rothIra;
             setToolInputs("tax", {
               ...toolInputs("tax", TAX_DEFAULTS), mode: "normal", view: "net", gross: dollarsField(pi.gross), gross2: two ? dollarsField(pi.gross2) : "0",
               status: pi.status, state: pi.state, itemize: true, year: TAX_DEFAULTS.year,
               // To the cent, so Income Tax shows the same tax as the stub.
-              k401: yr(r.k401s[0]), ira: "0", hsa: yr(r.hsas[0]), health: yr(health[0]), dother: "0",
-              k4012: yr(r.k401s[1]), ira2: "0", hsa2: yr(r.hsas[1]), health2: yr(health[1]), dother2: "0",
-              pre: yr(r.k401 + r.hsa + r.health),
+              k401: yr(r.k401s[0]), ira: yr(ira[0]), hsa: yr(r.hsas[0]), health: yr(health[0]), dother: "0",
+              k4012: yr(r.k401s[1]), ira2: yr(ira[1]), hsa2: yr(r.hsas[1]), health2: yr(health[1]), dother2: "0",
+              pre: yr(r.k401 + r.hsa + r.health + ira[0] + ira[1]),
               // Its pop-up shows them per paycheck on this schedule, or per month with two incomes.
               preUnits: two ? "month,year,month,month,year" : "check,year,check,check,year", prePay: String(pi.p),
             });
@@ -284,18 +286,17 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const taxCut = base.taxes - r.taxes;
   /** Set one line by hand: the plan no longer describes it. */
   const setLine = (k: PcStep, v: number) => setState((c) => ({ ...c, [pcAmountKey(k)]: amountText(Math.max(0, v)), pcPlan: "" }));
-  /* A plan: its 401(k) setting, every line filled in its order (the ones it
-     leaves out at nothing), and the sliders shown in that order. */
+  /* A plan: its 401(k) and IRA settings, every line filled in its order
+     (the ones it leaves out at nothing), and the sliders shown in that order. */
   const applyPlan = (k: PcPlan) => {
-    const plan = PC_PLANS[k];
-    const roth = plan.traditional ? { match: false, k401max: false } : pi.roth;
-    const a = paycheckFill({ ...pi, roth }, [...plan.order]);
+    const { roth, amounts: a } = pcPlanApply(pi, k);
     setState((c) => ({
       ...c, ...Object.fromEntries(PC_STEPS.map((x) => [pcAmountKey(x), amountText(a[x])])),
-      ...(plan.traditional ? { pcMatchRoth: false, pcK401maxRoth: false } : {}),
+      pcMatchRoth: roth.match, pcK401maxRoth: roth.k401max, pcIraRoth: roth.rothIra,
       pcOrder: pcPlanOrder(k).join(","), pcPlan: k,
     }));
   };
+  const rr = pcRothRoom(pi, r);
   const clear = () => setState((c) => ({ ...c, ...Object.fromEntries(PC_STEPS.map((x) => [pcAmountKey(x), "0"])), pcPlan: "" }));
   const plan = (s.pcPlan in PC_PLANS ? s.pcPlan : "") as PcPlan | "";
   const sp = pcSplit(pi);
@@ -319,7 +320,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
           <Button size="sm" variant="ghost" id="pcClear" onClick={clear}>Clear</Button>
         </div>
         <p className="mt-1.5 mb-1 text-note text-muted-foreground" id="pcPlanNote">
-          {plan ? <>{PC_PLANS[plan].note}{pi.efOn ? (plan === "tax" ? ", with the emergency fund before the Roth IRA." : ", with the emergency fund right after the match.") : "."}</>
+          {plan ? <>{PC_PLANS[plan].note}{pi.efOn ? (plan === "tax" ? ", with the emergency fund before the IRA." : ", with the emergency fund right after the match.") : "."}</>
             : "A plan sets every slider at once; drag from there."}
         </p>
 
@@ -346,7 +347,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
                   <div className="flex items-center gap-4 max-sm:contents">
                     <div className="flex w-80 flex-none items-center gap-2.5 whitespace-nowrap max-sm:order-1 max-sm:w-auto max-sm:min-w-0 max-sm:flex-1 max-sm:flex-wrap max-sm:whitespace-normal">
                       <b className="font-medium">{line.name}</b>
-                      {line.k401 ? (
+                      {line.roth ? (
                         <Segmented size="compact" attr="data-kind" options={[["trad", "Traditional"], ["roth", "Roth"]] as const}
                           value={s[rothKey] ? "roth" : "trad"} onChange={(x) => setState((c) => ({ ...c, [rothKey]: x === "roth", pcPlan: "" }))} />
                       ) : null}
@@ -364,7 +365,13 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
                       {limit}
                       {over ? <span className="text-destructive"> · over the limit</span> : null}
                       {half ? " · you " + cents(half[0]) + ", spouse " + cents(half[1]) : null}
-                      {v > 0 && pcPreTax(pi, k) ? <>{two ? " · costs your deposits " : " · costs your deposit "}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
+                      {v > 0 && pcPreTax(pi, k) && (k !== "rothIra" || r.iraDed >= 0.005) ? <>{two ? " · costs your deposits " : " · costs your deposit "}<b className="font-medium text-foreground tabular-nums">{cents(v * pcCostPer(pi, k))}</b></> : null}
+                      {/* The IRA: how much of a traditional one is deductible; past the Roth's income range, the backdoor. */}
+                      {k === "rothIra" && !pi.roth.rothIra && v > 0 && r.iraDed < v - 0.005 ? <>
+                        {r.iraDed < 0.005 ? " · not deductible at your income" : " · " + cents(r.iraDed) + " of it deductible"}<TipDot k="pciradeduct" /></> : null}
+                      {k === "rothIra" && pi.roth.rothIra && (rr.over || rr.reduced) ? <>
+                        {" · "}<b className="font-medium text-foreground">{rr.over ? "Over the Roth income limit: use a backdoor Roth" : "Roth limit cut to " + money(rr.direct) + " a year" + (two ? " each" : "") + " at your income: a backdoor covers the rest"}</b>
+                        <TipDot k="pcbackdoor" /></> : null}
                     </>}
                   </div>
                 </div>
@@ -458,15 +465,13 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   if (r.ef || r.rothIra || r.brok) {
     sec(two ? "From your deposits" : "From your deposit");
     if (r.ef) ln("item", "Emergency fund", -r.ef);
-    if (r.rothIra) ln("item", "Roth IRA", -r.rothIra);
+    if (r.rothIra) ln("item", pi.roth.rothIra ? "Roth IRA" : "Traditional IRA", -r.rothIra);
     if (r.brok) ln("item", "Taxable brokerage", -r.brok);
   }
   ln("hi", short ? "Short" : "Unassigned", Math.abs(r.left) < 0.01 ? 0 : r.left);
 
   // The CSV has every row, budget lines included, whether or not they're shown.
   const csv = () => empty ? null : [["Line", ...heads], ...rows.map((x) => x.v == null ? [x.label] : [(x.kind === "sub" ? "  " : "") + x.label, ...vals(x).map((y) => (y == null ? "" : y.toFixed(2)))])];
-  // The Roth IRA's income test reads the household's income on a joint return.
-  const rothIra = pi.amounts.rothIra > 0 && pi.gross + pi.gross2 > (pi.status === "m" ? 242000 : 153000);
 
   return (
     <Card className="min-w-0" hidden={empty}>
@@ -508,9 +513,6 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
           </tbody>
         </table>
       </div>
-      {rothIra ? (
-        <div className="mcnote"><b>Roth IRA income limit.</b> At this pay, direct Roth IRA contributions phase out. A backdoor Roth or the Roth 401(k) may fit instead.</div>
-      ) : null}
     </Card>
   );
 }
