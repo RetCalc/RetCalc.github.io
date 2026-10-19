@@ -8,7 +8,7 @@ import { Html } from "@/components/common/Html";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { opTacticsLine } from "@/tools/optimizer/words";
-import { householdAtRetire } from "../schedule";
+import { CARE_AREAS, careAreaOf, earlyCost, householdAtRetire } from "../schedule";
 import { rounded } from "../words";
 import {
   C, ClaimLadder, CollegeBars, CollegeTimeline, DebtLines, HistoryBars, StackBars, HomeStrip, IncomeBars, IncomeKey, LifeMap, LifetimeBars, NeedBars, OUT_COLOR, PHASE_COLOR,
@@ -178,13 +178,22 @@ function Family({ M, p }: { M: ReportModel; p: PageInfo }) {
             {Ch.short.list.length ? <><h5 className="gap">The years your saving can&apos;t cover</h5>{cap(who)} up to <b>{money(Ch.short.most)} a month</b> more than you save, about <b>{rounded(Ch.short.total)}</b> in all. Saving can&apos;t go below $0, so that comes from your budget: trim spending then, or build savings outside retirement before it starts.</> : null}</Side></div>
       </div>
       {Ch.kids.length ? <>
-        <Sec>What the Guide counts for each child</Sec>
-        <table className="rp-t"><thead><tr><th>Age of the child</th><th>First child</th><th>Each one after</th><th className="l">Notes</th></tr></thead><tbody>
-          <tr><td>Birth to 5, in childcare</td><td>{money(Ch.cost.care)}/mo</td><td>{money(Ch.cost.care * Ch.cost.later)}/mo</td><td className="l">Without childcare: {money(Ch.cost.noCare)}/mo</td></tr>
-          <tr><td>6 to 18</td><td>{money(Ch.cost.school)}/mo</td><td>{money(Ch.cost.school * Ch.cost.later)}/mo</td><td className="l">Children you have now are already in today&apos;s spending</td></tr>
-          <tr><td>19 and up</td><td colSpan={2} className="c">{M.college ? "College, page " + pageOf(M, "college") : "Nothing in this schedule"}</td><td className="l">College is its own line</td></tr>
-        </tbody></table>
-        <p className="rp-small">Defaults from {Ch.source}. Enter your own in the Guide&apos;s Changes ahead.</p></> : null}
+        <Sec>What each child costs per month</Sec>
+        {(() => {
+          const a = M.a, care = a.childcare !== false, area = careAreaOf(a.careArea), L = Ch.cost.later;
+          const pos = (v: unknown): v is number => typeof v === "number" && isFinite(v) && v > 0;
+          const early = pos(a.childEarly) ? a.childEarly : earlyCost(care, area);
+          const school = pos(a.childSchool) ? a.childSchool : Ch.cost.school, teen = pos(a.childTeen) ? a.childTeen : Ch.cost.teen;
+          return (
+            <table className="rp-t"><thead><tr><th>Age of the child</th><th>First child</th><th>Each one after</th><th className="l">Notes</th></tr></thead><tbody>
+              <tr><td>Birth to 5</td><td>{money(early)}</td><td>{money(early * L)}</td><td className="l">{care ? "With childcare (" + CARE_AREAS.find((x) => x.id === area)!.name.toLowerCase() + "); " + money(Ch.cost.noCare) + " without" : "No paid childcare"}</td></tr>
+              <tr><td>6 to 12</td><td>{money(school)}</td><td>{money(school * L)}</td><td className="l">Children you have now are already in today&apos;s spending</td></tr>
+              <tr><td>13 to 18</td><td>{money(teen)}</td><td>{money(teen * L)}</td><td className="l">Teens cost a little more: food and getting around</td></tr>
+              <tr><td>19 and up</td><td colSpan={2} className="c">{M.college ? "College, page " + pageOf(M, "college") : "Nothing in this schedule"}</td><td className="l">College is its own line</td></tr>
+            </tbody></table>
+          );
+        })()}
+        <p className="rp-small">Typical costs from {Ch.source}, unless you entered your own. A later child costs 20% less: they share a room, clothes and gear.</p></> : null}
     </Sheet>
   );
 }

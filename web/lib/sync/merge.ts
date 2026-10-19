@@ -147,6 +147,33 @@ function mergeGuide(local: Copy, account: Copy, base: string | null, now: number
   return merged;
 }
 
+/* ---------- Paycheck to Retirement ---------- */
+type PlanLike = { step?: unknown; reached?: unknown; tools?: Record<string, unknown> };
+const asPaycheckPlan = (v: unknown): PlanLike | null => (v && typeof v === "object" && (v as PlanLike).tools && typeof (v as PlanLike).tools === "object" ? (v as PlanLike) : null);
+const PLAN_STEPS = ["start", "taxes", "budget", "paycheck", "plan", "stages", "summary"];
+/** How far along a walkthrough is: the furthest step reached, then the tools filled in. */
+const planProgress = (p: PlanLike): [number, number] => [PLAN_STEPS.indexOf(String(p.reached)), Object.keys(p.tools ?? {}).length];
+
+/** Two different walkthroughs, as the Guide's: the newer stays (or, on a
+    first sign-in, the one further along), and the other is kept whole as a
+    saved plan, named for where it came from, so nothing typed is lost. */
+function mergePaycheckPlan(local: Copy, account: Copy, base: string | null, now: number): Merged | null {
+  const l = asPaycheckPlan(local.value), a = asPaycheckPlan(account.value);
+  if (!l || !a) return null;
+  let winner: "local" | "account";
+  if (base) winner = local.at > account.at ? "local" : "account";
+  else {
+    const [pl, pa] = [planProgress(l), planProgress(a)];
+    winner = pl[0] !== pa[0] ? (pl[0] > pa[0] ? "local" : "account") : pl[1] > pa[1] ? "local" : "account";
+  }
+  const win = winner === "local" ? local : account, lose = winner === "local" ? account : local;
+  const kept = winner === "local" ? a : l;
+  const merged: Merged = { version: win.version, value: win.value, toLocal: winner === "account", toAccount: winner === "local" };
+  if (!Object.keys(kept.tools ?? {}).length) return merged;
+  merged.keep = { name: `Plan from ${lose === local ? "this device" : "your other device"}, ${stamp(lose.at || now)}`, data: kept };
+  return merged;
+}
+
 /** One side wins outright. A saved-scenario list also sheds copies an
     earlier version made, which may mean both sides need the cleaned list. */
 function take(key: string, win: Copy, from: "local" | "account"): Merged {
@@ -177,6 +204,10 @@ export function mergeItem(key: string, local: Copy | null, account: Copy | null,
     return { version: local.version, value: local.value, toLocal: false, toAccount: false };
   if (key === "guide" && local.version === account.version) {
     const g = mergeGuide(local, account, base, now);
+    if (g) return g;
+  }
+  if (key === "paycheck-plan" && local.version === account.version) {
+    const g = mergePaycheckPlan(local, account, base, now);
     if (g) return g;
   }
   // A newer storage format can't be merged with an older one: the newer wins.

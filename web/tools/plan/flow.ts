@@ -99,14 +99,17 @@ export function taxesFromPaycheck(p: PlanState): PlanState {
 export function seedAdvanced(p: PlanState, household: Household | null): PlanState {
   const pc = paycheckOf(p);
   if (!pc) return p;
-  const c = paycheckCopy(pc.pi), ages = planAges(p), fp = JSON.stringify([c, ages?.years ?? null]);
+  // Taxes in retirement are figured on your filing status and state as
+  // you gave them (Taxes, then the paycheck), never the household profile's.
+  const c = paycheckCopy(pc.pi), ages = planAges(p), fact = { status: pc.pi.status, state: pc.pi.state };
+  const fp = JSON.stringify([c, ages?.years ?? null, fact]);
   const first = !p.tools.advanced;
   if (!first && p.from.advanced === fp) return p;
   let adv = toolOf(p, "advanced");
   // The first time: balances from the household's savings (all as
   // traditional, as Advanced's own switch starts), else nothing yet.
   if (first) adv = { ...adv, initial: dollarsField(household?.saved ?? 0) };
-  adv = intoAdvanced(adv, c, { status: household?.status || pc.pi.status, state: household?.state || pc.pi.state });
+  adv = { ...intoAdvanced(adv, c, fact), acStatus: fact.status, acState: fact.state };
   if (ages) adv = { ...adv, years: String(ages.years), ...(adv.glideOn ? { glideYears: glideYearsFor(String(ages.years), adv.glideYears) } : {}) };
   if (first) {
     const spend = budgetCompute(toolOf(p, "budget")).spentYr;

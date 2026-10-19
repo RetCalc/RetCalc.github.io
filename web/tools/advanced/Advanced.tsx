@@ -17,7 +17,7 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { useToolNav, useToolState, useToolStore } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -53,6 +53,8 @@ export function Advanced() {
   const { state: s, set, setState } = useToolState(ADVANCED_DEF);
   const { profile } = useHousehold();
   const store = useToolStore(), go = useToolNav();
+  // In a walkthrough, its own steps lead on: no Drawdown or Stages hand-offs here.
+  const scope = useToolScope();
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -61,6 +63,8 @@ export function Advanced() {
   const tableRef = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("advanced", s, setState, (h, c) => {
+    // A walkthrough fills these in from its own steps.
+    if (scope) return c;
     const age = has(h.age) && h.age! > 0 && h.age! < 120 ? Math.round(h.age!) : null;
     const retire = has(h.retire) && h.retire! > 0 && h.retire! < 120 ? Math.round(h.retire!) : null;
     const yrs = age && retire && retire > age ? Math.min(100, retire - age) : null;
@@ -400,7 +404,7 @@ export function Advanced() {
                   <VerdictIcon className="size-4" aria-hidden="true" />{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</span>
               </div>
               <div id="sCoastAction" className="empty:hidden max-sm:mb-1">{C.state === "reachable"
-                ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
+                && !scope ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>
             </div>
             <div className="grid2 mt-1 border-t border-border pt-1">
               <div>
@@ -423,13 +427,13 @@ export function Advanced() {
           chart={chart} maxX={p.years} bandItems={bandLegend(p.nominal, parseNum(band) / 100)}
           tipHead={(b) => <b>Year {fmtNum(b.year)}</b>} target={S.portToday} targetLabel={TARGET_LABEL} />
 
-        <div className="grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5 wide:grid-cols-2">
+        <div className={cn("grid min-w-0 grid-cols-1 items-start gap-5 max-sm:gap-3.5", !scope && "wide:grid-cols-2")}>
           <Card>
             <CardHeader><CardTitle>Milestones</CardTitle></CardHeader>
             <CardContent id="msBody"><Milestones rows={R.years} infl={p.inflation} feeCost={V.feeCost} horizon={p.years} /></CardContent>
           </Card>
 
-          <Card>
+          <Card hidden={!!scope}>
             <CardHeader><CardTitle>Take it further</CardTitle></CardHeader>
             <CardContent>
               <p className="hint mt-0">See how long this balance lasts once you start

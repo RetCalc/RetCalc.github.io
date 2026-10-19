@@ -20,7 +20,7 @@ import { TipDot } from "@/components/shell/Tooltips";
 import { NativeRange } from "@/components/ui/native-range";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
-import { useToolNav, useToolStore } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolStore } from "@/components/tools/ToolState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -274,6 +274,8 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const two = pi.two, per = two ? "month" : "check";
   const left = Math.abs(r.left) < 0.01 ? 0 : r.left, short = !empty && r.left <= -0.01;
   const taxCut = base.taxes - r.taxes;
+  // In a walkthrough its next step does the copying, in order.
+  const scope = useToolScope();
   const store = useToolStore(), go = useToolNav(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
   /* Copy to a calculator: the saving, account by account, into Advanced or
      Stages split by account type (asking first if that would replace
@@ -325,7 +327,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
       <CardHeader>
         <CardTitle>Where the rest goes</CardTitle>
         <CardAction>
-          <Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced or Stages" onClick={copyOut}>Copy to a calculator</Button>
+          {scope ? null : <Button variant="outline" size="sm" id="pcCopyOut" disabled={empty} title="Copy what goes into each account into Advanced or Stages" onClick={copyOut}>Copy to a calculator</Button>}
         </CardAction>
       </CardHeader>
       <CardContent>
@@ -440,6 +442,7 @@ function Stat({ label, value, id, tone, note }: { label: React.ReactNode; value:
 function Itemized({ s, pi, r, empty, short, openTax }: {
   s: BudgetInputs; pi: ReturnType<typeof paycheckInput>; r: PcRun; empty: boolean; short: boolean; openTax: () => void;
 }) {
+  const scope = useToolScope();
   const [showBudget, setShowBudget] = useState(false);
   // Per check, per month (unless paid monthly, when the two are the same) and
   // per year. With two incomes: each of your checks, on its own schedule, up
@@ -506,7 +509,10 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
         <CardTitle>Itemized paycheck</CardTitle>
         <CardAction>
           <div className="flex flex-wrap justify-end gap-2">
-            <Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>
+            {/* In a walkthrough, Income Tax is its first step. */}
+            {scope
+              ? <Button variant="outline" size="sm" id="pcToTax" title="Back to step 1, Taxes: the year's taxes on this paycheck in full" onClick={openTax}>See the full tax breakdown</Button>
+              : <Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>}
             <CsvButton id="pcCsv" label="itemized paycheck" title="Download the itemized paycheck as a CSV" rows={csv} filename="retcalc-paycheck.csv" />
           </div>
         </CardAction>

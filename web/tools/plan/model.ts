@@ -35,6 +35,12 @@ export interface PlanKids {
   childcare: boolean;
   early: string;
   school: string;
+  /** The teen years (13 to 18) as typed ("" = the default); where childcare
+      would be; and each planned child's gap after the one before, when they
+      aren't evenly spaced (null: every `spacing` years). */
+  teen?: string;
+  area?: "city" | "suburb" | "rural";
+  gaps?: number[] | null;
 }
 export const NO_KIDS: PlanKids = { now: [], planned: 0, firstIn: 2, spacing: 3, childcare: true, early: "", school: "" };
 

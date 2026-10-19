@@ -43,10 +43,11 @@ test("doc 3's worked table (2b): five stages from 32 to 60 come to $6,667,133", 
 
 test("Priya and Tom: two children planned, three years apart, in childcare (doc 3, item 13's rules)", () => {
   const a = plan(fx("priya-tom").a), L = schedule(a, { monthly: saveMo(a) });
-  assert.deepEqual(brief(L), [[32, 35, 10000], [35, 38, 7500], [38, 41, 5500], [41, 44, 6500], [44, 54, 7300], [54, 57, 8800], [57, 60, 10000]]);
+  // Childcare $2,300 (suburb), $1,840 for the second; 6 to 12 $1,400 ($1,120); teens $1,500 ($1,200).
+  assert.deepEqual(brief(L), [[32, 35, 10000], [35, 38, 7700], [38, 41, 5860], [41, 44, 6760], [44, 48, 7480], [48, 51, 7380], [51, 54, 7300], [54, 57, 8800], [57, 60, 10000]]);
   assert.equal(L[0].label, "Before children");
   assert.equal(L[1].label, "A child in childcare");
-  assert.equal(L[6].label, "Empty nest");
+  assert.equal(L[8].label, "Empty nest");
   assert.equal(L[1].src, "estimated");
   // the household before 65, and each child's college years at your ages
   assert.deepEqual(householdByAge(a).filter((h, i, all) => !i || h.n !== all[i - 1].n).map((h) => [h.age, h.n]), [[32, 2], [35, 3], [38, 4], [54, 3], [57, 2]]);
@@ -57,9 +58,11 @@ test("Priya and Tom: two children planned, three years apart, in childcare (doc 
 
 test("children you have now: today's saving already pays for them, and rises as they grow", () => {
   const a: Answers = { status: "s", age: 40, retire: 65, saved: 0, contrib: 2000, employer: 0, kidsNow: [3], childcare: true };
-  assert.deepEqual(brief(schedule(a, { monthly: 2000 })), [[40, 43, 2000], [43, 56, 3000], [56, 65, 4500]]);
-  // overrides replace the defaults
-  assert.deepEqual(brief(schedule({ ...a, childEarly: 1800, childSchool: 1200 }, { monthly: 2000 })), [[40, 43, 2000], [43, 56, 2600], [56, 65, 3800]]);
+  assert.deepEqual(brief(schedule(a, { monthly: 2000 })), [[40, 43, 2000], [43, 50, 2900], [50, 56, 2800], [56, 65, 4300]]);
+  // overrides replace the defaults (the teen years keep theirs)
+  assert.deepEqual(brief(schedule({ ...a, childEarly: 1800, childSchool: 1200 }, { monthly: 2000 })), [[40, 43, 2000], [43, 50, 2600], [50, 56, 2300], [56, 65, 3800]]);
+  // childcare by area: a big city costs more before school
+  assert.deepEqual(brief(schedule({ ...a, careArea: "city" }, { monthly: 2000 })), [[40, 43, 2000], [43, 50, 3400], [50, 56, 3300], [56, 65, 4800]]);
   assert.equal(children({ ...a, kidsNow: [3, 7] })[1].n, 1);
 });
 
@@ -81,17 +84,19 @@ test("the other changes: a raise, a payoff, part-time years, a spouse's pause, a
 
 test("a stage the saving can't cover says how far short it is, and the budget's share adds up", () => {
   // Maya and Sam with a second child in three years: today's $1,200 a month,
-  // then childcare ($2,000 for a second child) on top of the first child's
-  // school years, which today's spending already covers.
+  // then childcare ($1,840 for a second child) on top of the first child's
+  // school years ($1,400, which today's spending already covers), then the
+  // first child's teens ($100 more).
   const a: Answers = { ...fx("maya-sam").a, kidsNow: [6], kidsPlanned: 1, firstIn: 3, childcare: true };
   const L = schedule(a, { monthly: saveMo(a) });
-  assert.deepEqual(brief(L), [[38, 41, 1200], [41, 47, 0], [47, 51, 0], [51, 60, 1500], [60, 62, 2700]]);
-  assert.equal(L[1].short, 800);
+  assert.deepEqual(brief(L), [[38, 41, 1200], [41, 45, 0], [45, 47, 0], [47, 51, 0], [51, 54, 1480], [54, 60, 1400], [60, 62, 2600]]);
+  assert.equal(L[1].short, 640);
   assert.ok(L[1].floored);
-  assert.equal(L[2].short, undefined, "exactly covered is not short");
+  assert.equal(L[2].short, 740);
+  assert.equal(L[3].short, 20);
   const SF = shortfall(L);
-  assert.equal(SF.total, 800 * 12 * 6);
-  assert.equal(SF.most, 800);
+  assert.equal(SF.total, 640 * 12 * 4 + 740 * 12 * 2 + 20 * 12 * 4);
+  assert.equal(SF.most, 740);
 });
 
 test("the plan the engine tests is built from the schedule, and Over.flat is the plan without it", () => {
@@ -101,5 +106,5 @@ test("the plan the engine tests is built from the schedule, and Over.flat is the
   const V = scheduleValue(32, 60, 0.0575, 150000, S.sched!);
   assert.ok(Math.abs(S.fv - V.total) < 0.01, S.fv + " vs " + V.total);
   assert.ok(S.fv < T.fv);
-  assert.ok(S.sched!.length === 7);
+  assert.equal(S.sched!.length, 9);
 });

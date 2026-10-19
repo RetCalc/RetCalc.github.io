@@ -228,6 +228,20 @@
       "notes": "The article quotes $27,000 and a monthly saving figure the tests check."
     },
     {
+      "id": "child-costs",
+      "area": "Other defaults",
+      "name": "What children cost (the Guide and Paycheck to Retirement)",
+      "what": "Monthly cost of a child by age: everyday costs before school ($1,300), 6 to 12 ($1,400) and 13 to 18 ($1,500); childcare on top by area (big city $1,500, suburb or small city $1,000, rural $700); 20% less for a later child. Rounded to $100.",
+      "where": ["web/tools/guide/schedule.ts: CHILD_COST and the source line CHILD_SOURCE"],
+      "source": "USDA, Expenditures on Children by Families, 2015 (middle-income married couples, Table 1), brought to today's prices with the CPI-U; Department of Labor Women's Bureau, National Database of Childcare Prices (center care, by county size), brought forward with the CPI for day care and preschool",
+      "cadence": "Yearly: carry both forward with the CPI; switch to a newer USDA study or childcare-price release when one comes out",
+      "last_updated": "2026-10-19",
+      "data_for": "2026 prices",
+      "next_due": "2027-10-01",
+      "priority": "low",
+      "notes": "USDA middle-income totals for ages 6-11 and 12-17 (teens about 5% more), and ages 0-5 less child care and education. Childcare from 2018 county medians in 2022 dollars (infants: $8,310 in counties under 100,000 people, $17,171 at 1 million or more), averaged over ages 0 to 5 and brought forward. Changing them moves the Guide's numbers for plans with children: re-record the numbers baseline."
+    },
+    {
       "id": "sepp-rate",
       "area": "Other defaults",
       "name": "72(t) interest rate default",

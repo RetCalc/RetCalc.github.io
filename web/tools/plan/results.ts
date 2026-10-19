@@ -44,6 +44,13 @@ export interface PlanSummary {
   groups: { group: string; yr: number }[];
   /** At retirement, today's dollars. */
   atRetire: { total: number; fv: number; byAcct: Record<Acct, number> | null; afterTax: number; withdrawal: number; taxRate: number };
+  /** What the balance at retirement is made of, in the dollars of the day:
+      what you have today, what you'll put in, your employer's match, and
+      the growth on all of it (fv less the other three). */
+  made: { start: number; own: number; match: number; growth: number };
+  /** The same in today's dollars: today's savings as they are, each year's
+      saving brought back to today's dollars, and growth the rest. */
+  madeReal: { start: number; own: number; match: number; growth: number };
   target: { solveFor: string; target: number };
   /** What the plan's spending in retirement is measured against: your
       after-tax goal in Advanced, or without one, your budget's year. */
@@ -100,12 +107,15 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
 
   // The plan: Stages when the walkthrough went on there, else Advanced.
   let climb: ClimbRow[] = [], fv = 0, total = 0, afterTax = 0, byAcct: Record<Acct, number> | null = null;
-  let infl = 0, years = 0, taxRate = 0, withdrawal = 0;
+  let infl = 0, years = 0, taxRate = 0, withdrawal = 0, made = { start: 0, own: 0, match: 0, growth: 0 }, inReal = 0;
   let assumptions: PlanSummary["assumptions"];
   let stages: PlanSummary["stages"] = null;
   if (useStages) {
     const st = toolOf(p, "stages"), V = stagesCompute(st, household), P = V.P, g = P.g;
     infl = g.inflation; years = V.R.totalYears; fv = V.R.fv; total = V.R.fvReal; afterTax = V.R.afterTax; taxRate = g.taxRate; withdrawal = g.withdrawal;
+    const mt = P.B?.matchTotal ?? 0;
+    made = { start: g.initial, own: V.R.contribTotal - mt, match: mt, growth: V.R.fv - g.initial - V.R.contribTotal };
+    inReal = V.R.calRows.reduce((t, r) => t + r.contrib / Math.pow(1 + g.inflation, r.year), 0);
     if (P.B) byAcct = { trad: P.B.real.trad, roth: P.B.real.roth, brok: P.B.real.brok, hsa: P.B.real.hsa };
     // Each account's slice of every stage, as stagesPlan runs it.
     const a = g.acct;
@@ -139,6 +149,9 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   } else {
     const V = advancedCompute(adv, household), P = V.P, pl = P.p;
     infl = pl.inflation; years = pl.years; fv = V.R.fv; total = V.R.fvReal; afterTax = V.R.afterTax; taxRate = pl.taxRate; withdrawal = pl.withdrawal;
+    const mt = P.B?.matchTotal ?? 0;
+    made = { start: pl.initial, own: V.R.contribTotal - mt, match: mt, growth: V.R.fv - pl.initial - V.R.contribTotal };
+    inReal = V.R.years.reduce((t, r) => t + r.contrib / Math.pow(1 + pl.inflation, r.year), 0);
     if (P.B) byAcct = { trad: P.B.real.trad, roth: P.B.real.roth, brok: P.B.real.brok, hsa: P.B.real.hsa };
     const one = (bal: number, c: number) => yearEnds(projectSeries({ initial: bal, inflation: pl.inflation, withdrawal: pl.withdrawal, taxRate: pl.taxRate, fees: 0 },
       [{ years: pl.years, contrib: c, period: pl.period, growth: pl.growth, nominal: pl.nominal, vol: pl.vol, glide: pl.glide }]));
@@ -207,7 +220,11 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     lines, spendYear: bc.spentYr, groups, todayMonthly, budgetLines, ef: { months: bc.ef, target: bc.efTarget },
     facts: { status: pi.two ? "Married, two incomes" : pi.status === "m" ? "Married, filing jointly" : "Single", stateName: r.stateName, taxYear: tax.year,
       freqName: FREQ[pi.pays[0]] ?? "Every two weeks", twoIncomes: pi.two },
-    atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate },
+    atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate }, made,
+    madeReal: (() => {
+      const put = made.own + made.match || 1;
+      return { start: made.start, own: inReal * (made.own / put), match: inReal * (made.match / put), growth: total - made.start - inReal };
+    })(),
     target: { solveFor: adv.solveFor, target: parseNum(adv.target) },
     goal: adv.solveFor === "After-Tax Withdrawal" && parseNum(adv.target) > 0 ? { v: parseNum(adv.target), fromBudget: false } : { v: bc.spentYr, fromBudget: true },
     climb, milestones, stages, children, kids, kidSource: CHILD_SOURCE, assumptions,

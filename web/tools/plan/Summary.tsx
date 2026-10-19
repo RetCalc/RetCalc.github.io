@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { useToast } from "@/components/shell/Toast";
-import { HeroReading } from "@/components/common/Reading";
+import { CompositionBar, HeroReading, PartKey, type PartTone } from "@/components/common/Reading";
 import { Segmented } from "@/components/common/Readout";
 import { ChartFrame, HoverMarks, XAxis, YAxis, pathD, useChartSize } from "@/components/charts/ChartFrame";
 import { LegendToggle } from "@/components/charts/Legend";
@@ -20,11 +20,14 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { money, pctStr } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
+import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { copyToTools } from "./copy";
 import { PLAN_DEFAULTS, loadPlan, type PlanState, type StepId } from "./model";
 import { ACCT_NAMES, planSummary, type Acct, type PlanSummary } from "./results";
 
-const ACCT_COLOR: Record<Acct, string> = { trad: SERIES.sky, roth: SERIES.teal, brok: SERIES.lavender, hsa: SERIES.gray };
+/* One blue-gray in four shades: the accounts read as one calm shape, and
+   amber is the plan line alone. */
+const ACCT_COLOR: Record<Acct, string> = { trad: "var(--ds-acct-1)", roth: "var(--ds-acct-2)", brok: "var(--ds-acct-3)", hsa: "var(--ds-acct-4)" };
 const ACCTS: Acct[] = ["trad", "roth", "brok", "hsa"];
 /** A family's shades: the series color, then lighter. */
 const shade = (c: string, i: number) => (i === 0 ? c : `color-mix(in srgb, ${c} ${Math.max(35, 100 - i * 22)}%, transparent)`);
@@ -45,6 +48,7 @@ export function Summary({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => 
       <Climb S={S} />
       {S.children ? <ChildrenCost S={S} /> : null}
       {S.stages ? <StageLine S={S} /> : null}
+      <WhatNext S={S} />
       <Actions plan={plan} goTo={goTo} />
     </>
   );
@@ -100,7 +104,7 @@ function PayCard({ S }: { S: PlanSummary }) {
     <Card className="col-span-full">
       <CardHeader>
         <CardTitle>Where your pay goes</CardTitle>
-        <CardDescription>{money(k(y.gross))} of gross pay {unit === "year" ? "a year" : unit === "month" ? "a month" : "a paycheck"}, every dollar of it.
+        <CardDescription>{money(k(y.gross))} of gross pay {unit === "year" ? "a year" : unit === "month" ? "per month" : "a paycheck"}, every dollar of it.
           {y.match > 0 ? " Your employer adds " + money(k(y.match)) + " on top." : ""}</CardDescription>
         <CardAction><Segmented size="compact" attr="data-ppunit" options={units} value={unit} onChange={setUnit} /></CardAction>
       </CardHeader>
@@ -136,7 +140,7 @@ function PayCard({ S }: { S: PlanSummary }) {
 
 /* ---- each account ---- */
 function Accounts({ S }: { S: PlanSummary }) {
-  const per = S.per === "check" ? "a paycheck" : "a month";
+  const per = S.per === "check" ? "a paycheck" : "per month";
   const shown = ACCTS.filter((a) => S.inflow[a] > 0.004 || (S.atRetire.byAcct?.[a] ?? 0) > 1);
   return (
     <Card className="col-span-full">
@@ -246,7 +250,7 @@ function Climb({ S }: { S: PlanSummary }) {
               ))}
               <YAxis size={size} ticks={ticks} Y={Y} />
               <XAxis size={size} count={rows.length - 1} X={(i) => X(a0 + i)} label={label} />
-              {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_COLOR[b.a]} fillOpacity={0.88} />)}
+              {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_COLOR[b.a]} stroke="var(--ds-surface)" strokeWidth={0.75 * sw} />)}
               <path d={pathD(rows.map((r, j) => [X(r.age), Y(tot[j])]))} fill="none" stroke={SERIES.plan} strokeWidth={2.5 * sw} strokeLinejoin="round" />
               {marks.map((m) => (
                 <g key={m.label}>
@@ -272,7 +276,7 @@ function Climb({ S }: { S: PlanSummary }) {
         </div>
         {/* Under the chart: the end of the climb by account, the
             milestones, and what each numbered stage is. */}
-        <div className="mt-2 grid grid-cols-1 gap-x-10 gap-y-5 border-t border-border pt-4 text-note md:grid-cols-3">
+        <div className={cn("mt-2 grid grid-cols-1 gap-x-10 gap-y-5 border-t border-border pt-4 text-note", S.stages ? "md:grid-cols-3" : "md:grid-cols-2")}>
         <div className="min-w-0">
           <div className="text-label text-muted-foreground">At {a1}{future ? ", future dollars" : ", today's dollars"}</div>
           <div className="text-3xl font-medium tabular-nums">{money(tot[tot.length - 1])}</div>
@@ -283,10 +287,7 @@ function Climb({ S }: { S: PlanSummary }) {
           </dl>
         </div>
         <div className="min-w-0">
-          {marks.length ? <>
-            <div className="text-label text-muted-foreground">Milestones</div>
-            <p className="m-0 mt-1 tabular-nums">{marks.map((m) => m.label + " at " + rows[m.i].age).join(" · ")}</p>
-          </> : null}
+          <MadeOf S={S} future={future} />
         </div>
         <div className="min-w-0">
           {S.stages ? <>
@@ -299,6 +300,38 @@ function Climb({ S }: { S: PlanSummary }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+/* ---- what the balance is made of: today's savings, what you put in,
+   the match, and growth, in the dollars the chart shows ---- */
+function MadeOf({ S, future }: { S: PlanSummary; future: boolean }) {
+  // Today's dollars: each part brought back on its own (today's savings
+  // are already in them); the dollars of the day: as they'll be.
+  const M = future ? S.made : S.madeReal;
+  const parts: { tone: PartTone; label: string; v: number }[] = [
+    { tone: "start" as PartTone, label: "What you have today", v: M.start },
+    { tone: "in" as PartTone, label: "What you'll put in", v: M.own },
+    { tone: "teal" as PartTone, label: "Your employer's match", v: M.match },
+    { tone: "gain" as PartTone, label: "Growth on all of it", v: M.growth },
+  ].filter((x) => x.v > 0.5);
+  const all = parts.reduce((t, x) => t + x.v, 0) || 1, grow = M.growth / all;
+  return (
+    <>
+      <div className="text-label text-muted-foreground">Where it comes from</div>
+      <div className="text-3xl font-medium tabular-nums">{pctStr(grow, 0)} growth</div>
+      <div className="mb-2 text-label text-muted-foreground">{grow >= 0.5 ? "Most of it is what your saving earns, not what you put in" : "What you put in, and what it earns"}</div>
+      <CompositionBar parts={parts.map((x) => ({ tone: x.tone, share: x.v / all }))} />
+      <dl className="m-0">
+        {parts.map((x) => (
+          <div key={x.label} className="flex items-baseline gap-2 border-b border-border py-1.5">
+            <dt className="flex-1 text-muted-foreground"><PartKey tone={x.tone} />{x.label}</dt>
+            <dd className="m-0 tabular-nums">{money(x.v)}</dd>
+            <dd className="m-0 w-10 text-right text-muted-foreground tabular-nums">{pctStr(x.v / all, 0)}</dd>
+          </div>
+        ))}
+      </dl>
+    </>
   );
 }
 
@@ -327,7 +360,7 @@ function ChildrenCost({ S }: { S: PlanSummary }) {
         <div className="grid grid-cols-1 gap-x-12 gap-y-4 border-b border-border pb-5 sm:grid-cols-3">
           <div><div className="text-label text-muted-foreground">Until you retire at {a1}</div>
             <div className="text-3xl font-medium tabular-nums">{money(K.total)}</div>
-            <div className="text-label text-muted-foreground">At the most {money(K.peak.monthly)} a month, at {K.peak.age}</div></div>
+            <div className="text-label text-muted-foreground">At the most {money(K.peak.monthly)} per month, at {K.peak.age}</div></div>
           <div><div className="text-label text-muted-foreground">Paid for by saving less</div>
             <div className="text-3xl font-medium tabular-nums">{money(K.fromSaving)}</div>
             <div className="text-label text-muted-foreground">{K.fromSpending > 0.5 ? "and " + money(K.fromSpending) + " cut from spending, when saving ran out" : "Saving covered all of it"}</div></div>
@@ -341,14 +374,14 @@ function ChildrenCost({ S }: { S: PlanSummary }) {
             <div key={r.label} className="flex items-center gap-3">
               <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">{r.label}</b><span className="block text-label text-muted-foreground">{r.born >= a0 ? "Born at " + r.born : "Age " + (a0 - r.born) + " now"}</span></div>
               <div className="relative h-9 min-w-0 flex-1">
-                {r.bands.map((b) => <Seg key={b.from} {...b} c={b.early ? CARE : SCHOOL} title={r.label + ", ages " + b.from + " to " + (b.to - 1) + " (your age): " + money(b.monthly) + " a month, " + (b.early ? "before school" : "at school")} />)}
+                {r.bands.map((b) => <Seg key={b.from} {...b} c={b.early ? CARE : SCHOOL} title={r.label + ", ages " + b.from + " to " + (b.to - 1) + " (your age): " + money(b.monthly) + " per month, " + (b.early ? "before school" : "at school")} />)}
               </div>
             </div>
           ))}
           <div className="flex items-center gap-3 border-t border-border pt-2">
             <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">A month</span></div>
             <div className="relative h-9 min-w-0 flex-1">
-              {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Ages " + t.from + " to " + (t.to - 1) + ": " + money(t.monthly) + " a month"} />)}
+              {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Ages " + t.from + " to " + (t.to - 1) + ": " + money(t.monthly) + " per month"} />)}
             </div>
           </div>
           <div className="flex gap-3">
@@ -360,7 +393,7 @@ function ChildrenCost({ S }: { S: PlanSummary }) {
         </div>
         <div className="legend mt-2 px-0!">
           <span><i className="bg-series-rose"></i>Before school (childcare)</span><span><i className="bg-series-lavender"></i>At school</span>
-          <span><i className="bg-series-sky"></i>All the children, a month</span><span>Ages are yours</span>
+          <span><i className="bg-series-sky"></i>All the children, per month</span><span>Ages are yours</span>
         </div>
       </CardContent>
     </Card>
@@ -372,7 +405,7 @@ function StageLine({ S }: { S: PlanSummary }) {
   const st = S.stages!, total = st.reduce((t, s) => t + (s.to - s.from), 0) || 1;
   return (
     <Card className="col-span-full">
-      <CardHeader><CardTitle>Your life stages</CardTitle><CardDescription>Each stretch of years and what you save in it, a month in today&apos;s dollars.</CardDescription></CardHeader>
+      <CardHeader><CardTitle>Your life stages</CardTitle><CardDescription>Each stretch of years and what you save in it, per month in today&apos;s dollars.</CardDescription></CardHeader>
       <CardContent>
         {/* The years to scale, then each stage in full. */}
         <div className="flex h-7 w-full overflow-hidden rounded-md" aria-hidden="true">
@@ -386,8 +419,8 @@ function StageLine({ S }: { S: PlanSummary }) {
             <li key={s.from} className="min-w-0 rounded-lg border border-border bg-muted px-3.5 py-3">
               <div className="flex items-baseline gap-2"><span className="text-label text-muted-foreground tabular-nums">{i + 1}</span><b className="font-semibold">{s.name}</b></div>
               <div className="text-label text-muted-foreground tabular-nums">Ages {s.from} to {s.to - 1}, {s.to - s.from} {s.to - s.from === 1 ? "year" : "years"}</div>
-              <div className="mt-2 text-xl font-medium tabular-nums">{money(s.monthly)}<span className="text-label font-normal text-muted-foreground"> saved a month</span></div>
-              <div className="text-label text-muted-foreground tabular-nums">{s.kidCost > 0 ? "Children cost " + money(s.kidCost) + " a month" : "No child costs"}</div>
+              <div className="mt-2 text-xl font-medium tabular-nums">{money(s.monthly)}<span className="text-label font-normal text-muted-foreground"> saved per month</span></div>
+              <div className="text-label text-muted-foreground tabular-nums">{s.kidCost > 0 ? "Children cost " + money(s.kidCost) + " per month" : "No child costs"}</div>
             </li>
           ))}
         </ol>
@@ -397,6 +430,26 @@ function StageLine({ S }: { S: PlanSummary }) {
 }
 
 /* ---- what next ---- */
+/* ---- what next: how long it lasts, in the Drawdown Simulator ---- */
+function WhatNext({ S }: { S: PlanSummary }) {
+  const router = useRouter();
+  return (
+    <Card className="col-span-full">
+      <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+        <div className="min-w-0">
+          <CardTitle>What next: will it last?</CardTitle>
+          <p className="hint mt-1 mb-0 max-w-copy">See how long {money(S.atRetire.total)} lasts once you start spending it, tested against every market since 1926.
+            The Drawdown Simulator opens with your balance at {S.retire} filled in.</p>
+        </div>
+        <Button variant="outline" className="self-start sm:self-center" onClick={() => {
+          sendToDrawdown({ initial: Math.round(S.atRetire.total) });
+          router.push("/drawdown");
+        }}>Open the Drawdown Simulator<i className="arw" aria-hidden="true"></i></Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function Actions({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) {
   const router = useRouter(), toast = useToast();
   return (

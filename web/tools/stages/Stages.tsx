@@ -15,7 +15,7 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { useToolNav, useToolState, useToolStore } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -49,6 +49,8 @@ export function Stages() {
   const { state: s, set, setState } = useToolState(STAGES_DEF);
   const { profile } = useHousehold();
   const store = useToolStore(), go = useToolNav();
+  // In a walkthrough, its Summary leads on to Drawdown, not this step.
+  const scope = useToolScope();
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -56,6 +58,8 @@ export function Stages() {
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("stages", s, setState, (h, c) => {
+    // A walkthrough fills these in from its own steps.
+    if (scope) return c;
     const next = { ...c };
     if (c.saOn) {
       if (has(h.income)) next.saSalary = dollarsField(h.income!);
@@ -392,7 +396,7 @@ export function Stages() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card hidden={!!scope}>
             <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
               <div className="min-w-0">
                 <CardTitle>Take it further</CardTitle>

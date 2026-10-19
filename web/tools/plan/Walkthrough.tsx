@@ -12,7 +12,8 @@ import Link from "next/link";
 import { CheckIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { ToolBar } from "@/components/shell/ToolBar";
-import { TAB_STORE, ToolScopeProvider, decodeHash, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
+import { useToast } from "@/components/shell/Toast";
+import { TAB_STORE, ToolScopeProvider, decodeHash, readScenarios, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DASH, money } from "@/lib/format";
@@ -99,11 +100,20 @@ export function Walkthrough() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
     if (v?.t === PLAN_STORE.key && v.d) load(v.d as ToolInputs);
   }, [load]);
+  const toast = useToast();
   useEffect(() => {
-    const on = (e: Event) => { if ((e as CustomEvent<string[]>).detail?.includes(PLAN_STORE.key)) { rereadPlan(); setRev((r) => r + 1); } };
+    const on = (e: Event) => {
+      const keys = (e as CustomEvent<string[]>).detail ?? [];
+      if (keys.includes(PLAN_STORE.key)) { rereadPlan(); setRev((r) => r + 1); }
+      // Two devices both changed it: the other version is a saved plan now.
+      if (keys.includes("scenarios-" + PLAN_STORE.key)) {
+        const kept = readScenarios(PLAN_STORE.key).filter((x) => x.name.startsWith("Plan from")).pop();
+        if (kept) toast("Your other version is saved as “" + kept.name + "”: pick it from your saved plans");
+      }
+    };
     window.addEventListener("retcalc:synced", on);
     return () => window.removeEventListener("retcalc:synced", on);
-  }, []);
+  }, [toast]);
 
   if (!plan) return <div className="min-h-96" aria-busy="true"></div>;
   const step = plan.step, idx = stepIndex(step);
@@ -170,7 +180,7 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
 /* ---- the running figures: the paycheck so far ---- */
 function RunningStrip({ plan }: { plan: PlanState }) {
   const s = strip(plan);
-  const per = s ? (s.per === "month" ? "a month" : "a paycheck") : "a paycheck";
+  const per = s ? (s.per === "month" ? "per month" : "a paycheck") : "a paycheck";
   const fig = (label: string, v: number | null, note?: string) => (
     <div className="min-w-0">
       <div className="text-label text-muted-foreground">{label}</div>
@@ -185,7 +195,7 @@ function RunningStrip({ plan }: { plan: PlanState }) {
         {fig("Gross pay", s?.gross ?? null, per)}
         {fig("Taxes", s?.taxes ?? null, s ? money(s.taxes * s.p) + " a year" : undefined)}
         {fig("Take-home", s?.takeHome ?? null, s ? money(s.takeHome * s.p) + " a year" : undefined)}
-        {fig("Spending", s?.spend ?? null, s ? money((s.spend * s.p) / 12) + " a month" : undefined)}
+        {fig("Spending", s?.spend ?? null, s ? money((s.spend * s.p) / 12) + " per month" : undefined)}
         {fig(s?.planned ? "Saved and invested" : "Saved pre-tax", s?.saved ?? null, s?.planned ? money(s.saved * s.p) + " a year" : "Planned in step 3")}
         <div className="min-w-0">
           <div className="text-label text-muted-foreground">{left != null && left < 0 ? "Short" : "Left over"}</div>

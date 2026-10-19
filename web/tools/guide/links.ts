@@ -31,7 +31,7 @@ export function cleanAnswers(o: unknown): Answers {
   for (const [k, x] of Object.entries(o)) {
     if (!/^[A-Za-z0-9]{1,24}$/.test(k)) continue;
     if (k === "events") { const e = cleanEvents(x); if (e) a[k] = e; continue; }
-    if (k === "kidsNow") { if (Array.isArray(x)) a[k] = x.filter((n) => typeof n === "number" && isFinite(n)).slice(0, 12); continue; }
+    if (k === "kidsNow" || k === "kidGaps") { if (Array.isArray(x)) a[k] = x.filter((n) => typeof n === "number" && isFinite(n)).slice(0, 6); continue; }
     if ((typeof x === "number" && isFinite(x)) || typeof x === "boolean" || x === null) a[k] = x;
     else if (typeof x === "string" && /^[A-Za-z0-9 .,%\-]{0,40}$/.test(x)) a[k] = x;
   }

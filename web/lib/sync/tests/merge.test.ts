@@ -189,3 +189,20 @@ test("the plan kept by a merge is the shape the toolbar's Save loads", () => {
   assert.deepEqual(Object.keys(k.data as object).sort(), ["a", "done", "pace", "src", "v"]);
   assert.equal((k.data as { v: number }).v, 2);
 });
+
+test("Paycheck to Retirement on two devices: the newer stays, the other is kept whole as a saved plan", () => {
+  const phone = { step: "summary", reached: "summary", age: "29", tools: { tax: { gross: "95,000" }, budget: { rows: [] } } };
+  const laptop = { step: "budget", reached: "budget", age: "29", tools: { tax: { gross: "105,000" } } };
+  const base = fingerprint({ step: "start", reached: "start", tools: {} });
+  const m = mergeItem("paycheck-plan", c(laptop, 300), c(phone, 200), base)!;
+  assert.deepEqual(m.value, laptop);
+  assert.equal(m.toAccount, true);
+  assert.deepEqual(m.keep!.data, phone);
+  assert.match(m.keep!.name, /^Plan from your other device, /);
+  // First sign-in (no shared version): the one further along stays.
+  const f = mergeItem("paycheck-plan", c(laptop, 300), c(phone, 200), null)!;
+  assert.deepEqual(f.value, phone);
+  assert.match(f.keep!.name, /^Plan from this device, /);
+  // Nothing typed on the other side: nothing to keep.
+  assert.equal(mergeItem("paycheck-plan", c(laptop, 300), c({ step: "start", reached: "start", tools: {} }, 200), base)!.keep, undefined);
+});

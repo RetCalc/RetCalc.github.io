@@ -109,6 +109,7 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
 .gd-h3{font-size:13px;font-weight:600;color:var(--text);margin:20px 0 10px}
 .gd-choices{display:grid;gap:9px;margin:0 0 18px}
 .gd-choices.two{grid-template-columns:1fr 1fr}
+.gd-choices.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .gd-choice{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;
   padding:13px 15px;border-radius:var(--r-card);border:1px solid var(--line);
   background:var(--panel-2);color:var(--text);cursor:pointer;font:inherit;
@@ -274,7 +275,7 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
   .gd-q,.panel > h2.gd-q{font-size:20px}
   .gd-lead{font-size:14px}
   .gd-fields{grid-template-columns:minmax(0,1fr)}
-  .gd-choices.two{grid-template-columns:minmax(0,1fr)}
+  .gd-choices.two,.gd-choices.three{grid-template-columns:minmax(0,1fr)}
 }
 
 /* Adjust your plan: the target, the option cards, and the before/after. */

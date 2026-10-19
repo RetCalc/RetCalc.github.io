@@ -13,7 +13,7 @@ import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
 import { Tipped } from "@/components/shell/Tooltips";
-import { useToolState } from "@/components/tools/ToolState";
+import { useToolScope, useToolState } from "@/components/tools/ToolState";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
@@ -54,7 +54,9 @@ function Key({ c }: { c: string }) {
 }
 
 export function Tax() {
-  const { state: s, set, setState } = useToolState(TAX_DEF);
+  // In a walkthrough this is your paycheck's taxes: never retirement income.
+  const scope = useToolScope();
+  const { state: s, set, setState } = useToolState(TAX_DEF, scope ? (c) => (c.mode === "retire" ? { ...c, mode: "normal" as const } : c) : undefined);
   useShareKit(TAX_DEF.id, taxShare(s));
   const [active, setActive] = useState<number | null>(null);
   const [preOpen, setPreOpen] = useState(false);
@@ -256,7 +258,7 @@ export function Tax() {
               <CardDescription>A year of pay, or a year of withdrawals in retirement.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-4">
+              <div className="mb-4" hidden={!!scope}>
                 <Segmented id="segTxMode" size="fill" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
               </div>
 
