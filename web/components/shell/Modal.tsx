@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   onClose: () => void;
-  size?: "default" | "wide" | "guide" | "study";
+  size?: "default" | "wide" | "guide" | "study" | "table";
   /** What gets focus when it opens (a selector inside the dialog); a text
       field's contents are selected too. */
   focus?: string;

@@ -12,11 +12,14 @@ import { useHousehold } from "@/components/household/HouseholdProvider";
 import { useToast } from "@/components/shell/Toast";
 import { HeroReading } from "@/components/common/Reading";
 import { Segmented } from "@/components/common/Readout";
-import { fmtAxisMoney, niceAxis } from "@/components/charts/scale";
+import { ChartFrame, HoverMarks, XAxis, YAxis, pathD, useChartSize } from "@/components/charts/ChartFrame";
+import { Legend, LegendToggle } from "@/components/charts/Legend";
+import { StackedBars } from "@/components/charts/StackedBars";
+import { TipRow } from "@/components/charts/TipRows";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { money, pctStr } from "@/lib/format";
-import { SERIES } from "@/lib/hues";
+import { SERIES, hatched } from "@/lib/hues";
 import { cn } from "@/lib/utils";
 import { copyToTools } from "./copy";
 import { PLAN_DEFAULTS, loadPlan, type PlanState, type StepId } from "./model";
@@ -41,6 +44,7 @@ export function Summary({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => 
       <PayCard S={S} />
       <Accounts S={S} />
       <Climb S={S} />
+      {S.money ? <MoneyByAge S={S} /> : null}
       {S.stages ? <StageLine S={S} /> : null}
       <Actions plan={plan} goTo={goTo} />
     </>
@@ -50,16 +54,16 @@ export function Summary({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => 
 /* ---- the answer ---- */
 function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
   const A = S.atRetire, perYr = S.p, savedYr = (S.inflow.trad + S.inflow.roth + S.inflow.brok + S.inflow.hsa) * perYr;
-  const want = S.target.solveFor === "After-Tax Withdrawal" ? S.target.target : null;
+  const want = S.goal.v > 0 ? S.goal.v : null;
   const meets = want != null ? A.afterTax >= want - 0.5 : null;
   return (
     <Card size="flush" className="col-span-full">
       <HeroReading tone="answer"
         hero={{ label: "At " + S.retire + ", in today's dollars", id: "ppTotal", value: money(A.total),
-          note: (stages ? "With your life stages, " : "") + money(A.fv) + " in the dollars of the day, after " + Math.round(S.years) + " years of saving" }}
+          note: (stages ? "With your life stages, " : "") + money(A.fv) + " in future dollars, after " + Math.round(S.years) + " years of saving" }}
         figures={[
           { label: "A year to spend, after tax", id: "ppSpend", value: money(A.afterTax), note: "A " + pctStr(A.withdrawal, 1) + " withdrawal, taxed at " + pctStr(A.taxRate, 1) },
-          ...(want != null ? [{ label: "What you spend today", id: "ppWant", value: money(want), tone: meets ? "gain" as const : "loss" as const,
+          ...(want != null ? [{ label: S.goal.fromBudget ? "Your budget, a year" : "Your spending goal", id: "ppWant", value: money(want), tone: meets ? "gain" as const : "loss" as const,
             note: meets ? "✓ Covered, with " + money(A.afterTax - want) + " to spare" : "✗ Short by " + money(want - A.afterTax) + " a year" }] : []),
           { label: "Saved each year", id: "ppSaved", value: money(savedYr), note: S.inflow.match > 0 ? money(S.inflow.match * perYr) + " of it your employer's match" : "Into your accounts, at today's pay" },
         ]} />
@@ -71,6 +75,10 @@ function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
 type Part = { label: string; v: number; c: string };
 function PayCard({ S }: { S: PlanSummary }) {
   const [unit, setUnit] = useState<"year" | "month" | "check">("year");
+  // The part pointed at, in the bar or its list: the rest dim, and its figure shows.
+  const [hot, setHot] = useState<string | null>(null);
+  const dim = (l: string) => (hot && hot !== l ? "opacity-35" : "");
+  const point = (l: string) => ({ onMouseEnter: () => setHot(l), onMouseLeave: () => setHot(null), onFocus: () => setHot(l), onBlur: () => setHot(null) });
   const y = S.pay, mult = unit === "year" ? S.p : unit === "month" ? S.p / 12 : 1;
   const k = (v: number) => v * mult;
   const taxes: Part[] = [
@@ -103,11 +111,14 @@ function PayCard({ S }: { S: PlanSummary }) {
       <CardContent>
         <div className="flex h-9 w-full overflow-hidden rounded-md" role="img"
           aria-label={cols.map((c) => c.h + " " + money(k(sum(c.parts)))).join(", ")}>
-          {all.map((x) => <div key={x.label} title={x.label + ": " + money(k(x.v))} className="h-full w-(--w) border-r border-card bg-(--c) last:border-r-0" style={{ "--w": (x.v / gross) * 100 + "%", "--c": x.c } as React.CSSProperties}></div>)}
+          {all.map((x) => <div key={x.label} {...point(x.label)} onClick={() => setHot(hot === x.label ? null : x.label)}
+            className={cn("h-full w-(--w) border-r border-card bg-(--c) transition-opacity last:border-r-0", dim(x.label))} style={{ "--w": (x.v / gross) * 100 + "%", "--c": x.c } as React.CSSProperties}></div>)}
         </div>
-        <div className="mt-1.5 flex w-full text-label text-muted-foreground tabular-nums" aria-hidden="true">
-          {cols.map((c) => <div key={c.h} className="w-(--w) min-w-0 truncate pr-2" style={{ "--w": (sum(c.parts) / gross) * 100 + "%" } as React.CSSProperties}>{pctStr(sum(c.parts) / gross, 0)}</div>)}
-        </div>
+        {hot ? (() => { const x = all.find((p) => p.label === hot)!; return (
+          <div className="mt-1.5 text-label tabular-nums" aria-live="polite"><b className="font-semibold">{x.label}</b> {money(k(x.v))}, {pctStr(x.v / gross, 1)} of gross pay</div>); })() : (
+          <div className="mt-1.5 flex w-full text-label text-muted-foreground tabular-nums" aria-hidden="true">
+            {cols.map((c) => <div key={c.h} className="w-(--w) min-w-0 truncate pr-2" style={{ "--w": (sum(c.parts) / gross) * 100 + "%" } as React.CSSProperties}>{pctStr(sum(c.parts) / gross, 0)}</div>)}
+          </div>)}
         <div className={cn("mt-5 grid gap-x-8 gap-y-5 max-sm:grid-cols-1", cols.length === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3")}>
           {cols.map((c) => (
             <div key={c.h} className="min-w-0">
@@ -116,7 +127,7 @@ function PayCard({ S }: { S: PlanSummary }) {
               </div>
               <ul className="m-0 list-none p-0 text-note">
                 {c.parts.map((x) => (
-                  <li key={x.label} className="flex items-baseline gap-2 py-1">
+                  <li key={x.label} {...point(x.label)} className={cn("flex items-baseline gap-2 py-1 transition-opacity", dim(x.label))}>
                     <i className="size-2.5 flex-none translate-y-px rounded-xs bg-(--c)" style={{ "--c": x.c } as React.CSSProperties} aria-hidden="true"></i>
                     <span className="min-w-0 flex-1">{x.label}</span><span className="tabular-nums">{money(k(x.v))}</span>
                   </li>
@@ -150,7 +161,7 @@ function Accounts({ S }: { S: PlanSummary }) {
               <div className="mt-3 border-t border-border pt-2.5 text-note tabular-nums">
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">In {per}</span><span>{money(S.inflow[a], 2)}</span></div>
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">In a year</span><span>{money(S.inflow[a] * S.p)}</span></div>
-                {a === "trad" && S.inflow.match > 0 ? <div className="flex justify-between gap-2"><span className="text-muted-foreground">Of it, the match</span><span>{money(S.inflow.match * S.p)}</span></div> : null}
+                {a === "trad" && S.inflow.match > 0 ? <div className="flex justify-between gap-2"><span className="text-muted-foreground">Employer match</span><span>{money(S.inflow.match * S.p)}</span></div> : null}
               </div>
             </div>
           );
@@ -161,65 +172,164 @@ function Accounts({ S }: { S: PlanSummary }) {
 }
 
 /* ---- the climb: the balance by age, stacked by account ---- */
+
+/** Gridlines that stop just past the top: the smallest 1, 2, 2.5 or 5 step
+    that needs seven lines or fewer. */
+function tightTicks(max: number): number[] {
+  const m = Math.max(1, max), mag = Math.pow(10, Math.floor(Math.log10(m / 7)));
+  const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((st) => Math.ceil(m / st) <= 7) ?? mag * 10;
+  const out: number[] = [];
+  for (let v = 0; v <= Math.ceil(m / step) * step + 1e-6; v += step) out.push(v);
+  return out;
+}
+
 function Climb({ S }: { S: PlanSummary }) {
-  const W = 960, H = 340, pl = 58, pr = 18, pt = S.stages ? 30 : 14, pb = S.kids.length ? 44 : 30;
-  const rows = S.climb, a0 = rows[0].age, a1 = rows[rows.length - 1].age;
-  const ax = niceAxis(0, Math.max(1, ...rows.map((r) => r.total)));
-  const X = (age: number) => pl + ((age - a0) / Math.max(1, a1 - a0)) * (W - pl - pr), Y = (v: number) => pt + (1 - v / ax.max) * (H - pt - pb);
-  const used = ACCTS.filter((a) => rows.some((r) => r[a] > 1));
-  // Each account's band, stacked in order.
-  const bands = used.map((a, i) => {
-    const below = (r: (typeof rows)[number]) => used.slice(0, i).reduce((t, b) => t + r[b], 0);
-    const top = rows.map((r) => X(r.age) + "," + Y(below(r) + r[a])).join(" ");
-    const bottom = rows.slice().reverse().map((r) => X(r.age) + "," + Y(below(r))).join(" ");
-    return { a, d: "M" + top + " L" + bottom + " Z" };
+  const size = useChartSize(), { L, pw, sw, fs } = size;
+  const [off, setOff] = useState<Acct[]>([]);
+  const [future, setFuture] = useState(false);
+  const infl = S.assumptions.inflation, a0 = S.climb[0].age, a1 = S.climb[S.climb.length - 1].age;
+  // Today's dollars, or the dollars of each year.
+  const rows = S.climb.map((r) => {
+    const k = future ? Math.pow(1 + infl, r.year) : 1;
+    return { ...r, trad: r.trad * k, roth: r.roth * k, brok: r.brok * k, hsa: r.hsa * k, total: r.total * k };
   });
-  const line = rows.map((r) => X(r.age) + "," + Y(r.total)).join(" ");
-  const ticks = ax.ticks;
-  const ageTicks = rows.filter((r) => (r.age - a0) % 5 === 0 || r.age === a1).map((r) => r.age);
+  const used = ACCTS.filter((a) => S.climb.some((r) => r[a] > 1)), shown = used.filter((a) => !off.includes(a));
+  const tot = rows.map((r) => shown.reduce((t, a) => t + r[a], 0));
+  const ticks = tightTicks(Math.max(...tot)), top = ticks[ticks.length - 1] || 1;
+  // Room along the top for the stage numbers.
+  const T = size.T + (S.stages ? 26 * sw : 4), ph = size.T + size.ph - T;
+  const X = (age: number) => L + ((age - a0) / Math.max(1, a1 - a0)) * pw, Y = (v: number) => T + ph - (v / top) * ph;
+  const bands = shown.map((a, i) => {
+    const below = (j: number) => shown.slice(0, i).reduce((t, b) => t + rows[j][b], 0);
+    return { a, d: pathD([...rows.map((r, j) => [X(r.age), Y(below(j) + r[a])] as [number, number]), ...rows.map((r, j) => [X(r.age), Y(below(j))] as [number, number]).reverse()]) + "Z" };
+  });
+  // Milestones still ahead, on the line as shown; labels that would
+  // collide step up out of each other's way.
+  const marks: { label: string; i: number; dy: number }[] = [];
+  for (const [v, label] of [[100e3, "$100K"], [250e3, "$250K"], [500e3, "$500K"], [1e6, "$1M"], [2e6, "$2M"], [5e6, "$5M"]] as const) {
+    const i = tot.findIndex((t) => t >= v);
+    if (i > 0) {
+      const prev = marks[marks.length - 1];
+      const near = prev && Math.abs(X(rows[i].age) - X(rows[prev.i].age)) < 110 * sw && Math.abs(Y(tot[i]) - Y(tot[prev.i])) < 26 * sw;
+      marks.push({ label, i, dy: near ? prev.dy + 17 * sw : 0 });
+    }
+  }
+  const stageAt = (age: number) => S.stages?.findIndex((s) => age >= s.from && age < s.to) ?? -1;
+  const kidsBorn = (age: number) => S.kids.map((k, i) => (k.born === age ? i + 1 : 0)).filter(Boolean);
+  const label = (i: number) => (rows[i] ? rows[i].age : "");
   return (
     <Card className="col-span-full">
       <CardHeader><CardTitle>The climb</CardTitle>
-        <CardDescription>Your balance at each age, in today&apos;s dollars, by account.{S.stages ? " Shaded bands are your life stages." : ""}</CardDescription></CardHeader>
-      <CardContent>
-        <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="img" aria-label={"Balance by age, from " + money(rows[0].total) + " at " + a0 + " to " + money(rows[rows.length - 1].total) + " at " + a1}>
-          {/* Each stage a band, numbered as in Your life stages below, its
-              name too where the band has room for it. */}
-          {S.stages?.map((s, i) => {
-            const w = X(s.to) - X(s.from), fits = s.name.length * 6.4 + 30 < w;
+        <CardDescription>Your balance at each age{future ? ", in the dollars of each year" : ", in today's dollars"}, by account. Point at any age for the figures.
+          {S.stages ? " Numbers along the top are your life stages." : ""}</CardDescription>
+        <CardAction><Segmented size="compact" attr="data-ppreal" options={[["today", "Today's dollars"], ["future", "Future dollars"]] as const} value={future ? "future" : "today"} onChange={(v) => setFuture(v === "future")} /></CardAction>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
+        <ChartFrame id="ppClimb" size={size} xs={rows.map((r) => X(r.age))}
+          ariaLabel={"Balance by age, from " + money(tot[0]) + " at " + a0 + " to " + money(tot[tot.length - 1]) + " at " + a1}
+          tip={(i) => {
+            const st = stageAt(rows[i].age), born = kidsBorn(rows[i].age);
             return (
-              <g key={s.from}>
-                {i % 2 === 1 ? <rect x={X(s.from)} y={pt} width={w} height={H - pt - pb} fill="var(--ds-raised)" /> : null}
-                <line x1={X(s.from)} x2={X(s.from)} y1={pt - 24} y2={H - pb} stroke="var(--ds-rule)" />
-                <circle cx={X(s.from) + 11} cy={pt - 13} r={8} fill="none" stroke="var(--ds-muted)" />
-                <text x={X(s.from) + 11} y={pt - 9.2} fontSize="10.5" textAnchor="middle" fill="var(--ds-muted)" className="tabular-nums">{i + 1}</text>
-                {fits ? <text x={X(s.from) + 24} y={pt - 9} fontSize="11.5" fill="var(--ds-muted)">{s.name}</text> : null}
-              </g>
+              <>
+                <b>Age {rows[i].age}</b>{st >= 0 ? <span className="block text-label text-muted-foreground">Stage {st + 1}: {S.stages![st].name}</span> : null}
+                {born.length ? <span className="block text-label text-muted-foreground">Child {born.join(" and ")} born</span> : null}
+                {shown.slice().reverse().map((a) => <TipRow key={a} color={ACCT_COLOR[a]} label={ACCT_NAMES[a]} value={rows[i][a]} />)}
+                <TipRow color={SERIES.plan} label="Total" value={tot[i]} />
+              </>
             );
-          })}
-          {ticks.map((t) => (
-            <g key={t}><line x1={pl} x2={W - pr} y1={Y(t)} y2={Y(t)} stroke="var(--grid, var(--ds-rule))" strokeWidth={t === 0 ? 1.2 : 0.6} />
-              <text x={pl - 8} y={Y(t) + 4} fontSize="11.5" textAnchor="end" fill="var(--ds-muted)" className="tabular-nums">{fmtAxisMoney(t)}</text></g>
-          ))}
-          {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_COLOR[b.a]} fillOpacity={0.55} />)}
-          <polyline points={line} fill="none" stroke={SERIES.plan} strokeWidth={2.5} strokeLinejoin="round" />
-          <circle cx={X(a1)} cy={Y(rows[rows.length - 1].total)} r={4} fill={SERIES.plan} />
-          {S.milestones.map((m) => {
-            const r = rows.find((x) => x.age === m.age)!;
-            return <g key={m.label}><circle cx={X(m.age)} cy={Y(r.total)} r={3.5} fill="var(--ds-surface)" stroke="var(--ds-text)" strokeWidth={1.5} />
-              <text x={X(m.age) - 6} y={Y(r.total) - 9} fontSize="11.5" textAnchor="end" fill="var(--ds-text)" className="tabular-nums">{m.label} at {m.age}</text></g>;
-          })}
-          {/* Each child's birth: a mark on the age axis, named under it. */}
-          {S.kids.map((k, i) => k.born > a0 && k.born < a1 ? (
-            <g key={i}><path d={`M${X(k.born)},${H - pb + 1} l-4,7 h8 Z`} fill="var(--ds-text)" />
-              <text x={X(k.born)} y={H - 4} fontSize="11" textAnchor="middle" fill="var(--ds-text)">Child {i + 1}</text></g>
-          ) : null)}
-          {ageTicks.map((a) => <text key={a} x={X(a)} y={H - pb + 20} fontSize="11.5" textAnchor="middle" fill="var(--ds-muted)" className="tabular-nums">{a}</text>)}
-        </svg>
-        <div className="stacklegend">
-          {used.map((a) => <span key={a}><i className="bg-(--c) opacity-75" style={{ "--c": ACCT_COLOR[a] } as React.CSSProperties}></i>{ACCT_NAMES[a]}</span>)}
+          }}>
+          {(hi) => (
+            <>
+              {S.stages?.map((s, i) => (
+                <g key={s.from}>
+                  {i % 2 === 1 ? <rect x={X(s.from)} y={T} width={X(Math.min(s.to, a1)) - X(s.from)} height={ph} fill="var(--ds-raised)" /> : null}
+                  <line x1={X(s.from)} x2={X(s.from)} y1={T - 22 * sw} y2={T + ph} stroke="var(--grid)" strokeWidth={sw} />
+                  <circle cx={X(s.from) + 10 * sw} cy={T - 12 * sw} r={8 * sw} fill="none" stroke="var(--axis)" strokeWidth={sw} />
+                  <text x={X(s.from) + 10 * sw} y={T - 12 * sw + fs / 3} fontSize={fs * 0.92} textAnchor="middle" fill="var(--axis)">{i + 1}</text>
+                </g>
+              ))}
+              <YAxis size={size} ticks={ticks} Y={Y} />
+              <XAxis size={size} count={rows.length - 1} X={(i) => X(a0 + i)} label={label} />
+              {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_COLOR[b.a]} fillOpacity={0.88} />)}
+              <path d={pathD(rows.map((r, j) => [X(r.age), Y(tot[j])]))} fill="none" stroke={SERIES.plan} strokeWidth={2.5 * sw} strokeLinejoin="round" />
+              {marks.map((m) => (
+                <g key={m.label}>
+                  <circle cx={X(rows[m.i].age)} cy={Y(tot[m.i])} r={3.5 * sw} fill="var(--ds-surface)" stroke="var(--ds-text)" strokeWidth={1.5 * sw} />
+                  {/* Left of its point, unless that runs into the axis. */}
+                  {X(rows[m.i].age) - L < 100 * sw
+                    ? <text x={X(rows[m.i].age) + 7 * sw} y={Y(tot[m.i]) - 9 * sw - m.dy} fontSize={fs} textAnchor="start" fill="var(--ds-text)">{m.label} at {rows[m.i].age}</text>
+                    : <text x={X(rows[m.i].age) - 7 * sw} y={Y(tot[m.i]) - 9 * sw - m.dy} fontSize={fs} textAnchor="end" fill="var(--ds-text)">{m.label} at {rows[m.i].age}</text>}
+                </g>
+              ))}
+              {S.kids.map((k, i) => k.born > a0 && k.born < a1 ? (
+                <path key={i} d={`M${X(k.born)},${T + ph - 9 * sw} l${-5 * sw},${9 * sw} h${10 * sw} Z`} fill="var(--ds-text)" />
+              ) : null)}
+              <HoverMarks size={size} x={hi != null ? X(rows[hi].age) : null} y={hi != null ? Y(tot[hi]) : null} />
+            </>
+          )}
+        </ChartFrame>
+        <div className="legend">
+          {used.map((a) => <LegendToggle key={a} color={ACCT_COLOR[a]} label={ACCT_NAMES[a]} on={!off.includes(a)}
+            onToggle={() => setOff((o) => (o.includes(a) ? o.filter((x) => x !== a) : o.length + 1 < used.length ? [...o, a] : o))} />)}
           <span><i className="h-0.75! bg-series-plan"></i>Total</span>
+          {S.kids.some((k) => k.born > a0) ? <span>▲ A child is born</span> : null}
         </div>
+        </div>
+        {/* Beside the chart: the end of the climb by account, the
+            milestones, and what each numbered stage is. */}
+        <div className="min-w-0 text-note">
+          <div className="text-label text-muted-foreground">At {a1}{future ? ", future dollars" : ", today's dollars"}</div>
+          <div className="text-3xl font-medium tabular-nums">{money(tot[tot.length - 1])}</div>
+          <dl className="m-0 mt-2">
+            {shown.map((a) => <div key={a} className="flex items-baseline gap-2 border-b border-border py-1.5">
+              <i className="size-2.5 flex-none rounded-xs bg-(--c)" style={{ "--c": ACCT_COLOR[a] } as React.CSSProperties} aria-hidden="true"></i>
+              <dt className="flex-1 text-muted-foreground">{ACCT_NAMES[a]}</dt><dd className="m-0 tabular-nums">{money(rows[rows.length - 1][a])}</dd></div>)}
+          </dl>
+          {marks.length ? <>
+            <div className="mt-4 text-label text-muted-foreground">Milestones</div>
+            <p className="m-0 mt-1 tabular-nums">{marks.map((m) => m.label + " at " + rows[m.i].age).join(" · ")}</p>
+          </> : null}
+          {S.stages ? <>
+            <div className="mt-4 text-label text-muted-foreground">Life stages</div>
+            <ol className="m-0 mt-1 list-none p-0">{S.stages.map((st, i) => (
+              <li key={st.from} className="flex gap-2 py-0.5"><span className="w-4 flex-none text-muted-foreground tabular-nums">{i + 1}</span><span className="flex-1">{st.name}</span>
+                <span className="text-muted-foreground tabular-nums">{st.from}–{st.to - 1}</span></li>))}</ol>
+          </> : null}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ---- the years' money: where each year's pay goes, stage by stage ---- */
+const MONEY_CATS = [
+  { k: "save", c: SERIES.teal, name: "Saving" },
+  { k: "kids", c: SERIES.rose, name: "Children" },
+  { k: "spend", c: SERIES.lavender, name: "Everyday spending" },
+  { k: "taxes", c: SERIES.gray, name: "Taxes" },
+  { k: "left", c: hatched(SERIES.gray), name: "Left over" },
+] as const;
+function MoneyByAge({ S }: { S: PlanSummary }) {
+  const M = S.money!, cats = MONEY_CATS.filter((c) => M.some((y) => y[c.k] > 0.5));
+  const peak = M.reduce((m, y) => (y.kids > m.kids ? y : m), M[0]);
+  return (
+    <Card className="col-span-full">
+      <CardHeader><CardTitle>Your money by age</CardTitle>
+        <CardDescription>Each year&apos;s pay, in today&apos;s dollars, and where it goes. {peak.kids > 0
+          ? "The children cost the most at " + peak.age + ", " + money(peak.kids) + " that year, while you save " + money(peak.save) + "."
+          : ""} Point at any year for the figures.</CardDescription></CardHeader>
+      <CardContent>
+        <StackedBars id="ppMoney" cats={cats.map((c) => ({ k: c.k, c: c.c }))}
+          bars={M.map((y) => ({ label: y.age, parts: Object.fromEntries(cats.map((c) => [c.k, y[c.k]])) }))}
+          ariaLabel={"Each year's pay by age, " + M[0].age + " to " + M[M.length - 1].age + ": taxes, everyday spending, children and saving"}
+          tip={(i) => (
+            <>
+              <b>Age {M[i].age}</b><span className="block text-label text-muted-foreground">Stage {M[i].stage + 1}: {S.stages![M[i].stage].name}</span>
+              {cats.slice().reverse().map((c) => <TipRow key={c.k} color={c.c} label={c.name} value={M[i][c.k]} />)}
+            </>
+          )} />
+        <Legend items={cats.slice().reverse().map((c) => [c.c, c.name] as [string, string])} />
       </CardContent>
     </Card>
   );
@@ -245,7 +355,7 @@ function StageLine({ S }: { S: PlanSummary }) {
               <div className="flex items-baseline gap-2"><span className="text-label text-muted-foreground tabular-nums">{i + 1}</span><b className="font-semibold">{s.name}</b></div>
               <div className="text-label text-muted-foreground tabular-nums">Ages {s.from} to {s.to - 1}, {s.to - s.from} {s.to - s.from === 1 ? "year" : "years"}</div>
               <div className="mt-2 text-xl font-medium tabular-nums">{money(s.monthly)}<span className="text-label font-normal text-muted-foreground"> saved a month</span></div>
-              <div className="text-label text-muted-foreground tabular-nums">{s.kidCost > 0 ? "Children " + money(s.kidCost) + " a month" : "No child costs"}</div>
+              <div className="text-label text-muted-foreground tabular-nums">{s.kidCost > 0 ? "Children cost " + money(s.kidCost) + " a month" : "No child costs"}</div>
             </li>
           ))}
         </ol>

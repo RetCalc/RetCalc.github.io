@@ -21,7 +21,7 @@ import { paycheckInput, paycheckRun, type PcInput, type PcRun } from "@/tools/bu
 import { intoAdvanced, paycheckCopy, taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { STAGES_DEFAULTS, type StagesInputs } from "@/tools/stages/model";
 import { TAX_DEFAULTS, itemized, preBuckets, runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
-import { kidStages, stagesFromKids } from "./kids";
+import { ONE_FOR_ONE, kidStages, paycheckFreed, stagesFromKids, type Freed } from "./kids";
 import type { PlanState, PlanTool } from "./model";
 
 const DEFAULTS = { tax: TAX_DEFAULTS, budget: BUDGET_DEFAULTS, advanced: ADVANCED_DEFAULTS, stages: STAGES_DEFAULTS } as const;
@@ -115,16 +115,22 @@ export function seedAdvanced(p: PlanState, household: Household | null): PlanSta
   return { ...withTool(p, "advanced", adv), from: { ...p.from, advanced: fp } };
 }
 
+/** What each cut frees after tax, on the paycheck as planned. */
+export function freedOf(p: PlanState): Freed {
+  const pc = paycheckOf(p);
+  return pc ? paycheckFreed(pc.pi) : ONE_FOR_ONE;
+}
+
 /* ---- Your plan + children → Life stages ---- */
 /** The stages from Advanced and the children, when either changed since. */
 export function seedStages(p: PlanState, household: Household | null): PlanState {
   const ages = planAges(p);
   if (!p.stagesOn || !ages || !p.tools.advanced) return p;
   const adv = toolOf(p, "advanced"), years = Math.max(1, Math.round(parseNum(adv.years)));
-  const fp = JSON.stringify([adv, p.kids, p.cover, ages.age]);
+  const fp = JSON.stringify([adv, p.kids, p.cover, ages.age, p.tools.budget ?? null, p.tools.tax?.state ?? null]);
   if (p.tools.stages && p.from.stages === fp) return p;
   const segs = kidStages(p.kids, ages.age, ages.age + years);
-  const stages = stagesFromKids(advancedPlan(adv, household), adv, toolOf(p, "stages"), segs, p.cover);
+  const stages = stagesFromKids(advancedPlan(adv, household), adv, toolOf(p, "stages"), segs, p.cover, freedOf(p));
   return { ...withTool(p, "stages", stages), from: { ...p.from, stages: fp } };
 }
 

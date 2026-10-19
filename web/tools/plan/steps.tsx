@@ -24,7 +24,7 @@ const HEADS: Record<StepId, { title: string; lede: string; todo?: string }> = {
   plan: { title: "Where that gets you", lede: "Your saving by account, carried over from your paycheck, grown to the age you'd like to retire.",
     todo: "Add what you've saved so far in each account under Accounts, and check the return and inflation. The target is what you spend today; change it to what you'll want in retirement." },
   stages: { title: "Life stages", lede: "Saving changes over a lifetime. Stages splits the years into stretches, each with its own saving.",
-    todo: "Children are built in: tell us about yours and how you'd cover them, and the stages follow. For anything else (a raise, a move, part-time years), change a stage's saving or return, or add one." },
+    todo: "Tell us about any children you have or are planning, and how you'd cover what they cost, and the stages are made from that. For anything else (a raise, a move, part-time years), change a stage's saving or return, or add one." },
   summary: { title: "Your plan", lede: "" },
 };
 
@@ -76,7 +76,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
       </Card>
       <Card className="min-w-0 lg:col-span-2">
         <CardHeader><CardTitle>How it works</CardTitle>
-          <CardDescription>Six steps, about fifteen minutes. Each one is the full RetCalc tool, so nothing is held back, and each fills in the next.</CardDescription></CardHeader>
+          <CardDescription>Six steps, about fifteen minutes. Each one fills in the next.</CardDescription></CardHeader>
         <CardContent>
           <ol className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-3.5 p-0 max-sm:grid-cols-1">
             {steps.map(([t, d], i) => (

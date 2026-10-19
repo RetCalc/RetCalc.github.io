@@ -28,4 +28,11 @@ export function samplePlan(stages = true): PlanState {
   return { ...p, step: "summary", reached: "summary" };
 }
 
-if (process.argv[1]?.endsWith("fixture.ts")) process.stdout.write(JSON.stringify(samplePlan(process.argv[2] !== "advanced")));
+/** The sample with a long budget: thirty more lines, for the report's page breaks. */
+export function longPlan(): PlanState {
+  const p = samplePlan(true), b = toolOf(p, "budget");
+  const extra = Array.from({ length: 30 }, (_, i) => ({ group: ["Lifestyle", "Housing", "Food", "Custom"][i % 4], desc: "Line " + (i + 1), amount: String(20 + i), freq: 12, custom: true }));
+  return { ...p, tools: { ...p.tools, budget: { ...b, rows: [...b.rows, ...extra] } } };
+}
+
+if (process.argv[1]?.endsWith("fixture.ts")) process.stdout.write(JSON.stringify(process.argv[2] === "long" ? longPlan() : samplePlan(process.argv[2] !== "advanced")));

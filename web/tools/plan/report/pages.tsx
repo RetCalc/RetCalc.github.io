@@ -8,7 +8,7 @@ import { money, pctStr } from "@/lib/format";
 import { C, ReportMark } from "@/tools/guide/report/charts";
 import { COVER_ORDER } from "../model";
 import { ACCT_NAMES, type Acct, type PlanSummary } from "../results";
-import { ACCT_PRINT, ClimbChart, GroupBars, PAY_PRINT, PayBar, StageStrip } from "./charts";
+import { ACCT_PRINT, ClimbChart, GroupBars, MONEY_PRINT, MoneyBars, PAY_PRINT, PayBar, StageStrip } from "./charts";
 
 export interface PlanReport { S: PlanSummary; title: string; date: string }
 interface Page { id: string; title: string; because?: string; n: number }
@@ -48,16 +48,16 @@ function Cover({ R, pages }: { R: PlanReport; pages: Page[] }) {
         <div><h5>Your pay</h5><div className="rp-fig">{money(S.pay.takeHome * S.p)}</div>
           <p>a year reaches your bank from {money(S.pay.gross * S.p)} of pay: {money(S.pay.takeHome)} {per(S)}, after {money(S.pay.taxes * S.p)} in taxes and what goes into accounts before it.</p>
           <h5 className="gap">Contents</h5>
-          <ol className="rp-toc">{pages.slice(1).map((p) => <li key={p.id}><b>{p.title}</b><span className="d" /><span className="pn">{p.n}</span></li>)}</ol></div>
+          <ol className="rp-toc">{pages.slice(1).filter((p) => !p.title.endsWith("continued")).map((p) => <li key={p.id}><b>{p.title}</b><span className="d" /><span className="pn">{p.n}</span></li>)}</ol></div>
         <div><h5>Your saving</h5><div className="rp-fig">{money(saved)}</div>
           <p>a year, {pctStr(saved / Math.max(1, S.pay.gross * S.p), 0)} of your pay{S.inflow.match > 0 ? ", " + money(S.inflow.match * S.p) + " of it your employer's match" : ""}.
             {S.pay.left > 0.5 ? " " + money(S.pay.left * S.p) + " a year is still unassigned." : " Every dollar of pay has a job."}</p>
           <h5 className="gap">Spending</h5><div className="rp-fig">{money(S.spendYear / 12)}</div><p>a month, from your budget.</p></div>
         <div><h5>At {S.retire}</h5><div className="rp-fig">{money(A.total)}</div>
-          <p>in today&apos;s dollars ({money(A.fv)} in the dollars of the day){S.stages ? ", with your life stages" : ""}.</p>
+          <p>in today&apos;s dollars ({money(A.fv)} in future dollars){S.stages ? ", with your life stages" : ""}.</p>
           <h5 className="gap">To spend in retirement</h5><div className="rp-fig">{money(A.afterTax)}</div>
-          <p>a year after tax, from a {pctStr(A.withdrawal, 1)} withdrawal{S.target.solveFor === "After-Tax Withdrawal" && S.target.target > 0
-            ? A.afterTax >= S.target.target ? ", more than the " + money(S.target.target) + " you spend today." : ", against " + money(S.target.target) + " you spend today: " + money(S.target.target - A.afterTax) + " short."
+          <p>a year after tax, from a {pctStr(A.withdrawal, 1)} withdrawal{S.goal.v > 0
+            ? (A.afterTax >= S.goal.v ? ", more than " : ", against ") + (S.goal.fromBudget ? "the " + money(S.goal.v) + " your budget spends in a year" : "your goal of " + money(S.goal.v)) + (A.afterTax >= S.goal.v ? "." : ": " + money(S.goal.v - A.afterTax) + " short.")
             : "."}</p></div>
       </div>
       <div className="rp-foot"><span>RetCalc · retcalc.app</span><span>An educational plan, not financial advice. Past returns don&apos;t predict future ones.</span></div>
@@ -87,7 +87,7 @@ function Paycheck({ R, p }: { R: PlanReport; p: Page }) {
           <tr key={k} className={i === 0 || i === rows.length - 1 ? "tot" : undefined}><td>{k}</td><td>{money(v, 2)}</td>{S.per === "check" ? <td>{money((v * n) / 12)}</td> : null}<td>{money(v * n)}</td><td>{pctStr(v / Math.max(1, y.gross), 1)}</td></tr>
         ))}</tbody></table>
       <div className="rp-g3 gap">
-        <div className="rp-side"><h5>Taxes, all told</h5><div className="rp-fig sm">{pctStr(y.taxes / Math.max(1, y.gross), 1)}</div><p className="rp-body">of gross pay: federal, state, Social Security and Medicare.</p></div>
+        <div className="rp-side"><h5>Effective tax rate</h5><div className="rp-fig sm">{pctStr(y.taxes / Math.max(1, y.gross), 1)}</div><p className="rp-body">of gross pay: federal, state, Social Security and Medicare.</p></div>
         <div className="rp-side"><h5>{S.per === "check" ? "Each paycheck" : "Each month"}</h5><div className="rp-fig sm">{money(y.takeHome, 2)}</div><p className="rp-body">deposited, {S.facts.freqName.toLowerCase()}.</p></div>
         <div className="rp-side"><h5>Your employer adds</h5><div className="rp-fig sm">{money(y.match * n)}</div><p className="rp-body">{y.match > 0 ? "a year in 401(k) match, on top of your pay." : "Nothing yet: no match on what goes in."}</p></div>
       </div>
@@ -96,8 +96,36 @@ function Paycheck({ R, p }: { R: PlanReport; p: Page }) {
 }
 
 /* ---------- 3. your spending ---------- */
-function Spending({ R, p }: { R: PlanReport; p: Page }) {
-  const S = R.S, groups = [...new Set(S.budgetLines.map((l) => l.group))];
+type SpendRow = { kind: "group" | "line" | "total"; label: string; mo: number; yr: number };
+/** The spending table's rows, split into pages: the first page shares its
+    column with the bars by group, later ones ("continued") have it all. */
+export function spendChunks(S: PlanSummary): SpendRow[][] {
+  const rows: SpendRow[] = [];
+  for (const g of [...new Set(S.budgetLines.map((l) => l.group))]) {
+    const ls = S.budgetLines.filter((l) => l.group === g), yr = ls.reduce((t, l) => t + l.yr, 0);
+    rows.push({ kind: "group", label: g, mo: yr / 12, yr });
+    for (const l of ls) rows.push({ kind: "line", label: l.desc + (l.freq === 1 ? " (yearly)" : ""), mo: l.yr / 12, yr: l.yr });
+  }
+  rows.push({ kind: "total", label: "Total", mo: S.spendYear / 12, yr: S.spendYear });
+  const groups = new Set(S.budgetLines.map((l) => l.group)).size;
+  // Rows of about 26.5px in a body of about 870px, less the lead, the bars and the headings.
+  const first = Math.max(6, Math.floor((870 - 110 - 60 - (groups * 26 + 4) - 50) / 26.5)), more = Math.floor((870 - 90) / 26.5);
+  const out: SpendRow[][] = [rows.slice(0, first)];
+  for (let i = first; i < rows.length; i += more) out.push(rows.slice(i, i + more));
+  return out;
+}
+function SpendTable({ rows }: { rows: SpendRow[] }) {
+  return (
+    <table className="rp-t"><thead><tr><th>Line</th><th>A month</th><th>A year</th></tr></thead>
+      <tbody>{rows.map((r, i) => (
+        <tr key={i} className={r.kind === "group" ? "hl" : r.kind === "total" ? "tot" : undefined}>
+          <td className={r.kind === "line" ? "l" : undefined}>{r.kind === "group" ? <b>{r.label}</b> : r.label}</td><td>{money(r.mo)}</td><td>{money(r.yr)}</td></tr>
+      ))}</tbody></table>
+  );
+}
+function Spending({ R, p, rows, part }: { R: PlanReport; p: Page; rows: SpendRow[]; part: number }) {
+  const S = R.S;
+  if (part > 0) return <Sheet R={R} p={p}><Sec>Every line, continued</Sec><SpendTable rows={rows} /></Sheet>;
   return (
     <Sheet R={R} p={p}>
       <Lead h={<>You spend {money(S.spendYear / 12)} a month.</>}>
@@ -106,17 +134,12 @@ function Spending({ R, p }: { R: PlanReport; p: Page }) {
       </Lead>
       <div className="rp-wide gap">
         <div><Sec>By group, a month</Sec><GroupBars S={S} />
-          <Sec>Every line</Sec>
-          <table className="rp-t"><thead><tr><th>Line</th><th>A month</th><th>A year</th></tr></thead>
-            <tbody>{groups.flatMap((g) => [
-              <tr key={g} className="hl"><td><b>{g}</b></td><td>{money(S.budgetLines.filter((l) => l.group === g).reduce((t, l) => t + l.yr, 0) / 12)}</td><td>{money(S.budgetLines.filter((l) => l.group === g).reduce((t, l) => t + l.yr, 0))}</td></tr>,
-              ...S.budgetLines.filter((l) => l.group === g).map((l, i) => <tr key={g + i}><td className="l">{l.desc}{l.freq === 1 ? " (yearly)" : ""}</td><td>{money(l.yr / 12)}</td><td>{money(l.yr)}</td></tr>),
-            ])}
-              <tr className="tot"><td>Total</td><td>{money(S.spendYear / 12)}</td><td>{money(S.spendYear)}</td></tr></tbody></table></div>
+          <Sec>Every line</Sec><SpendTable rows={rows} />
+          {spendChunks(S).length > 1 ? <p className="rp-body mt-1.5">Continued on the next page.</p> : null}</div>
         <div className="rp-side self-start"><h5>Emergency fund</h5><div className="rp-fig sm">{money(S.ef.target)}</div>
           <p>{S.ef.months} months of spending, in cash, before investing past the match. {S.inflow.ef > 0 ? "Your paycheck puts " + money(S.inflow.ef, 2) + " " + per(S) + " toward it." : ""}</p>
-          {S.pay.health > 0.004 ? <><h5 className="gap">Health premiums</h5><p>{money(S.pay.health * S.p)} a year comes out of pay through work, before tax, so it isn&apos;t in the spending here.</p></> : null}
-          <h5 className="gap">What&apos;s left</h5><p>After taxes and spending, {money((S.lines.reduce((t, l) => t + l.v, 0) + Math.max(0, S.pay.left)) * S.p)} a year is yours to save. The next page is where it goes.</p></div>
+          {S.pay.health > 0.004 ? <><h5 className="gap">Health premiums</h5><p>{money(S.pay.health * S.p)} a year comes out of pay through work, before tax.</p></> : null}
+          <h5 className="gap">What&apos;s left</h5><p>After taxes and spending, {money((S.lines.reduce((t, l) => t + l.v, 0) + Math.max(0, S.pay.left)) * S.p)} a year is yours to save. The next section is where it goes.</p></div>
       </div>
     </Sheet>
   );
@@ -164,7 +187,7 @@ function Road({ R, p }: { R: PlanReport; p: Page }) {
       <div className="rp-key">{ACCTS.filter((x) => S.climb.some((r) => r[x] > 1)).map((x) => <span key={x}><i style={{ "--sw": ACCT_PRINT[x] } as React.CSSProperties} />{ACCT_NAMES[x]}</span>)}
         <span><i className="line" style={{ "--sw": C.trail } as React.CSSProperties} />Total</span></div>
       <div className="rp-g3 gap">
-        <div className="rp-side"><h5>In the dollars of the day</h5><div className="rp-fig sm">{money(A.fv)}</div><p className="rp-body">What the statements will say at {S.retire}.</p></div>
+        <div className="rp-side"><h5>In future dollars</h5><div className="rp-fig sm">{money(A.fv)}</div><p className="rp-body">What your statements will say at {S.retire}, before adjusting for inflation.</p></div>
         <div className="rp-side"><h5>A year to spend</h5><div className="rp-fig sm">{money(A.afterTax)}</div><p className="rp-body">After tax at about {pctStr(A.taxRate, 1)}, from a {pctStr(A.withdrawal, 1)} withdrawal, in today&apos;s dollars.</p></div>
         <div className="rp-side"><h5>Milestones</h5>
           <dl className="rp-facts">{S.milestones.map((m) => <div key={m.label}><dt>{m.label}</dt><dd>age {m.age}</dd></div>)}</dl></div>
@@ -185,8 +208,9 @@ function Stages({ R, p }: { R: PlanReport; p: Page }) {
   const today = S.todayMonthly, now = today.brok + today.roth + today.trad + today.hsa;
   return (
     <Sheet R={R} p={p}>
-      <Lead h={<>{WORDS[st.length] ?? st.length} stages{kids ? ", built around " + (kids === 1 ? "one child" : (WORDS[kids] ?? kids) + " children") : ""}.</>}>
+      <Lead h={<>{WORDS[st.length] ?? st.length} stages{kids ? ", built around " + (kids === 1 ? "one child" : String(WORDS[kids] ?? kids).toLowerCase() + " children") : ""}.</>}>
         Today you save {money(now)} a month. Each stage below saves that, less what its children cost beyond today, taken from the brokerage first so the tax-advantaged accounts stay full.
+        {st.some((s) => s.take && s.take.trad + s.take.hsa > 0.5) ? " A cut from a traditional account or the HSA is bigger than the cost it covers, since that money is taxed as pay again." : ""}
         {st.some((s) => s.short > 0) ? " Where saving can't cover it, the rest comes out of spending." : ""}
       </Lead>
       <Sec>Your stages, to scale</Sec>
@@ -198,9 +222,13 @@ function Stages({ R, p }: { R: PlanReport; p: Page }) {
             {COVER_ORDER.map((k) => <td key={k}>{s.take && Math.abs(s.take[k]) > 0.5 ? (s.take[k] > 0 ? "−" : "+") + money(Math.abs(s.take[k])) : "–"}</td>)}
             <td>{s.short > 0 ? "−" + money(s.short) : "–"}</td><td><b>{money(s.monthly)}</b></td></tr>
         ))}</tbody></table>
+      <Sec>Each year&apos;s pay, in today&apos;s dollars</Sec>
+      <MoneyBars S={S} h={150} />
+      <div className="rp-key">{(["save", "kids", "spend", "taxes", "left"] as const).filter((k) => S.money?.some((y) => y[k] > 0.5)).map((k) =>
+        <span key={k}><i style={{ "--sw": MONEY_PRINT[k] } as React.CSSProperties} />{{ save: "Saving", kids: "Children", spend: "Everyday spending", taxes: "Taxes", left: "Left over" }[k]}</span>)}</div>
       <div className="rp-g2 top gap">
-        <div className="rp-side"><h5>What a child costs here</h5><p className="rp-body">$2,500 a month before school with childcare ($1,300 without), $1,500 from 6 to 18, each later child 20% less, unless you changed them. {S.kidSource}. College isn&apos;t included.</p></div>
-        <div className="rp-side"><h5>Other changes</h5><p className="rp-body">Stages works for any change to saving: a raise, a move, part-time years. Each stage keeps its own saving, return and raises. Contributions after the first stage are restated for inflation at the stage&apos;s start.</p></div>
+        <div className="rp-side"><h5>What a child costs here</h5><p className="rp-body">$2,500 a month before school with childcare ($1,300 without), $1,500 from 6 to 18, each later child 20% less, unless you changed them. College isn&apos;t included.</p></div>
+        <div className="rp-side"><h5>Other changes</h5><p className="rp-body">Any change to saving can be a stage: a raise, a move, part-time years, each with its own saving and return.</p></div>
       </div>
     </Sheet>
   );
@@ -216,13 +244,14 @@ function Method({ R, p }: { R: PlanReport; p: Page }) {
   ];
   return (
     <Sheet R={R} p={p}>
-      <Lead h="What this rests on.">Every figure comes from the same calculators as the rest of RetCalc: Income Tax and the Budget&apos;s Paycheck tab for pay, Advanced{S.stages ? " and Stages" : ""} for the years ahead. It was all worked out in your browser.</Lead>
+      <Lead h="What this rests on.">Your answers, this year&apos;s tax rules, and the assumptions below about returns and inflation. Everything was worked out in your browser.</Lead>
       <div className="rp-wide gap">
         <div><Sec>Your answers and the assumptions</Sec><dl className="rp-facts">{facts.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl></div>
         <div className="rp-side"><h5>How it&apos;s figured</h5>
           <p>Taxes use the year&apos;s federal brackets and standard deduction, your state&apos;s rules, and Social Security and Medicare, with pre-tax money taken off what each one taxes.</p>
           <p className="gap">The years ahead grow every account at the same return, contributions rising each year, the match landing in traditional. Balances are shown in today&apos;s dollars.</p>
-          <p className="gap">The tax on withdrawals is what the first year&apos;s withdrawal from each account would pay, as Advanced works it out. Social Security and other income aren&apos;t included; the Drawdown Simulator and the Readiness Guide go further.</p></div>
+          {S.stages ? <p className="gap">What children cost: {S.kidSource}.</p> : null}
+          <p className="gap">The tax on withdrawals is what the first year&apos;s withdrawal from each account would pay. Social Security and other income aren&apos;t included; the Drawdown Simulator and the Readiness Guide go further.</p></div>
       </div>
       <Sec>Please note</Sec>
       <p className="rp-body">An educational plan, not financial, tax or investment advice. Returns are an assumption; markets don&apos;t move in a straight line, and past returns don&apos;t predict future ones. Tax figures are estimates from published rules.</p>
@@ -234,7 +263,7 @@ export function planPages(S: PlanSummary): Page[] {
   const list: Omit<Page, "n">[] = [
     { id: "cover", title: "Cover" },
     { id: "pay", title: "Your paycheck", because: "Step 1: what you take home" },
-    { id: "spend", title: "Your spending", because: "Step 2: what you spend" },
+    ...spendChunks(S).map((_, i) => ({ id: "spend" + i, title: i ? "Your spending, continued" : "Your spending", because: "Step 2: what you spend" })),
     { id: "save", title: "Your saving", because: "Step 3: where each paycheck goes" },
     { id: "road", title: "The road to retirement", because: "Step 4: where that gets you" },
     ...(S.stages ? [{ id: "stages", title: "Your life stages", because: "Step 5: children and other changes" }] : []),
@@ -249,7 +278,7 @@ export function PlanReportPages({ R }: { R: PlanReport }) {
     <>
       <Cover R={R} pages={pages} />
       <Paycheck R={R} p={at("pay")} />
-      <Spending R={R} p={at("spend")} />
+      {spendChunks(R.S).map((rows, i) => <Spending key={i} R={R} p={at("spend" + i)} rows={rows} part={i} />)}
       <Saving R={R} p={at("save")} />
       <Road R={R} p={at("road")} />
       {R.S.stages ? <Stages R={R} p={at("stages")} /> : null}

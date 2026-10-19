@@ -5,7 +5,7 @@
    from results.ts. */
 
 import { money } from "@/lib/format";
-import { C, axis, ticks } from "@/tools/guide/report/charts";
+import { C, axis } from "@/tools/guide/report/charts";
 import type { Acct, PlanSummary } from "../results";
 
 /** Accounts on paper: pre-tax Forest, Roth Woods, taxable Sand, as the
@@ -13,6 +13,15 @@ import type { Acct, PlanSummary } from "../results";
 export const ACCT_PRINT: Record<Acct, string> = { trad: C.forest, roth: C.woods, brok: C.sand, hsa: C.water };
 /** Where pay goes: taxes Trail, spending Dusk, saving Forest, unassigned Gray. */
 export const PAY_PRINT = { taxes: C.trail, health: C.clay, spend: C.dusk, save: C.forest, left: C.gray };
+
+/** Gridlines that stop just past the top (seven at most). */
+function ticks(max: number) {
+  const m = Math.max(1, max), mag = Math.pow(10, Math.floor(Math.log10(m / 7)));
+  const step = [1, 2, 2.5, 5, 10].map((k) => k * mag).find((st) => Math.ceil(m / st) <= 7) ?? mag * 10;
+  const top = Math.ceil(m / step) * step, list: number[] = [];
+  for (let v = 0; v <= top + 1e-6; v += step) list.push(v);
+  return { top, list };
+}
 
 const T = ({ x, y, children, a = "start", w = 600, s = 11, c = C.ink }: { x: number; y: number; children: React.ReactNode; a?: "start" | "middle" | "end"; w?: number; s?: number; c?: string }) =>
   <text x={x} y={y} textAnchor={a} className="rp-tx" style={{ "--fw": w, "--fs": s + "px" } as React.CSSProperties} fill={c}>{children}</text>;
@@ -96,10 +105,12 @@ export function ClimbChart({ S, w = 732, h = 330 }: { S: PlanSummary; w?: number
         <text x={pl - 6} y={Y(v) + 3.5} textAnchor="end" className="rp-ax">{axis(v)}</text></g>)}
       {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_PRINT[b.a]} />)}
       <polyline points={rows.map((r) => X(r.age) + "," + Y(r.total)).join(" ")} fill="none" stroke={C.trail} strokeWidth={3} strokeLinejoin="round" />
-      {S.milestones.map((m) => {
-        const r = rows.find((x) => x.age === m.age)!;
+      {S.milestones.map((m, i) => {
+        const r = rows.find((x) => x.age === m.age)!, prev = S.milestones[i - 1], pr = prev && rows.find((x) => x.age === prev.age)!;
+        // A label close to the one before steps up out of its way.
+        const dy = pr && Math.abs(X(m.age) - X(prev.age)) < 90 && Math.abs(Y(r.total) - Y(pr.total)) < 22 ? 15 : 0;
         return <g key={m.label}><circle cx={X(m.age)} cy={Y(r.total)} r={4} fill={C.white} stroke={C.ink} strokeWidth={1.6} />
-          <T x={X(m.age) - 7} y={Y(r.total) - 8} a="end" s={10.5} w={700}>{m.label} at {m.age}</T></g>;
+          <T x={X(m.age) - 7} y={Y(r.total) - 8 - dy} a="end" s={10.5} w={700}>{m.label} at {m.age}</T></g>;
       })}
       {rows.filter((r) => (r.age - a0) % every === 0 || r.age === a1).map((r) => <text key={r.age} x={X(r.age)} y={h - pb + 13} textAnchor="middle" className="rp-ax">{r.age}</text>)}
       {S.kids.map((k, i) => k.born > a0 && k.born < a1 ? (
@@ -129,6 +140,26 @@ export function StageStrip({ S, w = 732, h = 58 }: { S: PlanSummary; w?: number;
         );
       })}
       <text x={w - 2} y={48} textAnchor="end" className="rp-ax">{S.retire}</text>
+    </svg>
+  );
+}
+
+/** Each year's pay by age, today's dollars: saving, the children, everyday
+    spending, taxes and what's left, stacked. */
+export const MONEY_PRINT = { save: C.forest, kids: C.clay, spend: C.dusk, taxes: C.trail, left: C.gray };
+export function MoneyBars({ S, w = 732, h = 210 }: { S: PlanSummary; w?: number; h?: number }) {
+  const M = S.money ?? [], pl = 50, pb = 18, pt = 6, n = Math.max(1, M.length), keys = ["save", "kids", "spend", "taxes", "left"] as const;
+  const { top, list } = ticks(Math.max(1, ...M.map((y) => keys.reduce((t, k) => t + y[k], 0))));
+  const bw = (w - pl) / n, Y = (v: number) => pt + (1 - v / top) * (h - pt - pb), every = n > 24 ? 5 : n > 12 ? 2 : 1;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label="Each year's pay by age: saving, children, everyday spending and taxes">
+      {list.map((v) => <g key={v}><line x1={pl} x2={w} y1={Y(v)} y2={Y(v)} stroke={C.grid} strokeWidth={v ? 0.6 : 1} />
+        <text x={pl - 6} y={Y(v) + 3.5} textAnchor="end" className="rp-ax">{axis(v)}</text></g>)}
+      {M.map((y, i) => {
+        const x = pl + i * bw, acc = keys.map((_, j) => keys.slice(0, j).reduce((t, k) => t + y[k], 0));
+        return <g key={y.age}>{keys.map((k, j) => y[k] > 0.5 ? <rect key={k} x={x + bw * 0.12} width={bw * 0.76} y={Y(acc[j] + y[k])} height={Y(acc[j]) - Y(acc[j] + y[k])} fill={MONEY_PRINT[k]} /> : null)}
+          {(y.age - M[0].age) % every === 0 ? <text x={x + bw / 2} y={h - 5} textAnchor="middle" className="rp-ax">{y.age}</text> : null}</g>;
+      })}
     </svg>
   );
 }

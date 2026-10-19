@@ -13,7 +13,7 @@ import { annualize, budgetCompute } from "@/tools/budget/model";
 import { PC_LINES, PC_STEPS, rowRole, type PcStep } from "@/tools/budget/paycheck-math";
 import { CHILD_SOURCE } from "@/tools/guide/schedule";
 import { stageSplit, stagesCompute } from "@/tools/stages/model";
-import { paycheckOf, planAges, toolOf } from "./flow";
+import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
 import { coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import type { PlanState } from "./model";
 
@@ -45,11 +45,19 @@ export interface PlanSummary {
   /** At retirement, today's dollars. */
   atRetire: { total: number; fv: number; byAcct: Record<Acct, number> | null; afterTax: number; withdrawal: number; taxRate: number };
   target: { solveFor: string; target: number };
+  /** What the plan's spending in retirement is measured against: your
+      after-tax goal in Advanced, or without one, your budget's year. */
+  goal: { v: number; fromBudget: boolean };
   climb: ClimbRow[];
   milestones: { label: string; age: number }[];
   /** Each stage: its saving a month (today's dollars), the children's cost
       then and its change from today, and what each account gives for it. */
-  stages: { name: string; from: number; to: number; monthly: number; kidCost: number; change: number; take: Monthly | null; short: number }[] | null;
+  stages: { name: string; from: number; to: number; monthly: number; kidCost: number; change: number; take: Monthly | null; short: number; taxUp: number; matchLost: number }[] | null;
+  /** With life stages, each year's pay from now to retirement, today's
+      dollars: taxes (more where pre-tax saving was cut), everyday spending
+      (less what saving couldn't cover), the children, your own saving, and
+      what's left. Each year adds back up to the year's pay. */
+  money: { age: number; stage: number; taxes: number; spend: number; kids: number; save: number; left: number }[] | null;
   /** Today's saving a month, by account, that the stages cut from. */
   todayMonthly: Monthly;
   /** Every budget line with money on it, a year, by group in the Budget's order. */
@@ -109,13 +117,13 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       const mine = P.eff[i].mine, perYr = { Weekly: 52, "Bi-Weekly": 26, Monthly: 12, Quarterly: 4, Annually: 1 }[s.period] ?? 12;
       const kids = p.kids ? kidList(p.kids, ages.age) : [];
       return { name: s.name || "Stage " + (i + 1), from, to, monthly: real((mine * perYr) / 12, i > 0 && s.adj ? infl : 0, from - ages.age),
-        kidCost: Math.round(kidCostAt(kids, from)), change: 0, take: null as Monthly | null, short: 0 };
+        kidCost: Math.round(kidCostAt(kids, from)), change: 0, take: null as Monthly | null, short: 0, taxUp: 0, matchLost: 0 };
     });
     // The children's stages, as built: their cost and how each was covered.
-    const ks = kidStages(p.kids, ages.age, ages.age + years), AP = advancedPlan(adv, household), today = monthlyByAccount(AP, AP.p.period);
+    const ks = kidStages(p.kids, ages.age, ages.age + years), AP = advancedPlan(adv, household), today = monthlyByAccount(AP, AP.p.period), F = freedOf(p);
     if (ks.length === stages.length) stages = stages.map((s, i) => {
-      const c = coverStage(ks[i].change, today, p.cover[stageKey(ks[i])]);
-      return { ...s, kidCost: ks[i].cost, change: ks[i].change, take: ks[i].change !== 0 ? c.take : null, short: c.short };
+      const c = coverStage(ks[i].change, today, p.cover[stageKey(ks[i])], F);
+      return { ...s, kidCost: ks[i].cost, change: ks[i].change, take: ks[i].change !== 0 ? c.take : null, short: c.short, taxUp: c.taxUp, matchLost: c.matchLost };
     });
     const s0 = P.stages[0];
     assumptions = { nominal: s0 ? s0.nominal : 0, inflation: g.inflation, fees: g.fees, growth: s0 ? s0.growth : 0, withdrawal: g.withdrawal, vol: s0?.vol ?? 0 };
@@ -133,10 +141,24 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     assumptions = { nominal: pl.gross, inflation: pl.inflation, fees: pl.fees, growth: pl.growth, withdrawal: pl.withdrawal, vol: pl.vol };
   }
   const retireAge = ages.age + Math.round(years);
+  // Each year's pay, with the stages (only once there are any).
+  let money: PlanSummary["money"] = null;
+  if (stages && stages.length) {
+    const kids = p.kids ? kidList(p.kids, ages.age) : [], gross = r.check * pi.p, spendYr = budgetCompute(b).spentYr;
+    const now = kidCostAt(kids, ages.age) * 12, taxes0 = r.taxes * pi.p;
+    money = [];
+    for (let t = ages.age; t < retireAge; t++) {
+      const i = Math.max(0, stages.findIndex((s) => t >= s.from && t < s.to)), st = stages[i];
+      const row = { age: t, stage: i, taxes: taxes0 + st.taxUp * 12, spend: Math.max(0, spendYr - now - st.short * 12), kids: kidCostAt(kids, t) * 12, save: st.monthly * 12, left: 0 };
+      row.left = Math.max(0, gross - row.taxes - row.spend - row.kids - row.save);
+      money.push(row);
+    }
+  }
   const milestones: PlanSummary["milestones"] = [];
   for (const [v, label] of [[100e3, "$100K"], [250e3, "$250K"], [500e3, "$500K"], [1e6, "$1M"], [2e6, "$2M"]] as const) {
+    // Only the ones still ahead: a balance you already have isn't a milestone.
     const hit = climb.find((c) => c.total >= v);
-    if (hit) milestones.push({ label, age: hit.age });
+    if (hit && hit.year > 0) milestones.push({ label, age: hit.age });
   }
   const kids = p.kids ? kidList(p.kids, ages.age).map((c) => ({ born: c.born, planned: c.planned })) : [];
   const g: Record<string, number> = {};
@@ -163,7 +185,8 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       freqName: FREQ[pi.pays[0]] ?? "Every two weeks", twoIncomes: pi.two },
     atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate },
     target: { solveFor: adv.solveFor, target: parseNum(adv.target) },
-    climb, milestones, stages, kids, kidSource: CHILD_SOURCE, assumptions,
+    goal: adv.solveFor === "After-Tax Withdrawal" && parseNum(adv.target) > 0 ? { v: parseNum(adv.target), fromBudget: false } : { v: bc.spentYr, fromBudget: true },
+    climb, milestones, stages, money, kids, kidSource: CHILD_SOURCE, assumptions,
   };
 }
 

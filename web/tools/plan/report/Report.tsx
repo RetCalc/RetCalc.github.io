@@ -74,7 +74,7 @@ export function PlanReport({ fontClass }: { fontClass: string }) {
         <div className="rp-bar-l">
           <Link href="/guide/paycheck" className="rp-back">← Back to Paycheck to Retirement</Link>
           <h1 id="pageH1">Your paycheck plan</h1>
-          <p>{S ? planPages(S).length + " pages, from your walkthrough. Everything here was worked out in your browser." : "Your walkthrough as a full report, ready to print or save as a PDF."}</p>
+          <p>{S ? planPages(S).length + " pages, from your answers. Everything here was worked out in your browser." : "Your plan as a full report, ready to print or save as a PDF."}</p>
         </div>
         <div className="rp-bar-r">
           <div className="rp-name"><Label htmlFor="pp-name">Your first name</Label>
@@ -85,7 +85,7 @@ export function PlanReport({ fontClass }: { fontClass: string }) {
       </div>
       <div className="rp-stage" ref={wrap}>
         {S === undefined ? <p className="rp-wait" role="status">Building your report…</p>
-          : S === null ? <div className="rp-wait"><p>Finish the walkthrough first: the report needs your ages, your pay and your plan.</p>
+          : S === null ? <div className="rp-wait"><p>Finish Paycheck to Retirement first: the report needs your ages, your pay and your plan.</p>
             <Link href="/guide/paycheck" className={buttonVariants({ variant: "secondary" })}>Open Paycheck to Retirement</Link></div>
             : <div className="rp-fit" style={{ "--rp-zoom": scale, "--rp-h": tall } as React.CSSProperties}>
               <div className="rp-pages" ref={pagesRef}><PlanReportPages R={{ S, title, date }} /></div></div>}

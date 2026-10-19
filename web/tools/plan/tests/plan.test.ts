@@ -8,7 +8,7 @@ import { BUDGET_DEFAULTS } from "@/tools/budget/model";
 import { stagesCompute } from "@/tools/stages/model";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { coverStage, kidStages, monthlyByAccount, stagesFromKids } from "../kids";
-import { paycheckOf, planAges, seedAdvanced, seedPaycheck, seedStages, strip, taxesFromPaycheck, toolOf } from "../flow";
+import { freedOf, paycheckOf, planAges, seedAdvanced, seedPaycheck, seedStages, strip, taxesFromPaycheck, toolOf } from "../flow";
 import { NO_KIDS, PLAN_DEFAULTS, type PlanState } from "../model";
 
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
@@ -94,11 +94,29 @@ test("children: stages where the cost changes, in the Guide's words", () => {
 
 test("covering a stage: the brokerage first, typed amounts stand, the rest from spending", () => {
   const today = { brok: 500, roth: 300, trad: 600, hsa: 200 };
-  assert.deepEqual(coverStage(700, today), { take: { brok: 500, roth: 200, trad: 0, hsa: 0 }, short: 0 });
-  assert.deepEqual(coverStage(700, today, { brok: 100 }), { take: { brok: 100, roth: 300, trad: 300, hsa: 0 }, short: 0 });
-  assert.deepEqual(coverStage(2000, today), { take: { brok: 500, roth: 300, trad: 600, hsa: 200 }, short: 400 });
+  const pick = (c: { take: unknown; short: number }) => ({ take: c.take, short: c.short });
+  assert.deepEqual(pick(coverStage(700, today)), { take: { brok: 500, roth: 200, trad: 0, hsa: 0 }, short: 0 });
+  assert.deepEqual(pick(coverStage(700, today, { brok: 100 })), { take: { brok: 100, roth: 300, trad: 300, hsa: 0 }, short: 0 });
+  assert.deepEqual(pick(coverStage(2000, today)), { take: { brok: 500, roth: 300, trad: 600, hsa: 200 }, short: 400 });
   // Costing less than today adds to the brokerage.
   assert.deepEqual(coverStage(-300, today).take, { brok: -300, roth: 0, trad: 0, hsa: 0 });
+});
+
+test("covering a stage from pre-tax accounts: a cut frees less than itself, and can cost the match", () => {
+  const p = seedAdvanced(seedPaycheck(plan()), null), F = freedOf(p), pc = paycheckOf(p)!;
+  const today = monthlyByAccount(advancedPlan(toolOf(p, "advanced"), null), "Bi-Weekly");
+  // $200 a month from the traditional 401(k): more than $200 is cut, and the freed pay is exactly $200.
+  const c = coverStage(200, { ...today, brok: 0, roth: 0 }, {}, F);
+  assert.ok(c.take.trad > 240 && c.take.trad < 290, "cut " + c.take.trad);
+  near(c.freed, 200, 0.05);
+  near(c.taxUp, c.take.trad - 200, 0.05);
+  assert.equal(c.short, 0);
+  // Brokerage and Roth free what they cut.
+  near(F({ brok: 100, roth: 50, trad: 0, hsa: 0 }).freed, 150, 0.01);
+  // Cutting the whole 401(k) costs the whole match.
+  const all = F({ brok: 0, roth: 0, trad: today.trad, hsa: 0 });
+  near(all.matchLost, (pc.r.match * 26) / 12, 0.05);
+  assert.ok(all.freed < today.trad * 0.85);
 });
 
 test("Life stages: one per children's stage, saving less what each stage takes, the years adding up", () => {
@@ -152,4 +170,21 @@ test("summary: a paycheck's parts add back to gross pay (the ribbon)", async () 
   const lines = S.lines.reduce((t, l) => t + l.v, 0);
   near(y.taxes + y.health + lines + y.spend + y.left, y.gross, 0.02);
   near(S.inflow.trad + S.inflow.roth + S.inflow.brok + S.inflow.hsa + S.inflow.ef - S.inflow.match, lines, 0.02);
+});
+
+test("summary: each year's money adds up to the year's pay, and the children show where they cost", async () => {
+  const { planSummary } = await import("../results");
+  let p = seedAdvanced(seedPaycheck(plan()), null);
+  p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), brokC: "400" } } };
+  const S = planSummary(seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 1, firstIn: 2 } }, null), null)!;
+  const M = S.money!, gross = S.pay.gross * S.p;
+  assert.equal(M.length, 31);
+  for (const y of M) near(y.taxes + y.spend + y.kids + y.save + y.left, gross, 1);
+  assert.equal(M[0].kids, 0);
+  near(M[2].kids, 30000);
+  // Saving cut from the 401(k) in childcare brings more tax.
+  assert.ok(M[2].taxes > M[0].taxes);
+  assert.ok(M[2].save < M[0].save);
+  // No milestones already passed.
+  assert.ok(S.milestones.every((m) => m.age > S.age));
 });

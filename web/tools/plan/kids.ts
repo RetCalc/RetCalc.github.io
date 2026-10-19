@@ -9,6 +9,7 @@ import type { AdvancedInputs, AdvancedPlan } from "@/tools/advanced/model";
 import { stagesFromAdvanced } from "@/tools/advanced/toStages";
 import { CHILD_COST, childCost, children, labelAt, type Child } from "@/tools/guide/schedule";
 import type { Answers } from "@/tools/guide/store";
+import { paycheckRun, type PcInput, type PcStep } from "@/tools/budget/paycheck-math";
 import { stageFields, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { COVER_ORDER, type CoverLine, type PlanKids } from "./model";
 
@@ -80,34 +81,81 @@ export function monthlyByAccount(P: AdvancedPlan, period: string): Monthly {
   return { brok: mo(P.a.brokC), roth: mo(P.a.rothC), trad: mo(P.a.tradC), hsa: mo(P.a.hsaC) };
 }
 
+/** What cutting a month's saving from each account frees in take-home
+    pay, and what it costs in employer match, both a month. */
+export type Freed = (take: Monthly) => { freed: number; matchLost: number };
+
+/** Cuts free their full amount (no paycheck to work the taxes out on). */
+export const ONE_FOR_ONE: Freed = (t) => ({ freed: COVER_ORDER.reduce((s, k) => s + t[k], 0), matchLost: 0 });
+
+/** The paycheck's own taxes behind each cut. Money kept out of a traditional
+    401(k), traditional IRA or HSA is taxed as pay again (the HSA through
+    payroll skips Social Security and Medicare too), so cutting a dollar
+    from one frees less than a dollar; brokerage and Roth free it all. Each
+    account's cut comes off the paycheck lines it's made of (traditional:
+    beyond the match, then the IRA, then the match line), and the paycheck
+    is run again. */
+export function paycheckFreed(pi: PcInput): Freed {
+  const base = paycheckRun(pi), mo = pi.p / 12, per = (v: number) => (Math.max(0, v) * 12) / pi.p, R = pi.roth;
+  const TRAD: PcStep[] = (["k401max", "rothIra", "match"] as const).filter((k) => !R[k]);
+  const ROTH: PcStep[] = (["rothIra", "k401max", "match"] as const).filter((k) => R[k]);
+  return (take) => {
+    const a = { ...pi.amounts };
+    const cut = (lines: PcStep[], v: number) => { for (const k of lines) { const c = Math.min(a[k], v); a[k] -= c; v -= c; } };
+    cut(TRAD, per(take.trad)); cut(ROTH, per(take.roth)); cut(["brok"], per(take.brok)); cut(["hsa"], per(take.hsa));
+    const r = paycheckRun(pi, a);
+    return { freed: COVER_ORDER.reduce((s, k) => s + take[k], 0) - (r.taxes - base.taxes) * mo, matchLost: Math.max(0, (base.match - r.match) * mo) };
+  };
+}
+
 export interface Cover {
-  /** A month taken from each account (negative: added, when the children
+  /** A month cut from each account (negative: added, when the children
       cost less than today). */
   take: Monthly;
-  /** What the saving can't cover: it comes out of spending. */
+  /** The take-home pay that frees, after the tax it brings back. */
+  freed: number;
+  /** Each account's cut on its own, in take-home pay. */
+  freedBy: Monthly;
+  /** What saving can't cover: it comes out of spending. */
   short: number;
+  /** Employer match given up, and the extra tax on the cuts, a month. */
+  matchLost: number; taxUp: number;
 }
 
 /** How a stage pays for `change` more a month than today: the amounts
     typed for an account stand; the rest comes out of the others in
-    COVER_ORDER, as far as each goes. Costs lower than today add to the
-    brokerage unless typed otherwise. */
-export function coverStage(change: number, today: Monthly, typed: Partial<Monthly> = {}): Cover {
+    COVER_ORDER, each cut as far as it takes to free the rest in take-home
+    pay (a pre-tax cut frees less than itself), and as far as each goes.
+    Costs lower than today add to the brokerage unless typed otherwise. */
+export function coverStage(change: number, today: Monthly, typed: Partial<Monthly> = {}, F: Freed = ONE_FOR_ONE): Cover {
   const take: Monthly = { brok: 0, roth: 0, trad: 0, hsa: 0 };
+  const done = (): Cover => {
+    const f = F(take), sum = COVER_ORDER.reduce((s, k) => s + take[k], 0);
+    const freedBy = Object.fromEntries(COVER_ORDER.map((k) => [k, take[k] > 0 ? F({ brok: 0, roth: 0, trad: 0, hsa: 0, [k]: take[k] }).freed : take[k]])) as Monthly;
+    const short = change > 0 ? Math.max(0, Math.round((change - f.freed) * 100) / 100) : 0;
+    return { take, freed: f.freed, freedBy, short: short < 0.01 ? 0 : short, matchLost: f.matchLost, taxUp: Math.max(0, sum - f.freed) };
+  };
   if (change <= 0) {
-    for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.max(-1e9, Math.min(today[k], typed[k]!));
+    for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.min(today[k], typed[k]!);
     const set = COVER_ORDER.reduce((s, k) => s + take[k], 0);
     if (typed.brok == null) take.brok = change - (set - take.brok);
-    return { take, short: 0 };
+    return done();
   }
-  let left = change;
-  for (const k of COVER_ORDER) if (typed[k] != null) { take[k] = Math.max(0, Math.min(today[k], typed[k]!)); left -= take[k]; }
+  for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.max(0, Math.min(today[k], typed[k]!));
   for (const k of COVER_ORDER) {
-    if (typed[k] != null || left <= 0) continue;
-    take[k] = Math.min(today[k], left);
-    left -= take[k];
+    if (typed[k] != null || F(take).freed >= change - 0.005) continue;
+    // The least cut from this account that frees the rest, or all of it.
+    take[k] = today[k];
+    if (F(take).freed <= change) continue;
+    let lo = 0, hi = today[k];
+    for (let i = 0; i < 24 && hi - lo > 0.005; i++) {
+      const mid = (lo + hi) / 2;
+      take[k] = mid;
+      if (F(take).freed >= change) hi = mid; else lo = mid;
+    }
+    take[k] = Math.round(hi * 100) / 100;
   }
-  return { take, short: Math.max(0, Math.round(left * 100) / 100) };
+  return done();
 }
 
 const cents = (v: number) => Math.round(v * 100) / 100;
@@ -118,11 +166,11 @@ const cents = (v: number) => Math.round(v * 100) / 100;
     children take, in today's dollars (each later stage restated at its
     start, Stages' "adjust for inflation"). A glide stays on the last. */
 export function stagesFromKids(P: AdvancedPlan, adv: AdvancedInputs, cur: StagesInputs, segs: KidStage[],
-  cover: Record<string, Partial<Monthly>>): StagesInputs {
+  cover: Record<string, Partial<Monthly>>, F: Freed = ONE_FOR_ONE): StagesInputs {
   const { next } = stagesFromAdvanced(P, adv, cur, null);
   const p = P.p, period = p.period, ppy = PER_YEAR[period] ?? 12, today = monthlyByAccount(P, period);
   const stages: StageInputs[] = segs.map((seg, i) => {
-    const { take } = coverStage(seg.change, today, cover[stageKey(seg)]);
+    const { take } = coverStage(seg.change, today, cover[stageKey(seg)], F);
     const m = Object.fromEntries((Object.keys(today) as CoverLine[]).map((k) => [k, Math.max(0, today[k] - take[k])])) as Monthly;
     const total = m.brok + m.roth + m.trad + m.hsa, per = (v: number) => (v * 12) / ppy;
     const last = i === segs.length - 1, years = seg.to - seg.from;

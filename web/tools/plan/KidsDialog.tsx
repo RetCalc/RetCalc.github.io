@@ -20,7 +20,7 @@ import { PER_YEAR } from "@/lib/engine/typed";
 import { groupDigits, money, parseNum } from "@/lib/format";
 import { advancedPlan } from "@/tools/advanced/model";
 import { CHILD_COST, CHILD_SOURCE } from "@/tools/guide/schedule";
-import { planAges, seedStages, toolOf } from "./flow";
+import { freedOf, planAges, seedStages, toolOf } from "./flow";
 import { coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import { COVER_ORDER, NO_KIDS, setPlan, type CoverLine, type PlanKids, type PlanState } from "./model";
 
@@ -107,7 +107,7 @@ function KidsDialog({ kids, age, retire, close, save }: { kids: PlanKids; age: n
     <Modal size="study" onClose={close} focus="#kdNow">
       <h3>Children</h3>
       <div className="formhint">The biggest change to saving for most people: childcare before school, then the school years, then saving can rise again.
-        These are the Guide&apos;s costs, in today&apos;s dollars; change any of them to your own.</div>
+        The costs below are typical ones, in today&apos;s dollars; change any of them to your own.</div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-3 max-sm:grid-cols-1">
         <div className="col-span-full">
           <Label className="mb-1.5" htmlFor="kdNow"><span>Children you have now: their ages</span></Label>
@@ -173,7 +173,8 @@ function useCover(plan: PlanState, typed: Record<string, Partial<Monthly>>) {
   const { profile } = useHousehold();
   const adv = toolOf(plan, "advanced"), P = advancedPlan(adv, profile), period = P.p.period;
   const today = monthlyByAccount(P, period), ppy = PER_YEAR[period] ?? 12;
-  return { today, ppy, per: (m: number) => (m * 12) / ppy, cover: (s: KidStage) => coverStage(s.change, today, typed[stageKey(s)]) };
+  const F = freedOf(plan);
+  return { today, ppy, per: (m: number) => (m * 12) / ppy, cover: (s: KidStage) => coverStage(s.change, today, typed[stageKey(s)], F) };
 }
 
 /** The stages with their cost and what each account gives, for the card. */
@@ -193,7 +194,8 @@ function CoverTable({ plan, segs }: { plan: PlanState; segs: KidStage[] }) {
               <tr key={stageKey(s)} className="border-t border-border">
                 <td className="py-1.5"><b className="font-medium">{s.label}</b> <span className="text-muted-foreground">{ages(s.from, s.to)}</span></td>
                 <td className="text-right">{(s.change < 0 ? "−" : "+") + money(Math.abs(s.change))}/mo</td>
-                {COVER_ORDER.map((k) => <td key={k} className="text-right">{c.take[k] > 0.004 ? "−" + money(c.take[k]) : c.take[k] < -0.004 ? "+" + money(-c.take[k]) : "–"}</td>)}
+                {COVER_ORDER.map((k) => <td key={k} className="text-right">{c.take[k] > 0.004 ? "−" + money(c.take[k]) : c.take[k] < -0.004 ? "+" + money(-c.take[k]) : "–"}
+                  {k === "trad" && c.matchLost > 0.5 ? <span className="block text-label text-loss">−{money(c.matchLost)} match</span> : null}</td>)}
                 <td className={"text-right" + (c.short > 0 ? " text-loss" : "")}>{c.short > 0 ? "−" + money(c.short) : "–"}</td>
               </tr>
             );
@@ -215,12 +217,13 @@ function CoverDialog({ plan, age, retire, close, save }: {
   const C = useCover(plan, nums);
   const perCheck = C.ppy === 12 ? "a month" : C.ppy === 26 ? "a paycheck (every two weeks)" : C.ppy === 52 ? "a paycheck (weekly)" : "a paycheck";
   return (
-    <Modal size="guide" onClose={close}>
+    <Modal size="table" onClose={close}>
       <h3>How will you cover this?</h3>
       <div className="formhint">Today you save <b>{money(C.today.brok + C.today.roth + C.today.trad + C.today.hsa)}</b> a month:{" "}
         {COVER_ORDER.filter((k) => C.today[k] > 0).map((k) => (k === "brok" || k === "trad" ? ACCT[k].toLowerCase() : ACCT[k]) + " " + money(C.today[k])).join(", ") || "nothing yet"}.
         {" "}Each stage&apos;s children come out of the brokerage first, so the tax-advantaged accounts stay full, then Roth, then traditional
-        (where the 401(k) match is), then the HSA. Type over any amount to take it from somewhere else; what saving can&apos;t cover comes out of spending.</div>
+        (where the 401(k) match is), then the HSA. Type over any amount to take it from somewhere else; what saving can&apos;t cover comes out of spending.
+        {" "}Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there frees less than its size: each one is cut far enough to cover the cost after that tax.</div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-170 text-note tabular-nums">
           <thead><tr className="text-label text-muted-foreground">
@@ -233,22 +236,26 @@ function CoverDialog({ plan, age, retire, close, save }: {
               const key = stageKey(s), c = C.cover(s);
               return (
                 <tr key={key} className="border-t border-border align-top">
-                  <td className="py-2 pr-2"><b className="font-medium">{s.label}</b><span className="block text-label text-muted-foreground">{ages(s.from, s.to)}</span></td>
+                  <td className="min-w-40 py-2 pr-2"><b className="font-medium">{s.label}</b><span className="block text-label text-muted-foreground">{ages(s.from, s.to)}</span></td>
                   <td className="py-2 text-right">{(s.change < 0 ? "−" : "+") + money(Math.abs(s.change))}/mo
                     <span className="block text-label text-muted-foreground">{(s.change < 0 ? "−" : "+") + money(Math.abs(C.per(s.change)), 2)} {perCheck === "a month" ? "" : "/check"}</span></td>
                   {COVER_ORDER.map((k) => s.change > 0 ? (
                     <td key={k} className="py-1.5 pl-2">
-                      <Affixed prefix="−$" className="w-24"><MoneyInput nonNeg aria-label={ACCT[k] + " taken, " + s.label + ", a month"}
+                      <Affixed prefix="−$" className="w-30"><MoneyInput nonNeg aria-label={ACCT[k] + " taken, " + s.label + ", a month"}
                         value={typed[key]?.[k] ?? cents(c.take[k])} onValueChange={(v) => setTyped((t) => ({ ...t, [key]: { ...t[key], [k]: v } }))} /></Affixed>
+                      {/* A pre-tax cut frees less than itself: say what it frees. */}
+                      {c.take[k] > 0.5 && c.take[k] - c.freedBy[k] > 0.5 ? <span className="mt-0.5 block text-right text-label text-muted-foreground">frees {money(c.freedBy[k])}</span> : null}
+                      {k === "trad" && c.matchLost > 0.5 ? <span className="block text-right text-label text-loss">−{money(c.matchLost)} match</span> : null}
                     </td>
                   ) : <td key={k} className="py-2 text-right">{c.take[k] < -0.004 ? "+" + money(-c.take[k]) : "–"}</td>)}
-                  <td className={"py-2 text-right" + (c.short > 0 ? " text-loss" : "")}>{c.short > 0 ? "−" + money(c.short) + "/mo" : "–"}</td>
+                  <td className={"py-2 text-right whitespace-nowrap" + (c.short > 0 ? " text-loss" : "")}>{c.short > 0 ? "−" + money(c.short) + "/mo" : "–"}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+      {segs.some((s) => C.cover(s).matchLost > 0.5) ? <p className="hint mt-3 text-loss">⚠ A cut shown in red under Traditional goes below what earns the full employer match, so the match shrinks too. Taking more from another account keeps it.</p> : null}
       <p className="hint mt-3">Amounts are a month, in today&apos;s dollars. The paycheck figure is the same cost {perCheck === "a month" ? "" : "on your pay schedule"}. A stage costing less than today adds the difference to the brokerage.</p>
       <div className="formactions mt-4">
         <Button variant="outline" className="flex-1" onClick={() => setTyped({})}>Brokerage first again</Button>
