@@ -109,6 +109,8 @@
 /* Cover */
 .rp-map{position:relative;background:var(--rp-land);padding:.2in .45in .14in;border-bottom:1px solid var(--rp-rule2)}
 .rp-legend{position:absolute;left:1.02in;top:.3in;background:#fff;border:1.5px solid var(--rp-band);padding:9px 11px;font-size:10.5px;line-height:1.35;width:2.25in}
+/* Lower, under the stage markers along the top of the chart. */
+.rp-legend.low{top:.66in}
 .rp-legend h5{font-size:11px;font-weight:800;margin-bottom:5px}
 .rp-legend div{display:flex;align-items:center;gap:7px;margin:3px 0}
 .rp-legend i{display:inline-block;width:20px;height:10px;flex:none;background:var(--sw)}

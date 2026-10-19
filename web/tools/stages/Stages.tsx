@@ -7,7 +7,6 @@
    03-calculator-results.html. */
 
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
@@ -16,7 +15,7 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolNav, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -49,7 +48,7 @@ const TARGET_LABEL = "(your target above)";
 export function Stages() {
   const { state: s, set, setState } = useToolState(STAGES_DEF);
   const { profile } = useHousehold();
-  const router = useRouter();
+  const store = useToolStore(), go = useToolNav();
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -86,7 +85,7 @@ export function Stages() {
       // Start with the whole balance in traditional and every stage's
       // contribution there too, so nothing moves until you split it.
       const blank = (["saTradBal", "saRothBal", "saBrokBal", "saHsaBal"] as const).every((k) => !(parseNum(s[k]) > 0));
-      const tax = toolInputs("tax", TAX_DEFAULTS), H = profile;
+      const tax = store.read("tax", TAX_DEFAULTS), H = profile;
       setState((c) => ({
         ...c, saOn: true, stages: c.stages.map(dropTyped),
         ...(blank ? {
@@ -174,7 +173,7 @@ export function Stages() {
 
   const toDrawdown = () => {
     sendToDrawdown({ initial: Math.round(R.fvReal) });
-    router.push("/drawdown");
+    go("/drawdown");
     toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
   };
 

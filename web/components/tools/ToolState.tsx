@@ -11,6 +11,7 @@
    saved, shared and restored is exactly what was on screen. */
 
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
 
 export type ToolInputs = Record<string, string | string[] | unknown>;
@@ -152,11 +153,59 @@ export function setToolInputs(id: string, data: ToolInputs): void {
   remember(id, data);
 }
 
+/* ---------- a tool scope ----------
+   A page that runs tool screens inside it (the Paycheck to Retirement
+   walkthrough) gives them its own copy of every tool's inputs: each tool
+   reads and writes the scope's copy instead of the tab's, a tool's move to
+   another tool's page becomes the page's own step, and the header's
+   controls are left to the page. Outside a scope nothing changes. */
+export interface ToolScope {
+  /** The scope's name, which keeps its household fill apart from the tools'. */
+  name: string;
+  /** The scope's copy of a tool's inputs, if it has one. */
+  read: (id: string) => ToolInputs | undefined;
+  write: (id: string, data: ToolInputs) => void;
+  /** A tool moving to a page ("/stages"): true when the scope took it. */
+  go: (path: string) => boolean;
+}
+const ScopeContext = createContext<ToolScope | null>(null);
+export const ToolScopeProvider = ScopeContext;
+/** The scope this tool runs in, or null on its own page. */
+export function useToolScope(): ToolScope | null {
+  return use(ScopeContext);
+}
+
+/** Another tool's inputs, read and changed in the scope this one runs in. */
+export interface ToolStore {
+  read: <S extends ToolInputs>(id: string, fallback: S) => S;
+  write: (id: string, data: ToolInputs) => void;
+}
+export const TAB_STORE: ToolStore = { read: toolInputs, write: setToolInputs };
+export function useToolStore(): ToolStore {
+  const scope = use(ScopeContext);
+  return useMemo(() => scope
+    ? { read: <S extends ToolInputs>(id: string, fallback: S) => (scope.read(id) as S | undefined) ?? fallback, write: scope.write }
+    : TAB_STORE, [scope]);
+}
+
+/** Moves to another page, or to the scope's own step for it. */
+export function useToolNav(): (path: string) => void {
+  const scope = use(ScopeContext), router = useRouter();
+  return useCallback((path: string) => { if (!scope?.go(path)) router.push(path); }, [scope, router]);
+}
+
 /** A tool's inputs. `set("price")(text)` updates one; `update({...})` several. */
 /** `opening`: a change to the inputs as the page opens (a strategy page
     sets up its strategy). */
 export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s: S) => S) {
+  const scope = use(ScopeContext);
   const [state, setState] = useState<S>(() => {
+    // In a scope, its copy (the scope is only drawn in the browser).
+    if (scope) {
+      const mine = scope.read(def.id);
+      const s = mine ? withDefaults(def.defaults, mine) : def.defaults;
+      return opening ? opening(s) : s;
+    }
     // Memory only: reading session storage here would differ from the
     // server's render. The effect below fills that in.
     const s = (memory.get(def.id) as S | undefined) ?? def.defaults;
@@ -171,6 +220,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
   });
   const filled = useRef(false);
   useEffect(() => {
+    if (scope) return;
     restoreSession();
     const saved = pending.get(def.id);
     if (!saved) return;
@@ -178,7 +228,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     filled.current = true;
     const s = withDefaults(def.defaults, saved);
     setState(openingRef.current ? openingRef.current(s) : s);
-  }, [def]);
+  }, [def, scope]);
   useEffect(() => {
     // The defaults this page rendered with must not overwrite what was
     // just read back.
@@ -186,20 +236,23 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
       filled.current = false;
       return;
     }
-    remember(def.id, state);
-  }, [def.id, state]);
+    if (scope) scope.write(def.id, state);
+    else remember(def.id, state);
+  }, [def.id, state, scope]);
 
   // A share link for this tool opens with its inputs.
   useEffect(() => {
+    if (scope) return;
     const shared = decodeShare(window.location.hash);
     if (shared?.t === def.id) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
       setState(withDefaults(def.defaults, shared.d));
     }
-  }, [def]);
+  }, [def, scope]);
 
-  // The header's controls see this tool, and its inputs as they change.
-  useRegisterTool(def, state, (data) => setState(withDefaults(def.defaults, data)));
+  // The header's controls see this tool, and its inputs as they change
+  // (in a scope, the page's own register instead).
+  useRegisterTool(def, state, (data) => setState(withDefaults(def.defaults, data)), !!scope);
 
   const set = useCallback(
     <K extends keyof S>(k: K) => (v: S[K]) => setState((s) => ({ ...s, [k]: v })),
@@ -211,14 +264,14 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
 
 /** Makes a page's inputs the ones the header's controls (save, share,
     reset) work on: a tool's, or the readiness guide's plan. */
-export function useRegisterTool<S extends ToolInputs>(def: ToolDef<S>, state: S, load: (data: ToolInputs) => void) {
+export function useRegisterTool<S extends ToolInputs>(def: ToolDef<S>, state: S, load: (data: ToolInputs) => void, off = false) {
   const { setActive } = use(RegistryContext);
   const latest = useRef(load);
   useEffect(() => {
     latest.current = load;
   });
   useEffect(() => {
-    setActive({ def: def as unknown as ToolDef<ToolInputs>, state, load: (d) => latest.current(d) });
-  }, [def, state, setActive]);
-  useEffect(() => () => setActive(null), [setActive]);
+    if (!off) setActive({ def: def as unknown as ToolDef<ToolInputs>, state, load: (d) => latest.current(d) });
+  }, [def, state, setActive, off]);
+  useEffect(() => () => { if (!off) setActive(null); }, [setActive, off]);
 }

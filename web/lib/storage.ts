@@ -54,9 +54,10 @@ export function writeSession(key: string, version: number, value: unknown): void
    stays on this device. Signed out, or with no account service set up,
    nothing below does anything visible: writes go to this browser alone. */
 
-/** The keys synced to an account: the household, the Guide, saved scenarios. */
+/** The keys synced to an account: the household, the Guide, Paycheck to
+    Retirement, saved scenarios. */
 export function isSynced(key: string): boolean {
-  return key === "household" || key === "guide" || key.startsWith("scenarios-");
+  return key === "household" || key === "guide" || key === "paycheck-plan" || key.startsWith("scenarios-");
 }
 
 type WriteListener = (key: string, version: number, value: unknown) => void;

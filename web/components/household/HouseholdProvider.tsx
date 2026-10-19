@@ -10,6 +10,7 @@
 import { createContext, use, useEffect, useMemo, useRef, useState } from "react";
 import { HOUSEHOLD_STORE, HOUSEHOLD_TOOLS, type SavedHousehold } from "@/lib/household";
 import { readStored, writeStored } from "@/lib/storage";
+import { useToolScope } from "@/components/tools/ToolState";
 
 /** The open tool's tie to the household: whether its inputs still match
     what the household fills in, and a way to fill them in again. */
@@ -55,8 +56,12 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
     tool, and when the profile is saved while it's open. Running it on the
     current inputs also tells whether they still match the household, which
     the tool bar shows, with a way to fill them in again. */
-export function useHouseholdFill<S>(tool: string, state: S, setState: (f: (c: S) => S) => void, fill: (h: SavedHousehold, c: S) => S): void {
+export function useHouseholdFill<S>(own: string, state: S, setState: (f: (c: S) => S) => void, fill: (h: SavedHousehold, c: S) => S): void {
   const { profile, setLink } = useHousehold();
+  // In a tool scope (a walkthrough), its copy takes the household in on its
+  // own, and the tool bar's household status is the page's, not this tool's.
+  const scope = useToolScope();
+  const tool = scope ? scope.name + ":" + own : own;
   const latest = useRef(fill);
   useEffect(() => {
     latest.current = fill;
@@ -72,12 +77,12 @@ export function useHouseholdFill<S>(tool: string, state: S, setState: (f: (c: S)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tool, savedAt]);
 
-  const takes = !!profile && (HOUSEHOLD_TOOLS.find((t) => t.id === tool)?.takes(profile) ?? false);
+  const takes = !!profile && (HOUSEHOLD_TOOLS.find((t) => t.id === own)?.takes(profile) ?? false);
   const matches = !!profile && same(fill(profile, state), state);
   useEffect(() => {
-    setLink({ tool, takes, matches, apply: () => { if (profile) setState((c) => latest.current(profile, c)); } });
-  }, [tool, takes, matches, profile, setState, setLink]);
-  useEffect(() => () => setLink(null), [setLink]);
+    if (!scope) setLink({ tool, takes, matches, apply: () => { if (profile) setState((c) => latest.current(profile, c)); } });
+  }, [tool, takes, matches, profile, setState, setLink, scope]);
+  useEffect(() => () => { if (!scope) setLink(null); }, [setLink, scope]);
 }
 
 export function HouseholdProvider({ children }: { children: React.ReactNode }) {

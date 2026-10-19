@@ -10,7 +10,6 @@
    the mocks of 2026-10-15 (the tab) and 2026-10-18 (the sliders). */
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Donut, type DonutPart } from "@/components/charts/Donut";
 import { ShareBar } from "@/components/charts/Legend";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -21,11 +20,11 @@ import { TipDot } from "@/components/shell/Tooltips";
 import { NativeRange } from "@/components/ui/native-range";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
-import { setToolInputs, toolInputs } from "@/components/tools/ToolState";
+import { useToolNav, useToolStore } from "@/components/tools/ToolState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DASH, dollarsField, groupDigits, money } from "@/lib/format";
+import { DASH, groupDigits, money } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
 import { cn } from "@/lib/utils";
@@ -36,7 +35,7 @@ import { useHousehold } from "@/components/household/HouseholdProvider";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { PERIOD_ADV } from "@/lib/periods";
-import { advancedHasSaving, intoAdvanced, intoStages, paycheckCopy, stagesHasSaving } from "./to-calculator";
+import { advancedHasSaving, intoAdvanced, intoStages, paycheckCopy, stagesHasSaving, taxFromPaycheck } from "./to-calculator";
 import { annualize, type BudgetInputs } from "./model";
 import {
   PC_LINES, PC_PLANS, PC_STEPS, PC_ZERO, healthRowMonthly, paycheckInput, paycheckRun, pcAmountKey, pcCap, pcCostPer, pcHasLimit, pcMost,
@@ -58,8 +57,8 @@ export function Paycheck({ s, set, setState }: {
   set: <K extends keyof BudgetInputs>(k: K) => (v: BudgetInputs[K]) => void;
   setState: SetState;
 }) {
-  const router = useRouter();
-  const taxState = toolInputs("tax", TAX_DEFAULTS).state;
+  const store = useToolStore(), go = useToolNav();
+  const taxState = store.read("tax", TAX_DEFAULTS).state;
   const pi = paycheckInput(s, taxState);
   const r = paycheckRun(pi);
   const base = paycheckRun(pi, PC_ZERO);
@@ -212,25 +211,9 @@ export function Paycheck({ s, set, setState }: {
 
         <Itemized s={s} pi={pi} r={r} empty={empty} short={short}
           openTax={() => {
-            // Income Tax, filled in from here: the pay and the pre-tax
-            // deductions by kind, a year of each (a traditional IRA among
-            // them). Roth and after-tax saving don't change the tax, so they
-            // stay here.
-            // With two incomes, each person's lines go to their own column.
-            const yr = (v: number) => amountText(v * pi.p);
-            const health = r.healths;
-            const ira = pi.roth.rothIra ? [0, 0] : pcSplit(pi).rothIra;
-            setToolInputs("tax", {
-              ...toolInputs("tax", TAX_DEFAULTS), mode: "normal", view: "net", gross: dollarsField(pi.gross), gross2: two ? dollarsField(pi.gross2) : "0",
-              status: pi.status, state: pi.state, itemize: true, year: TAX_DEFAULTS.year,
-              // To the cent, so Income Tax shows the same tax as the stub.
-              k401: yr(r.k401s[0]), ira: yr(ira[0]), hsa: yr(r.hsas[0]), health: yr(health[0]), dother: "0",
-              k4012: yr(r.k401s[1]), ira2: yr(ira[1]), hsa2: yr(r.hsas[1]), health2: yr(health[1]), dother2: "0",
-              pre: yr(r.k401 + r.hsa + r.health + ira[0] + ira[1]),
-              // Its pop-up shows them per paycheck on this schedule, or per month with two incomes.
-              preUnits: two ? "month,year,month,month,year" : "check,year,check,check,year", prePay: String(pi.p),
-            });
-            router.push("/incometax");
+            // Income Tax, filled in from here (taxFromPaycheck).
+            store.write("tax", taxFromPaycheck(store.read("tax", TAX_DEFAULTS), pi, r));
+            go("/incometax");
           }} />
       </div>
     </>
@@ -291,7 +274,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
   const two = pi.two, per = two ? "month" : "check";
   const left = Math.abs(r.left) < 0.01 ? 0 : r.left, short = !empty && r.left <= -0.01;
   const taxCut = base.taxes - r.taxes;
-  const router = useRouter(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
+  const store = useToolStore(), go = useToolNav(), toast = useToast(), showPopup = usePopup(), { profile } = useHousehold();
   /* Copy to a calculator: the saving, account by account, into Advanced or
      Stages split by account type (asking first if that would replace
      saving already there), then on to it. */
@@ -308,17 +291,17 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
     const seed = { status: profile?.status || pi.status, state: profile?.state || pi.state };
     const to = i === 0 ? { id: "advanced", name: "Advanced", path: "/advanced" } : { id: "stages", name: "Stages", path: "/stages" };
     if (i === 0) {
-      const cur = toolInputs("advanced", ADVANCED_DEFAULTS);
+      const cur = store.read("advanced", ADVANCED_DEFAULTS);
       if (advancedHasSaving(cur) && await showPopup("Replace the saving in Advanced?", [
         { label: "Replace it", desc: "Its \u201cYou add\u201d amounts and employer match. Balances stay as they are." }]) < 0) return;
-      setToolInputs("advanced", intoAdvanced(cur, c, seed));
+      store.write("advanced", intoAdvanced(cur, c, seed));
     } else {
-      const cur = toolInputs("stages", STAGES_DEFAULTS);
+      const cur = store.read("stages", STAGES_DEFAULTS);
       if (stagesHasSaving(cur) && await showPopup("Replace the saving in Stages?", [
         { label: "Replace it", desc: "The first stage's contribution and the employer match. Balances and other stages stay as they are." }]) < 0) return;
-      setToolInputs("stages", intoStages(cur, c, seed));
+      store.write("stages", intoStages(cur, c, seed));
     }
-    router.push(to.path);
+    go(to.path);
     toast("Copied " + amount + " into " + to.name);
   };
   /** Set one line by hand: the plan no longer describes it. */

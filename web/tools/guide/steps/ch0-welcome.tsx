@@ -7,6 +7,7 @@
 import { paceMinutes } from "../route";
 import type { Pace } from "../store";
 import { Callout, Lead, Q, useGuideView } from "../ui";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ReportThumb } from "../report/Thumb";
 
@@ -45,6 +46,14 @@ export function Welcome() {
           );
         })}
       </div>
+      {/* The other way in: straight to the numbers (PAYCHECK_PLAN_BRIEF.md). */}
+      <Link href="/guide/paycheck" className="group mt-3 flex items-center gap-4 rounded-xl border border-border bg-muted px-4.5 py-3.5 no-underline text-foreground hover:border-muted-foreground">
+        <span className="min-w-0 flex-1">
+          <b className="font-semibold">Just want the numbers? Paycheck to Retirement</b>
+          <span className="block text-note text-muted-foreground">Your pay after taxes, your budget, where each paycheck goes, and where that gets you by retirement, with kids if you&apos;re planning them. Six steps, about fifteen minutes.</span>
+        </span>
+        <i className="arw flex-none" aria-hidden="true"></i>
+      </Link>
       <div className="rp-offer my-4">
         <ReportThumb />
         <p><b>Either pace ends with your full report.</b>A full-color plan in your own numbers, to print or save as a PDF: what you&apos;ll have, how it holds up against every market since 1926, Social Security, taxes and health insurance, and your next moves.</p>

@@ -6,7 +6,7 @@
    the true end of the plan, so it moves to the second stage, clamped to fit.
    From advToStages(), applyCoast() and the btnToStages handler in
    src/js/app/06-solve.js. */
-import { setToolInputs, toolInputs } from "@/components/tools/ToolState";
+import type { ToolStore } from "@/components/tools/ToolState";
 import { fmtYears, groupDigits, parseNum } from "@/lib/format";
 import { STAGES_DEFAULTS, stageFields, stagesLookEdited, type StagesInputs } from "@/tools/stages/model";
 import { pctField, type AdvancedInputs, type AdvancedPlan } from "./model";
@@ -14,11 +14,22 @@ import { pctField, type AdvancedInputs, type AdvancedPlan } from "./model";
 /** Writes the stages and returns the confirmation to show, or null if the
     person chose to keep the stages they have. `coastYears`: contributions
     stop after this many years. */
-export function toStages({ p, a }: AdvancedPlan, s: AdvancedInputs, coastYears: number | null): string | null {
-  const cur = toolInputs<StagesInputs>("stages", STAGES_DEFAULTS);
+export function toStages(plan: AdvancedPlan, s: AdvancedInputs, coastYears: number | null, store: ToolStore): string | null {
+  const cur = store.read<StagesInputs>("stages", STAGES_DEFAULTS);
   if (stagesLookEdited(cur.stages) && !confirm(coastYears != null
     ? "Replace the stages currently on the Stages tab with this Coast FIRE plan?"
     : "Replace the stages currently on the Stages tab with these numbers?")) return null;
+  const { next, clipped, glideYears } = stagesFromAdvanced(plan, s, cur, coastYears);
+  store.write("stages", next);
+  const shortened = " — glide shortened to " + fmtYears(Math.max(1, glideYears));
+  return coastYears != null
+    ? clipped ? "Coast FIRE plan loaded" + shortened + " to fit the final stage" : "Coast FIRE plan loaded into the Stages tab"
+    : clipped ? "Copied into two stages" + shortened + " to fit the second stage" : "Copied into two stages, the second running 10 years longer";
+}
+
+/** Stages as toStages() writes them over `cur`: the plan, then either ten
+    more years of it or the coast years. */
+export function stagesFromAdvanced({ p, a }: AdvancedPlan, s: AdvancedInputs, cur: StagesInputs, coastYears: number | null) {
 
   // The stage contribution is yours alone; Stages adds the match back on top.
   const mine = a ? a.tradC + a.rothC + a.brokC + a.hsaC : p.contrib;
@@ -45,14 +56,11 @@ export function toStages({ p, a }: AdvancedPlan, s: AdvancedInputs, coastYears: 
       glide: p.glide.on ? { on: true, endRate: p.glide.endRate! + p.fees, years: Math.max(1, glideYears) } : { on: false },
     }),
   ];
-  setToolInputs("stages", {
+  const next: StagesInputs = {
     ...cur, ...acct,
     initial: groupDigits(p.initial, true), inflation: pctField(p.inflation), withdrawal: pctField(p.withdrawal),
     taxRate: pctField(p.taxRate), fees: pctField(p.fees),
     stages, target: groupDigits(parseNum(s.target), true), solveFor: s.solveFor,
-  });
-  const shortened = " — glide shortened to " + fmtYears(Math.max(1, glideYears));
-  return coastYears != null
-    ? clipped ? "Coast FIRE plan loaded" + shortened + " to fit the final stage" : "Coast FIRE plan loaded into the Stages tab"
-    : clipped ? "Copied into two stages" + shortened + " to fit the second stage" : "Copied into two stages, the second running 10 years longer";
+  };
+  return { next, clipped, glideYears };
 }

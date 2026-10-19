@@ -19,7 +19,7 @@ import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { toolInputs, useToolNav, useToolScope, useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
@@ -44,6 +44,10 @@ export function Budget() {
   useShareKit(BUDGET_DEF.id, budgetShare(s));
   const toast = useToast();
   const listRef = useRef<HTMLDivElement>(null);
+  // In a walkthrough, the Budget and its Paycheck tab are separate steps:
+  // no tabs, and the paycheck is the walkthrough's next step.
+  const scope = useToolScope(), go = useToolNav();
+  const toPaycheck = () => (scope ? go("/budget#paycheck") : set("view")("paycheck"));
   const setRow = (i: number, patch: Partial<BudgetRow>) =>
     setState((c) => ({ ...c, rows: c.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
 
@@ -109,7 +113,7 @@ export function Budget() {
   };
 
   // The two tabs: the budget itself, and where each paycheck goes.
-  const tabs = (
+  const tabs = scope ? null : (
     <div className="col-span-full">
       <Segmented id="segBgView" attr="data-bgview" options={[["budget", "Budget"], ["paycheck", "Paycheck"]] as const} value={s.view} onChange={set("view")} />
     </div>
@@ -203,6 +207,7 @@ export function Budget() {
               <Button variant="outline" size="sm" id="bgAdd"
                 onClick={() => addLine("Custom")}><PlusIcon data-icon="inline-start" aria-hidden="true" />Add custom item</Button>
             </div>
+            {scope ? null : <>
             <div className="hint mt-3.5">Pull a number in from another tool:</div>
             <div className="mt-1.5 flex flex-wrap gap-2">
               <Button variant="outline" size="sm" id="bgCopyCollege"
@@ -221,6 +226,7 @@ export function Budget() {
                   toast("Added " + money(Math.round(mo)) + "/mo from College Savings");
                 }}><PlusIcon data-icon="inline-start" aria-hidden="true" />College savings</Button>
             </div>
+            </>}
           </CardContent>
         </Card>
       </div>
@@ -260,7 +266,7 @@ export function Budget() {
             <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4">
               <h3 className="m-0 text-body font-semibold">Next: your paycheck</h3>
               <p className="mt-1.5 mb-3 text-note text-muted-foreground">What taxes take, how each check covers this budget, and where the rest goes.</p>
-              <Button id="bgToPaycheck" onClick={() => set("view")("paycheck")}>Open the Paycheck tab</Button>
+              <Button id="bgToPaycheck" onClick={toPaycheck}>{scope ? "Next: your paycheck" : "Open the Paycheck tab"}</Button>
             </div>
           </Card>
         </aside>

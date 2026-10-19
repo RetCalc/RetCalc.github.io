@@ -13,9 +13,10 @@
    calculators match IRA money too, and the terms as they are would
    overstate it.) Per-account growth rates are left as they are. */
 import { dollarsField, groupDigits, parseNum } from "@/lib/format";
+import { TAX_DEFAULTS, type TaxInputs } from "@/tools/tax/model";
 import { ADVANCED_DEFAULTS, type AdvancedInputs } from "@/tools/advanced/model";
 import { STAGES_DEFAULTS, stagesLookEdited, type StageInputs, type StagesInputs } from "@/tools/stages/model";
-import { paycheckRun, pcSplit, type PcInput } from "./paycheck-math";
+import { paycheckRun, pcSplit, type PcInput, type PcRun } from "./paycheck-math";
 
 const SCHEDULES: Record<number, string> = { 52: "Weekly", 26: "Bi-Weekly", 12: "Monthly" };
 const PER: Record<string, number> = { Weekly: 52, "Bi-Weekly": 26, Monthly: 12 };
@@ -99,5 +100,26 @@ export function intoStages(s: StagesInputs, c: PcCopy, t: TaxSeed): StagesInputs
   return {
     ...s, ...start, saOn: true, stages: [stage, ...s.stages.slice(1)],
     saSalary: dollarsField(c.salary), saMatchPct: pctText(c.matchPct), saMatchCap: pctText(c.matchCap),
+  };
+}
+
+/** Income Tax, filled in from the paycheck: the pay and the pre-tax
+    deductions by kind, a year of each (a traditional IRA among them). Roth
+    and after-tax saving don't change the tax, so they stay on the paycheck.
+    With two incomes, each person's lines go to their own column. */
+export function taxFromPaycheck(cur: TaxInputs, pi: PcInput, r: PcRun): TaxInputs {
+  const two = pi.two;
+  const yr = (v: number) => groupDigits(String(cents(v * pi.p)), true);
+  const health = r.healths;
+  const ira = pi.roth.rothIra ? [0, 0] : pcSplit(pi).rothIra;
+  return {
+    ...cur, mode: "normal", view: "net", gross: dollarsField(pi.gross), gross2: two ? dollarsField(pi.gross2) : "0",
+    status: pi.status, state: pi.state, itemize: true, year: TAX_DEFAULTS.year,
+    // To the cent, so Income Tax shows the same tax as the stub.
+    k401: yr(r.k401s[0]), ira: yr(ira[0]), hsa: yr(r.hsas[0]), health: yr(health[0]), dother: "0",
+    k4012: yr(r.k401s[1]), ira2: yr(ira[1]), hsa2: yr(r.hsas[1]), health2: yr(health[1]), dother2: "0",
+    pre: yr(r.k401 + r.hsa + r.health + ira[0] + ira[1]),
+    // Its pop-up shows them per paycheck on this schedule, or per month with two incomes.
+    preUnits: two ? "month,year,month,month,year" : "check,year,check,check,year", prePay: String(pi.p),
   };
 }

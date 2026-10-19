@@ -72,7 +72,7 @@ export const hasChanges = (a: Answers) => children(a).length > 0 || (a.events ||
 
 const ageWord = (n: number) => (n === 1 ? "one child" : n === 2 ? "two children" : n + " children");
 /** What's going on at age `t`, in a stage's words. */
-function labelAt(a: Answers, kids: Child[], t: number, ev: ChangeEvent[]): string {
+export function labelAt(a: Answers, kids: Child[], t: number, ev: ChangeEvent[]): string {
   const born = kids.filter((c) => c.born <= t), home = born.filter((c) => t - c.born < 19);
   let s: string;
   if (!kids.length) s = "";

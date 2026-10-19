@@ -81,7 +81,7 @@ export function strategyLede(slug: Slug): string | null {
 // /72t), Roth Conversion (with /rmd), College Savings and Rent vs. Buy lay out their own columns (components/home/Home.tsx, tools/basic/Basic.tsx,
 // tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx,
 // tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx, tools/roth/Roth.tsx).
-const SOLO = new Set<string>(["home", "calculator", "advanced", "stages", "incometax", "optimizer", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare", "account", "privacy", "guide/report"]);
+const SOLO = new Set<string>(["home", "calculator", "advanced", "stages", "incometax", "optimizer", "bridge", "72t", "roth", "rmd", "healthcare", "fire", "backtest", "college", "rentbuy", "tools", "guide", "about", "budget", "debt", "mortgage", "compare", "account", "privacy", "guide/report", "guide/paycheck", "guide/paycheck/report"]);
 export function isSolo(slug: Slug): boolean {
   return SOLO.has(slug) || TOOL_SUB[slug] === "drawdown";
 }

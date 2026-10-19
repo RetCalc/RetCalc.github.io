@@ -8,7 +8,6 @@
    src/main/02-calculator-inputs.html and 03-calculator-results.html. */
 
 import { useDeferredValue, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { CheckToggle, SignFlip } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -18,7 +17,7 @@ import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/tools/ContribDialogs";
 import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { toolInputs, useToolState } from "@/components/tools/ToolState";
+import { useToolNav, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -53,7 +52,7 @@ const TARGET_LABEL = "(the portfolio behind your target above)";
 export function Advanced() {
   const { state: s, set, setState } = useToolState(ADVANCED_DEF);
   const { profile } = useHousehold();
-  const router = useRouter();
+  const store = useToolStore(), go = useToolNav();
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -105,7 +104,7 @@ export function Advanced() {
       // answer until you start splitting it up.
       const blank = (["tradBal", "tradC", "rothBal", "rothC", "brokBal", "brokC", "hsaBal", "hsaC"] as const).every((k) => !(parseNum(s[k]) > 0));
       if (blank) {
-        const tax = toolInputs("tax", TAX_DEFAULTS), H = profile;
+        const tax = store.read("tax", TAX_DEFAULTS), H = profile;
         setState((c) => ({
           ...c, acOn: true, tradBal: dollarsField(parseNum(c.initial)), tradC: dollarsField(parseNum(c.contrib)), rothBal: "0", rothC: "0", brokBal: "0", brokC: "0", hsaBal: "0", hsaC: "0",
           brokBasis: "", salary: dollarsField(H?.income || 0), matchPct: "0", matchCap: "6",
@@ -168,9 +167,9 @@ export function Advanced() {
 
   const handToStages = (coast: boolean) => {
     const now = advancedCompute(s, profile);
-    const out = toStages(now.P, s, coast ? now.C.years : null);
+    const out = toStages(now.P, s, coast ? now.C.years : null, store);
     if (!out) return;
-    router.push("/stages");
+    go("/stages");
     toast(out);
   };
 
@@ -230,7 +229,7 @@ export function Advanced() {
 
   const toDrawdown = () => {
     sendToDrawdown({ initial: Math.round(R.fvReal) });
-    router.push("/drawdown");
+    go("/drawdown");
     toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
   };
 

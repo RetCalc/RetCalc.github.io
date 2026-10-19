@@ -45,7 +45,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
   const router = useRouter();
   const slug = slugFromPath(path);
   // An address that isn't a page (the 404) sits under no tab.
-  const known = (slug as string) === "compare" || (slug as string) === "guide/report" || slug in ALIASES || (SLUGS as string[]).includes(slug);
+  const known = (slug as string) === "compare" || (slug as string) === "guide/report" || (slug as string) === "guide/paycheck" || (slug as string) === "guide/paycheck/report" || slug in ALIASES || (SLUGS as string[]).includes(slug);
   const tab: Tab | null = known ? tabFor(slug) : null;
   const mode = calcModeFor(slug);
 
