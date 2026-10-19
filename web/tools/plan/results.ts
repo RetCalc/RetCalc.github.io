@@ -14,7 +14,7 @@ import { PC_LINES, PC_STEPS, rowRole, type PcStep } from "@/tools/budget/paychec
 import { CHILD_SOURCE, childCost } from "@/tools/guide/schedule";
 import { stageSplit, stagesCompute } from "@/tools/stages/model";
 import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
-import { coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import type { PlanState } from "./model";
 
 export type Acct = "trad" | "roth" | "brok" | "hsa";
@@ -169,18 +169,18 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   if (stages && kl.length) {
     const rows = kl.map((c, i) => {
       const bands: { from: number; to: number; monthly: number; early: boolean }[] = [];
-      for (let t = Math.max(ages.age, c.born); t < Math.min(retireAge, c.born + 19); t++) {
+      for (let t = Math.max(ages.age, c.born); t < Math.min(retireAge, c.born + 19); t += STEP) {
         const m = Math.round(childCost(c, t)), early = t - c.born < 6, last = bands[bands.length - 1];
-        if (last && last.monthly === m && last.early === early && last.to === t) last.to = t + 1;
-        else bands.push({ from: t, to: t + 1, monthly: m, early });
+        if (last && last.monthly === m && last.early === early && last.to === t) last.to = t + STEP;
+        else bands.push({ from: t, to: t + STEP, monthly: m, early });
       }
       return { label: "Child " + (i + 1), born: c.born, planned: c.planned, bands };
     }).filter((r) => r.bands.length);
     const together = kidStages(p.kids, ages.age, retireAge).filter((s) => s.cost > 0).map((s) => ({ from: s.from, to: s.to, monthly: s.cost }));
     let total = 0, peak = { age: ages.age, monthly: 0 };
-    for (let t = ages.age; t < retireAge; t++) {
+    for (let t = ages.age; t < retireAge; t += STEP) {
       const m = kidCostAt(kl, t);
-      total += m * 12;
+      total += m * 12 * STEP;
       if (m > peak.monthly) peak = { age: t, monthly: m };
     }
     const yrs = (s: { from: number; to: number }) => (s.to - s.from) * 12;

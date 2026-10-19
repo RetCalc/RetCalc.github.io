@@ -22,6 +22,7 @@ import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { copyToTools } from "./copy";
+import { ageSpan, ageText } from "./kids";
 import { PLAN_DEFAULTS, loadPlan, type PlanState, type StepId } from "./model";
 import { ACCT_NAMES, planSummary, type Acct, type PlanSummary } from "./results";
 
@@ -215,7 +216,7 @@ function Climb({ S }: { S: PlanSummary }) {
     }
   }
   const stageAt = (age: number) => S.stages?.findIndex((s) => age >= s.from && age < s.to) ?? -1;
-  const kidsBorn = (age: number) => S.kids.map((k, i) => (k.born === age ? i + 1 : 0)).filter(Boolean);
+  const kidsBorn = (age: number) => S.kids.map((k, i) => (Math.floor(k.born) === age ? i + 1 : 0)).filter(Boolean);
   const label = (i: number) => (rows[i] ? rows[i].age : "");
   return (
     <Card className="col-span-full">
@@ -294,7 +295,7 @@ function Climb({ S }: { S: PlanSummary }) {
             <div className="text-label text-muted-foreground">Life stages</div>
             <ol className="m-0 mt-1 list-none p-0">{S.stages.map((st, i) => (
               <li key={st.from} className="flex gap-2 py-0.5"><span className="w-4 flex-none text-muted-foreground tabular-nums">{i + 1}</span><span className="flex-1">{st.name}</span>
-                <span className="text-muted-foreground tabular-nums">{st.from}–{st.to - 1}</span></li>))}</ol>
+                <span className="text-muted-foreground tabular-nums">{ageSpan(st.from, st.to).replace(" to ", "–")}</span></li>))}</ol>
           </> : null}
         </div>
         </div>
@@ -372,16 +373,16 @@ function ChildrenCost({ S }: { S: PlanSummary }) {
         <div className="mt-5 space-y-2">
           {K.rows.map((r) => (
             <div key={r.label} className="flex items-center gap-3">
-              <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">{r.label}</b><span className="block text-label text-muted-foreground">{r.born >= a0 ? "Born at " + r.born : "Age " + (a0 - r.born) + " now"}</span></div>
+              <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">{r.label}</b><span className="block text-label text-muted-foreground">{r.born >= a0 ? "Born at " + ageText(r.born) : "Age " + ageText(a0 - r.born) + " now"}</span></div>
               <div className="relative h-9 min-w-0 flex-1">
-                {r.bands.map((b) => <Seg key={b.from} {...b} c={b.early ? CARE : SCHOOL} title={r.label + ", ages " + b.from + " to " + (b.to - 1) + " (your age): " + money(b.monthly) + " per month, " + (b.early ? "before school" : "at school")} />)}
+                {r.bands.map((b) => <Seg key={b.from} {...b} c={b.early ? CARE : SCHOOL} title={r.label + ", your ages " + ageSpan(b.from, b.to) + ": " + money(b.monthly) + " per month, " + (b.early ? "before school" : "at school")} />)}
               </div>
             </div>
           ))}
           <div className="flex items-center gap-3 border-t border-border pt-2">
             <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">A month</span></div>
             <div className="relative h-9 min-w-0 flex-1">
-              {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Ages " + t.from + " to " + (t.to - 1) + ": " + money(t.monthly) + " per month"} />)}
+              {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Your ages " + ageSpan(t.from, t.to) + ": " + money(t.monthly) + " per month"} />)}
             </div>
           </div>
           <div className="flex gap-3">
@@ -418,7 +419,7 @@ function StageLine({ S }: { S: PlanSummary }) {
           {st.map((s, i) => (
             <li key={s.from} className="min-w-0 rounded-lg border border-border bg-muted px-3.5 py-3">
               <div className="flex items-baseline gap-2"><span className="text-label text-muted-foreground tabular-nums">{i + 1}</span><b className="font-semibold">{s.name}</b></div>
-              <div className="text-label text-muted-foreground tabular-nums">Ages {s.from} to {s.to - 1}, {s.to - s.from} {s.to - s.from === 1 ? "year" : "years"}</div>
+              <div className="text-label text-muted-foreground tabular-nums">Ages {ageSpan(s.from, s.to)}, {s.to - s.from} {s.to - s.from === 1 ? "year" : "years"}</div>
               <div className="mt-2 text-xl font-medium tabular-nums">{money(s.monthly)}<span className="text-label font-normal text-muted-foreground"> saved per month</span></div>
               <div className="text-label text-muted-foreground tabular-nums">{s.kidCost > 0 ? "Children cost " + money(s.kidCost) + " per month" : "No child costs"}</div>
             </li>

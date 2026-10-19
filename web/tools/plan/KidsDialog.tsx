@@ -7,6 +7,8 @@
    stages (flow.ts seedStages). */
 
 import { useState } from "react";
+import { ChevronDownIcon } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { Affixed } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -21,11 +23,13 @@ import { advancedPlan } from "@/tools/advanced/model";
 import { CARE_AREAS, CHILD_COST, CHILD_SOURCE, MAX_KIDS, type CareArea } from "@/tools/guide/schedule";
 import { CountedBoxes } from "@/components/fields/CountedBoxes";
 import { freedOf, planAges, seedStages, toolOf } from "./flow";
-import { coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { ageSpan, coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import { COVER_ORDER, NO_KIDS, setPlan, type CoverLine, type PlanKids, type PlanState } from "./model";
 
 const ACCT: Record<CoverLine, string> = { brok: "Brokerage", roth: "Roth", trad: "Traditional", hsa: "HSA" };
-const ages = (from: number, to: number) => (to - from === 1 ? "Age " + from : "Ages " + from + " to " + (to - 1));
+const ages = (from: number, to: number) => (to - from <= 1 && Number.isInteger(from) && Number.isInteger(to) ? "Age " : "Ages ") + ageSpan(from, to);
+/** To the half year: 2.5 years stays 2.5. */
+const half = (v: number) => Math.round(v * 2) / 2;
 const cents = (v: number) => groupDigits(String(Math.round(v * 100) / 100), true);
 
 /** Your age and the retirement age the plan in Advanced runs to. */
@@ -65,9 +69,15 @@ export function KidsCard({ plan }: { plan: PlanState }) {
         </CardHeader>
         {costly.length ? (
           <CardContent>
+            {/* Folded until wanted, like the year-by-year table. */}
+            <Collapsible>
+              <CardTitle><CollapsibleTrigger>How each stage covers them<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+              <CollapsibleContent className="mt-3">
             <CoverTable plan={plan} segs={costly} />
             <p className="hint mt-3">Each stage below runs these years at this saving, in today&apos;s dollars. Change any stage&apos;s saving or return
               to plan for other changes too: a raise, a move, part-time years. Changing your children or how you cover them rebuilds the stages.</p>
+              </CollapsibleContent>
+            </Collapsible>
           </CardContent>
         ) : null}
       </Card>
@@ -104,10 +114,10 @@ function KidsDialog({ kids, age, retire, close, save }: { kids: PlanKids; age: n
   const nowAges = now.map((x) => Math.round(parseNum(x))).filter((n, i) => now[i].trim() !== "" && n >= 0 && n < 30);
   const room = Math.max(0, MAX_KIDS - now.length);
   const nPlanned = Math.min(room, Math.max(0, Math.round(parseNum(planned))));
-  const even = Math.max(1, Math.round(parseNum(spacing)) || 3);
+  const even = Math.max(0.5, half(parseNum(spacing))) || 3;
   const form: PlanKids = {
-    now: nowAges, planned: nPlanned, firstIn: Math.max(0, Math.round(parseNum(firstIn))), spacing: even, childcare, area, early, school, teen,
-    gaps: gaps && nPlanned > 1 ? Array.from({ length: nPlanned - 1 }, (_, i) => Math.max(0, Math.round(parseNum(gaps[i] ?? String(even))))) : null,
+    now: nowAges, planned: nPlanned, firstIn: Math.max(0, half(parseNum(firstIn))), spacing: even, childcare, area, early, school, teen,
+    gaps: gaps && nPlanned > 1 ? Array.from({ length: nPlanned - 1 }, (_, i) => Math.max(0, half(parseNum(gaps[i] ?? String(even))))) : null,
   };
   const d = kidDefaults(form), segs = kidStages(form, age, retire), list = kidList(form, age);
   const gapBoxes = Array.from({ length: Math.max(0, nPlanned - 1) }, (_, i) => gaps?.[i] ?? String(even));

@@ -217,7 +217,7 @@ function PlannedSpacing() {
           <div key={i} className="w-40">
             <Label className="mb-1" htmlFor={"gdf-gap" + i}><span className="text-label text-muted-foreground">Planned child {i + 2}</span></Label>
             <Affixed suffix="yrs later"><NumberInput id={"gdf-gap" + i} nonNeg max={15} value={String(g)}
-              onValueChange={(v) => G.set("kidGaps", gaps.map((x, j) => (j === i ? Math.max(0, Math.round(Number(v) || 0)) : x)))} /></Affixed>
+              onValueChange={(v) => G.set("kidGaps", gaps.map((x, j) => (j === i ? Math.max(0, Math.round((Number(v) || 0) * 2) / 2) : x)))} /></Affixed>
           </div>
         ))}
       </div>

@@ -23,7 +23,7 @@ import { PPY, finalStageSolve, historicalRuns, monteCarlo, projectSeries } from 
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { has } from "@/lib/household";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
-import { PERIOD_ADV } from "@/lib/periods";
+import { PERIOD_ADV, PERIOD_SHORT } from "@/lib/periods";
 import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { StageCard, type StageEdit } from "./StageCard";
@@ -40,10 +40,38 @@ import { SERIES } from "@/lib/hues";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, LockIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, LockIcon, PencilIcon, PlusIcon } from "lucide-react";
+import { Modal, ModalTop } from "@/components/shell/Modal";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 
 const TARGET_LABEL = "(your target above)";
+
+/** "1 yr", "2.5 yrs". */
+const yrs = (y: number) => fmtNum(Math.max(0, y)) + (Math.max(0, y) === 1 ? " yr" : " yrs");
+
+/** The stages along the years: one segment each, sized by its years, in
+    alternating shades of one blue-gray, numbered; its name and span on
+    hover. A click opens that stage. */
+function StageBar({ nums, names, spans, onPick }: { nums: { years: number }[]; names: string[]; spans: string[]; onPick: (i: number) => void }) {
+  const total = nums.reduce((a, x) => a + Math.max(0, x.years), 0);
+  return (
+    <div className="mb-3">
+      <div className="flex h-9 gap-px overflow-hidden rounded-md" role="group" aria-label="Your stages, sized by their years">
+        {nums.map((st, i) => (
+          <button key={i} type="button" onClick={() => onPick(i)} title={names[i] + ", " + spans[i] + " (" + yrs(st.years) + ")"}
+            aria-label={names[i] + ", " + spans[i]}
+            className={cn("grid min-w-6 grow-(--g) basis-0 cursor-pointer place-items-center border-0 p-0 outline-none transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-solid focus-visible:outline-ring",
+              i % 2 ? "bg-(--ds-acct-3)" : "bg-(--ds-acct-2)", !(st.years > 0) && "outline-2 outline-destructive")}
+            style={{ "--g": Math.max(0, st.years) || (total ? 0 : 1) } as React.CSSProperties}>
+            {/* The number on a chip of the card's own color, readable on either shade, in either theme. */}
+            <span className="grid size-5 place-items-center rounded-full bg-card text-fine font-semibold text-foreground tabular-nums">{i + 1}</span>
+          </button>
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between text-label text-muted-foreground tabular-nums"><span>Year 0</span><span>{yrs(total)} in all</span></div>
+    </div>
+  );
+}
 
 export function Stages() {
   const { state: s, set, setState } = useToolState(STAGES_DEF);
@@ -181,13 +209,30 @@ export function Stages() {
     toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
   };
 
+  /* Past three stages they're edited in a pop-up (`editing`: the stage to
+     open it at), and the panel lists them. */
+  const many = n > 3;
+  const [editing, setEditing] = useState<number | null>(null);
+  const names = s.stages.map((st, i) => st.name || "Stage " + (i + 1));
+  const stageCard = (i: number, st: StageInputs) => (
+    <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
+      adjNote={st.adj && i > 0 && P.eff[i] ? money(P.eff[i].contrib / (P.eff[i].mf || 1)) : ""}
+      num={nums[i]} blend={split && st.gRates ? P.stages[i]?.growth : undefined} fees={parseNum(s.fees) / 100} inflation={parseNum(s.inflation) / 100}
+      matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
+  );
+  /** In the pop-up, a stage's card brought into view. */
+  const scrollToStage = (i: number) => {
+    const el = document.querySelector<HTMLInputElement>(`#stageList [data-f='years'][data-i='${i}']`);
+    el?.closest(".stagecard")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    el?.focus({ preventScroll: true });
+  };
+
   /* A segment of the timeline jumps to its stage's first field. */
   const goToStage = (i: number) => {
     const el = document.querySelector<HTMLInputElement>(`#stageList [data-f='years'][data-i='${i}']`);
     el?.closest(".stagecard")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     el?.focus({ preventScroll: true });
   };
-  const totalTyped = nums.reduce((a, x) => a + Math.max(0, x.years), 0);
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
@@ -204,32 +249,47 @@ export function Stages() {
             </CardHeader>
             <CardContent>
               <GroupHead first>Your stages</GroupHead>
-              {n ? (
-                <div className="mb-4 flex gap-0.5" role="group" aria-label="Your stages, sized by their years">
+              {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => (many ? setEditing(i) : goToStage(i))} /> : null}
+              {/* Three stages or fewer are edited right here; past that they
+                  read as a list, edited in a wide pop-up, so the panel stays short. */}
+              {many ? (
+                <ol className="m-0 mb-3 list-none p-0" aria-label="Your stages">
                   {nums.map((st, i) => (
-                    <button key={i} type="button" onClick={() => goToStage(i)}
-                      className={cn("flex min-w-11 grow-(--g) basis-0 cursor-pointer flex-col items-start gap-0.5 overflow-hidden rounded-sm border border-transparent bg-muted px-2 py-1.5 text-left transition-colors outline-none first:rounded-l-md last:rounded-r-md hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-solid focus-visible:outline-ring pointer-coarse:min-h-11",
-                        !(st.years > 0) && "border-destructive")}
-                      style={{ "--g": Math.max(0, st.years) || (totalTyped ? 0 : 1) } as React.CSSProperties}
-                      aria-label={(s.stages[i].name || "Stage " + (i + 1)) + ", " + spans[i]}>
-                      <span className="w-full truncate text-label font-medium text-foreground">{s.stages[i].name || "Stage " + (i + 1)}</span>
-                      <span className="w-full truncate text-label text-muted-foreground tabular-nums">{fmtNum(Math.max(0, st.years)) + " yrs"}</span>
-                    </button>
+                    <li key={i}>
+                      <button type="button" onClick={() => setEditing(i)}
+                        className="flex w-full cursor-pointer items-baseline gap-2 border-0 border-b border-solid border-border bg-transparent px-1 py-1.5 text-left text-note text-foreground outline-none hover:bg-muted focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring pointer-coarse:min-h-11">
+                        <span className="w-4 flex-none text-label text-muted-foreground tabular-nums">{i + 1}</span>
+                        <span className="min-w-0 flex-1 truncate">{names[i]}</span>
+                        <span className="flex-none text-muted-foreground tabular-nums">{yrs(st.years)}</span>
+                        <span className="w-24 flex-none text-right tabular-nums">{money(st.contrib)}{PERIOD_SHORT[st.period] ?? ""}</span>
+                      </button>
+                    </li>
                   ))}
+                </ol>
+              ) : (
+                <div id="stageList">
+                  {s.stages.map((st, i) => stageCard(i, st))}
                 </div>
-              ) : null}
-              <div id="stageList">
-                {s.stages.map((st, i) => (
-                  <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
-                    adjNote={st.adj && i > 0 && P.eff[i] ? money(P.eff[i].contrib / (P.eff[i].mf || 1)) : ""}
-                    num={nums[i]} blend={split && st.gRates ? P.stages[i]?.growth : undefined} fees={parseNum(s.fees) / 100} inflation={parseNum(s.inflation) / 100}
-                    matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
-                ))}
-              </div>
+              )}
               <div className={n ? "hint hidden" : "hint mt-0 block"} id="stageEmpty">
                 No stages yet. Add one to start building a run.
               </div>
-              <Button variant="outline" className="mt-1 w-full" id="btnAddStage" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>
+              {many
+                ? <Button variant="outline" className="mt-1 w-full" id="btnEditStages" onClick={() => setEditing(0)}><PencilIcon aria-hidden="true" />Edit stages</Button>
+                : <Button variant="outline" className="mt-1 w-full" id="btnAddStage" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>}
+              {editing != null ? (
+                <Modal size="table" onClose={() => setEditing(null)}>
+                  <ModalTop title="Your stages" onClose={() => setEditing(null)} />
+                  <StageBar nums={nums} names={names} spans={spans} onPick={(i) => scrollToStage(i)} />
+                  <div id="stageList" className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3" ref={(el) => { if (el && editing != null) requestAnimationFrame(() => scrollToStage(editing)); }}>
+                    {s.stages.map((st, i) => <div key={i} className="min-w-0">{stageCard(i, st)}</div>)}
+                  </div>
+                  <div className="formactions mt-4">
+                    <Button variant="outline" className="flex-1" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>
+                    <Button className="flex-1" onClick={() => setEditing(null)}>Done</Button>
+                  </div>
+                </Modal>
+              ) : null}
               <div className="derived mb-1">
                 <div><span>Stages</span><span className="num" id="gStages">{n}</span></div>
                 <div><span>Fees</span><span className="num" id="gFeeNote">{(g.fees || 0) > 0 ? pctStr(g.fees, 2) + " off every stage" : "none"}</span></div>

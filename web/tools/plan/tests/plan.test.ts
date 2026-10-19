@@ -223,3 +223,18 @@ test("filing status and state come from Taxes into Your plan, every time they ch
   p = seedAdvanced(seedPaycheck(p), house);
   assert.deepEqual([toolOf(p, "advanced").acStatus, toolOf(p, "advanced").acState], ["s", "IL"]);
 });
+
+test("children spaced in half years: 2.5 years apart stays 2.5, and stages can start mid-year", async () => {
+  const S = kidStages({ ...NO_KIDS, planned: 2, firstIn: 2, spacing: 2.5 }, 29, 60);
+  assert.ok(S.some((s) => s.from === 33.5), "the second child's arrival starts a stage at 33½");
+  assert.equal(S[S.length - 1].to, 60);
+  const { ageSpan } = await import("../kids");
+  assert.equal(ageSpan(31, 34), "31 to 33");
+  assert.equal(ageSpan(33.5, 36), "33½ to 36");
+  // Built into Stages: the years add up, a stage of 2.5 years among them.
+  let p = seedAdvanced(seedPaycheck(plan()), null);
+  p = seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2, spacing: 2.5 } }, null);
+  const st = toolOf(p, "stages").stages;
+  near(st.reduce((t, s) => t + parseNum(s.years), 0), 31);
+  assert.ok(st.some((s) => !Number.isInteger(parseNum(s.years))));
+});

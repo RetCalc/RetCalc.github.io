@@ -45,6 +45,17 @@ export interface KidStage {
   cost: number; change: number;
 }
 
+/** An age as shown: 31, or 31½ for half a year. */
+export const ageText = (a: number) => (Number.isInteger(a) ? String(a) : Math.floor(a) + "½");
+/** A stretch of your ages as shown: "31 to 33" for whole years (the last
+    year it covers), "31½ to 34" where it starts or ends mid-year. */
+export const ageSpan = (from: number, to: number) =>
+  Number.isInteger(from) && Number.isInteger(to) ? (to - from === 1 ? String(from) : from + " to " + (to - 1)) : ageText(from) + " to " + ageText(to);
+
+/** Children are worked out by the half year, so they can be spaced 2½
+    years apart and a stage can start mid-year. */
+export const STEP = 0.5;
+
 /** The stages from now to retirement: a new one wherever the children's
     cost changes, with the Guide's words for each. With no children, one. */
 export function kidStages(k: PlanKids | null, age: number, retire: number): KidStage[] {
@@ -54,10 +65,10 @@ export function kidStages(k: PlanKids | null, age: number, retire: number): KidS
   if (!kids.length) return [{ from: a, to: end, label: "Saving", cost: 0, change: 0 }];
   const A = asAnswers(k!, a), now = kidCostAt(kids, a);
   const out: KidStage[] = [];
-  for (let t = a; t < end; t++) {
+  for (let t = a; t < end; t += STEP) {
     const cost = Math.round(kidCostAt(kids, t)), label = labelAt(A, kids, t, []), last = out[out.length - 1];
-    if (last && last.cost === cost && last.label === label) last.to = t + 1;
-    else out.push({ from: t, to: t + 1, label, cost, change: Math.round(cost - now) });
+    if (last && last.cost === cost && last.label === label) last.to = t + STEP;
+    else out.push({ from: t, to: t + STEP, label, cost, change: Math.round(cost - now) });
   }
   // Neighbours that cost the same are one stage, under the first one's words.
   const merged: KidStage[] = [];

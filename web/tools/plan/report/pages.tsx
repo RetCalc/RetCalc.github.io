@@ -7,6 +7,7 @@
 import { money, pctStr } from "@/lib/format";
 import { C, ReportMark } from "@/tools/guide/report/charts";
 import { CHILD_COST } from "@/tools/guide/schedule";
+import { ageSpan } from "../kids";
 import { COVER_ORDER } from "../model";
 import { ACCT_NAMES, type Acct, type PlanSummary } from "../results";
 import { ACCT_PRINT, ClimbChart, GroupBars, KidBars, PAY_PRINT, PayBar, StageStrip } from "./charts";
@@ -215,7 +216,7 @@ function Stages({ R, p, part }: { R: PlanReport; p: Page; part: number }) {
   const table = (
     <table className="rp-t"><thead><tr><th>Stage</th><th>Ages</th><th>Children</th>{COVER_ORDER.map((k) => <th key={k}>{NAME[k]}</th>)}<th>From spending</th><th>Saved</th></tr></thead>
       <tbody>{rows.map((s, j) => (
-        <tr key={s.from}><td><b>{at0 + j + 1}.</b> {s.name}</td><td>{s.from}–{s.to - 1}</td><td>{s.kidCost > 0 ? money(s.kidCost) : "–"}</td>
+        <tr key={s.from}><td><b>{at0 + j + 1}.</b> {s.name}</td><td>{ageSpan(s.from, s.to).replace(" to ", "–")}</td><td>{s.kidCost > 0 ? money(s.kidCost) : "–"}</td>
           {COVER_ORDER.map((k) => <td key={k}>{s.take && Math.abs(s.take[k]) > 0.5 ? (s.take[k] > 0 ? "−" : "+") + money(Math.abs(s.take[k])) : "–"}</td>)}
           <td>{s.short > 0 ? "−" + money(s.short) : "–"}</td><td><b>{money(s.monthly)}</b></td></tr>
       ))}</tbody></table>
