@@ -14,7 +14,8 @@ export const dynamicParams = false;
 
 /* Addresses that already have their own folder beside this one. */
 const OWN = new Set(readdirSync(join(process.cwd(), "app"), { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name));
-const PENDING = SLUGS.filter((s) => s !== "home" && !OWN.has(s));
+// (Pages under another, like guide/paycheck, are in that folder: never here.)
+const PENDING = SLUGS.filter((s) => s !== "home" && !s.includes("/") && !OWN.has(s));
 
 export function generateStaticParams() {
   return PENDING.map((slug) => ({ slug }));

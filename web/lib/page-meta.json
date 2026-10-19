@@ -26,6 +26,11 @@
 "title": "Retirement Readiness Check: Are You on Track? | RetCalc",
 "desc": "A guided retirement check-up: your number, a readiness score out of 100, and your plan tested against every market since 1926, and the moves that matter."
 },
+"guide/paycheck": {
+"h1": "Paycheck to Retirement",
+"title": "Paycheck to Retirement: Take-Home Pay, Budget and Savings Plan | RetCalc",
+"desc": "Work out your take-home pay after taxes, build your budget, decide where each paycheck goes (401(k), HSA, IRA, brokerage), and see where it gets you by retirement, kids included."
+},
 "tools": {
 "h1": "Financial Planning Calculators",
 "title": "Free Financial Planning Calculators | RetCalc",
