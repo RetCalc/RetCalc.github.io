@@ -124,7 +124,7 @@ const budget: Tour<BudgetInputs> = { name: "Budget", title: "Build a budget that
       return [
         { h: "Open your last two or three months of bank and card statements and work down the list. Rough is fine; a guess beats a blank." + (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: tried(B.lines >= 5) },
         { h: "For bills that come once or twice a year, like car insurance, travel, gifts or repairs, tap <b>/yr</b> on the line and enter the yearly total. They're the ones budgets usually forget." },
-        { h: "Click any item's name to rename it, and <b>Add custom item</b> for anything missing. Skip lines that don't apply." },
+        { h: "Click any item's name to rename it. The <b>+</b> on a group adds a line to it, <b>Add custom item</b> covers anything else, and <b>×</b> removes a line you don't need." },
         { h: "Saving isn't a line here: the <b>Paycheck</b> tab plans it from what's left after these. <b>+ College savings</b> brings that goal in from its tool." },
       ];
     } },

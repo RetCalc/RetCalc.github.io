@@ -5,8 +5,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { yearData } from "@/lib/engine/typed";
-import { BUDGET_DEFAULTS, budgetCompute, dropPlanned, type BudgetInputs } from "../model";
-import { PC_PLANS, PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcMost, pcOrder, pcPlanApply, pcPlanOrder, pcRothRoom, pcSplit, rowRole, type PcStep } from "../paycheck-math";
+import { BUDGET_DEFAULTS, budgetCompute, budgetGroups, dropPlanned, newLineName, openBudget, slotRow, type BudgetInputs } from "../model";
+import { PC_PLANS, PC_STEPS, PC_ZERO, paycheckFill, paycheckInput, paycheckRun, pcCap, pcCostPer, pcMost, pcOrder, pcPlanApply, pcPlanOrder, pcRothRoom, pcSplit, healthRowMonthly, rowRole, type PcStep } from "../paycheck-math";
 
 const L = yearData().limits;
 /** A budget like the mock's: $95,000, every two weeks, Illinois. */
@@ -30,9 +30,64 @@ test("a saving line from before the Paycheck tab is dropped, and never counted",
   assert.ok(!BUDGET_DEFAULTS.rows.some((r) => r.desc === "Savings & investments"));
 });
 
+test("lines can be added to a group and removed, and a renamed line isn't read as what it was", () => {
+  // A budget saved before lines could be removed: no slots, Property tax renamed to Cleaning.
+  const old = budget();
+  old.rows = old.rows.map(({ slot: _slot, ...r }) => (r.desc === "Property tax" ? { ...r, desc: "Cleaning", amount: "120" } : r));
+  assert.ok(old.rows.every((r) => !("slot" in r)));
+  near(healthRowMonthly(old), 184);
+  const b = openBudget(old);
+  assert.equal(b.rows.find((r) => r.desc === "Cleaning")?.slot, "Property tax");
+  assert.equal(slotRow(b.rows, "Property tax"), undefined);
+  assert.equal(slotRow(b.rows, "Rent / Mortgage")?.amount, "1,650");
+  // Remove rent and the Activities line: Health insurance is still found.
+  const cut = { ...b, rows: b.rows.filter((r) => !["Rent / Mortgage", "Activities & hobbies"].includes(r.slot ?? "")) };
+  near(healthRowMonthly(cut), 184);
+  assert.equal(rowRole(cut, slotRow(cut.rows, "Health insurance")!), "work");
+  assert.equal(slotRow(cut.rows, "Rent / Mortgage"), undefined);
+  // A line added under that name is read as it.
+  const back = { ...cut, rows: [...cut.rows, { group: "Housing", desc: "Property tax", amount: "300", freq: 12, custom: true }] };
+  assert.equal(slotRow(back.rows, "Property tax")?.amount, "300");
+  // A line added under Lifestyle counts with Lifestyle, not Custom.
+  const added = { ...cut, rows: [...cut.rows, { group: "Lifestyle", desc: "Gym", amount: "60", freq: 12, custom: true }] };
+  const where = Object.fromEntries(budgetGroups(added).map((g) => [g.group, g.yr]));
+  near(where.Lifestyle, 2400 + 60 * 12);
+  assert.ok(!("Custom" in where));
+  near(paycheckInput(added, "IL").spendYear, (165 + 120 + 560 + 150 + 60) * 12 + 2400);
+});
+
+test("a new line is named for its group until it's given a name, numbered from 2", () => {
+  const rows = [...BUDGET_DEFAULTS.rows];
+  const add = (group: string) => { const desc = newLineName(rows, group); rows.push({ group, desc, amount: "0", freq: 12, custom: true }); return desc; };
+  assert.equal(add("Transportation"), "Transportation custom");
+  assert.equal(add("Transportation"), "Transportation custom 2");
+  rows[rows.length - 2].desc = "Tolls";
+  assert.equal(add("Transportation"), "Transportation custom");
+  assert.equal(add("Transportation"), "Transportation custom 3");
+  assert.equal(add("Custom"), "Custom item");
+  assert.equal(add("Custom"), "Custom item 2");
+  // Lines saved without a name are named as the budget opens.
+  const b = openBudget({ ...BUDGET_DEFAULTS, rows: [...rows, { group: "Health", desc: "", amount: "500", freq: 12, custom: true }, { group: "Health", desc: " ", amount: "0", freq: 12, custom: true }] });
+  assert.deepEqual(b.rows.slice(-2).map((r) => [r.desc, r.amount]), [["Health custom", "500"], ["Health custom 2", "0"]]);
+});
+
+test("Health insurance renamed before it was locked stays as its own line, and Health insurance comes back", () => {
+  const old = budget();
+  old.rows = old.rows.map(({ slot: _slot, ...r }) => (r.desc === "Health insurance" ? { ...r, desc: "Gym membership" } : r));
+  // Renamed, it isn't read as premiums: it stays an expense.
+  near(healthRowMonthly(old), 0);
+  const b = openBudget(old);
+  const gi = b.rows.findIndex((r) => r.desc === "Gym membership"), hi = b.rows.findIndex((r) => r.desc === "Health insurance");
+  assert.equal(hi, gi - 1);
+  assert.deepEqual([b.rows[hi].slot, b.rows[hi].amount, b.rows[hi].custom], ["Health insurance", "0", false]);
+  assert.deepEqual([b.rows[gi].group, b.rows[gi].amount, b.rows[gi].custom, b.rows[gi].slot], ["Health", "184", true, undefined]);
+  assert.equal(rowRole(b, b.rows[gi]), "count");
+  assert.equal(openBudget(b), b);
+});
+
 test("the budget comes across without the saving row, and health premiums move above the taxes", () => {
   const b = budget();
-  const roles = Object.fromEntries(b.rows.map((r, i) => [r.desc, rowRole(b, r, i)]));
+  const roles = Object.fromEntries(b.rows.map((r) => [r.desc, rowRole(b, r)]));
   assert.equal(roles["Savings & investments"], "save");
   assert.equal(roles["Health insurance"], "work");
   assert.equal(roles["Other debt payments"], "count");

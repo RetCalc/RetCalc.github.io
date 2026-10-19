@@ -246,7 +246,7 @@ function GroupHead({ children }: { children: React.ReactNode }) {
    with the ones this tab plans or moves marked and left out. */
 function BudgetFromTab({ s, p, per, onEdit }: { s: BudgetInputs; p: number; per: string; onEdit: () => void }) {
   const [open, setOpen] = useState(false);
-  const counted = s.rows.map((r, i) => ({ r, i, role: rowRole(s, r, i) })).filter((x) => annualize(x.r) > 0);
+  const counted = s.rows.map((r, i) => ({ r, i, role: rowRole(s, r) })).filter((x) => annualize(x.r) > 0);
   const spendYear = counted.reduce((a, x) => a + (x.role === "count" ? annualize(x.r) : 0), 0);
   const used = counted.filter((x) => x.role === "count").length;
   return (
@@ -501,7 +501,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   ln("total", two ? "Deposits to your bank" : "Deposit to your bank", r.deposit, undefined, each("deposit", 1));
   sec("Your budget", true);
   ln("item", "Bills and spending", -r.spend);
-  const budgetLines = s.rows.map((row, i) => ({ row, i })).filter(({ row, i }) => rowRole(s, row, i) === "count" && annualize(row) > 0);
+  const budgetLines = s.rows.map((row, i) => ({ row, i })).filter(({ row }) => rowRole(s, row) === "count" && annualize(row) > 0);
   const subStart = rows.length;
   for (const { row } of budgetLines) ln("sub", (row.desc || "Custom") + (row.freq === 1 ? " (" + money(annualize(row)) + " a year)" : ""), -annualize(row) / p);
   const subEnd = rows.length;

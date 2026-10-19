@@ -28,19 +28,19 @@ import { focusLast } from "@/lib/dom";
 import { dollarsField, groupDigits, money, parseNum } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } from "@/tools/college/model";
-import { BUDGET_DEF, PRESET_DESCS, budgetCompute, budgetGroups, dropPlanned, isPlannedRow, isSavingsRow, type BudgetRow } from "./model";
+import { BUDGET_DEF, PRESET_GROUPS, budgetCompute, budgetGroups, isPlannedRow, isLockedRow, isSavingsRow, newLineName, openBudget, rowSlot, type BudgetRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Paycheck } from "./Paycheck";
 
 
 export function Budget() {
-  // A budget saved before the Paycheck tab opens without its saving lines:
-  // saving is planned there now.
-  const { state: s, set, setState } = useToolState(BUDGET_DEF, dropPlanned);
+  // A budget saved before the Paycheck tab opens without its saving lines
+  // (saving is planned there now), and one saved before lines could be
+  // removed gets each preset line's own name (openBudget).
+  const { state: s, set, setState } = useToolState(BUDGET_DEF, openBudget);
   useShareKit(BUDGET_DEF.id, budgetShare(s));
   const toast = useToast();
   const listRef = useRef<HTMLDivElement>(null);
@@ -76,8 +76,10 @@ export function Budget() {
   const empty = !(totalYr > 0);
   const where = budgetGroups(s);
 
-  // Rows grouped as they come, keeping each row's place in the list.
-  const groups: { name: string; rows: { r: BudgetRow; i: number }[] }[] = [];
+  /* Rows grouped, keeping each row's place in the list. The preset groups
+     always show, in their order, even emptied, so a line can be added back;
+     any other (Custom) follows as its rows come. */
+  const groups: { name: string; rows: { r: BudgetRow; i: number }[] }[] = PRESET_GROUPS.map((name) => ({ name, rows: [] }));
   s.rows.forEach((r, i) => {
     if (isPlannedRow(r)) return;
     let g = groups.find((x) => x.name === r.group);
@@ -87,6 +89,15 @@ export function Budget() {
 
   /* The budget isn't a table, so its CSV is built here: each item with an
      amount, then the totals as labeled rows. */
+  /* A new line at the end of a group (a new Custom one from the button
+     under the list), named for its group until it's given a name, with
+     that name selected to type over. */
+  const addLine = (group: string) => {
+    setState((c) => ({ ...c, rows: [...c.rows, { group, desc: newLineName(c.rows, group), amount: "0", freq: 12, custom: true }] }));
+    focusLast(listRef, "[data-f=\"desc\"][data-group=\"" + group + "\"]");
+  };
+  const removeLine = (i: number) => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }));
+
   const csvRows = (): string[][] | null => {
     const period = (f: number) => (f === 12 ? "Per month" : "Per year");
     if (empty) return null;
@@ -131,21 +142,30 @@ export function Budget() {
             <div id="bgList" ref={listRef}>
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
-                  <div className="bggroup-h">{g.name || "Custom"}</div>
+                  <div className="bggroup-h">
+                    <span>{g.name || "Custom"}</span>
+                    {PRESET_GROUPS.includes(g.name) ? (
+                      <Button variant="ghost" size="icon-sm" title={"Add a line to " + g.name} aria-label={"Add a line to " + g.name} onClick={() => addLine(g.name)}><PlusIcon aria-hidden="true" /></Button>
+                    ) : null}
+                  </div>
                   {g.rows.map(({ r, i }) => (
                     /* An empty line (no amount) shows its name and its 0 in
                        Muted, so the lines in use stand out; the 0 itself stays. */
                     <div className="bgrow" key={i} data-empty={parseNum(r.amount) > 0 ? undefined : ""}>
-                      {r.custom ? (
-                        <div className="desc"><Input data-f="desc" data-i={i} value={r.desc} placeholder="Description" aria-label="Item name" onChange={(e) => setRow(i, { desc: e.target.value })} /></div>
-                      ) : isSavingsRow(r) ? (
+                      {isSavingsRow(r) ? (
                         <span className="desc"><Tipped text={r.desc} k="bgsavings" /></span>
+                      ) : isLockedRow(r, i) ? (
+                        /* Fixed: the Paycheck tab reads this line as your premiums. */
+                        <span className="desc" title="The Paycheck tab reads this line as your health premiums, so it keeps its name">{r.desc}</span>
                       ) : (
-                        /* A preset's name is renamed in place: a click selects it to
-                           type over, Enter commits, and a blank name falls back to
-                           the slot's own. The pencil shows it can be. */
+                        /* Every other name is renamed in place, a line added to a
+                           group as much as a preset: a click selects it to type
+                           over, Enter commits, and a preset's blank name falls back
+                           to its own. A new line opens here, empty, to type into. The
+                           pencil shows it can be. */
                         <span className="desc group/name">
                           <span key={r.desc} className="bgname" contentEditable suppressContentEditableWarning spellCheck={false} title="Click to rename" aria-label="Item name"
+                            data-f="desc" data-group={r.group} data-placeholder="Name this line"
                             onFocus={(e) => {
                               const range = document.createRange();
                               range.selectNodeContents(e.currentTarget);
@@ -161,16 +181,19 @@ export function Budget() {
                             }}
                             onBlur={(e) => {
                               const raw = (e.currentTarget.textContent ?? "").replace(/\s+/g, " ").trim().slice(0, 60);
-                              setRow(i, { desc: raw || PRESET_DESCS[i] || r.desc });
+                              const desc = raw || rowSlot(r, i) || r.desc;
+                              // Unchanged (or cleared, which keeps the name it had): put the text back as drawn.
+                              if (desc === r.desc) e.currentTarget.textContent = desc;
+                              else setRow(i, { desc });
                             }}>{r.desc}</span>
                           <PencilIcon className="ml-1.5 inline size-3 shrink-0 align-baseline text-muted-foreground opacity-0 transition-opacity group-hover/name:opacity-100 group-focus-within/name:opacity-100 pointer-coarse:opacity-70" aria-hidden="true" />
                         </span>
                       )}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
                       <Segmented size="compact" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
-                      {r.custom ? (
-                        <Button variant="ghost" size="icon-sm" title="Remove" aria-label="Remove" onClick={() => setState((c) => ({ ...c, rows: c.rows.filter((_, j) => j !== i) }))}><XIcon aria-hidden="true" /></Button>
-                      ) : <span className="delspace"></span>}
+                      {isLockedRow(r, i) ? <span className="delspace"></span> : (
+                        <Button variant="ghost" size="icon-sm" title="Remove this line" aria-label={"Remove " + (r.desc || "this line")} onClick={() => removeLine(i)}><XIcon aria-hidden="true" /></Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -178,10 +201,7 @@ export function Budget() {
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-4">
               <Button variant="outline" size="sm" id="bgAdd"
-                onClick={() => {
-                  setState((c) => ({ ...c, rows: [...c.rows, { group: "Custom", desc: "", amount: "0", freq: 12, custom: true }] }));
-                  focusLast(listRef, "input[data-f=\"desc\"]");
-                }}><PlusIcon data-icon="inline-start" aria-hidden="true" />Add custom item</Button>
+                onClick={() => addLine("Custom")}><PlusIcon data-icon="inline-start" aria-hidden="true" />Add custom item</Button>
             </div>
             <div className="hint mt-3.5">Pull a number in from another tool:</div>
             <div className="mt-1.5 flex flex-wrap gap-2">

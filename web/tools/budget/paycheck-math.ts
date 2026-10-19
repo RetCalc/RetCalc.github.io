@@ -26,7 +26,7 @@
    line isn't capped: it says to go through a backdoor Roth instead. */
 import { computeTax, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
-import { PRESET_DESCS, annualize, isPlannedRow, type BudgetInputs, type BudgetRow } from "./model";
+import { HEALTH_SLOT, annualize, isPlannedRow, slotRow, type BudgetInputs, type BudgetRow } from "./model";
 
 /** The lines, in their default order. */
 export const PC_STEPS = ["match", "hsa", "ef", "rothIra", "k401max", "brok"] as const;
@@ -51,13 +51,12 @@ const AMT_KEY: Record<PcStep, keyof BudgetInputs> = {
 export const pcAmountKey = (s: PcStep) => AMT_KEY[s] as "pcMatch";
 export const pcRothKey = (s: PcStep) => (s === "match" ? "pcMatchRoth" : s === "rothIra" ? "pcIraRoth" : "pcK401maxRoth") as "pcMatchRoth";
 
-const HEALTH_SLOT = PRESET_DESCS.indexOf("Health insurance");
 
 /** How a Budget row comes across: counted, left out (this tab plans it), or
     moved (the health premiums fields hold it). */
-export function rowRole(b: BudgetInputs, r: BudgetRow, i: number): "count" | "save" | "work" {
+export function rowRole(b: BudgetInputs, r: BudgetRow): "count" | "save" | "work" {
   if (isPlannedRow(r)) return "save";
-  if (healthThroughWork(b) && !r.custom && i === HEALTH_SLOT) return "work";
+  if (healthThroughWork(b) && r === slotRow(b.rows, HEALTH_SLOT)) return "work";
   return "count";
 }
 
@@ -101,8 +100,8 @@ export const healthThroughWork = (b: BudgetInputs) =>
 
 /** The Budget's Health insurance row as a monthly figure (0 when blank). */
 export function healthRowMonthly(b: BudgetInputs): number {
-  const r = b.rows[HEALTH_SLOT];
-  return r && !r.custom ? annualize(r) / 12 : 0;
+  const r = slotRow(b.rows, HEALTH_SLOT);
+  return r ? annualize(r) / 12 : 0;
 }
 
 /** The order as stored, with anything missing put back at the end (and
@@ -120,7 +119,7 @@ export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
   const sched = (v: string) => ([52, 26, 24, 12].includes(+v) ? +v : 26);
   const pays: [number, number] = [sched(b.pcFreq), sched(b.pcFreq2)];
   const p = two ? 12 : pays[0];
-  const spendYear = b.rows.reduce((a, r, i) => a + (rowRole(b, r, i) === "count" ? annualize(r) : 0), 0);
+  const spendYear = b.rows.reduce((a, r) => a + (rowRole(b, r) === "count" ? annualize(r) : 0), 0);
   const n = (v: string) => Math.max(0, parseNum(v));
   // Premiums are typed per check on each person's schedule; with two
   // incomes they're carried as a month.

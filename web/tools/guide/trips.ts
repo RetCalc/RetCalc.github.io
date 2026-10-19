@@ -13,7 +13,7 @@ import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { advancedFields } from "@/tools/advanced/model";
 import { basicInput, RISK_OPTIONS, type BasicInputs } from "@/tools/basic/model";
-import { annualize, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
+import { annualize, slotRow, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
 import { collegeInput, collegeMonthly, type CollegeInputs } from "@/tools/college/model";
 import { DEBT_DEFAULTS, type DebtInputs, type DebtRow } from "@/tools/debt/model";
 import { ddWrite, type DdItem, type DrawdownState } from "@/tools/drawdown/fields";
@@ -110,7 +110,7 @@ const TRIPS: Record<string, TripDef<never>> = {
         { h: "With your last two or three months of statements open, work down the list and fill in what you spend on each line. Skip lines that don't apply." +
           (B.lines ? "<em>" + B.lines + " filled</em>" : ""), ok: B.lines >= 5 },
         { h: "For bills that come once or twice a year (insurance, travel, gifts, car repairs), tap <b>/yr</b> on the line and enter the yearly total." },
-        { h: "Something missing? <b>Add custom item</b> sits under the list." },
+        { h: "Something missing? The <b>+</b> on a group adds a line to it, and <b>Add custom item</b> sits under the list. The <b>×</b> removes a line." },
         { h: "Then the <b>Paycheck</b> tab, at the top: enter your gross pay and it shows how each paycheck covers this budget and what's free for debt and saving.", ok: B.paid ? true : undefined },
       ];
     },
@@ -119,11 +119,12 @@ const TRIPS: Record<string, TripDef<never>> = {
       const B = budgetNums(s);
       if (!(B.spent > 0)) return null;
       const spend = Math.round(B.spent / 12), bgSave = Math.round(B.saved / 12);
-      // Rent or mortgage, property tax and home insurance: the first, second
-      // and fifth preset lines, which can be renamed but never move.
+      // Rent or mortgage, property tax and home insurance: those preset
+      // lines, found by their own names (they can be renamed or removed).
+      const mo = (slot: string) => { const r = slotRow(s.rows, slot); return r ? annualize(r) / 12 : 0; };
       const set: Partial<Answers> = { spend, bgSave,
-        bgMort: s.rows[0] ? Math.round(annualize(s.rows[0]) / 12) || null : null,
-        bgHousing: Math.round([0, 1, 4].reduce((t, i) => t + (s.rows[i] ? annualize(s.rows[i]) : 0), 0) / 12) || null,
+        bgMort: Math.round(mo("Rent / Mortgage")) || null,
+        bgHousing: Math.round(mo("Rent / Mortgage") + mo("Property tax") + mo("Home / Renters insurance")) || null,
         spendSrc: "budget", bgRows: s.rows.map((r) => ({ ...r })) };
       if (!pos(a.takehome) && B.inc > 0) set.takehome = Math.round(B.inc / 12);
       return { set, msg: "From your budget: <b>" + money(spend) + "/mo</b> in spending" + (bgSave > 0 ? " and <b>" + money(bgSave) + "/mo</b> going to savings" : "") +

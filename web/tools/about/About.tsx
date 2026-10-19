@@ -1181,8 +1181,10 @@ export function About({ states }: { states: StateOption[] }) {
               (gross minus taxes) straight from that tool.</dd>
               <dt>The preset rows</dt>
               <dd>A starting point, not a rulebook. Leave anything at zero to ignore it.</dd>
-              <dt>Add custom item</dt>
-              <dd>Adds a blank row you can name yourself, for anything the presets miss.</dd>
+              <dt>Adding and removing lines</dt>
+              <dd>The + beside a group&apos;s name adds a blank line to that group, counted
+              with it in Where it goes. Add custom item adds one under Custom, for anything
+              that fits no group. The × on any line removes it.</dd>
               <dt>+ Retirement contribution &amp; + College savings</dt>
               <dd>Pull a monthly figure straight from another tool instead of retyping it.
               If more than one retirement mode (Basic, Advanced, Stages) has a contribution

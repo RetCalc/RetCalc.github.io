@@ -99,7 +99,12 @@
 #bgList{container-type:inline-size}
 .bggroup{margin-bottom:6px}
 .bggroup-h{font-size:13px;color:var(--text);font-weight:600;
-  padding:18px 0 7px;border-bottom:1px solid var(--line);margin-bottom:2px}
+  padding:18px 0 7px;border-bottom:1px solid var(--line);margin-bottom:2px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px}
+/* The group's + sits in the column of the lines' ×, without making the
+   head any taller. */
+.bggroup-h > button{margin:-10px 0}
+@media (pointer:coarse){.bggroup-h > button{margin:-14px 0}}
 .bggroup-h.bghead-first{padding-top:0;margin-bottom:12px}
 .bgrow{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line-soft)}
 .bgrow:last-child{border-bottom:0}
@@ -107,6 +112,9 @@
 .bgrow .bgname{cursor:text;border-radius:4px;
   padding:2px 5px;margin:-2px -5px;border:1px dashed transparent}
 .bgrow .bgname:hover{border-color:var(--line)}
+/* A new line, not named yet: room to click, and a muted prompt. */
+.bgrow .bgname:empty{display:inline-block;min-width:9em}
+.bgrow .bgname:empty::before{content:attr(data-placeholder);color:var(--dim)}
 .bgrow .bgname:focus{outline:2px solid var(--ds-focus);outline-offset:2px;border-color:var(--text);
   border-style:solid;background:var(--panel)}
 /* A line with no amount: its name and its 0 in Muted, so the lines in use
@@ -121,7 +129,6 @@
 @container (max-width:447.98px){
   .bgrow{flex-wrap:wrap;row-gap:4px;padding:7px 0}
   .bgrow .desc{flex-basis:100%}
-  .bgrow > .delspace{display:none}
 }
 /* Wide: two lines side by side, the group head across both. */
 @container (min-width:820px){

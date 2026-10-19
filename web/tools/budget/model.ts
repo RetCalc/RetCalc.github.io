@@ -27,11 +27,43 @@ export const BUDGET_PRESETS = [
     { desc: "Other debt payments", freq: 12 }] },
 ];
 
-export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean }
+/** One line. `slot` is a preset line's own name, kept through a rename (a
+    blank rename falls back to it). A line added to a group, or under
+    Custom, is `custom` and has none. */
+export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean; slot?: string }
 
-/* Preset rows are only ever renamed, never added or removed, so row i always
-   lines up with preset i: a blank rename falls back to that slot's name. */
 export const PRESET_DESCS = BUDGET_PRESETS.flatMap((g) => g.items.map((it) => it.desc));
+export const PRESET_GROUPS = BUDGET_PRESETS.map((g) => g.group);
+
+/* Before lines could be removed, preset rows were only ever renamed, so row
+   i lined up with preset i and carried no slot: a row without one takes its
+   place's name. Every preset row saved since carries its slot. */
+export const rowSlot = (r: BudgetRow, i: number): string | undefined => r.slot ?? (r.custom ? undefined : PRESET_DESCS[i]);
+
+/** A new line's name until it's given one: the group's, then "custom",
+    numbered from 2 while the earlier ones keep theirs ("Transportation
+    custom", "Transportation custom 2"). Under Custom, "Custom item". */
+export function newLineName(rows: BudgetRow[], group: string): string {
+  const base = group === "Custom" ? "Custom item" : group + " custom";
+  const taken = new Set(rows.map((r) => r.desc.trim().toLowerCase()));
+  let n = 1;
+  while (taken.has((n === 1 ? base : base + " " + n).toLowerCase())) n++;
+  return n === 1 ? base : base + " " + n;
+}
+
+/** The Paycheck tab reads Health insurance, so that line can't be renamed
+    or removed. */
+export const HEALTH_SLOT = "Health insurance";
+export const isLockedRow = (r: BudgetRow, i: number) => rowSlot(r, i) === HEALTH_SLOT && r.desc === HEALTH_SLOT;
+
+const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.toLowerCase();
+
+/** The line that other tools read by this name (Health insurance, Rent /
+    Mortgage, Property tax): the preset line while it keeps its name, or a
+    line added under that name. A line renamed to something else is
+    something else, so it isn't read as this (the Guide then asks). */
+export const slotRow = (rows: BudgetRow[], name: string): BudgetRow | undefined =>
+  rows.find((r, i) => rowSlot(r, i) === name && sameName(r.desc, name)) ?? rows.find((r) => !isPlannedRow(r) && sameName(r.desc, name));
 
 /** The Paycheck tab's inputs (paycheck-math.ts), kept with the Budget's, as typed. */
 const PAYCHECK_DEFAULTS = {
@@ -80,7 +112,7 @@ const PAYCHECK_DEFAULTS = {
 export const BUDGET_DEFAULTS = {
   /** Which tab is showing: the budget itself, or the Paycheck tab. */
   view: "budget" as "budget" | "paycheck",
-  rows: BUDGET_PRESETS.flatMap((g) => g.items.map((it): BudgetRow => ({ group: g.group, desc: it.desc, amount: "0", freq: it.freq, custom: false }))),
+  rows: BUDGET_PRESETS.flatMap((g) => g.items.map((it): BudgetRow => ({ group: g.group, desc: it.desc, amount: "0", freq: it.freq, custom: false, slot: it.desc }))),
   efMonths: "6",
   ...PAYCHECK_DEFAULTS,
 };
@@ -96,6 +128,29 @@ export const PLANNED_ON_PAYCHECK = ["Savings & investments", "Retirement contrib
 export const isPlannedRow = (r: { desc: string }) => PLANNED_ON_PAYCHECK.includes(r.desc);
 export const dropPlanned = <B extends { rows: BudgetRow[] }>(b: B): B =>
   b.rows.some(isPlannedRow) ? { ...b, rows: b.rows.filter((r) => !isPlannedRow(r)) } : b;
+
+/** A budget as it opens: the planned lines dropped, unnamed lines named,
+    and each preset line from before slots given its own, so removing a line never shifts which
+    one is which. */
+export function openBudget<B extends { rows: BudgetRow[] }>(b: B): B {
+  let d = dropPlanned(b);
+  // A line left without a name (a custom line could be, once) takes its group's.
+  if (d.rows.some((r) => r.custom && !r.desc.trim())) {
+    const rows: BudgetRow[] = [];
+    for (const r of d.rows) rows.push(r.custom && !r.desc.trim() ? { ...r, desc: newLineName([...rows, ...d.rows], r.group || "Custom") } : r);
+    d = { ...d, rows };
+  }
+  if (d.rows.some((r, i) => !r.slot && rowSlot(r, i)))
+    d = { ...d, rows: d.rows.map((r, i) => (r.slot ? r : { ...r, ...(rowSlot(r, i) ? { slot: rowSlot(r, i) } : {}) })) };
+  /* Health insurance renamed (before it was locked) is that line now: it
+     stays, as a line of its own, and Health insurance comes back above it. */
+  if (d.rows.some((r) => r.slot === HEALTH_SLOT && r.desc === HEALTH_SLOT)) return d;
+  const at = d.rows.findIndex((r) => r.slot === HEALTH_SLOT);
+  const fresh: BudgetRow = { group: "Health", desc: HEALTH_SLOT, amount: "0", freq: 12, custom: false, slot: HEALTH_SLOT };
+  const rows = d.rows.map((r) => (r.slot === HEALTH_SLOT ? { group: r.group, desc: r.desc, amount: r.amount, freq: r.freq, custom: true } : r));
+  const where = at >= 0 ? at : Math.max(0, rows.findIndex((r) => r.group === "Health"));
+  return { ...d, rows: [...rows.slice(0, where), fresh, ...rows.slice(where)] };
+}
 
 /* A goal set aside for, not spent: counted in the budget's total, but kept
    out of the emergency fund, which covers spending. */
