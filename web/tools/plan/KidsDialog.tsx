@@ -128,7 +128,7 @@ function KidsDialog({ kids, age, retire, close, save }: { kids: PlanKids; age: n
         The costs below are typical ones, in today&apos;s dollars; change any of them to your own. Up to {MAX_KIDS} children in all.</div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-3 max-sm:grid-cols-1">
         <CountedBoxes id="kdNow" countLabel="Children you have now" countAffix="children" max={MAX_KIDS} values={now} onChange={setNow}
-          boxLabel={(i) => "Child " + (i + 1) + "'s age"} boxAffix="yrs" boxMax={29} />
+          boxLabel={(i) => "Child " + (i + 1) + "'s age"} boxAffix="yrs" boxMax={29} half />
         <div>
           <Label className="mb-1.5" htmlFor="kdPlanned"><span>Children planned</span></Label>
           <Affixed suffix="children"><NumberInput id="kdPlanned" nonNeg max={room} value={planned} onValueChange={setPlanned} /></Affixed>

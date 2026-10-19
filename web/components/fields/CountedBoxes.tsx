@@ -10,7 +10,7 @@ import { Affixed } from "./Field";
 import { NumberInput } from "./NumberInput";
 import { Label } from "@/components/ui/label";
 
-export function CountedBoxes({ id, countLabel, countAffix, max, values, onChange, boxLabel, boxAffix, boxMax, fill = "" }: {
+export function CountedBoxes({ id, countLabel, countAffix, max, values, onChange, boxLabel, boxAffix, boxMax, fill = "", half }: {
   id: string;
   countLabel: React.ReactNode;
   countAffix: string;
@@ -24,6 +24,9 @@ export function CountedBoxes({ id, countLabel, countAffix, max, values, onChange
   boxMax?: number;
   /** What a new box starts with. */
   fill?: string;
+  /** The count as wide as a field in a two-column grid with gap-x-3 (its
+      neighbours below), not its own narrow width. */
+  half?: boolean;
 }) {
   // The count as typed, so it can be cleared to type another.
   const [count, setCount] = useState(values.length ? String(values.length) : "");
@@ -34,9 +37,11 @@ export function CountedBoxes({ id, countLabel, countAffix, max, values, onChange
   };
   return (
     <div className="col-span-full">
-      <div className="max-w-56">
-        <Label className="mb-1.5" htmlFor={id}><span>{countLabel}</span></Label>
-        <Affixed suffix={countAffix}><NumberInput id={id} nonNeg max={max} value={count} onValueChange={setN} /></Affixed>
+      <div className={half ? "grid grid-cols-2 gap-x-3 max-sm:grid-cols-1" : "max-w-56"}>
+        <div>
+          <Label className="mb-1.5" htmlFor={id}><span>{countLabel}</span></Label>
+          <Affixed suffix={countAffix}><NumberInput id={id} nonNeg max={max} value={count} onValueChange={setN} /></Affixed>
+        </div>
       </div>
       {values.length ? (
         <div className="mt-2.5 flex flex-wrap gap-2.5">
