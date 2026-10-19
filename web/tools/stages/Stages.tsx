@@ -209,16 +209,15 @@ export function Stages() {
     toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
   };
 
-  /* Past three stages they're edited in a pop-up (`editing`: the stage to
-     open it at), and the panel lists them. */
-  const many = n > 3;
+  /* Stages are edited in a pop-up (`editing`: the stage to open it at);
+     the panel lists them. */
   const [editing, setEditing] = useState<number | null>(null);
   const names = s.stages.map((st, i) => st.name || "Stage " + (i + 1));
-  const stageCard = (i: number, st: StageInputs, wide?: boolean) => (
+  const stageCard = (i: number, st: StageInputs) => (
     <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
       adjNote={st.adj && i > 0 && P.eff[i] ? money(P.eff[i].contrib / (P.eff[i].mf || 1)) : ""}
       num={nums[i]} blend={split && st.gRates ? P.stages[i]?.growth : undefined} fees={parseNum(s.fees) / 100} inflation={parseNum(s.inflation) / 100}
-      matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} wide={wide} />
+      matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
   );
   /** In the pop-up, a stage's card brought into view. */
   const scrollToStage = (i: number) => {
@@ -234,11 +233,11 @@ export function Stages() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened]);
 
-  /* A segment of the timeline jumps to its stage's first field. */
-  const goToStage = (i: number) => {
-    const el = document.querySelector<HTMLInputElement>(`#stageList [data-f='years'][data-i='${i}']`);
-    el?.closest(".stagecard")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    el?.focus({ preventScroll: true });
+  /** A new stage, opened in the pop-up. */
+  const addAndOpen = () => {
+    addStage();
+    if (editing == null) setEditing(n);
+    else setTimeout(() => scrollToStage(n), 60);
   };
 
   return (
@@ -256,10 +255,8 @@ export function Stages() {
             </CardHeader>
             <CardContent>
               <GroupHead first>Your stages</GroupHead>
-              {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => (many ? setEditing(i) : goToStage(i))} /> : null}
-              {/* Three stages or fewer are edited right here; past that they
-                  read as a list, edited in a wide pop-up, so the panel stays short. */}
-              {many ? (
+              {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => setEditing(i)} /> : null}
+              {n ? (
                 <ol className="m-0 mb-3 list-none p-0" aria-label="Your stages">
                   {nums.map((st, i) => (
                     <li key={i}>
@@ -273,26 +270,22 @@ export function Stages() {
                     </li>
                   ))}
                 </ol>
-              ) : (
-                <div id="stageList">
-                  {s.stages.map((st, i) => stageCard(i, st))}
-                </div>
-              )}
+              ) : null}
               <div className={n ? "hint hidden" : "hint mt-0 block"} id="stageEmpty">
                 No stages yet. Add one to start building a run.
               </div>
-              {many
+              {n
                 ? <Button variant="outline" className="mt-1 w-full" id="btnEditStages" onClick={() => setEditing(0)}><PencilIcon aria-hidden="true" />Edit stages</Button>
-                : <Button variant="outline" className="mt-1 w-full" id="btnAddStage" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>}
-              {editing != null ? (
+                : <Button variant="outline" className="mt-1 w-full" id="btnAddStage" onClick={addAndOpen}><PlusIcon aria-hidden="true" />Add stage</Button>}
+              {editing != null && n ? (
                 <Modal size="table" onClose={() => setEditing(null)}>
                   <ModalTop title="Your stages" onClose={() => setEditing(null)} />
                   <StageBar nums={nums} names={names} spans={spans} onPick={(i) => scrollToStage(i)} />
                   <div id="stageList" className="mt-1">
-                    {s.stages.map((st, i) => stageCard(i, st, true))}
+                    {s.stages.map((st, i) => stageCard(i, st))}
                   </div>
                   <div className="formactions mt-4">
-                    <Button variant="outline" className="flex-1" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>
+                    <Button variant="outline" className="flex-1" onClick={addAndOpen}><PlusIcon aria-hidden="true" />Add stage</Button>
                     <Button className="flex-1" onClick={() => setEditing(null)}>Done</Button>
                   </div>
                 </Modal>
@@ -399,7 +392,7 @@ export function Stages() {
           <Card>
             <CardHeader><CardTitle>Start with a stage</CardTitle>
               <CardDescription>Add a stage to see your balance over time, stage by stage.</CardDescription></CardHeader>
-            <CardContent><Button variant="outline" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button></CardContent>
+            <CardContent><Button variant="outline" onClick={addAndOpen}><PlusIcon aria-hidden="true" />Add stage</Button></CardContent>
           </Card>
         ) : null}
 
