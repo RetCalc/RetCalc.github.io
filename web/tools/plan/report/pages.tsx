@@ -88,7 +88,7 @@ function Paycheck({ R, p }: { R: PlanReport; p: Page }) {
         ))}</tbody></table>
       <div className="rp-g3 gap">
         <div className="rp-side"><h5>Effective tax rate</h5><div className="rp-fig sm">{pctStr(y.taxes / Math.max(1, y.gross), 1)}</div><p className="rp-body">of gross pay: federal, state, Social Security and Medicare.</p></div>
-        <div className="rp-side"><h5>{S.per === "check" ? "Each paycheck" : "Each month"}</h5><div className="rp-fig sm">{money(y.takeHome, 2)}</div><p className="rp-body">deposited, {S.facts.freqName.toLowerCase()}.</p></div>
+        <div className="rp-side"><h5>{S.per === "check" ? "Each paycheck" : "Each month"}</h5><div className="rp-fig sm">{money(y.takeHome, 2)}</div><p className="rp-body">{S.per === "check" ? "deposited, " + S.facts.freqName.toLowerCase() + "." : "deposited a month, both paychecks together."}</p></div>
         <div className="rp-side"><h5>Your employer adds</h5><div className="rp-fig sm">{money(y.match * n)}</div><p className="rp-body">{y.match > 0 ? "a year in 401(k) match, on top of your pay." : "Nothing yet: no match on what goes in."}</p></div>
       </div>
     </Sheet>

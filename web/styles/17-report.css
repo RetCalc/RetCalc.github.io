@@ -151,6 +151,9 @@
 .rp-t th.l,.rp-t td.l{text-align:left;white-space:normal;padding-left:18px}
 .rp-t td.c{text-align:center}
 .rp-t tr.hl td{background:var(--rp-land)}
+/* Paper doesn't light up: the site's row hover (a theme color, near black
+   in dark mode) stays off the sheets. */
+.rp-page tbody tr:hover{background:transparent}
 .rp-t tr.tot td{font-weight:800}
 .rp-t.yy td,.rp-t.yy th{font-size:10.5px;padding-top:3.6px;padding-bottom:3.6px}
 
