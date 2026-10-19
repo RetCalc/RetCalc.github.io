@@ -6,7 +6,7 @@
    Stages parts of src/main/02-calculator-inputs.html and
    03-calculator-results.html. */
 
-import { useDeferredValue, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
@@ -214,11 +214,11 @@ export function Stages() {
   const many = n > 3;
   const [editing, setEditing] = useState<number | null>(null);
   const names = s.stages.map((st, i) => st.name || "Stage " + (i + 1));
-  const stageCard = (i: number, st: StageInputs) => (
+  const stageCard = (i: number, st: StageInputs, wide?: boolean) => (
     <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
       adjNote={st.adj && i > 0 && P.eff[i] ? money(P.eff[i].contrib / (P.eff[i].mf || 1)) : ""}
       num={nums[i]} blend={split && st.gRates ? P.stages[i]?.growth : undefined} fees={parseNum(s.fees) / 100} inflation={parseNum(s.inflation) / 100}
-      matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
+      matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} wide={wide} />
   );
   /** In the pop-up, a stage's card brought into view. */
   const scrollToStage = (i: number) => {
@@ -226,6 +226,13 @@ export function Stages() {
     el?.closest(".stagecard")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     el?.focus({ preventScroll: true });
   };
+
+  // Opening the pop-up brings the stage it was opened at into view.
+  const opened = editing != null;
+  useEffect(() => {
+    if (opened) requestAnimationFrame(() => scrollToStage(editing!));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened]);
 
   /* A segment of the timeline jumps to its stage's first field. */
   const goToStage = (i: number) => {
@@ -281,8 +288,8 @@ export function Stages() {
                 <Modal size="table" onClose={() => setEditing(null)}>
                   <ModalTop title="Your stages" onClose={() => setEditing(null)} />
                   <StageBar nums={nums} names={names} spans={spans} onPick={(i) => scrollToStage(i)} />
-                  <div id="stageList" className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3" ref={(el) => { if (el && editing != null) requestAnimationFrame(() => scrollToStage(editing)); }}>
-                    {s.stages.map((st, i) => <div key={i} className="min-w-0">{stageCard(i, st)}</div>)}
+                  <div id="stageList" className="mt-1">
+                    {s.stages.map((st, i) => stageCard(i, st, true))}
                   </div>
                   <div className="formactions mt-4">
                     <Button variant="outline" className="flex-1" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>
