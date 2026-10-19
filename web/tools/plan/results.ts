@@ -11,7 +11,7 @@ import type { Household } from "@/lib/household";
 import { advancedCompute, advancedPlan } from "@/tools/advanced/model";
 import { annualize, budgetCompute } from "@/tools/budget/model";
 import { PC_LINES, PC_STEPS, rowRole, type PcStep } from "@/tools/budget/paycheck-math";
-import { CHILD_SOURCE } from "@/tools/guide/schedule";
+import { CHILD_SOURCE, childCost } from "@/tools/guide/schedule";
 import { stageSplit, stagesCompute } from "@/tools/stages/model";
 import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
 import { coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
@@ -53,11 +53,20 @@ export interface PlanSummary {
   /** Each stage: its saving a month (today's dollars), the children's cost
       then and its change from today, and what each account gives for it. */
   stages: { name: string; from: number; to: number; monthly: number; kidCost: number; change: number; take: Monthly | null; short: number; taxUp: number; matchLost: number }[] | null;
-  /** With life stages, each year's pay from now to retirement, today's
-      dollars: taxes (more where pre-tax saving was cut), everyday spending
-      (less what saving couldn't cover), the children, your own saving, and
-      what's left. Each year adds back up to the year's pay. */
-  money: { age: number; stage: number; taxes: number; spend: number; kids: number; save: number; left: number }[] | null;
+  /** With life stages and children: each child's costs by age band, the
+      children together by stage, and what they come to. Today's dollars. */
+  children: {
+    rows: { label: string; born: number; planned: boolean; bands: { from: number; to: number; monthly: number; early: boolean }[] }[];
+    together: { from: number; to: number; monthly: number }[];
+    /** Every month of them from now to retirement, and the most in a month. */
+    total: number; peak: { age: number; monthly: number };
+    /** How the stages paid for them: saving given up (after the tax a
+        pre-tax cut brings back), and spending cut where saving ran out. */
+    fromSaving: number; fromSpending: number;
+    /** The balance at retirement without them: the same plan, saving
+        today's amounts all the way (Your plan). */
+    without: number;
+  } | null;
   /** Today's saving a month, by account, that the stages cut from. */
   todayMonthly: Monthly;
   /** Every budget line with money on it, a year, by group in the Budget's order. */
@@ -141,18 +150,33 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     assumptions = { nominal: pl.gross, inflation: pl.inflation, fees: pl.fees, growth: pl.growth, withdrawal: pl.withdrawal, vol: pl.vol };
   }
   const retireAge = ages.age + Math.round(years);
-  // Each year's pay, with the stages (only once there are any).
-  let money: PlanSummary["money"] = null;
-  if (stages && stages.length) {
-    const kids = p.kids ? kidList(p.kids, ages.age) : [], gross = r.check * pi.p, spendYr = budgetCompute(b).spentYr;
-    const now = kidCostAt(kids, ages.age) * 12, taxes0 = r.taxes * pi.p;
-    money = [];
+  // The children, once there are stages built around them.
+  let children: PlanSummary["children"] = null;
+  const kl = p.kids ? kidList(p.kids, ages.age) : [];
+  if (stages && kl.length) {
+    const rows = kl.map((c, i) => {
+      const bands: { from: number; to: number; monthly: number; early: boolean }[] = [];
+      for (let t = Math.max(ages.age, c.born); t < Math.min(retireAge, c.born + 19); t++) {
+        const m = Math.round(childCost(c, t)), early = t - c.born < 6, last = bands[bands.length - 1];
+        if (last && last.monthly === m && last.early === early && last.to === t) last.to = t + 1;
+        else bands.push({ from: t, to: t + 1, monthly: m, early });
+      }
+      return { label: "Child " + (i + 1), born: c.born, planned: c.planned, bands };
+    }).filter((r) => r.bands.length);
+    const together = kidStages(p.kids, ages.age, retireAge).filter((s) => s.cost > 0).map((s) => ({ from: s.from, to: s.to, monthly: s.cost }));
+    let total = 0, peak = { age: ages.age, monthly: 0 };
     for (let t = ages.age; t < retireAge; t++) {
-      const i = Math.max(0, stages.findIndex((s) => t >= s.from && t < s.to)), st = stages[i];
-      const row = { age: t, stage: i, taxes: taxes0 + st.taxUp * 12, spend: Math.max(0, spendYr - now - st.short * 12), kids: kidCostAt(kids, t) * 12, save: st.monthly * 12, left: 0 };
-      row.left = Math.max(0, gross - row.taxes - row.spend - row.kids - row.save);
-      money.push(row);
+      const m = kidCostAt(kl, t);
+      total += m * 12;
+      if (m > peak.monthly) peak = { age: t, monthly: m };
     }
+    const yrs = (s: { from: number; to: number }) => (s.to - s.from) * 12;
+    children = {
+      rows, together, total, peak,
+      fromSaving: stages.reduce((t, s) => t + (s.take ? Math.max(0, s.change - s.short) * yrs(s) : 0), 0),
+      fromSpending: stages.reduce((t, s) => t + s.short * yrs(s), 0),
+      without: advancedCompute(adv, household).R.fvReal,
+    };
   }
   const milestones: PlanSummary["milestones"] = [];
   for (const [v, label] of [[100e3, "$100K"], [250e3, "$250K"], [500e3, "$500K"], [1e6, "$1M"], [2e6, "$2M"]] as const) {
@@ -186,7 +210,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate },
     target: { solveFor: adv.solveFor, target: parseNum(adv.target) },
     goal: adv.solveFor === "After-Tax Withdrawal" && parseNum(adv.target) > 0 ? { v: parseNum(adv.target), fromBudget: false } : { v: bc.spentYr, fromBudget: true },
-    climb, milestones, stages, money, kids, kidSource: CHILD_SOURCE, assumptions,
+    climb, milestones, stages, children, kids, kidSource: CHILD_SOURCE, assumptions,
   };
 }
 

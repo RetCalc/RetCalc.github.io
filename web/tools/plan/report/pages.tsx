@@ -8,7 +8,7 @@ import { money, pctStr } from "@/lib/format";
 import { C, ReportMark } from "@/tools/guide/report/charts";
 import { COVER_ORDER } from "../model";
 import { ACCT_NAMES, type Acct, type PlanSummary } from "../results";
-import { ACCT_PRINT, ClimbChart, GroupBars, MONEY_PRINT, MoneyBars, PAY_PRINT, PayBar, StageStrip } from "./charts";
+import { ACCT_PRINT, ClimbChart, GroupBars, KidBars, PAY_PRINT, PayBar, StageStrip } from "./charts";
 
 export interface PlanReport { S: PlanSummary; title: string; date: string }
 interface Page { id: string; title: string; because?: string; n: number }
@@ -222,10 +222,13 @@ function Stages({ R, p }: { R: PlanReport; p: Page }) {
             {COVER_ORDER.map((k) => <td key={k}>{s.take && Math.abs(s.take[k]) > 0.5 ? (s.take[k] > 0 ? "−" : "+") + money(Math.abs(s.take[k])) : "–"}</td>)}
             <td>{s.short > 0 ? "−" + money(s.short) : "–"}</td><td><b>{money(s.monthly)}</b></td></tr>
         ))}</tbody></table>
-      <Sec>Each year&apos;s pay, in today&apos;s dollars</Sec>
-      <MoneyBars S={S} h={150} />
-      <div className="rp-key">{(["save", "kids", "spend", "taxes", "left"] as const).filter((k) => S.money?.some((y) => y[k] > 0.5)).map((k) =>
-        <span key={k}><i style={{ "--sw": MONEY_PRINT[k] } as React.CSSProperties} />{{ save: "Saving", kids: "Children", spend: "Everyday spending", taxes: "Taxes", left: "Left over" }[k]}</span>)}</div>
+      {S.children ? <>
+        <Sec>What the children cost a month, in today&apos;s dollars, by your age</Sec>
+        <KidBars S={S} />
+        <div className="rp-key"><span><i style={{ "--sw": C.clay } as React.CSSProperties} />Before school</span><span><i style={{ "--sw": C.sand } as React.CSSProperties} />At school</span>
+          <span><i style={{ "--sw": C.water } as React.CSSProperties} />All of them together</span>
+          <span>{money(S.children.total)} until {S.retire}; your balance at {S.retire} is {money(Math.max(0, S.children.without - S.atRetire.total))} lower than saving today&apos;s amounts all the way.</span></div>
+      </> : null}
       <div className="rp-g2 top gap">
         <div className="rp-side"><h5>What a child costs here</h5><p className="rp-body">$2,500 a month before school with childcare ($1,300 without), $1,500 from 6 to 18, each later child 20% less, unless you changed them. College isn&apos;t included.</p></div>
         <div className="rp-side"><h5>Other changes</h5><p className="rp-body">Any change to saving can be a stage: a raise, a move, part-time years, each with its own saving and return.</p></div>

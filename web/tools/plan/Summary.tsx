@@ -13,13 +13,12 @@ import { useToast } from "@/components/shell/Toast";
 import { HeroReading } from "@/components/common/Reading";
 import { Segmented } from "@/components/common/Readout";
 import { ChartFrame, HoverMarks, XAxis, YAxis, pathD, useChartSize } from "@/components/charts/ChartFrame";
-import { Legend, LegendToggle } from "@/components/charts/Legend";
-import { StackedBars } from "@/components/charts/StackedBars";
+import { LegendToggle } from "@/components/charts/Legend";
 import { TipRow } from "@/components/charts/TipRows";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { money, pctStr } from "@/lib/format";
-import { SERIES, hatched } from "@/lib/hues";
+import { SERIES } from "@/lib/hues";
 import { cn } from "@/lib/utils";
 import { copyToTools } from "./copy";
 import { PLAN_DEFAULTS, loadPlan, type PlanState, type StepId } from "./model";
@@ -44,7 +43,7 @@ export function Summary({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => 
       <PayCard S={S} />
       <Accounts S={S} />
       <Climb S={S} />
-      {S.money ? <MoneyByAge S={S} /> : null}
+      {S.children ? <ChildrenCost S={S} /> : null}
       {S.stages ? <StageLine S={S} /> : null}
       <Actions plan={plan} goTo={goTo} />
     </>
@@ -75,10 +74,7 @@ function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
 type Part = { label: string; v: number; c: string };
 function PayCard({ S }: { S: PlanSummary }) {
   const [unit, setUnit] = useState<"year" | "month" | "check">("year");
-  // The part pointed at, in the bar or its list: the rest dim, and its figure shows.
-  const [hot, setHot] = useState<string | null>(null);
-  const dim = (l: string) => (hot && hot !== l ? "opacity-35" : "");
-  const point = (l: string) => ({ onMouseEnter: () => setHot(l), onMouseLeave: () => setHot(null), onFocus: () => setHot(l), onBlur: () => setHot(null) });
+
   const y = S.pay, mult = unit === "year" ? S.p : unit === "month" ? S.p / 12 : 1;
   const k = (v: number) => v * mult;
   const taxes: Part[] = [
@@ -111,14 +107,11 @@ function PayCard({ S }: { S: PlanSummary }) {
       <CardContent>
         <div className="flex h-9 w-full overflow-hidden rounded-md" role="img"
           aria-label={cols.map((c) => c.h + " " + money(k(sum(c.parts)))).join(", ")}>
-          {all.map((x) => <div key={x.label} {...point(x.label)} onClick={() => setHot(hot === x.label ? null : x.label)}
-            className={cn("h-full w-(--w) border-r border-card bg-(--c) transition-opacity last:border-r-0", dim(x.label))} style={{ "--w": (x.v / gross) * 100 + "%", "--c": x.c } as React.CSSProperties}></div>)}
+          {all.map((x) => <div key={x.label} title={x.label + ": " + money(k(x.v))} className="h-full w-(--w) border-r border-card bg-(--c) last:border-r-0" style={{ "--w": (x.v / gross) * 100 + "%", "--c": x.c } as React.CSSProperties}></div>)}
         </div>
-        {hot ? (() => { const x = all.find((p) => p.label === hot)!; return (
-          <div className="mt-1.5 text-label tabular-nums" aria-live="polite"><b className="font-semibold">{x.label}</b> {money(k(x.v))}, {pctStr(x.v / gross, 1)} of gross pay</div>); })() : (
-          <div className="mt-1.5 flex w-full text-label text-muted-foreground tabular-nums" aria-hidden="true">
-            {cols.map((c) => <div key={c.h} className="w-(--w) min-w-0 truncate pr-2" style={{ "--w": (sum(c.parts) / gross) * 100 + "%" } as React.CSSProperties}>{pctStr(sum(c.parts) / gross, 0)}</div>)}
-          </div>)}
+        <div className="mt-1.5 flex w-full text-label text-muted-foreground tabular-nums" aria-hidden="true">
+          {cols.map((c) => <div key={c.h} className="w-(--w) min-w-0 truncate pr-2" style={{ "--w": (sum(c.parts) / gross) * 100 + "%" } as React.CSSProperties}>{pctStr(sum(c.parts) / gross, 0)}</div>)}
+        </div>
         <div className={cn("mt-5 grid gap-x-8 gap-y-5 max-sm:grid-cols-1", cols.length === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : "sm:grid-cols-3")}>
           {cols.map((c) => (
             <div key={c.h} className="min-w-0">
@@ -127,7 +120,7 @@ function PayCard({ S }: { S: PlanSummary }) {
               </div>
               <ul className="m-0 list-none p-0 text-note">
                 {c.parts.map((x) => (
-                  <li key={x.label} {...point(x.label)} className={cn("flex items-baseline gap-2 py-1 transition-opacity", dim(x.label))}>
+                  <li key={x.label} className="flex items-baseline gap-2 py-1">
                     <i className="size-2.5 flex-none translate-y-px rounded-xs bg-(--c)" style={{ "--c": x.c } as React.CSSProperties} aria-hidden="true"></i>
                     <span className="min-w-0 flex-1">{x.label}</span><span className="tabular-nums">{money(k(x.v))}</span>
                   </li>
@@ -184,7 +177,10 @@ function tightTicks(max: number): number[] {
 }
 
 function Climb({ S }: { S: PlanSummary }) {
-  const size = useChartSize(), { L, pw, sw, fs } = size;
+  // Drawn for the full width of the card, and taller than the tools' charts.
+  const base = useChartSize();
+  const size = base.narrow ? base : { ...base, W: 1240, H: 460, L: 74, fs: 12.5, pw: 1240 - 74 - base.Rp, ph: 460 - base.T - base.B };
+  const { L, pw, sw, fs } = size;
   const [off, setOff] = useState<Acct[]>([]);
   const [future, setFuture] = useState(false);
   const infl = S.assumptions.inflation, a0 = S.climb[0].age, a1 = S.climb[S.climb.length - 1].age;
@@ -224,9 +220,8 @@ function Climb({ S }: { S: PlanSummary }) {
           {S.stages ? " Numbers along the top are your life stages." : ""}</CardDescription>
         <CardAction><Segmented size="compact" attr="data-ppreal" options={[["today", "Today's dollars"], ["future", "Future dollars"]] as const} value={future ? "future" : "today"} onChange={(v) => setFuture(v === "future")} /></CardAction>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        <div className="min-w-0 lg:col-span-2">
-        <ChartFrame id="ppClimb" size={size} xs={rows.map((r) => X(r.age))}
+      <CardContent>
+        <ChartFrame id="ppClimb" size={size} wide xs={rows.map((r) => X(r.age))}
           ariaLabel={"Balance by age, from " + money(tot[0]) + " at " + a0 + " to " + money(tot[tot.length - 1]) + " at " + a1}
           tip={(i) => {
             const st = stageAt(rows[i].age), born = kidsBorn(rows[i].age);
@@ -275,10 +270,10 @@ function Climb({ S }: { S: PlanSummary }) {
           <span><i className="h-0.75! bg-series-plan"></i>Total</span>
           {S.kids.some((k) => k.born > a0) ? <span>▲ A child is born</span> : null}
         </div>
-        </div>
-        {/* Beside the chart: the end of the climb by account, the
+        {/* Under the chart: the end of the climb by account, the
             milestones, and what each numbered stage is. */}
-        <div className="min-w-0 text-note">
+        <div className="mt-2 grid grid-cols-1 gap-x-10 gap-y-5 border-t border-border pt-4 text-note md:grid-cols-3">
+        <div className="min-w-0">
           <div className="text-label text-muted-foreground">At {a1}{future ? ", future dollars" : ", today's dollars"}</div>
           <div className="text-3xl font-medium tabular-nums">{money(tot[tot.length - 1])}</div>
           <dl className="m-0 mt-2">
@@ -286,50 +281,87 @@ function Climb({ S }: { S: PlanSummary }) {
               <i className="size-2.5 flex-none rounded-xs bg-(--c)" style={{ "--c": ACCT_COLOR[a] } as React.CSSProperties} aria-hidden="true"></i>
               <dt className="flex-1 text-muted-foreground">{ACCT_NAMES[a]}</dt><dd className="m-0 tabular-nums">{money(rows[rows.length - 1][a])}</dd></div>)}
           </dl>
+        </div>
+        <div className="min-w-0">
           {marks.length ? <>
-            <div className="mt-4 text-label text-muted-foreground">Milestones</div>
+            <div className="text-label text-muted-foreground">Milestones</div>
             <p className="m-0 mt-1 tabular-nums">{marks.map((m) => m.label + " at " + rows[m.i].age).join(" · ")}</p>
           </> : null}
+        </div>
+        <div className="min-w-0">
           {S.stages ? <>
-            <div className="mt-4 text-label text-muted-foreground">Life stages</div>
+            <div className="text-label text-muted-foreground">Life stages</div>
             <ol className="m-0 mt-1 list-none p-0">{S.stages.map((st, i) => (
               <li key={st.from} className="flex gap-2 py-0.5"><span className="w-4 flex-none text-muted-foreground tabular-nums">{i + 1}</span><span className="flex-1">{st.name}</span>
                 <span className="text-muted-foreground tabular-nums">{st.from}–{st.to - 1}</span></li>))}</ol>
           </> : null}
+        </div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-/* ---- the years' money: where each year's pay goes, stage by stage ---- */
-const MONEY_CATS = [
-  { k: "save", c: SERIES.teal, name: "Saving" },
-  { k: "kids", c: SERIES.rose, name: "Children" },
-  { k: "spend", c: SERIES.lavender, name: "Everyday spending" },
-  { k: "taxes", c: SERIES.gray, name: "Taxes" },
-  { k: "left", c: hatched(SERIES.gray), name: "Left over" },
-] as const;
-function MoneyByAge({ S }: { S: PlanSummary }) {
-  const M = S.money!, cats = MONEY_CATS.filter((c) => M.some((y) => y[c.k] > 0.5));
-  const peak = M.reduce((m, y) => (y.kids > m.kids ? y : m), M[0]);
+/* ---- what the children cost: each child along the years, then together ---- */
+const CARE = SERIES.rose, SCHOOL = SERIES.lavender;
+function ChildrenCost({ S }: { S: PlanSummary }) {
+  const K = S.children!, a0 = S.age, a1 = S.retire, span = Math.max(1, a1 - a0);
+  const at = (age: number) => ((age - a0) / span) * 100 + "%";
+  const ticks = Array.from({ length: Math.floor(span / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
+  const gone = K.without - S.atRetire.total;
+  /** One stretch along the years: a tinted bar with its edge in the
+      color, and the monthly cost written in where it fits. */
+  const Seg = ({ from, to, monthly, c, title }: { from: number; to: number; monthly: number; c: string; title: string }) => (
+    <div title={title} className="absolute inset-y-0 left-(--l) flex w-(--w) items-center overflow-hidden rounded-sm border-l-3 border-l-(--c) px-1.5 text-label whitespace-nowrap tabular-nums"
+      style={{ "--l": at(from), "--w": ((to - from) / span) * 100 + "%", "--c": c } as React.CSSProperties}>
+      <span className="absolute inset-0 bg-(--c) opacity-25" aria-hidden="true"></span>
+      <span className="relative">{(to - from) / span > 0.09 ? money(monthly) + "/mo" : ""}</span>
+    </div>
+  );
   return (
     <Card className="col-span-full">
-      <CardHeader><CardTitle>Your money by age</CardTitle>
-        <CardDescription>Each year&apos;s pay, in today&apos;s dollars, and where it goes. {peak.kids > 0
-          ? "The children cost the most at " + peak.age + ", " + money(peak.kids) + " that year, while you save " + money(peak.save) + "."
-          : ""} Point at any year for the figures.</CardDescription></CardHeader>
+      <CardHeader><CardTitle>What the children cost</CardTitle>
+        <CardDescription>Each child from birth to 18, in today&apos;s dollars: childcare costs the most, then the school years, and each later child a little less.
+          {S.kids.some((k) => !k.planned) ? " Children you have now are already in your budget; only the change from today comes out of saving." : ""}</CardDescription></CardHeader>
       <CardContent>
-        <StackedBars id="ppMoney" cats={cats.map((c) => ({ k: c.k, c: c.c }))}
-          bars={M.map((y) => ({ label: y.age, parts: Object.fromEntries(cats.map((c) => [c.k, y[c.k]])) }))}
-          ariaLabel={"Each year's pay by age, " + M[0].age + " to " + M[M.length - 1].age + ": taxes, everyday spending, children and saving"}
-          tip={(i) => (
-            <>
-              <b>Age {M[i].age}</b><span className="block text-label text-muted-foreground">Stage {M[i].stage + 1}: {S.stages![M[i].stage].name}</span>
-              {cats.slice().reverse().map((c) => <TipRow key={c.k} color={c.c} label={c.name} value={M[i][c.k]} />)}
-            </>
-          )} />
-        <Legend items={cats.slice().reverse().map((c) => [c.c, c.name] as [string, string])} />
+        <div className="grid grid-cols-1 gap-x-12 gap-y-4 border-b border-border pb-5 sm:grid-cols-3">
+          <div><div className="text-label text-muted-foreground">Until you retire at {a1}</div>
+            <div className="text-3xl font-medium tabular-nums">{money(K.total)}</div>
+            <div className="text-label text-muted-foreground">At the most {money(K.peak.monthly)} a month, at {K.peak.age}</div></div>
+          <div><div className="text-label text-muted-foreground">Paid for by saving less</div>
+            <div className="text-3xl font-medium tabular-nums">{money(K.fromSaving)}</div>
+            <div className="text-label text-muted-foreground">{K.fromSpending > 0.5 ? "and " + money(K.fromSpending) + " cut from spending, when saving ran out" : "Saving covered all of it"}</div></div>
+          <div><div className="text-label text-muted-foreground">Less in your balance at {a1}</div>
+            <div className="text-3xl font-medium tabular-nums">{money(Math.max(0, gone))}</div>
+            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} saving today&apos;s amounts all the way</div></div>
+        </div>
+        {/* Along the years: each child, then all of them together. */}
+        <div className="mt-5 space-y-2">
+          {K.rows.map((r) => (
+            <div key={r.label} className="flex items-center gap-3">
+              <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">{r.label}</b><span className="block text-label text-muted-foreground">{r.born >= a0 ? "Born at " + r.born : "Age " + (a0 - r.born) + " now"}</span></div>
+              <div className="relative h-9 min-w-0 flex-1">
+                {r.bands.map((b) => <Seg key={b.from} {...b} c={b.early ? CARE : SCHOOL} title={r.label + ", ages " + b.from + " to " + (b.to - 1) + " (your age): " + money(b.monthly) + " a month, " + (b.early ? "before school" : "at school")} />)}
+              </div>
+            </div>
+          ))}
+          <div className="flex items-center gap-3 border-t border-border pt-2">
+            <div className="w-30 flex-none text-note max-sm:w-20"><b className="font-medium">Together</b><span className="block text-label text-muted-foreground">A month</span></div>
+            <div className="relative h-9 min-w-0 flex-1">
+              {K.together.map((t) => <Seg key={t.from} {...t} c={SERIES.sky} title={"Ages " + t.from + " to " + (t.to - 1) + ": " + money(t.monthly) + " a month"} />)}
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="w-30 flex-none max-sm:w-20"></div>
+            <div className="relative h-5 min-w-0 flex-1 text-label text-muted-foreground tabular-nums">
+              {ticks.map((t) => <span key={t} className="absolute left-(--l) -translate-x-1/2" style={{ "--l": at(t) } as React.CSSProperties}>{t}</span>)}
+            </div>
+          </div>
+        </div>
+        <div className="legend mt-2 px-0!">
+          <span><i className="bg-series-rose"></i>Before school (childcare)</span><span><i className="bg-series-lavender"></i>At school</span>
+          <span><i className="bg-series-sky"></i>All the children, a month</span><span>Ages are yours</span>
+        </div>
       </CardContent>
     </Card>
   );

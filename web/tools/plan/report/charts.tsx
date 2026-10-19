@@ -144,22 +144,30 @@ export function StageStrip({ S, w = 732, h = 58 }: { S: PlanSummary; w?: number;
   );
 }
 
-/** Each year's pay by age, today's dollars: saving, the children, everyday
-    spending, taxes and what's left, stacked. */
-export const MONEY_PRINT = { save: C.forest, kids: C.clay, spend: C.dusk, taxes: C.trail, left: C.gray };
-export function MoneyBars({ S, w = 732, h = 210 }: { S: PlanSummary; w?: number; h?: number }) {
-  const M = S.money ?? [], pl = 50, pb = 18, pt = 6, n = Math.max(1, M.length), keys = ["save", "kids", "spend", "taxes", "left"] as const;
-  const { top, list } = ticks(Math.max(1, ...M.map((y) => keys.reduce((t, k) => t + y[k], 0))));
-  const bw = (w - pl) / n, Y = (v: number) => pt + (1 - v / top) * (h - pt - pb), every = n > 24 ? 5 : n > 12 ? 2 : 1;
+/** Each child along your years (before school Clay, at school Sand),
+    then all of them together a month, with the cost written in. */
+export function KidBars({ S, w = 732 }: { S: PlanSummary; w?: number }) {
+  const K = S.children!, a0 = S.age, a1 = S.retire, lw = 92, row = 30, rows = K.rows.length + 1, h = rows * row + 22;
+  const X = (a: number) => lw + ((a - a0) / Math.max(1, a1 - a0)) * (w - lw);
+  const seg = (from: number, to: number, m: number, fill: string, y: number, key: string, ink: string) => (
+    <g key={key}>
+      <rect x={X(from)} y={y + 4} width={Math.max(1, X(to) - X(from) - 1.5)} height={row - 9} fill={fill} />
+      {X(to) - X(from) > 50 ? <T x={X(from) + 5} y={y + row / 2 + 3.5} s={9.5} w={800} c={ink}>{money(m)}</T> : null}
+    </g>
+  );
+  const ticks = Array.from({ length: Math.floor((a1 - a0) / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label="Each year's pay by age: saving, children, everyday spending and taxes">
-      {list.map((v) => <g key={v}><line x1={pl} x2={w} y1={Y(v)} y2={Y(v)} stroke={C.grid} strokeWidth={v ? 0.6 : 1} />
-        <text x={pl - 6} y={Y(v) + 3.5} textAnchor="end" className="rp-ax">{axis(v)}</text></g>)}
-      {M.map((y, i) => {
-        const x = pl + i * bw, acc = keys.map((_, j) => keys.slice(0, j).reduce((t, k) => t + y[k], 0));
-        return <g key={y.age}>{keys.map((k, j) => y[k] > 0.5 ? <rect key={k} x={x + bw * 0.12} width={bw * 0.76} y={Y(acc[j] + y[k])} height={Y(acc[j]) - Y(acc[j] + y[k])} fill={MONEY_PRINT[k]} /> : null)}
-          {(y.age - M[0].age) % every === 0 ? <text x={x + bw / 2} y={h - 5} textAnchor="middle" className="rp-ax">{y.age}</text> : null}</g>;
-      })}
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={"What each child costs a month, by your age, " + a0 + " to " + a1}>
+      {K.rows.map((r, i) => (
+        <g key={r.label}>
+          <T x={0} y={i * row + row / 2 + 4} s={11}>{r.label}</T>
+          {r.bands.map((b) => seg(b.from, b.to, b.monthly, b.early ? C.clay : C.sand, i * row, r.label + b.from, b.early ? C.white : C.ink))}
+        </g>
+      ))}
+      <line x1={0} x2={w} y1={K.rows.length * row + 1} y2={K.rows.length * row + 1} stroke={C.ink} strokeWidth={1} />
+      <T x={0} y={K.rows.length * row + row / 2 + 5} s={11} w={800}>Together</T>
+      {K.together.map((t) => seg(t.from, t.to, t.monthly, C.water, K.rows.length * row + 2, "t" + t.from, C.white))}
+      {ticks.map((t) => <text key={t} x={X(t)} y={h - 4} textAnchor={t === a1 ? "end" : "middle"} className="rp-ax">{t}</text>)}
     </svg>
   );
 }

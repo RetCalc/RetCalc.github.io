@@ -126,9 +126,12 @@ interface FrameProps {
   fadeIn?: boolean;
   /** The drawing; `hover` is the index under the pointer, for its markers. */
   children: (hover: number | null) => React.ReactNode;
+  /** Drawn to its own wider size and allowed to fill the card, past the
+      usual 900 units (the size's W should match the space it gets). */
+  wide?: boolean;
 }
 
-export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn, children }: FrameProps) {
+export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn, children, wide }: FrameProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const tipRef = useRef<HTMLDivElement>(null);
@@ -165,7 +168,7 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn,
 
   return (
     <div
-      className="chartwrap"
+      className={wide ? "chartwrap chartwrap-wide" : "chartwrap"}
       id={`chartWrap${id}`}
       ref={wrapRef}
       onMouseMove={(e) => probe(e.clientX, e.clientY)}

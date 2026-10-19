@@ -70,7 +70,8 @@ export interface SchedOpts {
 /** Whether the answers describe saving that changes. */
 export const hasChanges = (a: Answers) => children(a).length > 0 || (a.events || []).some((e) => e.kind !== "child");
 
-const ageWord = (n: number) => (n === 1 ? "one child" : n === 2 ? "two children" : n + " children");
+const NUM = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"];
+const ageWord = (n: number) => (n === 1 ? "one child" : (NUM[n] ?? n) + " children");
 /** What's going on at age `t`, in a stage's words. */
 export function labelAt(a: Answers, kids: Child[], t: number, ev: ChangeEvent[]): string {
   const born = kids.filter((c) => c.born <= t), home = born.filter((c) => t - c.born < 19);
@@ -81,7 +82,8 @@ export function labelAt(a: Answers, kids: Child[], t: number, ev: ChangeEvent[])
   else {
     const care = home.filter((c) => t - c.born < 6 && c.childcare);
     s = home.length === 1 ? (care.length ? "A child in childcare" : t - home[0].born < 6 ? "A young child" : "A child at school")
-      : care.length ? ageWord(home.length).replace(/^./, (x) => x.toUpperCase()) + ", " + (care.length === 1 ? "one in childcare" : "both in childcare")
+      : care.length ? ageWord(home.length).replace(/^./, (x) => x.toUpperCase()) + ", " + (care.length === 1 ? "one in childcare"
+        : care.length < home.length ? NUM[care.length] + " in childcare" : home.length === 2 ? "both in childcare" : "all in childcare")
         : home.every((c) => t - c.born >= 6) ? "School years" : ageWord(home.length).replace(/^./, (x) => x.toUpperCase());
   }
   // Part-time years and a spouse's pause set the saving outright, so they

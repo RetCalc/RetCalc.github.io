@@ -172,19 +172,21 @@ test("summary: a paycheck's parts add back to gross pay (the ribbon)", async () 
   near(S.inflow.trad + S.inflow.roth + S.inflow.brok + S.inflow.hsa + S.inflow.ef - S.inflow.match, lines, 0.02);
 });
 
-test("summary: each year's money adds up to the year's pay, and the children show where they cost", async () => {
+test("summary: what the children cost, child by child, and what it does to the balance", async () => {
   const { planSummary } = await import("../results");
   let p = seedAdvanced(seedPaycheck(plan()), null);
   p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), brokC: "400" } } };
-  const S = planSummary(seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 1, firstIn: 2 } }, null), null)!;
-  const M = S.money!, gross = S.pay.gross * S.p;
-  assert.equal(M.length, 31);
-  for (const y of M) near(y.taxes + y.spend + y.kids + y.save + y.left, gross, 1);
-  assert.equal(M[0].kids, 0);
-  near(M[2].kids, 30000);
-  // Saving cut from the 401(k) in childcare brings more tax.
-  assert.ok(M[2].taxes > M[0].taxes);
-  assert.ok(M[2].save < M[0].save);
+  const S = planSummary(seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2 } }, null), null)!;
+  const K = S.children!;
+  assert.equal(K.rows.length, 2);
+  // Child 1, born at 31: childcare to 36 at $2,500, then school at $1,500 to 49.
+  assert.deepEqual(K.rows[0].bands.map((b) => [b.from, b.to, b.monthly, b.early]), [[31, 37, 2500, true], [37, 50, 1500, false]]);
+  // Child 2 costs 20% less.
+  assert.equal(K.rows[1].bands[0].monthly, 2000);
+  near(K.total, K.rows.reduce((t, r) => t + r.bands.reduce((u, b) => u + b.monthly * 12 * (b.to - b.from), 0), 0), 1);
+  assert.deepEqual(K.peak, { age: 34, monthly: 4500 });
+  near(K.fromSaving + K.fromSpending, K.total, 1);
+  assert.ok(K.without > S.atRetire.total);
   // No milestones already passed.
   assert.ok(S.milestones.every((m) => m.age > S.age));
 });
