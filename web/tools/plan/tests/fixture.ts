@@ -4,9 +4,11 @@
    children planned. `node --import ./scripts/test-hooks.mjs tools/plan/tests/fixture.ts > plan.json` */
 import { BUDGET_DEFAULTS } from "@/tools/budget/model";
 import { paycheckInput, pcAmountKey, pcPlanApply, PC_STEPS } from "@/tools/budget/paycheck-math";
-import { TAX_DEFAULTS } from "@/tools/tax/model";
-import { seedAdvanced, seedPaycheck, seedStages, toolOf } from "../flow";
+import { seedAdvanced, seedStages, toolOf } from "../flow";
 import { NO_KIDS, PLAN_DEFAULTS, type PlanState } from "../model";
+
+/** The Start step's answers, in the Paycheck tab's fields. */
+export const START = { pcStatus: "s", pcGross: "95,000", pcFreq: "26", pcState: "IL" };
 
 const amounts: Record<string, string> = { "Rent / Mortgage": "1,800", Utilities: "200", "Internet & phone": "90", "Car payment": "350", "Car insurance": "120", Gas: "150",
   "Health insurance": "150", Groceries: "500", "Eating out": "300", Subscriptions: "45", Travel: "3,000", Gifts: "800" };
@@ -14,11 +16,10 @@ export function samplePlan(stages = true): PlanState {
   let p: PlanState = {
     ...PLAN_DEFAULTS, age: "29", retire: "60", freq: "26",
     tools: {
-      tax: { ...TAX_DEFAULTS, gross: "95,000", status: "s", state: "IL", itemize: true, k401: "6,000" },
-      budget: { ...BUDGET_DEFAULTS, rows: BUDGET_DEFAULTS.rows.map((r) => (amounts[r.desc] ? { ...r, amount: amounts[r.desc] } : r)) },
+      // As Start asks it: single, $95,000, every two weeks, in Illinois.
+      budget: { ...BUDGET_DEFAULTS, ...START, rows: BUDGET_DEFAULTS.rows.map((r) => (amounts[r.desc] ? { ...r, amount: amounts[r.desc] } : r)) },
     },
   };
-  p = seedPaycheck(p);
   const b = toolOf(p, "budget"), pi = paycheckInput(b, "IL"), { roth, amounts: a } = pcPlanApply(pi, "usual");
   p = { ...p, tools: { ...p.tools, budget: { ...b, ...Object.fromEntries(PC_STEPS.map((x) => [pcAmountKey(x), String(Math.round(a[x] * 100) / 100)])),
     pcMatchRoth: roth.match, pcK401maxRoth: roth.k401max, pcIraRoth: roth.rothIra, pcPlan: "usual" } } };

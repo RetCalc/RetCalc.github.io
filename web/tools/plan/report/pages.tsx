@@ -282,11 +282,11 @@ function Method({ R, p }: { R: PlanReport; p: Page }) {
 export function planPages(S: PlanSummary): Page[] {
   const list: Omit<Page, "n">[] = [
     { id: "cover", title: "Cover" },
-    { id: "pay", title: "Your paycheck", because: "Step 1: what you take home" },
-    ...spendChunks(S).map((_, i) => ({ id: "spend" + i, title: i ? "Your spending, continued" : "Your spending", because: "Step 2: what you spend" })),
-    { id: "save", title: "Your saving", because: "Step 3: where each paycheck goes" },
-    { id: "road", title: "The road to retirement", because: "Step 4: where that gets you" },
-    ...(S.stages ? Array.from({ length: stagePages(S) }, (_, i) => ({ id: "stages" + i, title: i ? "Your life stages, continued" : "Your life stages", because: "Step 5: children and other changes" })) : []),
+    { id: "pay", title: "Your paycheck", because: "Step 2: your pay and its taxes" },
+    ...spendChunks(S).map((_, i) => ({ id: "spend" + i, title: i ? "Your spending, continued" : "Your spending", because: "Step 1: what you spend" })),
+    { id: "save", title: "Your saving", because: "Step 2: where each paycheck goes" },
+    { id: "road", title: "The road to retirement", because: "Step 3: where that gets you" },
+    ...(S.stages ? Array.from({ length: stagePages(S) }, (_, i) => ({ id: "stages" + i, title: i ? "Your life stages, continued" : "Your life stages", because: "Step 4: children and other changes" })) : []),
     { id: "method", title: "Assumptions and method" },
   ];
   return list.map((p, i) => ({ ...p, n: i + 1 }));

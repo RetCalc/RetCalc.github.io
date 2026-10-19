@@ -4,7 +4,7 @@
    Every figure comes from the tools' own code (paycheckRun, budgetGroups,
    advancedCompute, stagesCompute); the balance by account is the same run
    once per account, as Stages does for its split. No React. */
-import { projectSeries } from "@/lib/engine/typed";
+import { NEWEST_YEAR, projectSeries } from "@/lib/engine/typed";
 import type { Series, Stage } from "@/lib/engine/types";
 import { parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
@@ -203,7 +203,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   const groups = Object.entries(g).map(([group, yr]) => ({ group, yr })).sort((x, y) => y.yr - x.yr);
   const A = pi.amounts, R = pi.roth;
   const AP0 = advancedPlan(adv, household), todayMonthly = monthlyByAccount(AP0, AP0.p.period);
-  const bc = budgetCompute(b), tax = toolOf(p, "tax");
+  const bc = budgetCompute(b);
   const budgetLines = b.rows.filter((row) => rowRole(b, row) !== "save" && annualize(row) > 0).map((row) => ({ group: row.group || "Custom", desc: row.desc, yr: annualize(row), freq: row.freq }));
   const FREQ: Record<number, string> = { 52: "Every week", 26: "Every two weeks", 24: "Twice a month", 12: "Monthly" };
   const inflow = {
@@ -218,7 +218,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       takeHome: r.deposit, spend: r.spend, saved: r.saved, left: r.left, match: r.match, stateName: r.stateName,
     },
     lines, spendYear: bc.spentYr, groups, todayMonthly, budgetLines, ef: { months: bc.ef, target: bc.efTarget },
-    facts: { status: pi.two ? "Married, two incomes" : pi.status === "m" ? "Married, filing jointly" : "Single", stateName: r.stateName, taxYear: tax.year,
+    facts: { status: pi.two ? "Married, two incomes" : pi.status === "m" ? "Married, filing jointly" : "Single", stateName: r.stateName, taxYear: String(NEWEST_YEAR),
       freqName: FREQ[pi.pays[0]] ?? "Every two weeks", twoIncomes: pi.two },
     atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate }, made,
     madeReal: (() => {

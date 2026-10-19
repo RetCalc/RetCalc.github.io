@@ -8,19 +8,19 @@ import { BUDGET_DEFAULTS } from "@/tools/budget/model";
 import { stagesCompute } from "@/tools/stages/model";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { coverStage, kidList, kidStages, monthlyByAccount, stagesFromKids } from "../kids";
-import { freedOf, paycheckOf, planAges, seedAdvanced, seedPaycheck, seedStages, strip, taxesFromPaycheck, toolOf } from "../flow";
+import { freedOf, fromOldTaxes, paycheckOf, planAges, seedAdvanced, seedStages, startDone, strip, taxOfPaycheck, toolOf } from "../flow";
 import { NO_KIDS, PLAN_DEFAULTS, type PlanState } from "../model";
 
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 
-/** Someone 29, retiring at 60, $95,000, paid every two weeks, in Illinois,
-    putting $6,000 a year into a traditional 401(k) today. */
+/** Someone 29, retiring at 60, $95,000, paid every two weeks, in Illinois
+    (as Start asks it), putting $6,000 a year into a traditional 401(k)
+    today: $219.23 a check on the match line (6% of pay), the rest beyond it. */
 function plan(patch: Partial<PlanState> = {}): PlanState {
   return {
     ...PLAN_DEFAULTS, age: "29", retire: "60", freq: "26",
     tools: {
-      tax: { ...TAX_DEFAULTS, gross: "95,000", status: "s", state: "IL", itemize: true, k401: "6,000" },
-      budget: { ...BUDGET_DEFAULTS, rows: BUDGET_DEFAULTS.rows.map((r) => (r.desc === "Rent / Mortgage" ? { ...r, amount: "1,800" } : r.desc === "Groceries" ? { ...r, amount: "500" } : r)) },
+      budget: { ...BUDGET_DEFAULTS, pcStatus: "s", pcGross: "95,000", pcFreq: "26", pcState: "IL", pcMatch: "219.23", pcK401max: "11.54", rows: BUDGET_DEFAULTS.rows.map((r) => (r.desc === "Rent / Mortgage" ? { ...r, amount: "1,800" } : r.desc === "Groceries" ? { ...r, amount: "500" } : r)) },
     },
     ...patch,
   };
@@ -32,8 +32,10 @@ test("ages: both needed, retiring after today", () => {
   assert.equal(planAges(plan({ age: "" })), null);
 });
 
-test("Paycheck is filled from Taxes: the facts, and the first time today's 401(k) up to the match first", () => {
-  const p = seedPaycheck(plan());
+test("a plan saved when Taxes was a step: its answers fill the paycheck once, today's 401(k) up to the match first", () => {
+  const old: PlanState = { ...PLAN_DEFAULTS, age: "29", retire: "60", freq: "26",
+    tools: { tax: { ...TAX_DEFAULTS, gross: "95,000", status: "s", state: "IL", itemize: true, k401: "6,000" } } };
+  const p = fromOldTaxes(old);
   const b = toolOf(p, "budget");
   assert.equal(b.pcGross, "95,000");
   assert.equal(b.pcStatus, "s");
@@ -42,30 +44,32 @@ test("Paycheck is filled from Taxes: the facts, and the first time today's 401(k
   // $6,000 a year is $230.77 a check; the match line holds up to 6% of pay ($219.23), the rest goes beyond it.
   near(parseNum(b.pcMatch), (0.06 * 95000) / 26);
   near(parseNum(b.pcMatch) + parseNum(b.pcK401max), 6000 / 26);
-  // Nothing changed: nothing is filled again, so the lines stay as moved.
+  // Once: what's typed on the paycheck afterwards stays.
   const moved = { ...p, tools: { ...p.tools, budget: { ...b, pcBrok: "300" } } };
-  assert.equal(seedPaycheck(moved), moved);
-  // A raise in Taxes carries the pay over and leaves the lines alone.
-  const raise = { ...moved, tools: { ...moved.tools, tax: { ...toolOf(moved, "tax"), gross: "105,000" } } };
-  const b2 = toolOf(seedPaycheck(raise), "budget");
-  assert.equal(b2.pcGross, "105,000");
-  assert.equal(b2.pcBrok, "300");
-  assert.equal(b2.pcMatch, b.pcMatch);
+  assert.equal(fromOldTaxes(moved), moved);
+  // And a plan begun on the new Start is left alone.
+  const fresh = plan();
+  assert.equal(fromOldTaxes(fresh), fresh);
 });
 
-test("Taxes, from the paycheck as planned: the same take-home both ways", () => {
-  const p = taxesFromPaycheck(seedPaycheck(plan()));
-  const s = strip(p)!, pc = paycheckOf(p)!;
-  near(s.takeHome, pc.r.deposit);
-  const t = toolOf(p, "tax");
+test("Income Tax, from the paycheck as planned (Copy into my tools): the 401(k) by kind", () => {
+  const p = plan(), t = taxOfPaycheck(p)!;
   assert.equal(t.itemize, true);
   near(parseNum(t.k401), 6000, 0.2);
-  // And it doesn't fill the paycheck again: the facts already match.
-  assert.equal(seedPaycheck(p), p);
+  assert.equal(t.state, "IL");
+  // The running figures are the paycheck's.
+  near(strip(p)!.takeHome, paycheckOf(p)!.r.deposit);
+});
+
+test("Start is done with your ages and your pay", () => {
+  assert.equal(startDone(plan()), true);
+  assert.equal(startDone(plan({ age: "" })), false);
+  const noPay = plan();
+  assert.equal(startDone({ ...noPay, tools: { ...noPay.tools, budget: { ...toolOf(noPay, "budget"), pcGross: "" } } }), false);
 });
 
 test("Your plan is filled from the paycheck: saving by account, the years, and spending as the target", () => {
-  const p = seedAdvanced(seedPaycheck(plan()), null);
+  const p = seedAdvanced(plan(), null);
   const a = toolOf(p, "advanced");
   assert.equal(a.acOn, true);
   assert.equal(a.years, "31");
@@ -110,7 +114,7 @@ test("covering a stage: the brokerage first, typed amounts stand, the rest from 
 });
 
 test("covering a stage from pre-tax accounts: a cut frees less than itself, and can cost the match", () => {
-  const p = seedAdvanced(seedPaycheck(plan()), null), F = freedOf(p), pc = paycheckOf(p)!;
+  const p = seedAdvanced(plan(), null), F = freedOf(p), pc = paycheckOf(p)!;
   const today = monthlyByAccount(advancedPlan(toolOf(p, "advanced"), null), "Bi-Weekly");
   // $200 a month from the traditional 401(k): more than $200 is cut, and the freed pay is exactly $200.
   const c = coverStage(200, { ...today, brok: 0, roth: 0 }, {}, F);
@@ -133,7 +137,7 @@ test("covering a stage from pre-tax accounts: a cut frees less than itself, and 
 });
 
 test("Life stages: one per children's stage, saving less what each stage takes, the years adding up", () => {
-  let p = seedAdvanced(seedPaycheck(plan()), null);
+  let p = seedAdvanced(plan(), null);
   const adv = toolOf(p, "advanced");
   // A brokerage line to take from: $400 a check.
   p = { ...p, tools: { ...p.tools, advanced: { ...adv, brokC: "400" } } };
@@ -159,7 +163,7 @@ test("Life stages: one per children's stage, saving less what each stage takes, 
 
 test("summary: the balance by account adds up to the plan's own figure, with Advanced or Stages", async () => {
   const { planSummary } = await import("../results");
-  let p = seedAdvanced(seedPaycheck(plan()), null);
+  let p = seedAdvanced(plan(), null);
   p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), tradBal: "20,000", rothBal: "5,000", brokC: "200" } } };
   const A = planSummary(p, null)!;
   assert.equal(A.retire, 60);
@@ -186,7 +190,7 @@ test("summary: the balance by account adds up to the plan's own figure, with Adv
 
 test("summary: a paycheck's parts add back to gross pay (the ribbon)", async () => {
   const { planSummary } = await import("../results");
-  let p = seedAdvanced(seedPaycheck(plan()), null);
+  let p = seedAdvanced(plan(), null);
   p = { ...p, tools: { ...p.tools, budget: { ...toolOf(p, "budget"), pcBrok: "250", pcRothIra: "150", pcHsa: "80", pcEfOn: true, pcEf: "50" } } };
   const S = planSummary(seedAdvanced(p, null), null)!, y = S.pay;
   const lines = S.lines.reduce((t, l) => t + l.v, 0);
@@ -196,7 +200,7 @@ test("summary: a paycheck's parts add back to gross pay (the ribbon)", async () 
 
 test("summary: what the children cost, child by child, and what it does to the balance", async () => {
   const { planSummary } = await import("../results");
-  let p = seedAdvanced(seedPaycheck(plan()), null);
+  let p = seedAdvanced(plan(), null);
   p = { ...p, tools: { ...p.tools, advanced: { ...toolOf(p, "advanced"), brokC: "400" } } };
   const S = planSummary(seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2 } }, null), null)!;
   const K = S.children!;
@@ -213,14 +217,14 @@ test("summary: what the children cost, child by child, and what it does to the b
   assert.ok(S.milestones.every((m) => m.age > S.age));
 });
 
-test("filing status and state come from Taxes into Your plan, every time they change, not from the household", () => {
-  const married = (p: PlanState): PlanState => ({ ...p, tools: { ...p.tools, tax: { ...toolOf(p, "tax"), status: "m", gross2: "60,000", state: "CA" } } });
+test("filing status and state come from Start into Your plan, every time they change, not from the household", () => {
+  const married = (p: PlanState): PlanState => ({ ...p, tools: { ...p.tools, budget: { ...toolOf(p, "budget"), pcStatus: "m2", pcGross2: "60,000", pcState: "CA" } } });
   const house = { status: "s", state: "TX" } as unknown as Parameters<typeof seedAdvanced>[1];
-  let p = seedAdvanced(seedPaycheck(married(plan())), house);
+  let p = seedAdvanced(married(plan()), house);
   assert.deepEqual([toolOf(p, "advanced").acStatus, toolOf(p, "advanced").acState], ["m", "CA"]);
-  // Back to Taxes: single, in Illinois. The paycheck and then Your plan follow.
-  p = { ...p, tools: { ...p.tools, tax: { ...toolOf(p, "tax"), status: "s", gross2: "0", state: "IL" } } };
-  p = seedAdvanced(seedPaycheck(p), house);
+  // Back to Start: single, in Illinois. Your plan follows.
+  p = { ...p, tools: { ...p.tools, budget: { ...toolOf(p, "budget"), pcStatus: "s", pcGross2: "", pcState: "IL" } } };
+  p = seedAdvanced(p, house);
   assert.deepEqual([toolOf(p, "advanced").acStatus, toolOf(p, "advanced").acState], ["s", "IL"]);
 });
 
@@ -232,7 +236,7 @@ test("children spaced in half years: 2.5 years apart stays 2.5, and stages can s
   assert.equal(ageSpan(31, 34), "31 to 33");
   assert.equal(ageSpan(33.5, 36), "33½ to 36");
   // Built into Stages: the years add up, a stage of 2.5 years among them.
-  let p = seedAdvanced(seedPaycheck(plan()), null);
+  let p = seedAdvanced(plan(), null);
   p = seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 2, firstIn: 2, spacing: 2.5 } }, null);
   const st = toolOf(p, "stages").stages;
   near(st.reduce((t, s) => t + parseNum(s.years), 0), 31);

@@ -29,6 +29,8 @@ import { SERIES } from "@/lib/hues";
 import { STATE_OPTIONS } from "@/lib/states";
 import { cn } from "@/lib/utils";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
+import { BracketsCard, StateRulesCard } from "@/tools/tax/TaxTables";
+import { NEWEST_YEAR, yearData } from "@/lib/engine/typed";
 import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
 import { STAGES_DEFAULTS } from "@/tools/stages/model";
 import { useHousehold } from "@/components/household/HouseholdProvider";
@@ -94,31 +96,40 @@ export function Paycheck({ s, set, setState }: {
           <Card>
             <CardHeader><CardTitle>{two ? "Your paychecks" : "Your paycheck"}</CardTitle></CardHeader>
             <CardContent>
+              {/* Filing status first: it decides whether there's one pay to
+                  ask for or two. Switching to two incomes starts the HSA on
+                  one each: two earners usually each have their own plan. */}
+              <SelectField id="pcStatus" label="Filing status" value={s.pcStatus}
+                onChange={(v) => setState((c) => ({ ...c, pcStatus: v, ...(v === "m2" && c.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}) }))}>
+                <option value="s">Single</option>
+                <option value="m">Married, one income</option>
+                <option value="m2">Married, two incomes</option>
+              </SelectField>
               {two ? (
+                <>
+                  <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                    <MoneyField id="pcGross" label="Your gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
+                    <MoneyField id="pcGross2" label="Spouse's gross pay, per year" value={s.pcGross2} onValueChange={set("pcGross2")} />
+                  </div>
+                  {/* Each person's own schedule: it sets their check in the itemized paycheck. */}
+                  <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                    <SelectField id="pcFreq" label="You're paid" value={s.pcFreq} onChange={set("pcFreq")}>
+                      {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </SelectField>
+                    <SelectField id="pcFreq2" label="Your spouse is paid" value={s.pcFreq2} onChange={set("pcFreq2")}>
+                      {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </SelectField>
+                  </div>
+                  <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up; the itemized paycheck shows each of your checks. Taxed together as a joint return.</div>
+                </>
+              ) : (
                 <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                  <MoneyField id="pcGross" label="Your gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
-                  <MoneyField id="pcGross2" label="Spouse's gross pay, per year" value={s.pcGross2} onValueChange={set("pcGross2")} />
-                </div>
-              ) : <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />}
-              <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                {/* Switching to two incomes starts the HSA on one each: two earners usually each have their own plan. */}
-                <SelectField id="pcStatus" className={two ? "col-span-full" : undefined} label="Filing status" value={s.pcStatus}
-                  onChange={(v) => setState((c) => ({ ...c, pcStatus: v, ...(v === "m2" && c.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}) }))}>
-                  <option value="s">Single</option>
-                  <option value="m">Married, one income</option>
-                  <option value="m2">Married, two incomes</option>
-                </SelectField>
-                <SelectField id="pcFreq" label={two ? "You're paid" : "Paid"} value={s.pcFreq} onChange={set("pcFreq")}>
-                  {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </SelectField>
-                {/* Each person's own schedule: it sets their check in the itemized paycheck. */}
-                {two ? (
-                  <SelectField id="pcFreq2" label="Your spouse is paid" value={s.pcFreq2} onChange={set("pcFreq2")}>
+                  <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
+                  <SelectField id="pcFreq" label="Paid" value={s.pcFreq} onChange={set("pcFreq")}>
                     {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </SelectField>
-                ) : null}
-              </div>
-              {two ? <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up; the itemized paycheck shows each of your checks. Taxed together as a joint return.</div> : null}
+                </div>
+              )}
               <SelectField id="pcState" label="State" value={pi.state} onChange={set("pcState")}>
                 {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
               </SelectField>
@@ -215,6 +226,12 @@ export function Paycheck({ s, set, setState }: {
             store.write("tax", taxFromPaycheck(store.read("tax", TAX_DEFAULTS), pi, r));
             go("/incometax");
           }} />
+        {/* The year's taxes on this paycheck in full: the federal brackets,
+            then the state's rules, as Income Tax ends. */}
+        {empty ? null : <>
+          <BracketsCard id="pcBrackets" bands={r.bands} fold />
+          <StateRulesCard id="pcStateRules" state={pi.state} status={pi.status} year={NEWEST_YEAR} figuresFrom={yearData().states.year} />
+        </>}
       </div>
     </>
   );
@@ -479,7 +496,8 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   sec("Taxes");
   ln("item", "Federal income tax", -r.fed, undefined, each("fed"));
   ln("item", (r.stateName || "State") + " income tax", -r.state, r.stateAddBack > 0 ? "keeps " + money(r.stateAddBack) + "/yr of pre-tax in its base" : undefined, each("state"));
-  ln("item", "Social Security and Medicare", -r.fica, undefined, each("fica"));
+  ln("item", "Social Security", -r.ss, undefined, each("ss"));
+  ln("item", "Medicare", -r.med, undefined, each("med"));
   if (r.roth401) {
     sec("After tax");
     ln("item", "Roth 401(k)", -r.roth401, undefined, each("roth401")); k401Tip(r.roth401s);
@@ -509,10 +527,8 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
         <CardTitle>Itemized paycheck</CardTitle>
         <CardAction>
           <div className="flex flex-wrap justify-end gap-2">
-            {/* In a walkthrough, Income Tax is its first step. */}
-            {scope
-              ? <Button variant="outline" size="sm" id="pcToTax" title="Back to step 1, Taxes: the year's taxes on this paycheck in full" onClick={openTax}>See the full tax breakdown</Button>
-              : <Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>}
+            {/* A walkthrough has the tax tables below and stays put. */}
+            {scope ? null : <Button variant="outline" size="sm" id="pcToTax" title="Open Income Tax with this pay, state and these pre-tax deductions" onClick={openTax}>Open in Income Tax</Button>}
             <CsvButton id="pcCsv" label="itemized paycheck" title="Download the itemized paycheck as a CSV" rows={csv} filename="retcalc-paycheck.csv" />
           </div>
         </CardAction>

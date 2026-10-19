@@ -24,15 +24,14 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { PRE_ROWS, TAX_DEF, itemized, runTax, taxInput, taxYears } from "./model";
 import { PreTaxDialog } from "./PreTaxDialog";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
-import { stateGaps, stateRuleRows } from "./stateRules";
+import { BracketsCard, StateRulesCard, type Band } from "./TaxTables";
 import { useShareKit } from "@/components/shell/share";
 import { taxShare } from "./share";
 import { SERIES, baseColor, hatchClass, hatched } from "@/lib/hues";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Donut, type DonutPart } from "@/components/charts/Donut";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDownIcon, ChevronRightIcon, CircleAlertIcon } from "lucide-react";
+import { ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InputGroupButton } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
@@ -68,7 +67,7 @@ export function Tax() {
   const leave = () => {
     deactivate.current = setTimeout(() => setActive(null), 60);
   };
-  const tableRef = useRef<HTMLTableElement>(null), bucketRef = useRef<HTMLTableElement>(null), bracketRef = useRef<HTMLTableElement>(null), rulesRef = useRef<HTMLTableElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null), bucketRef = useRef<HTMLTableElement>(null);
 
   // The household's filing status, state and incomes.
   useHouseholdFill("tax", s, setState, (h, c) => ({
@@ -262,7 +261,35 @@ export function Tax() {
                 <Segmented id="segTxMode" size="fill" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
               </div>
 
-              <GroupHead first>Income</GroupHead>
+              {/* Your return first: filing status decides whether there is
+                  one income to ask for or two. */}
+              <GroupHead first>Your return</GroupHead>
+              <Field id="txYear" wrapId="txYearWrap" hidden={years.length < 2} label="Tax year">
+                <NativeSelect id="txYear" className="w-full" value={String(year)} onChange={(e) => set("year")(e.target.value)}>
+                  {years.map((y) => <NativeSelectOption key={y} value={String(y)}>{y}</NativeSelectOption>)}
+                </NativeSelect>
+                {stateLag ? <div className="hint" id="txYearNote">State figures are {stateYear}&apos;s until the states publish {year}&apos;s.</div> : null}
+              </Field>
+              {/* Two-up where the answers are short; the selects take the
+                  full width on a phone, where half would cut their text. */}
+              <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                <SelectField id="txStatus" label="Filing status" value={s.status}
+                  // "Both spouses" only means anything on a joint return.
+                  onChange={(v) => setState((c) => ({ ...c, status: v, seniors: v !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
+                  <option value="s">Single</option>
+                  <option value="m">Married filing jointly</option>
+                </SelectField>
+                <SelectField id="txSeniors" wrapId="txSeniorWrap" hidden={!ret} label={<Tipped text="Age 65 or older" k="senior" />} value={s.seniors} onChange={set("seniors")}>
+                  <option value="0">No</option>
+                  <option value="1">{joint ? "One spouse" : "Yes"}</option>
+                  <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
+                </SelectField>
+                <SelectField id="txState" className={ret ? "col-span-full" : undefined} label="State" value={s.state} onChange={set("state")}>
+                  {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+                </SelectField>
+              </div>
+
+              <GroupHead>Income</GroupHead>
               <div id="txGrossWrap" className={split ? "two bottomalign max-sm:grid-cols-2" : undefined} hidden={ret}>
                 <MoneyField id="txGross" labelId="txGrossLabel" label={split ? "Your gross income" : "Gross income"} value={s.gross} onValueChange={set("gross")} />
                 <MoneyField id="txGross2" wrapId="txGross2Wrap" hidden={!split} label="Spouse's gross income" value={s.gross2} onValueChange={set("gross2")} />
@@ -296,30 +323,8 @@ export function Tax() {
                 </div>
               </div>
 
-              <GroupHead>Your return</GroupHead>
-              <Field id="txYear" wrapId="txYearWrap" hidden={years.length < 2} label="Tax year">
-                <NativeSelect id="txYear" className="w-full" value={String(year)} onChange={(e) => set("year")(e.target.value)}>
-                  {years.map((y) => <NativeSelectOption key={y} value={String(y)}>{y}</NativeSelectOption>)}
-                </NativeSelect>
-                {stateLag ? <div className="hint" id="txYearNote">State figures are {stateYear}&apos;s until the states publish {year}&apos;s.</div> : null}
-              </Field>
-              {/* Two-up where the answers are short; the selects take the
-                  full width on a phone, where half would cut their text. */}
+              <GroupHead>Deductions</GroupHead>
               <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                <SelectField id="txStatus" label="Filing status" value={s.status}
-                  // "Both spouses" only means anything on a joint return.
-                  onChange={(v) => setState((c) => ({ ...c, status: v, seniors: v !== "m" && c.seniors === "2" ? "1" : c.seniors }))}>
-                  <option value="s">Single</option>
-                  <option value="m">Married filing jointly</option>
-                </SelectField>
-                <SelectField id="txSeniors" wrapId="txSeniorWrap" hidden={!ret} label={<Tipped text="Age 65 or older" k="senior" />} value={s.seniors} onChange={set("seniors")}>
-                  <option value="0">No</option>
-                  <option value="1">{joint ? "One spouse" : "Yes"}</option>
-                  <option value="2" hidden={!joint} disabled={!joint}>Both spouses</option>
-                </SelectField>
-                <SelectField id="txState" className={ret ? "col-span-full" : undefined} label="State" value={s.state} onChange={set("state")}>
-                  {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-                </SelectField>
                 {/* Normal mode can break the figure down by kind in a pop-up;
                     once it is, the field shows the total and opens it. */}
                 {itemized(s) ? (
@@ -506,44 +511,8 @@ export function Tax() {
           ) : null}
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Federal brackets, and what you pay in each</CardTitle><CardAction><CsvButton table={bracketRef} label="Federal brackets, and what you pay in each" /></CardAction></CardHeader>
-          <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
-            <table id="txBrackets" ref={bracketRef}>
-              <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
-              <tbody>
-                {(R.bands as { rate: number; lo: number; hi: number; amount: number; tax: number }[]).map((b) => (
-                  <tr key={b.rate} className={b.amount > 0 ? undefined : "text-muted-foreground"}>
-                    <td>{pctStr(b.rate, 0)}</td><td>{money(b.lo) + (b.hi === Infinity ? " and up" : " – " + money(b.hi))}</td><td>{money(b.amount)}</td><td>{money(b.tax)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
-        {/* The state's rules fold behind their title; what the figures leave
-            out stays in view under them. */}
-        <Collapsible className="min-w-0" render={<Card />}>
-          <CardHeader>
-            <CardTitle><CollapsibleTrigger>State rules, and what went into the figure above<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-            <CardDescription id="txStateRuleName">{(STATE_OPTIONS.find((o) => o.code === s.state)?.name ?? "") + (stateLag ? ", by " + stateYear + "'s state rules" : "")}</CardDescription>
-            <CardAction><CsvButton table={rulesRef} label="State rules, and what went into the figure above" /></CardAction>
-          </CardHeader>
-          <CollapsibleContent keepMounted>
-            <div id="txStateRuleWrap">
-              <table id="txStateRules" ref={rulesRef}>
-                <tbody>
-                  {(stateRuleRows(s.state, s.status, year) as [string, string][]).map(([k, v]) => (
-                    <tr key={k}><td className="whitespace-nowrap font-semibold">{k}</td><td>{v}</td></tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CollapsibleContent>
-          <div className="mcnote" id="txStateGaps"><b>Not included in the figures above.</b> {stateGaps(s.state)}</div>
-        </Collapsible>
+        <BracketsCard id="txBrackets" bands={R.bands as Band[]} />
+        <StateRulesCard id="txStateRules" state={s.state} status={s.status} year={year} figuresFrom={stateYear} />
       </div>
     </div>
   );

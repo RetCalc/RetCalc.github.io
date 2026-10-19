@@ -207,7 +207,12 @@ export function pcCap(pi: PcInput, s: PcStep, a: PcAmounts): number {
     fund's is only where Fill stops). */
 export const pcHasLimit = (s: PcStep) => s !== "ef" && s !== "brok";
 
-export interface PcPerson { gross: number; k401: number; roth401: number; hsa: number; health: number; fed: number; state: number; fica: number; deposit: number }
+export interface PcPerson { gross: number; k401: number; roth401: number; hsa: number; health: number; fed: number; state: number; fica: number; deposit: number;
+  /** Their FICA in its two parts: Social Security, and Medicare (with their share of the extra 0.9%). */
+  ss: number; med: number }
+
+/** One federal bracket, for a year: what of the taxable income falls in it, and its tax. */
+export interface PcBand { rate: number; lo: number; hi: number; amount: number; tax: number }
 
 export interface PcRun {
   /** Gross pay a period: both together, and each person's. */
@@ -217,6 +222,11 @@ export interface PcRun {
   k401s: [number, number]; roth401s: [number, number]; hsas: [number, number]; healths: [number, number];
   k401: number; roth401: number; hsa: number; health: number;
   fed: number; state: number; fica: number; taxes: number;
+  /** FICA in its parts, per period: Social Security, Medicare (the extra
+      0.9% on high pay included). */
+  ss: number; med: number;
+  /** The federal brackets, and the taxable income they're figured on, a year. */
+  bands: PcBand[]; fedTaxable: number;
   deposit: number; spend: number; toAssign: number; ef: number; rothIra: number; brok: number;
   /** The IRA line when traditional (else 0), and the part of it the
       deduction allows, per period, both of you together. */
@@ -251,7 +261,7 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
     // In a 401(k) at work, traditional or Roth, is what phases out the IRA deduction.
     ded: [0, 1].map((i) => ({ k401: k401s[i] * p, ira: iras[i] * p, hsa: hsas[i] * p, health: healths[i] * p, other: 0,
       covered: sp.match[i] + sp.k401max[i] > 0 })),
-  }) as { federal: number; state: number; fica: number; ss1: number; ss2: number; addl: number; stateName: string;
+  }) as { federal: number; state: number; fica: number; ss1: number; ss2: number; addl: number; stateName: string; bands: PcBand[]; fedTaxable: number;
     preTax: { addBack: number; ficaOff: number[]; magi: number; people: { iraDed: number }[] } | null };
   const gross1 = pi.gross / p, gross2 = pi.gross2 / p, check = gross1 + gross2;
   const sum = (x: number[]) => x[0] + x[1];
@@ -272,12 +282,13 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const fShare = (i: number) => (ficaWage[0] + ficaWage[1] > 0 ? ficaWage[i] / (ficaWage[0] + ficaWage[1]) : 0);
   const people = [0, 1].map((i): PcPerson => {
     const g = grosses[i] / p, f = R.federal * tShare(i) / p, st = R.state * tShare(i) / p;
-    const fc = ((i ? R.ss2 : R.ss1) + ficaWage[i] * medRate + R.addl * fShare(i)) / p;
-    return { gross: g, k401: k401s[i], roth401: roth401s[i], hsa: hsas[i], health: healths[i], fed: f, state: st, fica: fc,
+    const ss = (i ? R.ss2 : R.ss1) / p, med = (ficaWage[i] * medRate + R.addl * fShare(i)) / p, fc = ss + med;
+    return { gross: g, k401: k401s[i], roth401: roth401s[i], hsa: hsas[i], health: healths[i], fed: f, state: st, fica: fc, ss, med,
       deposit: g - k401s[i] - roth401s[i] - hsas[i] - healths[i] - f - st - fc };
   });
   return {
     check, gross1, gross2, k401s, roth401s, hsas, healths, k401, roth401, hsa, health, fed, state, fica, taxes: fed + state + fica,
+    ss: (R.ss1 + R.ss2) / p, med: fica - (R.ss1 + R.ss2) / p, bands: R.bands, fedTaxable: R.fedTaxable,
     deposit, spend, toAssign, ef: a.ef, rothIra: a.rothIra, brok: a.brok, left,
     iraTrad: iras[0] + iras[1], iraDed: ((R.preTax?.people[0].iraDed ?? 0) + (R.preTax?.people[1].iraDed ?? 0)) / p,
     magi: R.preTax?.magi ?? pi.gross + pi.gross2,

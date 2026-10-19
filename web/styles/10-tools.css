@@ -22,13 +22,13 @@
    which is right for every other table in the app and wrong for this one --
    these cells are sentences, so they take the same sans the rest of the site
    reads in. */
-#txStateRules td{text-align:left;vertical-align:top;font-family:var(--sans);
+.txrules td{text-align:left;vertical-align:top;font-family:var(--sans);
   font-variant-numeric:normal;letter-spacing:normal;font-size:12.5px;
   line-height:1.55;padding:11px 10px;color:var(--text)}
-#txStateRules td:first-child{width:158px;color:var(--dim);font-weight:600}
-#txStateRules tbody tr:last-child td{border-bottom:0}
-#txStateRules tbody tr:hover{background:transparent;box-shadow:none}
-#txStateRuleWrap{padding:4px 8px 0}
+.txrules td:first-child{width:158px;color:var(--dim);font-weight:600}
+.txrules tbody tr:last-child td{border-bottom:0}
+.txrules tbody tr:hover{background:transparent;box-shadow:none}
+.txrulewrap{padding:4px 8px 0}
 .bar{margin-bottom:11px;cursor:pointer;transition:opacity .15s}
 .bar .lbl{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;gap:10px}
 .bar .lbl b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}

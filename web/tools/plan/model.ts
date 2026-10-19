@@ -8,10 +8,10 @@ import { readStored, writeStored } from "@/lib/storage";
 
 export const PLAN_STORE = { key: "paycheck-plan", version: 1 } as const;
 
-/** The steps, in order. Life stages is optional. */
+/** The steps, in order. Life stages is optional. (Taxes was a step of its
+    own until Start asked the pay; a plan saved on it opens at Start.) */
 export const STEPS = [
   { id: "start", name: "Start" },
-  { id: "taxes", name: "Taxes" },
   { id: "budget", name: "Budget" },
   { id: "paycheck", name: "Paycheck" },
   { id: "plan", name: "Your plan" },
@@ -57,7 +57,7 @@ export interface PlanState {
   /** Your age and the age you'd like to retire, as typed. */
   age: string;
   retire: string;
-  /** Paychecks a year: 52, 26, 24 or 12. */
+  /** Paychecks a year: 52, 26, 24 or 12 (kept as the paycheck's own too). */
   freq: string;
   tools: Partial<Record<PlanTool, ToolInputs>>;
   /** What each later step was last filled in from, so a step is filled
