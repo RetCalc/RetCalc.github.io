@@ -13,6 +13,7 @@ import { CHAPTERS, route, type RouteFacts, type StepDecl } from "./route";
 import { RouteMap, ScoreCard, type RailPlan } from "./Rail";
 import type { GuideState } from "./store";
 import { rounded } from "./words";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 /* The top bar: the pace switch, the score in brief, the step count and the
@@ -86,6 +87,9 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
       <div className="gd-top-row">
         <div className="gd-title">Retirement Readiness Guide</div>
         {client ? <Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /> : null}
+        {/* The other walkthrough, a step away whatever card you're on. */}
+        <span className="text-note text-muted-foreground"><span className="max-sm:hidden">Just the numbers? </span>
+          <Button variant="quiet" size="inline" nativeButton={false} render={<Link href="/guide/paycheck" />}>Paycheck to Retirement<i className="arw" aria-hidden="true"></i></Button></span>
         <div className="gd-mini" id="gdMini">{client && s != null ? <>Score <b className="text-(color:--ink)" style={{ "--ink": color } as React.CSSProperties}>{s}</b></> : null}</div>
         <div className="gd-count" id="gdCount">{client ? count : ""}</div>
       </div>
