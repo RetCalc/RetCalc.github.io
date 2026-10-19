@@ -151,6 +151,13 @@
   --ds-loss: #f0716a;
   --ds-series-plan: var(--ds-amber);
   --ds-series-sky: #5aa9e6;
+  /* Accounts in one calm blue-gray, deepest to lightest (traditional,
+     Roth, brokerage, HSA): Paycheck to Retirement's climb, where amber is
+     the plan line alone. */
+  --ds-acct-1: #3f5f80;
+  --ds-acct-2: #5a7ea3;
+  --ds-acct-3: #7f9fbf;
+  --ds-acct-4: #a9c0d6;
   --ds-series-teal: #46b9a6;
   --ds-series-rose: #e0749b;
   --ds-series-lavender: #9c8ce0;
@@ -181,6 +188,10 @@
   --ds-gain: #17704a;
   --ds-loss: #b02f29;
   --ds-series-sky: #2f7fc4;
+  --ds-acct-1: #3e5c7c;
+  --ds-acct-2: #5c7fa3;
+  --ds-acct-3: #8aa7c4;
+  --ds-acct-4: #bccfe0;
   --ds-series-teal: #1f8f7e;
   --ds-series-rose: #c2467a;
   --ds-series-lavender: #7b68c9;

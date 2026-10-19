@@ -5,22 +5,23 @@
 
 import { useEffect } from "react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
-import { NumberField, SelectField } from "@/components/fields/Field";
+import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { planAges } from "./flow";
-import { setPlan, stepIndex, type PlanState, type StepId } from "./model";
+import { groupDigits } from "@/lib/format";
+import { STATE_OPTIONS } from "@/lib/states";
+import type { BudgetInputs } from "@/tools/budget/model";
+import { planAges, toolOf } from "./flow";
+import { STEPS, setPlan, stepIndex, type PlanState, type StepId } from "./model";
 
 const FREQS = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a month"], ["12", "Monthly"]] as const;
 
 /** What each step is for, and what to do in it. */
 const HEADS: Record<StepId, { title: string; lede: string; todo?: string }> = {
   start: { title: "Four questions, in your own numbers", lede: "What do you take home after taxes? What do you spend? Where should the rest go? And where does that get you by retirement?" },
-  taxes: { title: "What you take home", lede: "Your pay and the taxes on it, for the year and for each paycheck.",
-    todo: "Enter your pay, filing status and state. If you put money into a 401(k), HSA or IRA before tax today, add it under Pre-tax deductions; if you're not sure, leave it at $0." },
   budget: { title: "What you spend", lede: "Every bill and spending line, by the month or by the year. Saving isn't spending: that comes next.",
     todo: "Fill in the lines that apply, add your own with the + on a group, and remove what you don't need." },
   paycheck: { title: "Where each paycheck goes", lede: "Your paycheck from the top: taxes, your budget, and what's left for saving, account by account.",
-    todo: "Filled in from your taxes, with what you save today as the starting lines. Pick a plan, or move each slider, until nothing's left unassigned. Every change reruns the taxes." },
+    todo: "Start with what you put in today: your 401(k), HSA and IRA. Then pick a plan, or move each slider, until nothing's left unassigned. Every change reruns the taxes, and the itemized paycheck and the tax tables under it follow." },
   plan: { title: "Where that gets you", lede: "Your saving by account, carried over from your paycheck, grown to the age you'd like to retire.",
     todo: "Add what you've saved so far in each account under Accounts, and check the return and inflation. The target is what you spend today; change it to what you'll want in retirement." },
   stages: { title: "Life stages", lede: "Saving changes over a lifetime. Stages splits the years into stretches, each with its own saving.",
@@ -33,7 +34,7 @@ export function StepHead({ step }: { step: StepId }) {
   const h = HEADS[step], n = stepIndex(step);
   return (
     <div className="col-span-full -mb-1">
-      {n > 0 ? <div className="text-label text-muted-foreground">Step {n} of 6{step === "stages" ? ", optional" : ""}</div> : null}
+      {n > 0 ? <div className="text-label text-muted-foreground">Step {n} of {STEPS.length - 1}{step === "stages" ? ", optional" : ""}</div> : null}
       <h2 className="m-0 mt-0.5 text-xl font-semibold">{h.title}</h2>
       <p className="m-0 mt-1 max-w-copy text-muted-foreground">{h.lede}</p>
       {h.todo ? <p className="m-0 mt-2 max-w-copy text-note">{h.todo}</p> : null}
@@ -41,20 +42,34 @@ export function StepHead({ step }: { step: StepId }) {
   );
 }
 
-/** Start: your age, when you'd like to retire, and how often you're paid,
-    from the household profile the first time. */
+/** Start: your age and when you'd like to retire, then your filing status,
+    pay (one or two, by the status), schedule and state, from the household
+    profile the first time. The pay goes straight into the Paycheck tab's
+    own fields, which the later steps run on. */
 export function StartStep({ plan }: { plan: PlanState }) {
   const { profile } = useHousehold();
+  const b = toolOf(plan, "budget"), two = b.pcStatus === "m2";
   useEffect(() => {
-    if (!profile || plan.age !== "" || plan.retire !== "") return;
-    setPlan((p) => ({ ...p, age: profile.age ? String(Math.round(profile.age)) : p.age, retire: profile.retire ? String(Math.round(profile.retire)) : p.retire }));
-  }, [profile, plan.age, plan.retire]);
-  const set = (k: "age" | "retire" | "freq") => (v: string) => setPlan((p) => ({ ...p, [k]: v }));
+    if (!profile) return;
+    setPlan((p) => {
+      let n = p;
+      if (p.age === "" && p.retire === "") n = { ...n, age: profile.age ? String(Math.round(profile.age)) : p.age, retire: profile.retire ? String(Math.round(profile.retire)) : p.retire };
+      const cur = toolOf(n, "budget");
+      if (cur.pcGross === "" && profile.income != null) {
+        const both = profile.status === "m" && (profile.income2 ?? 0) > 0;
+        n = { ...n, tools: { ...n.tools, budget: { ...cur, pcStatus: profile.status !== "m" ? "s" : both ? "m2" : "m",
+          pcGross: groupDigits(profile.income, true), pcGross2: both ? groupDigits(profile.income2!, true) : "",
+          ...(both ? { pcHsaFamily: false, pcHsaBoth: true } : {}), ...(profile.state ? { pcState: profile.state } : {}) } } };
+      }
+      return n;
+    });
+  }, [profile]);
+  const set = (k: "age" | "retire") => (v: string) => setPlan((p) => ({ ...p, [k]: v }));
+  const setB = (patch: Partial<BudgetInputs>) => setPlan((p) => ({ ...p, tools: { ...p.tools, budget: { ...toolOf(p, "budget"), ...patch } } }));
   const ages = planAges(plan);
   const steps = [
-    ["Taxes", "Your pay after federal, state and payroll taxes, a year and a paycheck."],
     ["Budget", "What you spend, line by line."],
-    ["Paycheck", "What's left, and which account each dollar goes into: 401(k), HSA, IRA, brokerage."],
+    ["Paycheck", "Your pay after federal, state and payroll taxes, and which account each dollar left goes into: 401(k), HSA, IRA, brokerage."],
     ["Your plan", "That saving, grown to the age you'd like to retire."],
     ["Life stages", "Optional: kids and other changes, as stages with their own saving."],
     ["Summary", "Everything on one page, and a full report to print or save."],
@@ -62,21 +77,53 @@ export function StartStep({ plan }: { plan: PlanState }) {
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <Card className="min-w-0">
-        <CardHeader><CardTitle>About you</CardTitle><CardDescription>Three facts every step uses.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>About you</CardTitle><CardDescription>What every step is built on.</CardDescription></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 items-end gap-x-2.5">
             <NumberField id="ppAge" label="Your age" unit="years" max={99} value={plan.age} onValueChange={set("age")} />
             <NumberField id="ppRetire" label="Retire at" unit="years" max={100} value={plan.retire} onValueChange={set("retire")} />
           </div>
-          <SelectField id="ppFreq" label="You're paid" value={plan.freq} onChange={set("freq")}>
-            {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          <p className="hint -mt-1.5 mb-3.5">{ages ? ages.years + " years of saving to go." : "Your age and retirement age set how long your saving grows."}</p>
+          {/* Filing status first: it decides whether there's one pay to ask
+              for or two. Two incomes start with an HSA each, as on the Paycheck tab. */}
+          <h3 className="m-0 mt-1 mb-3 border-t border-border pt-4 text-sm font-semibold">Your pay</h3>
+          <SelectField id="ppStatus" label="Filing status" value={b.pcStatus}
+            onChange={(v) => setB({ pcStatus: v, ...(v === "m2" && b.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}) })}>
+            <option value="s">Single</option>
+            <option value="m">Married, one income</option>
+            <option value="m2">Married, two incomes</option>
           </SelectField>
-          <p className="hint mt-1">{ages ? ages.years + " years of saving to go." : "Your age and retirement age set how long your saving grows."}</p>
+          {two ? (
+            <>
+              <div className="grid grid-cols-2 items-end gap-x-2.5">
+                <MoneyField id="ppGross" label="Your gross pay, per year" value={b.pcGross} onValueChange={(v) => setB({ pcGross: v })} />
+                <MoneyField id="ppGross2" label="Spouse's gross pay, per year" value={b.pcGross2} onValueChange={(v) => setB({ pcGross2: v })} />
+              </div>
+              <div className="grid grid-cols-2 items-end gap-x-2.5">
+                <SelectField id="ppFreq" label="You're paid" value={b.pcFreq} onChange={(v) => { setB({ pcFreq: v }); setPlan((p) => ({ ...p, freq: v })); }}>
+                  {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </SelectField>
+                <SelectField id="ppFreq2" label="Your spouse is paid" value={b.pcFreq2} onChange={(v) => setB({ pcFreq2: v })}>
+                  {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </SelectField>
+              </div>
+            </>
+          ) : (
+            <div className="grid grid-cols-2 items-end gap-x-2.5">
+              <MoneyField id="ppGross" label="Gross pay, per year" value={b.pcGross} onValueChange={(v) => setB({ pcGross: v })} />
+              <SelectField id="ppFreq" label="You're paid" value={b.pcFreq} onChange={(v) => { setB({ pcFreq: v }); setPlan((p) => ({ ...p, freq: v })); }}>
+                {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </SelectField>
+            </div>
+          )}
+          <SelectField id="ppState" label="State" value={b.pcState || toolOf(plan, "tax").state} onChange={(v) => setB({ pcState: v })}>
+            {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+          </SelectField>
         </CardContent>
       </Card>
       <Card className="min-w-0 lg:col-span-2">
         <CardHeader><CardTitle>How it works</CardTitle>
-          <CardDescription>Six steps, about fifteen minutes. Each one fills in the next.</CardDescription></CardHeader>
+          <CardDescription>Five steps, about fifteen minutes. Each one fills in the next.</CardDescription></CardHeader>
         <CardContent>
           <ol className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-3.5 p-0 max-sm:grid-cols-1">
             {steps.map(([t, d], i) => (

@@ -49,7 +49,7 @@ test("a second child and college for two add their pages, with the shortfall and
   const M = reportModel(a, {}, LEV, {}, DAY)!;
   assert.deepEqual(M.pages.map((p) => p.id).slice(0, 6), ["cover", "stand", "road", "family", "college", "last"]);
   assert.equal(M.pages.find((p) => p.id === "college")!.title, "College for two");
-  assert.equal(M.changes!.short.total, 800 * 12 * 6);
+  assert.equal(M.changes!.short.total, 640 * 12 * 4 + 740 * 12 * 2 + 20 * 12 * 4);
   assert.equal(Math.round(M.changes!.flat!.fv), 1518176);
   assert.ok(M.college!.totalToday < M.college!.kids.reduce((t, k) => t + k.total, 0));
   assert.ok(M.list.some((m) => m.id === "short"));

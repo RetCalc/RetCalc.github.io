@@ -7,7 +7,7 @@ import { PER_YEAR } from "@/lib/engine/typed";
 import { groupDigits, parseNum } from "@/lib/format";
 import type { AdvancedInputs, AdvancedPlan } from "@/tools/advanced/model";
 import { stagesFromAdvanced } from "@/tools/advanced/toStages";
-import { CHILD_COST, childCost, children, labelAt, type Child } from "@/tools/guide/schedule";
+import { CHILD_COST, MAX_KIDS, childCost, children, earlyCost, labelAt, type Child } from "@/tools/guide/schedule";
 import type { Answers } from "@/tools/guide/store";
 import { paycheckRun, type PcInput, type PcStep } from "@/tools/budget/paycheck-math";
 import { stageFields, type StageInputs, type StagesInputs } from "@/tools/stages/model";
@@ -17,10 +17,11 @@ const pos = (v: number) => isFinite(v) && v > 0;
 
 /** The answers as the Guide keeps them, for its child functions. */
 function asAnswers(k: PlanKids, age: number): Answers {
-  const early = parseNum(k.early), school = parseNum(k.school);
+  const early = parseNum(k.early), school = parseNum(k.school), teen = parseNum(k.teen ?? "");
   return {
-    age, kidsNow: k.now, kidsPlanned: k.planned, firstIn: k.firstIn, spacing: k.spacing, childcare: k.childcare,
-    childEarly: pos(early) ? early : null, childSchool: pos(school) ? school : null, events: [],
+    age, kidsNow: k.now.slice(0, MAX_KIDS), kidsPlanned: k.planned, firstIn: k.firstIn, spacing: k.spacing, childcare: k.childcare,
+    childEarly: pos(early) ? early : null, childSchool: pos(school) ? school : null, childTeen: pos(teen) ? teen : null,
+    careArea: k.area ?? "suburb", kidGaps: k.gaps ?? null, events: [],
   } as unknown as Answers;
 }
 
@@ -30,7 +31,7 @@ export function kidList(k: PlanKids, age: number): Child[] {
 }
 
 /** The default monthly cost of a child before school, and at school. */
-export const kidDefaults = (k: PlanKids) => ({ early: k.childcare ? CHILD_COST.care : CHILD_COST.noCare, school: CHILD_COST.school });
+export const kidDefaults = (k: PlanKids) => ({ early: earlyCost(k.childcare, k.area ?? "suburb"), school: CHILD_COST.school, teen: CHILD_COST.teen });
 
 /** What the children cost a month at your age `t`, in today's dollars. */
 export const kidCostAt = (kids: Child[], t: number) => kids.reduce((s, c) => s + childCost(c, t), 0);
@@ -44,6 +45,17 @@ export interface KidStage {
   cost: number; change: number;
 }
 
+/** An age as shown: 31, or 31½ for half a year. */
+export const ageText = (a: number) => (Number.isInteger(a) ? String(a) : Math.floor(a) + "½");
+/** A stretch of your ages as shown: "31 to 33" for whole years (the last
+    year it covers), "31½ to 34" where it starts or ends mid-year. */
+export const ageSpan = (from: number, to: number) =>
+  Number.isInteger(from) && Number.isInteger(to) ? (to - from === 1 ? String(from) : from + " to " + (to - 1)) : ageText(from) + " to " + ageText(to);
+
+/** Children are worked out by the half year, so they can be spaced 2½
+    years apart and a stage can start mid-year. */
+export const STEP = 0.5;
+
 /** The stages from now to retirement: a new one wherever the children's
     cost changes, with the Guide's words for each. With no children, one. */
 export function kidStages(k: PlanKids | null, age: number, retire: number): KidStage[] {
@@ -53,10 +65,10 @@ export function kidStages(k: PlanKids | null, age: number, retire: number): KidS
   if (!kids.length) return [{ from: a, to: end, label: "Saving", cost: 0, change: 0 }];
   const A = asAnswers(k!, a), now = kidCostAt(kids, a);
   const out: KidStage[] = [];
-  for (let t = a; t < end; t++) {
+  for (let t = a; t < end; t += STEP) {
     const cost = Math.round(kidCostAt(kids, t)), label = labelAt(A, kids, t, []), last = out[out.length - 1];
-    if (last && last.cost === cost && last.label === label) last.to = t + 1;
-    else out.push({ from: t, to: t + 1, label, cost, change: Math.round(cost - now) });
+    if (last && last.cost === cost && last.label === label) last.to = t + STEP;
+    else out.push({ from: t, to: t + STEP, label, cost, change: Math.round(cost - now) });
   }
   // Neighbours that cost the same are one stage, under the first one's words.
   const merged: KidStage[] = [];
@@ -109,51 +121,63 @@ export function paycheckFreed(pi: PcInput): Freed {
 }
 
 export interface Cover {
-  /** A month cut from each account (negative: added, when the children
-      cost less than today). */
+  /** A month cut from each account, in whole dollars (negative: added,
+      when the children cost less than today). */
   take: Monthly;
   /** The take-home pay that frees, after the tax it brings back. */
   freed: number;
-  /** Each account's cut on its own, in take-home pay. */
+  /** What each account's cut frees, in whole dollars, adding up exactly to
+      what the stage needs (the last cut covers the rest to the dollar). */
   freedBy: Monthly;
-  /** What saving can't cover: it comes out of spending. */
+  /** What saving can't cover, in whole dollars: it comes out of spending. */
   short: number;
   /** Employer match given up, and the extra tax on the cuts, a month. */
   matchLost: number; taxUp: number;
 }
 
-/** How a stage pays for `change` more a month than today: the amounts
-    typed for an account stand; the rest comes out of the others in
-    COVER_ORDER, each cut as far as it takes to free the rest in take-home
-    pay (a pre-tax cut frees less than itself), and as far as each goes.
-    Costs lower than today add to the brokerage unless typed otherwise. */
+/** How a stage pays for `change` more a month than today, in whole dollars:
+    the amounts typed for an account stand; the rest comes out of the others
+    in COVER_ORDER, each cut by the fewest whole dollars that free the rest
+    in take-home pay (a pre-tax cut frees less than itself), and as far as
+    each goes. Costs lower than today add to the brokerage unless typed
+    otherwise. */
 export function coverStage(change: number, today: Monthly, typed: Partial<Monthly> = {}, F: Freed = ONE_FOR_ONE): Cover {
+  const need = Math.round(change);
   const take: Monthly = { brok: 0, roth: 0, trad: 0, hsa: 0 };
+  const cap = (k: CoverLine) => Math.max(0, Math.floor(today[k] + 0.005));
   const done = (): Cover => {
     const f = F(take), sum = COVER_ORDER.reduce((s, k) => s + take[k], 0);
-    const freedBy = Object.fromEntries(COVER_ORDER.map((k) => [k, take[k] > 0 ? F({ brok: 0, roth: 0, trad: 0, hsa: 0, [k]: take[k] }).freed : take[k]])) as Monthly;
-    const short = change > 0 ? Math.max(0, Math.round((change - f.freed) * 100) / 100) : 0;
-    return { take, freed: f.freed, freedBy, short: short < 0.01 ? 0 : short, matchLost: f.matchLost, taxUp: Math.max(0, sum - f.freed) };
+    const freedBy = { brok: 0, roth: 0, trad: 0, hsa: 0 } as Monthly;
+    let left = need;
+    for (const k of COVER_ORDER) {
+      if (take[k] <= 0) { freedBy[k] = take[k]; continue; }
+      const own = Math.round(F({ brok: 0, roth: 0, trad: 0, hsa: 0, [k]: take[k] }).freed);
+      freedBy[k] = need > 0 ? Math.max(0, Math.min(own, left)) : own;
+      left -= freedBy[k];
+    }
+    const short = need > 0 ? Math.max(0, Math.ceil(need - f.freed - 0.005)) : 0;
+    return { take, freed: f.freed, freedBy, short, matchLost: f.matchLost, taxUp: Math.max(0, sum - f.freed) };
   };
-  if (change <= 0) {
-    for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.min(today[k], typed[k]!);
+  if (need <= 0) {
+    for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.round(Math.min(today[k], typed[k]!));
     const set = COVER_ORDER.reduce((s, k) => s + take[k], 0);
-    if (typed.brok == null) take.brok = change - (set - take.brok);
+    if (typed.brok == null) take.brok = need - (set - take.brok);
     return done();
   }
-  for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.max(0, Math.min(today[k], typed[k]!));
+  for (const k of COVER_ORDER) if (typed[k] != null) take[k] = Math.max(0, Math.min(cap(k), Math.round(typed[k]!)));
   for (const k of COVER_ORDER) {
-    if (typed[k] != null || F(take).freed >= change - 0.005) continue;
-    // The least cut from this account that frees the rest, or all of it.
-    take[k] = today[k];
-    if (F(take).freed <= change) continue;
-    let lo = 0, hi = today[k];
-    for (let i = 0; i < 24 && hi - lo > 0.005; i++) {
-      const mid = (lo + hi) / 2;
+    if (typed[k] != null || F(take).freed >= need - 0.005) continue;
+    // All of it (to the cent, so nothing is left behind), or the fewest
+    // whole dollars that free the rest.
+    take[k] = Math.max(0, today[k]);
+    if (F(take).freed <= need) continue;
+    let lo = 0, hi = Math.ceil(today[k]);
+    while (hi - lo > 1) {
+      const mid = Math.floor((lo + hi) / 2);
       take[k] = mid;
-      if (F(take).freed >= change) hi = mid; else lo = mid;
+      if (F(take).freed >= need - 0.005) hi = mid; else lo = mid;
     }
-    take[k] = Math.round(hi * 100) / 100;
+    take[k] = Math.min(hi, today[k]);
   }
   return done();
 }

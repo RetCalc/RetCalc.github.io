@@ -99,8 +99,8 @@ svg{display:block;width:100%;height:auto}
   #ddTable{min-width:760px}
   #brCompare{min-width:640px}
   #brTable{min-width:1000px}
-  #txBrackets{min-width:520px}
-  #txStateRules td:first-child{width:118px}
+  .txbrackets{min-width:520px}
+  .txrules td:first-child{width:118px}
   #moTable{min-width:560px}
 
   .solveopts{grid-template-columns:1fr}

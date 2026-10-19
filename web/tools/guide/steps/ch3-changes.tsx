@@ -10,8 +10,11 @@
    college years against retirement. The schedule is worked out from the
    answers every time (schedule.ts); a hand edit is kept as an event. */
 
+import { useState } from "react";
 import { DraftInput } from "@/components/fields/DraftInput";
 import { Affixed } from "@/components/fields/Field";
+import { CountedBoxes } from "@/components/fields/CountedBoxes";
+import { NumberInput } from "@/components/fields/NumberInput";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +24,7 @@ import { XIcon } from "lucide-react";
 import { gdM, ok, pos, saveMo, withGuess, type Sim } from "../calc";
 import { ScheduleBars } from "../charts/Schedule";
 import { Lesson, Term } from "../lessons/Lesson";
-import { CHILD_COST, CHILD_SOURCE, children, collegeWindows, hasChanges, householdAtRetire, householdByAge, schedule, shortfall, type Stage } from "../schedule";
+import { CARE_AREAS, CHILD_COST, CHILD_SOURCE, MAX_KIDS, careAreaOf, children, collegeWindows, earlyCost, hasChanges, householdAtRetire, householdByAge, schedule, shortfall, type Stage } from "../schedule";
 import { SourceBadge } from "../SourceBadge";
 import type { Answers, ChangeEvent } from "../store";
 import { BackNote, Callout, H3, MoneyF, NumF, Q, useGuideView } from "../ui";
@@ -119,7 +122,6 @@ function StageCell({ s }: { s: Stage }) {
 export function ChangesCard() {
   const G = useGuideView(), { a } = G;
   const L = scheduleOf(a), flatMo = saveMo(a), kids = children(a), on = hasChanges(a);
-  const ages = (a.kidsNow || []).join(", ");
   const events = (a.events || []).filter((e) => e.kind !== "child");
   return (
     <>
@@ -133,34 +135,46 @@ export function ChangesCard() {
         </Lesson>
       </Learn>
       <BackNote step="changes" />
-      <Numbers moreLabel="Spacing, childcare and costs" moreOpen={a.childcare === false || pos(a.childEarly) || pos(a.childSchool)} more={kids.length ? (
+      <Numbers moreLabel="Spacing, childcare and costs" moreOpen={a.childcare === false || pos(a.childEarly) || pos(a.childSchool) || pos(a.childTeen) || !!a.kidGaps || (a.careArea != null && a.careArea !== "suburb")} more={kids.length ? (
         <>
-          {pos(a.kidsPlanned) && a.kidsPlanned > 1 ? <div className="gd-fields"><NumF k="spacing" label="Then one every" affix="years" hint="3 years unless you say otherwise." /></div> : null}
+          {pos(a.kidsPlanned) && a.kidsPlanned > 1 ? <PlannedSpacing /> : null}
           <H3>Paid childcare before school?</H3>
           <div className="gd-choices two">
             <button type="button" className={"gd-choice" + (a.childcare !== false ? " on" : "")} data-set="childcare" data-val="yes" aria-pressed={a.childcare !== false} onClick={() => G.set("childcare", true, true)}>
-              <i className="dot" aria-hidden="true"></i><span className="t"><b>Yes</b><span>{money(CHILD_COST.care)} a month per child, to age 6</span></span></button>
+              <i className="dot" aria-hidden="true"></i><span className="t"><b>Yes</b><span>{money(earlyCost(true, careAreaOf(a.careArea)))} per month per child, to age 6</span></span></button>
             <button type="button" className={"gd-choice" + (a.childcare === false ? " on" : "")} data-set="childcare" data-val="no" aria-pressed={a.childcare === false} onClick={() => G.set("childcare", false, true)}>
-              <i className="dot" aria-hidden="true"></i><span className="t"><b>No</b><span>{money(CHILD_COST.noCare)} a month per child, to age 6</span></span></button>
+              <i className="dot" aria-hidden="true"></i><span className="t"><b>No</b><span>{money(CHILD_COST.noCare)} per month per child, to age 6</span></span></button>
           </div>
+          {a.childcare !== false ? <>
+            <H3>Where you&apos;d use it</H3>
+            <div className="gd-choices three">
+              {CARE_AREAS.map((x) => {
+                const on = careAreaOf(a.careArea) === x.id;
+                return (
+                  <button key={x.id} type="button" className={"gd-choice" + (on ? " on" : "")} data-set="careArea" data-val={x.id} aria-pressed={on} onClick={() => G.set("careArea", x.id, true)}>
+                    <i className="dot" aria-hidden="true"></i><span className="t"><b>{x.name}</b><span>Childcare about {money(CHILD_COST.care[x.id])} per month</span></span></button>
+                );
+              })}
+            </div>
+          </> : null}
           <div className="gd-fields">
-            <MoneyF k="childEarly" label="A child before school costs" per="/mo" ph={String(a.childcare !== false ? CHILD_COST.care : CHILD_COST.noCare)} />
-            <MoneyF k="childSchool" label="At school, to 18" per="/mo" ph={String(CHILD_COST.school)} />
+            <MoneyF k="childEarly" label="Birth to 5" per="/mo" ph={String(earlyCost(a.childcare !== false, careAreaOf(a.careArea)))} />
+            <MoneyF k="childSchool" label="6 to 12" per="/mo" ph={String(CHILD_COST.school)} />
+            <MoneyF k="childTeen" label="13 to 18" per="/mo" ph={String(CHILD_COST.teen)} />
           </div>
+          <p className="hint mx-0 mt-0 mb-3">What one child costs per month at each age. A second or later child costs 20% less than these, since they share a room, clothes and gear.</p>
         </>
       ) : null}>
         <H3>Children</H3>
         <div className="gd-fields">
-          <div className="field full"><Label className="mb-1.5" htmlFor="gdf-kidsNow"><span>Children you have now: their ages</span></Label>
-            <Input id="gdf-kidsNow" data-a="kidsNow" inputMode="numeric" placeholder="none, or for example 4, 7" defaultValue={ages}
-              onChange={(e) => G.set("kidsNow", e.target.value.split(/[^0-9]+/).filter(Boolean).map(Number).filter((n) => n < 30).slice(0, 12))} />
-            <div className="hint">Leave blank if none. Today&apos;s saving already pays for them; the plan raises it as they grow up.</div></div>
-          <NumF k="kidsPlanned" label="Children planned" affix="children" hint="0 if none." />
+          <KidsNow />
+          <NumF k="kidsPlanned" label="Children planned" affix="children" hint={"0 if none. Up to " + MAX_KIDS + " children in all."} />
           {pos(a.kidsPlanned) ? <NumF k="firstIn" label="The first in about" affix="years" /> : null}
         </div>
-        {kids.length ? <p className="hint mx-0 mt-0 mb-3">{pos(a.childEarly) && pos(a.childSchool) ? <SourceBadge kind="entered" /> : <SourceBadge kind="estimated" />} Each child costs
-          {" "}{money(pos(a.childEarly) ? a.childEarly : a.childcare !== false ? CHILD_COST.care : CHILD_COST.noCare)} a month before school{a.childcare !== false && !pos(a.childEarly) ? ", with childcare" : ""} and
-          {" "}{money(pos(a.childSchool) ? a.childSchool : CHILD_COST.school)} at school, 20% less from the second. Estimated from {CHILD_SOURCE}; change them under <b>Spacing, childcare and costs</b>.</p> : null}
+        {kids.length ? <p className="hint mx-0 mt-0 mb-3">{pos(a.childEarly) && pos(a.childSchool) && pos(a.childTeen) ? <SourceBadge kind="entered" /> : <SourceBadge kind="estimated" />} Each child costs
+          {" "}{money(pos(a.childEarly) ? a.childEarly : earlyCost(a.childcare !== false, careAreaOf(a.careArea)))} per month before school{a.childcare !== false && !pos(a.childEarly) ? ", with childcare" : ""},
+          {" "}{money(pos(a.childSchool) ? a.childSchool : CHILD_COST.school)} from 6 to 12 and {money(pos(a.childTeen) ? a.childTeen : CHILD_COST.teen)} from 13 to 18,
+          {" "}20% less from the second. Typical costs from {CHILD_SOURCE}; change them under <b>Spacing, childcare and costs</b>.</p> : null}
         <H3>Other changes</H3>
         <div className="gd-picks">{KINDS.map((k) => (
           <Button key={k.kind} variant="outline" size="sm" data-ev-add={k.kind} onClick={() => G.set("events", [...(a.events || []), blank(k.kind, a)], true)}>+ {k.label}</Button>
@@ -169,6 +183,47 @@ export function ChangesCard() {
       </Numbers>
       <ChangesMeans />
     </>
+  );
+}
+
+/** The children you have now: how many, then each one's age. */
+function KidsNow() {
+  const G = useGuideView();
+  const [vals, setVals] = useState(() => (G.a.kidsNow || []).map(String));
+  return (
+    <CountedBoxes id="gdf-kidsNow" countLabel="Children you have now" countAffix="children" max={MAX_KIDS} values={vals} boxLabel={(i) => "Child " + (i + 1) + "'s age"} boxAffix="yrs" boxMax={29}
+      onChange={(v) => {
+        setVals(v);
+        G.set("kidsNow", v.filter((x) => x.trim() !== "").map(Number).filter((n) => isFinite(n) && n >= 0 && n < 30));
+      }} />
+  );
+}
+
+/** Planned children's spacing: one gap for all, or each its own. */
+function PlannedSpacing() {
+  const G = useGuideView(), { a } = G;
+  const n = Math.round(a.kidsPlanned ?? 0), even = pos(a.spacing) ? a.spacing : 3;
+  const gaps = a.kidGaps ? Array.from({ length: n - 1 }, (_, i) => a.kidGaps![i] ?? even) : null;
+  if (!gaps) return (
+    <div className="gd-fields">
+      <NumF k="spacing" label="Then one every" affix="years" hint="3 years unless you say otherwise." />
+      <div className="field self-end"><Button variant="quiet" size="inline-xs" onClick={() => G.set("kidGaps", Array.from({ length: n - 1 }, () => even), true)}>Space them differently</Button></div>
+    </div>
+  );
+  return (
+    <div className="mb-3">
+      <div className="flex flex-wrap gap-2.5">
+        {gaps.map((g, i) => (
+          <div key={i} className="w-40">
+            <Label className="mb-1" htmlFor={"gdf-gap" + i}><span className="text-label text-muted-foreground">Planned child {i + 2}</span></Label>
+            <Affixed suffix="yrs later"><NumberInput id={"gdf-gap" + i} nonNeg max={15} value={String(g)}
+              onValueChange={(v) => G.set("kidGaps", gaps.map((x, j) => (j === i ? Math.max(0, Math.round((Number(v) || 0) * 2) / 2) : x)))} /></Affixed>
+          </div>
+        ))}
+      </div>
+      <p className="hint mx-0 mt-1.5 mb-0">Years after the planned child before it.{" "}
+        <Button variant="quiet" size="inline-xs" onClick={() => G.set("kidGaps", null, true)}>Same spacing for all</Button></p>
+    </div>
   );
 }
 

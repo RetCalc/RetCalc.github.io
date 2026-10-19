@@ -3,11 +3,10 @@
    when what it's built on changed (PlanState.from), so what's typed into a
    step stays put while the steps before it don't move.
 
-   - Paycheck, from Taxes: the pay, filing status, state and schedule; the
-     first time, also today's pre-tax saving as its 401(k), HSA and IRA
-     lines and premiums.
-   - Taxes, from Paycheck (leaving it): the pay and pre-tax money by kind,
-     so Taxes shows the taxes on the paycheck as now planned.
+   - Start asks the filing status, pay, schedule and state straight into
+     the Paycheck tab's fields, so there's nothing to fill from it.
+   - A plan begun when Taxes was a step of its own: its Taxes answers fill
+     the paycheck once (fromOldTaxes).
    - Your plan (Advanced), from Paycheck: the saving by account type, the
      match, and the years from your ages; the first time, your spending as
      the target.
@@ -20,9 +19,9 @@ import { BUDGET_DEFAULTS, budgetCompute, type BudgetInputs } from "@/tools/budge
 import { paycheckInput, paycheckRun, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
 import { intoAdvanced, paycheckCopy, taxFromPaycheck } from "@/tools/budget/to-calculator";
 import { STAGES_DEFAULTS, type StagesInputs } from "@/tools/stages/model";
-import { TAX_DEFAULTS, itemized, preBuckets, runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
+import { TAX_DEFAULTS, itemized, preBuckets, type TaxInputs } from "@/tools/tax/model";
 import { ONE_FOR_ONE, kidStages, paycheckFreed, stagesFromKids, type Freed } from "./kids";
-import type { PlanState, PlanTool } from "./model";
+import { stepIndex, type PlanState, type PlanTool } from "./model";
 
 const DEFAULTS = { tax: TAX_DEFAULTS, budget: BUDGET_DEFAULTS, advanced: ADVANCED_DEFAULTS, stages: STAGES_DEFAULTS } as const;
 type Inputs = { tax: TaxInputs; budget: BudgetInputs; advanced: AdvancedInputs; stages: StagesInputs };
@@ -42,14 +41,17 @@ export function planAges(p: PlanState): { age: number; retire: number; years: nu
 
 const money = (v: number) => groupDigits(String(Math.round(v * 100) / 100), true);
 
-/* ---- Taxes → Paycheck ---- */
+/* ---- an old plan's Taxes → Paycheck ---- */
 const taxFacts = (t: TaxInputs, freq: string) => JSON.stringify([t.gross, t.status === "m" ? t.gross2 : "", t.status, t.state, freq]);
 
-/** The Paycheck tab filled in from Taxes, when Taxes changed since. */
-export function seedPaycheck(p: PlanState): PlanState {
+/** A plan begun when Taxes was its own step, before the paycheck was
+    filled from it: the pay, filing status, state and schedule, and today's
+    pre-tax saving as the paycheck's 401(k), HSA and IRA lines and premiums.
+    Once; anything else is left as it is. */
+export function fromOldTaxes(p: PlanState): PlanState {
+  if (!p.tools.tax || p.from.paycheck) return p;
   const tax = toolOf(p, "tax"), b = toolOf(p, "budget"), fp = taxFacts(tax, p.freq);
-  const first = !p.from.paycheck;
-  if (!first && p.from.paycheck === fp) return p;
+  if (!(parseNum(tax.gross) > 0)) return p;
   const gross = parseNum(tax.gross), gross2 = tax.status === "m" ? parseNum(tax.gross2) : 0, two = gross2 > 0;
   let next: BudgetInputs = {
     ...b, pcGross: dollarsField(gross), pcGross2: two ? dollarsField(gross2) : "", pcStatus: tax.status !== "m" ? "s" : two ? "m2" : "m",
@@ -57,23 +59,21 @@ export function seedPaycheck(p: PlanState): PlanState {
     // Two incomes start with an HSA each, as switching to them does.
     ...(two && b.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}),
   };
-  if (first) {
-    // Today's pre-tax saving as the starting lines: a year of each kind,
-    // per check (or per month with two incomes). The 401(k) fills the
-    // match line first, up to the match, and the rest goes beyond it.
-    const pays = +p.freq || 26, per = two ? 12 : pays;
-    const [y, s] = itemized(tax) ? preBuckets(tax) : [{ k401: parseNum(tax.pre) }, {}];
-    const both = (k: string) => ((y[k] || 0) + (two ? s[k] || 0 : 0)) / per;
-    const k401 = both("k401"), cap = ((parseNum(b.pcMatchUpTo) / 100) * gross + (two ? (parseNum(b.pcMatchUpTo2) / 100) * gross2 : 0)) / per;
-    const match = Math.min(k401, cap), ira = both("ira");
-    next = {
-      ...next, pcMatch: money(match), pcK401max: money(k401 - match), pcHsa: money(both("hsa")), pcRothIra: money(ira),
-      ...(ira > 0 ? { pcIraRoth: false } : {}),
-      // Premiums per check, on each one's own schedule.
-      ...((y.health || 0) > 0 ? { pcHealth: money((y.health || 0) / pays) } : {}),
-      ...(two && (s.health || 0) > 0 ? { pcHealth2: money((s.health || 0) / pays) } : {}),
-    };
-  }
+  // Today's pre-tax saving as the starting lines: a year of each kind,
+  // per check (or per month with two incomes). The 401(k) fills the
+  // match line first, up to the match, and the rest goes beyond it.
+  const pays = +p.freq || 26, per = two ? 12 : pays;
+  const [y, s] = itemized(tax) ? preBuckets(tax) : [{ k401: parseNum(tax.pre) }, {}];
+  const both = (k: string) => ((y[k] || 0) + (two ? s[k] || 0 : 0)) / per;
+  const k401 = both("k401"), cap = ((parseNum(b.pcMatchUpTo) / 100) * gross + (two ? (parseNum(b.pcMatchUpTo2) / 100) * gross2 : 0)) / per;
+  const match = Math.min(k401, cap), ira = both("ira");
+  next = {
+    ...next, pcMatch: money(match), pcK401max: money(k401 - match), pcHsa: money(both("hsa")), pcRothIra: money(ira),
+    ...(ira > 0 ? { pcIraRoth: false } : {}),
+    // Premiums per check, on each one's own schedule.
+    ...((y.health || 0) > 0 ? { pcHealth: money((y.health || 0) / pays) } : {}),
+    ...(two && (s.health || 0) > 0 ? { pcHealth2: money((s.health || 0) / pays) } : {}),
+  };
   return { ...withTool(p, "budget", next), from: { ...p.from, paycheck: fp } };
 }
 
@@ -85,28 +85,31 @@ export function paycheckOf(p: PlanState): { pi: PcInput; r: PcRun } | null {
   return { pi, r: paycheckRun(pi) };
 }
 
-/* ---- Paycheck → Taxes ---- */
-/** Taxes as the paycheck now has them (leaving the Paycheck step). */
-export function taxesFromPaycheck(p: PlanState): PlanState {
+/** Income Tax as the paycheck has it (for Copy into my tools). */
+export const taxOfPaycheck = (p: PlanState): TaxInputs | null => {
   const pc = paycheckOf(p);
-  if (!pc) return p;
-  const tax = taxFromPaycheck(toolOf(p, "tax"), pc.pi, pc.r);
-  return { ...withTool(p, "tax", tax), from: { ...p.from, paycheck: taxFacts(tax, p.freq) } };
-}
+  return pc ? taxFromPaycheck(toolOf(p, "tax"), pc.pi, pc.r) : null;
+};
+
+/** Start is done: your ages, and your pay. */
+export const startDone = (p: PlanState) => !!planAges(p) && parseNum(toolOf(p, "budget").pcGross) > 0;
 
 /* ---- Paycheck → Your plan ---- */
 /** Advanced filled in from the paycheck, when the paycheck changed since. */
 export function seedAdvanced(p: PlanState, household: Household | null): PlanState {
   const pc = paycheckOf(p);
   if (!pc) return p;
-  const c = paycheckCopy(pc.pi), ages = planAges(p), fp = JSON.stringify([c, ages?.years ?? null]);
+  // Taxes in retirement are figured on your filing status and state as
+  // you gave them (Start, then the paycheck), never the household profile's.
+  const c = paycheckCopy(pc.pi), ages = planAges(p), fact = { status: pc.pi.status, state: pc.pi.state };
+  const fp = JSON.stringify([c, ages?.years ?? null, fact]);
   const first = !p.tools.advanced;
   if (!first && p.from.advanced === fp) return p;
   let adv = toolOf(p, "advanced");
   // The first time: balances from the household's savings (all as
   // traditional, as Advanced's own switch starts), else nothing yet.
   if (first) adv = { ...adv, initial: dollarsField(household?.saved ?? 0) };
-  adv = intoAdvanced(adv, c, { status: household?.status || pc.pi.status, state: household?.state || pc.pi.state });
+  adv = { ...intoAdvanced(adv, c, fact), acStatus: fact.status, acState: fact.state };
   if (ages) adv = { ...adv, years: String(ages.years), ...(adv.glideOn ? { glideYears: glideYearsFor(String(ages.years), adv.glideYears) } : {}) };
   if (first) {
     const spend = budgetCompute(toolOf(p, "budget")).spentYr;
@@ -147,18 +150,13 @@ export interface Strip {
   planned: boolean;
 }
 
-/** Each figure per period: from the paycheck once it's planned, before
-    that from Taxes and the Budget. */
+/** Each figure per period, from the paycheck (the saving counts as
+    planned once the Paycheck step has been reached). */
 export function strip(p: PlanState): Strip | null {
   const pc = paycheckOf(p);
-  if (pc) {
-    const { pi, r } = pc;
-    // Take-home is what lands in the bank, as on the Paycheck tab.
-    return { per: pi.two ? "month" : "check", p: pi.p, gross: r.check, taxes: r.taxes, takeHome: r.deposit, spend: r.spend, saved: r.saved, left: r.left, planned: true };
-  }
-  const tax = toolOf(p, "tax");
-  if (!(parseNum(tax.gross) > 0)) return null;
-  const R = runTax(taxInput(tax)), n = +p.freq || 26, spend = budgetCompute(toolOf(p, "budget")).spentYr / n;
-  const takeHome = (R.gross - R.total - R.pre) / n;
-  return { per: "check", p: n, gross: R.gross / n, taxes: R.total / n, takeHome, spend, saved: R.pre / n, left: takeHome - spend, planned: false };
+  if (!pc) return null;
+  const { pi, r } = pc;
+  const planned = stepIndex(p.reached) >= stepIndex("paycheck");
+  // Take-home is what lands in the bank, as on the Paycheck tab.
+  return { per: pi.two ? "month" : "check", p: pi.p, gross: r.check, taxes: r.taxes, takeHome: r.deposit, spend: r.spend, saved: r.saved, left: r.left, planned };
 }

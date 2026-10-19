@@ -262,8 +262,9 @@ export function Budget() {
               </div>
             </div>
 
-            {/* The next step: the paycheck that covers this budget. */}
-            <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4">
+            {/* The next step: the paycheck that covers this budget (a
+                walkthrough has its own Next). */}
+            <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4" hidden={!!scope}>
               <h3 className="m-0 text-body font-semibold">Next: your paycheck</h3>
               <p className="mt-1.5 mb-3 text-note text-muted-foreground">What taxes take, how each check covers this budget, and where the rest goes.</p>
               <Button id="bgToPaycheck" onClick={toPaycheck}>{scope ? "Next: your paycheck" : "Open the Paycheck tab"}</Button>

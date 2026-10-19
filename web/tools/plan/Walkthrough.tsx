@@ -2,8 +2,8 @@
 
 /* Paycheck to Retirement (PAYCHECK_PLAN_BRIEF.md): from gross pay to a
    retirement plan in one place. A step rail, the running figures under it,
-   then the step: Start, then the real Income Tax, Budget, Paycheck tab,
-   Advanced and Stages screens, each on the walkthrough's own copy of its
+   then the step: Start (your ages, pay, filing status and state), then the
+   real Budget, Paycheck tab, Advanced and Stages screens, each on the walkthrough's own copy of its
    inputs (a tool scope), and the Summary. Moving between steps fills each
    later one from the ones before (flow.ts). */
 
@@ -12,7 +12,8 @@ import Link from "next/link";
 import { CheckIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { ToolBar } from "@/components/shell/ToolBar";
-import { TAB_STORE, ToolScopeProvider, decodeHash, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
+import { useToast } from "@/components/shell/Toast";
+import { TAB_STORE, ToolScopeProvider, decodeHash, readScenarios, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DASH, money } from "@/lib/format";
@@ -20,8 +21,7 @@ import { cn } from "@/lib/utils";
 import { Advanced } from "@/tools/advanced/Advanced";
 import { Budget } from "@/tools/budget/Budget";
 import { Stages } from "@/tools/stages/Stages";
-import { Tax } from "@/tools/tax/Tax";
-import { planAges, seedAdvanced, seedPaycheck, seedStages, strip, taxesFromPaycheck, toolOf } from "./flow";
+import { fromOldTaxes, seedAdvanced, seedStages, startDone, strip } from "./flow";
 import { PLAN_DEFAULTS, PLAN_STORE, STEPS, loadPlan, planHasWork, readPlan, rereadPlan, setPlan, stepIndex, subscribePlan, type PlanState, type PlanTool, type StepId } from "./model";
 import { KidsCard } from "./KidsDialog";
 import { StartStep, StepHead } from "./steps";
@@ -37,7 +37,7 @@ const PLAN_DEF: ToolDef<ToolInputs> = {
 
 /** Where a tool's move to another page lands in the walkthrough. */
 const PATH_STEP: Record<string, StepId> = {
-  "/incometax": "taxes", "/budget": "budget", "/budget#paycheck": "paycheck", "/advanced": "plan", "/stages": "stages",
+  "/budget": "budget", "/budget#paycheck": "paycheck", "/advanced": "plan", "/stages": "stages",
 };
 
 const NONE = () => null;
@@ -54,10 +54,8 @@ export function Walkthrough() {
   /** Moves to a step, filling it (and anything it's built on) first. */
   const goTo = useCallback((to: StepId) => {
     setPlan((p) => {
-      let n = p;
+      let n = fromOldTaxes(p);
       const i = stepIndex(to);
-      if (p.step === "paycheck" && to !== "paycheck") n = taxesFromPaycheck(n);
-      if (i >= stepIndex("paycheck")) n = seedPaycheck(n);
       if (i >= stepIndex("plan")) n = seedAdvanced(n, profile);
       if (to === "stages") n = { ...n, stagesOn: true };
       if (i >= stepIndex("stages")) n = seedStages(n, profile);
@@ -91,6 +89,9 @@ export function Walkthrough() {
   const load = useCallback((d: ToolInputs) => { loadPlan(d); setRev((r) => r + 1); }, []);
   useRegisterTool(PLAN_DEF, (plan ?? PLAN_DEFAULTS) as unknown as ToolInputs, load);
 
+  // A plan saved when Taxes was a step of its own: its pay into the paycheck.
+  useEffect(() => { setPlan(fromOldTaxes); }, [rev]);
+
   // A share link opens with its plan; the account's copy arriving is read again.
   useEffect(() => {
     const h = window.location.hash;
@@ -99,11 +100,20 @@ export function Walkthrough() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
     if (v?.t === PLAN_STORE.key && v.d) load(v.d as ToolInputs);
   }, [load]);
+  const toast = useToast();
   useEffect(() => {
-    const on = (e: Event) => { if ((e as CustomEvent<string[]>).detail?.includes(PLAN_STORE.key)) { rereadPlan(); setRev((r) => r + 1); } };
+    const on = (e: Event) => {
+      const keys = (e as CustomEvent<string[]>).detail ?? [];
+      if (keys.includes(PLAN_STORE.key)) { rereadPlan(); setRev((r) => r + 1); }
+      // Two devices both changed it: the other version is a saved plan now.
+      if (keys.includes("scenarios-" + PLAN_STORE.key)) {
+        const kept = readScenarios(PLAN_STORE.key).filter((x) => x.name.startsWith("Plan from")).pop();
+        if (kept) toast("Your other version is saved as “" + kept.name + "”: pick it from your saved plans");
+      }
+    };
     window.addEventListener("retcalc:synced", on);
     return () => window.removeEventListener("retcalc:synced", on);
-  }, []);
+  }, [toast]);
 
   if (!plan) return <div className="min-h-96" aria-busy="true"></div>;
   const step = plan.step, idx = stepIndex(step);
@@ -170,7 +180,7 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
 /* ---- the running figures: the paycheck so far ---- */
 function RunningStrip({ plan }: { plan: PlanState }) {
   const s = strip(plan);
-  const per = s ? (s.per === "month" ? "a month" : "a paycheck") : "a paycheck";
+  const per = s ? (s.per === "month" ? "per month" : "a paycheck") : "a paycheck";
   const fig = (label: string, v: number | null, note?: string) => (
     <div className="min-w-0">
       <div className="text-label text-muted-foreground">{label}</div>
@@ -185,8 +195,8 @@ function RunningStrip({ plan }: { plan: PlanState }) {
         {fig("Gross pay", s?.gross ?? null, per)}
         {fig("Taxes", s?.taxes ?? null, s ? money(s.taxes * s.p) + " a year" : undefined)}
         {fig("Take-home", s?.takeHome ?? null, s ? money(s.takeHome * s.p) + " a year" : undefined)}
-        {fig("Spending", s?.spend ?? null, s ? money((s.spend * s.p) / 12) + " a month" : undefined)}
-        {fig(s?.planned ? "Saved and invested" : "Saved pre-tax", s?.saved ?? null, s?.planned ? money(s.saved * s.p) + " a year" : "Planned in step 3")}
+        {fig("Spending", s?.spend ?? null, s ? money((s.spend * s.p) / 12) + " per month" : undefined)}
+        {fig(s?.planned ? "Saved and invested" : "Saved pre-tax", s?.saved ?? null, s?.planned ? money(s.saved * s.p) + " a year" : "Planned in step 2")}
         <div className="min-w-0">
           <div className="text-label text-muted-foreground">{left != null && left < 0 ? "Short" : "Left over"}</div>
           <div className={cn("text-xl font-medium tabular-nums", left != null && left < 0 && "text-loss")}>{left == null ? DASH : (left < 0 ? "−" : "") + money(Math.abs(left))}</div>
@@ -201,7 +211,6 @@ function RunningStrip({ plan }: { plan: PlanState }) {
 function Body({ step, plan, goTo }: { step: StepId; plan: PlanState; goTo: (s: StepId) => void }) {
   switch (step) {
     case "start": return <StartStep plan={plan} />;
-    case "taxes": return <Tax />;
     case "budget": return <Budget />;
     case "paycheck": return <Budget />;
     case "plan": return <Advanced />;
@@ -214,9 +223,7 @@ function Body({ step, plan, goTo }: { step: StepId; plan: PlanState; goTo: (s: S
 function Foot({ plan, idx, goTo }: { plan: PlanState; idx: number; goTo: (s: StepId) => void }) {
   const step = plan.step;
   const prev = step === "summary" && !plan.stagesOn ? "plan" : idx > 0 ? STEPS[idx - 1].id : null;
-  const ages = planAges(plan), tax = toolOf(plan, "tax");
-  const blocked = step === "start" && !ages ? "Enter your age and when you'd like to retire to go on." :
-    step === "taxes" && !(Number(tax.gross.replace(/,/g, "")) > 0) ? "Enter your pay to go on." : null;
+  const blocked = step === "start" && !startDone(plan) ? "Enter your ages and your pay to go on." : null;
   if (step === "summary") return null;
   return (
     <Card className="col-span-full">
@@ -230,7 +237,7 @@ function Foot({ plan, idx, goTo }: { plan: PlanState; idx: number; goTo: (s: Ste
           <Button size="lg" onClick={() => { if (plan.stagesOn) setPlan((p) => ({ ...p, stagesOn: false })); goTo("summary"); }}>See your summary<i className="arw" aria-hidden="true"></i></Button>
         </> : (
           <Button size="lg" disabled={!!blocked} onClick={() => goTo(step === "stages" ? "summary" : STEPS[idx + 1].id)}>
-            {step === "start" ? "Start with your taxes" : step === "stages" ? "See your summary" : "Next: " + STEPS[idx + 1].name.toLowerCase()}
+            {step === "start" ? "Start with your budget" : step === "stages" ? "See your summary" : "Next: " + STEPS[idx + 1].name.toLowerCase()}
             <i className="arw" aria-hidden="true"></i>
           </Button>
         )}

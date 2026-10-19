@@ -47,6 +47,10 @@ export interface Answers {
   /** Paid childcare before school, and the monthly costs per child when
       they replace the defaults (doc 3, section 3, item 13). */
   childcare?: boolean | null; childEarly?: number | null; childSchool?: number | null;
+  /** The teen years' cost (13 to 18) when it replaces the default; where
+      childcare would be (big city, suburb, rural); and each planned child's
+      gap after the one before, when they aren't evenly spaced. */
+  childTeen?: number | null; careArea?: "city" | "suburb" | "rural" | null; kidGaps?: number[] | null;
 }
 export type AnswerKey = keyof Answers;
 

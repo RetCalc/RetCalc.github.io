@@ -4,7 +4,7 @@
    Every figure comes from the tools' own code (paycheckRun, budgetGroups,
    advancedCompute, stagesCompute); the balance by account is the same run
    once per account, as Stages does for its split. No React. */
-import { projectSeries } from "@/lib/engine/typed";
+import { NEWEST_YEAR, projectSeries } from "@/lib/engine/typed";
 import type { Series, Stage } from "@/lib/engine/types";
 import { parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
@@ -14,7 +14,7 @@ import { PC_LINES, PC_STEPS, rowRole, type PcStep } from "@/tools/budget/paychec
 import { CHILD_SOURCE, childCost } from "@/tools/guide/schedule";
 import { stageSplit, stagesCompute } from "@/tools/stages/model";
 import { freedOf, paycheckOf, planAges, toolOf } from "./flow";
-import { coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { STEP, coverStage, kidCostAt, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
 import type { PlanState } from "./model";
 
 export type Acct = "trad" | "roth" | "brok" | "hsa";
@@ -44,6 +44,13 @@ export interface PlanSummary {
   groups: { group: string; yr: number }[];
   /** At retirement, today's dollars. */
   atRetire: { total: number; fv: number; byAcct: Record<Acct, number> | null; afterTax: number; withdrawal: number; taxRate: number };
+  /** What the balance at retirement is made of, in the dollars of the day:
+      what you have today, what you'll put in, your employer's match, and
+      the growth on all of it (fv less the other three). */
+  made: { start: number; own: number; match: number; growth: number };
+  /** The same in today's dollars: today's savings as they are, each year's
+      saving brought back to today's dollars, and growth the rest. */
+  madeReal: { start: number; own: number; match: number; growth: number };
   target: { solveFor: string; target: number };
   /** What the plan's spending in retirement is measured against: your
       after-tax goal in Advanced, or without one, your budget's year. */
@@ -100,12 +107,15 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
 
   // The plan: Stages when the walkthrough went on there, else Advanced.
   let climb: ClimbRow[] = [], fv = 0, total = 0, afterTax = 0, byAcct: Record<Acct, number> | null = null;
-  let infl = 0, years = 0, taxRate = 0, withdrawal = 0;
+  let infl = 0, years = 0, taxRate = 0, withdrawal = 0, made = { start: 0, own: 0, match: 0, growth: 0 }, inReal = 0;
   let assumptions: PlanSummary["assumptions"];
   let stages: PlanSummary["stages"] = null;
   if (useStages) {
     const st = toolOf(p, "stages"), V = stagesCompute(st, household), P = V.P, g = P.g;
     infl = g.inflation; years = V.R.totalYears; fv = V.R.fv; total = V.R.fvReal; afterTax = V.R.afterTax; taxRate = g.taxRate; withdrawal = g.withdrawal;
+    const mt = P.B?.matchTotal ?? 0;
+    made = { start: g.initial, own: V.R.contribTotal - mt, match: mt, growth: V.R.fv - g.initial - V.R.contribTotal };
+    inReal = V.R.calRows.reduce((t, r) => t + r.contrib / Math.pow(1 + g.inflation, r.year), 0);
     if (P.B) byAcct = { trad: P.B.real.trad, roth: P.B.real.roth, brok: P.B.real.brok, hsa: P.B.real.hsa };
     // Each account's slice of every stage, as stagesPlan runs it.
     const a = g.acct;
@@ -139,6 +149,9 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   } else {
     const V = advancedCompute(adv, household), P = V.P, pl = P.p;
     infl = pl.inflation; years = pl.years; fv = V.R.fv; total = V.R.fvReal; afterTax = V.R.afterTax; taxRate = pl.taxRate; withdrawal = pl.withdrawal;
+    const mt = P.B?.matchTotal ?? 0;
+    made = { start: pl.initial, own: V.R.contribTotal - mt, match: mt, growth: V.R.fv - pl.initial - V.R.contribTotal };
+    inReal = V.R.years.reduce((t, r) => t + r.contrib / Math.pow(1 + pl.inflation, r.year), 0);
     if (P.B) byAcct = { trad: P.B.real.trad, roth: P.B.real.roth, brok: P.B.real.brok, hsa: P.B.real.hsa };
     const one = (bal: number, c: number) => yearEnds(projectSeries({ initial: bal, inflation: pl.inflation, withdrawal: pl.withdrawal, taxRate: pl.taxRate, fees: 0 },
       [{ years: pl.years, contrib: c, period: pl.period, growth: pl.growth, nominal: pl.nominal, vol: pl.vol, glide: pl.glide }]));
@@ -156,18 +169,18 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   if (stages && kl.length) {
     const rows = kl.map((c, i) => {
       const bands: { from: number; to: number; monthly: number; early: boolean }[] = [];
-      for (let t = Math.max(ages.age, c.born); t < Math.min(retireAge, c.born + 19); t++) {
+      for (let t = Math.max(ages.age, c.born); t < Math.min(retireAge, c.born + 19); t += STEP) {
         const m = Math.round(childCost(c, t)), early = t - c.born < 6, last = bands[bands.length - 1];
-        if (last && last.monthly === m && last.early === early && last.to === t) last.to = t + 1;
-        else bands.push({ from: t, to: t + 1, monthly: m, early });
+        if (last && last.monthly === m && last.early === early && last.to === t) last.to = t + STEP;
+        else bands.push({ from: t, to: t + STEP, monthly: m, early });
       }
       return { label: "Child " + (i + 1), born: c.born, planned: c.planned, bands };
     }).filter((r) => r.bands.length);
     const together = kidStages(p.kids, ages.age, retireAge).filter((s) => s.cost > 0).map((s) => ({ from: s.from, to: s.to, monthly: s.cost }));
     let total = 0, peak = { age: ages.age, monthly: 0 };
-    for (let t = ages.age; t < retireAge; t++) {
+    for (let t = ages.age; t < retireAge; t += STEP) {
       const m = kidCostAt(kl, t);
-      total += m * 12;
+      total += m * 12 * STEP;
       if (m > peak.monthly) peak = { age: t, monthly: m };
     }
     const yrs = (s: { from: number; to: number }) => (s.to - s.from) * 12;
@@ -190,7 +203,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
   const groups = Object.entries(g).map(([group, yr]) => ({ group, yr })).sort((x, y) => y.yr - x.yr);
   const A = pi.amounts, R = pi.roth;
   const AP0 = advancedPlan(adv, household), todayMonthly = monthlyByAccount(AP0, AP0.p.period);
-  const bc = budgetCompute(b), tax = toolOf(p, "tax");
+  const bc = budgetCompute(b);
   const budgetLines = b.rows.filter((row) => rowRole(b, row) !== "save" && annualize(row) > 0).map((row) => ({ group: row.group || "Custom", desc: row.desc, yr: annualize(row), freq: row.freq }));
   const FREQ: Record<number, string> = { 52: "Every week", 26: "Every two weeks", 24: "Twice a month", 12: "Monthly" };
   const inflow = {
@@ -205,9 +218,13 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
       takeHome: r.deposit, spend: r.spend, saved: r.saved, left: r.left, match: r.match, stateName: r.stateName,
     },
     lines, spendYear: bc.spentYr, groups, todayMonthly, budgetLines, ef: { months: bc.ef, target: bc.efTarget },
-    facts: { status: pi.two ? "Married, two incomes" : pi.status === "m" ? "Married, filing jointly" : "Single", stateName: r.stateName, taxYear: tax.year,
+    facts: { status: pi.two ? "Married, two incomes" : pi.status === "m" ? "Married, filing jointly" : "Single", stateName: r.stateName, taxYear: String(NEWEST_YEAR),
       freqName: FREQ[pi.pays[0]] ?? "Every two weeks", twoIncomes: pi.two },
-    atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate },
+    atRetire: { total, fv, byAcct, afterTax, withdrawal, taxRate }, made,
+    madeReal: (() => {
+      const put = made.own + made.match || 1;
+      return { start: made.start, own: inReal * (made.own / put), match: inReal * (made.match / put), growth: total - made.start - inReal };
+    })(),
     target: { solveFor: adv.solveFor, target: parseNum(adv.target) },
     goal: adv.solveFor === "After-Tax Withdrawal" && parseNum(adv.target) > 0 ? { v: parseNum(adv.target), fromBudget: false } : { v: bc.spentYr, fromBudget: true },
     climb, milestones, stages, children, kids, kidSource: CHILD_SOURCE, assumptions,

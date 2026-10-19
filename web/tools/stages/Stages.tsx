@@ -6,7 +6,7 @@
    Stages parts of src/main/02-calculator-inputs.html and
    03-calculator-results.html. */
 
-import { useDeferredValue, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { CheckToggle } from "@/components/fields/CheckToggle";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput } from "@/components/fields/NumberInput";
@@ -15,7 +15,7 @@ import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { AccountTable } from "@/components/tools/AccountTable";
 import { ProjectionChart, ProjectionReading, SolveOption, bandLabel, emptyChart, fanPoints, histChart, type ChartData, type ChartMode } from "@/components/tools/Projection";
-import { useToolNav, useToolState, useToolStore } from "@/components/tools/ToolState";
+import { useToolNav, useToolScope, useToolState, useToolStore } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { Milestones } from "@/components/common/Milestones";
 import { KV } from "@/components/common/Readout";
@@ -23,7 +23,7 @@ import { PPY, finalStageSolve, historicalRuns, monteCarlo, projectSeries } from 
 import { DASH, dollarsField, fmtNum, fmtYears, fraction, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { has } from "@/lib/household";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
-import { PERIOD_ADV } from "@/lib/periods";
+import { PERIOD_ADV, PERIOD_SHORT } from "@/lib/periods";
 import { STATE_OPTIONS } from "@/lib/states";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { StageCard, type StageEdit } from "./StageCard";
@@ -40,15 +40,45 @@ import { SERIES } from "@/lib/hues";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, LockIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, LockIcon, PencilIcon, PlusIcon } from "lucide-react";
+import { Modal, ModalTop } from "@/components/shell/Modal";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 
 const TARGET_LABEL = "(your target above)";
+
+/** "1 yr", "2.5 yrs". */
+const yrs = (y: number) => fmtNum(Math.max(0, y)) + (Math.max(0, y) === 1 ? " yr" : " yrs");
+
+/** The stages along the years: one segment each, sized by its years, in
+    alternating shades of one blue-gray, numbered; its name and span on
+    hover. A click opens that stage. */
+function StageBar({ nums, names, spans, onPick }: { nums: { years: number }[]; names: string[]; spans: string[]; onPick: (i: number) => void }) {
+  const total = nums.reduce((a, x) => a + Math.max(0, x.years), 0);
+  return (
+    <div className="mb-3">
+      <div className="flex h-9 gap-px overflow-hidden rounded-md" role="group" aria-label="Your stages, sized by their years">
+        {nums.map((st, i) => (
+          <button key={i} type="button" onClick={() => onPick(i)} title={names[i] + ", " + spans[i] + " (" + yrs(st.years) + ")"}
+            aria-label={names[i] + ", " + spans[i]}
+            className={cn("grid min-w-6 grow-(--g) basis-0 cursor-pointer place-items-center border-0 p-0 outline-none transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-solid focus-visible:outline-ring",
+              i % 2 ? "bg-(--ds-acct-3)" : "bg-(--ds-acct-2)", !(st.years > 0) && "outline-2 outline-destructive")}
+            style={{ "--g": Math.max(0, st.years) || (total ? 0 : 1) } as React.CSSProperties}>
+            {/* The number on a chip of the card's own color, readable on either shade, in either theme. */}
+            <span className="grid size-5 place-items-center rounded-full bg-card text-fine font-semibold text-foreground tabular-nums">{i + 1}</span>
+          </button>
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between text-label text-muted-foreground tabular-nums"><span>Year 0</span><span>{yrs(total)} in all</span></div>
+    </div>
+  );
+}
 
 export function Stages() {
   const { state: s, set, setState } = useToolState(STAGES_DEF);
   const { profile } = useHousehold();
   const store = useToolStore(), go = useToolNav();
+  // In a walkthrough, its Summary leads on to Drawdown, not this step.
+  const scope = useToolScope();
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -56,6 +86,8 @@ export function Stages() {
   const stageTable = useRef<HTMLTableElement>(null), yearTable = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("stages", s, setState, (h, c) => {
+    // A walkthrough fills these in from its own steps.
+    if (scope) return c;
     const next = { ...c };
     if (c.saOn) {
       if (has(h.income)) next.saSalary = dollarsField(h.income!);
@@ -177,13 +209,36 @@ export function Stages() {
     toast("Portfolio set to " + money(R.fvReal) + ", your balance in today's dollars");
   };
 
-  /* A segment of the timeline jumps to its stage's first field. */
-  const goToStage = (i: number) => {
+  /* Stages are edited in a pop-up (`editing`: the stage to open it at);
+     the panel lists them. */
+  const [editing, setEditing] = useState<number | null>(null);
+  const names = s.stages.map((st, i) => st.name || "Stage " + (i + 1));
+  const stageCard = (i: number, st: StageInputs) => (
+    <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
+      adjNote={st.adj && i > 0 && P.eff[i] ? money(P.eff[i].contrib / (P.eff[i].mf || 1)) : ""}
+      num={nums[i]} blend={split && st.gRates ? P.stages[i]?.growth : undefined} fees={parseNum(s.fees) / 100} inflation={parseNum(s.inflation) / 100}
+      matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
+  );
+  /** In the pop-up, a stage's card brought into view. */
+  const scrollToStage = (i: number) => {
     const el = document.querySelector<HTMLInputElement>(`#stageList [data-f='years'][data-i='${i}']`);
     el?.closest(".stagecard")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     el?.focus({ preventScroll: true });
   };
-  const totalTyped = nums.reduce((a, x) => a + Math.max(0, x.years), 0);
+
+  // Opening the pop-up brings the stage it was opened at into view.
+  const opened = editing != null;
+  useEffect(() => {
+    if (opened) requestAnimationFrame(() => scrollToStage(editing!));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened]);
+
+  /** A new stage, opened in the pop-up. */
+  const addAndOpen = () => {
+    addStage();
+    if (editing == null) setEditing(n);
+    else setTimeout(() => scrollToStage(n), 60);
+  };
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
@@ -200,32 +255,41 @@ export function Stages() {
             </CardHeader>
             <CardContent>
               <GroupHead first>Your stages</GroupHead>
+              {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => setEditing(i)} /> : null}
               {n ? (
-                <div className="mb-4 flex gap-0.5" role="group" aria-label="Your stages, sized by their years">
+                <ol className="m-0 mb-3 list-none p-0" aria-label="Your stages">
                   {nums.map((st, i) => (
-                    <button key={i} type="button" onClick={() => goToStage(i)}
-                      className={cn("flex min-w-11 grow-(--g) basis-0 cursor-pointer flex-col items-start gap-0.5 overflow-hidden rounded-sm border border-transparent bg-muted px-2 py-1.5 text-left transition-colors outline-none first:rounded-l-md last:rounded-r-md hover:bg-foreground/10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-solid focus-visible:outline-ring pointer-coarse:min-h-11",
-                        !(st.years > 0) && "border-destructive")}
-                      style={{ "--g": Math.max(0, st.years) || (totalTyped ? 0 : 1) } as React.CSSProperties}
-                      aria-label={(s.stages[i].name || "Stage " + (i + 1)) + ", " + spans[i]}>
-                      <span className="w-full truncate text-label font-medium text-foreground">{s.stages[i].name || "Stage " + (i + 1)}</span>
-                      <span className="w-full truncate text-label text-muted-foreground tabular-nums">{fmtNum(Math.max(0, st.years)) + " yrs"}</span>
-                    </button>
+                    <li key={i}>
+                      <button type="button" onClick={() => setEditing(i)}
+                        className="flex w-full cursor-pointer items-baseline gap-2 border-0 border-b border-solid border-border bg-transparent px-1 py-1.5 text-left text-note text-foreground outline-none hover:bg-muted focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring pointer-coarse:min-h-11">
+                        <span className="w-4 flex-none text-label text-muted-foreground tabular-nums">{i + 1}</span>
+                        <span className="min-w-0 flex-1 truncate">{names[i]}</span>
+                        <span className="flex-none text-muted-foreground tabular-nums">{yrs(st.years)}</span>
+                        <span className="w-24 flex-none text-right tabular-nums">{money(st.contrib)}{PERIOD_SHORT[st.period] ?? ""}</span>
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ol>
               ) : null}
-              <div id="stageList">
-                {s.stages.map((st, i) => (
-                  <StageCard key={i} i={i} st={st} last={i === n - 1} split={split} mc={mode === "mc"} span={spans[i]}
-                    adjNote={st.adj && i > 0 && P.eff[i] ? money(P.eff[i].contrib / (P.eff[i].mf || 1)) : ""}
-                    num={nums[i]} blend={split && st.gRates ? P.stages[i]?.growth : undefined} fees={parseNum(s.fees) / 100} inflation={parseNum(s.inflation) / 100}
-                    matchOn={parseNum(s.saMatchPct) > 0} edit={editStage} remove={removeStage} />
-                ))}
-              </div>
               <div className={n ? "hint hidden" : "hint mt-0 block"} id="stageEmpty">
                 No stages yet. Add one to start building a run.
               </div>
-              <Button variant="outline" className="mt-1 w-full" id="btnAddStage" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button>
+              {n
+                ? <Button variant="outline" className="mt-1 w-full" id="btnEditStages" onClick={() => setEditing(0)}><PencilIcon aria-hidden="true" />Edit stages</Button>
+                : <Button variant="outline" className="mt-1 w-full" id="btnAddStage" onClick={addAndOpen}><PlusIcon aria-hidden="true" />Add stage</Button>}
+              {editing != null && n ? (
+                <Modal size="table" onClose={() => setEditing(null)}>
+                  <ModalTop title="Your stages" onClose={() => setEditing(null)} />
+                  <StageBar nums={nums} names={names} spans={spans} onPick={(i) => scrollToStage(i)} />
+                  <div id="stageList" className="mt-1">
+                    {s.stages.map((st, i) => stageCard(i, st))}
+                  </div>
+                  <div className="formactions mt-4">
+                    <Button variant="outline" className="flex-1" onClick={addAndOpen}><PlusIcon aria-hidden="true" />Add stage</Button>
+                    <Button className="flex-1" onClick={() => setEditing(null)}>Done</Button>
+                  </div>
+                </Modal>
+              ) : null}
               <div className="derived mb-1">
                 <div><span>Stages</span><span className="num" id="gStages">{n}</span></div>
                 <div><span>Fees</span><span className="num" id="gFeeNote">{(g.fees || 0) > 0 ? pctStr(g.fees, 2) + " off every stage" : "none"}</span></div>
@@ -328,7 +392,7 @@ export function Stages() {
           <Card>
             <CardHeader><CardTitle>Start with a stage</CardTitle>
               <CardDescription>Add a stage to see your balance over time, stage by stage.</CardDescription></CardHeader>
-            <CardContent><Button variant="outline" onClick={addStage}><PlusIcon aria-hidden="true" />Add stage</Button></CardContent>
+            <CardContent><Button variant="outline" onClick={addAndOpen}><PlusIcon aria-hidden="true" />Add stage</Button></CardContent>
           </Card>
         ) : null}
 
@@ -392,7 +456,7 @@ export function Stages() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card hidden={!!scope}>
             <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
               <div className="min-w-0">
                 <CardTitle>Take it further</CardTitle>

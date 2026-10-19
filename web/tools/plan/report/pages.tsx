@@ -6,6 +6,8 @@
 
 import { money, pctStr } from "@/lib/format";
 import { C, ReportMark } from "@/tools/guide/report/charts";
+import { CHILD_COST } from "@/tools/guide/schedule";
+import { ageSpan } from "../kids";
 import { COVER_ORDER } from "../model";
 import { ACCT_NAMES, type Acct, type PlanSummary } from "../results";
 import { ACCT_PRINT, ClimbChart, GroupBars, KidBars, PAY_PRINT, PayBar, StageStrip } from "./charts";
@@ -19,7 +21,7 @@ const Sec = ({ children }: { children: React.ReactNode }) => <h4 className="rp-s
 const ACCTS: Acct[] = ["trad", "roth", "brok", "hsa"];
 const WORDS = ["None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
 const used = (S: PlanSummary) => ACCTS.filter((a) => S.climb.some((r) => r[a] > 1));
-const per = (S: PlanSummary) => (S.per === "check" ? "a paycheck" : "a month");
+const per = (S: PlanSummary) => (S.per === "check" ? "a paycheck" : "per month");
 
 function Sheet({ R, p, children }: { R: PlanReport; p: Page; children: React.ReactNode }) {
   return (
@@ -52,7 +54,7 @@ function Cover({ R, pages }: { R: PlanReport; pages: Page[] }) {
         <div><h5>Your saving</h5><div className="rp-fig">{money(saved)}</div>
           <p>a year, {pctStr(saved / Math.max(1, S.pay.gross * S.p), 0)} of your pay{S.inflow.match > 0 ? ", " + money(S.inflow.match * S.p) + " of it your employer's match" : ""}.
             {S.pay.left > 0.5 ? " " + money(S.pay.left * S.p) + " a year is still unassigned." : " Every dollar of pay has a job."}</p>
-          <h5 className="gap">Spending</h5><div className="rp-fig">{money(S.spendYear / 12)}</div><p>a month, from your budget.</p></div>
+          <h5 className="gap">Spending</h5><div className="rp-fig">{money(S.spendYear / 12)}</div><p>per month, from your budget.</p></div>
         <div><h5>At {S.retire}</h5><div className="rp-fig">{money(A.total)}</div>
           <p>in today&apos;s dollars ({money(A.fv)} in future dollars){S.stages ? ", with your life stages" : ""}.</p>
           <h5 className="gap">To spend in retirement</h5><div className="rp-fig">{money(A.afterTax)}</div>
@@ -82,13 +84,13 @@ function Paycheck({ R, p }: { R: PlanReport; p: Page }) {
       <div className="rp-key"><span><i style={{ "--sw": PAY_PRINT.taxes } as React.CSSProperties} />Taxes</span>{y.health > 0.004 ? <span><i style={{ "--sw": PAY_PRINT.health } as React.CSSProperties} />Health premiums</span> : null}
         <span><i style={{ "--sw": PAY_PRINT.spend } as React.CSSProperties} />Spending</span><span><i style={{ "--sw": PAY_PRINT.save } as React.CSSProperties} />Saving and investing</span>{y.left > 0.5 ? <span><i style={{ "--sw": PAY_PRINT.left } as React.CSSProperties} />Unassigned</span> : null}</div>
       <Sec>From gross pay to the bank</Sec>
-      <table className="rp-t"><thead><tr><th>&nbsp;</th><th>{S.per === "check" ? "A paycheck" : "A month"}</th>{S.per === "check" ? <th>A month</th> : null}<th>A year</th><th>Share of pay</th></tr></thead>
+      <table className="rp-t"><thead><tr><th>&nbsp;</th><th>{S.per === "check" ? "Per paycheck" : "Per month"}</th>{S.per === "check" ? <th>Per month</th> : null}<th>Per year</th><th>Share of pay</th></tr></thead>
         <tbody>{rows.map(([k, v], i) => (
           <tr key={k} className={i === 0 || i === rows.length - 1 ? "tot" : undefined}><td>{k}</td><td>{money(v, 2)}</td>{S.per === "check" ? <td>{money((v * n) / 12)}</td> : null}<td>{money(v * n)}</td><td>{pctStr(v / Math.max(1, y.gross), 1)}</td></tr>
         ))}</tbody></table>
       <div className="rp-g3 gap">
         <div className="rp-side"><h5>Effective tax rate</h5><div className="rp-fig sm">{pctStr(y.taxes / Math.max(1, y.gross), 1)}</div><p className="rp-body">of gross pay: federal, state, Social Security and Medicare.</p></div>
-        <div className="rp-side"><h5>{S.per === "check" ? "Each paycheck" : "Each month"}</h5><div className="rp-fig sm">{money(y.takeHome, 2)}</div><p className="rp-body">{S.per === "check" ? "deposited, " + S.facts.freqName.toLowerCase() + "." : "deposited a month, both paychecks together."}</p></div>
+        <div className="rp-side"><h5>{S.per === "check" ? "Each paycheck" : "Each month"}</h5><div className="rp-fig sm">{money(y.takeHome, 2)}</div><p className="rp-body">{S.per === "check" ? "deposited, " + S.facts.freqName.toLowerCase() + "." : "deposited per month, both paychecks together."}</p></div>
         <div className="rp-side"><h5>Your employer adds</h5><div className="rp-fig sm">{money(y.match * n)}</div><p className="rp-body">{y.match > 0 ? "a year in 401(k) match, on top of your pay." : "Nothing yet: no match on what goes in."}</p></div>
       </div>
     </Sheet>
@@ -109,14 +111,15 @@ export function spendChunks(S: PlanSummary): SpendRow[][] {
   rows.push({ kind: "total", label: "Total", mo: S.spendYear / 12, yr: S.spendYear });
   const groups = new Set(S.budgetLines.map((l) => l.group)).size;
   // Rows of about 26.5px in a body of about 870px, less the lead, the bars and the headings.
-  const first = Math.max(6, Math.floor((870 - 110 - 60 - (groups * 26 + 4) - 50) / 26.5)), more = Math.floor((870 - 90) / 26.5);
+  // Under the lead and the bars by group (beside the emergency fund), the table runs the full width.
+  const first = Math.max(6, Math.floor((870 - 110 - Math.max(groups * 26 + 50, 240) - 70) / 26.5)), more = Math.floor((870 - 90) / 26.5);
   const out: SpendRow[][] = [rows.slice(0, first)];
   for (let i = first; i < rows.length; i += more) out.push(rows.slice(i, i + more));
   return out;
 }
 function SpendTable({ rows }: { rows: SpendRow[] }) {
   return (
-    <table className="rp-t"><thead><tr><th>Line</th><th>A month</th><th>A year</th></tr></thead>
+    <table className="rp-t"><thead><tr><th>Line</th><th>Per month</th><th>Per year</th></tr></thead>
       <tbody>{rows.map((r, i) => (
         <tr key={i} className={r.kind === "group" ? "hl" : r.kind === "total" ? "tot" : undefined}>
           <td className={r.kind === "line" ? "l" : undefined}>{r.kind === "group" ? <b>{r.label}</b> : r.label}</td><td>{money(r.mo)}</td><td>{money(r.yr)}</td></tr>
@@ -128,19 +131,18 @@ function Spending({ R, p, rows, part }: { R: PlanReport; p: Page; rows: SpendRow
   if (part > 0) return <Sheet R={R} p={p}><Sec>Every line, continued</Sec><SpendTable rows={rows} /></Sheet>;
   return (
     <Sheet R={R} p={p}>
-      <Lead h={<>You spend {money(S.spendYear / 12)} a month.</>}>
+      <Lead h={<>You spend {money(S.spendYear / 12)} per month.</>}>
         That&apos;s {money(S.spendYear)} a year, {pctStr(S.spendYear / Math.max(1, S.pay.gross * S.p), 0)} of your gross pay. Yearly bills are spread over the year.
         {" "}An emergency fund of {S.ef.months} months of it comes to {money(S.ef.target)}.
       </Lead>
       <div className="rp-wide gap">
-        <div><Sec>By group, a month</Sec><GroupBars S={S} />
-          <Sec>Every line</Sec><SpendTable rows={rows} />
-          {spendChunks(S).length > 1 ? <p className="rp-body mt-1.5">Continued on the next page.</p> : null}</div>
+        <div><Sec>By group, per month</Sec><GroupBars S={S} /></div>
         <div className="rp-side self-start"><h5>Emergency fund</h5><div className="rp-fig sm">{money(S.ef.target)}</div>
           <p>{S.ef.months} months of spending, in cash, before investing past the match. {S.inflow.ef > 0 ? "Your paycheck puts " + money(S.inflow.ef, 2) + " " + per(S) + " toward it." : ""}</p>
-          {S.pay.health > 0.004 ? <><h5 className="gap">Health premiums</h5><p>{money(S.pay.health * S.p)} a year comes out of pay through work, before tax.</p></> : null}
           <h5 className="gap">What&apos;s left</h5><p>After taxes and spending, {money((S.lines.reduce((t, l) => t + l.v, 0) + Math.max(0, S.pay.left)) * S.p)} a year is yours to save. The next section is where it goes.</p></div>
       </div>
+      <Sec>Every line</Sec><SpendTable rows={rows} />
+      {spendChunks(S).length > 1 ? <p className="rp-body mt-1.5">Continued on the next page.</p> : null}
     </Sheet>
   );
 }
@@ -157,7 +159,7 @@ function Saving({ R, p }: { R: PlanReport; p: Page }) {
         {S.inflow.match > 0 ? " Your employer's " + money(S.inflow.match * n) + " a year lands in the traditional 401(k) on top." : ""}
       </Lead>
       <Sec>Each line on your paycheck</Sec>
-      <table className="rp-t"><thead><tr><th>Line</th><th className="l">Kind</th><th>{S.per === "check" ? "A paycheck" : "A month"}</th><th>A year</th></tr></thead>
+      <table className="rp-t"><thead><tr><th>Line</th><th className="l">Kind</th><th>{S.per === "check" ? "Per paycheck" : "Per month"}</th><th>Per year</th></tr></thead>
         <tbody>{S.lines.map((l) => <tr key={l.id}><td>{l.name}</td><td className="l">{kind(l)}</td><td>{money(l.v, 2)}</td><td>{money(l.v * n)}</td></tr>)}
           {S.inflow.match > 0 ? <tr><td>Employer match</td><td className="l">Traditional</td><td>{money(S.inflow.match, 2)}</td><td>{money(S.inflow.match * n)}</td></tr> : null}
           <tr className="tot"><td>Total</td><td></td><td>{money(total + S.inflow.match, 2)}</td><td>{money((total + S.inflow.match) * n)}</td></tr></tbody></table>
@@ -202,37 +204,52 @@ function Road({ R, p }: { R: PlanReport; p: Page }) {
 }
 
 /* ---------- 6. life stages ---------- */
-function Stages({ R, p }: { R: PlanReport; p: Page }) {
-  const S = R.S, st = S.stages!, kids = S.kids.length;
+/** How many stages the first Life stages page lists; the rest, the
+    children's picture and the notes go on a second page. */
+const STAGE_ROWS = 9;
+export const stagePages = (S: PlanSummary) => (S.stages && S.stages.length > STAGE_ROWS ? 2 : 1);
+function Stages({ R, p, part }: { R: PlanReport; p: Page; part: number }) {
+  const S = R.S, st = S.stages!, kids = S.kids.length, split = stagePages(S) > 1;
+  const rows = split ? (part === 0 ? st.slice(0, 20) : st.slice(20)) : st, at0 = split && part > 0 ? 20 : 0;
   const NAME: Record<string, string> = { brok: "Brokerage", roth: "Roth", trad: "Traditional", hsa: "HSA" };
   const today = S.todayMonthly, now = today.brok + today.roth + today.trad + today.hsa;
+  const table = (
+    <table className="rp-t"><thead><tr><th>Stage</th><th>Ages</th><th>Children</th>{COVER_ORDER.map((k) => <th key={k}>{NAME[k]}</th>)}<th>From spending</th><th>Saved</th></tr></thead>
+      <tbody>{rows.map((s, j) => (
+        <tr key={s.from}><td><b>{at0 + j + 1}.</b> {s.name}</td><td>{ageSpan(s.from, s.to).replace(" to ", "–")}</td><td>{s.kidCost > 0 ? money(s.kidCost) : "–"}</td>
+          {COVER_ORDER.map((k) => <td key={k}>{s.take && Math.abs(s.take[k]) > 0.5 ? (s.take[k] > 0 ? "−" : "+") + money(Math.abs(s.take[k])) : "–"}</td>)}
+          <td>{s.short > 0 ? "−" + money(s.short) : "–"}</td><td><b>{money(s.monthly)}</b></td></tr>
+      ))}</tbody></table>
+  );
+  // With many stages: the stages first, then the children and the notes on the next page.
+  const head = part === 0;
+  const tail = !split || part > 0;
   return (
     <Sheet R={R} p={p}>
+      {head ? <>
       <Lead h={<>{WORDS[st.length] ?? st.length} stages{kids ? ", built around " + (kids === 1 ? "one child" : String(WORDS[kids] ?? kids).toLowerCase() + " children") : ""}.</>}>
-        Today you save {money(now)} a month. Each stage below saves that, less what its children cost beyond today, taken from the brokerage first so the tax-advantaged accounts stay full.
+        Today you save {money(now)} per month. Each stage below saves that, less what its children cost beyond today, taken from the brokerage first so the tax-advantaged accounts stay full.
         {st.some((s) => s.take && s.take.trad + s.take.hsa > 0.5) ? " A cut from a traditional account or the HSA is bigger than the cost it covers, since that money is taxed as pay again." : ""}
         {st.some((s) => s.short > 0) ? " Where saving can't cover it, the rest comes out of spending." : ""}
       </Lead>
       <Sec>Your stages, to scale</Sec>
       <StageStrip S={S} />
-      <Sec>Stage by stage, a month in today&apos;s dollars</Sec>
-      <table className="rp-t"><thead><tr><th>Stage</th><th>Ages</th><th>Children</th>{COVER_ORDER.map((k) => <th key={k}>{NAME[k]}</th>)}<th>From spending</th><th>Saved</th></tr></thead>
-        <tbody>{st.map((s, i) => (
-          <tr key={s.from}><td><b>{i + 1}.</b> {s.name}</td><td>{s.from}–{s.to - 1}</td><td>{s.kidCost > 0 ? money(s.kidCost) : "–"}</td>
-            {COVER_ORDER.map((k) => <td key={k}>{s.take && Math.abs(s.take[k]) > 0.5 ? (s.take[k] > 0 ? "−" : "+") + money(Math.abs(s.take[k])) : "–"}</td>)}
-            <td>{s.short > 0 ? "−" + money(s.short) : "–"}</td><td><b>{money(s.monthly)}</b></td></tr>
-        ))}</tbody></table>
-      {S.children ? <>
-        <Sec>What the children cost a month, in today&apos;s dollars, by your age</Sec>
+      <Sec>Stage by stage, per month in today&apos;s dollars</Sec>
+      {table}
+      {split ? <p className="rp-body mt-1.5">The children and the notes are on the next page.</p> : null}
+      </> : null}
+      {split && part > 0 && rows.length ? <><Sec>Stage by stage, continued</Sec>{table}</> : null}
+      {tail && S.children ? <>
+        <Sec>What the children cost per month, in today&apos;s dollars, by your age</Sec>
         <KidBars S={S} />
         <div className="rp-key"><span><i style={{ "--sw": C.clay } as React.CSSProperties} />Before school</span><span><i style={{ "--sw": C.sand } as React.CSSProperties} />At school</span>
           <span><i style={{ "--sw": C.water } as React.CSSProperties} />All of them together</span>
           <span>{money(S.children.total)} until {S.retire}; your balance at {S.retire} is {money(Math.max(0, S.children.without - S.atRetire.total))} lower than saving today&apos;s amounts all the way.</span></div>
       </> : null}
-      <div className="rp-g2 top gap">
-        <div className="rp-side"><h5>What a child costs here</h5><p className="rp-body">$2,500 a month before school with childcare ($1,300 without), $1,500 from 6 to 18, each later child 20% less, unless you changed them. College isn&apos;t included.</p></div>
+      {tail ? <div className="rp-g2 top gap">
+        <div className="rp-side"><h5>What a child costs here</h5><p className="rp-body">Per month, unless you changed them: {money(CHILD_COST.noCare)} before school plus childcare where it&apos;s paid (about {money(CHILD_COST.care.suburb)} in a suburb, {money(CHILD_COST.care.city)} in a big city, {money(CHILD_COST.care.rural)} in rural areas), {money(CHILD_COST.school)} from 6 to 12 and {money(CHILD_COST.teen)} from 13 to 18. A later child costs 20% less: they share a room, clothes and gear. College isn&apos;t included.</p></div>
         <div className="rp-side"><h5>Other changes</h5><p className="rp-body">Any change to saving can be a stage: a raise, a move, part-time years, each with its own saving and return.</p></div>
-      </div>
+      </div> : null}
     </Sheet>
   );
 }
@@ -265,11 +282,11 @@ function Method({ R, p }: { R: PlanReport; p: Page }) {
 export function planPages(S: PlanSummary): Page[] {
   const list: Omit<Page, "n">[] = [
     { id: "cover", title: "Cover" },
-    { id: "pay", title: "Your paycheck", because: "Step 1: what you take home" },
-    ...spendChunks(S).map((_, i) => ({ id: "spend" + i, title: i ? "Your spending, continued" : "Your spending", because: "Step 2: what you spend" })),
-    { id: "save", title: "Your saving", because: "Step 3: where each paycheck goes" },
-    { id: "road", title: "The road to retirement", because: "Step 4: where that gets you" },
-    ...(S.stages ? [{ id: "stages", title: "Your life stages", because: "Step 5: children and other changes" }] : []),
+    { id: "pay", title: "Your paycheck", because: "Step 2: your pay and its taxes" },
+    ...spendChunks(S).map((_, i) => ({ id: "spend" + i, title: i ? "Your spending, continued" : "Your spending", because: "Step 1: what you spend" })),
+    { id: "save", title: "Your saving", because: "Step 2: where each paycheck goes" },
+    { id: "road", title: "The road to retirement", because: "Step 3: where that gets you" },
+    ...(S.stages ? Array.from({ length: stagePages(S) }, (_, i) => ({ id: "stages" + i, title: i ? "Your life stages, continued" : "Your life stages", because: "Step 4: children and other changes" })) : []),
     { id: "method", title: "Assumptions and method" },
   ];
   return list.map((p, i) => ({ ...p, n: i + 1 }));
@@ -284,7 +301,7 @@ export function PlanReportPages({ R }: { R: PlanReport }) {
       {spendChunks(R.S).map((rows, i) => <Spending key={i} R={R} p={at("spend" + i)} rows={rows} part={i} />)}
       <Saving R={R} p={at("save")} />
       <Road R={R} p={at("road")} />
-      {R.S.stages ? <Stages R={R} p={at("stages")} /> : null}
+      {R.S.stages ? Array.from({ length: stagePages(R.S) }, (_, i) => <Stages key={i} R={R} p={at("stages" + i)} part={i} />) : null}
       <Method R={R} p={at("method")} />
     </>
   );

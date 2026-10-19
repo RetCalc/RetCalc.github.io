@@ -18,31 +18,59 @@ const pos = (v: unknown): v is number => ok(v) && v > 0;
 const INFL = BASIC_INFL as number;
 
 /* ---------- children (doc 3, section 3, item 13; decision D11) ---------- */
-/** The default monthly cost of a child, by age band, in today's dollars. */
-export const CHILD_COST = { care: 2500, noCare: 1300, school: 1500, later: 0.8 };
-export const CHILD_SOURCE = "The USDA's last study of what children cost (2015 data, about $17,000 a year per child today) and national childcare averages, which vary two- to threefold by state";
+/** The default monthly cost of a child, by age band, in today's dollars,
+    rounded to $100. Everyday costs come from the USDA's last study of what
+    children cost (middle-income, 2015, brought to today's prices): $1,300
+    before school, $1,400 from 6 to 12 and $1,500 from 13 to 18 (the study
+    finds teens cost about 5% more). Paid childcare adds the Department of
+    Labor's county prices (center care, birth to 5, today's prices) by the
+    kind of place: big cities $1,500, suburbs and small cities $1,000, rural
+    areas $700. A second or later child costs 20% less (`later`): the study
+    finds per-child spending falls as families grow. */
+export type CareArea = "city" | "suburb" | "rural";
+export const CHILD_COST = {
+  noCare: 1300, school: 1400, teen: 1500, later: 0.8,
+  care: { city: 1500, suburb: 1000, rural: 700 } as Record<CareArea, number>,
+};
+export const CARE_AREAS: { id: CareArea; name: string }[] = [
+  { id: "city", name: "Big city" }, { id: "suburb", name: "Suburb or small city" }, { id: "rural", name: "Rural or small town" },
+];
+/** At most this many children, the ones you have and the ones planned together. */
+export const MAX_KIDS = 6;
+/** Before school, a month: everyday costs, plus childcare where it's paid. */
+export const earlyCost = (childcare: boolean, area: CareArea = "suburb") => CHILD_COST.noCare + (childcare ? CHILD_COST.care[area] : 0);
+export const careAreaOf = (v: unknown): CareArea => (v === "city" || v === "rural" ? v : "suburb");
+export const CHILD_SOURCE = "the USDA's last study of what children cost (2015, brought to today's prices) and the Department of Labor's county childcare prices";
 
-export interface Child { born: number; childcare: boolean; early: number; school: number; n: number; planned: boolean; id: string }
+export interface Child { born: number; childcare: boolean; area: CareArea; early: number; school: number; teen: number; n: number; planned: boolean; id: string }
 /** Every child: those you have (their ages today), those planned (the first
     in about N years, then every `spacing` years), and any added one by one.
     Ages are yours; `n` is the birth order, for the second-child step-down. */
 export function children(a: Answers): Child[] {
   if (!ok(a.age)) return [];
-  const care = a.childcare !== false, early = pos(a.childEarly) ? a.childEarly : null, school = pos(a.childSchool) ? a.childSchool : null;
+  const care = a.childcare !== false, area = careAreaOf(a.careArea);
+  const early = pos(a.childEarly) ? a.childEarly : 0, school = pos(a.childSchool) ? a.childSchool : 0, teen = pos(a.childTeen) ? a.childTeen : 0;
+  const base = { childcare: care, area, early, school, teen };
   const out: Omit<Child, "n">[] = [];
-  (a.kidsNow || []).forEach((k, i) => { if (ok(k) && k >= 0 && k < 30) out.push({ id: "now" + i, born: a.age! - k, childcare: care, early: early ?? 0, school: school ?? 0, planned: false }); });
-  const n = pos(a.kidsPlanned) ? Math.min(6, Math.round(a.kidsPlanned)) : 0, first = ok(a.firstIn) ? Math.max(0, a.firstIn) : 2, gap = pos(a.spacing) ? a.spacing : 3;
-  for (let i = 0; i < n; i++) out.push({ id: "plan" + i, born: a.age! + first + i * gap, childcare: care, early: early ?? 0, school: school ?? 0, planned: true });
-  for (const e of a.events || []) if (e.kind === "child") out.push({ id: e.id, born: e.born, childcare: e.childcare, early: e.earlyCost ?? 0, school: e.schoolCost ?? 0, planned: e.born > a.age! });
+  (a.kidsNow || []).slice(0, MAX_KIDS).forEach((k, i) => { if (ok(k) && k >= 0 && k < 30) out.push({ id: "now" + i, born: a.age! - k, ...base, planned: false }); });
+  // Planned: the first in about N years, then every `spacing` years, or
+  // each one its own gap after the one before (kidGaps, where set).
+  const n = pos(a.kidsPlanned) ? Math.min(MAX_KIDS - out.length, Math.round(a.kidsPlanned)) : 0, first = ok(a.firstIn) ? Math.max(0, a.firstIn) : 2, gap = pos(a.spacing) ? a.spacing : 3;
+  let born = a.age! + first;
+  for (let i = 0; i < n; i++) {
+    if (i > 0) { const g = a.kidGaps?.[i - 1]; born += ok(g) && g >= 0 ? g : gap; }
+    out.push({ id: "plan" + i, born, ...base, planned: true });
+  }
+  for (const e of a.events || []) if (e.kind === "child") out.push({ id: e.id, born: e.born, childcare: e.childcare, area, early: e.earlyCost ?? 0, school: e.schoolCost ?? 0, teen: 0, planned: e.born > a.age! });
   return out.sort((x, y) => x.born - y.born).map((c, i) => ({ ...c, n: i }));
 }
-/** What a child costs a month at your age `t`: the band's cost (or the
-    override), less 20% for a second or later child; nothing before birth or
-    from 19, when college is its own line. */
+/** What a child costs a month at your age `t`: the band's cost (before
+    school, 6 to 12, 13 to 18; or the override), less 20% for a second or
+    later child; nothing before birth or from 19, when college is its own line. */
 export function childCost(c: Child, t: number): number {
   const k = t - c.born;
   if (k < 0 || k >= 19) return 0;
-  const band = k < 6 ? (c.early || (c.childcare ? CHILD_COST.care : CHILD_COST.noCare)) : c.school || CHILD_COST.school;
+  const band = k < 6 ? c.early || earlyCost(c.childcare, c.area) : k < 13 ? c.school || CHILD_COST.school : c.teen || CHILD_COST.teen;
   return band * (c.n > 0 ? CHILD_COST.later : 1);
 }
 
@@ -72,6 +100,10 @@ export const hasChanges = (a: Answers) => children(a).length > 0 || (a.events ||
 
 const NUM = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"];
 const ageWord = (n: number) => (n === 1 ? "one child" : (NUM[n] ?? n) + " children");
+/** Children all at school: "School years", "School years, one a teenager", "The teen years". */
+const schoolWords = (teens: number, all: number) =>
+  !teens ? "School years" : teens === all ? "The teen years" : "School years, " + (teens === 1 ? "one a teenager" : NUM[teens] + " teenagers");
+
 /** What's going on at age `t`, in a stage's words. */
 export function labelAt(a: Answers, kids: Child[], t: number, ev: ChangeEvent[]): string {
   const born = kids.filter((c) => c.born <= t), home = born.filter((c) => t - c.born < 19);
@@ -81,10 +113,10 @@ export function labelAt(a: Answers, kids: Child[], t: number, ev: ChangeEvent[])
   else if (!home.length) s = "Empty nest";
   else {
     const care = home.filter((c) => t - c.born < 6 && c.childcare);
-    s = home.length === 1 ? (care.length ? "A child in childcare" : t - home[0].born < 6 ? "A young child" : "A child at school")
+    s = home.length === 1 ? (care.length ? "A child in childcare" : t - home[0].born < 6 ? "A young child" : t - home[0].born < 13 ? "A child at school" : "A teenager")
       : care.length ? ageWord(home.length).replace(/^./, (x) => x.toUpperCase()) + ", " + (care.length === 1 ? "one in childcare"
         : care.length < home.length ? NUM[care.length] + " in childcare" : home.length === 2 ? "both in childcare" : "all in childcare")
-        : home.every((c) => t - c.born >= 6) ? "School years" : ageWord(home.length).replace(/^./, (x) => x.toUpperCase());
+        : home.every((c) => t - c.born >= 6) ? schoolWords(home.filter((c) => t - c.born >= 13).length, home.length) : ageWord(home.length).replace(/^./, (x) => x.toUpperCase());
   }
   // Part-time years and a spouse's pause set the saving outright, so they
   // lead; a raise or a freed payment only matters outside them.

@@ -62,7 +62,7 @@ export function GroupBars({ S, w = 430, row = 26 }: { S: PlanSummary; w?: number
   for (const l of S.budgetLines) sums[l.group] = (sums[l.group] ?? 0) + l.yr;
   const g = Object.entries(sums).map(([group, yr]) => ({ group, yr })).sort((a, b) => b.yr - a.yr), max = Math.max(1, ...g.map((x) => x.yr)), lw = 112, h = g.length * row + 4;
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={g.map((x) => x.group + " " + money(x.yr / 12) + " a month").join(", ")}>
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={g.map((x) => x.group + " " + money(x.yr / 12) + " per month").join(", ")}>
       {g.map((x, i) => {
         const bw = ((w - lw - 70) * x.yr) / max;
         return (
@@ -110,7 +110,9 @@ export function ClimbChart({ S, w = 732, h = 330 }: { S: PlanSummary; w?: number
         // A label close to the one before steps up out of its way.
         const dy = pr && Math.abs(X(m.age) - X(prev.age)) < 90 && Math.abs(Y(r.total) - Y(pr.total)) < 22 ? 15 : 0;
         return <g key={m.label}><circle cx={X(m.age)} cy={Y(r.total)} r={4} fill={C.white} stroke={C.ink} strokeWidth={1.6} />
-          <T x={X(m.age) - 7} y={Y(r.total) - 8 - dy} a="end" s={10.5} w={700}>{m.label} at {m.age}</T></g>;
+          {X(m.age) - pl < 90
+            ? <T x={X(m.age) + 7} y={Y(r.total) - 8 - dy} s={10.5} w={700}>{m.label} at {m.age}</T>
+            : <T x={X(m.age) - 7} y={Y(r.total) - 8 - dy} a="end" s={10.5} w={700}>{m.label} at {m.age}</T>}</g>;
       })}
       {rows.filter((r) => (r.age - a0) % every === 0 || r.age === a1).map((r) => <text key={r.age} x={X(r.age)} y={h - pb + 13} textAnchor="middle" className="rp-ax">{r.age}</text>)}
       {S.kids.map((k, i) => k.born > a0 && k.born < a1 ? (
@@ -145,7 +147,7 @@ export function StageStrip({ S, w = 732, h = 58 }: { S: PlanSummary; w?: number;
 }
 
 /** Each child along your years (before school Clay, at school Sand),
-    then all of them together a month, with the cost written in. */
+    then all of them together per month, with the cost written in. */
 export function KidBars({ S, w = 732 }: { S: PlanSummary; w?: number }) {
   const K = S.children!, a0 = S.age, a1 = S.retire, lw = 92, row = 30, rows = K.rows.length + 1, h = rows * row + 22;
   const X = (a: number) => lw + ((a - a0) / Math.max(1, a1 - a0)) * (w - lw);
@@ -157,7 +159,7 @@ export function KidBars({ S, w = 732 }: { S: PlanSummary; w?: number }) {
   );
   const ticks = Array.from({ length: Math.floor((a1 - a0) / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={"What each child costs a month, by your age, " + a0 + " to " + a1}>
+    <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h} role="img" aria-label={"What each child costs per month, by your age, " + a0 + " to " + a1}>
       {K.rows.map((r, i) => (
         <g key={r.label}>
           <T x={0} y={i * row + row / 2 + 4} s={11}>{r.label}</T>

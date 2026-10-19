@@ -13,13 +13,15 @@ import { Button } from "@/components/ui/button";
    with every page: most visits never open one. */
 let gloss: Record<string, string> | null = null;
 const loadGloss = () => import("@/lib/glossary").then((m) => (gloss = m.GLOSS));
-async function textFor(key: string | null): Promise<string> {
+async function textFor(key: string | null, own?: string | null): Promise<string> {
+  if (own) return own;
   return ((gloss ?? (await loadGloss()))[key ?? ""]) || "";
 }
 
-/** A "?" for glossary entry `k`. */
-export function TipDot({ k, title }: { k: string; title?: string }) {
-  return <span className="tipdot" data-tip={k} data-tip-title={title} role="button" tabIndex={0} aria-label="What is this?">?</span>;
+/** A "?" for glossary entry `k`, or with `text` of its own (a figure
+    worked out on the page). */
+export function TipDot({ k, title, text }: { k: string; title?: string; text?: string }) {
+  return <span className="tipdot" data-tip={k} data-tip-title={title} data-tip-text={text} role="button" tabIndex={0} aria-label="What is this?">?</span>;
 }
 
 /** Label text ending in a "?". The last word and the dot are kept together,
@@ -79,7 +81,7 @@ export function Tooltips() {
   useEffect(() => {
     const dotOf = (e: Event) => (e.target as Element).closest?.(".tipdot") as HTMLElement | null;
     const show = async (d: HTMLElement) => {
-      const text = await textFor(d.getAttribute("data-tip"));
+      const text = await textFor(d.getAttribute("data-tip"), d.getAttribute("data-tip-text"));
       if (!text) return;
       openDot.current?.classList.remove("on");
       d.classList.add("on");
@@ -107,7 +109,7 @@ export function Tooltips() {
         e.preventDefault();
         hide();
         const title = titleOf(d) || "What this means";
-        void textFor(d.getAttribute("data-tip")).then((text) => text && setSheet({ title, text }));
+        void textFor(d.getAttribute("data-tip"), d.getAttribute("data-tip-text")).then((text) => text && setSheet({ title, text }));
         return;
       }
       if (d) {

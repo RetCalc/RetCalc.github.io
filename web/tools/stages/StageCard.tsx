@@ -24,6 +24,7 @@ import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 export type StageEdit = (i: number, f: (st: StageInputs) => StageInputs) => void;
 
@@ -58,13 +59,6 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   // still follow what's typed).
   const noYears = st.years.trim() !== "" && !(num.years > 0);
   const errId = "stageYearsErr" + i;
-  const adjRow = i > 0 ? (
-    <label className="-mt-1.5 mb-3.5 flex min-w-0 cursor-pointer items-center gap-2 text-label text-muted-foreground" title="Inflation adjusted: grows the amount you type by inflation up to the start of this stage">
-      <Checkbox data-f="adj" data-i={i} checked={st.adj} onCheckedChange={(on) => up((c) => ({ ...c, adj: on }))} />
-      <span className="min-w-0 truncate">Inflation adjusted</span>
-      <span className="ml-auto shrink-0 tabular-nums empty:hidden" data-adj={i}>{adjNote}</span>
-    </label>
-  ) : null;
 
   const field = (key: string, labelText: React.ReactNode, input: React.ReactNode, extra?: React.ReactNode, cls?: string) => (
     <div className={cls ? "field " + cls : "field"} key={key}><Label className="mb-1.5"><span>{labelText}</span></Label>{input}{extra}</div>
@@ -77,7 +71,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
     <NumberInput data-f="nominal" data-i={i} step={0.5} value={st.nominal} aria-label={aria + " rate of return"} onValueChange={setF("nominal")} />
     </Affixed>,
   <div className="hint mt-1 mx-0 mb-0 text-right" data-realrate={i}>{pctStr((1 + num.nominal - fees) / (1 + inflation) - 1, 2) + " Real"}</div>);
-  const contrib = field("contrib", "Contribution", <Affixed prefix="$"><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></Affixed>);
+  const contribIn = <Affixed prefix="$"><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></Affixed>;
   const freq = field("freq", "How often", <NativeSelect data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></NativeSelect>,
     <Button variant="link" size="inline-xs" className="mt-1.75 justify-self-start" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</Button>);
   const growth = field("growth", <Tipped text="Contribution growth" k="contribgrowth" />, <Affixed suffix="%/yr">
@@ -100,59 +94,8 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
     glideYears: String(Math.min(5, Math.max(1, Math.round(Math.min(100, parseNum(c.years)))))),
   });
 
-  /* Flat rows in the inputs column, on a rule between stages: the stage's
-     length and return (and on the final stage its glide path), then what it
-     puts in. Two fields a row on every width. */
-  const row = "two items-start max-sm:grid-cols-2";
-  return (
-    <div className="stagecard m-0 rounded-none border-x-0 border-t border-b-0 border-border bg-transparent px-0 pt-3.5 pb-1 first:border-t-0 first:pt-0" id={"stage" + i}>
-      <StageHead name={st.name} fallback={"Stage " + (i + 1)} aria={aria} span={span} remove={() => remove(i)} quiet
-        attrs={{ name: { "data-name": i }, span: { "data-span": i }, del: { "data-del": i } }}
-        rename={(name) => up((c) => {
-          const { name: _old, ...rest } = c;
-          return name ? { ...rest, name } : rest;
-        })} />
-      <div className={row}>{years}{rate}</div>
-      {noYears ? (
-        <div className="-mt-1.5 mb-3 flex items-start gap-2 text-note text-destructive">
-          <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          <span id={errId}>This stage has no years, so it adds nothing to the plan.</span>
-        </div>
-      ) : null}
-      {last ? (
-        <div className="mb-3.5 -mt-1">
-          <CheckToggle on={st.glideOn} onToggle={toggleGlide}>Glide path<TipDot k="glide" /></CheckToggle>
-          <div className="glidefields" hidden={!st.glideOn}>
-            <div className="two max-sm:grid-cols-2">
-              {field("glideEnd", "End at", <Affixed suffix="%">
-                <NumberInput data-f="glideEnd" data-i={i} value={st.glideEnd} aria-label={aria + " glide end rate"} onValueChange={setF("glideEnd")} /></Affixed>)}
-              {field("glideYears", "Over final", <Affixed suffix="yrs">
-                <NumberInput data-f="glideYears" data-i={i} nonNeg value={st.glideYears} aria-label={aria + " glide years"}
-                  onValueChange={(v) => up((c) => ({ ...c, glideYears: stageGlideYears(c.years, v) }))} /></Affixed>)}
-            </div>
-            <div className="hint m-0" data-glidenote={i}>{st.glideOn ? glideNote(num.nominal, num.glide?.endRate || 0, num.years, num.glide?.years || 1, " of this stage") : ""}</div>
-          </div>
-        </div>
-      ) : null}
-      {split ? (
-        <>
-          <div className={row}>{acct("cT", "Traditional")}{acct("cR", "Roth")}</div>
-          <div className={row}>{acct("cB", "Taxable")}{acct("cH", "HSA")}</div>
-          <div className={row}>
-            {field("total", "Total", <Affixed prefix="$">
-              <InputGroupInput variant="numeric" type="text" readOnly tabIndex={-1} data-stotal={i} aria-label={aria + " total contribution"} value={groupDigits(Math.round(parseNum(st.contrib) * 100) / 100, true)} /></Affixed>)}
-            {freq}</div>
-          {adjRow}
-          <div className={row}>{growth}{vol}</div>
-        </>
-      ) : (
-        <>
-          <div className={row}>{contrib}{freq}</div>
-          {adjRow}
-          <div className={row}>{growth}{vol}</div>
-        </>
-      )}
-
+  const dialogs = (
+    <>
       {dialog === "conv" ? (
         <ConverterDialog title={label + " contribution"} amount={num.contrib} period={st.period} onClose={() => setDialog(null)}
           apply={(v, period) => up((c) => {
@@ -177,6 +120,72 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
             toast(rates ? "Contribution growth set by account" : "One contribution growth rate for every account");
           }} />
       ) : null}
+    </>
+  );
+  const head = (
+      <StageHead name={st.name} fallback={"Stage " + (i + 1)} aria={aria} span={span} remove={() => remove(i)} quiet
+        attrs={{ name: { "data-name": i }, span: { "data-span": i }, del: { "data-del": i } }}
+        rename={(name) => up((c) => {
+          const { name: _old, ...rest } = c;
+          return name ? { ...rest, name } : rest;
+        })} />
+  );
+  const noYearsNote = noYears ? (
+    <div className="-mt-1.5 mb-3 flex items-start gap-2 text-note text-destructive">
+      <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+      <span id={errId}>This stage has no years, so it adds nothing to the plan.</span>
+    </div>
+  ) : null;
+  const glideBlock = last ? (
+    <div className="mb-3.5 max-w-md">
+      <CheckToggle on={st.glideOn} onToggle={toggleGlide}>Glide path<TipDot k="glide" /></CheckToggle>
+      <div className="glidefields" hidden={!st.glideOn}>
+        <div className="two max-sm:grid-cols-2">
+          {field("glideEnd", "End at", <Affixed suffix="%">
+            <NumberInput data-f="glideEnd" data-i={i} value={st.glideEnd} aria-label={aria + " glide end rate"} onValueChange={setF("glideEnd")} /></Affixed>)}
+          {field("glideYears", "Over final", <Affixed suffix="yrs">
+            <NumberInput data-f="glideYears" data-i={i} nonNeg value={st.glideYears} aria-label={aria + " glide years"}
+              onValueChange={(v) => up((c) => ({ ...c, glideYears: stageGlideYears(c.years, v) }))} /></Affixed>)}
+        </div>
+        <div className="hint m-0" data-glidenote={i}>{st.glideOn ? glideNote(num.nominal, num.glide?.endRate || 0, num.years, num.glide?.years || 1, " of this stage") : ""}</div>
+      </div>
+    </div>
+  ) : null;
+  const totalIn = <Affixed prefix="$">
+    <InputGroupInput variant="numeric" type="text" readOnly tabIndex={-1} data-stotal={i} aria-label={aria + " total contribution"} value={groupDigits(Math.round(parseNum(st.contrib) * 100) / 100, true)} /></Affixed>;
+  /* The inflation switch sits under the amount it grows, with
+     what it grows to beside it; the "?" says what that is. */
+  const typedAmt = "$" + groupDigits(Math.round(parseNum(st.contrib)), true);
+  const adjLine = i > 0 ? (
+    <div className="mt-1.75 flex min-w-0 items-center gap-1.5 text-label text-muted-foreground">
+      <label className="flex cursor-pointer items-center gap-1.5">
+        <Checkbox data-f="adj" data-i={i} checked={st.adj} onCheckedChange={(on) => up((c) => ({ ...c, adj: on }))} aria-label={aria + " inflation adjusted"} />
+        <span>Inf. Adj.</span>
+      </label>
+      <TipDot k="" title="Inflation adjusted" text={st.adj && adjNote
+        ? "The " + typedAmt + " you type is in today's dollars. Inflation makes it " + adjNote + " by the time this stage starts, and that's what goes in."
+        : "Tick this to type the amount in today's dollars: it grows by inflation up to the start of this stage."} />
+      <span className="ml-auto shrink-0 tabular-nums text-foreground empty:hidden" data-adj={i}>{st.adj ? adjNote : ""}</span>
+    </div>
+  ) : null;
+
+  /* One stage a row in the pop-up under a numbered heading on a rule, its
+     fields side by side (split by account, the four accounts and the total
+     on a line of their own). */
+  const line = "grid grid-cols-2 items-start gap-x-3 sm:grid-cols-3";
+  return (
+    <div className="stagecard m-0 rounded-none border-x-0 border-t-2 border-b-0 border-border bg-transparent px-0 pt-4 pb-1 first:border-t-0 first:pt-1" id={"stage" + i}>
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 grid size-6 flex-none place-items-center rounded-full bg-primary text-label font-semibold text-primary-foreground tabular-nums" aria-hidden="true">{i + 1}</span>
+        <div className="min-w-0 flex-1">{head}</div>
+      </div>
+      <div className={cn(line, split ? (mc ? "lg:grid-cols-5" : "lg:grid-cols-4") : (mc ? "lg:grid-cols-6" : "lg:grid-cols-5"))}>
+        {years}{rate}{split ? null : field("contrib", "Contribution", contribIn, adjLine)}{freq}{growth}{vol}
+      </div>
+      {noYearsNote}
+      {split ? <div className={cn(line, "lg:grid-cols-5")}>{acct("cT", "Traditional")}{acct("cR", "Roth")}{acct("cB", "Taxable")}{acct("cH", "HSA")}{field("total", "Total", totalIn, adjLine)}</div> : null}
+      {glideBlock}
+      {dialogs}
     </div>
   );
 }
