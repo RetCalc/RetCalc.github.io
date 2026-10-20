@@ -192,7 +192,7 @@ export function planSummary(p: PlanState, household: Household | null): PlanSumm
     };
   }
   const milestones: PlanSummary["milestones"] = [];
-  for (const [v, label] of [[100e3, "$100K"], [250e3, "$250K"], [500e3, "$500K"], [1e6, "$1M"], [2e6, "$2M"]] as const) {
+  for (const [v, label] of [[100e3, "$100K"], [250e3, "$250K"], [500e3, "$500K"], [1e6, "$1M"], [2e6, "$2M"], [5e6, "$5M"], [10e6, "$10M"]] as const) {
     // Only the ones still ahead: a balance you already have isn't a milestone.
     const hit = climb.find((c) => c.total >= v);
     if (hit && hit.year > 0) milestones.push({ label, age: hit.age });

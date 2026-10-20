@@ -79,7 +79,7 @@ export function GroupBars({ S, w = 430, row = 26 }: { S: PlanSummary; w?: number
 
 /** The balance by age, stacked by account, today's dollars: the stages as
     numbered bands, each child's birth a mark on the age axis, the total in
-    Trail with the milestones on it. */
+    Trail. */
 export function ClimbChart({ S, w = 732, h = 330 }: { S: PlanSummary; w?: number; h?: number }) {
   const rows = S.climb, a0 = rows[0].age, a1 = rows[rows.length - 1].age;
   const pl = 50, pr = 8, pt = S.stages ? 26 : 10, pb = S.kids.length ? 42 : 22;
@@ -105,15 +105,6 @@ export function ClimbChart({ S, w = 732, h = 330 }: { S: PlanSummary; w?: number
         <text x={pl - 6} y={Y(v) + 3.5} textAnchor="end" className="rp-ax">{axis(v)}</text></g>)}
       {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_PRINT[b.a]} />)}
       <polyline points={rows.map((r) => X(r.age) + "," + Y(r.total)).join(" ")} fill="none" stroke={C.trail} strokeWidth={3} strokeLinejoin="round" />
-      {S.milestones.map((m, i) => {
-        const r = rows.find((x) => x.age === m.age)!, prev = S.milestones[i - 1], pr = prev && rows.find((x) => x.age === prev.age)!;
-        // A label close to the one before steps up out of its way.
-        const dy = pr && Math.abs(X(m.age) - X(prev.age)) < 90 && Math.abs(Y(r.total) - Y(pr.total)) < 22 ? 15 : 0;
-        return <g key={m.label}><circle cx={X(m.age)} cy={Y(r.total)} r={4} fill={C.white} stroke={C.ink} strokeWidth={1.6} />
-          {X(m.age) - pl < 90
-            ? <T x={X(m.age) + 7} y={Y(r.total) - 8 - dy} s={10.5} w={700}>{m.label} at {m.age}</T>
-            : <T x={X(m.age) - 7} y={Y(r.total) - 8 - dy} a="end" s={10.5} w={700}>{m.label} at {m.age}</T>}</g>;
-      })}
       {rows.filter((r) => (r.age - a0) % every === 0 || r.age === a1).map((r) => <text key={r.age} x={X(r.age)} y={h - pb + 13} textAnchor="middle" className="rp-ax">{r.age}</text>)}
       {S.kids.map((k, i) => k.born > a0 && k.born < a1 ? (
         <g key={i}><path d={`M${X(k.born)},${h - 21} l-4,7 h8 Z`} fill={C.ink} /><T x={X(k.born)} y={h - 2} a="middle" s={9.5} w={700}>Child {i + 1}</T></g>

@@ -8,10 +8,9 @@
    later one from the ones before (flow.ts). */
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
 import { CheckIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
-import { ToolBar } from "@/components/shell/ToolBar";
+import { ScenarioBar } from "@/components/shell/ScenarioBar";
 import { useToast } from "@/components/shell/Toast";
 import { TAB_STORE, ToolScopeProvider, decodeHash, readScenarios, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
@@ -125,7 +124,6 @@ export function Walkthrough() {
       <div ref={top} className="scroll-mt-24">
         <Header plan={plan} goTo={goTo} />
       </div>
-      <ToolBar />
       {step !== "start" && step !== "summary" ? <RunningStrip plan={plan} /> : null}
       <StepHead step={step} />
       <ToolScopeProvider value={scope}>
@@ -141,16 +139,9 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
   const reached = stepIndex(plan.reached), cur = stepIndex(plan.step);
   return (
     <div className="toolback">
-      <Button variant="ghost" size="sm" className="-ml-2 flex-none" nativeButton={false} render={<Link href="/guide" />}>
-        <i className="arw back" aria-hidden="true"></i>Guide
-      </Button>
-      <div className="mt-2 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-        <div className="min-w-0">
-          <h1 className="toolhead-name">Paycheck to Retirement</h1>
-          <p className="m-0 mt-1 max-w-copy text-muted-foreground">Straight to the numbers: your pay after taxes, what you spend, where the rest goes, and where that gets you.</p>
-        </div>
-      </div>
-      <nav aria-label="Steps" className="mt-4 -mx-1 overflow-x-auto pb-1">
+      <h1 className="toolhead-name">Paycheck to Retirement</h1>
+      <div className="toolbar mt-3 w-full">
+      <nav aria-label="Steps" className="-mx-1 min-w-0 max-w-full overflow-x-auto pb-1">
         <ol className="m-0 flex min-w-max list-none gap-1 p-0">
           {STEPS.map((s, i) => {
             // Life stages, skipped, stays open to go into but isn't ticked off.
@@ -173,6 +164,8 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
           })}
         </ol>
       </nav>
+        <ScenarioBar />
+      </div>
     </div>
   );
 }
