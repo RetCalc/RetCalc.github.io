@@ -14,6 +14,13 @@ import { ToolBar } from "./ToolBar";
 import { ToolHeader } from "./ToolHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+/** The calculator's three modes, named over their tool. */
+const CALC_HEAD: Partial<Record<Slug, { title: string; desc: string }>> = {
+  calculator: { title: "Basic calculator", desc: "Answer these questions to see what you could have at retirement." },
+  advanced: { title: "Advanced calculator", desc: "Inflation, fees, taxes and account types, worked back from a target." },
+  stages: { title: "Stages calculator", desc: "A plan in stages, each with its own contribution, return and length." },
+};
+
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {
   const meta = PAGES[slug];
   const sub = TOOL_SUB[slug];
@@ -28,7 +35,7 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
       {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={strategyLede(slug) ?? TOOLS[sub].desc}
         full={strategy} more={strategy ? <StrategyLedeLinks hasArticle={!!article} /> : null}
         controls={hasToolControls(slug) ? <ScenarioBar /> : null} /> : null}
-      {!sub && hasToolControls(slug) ? <ToolBar /> : null}
+      {!sub && hasToolControls(slug) ? <ToolBar {...(CALC_HEAD[slug] ?? {})} /> : null}
       {children}
       {strategy ? <StrategyLinks current={slug} /> : null}
       {article ? <Article html={article} /> : null}

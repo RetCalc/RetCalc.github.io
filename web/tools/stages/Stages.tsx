@@ -249,10 +249,6 @@ export function Stages() {
 
         <aside id="asideSeries" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Stages calculator</CardTitle>
-              <CardDescription>A plan in stages, each with its own contribution, return and length.</CardDescription>
-            </CardHeader>
             <CardContent>
               <GroupHead first>Your stages</GroupHead>
               {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => setEditing(i)} /> : null}

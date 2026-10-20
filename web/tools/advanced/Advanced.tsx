@@ -39,7 +39,7 @@ import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
@@ -246,10 +246,6 @@ export function Advanced() {
 
         <aside id="asideSingle" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Advanced calculator</CardTitle>
-              <CardDescription>Inflation, fees, taxes and account types, worked back from a target.</CardDescription>
-            </CardHeader>
             <CardContent>
               <GroupHead first>Your savings</GroupHead>
               <div className="glidewrap acwrap mt-0" id="acWrap">

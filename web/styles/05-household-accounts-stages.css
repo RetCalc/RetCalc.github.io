@@ -41,10 +41,12 @@
 @media (max-width:640px){ .hh-chip{display:none} }
 
 /* ---------- the tool bar ----------
-   Over the calculator's pages: the saved scenarios, on the right. */
+   Over the calculator's pages: the mode's name on the left, the saved
+   scenarios on the right (under it once the row runs out of room). */
 .toolbar{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:10px 20px;
   flex-wrap:wrap;min-width:0}
 .toolbar .scgroup{margin-left:auto}
+.toolbar-t{flex:1 1 360px;min-width:0}
 @media (max-width:640px){
   .toolbar .scgroup{flex:1 1 100%;margin-left:0}
 }
