@@ -57,7 +57,20 @@ main.solo .seo{grid-column:1 / -1}
    in the page either way, so search engines read it in full. The card spans
    the column like the results panels above it; the text inside keeps a
    readable line length rather than stretching with it. */
-.seo-a .body > *{max-width:78ch}
+.seo-a .body > *,.seo-a .seo-main > *{max-width:78ch}
+/* On a wide card the closing sections (questions, related tools, sources)
+   take the right-hand column beside the article, so the text keeps its
+   measure without leaving half the card empty (lib/articles.ts). */
+.seo-a{container:seo / inline-size}
+/* Not the tools' sticky input column: it scrolls with the article. */
+.seo-a .seo-side{position:static;max-height:none;overflow:visible}
+.seo-side > section + section{margin-top:22px}
+@container seo (min-width:1000px){
+  .seo-a .body{display:grid;grid-template-columns:minmax(0,72ch) minmax(0,1fr);gap:0 clamp(40px,5vw,72px);align-items:start}
+  .seo-a .body > .seo-side{max-width:none;border-left:1px solid var(--line-soft);padding-left:clamp(28px,3vw,44px)}
+  .seo-a .seo-main > *{max-width:none}
+  .seo-side > section > h3:first-child{margin-top:0}
+}
 /* About's gold headings, in sentence case: long articles read more easily
    without capitals, and "72(t)" stays lowercase. */
 .seo-a.about h3{text-transform:none;letter-spacing:0;font-size:13.5px}

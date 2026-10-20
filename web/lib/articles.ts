@@ -27,9 +27,9 @@ export const articleHtml = cache((slug: Slug, open = false): string | null => {
   const html = raw(slug);
   if (!html) return null;
   const reviewed = articleReviewed(slug);
-  return html
+  return split(html)
     // "Last reviewed" opens the article's body, from its data-reviewed date.
-    .replace(/(<div class="body">)/, reviewed ? `$1\n    <p class="reviewed">Last reviewed ${reviewedLabel(reviewed)}.</p>` : "$1")
+    .replace(/(<div class="body">\s*(?:<div class="seo-main">)?)/, reviewed ? `$1\n    <p class="reviewed">Last reviewed ${reviewedLabel(reviewed)}.</p>` : "$1")
     .replace('class="seo-a panel about"', open ? 'class="seo-a panel about"' : 'class="seo-a panel about collapsed"')
     .replace(
       /<h2>([\s\S]*?)<\/h2>/,
@@ -40,6 +40,28 @@ export const articleHtml = cache((slug: Slug, open = false): string | null => {
     // the browser's triangle (details/summary keep the keyboard working).
     .replace(/<summary>([\s\S]*?)<\/summary>/g, `<summary>$1${CHEVRON}</summary>`);
 });
+
+/* Where an article's closing sections start, and the order they take in
+   the side column: the questions first, then where to go next, then the
+   sources. */
+const SIDE = ["Questions", "Related tools", "Go further", "Sources"];
+const SIDE_H3 = new RegExp(`<h3>(?:${SIDE.join("|")})</h3>`);
+
+/** Splits the body in two: the article itself, and its closing sections
+    (SIDE) as a column beside it on a wide card (styles: .seo-main, .seo-side).
+    An article without them stays whole. */
+function split(html: string): string {
+  const open = html.indexOf('<div class="body">'), close = html.lastIndexOf("</div>");
+  if (open < 0 || close < open) return html;
+  const start = open + '<div class="body">'.length, body = html.slice(start, close);
+  const at = body.search(SIDE_H3);
+  if (at < 0) return html;
+  const sections = body.slice(at).split(/(?=<h3>)/).map((x) => x.trim()).filter(Boolean);
+  const rank = (x: string) => SIDE.findIndex((t) => x.startsWith(`<h3>${t}</h3>`));
+  sections.sort((x, y) => rank(x) - rank(y));
+  return html.slice(0, start) + `\n    <div class="seo-main">${body.slice(0, at)}</div>\n    <aside class="seo-side">\n    ` +
+    sections.map((x) => `<section>${x}</section>`).join("\n    ") + "\n    </aside>\n    " + html.slice(close);
+}
 
 /** The date (YYYY-MM-DD) an article was last reviewed, from its
     data-reviewed attribute; null when it has none. Only set it when the
