@@ -218,7 +218,7 @@ export function RentBuy() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll max-h-none">
+              <div className="scroll">
                 <table id="rbTable" ref={tableRef}>
                   <thead><tr><th>Year</th><th>Buyer net worth</th><th>Renter net worth</th><th>Difference</th><th>Home value</th><th>Mortgage balance</th></tr></thead>
                   <tbody>

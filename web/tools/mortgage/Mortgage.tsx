@@ -363,7 +363,7 @@ export function Mortgage() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll max-h-none">
+              <div className="scroll">
                 <table id="moTable" ref={table}>
                   <thead><tr><th>Year</th><th>Interest</th><th>Principal</th><th>Total paid</th><th>Balance</th></tr></thead>
                   <tbody>
