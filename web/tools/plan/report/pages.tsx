@@ -21,7 +21,7 @@ const Sec = ({ children }: { children: React.ReactNode }) => <h4 className="rp-s
 const ACCTS: Acct[] = ["trad", "roth", "brok", "hsa"];
 const WORDS = ["None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
 const used = (S: PlanSummary) => ACCTS.filter((a) => S.climb.some((r) => r[a] > 1));
-const per = (S: PlanSummary) => (S.per === "check" ? "a paycheck" : "per month");
+const per = (S: PlanSummary) => (S.per === "check" ? "per paycheck" : "per month");
 
 function Sheet({ R, p, children }: { R: PlanReport; p: Page; children: React.ReactNode }) {
   return (
@@ -48,18 +48,18 @@ function Cover({ R, pages }: { R: PlanReport; pages: Page[] }) {
           {S.stages ? <div><span className="rp-num">1</span>Each life stage, numbered</div> : null}</div></div>
       <div className="rp-cols">
         <div><h5>Your pay</h5><div className="rp-fig">{money(S.pay.takeHome * S.p)}</div>
-          <p>a year reaches your bank from {money(S.pay.gross * S.p)} of pay: {money(S.pay.takeHome)} {per(S)}, after {money(S.pay.taxes * S.p)} in taxes and what goes into accounts before it.</p>
+          <p>per year reaches your bank from {money(S.pay.gross * S.p)} of pay: {money(S.pay.takeHome)} {per(S)}, after {money(S.pay.taxes * S.p)} in taxes and what goes into accounts before it.</p>
           <h5 className="gap">Contents</h5>
           <ol className="rp-toc">{pages.slice(1).filter((p) => !p.title.endsWith("continued")).map((p) => <li key={p.id}><b>{p.title}</b><span className="d" /><span className="pn">{p.n}</span></li>)}</ol></div>
         <div><h5>Your saving</h5><div className="rp-fig">{money(saved)}</div>
-          <p>a year, {pctStr(saved / Math.max(1, S.pay.gross * S.p), 0)} of your pay{S.inflow.match > 0 ? ", " + money(S.inflow.match * S.p) + " of it your employer's match" : ""}.
-            {S.pay.left > 0.5 ? " " + money(S.pay.left * S.p) + " a year is still unassigned." : " Every dollar of pay has a job."}</p>
+          <p>per year, {pctStr(saved / Math.max(1, S.pay.gross * S.p), 0)} of your pay{S.inflow.match > 0 ? ", " + money(S.inflow.match * S.p) + " of it your employer's match" : ""}.
+            {S.pay.left > 0.5 ? " " + money(S.pay.left * S.p) + " per year is still unassigned." : " Every dollar of pay has a job."}</p>
           <h5 className="gap">Spending</h5><div className="rp-fig">{money(S.spendYear / 12)}</div><p>per month, from your budget.</p></div>
         <div><h5>At {S.retire}</h5><div className="rp-fig">{money(A.total)}</div>
           <p>in today&apos;s dollars ({money(A.fv)} in future dollars){S.stages ? ", with your life stages" : ""}.</p>
           <h5 className="gap">To spend in retirement</h5><div className="rp-fig">{money(A.afterTax)}</div>
-          <p>a year after tax, from a {pctStr(A.withdrawal, 1)} withdrawal{S.goal.v > 0
-            ? (A.afterTax >= S.goal.v ? ", more than " : ", against ") + (S.goal.fromBudget ? "the " + money(S.goal.v) + " your budget spends in a year" : "your goal of " + money(S.goal.v)) + (A.afterTax >= S.goal.v ? "." : ": " + money(S.goal.v - A.afterTax) + " short.")
+          <p>per year after tax, from a {pctStr(A.withdrawal, 1)} withdrawal{S.goal.v > 0
+            ? (A.afterTax >= S.goal.v ? ", more than " : ", against ") + (S.goal.fromBudget ? "the " + money(S.goal.v) + " your budget spends per year" : "your goal of " + money(S.goal.v)) + (A.afterTax >= S.goal.v ? "." : ": " + money(S.goal.v - A.afterTax) + " short.")
             : "."}</p></div>
       </div>
       <div className="rp-foot"><span>RetCalc · retcalc.app</span><span>An educational plan, not financial advice. Past returns don&apos;t predict future ones.</span></div>
@@ -75,7 +75,7 @@ function Paycheck({ R, p }: { R: PlanReport; p: Page }) {
     ["Reaches your bank", y.takeHome]];
   return (
     <Sheet R={R} p={p}>
-      <Lead h={<>Of {money(y.gross * n)} a year, {money(y.takeHome * n)} reaches your bank.</>}>
+      <Lead h={<>Of {money(y.gross * n)} per year, {money(y.takeHome * n)} reaches your bank.</>}>
         Taxes take {money(y.taxes * n)}, {pctStr(y.taxes / Math.max(1, y.gross), 1)} of your pay. {y.preSave > 0.004 ? money(y.preSave * n) + " goes into accounts before tax, which is why it costs your paycheck less than it saves. " : ""}
         Everything here is {S.facts.taxYear}&apos;s federal and {y.stateName || "state"} rules, {S.facts.status.toLowerCase()}, paid {S.facts.freqName.toLowerCase()}.
       </Lead>
@@ -91,7 +91,7 @@ function Paycheck({ R, p }: { R: PlanReport; p: Page }) {
       <div className="rp-g3 gap">
         <div className="rp-side"><h5>Effective tax rate</h5><div className="rp-fig sm">{pctStr(y.taxes / Math.max(1, y.gross), 1)}</div><p className="rp-body">of gross pay: federal, state, Social Security and Medicare.</p></div>
         <div className="rp-side"><h5>{S.per === "check" ? "Each paycheck" : "Each month"}</h5><div className="rp-fig sm">{money(y.takeHome, 2)}</div><p className="rp-body">{S.per === "check" ? "deposited, " + S.facts.freqName.toLowerCase() + "." : "deposited per month, both paychecks together."}</p></div>
-        <div className="rp-side"><h5>Your employer adds</h5><div className="rp-fig sm">{money(y.match * n)}</div><p className="rp-body">{y.match > 0 ? "a year in 401(k) match, on top of your pay." : "Nothing yet: no match on what goes in."}</p></div>
+        <div className="rp-side"><h5>Your employer adds</h5><div className="rp-fig sm">{money(y.match * n)}</div><p className="rp-body">{y.match > 0 ? "per year in 401(k) match, on top of your pay." : "Nothing yet: no match on what goes in."}</p></div>
       </div>
     </Sheet>
   );
@@ -132,14 +132,14 @@ function Spending({ R, p, rows, part }: { R: PlanReport; p: Page; rows: SpendRow
   return (
     <Sheet R={R} p={p}>
       <Lead h={<>You spend {money(S.spendYear / 12)} per month.</>}>
-        That&apos;s {money(S.spendYear)} a year, {pctStr(S.spendYear / Math.max(1, S.pay.gross * S.p), 0)} of your gross pay. Yearly bills are spread over the year.
+        That&apos;s {money(S.spendYear)} per year, {pctStr(S.spendYear / Math.max(1, S.pay.gross * S.p), 0)} of your gross pay. Yearly bills are spread over the year.
         {" "}An emergency fund of {S.ef.months} months of it comes to {money(S.ef.target)}.
       </Lead>
       <div className="rp-wide gap">
         <div><Sec>By group, per month</Sec><GroupBars S={S} /></div>
         <div className="rp-side self-start"><h5>Emergency fund</h5><div className="rp-fig sm">{money(S.ef.target)}</div>
           <p>{S.ef.months} months of spending, in cash, before investing past the match. {S.inflow.ef > 0 ? "Your paycheck puts " + money(S.inflow.ef, 2) + " " + per(S) + " toward it." : ""}</p>
-          <h5 className="gap">What&apos;s left</h5><p>After taxes and spending, {money((S.lines.reduce((t, l) => t + l.v, 0) + Math.max(0, S.pay.left)) * S.p)} a year is yours to save. The next section is where it goes.</p></div>
+          <h5 className="gap">What&apos;s left</h5><p>After taxes and spending, {money((S.lines.reduce((t, l) => t + l.v, 0) + Math.max(0, S.pay.left)) * S.p)} per year is yours to save. The next section is where it goes.</p></div>
       </div>
       <Sec>Every line</Sec><SpendTable rows={rows} />
       {spendChunks(S).length > 1 ? <p className="rp-body mt-1.5">Continued on the next page.</p> : null}
@@ -154,9 +154,9 @@ function Saving({ R, p }: { R: PlanReport; p: Page }) {
   const total = S.lines.reduce((t, l) => t + l.v, 0);
   return (
     <Sheet R={R} p={p}>
-      <Lead h={<>{money(total * n)} a year goes to work, {money(total, 2)} {per(S)}.</>}>
+      <Lead h={<>{money(total * n)} per year goes to work, {money(total, 2)} {per(S)}.</>}>
         In order: {S.lines.map((l) => l.name).join(", ")}.
-        {S.inflow.match > 0 ? " Your employer's " + money(S.inflow.match * n) + " a year lands in the traditional 401(k) on top." : ""}
+        {S.inflow.match > 0 ? " Your employer's " + money(S.inflow.match * n) + " per year lands in the traditional 401(k) on top." : ""}
       </Lead>
       <Sec>Each line on your paycheck</Sec>
       <table className="rp-t"><thead><tr><th>Line</th><th className="l">Kind</th><th>{S.per === "check" ? "Per paycheck" : "Per month"}</th><th>Per year</th></tr></thead>
@@ -168,7 +168,7 @@ function Saving({ R, p }: { R: PlanReport; p: Page }) {
         {shown.map((a) => (
           <div key={a} className="rp-side"><h5><i className="mr-1.5 inline-block size-2.75 align-baseline bg-(--sw)" style={{ "--sw": ACCT_PRINT[a] } as React.CSSProperties} />{ACCT_NAMES[a]}</h5>
             <div className="rp-fig sm">{money(S.atRetire.byAcct?.[a] ?? 0)}</div>
-            <p className="rp-body">at {S.retire}, {pctStr((S.atRetire.byAcct?.[a] ?? 0) / Math.max(1, S.atRetire.total), 0)} of the total. Today {money(S.climb[0][a])}; {money(S.inflow[a] * n)} a year going in.</p></div>
+            <p className="rp-body">at {S.retire}, {pctStr((S.atRetire.byAcct?.[a] ?? 0) / Math.max(1, S.atRetire.total), 0)} of the total. Today {money(S.climb[0][a])}; {money(S.inflow[a] * n)} per year going in.</p></div>
         ))}
       </div>
     </Sheet>
