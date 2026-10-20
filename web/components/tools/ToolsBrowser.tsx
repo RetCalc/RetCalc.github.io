@@ -25,7 +25,7 @@ import { ToolIconTile } from "./ToolIcon";
 import { Badge } from "@/components/ui/badge";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import {
-  BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, HealthChart, MortgageChart, RothChart, TaxChart,
+  BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, HealthChart, MortgageChart, RothChart, TaxChart, SocialChart
 } from "@/components/home/charts";
 import { BacktestSliders, CollegeStairs, DebtDownhill, RentBuyBlueprint } from "./picker-charts";
 
@@ -34,6 +34,7 @@ function chartFor(sub: ToolSub, data: PickerData): { chart: React.ReactNode; bar
   switch (sub) {
     case "drawdown": return { chart: <FanChart fan={data.fan} /> };
     case "optimizer": return { chart: <CloudChart /> };
+    case "social": return { chart: <SocialChart />, bars: "up" };
     case "bridge": return { chart: <BridgeChart />, bars: "across" };
     case "roth": return { chart: <RothChart />, bars: "up" };
     case "healthcare": return { chart: <HealthChart /> };
@@ -51,8 +52,8 @@ function chartFor(sub: ToolSub, data: PickerData): { chart: React.ReactNode; bar
 /* The chart cards' layout, by section: the Drawdown Simulator wide with the
    Optimizer beside it, three across under them; then two across, where the
    homepage's wide charts (Rent vs. Buy, Income Tax) have room. */
-const CHART_LAYOUT: Record<string, [ToolSub, "lead" | "third" | "half"][]> = {
-  "Retirement income": [["drawdown", "lead"], ["optimizer", "third"], ["bridge", "third"], ["roth", "third"], ["healthcare", "third"]],
+const CHART_LAYOUT: Record<string, [ToolSub, "lead" | "third" | "half" | "quarter"][]> = {
+  "Retirement income": [["drawdown", "lead"], ["optimizer", "third"], ["social", "quarter"], ["bridge", "quarter"], ["roth", "quarter"], ["healthcare", "quarter"]],
   "Saving and investing": [["rentbuy", "half"], ["fire", "half"], ["backtest", "half"], ["college", "half"]],
   "Everyday money": [["tax", "half"], ["budget", "half"], ["mortgage", "half"], ["debt", "half"]],
 };
@@ -62,7 +63,7 @@ function Name({ sub }: { sub: ToolSub }) {
   return <div className="toolcard-name">{c.name}{c.badge ? <Badge variant="highlight" className="ml-1.75 align-middle">{c.badge}</Badge> : null}</div>;
 }
 
-function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "third" | "half"; data: PickerData; glide: boolean }) {
+function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "third" | "half" | "quarter"; data: PickerData; glide: boolean }) {
   const c = TOOLS[sub], { chart, bars } = chartFor(sub, data);
   const top = (
     <div className="toolcard-top">

@@ -5,6 +5,7 @@
    Early Retirement Bridge's from typed-bridge.ts. */
 import * as E from "./core.js";
 import type {
+  SsHousehold, SsHouseholdInput, SsInvest, SsInvestInput, SsPerson,
   Coast, FinalStageSolve, FvFactors, GoalSolve, MCResult, Plan, RetireTax, SeriesGlobals, Series, SolveYears, Stage,
   BasicResult, HistRuns, Projection, RothResult, CollegeInput, CollegePlan, CollegeResult, DebtInput, DebtResult, MortgageInput, MortgageResult, RefiResult, RentBuyResult, BtInput, BtResult,
   YearData,
@@ -36,6 +37,14 @@ export const HIST_YEARS = (E.HIST_STOCK as number[]).length;
 
 export const projectBasic = typed<(p: { years: number; real: number; initial: number; contrib: number; period: string; withdrawal: number }) => BasicResult>(E.projectBasic);
 
+export const ssFRA = typed<(birthYear: number) => number>(E.ssFRA);
+export const ssClaimFactor = typed<(claimAge: number, fra: number) => number>(E.ssClaimFactor);
+export const ssSpousalFactor = typed<(claimAge: number, fra: number) => number>(E.ssSpousalFactor);
+export const ssPerson = typed<(p: { pia: number; fra: number; claim: number; earnings?: number }) => SsPerson>(E.ssPerson);
+export const ssHousehold = typed<(o: SsHouseholdInput) => SsHousehold>(E.ssHousehold);
+export const ssBreakEven = typed<(a: number, benA: number, b: number, benB: number) => number | null>(E.ssBreakEven);
+export const ssInvestEarly = typed<(o: SsInvestInput) => SsInvest>(E.ssInvestEarly);
+export const ssEstimatePia = typed<(income: number, careerYears: number, claimAge: number) => { pia: number; aime: number }>(E.ssEstimate);
 export const ssTaxable = typed<(ss: number, otherAgi: number, st: string) => { taxable: number }>(E.ssTaxable);
 export const hcFPL = typed<(size: number) => number>(E.hcFPL);
 export const hcGrossPremium = typed<(state: string, age: number, manual: number) => number>(E.hcGrossPremium);

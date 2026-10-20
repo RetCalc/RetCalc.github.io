@@ -2170,4 +2170,201 @@ export function hcCalcACA(income, grossPremium, pctFPL, enhanced){
 }
 
 
+/* ---------- Social Security claiming ----------
+   The claiming tool: a benefit at every age from 62 to 70, for one person
+   or a couple, what each choice adds up to over a lifetime, and where the
+   choices cross. Everything is in today's dollars: Social Security's
+   cost-of-living raises keep a benefit level in real terms, and the
+   delayed credits are real too. */
+
+/** Full retirement age for a birth year, in years (66 and 4 months is
+    66.3333): 65 up to 1937, climbing two months a year to 66 for 1943 to
+    1954, then two months a year again to 67 from 1960 on. */
+export function ssFRA(birthYear) {
+  var y = Math.round(birthYear || 1960);
+  if (y <= 1937) return 65;
+  if (y <= 1942) return 65 + (y - 1937) * 2 / 12;
+  if (y <= 1954) return 66;
+  if (y <= 1959) return 66 + (y - 1954) * 2 / 12;
+  return 67;
+}
+
+/* The worker's own benefit, as a share of the full one, for claiming at
+   `claimAge` with full retirement age `fra`: early, 5/9 of 1% a month for
+   the first 36 months and 5/12 of 1% a month beyond; late, 2/3 of 1% a
+   month (8% a year) up to 70. Months are whole, as Social Security counts
+   them. */
+export function ssClaimFactor(claimAge, fra) {
+  fra = fra || SS_FRA;
+  var age = Math.min(70, Math.max(62, claimAge));
+  var months = Math.round((age - fra) * 12);
+  if (months < 0) {
+    var early = -months, first36 = Math.min(36, early);
+    return 1 - first36 * (5 / 9) / 100 - Math.max(0, early - 36) * (5 / 12) / 100;
+  }
+  return 1 + months * (2 / 3) / 100;
+}
+
+/* A spousal benefit's share: cut 25/36 of 1% a month for the first 36
+   months before full retirement age and 5/12 of 1% beyond (35% at 62 with a
+   full retirement age of 67), and never raised past it. */
+export function ssSpousalFactor(claimAge, fra) {
+  fra = fra || SS_FRA;
+  var age = Math.min(70, Math.max(62, claimAge));
+  var early = Math.max(0, Math.round((fra - age) * 12));
+  if (!early) return 1;
+  return 1 - Math.min(36, early) * (25 / 36) / 100 - Math.max(0, early - 36) * (5 / 12) / 100;
+}
+
+/* The earnings test: claiming before full retirement age while still
+   working, Social Security withholds $1 of benefit for every $2 earned
+   over the year's limit (the year full retirement age is reached runs on
+   a higher limit and $1 in $3; treated here as the earlier years, which
+   overstates it a little for that one year). The withheld months aren't
+   lost: at full retirement age the benefit is refigured as if claimed
+   that many months later. Returns the annual benefit withheld. */
+export function ssEarningsWithheld(earnings, annualBenefit) {
+  var limit = yearData().ss.earn.under;
+  if (!(earnings > limit) || !(annualBenefit > 0)) return 0;
+  return Math.min(annualBenefit, (earnings - limit) / 2);
+}
+
+/* One person's benefit stream from a claiming choice: the monthly benefit
+   from that age on, and, with earnings before full retirement age, what's
+   paid in each of those years and the higher benefit from full retirement
+   age once the withheld months are credited back.
+   @param {{pia:number, fra:number, claim:number, earnings?:number}} p
+   @returns {{monthly:number, annual:number, factor:number, earlyAnnual:number,
+     withheld:number, monthsBack:number, laterMonthly:number}} */
+export function ssPerson(p) {
+  var fra = p.fra || SS_FRA, claim = Math.min(70, Math.max(62, p.claim));
+  var factor = ssClaimFactor(claim, fra), monthly = p.pia * factor, annual = monthly * 12;
+  var out = {monthly:monthly, annual:annual, factor:factor, earlyAnnual:annual, withheld:0, monthsBack:0, laterMonthly:monthly};
+  if (p.earnings > 0 && claim < fra) {
+    var w = ssEarningsWithheld(p.earnings, annual);
+    if (w > 0) {
+      out.withheld = w;
+      out.earlyAnnual = annual - w;
+      // Whole months of benefit withheld each year, credited back at FRA.
+      var yrs = fra - claim, months = Math.round(Math.min(annual, w) / monthly * yrs);
+      out.monthsBack = months;
+      var later = Math.min(fra, claim + months / 12);
+      out.laterMonthly = p.pia * ssClaimFactor(later, fra);
+    }
+  }
+  return out;
+}
+
+/* A household's Social Security, year by year, from the first spouse's
+   claiming age to the end of the longer life, in today's dollars.
+   @param {Object} o
+   @param {number} o.pia1 - your benefit at full retirement age, a month
+   @param {number} o.fra1 - your full retirement age (ssFRA)
+   @param {number} o.claim1 - the age you claim, 62 to 70
+   @param {number} o.through1 - the age you plan through (live to)
+   @param {number} [o.earn1] - earnings a year before full retirement age
+   @param {boolean} o.married
+   @param {number} [o.pia2], [o.fra2], [o.claim2], [o.through2], [o.earn2] - the spouse's
+   @param {number} [o.gap] - the spouse's age minus yours (a younger spouse is negative)
+   @returns {{rows: {age:number, you:number, spouse:number, total:number, cum:number}[],
+     total:number, you:ssPerson, spouse:ssPerson|null, top1:number, top2:number,
+     survivor:number, survivorAt:number|null, firstYear:number, lastYear:number}}
+   Each row is one year of your age (the spouse's is age + gap). The
+   lower earner's spousal top-up starts once both have claimed, reduced
+   for the age that spouse is then. When one spouse dies the other keeps
+   the larger of the two checks (the survivor benefit) from then on. */
+export function ssHousehold(o) {
+  var you = ssPerson({pia:o.pia1, fra:o.fra1, claim:o.claim1, earnings:o.earn1});
+  var sp = o.married ? ssPerson({pia:o.pia2, fra:o.fra2, claim:o.claim2, earnings:o.earn2}) : null;
+  var gap = o.married ? (o.gap || 0) : 0;
+  var top1 = 0, top2 = 0, bothAt = o.claim1;
+  if (sp) {
+    // Your age when both have claimed: the later of your claim and the
+    // spouse's claim, in your years.
+    bothAt = Math.max(o.claim1, o.claim2 - gap);
+    top1 = Math.max(0, .5 * o.pia2 - o.pia1) * ssSpousalFactor(Math.min(70, bothAt), o.fra1);
+    top2 = Math.max(0, .5 * o.pia1 - o.pia2) * ssSpousalFactor(Math.min(70, bothAt + gap), o.fra2);
+  }
+  var first = sp ? Math.min(o.claim1, o.claim2 - gap) : o.claim1;
+  var last = sp ? Math.max(o.through1, o.through2 - gap) : o.through1;
+  var rows = [], cum = 0, survivor = 0, survivorAt = null;
+  for (var age = first; age < last; age++) {
+    var alive1 = age < o.through1, alive2 = sp ? age + gap < o.through2 : false;
+    var b1 = 0, b2 = 0;
+    if (alive1 && age >= o.claim1) {
+      b1 = (age < o.fra1 ? you.earlyAnnual : you.laterMonthly * 12) + (age >= bothAt ? top1 * 12 : 0);
+    }
+    if (sp && alive2 && age + gap >= o.claim2) {
+      b2 = (age + gap < o.fra2 ? sp.earlyAnnual : sp.laterMonthly * 12) + (age >= bothAt ? top2 * 12 : 0);
+    }
+    if (sp) {
+      // The survivor keeps the larger check: own benefit including any
+      // credits, or the one the other had (or would have had).
+      var own1 = you.laterMonthly * 12, own2 = sp.laterMonthly * 12;
+      if (alive1 && !alive2 && age >= o.claim1) { b1 = Math.max(b1, own2); if (survivorAt === null) { survivorAt = age; survivor = b1 / 12; } }
+      if (alive2 && !alive1 && age + gap >= o.claim2) { b2 = Math.max(b2, own1); if (survivorAt === null) { survivorAt = age; survivor = b2 / 12; } }
+    }
+    cum += b1 + b2;
+    rows.push({age:age, you:b1, spouse:b2, total:b1 + b2, cum:cum});
+  }
+  return {rows:rows, total:cum, you:you, spouse:sp, top1:top1, top2:top2, survivor:survivor, survivorAt:survivorAt, firstYear:first, lastYear:last};
+}
+
+/* The age at which claiming at `b` has paid as much in all as claiming at
+   `a` (a < b), from each one's annual benefit: null when the later claim
+   never catches up. */
+export function ssBreakEven(a, benA, b, benB) {
+  if (!(benB > benA) || !(b > a)) return null;
+  return (benB * b - benA * a) / (benB - benA);
+}
+
+/* Claim early and invest every check, or wait: the claim at `early` is
+   saved, in a stock and bond mix, until `late`; from then on the gap
+   between the two checks is drawn from what was saved, every year to
+   `through`. Run across every start year in market history, in real
+   terms (that window's own inflation). Won: the pot outlasts `through`.
+   @param {{early:number, late:number, benEarly:number, benLate:number,
+     through:number, mix:number}} o - annual benefits in today's dollars;
+     mix is the stock share (0 to 1), the rest 10-year Treasuries
+   @returns {{windows:number, won:number, ranOut:number, median:number,
+     worst:number, best:number, firstOut:number|null, years:number,
+     bands:{year:number, p10:number, p25:number, p50:number, p75:number, p90:number}[],
+     finals:{start:number, end:number, outAt:number|null}[]}} */
+export function ssInvestEarly(o) {
+  var years = o.through - o.early, n = HIST_STOCK.length;
+  var base = {windows:0, won:0, ranOut:0, median:0, worst:0, best:0, firstOut:null, years:years, bands:[], finals:[]};
+  if (!(years > 0) || years > n) return base;
+  var paths = [], finals = [], s, y, pot, outAt;
+  for (s = 0; s + years <= n; s++) {
+    pot = 0; outAt = null;
+    var path = [0];
+    for (y = 0; y < years; y++) {
+      var age = o.early + y;
+      var r = (o.mix * HIST_STOCK[s + y] + (1 - o.mix) * HIST_BOND[s + y]) / 100;
+      var real = (1 + r) / (1 + HIST_INFL[s + y] / 100) - 1;
+      // Each year's checks come in through the year; count them at the
+      // start, and the gap drawn the same way.
+      pot += age < o.late ? o.benEarly : o.benEarly - o.benLate;
+      // Once it's gone it's gone: the year it ran out is the shortfall.
+      if (pot < 0) { if (outAt === null) outAt = age; pot = 0; }
+      pot = pot * (1 + real);
+      path.push(pot);
+    }
+    paths.push(path);
+    finals.push({start:HIST_START + s, end:pot, outAt:outAt});
+  }
+  var ends = finals.map(function (f) { return f.end; }).sort(function (a, b) { return a - b; });
+  var q = function (arr, p) { return arr[Math.min(arr.length - 1, Math.max(0, Math.round(p * (arr.length - 1))))]; };
+  var bands = [];
+  for (y = 0; y <= years; y++) {
+    var col = paths.map(function (p) { return p[y]; }).sort(function (a, b) { return a - b; });
+    bands.push({year:y, p10:q(col, .1), p25:q(col, .25), p50:q(col, .5), p75:q(col, .75), p90:q(col, .9)});
+  }
+  var won = finals.filter(function (f) { return f.outAt === null; }).length;
+  var outs = finals.filter(function (f) { return f.outAt !== null; });
+  var firstOut = outs.length ? outs.reduce(function (m, f) { return Math.min(m, f.outAt); }, 999) : null;
+  return {windows:finals.length, won:won, ranOut:finals.length - won, median:q(ends, .5), worst:ends[0], best:ends[ends.length - 1],
+          firstOut:firstOut, years:years, bands:bands, finals:finals};
+}
+
 // ===MATH END===

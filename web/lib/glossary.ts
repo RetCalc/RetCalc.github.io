@@ -2,6 +2,16 @@
    src/js/app/16-glossary.js. */
 
 export const GLOSS: Record<string, string> = {
+  ssbirth: "Your birth year sets your full retirement age: 66 for anyone born 1943 to 1954, rising two months a year to 67 for 1960 and later. The claiming reductions and credits all count from it.",
+  ssfra: "The age Social Security pays your full benefit, the figure on your statement. Claim earlier and the check is cut for every month early; claim later and it grows 8% a year until 70.",
+  sspia: "The monthly figure your Social Security statement shows at full retirement age (ssa.gov/myaccount). It's in today's dollars and already reflects your earnings record, so it's the most accurate starting point. Benefits get a cost-of-living raise every year, so every figure here stays in today's dollars.",
+  ssyears: "Social Security averages your best 35 years of earnings. Fewer years means zeros are averaged in, which lowers the benefit. The estimate assumes a roughly steady career at the income entered.",
+  ssthrough: "The age the totals run to: a life expectancy, or an age you'd want the plan to hold up to. A 65-year-old today lives to about 84 on average, and in a couple one of the two usually passes 90. Try a few.",
+  ssearn: "Work earnings in a year you're collecting before full retirement age. Social Security withholds $1 of benefit for every $2 earned over the year's limit. The withheld months aren't lost: at full retirement age your benefit is refigured as if you had claimed that much later.",
+  ssother: "Pensions, withdrawals from traditional accounts, interest, dividends, capital gains and tax-exempt interest, a year, in retirement. Together with half your benefit they set how much of Social Security is taxed: none at low incomes, up to 85% at higher ones.",
+  ssmix: "How the early checks are invested in the claim-early-and-invest test: this share in US stocks, the rest in 10-year Treasuries, rebalanced yearly, through every start year since 1926.",
+  ssbest: "The claiming age that collects the most in all, in today's dollars, if you live exactly to the age planned through. It ignores taxes and what the money could earn invested; the sections below take those up.",
+  sstaxed: "The share of your household's yearly benefit that counts as taxable income at the other income entered, under the federal provisional-income rules. The rest is tax-free. Most states don't tax Social Security at all.",
   refiexisting: "For a loan you already have, describe it as it stands today: set the price and down payment so the loan amount equals your current balance, and the length to the years left. The refinance is compared from today on that loan.",
   recast: "Your lender re-runs the amortization on the reduced balance right after a lump-sum payment, spreading it over whatever's left of the original term. The payoff date doesn't move, but the required payment drops for every month after. Most lenders charge a small fee for this, typically $150\u2013500, not included here.",
   bthistory: "The years the backtest covers. Earlier start dates give more data and more market regimes; later ones describe a world closer to the present. Both are useful, and they often disagree \u2014 a 60/40 mix looks very different measured from 1926 than from 1982.",

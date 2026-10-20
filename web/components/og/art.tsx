@@ -442,8 +442,25 @@ const Tools: Pic = ({ data }) => {
   );
 };
 
+/** Social Security: the check at 62, 67 and 70 as three columns, the plan
+    line climbing across their tops to the arrowhead. */
+const Social: Pic = () => {
+  const base = H - 60, bw = 120, xs = [70, 230, 390], hs = [0.42, 0.6, 0.744];
+  const top = (i: number): Pt => [xs[i] + bw / 2, base - hs[i] * (H - 140)];
+  const cols = [C.sky, C.teal, C.amber];
+  return (
+    <>
+      <line x1={30} x2={W} y1={base} y2={base} stroke={C.strong} strokeWidth={2} />
+      {xs.map((x, i) => <rect key={i} x={x} y={top(i)[1]} width={bw} height={base - top(i)[1]} rx={10} fill={cols[i]} opacity={i === 2 ? 0.9 : 0.45} />)}
+      <path d={smooth([[xs[0] + bw / 2, top(0)[1] - 26], [xs[1] + bw / 2, top(1)[1] - 26], [xs[2] + bw / 2 - 8, top(2)[1] - 30]])} fill="none" stroke={C.amber} strokeWidth={5} strokeLinecap="round" />
+      <Arrowhead at={[xs[2] + bw / 2 + 4, top(2)[1] - 31]} from={[xs[1] + bw / 2, top(1)[1] - 26]} />
+      {xs.map((x, i) => <text key={i} x={x + bw / 2} y={base + 40} textAnchor="middle" fontSize={30} fontWeight={600} fill={C.text} fontFamily="inherit">{["62", "67", "70"][i]}</text>)}
+    </>
+  );
+};
+
 const PICS: Record<CardArt, Pic> = {
   fan: Fan, growth: Growth, accounts: Accounts, stages: Stages, guide: Guide, fire: Fire, bridge: Bridge, sepp: Sepp,
-  health: Health, optimizer: Optimizer, roth: Roth, rmd: Rmd, tax: Tax, rentbuy: RentBuy, mortgage: Mortgage,
+  health: Health, optimizer: Optimizer, social: Social, roth: Roth, rmd: Rmd, tax: Tax, rentbuy: RentBuy, mortgage: Mortgage,
   budget: Budget, college: College, debt: Debt, backtest: Backtest, tools: Tools,
 };

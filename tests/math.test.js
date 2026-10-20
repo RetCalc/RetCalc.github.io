@@ -225,6 +225,71 @@ group("Social Security: 2026 bend points, claiming ages, spousal benefits");
   eq(S.delay3, 2, "top-up starts once both have claimed");
 })();
 
+group("Social Security claiming: full retirement age, claiming factors, break-even, the household");
+(function () {
+  // SSA's full retirement age table.
+  eq(ssFRA(1937), 65, "born 1937: 65"); near(ssFRA(1940), 65.5, 1e-9, "born 1940: 65 and 6 months");
+  eq(ssFRA(1954), 66, "born 1954: 66"); near(ssFRA(1958), 66 + 8 / 12, 1e-9, "born 1958: 66 and 8 months");
+  eq(ssFRA(1960), 67, "born 1960: 67"); eq(ssFRA(1975), 67, "born 1975: 67");
+  // SSA's own published factors, FRA 67: 70% at 62, 86.7% at 65, 108% at 68, 124% at 70.
+  near(ssClaimFactor(62, 67), .70, 1e-9, "62 with FRA 67: 70%");
+  near(ssClaimFactor(65, 67), 1 - 24 * 5 / 9 / 100, 1e-9, "65 with FRA 67: 86.7%");
+  near(ssClaimFactor(68, 67), 1.08, 1e-9, "68 with FRA 67: 108%");
+  near(ssClaimFactor(70, 67), 1.24, 1e-9, "70 with FRA 67: 124%");
+  // FRA 66: 75% at 62, 132% at 70 (SSA).
+  near(ssClaimFactor(62, 66), .75, 1e-9, "62 with FRA 66: 75%");
+  near(ssClaimFactor(70, 66), 1.32, 1e-9, "70 with FRA 66: 132%");
+  near(ssClaimFactor(66 + 8 / 12, 66 + 8 / 12), 1, 1e-9, "at a fractional FRA: the full benefit");
+  near(ssSpousalFactor(62, 67), .65, 1e-9, "spousal at 62, FRA 67: 65%");
+  near(ssSpousalFactor(62, 66), .70, 1e-9, "spousal at 62, FRA 66: 70%");
+  eq(ssSpousalFactor(70, 67), 1, "spousal never above the full half");
+  // Break-even: $2,000 at 62 ($24,000/yr at 70% = $16,800) against $2,000 at 70 ($29,760): crosses at 80.4.
+  near(ssBreakEven(62, 2000 * .7 * 12, 70, 2000 * 1.24 * 12), (29760 * 70 - 16800 * 62) / (29760 - 16800), 1e-9, "62 vs 70 break-even by the formula");
+  eq(ssBreakEven(62, 20000, 70, 20000), null, "no break-even when the later claim pays no more");
+  // Earnings test: $40,000 earned over a $24,480 limit withholds $7,760.
+  near(ssEarningsWithheld(40000, 30000), (40000 - 24480) / 2, 1e-9, "$1 withheld per $2 over the limit");
+  eq(ssEarningsWithheld(20000, 30000), 0, "nothing withheld under the limit");
+  var P = ssPerson({pia:2000, fra:67, claim:62, earnings:40000});
+  near(P.earlyAnnual, 2000 * .7 * 12 - 7760, 1e-9, "paid before FRA, after withholding");
+  ok(P.laterMonthly > P.monthly && P.laterMonthly <= 2000, "credited back at FRA: a higher benefit, at most the full one");
+  // A single person claiming at 67 and living to 90: 23 years of the full benefit.
+  var H = ssHousehold({pia1:2000, fra1:67, claim1:67, through1:90, married:false});
+  near(H.total, 2000 * 12 * 23, 1e-6, "single, 67 to 90: 23 years of benefit");
+  eq(H.rows.length, 23, "one row a year"); eq(H.rows[0].age, 67, "from the claiming age");
+  // A one-earner couple, same age, both claiming at 67: the spouse gets half.
+  var C = ssHousehold({pia1:2000, fra1:67, claim1:67, through1:90, married:true, pia2:0, fra2:67, claim2:67, through2:90, gap:0});
+  near(C.top2, 1000, 1e-9, "spouse's top-up is half the earner's full benefit");
+  near(C.rows[0].total, 3000 * 12, 1e-6, "household: the benefit and a half");
+  // The survivor keeps the larger check once the earner dies at 80.
+  var V = ssHousehold({pia1:2000, fra1:67, claim1:70, through1:80, married:true, pia2:800, fra2:67, claim2:67, through2:90, gap:0});
+  var at80 = V.rows.filter(function (r) { return r.age === 80; })[0];
+  near(at80.spouse, 2000 * 1.24 * 12, 1e-6, "survivor steps up to the earner's benefit, delayed credits included");
+  eq(at80.you, 0, "nothing for the one who died");
+  eq(V.survivorAt, 80, "survivor year");
+  // Claim early and invest: the pot saves the early check until the late age, then draws the gap.
+  var I = ssInvestEarly({early:62, late:70, benEarly:16800, benLate:29760, through:90, mix:.6});
+  eq(I.windows, HIST_STOCK.length - 28 + 1, "every 28-year window since 1926");
+  eq(I.bands.length, 29, "a band point for each year, from the start");
+  ok(I.won + I.ranOut === I.windows, "every window either lasted or ran out");
+  ok(I.bands[8].p50 > 16800 * 8 * .9, "eight years of checks saved, grown, by 70");
+})();
+
+group("Articles: Social Security claiming");
+(function () {
+  // Sam, born 1964 (FRA 67), $2,400 at full retirement age, living to 90.
+  var pia = 2400, fra = ssFRA(1964);
+  eq(fra, 67, "born 1964: full retirement age 67");
+  var at = function (age) { return pia * ssClaimFactor(age, fra); };
+  var total = function (age) { return ssHousehold({pia1:pia, fra1:fra, claim1:age, through1:90, married:false}).total; };
+  says("social-security", dollars(at(62)) + " a month"); says("social-security", dollars(total(62)) + " in all");
+  says("social-security", dollars(at(67)) + " a month"); says("social-security", dollars(total(67)) + " in all");
+  says("social-security", dollars(at(70)) + " a month"); says("social-security", dollars(total(70)) + " in all");
+  var be = function (a, b) { return (Math.round(ssBreakEven(a, at(a) * 12, b, at(b) * 12) * 10) / 10).toFixed(1); };
+  says("social-security", "62 to 67 pays off from age " + be(62, 67));
+  says("social-security", "67 to 70 pays off from " + be(67, 70));
+  says("social-security", "62 against 70 from " + be(62, 70));
+})();
+
 /* ---------------- RMDs and Roth conversions ---------------- */
 group("RMDs: IRS Uniform Lifetime Table and start age");
 (function () {

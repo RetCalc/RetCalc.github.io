@@ -63,7 +63,12 @@ export var YEAR_2026 = {
   /* Social Security's 2026 bend points: average indexed monthly earnings
      run through them make the benefit at full retirement age. Earnings
      count up to the FICA wage base above (fica.ssCap). */
-  ss: {bend1:1286, bend2:7749},
+  ss: {bend1:1286, bend2:7749,
+       /* The retirement earnings test: benefits claimed before full
+          retirement age are withheld $1 for every $2 earned over `under`
+          in a year, and $1 for every $3 over `fraYear` in the year full
+          retirement age is reached (SSA's 2026 fact sheet). */
+       earn: {under:24480, fraYear:65160}},
 
   /* The states, as of 1 January 2026. Their own year, since a new tax year
      can run on the last year's state figures until the states publish. */

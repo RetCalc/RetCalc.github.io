@@ -11,6 +11,15 @@ const ICONS: Record<ToolSub, React.ReactNode> = {
   drawdown: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path className="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M5 30 h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle className="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor" /><circle className="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor" /></svg>
   ),
+  social: (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="23" width="8" height="11" rx="2" stroke="currentColor" strokeWidth="2" />
+    <rect x="16" y="16" width="8" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+    <rect x="27" y="7" width="8" height="27" rx="2" stroke="currentColor" strokeWidth="2" />
+    <path d="M9 18 L20 11 L31 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M26.5 3 L31 3 L31 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   bridge: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M6 30 V21 M34 30 V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path className="br-arch" pathLength="100" d="M4 21 Q20 6 36 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" /><path className="br-cable br-cable1" d="M13 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable br-cable2" d="M20 30 V13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable br-cable3" d="M27 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><circle className="br-walker" cx="7" cy="26.6" r="1.8" fill="currentColor" opacity="0" /></svg>
   ),

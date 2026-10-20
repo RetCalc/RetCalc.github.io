@@ -19,6 +19,7 @@ import type { FireInputs } from "@/tools/fire/model";
 import { mortgageInput, type Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { mortgage } from "@/lib/engine/typed";
 import type { RothInputs } from "@/tools/roth/model";
+import { household, socialInput, type SocialInputs } from "@/tools/social/model";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
 
 export interface HelpTask { h: string; ok?: boolean }
@@ -407,4 +408,27 @@ const bridge: Tour<BridgeInputs> = { name: "Early Retirement Bridge", title: "Ge
   } };
 
 /** The tours, by the tool they explain. */
-export const TOURS = { tax, mortgage: mortgageTour, budget, college, rentbuy, drawdown, roth, debt, backtest, healthcare, fire, bridge } as unknown as Record<string, Tour>;
+const social: Tour<SocialInputs> = { name: "Social Security Claiming", title: "When to claim Social Security",
+  start: ({ s }) => ({ claim1: n(s.claim1), through1: n(s.through1) }),
+  pages: [
+    { title: "Your benefit", focus: "#asideSocial", tasks: ({ s }) => [
+      { h: "<b>Just me</b> or <b>Married</b>. A couple's choices interact: the lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
+      { h: "<b>Year of birth</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months a year to 67 for 1960 and later." },
+      { h: "<b>From my statement</b> takes the monthly figure at full retirement age from ssa.gov/myaccount, the most accurate starting point. <b>Estimate it</b> works one out from your income and years worked.", ok: tried(s.src1 === "estimate") },
+      { h: "<b>Earnings a year, if still working</b> only matters if you'd claim before full retirement age while still earning: part of the benefit is withheld, then credited back later." },
+    ] },
+    { title: "The choice", focus: "#ssClaim1", tasks: ({ s, base }) => [
+      { h: "<b>Claim at</b> is the decision. Every month before full retirement age cuts the check, every month after adds to it, up to 70: 30% less at 62 and 24% more at 70 for a full retirement age of 67. Try 62 and 70.", ok: tried(n(s.claim1) !== base.claim1) },
+      { h: "<b>Plan through age</b> is how long the totals run. It decides everything: a short life favors claiming early, a long one favors waiting. Try 80 and 95.", ok: tried(n(s.through1) !== base.through1) },
+      { h: "Everything is in today's dollars. Benefits get a cost-of-living raise each year, so the figures keep their buying power." },
+    ] },
+    { title: "Reading it", focus: "#ssReading", tasks: () => [
+      { h: "<b>Every claiming age</b> lists each check and what it adds up to through the age planned, with the best marked. <b>Benefits added up</b> shows where waiting overtakes claiming early: the break-even age." },
+      { h: "<b>Which age pays the most, by how long you live</b> is the honest answer: nobody knows their lifespan, so see which choice wins over the range you'd plan for. A 65-year-old today lives to about 84 on average." },
+      { h: "<b>Claim early and invest the checks</b> tests the common argument for claiming at 62 against every market since 1926. Waiting is a guaranteed, inflation-protected 8% a year; the market has to beat that after inflation." },
+      { h: "For the full picture with taxes, withdrawals and Roth conversions together, the <a href='/optimizer'>Plan Optimizer</a> tries every claiming age inside the rest of your plan." },
+    ] },
+  ],
+  chip: ({ s }) => { const p = socialInput(s); if (!(p.you.pia > 0)) return ""; const H = household(p); return "Claim at " + p.you.claim + "<br><b>" + money((H.you.monthly + H.top1 + (H.spouse ? H.spouse.monthly + H.top2 : 0))) + "/mo</b>"; } };
+
+export const TOURS = { tax, mortgage: mortgageTour, budget, college, rentbuy, drawdown, roth, debt, backtest, healthcare, fire, bridge, social } as unknown as Record<string, Tour>;

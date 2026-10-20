@@ -44,6 +44,7 @@ export const HOUSEHOLD_TOOLS: { id: string; name: string; takes: (h: Household) 
   { id: "bridge", name: "Early Retirement Bridge", takes: (h) => !!(h.retire || h.state || (h.spend != null && h.spend > 0) || h.status) },
   { id: "optimizer", name: "Plan Optimizer", takes: (h) => !!(h.age || h.retire || has(h.saved) || (h.spend != null && h.spend > 0) || h.state) },
   { id: "healthcare", name: "Healthcare", takes: () => true },
+  { id: "social", name: "Social Security", takes: (h) => !!(h.age || h.status || has(h.income)) },
   { id: "tax", name: "Income Tax", takes: () => true },
   { id: "budget", name: "Budget", takes: (h) => has(h.income) && (h.income! + (h.status === "m" && has(h.income2) ? h.income2! : 0)) > 0 },
 ];

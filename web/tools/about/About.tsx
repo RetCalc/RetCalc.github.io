@@ -21,7 +21,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
    "about-" + its key, so a link to /about#about-roth opens Roth's. */
 const GROUPS = [
   { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["stages", "Stages"], ["guide", "Retirement Readiness Guide"], ["paycheck", "Paycheck to Retirement"]] },
-  { key: "retirement", label: "Retirement income", sections: [["optimizer", "Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion & RMDs"], ["healthcare", "Healthcare Cost Planner"]] },
+  { key: "retirement", label: "Retirement income", sections: [["optimizer", "Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Claiming"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion & RMDs"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
   { key: "everyday", label: "Everyday money", sections: [["tax", "Income Tax"], ["budget", "Budget"], ["debt", "Debt Payoff"], ["mortgage", "Mortgage Calculator"]] },
   { key: "methods", label: "Methods", sections: [["historical", "Historical"], ["montecarlo", "Monte Carlo"]] },
@@ -909,6 +909,74 @@ export function About({ states }: { states: StateOption[] }) {
             the law, the most likely reason any of this turns out differently,
             is outside the model by construction.</p>
           </Section>
+          <Section id="social">
+            <p>The claiming tool shows one benefit at every age from 62 to 70 and what each
+            choice adds up to, so the trade-off is visible: a smaller check for more years,
+            or a larger one for fewer. Everything is in today&apos;s dollars. Social Security&apos;s
+            yearly cost-of-living raise keeps a benefit level in real terms, and the delayed
+            credits are real too, so no inflation assumption is needed.</p>
+
+            <dl className="gloss">
+              <dt>Full retirement age and the factors</dt>
+              <dd>Full retirement age comes from the birth year: 66 for 1943 to 1954, two
+              months more for each year to 67 from 1960 on. A benefit claimed early is cut
+              5/9 of 1% for each of the first 36 months and 5/12 of 1% for each month
+              beyond; claimed late it grows 2/3 of 1% a month, 8% a year, until 70. These
+              are the Social Security Administration&apos;s own rules, applied to whole months.</dd>
+
+              <dt>The benefit itself</dt>
+              <dd>The monthly figure at full retirement age on a statement from ssa.gov is
+              the right input: it reflects the actual earnings record. The estimate from
+              income and years worked runs a steady career at that income through the
+              current year&apos;s bend points (the same estimator the Optimizer and the Drawdown
+              Simulator use); a real record with low early years or gaps comes out lower.</dd>
+
+              <dt>Couples</dt>
+              <dd>Each spouse claims their own benefit at their own age. A spouse whose own
+              full benefit is under half the other&apos;s gets the difference as a spousal top-up,
+              starting once both have claimed and reduced on the spousal schedule (25/36 of
+              1% a month for the first 36 months early, 35% at 62 with a full retirement age
+              of 67) for the age it starts; it never earns delayed credits. When one spouse
+              dies the survivor keeps the larger of the two checks, the deceased&apos;s delayed
+              credits included: the survivor benefit. Survivor claims before the survivor&apos;s
+              own full retirement age, and the family maximum, aren&apos;t modeled.</dd>
+
+              <dt>The earnings test</dt>
+              <dd>Claiming before full retirement age while still working, $1 of benefit is
+              withheld for every $2 earned over the year&apos;s limit ($24,480 in 2026). The year
+              full retirement age is reached runs on a higher limit and $1 in $3; the tool
+              treats it like the earlier years, which overstates the withholding a little for
+              that one year. At full retirement age the benefit is refigured as if claimed
+              later by the months withheld, which the tool shows as the higher benefit from
+              then on.</dd>
+
+              <dt>Break-even and the lifespan strip</dt>
+              <dd>Two claiming choices break even at the age where the later, larger check has
+              paid as much in all as the earlier one: for annual benefits A at age a and B at
+              age b, (B&times;b &minus; A&times;a) / (B &minus; A). The strip runs the household
+              total for every lifespan from 70 to 100 and marks which claiming age collects
+              the most at each. Neither counts taxes or investment returns; the sections for
+              those do.</dd>
+
+              <dt>Claim early and invest</dt>
+              <dd>The early check is saved every year from the early age to the late one, in
+              the stock share chosen and 10-year Treasuries, rebalanced yearly; from the late
+              age on, the gap between the two checks is drawn from the pot so the two paths
+              give the same income. Each start year since 1926 is run with its own returns
+              and inflation (the same monthly series as the Drawdown Simulator, taken by
+              calendar year), and the outcome is whether the pot outlasts the age planned
+              through, and what&apos;s left. It uses your own benefit alone, before tax, and leaves
+              the survivor benefit out.</dd>
+
+              <dt>Taxes</dt>
+              <dd>The share of the benefit taxed follows the federal provisional-income rules
+              (other income plus half the benefit against the $25,000/$32,000 and
+              $34,000/$44,000 thresholds, which aren&apos;t indexed), at the other income entered.
+              The Income Tax tool&apos;s retirement mode works out the tax itself, including the
+              senior deduction and any state tax on benefits.</dd>
+            </dl>
+          </Section>
+
           <Section id="healthcare">
             <p>Healthcare is one of the largest and most variable costs in early retirement.
             This tool covers two phases: the ACA bridge between retirement and Medicare,
