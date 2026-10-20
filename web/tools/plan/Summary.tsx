@@ -28,7 +28,11 @@ import { ACCT_NAMES, planSummary, type Acct, type PlanSummary } from "./results"
 
 /* One blue-gray in four shades: the accounts read as one calm shape, and
    amber is the plan line alone. */
-const ACCT_COLOR: Record<Acct, string> = { trad: "var(--ds-acct-1)", roth: "var(--ds-acct-2)", brok: "var(--ds-acct-3)", hsa: "var(--ds-acct-4)" };
+/* The chart series' hues, see-through so the gridlines show behind the stack
+   and it sits quietly on the card in either theme; amber stays the total
+   line's alone. */
+const soft = (series: string) => `color-mix(in srgb, var(--ds-series-${series}) 45%, transparent)`;
+const ACCT_COLOR: Record<Acct, string> = { trad: soft("sky"), roth: soft("teal"), brok: soft("lavender"), hsa: soft("rose") };
 const ACCTS: Acct[] = ["trad", "roth", "brok", "hsa"];
 /** A family's shades: the series color, then lighter. */
 const shade = (c: string, i: number) => (i === 0 ? c : `color-mix(in srgb, ${c} ${Math.max(35, 100 - i * 22)}%, transparent)`);
@@ -204,17 +208,6 @@ function Climb({ S }: { S: PlanSummary }) {
     const below = (j: number) => shown.slice(0, i).reduce((t, b) => t + rows[j][b], 0);
     return { a, d: pathD([...rows.map((r, j) => [X(r.age), Y(below(j) + r[a])] as [number, number]), ...rows.map((r, j) => [X(r.age), Y(below(j))] as [number, number]).reverse()]) + "Z" };
   });
-  // Milestones still ahead, on the line as shown; labels that would
-  // collide step up out of each other's way.
-  const marks: { label: string; i: number; dy: number }[] = [];
-  for (const [v, label] of [[100e3, "$100K"], [250e3, "$250K"], [500e3, "$500K"], [1e6, "$1M"], [2e6, "$2M"], [5e6, "$5M"]] as const) {
-    const i = tot.findIndex((t) => t >= v);
-    if (i > 0) {
-      const prev = marks[marks.length - 1];
-      const near = prev && Math.abs(X(rows[i].age) - X(rows[prev.i].age)) < 110 * sw && Math.abs(Y(tot[i]) - Y(tot[prev.i])) < 26 * sw;
-      marks.push({ label, i, dy: near ? prev.dy + 17 * sw : 0 });
-    }
-  }
   const stageAt = (age: number) => S.stages?.findIndex((s) => age >= s.from && age < s.to) ?? -1;
   const kidsBorn = (age: number) => S.kids.map((k, i) => (Math.floor(k.born) === age ? i + 1 : 0)).filter(Boolean);
   const label = (i: number) => (rows[i] ? rows[i].age : "");
@@ -253,15 +246,6 @@ function Climb({ S }: { S: PlanSummary }) {
               <XAxis size={size} count={rows.length - 1} X={(i) => X(a0 + i)} label={label} />
               {bands.map((b) => <path key={b.a} d={b.d} fill={ACCT_COLOR[b.a]} stroke="var(--ds-surface)" strokeWidth={0.75 * sw} />)}
               <path d={pathD(rows.map((r, j) => [X(r.age), Y(tot[j])]))} fill="none" stroke={SERIES.plan} strokeWidth={2.5 * sw} strokeLinejoin="round" />
-              {marks.map((m) => (
-                <g key={m.label}>
-                  <circle cx={X(rows[m.i].age)} cy={Y(tot[m.i])} r={3.5 * sw} fill="var(--ds-surface)" stroke="var(--ds-text)" strokeWidth={1.5 * sw} />
-                  {/* Left of its point, unless that runs into the axis. */}
-                  {X(rows[m.i].age) - L < 100 * sw
-                    ? <text x={X(rows[m.i].age) + 7 * sw} y={Y(tot[m.i]) - 9 * sw - m.dy} fontSize={fs} textAnchor="start" fill="var(--ds-text)">{m.label} at {rows[m.i].age}</text>
-                    : <text x={X(rows[m.i].age) - 7 * sw} y={Y(tot[m.i]) - 9 * sw - m.dy} fontSize={fs} textAnchor="end" fill="var(--ds-text)">{m.label} at {rows[m.i].age}</text>}
-                </g>
-              ))}
               {S.kids.map((k, i) => k.born > a0 && k.born < a1 ? (
                 <path key={i} d={`M${X(k.born)},${T + ph - 9 * sw} l${-5 * sw},${9 * sw} h${10 * sw} Z`} fill="var(--ds-text)" />
               ) : null)}

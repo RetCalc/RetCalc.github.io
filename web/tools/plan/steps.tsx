@@ -17,7 +17,7 @@ const FREQS = [["52", "Every week"], ["26", "Every two weeks"], ["24", "Twice a 
 
 /** What each step is for, and what to do in it. */
 const HEADS: Record<StepId, { title: string; lede: string; todo?: string }> = {
-  start: { title: "Four questions, in your own numbers", lede: "What do you take home after taxes? What do you spend? Where should the rest go? And where does that get you by retirement?" },
+  start: { title: "", lede: "" },
   budget: { title: "What you spend", lede: "Every bill and spending line, by the month or by the year. Saving isn't spending: that comes next.",
     todo: "Fill in the lines that apply, add your own with the + on a group, and remove what you don't need." },
   paycheck: { title: "Where each paycheck goes", lede: "Your paycheck from the top: taxes, your budget, and what's left for saving, account by account.",
@@ -30,14 +30,16 @@ const HEADS: Record<StepId, { title: string; lede: string; todo?: string }> = {
 };
 
 export function StepHead({ step }: { step: StepId }) {
-  if (step === "summary") return null;
+  if (step === "summary" || step === "start") return null;
   const h = HEADS[step], n = stepIndex(step);
   return (
-    <div className="col-span-full -mb-1">
-      {n > 0 ? <div className="text-label text-muted-foreground">Step {n} of {STEPS.length - 1}{step === "stages" ? ", optional" : ""}</div> : null}
-      <h2 className="m-0 mt-0.5 text-xl font-semibold">{h.title}</h2>
-      <p className="m-0 mt-1 max-w-copy text-muted-foreground">{h.lede}</p>
-      {h.todo ? <p className="m-0 mt-2 max-w-copy text-note">{h.todo}</p> : null}
+    <div className="col-span-full -mb-1 grid gap-x-12 gap-y-2 lg:grid-cols-2 lg:items-end">
+      <div>
+        {n > 0 ? <div className="text-label text-muted-foreground">Step {n} of {STEPS.length - 1}{step === "stages" ? ", optional" : ""}</div> : null}
+        <h2 className="m-0 mt-0.5 text-xl font-semibold">{h.title}</h2>
+        <p className="m-0 mt-1 max-w-copy text-muted-foreground">{h.lede}</p>
+      </div>
+      {h.todo ? <p className="m-0 max-w-copy text-note lg:pb-0.5">{h.todo}</p> : null}
     </div>
   );
 }
@@ -68,11 +70,11 @@ export function StartStep({ plan }: { plan: PlanState }) {
   const setB = (patch: Partial<BudgetInputs>) => setPlan((p) => ({ ...p, tools: { ...p.tools, budget: { ...toolOf(p, "budget"), ...patch } } }));
   const ages = planAges(plan);
   const steps = [
-    ["Budget", "What you spend, line by line."],
-    ["Paycheck", "Your pay after federal, state and payroll taxes, and which account each dollar left goes into: 401(k), HSA, IRA, brokerage."],
-    ["Your plan", "That saving, grown to the age you'd like to retire."],
-    ["Life stages", "Optional: kids and other changes, as stages with their own saving."],
-    ["Summary", "Everything on one page, and a full report to print or save."],
+    ["Budget", "Enter what you spend in a typical month, line by line: housing, food, transportation, insurance and the rest. Use monthly or yearly amounts, add your own lines, and remove any that don't apply."],
+    ["Paycheck", "See your pay after federal, state and payroll taxes, then subtract your budget to find what's left to save. Put it into your 401(k), HSA, IRA and brokerage account with a preset plan or the sliders, and watch the taxes update as you go."],
+    ["Your plan", "Add what you've already saved in each account and set the return you expect. See what your saving grows to by the age you plan to retire, and what that can support in retirement."],
+    ["Life stages", "Optional. Your income, spending and saving won't stay the same for decades. Split the years into stages for things like kids, a raise, a move or part-time work, each with its own saving."],
+    ["Summary", "Your pay, budget, saving and projected retirement on one page, with a full report to print or save, or to copy into the other tools."],
   ];
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
@@ -123,7 +125,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
       </Card>
       <Card className="min-w-0 lg:col-span-2">
         <CardHeader><CardTitle>How it works</CardTitle>
-          <CardDescription>Five steps, about fifteen minutes. Each one fills in the next.</CardDescription></CardHeader>
+          <CardDescription>Five steps that take you from your monthly spending to a retirement projection: how much you spend, what&apos;s left after taxes and expenses, where to save it, and where that gets you. It takes about fifteen minutes.</CardDescription></CardHeader>
         <CardContent>
           <ol className="m-0 grid list-none grid-cols-2 gap-x-6 gap-y-3.5 p-0 max-sm:grid-cols-1">
             {steps.map(([t, d], i) => (
@@ -133,7 +135,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
               </li>
             ))}
           </ol>
-          <p className="hint mt-5 border-t border-border pt-3.5">What you type here stays here: your other tools aren&apos;t changed. At the end you can copy it all into them. It&apos;s saved in this browser, and to your account if you sign in.</p>
+          <p className="hint mt-5 border-t border-border pt-3.5">Nothing you enter here changes your other tools; at the end you can copy it into them if you want. Your work is saved in this browser, and to your account if you sign in.</p>
         </CardContent>
       </Card>
     </div>
