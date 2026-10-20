@@ -132,7 +132,7 @@ export function About({ states }: { states: StateOption[] }) {
             <p>A personal finance calculator built around one question: are you on track?
             You describe your savings, contributions, and expected returns, and it projects
             where you land at retirement, how long that money lasts, and what it all means
-            in today&apos;s dollars. Everything runs in your browser; nothing is sent anywhere.</p>
+            in today&apos;s dollars. Everything runs in your browser, and nothing leaves it unless you sign in to save it.</p>
             <p>The Guide tab is the place to start, and it holds two walkthroughs. The
             Retirement Readiness Guide is for when you&apos;re not sure where you stand: it
             asks about your money one question at a time, gives you a readiness score, and
@@ -146,7 +146,7 @@ export function About({ states }: { states: StateOption[] }) {
             extends that with calculators for taxes, mortgage, college savings, rent vs.
             buy, drawdown, FIRE planning, budget, and more. Each tool is described in
             its own section below.</p>
-            <p><b>Your household</b>, the bar above every tool, holds the facts most
+            <p><b>Your household</b>, the button at the top of every page, holds the facts most
             tools ask for: ages, when you plan to retire, state, savings, income and
             retirement spending. Saving it fills those numbers into Basic, Advanced,
             Stages, Drawdown, Roth Conversion, Healthcare, Income Tax, Budget and FIRE,

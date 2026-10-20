@@ -39,11 +39,11 @@ import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, CircleCheckIcon, CircleXIcon, LockIcon } from "lucide-react";
+import { ChevronDownIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -246,10 +246,6 @@ export function Advanced() {
 
         <aside id="asideSingle" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your plan</CardTitle>
-              <CardDescription>Inflation, fees, taxes and account types, worked back from a target.</CardDescription>
-            </CardHeader>
             <CardContent>
               <GroupHead first>Your savings</GroupHead>
               <div className="glidewrap acwrap mt-0" id="acWrap">
@@ -351,8 +347,6 @@ export function Advanced() {
                     <InputGroupInput variant="numeric" id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /></Affixed>
                 </div>
               </div>
-              <p className="mt-0.5 mb-0 flex items-center gap-1.5 text-label text-muted-foreground">
-                <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser unless you sign in to save it.</p>
             </CardContent>
           </Card>
         </aside>
@@ -375,8 +369,7 @@ export function Advanced() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Reach your target</CardTitle>
-            <CardDescription>Two ways to get there: change what you put in, or how long you save.</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Reach your target</CardTitle></CardHeader>
           <div className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
             <SolveOption label="Change your contribution" id="sPerPeriod" value={money(S.perPeriod, 2)} noteId="sPerPeriodNote"
               note={"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}>

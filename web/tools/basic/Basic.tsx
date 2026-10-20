@@ -134,10 +134,6 @@ export function Basic() {
 
         <aside id="asideSimple">
           <Card>
-            <CardHeader>
-              <CardTitle>A few questions</CardTitle>
-              <CardDescription>Answer a few questions to see what you could have at retirement.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 items-end gap-x-3">
                 <NumberField id="qAge" label="How old are you?" unit="age" value={s.age} onValueChange={setAge("age")}

@@ -168,11 +168,6 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
 
         <aside id="asideBR" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your situation</CardTitle>
-              <CardDescription>{t72 ? "What you'll have on the day you retire, what you'll spend, and the 72(t) terms."
-                : "What you'll have on the day you retire, and what you'll spend."}</CardDescription>
-            </CardHeader>
             <CardContent>
               {/* One column on phones: "Married filing jointly" needs the full row. */}
               <div className="two bottomalign max-sm:grid-cols-1">
@@ -244,7 +239,6 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
           <Card>
             <CardHeader>
               <CardTitle>Ways to 59½</CardTitle>
-              <CardDescription>Pick a plan to follow it below.</CardDescription>
               <CardAction><CsvButton table={compareRef} label="Ways to 59½" /></CardAction>
             </CardHeader>
             <div className="swipehint">Swipe the table sideways to see every column.</div>

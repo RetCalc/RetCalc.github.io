@@ -29,7 +29,7 @@ import { useShareKit } from "@/components/shell/share";
 import { taxShare } from "./share";
 import { SERIES, baseColor, hatchClass, hatched } from "@/lib/hues";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Donut, type DonutPart } from "@/components/charts/Donut";
 import { ChevronRightIcon, CircleAlertIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -252,10 +252,6 @@ export function Tax() {
 
         <aside id="asideTax" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your situation</CardTitle>
-              <CardDescription>A year of pay, or a year of withdrawals in retirement.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div className="mb-4" hidden={!!scope}>
                 <Segmented id="segTxMode" size="fill" attr="data-txmode" options={[["normal", "Normal income"], ["retire", "Retirement income"]] as const} value={s.mode} onChange={set("mode")} />
@@ -452,8 +448,7 @@ export function Tax() {
 
         <Card id="txBucketPanel" hidden={!ret}>
           <CardHeader>
-            <CardTitle>Where each dollar came from, and how it was taxed</CardTitle>
-            <CardDescription>Each track is what you took from that source; the filled part went to tax.</CardDescription>
+            <CardTitle><span><Tipped text="Where each dollar came from, and how it was taxed" k="txtracks" /></span></CardTitle>
             <CardAction><CsvButton table={bucketRef} label="Where each dollar came from, and how it was taxed" /></CardAction>
           </CardHeader>
           <CardContent>

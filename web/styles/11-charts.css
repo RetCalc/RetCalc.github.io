@@ -71,6 +71,10 @@ svg{display:block;width:100%;height:auto}
   .brand{gap:12px}
   .tagline{margin-top:3px}
   .toolhead{gap:12px;flex:1 0 100%;margin:4px 0 0}
+  .toolhead-t{flex-basis:0}
+  /* Help stays beside the title; the saved scenarios take a row of their own. */
+  .toolhead-ctl{display:contents}
+  .toolhead .scgroup{order:3;flex:1 1 100%}
   .toolhead-icon{width:44px;height:44px;padding:7px}
   .toolhead-name{font-size:19px}
   .toolhead-desc{font-size:13px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}

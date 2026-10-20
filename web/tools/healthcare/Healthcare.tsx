@@ -28,7 +28,7 @@ import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { HC_STATES, HC_YEAR, HEALTHCARE_DEF, healthcareCompute, type HealthcareInputs } from "./model";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
@@ -233,10 +233,6 @@ export function Healthcare() {
 
         <aside id="asideHC" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your situation</CardTitle>
-              <CardDescription>When you retire, who&apos;s covered, and your income in retirement.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div className={two}>
                 <NumberField id="hcRetireAge" label="Retirement age" unit="age" max={75} value={s.retireAge} onValueChange={set("retireAge")} />

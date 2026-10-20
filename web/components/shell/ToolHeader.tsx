@@ -1,8 +1,9 @@
 "use client";
 
 /* The header over an open tool: back to the tool list, then the tool's
-   icon, name (the page's main heading) and one-line description. Markup
-   from src/main/01-tool-header.html. */
+   icon, name (the page's main heading) and one-line description, with the
+   tool's saved scenarios and Help on the right. Markup from
+   src/main/01-tool-header.html. */
 
 import { useRouter } from "next/navigation";
 import { ToolIconTile } from "@/components/tools/ToolIcon";
@@ -13,8 +14,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** `more` sits under the description (a strategy page's links); `full`
-    keeps the description whole on phones instead of two lines. */
-export function ToolHeader({ sub, name, desc, more, full }: { sub: ToolSub; name: string; desc: string; more?: React.ReactNode; full?: boolean }) {
+    keeps the description whole on phones instead of two lines; `controls`
+    (the saved scenarios, Save, Share and Reset) sit beside Help. */
+export function ToolHeader({ sub, name, desc, more, full, controls }: { sub: ToolSub; name: string; desc: string; more?: React.ReactNode; full?: boolean; controls?: React.ReactNode }) {
   const router = useRouter();
   return (
     <div className="toolback" id="toolBack">
@@ -29,7 +31,12 @@ export function ToolHeader({ sub, name, desc, more, full }: { sub: ToolSub; name
           <p className={cn("toolhead-desc", full && "line-clamp-none")} id="toolHeadDesc">{desc}</p>
           {more}
         </div>
-        <HelpButton tool={sub} />
+        {/* When the row runs out of room, these drop under the description
+            rather than squeezing it. */}
+        <div className="toolhead-ctl">
+          {controls}
+          <HelpButton tool={sub} />
+        </div>
       </div>
     </div>
   );

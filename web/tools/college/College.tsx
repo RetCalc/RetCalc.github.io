@@ -33,7 +33,7 @@ import { useShareKit } from "@/components/shell/share";
 import { collegeShare } from "./share";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
 
@@ -166,10 +166,6 @@ export function College() {
 
         <aside id="asideCollege" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>College plan</CardTitle>
-              <CardDescription>What college will cost, and what to set aside for it each month.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div id="clKids" ref={kidsRef}>
                 {s.kids.map((k, i) => {

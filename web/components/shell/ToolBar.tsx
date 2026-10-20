@@ -1,17 +1,22 @@
 "use client";
 
-/* The bar at the top of each tool: on the left, its tie to the household
-   (using its numbers, or changed from them); on the right, the tool's own
-   saved scenarios with Save, Share and Reset. Both belong to the tool on
-   the page, so they sit with it rather than in the site header. */
+/* The header over the calculator's pages (Basic, Advanced, Stages), which
+   have no tool header: the mode's name and what it does on the left, its
+   saved scenarios with Save, Share and Reset on the right. Other tools carry
+   their saved scenarios in their own header (ToolHeader). Pages without a
+   title (the Guide) get the saved scenarios alone. */
 
-import { HouseholdStatus } from "@/components/household/HouseholdBar";
 import { ScenarioBar } from "./ScenarioBar";
 
-export function ToolBar() {
+export function ToolBar({ title, desc }: { title?: string; desc?: string }) {
   return (
     <div className="toolbar" id="toolBar">
-      <HouseholdStatus />
+      {title ? (
+        <div className="toolbar-t">
+          <h2 className="toolhead-name">{title}</h2>
+          {desc ? <p className="toolhead-desc">{desc}</p> : null}
+        </div>
+      ) : null}
       <ScenarioBar />
     </div>
   );

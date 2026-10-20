@@ -1,6 +1,7 @@
 /* What every page has inside <main>: the main heading (the tool's own name
-   on a tool's page), the tool header, the tool bar (household status and
-   saved scenarios), the page's content, and its "about this tool" article. */
+   on a tool's page), the tool header, the saved scenarios (in the tool
+   header, or a bar of their own on the calculator's pages), the page's
+   content, and its "about this tool" article. */
 
 import { articleHtml } from "@/lib/articles";
 import { jsonLdFor } from "@/lib/seo";
@@ -8,9 +9,17 @@ import { PAGES, TOOL_SUB, hasToolControls, isStrategyPage, strategyLede, type Sl
 import { TOOLS } from "@/lib/tools";
 import { Article } from "./Article";
 import { StrategyLinks, StrategyLedeLinks } from "./StrategyLinks";
+import { ScenarioBar } from "./ScenarioBar";
 import { ToolBar } from "./ToolBar";
 import { ToolHeader } from "./ToolHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+/** The calculator's three modes, named over their tool. */
+const CALC_HEAD: Partial<Record<Slug, { title: string; desc: string }>> = {
+  calculator: { title: "Basic calculator", desc: "Answer these questions to see what you could have at retirement." },
+  advanced: { title: "Advanced calculator", desc: "Inflation, fees, taxes and account types, worked back from a target." },
+  stages: { title: "Stages calculator", desc: "A plan in stages, each with its own contribution, return and length." },
+};
 
 export function PageShell({ slug, children }: { slug: Slug; children: React.ReactNode }) {
   const meta = PAGES[slug];
@@ -24,9 +33,9 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
       {sub ? null : <h1 className="srlive" id="pageH1">{meta.h1 ?? "RetCalc"}</h1>}
       {sub ? <ToolHeader sub={sub} name={meta.h1 ?? TOOLS[sub].name} desc={strategyLede(slug) ?? TOOLS[sub].desc}
-        full={strategy} more={strategy ? <StrategyLedeLinks hasArticle={!!article} /> : null} /> : null}
-      {/* The tool's household status and its saved scenarios. */}
-      {hasToolControls(slug) ? <ToolBar /> : null}
+        full={strategy} more={strategy ? <StrategyLedeLinks hasArticle={!!article} /> : null}
+        controls={hasToolControls(slug) ? <ScenarioBar /> : null} /> : null}
+      {!sub && hasToolControls(slug) ? <ToolBar {...(CALC_HEAD[slug] ?? {})} /> : null}
       {children}
       {strategy ? <StrategyLinks current={slug} /> : null}
       {article ? <Article html={article} /> : null}

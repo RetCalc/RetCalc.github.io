@@ -130,10 +130,6 @@ export function Backtest() {
 
         <aside id="asideBT" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle><span><Tipped text="The mix" k="btdata" /></span></CardTitle>
-              <CardDescription>What a split of stocks, bonds and cash earned through any stretch since 1926.</CardDescription>
-            </CardHeader>
             <CardContent>
               <Field id="btMixBtn" label={<Tipped text="Asset mix" k="btmix" />}>
                 <Button variant="outline" size="lg" className="w-full justify-between" id="btMixBtn" onClick={() => setMixOpen(true)}><span id="btMixText" className="min-w-0 flex-1 truncate text-left">{mixText(B)}</span>

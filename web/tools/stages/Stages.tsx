@@ -40,7 +40,7 @@ import { SERIES } from "@/lib/hues";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, LockIcon, PencilIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 
@@ -249,10 +249,6 @@ export function Stages() {
 
         <aside id="asideSeries" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your plan</CardTitle>
-              <CardDescription>A plan in stages, each with its own contribution, return and length. The target is reached by changing the final stage.</CardDescription>
-            </CardHeader>
             <CardContent>
               <GroupHead first>Your stages</GroupHead>
               {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => setEditing(i)} /> : null}
@@ -365,8 +361,6 @@ export function Stages() {
                     <InputGroupInput variant="numeric" id="saTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={V.saRate != null ? pctStr(V.saRate, 1) : ""} /></Affixed>
                 </div>
               </div>
-              <p className="mt-0.5 mb-0 flex items-center gap-1.5 text-label text-muted-foreground">
-                <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser unless you sign in to save it.</p>
             </CardContent>
           </Card>
         </aside>
@@ -401,8 +395,7 @@ export function Stages() {
         </Card>
 
         <Card hidden={!n}>
-          <CardHeader><CardTitle>Reach your target</CardTitle>
-            <CardDescription>Two ways to get there, both by changing the final stage: what it puts in, or how long it runs.</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Reach your target</CardTitle></CardHeader>
           <div className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
             <SolveOption label="Change the final stage's contribution" id="tPerPeriod" value={F ? money(F.perPeriod / mf, 2) : DASH} sized={!!F} noteId="tPerPeriodNote"
               note={F && last ? "Stage " + dn + ", paid " + PERIOD_ADV[last.period] + " for " + fmtYears(last.years) + (mf > 1 ? ", plus the match" : "") : ""}>

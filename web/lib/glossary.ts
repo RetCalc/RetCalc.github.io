@@ -2,6 +2,7 @@
    src/js/app/16-glossary.js. */
 
 export const GLOSS: Record<string, string> = {
+  refiexisting: "For a loan you already have, describe it as it stands today: set the price and down payment so the loan amount equals your current balance, and the length to the years left. The refinance is compared from today on that loan.",
   recast: "Your lender re-runs the amortization on the reduced balance right after a lump-sum payment, spreading it over whatever's left of the original term. The payoff date doesn't move, but the required payment drops for every month after. Most lenders charge a small fee for this, typically $150\u2013500, not included here.",
   bthistory: "The years the backtest covers. Earlier start dates give more data and more market regimes; later ones describe a world closer to the present. Both are useful, and they often disagree \u2014 a 60/40 mix looks very different measured from 1926 than from 1982.",
   histmix: "The share held in stocks, with the rest in 10-year Treasuries, rebalanced once a year. History mode replaces your rate of return with what this mix actually earned, year by year, so the mix is what sets returns here.",
@@ -78,6 +79,8 @@ export const GLOSS: Record<string, string> = {
   vpwrate: "The return, after inflation, that VPW assumes the portfolio earns. It sets how fast you spend: a higher rate front-loads spending. The Bogleheads tables use 5.0% for stocks and 1.9% for bonds, blended by your mix; a lower number is more conservative.",
   vpwfv: "What VPW aims to leave at the end of the plan, in today's dollars: the future value in the spreadsheet PMT formula it uses. At $0, the plan spends the whole portfolio by the final year. The Bogleheads guidance is to leave it at $0 and plan a bequest separately.",
   aime: "Social Security bases your benefit on your highest 35 years of indexed earnings, then applies a formula that replaces more of a lower income than a higher one.",
+  rbbuyernw: "What the buyer has at the end: the home's value after selling costs and paying off the mortgage, plus an investment account. Each month that owning costs less than renting, the buyer invests the difference at your investment return. Gains are shown after tax.",
+  rbrenternw: "What the renter has at the end: the down payment and closing costs, invested from day one instead of going into a home. Each month that renting costs less than owning, the renter invests the difference too. Gains are shown after tax.",
   closingcost: "One-time fees to finalize a home purchase: lender fees, title insurance, appraisal, and more. Typically 2\u20135% of the price, paid by the buyer.",
   sellingcost: "What it costs to sell a home, mostly real estate agent commission. Typically 5\u20136% of the sale price, split between both agents.",
   rbgaintax: "The tax rate on investment gains when they're sold: 15% for most households, 0% at low incomes, 20% plus 3.8% at high ones, plus any state income tax. Both sides are valued as if cashed out at each year's end, so the renter's portfolio pays this on its growth, and so does the home on any gain above the home-sale exclusion.",
@@ -87,6 +90,7 @@ export const GLOSS: Record<string, string> = {
   maxcut: "The most spending can drop from one year to the next, no matter what the target percentage would otherwise call for. Protects against a sudden, jarring cut in a single bad year.",
   maxraise: "The most spending can increase from one year to the next, even if the target percentage would allow more. Keeps a good year from changing your lifestyle too abruptly.",
   spendfloor: "An absolute dollar amount, in today's terms, that spending is never allowed to fall below, stacked on top of whatever the strategy above would otherwise do. Leave it blank for no minimum.",
+  txtracks: "Each track is one source of money: what you took from it, with the filled part showing how much of that went to tax.",
   bkttrad: "Money coming out of a traditional 401(k), 403(b) or IRA, including required minimum distributions. You took a deduction going in, so every dollar coming out is ordinary income, taxed at the same 10\u201337% brackets a salary would be. No FICA, though: withdrawals are not wages.",
   bktroth: "Money coming out of a Roth 401(k) or Roth IRA. You already paid tax on the way in, so a qualified withdrawal is tax-free: zero federal, zero state, and it stays out of the provisional-income figure that decides how much of your Social Security is taxable. That second effect is why Roth dollars are worth more than the headline suggests.",
   bktbrok: "Money coming out of an ordinary taxable brokerage account. Only the growth is taxed; the part that was your own money going in comes back untaxed. Assuming everything is held over a year, the growth gets long-term capital gain rates of 0%, 15% or 20% rather than ordinary rates, which is usually the cheapest income in a retiree's mix.",

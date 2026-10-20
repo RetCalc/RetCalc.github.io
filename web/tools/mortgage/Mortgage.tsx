@@ -29,7 +29,7 @@ import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { MORTGAGE_DEF as DEF, dur, mortgageCompute, when, type Inputs } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { mortgageShare } from "./share";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES, hatched } from "@/lib/hues";
 import { cn } from "@/lib/utils";
@@ -177,10 +177,6 @@ export function Mortgage() {
 
         <aside id="asideMort" className="static max-h-none overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>The home and loan</CardTitle>
-              <CardDescription>What you&apos;d pay for the home, how you&apos;d borrow, and what owning it costs each month.</CardDescription>
-            </CardHeader>
             <CardContent>
               <GroupHead first>The home</GroupHead>
               <Field id="moPrice" label="Home price">
@@ -269,7 +265,6 @@ export function Mortgage() {
         <Card className="min-w-0" id="moExtrasCard">
           <CardHeader>
             <CardTitle>Extra payments and refinancing</CardTitle>
-            <CardDescription>For a new loan or one you already have.</CardDescription>
           </CardHeader>
           <CardContent>
             {/* The switch takes the first of the two columns below; beside it,
@@ -297,10 +292,9 @@ export function Mortgage() {
                 </SelectField>
               </div>
               <div className="min-w-0 border-t border-border pt-4 max-sm:order-3 sm:order-2">
-                <GroupHead first>Refinancing</GroupHead>
                 {/* The comparison runs from today, on the loan as entered, so an
                     existing loan has to be described as it stands now. */}
-                <p className="m-0 mb-3.5 text-note text-muted-foreground">Comparing a loan you already have? Describe it as it stands today: set the price and down payment so the loan amount equals your current balance, and the length to the years left.</p>
+                <GroupHead first><Tipped text="Refinancing" k="refiexisting" /></GroupHead>
                 <div className="two bottomalign max-sm:grid-cols-2">
                   <NumberField id="moRefiRate" label="New rate" unit="%" step={0.125} value={s.refiRate} onValueChange={set("refiRate")} />
                   <SelectField id="moRefiTerm" label="New length" value={s.refiTerm} onChange={set("refiTerm")}>{TERMS}</SelectField>
@@ -345,7 +339,6 @@ export function Mortgage() {
         <Card className="min-w-0" hidden={!hasYears}>
           <CardHeader>
             <CardTitle>Loan balance and what you&apos;ve paid</CardTitle>
-            <CardDescription>What&apos;s left on the loan, against the principal and the interest paid so far.</CardDescription>
           </CardHeader>
           {/* On screen the gap between the two paid lines isn't filled (it
               isn't a range); the printed summary and share card copy this

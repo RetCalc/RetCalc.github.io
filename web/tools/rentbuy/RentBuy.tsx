@@ -33,7 +33,7 @@ import { useShareKit } from "@/components/shell/share";
 import { rentBuyShare } from "./share";
 import { RENTBUY_DEF as DEF, rentBuyInput, type RentBuyInputs as Inputs } from "./model";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
 
@@ -75,15 +75,11 @@ export function RentBuy() {
   const winner = last ? (buyWins ? "Buying" : "Renting") : DASH;
   const margin = last ? money(Math.abs(last.buyerNW - last.renterNW)) : "";
   const horizonLbl = <>Better after <span id="rbHorizonLbl">{fmtNum(inp.horizon)}</span> years</>;
-  // Notes wrap at a short measure, so the two net worths sit side by side.
-  const fig = (t: string) => (t ? <span className="block max-w-52">{t}</span> : "");
   const hero: ReadingFigure = { label: horizonLbl, id: "rbWinner", value: winner,
     note: <span className="text-body text-foreground">{last ? "Ahead " : ""}<span id="rbWinNote">{last ? "by " + margin : ""}</span></span> };
   const figures: ReadingFigure[] = [
-    { label: "Buyer net worth", id: "rbBuyerNW", value: last ? money(last.buyerNW) : DASH, noteId: "rbBuyerNote",
-      note: fig(last ? "Home equity after selling, plus whatever's invested in months buying costs less than renting, after tax on the gains" : "") },
-    { label: "Renter net worth", id: "rbRenterNW", value: last ? money(last.renterNW) : DASH, noteId: "rbRenterNote",
-      note: fig(last ? "Down payment invested from day one, plus whatever's invested in months renting costs less than buying, after tax on the gains" : "") },
+    { label: <Tipped text="Buyer net worth" k="rbbuyernw" />, id: "rbBuyerNW", value: last ? money(last.buyerNW) : DASH },
+    { label: <Tipped text="Renter net worth" k="rbrenternw" />, id: "rbRenterNW", value: last ? money(last.renterNW) : DASH },
   ];
 
   return (
@@ -97,10 +93,6 @@ export function RentBuy() {
 
         <aside id="asideRB" className="static max-h-none overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your situation</CardTitle>
-              <CardDescription>The home you&apos;d buy, the place you&apos;d rent, and how long you&apos;d stay.</CardDescription>
-            </CardHeader>
             <CardContent>
               {num("rbHorizon", "Time horizon", "horizon", "yrs", 1, 40)}
 
@@ -202,7 +194,6 @@ export function RentBuy() {
         <Card className="min-w-0" hidden={!R}>
           <CardHeader>
             <CardTitle>Net worth over time</CardTitle>
-            <CardDescription>Every month, whichever side costs less banks the difference and invests it at your chosen return, so a renter paying less than a buyer&apos;s monthly cost keeps growing that gap, and vice versa.</CardDescription>
           </CardHeader>
           {R ? (
             <BandChart id="RB" enhanced colors={{ base: SERIES.sky, hi: SERIES.teal }} maxX={inp.horizon} ariaLabel="Buyer vs renter net worth"

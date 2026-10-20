@@ -164,10 +164,6 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
 
         <aside id="asideRC" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your situation</CardTitle>
-              <CardDescription>Where you stand today. The conversion plan to test sits with the results.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div className={two}>
                 <NumberField id="rcAge" label="Your age" unit="age" max={95} value={s.age} onValueChange={set("age")} />

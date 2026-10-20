@@ -259,7 +259,7 @@ function CoverDialog({ plan, age, retire, close, save }: {
     Object.fromEntries(Object.entries(plan.cover).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cents(x as number)]))])));
   const nums = Object.fromEntries(Object.entries(typed).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, parseNum(x as string)]))])) as Record<string, Partial<Monthly>>;
   const C = useCover(plan, nums);
-  const perCheck = C.ppy === 12 ? "per month" : C.ppy === 26 ? "a paycheck (every two weeks)" : C.ppy === 52 ? "a paycheck (weekly)" : "a paycheck";
+  const perCheck = C.ppy === 12 ? "per month" : C.ppy === 26 ? "per paycheck (every two weeks)" : C.ppy === 52 ? "per paycheck (weekly)" : "per paycheck";
   return (
     <Modal size="table" onClose={close}>
       <h3>How will you cover this?</h3>

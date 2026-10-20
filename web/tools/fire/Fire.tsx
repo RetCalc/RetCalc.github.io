@@ -194,10 +194,6 @@ export function Fire() {
 
         <aside id="asideFire" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your plan</CardTitle>
-              <CardDescription>When your savings could pay for your life, or when you could stop adding to them.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div className="field mb-3.5">
                 <Segmented id="segFireMode" attr="data-firemode" options={[["fire", "FIRE"], ["coast", "Coast FIRE"]] as const} value={s.mode} onChange={set("mode")} />
@@ -352,7 +348,6 @@ export function Fire() {
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
-              {coast ? <CardDescription>Saving every year, as if you never stopped to coast.</CardDescription> : null}
               <CardAction><CsvButton table={tableRef} label="Year by year" /></CardAction>
             </CardHeader>
             <CollapsibleContent keepMounted>

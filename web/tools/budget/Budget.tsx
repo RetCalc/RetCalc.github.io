@@ -32,7 +32,7 @@ import { BUDGET_DEF, PRESET_GROUPS, budgetCompute, budgetGroups, isPlannedRow, i
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Paycheck } from "./Paycheck";
 
 
@@ -139,7 +139,6 @@ export function Budget() {
         <Card>
           <CardHeader>
             <CardTitle>Your budget</CardTitle>
-            <CardDescription>What you spend, each line by the month or by the year. Your pay is on the Paycheck tab.</CardDescription>
             <CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction>
           </CardHeader>
           <CardContent>
@@ -266,7 +265,6 @@ export function Budget() {
                 walkthrough has its own Next). */}
             <div className="border-t border-border px-5.5 pt-4 pb-5 max-sm:px-4" hidden={!!scope}>
               <h3 className="m-0 text-body font-semibold">Next: your paycheck</h3>
-              <p className="mt-1.5 mb-3 text-note text-muted-foreground">What taxes take, how each check covers this budget, and where the rest goes.</p>
               <Button id="bgToPaycheck" onClick={toPaycheck}>{scope ? "Next: your paycheck" : "Open the Paycheck tab"}</Button>
             </div>
           </Card>

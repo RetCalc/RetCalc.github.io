@@ -1,7 +1,7 @@
 "use client";
 
 /* A tool's saved-scenario picker and its Save, Share and Reset buttons, in
-   the tool bar over the tool (ToolBar). They act on whichever tool is open
+   the tool's header (ToolHeader), or the tool bar on the calculator's pages. They act on whichever tool is open
    (components/tools/ToolState), and say whose they are ("Saved tax
    scenarios").
    Ported from src/js/app/23-scenarios.js, 21-share-links.js and

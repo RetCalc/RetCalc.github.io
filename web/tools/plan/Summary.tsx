@@ -71,8 +71,8 @@ function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
           note: (stages ? "With your life stages, " : "") + money(A.fv) + " in future dollars, after " + Math.round(S.years) + " years of saving" }}
         figures={[
           { label: "A year to spend, after tax", id: "ppSpend", value: money(A.afterTax), note: "A " + pctStr(A.withdrawal, 1) + " withdrawal, taxed at " + pctStr(A.taxRate, 1) },
-          ...(want != null ? [{ label: S.goal.fromBudget ? "Your budget, a year" : "Your spending goal", id: "ppWant", value: money(want), tone: meets ? "gain" as const : "loss" as const,
-            note: meets ? "✓ Covered, with " + money(A.afterTax - want) + " to spare" : "✗ Short by " + money(want - A.afterTax) + " a year" }] : []),
+          ...(want != null ? [{ label: S.goal.fromBudget ? "Your budget, per year" : "Your spending goal", id: "ppWant", value: money(want), tone: meets ? "gain" as const : "loss" as const,
+            note: meets ? "✓ Covered, with " + money(A.afterTax - want) + " to spare" : "✗ Short by " + money(want - A.afterTax) + " per year" }] : []),
           { label: "Saved each year", id: "ppSaved", value: money(savedYr), note: S.inflow.match > 0 ? money(S.inflow.match * perYr) + " of it your employer's match" : "Into your accounts, at today's pay" },
         ]} />
     </Card>
@@ -109,7 +109,7 @@ function PayCard({ S }: { S: PlanSummary }) {
     <Card className="col-span-full">
       <CardHeader>
         <CardTitle>Where your pay goes</CardTitle>
-        <CardDescription>{money(k(y.gross))} of gross pay {unit === "year" ? "a year" : unit === "month" ? "per month" : "a paycheck"}, every dollar of it.
+        <CardDescription>{money(k(y.gross))} of gross pay {unit === "year" ? "per year" : unit === "month" ? "per month" : "per paycheck"}.
           {y.match > 0 ? " Your employer adds " + money(k(y.match)) + " on top." : ""}</CardDescription>
         <CardAction><Segmented size="compact" attr="data-ppunit" options={units} value={unit} onChange={setUnit} /></CardAction>
       </CardHeader>
@@ -145,7 +145,7 @@ function PayCard({ S }: { S: PlanSummary }) {
 
 /* ---- each account ---- */
 function Accounts({ S }: { S: PlanSummary }) {
-  const per = S.per === "check" ? "a paycheck" : "per month";
+  const per = S.per === "check" ? "per paycheck" : "per month";
   const shown = ACCTS.filter((a) => S.inflow[a] > 0.004 || (S.atRetire.byAcct?.[a] ?? 0) > 1);
   return (
     <Card className="col-span-full">
@@ -161,8 +161,8 @@ function Accounts({ S }: { S: PlanSummary }) {
               <div className="text-3xl font-medium tabular-nums">{money(at)}</div>
               <div className="text-label text-muted-foreground">{pctStr(share, 0)} of the total</div>
               <div className="mt-3 border-t border-border pt-2.5 text-note tabular-nums">
-                <div className="flex justify-between gap-2"><span className="text-muted-foreground">In {per}</span><span>{money(S.inflow[a], 2)}</span></div>
-                <div className="flex justify-between gap-2"><span className="text-muted-foreground">In a year</span><span>{money(S.inflow[a] * S.p)}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">{per === "per month" ? "Per month" : "Per paycheck"}</span><span>{money(S.inflow[a], 2)}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">Per year</span><span>{money(S.inflow[a] * S.p)}</span></div>
                 {a === "trad" && S.inflow.match > 0 ? <div className="flex justify-between gap-2"><span className="text-muted-foreground">Employer match</span><span>{money(S.inflow.match * S.p)}</span></div> : null}
               </div>
             </div>
