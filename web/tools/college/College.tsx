@@ -275,7 +275,7 @@ export function College() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll max-h-none">
+              <div className="scroll">
                 <table id="clTable" ref={tableRef}>
                   <thead><tr><th>Year</th><th>Balance</th><th>You added</th><th>Growth</th><th>{multi ? "Paid for college" : "Projected cost"}</th></tr></thead>
                   <tbody>{rows}</tbody>

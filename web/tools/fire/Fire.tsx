@@ -352,7 +352,7 @@ export function Fire() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll max-h-none">
+              <div className="scroll">
                 <table id="fiTable" ref={tableRef}>
                   <thead><tr><th>Age</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
                   <tbody id="fiTableBody">
