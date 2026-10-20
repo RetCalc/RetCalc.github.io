@@ -183,7 +183,7 @@ export function Paycheck({ s, set, setState }: {
 
       <div className="stack min-w-0 lg:col-span-2" id="tab-paycheck">
         <Card size="flush" className="min-w-0">
-          <HeroReading tone={empty ? "text" : "answer"} sized={!empty}
+          <HeroReading tone={empty ? "text" : "answer"} sized={!empty} row
             hero={{ label: "Saved and invested, each " + per, id: "pcSaved", value: empty ? DASH : money(r.saved), noteId: "pcSavedNote",
               note: empty ? "Enter your gross pay to begin" : ((r.saved / r.check) * 100).toFixed(1) + "% of gross pay" + (r.match > 0 ? ", plus " + money(r.match) + (two ? " in employer matches" : " from your employer") : "") }}
             figures={[

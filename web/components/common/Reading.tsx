@@ -47,7 +47,7 @@ const TONE: Record<HeroTone, string> = {
   text: "text-foreground",
 };
 
-export function HeroReading({ hero, tone = "answer", sized = true, figures = [], under = false, className, children }: {
+export function HeroReading({ hero, tone = "answer", sized = true, figures = [], under = false, row = false, className, children }: {
   hero: ReadingFigure;
   tone?: HeroTone;
   /** False while the value is a dash: it then keeps the readout's own size. */
@@ -56,6 +56,10 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
   /** Keep the secondary figures under the hero at every width (three
       secondaries beside a wide hero would wrap into a ragged stack). */
   under?: boolean;
+  /** Beside the hero, the secondary figures stay on one line, each taking
+      an equal share and its note wrapping inside it, instead of wrapping
+      under one another when a long note doesn't fit. */
+  row?: boolean;
   className?: string;
   /** Anything that belongs under the hero in its zone (a badge, a link). */
   children?: ReactNode;
@@ -78,9 +82,10 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
       </div>
       {figures.length ? (
         <div className={cn("mt-5 flex flex-wrap gap-x-12 gap-y-3 border-t border-border pt-4", under ? "sm:justify-between sm:gap-x-8"
-          : "wide:mt-0 wide:min-w-0 wide:flex-1 wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8", !under && (placeholder ? "wide:items-start" : "wide:items-center"))}>
+          : "wide:mt-0 wide:min-w-0 wide:flex-1 wide:justify-evenly wide:gap-x-8 wide:self-stretch wide:border-t-0 wide:border-l wide:pt-0 wide:pl-8", !under && (placeholder ? "wide:items-start" : "wide:items-center"),
+          row && !under && "wide:flex-nowrap")}>
           {figures.map((f) => (
-            <div key={f.id} id={f.wrapId} data-pair>
+            <div key={f.id} id={f.wrapId} className={row && !under ? "wide:min-w-0 wide:flex-1" : undefined} data-pair>
               <span className="block text-label text-muted-foreground" id={f.labelId} data-k>{f.label}</span>
               <BigValue className={cn("text-3xl leading-tight font-medium tabular-nums sm:text-display", f.tone && TONE[f.tone])} id={f.id} text={f.value} sized={false} />
               {f.extra}
