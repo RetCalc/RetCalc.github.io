@@ -27,8 +27,9 @@ const GROUPS = [
   { key: "methods", label: "Methods", sections: [["historical", "Historical"], ["montecarlo", "Monte Carlo"]] },
   { key: "sharing", label: "Sharing and limits", sections: [["scenarios", "Scenarios, sharing and the summary"], ["limits", "Limitations worth knowing"]] },
 ] as const;
-type SectionKey = (typeof GROUPS)[number]["sections"][number][0];
-const TITLE = Object.fromEntries(GROUPS.flatMap((g): readonly (readonly [string, string])[] => g.sections)) as Record<SectionKey, string>;
+/* Data and assumptions folds the same way, on its own above the groups. */
+type SectionKey = (typeof GROUPS)[number]["sections"][number][0] | "method";
+const TITLE = Object.fromEntries([["method", "Data and assumptions"], ...GROUPS.flatMap((g): readonly (readonly [string, string])[] => g.sections)]) as Record<SectionKey, string>;
 const LABEL = Object.fromEntries(GROUPS.map((g) => [g.key, g.label])) as Record<(typeof GROUPS)[number]["key"], string>;
 
 /* Which sections are open, shared by the sections and the index. */
@@ -72,7 +73,7 @@ function Index() {
     <nav className="about-index" aria-label="On this page">
       <a className={link} href="#about-what">What this is</a>
       <a className={link} href="#about-settings">Your settings</a>
-      <a className={link} href="#about-method">Data and assumptions</a>
+      <a className={link} href="#about-method" onClick={() => set("method", true)}>Data and assumptions</a>
       {GROUPS.map((g) => (
         <div key={g.key} className="mt-4">
           <a className="toolgroup-h about-index-h" href={"#about-" + g.key}>{g.label}</a>
@@ -161,10 +162,10 @@ export function About({ states }: { states: StateOption[] }) {
             <div id="hhAboutSlot"><HouseholdBar states={states} inAbout /></div>
           </div>
         </section>
-        <Card id="about-method">
-          <CardHeader><CardTitle>Data and assumptions</CardTitle></CardHeader>
-          <CardContent><div className="about">
-            <h3>Where the numbers come from</h3>
+        <Card size="flush">
+          <div className="overflow-hidden rounded-(--r-panel)">
+          <Section id="method">
+            <h4>Where the numbers come from</h4>
             <ul>
               <li><b>Market history:</b> monthly, January 1926 to December 2025. US stock
               prices, dividends and 10-year Treasury yields are from Robert Shiller&apos;s
@@ -181,24 +182,25 @@ export function About({ states }: { states: StateOption[] }) {
               National Database of Childcare Prices, by county, for childcare. Both are
               rounded to the nearest $100 a month.</li>
             </ul>
-            <h3>What every tool assumes</h3>
+            <h4>What every tool assumes</h4>
             <p>Figures are in today&apos;s dollars unless a tool says otherwise. The
             historical tests use one country&apos;s record, annual rebalancing, and no
             fees, trading costs or taxes unless a tool adds them. Stocks are the S&amp;P
             500 with dividends reinvested and bonds are 10-year Treasuries, not a
             particular fund. Tax law is taken as it stands in 2026.</p>
-            <h3>What they don&apos;t model</h3>
+            <h4>What they don&apos;t model</h4>
             <p>Tax credits, local taxes and many special cases; financial aid and
             scholarships; changes to tax law or benefits after 2026; and anything about
             your health, how long you&apos;ll live, or how you&apos;ll actually react to a
             bad market. Past returns are context, not a forecast. Each tool&apos;s section
             below lists its own assumptions and what it leaves out.</p>
-            <h3>Corrections</h3>
+            <h4>Corrections</h4>
             <p>If a number looks wrong, <a href="#about-contact">email it in</a>. Confirmed
             errors are fixed on the page, and the figures quoted in the articles are
             checked against the calculators by an automated test before anything is
             released, so a changed calculation can&apos;t quietly leave an article behind.</p>
-          </div></CardContent>
+          </Section>
+          </div>
         </Card>
         <Group id="calculator">
           <Section id="projection">
