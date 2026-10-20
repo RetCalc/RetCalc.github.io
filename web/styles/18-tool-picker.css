@@ -11,7 +11,7 @@
 @media (max-width:640px){:root:not([data-tools-view]) .tp-charts{display:none}}
 @media (min-width:641px){:root:not([data-tools-view]) .tp-compact{display:none}}
 
-.tp-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 24px;margin-bottom:28px}
+.tp-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;margin-bottom:28px}
 .tp-switch svg{width:15px;height:15px;margin-right:6px;flex:none}
 
 /* ---------- charts: twelve columns; the Drawdown Simulator leads ---------- */

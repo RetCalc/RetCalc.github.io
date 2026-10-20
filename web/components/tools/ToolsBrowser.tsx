@@ -112,7 +112,6 @@ function CompactTile({ sub, glide }: { sub: ToolSub; glide: boolean }) {
   );
 }
 
-const COUNT = TOOL_GROUPS.reduce((n, g) => n + g.cards.length, 0);
 
 const VIEWS: [ToolsView, string, React.ReactNode][] = [
   ["charts", "Charts", <svg key="c" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2" width="13" height="12" rx="2" stroke="currentColor" strokeWidth="1.4" /><path d="M4 11 7 8l2 1.5 3-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" /></svg>],
@@ -132,7 +131,6 @@ export function ToolsBrowser({ data }: { data: PickerData }) {
       <div className="tp-head">
         <div>
           <p className="toolhead-name" aria-hidden="true">Tools</p>
-          <p className="toolhead-desc">{COUNT} planning tools, grouped by the question they answer.</p>
         </div>
         <div className="tp-switch">
           <Segmented role="group" aria-label="Show the tools as">
@@ -146,7 +144,7 @@ export function ToolsBrowser({ data }: { data: PickerData }) {
       <div className="tp-charts">
         {TOOL_GROUPS.map((g) => (
           <section className="toolgroup" aria-label={g.label} key={g.label}>
-            <h2 className="toolgroup-h"><span>{g.title}</span><em>{g.sub}</em></h2>
+            <h2 className="toolgroup-h"><span>{g.title}</span></h2>
             <div className="tp-grid">
               {CHART_LAYOUT[g.label].map(([sub, size]) => <ChartCard key={sub} sub={sub} size={size} data={data} glide={view === "charts"} />)}
             </div>
@@ -157,7 +155,7 @@ export function ToolsBrowser({ data }: { data: PickerData }) {
       <div className="tp-compact">
         {TOOL_GROUPS.map((g) => (
           <section className="tp-col" aria-label={g.label} key={g.label}>
-            <h2 className="toolgroup-h"><span>{g.title}</span><em>{g.sub}</em></h2>
+            <h2 className="toolgroup-h"><span>{g.title}</span></h2>
             {g.cards.map((c) => <CompactTile key={c.sub} sub={c.sub} glide={view === "compact"} />)}
           </section>
         ))}
