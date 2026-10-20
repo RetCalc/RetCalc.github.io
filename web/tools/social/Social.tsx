@@ -14,7 +14,7 @@
    claim-early-and-invest test with its own fan. On a phone a compact
    reading leads and stays pinned. */
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ChevronDownIcon, InfoIcon } from "lucide-react";
 import { BandChart } from "@/components/charts/BandChart";
 import { Legend, McLegend } from "@/components/charts/Legend";
@@ -28,13 +28,15 @@ import { useToolState } from "@/components/tools/ToolState";
 import { CsvButton } from "@/components/common/CsvButton";
 import { KV, Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading, type ReadingFigure } from "@/components/common/Reading";
-import { DASH, dollarsField, fmtNum, money, pctStr } from "@/lib/format";
+import { DASH, dollarsField, fmtNum, money, parseNum, pctStr } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ageRows, breakEvens, CLAIM_AGES, fraLabel, household, investEarly, SOCIAL_DEF, socialInput, taxedShare, winsByLifespan, type SocialInputs } from "./model";
+import { ageRows, breakEvens, careerPia, CLAIM_AGES, fraLabel, household, investEarly, SOCIAL_DEF, socialInput, taxedShare, winsByLifespan, type SocialInputs } from "./model";
+import { CareerDialog } from "./CareerDialog";
 
 const two = "two bottomalign max-sm:grid-cols-2";
 const age1 = (a: number) => (Math.abs(a - Math.round(a)) < 0.05 ? String(Math.round(a)) : a.toFixed(1));
@@ -58,6 +60,10 @@ function PersonFields({ k, s, set, label }: { k: "1" | "2"; s: SocialInputs; set
   const p = socialInput(s)[k === "1" ? "you" : "spouse"]!;
   const est = s[`src${k}`] === "estimate";
   const who = k === "1" ? "Your" : "Spouse's";
+  const [mapping, setMapping] = useState(false);
+  const car = s[`career${k}`], years = p.career ?? [];
+  const counted = years.length ? careerPia(years).years : 0;
+  const edits = Object.values(car.edits).filter((v) => v !== "").length;
   return (
     <>
       <GroupHead>{label}</GroupHead>
@@ -73,21 +79,29 @@ function PersonFields({ k, s, set, label }: { k: "1" | "2"; s: SocialInputs; set
           value={s[`src${k}`]} onChange={set(`src${k}`)} />
       </div>
       {est ? (
-        <div className={two}>
-          <MoneyField id={`ssInc${k}`} label="Income a year" value={s[`inc${k}`]} onValueChange={set(`inc${k}`)} aria-label={`${who} income a year`} />
-          <NumberField id={`ssYrs${k}`} label={<Tipped text="Years worked" k="ssyears" />} unit="yrs" max={35} value={s[`yrs${k}`]} onValueChange={set(`yrs${k}`)} aria-label={`${who} years worked`} />
-        </div>
+        <>
+          <MoneyField id={`ssInc${k}`} label={<Tipped text="Pay today, per year" k="sspay" />} unit="/yr" value={s[`inc${k}`]} onValueChange={set(`inc${k}`)} aria-label={`${who} pay today, per year`} />
+          <div className="derived -mt-1 mb-3.5">
+            <div><span>Career</span><span className="num">{car.start} to {car.stop}{edits ? ", " + fmtNum(edits) + " by hand" : ""}</span></div>
+            <div><span>Raises above wage growth</span><span className="num">{car.growPast}% so far, {car.growAhead}% ahead</span></div>
+            <div><span>At full retirement age</span><span className="num" id={`ssEst${k}`}>{money(p.pia)}/mo{counted < 35 ? ", " + fmtNum(counted) + " of 35 years" : ""}</span></div>
+          </div>
+          <Button variant="outline" size="sm" className="-mt-1 mb-3.5" onClick={() => setMapping(true)}>Map out {k === "1" ? "your" : "their"} pay, year by year</Button>
+          {mapping ? <CareerDialog who={k === "1" ? "Your" : "Your spouse's"} career={car} ageNow={p.ageNow} incomeNow={parseNum(s[`inc${k}`])} fra={p.fra}
+            apply={set(`career${k}`)} onClose={() => setMapping(false)} /> : null}
+        </>
       ) : (
         <MoneyField id={`ssPia${k}`} label={<Tipped text="Monthly benefit at full retirement age" k="sspia" />} unit="/mo" value={s[`pia${k}`]} onValueChange={set(`pia${k}`)} aria-label={`${who} monthly benefit at full retirement age`} />
       )}
-      {est ? <p className="hint -mt-2 mb-3">About {money(p.pia)} a month at full retirement age. A statement from ssa.gov is more accurate.</p> : null}
       <div className={two}>
         <SelectField id={`ssClaim${k}`} label="Claim at" value={s[`claim${k}`]} onChange={set(`claim${k}`)} aria-label={`${who} claiming age`}>
           {CLAIM_AGES.map((a) => <option key={a} value={String(a)}>{a}{Math.abs(a - p.fra) < 0.01 ? " (full)" : ""}</option>)}
         </SelectField>
         <NumberField id={`ssThrough${k}`} label={<Tipped text="Plan through age" k="ssthrough" />} unit="age" max={110} value={s[`through${k}`]} onValueChange={set(`through${k}`)} aria-label={`${who} age planned through`} />
       </div>
-      <MoneyField id={`ssEarn${k}`} label={<Tipped text="Earnings a year, if still working" k="ssearn" />} unit="/yr" value={s[`earn${k}`]} onValueChange={set(`earn${k}`)} aria-label={`${who} earnings a year while claiming early`} />
+      {p.claim < p.fra ? (
+        <MoneyField id={`ssEarn${k}`} label={<Tipped text={"Still working at " + p.claim + "? Pay per year, until full retirement age"} k="ssearn" />} unit="/yr" value={s[`earn${k}`]} onValueChange={set(`earn${k}`)} aria-label={`${who} pay per year while claiming before full retirement age`} />
+      ) : null}
     </>
   );
 }
@@ -178,7 +192,7 @@ export function Social() {
               {married ? <PersonFields k="2" s={s} set={set} label="Your spouse" /> : null}
 
               <GroupHead>Taxes and investing</GroupHead>
-              <MoneyField id="ssOther" label={<Tipped text="Other income a year in retirement" k="ssother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
+              <MoneyField id="ssOther" label={<Tipped text="Other income per year, in retirement" k="ssother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
               <Field id="ssMix" label={<Tipped text="Stock share, if you invest the checks" k="ssmix" />}>
                 <NumberField id="ssMix" label="" unit="%" step={5} max={100} value={s.mix} onValueChange={set("mix")} />
               </Field>
@@ -210,12 +224,12 @@ export function Social() {
                 {married && H.top1 > 0 ? <KV k="Spousal top-up, a month" id="ssKVTop1" v={money(H.top1)} /> : null}
                 {married ? <KV k={"Spouse's benefit at " + p.spouse!.claim + ", a month"} id="ssKVSp" v={money(H.spouse!.monthly)} /> : null}
                 {married && H.top2 > 0 ? <KV k="Spouse's top-up, a month" id="ssKVTop2" v={money(H.top2)} /> : null}
-                {H.you.withheld > 0 ? <KV k={"Withheld a year until " + fraLabel(p.you.fra)} id="ssKVHeld" cls="neg" v={money(H.you.withheld)} /> : null}
+                {H.you.withheld > 0 ? <KV k={"Withheld per year until " + fraLabel(p.you.fra)} id="ssKVHeld" cls="neg" v={money(H.you.withheld)} /> : null}
                 {H.you.withheld > 0 ? <KV k="Your benefit from full retirement age" id="ssKVLater" v={money(H.you.laterMonthly)} /> : null}
               </div>
             </div>
             {H.you.withheld > 0 ? (
-              <p className="hint m-0 mt-2 max-w-copy">Earning {money(p.you.earn)} a year before full retirement age, Social Security holds back $1 of every $2 over the limit. Those months are credited back at full retirement age, so the benefit rises then.</p>
+              <p className="hint m-0 mt-2 max-w-copy">Earning {money(p.you.earn)} per year before full retirement age, Social Security holds back $1 of every $2 over the limit. Those months are credited back at full retirement age, so the benefit rises then.</p>
             ) : null}
           </div>
         </Card>

@@ -414,8 +414,9 @@ const social: Tour<SocialInputs> = { name: "Social Security Claiming", title: "W
     { title: "Your benefit", focus: "#asideSocial", tasks: ({ s }) => [
       { h: "<b>Just me</b> or <b>Married</b>. A couple's choices interact: the lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
       { h: "<b>Year of birth</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months a year to 67 for 1960 and later." },
-      { h: "<b>From my statement</b> takes the monthly figure at full retirement age from ssa.gov/myaccount, the most accurate starting point. <b>Estimate it</b> works one out from your income and years worked.", ok: tried(s.src1 === "estimate") },
-      { h: "<b>Earnings a year, if still working</b> only matters if you'd claim before full retirement age while still earning: part of the benefit is withheld, then credited back later." },
+      { h: "<b>From my statement</b> takes the monthly figure at full retirement age from ssa.gov/myaccount, the most accurate starting point if you're near claiming. <b>Estimate it</b> builds one from your pay today and a whole career around it.", ok: tried(s.src1 === "estimate") },
+      { h: "<b>Map out your pay, year by year</b> opens the career: when you started, when you'll stop, raises above wage growth so far and ahead, and every year's pay to change by hand. Decades out, this is where the estimate is won or lost." },
+      { h: "A field for pay while <b>still working</b> appears only when you'd claim before full retirement age: part of the benefit is withheld then, and credited back later." },
     ] },
     { title: "The choice", focus: "#ssClaim1", tasks: ({ s, base }) => [
       { h: "<b>Claim at</b> is the decision. Every month before full retirement age cuts the check, every month after adds to it, up to 70: 30% less at 62 and 24% more at 70 for a full retirement age of 67. Try 62 and 70.", ok: tried(n(s.claim1) !== base.claim1) },

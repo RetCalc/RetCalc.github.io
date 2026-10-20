@@ -926,10 +926,16 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>The benefit itself</dt>
               <dd>The monthly figure at full retirement age on a statement from ssa.gov is
-              the right input: it reflects the actual earnings record. The estimate from
-              income and years worked runs a steady career at that income through the
-              current year&apos;s bend points (the same estimator the Optimizer and the Drawdown
-              Simulator use); a real record with low early years or gaps comes out lower.</dd>
+              the right input for anyone near claiming: it reflects the actual earnings
+              record. The estimate builds a whole career instead: today&apos;s pay walked back
+              to the age work started and forward to the age it stops, at raises above
+              wage growth set for each direction, with any year changeable by hand. Every
+              figure is in today&apos;s dollars: Social Security indexes past pay to national
+              wage growth, so pay that only kept pace counts as level, and the bend points
+              and wage base move with wages too. Each year is capped at the wage base, the
+              best 35 are averaged (zeros fill a shorter career) and the monthly average
+              goes through the current year&apos;s bend points. The Optimizer&apos;s and the Drawdown
+              Simulator&apos;s simpler estimators assume level pay.</dd>
 
               <dt>Couples</dt>
               <dd>Each spouse claims their own benefit at their own age. A spouse whose own

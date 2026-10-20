@@ -2177,6 +2177,25 @@ export function hcCalcACA(income, grossPremium, pctFPL, enhanced){
    cost-of-living raises keep a benefit level in real terms, and the
    delayed credits are real too. */
 
+/* The benefit at full retirement age from a whole career: each year's pay,
+   in today's dollars (Social Security indexes past pay to wage growth, so
+   pay that only kept up with wages counts as level), capped at the wage
+   base, the best 35 years averaged (zeros fill a shorter career), and the
+   monthly average run through the bend points.
+   @param {number[]} earnings - one figure per year worked, any order
+   @returns {{aime:number, pia:number, years:number, counted:number[]}} */
+export function ssPiaFromEarnings(earnings) {
+  var Y = yearData(), cap = Y.fica.ssCap;
+  var capped = (earnings || []).map(function (e) { return Math.min(Math.max(0, e || 0), cap); })
+    .sort(function (a, b) { return b - a; }).slice(0, 35);
+  var sum = capped.reduce(function (t, e) { return t + e; }, 0);
+  var aime = sum / 35 / 12, b1 = Y.ss.bend1, b2 = Y.ss.bend2, pia;
+  if (aime <= b1) pia = .9 * aime;
+  else if (aime <= b2) pia = .9 * b1 + .32 * (aime - b1);
+  else pia = .9 * b1 + .32 * (b2 - b1) + .15 * (aime - b2);
+  return {aime:aime, pia:pia, years:capped.filter(function (e) { return e > 0; }).length, counted:capped};
+}
+
 /** Full retirement age for a birth year, in years (66 and 4 months is
     66.3333): 65 up to 1937, climbing two months a year to 66 for 1943 to
     1954, then two months a year again to 67 from 1960 on. */

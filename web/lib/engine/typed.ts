@@ -37,6 +37,7 @@ export const HIST_YEARS = (E.HIST_STOCK as number[]).length;
 
 export const projectBasic = typed<(p: { years: number; real: number; initial: number; contrib: number; period: string; withdrawal: number }) => BasicResult>(E.projectBasic);
 
+export const ssPiaFromEarnings = typed<(earnings: number[]) => { aime: number; pia: number; years: number; counted: number[] }>(E.ssPiaFromEarnings);
 export const ssFRA = typed<(birthYear: number) => number>(E.ssFRA);
 export const ssClaimFactor = typed<(claimAge: number, fra: number) => number>(E.ssClaimFactor);
 export const ssSpousalFactor = typed<(claimAge: number, fra: number) => number>(E.ssSpousalFactor);

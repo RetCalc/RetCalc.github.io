@@ -4,9 +4,15 @@
    age beside them, where the choices cross, and the claim-early-and-invest
    test across market history (lib/engine/math.js, the claiming section). */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { NEWEST_YEAR, ssBreakEven, ssClaimFactor, ssEstimatePia, ssFRA, ssHousehold, ssInvestEarly, ssTaxable } from "@/lib/engine/typed";
+import { NEWEST_YEAR, ssBreakEven, ssClaimFactor, ssFRA, ssHousehold, ssInvestEarly, ssPiaFromEarnings, ssTaxable } from "@/lib/engine/typed";
 import type { SsHousehold, SsHouseholdInput, SsInvest } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
+
+/** How a person's pay runs over a career, for the estimate: the ages they
+    started and will stop, raises above wage growth so far and ahead (a
+    year), and any ages whose pay was set by hand (today's dollars). */
+export interface Career { start: string; stop: string; growPast: string; growAhead: string; edits: Record<string, string> }
+export const CAREER_DEFAULT: Career = { start: "22", stop: "67", growPast: "2", growAhead: "1", edits: {} };
 
 export const SOCIAL_DEFAULTS = {
   status: "s" as "s" | "m",
@@ -14,9 +20,9 @@ export const SOCIAL_DEFAULTS = {
       full retirement age, or an estimate from income and years worked),
       the claiming age, the age planned through, and earnings a year while
       claiming before full retirement age. */
-  birth1: "1964", src1: "statement" as "statement" | "estimate", pia1: groupDigits(2400, true), inc1: groupDigits(85000, true), yrs1: "35",
+  birth1: "1964", src1: "statement" as "statement" | "estimate", pia1: groupDigits(2400, true), inc1: groupDigits(85000, true), career1: CAREER_DEFAULT as Career,
   claim1: "67", through1: "90", earn1: "0",
-  birth2: "1966", src2: "statement" as "statement" | "estimate", pia2: groupDigits(1500, true), inc2: groupDigits(55000, true), yrs2: "35",
+  birth2: "1966", src2: "statement" as "statement" | "estimate", pia2: groupDigits(1500, true), inc2: groupDigits(55000, true), career2: CAREER_DEFAULT as Career,
   claim2: "67", through2: "92", earn2: "0",
   /** Other taxable income a year in retirement, for how much of the
       benefit is taxed. */
@@ -40,6 +46,35 @@ export interface Person {
   birth: number; fra: number; pia: number; claim: number; through: number; earn: number;
   /** The benefit came from an estimate, not a statement. */
   estimated: boolean;
+  /** Age this year (the data's year), for the career model. */
+  ageNow: number;
+  /** The pay by age the estimate used, today's dollars. */
+  career: CareerYear[] | null;
+}
+
+export interface CareerYear { age: number; year: number; pay: number; edited: boolean }
+
+/** Pay at every age from the start of a career to the year before it ends,
+    in today's dollars: today's pay walked back at the past raise and
+    forward at the one ahead, with any age set by hand taking its own
+    figure. The year is the calendar year. */
+export function careerYears(c: Career, ageNow: number, incomeNow: number): CareerYear[] {
+  const start = clampAge(c.start, 14, 70, 22), stop = Math.max(start + 1, clampAge(c.stop, 15, 80, 67));
+  const gPast = parseNum(c.growPast) / 100, gAhead = parseNum(c.growAhead) / 100;
+  const out: CareerYear[] = [];
+  for (let age = start; age < stop; age++) {
+    const d = age - ageNow;
+    const pattern = d < 0 ? incomeNow / Math.pow(1 + gPast, -d) : incomeNow * Math.pow(1 + gAhead, d);
+    const edit = c.edits[String(age)];
+    const edited = edit != null && edit !== "";
+    out.push({ age, year: NEWEST_YEAR + d, pay: Math.max(0, edited ? parseNum(edit) : pattern), edited });
+  }
+  return out;
+}
+
+/** The benefit at full retirement age a career's pay earns. */
+export function careerPia(years: CareerYear[]): { pia: number; aime: number; years: number } {
+  return ssPiaFromEarnings(years.map((y) => y.pay));
 }
 
 /* As the engine takes them. A blank or senseless field takes its default;
@@ -48,12 +83,12 @@ function person(s: SocialInputs, k: "1" | "2"): Person {
   const birth = clampAge(s[`birth${k}`], 1930, NEWEST_YEAR - 18, k === "1" ? 1964 : 1966);
   const fra = ssFRA(birth);
   const estimated = s[`src${k}`] === "estimate";
-  const pia = estimated
-    ? ssEstimatePia(Math.max(0, parseNum(s[`inc${k}`])), clampAge(s[`yrs${k}`], 1, 35, 35), 67).pia
-    : Math.max(0, parseNum(s[`pia${k}`]));
+  const ageNow = NEWEST_YEAR - birth;
+  const career = estimated ? careerYears(s[`career${k}`] ?? CAREER_DEFAULT, ageNow, Math.max(0, parseNum(s[`inc${k}`]))) : null;
+  const pia = career ? careerPia(career).pia : Math.max(0, parseNum(s[`pia${k}`]));
   const claim = clampAge(s[`claim${k}`], 62, 70, 67);
   const through = Math.max(claim + 1, clampAge(s[`through${k}`], 63, 110, 90));
-  return { birth, fra, pia, claim, through, earn: Math.max(0, parseNum(s[`earn${k}`])), estimated };
+  return { birth, fra, pia, claim, through, earn: Math.max(0, parseNum(s[`earn${k}`])), estimated, ageNow, career };
 }
 
 export interface SocialPlan {

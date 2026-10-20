@@ -274,6 +274,22 @@ group("Social Security claiming: full retirement age, claiming factors, break-ev
   ok(I.bands[8].p50 > 16800 * 8 * .9, "eight years of checks saved, grown, by 70");
 })();
 
+group("Social Security: the benefit from a whole career");
+(function () {
+  // 35 years at $80,000 matches the steady-career estimator exactly.
+  var flat = []; for (var i = 0; i < 35; i++) flat.push(80000);
+  near(ssPiaFromEarnings(flat).pia, ssEstimate(80000, 35, 67).pia, 1e-6, "35 level years: the same benefit as the estimator");
+  // 20 years at $80,000: 15 zeros averaged in, the same as the estimator's shorter career.
+  near(ssPiaFromEarnings(flat.slice(0, 20)).pia, ssEstimate(80000, 20, 67).pia, 1e-6, "a 20-year career averages in zeros");
+  // Only the best 35 count, and pay over the wage base is capped.
+  var long = flat.concat([10, 20, 30]);
+  near(ssPiaFromEarnings(long).pia, ssPiaFromEarnings(flat).pia, 1e-6, "the three worst of 38 years drop out");
+  var cap = yearData().fica.ssCap, high = []; for (var k = 0; k < 35; k++) high.push(cap * 3);
+  near(ssPiaFromEarnings(high).aime, cap / 12, 1e-6, "pay above the wage base doesn't count");
+  eq(ssPiaFromEarnings([]).pia, 0, "no earnings, no benefit");
+  eq(ssPiaFromEarnings(flat.slice(0, 20)).years, 20, "years with pay counted");
+})();
+
 group("Articles: Social Security claiming");
 (function () {
   // Sam, born 1964 (FRA 67), $2,400 at full retirement age, living to 90.
