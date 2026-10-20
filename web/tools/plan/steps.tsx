@@ -79,7 +79,7 @@ export function StartStep({ plan }: { plan: PlanState }) {
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <Card className="min-w-0">
-        <CardHeader><CardTitle>About you</CardTitle><CardDescription>What every step is built on.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>About you</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 items-end gap-x-2.5">
             <NumberField id="ppAge" label="Your age" unit="years" max={99} value={plan.age} onValueChange={set("age")} />

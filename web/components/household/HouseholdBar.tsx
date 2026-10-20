@@ -2,10 +2,8 @@
 
 /* The household profile's faces. One form (HouseholdForm) is used in two
    places: the household panel, which opens over any page from the header's
-   household button or a tool's status line, and About, where it sits open
-   under Appearance. Each tool shows its tie to the household in its tool
-   bar (HouseholdStatus): using the household's numbers, or changed from
-   them with a way back. Markup from src/main/00-household.html. */
+   household button (on a phone, the account menu), and About, where it
+   sits open under Appearance. Markup from src/main/00-household.html. */
 
 import { useEffect, useRef, useState } from "react";
 import { HomeIcon } from "lucide-react";
@@ -173,40 +171,5 @@ export function HouseholdChip({ states }: { states: StateOption[] }) {
         <span className="hh-chip-t">{label}</span>
       </Button>
     </span>
-  );
-}
-
-/** A tool's tie to the household, in its tool bar. */
-export function HouseholdStatus() {
-  const { profile, link, setPanelOpen } = useHousehold();
-  const toast = useToast();
-  if (!link) return null;
-  const edit = <Button variant="link" size="inline" onClick={() => setPanelOpen(true)}>Edit household</Button>;
-  if (isEmptyHousehold(profile)) {
-    return (
-      <p className="hh-st" id="hhLink">
-        <HomeIcon aria-hidden="true" /><span>Enter your household once and every tool starts from it.</span>
-        <Button variant="link" size="inline" onClick={() => setPanelOpen(true)}>Set up</Button>
-      </p>
-    );
-  }
-  // Nothing in the household for this tool yet: still a way to it (a phone's header has no household button).
-  if (!link.takes) {
-    return (
-      <p className="hh-st" id="hhLink" data-state="none">
-        <HomeIcon aria-hidden="true" /><span>Your household has nothing for this tool yet</span>{edit}
-      </p>
-    );
-  }
-  return link.matches ? (
-    <p className="hh-st" id="hhLink" data-state="match">
-      <HomeIcon aria-hidden="true" /><span>Using your household</span>{edit}
-    </p>
-  ) : (
-    <p className="hh-st" id="hhLink" data-state="changed">
-      <HomeIcon aria-hidden="true" /><span>Changed from your household</span>
-      <Button variant="link" size="inline" onClick={() => { link.apply(); toast("Filled in from your household"); }}>Use household numbers</Button>
-      {edit}
-    </p>
   );
 }

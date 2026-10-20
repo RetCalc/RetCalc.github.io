@@ -3,13 +3,15 @@
 /* The header's account button. Signed out: "Sign in". Signed in: the first
    name (or email) and a menu with Account and Sign out. On a phone the
    header has no room for both this and the theme button, so this one takes
-   the theme button's place and the theme switch moves into its menu. With
+   the theme button's place and the theme switch moves into its menu, with
+   the household (whose header button a phone hides). With
    no account service set up, it isn't shown at all. ACCOUNTS_PLAN.md. */
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CircleUserRoundIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
+import { CircleUserRoundIcon, HomeIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
+import { useHousehold } from "@/components/household/HouseholdProvider";
 import { useAccount } from "./AccountProvider";
 import { usePopup } from "@/components/shell/Popup";
 import { setThemeChoice, useTheme } from "@/lib/theme";
@@ -37,12 +39,16 @@ export function AccountButton() {
   const router = useRouter();
   const theme = useTheme();
   const phone = usePhone();
+  const { setPanelOpen } = useHousehold();
   if (!configured) return null;
 
   const themeItem = !phone ? null : (
-    <DropdownMenuItem onClick={() => setThemeChoice(theme === "dark" ? "light" : "dark")}>
-      {theme === "dark" ? <SunIcon /> : <MoonIcon />}{theme === "dark" ? "Light theme" : "Dark theme"}
-    </DropdownMenuItem>
+    <>
+      <DropdownMenuItem onClick={() => setPanelOpen(true)}><HomeIcon />Your household</DropdownMenuItem>
+      <DropdownMenuItem onClick={() => setThemeChoice(theme === "dark" ? "light" : "dark")}>
+        {theme === "dark" ? <SunIcon /> : <MoonIcon />}{theme === "dark" ? "Light theme" : "Dark theme"}
+      </DropdownMenuItem>
+    </>
   );
 
   if (!account) {
@@ -50,7 +56,7 @@ export function AccountButton() {
       <span className="acct-btn" data-ready={ready ? "" : undefined}>
         {!phone ? <Button variant="outline" onClick={() => setStep({ at: "start" })}>Sign in</Button> : (
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="outline" size="icon" aria-label="Sign in or change theme" />}>
+          <DropdownMenuTrigger render={<Button variant="outline" size="icon" aria-label="Sign in, your household or theme" />}>
             <UserRoundIcon aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56" data-acct-menu="">

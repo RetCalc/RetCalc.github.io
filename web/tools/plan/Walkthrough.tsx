@@ -173,7 +173,7 @@ function Header({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => void }) 
 /* ---- the running figures: the paycheck so far ---- */
 function RunningStrip({ plan }: { plan: PlanState }) {
   const s = strip(plan);
-  const per = s ? (s.per === "month" ? "per month" : "a paycheck") : "a paycheck";
+  const per = s ? (s.per === "month" ? "per month" : "per paycheck") : "per paycheck";
   const fig = (label: string, v: number | null, note?: string) => (
     <div className="min-w-0">
       <div className="text-label text-muted-foreground">{label}</div>
@@ -186,10 +186,10 @@ function RunningStrip({ plan }: { plan: PlanState }) {
     <Card size="flush" className="col-span-full">
       <CardContent className="grid grid-cols-3 gap-x-6 gap-y-3 px-5.5 py-3.5 max-sm:grid-cols-2 max-sm:px-4 lg:grid-cols-6">
         {fig("Gross pay", s?.gross ?? null, per)}
-        {fig("Taxes", s?.taxes ?? null, s ? money(s.taxes * s.p) + " a year" : undefined)}
-        {fig("Take-home", s?.takeHome ?? null, s ? money(s.takeHome * s.p) + " a year" : undefined)}
+        {fig("Taxes", s?.taxes ?? null, s ? money(s.taxes * s.p) + " per year" : undefined)}
+        {fig("Take-home", s?.takeHome ?? null, s ? money(s.takeHome * s.p) + " per year" : undefined)}
         {fig("Spending", s?.spend ?? null, s ? money((s.spend * s.p) / 12) + " per month" : undefined)}
-        {fig(s?.planned ? "Saved and invested" : "Saved pre-tax", s?.saved ?? null, s?.planned ? money(s.saved * s.p) + " a year" : "Planned in step 2")}
+        {fig(s?.planned ? "Saved and invested" : "Saved pre-tax", s?.saved ?? null, s?.planned ? money(s.saved * s.p) + " per year" : "Planned in step 2")}
         <div className="min-w-0">
           <div className="text-label text-muted-foreground">{left != null && left < 0 ? "Short" : "Left over"}</div>
           <div className={cn("text-xl font-medium tabular-nums", left != null && left < 0 && "text-loss")}>{left == null ? DASH : (left < 0 ? "−" : "") + money(Math.abs(left))}</div>

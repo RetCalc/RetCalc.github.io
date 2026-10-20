@@ -38,7 +38,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
 
@@ -188,7 +188,6 @@ export function Debt() {
           <Card>
             <CardHeader>
               <CardTitle>Your debts</CardTitle>
-              <CardDescription>What you owe, at what rate, and the least you pay on each.</CardDescription>
             </CardHeader>
             <CardContent>
               <div id="dtList" ref={listRef} className="@container">
@@ -309,7 +308,6 @@ export function Debt() {
         <Card className="min-w-0" hidden={!plan}>
           <CardHeader>
             <CardTitle>Avalanche vs. snowball</CardTitle>
-            <CardDescription>Same money, different order.</CardDescription>
             <CardAction><CsvButton table={compareRef} label="Avalanche vs. snowball" /></CardAction>
           </CardHeader>
           <CardContent>
@@ -324,7 +322,7 @@ export function Debt() {
         </Card>
 
         <Card className="min-w-0" hidden={!plan}>
-          <CardHeader><CardTitle>What you owe, month by month</CardTitle><CardDescription>Years from now along the bottom.</CardDescription></CardHeader>
+          <CardHeader><CardTitle>What you owe, month by month</CardTitle></CardHeader>
           {body ?? <><BandChart id="DT" pts={[]} maxX={0} ariaLabel="Balance over time" tip={() => null} /><Legend id="legendDT" items={[]} /></>}
         </Card>
 

@@ -4,8 +4,8 @@
    (Guide with its Readiness / Paycheck menu, Calculator with its Basic /
    Advanced / Stages menu, Tools, About), and on the right the household
    button and the theme button.
-   Ported from src/js/app/09-navigation.js. A tool's own controls (saved
-   scenarios, its household status) are in its tool bar, not here.
+   Ported from src/js/app/09-navigation.js. A tool's own controls (its saved
+   scenarios) are in its header or tool bar, not here.
 
    Tools works like a tab that keeps its place: from another tab it reopens
    the tool last used, and clicked again from that tool it goes to the
@@ -40,8 +40,8 @@ const MODES: { mode: CalcMode; desc: string }[] = [
 /** The Guide's two walkthroughs: the whole picture, or straight to the numbers. */
 type GuideMode = "readiness" | "paycheck";
 const GUIDE_MODES: { mode: GuideMode; tab: string; name: string; href: string; desc: string }[] = [
-  { mode: "readiness", tab: "Readiness", name: "Readiness Guide", href: "/guide", desc: "Your whole picture: a score, Social Security, health care and your next moves" },
-  { mode: "paycheck", tab: "Paycheck", name: "Paycheck to Retirement", href: "/guide/paycheck", desc: "Straight to the numbers: take-home pay, budget, saving and where it gets you" },
+  { mode: "readiness", tab: "Readiness", name: "Readiness Guide", href: "/guide", desc: "Your whole financial picture, with a readiness score and next steps" },
+  { mode: "paycheck", tab: "Paycheck", name: "Paycheck to Retirement", href: "/guide/paycheck", desc: "From your paycheck to what you'll have at retirement" },
 ];
 const guideModeFor = (slug: string): GuideMode | null =>
   slug.startsWith("guide/paycheck") ? "paycheck" : slug === "guide" || slug.startsWith("guide/") ? "readiness" : null;

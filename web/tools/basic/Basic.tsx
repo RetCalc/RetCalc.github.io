@@ -135,8 +135,8 @@ export function Basic() {
         <aside id="asideSimple">
           <Card>
             <CardHeader>
-              <CardTitle>A few questions</CardTitle>
-              <CardDescription>Answer a few questions to see what you could have at retirement.</CardDescription>
+              <CardTitle>Basic calculator</CardTitle>
+              <CardDescription>Answer these questions to see what you could have at retirement.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 items-end gap-x-3">

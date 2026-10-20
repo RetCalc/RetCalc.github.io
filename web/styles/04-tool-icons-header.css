@@ -147,9 +147,12 @@
 /* ---------- back to the tool picker, and the tool's header ---------- */
 .toolback{grid-column:1 / -1;display:flex;align-items:center;flex-wrap:wrap;gap:11px;
   min-width:0;margin:-2px 0 0}
-.toolhead{flex:1 1 0;display:flex;align-items:center;gap:15px;min-width:0;margin-left:10px}
+.toolhead{flex:1 1 0;display:flex;flex-wrap:wrap;align-items:center;gap:12px 15px;min-width:0;margin-left:10px}
 .toolhead-icon{width:52px;height:52px;padding:9px}
-.toolhead-t{min-width:0}
+.toolhead-t{flex:1 1 360px;min-width:0}
+/* Saved scenarios and Help, on the right of the header row. Below the
+   description's 360px they wrap under it instead of squeezing it. */
+.toolhead-ctl{flex:none;display:flex;align-items:center;gap:10px;margin-left:auto}
 .toolhead-name{margin:0;font-size:23px;font-weight:700;letter-spacing:-.024em;line-height:1.15;color:var(--text)}
 .toolhead-desc{margin:4px 0 0;font-size:13.5px;line-height:1.5;color:var(--dim);max-width:80ch}
 .toolhead-desc:empty{display:none}

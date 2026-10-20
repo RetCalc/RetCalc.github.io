@@ -95,8 +95,8 @@ export function tabFor(slug: Slug): Tab | null {
   return "tools";
 }
 
-/** Pages with a tool on them, which get the tool bar (household status and
-    saved scenarios, ToolBar.tsx). */
+/** Pages with a tool on them, which get its saved scenarios (in the tool
+    header, or ToolBar.tsx on the calculator's pages). */
 export function hasToolControls(slug: Slug): boolean {
   return slug !== "home" && slug !== "about" && slug !== "tools" && slug !== "privacy";
 }

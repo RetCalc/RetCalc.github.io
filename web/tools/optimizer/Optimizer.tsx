@@ -30,7 +30,7 @@ import { optimizerCard } from "./share";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinnedReading } from "@/components/common/Reading";
 import { CircleAlertIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -191,10 +191,6 @@ export function Optimizer() {
 
         <aside id="asideOP" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
-            <CardHeader>
-              <CardTitle>Your situation</CardTitle>
-              <CardDescription>Your household, savings and retirement, as the search should see them.</CardDescription>
-            </CardHeader>
             <CardContent>
               <div className="field mb-4">
                 <Label className="mb-1.5"><span><Tipped text="Start from" k="opmode" /></span></Label>

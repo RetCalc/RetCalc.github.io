@@ -41,15 +41,10 @@
 @media (max-width:640px){ .hh-chip{display:none} }
 
 /* ---------- the tool bar ----------
-   Over each tool: its tie to the household on the left, its saved
-   scenarios on the right. */
+   Over the calculator's pages: the saved scenarios, on the right. */
 .toolbar{grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between;gap:10px 20px;
   flex-wrap:wrap;min-width:0}
 .toolbar .scgroup{margin-left:auto}
-.hh-st{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;margin:0;font-size:13.5px;color:var(--ds-muted);min-width:0}
-.hh-st > svg{width:16px;height:16px;flex:none;color:var(--ds-brand-jade)}
-.hh-st[data-state="changed"] > svg{color:var(--ds-amber)}
-.hh-st[data-state="changed"] > span{color:var(--ds-text)}
 @media (max-width:640px){
   .toolbar .scgroup{flex:1 1 100%;margin-left:0}
 }

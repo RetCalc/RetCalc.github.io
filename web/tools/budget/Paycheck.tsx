@@ -259,7 +259,7 @@ function BudgetFromTab({ s, p, per, onEdit }: { s: BudgetInputs; p: number; per:
         <span>Bills and spending</span><b className="font-medium tabular-nums" id="pcBudget">{cents(spendYear / p)} a {per}</b>
       </div>
       <div className="mb-1.5 text-label text-muted-foreground">
-        {spendYear > 0 ? money(spendYear / 12) + " a month, from " + used + (used === 1 ? " line" : " lines") + " of your Budget" : "Nothing in your Budget yet"}
+        {spendYear > 0 ? money(spendYear / 12) + " per month, from " + used + (used === 1 ? " line" : " lines") + " of your Budget" : "Nothing in your Budget yet"}
       </div>
       {counted.length ? (
         <Button variant="quiet" size="inline" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? "Hide the lines" : "Show the lines"}</Button>
@@ -414,7 +414,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
                       {k === "rothIra" && !pi.roth.rothIra && v > 0 && r.iraDed < v - 0.005 ? <>
                         {r.iraDed < 0.005 ? " · not deductible at your income" : " · " + cents(r.iraDed) + " of it deductible"}<TipDot k="pciradeduct" /></> : null}
                       {k === "rothIra" && pi.roth.rothIra && (rr.over || rr.reduced) ? <>
-                        {" · "}<b className="font-medium text-foreground">{rr.over ? "Over the Roth income limit: use a backdoor Roth" : "Roth limit cut to " + money(rr.direct) + " a year" + (two ? " each" : "") + " at your income: a backdoor covers the rest"}</b>
+                        {" · "}<b className="font-medium text-foreground">{rr.over ? "Over the Roth income limit: use a backdoor Roth" : "Roth limit cut to " + money(rr.direct) + " per year" + (two ? " each" : "") + " at your income: a backdoor covers the rest"}</b>
                         <TipDot k="pcbackdoor" /></> : null}
                     </>}
                   </div>
@@ -507,7 +507,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   ln("item", "Bills and spending", -r.spend);
   const budgetLines = s.rows.map((row, i) => ({ row, i })).filter(({ row }) => rowRole(s, row) === "count" && annualize(row) > 0);
   const subStart = rows.length;
-  for (const { row } of budgetLines) ln("sub", (row.desc || "Custom") + (row.freq === 1 ? " (" + money(annualize(row)) + " a year)" : ""), -annualize(row) / p);
+  for (const { row } of budgetLines) ln("sub", (row.desc || "Custom") + (row.freq === 1 ? " (" + money(annualize(row)) + " per year)" : ""), -annualize(row) / p);
   const subEnd = rows.length;
   ln("total", "Free to save or invest", r.toAssign);
   if (r.ef || r.rothIra || r.brok) {

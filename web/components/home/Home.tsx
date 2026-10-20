@@ -45,9 +45,9 @@ export function Home({ data }: { data: HomeData }) {
 
       <section aria-labelledby="hmTools">
         <div className="hm-head">
-          <h2 className="hm-h2" id="hmTools" data-rv="">The tools, in the order you&apos;ll need them.</h2>
+          <h2 className="hm-h2" id="hmTools" data-rv="">From saving to retirement.</h2>
           <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
-            A calculator, a guide and 13 planning tools. They share one household, so what you enter in the Calculator is already there when you open the Drawdown Simulator twenty years later.
+            A calculator, a guide and 13 planning tools. They share one household, so what you enter once fills in everywhere.
           </p>
         </div>
 
