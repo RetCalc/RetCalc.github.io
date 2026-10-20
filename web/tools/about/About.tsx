@@ -20,15 +20,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
    behind them, then sharing and the limits. Each section's id is
    "about-" + its key, so a link to /about#about-roth opens Roth's. */
 const GROUPS = [
-  { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["stages", "Stages"], ["guide", "Retirement Readiness Guide"]] },
+  { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["stages", "Stages"], ["guide", "Retirement Readiness Guide"], ["paycheck", "Paycheck to Retirement"]] },
   { key: "retirement", label: "Retirement income", sections: [["optimizer", "Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion & RMDs"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
   { key: "everyday", label: "Everyday money", sections: [["tax", "Income Tax"], ["budget", "Budget"], ["debt", "Debt Payoff"], ["mortgage", "Mortgage Calculator"]] },
   { key: "methods", label: "Methods", sections: [["historical", "Historical"], ["montecarlo", "Monte Carlo"]] },
   { key: "sharing", label: "Sharing and limits", sections: [["scenarios", "Scenarios, sharing and the summary"], ["limits", "Limitations worth knowing"]] },
 ] as const;
-type SectionKey = (typeof GROUPS)[number]["sections"][number][0];
-const TITLE = Object.fromEntries(GROUPS.flatMap((g): readonly (readonly [string, string])[] => g.sections)) as Record<SectionKey, string>;
+/* Data and assumptions folds the same way, on its own above the groups. */
+type SectionKey = (typeof GROUPS)[number]["sections"][number][0] | "method";
+const TITLE = Object.fromEntries([["method", "Data and assumptions"], ...GROUPS.flatMap((g): readonly (readonly [string, string])[] => g.sections)]) as Record<SectionKey, string>;
 const LABEL = Object.fromEntries(GROUPS.map((g) => [g.key, g.label])) as Record<(typeof GROUPS)[number]["key"], string>;
 
 /* Which sections are open, shared by the sections and the index. */
@@ -72,7 +73,7 @@ function Index() {
     <nav className="about-index" aria-label="On this page">
       <a className={link} href="#about-what">What this is</a>
       <a className={link} href="#about-settings">Your settings</a>
-      <a className={link} href="#about-method">Data and assumptions</a>
+      <a className={link} href="#about-method" onClick={() => set("method", true)}>Data and assumptions</a>
       {GROUPS.map((g) => (
         <div key={g.key} className="mt-4">
           <a className="toolgroup-h about-index-h" href={"#about-" + g.key}>{g.label}</a>
@@ -132,9 +133,13 @@ export function About({ states }: { states: StateOption[] }) {
             You describe your savings, contributions, and expected returns, and it projects
             where you land at retirement, how long that money lasts, and what it all means
             in today&apos;s dollars. Everything runs in your browser; nothing is sent anywhere.</p>
-            <p>The Guide tab is the place to start if you&apos;re not sure where you stand: it
+            <p>The Guide tab is the place to start, and it holds two walkthroughs. The
+            Retirement Readiness Guide is for when you&apos;re not sure where you stand: it
             asks about your money one question at a time, gives you a readiness score, and
-            walks you through whichever tool finds an answer you don&apos;t know.</p>
+            walks you through whichever tool finds an answer you don&apos;t know. Paycheck to
+            Retirement goes straight to the numbers, from your pay and its taxes to your
+            budget, where each paycheck&apos;s saving goes, and what that adds up to by
+            retirement.</p>
             <p>The core retirement planner, under the Calculator tab, has three modes for
             different levels of detail, from a five-question starting point (Basic) to a
             full multi-stage model (Stages). The Tools tab
@@ -157,10 +162,10 @@ export function About({ states }: { states: StateOption[] }) {
             <div id="hhAboutSlot"><HouseholdBar states={states} inAbout /></div>
           </div>
         </section>
-        <Card id="about-method">
-          <CardHeader><CardTitle>Data and assumptions</CardTitle></CardHeader>
-          <CardContent><div className="about">
-            <h3>Where the numbers come from</h3>
+        <Card size="flush">
+          <div className="overflow-hidden rounded-(--r-panel)">
+          <Section id="method">
+            <h4>Where the numbers come from</h4>
             <ul>
               <li><b>Market history:</b> monthly, January 1926 to December 2025. US stock
               prices, dividends and 10-year Treasury yields are from Robert Shiller&apos;s
@@ -172,25 +177,30 @@ export function About({ states }: { states: StateOption[] }) {
               state rules as of January 1, 2026; Medicare premiums and IRMAA brackets from
               CMS; ACA premiums and subsidies from KFF benchmark premiums and HHS poverty
               guidelines; the mortgage tools start from a rounded recent Freddie Mac average, kept as a starting point rather than updated weekly.</li>
+              <li><b>What children cost:</b> the USDA&apos;s last study of what families spend
+              on a child (2015), brought to today&apos;s prices, and the Department of Labor&apos;s
+              National Database of Childcare Prices, by county, for childcare. Both are
+              rounded to the nearest $100 a month.</li>
             </ul>
-            <h3>What every tool assumes</h3>
+            <h4>What every tool assumes</h4>
             <p>Figures are in today&apos;s dollars unless a tool says otherwise. The
             historical tests use one country&apos;s record, annual rebalancing, and no
             fees, trading costs or taxes unless a tool adds them. Stocks are the S&amp;P
             500 with dividends reinvested and bonds are 10-year Treasuries, not a
             particular fund. Tax law is taken as it stands in 2026.</p>
-            <h3>What they don&apos;t model</h3>
+            <h4>What they don&apos;t model</h4>
             <p>Tax credits, local taxes and many special cases; financial aid and
             scholarships; changes to tax law or benefits after 2026; and anything about
             your health, how long you&apos;ll live, or how you&apos;ll actually react to a
             bad market. Past returns are context, not a forecast. Each tool&apos;s section
             below lists its own assumptions and what it leaves out.</p>
-            <h3>Corrections</h3>
+            <h4>Corrections</h4>
             <p>If a number looks wrong, <a href="#about-contact">email it in</a>. Confirmed
             errors are fixed on the page, and the figures quoted in the articles are
             checked against the calculators by an automated test before anything is
             released, so a changed calculation can&apos;t quietly leave an article behind.</p>
-          </div></CardContent>
+          </Section>
+          </div>
         </Card>
         <Group id="calculator">
           <Section id="projection">
@@ -320,13 +330,16 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Split by account type <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
               <dd>Swaps the single starting value, contribution and tax rate for a
-              balance and contribution in each of traditional, Roth and taxable brokerage
-              accounts, plus an employer match and your filing status and state. Every
+              balance and contribution in each of traditional, Roth, taxable brokerage
+              and HSA accounts, plus an employer match and your filing status and state. Every
               account grows at the same return, so the projection is unchanged; what
               changes is the tax. The first year&apos;s withdrawal is taken from each account in
               proportion to its balance and taxed with the 2026 rules the Income Tax tool
               uses: traditional as ordinary income, only the growth in the brokerage account
-              at capital-gain rates, and Roth not at all. Contributions aren&apos;t capped at the
+              at capital-gain rates, and Roth not at all. The HSA grows with the rest and
+              counts in the total, but it&apos;s taken as kept for health care, where it comes
+              out tax-free, so the first year&apos;s withdrawal comes from the other three and
+              none from it. Contributions aren&apos;t capped at the
               annual limits, since backdoor and mega backdoor Roth strategies can go past
               them; enter what you actually put in. Switching back to one total
               carries the totals and the calculated rate across, so the answer doesn&apos;t jump.</dd>
@@ -377,12 +390,20 @@ export function About({ states }: { states: StateOption[] }) {
             see that section for what each one means. A few things are specific
             to Stages:</p>
             <dl className="gloss">
+              <dt>Editing stages</dt>
+              <dd>The panel lists your stages, each with its length and contribution, under
+              a bar that draws every stage at its share of the years. <b>Edit stages</b>,
+              or a click on a stage or its part of the bar, opens the stage editor, one
+              stage to a row. <b>Add stage</b> copies the stage before it as a starting
+              point, and a stage&apos;s name can be clicked to rename it.</dd>
+
               <dt>Inflation adjusted <Badge variant="outline" className="ml-1.25">stage 2 onward</Badge></dt>
               <dd>Restates the contribution you typed into that stage&apos;s future dollars.
               Type $3,000 for a stage starting in year 5 at 2.5% inflation and it&apos;s
               modeled as $3,394, the amount that <i>feels like</i> $3,000 by
               then. The stage&apos;s own growth rate compounds from there. Turn it off to
-              use the number exactly as typed.</dd>
+              use the number exactly as typed. In the editor it&apos;s the <b>Inf. Adj.</b> box
+              under the contribution, with the amount it becomes beside it.</dd>
 
               <dt>Glide path <Badge variant="outline" className="ml-1.25">final stage only</Badge></dt>
               <dd>Available on the last stage only, since that&apos;s the one closest to
@@ -399,9 +420,8 @@ export function About({ states }: { states: StateOption[] }) {
               <dt>Split by account type <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
               <dd>Works like the Advanced version, spread across stages. Starting
               balances, the employer match and your filing status and state are set once
-              for the whole run; each stage card then says where that stage&apos;s
-              contribution goes: a share to traditional, a share to Roth, and the rest to
-              the taxable brokerage account. That lets a plan go Roth early in a career
+              for the whole run; each stage then says how much of its contribution goes
+              into each of traditional, Roth, the taxable brokerage account and the HSA. That lets a plan go Roth early in a career
               and traditional later, and the tax on your retirement income reflects the
               mix you end up with. The employer match works as on Advanced, from your
               salary, the match rate and the share of salary it applies to; your salary is
@@ -435,6 +455,19 @@ export function About({ states }: { states: StateOption[] }) {
               reach 95. The outlook is the share of those retirements where the money
               lasted, and the guide also solves for what you&apos;d need saved by retirement to
               last in 90% of them.</dd>
+
+              <dt>Children and other changes</dt>
+              <dd>A plan that assumes the same saving every year until retirement misses
+              the years when children cost the most. The guide asks the age of each child
+              you have, and for children you&apos;re planning, when the first arrives and how
+              far apart the rest are, to the half year. It then builds a saving schedule by
+              age, with less saved in the years the children cost more. A child costs, per
+              month in today&apos;s dollars, $1,300 before school plus childcare if you&apos;ll pay
+              for it ($1,500 in a big city, $1,000 in a suburb or small city, $700 in a rural
+              area or small town), $1,400 from 6 to 12, and $1,500 from 13 to 18. A second
+              or later child costs 20% less, since they share a room, clothes and gear. Up to
+              six children in all, and every figure can be changed to your own. A raise,
+              part-time years or a payment that ends are added the same way.</dd>
 
               <dt>Social Security and pensions</dt>
               <dd>Estimated from your income and the years you&apos;ll have worked by
@@ -494,12 +527,91 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>With the Guide tab open, <b>Save/Delete</b> saves your answers and plan
               under a name, like any other tool&apos;s scenario, and picking it from the list
               later loads the whole plan back, household bar included. From the results,
-              or the Share button while on the Guide tab, print the
-              finished plan on one page or copy a link that opens it in the guide. The link
+              or the Share button while on the Guide tab, open the full report (several
+              pages in color, longer as your plan has more in it, with your names on the
+              cover if you add them), print the plan on one page, or copy a link that opens
+              it in the guide. The link
               carries your answers (not your budget or debt lists), so share it only with
               people you&apos;d show your finances to. Someone opening it who has guide answers
               of their own is asked before theirs are replaced.</dd>
             </dl>
+          </Section>
+          <Section id="paycheck">
+            <p>The Guide tab&apos;s second walkthrough. Where the Readiness Guide looks at your
+            whole financial picture, Paycheck to Retirement goes straight to the numbers:
+            what you take home after taxes, what you spend, where the rest of each
+            paycheck goes, and where that saving gets you by the age you want to retire.
+            Each step is one of the site&apos;s own calculators (Budget, its Paycheck tab,
+            Advanced and Stages), filled in from the step before it, so a change early on
+            carries through to the end.</p>
+            <p>What you type stays in the walkthrough. The calculators keep their own numbers
+            until you choose <b>Copy into my tools</b> at the end. Your plan is saved in this
+            browser, and in your account if you sign in.</p>
+            <dl className="gloss">
+              <dt>Start</dt>
+              <dd>Your age and the age you&apos;d like to retire, then your pay. Filing status
+              comes first (single, married with one income, or married with two incomes),
+              since it decides whether there&apos;s one pay to ask for or two. Then gross pay for
+              the year, how often each of you is paid, and your state. With two incomes the
+              plan works by the month, since two paychecks rarely line up, and the taxes are
+              figured as one joint return.</dd>
+
+              <dt>Step 1: Budget</dt>
+              <dd>What you spend, line by line, as on the Budget tool. Saving isn&apos;t entered
+              here; the next step plans it.</dd>
+
+              <dt>Step 2: Paycheck</dt>
+              <dd>The Budget tool&apos;s Paycheck tab, described under Budget below: taxes come
+              out, your budget comes out, and you decide where the rest goes, account by
+              account. Start with what you put in today, then pick a plan or move each
+              slider until nothing is left unassigned. Every change reruns the taxes, so
+              money moved into a traditional 401(k) or HSA lowers them right away. Under
+              the itemized paycheck are the federal brackets and what you pay in each, then
+              your state&apos;s rules.</dd>
+
+              <dt>Step 3: Your plan</dt>
+              <dd>The Advanced calculator, split by account type. Each account&apos;s
+              contribution comes over from your paycheck, along with the employer match,
+              your filing status and state, and the years between your two ages. The first
+              time through, your spending becomes the target income. Add what you&apos;ve
+              already saved in each account, and check the return and inflation.</dd>
+
+              <dt>Step 4: Life stages <Badge variant="outline" className="ml-1.25">optional</Badge></dt>
+              <dd>Stages, built from your plan in step 3 and your children. Tell it the ages
+              of the children you have, how many you&apos;re planning, when the first arrives and
+              how far apart the rest are (to the half year), and whether you&apos;ll pay for
+              childcare before school. It works out what they cost each year until you
+              retire and starts a new stage wherever that cost changes, named for what&apos;s
+              happening then. The costs are the ones described under the Guide&apos;s
+              children, and any of them can be changed. With no children it&apos;s one stage.
+              Children are the only change it builds stages from, but any stage&apos;s saving
+              or return can be edited, and stages added, for a raise, a move or part-time
+              years.</dd>
+
+              <dt>How will you cover this?</dt>
+              <dd>For each stage, where the children&apos;s extra cost comes from. By default it
+              comes out of the brokerage first, then Roth, then traditional, then the HSA,
+              each only as far as it goes. You can type your own amount for any account.
+              Cutting a traditional 401(k) or HSA contribution frees less than the full
+              amount, because that money is taxed as pay again, so each cut is sized to
+              free what the stage needs after tax. A cut that drops below what earns the
+              full employer match is marked with the match you&apos;d give up, and anything
+              saving can&apos;t cover is shown as coming out of spending.</dd>
+
+              <dt>Summary</dt>
+              <dd>The plan on one page: what you&apos;ll have at retirement and the income it
+              pays, where every dollar of pay goes, each account, the balance climbing by
+              age with the stages and children marked, what the children cost, and your
+              stages. From there, <b>Print or save the report</b> opens a multi-page report
+              laid out for paper, <b>Copy into my tools</b> puts every step&apos;s numbers into
+              the calculators themselves, and the Drawdown Simulator opens with your
+              retirement balance filled in, to test whether it lasts.</dd>
+            </dl>
+            <p><b>What it leaves out.</b> Tax credits, the child tax credit included;
+            itemized deductions, since the paycheck takes the standard deduction, as most
+            filers do; pre-tax benefits other than the 401(k), HSA, IRA and health premiums,
+            such as FSAs and commuter accounts; and college costs, which the College Savings
+            tool covers. The taxes are the newest tax year&apos;s.</p>
           </Section>
         </Group>
         <Group id="retirement">
@@ -999,12 +1111,23 @@ export function About({ states }: { states: StateOption[] }) {
             $250,000 joint.</p>
             <h4>Normal income</h4>
             <dl className="gloss">
-              <dt>Gross income</dt>
-              <dd>Salary before anything is taken out.</dd>
+              <dt>Filing status and gross income</dt>
+              <dd>Filing status comes first, since it decides how many incomes there are.
+              Gross income is salary before anything is taken out; married filing jointly
+              asks for each spouse&apos;s separately, because Social Security and Medicare
+              are figured per person.</dd>
               <dt>Pre-tax deductions</dt>
-              <dd>Traditional 401(k), HSA, and health premiums. These reduce income tax
-              but <i>not</i> Social Security and Medicare, which is why the FICA figure
-              doesn&apos;t move at all when you raise them.</dd>
+              <dd>Money taken out of your pay before income tax. Typed as one figure, it
+              lowers income tax only. <b>Split</b> breaks it down by kind, and on a joint
+              return by spouse, because each kind comes off different taxes. A traditional
+              401(k), 403(b) or 457, and other pre-tax benefits such as FSAs and commuter
+              accounts, come off income tax but not Social Security and Medicare. An HSA
+              through payroll and health, dental and vision premiums come off both. A
+              traditional IRA comes off income tax as far as the income limits allow when
+              you have a plan at work (a 401(k) line counts as one). Each line can be
+              typed per paycheck, per month or per year, whichever you know it by, and
+              anything over the year&apos;s contribution limits is flagged. A few states keep
+              some kinds in their own base; the state rules table says which.</dd>
               <dt>Standard vs itemized</dt>
               <dd>You take whichever is larger. Most people take the standard deduction;
               itemizing wins mainly with a big mortgage, large charitable giving, or high
@@ -1168,36 +1291,98 @@ export function About({ states }: { states: StateOption[] }) {
             good estimate rather than a return.</p>
           </Section>
           <Section id="budget">
-            <p>A simple worksheet for laying out where your money goes and seeing what&apos;s
-            left. It starts with your income after taxes, lists the usual expenses grouped
-            by category, and totals everything into a yearly and monthly figure.</p>
-            <p>Each line has its own amount and a per-month or per-year switch, because
-            some costs are naturally one and some the other: rent is monthly, travel
-            and car repairs are easier to think of as a yearly lump. Everything is
-            converted to a common basis before totaling, so mixing the two is fine.</p>
+            <p>Two tabs. <b>Budget</b> lays out what you spend. <b>Paycheck</b> starts from
+            your gross pay, takes out the taxes and that budget, and plans where the rest of
+            each paycheck goes.</p>
+
+            <h4>Budget</h4>
+            <p>What you spend, line by line, grouped by category and totaled per month and
+            per year. Your pay isn&apos;t entered here; it&apos;s on the Paycheck tab. Each line
+            has its own amount and a per-month or per-year switch, because some costs are
+            naturally one and some the other: rent is monthly, travel and car repairs are
+            easier to think of as a yearly lump. Everything is converted to a common basis
+            before totaling, so mixing the two is fine.</p>
             <dl className="gloss">
-              <dt>Income after taxes</dt>
-              <dd>Type it in, or use <b>Copy from Income Tax</b> to pull your net pay
-              (gross minus taxes) straight from that tool.</dd>
               <dt>The preset rows</dt>
               <dd>A starting point, not a rulebook. Leave anything at zero to ignore it.</dd>
               <dt>Adding and removing lines</dt>
               <dd>The + beside a group&apos;s name adds a blank line to that group, counted
               with it in Where it goes. Add custom item adds one under Custom, for anything
-              that fits no group. The × on any line removes it.</dd>
-              <dt>+ Retirement contribution &amp; + College savings</dt>
-              <dd>Pull a monthly figure straight from another tool instead of retyping it.
-              If more than one retirement mode (Basic, Advanced, Stages) has a contribution
-              set, you&apos;ll be asked which one to use, with each option&apos;s monthly amount
-              shown so the choice is never a guess.</dd>
-              <dt>Left over</dt>
-              <dd>Income minus everything budgeted, shown per year and per month, green
-              when positive and red when you&apos;ve allocated more than you make. The
-              percentage is how much of your income is left, or how far over you
-              are.</dd>
+              that fits no group. Click a line&apos;s name to rename it, and the × removes it.
+              Health insurance is the one fixed line: the Paycheck tab reads it as your
+              premiums, so it keeps its name.</dd>
+              <dt>+ College savings</dt>
+              <dd>Pulls the monthly amount the College Savings tool works out, instead of
+              retyping it.</dd>
+              <dt>Where it goes</dt>
+              <dd>Each group&apos;s share of the total, with yearly bills spread over the year.</dd>
+              <dt>Emergency fund</dt>
+              <dd>A target in months of your expenses, six unless you change it, and what
+              that comes to. Three to six months is a common starting goal.</dd>
             </dl>
-            <p>Like the other tools, a budget can be saved, and Save/Delete act on the
-            budget while you&apos;re on it. It keeps its own separate list.</p>
+
+            <h4>Paycheck</h4>
+            <p>One paycheck from the top: gross pay, what comes out before tax, the taxes,
+            what lands in your bank, your budget, and what&apos;s left to save. The facts sit on
+            the left and the decisions on the right. Every change reruns the 2026 federal,
+            state and payroll taxes the Income Tax tool uses, so the effect of pre-tax saving
+            shows up in the same paycheck.</p>
+            <dl className="gloss">
+              <dt>Your paycheck</dt>
+              <dd>Filing status first: single, married with one income, or married with two
+              incomes. Then gross pay for the year (each of yours with two incomes), how
+              often each of you is paid, and your state. With two incomes everything is
+              planned by the month, since two paychecks rarely line up, and taxed as one
+              joint return.</dd>
+              <dt>Through work</dt>
+              <dd>Health, dental and vision premiums per check, starting from the Budget&apos;s
+              Health insurance line; set them to 0 if your coverage isn&apos;t through work and
+              that line stays an expense. The employer 401(k) match, as a rate on the first
+              share of pay, one for each job. And HSA coverage, which sets the HSA limit:
+              self-only or family, and with two incomes, one self-only plan, one each, or
+              family.</dd>
+              <dt>The results</dt>
+              <dd><b>Saved and invested</b> each check, as a share of gross pay, plus your
+              employer&apos;s match. <b>Free before saving</b> is pay less taxes and your budget
+              with nothing saved. <b>Still unassigned</b> is what has no place yet; it turns
+              into <b>Short</b> when more is assigned than the deposit covers. The chart
+              splits the paycheck into saving, taxes, expenses and what&apos;s unassigned.</dd>
+              <dt>Where the rest goes</dt>
+              <dd>One slider for each place money can go: the 401(k) up to the match, the
+              HSA, an IRA, the 401(k) beyond the match, taxable brokerage, and, if you add
+              one, an emergency fund. Each 401(k) line and the IRA switch between
+              traditional and Roth. <b>Max</b> fills a line to its 2026 limit, or to what&apos;s
+              left. A plan sets every slider at once: <b>The usual order</b> (the full match,
+              then the HSA, a Roth IRA, the rest of the 401(k) and brokerage), <b>Max tax
+              breaks</b> (everything pre-tax first, all traditional) or <b>Stay
+              flexible</b> (the match, then money you can reach before retirement: a Roth
+              IRA and brokerage). A traditional IRA shows how much of it is deductible at
+              your income. The Roth IRA isn&apos;t capped by income; past the 2026 income range
+              the line says to use a backdoor Roth instead.</dd>
+              <dt>Two incomes</dt>
+              <dd>The six lines stay six, each split between you: the match line goes to the
+              better match first, the 401(k) beyond it by each person&apos;s room under the
+              limit, and the HSA and IRA evenly. HSA money through payroll also skips Social
+              Security tax, but only on pay under the wage cap, so when one of you earns
+              above it the HSA comes out of the other&apos;s pay first.</dd>
+              <dt>Itemized paycheck</dt>
+              <dd>Every line per check, per month and per year (with two incomes, each of
+              your checks, then the household by the month and year): gross pay, the pre-tax
+              lines, federal and state income tax, Social Security and Medicare, the
+              deposit, your budget with its lines on demand, and the saving that comes out
+              of the deposit. It downloads as a CSV, and <b>Open in Income Tax</b> carries
+              the pay, state and pre-tax money over to that tool.</dd>
+              <dt>Federal brackets and state rules</dt>
+              <dd>Under the itemized paycheck, as on Income Tax: each federal bracket and
+              what you pay in it, then your state&apos;s rules and what the figures leave out.</dd>
+              <dt>Copy to a calculator</dt>
+              <dd>Puts what goes into each account, and the match, into Advanced or Stages,
+              split by account type, so the projection starts from this paycheck. Stages
+              gets it as its first stage. It asks before replacing saving that&apos;s already
+              there.</dd>
+            </dl>
+            <p>Like the other tools, a budget can be saved, and Save/Delete act on both tabs
+            together. It keeps its own separate list.</p>
           </Section>
           <Section id="debt">
             <p>Two well-known ways to clear several debts at once, and they differ in
@@ -1258,7 +1443,7 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>Enter a percentage or a dollar amount; the other updates itself.</dd>
               <dt>Interest rate</dt>
               <dd>Pre-filled with a rounded recent national average for a 30-year fixed
-              loan — a starting point, not a live figure. Rates move weekly, and your own
+              loan, as a starting point rather than a live figure. Rates move weekly, and your own
               depends on credit score, term, points and lender, so replace it with a
               current quote.</dd>
               <dt>PMI</dt>
@@ -1369,13 +1554,13 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>Names the current setup and adds it to the dropdown. Saving under
               the name of the scenario you already have loaded updates it; saving
               under a different existing name asks first before overwriting it.
-              Scenarios are stored in your browser, on the
-              device you&apos;re using; they don&apos;t sync between your phone and computer, and
-              clearing site data removes them.</dd>
+              Scenarios are stored in your browser, and in your account if you sign in, so
+              they follow you between your phone and computer. Signed out, they stay on the
+              device you&apos;re using, and clearing site data removes them.</dd>
 
               <dt>The dropdown</dt>
-              <dd>Each mode and tool keeps its own saved list (Basic, Advanced, Stages and
-              every tool in the Tools tab), and the dropdown shows whichever list belongs to
+              <dd>Each mode and tool keeps its own saved list (Basic, Advanced, Stages,
+              every tool in the Tools tab, and both Guide walkthroughs), and the dropdown shows whichever list belongs to
               the one you&apos;re on. It remembers which scenario you loaded or saved as you
               move between tabs, and marks it &quot;(edited)&quot; once your current numbers no
               longer match what&apos;s saved. &quot;Unsaved&quot; means the current numbers don&apos;t match
@@ -1425,7 +1610,7 @@ export function About({ states }: { states: StateOption[] }) {
               <li>Contributions are assumed to continue uninterrupted. Job loss, career
               breaks and emergencies aren&apos;t modeled.</li>
               <li>Contribution limits and employer matching are only modeled when you
-              split by account type. Social Security is modeled in the Drawdown Simulator,
+              split by account type, and on the Budget&apos;s Paycheck tab. Social Security is modeled in the Drawdown Simulator,
               Income Tax and Roth Conversion tools, not in the retirement projections.</li>
               <li>Monte Carlo draws each period independently. Real markets show
               streaks and mean reversion that random draws don&apos;t capture; the
