@@ -247,7 +247,7 @@ function Key({ items }: { items: [string, string][] }) {
   );
 }
 
-/** Social Security Claiming: the monthly check at 62, full retirement age
+/** Social Security Calculator: the monthly check at 62, full retirement age
     and 70, each bar taller than the last, the one at 70 in the plan's color. */
 export function SocialChart({ w = 340, h = 120 }) {
   const bars: [string, number, string][] = [["62", 70, "f-sky"], ["67", 100, "f-teal"], ["70", 124, "f-amber"]];

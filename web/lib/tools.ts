@@ -49,9 +49,9 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "sub": "social",
         "q": "When should I claim Social Security?",
         "path": "social-security",
-        "name": "Social Security Claiming",
+        "name": "Social Security Calculator",
         "badge": "New",
-        "desc": "Your benefit at every age from 62 to 70, for you or a couple: what each choice adds up to, where they cross, which wins for your lifespan, and whether claiming early and investing it beat waiting since 1926.",
+        "desc": "What your check will be at every age you could claim, 62 to 70.",
         "i": 2
       },
       {

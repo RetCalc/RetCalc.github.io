@@ -1,191 +1,230 @@
-/* The Social Security Claiming tool's inputs, and the figures the page
-   reads from them: each person's full retirement age and benefit, the
-   household's benefits for the claiming ages chosen, every other claiming
-   age beside them, where the choices cross, and the claim-early-and-invest
-   test across market history (lib/engine/math.js, the claiming section). */
+/* The Social Security Calculator's inputs, and every figure the page reads
+   from them: each person's full retirement age and benefit (from a
+   statement, or estimated from a career of pay), the household's checks at
+   every claiming age, where the choices cross, which age wins for each
+   lifespan, and for a couple every pair of claiming ages
+   (lib/engine/math.js, the claiming section). */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { NEWEST_YEAR, ssBreakEven, ssClaimFactor, ssFRA, ssHousehold, ssInvestEarly, ssPiaFromEarnings, ssTaxable } from "@/lib/engine/typed";
-import type { SsHousehold, SsHouseholdInput, SsInvest } from "@/lib/engine/types";
+import { NEWEST_YEAR, ssBreakEven, ssClaimFactor, ssFRA, ssHousehold, ssPiaFromEarnings, ssTaxable, yearData } from "@/lib/engine/typed";
+import type { SsHousehold, SsHouseholdInput } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 
-/** How a person's pay runs over a career, for the estimate: the ages they
-    started and will stop, raises above wage growth so far and ahead (a
-    year), and any ages whose pay was set by hand (today's dollars). */
-export interface Career { start: string; stop: string; growPast: string; growAhead: string; edits: Record<string, string> }
-export const CAREER_DEFAULT: Career = { start: "22", stop: "67", growPast: "2", growAhead: "1", edits: {} };
+export const CLAIM_AGES = [62, 63, 64, 65, 66, 67, 68, 69, 70] as const;
+
+/* One person's inputs, as typed. `src` is where the benefit comes from:
+   "pay" estimates it from a career, "statement" takes the figure on the
+   Social Security statement. Raises are above wage growth, a year. `edits`
+   are years of pay set by hand, by age, in today's dollars. */
+const personDefaults = (birth: string, pay: number, pia: number, start: string, stop: string, through: string) => ({
+  birth, src: "pay" as "pay" | "statement", pay: groupDigits(pay, true), pia: groupDigits(pia, true),
+  start, stop, claim: "67", through, earn: "0", gPast: "2", gAhead: "1", edits: {} as Record<string, string>,
+});
 
 export const SOCIAL_DEFAULTS = {
   status: "s" as "s" | "m",
-  /** You: birth year, how the benefit is given (the statement's figure at
-      full retirement age, or an estimate from income and years worked),
-      the claiming age, the age planned through, and earnings a year while
-      claiming before full retirement age. */
-  birth1: "1964", src1: "statement" as "statement" | "estimate", pia1: groupDigits(2400, true), inc1: groupDigits(85000, true), career1: CAREER_DEFAULT as Career,
-  claim1: "67", through1: "90", earn1: "0",
-  birth2: "1966", src2: "statement" as "statement" | "estimate", pia2: groupDigits(1500, true), inc2: groupDigits(55000, true), career2: CAREER_DEFAULT as Career,
-  claim2: "67", through2: "92", earn2: "0",
+  you: personDefaults("1990", 85000, 2400, "22", "67", "90"),
+  spouse: personDefaults("1992", 55000, 1500, "24", "65", "92"),
   /** Other taxable income a year in retirement, for how much of the
       benefit is taxed. */
   other: groupDigits(40000, true),
-  /** The claim-early-and-invest test: the two ages compared and the stock
-      share the checks are invested at. */
-  early: "62", late: "70", mix: "60",
 };
 export type SocialInputs = typeof SOCIAL_DEFAULTS;
+export type PersonInputs = SocialInputs["you"];
+export type Who = "you" | "spouse";
 
-export const SOCIAL_DEF: ToolDef<SocialInputs> = { id: "social", label: "Social Security", noun: "claiming plan", defaults: SOCIAL_DEFAULTS };
-
-export const CLAIM_AGES = [62, 63, 64, 65, 66, 67, 68, 69, 70] as const;
+export const SOCIAL_DEF: ToolDef<SocialInputs> = { id: "social", label: "Social Security", noun: "Social Security plan", defaults: SOCIAL_DEFAULTS };
 
 const clampAge = (v: string, lo: number, hi: number, dflt: number) => {
   const n = parseNum(v);
   return n > 0 ? Math.max(lo, Math.min(hi, Math.round(n))) : dflt;
 };
 
-export interface Person {
-  birth: number; fra: number; pia: number; claim: number; through: number; earn: number;
-  /** The benefit came from an estimate, not a statement. */
-  estimated: boolean;
-  /** Age this year (the data's year), for the career model. */
-  ageNow: number;
-  /** The pay by age the estimate used, today's dollars. */
-  career: CareerYear[] | null;
+export interface CareerYear {
+  age: number; year: number; pay: number;
+  /** Set by hand. */
+  edited: boolean;
+  /** Before this year, or this year. */
+  past: boolean; now: boolean;
+  /** Among the best 35 years the benefit counts. */
+  counted: boolean;
 }
 
-export interface CareerYear { age: number; year: number; pay: number; edited: boolean }
-
-/** Pay at every age from the start of a career to the year before it ends,
-    in today's dollars: today's pay walked back at the past raise and
-    forward at the one ahead, with any age set by hand taking its own
-    figure. The year is the calendar year. */
-export function careerYears(c: Career, ageNow: number, incomeNow: number): CareerYear[] {
-  const start = clampAge(c.start, 14, 70, 22), stop = Math.max(start + 1, clampAge(c.stop, 15, 80, 67));
-  const gPast = parseNum(c.growPast) / 100, gAhead = parseNum(c.growAhead) / 100;
+/** Pay at every age of a career, in today's dollars. Before this year,
+    each year is today's pay walked back at the past raise, and a year set
+    by hand is that year alone (an earnings record). This year is today's
+    pay. After it, each year is the year before plus the raise ahead, so a
+    year set by hand (a promotion, a cut) carries forward and the raises
+    continue from it. */
+export function careerYears(p: PersonInputs, ageNow: number): CareerYear[] {
+  const start = clampAge(p.start, 14, 70, 22), stop = Math.max(start + 1, clampAge(p.stop, 15, 80, 67));
+  const payNow = Math.max(0, parseNum(p.pay)), gPast = parseNum(p.gPast) / 100, gAhead = parseNum(p.gAhead) / 100;
   const out: CareerYear[] = [];
+  let prev: number | null = null;
   for (let age = start; age < stop; age++) {
-    const d = age - ageNow;
-    const pattern = d < 0 ? incomeNow / Math.pow(1 + gPast, -d) : incomeNow * Math.pow(1 + gAhead, d);
-    const edit = c.edits[String(age)];
-    const edited = edit != null && edit !== "";
-    out.push({ age, year: NEWEST_YEAR + d, pay: Math.max(0, edited ? parseNum(edit) : pattern), edited });
+    const d = age - ageNow, e = p.edits[String(age)], hand = e != null && e !== "";
+    let pay: number;
+    if (d < 0) pay = hand ? parseNum(e) : payNow / Math.pow(1 + gPast, -d);
+    else if (d === 0) pay = payNow;
+    else pay = hand ? parseNum(e) : (prev ?? payNow * Math.pow(1 + gAhead, d - 1)) * (1 + gAhead);
+    pay = Math.max(0, pay);
+    prev = pay;
+    out.push({ age, year: NEWEST_YEAR + d, pay, edited: hand && d !== 0, past: d < 0, now: d === 0, counted: false });
   }
+  // The best 35 years count, each capped at the wage base.
+  const cap = yearData().fica.ssCap;
+  out.map((y, i) => i).sort((a, b) => Math.min(out[b].pay, cap) - Math.min(out[a].pay, cap)).slice(0, 35)
+    .forEach((i) => { if (out[i].pay > 0) out[i].counted = true; });
   return out;
 }
 
-/** The benefit at full retirement age a career's pay earns. */
-export function careerPia(years: CareerYear[]): { pia: number; aime: number; years: number } {
-  return ssPiaFromEarnings(years.map((y) => y.pay));
+export interface Person {
+  birth: number; fra: number; ageNow: number;
+  /** The benefit at full retirement age, a month. */
+  pia: number;
+  claim: number; through: number; earn: number;
+  /** The career behind an estimate; null when the benefit is the statement's. */
+  career: CareerYear[] | null;
+  /** The estimate's average indexed monthly earnings and years counted. */
+  aime: number; years: number;
 }
 
-/* As the engine takes them. A blank or senseless field takes its default;
-   the age planned through is at least a year past the claiming age. */
-function person(s: SocialInputs, k: "1" | "2"): Person {
-  const birth = clampAge(s[`birth${k}`], 1930, NEWEST_YEAR - 18, k === "1" ? 1964 : 1966);
-  const fra = ssFRA(birth);
-  const estimated = s[`src${k}`] === "estimate";
-  const ageNow = NEWEST_YEAR - birth;
-  const career = estimated ? careerYears(s[`career${k}`] ?? CAREER_DEFAULT, ageNow, Math.max(0, parseNum(s[`inc${k}`]))) : null;
-  const pia = career ? careerPia(career).pia : Math.max(0, parseNum(s[`pia${k}`]));
-  const claim = clampAge(s[`claim${k}`], 62, 70, 67);
-  const through = Math.max(claim + 1, clampAge(s[`through${k}`], 63, 110, 90));
-  return { birth, fra, pia, claim, through, earn: Math.max(0, parseNum(s[`earn${k}`])), estimated, ageNow, career };
-}
-
-export interface SocialPlan {
-  married: boolean;
-  you: Person; spouse: Person | null;
-  /** The spouse's age minus yours. */
-  gap: number;
-  other: number; early: number; late: number; mix: number;
-}
-
-export function socialInput(s: SocialInputs): SocialPlan {
-  const married = s.status === "m";
-  const you = person(s, "1"), spouse = married ? person(s, "2") : null;
-  const early = clampAge(s.early, 62, 69, 62);
-  return {
-    married, you, spouse, gap: spouse ? you.birth - spouse.birth : 0,
-    other: Math.max(0, parseNum(s.other)),
-    early, late: Math.max(early + 1, clampAge(s.late, 63, 70, 70)),
-    mix: Math.max(0, Math.min(1, parseNum(s.mix) / 100)),
-  };
-}
-
-/** The household's benefits with you claiming at `claim1` (the spouse as set). */
-export function household(p: SocialPlan, claim1 = p.you.claim, claim2 = p.spouse?.claim): SsHousehold {
-  const o: SsHouseholdInput = { pia1: p.you.pia, fra1: p.you.fra, claim1, through1: p.you.through, earn1: p.you.earn, married: p.married };
-  if (p.spouse) Object.assign(o, { pia2: p.spouse.pia, fra2: p.spouse.fra, claim2: claim2 ?? p.spouse.claim, through2: p.spouse.through, earn2: p.spouse.earn, gap: p.gap });
-  return ssHousehold(o);
+function person(p: PersonInputs, dfltBirth: number): Person {
+  const birth = clampAge(p.birth, 1930, NEWEST_YEAR - 16, dfltBirth);
+  const fra = ssFRA(birth), ageNow = NEWEST_YEAR - birth;
+  const claim = clampAge(p.claim, 62, 70, 67);
+  const through = Math.max(claim + 1, clampAge(p.through, 63, 110, 90));
+  let pia = Math.max(0, parseNum(p.pia)), career: CareerYear[] | null = null, aime = 0, years = 0;
+  if (p.src === "pay") {
+    career = careerYears(p, ageNow);
+    const r = ssPiaFromEarnings(career.map((y) => y.pay));
+    pia = r.pia; aime = r.aime; years = r.years;
+  }
+  return { birth, fra, ageNow, pia, claim, through, earn: Math.max(0, parseNum(p.earn)), career, aime, years };
 }
 
 export interface AgeRow {
   age: number;
-  /** Each person's own monthly benefit claiming at this age. */
-  you: number; spouse: number;
-  /** The household's lifetime benefits with you claiming at this age. */
-  lifetime: number;
-  /** And with the spouse claiming at this age (you as set). */
-  lifetimeSpouse: number;
+  /** Your check as a share of the full benefit. */
+  factor: number;
+  /** Your own check, a month, claiming at this age. */
+  own: number;
+  /** The household's checks a month once both have claimed: yours and your
+      top-up, then your spouse's. */
+  mine: number; theirs: number; monthly: number;
+  /** All the checks through the ages planned to. */
+  total: number;
 }
 
-/** Every claiming age from 62 to 70, and the best one for each of you by
-    lifetime benefits. */
-export function ageRows(p: SocialPlan): { rows: AgeRow[]; best1: number; best2: number } {
-  const rows = CLAIM_AGES.map((age) => ({
-    age,
-    you: p.you.pia * ssClaimFactor(age, p.you.fra),
-    spouse: p.spouse ? p.spouse.pia * ssClaimFactor(age, p.spouse.fra) : 0,
-    lifetime: household(p, age).total,
-    lifetimeSpouse: p.spouse ? household(p, p.you.claim, age).total : 0,
-  }));
-  const best1 = rows.reduce((b, r) => (r.lifetime > b.lifetime ? r : b), rows[0]).age;
-  const best2 = p.spouse ? rows.reduce((b, r) => (r.lifetimeSpouse > b.lifetimeSpouse ? r : b), rows[0]).age : 0;
-  return { rows, best1, best2 };
+export interface Social {
+  married: boolean;
+  you: Person; spouse: Person | null;
+  /** The spouse's age minus yours. */
+  gap: number;
+  other: number;
+  /** The household with the ages chosen. */
+  H: SsHousehold;
+  rows: AgeRow[];
+  best: AgeRow; chosen: AgeRow;
+  /** The household's checks a month once both have claimed. */
+  monthly: number; monthlyYou: number; monthlySpouse: number;
+  /** What the longer-lived spouse keeps: the larger own check, credits for
+      waiting included (the engine's survivor rule). */
+  survivor: number;
+  taxedShare: number;
+  /** Your claiming age that collects the most, for each age you might live
+      to: runs of ages each claiming age wins, in order. */
+  wins: { claim: number; from: number; to: number }[];
+  /** Where your own check's choices cross. */
+  breakEvens: { a: number; b: number; at: number | null }[];
+  /** A couple's total for every pair of claiming ages (yours by row). */
+  pairs: { grid: number[][]; best: { you: number; spouse: number; total: number }; chosen: number; min: number } | null;
 }
 
-/** Where your own benefit's choices cross: 62 against full retirement age,
-    full retirement age against 70, and 62 against 70. */
-export function breakEvens(p: Person): { a: number; b: number; at: number | null }[] {
-  const ben = (age: number) => p.pia * ssClaimFactor(age, p.fra) * 12;
-  const fra = Math.round(p.fra * 12) / 12;
-  const pairs: [number, number][] = fra > 62 && fra < 70 ? [[62, fra], [fra, 70], [62, 70]] : [[62, 70]];
-  return pairs.map(([a, b]) => ({ a, b, at: ssBreakEven(a, ben(a), b, ben(b)) }));
-}
+export function social(s: SocialInputs): Social {
+  const married = s.status === "m";
+  const you = person(s.you, 1990), spouse = married ? person(s.spouse, 1992) : null;
+  const gap = spouse ? you.birth - spouse.birth : 0;
+  const hh = (c1 = you.claim, c2 = spouse?.claim ?? 67, t1 = you.through): SsHousehold => {
+    const o: SsHouseholdInput = { pia1: you.pia, fra1: you.fra, claim1: c1, through1: t1, earn1: you.earn, married };
+    if (spouse) Object.assign(o, { pia2: spouse.pia, fra2: spouse.fra, claim2: c2, through2: spouse.through, earn2: spouse.earn, gap });
+    return ssHousehold(o);
+  };
+  const H = hh();
+  const rows: AgeRow[] = CLAIM_AGES.map((age) => {
+    const h = hh(age);
+    const mine = h.you.monthly + h.top1, theirs = h.spouse ? h.spouse.monthly + h.top2 : 0;
+    return { age, factor: ssClaimFactor(age, you.fra), own: you.pia * ssClaimFactor(age, you.fra), mine, theirs, monthly: mine + theirs, total: h.total };
+  });
+  const best = rows.reduce((b, r) => (r.total > b.total + 1e-6 ? r : b), rows[0]);
+  const chosen = rows.find((r) => r.age === you.claim)!;
+  const monthlyYou = H.you.monthly + H.top1, monthlySpouse = H.spouse ? H.spouse.monthly + H.top2 : 0;
+  const monthly = monthlyYou + monthlySpouse;
+  const other = Math.max(0, parseNum(s.other));
+  const taxedShare = monthly > 0 ? ssTaxable(monthly * 12, other, married ? "m" : "s").taxable / (monthly * 12) : 0;
 
-/** Which of your claiming ages pays the most in all, for each age you
-    might live to: the runs of ages each claiming age wins, in order. */
-export function winsByLifespan(p: SocialPlan): { claim: number; from: number; to: number }[] {
-  const out: { claim: number; from: number; to: number }[] = [];
-  for (let through = 70; through <= 100; through++) {
-    const q: SocialPlan = { ...p, you: { ...p.you, through } };
-    let best = 62, bestTotal = -1;
-    for (const age of CLAIM_AGES) {
-      if (age >= through) break;
-      const t = household(q, age).total;
-      if (t > bestTotal + 1e-6) { bestTotal = t; best = age; }
+  const wins: Social["wins"] = [];
+  for (let t = 70; t <= 100; t++) {
+    let bestA = 62, bestT = -1;
+    for (const a of CLAIM_AGES) {
+      if (a >= t) break;
+      const tt = hh(a, spouse?.claim, t).total;
+      if (tt > bestT + 1e-6) { bestT = tt; bestA = a; }
     }
-    const last = out[out.length - 1];
-    if (last && last.claim === best) last.to = through;
-    else out.push({ claim: best, from: through, to: through });
+    const last = wins[wins.length - 1];
+    if (last && last.claim === bestA) last.to = t;
+    else wins.push({ claim: bestA, from: t, to: t });
   }
-  return out;
+
+  const ben = (a: number) => you.pia * ssClaimFactor(a, you.fra) * 12;
+  const fraR = Math.round(you.fra);
+  const breakEvens = ([[62, fraR], [fraR, 70], [62, 70]] as [number, number][]).filter(([a, b]) => b > a)
+    .map(([a, b]) => ({ a, b, at: ssBreakEven(a, ben(a), b, ben(b)) }));
+
+  let pairs: Social["pairs"] = null;
+  if (spouse) {
+    const grid = CLAIM_AGES.map((a) => CLAIM_AGES.map((b) => hh(a, b).total));
+    let bi = 0, bj = 0;
+    grid.forEach((row, i) => row.forEach((t, j) => { if (t > grid[bi][bj] + 1e-6) { bi = i; bj = j; } }));
+    pairs = { grid, best: { you: CLAIM_AGES[bi], spouse: CLAIM_AGES[bj], total: grid[bi][bj] },
+      chosen: grid[CLAIM_AGES.indexOf(you.claim as (typeof CLAIM_AGES)[number])][CLAIM_AGES.indexOf(spouse.claim as (typeof CLAIM_AGES)[number])],
+      min: Math.min(...grid.flat()) };
+  }
+
+  return {
+    married, you, spouse, gap, other, H, rows, best, chosen, monthly, monthlyYou, monthlySpouse,
+    survivor: H.spouse ? Math.max(H.you.laterMonthly, H.spouse.laterMonthly) : 0,
+    taxedShare, wins, breakEvens, pairs,
+  };
 }
 
-/** The claim-early-and-invest test on your own benefit. */
-export function investEarly(p: SocialPlan): SsInvest & { benEarly: number; benLate: number } {
-  const benEarly = p.you.pia * ssClaimFactor(p.early, p.you.fra) * 12;
-  const benLate = p.you.pia * ssClaimFactor(p.late, p.you.fra) * 12;
-  return { ...ssInvestEarly({ early: p.early, late: p.late, benEarly, benLate, through: p.you.through, mix: p.mix }), benEarly, benLate };
+/** Your own checks added up from claiming at `age`, by age, to `to`. */
+export function cumulative(p: Person, age: number, to: number): { year: number; value: number }[] {
+  const annual = p.pia * ssClaimFactor(age, p.fra) * 12, pts: { year: number; value: number }[] = [];
+  for (let x = 62, c = 0; x <= to; x++) { pts.push({ year: x - 62, value: c }); if (x >= age) c += annual; }
+  return pts;
 }
 
-/** How much of a year's benefits is taxed, with the other income entered. */
-export function taxedShare(p: SocialPlan, annual: number): number {
-  if (!(annual > 0)) return 0;
-  return ssTaxable(annual, p.other, p.married ? "m" : "s").taxable / annual;
+/** What the Drawdown Simulator takes from this tool: each person's yearly
+    benefit once both have claimed (today's dollars, any spousal top-up
+    included), and the claiming ages. */
+export function forDrawdown(s: SocialInputs): { couple: boolean; annual: number; annual2: number; claim: number; claim2: number } {
+  const S = social(s);
+  return {
+    couple: S.married,
+    annual: Math.round((S.H.you.laterMonthly + S.H.top1) * 12),
+    annual2: S.H.spouse ? Math.round((S.H.spouse.laterMonthly + S.H.top2) * 12) : 0,
+    claim: S.you.claim, claim2: S.spouse?.claim ?? S.you.claim,
+  };
 }
 
 /** "67" or "66 and 8 months". */
 export function fraLabel(fra: number): string {
   const months = Math.round((fra % 1) * 12);
   return months ? `${Math.floor(fra)} and ${months} months` : String(fra);
+}
+
+/** The wage base and bend points, for the explanations. */
+export function ssRules(): { cap: number; bend1: number; bend2: number; earnLimit: number } {
+  const Y = yearData();
+  return { cap: Y.fica.ssCap, bend1: Y.ss.bend1, bend2: Y.ss.bend2, earnLimit: Y.ss.earn.under };
 }

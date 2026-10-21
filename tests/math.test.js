@@ -290,16 +290,16 @@ group("Social Security: the benefit from a whole career");
   eq(ssPiaFromEarnings(flat.slice(0, 20)).years, 20, "years with pay counted");
 })();
 
-group("Articles: Social Security claiming");
+group("Articles: Social Security Calculator");
 (function () {
   // Sam, born 1964 (FRA 67), $2,400 at full retirement age, living to 90.
   var pia = 2400, fra = ssFRA(1964);
   eq(fra, 67, "born 1964: full retirement age 67");
   var at = function (age) { return pia * ssClaimFactor(age, fra); };
   var total = function (age) { return ssHousehold({pia1:pia, fra1:fra, claim1:age, through1:90, married:false}).total; };
-  says("social-security", dollars(at(62)) + " a month"); says("social-security", dollars(total(62)) + " in all");
-  says("social-security", dollars(at(67)) + " a month"); says("social-security", dollars(total(67)) + " in all");
-  says("social-security", dollars(at(70)) + " a month"); says("social-security", dollars(total(70)) + " in all");
+  says("social-security", dollars(at(62)) + " per month"); says("social-security", dollars(total(62)) + " in all");
+  says("social-security", dollars(at(67)) + " per month"); says("social-security", dollars(total(67)) + " in all");
+  says("social-security", dollars(at(70)) + " per month"); says("social-security", dollars(total(70)) + " in all");
   var be = function (a, b) { return (Math.round(ssBreakEven(a, at(a) * 12, b, at(b) * 12) * 10) / 10).toFixed(1); };
   says("social-security", "62 to 67 pays off from age " + be(62, 67));
   says("social-security", "67 to 70 pays off from " + be(67, 70));

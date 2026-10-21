@@ -54,8 +54,8 @@ export const CARDS: Partial<Record<Slug, Card>> = {
 
   optimizer: { title: "Retirement Plan Optimizer", art: "optimizer",
     text: "Find the best age to claim Social Security, withdrawal order and Roth conversions." },
-  "social-security": { title: "Social Security Claiming Calculator", art: "social",
-    text: "See your benefit at 62, 67 or 70, break-even ages, spousal and survivor benefits, and what waiting is worth." },
+  "social-security": { title: "Social Security Calculator", art: "social",
+    text: "See your monthly check at every age from 62 to 70, and which age collects the most for you." },
   bridge: { title: "Early Retirement Calculator", art: "bridge",
     text: "Plan how to pay for retirement before 59½ without early-withdrawal penalties." },
   "72t": { title: "72(t) Calculator", art: "sepp",

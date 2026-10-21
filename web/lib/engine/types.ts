@@ -226,7 +226,7 @@ export interface YearData {
   ltcg: { s: Pair; m: Pair };
   seniorAddl: { s: number; m: number };
   seniorBonus: { amount: number; rate: number; start: { s: number; m: number } };
-  ss: { bend1: number; bend2: number };
+  ss: { bend1: number; bend2: number; earn: { under: number; fraYear: number } };
   /** Contribution limits per person, and the IRA deduction's phase-out ranges. */
   limits: {
     k401: { base: number; catch50: number; catch60: number };

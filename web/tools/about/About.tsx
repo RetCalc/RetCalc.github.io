@@ -21,7 +21,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
    "about-" + its key, so a link to /about#about-roth opens Roth's. */
 const GROUPS = [
   { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["stages", "Stages"], ["guide", "Retirement Readiness Guide"], ["paycheck", "Paycheck to Retirement"]] },
-  { key: "retirement", label: "Retirement income", sections: [["optimizer", "Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Claiming"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion & RMDs"], ["healthcare", "Healthcare Cost Planner"]] },
+  { key: "retirement", label: "Retirement income", sections: [["optimizer", "Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Calculator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion & RMDs"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
   { key: "everyday", label: "Everyday money", sections: [["tax", "Income Tax"], ["budget", "Budget"], ["debt", "Debt Payoff"], ["mortgage", "Mortgage Calculator"]] },
   { key: "methods", label: "Methods", sections: [["historical", "Historical"], ["montecarlo", "Monte Carlo"]] },
@@ -910,42 +910,58 @@ export function About({ states }: { states: StateOption[] }) {
             is outside the model by construction.</p>
           </Section>
           <Section id="social">
-            <p>The claiming tool shows one benefit at every age from 62 to 70 and what each
-            choice adds up to, so the trade-off is visible: a smaller check for more years,
-            or a larger one for fewer. Everything is in today&apos;s dollars. Social Security&apos;s
-            yearly cost-of-living raise keeps a benefit level in real terms, and the delayed
-            credits are real too, so no inflation assumption is needed.</p>
+            <p>The Social Security Calculator shows your monthly check at every age you
+            could claim, 62 to 70, worked out from your pay or from your statement, and
+            what each choice adds up to, so the trade-off is plain: a smaller check for
+            more years, or a larger one for fewer. Everything is in today&apos;s dollars.
+            Social Security&apos;s yearly cost-of-living raise keeps a benefit level in real
+            terms, and the delayed credits are real too, so no inflation assumption is
+            needed.</p>
 
             <dl className="gloss">
               <dt>Full retirement age and the factors</dt>
               <dd>Full retirement age comes from the birth year: 66 for 1943 to 1954, two
               months more for each year to 67 from 1960 on. A benefit claimed early is cut
               5/9 of 1% for each of the first 36 months and 5/12 of 1% for each month
-              beyond; claimed late it grows 2/3 of 1% a month, 8% a year, until 70. These
-              are the Social Security Administration&apos;s own rules, applied to whole months.</dd>
+              beyond; claimed late it grows 2/3 of 1% per month, 8% per year, until 70.
+              These are the Social Security Administration&apos;s own rules, applied to whole
+              months. The staircase shows each age&apos;s check and its share of the full
+              benefit, and &ldquo;How it&apos;s figured&rdquo; walks through the arithmetic for the age
+              chosen.</dd>
 
-              <dt>The benefit itself</dt>
+              <dt>The benefit from your pay</dt>
               <dd>The monthly figure at full retirement age on a statement from ssa.gov is
               the right input for anyone near claiming: it reflects the actual earnings
-              record. The estimate builds a whole career instead: today&apos;s pay walked back
-              to the age work started and forward to the age it stops, at raises above
-              wage growth set for each direction, with any year changeable by hand. Every
-              figure is in today&apos;s dollars: Social Security indexes past pay to national
-              wage growth, so pay that only kept pace counts as level, and the bend points
-              and wage base move with wages too. Each year is capped at the wage base, the
-              best 35 are averaged (zeros fill a shorter career) and the monthly average
-              goes through the current year&apos;s bend points. The Optimizer&apos;s and the Drawdown
-              Simulator&apos;s simpler estimators assume level pay.</dd>
+              record. The estimate builds a whole career instead, from the age work started
+              to the age it stops. Years before today are today&apos;s pay walked back at the
+              raise set for the past, and any of them can be typed in to match the earnings
+              record; a year typed in is that year alone. Years after today rise from the
+              year before at the raise set for the future, so a year typed in (a promotion,
+              a cut) carries forward, and the raises go on from it. Raises are above
+              national wage growth, and every figure is in today&apos;s dollars: Social Security
+              indexes past pay to wage growth, so pay that only kept pace counts as level,
+              and the bend points and wage base move with wages too. Each year is capped at
+              the wage base, the best 35 are averaged (zeros fill a shorter career) and the
+              monthly average goes through the current year&apos;s bend points: 90% of the
+              first part, 32% of the next and 15% of the rest. The Optimizer&apos;s and the
+              Drawdown Simulator&apos;s simpler estimators assume level pay.</dd>
 
               <dt>Couples</dt>
               <dd>Each spouse claims their own benefit at their own age. A spouse whose own
               full benefit is under half the other&apos;s gets the difference as a spousal top-up,
               starting once both have claimed and reduced on the spousal schedule (25/36 of
-              1% a month for the first 36 months early, 35% at 62 with a full retirement age
-              of 67) for the age it starts; it never earns delayed credits. When one spouse
-              dies the survivor keeps the larger of the two checks, the deceased&apos;s delayed
-              credits included: the survivor benefit. Survivor claims before the survivor&apos;s
-              own full retirement age, and the family maximum, aren&apos;t modeled.</dd>
+              1% per month for the first 36 months early, 35% at 62 with a full retirement
+              age of 67) for the age it starts; it never earns delayed credits. &ldquo;Best ages
+              for the two of you&rdquo; runs the household total for all 81 pairs of claiming
+              ages, through the ages each of you expects to live to, and marks the pair that
+              collects the most.</dd>
+
+              <dt>The survivor benefit</dt>
+              <dd>When one spouse dies the survivor keeps the larger of the two checks, the
+              deceased&apos;s delayed credits included, and the smaller one stops. The figure
+              shown is that larger check. Survivor claims before the survivor&apos;s own full
+              retirement age, the floor on a survivor benefit when the deceased claimed early,
+              and the family maximum aren&apos;t modeled.</dd>
 
               <dt>The earnings test</dt>
               <dd>Claiming before full retirement age while still working, $1 of benefit is
@@ -953,26 +969,16 @@ export function About({ states }: { states: StateOption[] }) {
               full retirement age is reached runs on a higher limit and $1 in $3; the tool
               treats it like the earlier years, which overstates the withholding a little for
               that one year. At full retirement age the benefit is refigured as if claimed
-              later by the months withheld, which the tool shows as the higher benefit from
+              later by the months withheld, which the tool counts as the higher benefit from
               then on.</dd>
 
-              <dt>Break-even and the lifespan strip</dt>
+              <dt>Break-even and the best age by lifespan</dt>
               <dd>Two claiming choices break even at the age where the later, larger check has
               paid as much in all as the earlier one: for annual benefits A at age a and B at
-              age b, (B&times;b &minus; A&times;a) / (B &minus; A). The strip runs the household
-              total for every lifespan from 70 to 100 and marks which claiming age collects
-              the most at each. Neither counts taxes or investment returns; the sections for
-              those do.</dd>
-
-              <dt>Claim early and invest</dt>
-              <dd>The early check is saved every year from the early age to the late one, in
-              the stock share chosen and 10-year Treasuries, rebalanced yearly; from the late
-              age on, the gap between the two checks is drawn from the pot so the two paths
-              give the same income. Each start year since 1926 is run with its own returns
-              and inflation (the same monthly series as the Drawdown Simulator, taken by
-              calendar year), and the outcome is whether the pot outlasts the age planned
-              through, and what&apos;s left. It uses your own benefit alone, before tax, and leaves
-              the survivor benefit out.</dd>
+              age b, (B&times;b &minus; A&times;a) / (B &minus; A). The lifespan bar runs the
+              household total for every lifespan from 70 to 100 and marks which claiming age
+              collects the most at each. Neither counts taxes or what the money could earn
+              invested.</dd>
 
               <dt>Taxes</dt>
               <dd>The share of the benefit taxed follows the federal provisional-income rules

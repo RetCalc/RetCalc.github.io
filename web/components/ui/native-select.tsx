@@ -8,7 +8,7 @@ type NativeSelectProps = Omit<React.ComponentProps<"select">, "size"> & {
       Save, Share and Reset): it fills the toolbar's height, draws no edge or
       corners of its own, and its focus ring sits inside, since the toolbar
       clips what spills over. */
-  variant?: "default" | "joined"
+  variant?: "default" | "joined" | "inline"
 }
 
 /* A native <select>, so its value, change events and the site's own
@@ -30,6 +30,8 @@ function NativeSelect({
            (Tools, About, Compare, 404) while its neighbours aren't; it keeps
            their look there, so the toolbar reads the same on every page. */
         variant !== "joined" && "has-[select:disabled]:opacity-50",
+        /* "inline": a blank in a sentence, as wide as its choice. */
+        variant === "inline" && "inline-block w-auto",
         className
       )}
       data-slot="native-select-wrapper"
@@ -40,10 +42,10 @@ function NativeSelect({
         data-slot="native-select"
         data-size={size}
         data-variant={variant}
-        className="h-9 w-full min-w-0 cursor-pointer appearance-none truncate rounded-lg border border-input bg-background py-1 pr-8 pl-3 text-[13px] text-foreground max-sm:text-base transition-colors outline-none pointer-coarse:h-11 hover:border-muted-foreground focus-visible:border-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:cursor-not-allowed aria-invalid:border-destructive data-[size=sm]:h-8 data-[size=sm]:pointer-coarse:h-11 data-[variant=joined]:h-full data-[variant=joined]:rounded-none data-[variant=joined]:border-0 data-[variant=joined]:focus-visible:-outline-offset-2"
+        className="h-9 w-full min-w-0 cursor-pointer appearance-none truncate rounded-lg border border-input bg-background py-1 pr-8 pl-3 text-[13px] text-foreground max-sm:text-base transition-colors outline-none pointer-coarse:h-11 hover:border-muted-foreground focus-visible:border-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:cursor-not-allowed aria-invalid:border-destructive data-[size=sm]:h-8 data-[size=sm]:pointer-coarse:h-11 data-[variant=joined]:h-full data-[variant=joined]:rounded-none data-[variant=joined]:border-0 data-[variant=joined]:focus-visible:-outline-offset-2 data-[variant=inline]:h-auto data-[variant=inline]:w-auto data-[variant=inline]:rounded-none data-[variant=inline]:border-0 data-[variant=inline]:border-b-2 data-[variant=inline]:bg-transparent data-[variant=inline]:py-0 data-[variant=inline]:pr-5 data-[variant=inline]:pl-0.5 data-[variant=inline]:text-[length:inherit] data-[variant=inline]:font-medium data-[variant=inline]:tabular-nums data-[variant=inline]:max-sm:text-[length:inherit] data-[variant=inline]:pointer-coarse:h-auto data-[variant=inline]:focus-visible:outline-none"
         {...props}
       />
-      <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground select-none" aria-hidden="true" data-slot="native-select-icon" />
+      <ChevronDownIcon className="pointer-events-none absolute top-1/2 right-2.5 size-4 group-data-[variant=inline]/native-select:right-0 -translate-y-1/2 text-muted-foreground select-none" aria-hidden="true" data-slot="native-select-icon" />
     </div>
   )
 }

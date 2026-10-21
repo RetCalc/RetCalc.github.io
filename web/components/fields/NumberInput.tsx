@@ -28,6 +28,8 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | 
   onValueChange: (value: string) => void;
   nonNeg?: boolean;
   ref?: Ref<HTMLInputElement>;
+  /** "inline": a blank in a sentence, sized to its text. */
+  variant?: "numeric" | "inline";
 };
 
 /* Selecting on focus: the mouseup that gave focus would otherwise collapse
@@ -73,7 +75,7 @@ function setRefs<T>(a: Ref<T> | undefined, b: React.RefObject<T | null>, el: T |
   else if (a) (a as React.RefObject<T | null>).current = el;
 }
 
-export function MoneyInput({ value, onValueChange, nonNeg = false, ref, onBlur, ...rest }: Props) {
+export function MoneyInput({ value, onValueChange, nonNeg = false, ref, onBlur, variant = "numeric", ...rest }: Props) {
   const inner = useRef<HTMLInputElement>(null);
   const caretRef = useCaret(inner);
   const sel = useSelectOnFocus();
@@ -81,7 +83,7 @@ export function MoneyInput({ value, onValueChange, nonNeg = false, ref, onBlur, 
   return (
     <Control
       {...rest}
-      variant="numeric"
+      variant={variant}
       ref={(el) => setRefs(ref, inner, el)}
       type="text"
       inputMode="decimal"
@@ -119,7 +121,7 @@ export function MoneyInput({ value, onValueChange, nonNeg = false, ref, onBlur, 
 }
 
 export function NumberInput({
-  value, onValueChange, nonNeg = false, step = 1, max, ref, ...rest
+  value, onValueChange, nonNeg = false, step = 1, max, ref, variant = "numeric", ...rest
 }: Props & { step?: number; max?: number }) {
   const inner = useRef<HTMLInputElement>(null);
   const caretRef = useCaret(inner);
@@ -128,7 +130,7 @@ export function NumberInput({
   return (
     <Control
       {...rest}
-      variant="numeric"
+      variant={variant}
       ref={(el) => setRefs(ref, inner, el)}
       type="text"
       inputMode="decimal"
