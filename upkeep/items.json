@@ -39,9 +39,9 @@
       "cadence": "Yearly. Switch with the federal tax figures on January 1",
       "last_updated": "2026-09-29",
       "data_for": "2026",
-      "next_due": "2026-11-01",
+      "next_due": "2027-01-01",
       "priority": "high",
-      "notes": "The wage base is one figure, fica.ssCap; the Social Security estimator reads it too. The earnings-test amounts are on the same SSA fact sheet; the Social Security Claiming tool and its About section quote the under-FRA one."
+      "notes": "The wage base is one figure, fica.ssCap; the Social Security estimator reads it too. The earnings-test amounts are on the same SSA fact sheet; the Social Security Calculator and its About section quote the under-FRA one. 2027 figures gathered 2026-10-20 from SSA (oact/cola cbb.html, piaformula.html, rtea.html; released 2026-10-14): wage base $192,300; bend points $1,340 and $8,077; earnings test $25,560 under FRA and $67,920 in the year FRA is reached. Owner: add them as data/2027.js on 2027-01-01 with the federal tax figures, not before (adding the year makes the calculator treat 2027 as the current year)."
     },
     {
       "id": "state-tax",
