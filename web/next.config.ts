@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
     // (retcalc.app) reports errors.
     SENTRY_ENVIRONMENT: process.env.VERCEL_ENV ?? "development",
   },
+  compiler: {
+    // Sentry reports errors only (lib/sentry.ts), so its performance
+    // tracing and debug logging are left out of the build: about a quarter
+    // of its weight, on every page. These are Sentry's own switches, which
+    // its plugin sets only under webpack.
+    define: { __SENTRY_TRACING__: false, __SENTRY_DEBUG__: false },
+  },
   async redirects() {
     return [
       // The old site served each page as a file too (/drawdown.html), and
