@@ -27,6 +27,23 @@ export interface SavedHousehold extends Household {
 /** Stored under retcalc.household.v1. */
 export const HOUSEHOLD_STORE = { key: "household", version: 1 } as const;
 
+/** The profile as read back from this browser (or an account): each field
+    kept only when it's the right kind, so a damaged or hand-edited copy
+    reads as blanks instead of breaking the tools that take it in. null
+    when it isn't a profile at all. */
+export function readHousehold(v: unknown): SavedHousehold | null {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return null;
+  const o = v as Record<string, unknown>;
+  const num = (x: unknown) => (typeof x === "number" && isFinite(x) ? x : null);
+  return {
+    status: o.status === "m" ? "m" : "s",
+    age: num(o.age), spouseAge: num(o.spouseAge), retire: num(o.retire),
+    state: typeof o.state === "string" && /^[A-Z]{2}$/.test(o.state) ? o.state : null,
+    saved: num(o.saved), monthly: num(o.monthly), income: num(o.income), income2: num(o.income2), spend: num(o.spend),
+    savedAt: num(o.savedAt) ?? 0,
+  };
+}
+
 /** Whether a profile field was filled in. */
 export const has = (v: number | null): v is number => v != null && isFinite(v);
 

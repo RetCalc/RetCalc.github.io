@@ -59,9 +59,19 @@ export function useActiveTool(): ActiveTool | null {
   return use(RegistryContext).active;
 }
 
-/* Saved scenarios, one list per tool, as retcalc.scenarios-<id>.v1. */
+/* Saved scenarios, one list per tool, as retcalc.scenarios-<id>.v1. A list
+   that doesn't read as one (edited by hand, or damaged) counts as empty, and
+   an entry without a name is left out, so the header always draws. */
 export function readScenarios(id: string): Scenario[] {
-  return readStored<Scenario[]>(`scenarios-${id}`, 1) ?? [];
+  const list = readStored<unknown>(`scenarios-${id}`, 1);
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list.filter((s): s is Scenario => {
+    if (!s || typeof s !== "object" || typeof (s as Scenario).name !== "string" || !(s as Scenario).name.trim()) return false;
+    if (seen.has((s as Scenario).name)) return false;
+    seen.add((s as Scenario).name);
+    return true;
+  });
 }
 export function writeScenarios(id: string, list: Scenario[]): void {
   writeStored(`scenarios-${id}`, 1, list);
@@ -94,13 +104,33 @@ function decodeShare(hash: string): { t: string; d: ToolInputs } | null {
   return v && typeof v.t === "string" && v.d && typeof v.d === "object" ? (v as { t: string; d: ToolInputs }) : null;
 }
 
+/** Whether a saved or shared value can stand in for a default: the same
+    kind of thing (a list for a list, an object for an object), and a list
+    whose defaults hold objects holds only objects. */
+function sameKind(v: unknown, d: unknown): boolean {
+  if (d === null) return typeof v === "object";
+  if (v === null || typeof v !== typeof d) return false;
+  if (Array.isArray(d)) {
+    if (!Array.isArray(v)) return false;
+    if (!d.length) return true;
+    const first: unknown = d[0];
+    if (first && typeof first === "object") return v.every((x) => !!x && typeof x === "object" && Array.isArray(x) === Array.isArray(first));
+    return v.every((x) => x === null || typeof x !== "object");
+  }
+  if (typeof d === "object") return !Array.isArray(v);
+  return true;
+}
+
 /** Fills in anything a saved or shared copy lacks from the defaults, and
-    drops keys the tool no longer has, so an older copy still loads. */
+    drops keys the tool no longer has, so an older copy still loads. A value
+    of the wrong kind (from a damaged link or saved copy) keeps the
+    default. */
 function withDefaults<S extends ToolInputs>(defaults: S, data: ToolInputs): S {
   const out = { ...defaults };
+  if (!data || typeof data !== "object") return out;
   for (const k of Object.keys(defaults)) {
     const v = data[k];
-    if (v !== undefined && typeof v === typeof defaults[k]) (out as ToolInputs)[k] = v;
+    if (v !== undefined && sameKind(v, defaults[k])) (out as ToolInputs)[k] = v;
   }
   return out;
 }
