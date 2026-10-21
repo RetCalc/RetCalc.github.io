@@ -3,27 +3,43 @@
    what each person can reach). Configured by two public env vars; without
    them there is no account service and the site works exactly as before.
    ACCOUNTS_PLAN.md, supabase/migrations. */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-let client: SupabaseClient | null | undefined;
+let loading: Promise<SupabaseClient | null> | undefined;
 
 /** Whether accounts are set up on this build (the env vars were set). The
     same on the server and in the browser, so pages render alike in both. */
 export const ACCOUNTS_ON = !!(URL_ && KEY);
 
 /** The Supabase client, or null when accounts aren't set up (no env vars)
-    or outside a browser. */
-export function accountClient(): SupabaseClient | null {
-  if (client !== undefined) return client;
-  // PKCE: Google sends back ?code=..., never tokens in the address's
-  // #fragment, which the site's share links (#s=..., #g=...) use.
-  client = typeof window !== "undefined" && URL_ && KEY
-    ? createClient(URL_, KEY, { auth: { flowType: "pkce", detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } })
-    : null;
-  return client;
+    or outside a browser. Supabase's code is fetched on first use, not with
+    every page: most visits never sign in. */
+export function loadAccountClient(): Promise<SupabaseClient | null> {
+  if (typeof window === "undefined" || !URL_ || !KEY) return Promise.resolve(null);
+  loading ??= import("@supabase/supabase-js").then(
+    // PKCE: Google sends back ?code=..., never tokens in the address's
+    // #fragment, which the site's share links (#s=..., #g=...) use.
+    ({ createClient }) => createClient(URL_, KEY, { auth: { flowType: "pkce", detectSessionInUrl: true, persistSession: true, autoRefreshToken: true } }),
+    () => { loading = undefined; return null; }, // offline: try again next time
+  );
+  return loading;
+}
+
+/** Supabase's saved session in this browser (sb-<project>-auth-token). */
+export const isSessionKey = (k: string) => /^sb-.+-auth-token$/.test(k);
+
+/** Whether this page might have someone signed in, so the client is needed
+    now: a saved session, or Google sending someone back (?code=...). */
+export function maySignIn(): boolean {
+  const q = new URLSearchParams(window.location.search);
+  if (q.has("code") || q.has("error_description")) return true;
+  try {
+    for (let i = 0; i < localStorage.length; i++) if (isSessionKey(localStorage.key(i) ?? "")) return true;
+  } catch { /* storage blocked: no session could have been kept */ }
+  return false;
 }
 
 /** A row of public.user_data as the browser sees it. */

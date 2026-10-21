@@ -9,7 +9,7 @@
 
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
-import { ACCOUNTS_ON, accountClient } from "@/lib/sync/account";
+import { ACCOUNTS_ON, isSessionKey, loadAccountClient, maySignIn } from "@/lib/sync/account";
 import { startSync, syncNow, type SyncResult } from "@/lib/sync/engine";
 import { isSynced } from "@/lib/storage";
 
@@ -83,11 +83,13 @@ function friendly(e: { message?: string; status?: number } | null): string | nul
 
 export function AccountProvider({ children }: { children: React.ReactNode }) {
   // The client exists only in the browser, made after the page loads, so
-  // the server's render and the browser's first render match.
+  // the server's render and the browser's first render match. It's loaded
+  // only when someone may be signed in or starts to sign in.
   const [client, setClient] = useState<SupabaseClient | null>(null);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- the browser-only client, once mounted
-    setClient(accountClient());
+  const need = useCallback(async () => {
+    const c = await loadAccountClient();
+    if (c) setClient(c);
+    return c;
   }, []);
   const [ready, setReady] = useState(false);
   const [account, setAccount] = useState<Account | null>(null);
@@ -95,14 +97,29 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   const [step, setStep] = useState<SignInStep>({ at: "closed" });
   const stopSync = useRef<(() => void) | null>(null);
 
+  // On load: with a saved session (or Google's return) read it; with none,
+  // nobody is signed in, and the client waits until someone signs in, here
+  // or in another tab.
+  useEffect(() => {
+    if (!ACCOUNTS_ON || !maySignIn()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- signed out: nothing to read
+      setReady(true);
+      if (!ACCOUNTS_ON) return;
+      const onStorage = (e: StorageEvent) => { if (e.key && isSessionKey(e.key)) void need(); };
+      window.addEventListener("storage", onStorage);
+      return () => window.removeEventListener("storage", onStorage);
+    }
+    void need().then((c) => { if (!c) setReady(true); });
+  }, [need]);
+  // Opening the sign-in dialog starts loading the client.
+  const toStep = useCallback((s: SignInStep) => {
+    if (s.at !== "closed") void need();
+    setStep(s);
+  }, [need]);
+
   // The session, now and as it changes (sign in, sign out, token refresh,
   // and Google's return to the page).
   useEffect(() => {
-    if (!ACCOUNTS_ON) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- nothing to read without an account service
-      setReady(true);
-      return;
-    }
     if (!client) return;
     let live = true;
     const apply = (u: User | null) => {
@@ -131,27 +148,30 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   }, [userId, askedName]);
 
   const sendCode = useCallback(async (email: string) => {
+    const client = await need();
     if (!client) return "Accounts aren't available right now.";
     const { error } = await client.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } });
     if (error) return friendly(error);
     setStep({ at: "code", email: email.trim() });
     return null;
-  }, [client]);
+  }, [need]);
 
   const verifyCode = useCallback(async (email: string, code: string) => {
+    const client = await need();
     if (!client) return "Accounts aren't available right now.";
     const { error } = await client.auth.verifyOtp({ email, token: code.replace(/\D/g, ""), type: "email" });
     if (error) return friendly(error);
     setStep({ at: "closed" });
     return null;
-  }, [client]);
+  }, [need]);
 
   const signInWithGoogle = useCallback(async () => {
+    const client = await need();
     if (!client) return "Accounts aren't available right now.";
     const back = window.location.origin + window.location.pathname;
     const { error } = await client.auth.signInWithOAuth({ provider: "google", options: { redirectTo: back } });
     return friendly(error);
-  }, [client]);
+  }, [need]);
 
   const setFirstName = useCallback(async (name: string | null) => {
     if (!client) return null;
@@ -188,8 +208,8 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   }, [client]);
 
   const value = useMemo<AccountState>(() => ({
-    configured: ACCOUNTS_ON, ready, account, sync, step, setStep, sendCode, verifyCode, signInWithGoogle, setFirstName, signOut, client,
-  }), [client, ready, account, sync, step, sendCode, verifyCode, signInWithGoogle, setFirstName, signOut]);
+    configured: ACCOUNTS_ON, ready, account, sync, step, setStep: toStep, sendCode, verifyCode, signInWithGoogle, setFirstName, signOut, client,
+  }), [client, ready, account, sync, step, toStep, sendCode, verifyCode, signInWithGoogle, setFirstName, signOut]);
 
   return <AccountContext value={value}>{children}</AccountContext>;
 }
