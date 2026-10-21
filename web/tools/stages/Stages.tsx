@@ -40,7 +40,7 @@ import { SERIES } from "@/lib/hues";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, PencilIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, CircleAlertIcon, PencilIcon, PlusIcon } from "lucide-react";
 import { Modal, ModalTop } from "@/components/shell/Modal";
 import { sendToDrawdown } from "@/tools/drawdown/fields";
 
@@ -202,6 +202,13 @@ export function Stages() {
   // The target beside the answer: what it asks for, in its own words.
   const target = parseNum(typed.target);
   const income = typed.solveFor === "After-Tax Withdrawal";
+  // An after-tax income target can't be met by a portfolio that pays
+  // nothing after tax: no contribution or length reaches it.
+  const noPay = income && target > 0 && !(g.withdrawal > 0 && rate < 1);
+  const payWarn = !noPay ? "" : g.withdrawal > 0
+    ? "At a 100% tax rate nothing is left after tax, so no portfolio reaches an after-tax income. Lower the tax rate."
+    : "At a 0% withdrawal rate the portfolio pays no income, so no amount reaches your target. Set a withdrawal rate above 0%.";
+  const badWd = noPay && !(g.withdrawal > 0), badTax = noPay && !badWd && !split;
 
   const toDrawdown = () => {
     sendToDrawdown({ initial: Math.round(R.fvReal) });
@@ -353,13 +360,19 @@ export function Stages() {
                 ? "The after-tax income you want each year, in today's spending power."
                 : "The portfolio balance you want, in today's spending power.") : ""}</div>
               <div className="two bottomalign max-sm:grid-cols-2">
-                <NumberField id="gWithdrawal" label="Withdrawal rate" unit="%" value={s.withdrawal} onValueChange={set("withdrawal")} />
-                <NumberField id="gTaxrate" wrapId="gTaxrateField" hidden={split} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
+                <NumberField id="gWithdrawal" label="Withdrawal rate" unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
+                  aria-invalid={badWd || undefined} aria-describedby={badWd ? "payWarnTextS" : undefined} />
+                <NumberField id="gTaxrate" wrapId="gTaxrateField" hidden={split} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")}
+                  aria-invalid={badTax || undefined} aria-describedby={badTax ? "payWarnTextS" : undefined} />
                 <div className="field" id="saTaxField" hidden={!split}>
                   <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
                   <Affixed suffix="calc">
                     <InputGroupInput variant="numeric" id="saTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={V.saRate != null ? pctStr(V.saRate, 1) : ""} /></Affixed>
                 </div>
+              </div>
+              <div className="-mt-1 mb-1 flex items-start gap-2 text-note text-destructive" id="payWarnS" hidden={!noPay}>
+                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span id="payWarnTextS" role="alert">{payWarn}</span>
               </div>
             </CardContent>
           </Card>
@@ -401,13 +414,13 @@ export function Stages() {
               note={F && last ? "Stage " + dn + ", paid " + PERIOD_ADV[last.period] + " for " + fmtYears(last.years) + (mf > 1 ? ", plus the match" : "") : ""}>
               <KV k="Per year" id="tPerYear" v={F ? money(F.perYear / mf) : ""} />
               <StageChange F={F} contrib={P.eff[dn - 1]?.contrib ?? 0} mf={mf} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" disabled={!n} onClick={applyContribution}>Use this contribution</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyS" disabled={!n || noPay} onClick={applyContribution}>Use this contribution</Button>
             </SolveOption>
             <SolveOption label="Change the final stage's length" id="tYears" value={!F ? DASH : F.reached ? fmtYears(F.stageYears!) : "Out of reach"} sized={!!F} noteId="tYearsNote" className="max-sm:border-t sm:border-l"
               note={!F ? "" : F.reached ? "Keeping " + money(P.eff[dn - 1].contrib / mf, 2) + " " + PERIOD_ADV[last.period] : "Not reached within 100 years at this contribution."}>
               <KV k="Final stage now" id="tYearsNow" v={F && last ? fmtYears(last.years) : ""} />
               <KV k="Whole run becomes" id="tYearsTotal" v={!F ? "" : F.reached ? fmtYears(F.totalIfStretched!) : DASH} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!n || (!!F && !F.reached)} onClick={applyYears}>Use this length</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYearsS" disabled={!n || (!!F && !F.reached) || noPay} onClick={applyYears}>Use this length</Button>
             </SolveOption>
           </div>
           <div className="-mb-1 border-t border-border px-4.5 pt-1 max-sm:px-3.5">

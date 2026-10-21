@@ -43,7 +43,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PinnedReading } from "@/components/common/Reading";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
+import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { SERIES } from "@/lib/hues";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -230,6 +230,13 @@ export function Advanced() {
   const income = typed.solveFor === "After-Tax Withdrawal";
   const onTrack = C.state !== "never";
   const VerdictIcon = onTrack ? CircleCheckIcon : CircleXIcon;
+  // An after-tax income target can't be met by a portfolio that pays
+  // nothing after tax: no contribution or timeline reaches it.
+  const noPay = income && target > 0 && !(p.withdrawal > 0 && p.taxRate < 1);
+  const payWarn = !noPay ? "" : p.withdrawal > 0
+    ? "At a 100% tax rate nothing is left after tax, so no portfolio reaches an after-tax income. Lower the tax rate."
+    : "At a 0% withdrawal rate the portfolio pays no income, so no amount reaches your target. Set a withdrawal rate above 0%.";
+  const badWd = noPay && !(p.withdrawal > 0), badTax = noPay && !badWd && !acOn;
 
   const toDrawdown = () => {
     sendToDrawdown({ initial: Math.round(R.fvReal) });
@@ -339,13 +346,19 @@ export function Advanced() {
                 ? "The after-tax income you want each year, in today's spending power."
                 : "The portfolio balance you want, in today's spending power."}</div>
               <div className="two bottomalign max-sm:grid-cols-2">
-                <NumberField id="withdrawal" label={<Tipped text="Withdrawal rate" k="withdrawal" />} unit="%" value={s.withdrawal} onValueChange={set("withdrawal")} />
-                <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")} />
+                <NumberField id="withdrawal" label={<Tipped text="Withdrawal rate" k="withdrawal" />} unit="%" value={s.withdrawal} onValueChange={set("withdrawal")}
+                  aria-invalid={badWd || undefined} aria-describedby={badWd ? "payWarnText" : undefined} />
+                <NumberField id="taxrate" wrapId="taxrateField" hidden={acOn} label={<Tipped text="Effective tax rate" k="efftaxrate" />} unit="%" value={s.taxRate} onValueChange={set("taxRate")}
+                  aria-invalid={badTax || undefined} aria-describedby={badTax ? "payWarnText" : undefined} />
                 <div className="field" id="acTaxField" hidden={!acOn}>
                   <Label className="mb-1.5"><span><Tipped text="Tax on withdrawals" k="actax" /></span></Label>
                   <Affixed suffix="calc">
                     <InputGroupInput variant="numeric" id="acTaxOut" type="text" readOnly tabIndex={-1} aria-label="Tax on withdrawals, calculated" value={acRate != null ? pctStr(acRate, 1) : ""} /></Affixed>
                 </div>
+              </div>
+              <div className="-mt-1 mb-1 flex items-start gap-2 text-note text-destructive" id="payWarn" hidden={!noPay}>
+                <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span id="payWarnText" role="alert">{payWarn}</span>
               </div>
             </CardContent>
           </Card>
@@ -375,7 +388,7 @@ export function Advanced() {
               note={"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}>
               <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
               <KV k="Change from current" id="sChange" v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" onClick={applyContribution}>Use this contribution</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" disabled={noPay} onClick={applyContribution}>Use this contribution</Button>
             </SolveOption>
             <SolveOption label="Change your timeline" id="sYears" value={Y.reached ? fmtYears(Y.years) : "Out of reach"} noteId="sYearsNote" className="max-sm:border-t sm:border-l"
               note={Y.reached
@@ -383,7 +396,7 @@ export function Advanced() {
                 : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}>
               <KV k="Your plan now" id="sYearsNow" v={fmtYears(p.years)} />
               <YearsDiff Y={Y} years={p.years} />
-              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached} onClick={applyYears}>Use this timeline</Button>
+              <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApplyYears" disabled={!Y.reached || noPay} onClick={applyYears}>Use this timeline</Button>
             </SolveOption>
           </div>
           <div className="-mb-1 border-t border-border px-4.5 pt-1 max-sm:px-3.5">
