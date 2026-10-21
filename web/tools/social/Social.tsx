@@ -478,7 +478,7 @@ function Race({ S }: { S: SocialFigures }) {
       <CardHeader><CardTitle>When waiting pays off<TipDot k="" text="Your own checks added up from each claiming age. A later claim starts behind and catches up; where the lines cross is the break-even age, marked on the chart. Live past it and waiting paid off. Hover or touch the chart to read any age." /></CardTitle></CardHeader>
       {S.you.pia > 0 ? (
         <>
-          <MultiChart id="SsRace" series={series} maxX={end - 62} marks={marks} ariaLabel="Your own checks added up by claiming age"
+          <MultiChart id="SsRace" half series={series} maxX={end - 62} marks={marks} ariaLabel="Your own checks added up by claiming age"
             xFmt={(x) => x + 62} head={(y) => <b>Collected by age {y + 62}</b>} />
           <Legend id="legendSsRace" items={series.map((x) => [x.color, x.name] as [string, string])} />
         </>

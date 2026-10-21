@@ -37,10 +37,14 @@ interface Props {
   valFmt?: (v: number) => string;
   /** Marked moments: a faint dashed line with its label at the top. */
   marks?: { x: number; label: string }[];
+  /** In a half-width card: drawn to a narrower size so the axis labels and
+      marks keep a readable size on screen (desktop; phones are unchanged). */
+  half?: boolean;
 }
 
-export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) => x, yFmt = fmtAxisMoney, valFmt = money, marks = [] }: Props) {
-  const size = useChartSize();
+export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) => x, yFmt = fmtAxisMoney, valFmt = money, marks = [], half = false }: Props) {
+  const base = useChartSize();
+  const size = half && !base.narrow ? { ...base, W: 600, H: 330, L: 66, fs: 13, pw: 600 - 66 - base.Rp, ph: 330 - base.T - base.B } : base;
   const { W, Rp, L, T, pw, ph, fs, sw } = size;
   const live = series.filter((x) => x.pts.length);
   const colors = live.map((x, i) => x.color || MULTI_COLORS[i % MULTI_COLORS.length]);
@@ -72,7 +76,7 @@ export function MultiChart({ id, series, maxX, ariaLabel, head, tip, xFmt = (x) 
           {marks.filter((m) => m.x >= 0 && m.x <= maxX).map((m) => (
             <g key={m.x}>
               <line x1={X(m.x)} x2={X(m.x)} y1={T + fs + 4} y2={T + ph} stroke="var(--axis)" strokeWidth={sw} strokeDasharray="3 4" opacity={.55} />
-              <text x={X(m.x)} y={T + fs} textAnchor="middle" fontSize={fs * .9} fill="var(--axis)" fontFamily={MONO}>{m.label}</text>
+              <text x={X(m.x)} y={T + fs} textAnchor="middle" fontSize={half ? fs : fs * .9} fill="var(--axis)" fontFamily={MONO}>{m.label}</text>
             </g>
           ))}
           {live.map((x, i) => (
