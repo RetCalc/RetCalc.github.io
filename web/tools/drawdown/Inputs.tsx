@@ -14,6 +14,8 @@ import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
 import { useToast } from "@/components/shell/Toast";
 import { TipDot, Tipped } from "@/components/shell/Tooltips";
 import { StageHead } from "@/components/tools/StageHead";
+import { toolInputs } from "@/components/tools/ToolState";
+import { forDrawdown, type SocialInputs } from "@/tools/social/model";
 import { Html } from "@/components/common/Html";
 import { DD_STRAT, ddMCHistory, ssDrawdownStreams, ssEstimate } from "@/lib/engine/typed-drawdown";
 import { fmtNum, groupDigits, money, parseNum, pctStr } from "@/lib/format";
@@ -53,6 +55,23 @@ export function Inputs({ v, fromNote, periods, open }: {
   const ssMode = str("ssMode");
   const ssAgeMode = ssMode === "manual" && age != null;
   const ssCouple = ssMode !== "none" && str("ssWho") === "couple";
+  /* Copied from the Social Security Calculator: the same boxes as "I know my
+     benefit", filled in from what that tool has now. */
+  const fromSocial = ssMode === "manual" && str("ssFrom") === "social";
+  const socialSaved = (): SocialInputs | null => {
+    const saved = toolInputs<SocialInputs>("social", null as unknown as SocialInputs);
+    // Only this version's inputs (an older copy in the tab has another shape).
+    return saved && typeof saved.you === "object" && typeof saved.spouse === "object" ? saved : null;
+  };
+  const copySocial = () => {
+    const saved = socialSaved();
+    if (!saved) { toast("Open the Social Security Calculator first, then copy from it"); return; }
+    const f = forDrawdown(saved);
+    setState((c) => ({ ...c, ssMode: "manual", ssFrom: "social", ssWho: f.couple ? "couple" : "single",
+      ssAmount: groupDigits(f.annual, true), ssAmount2: groupDigits(f.annual2, true), ssDelay: age != null ? String(f.claim) : c.ssDelay }));
+  };
+  const socialNow = fromSocial ? socialSaved() : null;
+  const copied = socialNow ? forDrawdown(socialNow) : null;
   const d = v.d;
   const nb = <T extends object>(k: "pathStages" | "floorSteps" | "incomeItems" | "expenseItems") => s[k] as unknown as T[];
 
@@ -248,7 +267,8 @@ export function Inputs({ v, fromNote, periods, open }: {
                 // Switching to "starts at age": an untouched 0 becomes the full-retirement age.
                 // Switching back to "starts after": an age left in the field goes back to 0 years.
                 const delay = parseNum(c.ssDelay as string);
-                if (val.trim() !== "" && a > 0) { if (delay === 0) next.ssDelay = String(SS_DEFAULT_AGE); }
+                // Copied from the Social Security Calculator, that's the claiming age there.
+                if (val.trim() !== "" && a > 0) { if (delay === 0) next.ssDelay = String(copied && c.ssFrom === "social" ? copied.claim : SS_DEFAULT_AGE); }
                 else if (delay >= SS_MIN_AGE) next.ssDelay = "0";
                 return next;
               })} />
@@ -427,10 +447,12 @@ export function Inputs({ v, fromNote, periods, open }: {
               })}>+ Add spending stage</Button>
             </div>
             <GroupHead>Income in retirement</GroupHead>
-            <SelectField id="ddSSMode" label="Social Security" value={ssMode} onChange={set("ssMode")}>
+            <SelectField id="ddSSMode" label="Social Security" value={fromSocial ? "social" : ssMode}
+              onChange={(m) => m === "social" ? copySocial() : setState((c) => ({ ...c, ssMode: m, ssFrom: "" }))}>
               <option value="none">Not included</option>
               <option value="est">Estimate it for me</option>
               <option value="manual">I know my benefit</option>
+              <option value="social">Copy from Social Security Calculator</option>
             </SelectField>
             <SelectField id="ddSSWho" wrapId="ddSSWhoWrap" hidden={ssMode === "none"} label={<Tipped text="Whose benefit" k="sswho" />} value={str("ssWho")} onChange={set("ssWho")}>
               <option value="single">Just me</option>
@@ -450,6 +472,13 @@ export function Inputs({ v, fromNote, periods, open }: {
             <div id="ddSSManual" hidden={ssMode !== "manual"}>
               <MoneyField id="ddSSAmount" label={<span className="tipglue"><span id="ddSSAmountLabel">{ssCouple ? "Your annual benefit, today's dollars" : "Annual benefit, today's dollars"}</span><TipDot k="ssbenefit" /></span>} value={str("ssAmount")} onValueChange={set("ssAmount")} />
               <MoneyField id="ddSSAmount2" wrapId="ddSSAmount2Wrap" hidden={!(ssMode === "manual" && ssCouple)} label={<Tipped text="Spouse's annual benefit, today's dollars" k="ssbenefit" />} value={str("ssAmount2")} onValueChange={set("ssAmount2")} />
+              {fromSocial ? (
+                <div className="hint" id="ddSSFromNote">
+                  {copied ? <>From the Social Security Calculator: you claiming at {copied.claim}{copied.couple ? <>, your spouse at {copied.claim2}</> : null}.
+                    {age == null ? <> Fill in <b>Age at retirement</b> to start the checks at {copied.claim}.</> : copied.couple && copied.claim2 !== copied.claim ? <> Here both start at {copied.claim}.</> : null} </> : <>From the Social Security Calculator. </>}
+                  <Button variant="link" size="inline" id="ddSSCopyAgain" onClick={copySocial}>Copy again</Button>
+                </div>
+              ) : null}
             </div>
             <Field id="ddSSDelay" wrapId="ddSSDelayWrap" hidden={ssMode === "none" || (ssMode === "est" && age != null)}
               label={<span className="tipglue"><span id="ddSSDelayLabel">{ssAgeMode ? "Starts at age" : "Starts after"}</span><TipDot k={ssAgeMode ? "ssdelayage" : "ssdelay"} /></span>}>

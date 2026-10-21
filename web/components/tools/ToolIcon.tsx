@@ -11,6 +11,16 @@ const ICONS: Record<ToolSub, React.ReactNode> = {
   drawdown: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path className="dd-line" pathLength="100" d="M5 10 L13 18 L20 13 L27 24 L35 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M5 30 h30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle className="dd-dot dd-dot1" cx="13" cy="18" r="2" fill="currentColor" /><circle className="dd-dot dd-dot2" cx="27" cy="24" r="2" fill="currentColor" /></svg>
   ),
+  social: (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="20" cy="21" r="14" stroke="currentColor" strokeWidth="2" />
+    <path d="M20 9.5 V12 M31.5 21 H29 M20 32.5 V30 M8.5 21 H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <path className="ss-hand" d="M20 21 L20 12.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    <path d="M20 21 L15 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity=".55" />
+    <circle cx="20" cy="21" r="1.9" fill="currentColor" />
+    <path d="M27 3.5 h6 M30 1 l3 2.5 -3 2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
   bridge: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 30 h32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path d="M6 30 V21 M34 30 V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><path className="br-arch" pathLength="100" d="M4 21 Q20 6 36 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" /><path className="br-cable br-cable1" d="M13 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable br-cable2" d="M20 30 V13.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><path className="br-cable br-cable3" d="M27 30 V15.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity=".7" /><circle className="br-walker" cx="7" cy="26.6" r="1.8" fill="currentColor" opacity="0" /></svg>
   ),

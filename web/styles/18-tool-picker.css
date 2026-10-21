@@ -19,6 +19,7 @@
 .tp-lead{grid-column:span 8}
 .tp-third{grid-column:span 4}
 .tp-half{grid-column:span 6}
+.tp-quarter{grid-column:span 3}
 .toolcard.tp-card{gap:10px}
 /* The homepage sets the fan's path color on its own root (.hm); here, on the chart's box. */
 .tp-chart{margin-top:auto;padding-top:6px;--hm-path:color-mix(in srgb,var(--ds-muted) 40%,transparent)}
@@ -36,6 +37,7 @@
 @media (max-width:1099px){
   .tp-lead{grid-column:1 / -1}
   .tp-third{grid-column:span 6}
+  .tp-quarter{grid-column:span 6}
 }
 @media (max-width:760px){.tp-lead-body{grid-template-columns:minmax(0,1fr);gap:16px}}
 @media (max-width:640px){
@@ -45,7 +47,7 @@
   .tp-half .hm-wide-chart text{font-size:15px}
   .tp-half .hm-wide-chart text.hm-t-big{font-size:16px}
   .tp-grid{grid-template-columns:minmax(0,1fr);gap:10px}
-  .tp-lead,.tp-third,.tp-half{grid-column:auto}
+  .tp-lead,.tp-third,.tp-half,.tp-quarter{grid-column:auto}
   .tp-lead-v{font-size:35px}
 }
 

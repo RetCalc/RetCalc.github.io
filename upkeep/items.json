@@ -32,16 +32,16 @@
     {
       "id": "ss-wage-base",
       "area": "Taxes",
-      "name": "Social Security wage base and benefit bend points",
-      "what": "The Social Security tax wage cap (also the cap on earnings the benefit estimate counts) and the two bend points in the benefit formula.",
-      "where": ["web/lib/engine/data/<year>.js: fica (fica.ssCap is the wage base, also the benefit estimate's earnings cap), ss.bend1, ss.bend2"],
+      "name": "Social Security wage base, benefit bend points and earnings-test limits",
+      "what": "The Social Security tax wage cap (also the cap on earnings the benefit estimate counts), the two bend points in the benefit formula, and the retirement earnings test's two exempt amounts (under full retirement age, and the year it's reached), which the claiming tool applies.",
+      "where": ["web/lib/engine/data/<year>.js: fica (fica.ssCap is the wage base, also the benefit estimate's earnings cap), ss.bend1, ss.bend2, ss.earn.under, ss.earn.fraYear"],
       "source": "SSA's annual COLA and wage-base fact sheet, released in October",
       "cadence": "Yearly. Switch with the federal tax figures on January 1",
       "last_updated": "2026-09-29",
       "data_for": "2026",
       "next_due": "2026-11-01",
       "priority": "high",
-      "notes": "The wage base is one figure, fica.ssCap; the Social Security estimator reads it too."
+      "notes": "The wage base is one figure, fica.ssCap; the Social Security estimator reads it too. The earnings-test amounts are on the same SSA fact sheet; the Social Security Claiming tool and its About section quote the under-FRA one."
     },
     {
       "id": "state-tax",

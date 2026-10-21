@@ -158,6 +158,11 @@
 "h1": "Debt Payoff Calculator",
 "title": "Debt Payoff Calculator: Avalanche vs. Snowball | RetCalc",
 "desc": "List your debts and see your debt-free date, total interest and savings over minimum payments, with avalanche and snowball compared month by month."
+},
+"social-security": {
+"h1": "Social Security Calculator",
+"title": "Social Security Calculator: Your Benefit at 62, 67 or 70 | RetCalc",
+"desc": "Estimate your Social Security benefit from your pay or your statement, see your check at every age from 62 to 70, break-even ages, and spousal and survivor benefits."
 }
 }
 }

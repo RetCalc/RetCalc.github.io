@@ -12,7 +12,7 @@ export interface Help {
   base: Record<string, unknown> | null;
 }
 /** The tools with a tour. */
-export const TOUR_TOOLS = new Set(["tax", "mortgage", "budget", "college", "rentbuy", "drawdown", "roth", "debt", "backtest", "healthcare", "fire", "bridge"]);
+export const TOUR_TOOLS = new Set(["tax", "mortgage", "budget", "college", "rentbuy", "drawdown", "roth", "debt", "backtest", "healthcare", "fire", "bridge", "social"]);
 
 let help: Help | null = null;
 const listeners = new Set<() => void>();

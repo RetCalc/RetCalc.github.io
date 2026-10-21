@@ -2,6 +2,9 @@
    src/js/app/16-glossary.js. */
 
 export const GLOSS: Record<string, string> = {
+  ssbirth: "Your birth year sets your full retirement age: 66 for anyone born 1943 to 1954, rising two months per year to 67 for 1960 and later. The claiming reductions and credits all count from it.",
+  sspia: "The monthly figure your Social Security statement shows at full retirement age (ssa.gov/myaccount). It's in today's dollars and already reflects your earnings record, so it's the most accurate starting point. Benefits get a cost-of-living raise every year, so every figure here stays in today's dollars.",
+  ssother: "Pensions, withdrawals from traditional accounts, interest, dividends, capital gains and tax-exempt interest, per year, in retirement. Together with half your benefit they set how much of Social Security is taxed: none at low incomes, up to 85% at higher ones.",
   refiexisting: "For a loan you already have, describe it as it stands today: set the price and down payment so the loan amount equals your current balance, and the length to the years left. The refinance is compared from today on that loan.",
   recast: "Your lender re-runs the amortization on the reduced balance right after a lump-sum payment, spreading it over whatever's left of the original term. The payoff date doesn't move, but the required payment drops for every month after. Most lenders charge a small fee for this, typically $150\u2013500, not included here.",
   bthistory: "The years the backtest covers. Earlier start dates give more data and more market regimes; later ones describe a world closer to the present. Both are useful, and they often disagree \u2014 a 60/40 mix looks very different measured from 1926 than from 1982.",

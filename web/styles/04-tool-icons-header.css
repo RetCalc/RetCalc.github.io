@@ -111,6 +111,11 @@
   @keyframes fi-rise{from{transform:scaleY(.3) translateY(10px);opacity:0}to{transform:scaleY(1) translateY(0);opacity:1}}
   @keyframes fi-burn{0%,100%{transform:rotate(0deg) scaleX(1) scaleY(1)}20%{transform:rotate(-2deg) scaleX(.96) scaleY(1.04)}50%{transform:rotate(1.5deg) scaleX(1.04) scaleY(.97)}75%{transform:rotate(-1.5deg) scaleX(.97) scaleY(1.05)}}
   @keyframes fi-flicker{0%,100%{transform:scaleY(1) scaleX(1);opacity:1}30%{transform:scaleY(1.14) scaleX(.88);opacity:.82}60%{transform:scaleY(.9) scaleX(1.1);opacity:.95}}
+  /* Social Security Calculator: when to claim. The clock's hand sweeps from
+     early (62, past ten o'clock) round to late (70, past two) and settles. */
+  @keyframes ss-sweep{0%{transform:rotate(-70deg)}75%{transform:rotate(58deg)}100%{transform:rotate(50deg)}}
+  .ss-hand{transform-box:view-box;transform-origin:20px 21px;transform:rotate(50deg)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .ss-hand{animation:ss-sweep .7s cubic-bezier(.3,.7,.3,1) both}
   .fi-flame,.fi-core{transform-box:fill-box;transform-origin:50% 100%}
   .toolcard:is(:hover,:focus-visible,.is-beat) .fi-flame{animation:fi-rise .25s ease-out both,fi-burn 1.2s ease-in-out .25s 2}
   .toolcard:is(:hover,:focus-visible,.is-beat) .fi-core{animation:fi-flicker .65s ease-in-out .1s 3}

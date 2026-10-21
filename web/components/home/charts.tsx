@@ -246,3 +246,24 @@ function Key({ items }: { items: [string, string][] }) {
     </g>
   );
 }
+
+/** Social Security Calculator: the monthly check at 62, full retirement age
+    and 70, each bar taller than the last, the one at 70 in the plan's color. */
+export function SocialChart({ w = 340, h = 120 }) {
+  const bars: [string, number, string][] = [["62", 70, "f-sky"], ["67", 100, "f-teal"], ["70", 124, "f-amber"]];
+  const y = scale(0, 130, h - 20, 8), bw = 54, gap = (w - 3 * bw) / 4;
+  return (
+    <svg className="hm-chart" viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+      {bars.map(([age, v, c], i) => {
+        const x = gap + i * (bw + gap);
+        return (
+          <g key={age} className="fade" style={{ "--dl": i * 0.25 + "s" } as React.CSSProperties}>
+            <rect className={c + " o-band"} x={x} y={y(v)} width={bw} height={h - 20 - y(v)} rx={5} />
+            <text x={x + bw / 2} y={y(v) - 6} textAnchor="middle">{v}%</text>
+            <text x={x + bw / 2} y={h - 4} textAnchor="middle">{age}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}

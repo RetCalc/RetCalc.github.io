@@ -55,6 +55,10 @@ export const DD_STATE: [string, string, Kind, number | string | boolean][] = [
   ["ssAmount", "ddSSAmount", "money", 33000],
   ["ssAmount2", "ddSSAmount2", "money", 33000],
   ["ssDelay", "ddSSDelay", "num", 0],
+  /* "social" when the benefits were copied from the Social Security
+     Calculator: the mode stays "manual" for the engine, and the menu shows
+     where they came from. */
+  ["ssFrom", "ddSSFrom", "select", ""],
   ["retireAge", "ddRetireAge", "text", ""],
   ["starts", "ddStarts", "select", "month"],
   ["fromYear", "ddFromYear", "num", 1926],
@@ -95,7 +99,7 @@ export const DD_STATE: [string, string, Kind, number | string | boolean][] = [
 /* Settings added after scenarios were first saved. A full set of inputs
    that doesn't have one (an old scenario, a hand-off from another tool)
    sets it to its default, rather than keeping whatever was on screen. */
-const DD_LATER = ["sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
+const DD_LATER = ["ssFrom", "sv", "cash", "rebal", "rebalN", "rebalBand", "gkFinal", "gkFinalYrs", "starts", "fromYear", "comfort", "tCrit", "tConf", "skipRaise",
   "vgCeil", "vgFloor", "kitThresh", "kitRaise", "kitGap", "clyFloor", "hebWeight", "hebRate", "sensExtra",
   "rgTarget", "rgLo", "rgHi", "capeA", "capeB", "path", "pathEase", "gShare", "gType", "gYield", "gPayout", "gInflate",
   "mcBlock", "mcRet", "mcStock", "mcSV", "mcBond", "mcCash", "mcInfl"];

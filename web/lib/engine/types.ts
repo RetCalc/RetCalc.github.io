@@ -226,7 +226,7 @@ export interface YearData {
   ltcg: { s: Pair; m: Pair };
   seniorAddl: { s: number; m: number };
   seniorBonus: { amount: number; rate: number; start: { s: number; m: number } };
-  ss: { bend1: number; bend2: number };
+  ss: { bend1: number; bend2: number; earn: { under: number; fraYear: number } };
   /** Contribution limits per person, and the IRA deduction's phase-out ranges. */
   limits: {
     k401: { base: number; catch50: number; catch60: number };
@@ -242,4 +242,22 @@ export interface YearData {
     preTaxed: Record<string, Partial<Record<"k401" | "ira" | "hsa" | "health", 1>>>; noExpansion: Record<string, 1> };
   medicare: { irmaa: { partB: number; tiers: IrmaaTier[] }; partD: number; medigap: { low: number; high: number } };
   aca: { fplBase: number[]; fplPerAddl: number; premium40: Record<string, number>; cliff: number; contrib: [number, number, number, number][] };
+}
+
+/* ---- Social Security claiming (math.js, ssHousehold and ssInvestEarly) ---- */
+export interface SsPerson { monthly: number; annual: number; factor: number; earlyAnnual: number; withheld: number; monthsBack: number; laterMonthly: number }
+export interface SsHouseholdInput {
+  pia1: number; fra1: number; claim1: number; through1: number; earn1?: number;
+  married: boolean; pia2?: number; fra2?: number; claim2?: number; through2?: number; earn2?: number; gap?: number;
+}
+export interface SsRow { age: number; you: number; spouse: number; total: number; cum: number }
+export interface SsHousehold {
+  rows: SsRow[]; total: number; you: SsPerson; spouse: SsPerson | null; top1: number; top2: number;
+  survivor: number; survivorAt: number | null; firstYear: number; lastYear: number;
+}
+export interface SsInvestInput { early: number; late: number; benEarly: number; benLate: number; through: number; mix: number }
+export interface SsInvest {
+  windows: number; won: number; ranOut: number; median: number; worst: number; best: number; firstOut: number | null; years: number;
+  bands: { year: number; p10: number; p25: number; p50: number; p75: number; p90: number }[];
+  finals: { start: number; end: number; outAt: number | null }[];
 }

@@ -47,7 +47,7 @@ export function Home({ data }: { data: HomeData }) {
         <div className="hm-head">
           <h2 className="hm-h2" id="hmTools" data-rv="">From saving to retirement.</h2>
           <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
-            A calculator, a guide and 13 planning tools. They share one household, so what you enter once fills in everywhere.
+            A calculator, a guide and 14 planning tools. They share one household, so what you enter once fills in everywhere.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export function Home({ data }: { data: HomeData }) {
 
           <Node row={7} label="62 to 70" />
           <Tile href="/optimizer" className="hm-left hm-r7" kick="Plan Optimizer" kickClass="hm-c-amber"
-            title="Decide when to claim Social Security."
+            title="Put it all together into one plan."
             text="Tries thousands of claiming ages, withdrawal orders and Roth conversions, and finds the combination that leaves you the most."><CloudChart /></Tile>
 
           <Node row={8} label="65" />

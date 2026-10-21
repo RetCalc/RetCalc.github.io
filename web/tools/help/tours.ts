@@ -19,6 +19,7 @@ import type { FireInputs } from "@/tools/fire/model";
 import { mortgageInput, type Inputs as MortgageInputs } from "@/tools/mortgage/model";
 import { mortgage } from "@/lib/engine/typed";
 import type { RothInputs } from "@/tools/roth/model";
+import { social as socialFigures, type SocialInputs } from "@/tools/social/model";
 import { runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
 
 export interface HelpTask { h: string; ok?: boolean }
@@ -407,4 +408,26 @@ const bridge: Tour<BridgeInputs> = { name: "Early Retirement Bridge", title: "Ge
   } };
 
 /** The tours, by the tool they explain. */
-export const TOURS = { tax, mortgage: mortgageTour, budget, college, rentbuy, drawdown, roth, debt, backtest, healthcare, fire, bridge } as unknown as Record<string, Tour>;
+const social: Tour<SocialInputs> = { name: "Social Security Calculator", title: "Your Social Security check",
+  start: ({ s }) => ({ claim: n(s.you.claim), through: n(s.you.through) }),
+  pages: [
+    { title: "About you", focus: "#ssSentence", tasks: ({ s }) => [
+      { h: "Fill in the blanks. Your <b>birth year</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months a year to 67 for 1960 and later." },
+      { h: "<b>Your pay</b> today estimates a whole career: the ages you started and will stop, and raises around today's pay. <b>Edit pay year by year</b> shows every year; change a past year to match your record, or a future one for a promotion, and the years after follow it." },
+      { h: "Have your statement from ssa.gov/myaccount? <b>I have my Social Security statement</b> takes its monthly figure at full retirement age instead.", ok: tried(s.you.src === "statement") },
+      { h: "<b>Add my spouse</b> for a couple: a lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
+    ] },
+    { title: "Pick an age", focus: "#ssReading", tasks: ({ s, base }) => [
+      { h: "Each step is your check at that claiming age. Click one, or use the arrow keys: 30% less at 62 and 24% more at 70 with a full retirement age of 67. Try 62 and 70.", ok: tried(n(s.you.claim) !== base.claim) },
+      { h: "<b>How it's figured</b> walks from your pay to your check: the average of your best 35 years, the formula that turns it into a full benefit, then the cut or credit for your age." },
+      { h: "Everything is in today's dollars. Benefits get a cost-of-living raise each year, so the figures keep their buying power." },
+    ] },
+    { title: "Which age wins", focus: "#ssLifespan", tasks: ({ s, base }) => [
+      { h: "<b>Best age, by how long you live</b> is the honest answer: nobody knows their lifespan. Move the slider to see which claiming age collects the most for each one.", ok: tried(n(s.you.through) !== base.through) },
+      { h: "<b>When waiting pays off</b> marks the break-even ages, where a later claim has caught up. <b>Every age, side by side</b> and <b>Year by year</b> hold the figures, with a CSV of each." },
+      { h: "For a couple, <b>Best ages for the two of you</b> tries every pair of claiming ages. The higher earner waiting often wins, because the survivor keeps the bigger check." },
+    ] },
+  ],
+  chip: ({ s }) => { const S = socialFigures(s); if (!(S.you.pia > 0)) return ""; return "Claim at " + S.you.claim + "<br><b>" + money(S.monthly) + "/mo</b>"; } };
+
+export const TOURS = { tax, mortgage: mortgageTour, budget, college, rentbuy, drawdown, roth, debt, backtest, healthcare, fire, bridge, social } as unknown as Record<string, Tour>;

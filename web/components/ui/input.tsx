@@ -11,6 +11,9 @@ const inputVariants = cva(
         default: "",
         // Figures: right-aligned in the site's number face, digits in columns.
         numeric: "text-right font-mono tabular-nums",
+        // A blank in a sentence (the Social Security Calculator's): the
+        // sentence's own size, an underline for an edge, sized to its text.
+        inline: "inline-block h-auto w-auto min-w-[2ch] rounded-none border-0 border-b-2 border-input bg-transparent px-0.5 py-0 text-center text-[length:inherit] font-medium tabular-nums [field-sizing:content] md:text-[length:inherit] focus-visible:border-foreground focus-visible:outline-none",
       },
     },
     defaultVariants: {
