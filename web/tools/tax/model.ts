@@ -3,7 +3,7 @@
    src/js/app/11-income-tax.js and 23-scenarios.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
 import { NEWEST_YEAR, computeRetireTax, computeTax, dataYears } from "@/lib/engine/typed";
-import { groupDigits, parseNum } from "@/lib/format";
+import { groupDigits, oneOf, parseNum } from "@/lib/format";
 
 const g = (v: number) => groupDigits(v, true);
 export const TAX_DEFAULTS = {
@@ -55,7 +55,10 @@ export function preTotal(t: TaxInputs): number {
   return preBuckets(t).reduce((a, p) => a + Object.values(p).reduce((x, y) => x + y, 0), 0);
 }
 
-export const TAX_DEF: ToolDef<TaxInputs> = { id: "tax", label: "Tax", noun: "tax scenario", defaults: TAX_DEFAULTS };
+export const TAX_DEF: ToolDef<TaxInputs> = {
+  id: "tax", label: "Tax", noun: "tax scenario", defaults: TAX_DEFAULTS,
+  clean: (t) => ({ ...t, status: oneOf(t.status, ["s", "m"], "s"), dedType: oneOf(t.dedType, ["std", "item"], "std") }),
+};
 
 /** The years the Tax year picker offers, newest first. It shows only once
     there's more than one. */

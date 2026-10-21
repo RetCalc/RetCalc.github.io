@@ -29,7 +29,11 @@ export interface ToolDef<S extends ToolInputs> {
       scenario replaces them (the Guide's answers). Left off, loading a
       scenario replaces them without asking. */
   hasWork?: (state: S) => boolean;
+  /** Puts right what a saved copy or share link can hold that the screen
+      can't show (a dropdown's value that isn't one of its choices). */
+  clean?: (state: S) => S;
 }
+
 
 export interface Scenario {
   name: string;
@@ -130,14 +134,15 @@ function sameKind(v: unknown, d: unknown): boolean {
     drops keys the tool no longer has, so an older copy still loads. A value
     of the wrong kind (from a damaged link or saved copy) keeps the
     default. */
-function withDefaults<S extends ToolInputs>(defaults: S, data: ToolInputs): S {
+function withDefaults<S extends ToolInputs>(def: ToolDef<S>, data: ToolInputs): S {
+  const { defaults } = def;
   const out = { ...defaults };
   if (!data || typeof data !== "object") return out;
   for (const k of Object.keys(defaults)) {
     const v = data[k];
     if (v !== undefined && sameKind(v, defaults[k])) (out as ToolInputs)[k] = v;
   }
-  return out;
+  return def.clean ? def.clean(out) : out;
 }
 
 /* Each tool's inputs, kept for this visit as you move between pages, the way
@@ -238,7 +243,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     // In a scope, its copy (the scope is only drawn in the browser).
     if (scope) {
       const mine = scope.read(def.id);
-      const s = mine ? withDefaults(def.defaults, mine) : def.defaults;
+      const s = mine ? withDefaults(def, mine) : def.defaults;
       return opening ? opening(s) : s;
     }
     // Memory only: reading session storage here would differ from the
@@ -261,7 +266,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     if (!saved) return;
     pending.delete(def.id);
     filled.current = true;
-    const s = withDefaults(def.defaults, saved);
+    const s = withDefaults(def, saved);
     setState(openingRef.current ? openingRef.current(s) : s);
   }, [def, scope]);
   useEffect(() => {
@@ -283,13 +288,13 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     const shared = decodeShare(window.location.hash);
     if (shared?.t === def.id) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
-      setState(withDefaults(def.defaults, shared.d));
+      setState(withDefaults(def, shared.d));
     } else if (!shared) toast(BROKEN_LINK, "warn");
   }, [def, scope, toast]);
 
   // The header's controls see this tool, and its inputs as they change
   // (in a scope, the page's own register instead).
-  useRegisterTool(def, state, (data) => setState(withDefaults(def.defaults, data)), !!scope);
+  useRegisterTool(def, state, (data) => setState(withDefaults(def, data)), !!scope);
 
   const set = useCallback(
     <K extends keyof S>(k: K) => (v: S[K]) => setState((s) => ({ ...s, [k]: v })),

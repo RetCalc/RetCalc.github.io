@@ -39,6 +39,12 @@ export function parseNum(s: string | number): number {
   return Number.isFinite(v) ? v : 0;
 }
 
+/** `v` when it's one of `choices`, otherwise `fallback`: a dropdown's
+    value, as a saved copy or share link hands it in. */
+export function oneOf<T extends string>(v: string, choices: readonly T[], fallback: T): T {
+  return (choices as readonly string[]).includes(v) ? (v as T) : fallback;
+}
+
 /** A field's number, or null when it's blank. */
 export function parseOptional(s: string): number | null {
   return s.trim() === "" ? null : parseNum(s);
