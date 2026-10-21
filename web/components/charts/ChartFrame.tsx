@@ -22,17 +22,26 @@ export function useChartSize() {
 }
 export type ChartSize = ReturnType<typeof useChartSize>;
 
-/** A value scale over `vals` (always including 0), as the charts draw it. */
+/** A value scale over `vals` (always including 0), as the charts draw it.
+    A value too big to compute is left out of the scale. */
 export function valueScale(size: ChartSize, vals: number[]) {
-  const AX = niceAxis(Math.min(0, Math.min(...vals)), Math.max(...vals));
+  const fin = vals.filter(isFinite);
+  const AX = niceAxis(Math.min(0, Math.min(...fin)), fin.length ? Math.max(...fin) : 1);
   const span = AX.max - AX.min || 1;
   return { AX, Y: (v: number) => size.T + size.ph - ((v - AX.min) / span) * size.ph };
 }
 
 /** An SVG path through the points, to a tenth of a unit: finer than any
-    screen shows, and a much shorter attribute. */
+    screen shows, and a much shorter attribute. A point that can't be drawn
+    (a figure too big to compute) leaves a gap. */
 export function pathD(pts: [x: number, y: number][]): string {
-  return pts.map(([x, y], i) => (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1)).join("");
+  let out = "", gap = true;
+  for (const [x, y] of pts) {
+    if (!isFinite(x) || !isFinite(y)) { gap = true; continue; }
+    out += (gap ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1);
+    gap = false;
+  }
+  return out;
 }
 
 /** Gridlines and their labels up the left side. */

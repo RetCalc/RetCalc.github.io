@@ -4,6 +4,9 @@
    $0 / $500k / $1M / $1.5M reads at a glance; quarters of whatever the
    maximum happened to be ($509k, $1.02M) don't. */
 export function niceAxis(lo: number, hi: number): { min: number; max: number; ticks: number[] } {
+  // A figure too big to compute (or no figures) still gets an axis.
+  if (!isFinite(lo)) lo = 0;
+  if (!isFinite(hi)) hi = lo + 1;
   if (!(hi > lo)) hi = lo + 1;
   const raw = (hi - lo) / 4;
   const mag = Math.pow(10, Math.floor(Math.log10(raw)));
@@ -12,7 +15,9 @@ export function niceAxis(lo: number, hi: number): { min: number; max: number; ti
   const min = Math.floor(lo / step + 1e-9) * step;
   const max = Math.ceil((hi * 1.02) / step - 1e-9) * step;
   const ticks: number[] = [];
-  for (let v = min; v <= max + step / 2; v += step) ticks.push(Math.abs(v) < step / 1e6 ? 0 : v);
+  // Bounded: a range far narrower than its values (a step lost in the
+  // value's own rounding) would otherwise never reach max.
+  for (let v = min; v <= max + step / 2 && ticks.length < 20; v += step) ticks.push(Math.abs(v) < step / 1e6 ? 0 : v);
   return { min, max, ticks };
 }
 
