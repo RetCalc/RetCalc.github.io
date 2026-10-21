@@ -71,7 +71,7 @@ function Cover({ M }: { M: ReportModel }) {
         <div><h5>Your number</h5><div className="rp-fig">{money(M.S.fv)}</div>
           <p>On course for this at {M.retire}. A plan like yours needs {money(M.need)}{M.S.fv >= M.need ? ", so you have room to retire earlier or spend more." : ", so there's a gap to close: page " + pageOf(M, "stand") + " shows how."}</p>
           <h5 className="gap">Social Security</h5><div className="rp-fig"><Est on={M.why.estimated.some((e) => e.startsWith("Social"))}>{money(M.S.ss.total / 12)}</Est></div>
-          <p>a month{M.who.married ? " together" : ""}, claiming at {M.S.ss.claim}{M.who.married && M.S.ss.claim2 !== M.S.ss.claim ? " and " + M.S.ss.claim2 : ""}.{M.why.estimated.some((e) => e.startsWith("Social")) ? " Estimated from income." : ""}</p></div>
+          <p>per month{M.who.married ? " together" : ""}, claiming at {M.S.ss.claim}{M.who.married && M.S.ss.claim2 !== M.S.ss.claim ? " and " + M.S.ss.claim2 : ""}.{M.why.estimated.some((e) => e.startsWith("Social")) ? " Estimated from income." : ""}</p></div>
       </div>
       <div className="rp-foot"><span>RetCalc · retcalc.app</span><span>An educational plan, not financial advice. Past returns don&apos;t predict future ones.</span></div>
     </section>
@@ -304,13 +304,13 @@ function Health({ M, p }: { M: ReportModel; p: PageInfo }) {
           <YearBars M={M} ages={(g) => g < both + 6} h={300} f={(r) => r.health} color={C.clay} stack={{ f: (r) => r.med, color: C.water }} />
           <div className="rp-key"><span><i style={{ "--sw": C.clay } as React.CSSProperties} />Marketplace, after the subsidy</span><span><i style={{ "--sw": C.water } as React.CSSProperties} />Medicare premiums</span></div></div>
         <div><Sec>The costly stretch</Sec>
-          <Side><div className="rp-fig">{money(worst.health)}</div>a year at {worst.age}, the most of any year{M.who.married && worst.age >= 65 ? <>: {M.who.first} pays Medicare and {M.who.second}, alone on the marketplace, gets a smaller subsidy</> : null}.
+          <Side><div className="rp-fig">{money(worst.health)}</div>per year at {worst.age}, the most of any year{M.who.married && worst.age >= 65 ? <>: {M.who.first} pays Medicare and {M.who.second}, alone on the marketplace, gets a smaller subsidy</> : null}.
             {after ? <><h5 className="gap">From {both}</h5>{M.who.married ? "Both on Medicare" : "On Medicare"}: {money(after.health)} per year in premiums.</> : null}</Side></div>
       </div>
       <div className="rp-g3 gap">
         <Side><div className="rp-fig">{money(r0.health)}</div>in the first year of retirement</Side>
         {r0.fplPct != null ? <Side><div className="rp-fig">{pctStr(r0.fplPct, 0)}</div>of the poverty line: your income for the subsidy in year one</Side> : null}
-        <Side><div className="rp-fig">{money(Hh.avg)}</div>a year on average before Medicare</Side>
+        <Side><div className="rp-fig">{money(Hh.avg)}</div>per year on average before Medicare</Side>
       </div>
       <Sec>What you can do</Sec>
       <ol className="rp-poi plain">
@@ -499,8 +499,8 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
   const one = (n: 1 | 2) => {
     const name = cap(n === 1 ? M.who.first : M.who.second), a = n === 1 ? Q.a1 : Q.a2, pia = n === 1 ? Q.pia1 : Q.pia2, c = n === 1 ? Q.claim1 : Q.claim2, own = n === 1 ? Q.own1 : Q.own2;
     return <div><Sec>{name === "You" ? "Your benefit" : name}</Sec>
-      <div className="rp-g2 tight"><Side><div className="rp-fig"><Est on={!own}>{money(a / 12)}</Est></div>a month, claiming at {c}</Side>
-        <Side><div className="rp-fig"><Est on={!own}>{money(pia)}</Est></div>a month at full retirement age, 67</Side></div>
+      <div className="rp-g2 tight"><Side><div className="rp-fig"><Est on={!own}>{money(a / 12)}</Est></div>per month, claiming at {c}</Side>
+        <Side><div className="rp-fig"><Est on={!own}>{money(pia)}</Est></div>per month at full retirement age, 67</Side></div>
       <p className="rp-small">{own ? "From your Social Security statement." : "Estimated from income. Your statement at ssa.gov/myaccount has the real figure."}</p>
       <h6 className="rp-mini">Claiming at each age from 62 to 70</h6>
       <ClaimLadder list={n === 1 ? Q.ladder1 : Q.ladder2} pick={c} max={ladderMax} /></div>;
@@ -516,7 +516,7 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
           <StackBars rows={ssRows} h={190} parts={[{ f: (r) => r.ss, color: C.water }]} line={{ f: (r) => (r.ss > 0 ? Q.survivor : 0), color: C.trail }} />
           <div className="rp-key"><span><i style={{ "--sw": C.water } as React.CSSProperties} />Both of you, to {M.end}</span><span><i className="dash" style={{ "--sw": C.trail } as React.CSSProperties} />What one of you keeps, alone</span></div></div>
         <div><Sec>When one of you dies</Sec>
-          <Side><div className="rp-fig">{money(Q.survivor / 12)}</div>a month for the survivor: the larger of the two benefits carries on and the smaller one stops, so the household&apos;s Social Security falls from {money(total / 12)}.
+          <Side><div className="rp-fig">{money(Q.survivor / 12)}</div>per month for the survivor: the larger of the two benefits carries on and the smaller one stops, so the household&apos;s Social Security falls from {money(total / 12)}.
             <h5 className="gap">Why it matters</h5>The higher earner&apos;s claiming age sets the survivor&apos;s benefit too, which is why waiting often pays off for couples. The Plan Optimizer tries every pair of claiming ages.</Side></div>
       </div>
     </Sheet>

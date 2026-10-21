@@ -163,7 +163,7 @@ export function Inputs({ v, fromNote, periods, open }: {
 
   /* ---- guaranteed income ---- */
   const gOn = o.gShare > 0, G = P.G, tips = o.gType !== "annuity";
-  const gNote = !gOn ? "" : money(o.initial * G.share) + " buys <b>" + money(G.income) + "</b> a year" +
+  const gNote = !gOn ? "" : money(o.initial * G.share) + " buys <b>" + money(G.income) + "</b> per year" +
     (tips ? " for " + o.years + " years, rising with inflation: a " + o.years + "-year TIPS ladder at " + pctStr((o.gYield || 0) / 100, 2) +
         " real pays " + pctStr(G.rate, 2) + " of its cost a year, then nothing."
       : " for life, " + (o.gInflate ? "rising with inflation." : "level in dollars, so inflation wears it down.")) +

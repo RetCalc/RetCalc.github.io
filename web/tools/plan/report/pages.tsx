@@ -181,7 +181,7 @@ function Road({ R, p }: { R: PlanReport; p: Page }) {
   return (
     <Sheet R={R} p={p}>
       <Lead h={<>{money(A.total)} at {S.retire}, in today&apos;s dollars.</>}>
-        {Math.round(S.years)} years of saving at {pctStr(a.nominal, 1)} a year before {pctStr(a.inflation, 1)} inflation{a.fees > 0 ? " and " + pctStr(a.fees, 2) + " in fees" : ""}.
+        {Math.round(S.years)} years of saving at {pctStr(a.nominal, 1)} per year before {pctStr(a.inflation, 1)} inflation{a.fees > 0 ? " and " + pctStr(a.fees, 2) + " in fees" : ""}.
         {" "}Withdrawing {pctStr(A.withdrawal, 1)} the first year gives {money(A.afterTax)} after tax{S.stages ? ", with the life stages on page " + (p.n + 1) + " in it" : ""}.
       </Lead>
       <Sec>Your savings by age, by account</Sec>

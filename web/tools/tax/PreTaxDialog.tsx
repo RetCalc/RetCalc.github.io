@@ -178,7 +178,7 @@ export function PreTaxDialog({ s, setState, close }: {
         );
       })}
       <div className="mt-3 mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-note tabular-nums" id="txPreTot">
-        <span>Total: <b>{money(total)}</b> a year</span>
+        <span>Total: <b>{money(total)}</b> per year</span>
         <span className="text-muted-foreground">
           {saved > 0.5 ? <>Lowers this year&apos;s taxes by <b className="text-foreground">{money(saved)}</b></> : "No tax saved yet"}
         </span>

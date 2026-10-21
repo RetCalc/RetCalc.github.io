@@ -24,7 +24,7 @@ export function AboutNote({ a }: { a: Answers }) {
 
 export function IncomeNote({ a }: { a: Answers }) {
   const g = gross(a);
-  return g > 0 ? <Callout>That&apos;s <b>{money(g / 12)}</b> a month before taxes{mar(a) ? " for the two of you" : ""}.</Callout> : null;
+  return g > 0 ? <Callout>That&apos;s <b>{money(g / 12)}</b> per month before taxes{mar(a) ? " for the two of you" : ""}.</Callout> : null;
 }
 
 export function FlowNote({ a }: { a: Answers }) {

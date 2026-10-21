@@ -43,7 +43,7 @@ export function NumberCard() {
         <Lesson id="income-sources" figure={<Coverage port={S.portIncome} ss={S.ss.total} pen={S.pension} need={spendNeed} />}
           caption={"A typical year of your retirement, in today's dollars, Social Security from " + S.ss.claim + "."}>
           <p>A year of retirement is paid from three places: your savings, Social Security, and any pension. A common rule says savings can pay about 4% of
-            {" "}their starting balance a year, rising with prices: a <Term k="swr">safe withdrawal rate</Term>. For you that&apos;s <b>{money(S.portIncome)}</b> a year
+            {" "}their starting balance a year, rising with prices: a <Term k="swr">safe withdrawal rate</Term>. For you that&apos;s <b>{money(S.portIncome)}</b> per year
             {" "}from {rounded(S.fv)}. The year has to cover what you live on and its tax: <b>{money(spendNeed)}</b>.</p>
           <p>The 4% rule is a rough guide drawn from history. Rather than trust it, the guide tests your own plan, year by year, through every market since
             {" "}{S.H.first}: that&apos;s the next card, and it&apos;s where &ldquo;what the plan needs&rdquo; comes from.</p>
@@ -59,7 +59,7 @@ export function NumberCard() {
           ]} />
         <ul className="gd-read">
           <li>Growing at a {riskLabel(S.real)} mix&apos;s {rate(S.real)} per year after inflation{S.stop != null ? (coast ? ", with nothing new going in" : ", saving until " + fmtNum(S.stop)) : ""}.
-            {" "}Taxes and premiums are counted: about <b>{money(S.taxYr)}</b> a year in income tax{S.hcYr > 0 ? <>, and <b>{money(S.hcYr)}</b> a year for health insurance for the {S.hcYears} years before Medicare</> : null}, on top of the {money(S.spend)} you live on.</li>
+            {" "}Taxes and premiums are counted: about <b>{money(S.taxYr)}</b> per year in income tax{S.hcYr > 0 ? <>, and <b>{money(S.hcYr)}</b> per year for health insurance for the {S.hcYears} years before Medicare</> : null}, on top of the {money(S.spend)} you live on.</li>
           {want != null && want > 0 && S.fv >= want * 1.2 ? <li>That&apos;s more than the plan needs: <b>Adjust your plan</b> shows what the extra could buy, from retiring sooner to spending more.</li>
             : want != null && want > S.fv ? <li>That&apos;s short of what the plan needs by about <b>{money(want - S.fv)}</b>. <b>Adjust your plan</b> shows the quickest ways to close it.</li> : null}
           {S.retire < S.ss.claim ? <li>Social Security starts at {S.ss.claim}, so for the first {S.ss.claim - Math.round(S.retire)} years of retirement your savings carry everything. The next card tests exactly that.</li> : null}

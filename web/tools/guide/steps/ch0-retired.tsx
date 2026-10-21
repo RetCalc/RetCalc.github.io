@@ -45,7 +45,7 @@ export function RetiredCard() {
         {!pos(a.saved) || draw == null ? <p className="gd-means-empty">What you&apos;d draw from savings appears once your savings and spending are in.</p> : (
           <ul className="gd-read">
             <li><b>{money(A.trad)}</b> traditional, <b>{money(A.roth)}</b> Roth and <b>{money(A.brok)}</b> in brokerage accounts.</li>
-            <li>You&apos;d draw about <b>{money(draw)}</b> a year from savings{income ? <> after {money(income)} of Social Security and pensions</> : null}: <b>{pctStr(draw / a.saved, 1)}</b> of what you have.
+            <li>You&apos;d draw about <b>{money(draw)}</b> per year from savings{income ? <> after {money(income)} of Social Security and pensions</> : null}: <b>{pctStr(draw / a.saved, 1)}</b> of what you have.
               {" "}The simulator tests whether that lasted{ok(a.age) ? " to " + fmtNum(Math.max(95, a.age! + 20)) : ""} in every retirement since 1926.</li>
           </ul>
         )}

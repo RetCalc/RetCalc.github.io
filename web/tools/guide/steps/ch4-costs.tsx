@@ -83,16 +83,16 @@ function NeedMeans() {
   const S = plan.res, N = need.res;
   return (
     <Means stale={(plan.stale || need.stale) && !!S}>
-      {!own ? <p className="gd-means-empty">{guess > 0 ? <>Until you enter it, the plan uses <b>{money(guess)}</b> a year, 80% of your take-home. <SourceBadge kind="default" /></>
+      {!own ? <p className="gd-means-empty">{guess > 0 ? <>Until you enter it, the plan uses <b>{money(guess)}</b> per year, 80% of your take-home. <SourceBadge kind="default" /></>
         : "What the plan needs appears once it's in."}</p>
         : !S ? <p className="gd-means-empty">{plan.stale ? "Working it out…" : "What the plan needs appears once your ages, savings and monthly saving are in."}</p> : (
           <ul className="gd-read">
-            {N != null ? <li>To last in {S.I.target >= 1 ? "every" : Math.round(S.I.target * 100) + "% of"} historical retirements, spending <b>{money(S.spend)}</b> a year,
+            {N != null ? <li>To last in {S.I.target >= 1 ? "every" : Math.round(S.I.target * 100) + "% of"} historical retirements, spending <b>{money(S.spend)}</b> per year,
               {" "}the plan needs about <b>{rounded(N)}</b> at {fmtNum(S.retire)}{was.res != null && was.res !== N
                 ? <>: entering it {N < was.res ? "cut" : "raised"} that from {rounded(was.res)}, with the starting estimate of {money(guess)} per year</> : null}.</li> : null}
             {pos(a.spend) ? <li>That&apos;s <b>{pctStr(S.spend / (a.spend * 12), 0)}</b> of what you spend today.</li> : null}
             <li>Income tax comes on top, worked out by the plan: about <b>{money(S.taxYr)}</b> in a typical year
-              {S.hcYr > 0 ? <>, and about <b>{money(S.hcYr)}</b> a year for health insurance for the {yrs(S.hcYears)} before Medicare</> : null}.</li>
+              {S.hcYr > 0 ? <>, and about <b>{money(S.hcYr)}</b> per year for health insurance for the {yrs(S.hcYears)} before Medicare</> : null}.</li>
             <li>That counts Social Security {S.ss.own ? "from your statement" : "as estimated from your income"}; the next card checks it.</li>
           </ul>
         )}
@@ -154,11 +154,11 @@ function SocialMeans() {
   return (
     <Means stale={plan.stale && !!S}>
       <ul className="gd-read">
-        <li><b>{money(ss.total / 12)} per month</b> from {ss.claim}{both && ss.claim2 !== ss.claim ? " (" + ss.claim2 + " for your spouse)" : ""}, <b>{money(ss.total)}</b> a year
+        <li><b>{money(ss.total / 12)} per month</b> from {ss.claim}{both && ss.claim2 !== ss.claim ? " (" + ss.claim2 + " for your spouse)" : ""}, <b>{money(ss.total)}</b> per year
           {both ? " for the two of you" : ""}{ss.spousal ? ", with the spousal top-up" : ""}. <SourceBadge kind={est ? "estimated" : "entered"} /></li>
-        {needYr != null ? <li>That&apos;s <b>{pctStr(Math.min(9.99, (ss.total + pen) / needYr), 0)}</b> of the <b>{money(needYr)}</b> a year your plan needs including tax
+        {needYr != null ? <li>That&apos;s <b>{pctStr(Math.min(9.99, (ss.total + pen) / needYr), 0)}</b> of the <b>{money(needYr)}</b> per year your plan needs including tax
           {pen ? ", counting your pension" : ""}.{early ? " Savings carry the " + yrs(early) + " before it starts." : ""}{guessing(a) ? " Spending is still the starting estimate." : ""}</li> : null}
-        {pos(a.pension) ? <li>Your pension: <b>{money(a.pension * 12)}</b> a year from {ok(from) ? fmtNum(from) : "retirement"}{a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year."}</li> : null}
+        {pos(a.pension) ? <li>Your pension: <b>{money(a.pension * 12)}</b> per year from {ok(from) ? fmtNum(from) : "retirement"}{a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year."}</li> : null}
         {ss.tactics ? <li>These are the Plan Optimizer&apos;s claiming ages, which your plan now uses.</li> : null}
         {!ss.own && ss.career < 35 ? <li>It averages your best 35 years, so retiring after {ss.career} years of work counts the rest as zeros.</li> : null}
         {est ? <li>An estimate from your income. Your statement at ssa.gov/myaccount uses your real record; the trust fund is also projected to run short in the 2030s,

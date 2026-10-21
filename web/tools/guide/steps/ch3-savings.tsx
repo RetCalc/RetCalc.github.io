@@ -45,7 +45,7 @@ export function SavingsCard() {
         <Lesson id="time" caption={C ? (valid ? "At your ages, with a " + riskLabel(real) + " mix, in today's dollars." : "An example: saving from 40 to 65, in today's dollars.") : null}
           figure={C ? <>
             <div className="gd-slide">
-              <label htmlFor="gdCmpSlide">Saving <b>{money(mo)}</b> a month</label>
+              <label htmlFor="gdCmpSlide">Saving <b>{money(mo)}</b> per month</label>
               <NativeRange id="gdCmpSlide" min={50} max={2000} step={50} value={mo} aria-valuetext={money(mo) + " per month"} onChange={(e) => setMo(+e.target.value)} />
             </div>
             <Compound C={C} />
@@ -117,7 +117,7 @@ function SavingsReadout() {
         : r != null ? <li>You&apos;re putting in <b>{money(P.monthly)} per month</b>, <b>{pctStr(r, 1)}</b> of gross income counting your employer&apos;s share.
           {r >= 0.15 ? " That meets the usual 15% target." : <> The usual target is 15%: about {money((inc * 0.15) / 12)} per month for you.</>}</li>
           : <li><b>{money(P.monthly)} per month</b> going in.</li>}
-      {!coast && pos(a.contrib) && splitOff(a) == null ? <li>Of the <b>{money(a.contrib)}</b> a month you put in, <b>{money(Math.round((a.contrib * splitPcts(a)[0]) / 100))}</b> goes to traditional,
+      {!coast && pos(a.contrib) && splitOff(a) == null ? <li>Of the <b>{money(a.contrib)}</b> per month you put in, <b>{money(Math.round((a.contrib * splitPcts(a)[0]) / 100))}</b> goes to traditional,
         {" "}<b>{money(Math.round((a.contrib * splitPcts(a)[1]) / 100))}</b> to Roth and <b>{money(Math.round((a.contrib * splitPcts(a)[2]) / 100))}</b> to a taxable account{pos(a.employer) ? <>, plus your employer&apos;s {money(a.employer)} to traditional</> : ""}.</li> : null}
       <li>By {fmtNum(a.retire!)}, at the {riskLabel(P.real)} mix&apos;s {rate(P.real)} per year after inflation: today&apos;s <b>{money(a.saved!)}</b> grows to <b>{money(P.fromSaved)}</b>
         {coast ? "." : <>, and what you add comes to <b>{money(P.fromSaving)}</b>.</>} Together, <b>{rounded(P.total)}</b>: your number so far, in today&apos;s dollars.</li>
@@ -143,8 +143,8 @@ export function InvestedCard() {
           <p>Every figure in this guide is in today&apos;s dollars: growth after inflation, a <Term k="realreturn">real return</Term>.
             {P ? <> So {rounded(P.total)} at {fmtNum(a.retire!)} means what {rounded(P.total)} buys now, </> : " So a figure decades away means what it would buy now, "}
             and your saving is assumed to rise with prices, so it stays the same in real terms.</p>
-          <p>Since {h.first}, a {h.label.toLowerCase()} mix earned about <b>{pc1(h.cagr)}</b> a year after inflation; the guide assumes <b>{rate(h.real)}</b>, a little less.
-            {" "}The average hides the range: its ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> a year. More stocks raise the average and widen the range.</p>
+          <p>Since {h.first}, a {h.label.toLowerCase()} mix earned about <b>{pc1(h.cagr)}</b> per year after inflation; the guide assumes <b>{rate(h.real)}</b>, a little less.
+            {" "}The average hides the range: its ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> per year. More stocks raise the average and widen the range.</p>
         </Lesson>
       </Learn>
       <BackNote step="invested" />
@@ -173,7 +173,7 @@ function MixReadout() {
         ))}</tbody>
       </table>
       <ul className="gd-read">
-        <li>In history, a {h.label.toLowerCase()} mix&apos;s ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> a year after inflation; the middle one, <b>{pc1(h.med)}</b>.</li>
+        <li>In history, a {h.label.toLowerCase()} mix&apos;s ten-year stretches ran from <b>{pc1(h.worst)}</b> to <b>{pc1(h.best)}</b> per year after inflation; the middle one, <b>{pc1(h.med)}</b>.</li>
         <li>This is the mix while you save. In retirement the plan holds 60% in stocks unless you change it on a trip into the Drawdown Simulator.</li>
       </ul>
     </>

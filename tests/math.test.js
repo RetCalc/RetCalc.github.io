@@ -1324,7 +1324,7 @@ group("Articles: Mortgage and rent vs. buy");
   var m = { price: 450000, down: 90000, rate: .065, term: 30, taxPct: .011, ins: 1800, pmiPct: 0, hoa: 0, maintPct: .01, util: 300 };
   var M = mortgage(m);
   says("mortgage", "Principal and interest: " + dollars(M.pi) + " per month");
-  says("mortgage", "(" + dollars(M.tax) + " per month) and $1,800 a year of insurance (" + dollars(M.ins) + "), the housing payment is " + dollars(M.pi + M.tax + M.ins));
+  says("mortgage", "(" + dollars(M.tax) + " per month) and $1,800 per year in insurance (" + dollars(M.ins) + "), the housing payment is " + dollars(M.pi + M.tax + M.ins));
   says("mortgage", dollars(M.totalInterest) + " over 30 years");
   var X = mortgage(Object.assign({}, m, { extraMonthly: 200 }));
   says("mortgage", "gone in " + X.payoffMonth + " months");
