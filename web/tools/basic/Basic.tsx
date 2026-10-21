@@ -34,6 +34,7 @@ import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
 import { basicShare } from "./share";
 import { BASIC_DEF, BASIC_INPUTS, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
+import { OpenInStages } from "./OpenInStages";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { SERIES } from "@/lib/hues";
@@ -222,15 +223,29 @@ export function Basic() {
           <CardContent id="msBodyQ">{R ? <Milestones rows={R.years} alreadyReal /> : null}</CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Want more detail?</CardTitle></CardHeader>
-          <CardContent>
-            <p className="hint mt-0">The Advanced tab does everything this does
-              plus taxes, fees, contribution growth, and a simulation of good and bad market
-              runs. This will carry your answers over so you don&apos;t have to retype them.</p>
-            <OpenInAdvanced basic={s} />
-          </CardContent>
-        </Card>
+        {/* Where to take these numbers next: Advanced for more detail, Stages
+            for saving that changes over time. */}
+        <div className="grid min-w-0 gap-5 max-sm:gap-3.5">
+          <Card>
+            <CardHeader><CardTitle>Want more detail?</CardTitle></CardHeader>
+            <CardContent>
+              <p className="hint mt-0">The Advanced tab does everything this does
+                plus taxes, fees, contribution growth, and a simulation of good and bad market
+                runs. This will carry your answers over so you don&apos;t have to retype them.</p>
+              <OpenInAdvanced basic={s} />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader><CardTitle>Saving that changes over time?</CardTitle></CardHeader>
+            <CardContent>
+              <p className="hint mt-0">The Stages tab splits your plan into stretches, each with its
+                own contribution, return and length: saving more after a raise, less while the
+                kids are young, or nothing after you stop. This copies your answers in as two
+                stages to start from.</p>
+              <OpenInStages basic={s} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Collapsible className="min-w-0 lg:col-span-3" render={<Card />}>
