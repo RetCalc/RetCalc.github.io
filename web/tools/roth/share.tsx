@@ -28,7 +28,7 @@ export function rothShare(s: RothInputs): ShareKit {
       if (inp.irmaaOn) out.push(["Lifetime IRMAA", money(plan.lifeIrmaa) + " vs " + money(base.lifeIrmaa)]);
       out.push(["Traditional at " + fmtNum(inp.endAge), money(plan.endTrad) + " vs " + money(base.endTrad)], ["Peak RMD", money(base.peakRMD) + " → " + money(plan.peakRMD)]);
       return (
-        <SheetPage title="Roth Conversion & RMDs" sub={<>Ages {fmtNum(inp.age)}–{fmtNum(inp.endAge)} &middot; today&apos;s dollars</>}
+        <SheetPage title="Roth Conversion Calculator" sub={<>Ages {fmtNum(inp.age)}–{fmtNum(inp.endAge)} &middot; today&apos;s dollars</>}
           big={[["Lifetime tax saved", money(taxSaved), "present value"], ["After-tax net worth", (nwDelta >= 0 ? "+" : "−") + money(Math.abs(nwDelta)), "at age " + fmtNum(inp.endAge)],
             ["Total converted", money(plan.totalConv), "over " + fmtNum(plan.rows.filter((x) => x.conv > 0).length) + " years"]]}
           chart={copyChart("#chartRC")}

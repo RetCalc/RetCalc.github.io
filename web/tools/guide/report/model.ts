@@ -182,7 +182,7 @@ export function reportModel(a0: Answers, src: Sources, levers: Levers, names: Re
       ladder2: ages.map((c) => { const x = at(S.ss.claim, c); return { age: c, v: x.own2 + x.top2 }; }) };
   })() : null;
 
-  /* The Plan Optimizer's roadmap, once applied: against the same plan
+  /* The Retirement Plan Optimizer's roadmap, once applied: against the same plan
      without it (base), as the Guide's own sim works both out. */
   const roadmap = S.tactics ? (() => {
     const base = sim(a, undefined, true), C = S.C as unknown as { married: boolean; gap?: number; rmdAge?: number };
@@ -219,7 +219,7 @@ export function reportModel(a0: Answers, src: Sources, levers: Levers, names: Re
   add("money", "Where the money comes from");
   if (social) add("social", "Social Security for both of you", "On this report because you plan as a couple");
   if (pension) add("pension", "Your pension", "On this report because you have a pension");
-  if (roadmap) add("roadmap", "Your Plan Optimizer roadmap", "On this report because you applied the Plan Optimizer");
+  if (roadmap) add("roadmap", "Your Retirement Plan Optimizer roadmap", "On this report because you applied the Retirement Plan Optimizer");
   if (health) add("health", "Health insurance before Medicare", "On this report because you retire before 65");
   if (debt) add("debt", "Paying off debt", "On this report because you have debt besides a mortgage");
   add("score", "Your score, area by area");

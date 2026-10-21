@@ -174,7 +174,7 @@ export const GLOSS: Record<string, string> = {
   brholds: "The share of historical start years (or random draws, in Monte Carlo) in which the plan gets to 59½ without running short and without having to touch penalized money it didn't plan on. For the pay-the-penalty plan, only running short counts.",
   brcost: "Everything the best plan pays between retirement and 59½ on the steady path, other than your spending: federal and state income tax, early withdrawal penalties, and net health insurance premiums. Today's dollars.",
   brhandoff: "Both buttons use the highlighted column above. Drawdown gets the total as its starting portfolio at 60 and a fixed withdrawal that covers your spending plus tax. Income Tax gets one year of those withdrawals, split across traditional, Roth and brokerage in proportion to their balances.",
-  /* The Plan Optimizer's, from src/js/app/31b-plan-optimizer.js. */
+  /* The Retirement Plan Optimizer's, from src/js/app/31b-plan-optimizer.js. */
   opinc: "Don't have your Social Security statement? Leave the benefit blank and enter your salary instead: the optimizer estimates the benefit at 67 from it, with the 2026 formula, assuming you work at about this pay until you retire. A statement from ssa.gov/myaccount is more accurate.",
   opmode: "Retirement day: enter the balances you'll have when you retire (or copy them from Advanced or Stages, which project them with every detail), and the optimizer starts there. Today: enter what you have now and what you save each month, and it grows them to retirement at a steady return first.",
   opretire: "The age you stop working. Your spouse stops at the same time, at whatever age they are then. Already retired? Enter your age today.",

@@ -41,7 +41,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "sub": "optimizer",
         "q": "Which plan leaves me the most?",
         "path": "optimizer",
-        "name": "Plan Optimizer",
+        "name": "Retirement Plan Optimizer",
         "desc": "Tries thousands of ways to claim Social Security, draw down your accounts and convert to Roth, in every market since 1926, and finds the one that leaves you the most.",
         "i": 1
       },
@@ -66,7 +66,7 @@ export const TOOL_GROUPS: ToolGroup[] = [
         "sub": "roth",
         "q": "Should I convert to Roth before RMDs start?",
         "path": "roth",
-        "name": "Roth Conversion & RMDs",
+        "name": "Roth Conversion Calculator",
         "desc": "Project required distributions to age 100, then test a conversion schedule against doing nothing: lifetime tax, after-tax net worth, IRMAA surcharges and the survivor's bracket.",
         "i": 4
       },

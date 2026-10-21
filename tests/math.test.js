@@ -1447,7 +1447,7 @@ group("Plan engine: taxes, accounts and the rules");
   near(S2.top2, 12000, 0.01, "the spousal top-up waits for both claims, and at 70 it's unreduced");
 })();
 
-group("Plan Optimizer");
+group("Retirement Plan Optimizer");
 (function () {
   var P = plAtRetire({status: "s", state: "IL", age: 62, retire: 62, trad: 800000, roth: 50000, rothBasis: 30000,
     brok: 150000, brokBasis: 90000, saveTrad: 0, saveRoth: 0, saveBrok: 0, real: .045, infl: BASIC_INFL,

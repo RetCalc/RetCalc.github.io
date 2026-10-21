@@ -19,7 +19,7 @@ const T = {
   stages: { id: "stages", name: "Stages", path: "/stages" },
   advanced: { id: "advanced", name: "Advanced", path: "/advanced" },
   backtest: { id: "backtest", name: "Portfolio Backtest", path: "/backtest" },
-  optimizer: { id: "optimizer", name: "Plan Optimizer", path: "/optimizer" },
+  optimizer: { id: "optimizer", name: "Retirement Plan Optimizer", path: "/optimizer" },
   drawdown: { id: "drawdown", name: "Drawdown Simulator", path: "/drawdown" },
   fire: { id: "fire", name: "FIRE Calculator", path: "/fire" },
   healthcare: { id: "healthcare", name: "Healthcare Cost Planner", path: "/healthcare" },

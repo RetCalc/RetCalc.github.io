@@ -1,4 +1,4 @@
-/* The Roth Conversion & RMDs tool's inputs, and the parsing that clamps
+/* The Roth Conversion Calculator tool's inputs, and the parsing that clamps
    them into a plan runRoth() can take. From src/js/app/17-roth.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
 import { groupDigits, parseNum } from "@/lib/format";

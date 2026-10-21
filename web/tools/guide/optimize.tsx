@@ -1,6 +1,6 @@
 "use client";
 
-/* The Plan Optimizer as a step of the guide: the same search and result as
+/* The Retirement Plan Optimizer as a step of the guide: the same search and result as
    its own page, on the guide's plan, with "Use this plan" to apply what it
    finds. From opGuideHTML(), opApplyToGuide() and opClearGuide() in
    src/js/app/31b-plan-optimizer.js. */
@@ -32,7 +32,7 @@ export function OptimizeStep() {
     <>
       <Q>Find the best way to run your retirement</Q>
       <p className="gd-lead">Your plan so far claims Social Security at {opClaims(S.T, S.C)} and draws from the brokerage, then traditional, then Roth.
-        {" "}The Plan Optimizer tries every other way: each claiming age from 62 to 70{S.C.married ? " for each of you" : ""}, drawing traditional money first up to each tax bracket,
+        {" "}The Retirement Plan Optimizer tries every other way: each claiming age from 62 to 70{S.C.married ? " for each of you" : ""}, drawing traditional money first up to each tax bracket,
         {" "}converting to Roth for different stretches, and staying under the ACA and Medicare income lines. It runs all <b>{groupDigits(E.n, true)}</b> plans through every market since {HIST_START as number}
         {" "}and keeps the best.</p>
       <BackNote step="optimize" />

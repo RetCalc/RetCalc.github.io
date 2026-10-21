@@ -118,7 +118,7 @@ export function pias(a: Answers, retire: number) {
     own, own2, career: yrs1, career2: yrs2,
   };
 }
-/** The Plan Optimizer's choices, once applied. */
+/** The Retirement Plan Optimizer's choices, once applied. */
 export function tactics(a: Answers): PlTactics | null {
   if (!ok(a.optC1)) return null;
   return { c1: a.optC1, c2: ok(a.optC2) ? a.optC2 : a.optC1, f: a.optF || 0, u: a.optU || 0, im: a.optIm || 0, ac: a.optAc || 0 };

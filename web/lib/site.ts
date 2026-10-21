@@ -78,7 +78,7 @@ export function strategyLede(slug: Slug): string | null {
 
 /** Pages laid out in one column (the rest put inputs beside results). */
 // The homepage, Basic, Advanced, Stages, the Drawdown Simulator (with its strategy
-// pages), Income Tax, the Plan Optimizer, the Early Retirement Bridge (with
+// pages), Income Tax, the Retirement Plan Optimizer, the Early Retirement Bridge (with
 // /72t), Roth Conversion (with /rmd), College Savings and Rent vs. Buy lay out their own columns (components/home/Home.tsx, tools/basic/Basic.tsx,
 // tools/advanced/Advanced.tsx, tools/stages/Stages.tsx, tools/drawdown/Drawdown.tsx,
 // tools/tax/Tax.tsx, tools/optimizer/Optimizer.tsx, tools/bridge/Bridge.tsx, tools/roth/Roth.tsx).

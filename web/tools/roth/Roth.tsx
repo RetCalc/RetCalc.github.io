@@ -1,6 +1,6 @@
 "use client";
 
-/* Roth Conversion & RMDs (also the /rmd page): required distributions to
+/* Roth Conversion Calculator (also the /rmd page): required distributions to
    the end of the plan, and a conversion schedule scored against doing
    nothing. Ported from src/js/app/17-roth.js and src/main/12-roth-inputs.html,
    13-roth.html. */

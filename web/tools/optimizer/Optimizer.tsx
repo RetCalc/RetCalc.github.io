@@ -1,6 +1,6 @@
 "use client";
 
-/* The Plan Optimizer's own page: your situation, what the best plan should
+/* The Retirement Plan Optimizer's own page: your situation, what the best plan should
    do, and the search. Every claiming age, withdrawal order, Roth conversion
    and income guard, each through every market since 1926. From
    src/main/25b-optimizer-inputs.html, 25c-optimizer.html and

@@ -1,4 +1,4 @@
-/* ---------- the Plan Optimizer and the Drawdown Simulator, off the page ----------
+/* ---------- the Retirement Plan Optimizer and the Drawdown Simulator, off the page ----------
    Moved unchanged from src/js/plan-worker.js. scripts/build-worker.mjs puts
    it after the engine in public/engine-worker.js, as build.py did.
    A few thousand plans through every historical market takes seconds, so the

@@ -281,7 +281,7 @@ function Money({ M, p }: { M: ReportModel; p: PageInfo }) {
         <div><Sec>Tax over the whole retirement</Sec>
           <Side><div className="rp-fig">{money(M.S.lifeTax)}</div>in the middle of history, about {money(M.S.taxYr)} in a typical year.
             {afterRmd > 0.3 ? <><h5 className="gap">Where to look</h5>On the average path, {pctStr(afterRmd, 0)} of the tax comes after {M.rmdAge}, from required withdrawals. Roth conversions in lower-tax years before then can move some of it earlier at a lower rate.</> : null}
-            {!M.S.tactics ? <> The Plan Optimizer tests that, along with claiming ages and the order to draw accounts.</> : null}</Side></div>
+            {!M.S.tactics ? <> The Retirement Plan Optimizer tests that, along with claiming ages and the order to draw accounts.</> : null}</Side></div>
       </div>
       <Sec>Each year of retirement, by source</Sec>
       <IncomeBars M={M} w={732} h={210} /><IncomeKey M={M} />
@@ -517,7 +517,7 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
           <div className="rp-key"><span><i style={{ "--sw": C.water } as React.CSSProperties} />Both of you, to {M.end}</span><span><i className="dash" style={{ "--sw": C.trail } as React.CSSProperties} />What one of you keeps, alone</span></div></div>
         <div><Sec>When one of you dies</Sec>
           <Side><div className="rp-fig">{money(Q.survivor / 12)}</div>per month for the survivor: the larger of the two benefits carries on and the smaller one stops, so the household&apos;s Social Security falls from {money(total / 12)}.
-            <h5 className="gap">Why it matters</h5>The higher earner&apos;s claiming age sets the survivor&apos;s benefit too, which is why waiting often pays off for couples. The Plan Optimizer tries every pair of claiming ages.</Side></div>
+            <h5 className="gap">Why it matters</h5>The higher earner&apos;s claiming age sets the survivor&apos;s benefit too, which is why waiting often pays off for couples. The Retirement Plan Optimizer tries every pair of claiming ages.</Side></div>
       </div>
     </Sheet>
   );
@@ -555,12 +555,12 @@ function Pension({ M, p }: { M: ReportModel; p: PageInfo }) {
   );
 }
 
-/* ---------- the Plan Optimizer's roadmap (when applied) ---------- */
+/* ---------- the Retirement Plan Optimizer's roadmap (when applied) ---------- */
 function Roadmap({ M, p }: { M: ReportModel; p: PageInfo }) {
   const Rm = M.roadmap!, B = Rm.base, conv = M.rows.filter((r) => r.age < (Rm.until ?? M.rmdAge) + 1);
   return (
     <Sheet M={M} p={p}>
-      <Lead h={<>The Plan Optimizer&apos;s plan for &ldquo;{Rm.goal.toLowerCase()}&rdquo;, applied to yours.</>}>
+      <Lead h={<>The Retirement Plan Optimizer&apos;s plan for &ldquo;{Rm.goal.toLowerCase()}&rdquo;, applied to yours.</>}>
         {Rm.goalDesc}. It claims Social Security at {Rm.claims} and draws {lowerFirst(Rm.line)}. The rest of this report already uses it.
       </Lead>
       <Sec>With and without the roadmap</Sec>
@@ -581,7 +581,7 @@ function Roadmap({ M, p }: { M: ReportModel; p: PageInfo }) {
         <table className="rp-t"><thead><tr><th>Year</th><th>{M.who.axis.replace("'s age", "")}</th><th>Converted to Roth</th><th>From traditional</th><th>Social Security</th><th>Income tax</th></tr></thead><tbody>
           {conv.filter((r) => r.conv > 0).map((r) => <tr key={r.age}><td>{M.year0 + (r.age - M.accum[0].age)}</td><td>{r.age}</td><td>{money(r.conv)}</td><td>{money(r.trad)}</td><td>{r.ss >= 1 ? money(r.ss) : "–"}</td><td>{money(r.tax + r.irmaa)}</td></tr>)}
         </tbody></table></> : null}
-      <p className="rp-small gap">Run the Plan Optimizer again after a big change in the Guide: a new retirement age, spending or savings changes the best roadmap.</p>
+      <p className="rp-small gap">Run the Retirement Plan Optimizer again after a big change in the Guide: a new retirement age, spending or savings changes the best roadmap.</p>
     </Sheet>
   );
 }

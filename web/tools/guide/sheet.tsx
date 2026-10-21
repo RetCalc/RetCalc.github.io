@@ -45,7 +45,7 @@ export function GuideSheet({ a, src }: { a: Answers; src: Sources }) {
       foot={<>Savings grow at {pctStr(S.real, 1)} per year after inflation for a {riskLabel(S.real)} mix, with contributions rising with inflation.
         {" "}Retirement is tested against every historical retirement since {S.H.first} with {S.mix}% in stocks, spending a fixed amount that rises with inflation.
         {" "}Spending is after tax: each year&apos;s income tax, Medicare surcharge and health insurance before 65 are worked out from where the money comes from and paid on top
-        {S.tactics ? ", with the Plan Optimizer's roadmap applied (" + opTacticsLine(S.T, S.C).toLowerCase() + ")" : ""}.
+        {S.tactics ? ", with the Retirement Plan Optimizer's roadmap applied (" + opTacticsLine(S.T, S.C).toLowerCase() + ")" : ""}.
         {why.estimated.length ? " Estimated: " + and(why.estimated) + "." : ""}{why.defaults.length ? " Defaults: " + and(why.defaults) + "." : ""}
         {" "}This is a rule-of-thumb plan, not financial advice.</>}>
       <div className="sh-chart sh-plan"><PlanDrawing id="sheet" series={[series(S, a.age!, "Your plan", "p")]} caption="Your retirement savings over time, in today's dollars" /></div>

@@ -557,7 +557,7 @@ test("the Drawdown Simulator tour goes there and back", async ({ page }) => {
   await expect(page.locator("#gdCard .gd-callout.ok", { hasText: "Back from the Drawdown Simulator" })).toBeVisible();
 });
 
-test("the Plan Optimizer runs on the guide's plan and its roadmap applies", async ({ page }) => {
+test("the Retirement Plan Optimizer runs on the guide's plan and its roadmap applies", async ({ page }) => {
   test.setTimeout(180_000);
   await seeded(page, stateWith("full", "optimize"));
   await page.locator('#gdCard [data-op="run"]').click();

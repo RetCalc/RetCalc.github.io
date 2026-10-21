@@ -23,7 +23,7 @@ const TABLE: [number, string, string, string[], string[]][] = [
   [10, "buckets", "accounts", ["Roth", "Traditional", "Cost basis"], ["Advanced"]],
   [11, "not-flat", "changes", ["Stage"], ["Stages", "College Savings"]],
   [12, "eighty", "retspend", ["Replacement rate"], ["Budget"]],
-  [13, "wait", "social", ["PIA", "Spousal benefit"], ["Plan Optimizer"]],
+  [13, "wait", "social", ["PIA", "Spousal benefit"], ["Retirement Plan Optimizer"]],
   [14, "income-sources", "number", ["Safe withdrawal rate"], ["Basic calculator", "Stages"]],
   [15, "sequence", "lasting", ["Sequence-of-returns risk"], ["Drawdown Simulator"]],
   [16, "levers", "adjust", [], ["Stages", "FIRE Calculator"]],

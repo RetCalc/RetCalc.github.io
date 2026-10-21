@@ -128,7 +128,7 @@ export const STEPS: StepDecl[] = [
     prep: (a, put) => put("hcIncl", "no", "default") },
   { id: "bridge", chapter: 6, title: "Getting to 59½", type: "decision", pace: "full", minutes: 1, tripMinutes: 6, tool: "bridge", teaches: ["ways-across"],
     when: (a) => ok(a.retire) && a.retire < 59.5 },
-  { id: "optimize", chapter: 6, title: "Plan Optimizer", type: "decision", pace: "full", minutes: 2, tool: "optimizer" },
+  { id: "optimize", chapter: 6, title: "Retirement Plan Optimizer", type: "decision", pace: "full", minutes: 2, tool: "optimizer" },
 
   /* 7 · Your plan and toolkit */
   { id: "plan", chapter: 7, title: "Your plan", type: "summary", pace: "quick", minutes: 1 },

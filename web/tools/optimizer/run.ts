@@ -1,6 +1,6 @@
 "use client";
 
-/* Running the Plan Optimizer: the page side of plOptimize() in plan.js.
+/* Running the Retirement Plan Optimizer: the page side of plOptimize() in plan.js.
    The search runs in a worker of its own (public/engine-worker.js, a second
    copy beside the Drawdown Simulator's), so the page keeps drawing while it
    tries a few thousand plans in every historical market; where a worker

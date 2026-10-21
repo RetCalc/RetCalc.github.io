@@ -166,7 +166,7 @@ export interface BtResult {
   inflHigh: BtRow; inflLow: BtRow; deflationYears: number; priceLevel: number;
 }
 
-/* ---- the retirement plan engine (plan.js): the Plan Optimizer ---- */
+/* ---- the retirement plan engine (plan.js): the Retirement Plan Optimizer ---- */
 /** A plan's tactics: claiming ages, the bracket traditional money fills, how
     long conversions run, and the IRMAA and ACA income guards. */
 export interface PlTactics { c1: number; c2: number; f: number; u: number; im: number; ac: number }

@@ -64,7 +64,7 @@ export const CARDS: Partial<Record<Slug, Card>> = {
     text: "See whether converting to a Roth IRA could lower your lifetime taxes." },
   rmd: { title: "RMD Calculator", art: "rmd",
     text: "Calculate your required minimum distributions for every year to age 100." },
-  healthcare: { title: "Retirement Healthcare Cost Calculator", art: "health",
+  healthcare: { title: "Healthcare Cost Planner", art: "health",
     text: "Estimate health insurance costs before and after Medicare." },
   fire: { title: "FIRE Calculator", art: "fire",
     text: "Find out when you can reach financial independence and retire early." },

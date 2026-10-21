@@ -69,7 +69,7 @@ export function SSNote({ a }: { a: Answers }) {
   const ss = ssFor(a, a.retire), both = mar(a) && ss.a2 > 0;
   const src = (own: boolean, who: string) => (own ? "from " + who + " statement" : "estimated from " + who + " income");
   let tail = "";
-  if (ss.tactics) tail += " These are the Plan Optimizer's claiming ages, which your plan now uses.";
+  if (ss.tactics) tail += " These are the Retirement Plan Optimizer's claiming ages, which your plan now uses.";
   if (!ss.own && ss.career < 35) tail += " Social Security averages your best 35 years, so retiring this early counts the missing years as zeros.";
   let cover: React.ReactNode = null;
   if (pos(a.retSpend)) {
@@ -159,7 +159,7 @@ export function HcNote({ a }: { a: Answers }) {
   if (!(S.hcYr > 0)) return <Callout cls="ok">In your plan, income stays low enough before 65 that coverage comes through Medicaid or a full subsidy.</Callout>;
   return (
     <Callout>In your plan: about <b>{money(S.hcYr) + " per year"}</b> for {S.hcYears + (S.hcYears === 1 ? " year" : " years")}, after the subsidy its income earns.
-      {" "}Above 400% of the poverty line the subsidy disappears all at once; the Plan Optimizer can keep income under that line.</Callout>
+      {" "}Above 400% of the poverty line the subsidy disappears all at once; the Retirement Plan Optimizer can keep income under that line.</Callout>
   );
 }
 

@@ -245,7 +245,7 @@ const drawdown: Tour<DrawdownState> = { name: "Drawdown Simulator", title: "Will
   ],
   chip: () => { const t = text("#ddSuccess"); return t && t !== "—" ? "Success rate<br><b>" + escapeHtml(t) + "</b>" : ""; } };
 
-const roth: Tour<RothInputs> = { name: "Roth Conversion & RMDs", title: "Should you convert to Roth?",
+const roth: Tour<RothInputs> = { name: "Roth Conversion Calculator", title: "Should you convert to Roth?",
   start: ({ s }) => ({ strategy: s.strategy }),
   pages: [
     { title: "The idea", focus: "#asideRC", tasks: () => [

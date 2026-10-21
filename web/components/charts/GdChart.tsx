@@ -1,6 +1,6 @@
 "use client";
 
-/* The readiness guide's charts, and the Plan Optimizer's: drawn at the
+/* The readiness guide's charts, and the Retirement Plan Optimizer's: drawn at the
    width they actually have (so labels stay legible on a phone), redrawn
    when it changes, with a tooltip for the point under the pointer, a
    finger, or the arrow keys. From opHover() in

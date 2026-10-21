@@ -21,7 +21,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
    "about-" + its key, so a link to /about#about-roth opens Roth's. */
 const GROUPS = [
   { key: "calculator", label: "Calculator and Guide", sections: [["projection", "How the projection works"], ["basic", "Basic"], ["advanced", "Advanced"], ["stages", "Stages"], ["guide", "Retirement Readiness Guide"], ["paycheck", "Paycheck to Retirement"]] },
-  { key: "retirement", label: "Retirement income", sections: [["optimizer", "Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Calculator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion & RMDs"], ["healthcare", "Healthcare Cost Planner"]] },
+  { key: "retirement", label: "Retirement income", sections: [["optimizer", "Retirement Plan Optimizer"], ["drawdown", "Drawdown Simulator"], ["social", "Social Security Calculator"], ["bridge", "Early Retirement Bridge"], ["roth", "Roth Conversion Calculator"], ["healthcare", "Healthcare Cost Planner"]] },
   { key: "saving", label: "Saving and investing", sections: [["fire", "FIRE Calculator"], ["backtest", "Portfolio Backtest"], ["college", "College Savings"], ["rentbuy", "Rent vs. Buy"]] },
   { key: "everyday", label: "Everyday money", sections: [["tax", "Income Tax"], ["budget", "Budget"], ["debt", "Debt Payoff"], ["mortgage", "Mortgage Calculator"]] },
   { key: "methods", label: "Methods", sections: [["historical", "Historical"], ["montecarlo", "Monte Carlo"]] },
@@ -451,7 +451,7 @@ export function About({ states }: { states: StateOption[] }) {
               traditional, Roth and a taxable brokerage account, split the way you answer,
               with new saving going where you say and any employer match into traditional.
               The retirement is then run year by year through every historical market since
-              1926 by the plan engine the Plan Optimizer uses, living on a fixed amount after
+              1926 by the plan engine the Retirement Plan Optimizer uses, living on a fixed amount after
               tax that rises with inflation until you, or the younger of you and a spouse,
               reach 95. The outlook is the share of those retirements where the money
               lasted, and the guide also solves for what you&apos;d need saved by retirement to
@@ -514,11 +514,11 @@ export function About({ states }: { states: StateOption[] }) {
               income surcharge on a two-year lookback, the 10% additional tax on traditional
               money taken before 59½, required minimum distributions from 73 or 75, and,
               before 65, a marketplace health plan less the subsidy that year&apos;s income earns.
-              Unless you apply the Plan Optimizer&apos;s roadmap, withdrawals come from the
+              Unless you apply the Retirement Plan Optimizer&apos;s roadmap, withdrawals come from the
               brokerage first, then traditional, then Roth. Home equity isn&apos;t counted.</dd>
 
-              <dt>Plan Optimizer</dt>
-              <dd>Near the end, the guide hands your plan to the Plan Optimizer (below),
+              <dt>Retirement Plan Optimizer</dt>
+              <dd>Near the end, the guide hands your plan to the Retirement Plan Optimizer (below),
               which searches every claiming age, withdrawal order, Roth conversion level and
               income guard for the best way to run it. <b>Use this plan</b> makes its
               roadmap your plan&apos;s own, with Undo: the score, the projection and every step
@@ -620,7 +620,7 @@ export function About({ states }: { states: StateOption[] }) {
             <p>Once you know when you&apos;ll retire and what you&apos;ll spend, the rest is tactics,
             and they&apos;re worth a lot: when each of you claims Social Security, which account
             each year&apos;s money comes from, and how much to move from traditional to Roth
-            while your income is low. The Plan Optimizer tries every combination and keeps
+            while your income is low. The Retirement Plan Optimizer tries every combination and keeps
             the best, for the goal you pick.</p>
             <dl className="gloss">
               <dt>Where it starts</dt>

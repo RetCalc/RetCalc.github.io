@@ -59,7 +59,7 @@ export const HOUSEHOLD_TOOLS: { id: string; name: string; takes: (h: Household) 
   { id: "drawdown", name: "Drawdown", takes: (h) => !!((h.retire && h.retire > 0 && h.retire < 120) || has(h.income)) },
   { id: "roth", name: "Roth", takes: () => true },
   { id: "bridge", name: "Early Retirement Bridge", takes: (h) => !!(h.retire || h.state || (h.spend != null && h.spend > 0) || h.status) },
-  { id: "optimizer", name: "Plan Optimizer", takes: (h) => !!(h.age || h.retire || has(h.saved) || (h.spend != null && h.spend > 0) || h.state) },
+  { id: "optimizer", name: "Retirement Plan Optimizer", takes: (h) => !!(h.age || h.retire || has(h.saved) || (h.spend != null && h.spend > 0) || h.state) },
   { id: "healthcare", name: "Healthcare", takes: () => true },
   { id: "social", name: "Social Security", takes: (h) => !!(h.age || h.status || has(h.income)) },
   { id: "tax", name: "Income Tax", takes: () => true },

@@ -14,7 +14,7 @@ export type JobKind = "sim" | "need" | "levers" | "options" | "strategies";
 export interface JobArgs {
   /** A different retirement age, saving, stop age or spending. */
   over?: Over;
-  /** The plan without the Plan Optimizer's choices. */
+  /** The plan without the Retirement Plan Optimizer's choices. */
   base?: boolean;
   /** Which levers the balanced option may move. */
   levers?: Levers;

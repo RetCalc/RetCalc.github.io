@@ -135,7 +135,7 @@ export function SocialCard() {
           <SelF k="ssClaim" label={m ? "When would you each claim it?" : "When would you claim it?"} num full
             opts={[["", "At 67, or when I retire if that's later"], ...[62, 63, 64, 65, 66, 67, 68, 69, 70].map((x) =>
               [x, "At " + x + (x === 62 ? ", the earliest" : x === 67 ? ", full retirement age" : x === 70 ? ", the most it pays" : "")] as [number, string])]}
-            hint={"In this plan it never starts before you retire. The Plan Optimizer, near the end, tries every age for " + (m ? "each of you." : "you.")} />
+            hint={"In this plan it never starts before you retire. The Retirement Plan Optimizer, near the end, tries every age for " + (m ? "each of you." : "you.")} />
         </div>
       </Numbers>
       <SocialMeans />
@@ -159,7 +159,7 @@ function SocialMeans() {
         {needYr != null ? <li>That&apos;s <b>{pctStr(Math.min(9.99, (ss.total + pen) / needYr), 0)}</b> of the <b>{money(needYr)}</b> per year your plan needs including tax
           {pen ? ", counting your pension" : ""}.{early ? " Savings carry the " + yrs(early) + " before it starts." : ""}{guessing(a) ? " Spending is still the starting estimate." : ""}</li> : null}
         {pos(a.pension) ? <li>Your pension: <b>{money(a.pension * 12)}</b> per year from {ok(from) ? fmtNum(from) : "retirement"}{a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year."}</li> : null}
-        {ss.tactics ? <li>These are the Plan Optimizer&apos;s claiming ages, which your plan now uses.</li> : null}
+        {ss.tactics ? <li>These are the Retirement Plan Optimizer&apos;s claiming ages, which your plan now uses.</li> : null}
         {!ss.own && ss.career < 35 ? <li>It averages your best 35 years, so retiring after {ss.career} years of work counts the rest as zeros.</li> : null}
         {est ? <li>An estimate from your income. Your statement at ssa.gov/myaccount uses your real record; the trust fund is also projected to run short in the 2030s,
           {" "}so a cautious plan can enter a lower figure.</li> : null}

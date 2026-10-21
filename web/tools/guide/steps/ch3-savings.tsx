@@ -220,7 +220,7 @@ function AccountsMeans() {
       {!pos(a.saved) ? <p className="gd-means-empty">The split appears once your savings are in, on What you have and add.</p> : (
         <ul className="gd-read">
           <li><b>{money(B[0].v)}</b> traditional, taxed when it comes out; <b>{money(B[1].v)}</b> Roth, tax-free; <b>{money(B[2].v)}</b> in a brokerage account, taxed only on its gains.</li>
-          {S ? <li>By {fmtNum(S.retire)} that&apos;s about {rounded(S.P.trad)} traditional, {rounded(S.P.roth)} Roth and {rounded(S.P.brok)} brokerage. Unless the Plan Optimizer finds better, the plan
+          {S ? <li>By {fmtNum(S.retire)} that&apos;s about {rounded(S.P.trad)} traditional, {rounded(S.P.roth)} Roth and {rounded(S.P.brok)} brokerage. Unless the Retirement Plan Optimizer finds better, the plan
             {" "}draws the brokerage account first in retirement, then traditional, then Roth, and pays about <b>{money(S.taxYr)}</b> in income tax in a typical year.</li> : null}
         </ul>
       )}

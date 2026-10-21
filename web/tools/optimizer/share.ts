@@ -1,4 +1,4 @@
-/* The Plan Optimizer's image card: the roadmap it found. From the
+/* The Retirement Plan Optimizer's image card: the roadmap it found. From the
    optimizer card in src/js/app/25-share-card.js. */
 import type { CardData } from "@/components/shell/share";
 import { groupDigits, money, pctStr } from "@/lib/format";

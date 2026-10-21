@@ -124,7 +124,7 @@ export function Progress({ host, R }: { host: Host; R: Run }) {
   return (
     <div className={"op-run group/run" + (loosed ? " op-loosed" : "")} data-op-host={host} ref={root}
       style={{ "--p": R.shown.toFixed(4) } as React.CSSProperties}
-      tabIndex={flight ? 0 : undefined} role={flight ? "group" : undefined} aria-label={flight ? "Plan Optimizer search" : undefined}
+      tabIndex={flight ? 0 : undefined} role={flight ? "group" : undefined} aria-label={flight ? "Retirement Plan Optimizer search" : undefined}
       aria-describedby={flight ? hintId : undefined} onClick={flight ? skipHere : undefined}
       onKeyDown={flight ? (e) => {
         // Escape from anywhere in it (Stop included); Enter only on the loader itself, so Stop keeps its Enter.

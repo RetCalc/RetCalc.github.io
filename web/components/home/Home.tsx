@@ -106,7 +106,7 @@ export function Home({ data }: { data: HomeData }) {
             text="ACA premiums and subsidies, then Part B, Part D and IRMAA."><HealthChart /></Tile>
 
           <Node row={7} label="62 to 70" />
-          <Tile href="/optimizer" className="hm-left hm-r7" kick="Plan Optimizer" kickClass="hm-c-amber"
+          <Tile href="/optimizer" className="hm-left hm-r7" kick="Retirement Plan Optimizer" kickClass="hm-c-amber"
             title="Put it all together into one plan."
             text="Tries thousands of claiming ages, withdrawal orders and Roth conversions, and finds the combination that leaves you the most."><CloudChart /></Tile>
 
@@ -128,7 +128,7 @@ export function Home({ data }: { data: HomeData }) {
           </Link>
 
           <Node row={10} label="73" />
-          <Tile href="/roth" className="hm-right hm-r10" kick="Roth Conversion & RMDs" kickClass="hm-c-teal" title="Plan for required distributions."
+          <Tile href="/roth" className="hm-right hm-r10" kick="Roth Conversion Calculator" kickClass="hm-c-teal" title="Plan for required distributions."
             text="Your required withdrawals to age 100, and what a conversion schedule saves against doing nothing."><RothChart /></Tile>
         </div>
       </section>

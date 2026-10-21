@@ -1,5 +1,5 @@
 /* The retirement plan engine: one household's retirement year by year and account by
-   account, and the Plan Optimizer's search.
+   account, and the Retirement Plan Optimizer's search.
 
    Moved from src/js/plan.js without changes to the math: the only edits are
    `export` on each top-level name and the imports below. Import it
@@ -18,7 +18,7 @@ import { yearData, HIST_START } from "./data/index.js";
    One household's retirement, year by year and account by account: what
    comes out of the traditional 401(k)/IRA, the Roth and the taxable
    brokerage each year, what that does to the tax bill, and what's left.
-   The readiness guide tests every plan with it, and the Plan Optimizer
+   The readiness guide tests every plan with it, and the Retirement Plan Optimizer
    searches the ways of running it (when each of you claims Social Security,
    which account to draw first, how much to convert to Roth, and which income
    lines to stay under) for the one that does best.
@@ -627,7 +627,7 @@ export function plAtRetire(I){
   return P;
 }
 
-/* ---------- the Plan Optimizer ----------
+/* ---------- the Retirement Plan Optimizer ----------
    Every combination of tactics -- each claiming age for each of you, each
    bracket fill, conversion window and income guard -- run through every
    historical start since 1926. For a couple that is a few thousand plans and

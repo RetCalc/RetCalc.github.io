@@ -1,4 +1,4 @@
-/* The Plan Optimizer's words for its plans: amounts, claiming ages and
+/* The Retirement Plan Optimizer's words for its plans: amounts, claiming ages and
    tactics. From src/js/app/31b-plan-optimizer.js. */
 import type { PlPlan, PlTactics } from "@/lib/engine/types";
 import { money } from "@/lib/format";

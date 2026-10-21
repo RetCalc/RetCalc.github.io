@@ -4,7 +4,7 @@
    each change does before any option is picked (lesson 16), and the two
    cards only some plans need, healthcare before 65 (lesson 18) and the
    years before 59½ (lesson 19). Adjust your plan, drawing it down and the
-   Plan Optimizer keep their screens in tune.tsx, strategy.tsx and
+   Retirement Plan Optimizer keep their screens in tune.tsx, strategy.tsx and
    optimize.tsx, with their lessons added there. */
 
 import { fmtNum, money, pctStr } from "@/lib/format";
@@ -109,7 +109,7 @@ export function BridgeCard() {
         </Lesson>
       </Learn>
       <Lead>Your plan already follows the rules: before 59½ it lives on the brokerage account and Roth contributions first, and only pays the 10% penalty if
-        {" "}nothing else is left. The Plan Optimizer, next, can build a Roth conversion ladder to open up traditional money early.</Lead>
+        {" "}nothing else is left. The Retirement Plan Optimizer, next, can build a Roth conversion ladder to open up traditional money early.</Lead>
       <BridgeNote a={a} />
       <p className="hint -mt-1.5 mx-0 mb-3.5">The split comes from your answers on Where it sits. <Button variant="quiet" size="inline" data-go="accounts" onClick={() => G.go("accounts")}>Change it</Button></p>
       {v.retire! >= 55 ? <><H3>Will you leave a job with a 401(k) at 55 or later?</H3>

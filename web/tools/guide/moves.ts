@@ -112,9 +112,9 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     out.push({ id: "bridge-shore", when: "When you're ready", t: "Shore up the bridge to 59½: it held in " + a.bridgeHold + "% of markets",
       d: "More savings in a Roth or taxable account, a later retirement or lower spending in the early years would widen the margin.", trip: "bridge", btn: "Revisit the bridge" });
   if (S && !tactics(a))
-    out.push({ id: "optimizer", when: "When you're ready", t: "Let the Plan Optimizer look at the " + money(S.lifeTax) + " in tax",
+    out.push({ id: "optimizer", when: "When you're ready", t: "Let the Retirement Plan Optimizer look at the " + money(S.lifeTax) + " in tax",
       d: "It tries every claiming age from 62 to 70" + (mar(a) ? " for each of you" : "") + ", every order for drawing down your accounts and every Roth conversion level, through every market since 1926, and keeps the plan that does best.",
-      go: "optimize", btn: "Open the Plan Optimizer" });
+      go: "optimize", btn: "Open the Retirement Plan Optimizer" });
   if (ok(a.retire) && a.retire < 65 && !a.hcSeen && S && S.hcYr > 0)
     out.push({ id: "healthcare", when: "When you're ready", t: "Get to know the " + money(S.hcYr) + " per year for health insurance before 65",
       d: "That's marketplace coverage after the subsidy your plan's income earns. The Healthcare Cost Planner shows how the subsidy moves with income, and what Medicare costs after.",
@@ -170,7 +170,7 @@ export function toolkit(a: Answers, src: Sources, F: PlanFacts, list: Move[]): K
   const all: (Kit & { on: boolean })[] = [
     { id: "drawdown", name: "Drawdown Simulator", trip: "drawdown", on: !!S, why: "Every plan: any single starting year, in full",
       q: "How does one retirement play out year by year, and what does a flexible rule change?" },
-    { id: "optimizer", name: "Plan Optimizer", go: "optimize", on: !!S && (mar(a) || (saved > 0 && A.trad / saved > 0.4) || (ok(a.retire) && a.retire < 65)),
+    { id: "optimizer", name: "Retirement Plan Optimizer", go: "optimize", on: !!S && (mar(a) || (saved > 0 && A.trad / saved > 0.4) || (ok(a.retire) && a.retire < 65)),
       why: mar(a) ? "Two claiming ages to choose" : ok(a.retire) && a.retire < 65 ? "Retiring at " + fmtNum(a.retire) + ", before Medicare" : "Most of your savings is traditional",
       q: "When to claim, which account to draw first, and whether to convert to Roth" },
     { id: "healthcare", name: "Healthcare Cost Planner", trip: "healthcare", on: ok(a.retire) && a.retire < 65,

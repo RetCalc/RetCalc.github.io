@@ -264,7 +264,7 @@ export function Guide() {
     redraw();
     setTimeout(() => card.current?.querySelector(".gd-callout.ok")?.scrollIntoView({ block: "nearest" }), 0);
   };
-  /* The Plan Optimizer's roadmap, applied to the plan, or taken back off. */
+  /* The Retirement Plan Optimizer's roadmap, applied to the plan, or taken back off. */
   const OPT_KEYS = ["optC1", "optC2", "optF", "optU", "optIm", "optAc"] as const;
   const optApply = () => {
     const res = H.res;

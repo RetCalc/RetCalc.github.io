@@ -1,4 +1,4 @@
-/* The Plan Optimizer's inputs, and the plan they describe. From opToolIn(),
+/* The Retirement Plan Optimizer's inputs, and the plan they describe. From opToolIn(),
    opSyncFields() and opSetMode() in src/js/app/31b-plan-optimizer.js and
    src/main/25b-optimizer-inputs.html. */
 import type { ToolDef } from "@/components/tools/ToolState";
@@ -16,7 +16,7 @@ export const OP_DEFAULTS = {
 };
 export type OptimizerInputs = typeof OP_DEFAULTS;
 
-export const OP_DEF: ToolDef<OptimizerInputs> = { id: "optimizer", label: "Plan Optimizer", noun: "optimizer plan", defaults: OP_DEFAULTS };
+export const OP_DEF: ToolDef<OptimizerInputs> = { id: "optimizer", label: "Retirement Plan Optimizer", noun: "optimizer plan", defaults: OP_DEFAULTS };
 
 
 /* A blank field takes its default; anything else is held to the range. */

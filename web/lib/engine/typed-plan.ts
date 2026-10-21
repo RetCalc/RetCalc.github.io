@@ -1,4 +1,4 @@
-/* The retirement plan engine (plan.js), for the Plan Optimizer and the
+/* The retirement plan engine (plan.js), for the Retirement Plan Optimizer and the
    readiness guide, with its types. core.js is loaded first, for the order
    it explains. */
 import "./core.js";

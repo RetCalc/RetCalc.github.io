@@ -1,6 +1,6 @@
 "use client";
 
-/* The Plan Optimizer's answer: the headline against the usual way, the
+/* The Retirement Plan Optimizer's answer: the headline against the usual way, the
    roadmap, what each change brings, where the money comes from, tax and
    balances over time, every year, and other strong plans. The tool page
    draws it in panels; the readiness guide in sections of its card. From

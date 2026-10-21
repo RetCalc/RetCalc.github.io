@@ -93,7 +93,7 @@
 },
 "optimizer": {
 "h1": "Retirement Plan Optimizer",
-"title": "Retirement Optimizer: Social Security & Roth Conversions",
+"title": "Retirement Plan Optimizer: Social Security & Roth Conversions",
 "desc": "When should each of you claim Social Security, which account first, and how much to convert to Roth? Tests thousands of plans in every market since 1926."
 },
 "bridge": {
@@ -117,8 +117,8 @@
 "desc": "Project your required minimum distributions to age 100 with the IRS Uniform Lifetime Table, and see if Roth conversions would cut lifetime tax."
 },
 "healthcare": {
-"h1": "Retirement Healthcare Calculator",
-"title": "Retirement Healthcare Cost Calculator: ACA & Medicare",
+"h1": "Healthcare Cost Planner",
+"title": "Healthcare Cost Planner: ACA & Medicare",
 "desc": "Estimate retirement health costs: 2026 ACA premiums and subsidies before 65, then Medicare Part B, Part D, Medigap and IRMAA by income."
 },
 "fire": {
