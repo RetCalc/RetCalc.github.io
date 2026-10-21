@@ -3,7 +3,7 @@
    what each person can reach). Configured by two public env vars; without
    them there is no account service and the site works exactly as before.
    ACCOUNTS_PLAN.md, supabase/migrations. */
-import { createClient, isAuthSessionMissingError, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -32,7 +32,11 @@ export function accountClient(): SupabaseClient | null {
 export async function signedInUser(c: SupabaseClient): Promise<User | null> {
   const { data, error } = await c.auth.getUser();
   if (data.user) return data.user;
-  if (error && !isAuthSessionMissingError(error) && !(error.status && error.status >= 400 && error.status < 500)) throw error;
+  // No session (the check supabase's isAuthSessionMissingError makes, by
+  // name, so this file needs no more of supabase than createClient), or one
+  // the service turned down (4xx): signed out. Anything else: couldn't ask.
+  const missing = (error as { name?: string } | null)?.name === "AuthSessionMissingError";
+  if (error && !missing && !(error.status && error.status >= 400 && error.status < 500)) throw error;
   return null;
 }
 
