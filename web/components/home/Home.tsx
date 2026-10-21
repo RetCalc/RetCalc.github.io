@@ -5,7 +5,9 @@
    here; every tile opens one. Built from the owner's chosen mock
    (HOMEPAGE_BRIEF.md, .impeccable/mocks/homepage/f.html).
 
-   Motion (styles/16-home.css): text eases in as it arrives; a tile's chart
+   Motion (styles/16-home.css): the top of the page (the hero and the first
+   section's heading) is still, so it's there the moment the page opens;
+   further down, text eases in as it arrives; a tile's chart
    draws once about 90% of the tile is on screen below the header, and resets
    when the tile drops back below the fold, so scrolling up and down replays
    it. The age line fills with the scroll and its nodes light as the reading
@@ -31,12 +33,12 @@ export function Home({ data }: { data: HomeData }) {
   return (
     <div className="hm" ref={root}>
       <section className="hm-hero" aria-labelledby="hmTitle">
-        <h1 className="hm-display" id="hmTitle" data-rv="">The complete <em>retirement planning</em> toolkit.</h1>
+        <h1 className="hm-display" id="hmTitle">The complete <em>retirement planning</em> toolkit.</h1>
         <div>
-          <p className="hm-lede" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
+          <p className="hm-lede">
             Calculators for saving, withdrawals, taxes, Roth conversions, healthcare and Social Security, each checked against <b>every market since 1926</b>. Free, and you don&apos;t need an account.
           </p>
-          <div className="hm-btns" data-rv="" style={{ "--d": 2 } as React.CSSProperties}>
+          <div className="hm-btns">
             <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
             <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
           </div>
@@ -45,8 +47,8 @@ export function Home({ data }: { data: HomeData }) {
 
       <section aria-labelledby="hmTools">
         <div className="hm-head">
-          <h2 className="hm-h2" id="hmTools" data-rv="">From saving to retirement.</h2>
-          <p className="hm-body" data-rv="" style={{ "--d": 1 } as React.CSSProperties}>
+          <h2 className="hm-h2" id="hmTools">From saving to retirement.</h2>
+          <p className="hm-body">
             A calculator, a guide and 14 planning tools. They share one household, so what you enter once fills in everywhere.
           </p>
         </div>

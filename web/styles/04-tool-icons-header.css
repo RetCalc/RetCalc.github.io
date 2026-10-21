@@ -164,7 +164,7 @@
 /* the glide from the picker card into this header */
 /* (React names each tile's transition; they share the class "toolicon") */
 ::view-transition-group(.toolicon){animation-duration:.25s;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
-::view-transition-old(root),::view-transition-new(root){animation-duration:.2s;animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+/* (the frame around the page, root, doesn't fade: styles/03-navigation.css) */
 @media (prefers-reduced-motion: reduce){
   ::view-transition-old(*),::view-transition-new(*),::view-transition-group(*){animation-duration:0s!important;animation-delay:0s!important}
 }
