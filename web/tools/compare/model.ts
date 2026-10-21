@@ -2,14 +2,14 @@
    only by design: every figure comes from a saved scenario, run through the
    same math its own calculator uses, and nothing is written back. From
    src/js/app/05-compare.js. */
-import { readScenarios } from "@/components/tools/ToolState";
+import { readScenarios, withDefaults, type ToolInputs } from "@/components/tools/ToolState";
 import { project, projectBasic, projectSeries } from "@/lib/engine/typed";
 import { fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { PERIOD_ADV } from "@/lib/periods";
-import { ADVANCED_DEFAULTS, advancedPlan, type AdvancedInputs } from "@/tools/advanced/model";
-import { BASIC_INPUTS, basicInput, type BasicInputs } from "@/tools/basic/model";
-import { STAGES_DEFAULTS, stagesPlan, type StagesInputs } from "@/tools/stages/model";
+import { ADVANCED_DEF, advancedPlan } from "@/tools/advanced/model";
+import { BASIC_DEF, basicInput } from "@/tools/basic/model";
+import { STAGES_DEF, stagesPlan } from "@/tools/stages/model";
 
 export type CmpMode = "basic" | "advanced" | "stages";
 export const CMP_MODES: CmpMode[] = ["basic", "advanced", "stages"];
@@ -44,7 +44,7 @@ export function cmpRun(mode: CmpMode, name: string, household: Household | null)
   const sc = name ? readScenarios(mode).find((x) => x.name === name) : null;
   if (!sc) return null;
   if (mode === "basic") {
-    const b = { ...BASIC_INPUTS, ...(sc.data as Partial<BasicInputs>) };
+    const b = withDefaults(BASIC_DEF, sc.data as ToolInputs);
     const p = basicInput(b);
     if (!(p.years > 0)) return null;
     const R = projectBasic(p);
@@ -58,7 +58,7 @@ export function cmpRun(mode: CmpMode, name: string, household: Household | null)
     };
   }
   if (mode === "stages") {
-    const P = stagesPlan({ ...STAGES_DEFAULTS, ...(sc.data as Partial<StagesInputs>) }, household);
+    const P = stagesPlan(withDefaults(STAGES_DEF, sc.data as ToolInputs), household);
     if (!P.stages.length) return null;
     const R = projectSeries(P.g, P.eff);
     if (!R.rows.length) return null;
@@ -82,7 +82,7 @@ export function cmpRun(mode: CmpMode, name: string, household: Household | null)
       inp,
     };
   }
-  const p = advancedPlan({ ...ADVANCED_DEFAULTS, ...(sc.data as Partial<AdvancedInputs>) }, household).p;
+  const p = advancedPlan(withDefaults(ADVANCED_DEF, sc.data as ToolInputs), household).p;
   if (!(p.years > 0)) return null;
   const R = project(p);
   const defl = (yr: number) => Math.pow(1 + p.inflation, yr);

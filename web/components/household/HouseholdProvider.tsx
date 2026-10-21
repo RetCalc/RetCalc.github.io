@@ -8,7 +8,7 @@
    from those numbers, then is free to drift. */
 
 import { createContext, use, useEffect, useMemo, useRef, useState } from "react";
-import { HOUSEHOLD_STORE, HOUSEHOLD_TOOLS, type SavedHousehold } from "@/lib/household";
+import { HOUSEHOLD_STORE, HOUSEHOLD_TOOLS, readHousehold, type SavedHousehold } from "@/lib/household";
 import { readStored, writeStored } from "@/lib/storage";
 import { useToolScope } from "@/components/tools/ToolState";
 
@@ -69,7 +69,8 @@ export function useHouseholdFill<S>(own: string, state: S, setState: (f: (c: S) 
   const savedAt = profile?.savedAt;
   useEffect(() => {
     if (!profile || savedAt == null) return;
-    const applied = readStored<Record<string, number>>(APPLIED.key, APPLIED.version) ?? {};
+    const got = readStored<unknown>(APPLIED.key, APPLIED.version);
+    const applied = got && typeof got === "object" && !Array.isArray(got) ? (got as Record<string, number>) : {};
     if ((applied[tool] ?? 0) >= savedAt) return;
     setState((c) => latest.current(profile, c));
     writeStored(APPLIED.key, APPLIED.version, { ...applied, [tool]: savedAt });
@@ -93,7 +94,7 @@ export function HouseholdProvider({ children }: { children: React.ReactNode }) {
   // Browser storage only exists after the page has loaded. A household
   // arriving from the account (lib/sync) is read in the same way.
   useEffect(() => {
-    const read = () => setProfile(readStored<SavedHousehold>(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version));
+    const read = () => setProfile(readHousehold(readStored<unknown>(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version)));
     read();
     const onSynced = (e: Event) => { if ((e as CustomEvent<string[]>).detail?.includes(HOUSEHOLD_STORE.key)) read(); };
     window.addEventListener("retcalc:synced", onSynced);

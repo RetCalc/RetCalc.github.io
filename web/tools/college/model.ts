@@ -18,14 +18,19 @@ export const COLLEGE_DEFAULTS = {
 };
 export type CollegeInputs = typeof COLLEGE_DEFAULTS;
 
-export const COLLEGE_DEF: ToolDef<CollegeInputs> = { id: "college", label: "College", noun: "college plan", defaults: COLLEGE_DEFAULTS };
+export const COLLEGE_DEF: ToolDef<CollegeInputs> = {
+  id: "college", label: "College", noun: "college plan", defaults: COLLEGE_DEFAULTS,
+  // At least one child: the screen and the plan both start from the first.
+  clean: (c) => (c.kids.length ? c : { ...c, kids: COLLEGE_DEFAULTS.kids }),
+};
 
 /** The inputs as the calculators take them. */
 export function collegeInput(c: CollegeInputs): CollegeInput {
   const kids = c.kids.map((k) => ({
     yearsUntil: Math.min(25, parseNum(k.years) || 0),
     annualCost: parseNum(k.cost) || 0,
-    collegeYrs: Math.max(1, Math.round(parseNum(k.collegeYrs) || 0)),
+    // Held to the field's own limits, which a saved copy or link can skip.
+    collegeYrs: Math.min(8, Math.max(1, Math.round(parseNum(k.collegeYrs) || 0))),
   }));
   return {
     yearsUntil: kids[0].yearsUntil, annualCost: kids[0].annualCost, collegeYrs: kids[0].collegeYrs,

@@ -13,6 +13,7 @@
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
+import { useToast } from "@/components/shell/Toast";
 
 export type ToolInputs = Record<string, string | string[] | unknown>;
 
@@ -28,7 +29,11 @@ export interface ToolDef<S extends ToolInputs> {
       scenario replaces them (the Guide's answers). Left off, loading a
       scenario replaces them without asking. */
   hasWork?: (state: S) => boolean;
+  /** Puts right what a saved copy or share link can hold that the screen
+      can't show (a dropdown's value that isn't one of its choices). */
+  clean?: (state: S) => S;
 }
+
 
 export interface Scenario {
   name: string;
@@ -59,9 +64,19 @@ export function useActiveTool(): ActiveTool | null {
   return use(RegistryContext).active;
 }
 
-/* Saved scenarios, one list per tool, as retcalc.scenarios-<id>.v1. */
+/* Saved scenarios, one list per tool, as retcalc.scenarios-<id>.v1. A list
+   that doesn't read as one (edited by hand, or damaged) counts as empty, and
+   an entry without a name is left out, so the header always draws. */
 export function readScenarios(id: string): Scenario[] {
-  return readStored<Scenario[]>(`scenarios-${id}`, 1) ?? [];
+  const list = readStored<unknown>(`scenarios-${id}`, 1);
+  if (!Array.isArray(list)) return [];
+  const seen = new Set<string>();
+  return list.filter((s): s is Scenario => {
+    if (!s || typeof s !== "object" || typeof (s as Scenario).name !== "string" || !(s as Scenario).name.trim()) return false;
+    if (seen.has((s as Scenario).name)) return false;
+    seen.add((s as Scenario).name);
+    return true;
+  });
 }
 export function writeScenarios(id: string, list: Scenario[]): void {
   writeStored(`scenarios-${id}`, 1, list);
@@ -85,6 +100,10 @@ export function decodeHash(text: string): unknown {
     return null;
   }
 }
+/** What a page says when its share link can't be read (cut short when it
+    was copied, or edited). */
+export const BROKEN_LINK = "This share link is incomplete or damaged, so its numbers couldn't be opened. Ask for the link again.";
+
 export function encodeShare(id: string, data: ToolInputs): string {
   return "#s=" + encodeHash({ t: id, d: data });
 }
@@ -94,15 +113,36 @@ function decodeShare(hash: string): { t: string; d: ToolInputs } | null {
   return v && typeof v.t === "string" && v.d && typeof v.d === "object" ? (v as { t: string; d: ToolInputs }) : null;
 }
 
+/** Whether a saved or shared value can stand in for a default: the same
+    kind of thing (a list for a list, an object for an object), and a list
+    whose defaults hold objects holds only objects. */
+function sameKind(v: unknown, d: unknown): boolean {
+  if (d === null) return typeof v === "object";
+  if (v === null || typeof v !== typeof d) return false;
+  if (Array.isArray(d)) {
+    if (!Array.isArray(v)) return false;
+    if (!d.length) return true;
+    const first: unknown = d[0];
+    if (first && typeof first === "object") return v.every((x) => !!x && typeof x === "object" && Array.isArray(x) === Array.isArray(first));
+    return v.every((x) => x === null || typeof x !== "object");
+  }
+  if (typeof d === "object") return !Array.isArray(v);
+  return true;
+}
+
 /** Fills in anything a saved or shared copy lacks from the defaults, and
-    drops keys the tool no longer has, so an older copy still loads. */
-function withDefaults<S extends ToolInputs>(defaults: S, data: ToolInputs): S {
+    drops keys the tool no longer has, so an older copy still loads. A value
+    of the wrong kind (from a damaged link or saved copy) keeps the
+    default. */
+export function withDefaults<S extends ToolInputs>(def: ToolDef<S>, data: ToolInputs): S {
+  const { defaults } = def;
   const out = { ...defaults };
+  if (!data || typeof data !== "object") return out;
   for (const k of Object.keys(defaults)) {
     const v = data[k];
-    if (v !== undefined && typeof v === typeof defaults[k]) (out as ToolInputs)[k] = v;
+    if (v !== undefined && sameKind(v, defaults[k])) (out as ToolInputs)[k] = v;
   }
-  return out;
+  return def.clean ? def.clean(out) : out;
 }
 
 /* Each tool's inputs, kept for this visit as you move between pages, the way
@@ -203,7 +243,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     // In a scope, its copy (the scope is only drawn in the browser).
     if (scope) {
       const mine = scope.read(def.id);
-      const s = mine ? withDefaults(def.defaults, mine) : def.defaults;
+      const s = mine ? withDefaults(def, mine) : def.defaults;
       return opening ? opening(s) : s;
     }
     // Memory only: reading session storage here would differ from the
@@ -226,7 +266,7 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     if (!saved) return;
     pending.delete(def.id);
     filled.current = true;
-    const s = withDefaults(def.defaults, saved);
+    const s = withDefaults(def, saved);
     setState(openingRef.current ? openingRef.current(s) : s);
   }, [def, scope]);
   useEffect(() => {
@@ -240,19 +280,21 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     else remember(def.id, state);
   }, [def.id, state, scope]);
 
-  // A share link for this tool opens with its inputs.
+  // A share link for this tool opens with its inputs; one that doesn't
+  // read says so rather than quietly showing other numbers.
+  const toast = useToast();
   useEffect(() => {
-    if (scope) return;
+    if (scope || !window.location.hash.startsWith("#s=")) return;
     const shared = decodeShare(window.location.hash);
     if (shared?.t === def.id) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
-      setState(withDefaults(def.defaults, shared.d));
-    }
-  }, [def, scope]);
+      setState(withDefaults(def, shared.d));
+    } else if (!shared) toast(BROKEN_LINK, "warn");
+  }, [def, scope, toast]);
 
   // The header's controls see this tool, and its inputs as they change
   // (in a scope, the page's own register instead).
-  useRegisterTool(def, state, (data) => setState(withDefaults(def.defaults, data)), !!scope);
+  useRegisterTool(def, state, (data) => setState(withDefaults(def, data)), !!scope);
 
   const set = useCallback(
     <K extends keyof S>(k: K) => (v: S[K]) => setState((s) => ({ ...s, [k]: v })),

@@ -12,7 +12,7 @@ import { CheckIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { ScenarioBar } from "@/components/shell/ScenarioBar";
 import { useToast } from "@/components/shell/Toast";
-import { TAB_STORE, ToolScopeProvider, decodeHash, readScenarios, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
+import { BROKEN_LINK, TAB_STORE, ToolScopeProvider, decodeHash, readScenarios, useRegisterTool, type ToolDef, type ToolInputs, type ToolScope } from "@/components/tools/ToolState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DASH, money } from "@/lib/format";
@@ -91,15 +91,17 @@ export function Walkthrough() {
   // A plan saved when Taxes was a step of its own: its pay into the paycheck.
   useEffect(() => { setPlan(fromOldTaxes); }, [rev]);
 
-  // A share link opens with its plan; the account's copy arriving is read again.
+  // A share link opens with its plan (or says it can't be read); the
+  // account's copy arriving is read again.
+  const toast = useToast();
   useEffect(() => {
     const h = window.location.hash;
     if (!h.startsWith("#s=")) return;
     const v = decodeHash(h.slice(3)) as { t?: string; d?: unknown } | null;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
-    if (v?.t === PLAN_STORE.key && v.d) load(v.d as ToolInputs);
-  }, [load]);
-  const toast = useToast();
+    if (v?.t === PLAN_STORE.key && v.d && typeof v.d === "object") load(v.d as ToolInputs);
+    else if (!v || typeof v !== "object") toast(BROKEN_LINK, "warn");
+  }, [load, toast]);
   useEffect(() => {
     const on = (e: Event) => {
       const keys = (e as CustomEvent<string[]>).detail ?? [];

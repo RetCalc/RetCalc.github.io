@@ -19,6 +19,8 @@ import { ReportPages } from "./pages";
 
 const NAMES_KEY = "retcalc.report.v1";
 const PAGE_W = 816;
+/* The longest first name the cover takes, as the paycheck report's. */
+const NAME_MAX = 30;
 
 /* The names, as a tiny store over this browser's storage: read once, kept
    in memory after, so a private window still works for the visit. */
@@ -29,7 +31,9 @@ function readNames(): ReportNames {
   if (names) return names;
   try {
     const o = JSON.parse(localStorage.getItem(NAMES_KEY) || "{}");
-    names = { you: typeof o.you === "string" ? o.you : "", spouse: typeof o.spouse === "string" ? o.spouse : "" };
+    // Cut to the fields' length: the names sit in the cover's title.
+    const name = (v: unknown) => (typeof v === "string" ? v.slice(0, NAME_MAX) : "");
+    names = { you: name(o.you), spouse: name(o.spouse) };
   } catch { names = {}; }
   return names;
 }
@@ -118,9 +122,9 @@ export function Report({ fontClass }: { fontClass: string }) {
         </div>
         <div className="rp-bar-r">
           <div className="rp-name"><Label htmlFor="rp-you">Your first name</Label>
-            <Input id="rp-you" value={names?.you ?? ""} placeholder="Optional" autoComplete="given-name" onChange={(e) => setName("you", e.target.value)} /></div>
+            <Input id="rp-you" value={names?.you ?? ""} placeholder="Optional" autoComplete="given-name" maxLength={NAME_MAX} onChange={(e) => setName("you", e.target.value)} /></div>
           {married ? <div className="rp-name"><Label htmlFor="rp-spouse">Spouse&apos;s first name</Label>
-            <Input id="rp-spouse" value={names?.spouse ?? ""} placeholder="Optional" onChange={(e) => setName("spouse", e.target.value)} /></div> : null}
+            <Input id="rp-spouse" value={names?.spouse ?? ""} placeholder="Optional" maxLength={NAME_MAX} onChange={(e) => setName("spouse", e.target.value)} /></div> : null}
           <Button type="button" onClick={() => window.print()} disabled={!M}>Print or save as PDF</Button>
         </div>
       </div>

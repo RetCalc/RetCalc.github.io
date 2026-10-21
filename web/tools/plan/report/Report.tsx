@@ -25,7 +25,7 @@ export function PlanReport({ fontClass }: { fontClass: string }) {
   const { profile } = useHousehold();
   const [name, setName] = useState("");
   // eslint-disable-next-line react-hooks/set-state-in-effect -- browser storage is only readable once the page has loaded
-  useEffect(() => { setName(readStored<string>(NAME.key, NAME.version) ?? ""); }, []);
+  useEffect(() => { const v = readStored<unknown>(NAME.key, NAME.version); setName(typeof v === "string" ? v.slice(0, 30) : ""); }, []);
   const S = useMemo(() => (plan ? planSummary(plan, profile) : undefined), [plan, profile]);
   const date = useMemo(() => new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), []);
   const title = name.trim() ? name.trim() + (name.trim().endsWith("s") ? "' plan" : "'s plan") : "Your paycheck plan";

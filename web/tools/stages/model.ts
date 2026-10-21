@@ -6,9 +6,9 @@ import type { ToolDef } from "@/components/tools/ToolState";
 import { finishAccounts, growthBlend, seniorsAt, targetRate, withHsaRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
 import { PPY, finalStageSolve, projectSeries } from "@/lib/engine/typed";
 import type { Plan, SeriesGlobals, Stage } from "@/lib/engine/types";
-import { groupDigits, parseNum } from "@/lib/format";
+import { groupDigits, oneOf, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
-import { pctField } from "@/tools/advanced/model";
+import { PERIODS, pctField } from "@/tools/advanced/model";
 
 /** One stage card, as typed. `sTrad`, `sRoth` and `sHsa` split its
     contribution across accounts (the brokerage takes the rest);
@@ -54,7 +54,14 @@ export const STAGES_DEFAULTS = {
 };
 export type StagesInputs = typeof STAGES_DEFAULTS;
 
-export const STAGES_DEF: ToolDef<StagesInputs> = { id: "stages", label: "Stages", noun: "retirement scenario", defaults: STAGES_DEFAULTS };
+export const STAGES_DEF: ToolDef<StagesInputs> = {
+  id: "stages", label: "Stages", noun: "retirement scenario", defaults: STAGES_DEFAULTS,
+  // At least one stage, each paid on a schedule the dropdown has.
+  clean: (s) => ({
+    ...s, saStatus: oneOf(s.saStatus, ["s", "m"], "s"),
+    stages: s.stages.length ? s.stages.map((st) => ({ ...st, period: oneOf(String(st.period), PERIODS, "Monthly") })) : STAGES_DEFAULTS.stages,
+  }),
+};
 
 /** Whether the stages differ from the ones the tool starts with. */
 export function stagesLookEdited(list: StageInputs[]): boolean {

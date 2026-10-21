@@ -9,7 +9,7 @@
 
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
-import { ACCOUNTS_ON, isSessionKey, loadAccountClient, maySignIn } from "@/lib/sync/account";
+import { ACCOUNTS_ON, isSessionKey, loadAccountClient, maySignIn, settle, signedInUser } from "@/lib/sync/account";
 import { startSync, syncNow, type SyncResult } from "@/lib/sync/engine";
 import { isSynced } from "@/lib/storage";
 
@@ -77,6 +77,7 @@ function friendly(e: { message?: string; status?: number } | null): string | nul
   if (/expired|invalid/i.test(m) && /otp|token|code/i.test(m)) return "That code didn't work. Check it, or send a new one.";
   if (/rate limit|too many|security purposes/i.test(m)) return "Too many tries. Wait a minute, then try again.";
   if (/email/i.test(m) && /invalid/i.test(m)) return "That doesn't look like an email address.";
+  if (m === "timeout") return "The account service is taking too long to answer. Check your connection, then try again.";
   if (e.status === 0 || /fetch|network/i.test(m)) return "Couldn't reach the account service. Check your connection.";
   return "Something went wrong. Try again in a moment.";
 }
@@ -127,7 +128,14 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
       setAccount(u ? toAccount(u) : null);
       setReady(true);
     };
-    void client.auth.getUser().then(({ data }) => apply(data.user));
+    // Offline, or with the account service down, who's signed in can't be
+    // checked: the session this browser holds still stands, so the account
+    // menu stays and says sync is unavailable instead of signing you out.
+    signedInUser(client).then(apply, async () => {
+      setSync("offline");
+      const { data: s } = await client.auth.getSession();
+      apply(s.session?.user ?? null);
+    });
     const { data } = client.auth.onAuthStateChange((_e, session) => apply(session?.user ?? null));
     return () => { live = false; data.subscription.unsubscribe(); };
   }, [client]);
@@ -150,7 +158,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   const sendCode = useCallback(async (email: string) => {
     const client = await need();
     if (!client) return "Accounts aren't available right now.";
-    const { error } = await client.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } });
+    const { error } = await settle(client.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: true } }));
     if (error) return friendly(error);
     setStep({ at: "code", email: email.trim() });
     return null;
@@ -159,7 +167,7 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
   const verifyCode = useCallback(async (email: string, code: string) => {
     const client = await need();
     if (!client) return "Accounts aren't available right now.";
-    const { error } = await client.auth.verifyOtp({ email, token: code.replace(/\D/g, ""), type: "email" });
+    const { error } = await settle(client.auth.verifyOtp({ email, token: code.replace(/\D/g, ""), type: "email" }));
     if (error) return friendly(error);
     setStep({ at: "closed" });
     return null;
@@ -169,16 +177,16 @@ export function AccountProvider({ children }: { children: React.ReactNode }) {
     const client = await need();
     if (!client) return "Accounts aren't available right now.";
     const back = window.location.origin + window.location.pathname;
-    const { error } = await client.auth.signInWithOAuth({ provider: "google", options: { redirectTo: back } });
+    const { error } = await settle(client.auth.signInWithOAuth({ provider: "google", options: { redirectTo: back } }));
     return friendly(error);
   }, [need]);
 
   const setFirstName = useCallback(async (name: string | null) => {
     if (!client) return null;
     const first = name?.trim().split(/\s+/)[0]?.slice(0, 40) || null;
-    const { data, error } = await client.auth.updateUser({ data: { first_name: first, name_asked: true } });
+    const { data, error } = await settle(client.auth.updateUser({ data: { first_name: first, name_asked: true } }));
     if (error) return friendly(error);
-    if (data.user) setAccount(toAccount(data.user));
+    if (data?.user) setAccount(toAccount(data.user));
     setStep({ at: "closed" });
     return null;
   }, [client]);

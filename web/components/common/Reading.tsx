@@ -87,7 +87,9 @@ export function HeroReading({ hero, tone = "answer", sized = true, figures = [],
           {figures.map((f) => (
             <div key={f.id} id={f.wrapId} className={row && !under ? "wide:min-w-0 wide:flex-1" : undefined} data-pair>
               <span className="block text-label text-muted-foreground" id={f.labelId} data-k>{f.label}</span>
-              <BigValue className={cn("text-3xl leading-tight font-medium tabular-nums sm:text-display", f.tone && TONE[f.tone])} id={f.id} text={f.value} sized={false} />
+              {/* A figure past $10 trillion (only from extreme inputs) steps
+                  down a size on phones, so it can't push the page sideways. */}
+              <BigValue className={cn(f.value.length > 16 ? "text-2xl" : "text-3xl", "leading-tight font-medium tabular-nums sm:text-display", f.tone && TONE[f.tone])} id={f.id} text={f.value} sized={false} />
               {f.extra}
               {f.note != null ? <span className="block text-label text-muted-foreground" id={f.noteId}>{f.note}</span> : null}
             </div>

@@ -214,7 +214,7 @@ export function Debt() {
                         </div>
                         <div className="c2 min-w-0">
                           <RowLabel htmlFor={"dtApr" + i}>{first ? <Tipped text="Rate" k="dtrate" /> : "Rate"}</RowLabel>
-                          <Affixed suffix="%"><NumberInput id={"dtApr" + i} nonNeg step={0.1} data-f="apr" data-i={i} value={r.apr} onValueChange={setRow(i, "apr")} aria-label={name + " rate"} /></Affixed>
+                          <Affixed suffix="%"><NumberInput id={"dtApr" + i} nonNeg step={0.1} max={999} data-f="apr" data-i={i} value={r.apr} onValueChange={setRow(i, "apr")} aria-label={name + " rate"} /></Affixed>
                         </div>
                         <div className="c3 min-w-0">
                           <RowLabel htmlFor={"dtMin" + i}>{first ? <Tipped text="Minimum" k="dtmin" /> : "Minimum"}</RowLabel>

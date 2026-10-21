@@ -5,7 +5,7 @@
    gdHouseholdSync() in src/js/app/31-guide-coach.js and 29-guide-trips.js. */
 
 import { setToolInputs, toolInputs, type ToolInputs } from "@/components/tools/ToolState";
-import { HOUSEHOLD_STORE, type SavedHousehold } from "@/lib/household";
+import { HOUSEHOLD_STORE, readHousehold, type SavedHousehold } from "@/lib/household";
 import { readStored } from "@/lib/storage";
 import { ADVANCED_DEFAULTS } from "@/tools/advanced/model";
 import { BT_DEFAULTS } from "@/tools/backtest/model";
@@ -45,7 +45,7 @@ export function prefill(t: Trip, a: Answers, s: ToolInputs): ToolInputs {
     guide never pushes its numbers into a tool behind your back. Read
     from storage, as the page may not have loaded it yet. */
 export function syncHousehold(a: Answers, save: (h: SavedHousehold) => void) {
-  const profile = readStored<SavedHousehold>(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version);
+  const profile = readHousehold(readStored<unknown>(HOUSEHOLD_STORE.key, HOUSEHOLD_STORE.version));
   const H = { ...(profile || { status: "s", age: null, spouseAge: null, retire: null, state: null, saved: null, monthly: null, income: null, income2: null, spend: null, savedAt: 0 }) } as SavedHousehold;
   if (a.status) H.status = a.status;
   if (ok(a.age)) H.age = a.age;

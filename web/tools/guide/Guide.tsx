@@ -15,7 +15,7 @@ import { useHousehold } from "@/components/household/HouseholdProvider";
 import { printSheet } from "@/components/shell/Sheet";
 import { sendLink, useShareKit } from "@/components/shell/share";
 import { useToast } from "@/components/shell/Toast";
-import { decodeHash, encodeHash, useRegisterTool, type ToolDef, type ToolInputs } from "@/components/tools/ToolState";
+import { BROKEN_LINK, decodeHash, encodeHash, useRegisterTool, type ToolDef, type ToolInputs } from "@/components/tools/ToolState";
 import { fmtNum, money, pctStr } from "@/lib/format";
 import { useClient } from "@/lib/useClient";
 import { useOptimizer } from "@/tools/optimizer/run";
@@ -120,7 +120,8 @@ export function Guide() {
     if (hash.startsWith("#g=")) {
       const L = cleanLink(decodeHash(hash.slice(3)), stamp());
       try { history.replaceState(history.state, "", window.location.pathname + window.location.search); } catch { /* old browsers */ }
-      if (L && Object.keys(L.a).length) {
+      if (!L) toast(BROKEN_LINK, "warn");
+      else if (Object.keys(L.a).length) {
         const open = () => { replaceGuide(opened(L.a, L.src, L.pace)); setV(guide().a); setFocusKey((k) => k + 1); };
         if (!Object.keys(guide().done).length) open();
         else void popup("This link opens a shared retirement plan. Replace your own guide answers with it?", [
@@ -131,7 +132,7 @@ export function Guide() {
     }
     setGuide((x) => { stepById(current(x).id)?.prep?.(x.a, putter(x)); });
     setV(guide().a);
-  }, [save, popup]);
+  }, [save, popup, toast]);
   // The household bar loads after the page: a first visit starts from it.
   useEffect(() => {
     if (!profile || Object.keys(guide().a).length) return;

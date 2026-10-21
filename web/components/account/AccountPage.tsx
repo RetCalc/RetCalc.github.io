@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { useAccount } from "./AccountProvider";
-import { pullAll, type AccountItem } from "@/lib/sync/account";
+import { pullAll, settle, type AccountItem } from "@/lib/sync/account";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,8 @@ export function AccountPage({ states }: { states: StateOption[] }) {
   const showPopup = usePopup();
   const toast = useToast();
   const [items, setItems] = useState<AccountItem[] | null>(null);
+  // The account couldn't be read (offline, or the service is down).
+  const [unread, setUnread] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -43,7 +45,11 @@ export function AccountPage({ states }: { states: StateOption[] }) {
   useEffect(() => {
     if (!client || !account) return;
     let live = true;
-    pullAll(client).then((r) => { if (live) setItems(r); }, () => { if (live) setItems([]); });
+    const late = new Promise<never>((_, no) => setTimeout(() => no(new Error("timeout")), 20_000));
+    Promise.race([pullAll(client), late]).then(
+      (r) => { if (live) { setItems(r); setUnread(false); } },
+      () => { if (live) { setItems(null); setUnread(true); } },
+    );
     return () => { live = false; };
   }, [client, account, sync]);
 
@@ -95,7 +101,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
     ]);
     if (c !== 0) return;
     setBusy(true);
-    const { error } = await client.functions.invoke("delete-account", { method: "POST" });
+    const { error } = await settle(client.functions.invoke("delete-account", { method: "POST" }));
     setBusy(false);
     if (error) { toast("Couldn't delete the account. Try again in a minute.", "warn"); return; }
     toast("Your account is deleted");
@@ -134,7 +140,8 @@ export function AccountPage({ states }: { states: StateOption[] }) {
           <CardDescription>Stored with Supabase in the US. Never sold or shared.</CardDescription>
         </CardHeader>
         <CardContent>
-          {items === null ? <p className="acct-fine">Loading…</p> : items.length === 0 ? <p className="acct-fine">Nothing yet. It fills in as you use the tools.</p> : (
+          {unread ? <p className="acct-fine" role="status">Couldn&apos;t reach your account to list what it holds. Check your connection, then reload this page.</p>
+            : items === null ? <p className="acct-fine">Loading…</p> : items.length === 0 ? <p className="acct-fine">Nothing yet. It fills in as you use the tools.</p> : (
             <ul className="acct-items">
               {items.map((it) => <li key={it.key}><span>{label(it.key)}</span><span>{new Date(it.at).toLocaleDateString()}</span></li>)}
             </ul>

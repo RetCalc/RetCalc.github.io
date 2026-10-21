@@ -8,15 +8,22 @@ export const DASH = "\u2014";
    decimal count. Tables run to thousands of calls per render. */
 const MONEY_FMT: Record<number, Intl.NumberFormat> = {};
 
-/** $1,234 (or with `d` decimals); negatives as -$1,234. */
+/** $1,234 (or with `d` decimals); negatives as -$1,234. A figure too big
+    to compute (or not a number at all) shows as a dash, and one that rounds
+    to nothing has no minus sign. */
 export function money(v: number, d = 0): string {
+  if (!Number.isFinite(v)) return DASH;
   const f = (MONEY_FMT[d] ??= new Intl.NumberFormat("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }));
-  return (v < 0 ? "-" : "") + "$" + f.format(Math.abs(v));
+  const text = f.format(Math.abs(v));
+  return (v < 0 && /[1-9]/.test(text) ? "-" : "") + "$" + text;
 }
 
-/** 0.0425 -> "4.25%" (two decimals unless `d` says otherwise). */
+/** 0.0425 -> "4.25%" (two decimals unless `d` says otherwise); a dash when
+    there's no number to show. */
 export function pctStr(v: number, d = 2): string {
-  return (v * 100).toFixed(d) + "%";
+  if (!Number.isFinite(v)) return DASH;
+  const text = (v * 100).toFixed(d);
+  return (/[1-9]/.test(text) ? text : text.replace("-", "")) + "%";
 }
 
 /** Up to two decimals, none when it's a whole number: 30, 2.5, 3.14. */
@@ -25,10 +32,17 @@ export function fmtNum(v: number): string {
   return r === Math.floor(r) ? String(r) : r.toFixed(2);
 }
 
-/** What a field holds, as a number: commas ignored, anything unreadable is 0. */
+/** What a field holds, as a number: commas ignored, anything unreadable
+    (or too long to be a number) is 0. */
 export function parseNum(s: string | number): number {
   const v = parseFloat(String(s).replace(/,/g, ""));
-  return isNaN(v) ? 0 : v;
+  return Number.isFinite(v) ? v : 0;
+}
+
+/** `v` when it's one of `choices`, otherwise `fallback`: a dropdown's
+    value, as a saved copy or share link hands it in. */
+export function oneOf<T extends string>(v: string, choices: readonly T[], fallback: T): T {
+  return (choices as readonly string[]).includes(v) ? (v as T) : fallback;
 }
 
 /** A field's number, or null when it's blank. */

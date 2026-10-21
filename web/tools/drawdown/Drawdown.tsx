@@ -21,7 +21,7 @@ import {
   HIST_START, HIST_STOCK, ddOptsFromState, ddScorecard, ddWindows, historicalBacktest,
   type DdMC, type DdOpts, type DdPrep,
 } from "@/lib/engine/typed-drawdown";
-import { dollarsField, money, pctStr } from "@/lib/format";
+import { dollarsField, fmtYears, money, pctStr } from "@/lib/format";
 import { MC_RUNS, useMcSeed } from "@/lib/mc-seed";
 import { useStoredText } from "@/lib/useStoredText";
 import { ADVANCED_DEFAULTS, advancedPlan } from "@/tools/advanced/model";
@@ -305,7 +305,7 @@ function readoutFigures(o: DdOpts, mode: "hist" | "mc", R: PlanResult | null, H:
       F.badge = H.first + "–" + lastYear + (H.monthly ? " · monthly" : "");
       F.success = pctStr(H.successRate, 1);
       F.tone = tone(H.successRate);
-      F.successNote = H.survived + " of " + H.total + " retirements lasted " + o.years + " years";
+      F.successNote = H.survived + " of " + H.total + " retirements lasted " + fmtYears(o.years);
       F.median = money(H.medianEnd);
       F.worst = money(H.worstEnd);
       F.worstNote = H.failCount ? "Ran out in " + H.failCount + " of " + H.total + " retirements" : "Never ran out";
@@ -326,7 +326,7 @@ function readoutFigures(o: DdOpts, mode: "hist" | "mc", R: PlanResult | null, H:
     F.badge = running ? "Running…" : t + " simulations";
     F.success = pctStr(M.successRate, 1);
     F.tone = tone(M.successRate);
-    F.successNote = M.survived.toLocaleString("en-US") + " of " + t + " runs lasted " + o.years + " years";
+    F.successNote = M.survived.toLocaleString("en-US") + " of " + t + " runs lasted " + fmtYears(o.years);
     F.median = money(M.medianEnd);
     F.worst = money(M.p10End);
     F.worstNote = "10th percentile outcome";

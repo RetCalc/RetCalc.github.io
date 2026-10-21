@@ -4,9 +4,9 @@
    src/js/app/01-inputs.js and the account fields in 02-accounts-advanced.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
 import { accountBreakdown, growthBlend, seniorsAt, targetRate, type AccountResult, type Accounts, type GrowthRates } from "@/lib/accounts";
-import { DEFAULTS, coastFire, goalSolve, project, solveYears } from "@/lib/engine/typed";
+import { DEFAULTS, PER_YEAR, coastFire, goalSolve, project, solveYears } from "@/lib/engine/typed";
 import type { Plan } from "@/lib/engine/types";
-import { groupDigits, parseNum, pctStr } from "@/lib/format";
+import { groupDigits, oneOf, parseNum, pctStr } from "@/lib/format";
 import type { Household } from "@/lib/household";
 
 /** A plan in the engine's own terms: rates as decimals, dollars as numbers. */
@@ -43,7 +43,13 @@ export const ADVANCED_DEFAULTS = {
 };
 export type AdvancedInputs = typeof ADVANCED_DEFAULTS;
 
-export const ADVANCED_DEF: ToolDef<AdvancedInputs> = { id: "advanced", label: "Advanced", noun: "retirement scenario", defaults: ADVANCED_DEFAULTS };
+/** How often a contribution can be paid ("Monthly"), as the dropdowns list them. */
+export const PERIODS = Object.keys(PER_YEAR);
+
+export const ADVANCED_DEF: ToolDef<AdvancedInputs> = {
+  id: "advanced", label: "Advanced", noun: "retirement scenario", defaults: ADVANCED_DEFAULTS,
+  clean: (s) => ({ ...s, period: oneOf(s.period, PERIODS, ADVANCED_DEFAULTS.period), acStatus: oneOf(s.acStatus, ["s", "m"], "s") }),
+};
 
 const n = (s: string) => parseNum(s);
 const rate = (s: string) => parseNum(s) / 100;

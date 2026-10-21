@@ -11,7 +11,7 @@
    Nothing calls these yet: the sign-in UI does (ACCOUNTS_PLAN.md, step 3). */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { localSyncedItems, onSyncedWrite, readBase, readStored, writeBase, writeFromAccount } from "@/lib/storage";
-import { pullAll, push } from "./account";
+import { pullAll, push, signedInUser } from "./account";
 import { fingerprint, mergeItem, mergeScenarios, type Copy, type Scenario } from "./merge";
 
 /** Sent on window when items arrive from the account; detail: their keys. */
@@ -32,8 +32,8 @@ function newest<T extends { key: string; version: number }>(items: T[]): Map<str
 
 export async function syncNow(c: SupabaseClient): Promise<SyncResult> {
   try {
-    const { data: u } = await c.auth.getUser();
-    if (!u.user) return { ok: true, pulled: 0, pushed: 0 };
+    // Offline, this throws: the sync reports it, rather than "nothing to do".
+    if (!(await signedInUser(c))) return { ok: true, pulled: 0, pushed: 0 };
     const local = newest(localSyncedItems()), account = newest(await pullAll(c));
     let pulled = 0, pushed = 0;
     const changed: string[] = [];
@@ -76,9 +76,12 @@ export function startSync(c: SupabaseClient, onResult?: (r: SyncResult) => void)
     timers.set(key, setTimeout(() => {
       timers.delete(key);
       push(c, key, version, value).then(
-        () => {
-          if (value != null) writeBase(key, fingerprint(value));
-          onResult?.({ ok: true, pulled: 0, pushed: 1 });
+        (saved) => {
+          // Only what reached the account is the agreed version: marking an
+          // unsaved change as agreed would let the account's older copy
+          // win the next merge.
+          if (saved && value != null) writeBase(key, fingerprint(value));
+          onResult?.({ ok: true, pulled: 0, pushed: saved ? 1 : 0 });
         },
         (e) => onResult?.({ ok: false, pulled: 0, pushed: 0, error: String(e) }),
       );
