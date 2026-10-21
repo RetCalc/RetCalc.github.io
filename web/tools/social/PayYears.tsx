@@ -86,9 +86,9 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
   return (
     <div className="mt-3 rounded-xl border border-border bg-background" id="ssPay">
       <div className="flex flex-wrap items-end gap-x-3.5 gap-y-2.5 px-3.5 pt-3">
-        <h3 className="m-0 mr-auto mb-2 flex items-center gap-1.5 text-aside font-semibold max-sm:basis-full max-sm:mb-0">
+        <h2 className="m-0 mr-auto mb-2 flex items-center gap-1.5 text-aside font-semibold max-sm:basis-full max-sm:mb-0">
           {who === "you" ? "Your pay, year by year" : "Your spouse's pay, year by year"}<TipDot k="" text={TIP_PAY} />
-        </h3>
+        </h2>
         {both ? <div className="mb-0.5"><Segmented attr="data-who" options={[["you", "You"], ["spouse", "Spouse"]] as const} value={who} onChange={(w) => { setWho(w); setSel(null); setDraft(null); }} /></div> : null}
         <Field id="ssGPast" className="m-0 w-37.5 max-sm:flex-1" label={<span className="tipglue">Raises before today<TipDot k="" text="How much faster than average wages your pay grew each year before today. 2% is a typical career that rose with experience; 0% is pay that just kept up." /></span>}>
           <Affixed suffix="%/yr"><NumberInput id="ssGPast" step={0.5} value={inputs.gPast} onValueChange={setP("gPast")} /></Affixed>
