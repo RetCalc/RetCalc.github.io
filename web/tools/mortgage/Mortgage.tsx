@@ -17,6 +17,7 @@
 import { useRef } from "react";
 import { ChevronDownIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react";
 import { BandChart } from "@/components/charts/BandChart";
+import { EndLabels } from "@/components/charts/ChartFrame";
 import { Legend, ShareBar } from "@/components/charts/Legend";
 import { Affixed, Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { MoneyInput, NumberInput } from "@/components/fields/NumberInput";
@@ -346,6 +347,16 @@ export function Mortgage() {
               isn't a range); the printed summary and share card copy this
               chart, so their fill stays. */}
           <BandChart id="Mo" pts={pts} maxX={R.years.length || 1} enhanced ariaLabel="Mortgage balance over time" screenOnly={{ noBand: true }}
+            extras={(g) => {
+              // Each line named at its end: Principal (Teal) and Interest
+              // (Rose) cross, and color blindness can't tell those two apart.
+              const end = pts[pts.length - 1];
+              return <EndLabels size={g} items={[
+                { x: g.X(end.year), y: g.Y(end.base), label: "Balance" },
+                { x: g.X(end.year), y: g.Y(end.hi), label: "Principal paid" },
+                { x: g.X(end.year), y: g.Y(end.lo), label: "Interest paid" },
+              ]} />;
+            }}
             tip={(b) => (
               <>
                 <b>Year {fmtNum(b.year)}</b>

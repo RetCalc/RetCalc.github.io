@@ -62,6 +62,8 @@ interface Props<P extends BandPoint> {
 export interface ChartGeometry {
   X: (year: number) => number; Y: (value: number) => number;
   W: number; T: number; ph: number; narrow: boolean; minY: number; maxY: number;
+  /** The axis label size and line scale, for labels drawn on top. */
+  fs: number; sw: number;
 }
 
 
@@ -206,7 +208,7 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
                 <circle cx={bx ?? 0} cy={T + ph + B / 2} r={3 * sw} fill="var(--dim)" opacity={best ? 1 : 0} />
               </>
             ) : null}
-            {extras?.({ X, Y, W, T, ph, narrow, minY: AX.min, maxY: AX.max })}
+            {extras?.({ X, Y, W, T, ph, narrow, fs, sw, minY: AX.min, maxY: AX.max })}
           </>
         );
       }}

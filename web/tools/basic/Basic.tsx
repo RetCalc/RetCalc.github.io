@@ -57,7 +57,7 @@ function milestoneMarks(rows: Row[]): { year: number; end: number; label: string
 }
 
 function MilestoneMarks({ g, marks }: { g: ChartGeometry; marks: ReturnType<typeof milestoneMarks> }) {
-  const fs = g.narrow ? 13 : 11, gap = g.narrow ? 70 : 50;
+  const fs = g.fs, gap = g.narrow ? 70 : 50;
   // Name a mark only when it's clear of the last named one.
   const placed = marks.reduce<{ x: number; y: number; label: string | null; key: string }[]>((acc, m) => {
     const x = g.X(m.year), lastX = [...acc].reverse().find((a) => a.label)?.x ?? -Infinity;

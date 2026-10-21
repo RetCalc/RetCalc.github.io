@@ -33,7 +33,7 @@ export function Histogram({ id, bins, mark, ariaLabel, tip }: {
 }) {
   const narrow = useNarrow();
   const W = narrow ? 470 : 900, H = narrow ? 340 : 300, L = narrow ? 50 : 60, R = narrow ? 12 : 14, T = 12, B = narrow ? 44 : 38;
-  const fs = narrow ? 15 : 11, pw = W - L - R, ph = H - T - B;
+  const fs = narrow ? 16.5 : 13, pw = W - L - R, ph = H - T - B; // about 11px on screen, as useChartSize
   const size: ChartSize = { narrow, W, H, L, Rp: R, T, B, fs, sw: 1, pw, ph };
   if (!bins.length) return <ChartFrame id={id} ariaLabel={ariaLabel} size={size} tip={() => null}>{() => null}</ChartFrame>;
   const AX = niceAxis(0, Math.max(...bins.map((b) => b.n)) || 1);

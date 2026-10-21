@@ -121,7 +121,7 @@ export function Fire() {
     if (!(p.target > 0)) return null;
     const tY = g.Y(p.target), inside = tY >= g.T && tY <= g.T + g.ph;
     const fX = displayYear !== null && displayYear >= 0 && displayYear <= chart.maxX ? g.X(displayYear) : null;
-    const x0 = g.X(0), xEnd = g.X(chart.maxX), fs = g.narrow ? 13 : 11;
+    const x0 = g.X(0), xEnd = g.X(chart.maxX), fs = g.fs;
     const coastPt = coast && !hist && displayYear !== null ? chart.pts.find((a) => a.year === Math.round(displayYear)) : undefined;
     const upLabel = displayYear !== null ? (hist ? p.successRate + "%: " : modeLabel + " ") + trim1(p.curAge + displayYear) : "";
     const right = fX !== null && fX > x0 + (xEnd - x0) * 0.6;

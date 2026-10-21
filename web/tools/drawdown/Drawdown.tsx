@@ -7,7 +7,7 @@
    spent. Ported from src/js/app/15-drawdown.js and its companions, and
    src/main/08-drawdown.html. */
 
-import { useDeferredValue, useMemo, useRef, useState } from "react";
+import { addTransitionType, startTransition, useDeferredValue, useMemo, useRef, useState, ViewTransition } from "react";
 import { useHousehold, useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
@@ -74,6 +74,10 @@ export function Drawdown({ landing }: { landing?: string }) {
   const seed = useMcSeed();
   const [mode, setMode] = useState<"hist" | "mc">("hist");
   const [tab, setTab] = useState<"plan" | "compare" | "safe">("plan");
+  const switchTab = (k: "plan" | "compare" | "safe") => startTransition(() => {
+    addTransitionType("view-switch");
+    setTab(k);
+  });
   const [storedInputs, setStoredInputs] = useStoredText("retcalc-dd-inputs", "simple");
   const inputs = storedInputs === "adv" ? "adv" : "simple";
   const [introSeen, setIntroSeen] = useStoredText("retcalc-dd-intro-seen", "0", "1");
@@ -235,11 +239,14 @@ export function Drawdown({ landing }: { landing?: string }) {
           <div className="ddtabs" id="ddTabs">
             <SegmentedGroup size="tab" id="segDDTab" aria-label="Results">
               {([["plan", "Your plan"], ["compare", "Compare strategies"], ["safe", "Safe spending"]] as const).map(([k, label]) => (
-                <SegmentedItem key={k} data-ddtab={k} pressed={tab === k} onClick={() => setTab(k)}>{label}</SegmentedItem>
+                <SegmentedItem key={k} data-ddtab={k} pressed={tab === k} onClick={() => switchTab(k)}>{label}</SegmentedItem>
               ))}
             </SegmentedGroup>
           </div>
 
+          {/* A tab change cross-fades the panels below the tabs (tab-swap in
+              styles/03-navigation.css); typing in the inputs doesn't. */}
+          <ViewTransition update={{ "view-switch": "tab-swap", default: "none" }} default="none">
           <Card id="ddTargetPanel" data-ddtabs="compare safe">
             <CardContent>
               <div className="ddtgt-row">
@@ -267,6 +274,7 @@ export function Drawdown({ landing }: { landing?: string }) {
           <PlanView v={v} R={R} ps={{ sel, setSel, view, setView, chartPicks, pickOnChart: (i) => { setSel(i); setChartPicks((n) => n + 1); } }} />
           <CompareView v={v} T={T} active={tab === "compare"} />
           <SafeView v={v} T={T} active={tab === "safe"} />
+          </ViewTransition>
         </div>
       </div>
       <DrawdownDialogs v={v} dialog={dialog} close={() => setDialog(null)} />

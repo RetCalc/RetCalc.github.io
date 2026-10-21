@@ -12,7 +12,7 @@
    On a phone a compact reading leads and stays pinned under the tab rail
    while the lines are in view. */
 
-import { useRef } from "react";
+import { addTransitionType, startTransition, useRef, ViewTransition } from "react";
 import { PencilIcon, PlusIcon, XIcon } from "lucide-react";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed } from "@/components/fields/Field";
@@ -115,21 +115,27 @@ export function Budget() {
   // The two tabs: the budget itself, and where each paycheck goes.
   const tabs = scope ? null : (
     <div className="col-span-full">
-      <Segmented id="segBgView" attr="data-bgview" options={[["budget", "Budget"], ["paycheck", "Paycheck"]] as const} value={s.view} onChange={set("view")} />
+      <Segmented id="segBgView" attr="data-bgview" options={[["budget", "Budget"], ["paycheck", "Paycheck"]] as const} value={s.view}
+        onChange={(v) => startTransition(() => { addTransitionType("view-switch"); set("view")(v); })} />
     </div>
   );
+  // Switching tabs cross-fades the old view out and the new one in.
+  const swap = { "view-switch": "tab-swap", default: "none" } as const;
   if (s.view === "paycheck") return (
     <>
       {tabs}
+      <ViewTransition key="paycheck" enter={swap} exit={swap} default="none">
       <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
         <Paycheck s={s} set={set} setState={setState} />
       </div>
+      </ViewTransition>
     </>
   );
 
   return (
     <>
     {tabs}
+    <ViewTransition key="budget" enter={swap} exit={swap} default="none">
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3" id="tab-budget">
       <div className="min-w-0 lg:col-span-2">
         {/* Phones and narrow screens: the answer leads, and stays under the
@@ -271,6 +277,7 @@ export function Budget() {
         </aside>
       </div>
     </div>
+    </ViewTransition>
     </>
   );
 }

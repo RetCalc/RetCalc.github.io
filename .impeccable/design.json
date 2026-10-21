@@ -455,7 +455,7 @@
       "series-lavender": {
         "role": "chart",
         "displayName": "Lavender",
-        "canonical": "#9C8CE0",
+        "canonical": "#9670EC",
         "oklch": "oklch(68.8% 0.122 291.6)",
         "tonalRamp": [
           "oklch(15% 0.076 291.6)",
@@ -471,7 +471,7 @@
       "series-lavender-deep": {
         "role": "chart",
         "displayName": "Lavender Deep",
-        "canonical": "#7B68C9",
+        "canonical": "#7541B8",
         "oklch": "oklch(58% 0.145 290.1)",
         "tonalRamp": [
           "oklch(15% 0.103 290.1)",

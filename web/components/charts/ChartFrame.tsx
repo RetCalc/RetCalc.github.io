@@ -16,7 +16,9 @@ export function useChartSize() {
   const narrow = useNarrow();
   const W = narrow ? 470 : 900, H = narrow ? 400 : 340;
   const L = narrow ? 60 : 78, Rp = narrow ? 12 : 14, T = narrow ? 12 : 14, B = narrow ? 34 : 30;
-  return { narrow, W, H, L, Rp, T, B, fs: narrow ? 15 : 11, sw: narrow ? 1.7 : 1, pw: W - L - Rp, ph: H - T - B };
+  // Label size, in drawing units: the drawing is shown at about 0.85 of its
+  // width on a desktop and 0.68 on a phone, so these land near 11px on screen.
+  return { narrow, W, H, L, Rp, T, B, fs: narrow ? 16.5 : 13, sw: narrow ? 1.7 : 1, pw: W - L - Rp, ph: H - T - B };
 }
 export type ChartSize = ReturnType<typeof useChartSize>;
 
@@ -184,6 +186,31 @@ export function ChartFrame({ id, ariaLabel, size, xs, pick, onPick, tip, fadeIn,
         {active ? tip(active.i) : null}
       </div>
     </div>
+  );
+}
+
+/** Each line's name written at its end, so a line chart with a few series
+    never relies on color alone to say which line is which (red-green color
+    blindness can't tell Teal from Rose). Right-aligned to the line's last
+    point, just above it, and pushed apart where lines end close together. */
+export function EndLabels({ size, items }: { size: Pick<ChartSize, "T" | "ph" | "fs" | "sw">; items: { x: number; y: number; label: string }[] }) {
+  const { T, ph, fs, sw } = size;
+  const gap = fs * 1.2;
+  const placed = items.map((it) => ({ ...it, ty: it.y - 6 * sw })).sort((a, b) => a.ty - b.ty);
+  // Top down: each label at least one line below the one above it, then
+  // bottom up so the last stays inside the plot.
+  for (let k = 0; k < placed.length; k++) {
+    const prev = placed[k - 1];
+    placed[k].ty = Math.max(placed[k].ty, T + fs, prev ? prev.ty + gap : -Infinity);
+  }
+  for (let k = placed.length - 1; k >= 0; k--) {
+    const next = placed[k + 1];
+    placed[k].ty = Math.min(placed[k].ty, T + ph - 4 * sw, next ? next.ty - gap : Infinity);
+  }
+  return (
+    <g fontSize={fs} fill="var(--text)" fontWeight={600} stroke="var(--card)" strokeWidth={3 * sw} paintOrder="stroke" strokeLinejoin="round" aria-hidden="true">
+      {placed.map((it) => <text key={it.label} x={it.x - 2 * sw} y={it.ty} textAnchor="end">{it.label}</text>)}
+    </g>
   );
 }
 

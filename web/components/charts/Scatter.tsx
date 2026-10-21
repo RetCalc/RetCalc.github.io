@@ -56,7 +56,7 @@ export function Scatter<P extends ScatterPoint>({ id, pts, opt = {}, ariaLabel, 
 }) {
   const narrow = useNarrow();
   const W = narrow ? 470 : 900, H = narrow ? 420 : 360, L = narrow ? 62 : 78, R = narrow ? 14 : 18, T = 14, B = narrow ? 48 : 42;
-  const fs = narrow ? 14 : 11, sw = narrow ? 1.6 : 1, pw = W - L - R, ph = H - T - B;
+  const fs = narrow ? 16 : 13, sw = narrow ? 1.6 : 1, pw = W - L - R, ph = H - T - B; // about 11px on screen
   const size: ChartSize = { narrow, W, H, L, Rp: R, T, B, fs, sw, pw, ph };
   const live = pts.filter((p) => p.x != null && p.y != null && isFinite(p.x) && isFinite(p.y));
   if (!live.length) return <ChartFrame id={id} ariaLabel={ariaLabel} size={size} tip={() => null}>{() => null}</ChartFrame>;

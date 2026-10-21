@@ -222,6 +222,19 @@ nav[role=tablist] .calcbtn[aria-selected="true"] .calc-mode{color:var(--dim)}
 .pane-in-cards .toolcard{animation:card-in .18s cubic-bezier(.2,.7,.3,1) both;
   animation-delay:calc(min(var(--i,0), 5) * 14ms)}
 .pane-in-cards .toolgroup-h{animation:pane-fade .18s cubic-bezier(.2,.7,.3,1) both}
+/* View transitions (React's <ViewTransition>). A page change: the old page
+   fades out over the new one while the new one makes its entrance above
+   (pane-in), so the two never cut (components/shell/Main.tsx). A tab inside
+   a tool (Budget and Paycheck, Drawdown's views): a short cross-fade. Both
+   are opacity only, and off under reduced motion
+   (styles/04-tool-icons-header.css). */
+::view-transition-old(.page-out){animation:vt-fade-out .14s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(.page-in){animation:none}
+::view-transition-group(.page-in),::view-transition-group(.page-out){animation:none}
+::view-transition-old(.tab-swap){animation:vt-fade-out .12s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(.tab-swap){animation:vt-fade-in .18s cubic-bezier(.2,.7,.3,1) .04s both}
+@keyframes vt-fade-out{to{opacity:0}}
+@keyframes vt-fade-in{from{opacity:0}}
 /* The press: the card gives 1px under the finger, like every button. */
 .toolcard:active{transform:translateY(1px)}
 @media (prefers-reduced-motion:reduce){

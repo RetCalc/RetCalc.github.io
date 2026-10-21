@@ -30,8 +30,8 @@ colors:
   series-teal-deep: "#1F8F7E"
   series-rose: "#E0749B"
   series-rose-deep: "#C2467A"
-  series-lavender: "#9C8CE0"
-  series-lavender-deep: "#7B68C9"
+  series-lavender: "#9670EC"
+  series-lavender-deep: "#7541B8"
   series-gray: "#8A94A3"
   series-gray-deep: "#808A99"
   brand-gold: "#e9b872"
@@ -228,6 +228,7 @@ Graphite neutrals with a single Signal Amber accent, plus a fixed gain/loss pair
 - **Your plan** is always Signal Amber (Deep in light).
 - **Sky** and **Teal** (each with a Deep variant for light) are the first comparison series.
 - **Rose**, **Lavender** and **Gray** follow, each with a Deep variant for light mode (the dark values fall below 3:1 on Paper).
+- **Lavender was re-stepped on 2026-10-21** (#9C8CE0 to #9670EC dark, #7B68C9 to #7541B8 light): the old pair sat 10 OKLab ΔE from Sky with normal vision and about 1 to 2 under red-green color blindness, and Sky and Lavender stack side by side (Mortgage, Tax, Optimizer). The new values clear ΔE 15 (normal) and 8 (deutan/protan) against Sky, Rose and Teal in both themes (dataviz `validate_palette.js`).
 - Every series line clears 3:1 against Surface and Raised in its mode.
 - **Bands** (percentile ranges, better/worse cases) are the series color at 15 to 25% opacity.
 
