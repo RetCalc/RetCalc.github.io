@@ -312,8 +312,9 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const med = (a: DdHistRun[]) => { const x = a.map(M.of).sort((p, q) => p - q); return x[Math.floor(x.length / 2)]; };
   const failLow = low.filter((r) => r.depleted).length, failTop = top.filter((r) => r.depleted).length;
   const unit = mo ? "starting months" : "starts";
-  let txt = "The first " + n + " years decide most retirements: that's when withdrawals are largest against the balance, " +
-    "so losses then are locked in. The third of " + unit + " with the weakest first " + n + " years (under " +
+  const firstN = n === 1 ? "first year" : "first " + n + " years";
+  let txt = "The " + firstN + (n === 1 ? " decides" : " decide") + " most retirements: that's when withdrawals are largest against the balance, " +
+    "so losses then are locked in. The third of " + unit + " with the weakest " + firstN + " (under " +
     pct1(low[low.length - 1].dec1.port) + " a year after inflation, at your mix) " +
     (failLow ? "ran out in <b>" + failLow + " of " + low.length + "</b>, and " : "") + "left a typical <b>" + money(med(low)) + "</b>" +
     (M.name === "what was left" ? "" : " a year") + "; the strongest third (over " + pct1(top[0].dec1.port) + ") " +
@@ -341,7 +342,7 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
         opt={{
           small: pts.length > 150, yZero: true, yFmt: fmtAxisMoney,
           xFmt: dec ? (x) => fmtNum(x) + "%" : (x) => String(Math.round(x)),
-          xLabel: dec ? "First " + n + " years' return a year, after inflation →" : "Retired in →",
+          xLabel: dec ? (n === 1 ? "First year's" : "First " + n + " years'") + " return a year, after inflation →" : "Retired in →",
           yLabel: dec ? M.axis : null,
           marks: dec ? null : DD_ERAS.filter((e) => e.year >= lo && e.year <= hi).map((e) => ({ x: e.year, label: String(e.year) })),
         }}

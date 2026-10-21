@@ -230,12 +230,15 @@ export function advInUse(d: Record<string, unknown>): string[] {
 /** The record runs 1926 to 2025, and a retirement has to finish inside it:
     with 30 years, 1996 is the last January it can start. A start year
     outside that snaps back to the nearest end once the field is left, or
-    when the years change. From ddFromClamp() in src/js/app/15-drawdown.js. */
+    when the years change. The years themselves snap up to 1, the fewest
+    the run uses, so the field never shows 0 while the results show a
+    year. From ddFromClamp() in src/js/app/15-drawdown.js. */
 export function fromClamp(c: DrawdownState): DrawdownState {
   const years = Math.min(60, Math.max(1, Math.round(parseNum(c.years as string)))) || 1;
   const last = HIST_START + HIST_STOCK.length - years, raw = String(c.fromYear).trim();
   const val = raw === "" ? HIST_START : Math.min(last, Math.max(HIST_START, Math.round(parseNum(raw))));
-  return String(val) !== raw ? { ...c, fromYear: String(val) } : c;
+  const out = String(val) !== raw ? { ...c, fromYear: String(val) } : c;
+  return parseNum(c.years as string) < 1 ? { ...out, years: "1" } : out;
 }
 
 /** Year one's spending under the chosen strategy, in today's dollars, with
