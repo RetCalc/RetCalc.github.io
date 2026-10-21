@@ -116,6 +116,7 @@ function PersonFields({ k, s, set, label }: { k: "1" | "2"; s: SocialInputs; set
 export function Social() {
   const { state: s, set, setState } = useToolState(SOCIAL_DEF);
   const tableRef = useRef<HTMLTableElement>(null);
+  const yearsRef = useRef<HTMLTableElement>(null);
 
   useHouseholdFill("social", s, setState, (h, c) => {
     const next: SocialInputs = { ...c };
@@ -179,7 +180,7 @@ export function Social() {
      the ends of the range would do instead. */
   const verdict = !ready ? null : (
     <>
-      Claiming at <b>{p.you.claim}</b> gives {you} check of <b>{money(H.you.monthly)}</b> a month.
+      Claiming at <b>{p.you.claim}</b> gives {you} check of <b>{money(H.you.monthly)}</b> per month.
       {p.you.claim < 70 ? <> Waiting until 70 would make it <b>{money(r70.you)}</b>, and pay <b>{money(r70.lifetime - chosen.lifetime)}</b> more in all by {p.you.through}.</> : null}
       {p.you.claim > 62 ? <> Claiming at 62 would make it <b>{money(r62.you)}</b>, and pay <b>{money(chosen.lifetime - r62.lifetime)}</b> less.</> : null}
       {best1 === p.you.claim ? <> For a life to {p.you.through}, {p.you.claim} is the age that pays the most.</> : null}
@@ -232,18 +233,21 @@ export function Social() {
           {ready && married && H.survivorAt !== null ? (
             <Band id="ssSurvivor">
               {H.survivorAt === p.you.through
-                ? <>If you die first, at {fmtNum(p.you.through)}, your spouse keeps <b>{money(H.survivor)}</b> a month: the larger of your two checks, your delayed credits included.</>
-                : <>If your spouse dies first, at {fmtNum(p.spouse!.through)}, you keep <b>{money(H.survivor)}</b> a month: the larger of your two checks.</>}
+                ? <>If you die first, at {fmtNum(p.you.through)}, your spouse keeps <b>{money(H.survivor)}</b> per month: the larger of your two checks, your delayed credits included.</>
+                : <>If your spouse dies first, at {fmtNum(p.spouse!.through)}, you keep <b>{money(H.survivor)}</b> per month: the larger of your two checks.</>}
             </Band>
           ) : null}
           <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5" hidden={!ready}>
             <div className="grid2">
               <div>
+                <KV k={married ? "Your two checks per year" : "Your check per year"} id="ssKVYear" v={money(monthly * 12)} />
+                <KV k={"Years of checks, " + p.you.claim + " to " + p.you.through} id="ssKVYears" v={fmtNum(p.you.through - p.you.claim)} />
                 <KV k="Your full retirement age" id="ssKVFra" v={fraLabel(p.you.fra)} />
                 {married ? <KV k="Your spouse's full retirement age" id="ssKVFra2" v={fraLabel(p.spouse!.fra)} /> : null}
-                <KV k={<span className="tipglue">Share of it taxed as income<TipDot k="sstaxed" /></span>} id="ssTaxed" v={ready ? pctStr(taxed, 0) : DASH} />
               </div>
               <div>
+                <KV k={<span className="tipglue">Share of it taxed as income<TipDot k="sstaxed" /></span>} id="ssTaxed" v={ready ? pctStr(taxed, 0) : DASH} />
+                <KV k="Taxable amount per year" id="ssKVTaxable" v={money(taxed * monthly * 12)} />
                 {married ? <KV k={"Your check at " + p.you.claim} id="ssKVYou" v={money(H.you.monthly) + "/mo"} /> : null}
                 {married && H.top1 > 0 ? <KV k="Your spousal top-up" id="ssKVTop1" v={money(H.top1) + "/mo"} /> : null}
                 {married ? <KV k={"Your spouse's check at " + p.spouse!.claim} id="ssKVSp" v={money(H.spouse!.monthly) + "/mo"} /> : null}
@@ -315,8 +319,8 @@ export function Social() {
                   </div>
                 ))}
               </div>
-              {[70, 75, 80, 85, 90, 95, 100].map((a) => (
-                <span key={a} className="absolute top-full left-(--x) mt-1 -translate-x-1/2 text-label text-muted-foreground tabular-nums first:translate-x-0 last:-translate-x-full"
+              {Array.from({ length: 16 }, (_, i) => 70 + i * 2).map((a) => (
+                <span key={a} className={cn("absolute top-full left-(--x) mt-1 -translate-x-1/2 text-label text-muted-foreground tabular-nums first:translate-x-0 last:-translate-x-full", a % 10 !== 0 && "max-sm:hidden")}
                   style={{ "--x": a === 100 ? "100%" : tick(a) } as React.CSSProperties}>{a}</span>
               ))}
             </div>
@@ -363,8 +367,8 @@ export function Social() {
 
         <Card className="min-w-0" hidden={!ready}>
           <CardHeader>
-            <CardTitle>What if you claimed early and invested the checks?</CardTitle>
-            <CardDescription>Take the {money(I.benEarly / 12)} check at {p.early} and invest every one. From {p.late}, draw the {money((I.benLate - I.benEarly) / 12)} a month the bigger check would have paid. Does the pot last to {p.you.through}, in every market since 1926?</CardDescription>
+            <CardTitle><span className="tipglue">What if you claimed early and invested the checks?<TipDot k="ssinvest" /></span></CardTitle>
+            <CardDescription>Take the {money(I.benEarly / 12)} check at {p.early} and invest every one. From {p.late}, draw the {money((I.benLate - I.benEarly) / 12)} per month the bigger check would have paid. Does the pot last to {p.you.through}, in every market since 1926?</CardDescription>
           </CardHeader>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-y border-border px-5.5 py-3 text-note max-sm:px-4">
             <span>Claim at</span>
@@ -393,7 +397,6 @@ export function Social() {
                 ariaLabel="What the invested early checks are worth at each age, across every start year since 1926"
                 tip={(b) => <><b>Age {b.year + p.early}</b><FanTipRows b={b} /></>} />
               <McLegend id="legendSsInv" noDet extra={"Drawing from " + p.late} />
-              <p className="hint m-0 max-w-copy px-4.5 pb-4">The pot at each age in today&apos;s dollars: half of history inside the inner band, most of it inside the outer. Real returns with each start year&apos;s own inflation, the mix rebalanced yearly, taxes and the survivor benefit left out. Waiting is a sure 8% a year above inflation, and the market has to beat that.</p>
             </>
           ) : <Band>History is too short to run this comparison through age {p.you.through}.</Band>}
         </Card>
@@ -402,10 +405,11 @@ export function Social() {
           <Collapsible render={<Card />}>
             <CardHeader>
               <CardTitle><CollapsibleTrigger>Year by year<ChevronDownIcon aria-hidden="true" /></CollapsibleTrigger></CardTitle>
+              <CardAction><CsvButton table={yearsRef} label="Year by year" /></CardAction>
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="scroll">
-                <table id="ssYears">
+                <table id="ssYears" ref={yearsRef}>
                   <thead><tr><th>Your age</th>{married ? <th>Spouse&apos;s age</th> : null}<th>Yours</th>{married ? <th>Spouse&apos;s</th> : null}<th>Added up</th></tr></thead>
                   <tbody>
                     {H.rows.map((r) => (

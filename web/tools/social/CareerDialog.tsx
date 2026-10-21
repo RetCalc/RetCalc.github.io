@@ -32,49 +32,55 @@ export function CareerDialog({ who, career, ageNow, incomeNow, fra, apply, onClo
       <Affixed suffix={unit}><NumberInput id={"car_" + k} step={step} value={c[k]} onValueChange={up(k)} /></Affixed></div>
   );
   return (
-    <Modal size="wide" onClose={onClose} focus="#car_start">
+    <Modal size="table" onClose={onClose} focus="#car_start">
       <ModalTop title={`${who} pay over a career`} onClose={onClose} />
       <div className="formhint">
         Every figure is in today&apos;s dollars. Social Security indexes past pay to wage growth, so a raise that only kept up with wages counts as 0%, and the pattern walks today&apos;s {money(incomeNow)} back and forward at the rates here. Change any year by hand; the benefit updates as you go.
       </div>
-      <div className="two">
+      <div className="grid grid-cols-2 gap-x-3 sm:grid-cols-4">
         {field("start", "Started working at", "age")}
-        {field("stop", "Stop working at", "age")}
-      </div>
-      <div className="two">
         {field("growPast", "Raises so far, above wage growth", "%/yr", 0.5)}
+        {field("stop", "Stop working at", "age")}
         {field("growAhead", "Raises ahead, above wage growth", "%/yr", 0.5)}
       </div>
 
-      <div className="kv total mt-1 mx-0 mb-1"><span className="k">Benefit at {fra % 1 ? fra.toFixed(2) : fra}, a month</span><span className="v" id="car_pia">{money(est.pia)}</span></div>
+      <div className="kv total mt-1 mx-0 mb-1"><span className="k">Benefit at {fra % 1 ? fra.toFixed(2) : fra}, per month</span><span className="v" id="car_pia">{money(est.pia)}</span></div>
       <p className="hint m-0 mb-3">Best 35 years average {money(est.aime * 12)} a year{est.years < 35 ? ", with " + fmtNum(35 - est.years) + " zero " + (35 - est.years === 1 ? "year" : "years") + " averaged in" : ""}. Pay over the wage base doesn&apos;t count.</p>
 
       <div className="mb-2 flex items-center justify-between gap-3">
         <span className="text-label text-muted-foreground">{edited ? fmtNum(edited) + (edited === 1 ? " year set by hand" : " years set by hand") : "Every year follows the pattern"}</span>
         <Button variant="ghost" size="sm" disabled={!edited} onClick={() => setC((x) => ({ ...x, edits: {} }))}><RotateCcwIcon aria-hidden="true" />Reset to the pattern</Button>
       </div>
-      <div className="scroll max-h-72">
-        <table id="carTable">
-          <thead><tr><th>Age</th><th>Year</th><th>Pay, today&apos;s dollars</th></tr></thead>
-          <tbody>
-            {years.map((y) => (
-              <tr key={y.age} className={cn(y.age === ageNow && "font-semibold")}>
-                <td>{y.age}{y.age === ageNow ? <span className="ml-1.5 font-normal text-muted-foreground">now</span> : null}{y.edited ? <span className="ml-1.5 font-normal text-primary">set by hand</span> : null}</td>
-                <td>{y.year}</td>
-                <td className="py-1">
-                  <Affixed prefix="$" className="w-40">
-                    <MoneyInput nonNeg aria-label={"Pay at " + y.age} value={y.edited ? c.edits[String(y.age)] : groupDigits(Math.round(y.pay), true)}
-                      onValueChange={(v) => setC((x) => ({ ...x, edits: { ...x.edits, [String(y.age)]: v } }))} />
-                  </Affixed>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid gap-x-5 gap-y-3 sm:grid-cols-2">
+        {([["So far", years.filter((y) => y.age <= ageNow)], ["Ahead", years.filter((y) => y.age > ageNow)]] as const).map(([title, list]) => (
+          <div key={title}>
+            <div className="mb-1.5 text-sm font-semibold">{title}<span className="ml-1.5 font-normal text-muted-foreground">{list.length} {list.length === 1 ? "year" : "years"}</span></div>
+            <div className="scroll max-h-100">
+              <table>
+                <thead><tr><th>Age</th><th>Year</th><th>Pay, today&apos;s dollars</th></tr></thead>
+                <tbody>
+                  {list.map((y) => (
+                    <tr key={y.age} className={cn(y.age === ageNow && "font-semibold")}>
+                      <td>{y.age}{y.age === ageNow ? <span className="ml-1.5 font-normal text-muted-foreground">now</span> : null}</td>
+                      <td>{y.year}{y.edited ? <span className="ml-1.5 font-normal text-primary">set</span> : null}</td>
+                      <td className="py-1">
+                        <Affixed prefix="$" className="w-36">
+                          <MoneyInput nonNeg aria-label={"Pay at " + y.age} value={y.edited ? c.edits[String(y.age)] : groupDigits(Math.round(y.pay), true)}
+                            onValueChange={(v) => setC((x) => ({ ...x, edits: { ...x.edits, [String(y.age)]: v } }))} />
+                        </Affixed>
+                      </td>
+                    </tr>
+                  ))}
+                  {!list.length ? <tr><td colSpan={3} className="text-muted-foreground">None</td></tr> : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </div>
       <div className="formactions mt-3">
         <Button variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-        <Button className="flex-1" onClick={() => { onClose(); apply(c); }}>Use this career: {money(est.pia)} a month</Button>
+        <Button className="flex-1" onClick={() => { onClose(); apply(c); }}>Use this career: {money(est.pia)} per month</Button>
       </div>
     </Modal>
   );
