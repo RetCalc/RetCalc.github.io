@@ -10,6 +10,10 @@
    - plain number fields drop anything that isn't part of a number, cap at
      `max`, and step with the arrow keys
    - `nonNeg` fields refuse a minus sign
+   - no field takes more than 12 digits before the point (just under a
+     trillion), so a slip of the keyboard or a paste can't overflow the math
+   - a percent field (its unit starts with "%") stays between -99 and 100
+     unless it gives its own `max`; below -100% the math has no meaning
    - focusing a field selects what's in it, so typing replaces it
 
    Both are controlled: the parent holds the text as typed. Inside an
@@ -22,6 +26,12 @@ import { groupDigits, parseNum, sanitizeNumeric } from "@/lib/format";
 
 /** True inside an input group, where a field drops its own border. */
 export const InGroup = createContext(false);
+/** True when the field's unit is a percent ("%", "%/yr"). */
+export const InPercent = createContext(false);
+
+/* The most digits a field takes before its decimal point. */
+const MAX_DIGITS = 12;
+const tooLong = (s: string) => s.split(".")[0].replace(/\D/g, "").length > MAX_DIGITS;
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type" | "max" | "step"> & {
   value: string;
@@ -97,6 +107,7 @@ export function MoneyInput({ value, onValueChange, nonNeg = false, ref, onBlur, 
         const at = e.target.selectionStart ?? before.length;
         const digitsBefore = before.slice(0, at).replace(/[^0-9.\-]/g, "").length;
         const after = groupDigits(before, nonNeg);
+        if (tooLong(after)) return;
         let pos = after.length;
         for (let i = 0, seen = 0; i < after.length; i++) {
           if (/[0-9.\-]/.test(after[i])) seen++;
@@ -127,6 +138,8 @@ export function NumberInput({
   const caretRef = useCaret(inner);
   const sel = useSelectOnFocus();
   const Control = use(InGroup) ? InputGroupInput : Input;
+  const pct = use(InPercent);
+  const hi = max ?? (pct ? 100 : undefined), lo = pct && !nonNeg ? -99 : undefined;
   return (
     <Control
       {...rest}
@@ -138,11 +151,13 @@ export function NumberInput({
       onChange={(e) => {
         const raw = e.target.value;
         let next = sanitizeNumeric(raw, nonNeg);
+        if (tooLong(next)) return;
         if (next !== raw) {
           const at = e.target.selectionStart;
           if (at !== null) caretRef.current = Math.max(0, at - 1);
         }
-        if (max !== undefined && parseNum(next) > max) next = String(max);
+        if (hi !== undefined && parseNum(next) > hi) next = String(hi);
+        if (lo !== undefined && parseNum(next) < lo) next = String(lo);
         onValueChange(next);
       }}
       onKeyDown={(e) => {
@@ -151,7 +166,8 @@ export function NumberInput({
           e.preventDefault();
           let v = parseNum(value) + (e.key === "ArrowUp" ? step : -step);
           if (nonNeg) v = Math.max(0, v);
-          if (max !== undefined) v = Math.min(max, v);
+          if (hi !== undefined) v = Math.min(hi, v);
+          if (lo !== undefined) v = Math.max(lo, v);
           onValueChange(String(Math.round(v * 1e6) / 1e6));
         }
         rest.onKeyDown?.(e);

@@ -9,7 +9,7 @@
 
 import type { ReactNode, Ref } from "react";
 import { InputGroup, InputGroupAddon, InputGroupText } from "@/components/ui/input-group";
-import { InGroup, MoneyInput, NumberInput } from "./NumberInput";
+import { InGroup, InPercent, MoneyInput, NumberInput } from "./NumberInput";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 
@@ -41,6 +41,7 @@ export function Field({ id, label, labelId, wrapId, hidden, className, children 
 export function Affixed({ prefix, suffix, action, children, className }: { prefix?: ReactNode; suffix?: ReactNode; action?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <InGroup value={true}>
+      <InPercent value={typeof suffix === "string" && suffix.startsWith("%")}>
       <InputGroup className={className}>
         {children}
         {prefix ? <InputGroupAddon><InputGroupText>{prefix}</InputGroupText></InputGroupAddon> : null}
@@ -48,6 +49,7 @@ export function Affixed({ prefix, suffix, action, children, className }: { prefi
         {/* A button at the end of the field (an InputGroupButton). */}
         {action ? <InputGroupAddon align="inline-end">{action}</InputGroupAddon> : null}
       </InputGroup>
+      </InPercent>
     </InGroup>
   );
 }
