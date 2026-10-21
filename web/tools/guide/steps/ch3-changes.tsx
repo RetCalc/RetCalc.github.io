@@ -252,8 +252,8 @@ function ChangesMeans() {
           ))}</tbody>
         </table>
       ) : null}
-      {SF.list.length ? <Callout cls="warn">* {kids.length ? "The children cost" : "These changes cost"} more than the {money(saveMo(a))} a month you save now
-        {" "}({and(SF.list.map((x) => money(x.short) + " a month from " + x.from + " to " + x.to))}). Saving can&apos;t go below $0, so that has to come from your budget:
+      {SF.list.length ? <Callout cls="warn">* {kids.length ? "The children cost" : "These changes cost"} more than the {money(saveMo(a))} per month you save now
+        {" "}({and(SF.list.map((x) => money(x.short) + " per month from " + x.from + " to " + x.to))}). Saving can&apos;t go below $0, so that has to come from your budget:
         {" "}about <b>{rounded(SF.total)}</b> in all, in today&apos;s dollars. Trim spending in those years, or build savings outside retirement before they start.</Callout> : null}
       <ul className="gd-read">
         {H.length > 1 ? <li>Your household before 65: {and(H.map((h, i) => (i ? h.n + " from " + h.age : h.n + " now")))}. {ret < 65 ? "The plan prices health insurance before Medicare for a household of " + householdAtRetire(a, ret) + "." : ""}</li> : null}

@@ -34,7 +34,7 @@ export interface Curve {
   path: number[];
   fv: number;
 }
-/** Lesson 8's three curves for `monthly` a month: saved from now to
+/** Lesson 8's three curves for `monthly` per month: saved from now to
     retirement; saved from now but stopped `gap` years early; and started
     `gap` years late. The last two save for the same number of years, so
     the difference between them is time alone. `gap` is ten years, or half
@@ -114,9 +114,9 @@ export function buckets(a: Answers) {
 
 /** The claiming ages lesson 13 shows. */
 export const LADDER_AGES = [62, 64, 67, 70];
-/** Lesson 13's ladder: a benefit of `pia` a month at 67, claimed at each
-    age, by the 2026 rules (5/9 of 1% a month for the first three years
-    early, 5/12 beyond; 8% a year after 67). */
+/** Lesson 13's ladder: a benefit of `pia` per month at 67, claimed at each
+    age, by the 2026 rules (5/9 of 1% per month for the first three years
+    early, 5/12 beyond; 8% per year after 67). */
 export function ladder(pia: number, ages = LADDER_AGES) {
   return ages.map((age) => ({ age, mo: plSSParts({ P: { pia1: pia, pia2: 0 }, married: false, gap: 0 }, { c1: age, c2: age }).own1 / 12 }));
 }

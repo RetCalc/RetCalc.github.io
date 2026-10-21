@@ -83,7 +83,7 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await next(page);
   // 3 · What you spend · 4 · Your safety net · 5 · Debt
   await page.fill("#gdf-spend", "7000");
-  await expect(page.locator("#gdCard .gd-means")).toContainText("$2,200 a month");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("$2,200 per month");
   await next(page);
   await page.fill("#gdf-cash", "12000");
   await expect(page.locator("#gdCard .gd-means")).toContainText("1.7 months");
@@ -126,7 +126,7 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
   await next(page);
   // 9 · Social Security, estimated from income (doc 3, calculation 3)
   await step(9);
-  await expect(page.locator("#gdCard .gd-means")).toContainText("$5,597 a month from 67, $67,159 a year");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("$5,597 per month from 67, $67,159 per year");
   await expect(page.locator('#gdCard [data-lesson="wait"]')).toContainText("$2,275");
   await next(page);
   // 10 · Your number · 11 · Tested against history · 12 · Your plan
@@ -180,7 +180,7 @@ test("a statement figure replaces the Social Security estimate", async ({ page }
   await expect(page.locator('#gdCard .gd-means .gd-src[data-src="estimated"]')).toHaveText("estimated");
   await page.fill("#gdf-ssOwn", "3000"); await page.fill("#gdf-ssOwn2", "2000");
   await expect(page.locator('#gdCard .gd-means .gd-src[data-src="entered"]')).toHaveText("you entered");
-  await expect(page.locator("#gdCard .gd-means")).toContainText("$5,000 a month from 67");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("$5,000 per month from 67");
   await expect(page.locator('#gdCard [data-lesson="wait"]')).toContainText("$3,720"); // $3,000 at 70
 });
 
@@ -395,7 +395,7 @@ test("until retirement spending is entered, 80% of take-home stands in, marked",
   await seeded(page, { ...stateWith("quick", "savings"), a: { ...MAYA, retSpend: null } });
   await expect(page.locator("#gdNumNeed")).toHaveText("$1.25M");
   await expect(page.locator('.gd-num .gd-src[data-src="default"]')).toHaveText("default");
-  await expect(page.locator(".gd-num-note")).toContainText("$88,500 a year");
+  await expect(page.locator(".gd-num-note")).toContainText("$88,500 per year");
 });
 
 test("a field holding an estimate says so", async ({ page }) => {
@@ -492,7 +492,7 @@ test("already retired: the on-ramp opens the Drawdown Simulator with your number
   await page.fill("#gdf-age", "68"); await page.fill("#gdf-saved", "900000"); await page.fill("#gdf-retSpend", "50000");
   await page.locator("#gdCard [data-more]").click();
   await page.fill("#gdf-ssOwn", "2500");
-  await expect(page.locator("#gdCard .gd-means")).toContainText("You'd draw about $20,000 a year from savings after $30,000 of Social Security and pensions: 2.2%");
+  await expect(page.locator("#gdCard .gd-means")).toContainText("You'd draw about $20,000 per year from savings after $30,000 of Social Security and pensions: 2.2%");
   const score = (await page.locator("#gdStrip").isVisible()) ? null : page.locator("#gdScore");
   if (score) await expect(score).toContainText("No score for a retirement under way");
   await page.locator('#gdCard [data-trip="retired"]').click();

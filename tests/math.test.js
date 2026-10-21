@@ -397,8 +397,8 @@ group("Historical data: 100 years, long-run returns");
 (function () {
   eq(HIST_M_STOCK.length, 1200, "stock months"); eq(HIST_M_BOND.length, 1200, "bond months"); eq(HIST_M_INFL.length, 1200, "inflation months");
   var B = backtest({ stockPct: 100, fee: 0, initial: 10000, startYear: 1926, endYear: 2025 });
-  near(B.cagr, .1045, .0005, "stocks 1926-2025, about 10.45% a year");
-  near(B.inflCagr, .0294, .0005, "inflation, about 2.94% a year");
+  near(B.cagr, .1045, .0005, "stocks 1926-2025, about 10.45% per year");
+  near(B.inflCagr, .0294, .0005, "inflation, about 2.94% per year");
 })();
 
 group("Drawdown: the 4% rule, replicated independently");
@@ -474,7 +474,7 @@ group("Drawdown: a retirement starting every month, and the CAPE record");
   eq(HIST_M_CAPE[83 * 12 + 2], 13.32, "March 2009");
   near(HIST_M_CAPE.reduce(function (a, b) { return a + b; }, 0), 22939.76, 1e-6, "every reading as copied");
   ok(HIST_STOCK.every(function (v, y) { return HIST_Y12_STOCK[12 * y] === v && HIST_Y12_BOND[12 * y] === HIST_BOND[y] &&
-    HIST_Y12_INFL[12 * y] === HIST_INFL[y]; }), "a year from January is the calendar year, exactly");
+    HIST_Y12_INFL[12 * y] === HIST_INFL[y]; }), "per year from January is the calendar year, exactly");
   var o = { initial: 1e6, years: 30, stockPct: 60, initialPct: 4, fee: 0, strategy: "fixed" };
   var A = historicalBacktest(o), M = historicalBacktest(Object.assign({}, o, { monthly: true }));
   eq(M.total, 835, "835 thirty-year retirements, one a month from July 1926");
@@ -549,7 +549,7 @@ group("Drawdown: spending path, guaranteed income and what was really spent");
   var kE = run({ strategy: "kitces", path: "ease", pathEase: 1 }, 1950).rows;
   ok(kE[10].realSpend < kE[0].realSpend, "the ratchet takes it");
   var ease = run({ path: "ease", pathEase: 1 }, 1950).rows;
-  near(ease[10].realSpend, 40000 * Math.pow(.99, 10), 1e-6, "easing 1% a year");
+  near(ease[10].realSpend, 40000 * Math.pow(.99, 10), 1e-6, "easing 1% per year");
   var sm = ddPath({ years: 35, path: "smile", retireAge: 65 }, 50000);
   ok(sm[13] < sm[5] && sm[34] / sm[33] > sm[14] / sm[13], "the smile: down through the 70s, recovering late");
   near(ddBlanchett(78, 50000), Math.min.apply(null, [70, 74, 78, 82, 86].map(function (a) { return ddBlanchett(a, 50000); })), 1e-12, "steepest decline near 78");
@@ -636,7 +636,7 @@ group("Drawdown: Monte Carlo draws years in blocks, and can take your own return
   near(ddMCCompound(HIST_INFL, S.infl), 2.5, 1e-6, "inflation to 2.5%");
   var hist = ddMCHistory(), same = ddMCShift(Object.assign({}, o, { mcOwn: true, mcRet: hist }));
   ok(Math.abs(same.stock) < 1e-6 && Math.abs(same.infl) < 1e-6, "history's own figures move nothing");
-  near(hist.stock, 10.4, 0.05, "US stocks compounded 10.4% a year, 1927-2025");
+  near(hist.stock, 10.4, 0.05, "US stocks compounded 10.4% per year, 1927-2025");
   near(hist.infl, 3.0, 0.05, "inflation 3.0%");
   var lean = monteCarloDrawdown(own, 2000, 12345);
   ok(lean.successRate < M.successRate - 0.05, "a leaner future lasts less often", M.successRate + " -> " + lean.successRate);
@@ -701,7 +701,7 @@ group("Drawdown: the classic studies, reproduced");
   near(g.lowest.share, .334, .002, "but spending fell to a third of year one's"); eq(g.lowest.year, 1966, "retiring in 1966");
   near(g.max, 6.25, .02, "and the money lasted from every start up to 6.25%");
   var v = ddStudy("vanguard").find();
-  near(v.swing.up, .05, 1e-9, "Vanguard: spending rises at most 5% a year"); near(v.swing.down, -.025, 1e-9, "falls at most 2.5%");
+  near(v.swing.up, .05, 1e-9, "Vanguard: spending rises at most 5% per year"); near(v.swing.down, -.025, 1e-9, "falls at most 2.5%");
   ok(v.pctSwing.up > .2 && v.pctSwing.down < -.2, "a straight 5% swings over 20% either way");
   eq(Math.round((1 - v.success) * v.starts), 5, "and it ran out in 5 starts"); eq(v.starts, 65, "of 65");
   var w = ddStudy("vpw").find();
@@ -873,10 +873,10 @@ group("Articles: home and Advanced");
   function basic(o) { return projectBasic(Object.assign({ years: 35, real: bal, initial: 10000, contrib: 500, period: "Monthly", withdrawal: .04 }, o)); }
   var R = basic({});
   says("home", "At 65: " + dollars(R.fv) + " in today's dollars");
-  says("home", "4% of that is " + dollars(R.fv * .04) + " a year, or " + dollars(R.fv * .04 / 12) + " a month");
+  says("home", "4% of that is " + dollars(R.fv * .04) + " per year, or " + dollars(R.fv * .04 / 12) + " per month");
   says("home", "Sam puts in the $10,000 plus " + dollars(R.contribTotal) + " of contributions");
   says("home", "growth supplies the other " + dollars(R.growth));
-  says("home", "$750 a month instead of $500: " + dollars(basic({ contrib: 750 }).fv));
+  says("home", "$750 per month instead of $500: " + dollars(basic({ contrib: 750 }).fv));
   eq(RISK_LEVELS[3].real, .0575, "Growth is 5.75% after inflation");
   says("home", "instead of balanced: " + dollars(basic({ real: RISK_LEVELS[3].real }).fv));
   var r60 = basic({ years: 30 }).fv;
@@ -891,7 +891,7 @@ group("Articles: home and Advanced");
   says("advanced", "The difference: " + dollars(a - b) + ", or " + Math.round((1 - b / a) * 100) + "%");
   var B60 = backtest({ stockPct: 60, fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 });
   var B100 = backtest({ stockPct: 100, fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 });
-  says("advanced", "the " + pct1(B60.cagr) + " a year that 60% stocks and 40% bonds earned");
+  says("advanced", "the " + pct1(B60.cagr) + " per year that 60% stocks and 40% bonds earned");
   says("advanced", "All stocks earned " + pct1(B100.cagr));
 })();
 
@@ -904,7 +904,7 @@ group("Articles: Stages");
   var flat = projectSeries(g, [{ years: 30, contrib: 336000 / 360, period: "Monthly", growth: 0, nominal: .085, vol: .15 }]).fvReal;
   eq(400 * 120 + 900 * 120 + 1500 * 120, 336000, "the three patterns save the same total");
   says("stages", "ends with " + dollars(up) + " in today's dollars");
-  says("stages", "$933 a month for 30 years ends with " + dollars(flat));
+  says("stages", "$933 per month for 30 years ends with " + dollars(flat));
   says("stages", dollars(down) + ", " + Math.round((down / up - 1) * 100) + "% more");
   says("stages", "anywhere from " + dollars(up) + " to " + dollars(down));
 })();
@@ -923,12 +923,12 @@ group("Articles: Drawdown");
   says("drawdown", "about $" + (Math.round(H.medianEnd / 1e5) / 10) + " million left after 30 years");
   var H35 = historicalBacktest(Object.assign({}, o, { initialPct: 3.5 }));
   eq(H35.successRate, 1, "3.5% never failed");
-  says("drawdown", "At 3.5%: $35,000 a year, and the plan survived 100%");
+  says("drawdown", "At 3.5%: $35,000 per year, and the plan survived 100%");
   says("drawdown", "4% survived " + pct1(historicalBacktest(Object.assign({}, o, { years: 40 })).successRate));
   var G = Object.assign({}, o, { strategy: "guardrails", initialPct: 5 });
   eq(historicalBacktest(G).successRate, 1, "5% guardrails lasted every time");
   var g66 = runDrawdown(G, seqFrom(1966, 30));
-  says("drawdown", "cut as low as " + dollars(Math.min.apply(null, g66.rows.map(function (r) { return r.realSpend; }))) + " a year");
+  says("drawdown", "cut as low as " + dollars(Math.min.apply(null, g66.rows.map(function (r) { return r.realSpend; }))) + " per year");
 })();
 
 group("Articles: the strategy landing pages");
@@ -973,7 +973,7 @@ group("Articles: the strategy landing pages");
   says("guardrails", "spending was cut " + cutsOf(g66) + " times");
   var from = 0; for (var i = s66.length - 1; i >= 0 && s66[i] < 40000; i--) from = i + 1;
   says("guardrails", "fell below $40,000 from year " + from);
-  says("guardrails", "bottomed at " + dollars(mn(s66)) + " a year in today's dollars in year " + (s66.indexOf(mn(s66)) + 1));
+  says("guardrails", "bottomed at " + dollars(mn(s66)) + " per year in today's dollars in year " + (s66.indexOf(mn(s66)) + 1));
   near(mn(s66) / 50000, 1 / 3, .02, "a third of where it began");
   var life = G.runs.map(function (r) { return real(r).reduce(function (a, v) { return a + v; }, 0); });
   says("guardrails", "about $" + (Math.round(med(life) / 1e4) / 100) + " million in today's dollars");
@@ -991,7 +991,7 @@ group("Articles: the strategy landing pages");
   eq(V.successRate, 1, "VPW lasted every start"); says("vpw", "in all " + V.total + " historical retirements");
   says("vpw", "typical year was " + dollars(med(V.runs.map(function (r) { return r.medRealSpend; }))));
   var v66 = V.runs.filter(function (r) { return r.startYear === 1966; })[0], w66 = real(v66);
-  says("vpw", "spending fell to " + dollars(mn(w66)) + " a year at " + (65 + w66.indexOf(mn(w66))) + ", " + pctD(mn(w66) / w66[0], 0) + " of year one");
+  says("vpw", "spending fell to " + dollars(mn(w66)) + " per year at " + (65 + w66.indexOf(mn(w66))) + ", " + pctD(mn(w66) / w66[0], 0) + " of year one");
   says("vpw", "In " + V.runs.filter(function (r) { return real(r).some(function (v) { return v < r.rows[0].realSpend * .75; }); }).length +
     " of the " + V.total + " starts it fell more than a quarter below year one");
 })();
@@ -1031,7 +1031,7 @@ group("Articles: five more strategy pages");
   var big = 0; R.runs.forEach(function (r) { var s = real(r); for (var i = 1; i < s.length; i++) big = Math.min(big, s[i] / s[i - 1] - 1); });
   says("risk-based-guardrails", "largest single cut was " + pc0(-big));
   var rl = lowest(R); eq(rl.year, 1969, "the leanest start was 1969");
-  says("risk-based-guardrails", "Retiring in 1969, spending fell to " + dollars(rl.v) + " a year by year " + rl.at);
+  says("risk-based-guardrails", "Retiring in 1969, spending fell to " + dollars(rl.v) + " per year by year " + rl.at);
   says("risk-based-guardrails", "typical year was " + dollars(med(R.runs.map(function (r) { return r.medRealSpend; }))));
 
   // RMD method
@@ -1056,7 +1056,7 @@ group("Articles: five more strategy pages");
   says("ratcheting-withdrawal", K.runs.filter(function (r) { return raises(r) > 0; }).length + " of the 70 starts got at least one");
   var firstR = K.runs.map(function (r) { for (var i = 1; i < r.rows.length; i++) if (r.rows[i].realPlanned > r.rows[i - 1].realPlanned * 1.001) return i + 1; return 0; }).filter(Boolean);
   says("ratcheting-withdrawal", "the first typically came in year " + med(firstR));
-  says("ratcheting-withdrawal", "spending " + dollars(med(K.runs.map(function (r) { return r.rows[29].realPlanned; }))) + " a year in today's dollars by year 30");
+  says("ratcheting-withdrawal", "spending " + dollars(med(K.runs.map(function (r) { return r.rows[29].realPlanned; }))) + " per year in today's dollars by year 30");
   var k82 = start(K, 1982);
   says("ratcheting-withdrawal", "reaching " + dollars(k82.rows[29].realPlanned));
   eq(k82.rows.map(function (w, i) { return i > 0 && w.realPlanned > k82.rows[i - 1].realPlanned * 1.001 ? i + 1 : 0; }).filter(Boolean).join(","),
@@ -1074,8 +1074,8 @@ group("Articles: five more strategy pages");
   says("cape-withdrawal", "to " + dollars(mx) + " (retiring in " + r82.startYear + ", at a CAPE of " + r82.cape0.toFixed(1));
   eq(C.successRate, 1, "CAPE-based lasted every start");
   says("cape-withdrawal", "left a typical " + dollars(C.medianEnd));
-  says("cape-withdrawal", "spent " + dollars(med(C.runs.map(function (r) { return r.medRealSpend; }))) + " a year");
-  var c66 = real(start(C, 1966)); says("cape-withdrawal", "fell to " + dollars(mn(c66)) + " a year by year " + (c66.indexOf(mn(c66)) + 1));
+  says("cape-withdrawal", "spent " + dollars(med(C.runs.map(function (r) { return r.medRealSpend; }))) + " per year");
+  var c66 = real(start(C, 1966)); says("cape-withdrawal", "fell to " + dollars(mn(c66)) + " per year by year " + (c66.indexOf(mn(c66)) + 1));
 })();
 
 group("Backtest: small-cap value and cash");
@@ -1088,9 +1088,9 @@ group("Backtest: small-cap value and cash");
   var r = A.rows[0], i = 1927 - HIST_START;
   near(r.ret, (.4 * HIST_STOCK[i] + .2 * HIST_SV[i] + .4 * HIST_BOND[i]) / 100, 1e-12, "1927's return from the four holdings");
   near(bt({ stockPct: 60, svPct: 0, cashPct: 0 }).cagr, bt({ stockPct: 60 }).cagr, 0, "no small value or cash changes nothing");
-  says("backtest", "earned " + p2(A.cagr) + " a year from 1927 through 2025, against " + p2(S.cagr) + " for 60/40");
+  says("backtest", "earned " + p2(A.cagr) + " per year from 1927 through 2025, against " + p2(S.cagr) + " for 60/40");
   says("backtest", "deepest fall was " + Math.round(-A.maxDD * 100) + "% instead of " + Math.round(-S.maxDD * 100) + "%");
-  says("backtest", "Cash alone earned " + p2(C.cagr) + " a year, only " + p2(C.realCagr) + " after inflation");
+  says("backtest", "Cash alone earned " + p2(C.cagr) + " per year, only " + p2(C.realCagr) + " after inflation");
   ok(bt({ stockPct: 0, svPct: 100 }).cagr > bt({ stockPct: 100, startYear: 1927 }).cagr, "small value beat the S&P 500 over the century");
   // Rebalancing, as the Drawdown Simulator does it
   var Y = bt({ stockPct: 60 }), N = bt({ stockPct: 60, rebal: "never" });
@@ -1098,7 +1098,7 @@ group("Backtest: small-cap value and cash");
   var g = 1, s = .6 * 1e4, b = .4 * 1e4;
   for (var y = 0; y < 100; y++) { s *= 1 + HIST_STOCK[y] / 100; b *= 1 + HIST_BOND[y] / 100; }
   near(N.endBal, s + b, 1e-6, "never: each holding grows on its own");
-  says("backtest", "earned " + p2(N.cagr) + " a year instead of " + p2(Y.cagr));
+  says("backtest", "earned " + p2(N.cagr) + " per year instead of " + p2(Y.cagr));
   says("backtest", "by 2025 it was " + Math.round(N.endMix[0] * 100) + "% stocks");
   says("backtest", "deepest fall was " + Math.round(-N.maxDD * 100) + "% instead of " + Math.round(-Y.maxDD * 100) + "%");
   var E = bt({ stockPct: 60, rebal: "every", rebalN: 3 });
@@ -1111,7 +1111,7 @@ group("Articles: Bridge");
 (function () {
   says("bridge", "$540,000 in all");
   says("bridge", "five years of spending from other sources first, " + dollars(5 * 60000));
-  says("bridge", "from the whole $1,000,000 is " + dollars(1e6 * brAmortFactor(.05, 50)) + " a year");
+  says("bridge", "from the whole $1,000,000 is " + dollars(1e6 * brAmortFactor(.05, 50)) + " per year");
   says("bridge", "taxable income stays under " + dollars(YD.ltcg.m[0]));
   says("bridge", "ACA credits stop above " + dollars(hcFPL(2) * 4) + " for a household of two");
 })();
@@ -1131,7 +1131,7 @@ group("Articles: Roth conversions and RMDs");
   var lastConv = P.rows.filter(function (r) { return r.conv > 0; }).pop();
   says("roth", "By " + lastConv.age + " the traditional accounts are empty, " + dollars(P.totalConv) + " converted");
   eq(P.peakRMD, 0, "no RMDs with conversions");
-  says("roth", "would have peaked at " + dollars(B.peakRMD) + " a year");
+  says("roth", "would have peaked at " + dollars(B.peakRMD) + " per year");
   says("roth", dollars(P.lifeTax) + " with conversions against " + dollars(B.lifeTax) + " without");
   says("roth", "converting saves " + dollars(B.lifeTaxPV - P.lifeTaxPV));
   says("roth", "IRMAA totals " + dollars(P.lifeIrmaa) + " instead of " + dollars(B.lifeIrmaa));
@@ -1153,17 +1153,17 @@ group("Articles: Healthcare");
 (function () {
   var gross = 2 * hcGrossPremium("IL", 62, 0), fpl = hcFPL(2);
   function aca(m) { return hcCalcACA(m, gross, m / fpl, false); }
-  says("healthcare", "lists at " + dollars(gross) + " a month");
+  says("healthcare", "lists at " + dollars(gross) + " per month");
   var lo = aca(40000);
-  says("healthcare", "they pay " + (lo.pct * 100).toFixed(2) + "% of it, " + dollars(lo.net) + " a month");
+  says("healthcare", "they pay " + (lo.pct * 100).toFixed(2) + "% of it, " + dollars(lo.net) + " per month");
   var under = aca(84000), over = aca(85000);
   eq(over.eligible, false, "no credit over the cliff");
-  says("healthcare", dollars(under.net) + " a month or " + dollars(under.net * 12) + " a year");
-  says("healthcare", "pay the full " + dollars(over.net) + " a month, " + dollars(over.net * 12) + " a year");
+  says("healthcare", dollars(under.net) + " per month or " + dollars(under.net * 12) + " per year");
+  says("healthcare", "pay the full " + dollars(over.net) + " per month, " + dollars(over.net * 12) + " per year");
   says("healthcare", "costs them " + dollars((over.net - under.net) * 12) + " in premiums");
   says("healthcare", dollars(hcFPL(1) * 4) + " for one person and " + dollars(fpl * 4) + " for a household of two");
-  says("healthcare", "$" + (YD.medicare.irmaa.tiers[1].b - YD.medicare.irmaa.partB).toFixed(2) + " a month more per person");
-  says("healthcare", "$" + YD.medicare.irmaa.partB.toFixed(2) + " a month in 2026");
+  says("healthcare", "$" + (YD.medicare.irmaa.tiers[1].b - YD.medicare.irmaa.partB).toFixed(2) + " per month more per person");
+  says("healthcare", "$" + YD.medicare.irmaa.partB.toFixed(2) + " per month in 2026");
 })();
 
 group("Articles: FIRE");
@@ -1184,7 +1184,7 @@ group("Articles: FIRE");
     }
   }
   function f1(x) { return x.toFixed(1); }
-  says("fire", "about " + pct1(real) + " a year after inflation");
+  says("fire", "about " + pct1(real) + " per year after inflation");
   [[1000, "in "], [2000, ""], [2500, ""]].forEach(function (c) {
     var y = cross(c[0], false);
     says("fire", c[1] + f1(y) + " years, at " + f1(30 + y));
@@ -1197,17 +1197,17 @@ group("Articles: Backtest");
   function bt(s) { return backtest({ stockPct: s, fee: 0, initial: 1e4, startYear: 1926, endYear: 2025 }); }
   function roll(B, len) { return B.rolling.filter(function (r) { return r.len === len; })[0]; }
   var S = bt(100), M = bt(60), N = bt(0);
-  says("backtest", "All stocks: " + pct1(S.cagr) + " a year, or " + pct1(S.realCagr) + " after inflation");
+  says("backtest", "All stocks: " + pct1(S.cagr) + " per year, or " + pct1(S.realCagr) + " after inflation");
   says("backtest", "rose in " + S.upYears + " of the 100 years");
   says("backtest", "worst single year was " + pct1(roll(S, 1).nomWorst).replace("-", "−"));
   says("backtest", "from the " + S.ddFrom + " peak to the " + S.ddTo + " bottom the portfolio lost " + Math.round(-S.maxDD * 100) + "%");
-  says("backtest", pct1(M.cagr) + " a year, " + pct1(M.realCagr) + " after inflation. The worst year was " + pct1(roll(M, 1).nomWorst).replace("-", "−"));
+  says("backtest", pct1(M.cagr) + " per year, " + pct1(M.realCagr) + " after inflation. The worst year was " + pct1(roll(M, 1).nomWorst).replace("-", "−"));
   says("backtest", "the deepest fall " + Math.round(-M.maxDD * 100) + "%");
   says("backtest", "Giving up " + pct1(S.cagr - M.cagr).replace("%", "") + " points");
   says("backtest", "about " + Math.round((1 - M.maxDD / S.maxDD) * 10) * 10 + "%");
-  says("backtest", "All bonds: " + pct1(N.cagr) + " a year, but only " + pct1(N.realCagr) + " after inflation");
+  says("backtest", "All bonds: " + pct1(N.cagr) + " per year, but only " + pct1(N.realCagr) + " after inflation");
   says("backtest", Math.round(-N.maxDD * 100) + "% from " + N.ddFrom + " to " + N.ddTo);
-  says("backtest", "still earned " + pct1(roll(S, 20).realWorst) + " a year after inflation, and the worst 30-year stretch earned " + pct1(roll(S, 30).realWorst));
+  says("backtest", "still earned " + pct1(roll(S, 20).realWorst) + " per year after inflation, and the worst 30-year stretch earned " + pct1(roll(S, 30).realWorst));
   near(roll(M, 20).realWorst, 0, .001, "60/40's worst 20 years roughly broke even after inflation");
   says("backtest", "worst 30 years earned " + pct1(roll(M, 30).realWorst));
   eq(HIST_STOCK.indexOf(Math.min.apply(null, HIST_STOCK)) + 1926, 1931, "the worst year is 1931");
@@ -1275,7 +1275,7 @@ group("Articles: Income tax");
   says("incometax", "comes to " + dollars(T.federal));
   says("incometax", "7.65% of wages, " + dollars(T.fica));
   says("incometax", "a small exemption, " + dollars(T.state));
-  says("incometax", "Take-home: " + dollars(T.takeHome) + " a year, after " + dollars(T.total) + " in total tax");
+  says("incometax", "Take-home: " + dollars(T.takeHome) + " per year, after " + dollars(T.total) + " in total tax");
   eq(T.marginal, .22, "22% bracket");
   says("incometax", "federal income tax is only " + pct1(T.federal / 100000) + " of pay");
   var K = computeTax({ status: "s", gross: 100000, pre: 10000, dedType: "std", item: 0, state: "IL" });
@@ -1323,29 +1323,29 @@ group("Articles: Mortgage and rent vs. buy");
 (function () {
   var m = { price: 450000, down: 90000, rate: .065, term: 30, taxPct: .011, ins: 1800, pmiPct: 0, hoa: 0, maintPct: .01, util: 300 };
   var M = mortgage(m);
-  says("mortgage", "Principal and interest: " + dollars(M.pi) + " a month");
-  says("mortgage", "(" + dollars(M.tax) + " a month) and $1,800 a year of insurance (" + dollars(M.ins) + "), the housing payment is " + dollars(M.pi + M.tax + M.ins));
+  says("mortgage", "Principal and interest: " + dollars(M.pi) + " per month");
+  says("mortgage", "(" + dollars(M.tax) + " per month) and $1,800 a year of insurance (" + dollars(M.ins) + "), the housing payment is " + dollars(M.pi + M.tax + M.ins));
   says("mortgage", dollars(M.totalInterest) + " over 30 years");
   var X = mortgage(Object.assign({}, m, { extraMonthly: 200 }));
   says("mortgage", "gone in " + X.payoffMonth + " months");
   says("mortgage", "saves " + dollars(M.totalInterest - X.totalInterest) + " of interest");
   var F = mortgage(Object.assign({}, m, { rate: .0575, term: 15 }));
-  says("mortgage", dollars(F.pi) + " a month, " + dollars(F.pi - M.pi) + " more, but total interest of " + dollars(F.totalInterest));
+  says("mortgage", dollars(F.pi) + " per month, " + dollars(F.pi - M.pi) + " more, but total interest of " + dollars(F.totalInterest));
   ok(F.totalInterest < .4 * M.totalInterest, "15-year interest under 40% of the 30-year's");
   var P = mortgage(Object.assign({}, m, { down: 45000, pmiPct: .006 }));
-  says("mortgage", "adds " + dollars(P.pmi) + " a month");
+  says("mortgage", "adds " + dollars(P.pmi) + " per month");
   says("mortgage", "in month " + P.pmiEndMonth + ", " + dollars(P.pmiPaid) + " in all");
 
   var rb = { price: 450000, downPct: 20, rate: 6.5, term: 30, propTax: 1.1, ins: 1800, maint: 1, closePct: 3, sellPct: 3,
              rent: 1800, rentInc: 3.2, appr: 4, invest: 7, horizon: 30, gainTax: 15, status: "m" };
   var R = rentBuyCalc(rb), L = R.years[29];
-  says("rentbuy", dollars(R.monthlyBuy) + " a month in the first year: " + dollars(R.pi) + " of principal and interest");
+  says("rentbuy", dollars(R.monthlyBuy) + " per month in the first year: " + dollars(R.pi) + " of principal and interest");
   says("rentbuy", "also spends " + dollars(R.initialInvest) + " on the down payment");
   eq(R.breakEven, null, "at $1,800 rent, renting stays ahead");
   says("rentbuy", "worth " + dollars(L.renterNW) + " against the buyer's " + dollars(L.buyerNW) + " in home equity and savings, a " + dollars(L.renterNW - L.buyerNW) + " lead");
   var R2 = rentBuyCalc(Object.assign({}, rb, { rent: 2400 }));
   says("rentbuy", "buying pulls ahead in year " + R2.breakEven + " and leads by " + dollars(R2.years[29].buyerNW - R2.years[29].renterNW));
-  says("rentbuy", "At $1,800 a month it's about " + Math.round(450000 / 21600) + "; at $2,400 it's about " + Math.round(450000 / 28800));
+  says("rentbuy", "At $1,800 per month it's about " + Math.round(450000 / 21600) + "; at $2,400 it's about " + Math.round(450000 / 28800));
 })();
 
 group("Articles: College, budget and debt");
@@ -1353,11 +1353,11 @@ group("Articles: College, budget and debt");
   function cs(o) { return collegeSavingsCalc(Object.assign({ yearsUntil: 18, annualCost: 27000, tuitionInfl: .04, investRet: .06, saved: 0, collegeYrs: 4 }, o)); }
   var C = cs({});
   says("college", "make the first year " + dollars(C.yearCosts[0]));
-  says("college", dollars(C.monthly) + " a month from birth covers all four years");
+  says("college", dollars(C.monthly) + " per month from birth covers all four years");
   says("college", "hold " + dollars(C.targetAtStart) + " on the first day");
-  says("college", "it's " + dollars(cs({ yearsUntil: 10 }).monthly) + " a month for the same school");
-  says("college", "would take " + dollars(cs({ annualCost: 59000 }).monthly) + " a month from birth");
-  says("college", "about $" + Math.round(C.monthly / 10) * 10 + " a month from birth");
+  says("college", "it's " + dollars(cs({ yearsUntil: 10 }).monthly) + " per month for the same school");
+  says("college", "would take " + dollars(cs({ annualCost: 59000 }).monthly) + " per month from birth");
+  says("college", "about $" + Math.round(C.monthly / 10) * 10 + " per month from birth");
   says("college", "closer to $" + Math.round(cs({ yearsUntil: 10 }).monthly / 10) * 10);
 
   says("budget", "would put " + dollars(6000 * .5) + " toward needs");
@@ -1368,7 +1368,7 @@ group("Articles: College, budget and debt");
   var D = DEBT_DEFAULTS;
   var tot = D.reduce(function (a, x) { return a + x.balance; }, 0), mins = D.reduce(function (a, x) { return a + x.min; }, 0);
   says("debt", "owes " + dollars(tot) + " across four debts");
-  says("debt", "add up to " + dollars(mins) + " a month");
+  says("debt", "add up to " + dollars(mins) + " per month");
   var av = debtRun(D, 300, "avalanche"), sn = debtRun(D, 300, "snowball"), mn = debtRun(D, 0, "min"), av4 = debtRun(D, 400, "avalanche");
   says("debt", "Minimums only: " + mn.monthsTotal + " months");
   says("debt", "and " + dollars(mn.totalInterest) + " of interest");
@@ -1409,9 +1409,9 @@ group("Plan engine: taxes, accounts and the rules");
     res.rows = out.rows;
     return res;
   }
-  // Roth money only, no growth: $10,000 a year from $100,000 lasts ten years, tax-free.
+  // Roth money only, no growth: $10,000 per year from $100,000 lasts ten years, tax-free.
   var A = run({age1: 66, roth: 100000, rothBasis: 100000, spend: 10000, years: 15});
-  eq(A.depleted, 11, "a $100,000 Roth spending $10,000 a year runs short in year 11");
+  eq(A.depleted, 11, "a $100,000 Roth spending $10,000 per year runs short in year 11");
   near(A.tax, 0, 0.01, "Roth withdrawals owe no tax");
   // Before 59½ a traditional withdrawal carries the 10% additional tax, unless
   // the rule of 55 opens the 401(k).
@@ -1442,7 +1442,7 @@ group("Plan engine: taxes, accounts and the rules");
   near(S.own1, 36000, 0.01, "full benefit at 67");
   near(S.top2, 12000, 0.01, "spousal top-up to half the higher benefit");
   var S2 = plSSParts({P: {pia1: 3000, pia2: 500}, married: true, gap: 0}, {c1: 70, c2: 62});
-  near(S2.own1, 36000 * 1.24, 0.01, "8% a year past 67");
+  near(S2.own1, 36000 * 1.24, 0.01, "8% per year past 67");
   near(S2.own2, 6000 * .7, 0.01, "30% less at 62");
   near(S2.top2, 12000, 0.01, "the spousal top-up waits for both claims, and at 70 it's unreduced");
 })();

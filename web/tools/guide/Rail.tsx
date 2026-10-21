@@ -73,7 +73,7 @@ export function NumberTile({ g, cur, plan }: { g: GuideState; cur: StepDecl; pla
       </div>
       <Sparkline S={S} />
       <p className="gd-num-note">
-        {need != null ? <>To last in {S.I.target >= 1 ? "every" : Math.round(S.I.target * 100) + "% of"} historical retirements, spending {money(S.spend)} a year after tax. </> : null}
+        {need != null ? <>To last in {S.I.target >= 1 ? "every" : Math.round(S.I.target * 100) + "% of"} historical retirements, spending {money(S.spend)} per year after tax. </> : null}
         {placeholder ? <><SourceBadge kind="default" /> Spending is 80% of your take-home until you enter it.</> : null}
       </p>
       {moved.length ? <p className="gd-num-moved">This card {moved.join(", and ")}.</p> : null}

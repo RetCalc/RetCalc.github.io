@@ -10,7 +10,7 @@ import { TAX_DEFAULTS, runTax, taxInput } from "@/tools/tax/model";
 import { mortgage, projectBasic, rentBuyCalc } from "@/lib/engine/typed";
 import { historicalBacktest } from "@/lib/engine/typed-drawdown";
 
-/** The example household: 32, $60,000 saved, $1,500 a month, Balanced. */
+/** The example household: 32, $60,000 saved, $1,500 per month, Balanced. */
 export const EXAMPLE = { age: 32, retire: 65, saved: 60000, monthly: 1500 };
 
 export interface HomeData {
@@ -22,7 +22,7 @@ export interface HomeData {
   lasted: number;
   tax: { gross: number; takeHome: number; federal: number; fica: number; state: number; stateName: string };
   /** Buyer and renter net worth after 30 years, for Rent vs. Buy's blueprint (on
-      this page and /tools). An illustrative case, rent $2,300 rising 4% a year
+      this page and /tools). An illustrative case, rent $2,300 rising 4% per year
       with the rest the tool's defaults, where buying pulls ahead (in year 10):
       at the defaults renting stays ahead, and the picture is there to show a
       comparison, not a verdict. No figures show. */

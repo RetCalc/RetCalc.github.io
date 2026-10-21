@@ -21,7 +21,7 @@ export function basicShare(s: BasicInputs): ShareKit {
       const level = (RISK_LEVELS as { label: string; real: number }[]).find((r) => Math.abs(r.real - p.real) < 1e-9);
       return (
         <SheetPage title="Retirement Projection" sub={<>{fmtYears(p.years)} of saving &middot; every figure in today&apos;s dollars</>}
-          big={[["Value at retirement", money(R.fv), "at age " + fmtNum(p.retire)], ["Income per year", money(R.fv * 0.04), "taking 4% a year"],
+          big={[["Value at retirement", money(R.fv), "at age " + fmtNum(p.retire)], ["Income per year", money(R.fv * 0.04), "taking 4% per year"],
             ["Income per month", money((R.fv * 0.04) / 12), "before any tax"]]}
           chart={copyChart("#chartQ")}
           foot="All figures are in today's dollars and assume a steady return after inflation, no tax and no fees. Real returns vary year to year. Projections are not predictions, and this is not financial advice.">

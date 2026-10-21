@@ -28,7 +28,7 @@ export const debtList = (rows: DebtRow[]) =>
 /** The plan the screen shows, null with nothing owed: both orderings and
     minimums only, the debts whose minimum doesn't cover their interest,
     what the chosen order saves against minimums, how the orderings differ,
-    the blended rate, and the same plan with $100 a month more. */
+    the blended rate, and the same plan with $100 per month more. */
 export function debtCompute(s: DebtInputs) {
   const debts = debtList(s.rows);
   const extra = Math.max(0, parseNum(s.extra) || 0);

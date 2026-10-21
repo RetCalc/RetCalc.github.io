@@ -79,7 +79,7 @@ export function SSNote({ a }: { a: Answers }) {
     cover = share >= 1
       ? (pen ? " Once it starts, it and your pension cover the spending you entered" : " Once it starts, that alone covers the spending you entered") +
         (early ? "; your savings carry the " + early + (early === 1 ? " year" : " years") + " before it." : ".")
-      : <>{that} covers about <b>{pctStr(share, 0)}</b> of your spending; your savings cover the other {money(a.retSpend - got)} a year and its tax
+      : <>{that} covers about <b>{pctStr(share, 0)}</b> of your spending; your savings cover the other {money(a.retSpend - got)} per year and its tax
         {early ? ", and more for the " + early + (early === 1 ? " year" : " years") + " before " + ss.claim : ""}.</>;
   }
   return (
@@ -99,12 +99,12 @@ export function SSNote({ a }: { a: Answers }) {
 export function MinNote({ a }: { a: Answers }) {
   const S = sim(a), m = minSpend(a);
   if (!m || !S) return null;
-  if (m >= S.spend) return <Callout cls="warn">That&apos;s at or above the {money(S.spend)} a year you plan to spend, so no approach can flex: they&apos;d all behave like the fixed one.</Callout>;
+  if (m >= S.spend) return <Callout cls="warn">That&apos;s at or above the {money(S.spend)} per year you plan to spend, so no approach can flex: they&apos;d all behave like the fixed one.</Callout>;
   const base = S.ss.total + S.pension;
   return (
     <Callout>{pctStr(m / S.spend, 0)} of your planned spending.{" "}
       {base >= m ? "Social Security" + (S.pension ? " and your pension" : "") + " cover it on their own once they start, so the floor mostly matters in the years before."
-        : (S.pension ? "Social Security and your pension cover " : "Social Security covers ") + money(base) + " of it; the other " + money(m - base) + " a year has to come from savings even in the worst markets."}
+        : (S.pension ? "Social Security and your pension cover " : "Social Security covers ") + money(base) + " of it; the other " + money(m - base) + " per year has to come from savings even in the worst markets."}
     </Callout>
   );
 }
@@ -138,7 +138,7 @@ export function PensionNote({ a }: { a: Answers }) {
   if (!pos(a.pension)) return null;
   const from = ok(a.pensionAge) ? a.pensionAge : a.retire;
   return (
-    <Callout>Counted from {ok(from) ? "age " + fmtNum(from) : "retirement"}: <b>{money(a.pension * 12) + " a year"}</b>
+    <Callout>Counted from {ok(from) ? "age " + fmtNum(from) : "retirement"}: <b>{money(a.pension * 12) + " per year"}</b>
       {a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year as prices rise."}</Callout>
   );
 }
@@ -155,10 +155,10 @@ export function BridgeNote({ a }: { a: Answers }) {
 export function HcNote({ a }: { a: Answers }) {
   const S = sim(a);
   if (!S) return null;
-  if (a.hcIncl === "yes") return <Callout>Your plan won&apos;t add health premiums — not marketplace coverage before 65, not Medicare after. Make sure the {money(S.spend)} a year you entered really covers them: marketplace plans can run hundreds a month each without a subsidy.</Callout>;
+  if (a.hcIncl === "yes") return <Callout>Your plan won&apos;t add health premiums — not marketplace coverage before 65, not Medicare after. Make sure the {money(S.spend)} per year you entered really covers them: marketplace plans can run hundreds a month each without a subsidy.</Callout>;
   if (!(S.hcYr > 0)) return <Callout cls="ok">In your plan, income stays low enough before 65 that coverage comes through Medicaid or a full subsidy.</Callout>;
   return (
-    <Callout>In your plan: about <b>{money(S.hcYr) + " a year"}</b> for {S.hcYears + (S.hcYears === 1 ? " year" : " years")}, after the subsidy its income earns.
+    <Callout>In your plan: about <b>{money(S.hcYr) + " per year"}</b> for {S.hcYears + (S.hcYears === 1 ? " year" : " years")}, after the subsidy its income earns.
       {" "}Above 400% of the poverty line the subsidy disappears all at once; the Plan Optimizer can keep income under that line.</Callout>
   );
 }

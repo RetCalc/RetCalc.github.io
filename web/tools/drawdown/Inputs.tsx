@@ -107,7 +107,7 @@ export function Inputs({ v, fromNote, periods, open }: {
         (st.top1 + st.top2 > 0 ? ", including a spousal benefit of " + money((st.top1 + st.top2) / 12) + "/mo once you've both claimed" : "") + ".";
     } else {
       const e = ssEstimate(d.ssIncome as number, 40, Math.min(70, Math.max(62, d.ssClaim as number)));
-      ssEstNote = "About " + money(e.monthly) + " a month in today's dollars, claiming at " + Math.round(d.ssClaim as number) + ".";
+      ssEstNote = "About " + money(e.monthly) + " per month in today's dollars, claiming at " + Math.round(d.ssClaim as number) + ".";
     }
   }
 
@@ -138,14 +138,14 @@ export function Inputs({ v, fromNote, periods, open }: {
     if (kind === "flat") pathNote = "Spending keeps its value, rising with inflation, as the strategy decides.";
     else if (kind === "ease")
       pathNote = "Real spending falls " + ddN(o.pathEase) + "% a year: by year " + o.years + ", " + pctStr(last, 0) +
-        " of year one's" + (strat === "fixed" ? ", " + money(firstW * last) + " a year." : ".");
+        " of year one's" + (strat === "fixed" ? ", " + money(firstW * last) + " per year." : ".");
     else if (kind === "smile") {
       const age0 = o.retireAge != null ? o.retireAge : 65, at = (a: number) => { const i = Math.round(a - age0); return i >= 0 && i < m.length ? m[i] : null; };
       let lowI = 0;
       m.forEach((x, i) => { if (x < m[lowI]) lowI = i; });
       const a85 = at(85);
       pathNote = "David Blanchett's estimate of how retirees' real spending actually moves, for someone spending about " +
-        money(firstW + P.G.income) + " a year: easing through the 70s" + (a85 != null ? ", about " + pctStr(1 - a85, 0) + " lower by 85" : "") +
+        money(firstW + P.G.income) + " per year: easing through the 70s" + (a85 != null ? ", about " + pctStr(1 - a85, 0) + " lower by 85" : "") +
         (lowI < m.length - 1 ? ", then rising again late in life" : "") + "." +
         (o.retireAge == null ? " It depends on age, so it takes retirement at 65 until you set your age above." : "");
     } else if (kind === "stages")
@@ -582,7 +582,7 @@ function WdStages({ stages, v, edit, toast }: { stages: PathStage[]; v: DDView; 
       warn: !live,
       note: x.start > o.years ? "This starts after the " + fmtNum(o.years) + " years of retirement above, so it has no effect."
         : !live ? "Another stage starts the same year and takes its place."
-          : o.strategy === "fixed" && firstW > 0 ? "That's " + money(firstW * lv) + " a year (" + money(firstW * lv / 12) + "/mo) in today's dollars."
+          : o.strategy === "fixed" && firstW > 0 ? "That's " + money(firstW * lv) + " per year (" + money(firstW * lv / 12) + "/mo) in today's dollars."
             : fmtNum(lv * 100) + "% of what the strategy would pay that year.",
     });
   });

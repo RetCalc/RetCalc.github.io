@@ -130,12 +130,12 @@ export function reportModel(a0: Answers, src: Sources, levers: Levers, names: Re
     const e = pick("earlier"), c = pick("coast"), m = pick("more");
     if (e?.retire != null) levers3.push({ fig: String(e.retire), label: "retire " + (retire - e.retire) + (retire - e.retire === 1 ? " year" : " years") + " sooner" });
     if (c) levers3.push({ fig: c.stopAge! <= a.age ? "Stop" : String(c.stopAge), label: c.stopAge! <= a.age ? "saving now and coast" : "stop saving at that age" });
-    if (m?.retSpend != null) levers3.push({ fig: fmtMoney(m.retSpend), label: "a year to spend, not " + fmtMoney(a.retSpend!) });
+    if (m?.retSpend != null) levers3.push({ fig: fmtMoney(m.retSpend), label: "per year to spend, not " + fmtMoney(a.retSpend!) });
   } else {
     const x = pick("extra"), l = pick("later"), sp = pick("less-spend");
-    if (x?.contrib != null) levers3.push({ fig: fmtMoney(x.contrib - (a.contrib || 0)), label: "a month more saved" });
+    if (x?.contrib != null) levers3.push({ fig: fmtMoney(x.contrib - (a.contrib || 0)), label: "per month more saved" });
     if (l?.retire != null) levers3.push({ fig: String(l.retire), label: "retire at this age instead" });
-    if (sp?.retSpend != null) levers3.push({ fig: fmtMoney(sp.retSpend), label: "a year to spend in retirement" });
+    if (sp?.retSpend != null) levers3.push({ fig: fmtMoney(sp.retSpend), label: "per year to spend in retirement" });
   }
 
   /* ---------- the conditional pages ---------- */

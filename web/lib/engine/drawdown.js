@@ -287,7 +287,7 @@ export function ddRiskRate(T, p, L){
    value at a 3% real rate from year y to the end: A of the spending path, B
    of Social Security and other income, C of extra expenses, each split into
    what rises with inflation (r) and what's fixed in dollars (n, divided by
-   that year's price level when it's used, and taken to lose 3% a year to
+   that year's price level when it's used, and taken to lose 3% per year to
    inflation after). f turns a present value back into a level yearly amount.
    Guaranteed income isn't here: it pays for spending of its own. */
 export function ddRiskCoef(o, path){

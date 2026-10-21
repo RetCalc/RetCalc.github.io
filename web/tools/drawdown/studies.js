@@ -50,7 +50,7 @@ export const DD_STUDY_UI = {
         (fails ? "The steadiness has a price: it ran out in <b>" + fails + " of " + f.starts + "</b> starts, where a straight percentage never can."
           : "It lasted in every start.");
     },
-    why: "A cut of no more than 2.5% a year can lag a falling market, which is how it can run out; Vanguard's research pairs the rule with a sensible starting rate."},
+    why: "A cut of no more than 2.5% per year can lag a falling market, which is how it can run out; Vanguard's research pairs the rule with a sensible starting rate."},
   vpw: {title: "Variable percentage withdrawal (Bogleheads)",
     cite: "The Bogleheads' VPW method, from the Bogleheads forum and wiki, 2015 onward.",
     setup: "Retire at 65 with 60% stocks and spend to 100: each year an annuity-style payment on what's left, at the mix's expected real return (3.8%).",

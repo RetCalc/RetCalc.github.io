@@ -264,7 +264,7 @@ export function Drawdown({ landing }: { landing?: string }) {
                 </NativeSelect>
                 <span id="ddTStarts">historical starts</span>
               </div>
-              <Html className="hint mb-0" id="ddTargetNote" html={"Comfort line: <b>" + lineWords(comfort, age, " a year") + "</b>" +
+              <Html className="hint mb-0" id="ddTargetNote" html={"Comfort line: <b>" + lineWords(comfort, age, " per year") + "</b>" +
                 (o.comfort > 0 ? "" : " (set your own with Comfort line, in the inputs)") + ". These views use the historical record" +
                 (mode === "mc" ? ", whatever the Historical / Monte Carlo switch says" : "") + ", " +
                 (o.monthly ? "a retirement starting every month" : "a retirement starting each January") + " from " + o.fromYear + "."} />
@@ -305,7 +305,9 @@ function readoutFigures(o: DdOpts, mode: "hist" | "mc", R: PlanResult | null, H:
       F.badge = H.first + "–" + lastYear + (H.monthly ? " · monthly" : "");
       F.success = pctStr(H.successRate, 1);
       F.tone = tone(H.successRate);
-      F.successNote = H.survived + " of " + H.total + " retirements lasted " + fmtYears(o.years);
+      // Monthly and yearly starts give slightly different rates for the same
+      // plan (94.0% and 94.3% for the 4% rule); the note says which this is.
+      F.successNote = H.survived + " of " + H.total + (H.monthly ? " monthly" : " yearly") + " starts lasted " + fmtYears(o.years);
       F.median = money(H.medianEnd);
       F.worst = money(H.worstEnd);
       F.worstNote = H.failCount ? "Ran out in " + H.failCount + " of " + H.total + " retirements" : "Never ran out";

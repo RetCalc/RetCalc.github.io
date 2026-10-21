@@ -119,7 +119,7 @@ export function Home({ data }: { data: HomeData }) {
                 <p>It retires you in every month since 1926, through the Depression, the 1970s and 2008. 15 withdrawal strategies to compare.</p>
                 <div className="hm-readout">
                   <div className="v">{Math.round(data.lasted * 100)}%</div>
-                  <div className="k">of retirements since 1926 lasted 30 years at 4% a year</div>
+                  <div className="k">of retirements since 1926 lasted 30 years at 4% per year</div>
                 </div>
               </div>
               <FanChart fan={data.fan} />

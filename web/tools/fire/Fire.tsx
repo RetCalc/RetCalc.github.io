@@ -180,7 +180,7 @@ export function Fire() {
     { label: <span id="fiPortfolioLabel">{coast ? "Portfolio at coast" : "Portfolio at FIRE"}</span>, id: "fiPortfolio",
       value: S && S.fireYear !== null ? money(S.real) : DASH, note: S ? "In today's dollars" : "" },
     { label: "Target portfolio", id: "fiKVTarget", value: kvs?.target ?? DASH,
-      note: S ? (s.solveFor === "withdrawal" ? "Spending " + money(p.targetAmt) + " a year at " + pctStr(p.withdrawal, 2) : "Your portfolio target") : "" },
+      note: S ? (s.solveFor === "withdrawal" ? "Spending " + money(p.targetAmt) + " per year at " + pctStr(p.withdrawal, 2) : "Your portfolio target") : "" },
   ];
   const heroTone = !S ? "text" : never ? "loss" : "answer";
 

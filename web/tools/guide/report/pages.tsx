@@ -164,8 +164,8 @@ function Family({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       <Lead h={pausedYears ? <>{Ch.planned ? (Ch.planned > 1 ? "New children put" : "A new child puts") : "Your changes put"} retirement saving on hold for {num(pausedYears)} years{most > Ch.monthly ? ", then it comes back stronger" : ""}.</>
-        : <>Your saving moves between {money(Math.min(...Ch.sched.map((s) => s.monthly)))} and {money(most)} a month as things change.</>}>
-        The Guide takes what {who} out of the {money(Ch.monthly)} a month you save now{pausedYears ? <>. From {and(spans.map((s) => s.from + " to " + s.to))}, that&apos;s more than you save, so saving pauses</> : null}.
+        : <>Your saving moves between {money(Math.min(...Ch.sched.map((s) => s.monthly)))} and {money(most)} per month as things change.</>}>
+        The Guide takes what {who} out of the {money(Ch.monthly)} per month you save now{pausedYears ? <>. From {and(spans.map((s) => s.from + " to " + s.to))}, that&apos;s more than you save, so saving pauses</> : null}.
         {most > Ch.monthly ? <> It rises to {money(most)} {Ch.kids.length ? "once the children are grown" : "later on"}.</> : null}
       </Lead>
       <Sec>Retirement saving each month, by {M.who.axisIn}</Sec>
@@ -175,7 +175,7 @@ function Family({ M, p }: { M: ReportModel; p: PageInfo }) {
           <div className="rp-key"><span><i className="line" style={{ "--sw": C.trail } as React.CSSProperties} />Your plan</span><span><i className="dash" style={{ "--sw": C.gray } as React.CSSProperties} />Saving {money(Ch.monthly)} the whole way</span></div></div>
         <div><Sec>What the changes cost your retirement</Sec>
           <Side><div className="rp-fig">{money(Math.abs(cost))}</div>{cost >= 0 ? "less" : "more"} at {M.retire}. You&apos;re on course for {money(M.S.fv)} against the {money(M.need)} your plan needs, and it lasted in {lasted(M)}.
-            {Ch.short.list.length ? <><h5 className="gap">The years your saving can&apos;t cover</h5>{cap(who)} up to <b>{money(Ch.short.most)} a month</b> more than you save, about <b>{rounded(Ch.short.total)}</b> in all. Saving can&apos;t go below $0, so that comes from your budget: trim spending then, or build savings outside retirement before it starts.</> : null}</Side></div>
+            {Ch.short.list.length ? <><h5 className="gap">The years your saving can&apos;t cover</h5>{cap(who)} up to <b>{money(Ch.short.most)} per month</b> more than you save, about <b>{rounded(Ch.short.total)}</b> in all. Saving can&apos;t go below $0, so that comes from your budget: trim spending then, or build savings outside retirement before it starts.</> : null}</Side></div>
       </div>
       {Ch.kids.length ? <>
         <Sec>What each child costs per month</Sec>
@@ -205,8 +205,8 @@ function College({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p} foot="College in today's dollars here; College Savings shows the year's dollars.">
       <Lead h={<>About {rounded(K.totalToday)} of college in today&apos;s dollars{late.length ? <>, and the {nth[K.kids.indexOf(late[0])] ?? "last"} child&apos;s runs past retirement</> : null}.</>}>
-        From the College Savings tool: {money(K.costNow)} a year for each child at today&apos;s prices, college costs rising {pctStr(K.tuitionInfl, 0)} a year and savings earning {pctStr(K.investRet, 0)}.
-        {" "}Setting aside a fixed {money(K.monthly)} a month until {K.saveUntil} pays for {K.kids.length > 1 ? (K.kids.length === 2 ? "both" : "all of them") : "it"}.
+        From the College Savings tool: {money(K.costNow)} per year for each child at today&apos;s prices, college costs rising {pctStr(K.tuitionInfl, 0)} per year and savings earning {pctStr(K.investRet, 0)}.
+        {" "}Setting aside a fixed {money(K.monthly)} per month until {K.saveUntil} pays for {K.kids.length > 1 ? (K.kids.length === 2 ? "both" : "all of them") : "it"}.
       </Lead>
       <Sec>The college years beside your own</Sec>
       <CollegeTimeline M={M} />
@@ -218,7 +218,7 @@ function College({ M, p }: { M: ReportModel; p: PageInfo }) {
         <div><Sec>{ov || late.length ? "The overlap" : "Where the money comes from"}</Sec>
           <Side>{ov ? <><h5>{ov.t}</h5><Html as="span" html={ov.d} /><h5 className="gap">Where the money comes from</h5></>
             : late.length ? <><h5>College after you retire</h5>{cap(and(late.map((k) => "college from " + k.from + " to " + k.to)))} runs past the day you stop work at {M.retire}. Make sure that money is set aside before then, or plan for it from savings.<h5 className="gap">Where the money comes from</h5></> : null}
-            This plan treats the {money(K.monthly)} a month as part of your budget, not your retirement saving. If it will come out of retirement contributions instead, add it in the Guide&apos;s Changes ahead.</Side></div>
+            This plan treats the {money(K.monthly)} per month as part of your budget, not your retirement saving. If it will come out of retirement contributions instead, add it in the Guide&apos;s Changes ahead.</Side></div>
       </div>
       <Sec>Each child</Sec>
       <table className="rp-t"><thead><tr><th>Child</th><th>College at {M.who.axisIn}</th><th>Years from now</th><th>In today&apos;s dollars</th><th>In the year&apos;s dollars</th></tr></thead><tbody>
@@ -305,7 +305,7 @@ function Health({ M, p }: { M: ReportModel; p: PageInfo }) {
           <div className="rp-key"><span><i style={{ "--sw": C.clay } as React.CSSProperties} />Marketplace, after the subsidy</span><span><i style={{ "--sw": C.water } as React.CSSProperties} />Medicare premiums</span></div></div>
         <div><Sec>The costly stretch</Sec>
           <Side><div className="rp-fig">{money(worst.health)}</div>a year at {worst.age}, the most of any year{M.who.married && worst.age >= 65 ? <>: {M.who.first} pays Medicare and {M.who.second}, alone on the marketplace, gets a smaller subsidy</> : null}.
-            {after ? <><h5 className="gap">From {both}</h5>{M.who.married ? "Both on Medicare" : "On Medicare"}: {money(after.health)} a year in premiums.</> : null}</Side></div>
+            {after ? <><h5 className="gap">From {both}</h5>{M.who.married ? "Both on Medicare" : "On Medicare"}: {money(after.health)} per year in premiums.</> : null}</Side></div>
       </div>
       <div className="rp-g3 gap">
         <Side><div className="rp-fig">{money(r0.health)}</div>in the first year of retirement</Side>
@@ -416,7 +416,7 @@ function Sources({ M, p }: { M: ReportModel; p: PageInfo }) {
             {M.why.estimated.length ? <div><dt><span className="rp-tag e">estimated</span></dt><dd className="l">{cap(and(M.why.estimated))}</dd></div> : null}
             {M.why.defaults.length ? <div><dt><span className="rp-tag d">default</span></dt><dd className="l">{cap(and(M.why.defaults))}</dd></div> : null}</dl> : null}</div>
         <div><Sec>Method</Sec>
-          <p className="rp-body sm"><b>Saving.</b> Savings grow {pctStr(M.S.real, 2)} a year after inflation, the historical return of your mix, with contributions rising with inflation until {M.retire}.</p>
+          <p className="rp-body sm"><b>Saving.</b> Savings grow {pctStr(M.S.real, 2)} per year after inflation, the historical return of your mix, with contributions rising with inflation until {M.retire}.</p>
           <p className="rp-body sm"><b>Retirement.</b> Tested against every starting year since {M.S.H.first} with enough history to run the full {M.rows.length} years: {M.S.H.total} retirements, {M.S.mix}% in stocks. Spending is a fixed amount that rises with inflation.</p>
           <p className="rp-body sm"><b>Tax and health.</b> Each year&apos;s federal{st ? " and " + st : ""} income tax, the Medicare surcharge and marketplace premiums before 65 are worked out from where that year&apos;s money comes from, and paid on top of spending.</p>
           <p className="rp-body sm"><b>Needs.</b> The smallest balance at {M.retire} that lasted in {pctStr(M.goal, 0)} of historical retirements.</p>
@@ -507,7 +507,7 @@ function Social({ M, p }: { M: ReportModel; p: PageInfo }) {
   };
   return (
     <Sheet M={M} p={p}>
-      <Lead h={<>{money(total / 12)} a month together, {Q.claim1 === Q.claim2 ? "each claiming at " + Q.claim1 : "claiming at " + Q.claim1 + " and " + Q.claim2}.</>}>
+      <Lead h={<>{money(total / 12)} per month together, {Q.claim1 === Q.claim2 ? "each claiming at " + Q.claim1 : "claiming at " + Q.claim1 + " and " + Q.claim2}.</>}>
         Each of you gets a benefit from your own work record, or up to half the other&apos;s full benefit if that&apos;s more{Q.spousal ? ", which your plan uses" : ""}. Claiming before 67 shrinks a benefit for life; each year of waiting past 67 raises it 8%, up to 70.
       </Lead>
       <div className="rp-g2">{one(1)}{one(2)}</div>
@@ -528,9 +528,9 @@ function Pension({ M, p }: { M: ReportModel; p: PageInfo }) {
   const Pn = M.pension!, both = Pn.withSS ? (Pn.withSS.pension + Pn.withSS.ss) / Math.max(1, Pn.withSS.spend) : 0;
   return (
     <Sheet M={M} p={p}>
-      <Lead h={<>{money(Pn.monthly)} a month from {Pn.from}, {Pn.cola ? "rising with inflation" : "a fixed amount"}.</>}>
+      <Lead h={<>{money(Pn.monthly)} per month from {Pn.from}, {Pn.cola ? "rising with inflation" : "a fixed amount"}.</>}>
         It covers {pctStr(Pn.share, 0)} of what you spend in its first year{both > 0 ? <>, and with Social Security, {both >= 1 ? "all" : pctStr(both, 0)} of it once {M.who.married ? "you both claim" : "you claim"}</> : null}.
-        {" "}{Pn.cola ? "With a cost-of-living raise it keeps its value for life." : <>Without a cost-of-living raise it buys less each year: by {M.end} it&apos;s worth about {money(Pn.lastYear / 12)} a month in today&apos;s dollars.</>}
+        {" "}{Pn.cola ? "With a cost-of-living raise it keeps its value for life." : <>Without a cost-of-living raise it buys less each year: by {M.end} it&apos;s worth about {money(Pn.lastYear / 12)} per month in today&apos;s dollars.</>}
       </Lead>
       <Sec>Guaranteed income each year, against what you spend</Sec>
       <StackBars rows={M.rows} w={732} h={230} parts={[{ f: (r) => r.pension, color: C.dusk }, { f: (r) => r.ss, color: C.water }]} line={{ f: (r) => r.spend, color: C.trail }} />
@@ -592,7 +592,7 @@ function Debt({ M, p }: { M: ReportModel; p: PageInfo }) {
   return (
     <Sheet M={M} p={p}>
       {P ? <Lead h={<>Debt-free {D.free ? "by " + D.free : "once the plan clears"}, paying {money(P.interest)} in interest.</>}>
-          From the Debt Payoff tool: the highest rate first, with {money(D.extra)} a month on top of the minimums. That&apos;s {money(P.saved)} less interest{P.minMonths > P.months ? " and " + yrsMo(P.minMonths - P.months) + " sooner" : ""} than paying the minimums alone.
+          From the Debt Payoff tool: the highest rate first, with {money(D.extra)} per month on top of the minimums. That&apos;s {money(P.saved)} less interest{P.minMonths > P.months ? " and " + yrsMo(P.minMonths - P.months) + " sooner" : ""} than paying the minimums alone.
         </Lead>
         : <Lead h={<>{money(D.total)} owed besides the mortgage{D.hi > 0 ? <>, {money(D.hi)} of it at 8% or more</> : null}.</>}>
           Paying off high-rate debt is the surest return there is: every dollar there saves 8% or more a year, more than investing is likely to earn. The Debt Payoff tool puts your debts in order and dates each payoff; bring it back to the Guide and this page shows the plan.
@@ -611,7 +611,7 @@ function Debt({ M, p }: { M: ReportModel; p: PageInfo }) {
         : <div className="rp-g3 gap">
           <Side><div className="rp-fig">{money(D.total)}</div>owed, not counting the mortgage</Side>
           <Side><div className="rp-fig">{money(D.hi)}</div>of it at 8% or more</Side>
-          <Side><div className="rp-fig">{D.min ? money(D.min) : "–"}</div>{D.min ? "a month in minimum payments" : "minimum payments not entered"}</Side></div>}
+          <Side><div className="rp-fig">{D.min ? money(D.min) : "–"}</div>{D.min ? "per month in minimum payments" : "minimum payments not entered"}</Side></div>}
       {area ? <><Sec>Debt in your score</Sec>
         <div className="rp-wide"><div><p className="rp-body">{cap(area.txt)}: {Math.round(area.p * 15)} of 15 points.{area.p < 0.999 ? " Clearing the high-rate debt earns the rest." : ""}</p></div><div /></div></> : null}
       {D.moves.length ? <><Sec>The moves</Sec><ol className="rp-poi plain">{D.moves.map((m) => <li key={m.id}><span><b>{m.t}.</b> <Html as="span" html={m.d} /></span></li>)}</ol></> : null}

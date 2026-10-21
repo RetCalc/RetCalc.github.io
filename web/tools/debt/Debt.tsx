@@ -114,10 +114,10 @@ export function Debt() {
         : "Snowball offers nothing in return here: it clears the first debt no sooner.";
     }
     verdict += " Your blended rate is " + pctStr(rate / 100, 1) + " across " + live.length + (live.length === 1 ? " debt" : " debts") +
-      ", and you're putting " + money(pick.monthlyPool, 0) + " a month at it.";
+      ", and you're putting " + money(pick.monthlyPool, 0) + " per month at it.";
     // An extra dollar a month is the most underrated lever in the whole thing.
     if (bump && !bump.stalled && !pick.stalled && bump.monthsTotal < pick.monthsTotal)
-      verdict += " Another $100 a month would clear it " + debtDur(pick.monthsTotal - bump.monthsTotal) + " sooner and save " +
+      verdict += " Another $100 per month would clear it " + debtDur(pick.monthsTotal - bump.monthsTotal) + " sooner and save " +
         money(pick.totalInterest - bump.totalInterest) + " more.";
 
     /* The race: your approach marked with a check and Text weight (not

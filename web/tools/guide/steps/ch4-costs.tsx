@@ -154,7 +154,7 @@ function SocialMeans() {
   return (
     <Means stale={plan.stale && !!S}>
       <ul className="gd-read">
-        <li><b>{money(ss.total / 12)} a month</b> from {ss.claim}{both && ss.claim2 !== ss.claim ? " (" + ss.claim2 + " for your spouse)" : ""}, <b>{money(ss.total)}</b> a year
+        <li><b>{money(ss.total / 12)} per month</b> from {ss.claim}{both && ss.claim2 !== ss.claim ? " (" + ss.claim2 + " for your spouse)" : ""}, <b>{money(ss.total)}</b> a year
           {both ? " for the two of you" : ""}{ss.spousal ? ", with the spousal top-up" : ""}. <SourceBadge kind={est ? "estimated" : "entered"} /></li>
         {needYr != null ? <li>That&apos;s <b>{pctStr(Math.min(9.99, (ss.total + pen) / needYr), 0)}</b> of the <b>{money(needYr)}</b> a year your plan needs including tax
           {pen ? ", counting your pension" : ""}.{early ? " Savings carry the " + yrs(early) + " before it starts." : ""}{guessing(a) ? " Spending is still the starting estimate." : ""}</li> : null}

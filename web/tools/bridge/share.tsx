@@ -47,7 +47,7 @@ export function bridgeShare(R: BridgeRun | null, sel: RunPlan | null): ShareKit 
       if (!R) return { title: "Can I bridge to 59½?", bigLabel: "Enter your balances", big: "—", sub: "", rows: [] };
       const b = R.best, t = b.test, s = b.steady;
       return { title: "Can I bridge to 59½?", bigLabel: R.mc ? "Reaches 59½ penalty-free, random markets" : "Reaches 59½ penalty-free, tested since " + HIST_START,
-        big: t.of ? pctStr(t.hold / t.of, 0) : "—", sub: "Retiring at " + R.ctx.age + " · " + money(R.ctx.spend) + " a year after tax",
+        big: t.of ? pctStr(t.hold / t.of, 0) : "—", sub: "Retiring at " + R.ctx.age + " · " + money(R.ctx.spend) + " per year after tax",
         rows: [["Best plan", b.name], ["Tax to 59½", money(s.tax)], ["Penalties", money(s.pen)], ...(R.ctx.aca ? [["Health premiums to 59½", money(s.health)] as [string, string]] : []),
           ["Traditional at 59½", money(s.end.trad)], ["Roth at 59½", money(s.end.roth)], ["Brokerage at 59½", money(s.end.brok)]],
         verdict: b.desc, chart: { sel: "#chartBR", w: 900, h: 300 } };

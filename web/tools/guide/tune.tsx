@@ -81,11 +81,11 @@ function optTitle(a: Answers, o: Opt, S: Sim): { t: string; d: string } {
       ? { t: "Stop saving now", d: "What you have grows on its own to " + ret }
       : { t: "Stop saving at " + v.stopAge, d: "Then coast the last " + (ret - v.stopAge!) + " years to " + ret };
     case "less": return { t: "Save " + money(v.contrib! + emp) + "/mo", d: money(a.contrib! - v.contrib!) + "/mo back in your budget" };
-    case "more": return { t: "Spend " + money(v.retSpend!) + " a year", d: money(v.retSpend! - a.retSpend!) + " a year more in retirement" };
+    case "more": return { t: "Spend " + money(v.retSpend!) + " per year", d: money(v.retSpend! - a.retSpend!) + " per year more in retirement" };
     case "keepsaving": return { t: "Keep saving until " + ret, d: "Instead of stopping at " + fmtNum(S.stop!) };
     case "extra": return { t: "Save " + money(v.contrib! - a.contrib!) + "/mo more", d: money(v.contrib! + emp) + "/mo in all" };
     case "later": return { t: "Retire at " + v.retire, d: v.retire! - ret + (v.retire! - ret === 1 ? " year" : " years") + " later" };
-    case "less-spend": return { t: "Spend " + money(v.retSpend!) + " a year", d: money(a.retSpend! - v.retSpend!) + " a year less in retirement" };
+    case "less-spend": return { t: "Spend " + money(v.retSpend!) + " per year", d: money(a.retSpend! - v.retSpend!) + " per year less in retirement" };
     case "balance": {
       const bits = [];
       if ("retire" in v) bits.push("retire at " + v.retire);
@@ -128,10 +128,10 @@ function Compare({ a }: { a: Answers }) {
     notes.push("Retiring at " + fmtNum(T.retire) + " means living on savings before 59½, when most 401(k) and IRA withdrawals carry a 10% penalty. The rule of 55, Roth contributions, a taxable brokerage account or 72(t) payments can bridge those years; the Getting to 59½ step plans them.");
   if (T.retire < 65 && S.retire >= 65) notes.push("Before 65 you'll need health insurance until Medicare starts. A healthcare step joins your plan to price it.");
   if (!T.ss.own && T.ss.total < S.ss.total - 1)
-    notes.push("Fewer working years also lower your Social Security estimate, from " + money(S.ss.total / 12) + " to " + money(T.ss.total / 12) + " a month. That's already counted above.");
+    notes.push("Fewer working years also lower your Social Security estimate, from " + money(S.ss.total / 12) + " to " + money(T.ss.total / 12) + " per month. That's already counted above.");
   if (T.stop != null && (a.employer || 0) > 0)
     notes.push("Coasting here means no new money at all from " + (T.stop <= a.age! ? "now" : fmtNum(T.stop)) + ", so your employer's " + money(a.employer!) + "/mo stops too. If you keep working, it's worth still contributing enough to get any match.");
-  if (T.stop != null) notes.push("Coasting leans on the " + pctStr(a.risk || 0.045, 1) + " a year your mix is assumed to earn. If markets lag, you can always start saving again.");
+  if (T.stop != null) notes.push("Coasting leans on the " + pctStr(a.risk || 0.045, 1) + " per year your mix is assumed to earn. If markets lag, you can always start saving again.");
   if (o.id === "less" && (a.employer || 0) > 0) notes.push("Your employer's " + money(a.employer!) + "/mo stays in. If it's a match, keep contributing at least enough to get all of it.");
   if (T.spend > S.spend && T.success < 1) notes.push("Spending more uses up your margin: in the worst historical starting years, this spending needed trimming to last.");
   return (
@@ -183,7 +183,7 @@ export function TuneStep() {
       <LeversLesson ahead={O.ahead} />
       <p className="gd-lead">Your plan now: retire at <b>{fmtNum(S.retire)}</b>,{" "}
         {S.stop != null && S.stop <= a.age! ? <><b>coast</b> with no new saving</> : <>save <b>{money(S.monthly) + "/mo"}</b>{S.stop != null ? " until " + fmtNum(S.stop) : ""}</>}
-        , then spend <b>{money(S.spend) + " a year"}</b>.{" "}
+        , then spend <b>{money(S.spend) + " per year"}</b>.{" "}
         It reaches {money(S.fv)} and lasted in {pctStr(S.success, 0)} of historical retirements
         {want > 0 ? "; lasting in " + (goal >= 1 ? "every one" : pctStr(goal, 0)) + " takes about " + money(want) : ""}.{" "}
         {!O.ahead ? "Each option below closes the gap on its own." : big ? "That's more than it needs, and there's more than one way to use the extra." : "It's close to its target, so the options are small."}</p>

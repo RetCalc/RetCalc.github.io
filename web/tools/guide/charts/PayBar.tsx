@@ -12,12 +12,12 @@ export function PayBar({ P }: { P: { gross: number; federal: number; state: numb
   const pct = (v: number) => ((v / Math.max(1, P.gross)) * 100).toFixed(2);
   return (
     <div className="gd-pay">
-      <div className="gd-pay-bar" role="img" aria-label={"Of " + money(P.gross) + " a month: " + parts.map((p) => p.label.toLowerCase() + " " + money(p.v)).join(", ")}>
+      <div className="gd-pay-bar" role="img" aria-label={"Of " + money(P.gross) + " per month: " + parts.map((p) => p.label.toLowerCase() + " " + money(p.v)).join(", ")}>
         {parts.map((p) => <span key={p.k} className={p.k} style={{ "--w": pct(p.v) } as React.CSSProperties}></span>)}
       </div>
       <div className="gd-pay-key" aria-hidden="true">
         {parts.map((p) => <span key={p.k}><s className={p.k}></s>{p.label} <b>{money(p.v)}</b></span>)}
-        <span className="of">of {money(P.gross)} a month</span>
+        <span className="of">of {money(P.gross)} per month</span>
       </div>
     </div>
   );

@@ -42,7 +42,7 @@ export function GuideSheet({ a, src }: { a: Answers; src: Sources }) {
     <SheetPage title="Retirement Readiness Plan" sub={<>{d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} &middot; every figure in today&apos;s dollars</>}
       big={[["Your number at " + fmtNum(S.retire), money(S.fv), want > 0 ? "a plan like it needs about " + money(want) : "projected"],
         ["Readiness score", R.score + " / 100", rt.label], ["Lasted in", pctStr(S.success, 0), "of retirements since " + S.H.first]]}
-      foot={<>Savings grow at {pctStr(S.real, 1)} a year after inflation for a {riskLabel(S.real)} mix, with contributions rising with inflation.
+      foot={<>Savings grow at {pctStr(S.real, 1)} per year after inflation for a {riskLabel(S.real)} mix, with contributions rising with inflation.
         {" "}Retirement is tested against every historical retirement since {S.H.first} with {S.mix}% in stocks, spending a fixed amount that rises with inflation.
         {" "}Spending is after tax: each year&apos;s income tax, Medicare surcharge and health insurance before 65 are worked out from where the money comes from and paid on top
         {S.tactics ? ", with the Plan Optimizer's roadmap applied (" + opTacticsLine(S.T, S.C).toLowerCase() + ")" : ""}.

@@ -1815,7 +1815,7 @@ export function ssEstimate(income, careerYears, claimAge) {
   };
 }
 /* A spousal benefit's own claiming adjustment: it is cut more steeply than a
-   worker's for an early claim (25/36 of 1% a month for the first 36 months,
+   worker's for an early claim (25/36 of 1% per month for the first 36 months,
    5/12 of 1% after, so 35% at 62 rather than 30%) and earns no delayed
    retirement credits past full retirement age. */
 export function ssSpousalAdj(claimAge) {
@@ -2209,9 +2209,9 @@ export function ssFRA(birthYear) {
 }
 
 /* The worker's own benefit, as a share of the full one, for claiming at
-   `claimAge` with full retirement age `fra`: early, 5/9 of 1% a month for
-   the first 36 months and 5/12 of 1% a month beyond; late, 2/3 of 1% a
-   month (8% a year) up to 70. Months are whole, as Social Security counts
+   `claimAge` with full retirement age `fra`: early, 5/9 of 1% per month for
+   the first 36 months and 5/12 of 1% per month beyond; late, 2/3 of 1% a
+   month (8% per year) up to 70. Months are whole, as Social Security counts
    them. */
 export function ssClaimFactor(claimAge, fra) {
   fra = fra || SS_FRA;
@@ -2224,7 +2224,7 @@ export function ssClaimFactor(claimAge, fra) {
   return 1 + months * (2 / 3) / 100;
 }
 
-/* A spousal benefit's share: cut 25/36 of 1% a month for the first 36
+/* A spousal benefit's share: cut 25/36 of 1% per month for the first 36
    months before full retirement age and 5/12 of 1% beyond (35% at 62 with a
    full retirement age of 67), and never raised past it. */
 export function ssSpousalFactor(claimAge, fra) {

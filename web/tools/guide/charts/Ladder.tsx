@@ -13,7 +13,7 @@ export function Ladder({ groups }: { groups: { who: string; rows: Rung[]; claim:
     <div className="gd-lad">
       {groups.map((g) => (
         <div key={g.who} className="gd-lad-g" role="img"
-          aria-label={g.who + ": " + g.rows.map((r) => money(r.mo) + " a month claiming at " + r.age).join(", ") + "."}>
+          aria-label={g.who + ": " + g.rows.map((r) => money(r.mo) + " per month claiming at " + r.age).join(", ") + "."}>
           {groups.length > 1 ? <div className="who" aria-hidden="true">{g.who}</div> : null}
           {g.rows.map((r) => (
             <div key={r.age} className={"gd-lad-row" + (r.age === g.claim ? " on" : "")} aria-hidden="true">

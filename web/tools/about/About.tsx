@@ -141,18 +141,19 @@ export function About({ states }: { states: StateOption[] }) {
             budget, where each paycheck&apos;s saving goes, and what that adds up to by
             retirement.</p>
             <p>The core retirement planner, under the Calculator tab, has three modes for
-            different levels of detail, from a five-question starting point (Basic) to a
+            different levels of detail, from a six-question starting point (Basic) to a
             full multi-stage model (Stages). The Tools tab
             extends that with calculators for taxes, mortgage, college savings, rent vs.
             buy, drawdown, FIRE planning, budget, and more. Each tool is described in
             its own section below.</p>
-            <p><b>Your household</b>, the button at the top of every page, holds the facts most
+            <p><b>Your household</b>, set up from the top of every page (on a phone, from the account menu), holds the facts most
             tools ask for: ages, when you plan to retire, state, savings, income and
             retirement spending. Saving it fills those numbers into Basic, Advanced,
             Stages, Drawdown, Roth Conversion, Healthcare, Income Tax, Budget and FIRE,
             and it fills them in again each time you open the site or reset a tool. It&apos;s
-            a one-way fill: changing a number inside a tool never changes the profile or
-            any other tool. A shared link opens with its own numbers, not your profile.</p>
+            a one-way fill: changing a number inside a tool never changes the household or
+            any other tool. When a tool isn&apos;t using your household&apos;s numbers, it offers them.
+            A shared link opens with its own numbers, not your household&apos;s.</p>
           </div></CardContent>
         </Card>
         <section className="about-group" id="about-settings" aria-labelledby="about-settings-h">
@@ -180,7 +181,7 @@ export function About({ states }: { states: StateOption[] }) {
               <li><b>What children cost:</b> the USDA&apos;s last study of what families spend
               on a child (2015), brought to today&apos;s prices, and the Department of Labor&apos;s
               National Database of Childcare Prices, by county, for childcare. Both are
-              rounded to the nearest $100 a month.</li>
+              rounded to the nearest $100 per month.</li>
             </ul>
             <h4>What every tool assumes</h4>
             <p>Figures are in today&apos;s dollars unless a tool says otherwise. The
@@ -231,7 +232,7 @@ export function About({ states }: { states: StateOption[] }) {
             translation of what $2 million means in forty years.</p>
             <p>That simplicity costs you two things. It assumes you nudge your
             contribution up a little each year to keep pace with inflation; if you set
-            $500 a month and never change it, real progress will be slower than shown. And
+            $500 per month and never change it, real progress will be slower than shown. And
             it ignores tax and fees entirely, so the income figure is before both.</p>
             <p>The investment choices map to these rates of growth after inflation:</p>
             <dl className="gloss">
@@ -285,7 +286,7 @@ export function About({ states }: { states: StateOption[] }) {
 
               <dt>Rate of return</dt>
               <dd>Expected average annual return before inflation. For context, broad US
-              stock indices have averaged roughly 9&ndash;10% a year over the very long
+              stock indices have averaged roughly 9&ndash;10% per year over the very long
               run, bonds far less, and a mixed portfolio somewhere between. Many planners
               use 6&ndash;8% for a stock-heavy portfolio to stay conservative. Lower it as
               you shift toward bonds. The &plusmn; button lets you enter a negative return to
@@ -1117,10 +1118,10 @@ export function About({ states }: { states: StateOption[] }) {
             retirement research is built on. It slightly damps single-year extremes
             against a December-to-December series (2008 reads about &minus;39% here rather
             than &minus;37%) while leaving long-run compounding alone: stocks still run
-            near 10% a year over the period.</p>
+            near 10% per year over the period.</p>
             <p><b>The assumptions.</b> Stock returns are S&amp;P 500 total return with
             dividends reinvested, and bond returns include the coupon, not just the price
-            move &mdash; which is why stocks here compound near 10% a year rather than the
+            move &mdash; which is why stocks here compound near 10% per year rather than the
             6&ndash;7% price-only figure people often have in mind. Annual rebalancing, no
             fees, no taxes, no trading costs, so weigh in your own fund&apos;s expense ratio
             separately. The growth chart runs from a fixed $10,000, since
@@ -1141,7 +1142,7 @@ export function About({ states }: { states: StateOption[] }) {
               specific school in mind.</dd>
               <dt>Tuition inflation</dt>
               <dd>College costs have historically risen faster than the inflation used
-              elsewhere in this app, often 3&ndash;5% a year versus the 2&ndash;3%
+              elsewhere in this app, often 3&ndash;5% per year versus the 2&ndash;3%
               typical of general prices. The default reflects that gap.</dd>
             </dl>
             <p><b>What it leaves out:</b> financial aid, scholarships, 529 plan tax

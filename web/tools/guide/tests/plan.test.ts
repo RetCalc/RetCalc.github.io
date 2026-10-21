@@ -57,7 +57,7 @@ test("Maya and Sam: the emergency fund, the 8% debt, then what the surplus could
 test("Dan, behind: the gap comes first", () => {
   const a = fixture("dan"), L = moves(a, factsHere(a, ALL));
   assert.equal(L[0].id, "gap");
-  assert.match(L[0].d, /save <b>\$[\d,]+ a month more<\/b>/);
+  assert.match(L[0].d, /save <b>\$[\d,]+ per month more<\/b>/);
   assert.ok(L.some((m) => m.id === "match") && L.some((m) => m.id === "starter") && L.some((m) => m.id === "debt"));
 });
 

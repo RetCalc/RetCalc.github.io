@@ -60,7 +60,7 @@ test("the picker switches the figures, and the older year stays as it was", () =
   assert.notEqual(nextRet.federal, olderRet.federal);
 });
 
-test("a year that isn't there falls back to the newest", () => {
+test("per year that isn't there falls back to the newest", () => {
   assert.equal(taxYearOf({ ...salary, year: "1999" }), F);
   assert.equal(taxYearOf({ ...salary, year: "" }), F);
 });
@@ -73,7 +73,7 @@ test("everything but Income Tax itself uses the newest year", () => {
   assert.equal(yearData().year, F);
 });
 
-test("a year on the year before's state figures says so", () => {
+test("per year on the year before's state figures says so", () => {
   assert.equal(yearData(F).states.year, yearData(N).states.year);
   assert.notEqual(yearData(F).states.year, F);
   assert.deepEqual(stateRuleRows("IL", "s", F), stateRuleRows("IL", "s", N));

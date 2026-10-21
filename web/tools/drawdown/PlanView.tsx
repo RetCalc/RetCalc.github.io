@@ -173,7 +173,7 @@ function ScorePanel({ v, R, monthly }: { v: DDView; R: PlanResult | null; monthl
   }
   return (
     <Card id="ddScorePanel" className="min-w-0" data-ddtabs="plan">
-      <CardHeader><CardTitle><span><Tipped text="Spending scorecard" k="ddscore" /></span></CardTitle><CardDescription id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " a year") : ""}</CardDescription></CardHeader>
+      <CardHeader><CardTitle><span><Tipped text="Spending scorecard" k="ddscore" /></span></CardTitle><CardDescription id="ddScoreH2">{sc ? "comfort line " + lineWords(sc.comfort, v.age, " per year") : ""}</CardDescription></CardHeader>
       <CardContent>
         <div id="ddScore">
           {rows.map((r) => (
@@ -315,18 +315,18 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
   const firstN = n === 1 ? "first year" : "first " + n + " years";
   let txt = "The " + firstN + (n === 1 ? " decides" : " decide") + " most retirements: that's when withdrawals are largest against the balance, " +
     "so losses then are locked in. The third of " + unit + " with the weakest " + firstN + " (under " +
-    pct1(low[low.length - 1].dec1.port) + " a year after inflation, at your mix) " +
+    pct1(low[low.length - 1].dec1.port) + " per year after inflation, at your mix) " +
     (failLow ? "ran out in <b>" + failLow + " of " + low.length + "</b>, and " : "") + "left a typical <b>" + money(med(low)) + "</b>" +
-    (M.name === "what was left" ? "" : " a year") + "; the strongest third (over " + pct1(top[0].dec1.port) + ") " +
+    (M.name === "what was left" ? "" : " per year") + "; the strongest third (over " + pct1(top[0].dec1.port) + ") " +
     (failTop ? "ran out in " + failTop + " and " : "") + "left <b>" + money(med(top)) + "</b>. ";
   const pr = seqPair(H, M);
   if (pr && pr.kind === "beat")
     txt += "Retiring in " + startLabel(pr.a, mo) + " ran out though its " + o.years + " years averaged " + pct1(pr.a.full.port) +
-      " a year after inflation, while " + startLabel(pr.b, mo) + " lasted on " + pct1(pr.b.full.port) +
+      " per year after inflation, while " + startLabel(pr.b, mo) + " lasted on " + pct1(pr.b.full.port) +
       ": their first decades returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
   else if (pr)
     txt += "Retiring in " + startLabel(pr.a, mo) + " and in " + startLabel(pr.b, mo) + " both averaged about " + pct1(pr.a.full.port) +
-      " a year after inflation over " + o.years + " years, yet one left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b)) +
+      " per year after inflation over " + o.years + " years, yet one left " + money(M.of(pr.a)) + " and the other " + money(M.of(pr.b)) +
       ": their first decades returned " + pct1(pr.a.dec1.port) + " and " + pct1(pr.b.dec1.port) + ".";
   const eras = DD_ERAS.filter((e) => e.to >= lo && e.from <= hi);
   return (
@@ -544,7 +544,7 @@ function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
 function spendAllNote(H: DdHist, o: DdOpts): string {
   const f = once(H, "spend", () => spendAll(H)), n = H.runs.length;
   return Math.round(f.high - f.low) < 1
-    ? "Across all " + n + " historical starting years, spending held at " + money(f.low) + " a year in today's dollars, " + money(f.totalMin) + " over a full " + o.years + "-year retirement."
+    ? "Across all " + n + " historical starting years, spending held at " + money(f.low) + " per year in today's dollars, " + money(f.totalMin) + " over a full " + o.years + "-year retirement."
     : "Across all " + n + " historical starting years. A single year's spending ranged from " + money(f.low) + " to " + money(f.high) +
       " in today's dollars, and a full " + o.years + "-year retirement totaled anywhere from " + money(f.totalMin) + " to " + money(f.totalMax) + " depending on when it began.";
 }

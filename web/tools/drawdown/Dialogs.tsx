@@ -81,7 +81,7 @@ function MixDialog({ v, close }: { v: DDView; close: () => void }) {
           <div className="ddmixrow" id="ddMGYieldRow" hidden={!tips}><div><b>Real yield</b><small>What TIPS pay after inflation. Check today&apos;s.</small></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput step={0.1} id="ddMGYield" aria-label="Real yield" value={f.gYield} onValueChange={up("gYield")} /></Affixed></div>
           <div className="ddmixrow" id="ddMGPayRow" hidden={tips}><div><b>Payout rate</b><small>From a quote: depends on age and rates.</small></div><Affixed suffix="%" className="w-27.5 flex-none"><NumberInput nonNeg step={0.25} id="ddMGPay" aria-label="Payout rate" value={f.gPay} onValueChange={up("gPay")} /></Affixed></div>
           <label className="ddgk-check my-2 mx-0" id="ddMGInflRow" hidden={tips}><Checkbox id="ddMGInfl" checked={f.gInfl} onCheckedChange={up("gInfl")} /><span>Payments rise with inflation</span></label>
-          <div className="formhint" id="ddMGNote">{g > 0 ? money(o.initial * G.share) + " buys " + money(G.income) + " a year" +
+          <div className="formhint" id="ddMGNote">{g > 0 ? money(o.initial * G.share) + " buys " + money(G.income) + " per year" +
             (tips ? " for " + o.years + " years, rising with inflation." : " for life" + (f.gInfl ? ", rising with inflation." : ", level in dollars.")) : ""}</div>
         </div>
       </div>

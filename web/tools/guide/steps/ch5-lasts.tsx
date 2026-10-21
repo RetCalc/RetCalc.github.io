@@ -58,7 +58,7 @@ export function NumberCard() {
             { label: "Covered", id: "gdOutCover", value: want ? times(S.fv / want) : want === 0 ? "All of it" : "—", note: want === 0 ? "Income alone covers it" : "What you're on course for, over what it needs" },
           ]} />
         <ul className="gd-read">
-          <li>Growing at a {riskLabel(S.real)} mix&apos;s {rate(S.real)} a year after inflation{S.stop != null ? (coast ? ", with nothing new going in" : ", saving until " + fmtNum(S.stop)) : ""}.
+          <li>Growing at a {riskLabel(S.real)} mix&apos;s {rate(S.real)} per year after inflation{S.stop != null ? (coast ? ", with nothing new going in" : ", saving until " + fmtNum(S.stop)) : ""}.
             {" "}Taxes and premiums are counted: about <b>{money(S.taxYr)}</b> a year in income tax{S.hcYr > 0 ? <>, and <b>{money(S.hcYr)}</b> a year for health insurance for the {S.hcYears} years before Medicare</> : null}, on top of the {money(S.spend)} you live on.</li>
           {want != null && want > 0 && S.fv >= want * 1.2 ? <li>That&apos;s more than the plan needs: <b>Adjust your plan</b> shows what the extra could buy, from retiring sooner to spending more.</li>
             : want != null && want > S.fv ? <li>That&apos;s short of what the plan needs by about <b>{money(want - S.fv)}</b>. <b>Adjust your plan</b> shows the quickest ways to close it.</li> : null}
@@ -98,7 +98,7 @@ export function LastingCard() {
           <p>An average return hides the real risk: the order the returns arrive in. Retire into a bad decade and you sell low to live, so less is left to
             {" "}recover. The same average can end very differently: that&apos;s <Term k="sequence">sequence risk</Term>, and it&apos;s why the guide replays your
             {" "}plan through each real retirement since {S.H.first} rather than trusting one average.</p>
-          <p>Each replay spends {money(S.spend)} a year after tax, rising with prices, pays that year&apos;s tax{S.hcYears ? " and health premiums before Medicare" : ""},
+          <p>Each replay spends {money(S.spend)} per year after tax, rising with prices, pays that year&apos;s tax{S.hcYears ? " and health premiums before Medicare" : ""},
             {" "}starts Social Security at {S.ss.claim}{S.pension ? ", adds your pension" : ""}, and holds {S.mix}% in stocks.</p>
         </Lesson>
       </Learn>

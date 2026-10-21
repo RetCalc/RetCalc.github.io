@@ -38,7 +38,7 @@ export function heroFigure(res: Result) {
   if (goal === "spend") return {
     label: "You can spend, after tax, and still last in " + pctStr(res.target, 0) + " of markets", short: "You can spend",
     value: money(x.maxSpend!) + "/yr", was: money(b.maxSpend!) + "/yr",
-    delta: opSigned((x.maxSpend || 0) - (b.maxSpend || 0)) + " a year", good: (x.maxSpend || 0) >= (b.maxSpend || 0),
+    delta: opSigned((x.maxSpend || 0) - (b.maxSpend || 0)) + " per year", good: (x.maxSpend || 0) >= (b.maxSpend || 0),
   };
   if (goal === "last") return {
     label: "Historical retirements where the money lasted", short: "Retirements that lasted",
@@ -156,10 +156,10 @@ function Roadmap({ res }: { res: Result }) {
         if (tr > 50) draws.push(money(tr) + " traditional" + (rmd ? " (the required distribution" + (tr > avg(R, (r) => r.rmd) + 50 ? " and more" : "") + ")" : ""));
         if (bk > 50) draws.push(money(bk) + " brokerage");
         if (ro > 50) draws.push(money(ro) + " Roth");
-        items.push(["Spend from", draws.length ? draws.join(", ") + " a year" : "Nothing: income covers it"]);
-        if (conv > 50) items.push(["Convert", money(conv) + " a year to Roth" + (T.f > 0 ? ", filling " + opFillName(T.f) : "")]);
-        items.push(["Tax", "About " + money(tax) + " a year" + (ir > 50 ? ", plus " + money(ir) + " Medicare surcharge" : "")]);
-        if (aca) items.push(["Health", "About " + money(hl) + " a year after the subsidy" + (r0.fplPct != null ? " (income at " + Math.round(avg(R, (r) => r.fplPct!) * 100) + "% of the poverty line)" : "")]);
+        items.push(["Spend from", draws.length ? draws.join(", ") + " per year" : "Nothing: income covers it"]);
+        if (conv > 50) items.push(["Convert", money(conv) + " per year to Roth" + (T.f > 0 ? ", filling " + opFillName(T.f) : "")]);
+        items.push(["Tax", "About " + money(tax) + " per year" + (ir > 50 ? ", plus " + money(ir) + " Medicare surcharge" : "")]);
+        if (aca) items.push(["Health", "About " + money(hl) + " per year after the subsidy" + (r0.fplPct != null ? " (income at " + Math.round(avg(R, (r) => r.fplPct!) * 100) + "% of the poverty line)" : "")]);
         return (
           <li key={a0} className={"op-ph" + (conv > 50 ? " conv" : "")}><div className="op-ph-age">{a0 === a1 ? "Age " + a0 : a0 + "–" + a1}</div>
             <div className="op-ph-body"><div className="op-ph-tag">{tag}</div>
@@ -178,7 +178,7 @@ function Roadmap({ res }: { res: Result }) {
 function Moves({ res }: { res: Result }) {
   const C = who(res), T0 = res.base.T, goal = res.goal;
   const val = (s: PlStats) => (goal === "spend" ? s.maxSpend || 0 : goal === "last" ? s.survived : s.medLegacy);
-  const fmt = (d: number) => (goal === "spend" ? opSigned(d) + " a year"
+  const fmt = (d: number) => (goal === "spend" ? opSigned(d) + " per year"
     : goal === "last" ? (d >= 0 ? "+" : "−") + Math.abs(d) + " more " + (Math.abs(d) === 1 ? "market" : "markets") + " lasted" : opSigned(d, opCompact) + " left");
   const total = val(res.best.stats) - val(res.base.stats);
   const big = Math.max(1, Math.abs(total), ...res.steps.map((x) => Math.abs(val(x.to) - val(x.from))));
@@ -416,10 +416,10 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
     ))}</ul>
   )) : null;
   const fine = (
-    <p className="op-fine">{(res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " a year after tax and the usual way on " + money(res.base.spend) +
+    <p className="op-fine">{(res.goal === "spend" && res.best.spend ? "The best plan lives on " + money(res.best.spend) + " per year after tax and the usual way on " + money(res.base.spend) +
       ", each the most it can in " + pctStr(res.target, 0) + " of markets (the roadmap, charts and table show each at that spending),"
-      : "Every plan lives on the same " + money(res.P.spend) + " a year after tax") + " and runs to age " + (res.age1 + res.years) +
-      ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " a year after inflation with " + res.P.mix + "% in stocks. " +
+      : "Every plan lives on the same " + money(res.P.spend) + " per year after tax") + " and runs to age " + (res.age1 + res.years) +
+      ". Typical means the median of all " + res.windows + " historical retirements; the roadmap's yearly figures follow the average path, " + pctStr(plMix(res.P.mix).real, 1) + " per year after inflation with " + res.P.mix + "% in stocks. " +
       "Left after tax counts traditional money at " + pctStr(1 - h, 0) + " of its value, for the income tax whoever inherits it will owe; Roth and brokerage count in full. " +
       "Tax is " + yearData().year + " federal and " + (state ? state.n : "state") + " law, held in today's dollars. Both of you are assumed to live to the end of the plan, which favors claiming later. This is a model to plan with, not financial advice."}</p>
   );

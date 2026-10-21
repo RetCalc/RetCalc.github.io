@@ -186,7 +186,7 @@ test("two incomes: one line per kind, each split between you", () => {
 });
 
 test("two incomes: the match line funds the higher match first", () => {
-  // Your spouse's employer matches 100% of the first 4% ($266.67 a month); yours 50% of 6% ($600).
+  // Your spouse's employer matches 100% of the first 4% ($266.67 per month); yours 50% of 6% ($600).
   const pi = paycheckInput(two({ pcMatchRate2: "100", pcMatchUpTo2: "4", pcMatch: "400" }), "IL");
   const m = pcSplit(pi).match;
   near(m[1], 80000 * 0.04 / 12); near(m[0], 400 - 80000 * 0.04 / 12);
@@ -197,7 +197,7 @@ test("two incomes: premiums come off the FICA of the job they come through", () 
   // You're over the Social Security wage cap; your spouse isn't.
   const you = paycheckRun(paycheckInput(two({ pcGross: "250,000", pcGross2: "60,000", pcHealth: "500", pcHealth2: "0" }), "IL"));
   const spouse = paycheckRun(paycheckInput(two({ pcGross: "250,000", pcGross2: "60,000", pcHealth: "0", pcHealth2: "500" }), "IL"));
-  // Typed per check (every two weeks): $500 a check is $1,083.33 a month. Through your job
+  // Typed per check (every two weeks): $500 per check is $1,083.33 per month. Through your job
   // they save only Medicare (and the surtax); through your spouse's, Social Security too.
   near(you.fica - spouse.fica, (500 * 26 / 12) * 0.062, 0.01);
   // Both through work: both count, and the Budget's row moves up.

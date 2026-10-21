@@ -170,7 +170,7 @@ const rentbuy: Tour<{ horizon: string; appr: string }> = { name: "Rent vs. Buy",
     ] },
     { title: "Renting and the assumptions", focus: "#rbRent", tasks: ({ s, base }) => [
       { h: "<b>Monthly rent</b> for a comparable place, and its <b>Annual increase</b>." },
-      { h: "<b>Home appreciation</b> is how fast the home gains value. Across the country it has averaged roughly 3% to 4% a year, but it varies enormously by area and decade. Try 2% and 5%.", ok: tried(n(s.appr) !== base.appr) },
+      { h: "<b>Home appreciation</b> is how fast the home gains value. Across the country it has averaged roughly 3% to 4% per year, but it varies enormously by area and decade. Try 2% and 5%.", ok: tried(n(s.appr) !== base.appr) },
       { h: "<b>Investment return</b> is what the renter earns by investing the down payment, and any month renting costs less, instead of putting it into a house." },
       { h: "<b>Time horizon</b> is how long you'd stay. It matters most of all: try 5 years and then 20.", ok: tried(n(s.horizon) !== base.horizon) },
       { h: "<b>Tax on gains</b> and <b>Filing status</b>: investment gains are taxed when sold, while up to $250,000 of gain on a home you live in ($500,000 married) is tax-free." },

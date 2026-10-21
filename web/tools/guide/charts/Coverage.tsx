@@ -8,7 +8,7 @@ export function Coverage({ port, ss, pen, need }: { port: number; ss: number; pe
   const sc = Math.max(need, port + ss + pen) || 1, w = (v: number) => ((v / sc) * 100).toFixed(1) + "%";
   return (
     <div className="gd-cover">
-      <div className="gd-cover-bar" role="img" aria-label={"From savings at 4%: " + money(port) + " a year; Social Security " + money(ss) + (pen ? "; pension " + money(pen) : "") + "; against " + money(need) + " a year with its tax"}>
+      <div className="gd-cover-bar" role="img" aria-label={"From savings at 4%: " + money(port) + " per year; Social Security " + money(ss) + (pen ? "; pension " + money(pen) : "") + "; against " + money(need) + " per year with its tax"}>
         <i className="w-(--w) bg-series-teal" style={{ "--w": w(port) } as React.CSSProperties}></i>
         <i className="w-(--w) bg-series-sky" style={{ "--w": w(ss) } as React.CSSProperties}></i>
         {pen ? <i className="w-(--w) bg-series-gray" style={{ "--w": w(pen) } as React.CSSProperties}></i> : null}

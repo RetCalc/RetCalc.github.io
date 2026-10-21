@@ -14,8 +14,8 @@ import { NO_KIDS, PLAN_DEFAULTS, type PlanState } from "../model";
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} is not within ${tol} of ${b}`);
 
 /** Someone 29, retiring at 60, $95,000, paid every two weeks, in Illinois
-    (as Start asks it), putting $6,000 a year into a traditional 401(k)
-    today: $219.23 a check on the match line (6% of pay), the rest beyond it. */
+    (as Start asks it), putting $6,000 per year into a traditional 401(k)
+    today: $219.23 per check on the match line (6% of pay), the rest beyond it. */
 function plan(patch: Partial<PlanState> = {}): PlanState {
   return {
     ...PLAN_DEFAULTS, age: "29", retire: "60", freq: "26",
@@ -41,7 +41,7 @@ test("a plan saved when Taxes was a step: its answers fill the paycheck once, to
   assert.equal(b.pcStatus, "s");
   assert.equal(b.pcState, "IL");
   assert.equal(b.pcFreq, "26");
-  // $6,000 a year is $230.77 a check; the match line holds up to 6% of pay ($219.23), the rest goes beyond it.
+  // $6,000 per year is $230.77 per check; the match line holds up to 6% of pay ($219.23), the rest goes beyond it.
   near(parseNum(b.pcMatch), (0.06 * 95000) / 26);
   near(parseNum(b.pcMatch) + parseNum(b.pcK401max), 6000 / 26);
   // Once: what's typed on the paycheck afterwards stays.
@@ -116,7 +116,7 @@ test("covering a stage: the brokerage first, typed amounts stand, the rest from 
 test("covering a stage from pre-tax accounts: a cut frees less than itself, and can cost the match", () => {
   const p = seedAdvanced(plan(), null), F = freedOf(p), pc = paycheckOf(p)!;
   const today = monthlyByAccount(advancedPlan(toolOf(p, "advanced"), null), "Bi-Weekly");
-  // $200 a month from the traditional 401(k): more than $200 is cut, and the freed pay is exactly $200.
+  // $200 per month from the traditional 401(k): more than $200 is cut, and the freed pay is exactly $200.
   const c = coverStage(200, { ...today, brok: 0, roth: 0 }, {}, F);
   assert.ok(c.take.trad > 240 && c.take.trad < 290, "cut " + c.take.trad);
   // Whole dollars: the fewest that free the cost, and what it frees reads exactly the cost.
@@ -139,7 +139,7 @@ test("covering a stage from pre-tax accounts: a cut frees less than itself, and 
 test("Life stages: one per children's stage, saving less what each stage takes, the years adding up", () => {
   let p = seedAdvanced(plan(), null);
   const adv = toolOf(p, "advanced");
-  // A brokerage line to take from: $400 a check.
+  // A brokerage line to take from: $400 per check.
   p = { ...p, tools: { ...p.tools, advanced: { ...adv, brokC: "400" } } };
   p = seedStages({ ...p, stagesOn: true, kids: { ...NO_KIDS, planned: 1, firstIn: 2 } }, null);
   const st = toolOf(p, "stages");
@@ -147,7 +147,7 @@ test("Life stages: one per children's stage, saving less what each stage takes, 
   assert.equal(st.stages.reduce((t, s) => t + parseNum(s.years), 0), 31);
   assert.equal(st.stages[1].name, "A child in childcare");
   const P = advancedPlan(toolOf(p, "advanced"), null), today = monthlyByAccount(P, "Bi-Weekly");
-  // Childcare at $2,500 a month: the brokerage ($866.67 a month) and then the traditional 401(k) give.
+  // Childcare at $2,500 per month: the brokerage ($866.67 per month) and then the traditional 401(k) give.
   const per = (m: number) => (m * 12) / 26;
   near(parseNum(st.stages[0].contrib), per(today.brok + today.trad), 0.02);
   near(parseNum(st.stages[1].contrib), 0, 0.02);

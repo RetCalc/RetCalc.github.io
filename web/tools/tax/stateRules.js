@@ -61,7 +61,7 @@ function ruleGain(code, S, R){
   if (S.none) return code === "WA"
     ? "No tax on ordinary capital gain at the individual level, but Washington " +
       "levies a separate 7% excise tax on long-term gains above roughly $270,000 " +
-      "a year, with real estate and retirement accounts exempt. That tax is not " +
+      "per year, with real estate and retirement accounts exempt. That tax is not " +
       "calculated here."
     : "Not taxed.";
   let out = "";
@@ -272,7 +272,7 @@ const STATE_GAPS = {
   SD:"Nothing. South Dakota has no individual income tax.",
   TN:"Nothing. Tennessee's Hall tax on interest and dividends was repealed in 2021.",
   TX:"Nothing. Texas has no individual income tax.",
-  WA:"The 7% excise tax on long-term capital gains above roughly $270,000 a year, which is not calculated here. Real estate and retirement accounts are exempt from it.",
+  WA:"The 7% excise tax on long-term capital gains above roughly $270,000 per year, which is not calculated here. Real estate and retirement accounts are exempt from it.",
   WY:"Nothing. Wyoming has no individual income tax."
 };
 

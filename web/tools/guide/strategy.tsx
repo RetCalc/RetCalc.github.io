@@ -41,8 +41,8 @@ function StratPick({ a }: { a: Answers }) {
   const cut = r.lean < S.spend - 1 ? Math.round((1 - r.lean / S.spend) * 100) : 0;
   let t: string;
   if (cur === "fixed") t = r.success >= 0.995 ? "You'd never cut back, and it lasted in every retirement on record. Simple, and it held up."
-    : "You'd never cut back, but retiring in " + yearsList(r.H!.failYears) + " the money ran out, leaving " + money(r.lean) + " a year from Social Security" + (S.pension ? " and your pension" : "") + ". Being willing to trim in a bad stretch is what the other approaches add.";
-  else t = "In a typical retirement you'd have spent about " + money(r.typical) + " a year. " +
+    : "You'd never cut back, but retiring in " + yearsList(r.H!.failYears) + " the money ran out, leaving " + money(r.lean) + " per year from Social Security" + (S.pension ? " and your pension" : "") + ". Being willing to trim in a bad stretch is what the other approaches add.";
+  else t = "In a typical retirement you'd have spent about " + money(r.typical) + " per year. " +
     (cut ? "The hardest case was retiring in " + r.leanYear + ": at " + r.leanAge + " spending would have been " + money(r.lean) + ", " + cut + "% under your plan." : "Spending never had to drop below your plan.") +
     (r.canFail ? " It lasted in " + pctStr(r.success, 0) + " of retirements, against " + pctStr(S.success, 0) + " spending a fixed amount." : " It can't run out, because spending follows the balance down.") +
     (fl ? (r.success < target(a) - 1e-9 ? " Your " + money(fl) + " minimum is what costs it here: holding spending up through a bad market drains the portfolio, so a lower minimum, or a bigger cushion, buys safety."
@@ -71,7 +71,7 @@ export function StrategyStep() {
       </Learn>
       <Lead>So far your plan spends the same amount every year, raised with inflation, whatever markets do. It&apos;s the simplest approach and the most cautious test.
         {" "}Most retirees flex a little instead. Here&apos;s how six common approaches would have handled your plan ({money(S.fv)} at {fmtNum(S.retire)}, aiming to spend {money(S.spend)}
-        {" "}a year) in every retirement since {S.H.first}.</Lead>
+        {" "}per year) in every retirement since {S.H.first}.</Lead>
       <BackNote step="strategy" />
       <H3>What&apos;s the least you could live on?</H3>
       <p className="hint -mt-1 mx-0 mb-2.5 max-w-copy">Flexible approaches cut spending in bad markets, and some cut deep. A minimum stops them going lower: housing, food, insurance, utilities and the other essentials, in today&apos;s dollars. Leave it blank for no minimum.</p>

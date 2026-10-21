@@ -82,7 +82,7 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
             <p className="toolcard-desc">It retires you in every month since 1926, through the Depression, the 1970s and 2008, with 15 withdrawal strategies to compare.</p>
             <div className="tp-lead-read">
               <div className="tp-lead-v">{Math.round(data.lasted * 100)}%</div>
-              <div className="toolcard-desc">of retirements since 1926 lasted 30 years at 4% a year</div>
+              <div className="toolcard-desc">of retirements since 1926 lasted 30 years at 4% per year</div>
             </div>
           </div>
           <div className="tp-chart">{chart}</div>

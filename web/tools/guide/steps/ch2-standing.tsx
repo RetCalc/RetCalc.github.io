@@ -95,7 +95,7 @@ export function SpendCard() {
           <div className="gd-slide">
             <label htmlFor="gdSpendSlide">Or a quick estimate: <b>{share}%</b> of your take-home</label>
             <NativeRange id="gdSpendSlide" min={40} max={110} step={1} value={Math.max(40, Math.min(110, share))}
-              aria-valuetext={share + "% of take-home, " + money(Math.round((th * share) / 100 / 50) * 50) + " a month"}
+              aria-valuetext={share + "% of take-home, " + money(Math.round((th * share) / 100 / 50) * 50) + " per month"}
               onChange={(e) => G.set("spend", Math.round((th * +e.target.value) / 100 / 50) * 50, true, "estimated")} />
           </div>
         ) : null}
@@ -108,13 +108,13 @@ export function SpendCard() {
 function FlowReadout() {
   const { a, g } = useGuideView();
   if (!pos(a.spend)) return <p className="gd-means-empty">What&apos;s left each month appears once your spending is in.</p>;
-  if (!pos(a.takehome)) return <ul className="gd-read"><li>{money(a.spend)} a month. <SourceBadge s={g.src.spend} /></li></ul>;
+  if (!pos(a.takehome)) return <ul className="gd-read"><li>{money(a.spend)} per month. <SourceBadge s={g.src.spend} /></li></ul>;
   const left = a.takehome - a.spend, pct = left / a.takehome, pts = points(a, "flow", 10);
-  if (left < 0) return <Callout cls="bad">You&apos;re spending <b>{money(-left)} a month more</b> than you bring home. That gap usually lands on a credit card, so it&apos;s the first thing to fix. {pts ? "Cash flow scores " + pts + "." : ""}</Callout>;
+  if (left < 0) return <Callout cls="bad">You&apos;re spending <b>{money(-left)} per month more</b> than you bring home. That gap usually lands on a credit card, so it&apos;s the first thing to fix. {pts ? "Cash flow scores " + pts + "." : ""}</Callout>;
   const sv = pos(a.bgSave) && a.bgSave <= left ? a.bgSave : 0;
   return (
     <ul className="gd-read">
-      <li><b>{money(left)} a month</b> unspent, <b>{pctStr(pct, 0)}</b> of take-home{sv ? <>: {money(sv)} already going to savings and {money(left - sv)} left over</> : ", for saving and paying down debt"}. <SourceBadge s={g.src.spend} /></li>
+      <li><b>{money(left)} per month</b> unspent, <b>{pctStr(pct, 0)}</b> of take-home{sv ? <>: {money(sv)} already going to savings and {money(left - sv)} left over</> : ", for saving and paying down debt"}. <SourceBadge s={g.src.spend} /></li>
       <li>Spending no more than 80% of take-home earns full marks for cash flow{pts ? "; yours scores " + pts : ""}.{pct < 0.1 ? " Under 10% leaves little room for surprises." : ""}</li>
     </ul>
   );

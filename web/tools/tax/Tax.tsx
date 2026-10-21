@@ -371,7 +371,7 @@ export function Tax() {
         <Card size="flush" className="min-w-0">
           {/* Which pay the reading shows, in a quiet toolbar above it. */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-5.5 py-3 max-sm:px-4">
-            <Segmented id="segTxView" attr="data-view" options={[["net", "Net pay"], ["take", "Take-home pay"]] as const} value={s.view} onChange={set("view")} hidden={ret} />
+            <Segmented id="segTxView" attr="data-view" options={[["net", "After tax"], ["take", "Take-home"]] as const} value={s.view} onChange={set("view")} hidden={ret} />
             <span className="text-label text-muted-foreground" id="txRetLbl" hidden={!ret}>Retirement income</span>
             <span className="ml-auto"><Badge variant="outline">{year} rates</Badge></span>
           </div>

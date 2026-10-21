@@ -306,7 +306,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       ({ a, trip }: Ctx<DrawdownState>) => {
         const S = sim(a), b = trip.base as { est: boolean } | undefined;
         return [
-          { h: "Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " a year plus about " + money(S.taxYr) + " for tax, since the simulator doesn't work tax out itself (a <b>Starting withdrawal rate</b> of " + pctStr((S.spend + S.taxYr) / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
+          { h: "Your plan is loaded on the left: " + (S ? money(S.fv) + " at " + fmtNum(S.retire) + ", spending " + money(S.spend) + " per year plus about " + money(S.taxYr) + " for tax, since the simulator doesn't work tax out itself (a <b>Starting withdrawal rate</b> of " + pctStr((S.spend + S.taxYr) / Math.max(1, S.fv), 1) + ")" : "your savings and spending") +
             ", Social Security" + (b && !b.est ? " as a known benefit" : "") + " and " + (pos(a.pension) ? "your pension under <b>Other income</b>." : "no other income yet.") },
           { h: "<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid; close to 100% can mean room to spend more." },
           { h: "<b>Median ending balance</b> is what's typically left at the end, in today's dollars. <b>Worst case</b> is the leanest ending on record." },
@@ -347,13 +347,13 @@ const TRIPS: Record<string, TripDef<never>> = {
       ({ a, s, trip }: Ctx<DrawdownState>) => {
         const b = trip.base as { est: boolean; claim: number } | undefined;
         if (b && b.est) return [
-          { h: "<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% a year from 67 to 70; claiming at 62 cuts it about 30%, for life." },
+          { h: "<b>Claim at age</b> sets when your benefit starts. Waiting raises it about 8% per year from 67 to 70; claiming at 62 cuts it about 30%, for life." },
           { h: "Scroll to <b>Social Security claiming age comparison</b>, near the bottom, for your success rate claiming at 62, 64, 67 and 70." },
           { h: "Later claiming means drawing more from savings first, but a bigger check for the rest of your life, and for a surviving spouse.", ok: parseNum(String(s.ssClaim)) !== b.claim ? true : undefined },
         ];
         return [
           { h: "Your benefit is entered as a known amount" + (a.ssOwn ? ", from your statement" : ", from the guide's estimate") + ", starting at " + (b ? b.claim : 67) + "." },
-          { h: "Waiting raises a benefit about 8% a year from 67 to 70, and claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
+          { h: "Waiting raises a benefit about 8% per year from 67 to 70, and claiming at 62 cuts it about 30%. To try a different age, change <b>When will you claim it?</b> on the guide's Social Security card: the guide works out the new amount." },
         ];
       },
       ({ s }: Ctx<DrawdownState>) => [
@@ -375,7 +375,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       const set: Partial<Answers> = { ddTool: { rate: t, strat } }, ch: string[] = [];
       const undo: Partial<Answers> = { strategy: a.strategy ?? null, retMix: a.retMix ?? null, ssClaim: a.ssClaim ?? null, minSpend: a.minSpend ?? null };
       const fl = Math.round(parseNum(String(s.spendFloor)));
-      if (fl !== Math.round(b.floor || 0)) { set.minSpend = fl > 0 ? fl : null; ch.push(fl > 0 ? "a minimum of <b>" + money(fl) + " a year</b>" : "no minimum spending"); }
+      if (fl !== Math.round(b.floor || 0)) { set.minSpend = fl > 0 ? fl : null; ch.push(fl > 0 ? "a minimum of <b>" + money(fl) + " per year</b>" : "no minimum spending"); }
       if (strat !== b.strategy) { set.strategy = strat; ch.push("the <b>" + escapeHtml(stratName(strat)) + "</b> approach"); }
       const mix = Math.round(parseNum(String(s.stock)));
       if (mix !== b.stock && mix >= 0 && mix <= 100) { set.retMix = mix; ch.push("<b>" + mix + "%</b> in stocks in retirement"); }
@@ -644,7 +644,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       return ddWrite(s, d);
     },
     tasks: ({ a }: Ctx<DrawdownState>) => [
-      { h: "Your " + (pos(a.saved) ? money(a.saved) : "savings") + " and " + (pos(a.retSpend) ? money(a.retSpend) + " a year" : "spending") + " are loaded as a <b>Starting withdrawal rate</b>" +
+      { h: "Your " + (pos(a.saved) ? money(a.saved) : "savings") + " and " + (pos(a.retSpend) ? money(a.retSpend) + " per year" : "spending") + " are loaded as a <b>Starting withdrawal rate</b>" +
         (pos(a.ssOwn) ? ", with Social Security from now" : "") + (pos(a.pension) ? " and your pension under <b>Other income</b>" : "") + ". The simulator doesn't work out tax, so include it in what you spend." },
       { h: "<b>Success rate</b> is the share of real retirements since 1926 where the money never ran out. 85% or more is solid." },
       { h: "Under <b>How each starting year fared</b>, tap a hard one such as <b>1966</b> or <b>1929</b>, and switch the chart to <b>Selected year</b> to watch it play out.", ok: on('#segDDView [data-ddview="year"].on') },
@@ -665,7 +665,7 @@ const TRIPS: Record<string, TripDef<never>> = {
       const moved = (era && era.getAttribute("data-era") !== "all") || parseNum(String(s.stock)) !== mix || parseNum(String(s.sv)) > 0 || parseNum(String(s.cash)) > 0;
       return [
         { h: "<b>Asset mix</b> is set to " + mix + "% stocks, close to your " + riskLabel(a.risk || 0.045) + " mix; the rest is bonds. This shows what that mix actually earned, year by year, since 1926." },
-        { h: "<b>After inflation</b> is the figure to compare with the " + pctStr(a.risk || 0.045, 1) + " a year the guide assumed for your plan. <b>Return, per year</b> is the same before inflation." },
+        { h: "<b>After inflation</b> is the figure to compare with the " + pctStr(a.risk || 0.045, 1) + " per year the guide assumed for your plan. <b>Return, per year</b> is the same before inflation." },
         { h: "Try <b>Last 30</b> or <b>Last 50</b>, and a different mix, to see how much the answer moves with the period you pick.", ok: !!moved },
         { h: "<b>Worst year</b> and <b>Deepest fall</b> show what you'd have had to sit through. If a drop like that would have made you sell, a lower stock mix may suit you better." },
         { h: "<b>Rolling returns</b> lists every stretch of years, not just one average, so you can see the range: the best, the worst and the typical." },
@@ -674,7 +674,7 @@ const TRIPS: Record<string, TripDef<never>> = {
     },
     chip: () => { const t = text("#btReal"); return t && t !== "—" ? "After inflation<br><b>" + escapeHtml(t) + "</b>" : ""; },
     capture: ({ a }: Ctx<Inputs>) => ({ set: { btSeen: true }, msg: "Back from Portfolio Backtest. Remember, history shows the range of what's happened, not a forecast. The guide keeps assuming " +
-      pctStr(a.risk || 0.045, 1) + " a year after inflation; change your mix on the <b>How it's invested</b> card if you'd like a different one." }),
+      pctStr(a.risk || 0.045, 1) + " per year after inflation; change your mix on the <b>How it's invested</b> card if you'd like a different one." }),
   },
 } as unknown as Record<string, TripDef<never>>;
 

@@ -426,7 +426,7 @@ export function brPlans(ctx, steady){
       order:["brok", "roth"].concat(BR_FB)},
     {key:"sepp", name:"72(t) payments", phrase:"72(t) payments", conv:"none", sepp:seppPay,
       off:!(seppPay > 0) ? "No traditional balance to pay from" : "",
-      desc:money(seppPay) + " a year from an IRA, locked in through age " + brSeppEnd(ctx),
+      desc:money(seppPay) + " per year from an IRA, locked in through age " + brSeppEnd(ctx),
       order:["brok", "roth"].concat(BR_FB)},
     {key:"r55", name:"Rule of 55", phrase:"the rule of 55", conv:"none",
       off:ctx.r55 ? "" : ctx.age < ctx.r55Age ? "Needs you to leave your job at " + ctx.r55Age + " or later"

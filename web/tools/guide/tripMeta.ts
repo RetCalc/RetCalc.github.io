@@ -36,7 +36,7 @@ export const TRIP_META: Record<string, TripMeta> = {
       "The guide checks it against your income."] },
   mortOwn: { tool: "mortgage", path: "/mortgage", store: "mortgage", name: "Mortgage Calculator", mins: 5, title: "See what extra payments do", learn: "what extra payments save in interest, and how much sooner you'd be done",
     preview: ["You enter your loan as it stands today.",
-      "You try an extra $100 or $200 a month toward principal.",
+      "You try an extra $100 or $200 per month toward principal.",
       "The tool shows the interest you'd save and how much sooner you'd be done."] },
   college: { tool: "college", path: "/college", store: "college", name: "College Savings", mins: 3, title: "Find your monthly college number", learn: "the monthly amount that reaches your college goal",
     preview: ["Years until college is set from your child's age.",

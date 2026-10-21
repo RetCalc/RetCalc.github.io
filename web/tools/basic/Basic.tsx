@@ -160,7 +160,7 @@ export function Basic() {
               </div>
               <div className="derived">
                 <div><span>Years until retirement</span><span className="num" id="qYears">{ok ? fmtYears(p.years) : DASH}</span></div>
-                <div><span><Tipped text="Growth after inflation" k="realreturn" /></span><span className="num" id="qReal">{pctStr(p.real, 2) + " a year"}</span></div>
+                <div><span><Tipped text="Growth after inflation" k="realreturn" /></span><span className="num" id="qReal">{pctStr(p.real, 2) + " per year"}</span></div>
               </div>
               <p className="mt-3.5 mb-0 flex items-center gap-1.5 text-label text-muted-foreground">
                 <LockIcon className="size-3.5 shrink-0" aria-hidden="true" />Nothing leaves your browser unless you sign in to save it.</p>

@@ -28,7 +28,7 @@ export function opSources(profile: Household | null): Source[] {
     if (a && B) {
       const ppy = (PPY as Record<string, number>)[p.period], mo = (v: number) => (v * ppy) / 12;
       const notes = [];
-      if (Math.abs(p.growth - p.inflation) > 0.0025) notes.push("Advanced raises your saving " + pctStr(p.growth, 1) + " a year; here it keeps pace with inflation");
+      if (Math.abs(p.growth - p.inflation) > 0.0025) notes.push("Advanced raises your saving " + pctStr(p.growth, 1) + " per year; here it keeps pace with inflation");
       if (p.glide?.on) notes.push("the glide path isn't carried over");
       if (a.hsaBal > 0 || a.hsaC > 0) notes.push("the HSA isn't carried over (it's kept for health care)");
       out.push({ label: "Advanced", B, a, years: p.years, defl: Math.pow(1 + p.inflation, p.years), notes,

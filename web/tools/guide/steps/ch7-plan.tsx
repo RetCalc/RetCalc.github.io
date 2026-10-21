@@ -171,13 +171,13 @@ export function PlanCard() {
             <div className="min-w-0"><H3>The plan</H3><div className="gd-kvs">
               <KV k="Retire at" v={fmtNum(S.retire)} />
               <KV k="Saving" v={S.stop != null ? (S.stop <= a.age! ? "Coasting: no new savings" : money(S.monthly) + "/mo until " + fmtNum(S.stop) + ", then coasting") : money(S.monthly) + "/mo until you retire"} />
-              <KV k="Spending in retirement" v={money(S.spend) + " a year"} />
+              <KV k="Spending in retirement" v={money(S.spend) + " per year"} />
               <KV k="Social Security" v={S.ss.a2 > 0 ? money(S.ss.a1 / 12) + "/mo from " + S.ss.claim + ", spouse " + money(S.ss.a2 / 12) + "/mo from " + S.ss.claim2 : money(S.ss.total / 12) + "/mo from " + S.ss.claim} />
               {S.pension ? <KV k="Pension" v={money(S.pension / 12) + "/mo"} /> : null}
               <KV k="Withdrawals" v={S.tactics ? opTacticsLine(S.T, S.C) : "Brokerage, then traditional, then Roth"} />
-              <KV k="Income tax" v={"About " + money(S.taxYr) + " a year, " + money(S.lifeTax) + " in all"} />
+              <KV k="Income tax" v={"About " + money(S.taxYr) + " per year, " + money(S.lifeTax) + " in all"} />
               <KV k="Approach" v={stratName(a.strategy || "fixed")} />
-              {minSpend(a) ? <KV k="Minimum spending" v={money(minSpend(a)) + " a year"} /> : null}
+              {minSpend(a) ? <KV k="Minimum spending" v={money(minSpend(a)) + " per year"} /> : null}
               <KV k="Stocks in retirement" v={S.mix + "%"} />
             </div></div>
             <div className="min-w-0"><H3>Your numbers, and where they came from</H3><div className="gd-kvs">
@@ -186,7 +186,7 @@ export function PlanCard() {
               ))}
             </div></div>
           </div>
-          <p className="hint">Everything is in today&apos;s dollars. Savings grow at the {riskLabel(S.real)} mix&apos;s {pctStr(S.real, 1)} a year after inflation, with saving rising with prices.
+          <p className="hint">Everything is in today&apos;s dollars. Savings grow at the {riskLabel(S.real)} mix&apos;s {pctStr(S.real, 1)} per year after inflation, with saving rising with prices.
             {" "}Retirement is replayed through every historical retirement since {S.H.first}, spending a fixed amount that rises with inflation, with each year&apos;s income tax,
             {" "}Medicare surcharge and health insurance before 65 paid on top.{src.estimated.length ? " Estimated: " + and(src.estimated) + "." : ""}
             {src.defaults.length ? " Defaults: " + and(src.defaults) + "." : ""} A rule-of-thumb check, not financial advice; it leaves out home equity.</p>

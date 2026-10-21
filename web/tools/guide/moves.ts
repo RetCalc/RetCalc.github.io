@@ -60,7 +60,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
   const { S, O } = F, P = parts(a, S), inc = gross(a), out: Move[] = [];
   const pts = (id: FactorId) => headroom(id, P[id], a)?.pts;
   if (P.flow && !P.flow.bad && a.takehome! < a.spend!)
-    out.push({ id: "overspend", area: "flow", when: "This month", t: "Spend " + money(a.spend! - a.takehome!) + " a month less",
+    out.push({ id: "overspend", area: "flow", when: "This month", t: "Spend " + money(a.spend! - a.takehome!) + " per month less",
       d: "You're spending more than your take-home. Go through your budget line by line and trim the biggest items until it's back in the black.", trip: "budget", btn: "Open Budget" });
   if (P.cushion && !P.cushion.bad && P.cushion.m! < 1)
     out.push({ id: "starter", area: "cushion", when: "This month", t: "Put " + money(a.spend!) + " aside: one month of spending",
@@ -80,14 +80,14 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
       d: "You have " + months(P.cushion.m!) + " months of spending; three is " + money(a.spend! * 3) + " and six is " + money(a.spend! * 6) + ". Automate a transfer each payday until you're there." });
   const goal = target(a), ahead = !!S && S.success >= goal - 1e-9;
   if (P.rate && P.rate.r! < 0.15 && inc > 0 && !ahead)
-    out.push({ id: "rate", area: "rate", when: "This year", t: "Save " + money(Math.max(0, (inc * 0.15) / 12 - saveMo(a))) + " a month more, toward 15%",
-      d: "You save " + pctStr(P.rate.r!, 1) + " of your income. Raising it 1% a year, or at every raise, gets you there without feeling it.", trip: "basic", btn: "Try it in Basic" });
+    out.push({ id: "rate", area: "rate", when: "This year", t: "Save " + money(Math.max(0, (inc * 0.15) / 12 - saveMo(a))) + " per month more, toward 15%",
+      d: "You save " + pctStr(P.rate.r!, 1) + " of your income. Raising it 1% per year, or at every raise, gets you there without feeling it.", trip: "basic", btn: "Try it in Basic" });
   if (S && !ahead) {
     const pick = (id: string) => O?.list.find((o) => o.id === id)?.set;
     const bits: string[] = [], x = pick("extra"), l = pick("later"), sp = pick("less-spend");
-    if (x) bits.push("save <b>" + money(x.contrib! - (a.contrib || 0)) + " a month more</b>");
+    if (x) bits.push("save <b>" + money(x.contrib! - (a.contrib || 0)) + " per month more</b>");
     if (l) bits.push("retire at <b>" + l.retire + "</b>");
-    if (sp) bits.push("plan on <b>" + money(sp.retSpend!) + " a year</b> in retirement");
+    if (sp) bits.push("plan on <b>" + money(sp.retSpend!) + " per year</b> in retirement");
     out.push({ id: "gap", area: "outlook", when: "This year", t: "Close the gap: it lasted in " + pctStr(S.success, 0) + " of history",
       d: (bits.length ? "Any one of these gets it to " + pctStr(goal, 0) + ": " + or(bits) + ". A mix of smaller changes works too." : "Saving more, retiring later and spending less all help."),
       go: "adjust", btn: "See the options and apply one" });
@@ -97,7 +97,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     const bits: string[] = [], e = pick("earlier"), c = pick("coast"), m = pick("more");
     if (e) bits.push("retire at <b>" + e.retire + "</b>");
     if (c) bits.push(c.stopAge! <= a.age! ? "<b>stop saving now</b>" : "stop saving at <b>" + c.stopAge + "</b>");
-    if (m) bits.push("spend <b>" + money(m.retSpend!) + " a year</b>");
+    if (m) bits.push("spend <b>" + money(m.retSpend!) + " per year</b>");
     if (bits.length && F.need != null && F.need > 0 && S.fv >= F.need * 1.2)
       out.push({ id: "surplus", when: "When you're ready", t: "Decide what to do with " + money(S.fv - F.need) + " to spare",
         d: "You're on course for " + money(S.fv) + " against the " + money(F.need) + " your plan needs. You could " + or(bits) +
@@ -116,7 +116,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
       d: "It tries every claiming age from 62 to 70" + (mar(a) ? " for each of you" : "") + ", every order for drawing down your accounts and every Roth conversion level, through every market since 1926, and keeps the plan that does best.",
       go: "optimize", btn: "Open the Plan Optimizer" });
   if (ok(a.retire) && a.retire < 65 && !a.hcSeen && S && S.hcYr > 0)
-    out.push({ id: "healthcare", when: "When you're ready", t: "Get to know the " + money(S.hcYr) + " a year for health insurance before 65",
+    out.push({ id: "healthcare", when: "When you're ready", t: "Get to know the " + money(S.hcYr) + " per year for health insurance before 65",
       d: "That's marketplace coverage after the subsidy your plan's income earns. The Healthcare Cost Planner shows how the subsidy moves with income, and what Medicare costs after.",
       trip: "healthcare", btn: "Open Healthcare Cost Planner" });
   // Changes ahead that cost more than today's saving: the stages read $0,
@@ -124,9 +124,9 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
   const SF = S?.sched ? shortfall(S.sched) : null;
   if (SF && SF.list.length) {
     const first = SF.list[0], last = SF.list[SF.list.length - 1];
-    out.push({ id: "short", when: "This year", t: "Plan for the " + money(SF.most) + " a month your saving can't cover",
+    out.push({ id: "short", when: "This year", t: "Plan for the " + money(SF.most) + " per month your saving can't cover",
       d: "From " + first.from + " to " + last.to + ", " + (children(a).length ? "the children cost" : "your changes ahead cost") + " more than the " + money(saveMo(a)) +
-        " a month you save now, so retirement saving stops and about " + money(SF.total) + " in all has to come from your budget. Find it in your spending now, or build savings outside retirement before then.",
+        " per month you save now, so retirement saving stops and about " + money(SF.total) + " in all has to come from your budget. Find it in your spending now, or build savings outside retirement before then.",
       trip: "budget", btn: "Open Budget" });
   }
   // A child's college years that run past the retirement date (doc 3, 2b).
@@ -138,7 +138,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
   if (a.college === "yes" && !pos(a.collegeMo))
     out.push({ id: "college", when: "This year", t: "Set a monthly college number", d: "Find out what to put aside each month, and consider a 529 plan for the tax break.", trip: "college", btn: "Open College Savings" });
   if (!pos(a.ssOwn) && S)
-    out.push({ id: "ss", when: "This month", t: "Replace the Social Security estimate of " + money(S.ss.total / 12) + " a month",
+    out.push({ id: "ss", when: "This month", t: "Replace the Social Security estimate of " + money(S.ss.total / 12) + " per month",
       d: "Your statement at ssa.gov/myaccount uses your real earnings record and takes five minutes to get.", go: "social", btn: "Add it to your answers" });
   if (S && S.success >= 0.85 && !a.ddTool)
     out.push({ id: "stress", when: "When you're ready", t: "Stress-test how you'll spend it",

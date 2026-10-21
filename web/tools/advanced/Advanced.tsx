@@ -389,14 +389,14 @@ export function Advanced() {
           <CardHeader><CardTitle>Reach your target</CardTitle></CardHeader>
           <div className="grid grid-cols-1 border-t border-border sm:grid-cols-2">
             <SolveOption label="Change your contribution" id="sPerPeriod" value={money(S.perPeriod, 2)} noteId="sPerPeriodNote"
-              note={"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " a year"}>
+              note={"Paid " + p.period.toLowerCase() + " for " + fmtYears(p.years) + ", growing " + pctStr(p.growth, 1) + " per year"}>
               <KV k="Per year" id="sPerYear" v={money(S.perYear)} />
               <KV k="Change from current" id="sChange" v={(S.change >= 0 ? "+" : "") + money(S.change, 2)} />
               <Button variant="outline" className="mt-3.5 self-start max-sm:self-stretch" id="btnApply" disabled={noPay} onClick={applyContribution}>Use this contribution</Button>
             </SolveOption>
             <SolveOption label="Change your timeline" id="sYears" value={Y.reached ? fmtYears(Y.years) : "Out of reach"} noteId="sYearsNote" className="max-sm:border-t sm:border-l"
               note={Y.reached
-                ? "Keeping " + money(p.contrib, 2) + " " + p.period.toLowerCase() + ", growing " + pctStr(p.growth, 1) + " a year"
+                ? "Keeping " + money(p.contrib, 2) + " " + p.period.toLowerCase() + ", growing " + pctStr(p.growth, 1) + " per year"
                 : "Not reached within 100 years at " + money(p.contrib, 2) + " " + p.period.toLowerCase() + "."}>
               <KV k="Your plan now" id="sYearsNow" v={fmtYears(p.years)} />
               <YearsDiff Y={Y} years={p.years} />

@@ -44,7 +44,7 @@ export function budgetShare(s: BudgetInputs): ShareKit {
     card: () => {
       const top = budgetGroups(s).slice(0, 3).map((x) => [x.group, perMo(x.yr)] as [string, string]);
       return { title: "My monthly budget", bigLabel: "Budget, per month", big: money(T.totalYr / 12),
-        sub: money(T.totalYr) + " a year",
+        sub: money(T.totalYr) + " per year",
         rows: [...top, ["Emergency fund target", money((T.spentYr / 12) * ef) + " (" + ef + " mo)"]] };
     },
   };

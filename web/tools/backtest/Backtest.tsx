@@ -115,7 +115,7 @@ export function Backtest() {
     note: "Compound annual growth, " + B.first + "–" + B.last };
   const figures: ReadingFigure[] = [
     { label: <Tipped text="After inflation" k="btreal" />, id: "btReal", value: pctStr(B.realCagr, 2), noteId: "btRealNote",
-      note: "Inflation averaged " + pctStr(B.inflCagr, 2) + " a year" },
+      note: "Inflation averaged " + pctStr(B.inflCagr, 2) + " per year" },
     { label: <Tipped text="Volatility" k="btvol" />, id: "btVol", value: pctStr(B.vol, 2), note: "Standard deviation of annual returns" },
     { label: <Tipped text="Deepest fall" k="btdd" />, id: "btDD", value: B.maxDD < 0 ? pctStr(B.maxDD, 2) : "None",
       note: B.maxDD < 0 ? B.ddFrom + "–" + B.ddTo : "" },

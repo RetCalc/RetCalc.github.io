@@ -83,7 +83,7 @@ test("the other changes: a raise, a payoff, part-time years, a spouse's pause, a
 });
 
 test("a stage the saving can't cover says how far short it is, and the budget's share adds up", () => {
-  // Maya and Sam with a second child in three years: today's $1,200 a month,
+  // Maya and Sam with a second child in three years: today's $1,200 per month,
   // then childcare ($1,840 for a second child) on top of the first child's
   // school years ($1,400, which today's spending already covers), then the
   // first child's teens ($100 more).

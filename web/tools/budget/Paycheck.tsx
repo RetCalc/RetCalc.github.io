@@ -143,7 +143,7 @@ export function Paycheck({ s, set, setState }: {
               <Field id="pcHealth" label={(two ? "Premiums through your job" : "Health, dental and vision premiums") + ", per check"}>
                 <Affixed prefix="$"><MoneyInput id="pcHealth" nonNeg value={healthDerived ? amountText((pi.health[0] * pi.p) / pi.pays[0]) : s.pcHealth} onValueChange={set("pcHealth")} /></Affixed>
                 {two ? null : healthRow > 0 ? (
-                  <div className="hint">{healthDerived ? <>From the Budget&apos;s Health insurance row, {money(healthRow)} a month. 0 if it isn&apos;t through work.</>
+                  <div className="hint">{healthDerived ? <>From the Budget&apos;s Health insurance row, {money(healthRow)} per month. 0 if it isn&apos;t through work.</>
                     : pi.health[0] === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : null}</div>
                 ) : null}
               </Field>
@@ -151,7 +151,7 @@ export function Paycheck({ s, set, setState }: {
                 <Field id="pcHealth2" label="Premiums through your spouse's job, per check">
                   <Affixed prefix="$"><MoneyInput id="pcHealth2" nonNeg value={s.pcHealth2} onValueChange={set("pcHealth2")} /></Affixed>
                   {healthRow > 0 ? (
-                    <div className="hint">{healthDerived ? <>Health, dental and vision. Yours starts from the Budget&apos;s Health insurance row, {money(healthRow)} a month. Both 0 if not through work.</>
+                    <div className="hint">{healthDerived ? <>Health, dental and vision. Yours starts from the Budget&apos;s Health insurance row, {money(healthRow)} per month. Both 0 if not through work.</>
                       : pi.health[0] + pi.health[1] === 0 ? <>Not through work: the Budget&apos;s Health insurance row stays in your expenses.</> : <>Health, dental and vision.</>}</div>
                   ) : <div className="hint">Health, dental and vision.</div>}
                 </Field>
@@ -256,7 +256,7 @@ function BudgetFromTab({ s, p, per, onEdit }: { s: BudgetInputs; p: number; per:
         <Button variant="link" size="inline" onClick={onEdit}>Edit it there</Button>
       </div>
       <div className="flex items-baseline justify-between gap-2 text-note">
-        <span>Bills and spending</span><b className="font-medium tabular-nums" id="pcBudget">{cents(spendYear / p)} a {per}</b>
+        <span>Bills and spending</span><b className="font-medium tabular-nums" id="pcBudget">{cents(spendYear / p)} per {per}</b>
       </div>
       <div className="mb-1.5 text-label text-muted-foreground">
         {spendYear > 0 ? money(spendYear / 12) + " per month, from " + used + (used === 1 ? " line" : " lines") + " of your Budget" : "Nothing in your Budget yet"}
@@ -404,7 +404,7 @@ function Sliders({ s, set, setState, pi, r, base, empty }: {
                     {k === "ef" ? (
                       <span className="inline-flex items-center gap-1.5">Plans fill it to
                         <Affixed prefix="$" className="w-24"><MoneyInput nonNeg aria-label={"Emergency fund: how much a plan puts in, per " + per} value={s.pcEfCap} onValueChange={set("pcEfCap")} /></Affixed>
-                        a {per}</span>
+                        per {per}</span>
                     ) : <>
                       {limit}
                       {over ? <span className="text-destructive"> · over the limit</span> : null}

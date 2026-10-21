@@ -212,7 +212,7 @@ export function target(d: Record<string, unknown>, comfort: number | number[]): 
   return { crit: d.tCrit === "lasts" ? "lasts" : "comfort", conf: Math.min(100, Math.max(50, (d.tConf as number) || 100)) / 100, comfort };
 }
 export const critWords = (T: DdTarget, age: number | null) =>
-  T.crit === "comfort" ? "spending never falls below " + lineWords(T.comfort, age, " a year") : "the money lasts the whole retirement";
+  T.crit === "comfort" ? "spending never falls below " + lineWords(T.comfort, age, " per year") : "the money lasts the whole retirement";
 export const targetWords = (T: DdTarget, age: number | null) =>
   critWords(T, age) + (Array.isArray(T.comfort) ? ", in " : " in ") + (T.conf >= 1 ? "every historical start" : pctStr(T.conf, 0) + " of historical starts");
 
@@ -299,8 +299,8 @@ export function whyText(o: DdOpts, r: DdHistRun, H: DdHist, age: number | null):
   const rate = nx && row.realEnd > 0 ? nx.realWithdrawal / row.realEnd : null;
   const where = below < 0.1 ? "among the worst on record" : below < 0.33 ? "weaker than most" : below >= 0.9 ? "among the best on record" :
     below >= 0.67 ? "stronger than most" : "about typical";
-  let txt = "<b>" + lead + ":</b> its first " + n + " years returned " + pct1(d.port) + " a year after inflation at your mix " +
-    "(stocks " + pct1(d.stock) + ", bonds " + pct1(d.bond) + ", with inflation at " + pctStr(d.infl, 1) + " a year), " + where +
+  let txt = "<b>" + lead + ":</b> its first " + n + " years returned " + pct1(d.port) + " per year after inflation at your mix " +
+    "(stocks " + pct1(d.stock) + ", bonds " + pct1(d.bond) + ", with inflation at " + pctStr(d.infl, 1) + " per year), " + where +
     "; the typical start's returned " + pct1(med) + ". ";
   if (n < o.years)
     txt += "Withdrawing through them left " + pctStr(left, 0) + " of the starting balance, after inflation" +
@@ -319,8 +319,8 @@ export function comfortNote(o: DdOpts, P: DdPrep, age: number | null): string {
   const c = ddComfort(o, P);
   return o.comfort > 0 ? ""
     : (o.spendFloor > 0 || Array.isArray(c)) && DD_STRAT[o.strategy].limits !== false
-      ? "Blank: your minimum spending, " + lineWords(c, age, " a year") + "."
-      : "Blank: 80% of year one's spending, " + money(c as number) + " a year.";
+      ? "Blank: your minimum spending, " + lineWords(c, age, " per year") + "."
+      : "Blank: 80% of year one's spending, " + money(c as number) + " per year.";
 }
 
 /** Stages in the order they take effect, each with its working start year. */

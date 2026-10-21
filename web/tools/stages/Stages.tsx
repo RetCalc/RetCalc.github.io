@@ -389,7 +389,7 @@ export function Stages() {
             {target > 0 ? (
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-note">
                 <span className="text-muted-foreground">Your target</span>
-                <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " a year, after tax" : " portfolio, in today's dollars")}</span>
+                <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " per year, after tax" : " portfolio, in today's dollars")}</span>
               </div>
             ) : null}
           </ProjectionReading>

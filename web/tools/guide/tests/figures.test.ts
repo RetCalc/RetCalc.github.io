@@ -14,7 +14,7 @@ test("a dollar at 38 is $3.83 at 62 for a growth mix", () => {
   assert.equal(dollarAt(38, 62, 0.0575).toFixed(2), "3.83");
 });
 
-test("$100 a month: started now, stopped after 14 years, started ten years late", () => {
+test("$100 per month: started now, stopped after 14 years, started ten years late", () => {
   const C = compounding(38, 62, 0.0575, 100)!;
   assert.equal(C.gap, 10);
   assert.deepEqual(C.curves.map((c) => Math.round(c.fv)), [59562, 43774, 25027]);

@@ -56,7 +56,7 @@ const STRATEGY_LEDE: Partial<Record<Slug, string>> = {
   "4-percent-rule": "Does 4% still work? Test it against every retirement since 1926, and find your own safe rate.",
   "guardrails": "Guyton-Klinger guardrails: start higher, cut when markets fall. How deep did the cuts go?",
   "vpw": "Variable percentage withdrawal: spend it all by the end, never run out. How low did it go?",
-  "vanguard-dynamic-spending": "A share of the portfolio, but spending moves at most +5% or −2.5% a year. Tested since 1926.",
+  "vanguard-dynamic-spending": "A share of the portfolio, but spending moves at most +5% or −2.5% per year. Tested since 1926.",
   "risk-based-guardrails": "Change spending only when the odds of lasting leave a band. How often did it move, and how far?",
   "rmd-withdrawal-strategy": "Spend the balance divided by the IRS life-expectancy divisor, every year. Tested since 1926.",
   "ratcheting-withdrawal": "The 4% rule with raises: 10% more whenever the portfolio is up 50%. How often did they come?",

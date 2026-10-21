@@ -12,7 +12,7 @@ export function RangeBars({ H, cur }: { H: MixHistory[]; cur: number }) {
   const x = (v: number) => (((v - lo) / (hi - lo)) * 100).toFixed(2);
   const ticks: number[] = [];
   for (let t = Math.ceil(lo * 20) / 20; t <= hi + 1e-9; t += 0.05) ticks.push(Math.round(t * 100) / 100);
-  const label = H.map((h) => h.label + ": " + pc(h.worst) + " to " + pc(h.best) + " a year, middle " + pc(h.med) + ", the guide assumes " + pc(h.real)).join(". ");
+  const label = H.map((h) => h.label + ": " + pc(h.worst) + " to " + pc(h.best) + " per year, middle " + pc(h.med) + ", the guide assumes " + pc(h.real)).join(". ");
   return (
     <div className="gd-rng" role="img" aria-label={"Ten-year stretches since " + H[0].first + ", a year after inflation. " + label + "."}>
       <div className="gd-rng-row head" aria-hidden="true">

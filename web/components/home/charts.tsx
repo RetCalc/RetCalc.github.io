@@ -45,7 +45,7 @@ export function FanChart({ fan, w = 640, h = 260 }: { fan: HomeData["fan"]; w?: 
   const L = 40, R = 6, T = 8, B = 22, max = 3000000;
   const x = scale(0, 30, L, w - R), y = scale(0, max, h - B, T);
   return (
-    <svg className="hm-chart hm-wide-chart" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Every retirement since 1926 with $1 million, 60% stocks, spending 4% a year raised with inflation. A few that began in the late 1960s ran out.">
+    <svg className="hm-chart hm-wide-chart" viewBox={`0 0 ${w} ${h}`} role="img" aria-label="Every retirement since 1926 with $1 million, 60% stocks, spending 4% per year raised with inflation. A few that began in the late 1960s ran out.">
       <defs><clipPath id="hm-fan-clip"><rect x={0} y={T - 4} width={w} height={h - T - B + 8} /></clipPath></defs>
       <g>
         {[0, 1, 2, 3].map((m) => (

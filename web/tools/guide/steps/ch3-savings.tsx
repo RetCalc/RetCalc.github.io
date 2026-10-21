@@ -46,12 +46,12 @@ export function SavingsCard() {
           figure={C ? <>
             <div className="gd-slide">
               <label htmlFor="gdCmpSlide">Saving <b>{money(mo)}</b> a month</label>
-              <NativeRange id="gdCmpSlide" min={50} max={2000} step={50} value={mo} aria-valuetext={money(mo) + " a month"} onChange={(e) => setMo(+e.target.value)} />
+              <NativeRange id="gdCmpSlide" min={50} max={2000} step={50} value={mo} aria-valuetext={money(mo) + " per month"} onChange={(e) => setMo(+e.target.value)} />
             </div>
             <Compound C={C} />
           </> : null}>
           <p>Money saved early has the longest to grow, and its growth grows too: <Term k="compound">compound growth</Term>. At a {riskLabel(real)} mix&apos;s
-            {" "}{rate(real)} a year after inflation, a dollar saved at {fmtNum(age)} is worth <b>${A.toFixed(2)}</b> by {fmtNum(retire)}.</p>
+            {" "}{rate(real)} per year after inflation, a dollar saved at {fmtNum(age)} is worth <b>${A.toFixed(2)}</b> by {fmtNum(retire)}.</p>
           {C ? <p>That&apos;s why the years matter more than the amount. {money(mo)} a month from now comes to <b>{money(C.curves[0].fv)}</b> by {fmtNum(retire)}.
             {" "}Stop after {yrs(kept)} and it&apos;s still {money(C.curves[1].fv)}; start {yrs(C.gap)} late and save for the same {yrs(kept)}, and it&apos;s {money(C.curves[2].fv)}.</p> : null}
           {a.match === "none" ? <p>Self-employed? Consider a SEP IRA or a solo 401(k): either lets you put in far more than an IRA alone, since you contribute as both the employer and the employee.</p> : null}
@@ -97,7 +97,7 @@ function SaveSplit() {
       {off != null ? (
         <div className="mt-0 mb-2 flex items-start gap-2 text-note text-destructive"><CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           <span role="alert">These add up to {fmtNum(Math.round(off * 10) / 10)}%. They need to add up to 100%.</span></div>
-      ) : mine > 0 ? <p className="hint mx-0 mt-0 mb-1">Of the {money(mine)} a month you put in. Your employer&apos;s share goes into a traditional account either way.</p>
+      ) : mine > 0 ? <p className="hint mx-0 mt-0 mb-1">Of the {money(mine)} per month you put in. Your employer&apos;s share goes into a traditional account either way.</p>
         : <p className="hint mx-0 mt-0 mb-1">Enter what you contribute each month, above, to see these in dollars. Your employer&apos;s share goes into a traditional account either way.</p>}
     </>
   );
@@ -114,12 +114,12 @@ function SavingsReadout() {
   return (
     <ul className="gd-read">
       {coast ? <li>Your plan has you coasting from now, set on <b>Adjust your plan</b>: what&apos;s saved grows on its own.</li>
-        : r != null ? <li>You&apos;re putting in <b>{money(P.monthly)} a month</b>, <b>{pctStr(r, 1)}</b> of gross income counting your employer&apos;s share.
-          {r >= 0.15 ? " That meets the usual 15% target." : <> The usual target is 15%: about {money((inc * 0.15) / 12)} a month for you.</>}</li>
-          : <li><b>{money(P.monthly)} a month</b> going in.</li>}
+        : r != null ? <li>You&apos;re putting in <b>{money(P.monthly)} per month</b>, <b>{pctStr(r, 1)}</b> of gross income counting your employer&apos;s share.
+          {r >= 0.15 ? " That meets the usual 15% target." : <> The usual target is 15%: about {money((inc * 0.15) / 12)} per month for you.</>}</li>
+          : <li><b>{money(P.monthly)} per month</b> going in.</li>}
       {!coast && pos(a.contrib) && splitOff(a) == null ? <li>Of the <b>{money(a.contrib)}</b> a month you put in, <b>{money(Math.round((a.contrib * splitPcts(a)[0]) / 100))}</b> goes to traditional,
         {" "}<b>{money(Math.round((a.contrib * splitPcts(a)[1]) / 100))}</b> to Roth and <b>{money(Math.round((a.contrib * splitPcts(a)[2]) / 100))}</b> to a taxable account{pos(a.employer) ? <>, plus your employer&apos;s {money(a.employer)} to traditional</> : ""}.</li> : null}
-      <li>By {fmtNum(a.retire!)}, at the {riskLabel(P.real)} mix&apos;s {rate(P.real)} a year after inflation: today&apos;s <b>{money(a.saved!)}</b> grows to <b>{money(P.fromSaved)}</b>
+      <li>By {fmtNum(a.retire!)}, at the {riskLabel(P.real)} mix&apos;s {rate(P.real)} per year after inflation: today&apos;s <b>{money(a.saved!)}</b> grows to <b>{money(P.fromSaved)}</b>
         {coast ? "." : <>, and what you add comes to <b>{money(P.fromSaving)}</b>.</>} Together, <b>{rounded(P.total)}</b>: your number so far, in today&apos;s dollars.</li>
       {rp ? <li>Savings rate scores {Math.round(rp.p * 20)} of 20{rp.p >= 1 && r != null && r < 0.15 ? ": under 15%, but your plan already lasts" : ""}.</li> : null}
       {a.match === "partial" ? <li>You&apos;re missing part of your employer&apos;s match: getting all of it is the best return there is, and the first move on your plan.</li>

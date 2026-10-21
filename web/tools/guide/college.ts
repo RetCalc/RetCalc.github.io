@@ -1,5 +1,5 @@
 /* College in the plan's own money. The College Savings tool works in the
-   dollars of the year each bill is paid (tuition rising 4% a year by
+   dollars of the year each bill is paid (tuition rising 4% per year by
    default); everything else the Guide shows is in today's dollars. This
    takes the tool's own figures for the children the Guide sent there and
    brings each year's bill back to today's dollars at the plan's inflation,

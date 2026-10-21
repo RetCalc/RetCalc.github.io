@@ -250,7 +250,7 @@ export function Guide() {
         ch.push(set.stopAge == null ? "save until you retire" : set.stopAge <= y.age! ? "<b>stop saving now</b>" : "<b>stop saving at " + fmtNum(set.stopAge) + "</b>");
         setAnswer(x, "stopAge", set.stopAge);
       }
-      if ("retSpend" in set) { ch.push("spend <b>" + money(set.retSpend!) + " a year</b>"); setAnswer(x, "retSpend", set.retSpend); }
+      if ("retSpend" in set) { ch.push("spend <b>" + money(set.retSpend!) + " per year</b>"); setAnswer(x, "retSpend", set.retSpend); }
       if (ok(y.stopAge) && y.stopAge >= y.retire!) {
         if (undo.stopAge === undefined) { undo.stopAge = y.stopAge; if (x.src.stopAge) undoSrc.stopAge = x.src.stopAge; }
         setAnswer(x, "stopAge", null);

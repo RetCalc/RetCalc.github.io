@@ -135,7 +135,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
       rate: Math.max(0.1, Math.round(H.y.gross / H.e.total * 10000) / 100), spendFloor: 0, spendCeil: 0,
     });
     router.push("/drawdown");
-    toast("Drawdown set to " + money(H.e.total) + " at 60, withdrawing " + money(H.y.gross) + " a year");
+    toast("Drawdown set to " + money(H.e.total) + " at 60, withdrawing " + money(H.y.gross) + " per year");
   };
   const toTax = () => {
     const H = handoff();
@@ -676,7 +676,7 @@ function Rules({ ctx }: { ctx: BrCtx }) {
       "while still working starts the clocks sooner, but at your working tax rate."],
     ["72(t) payments", "Substantially equal periodic payments from an IRA are penalty-free at any age. " +
       "At " + ctx.age + ", the most " + money(brSeppBase(ctx)) + " could pay is " + money(brSeppMax(ctx, "amort")) +
-      " a year by amortization at " + pctStr(ctx.seppRate, 2) + ", or " + money(brSeppMax(ctx, "rmd")) +
+      " per year by amortization at " + pctStr(ctx.seppRate, 2) + ", or " + money(brSeppMax(ctx, "rmd")) +
       " by the RMD method. Payments must run until age " + seppEnd + " (the later of five years or 59½)" +
       (seppEnd > 59 ? ", so they carry on past 59½" : "") + ". Changing them, adding money to that IRA or " +
       "taking anything extra puts the 10% back on every payment so far, plus interest. Splitting off a " +

@@ -25,9 +25,9 @@ export const LEVER_ROWS = {
   ahead: ["save+100", "retire+1", "retire-1", "spend-5000", "spend+10000"],
 };
 const LABEL: Record<string, string> = {
-  "save+100": "Save $100 a month more", "save+250": "Save $250 a month more",
+  "save+100": "Save $100 per month more", "save+250": "Save $250 per month more",
   "retire-3": "Retire three years sooner", "retire-1": "Retire a year sooner", "retire+1": "Retire a year later", "retire+3": "Retire three years later",
-  "spend-5000": "Spend $5,000 a year less", "spend+5000": "Spend $5,000 a year more", "spend+10000": "Spend $10,000 a year more",
+  "spend-5000": "Spend $5,000 per year less", "spend+5000": "Spend $5,000 per year more", "spend+10000": "Spend $10,000 per year more",
 };
 
 /** Lesson 16's figure: the plan as it stands, then one change at a time. */

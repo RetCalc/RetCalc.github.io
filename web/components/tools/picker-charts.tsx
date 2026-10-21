@@ -135,7 +135,7 @@ export function CollegeStairs({ w = 340, h = 120 }) {
 /* ---------- Debt Payoff: downhill ---------- */
 
 const DB_SECONDS = 1.4;
-/** Four example debts, [balance, rate a year], paid $900 a month: minimums
+/** Four example debts, [balance, rate a year], paid $900 per month: minimums
     (2%, at least $25) on each, the rest on the highest rate (the avalanche). */
 const DEBTS: [number, number][] = [[4200, 0.24], [9000, 0.19], [2200, 0.11], [7000, 0.07]];
 function avalanche() {
