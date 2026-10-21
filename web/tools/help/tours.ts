@@ -413,7 +413,7 @@ const social: Tour<SocialInputs> = { name: "Social Security Calculator", title: 
   pages: [
     { title: "About you", focus: "#ssSentence", tasks: ({ s }) => [
       { h: "Fill in the blanks. Your <b>birth year</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months a year to 67 for 1960 and later." },
-      { h: "<b>Your pay</b> today estimates a whole career: the ages you started and will stop, and raises around today's pay. <b>Edit pay year by year</b> shows every year; change a past year to match your record, or a future one for a promotion, and the years after follow it." },
+      { h: "<b>Your pay</b> today estimates a whole career: the ages you started and will stop, and raises around today's pay. <b>Edit pay year by year</b> shows every year; type a past year's pay as you earned it (the tool indexes it to today's wages, as Social Security does), or a future year for a promotion, and the years after follow it." },
       { h: "Have your statement from ssa.gov/myaccount? <b>I have my Social Security statement</b> takes its monthly figure at full retirement age instead.", ok: tried(s.you.src === "statement") },
       { h: "<b>Add my spouse</b> for a couple: a lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
     ] },

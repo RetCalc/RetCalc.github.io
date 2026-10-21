@@ -31,6 +31,8 @@ export const yearData = typed<(year?: number) => YearData>(E.yearData);
 export const dataYears = typed<() => number[]>(E.dataYears);
 /** The newest year there are figures for: the one every tool but Income Tax uses. */
 export const NEWEST_YEAR = E.NEWEST_YEAR as number;
+/** Social Security's national average wage index, by year. */
+export const SS_AWI = E.SS_AWI as Record<number, number>;
 
 export const backtest = typed<(o: BtInput) => BtResult>(E.backtest);
 export const HIST_YEARS = (E.HIST_STOCK as number[]).length;

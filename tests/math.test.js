@@ -290,6 +290,17 @@ group("Social Security: the benefit from a whole career");
   eq(ssPiaFromEarnings(flat.slice(0, 20)).years, 20, "years with pay counted");
 })();
 
+group("Social Security: the average wage index");
+(function () {
+  // SSA sets each year's bend points from the index two years before:
+  // $180 and $1,085 scaled by AWI(year - 2) / AWI(1977), rounded.
+  var Y = yearData();
+  eq(Math.round(180 * SS_AWI[Y.year - 2] / SS_AWI[1977]), Y.ss.bend1, "first bend point from the index");
+  eq(Math.round(1085 * SS_AWI[Y.year - 2] / SS_AWI[1977]), Y.ss.bend2, "second bend point from the index");
+  eq(SS_AWI[2020], 55628.60, "2020 average wage, as SSA publishes it");
+  ok(SS_AWI[Y.year - 1] > SS_AWI[Y.year - 2], "the newest published year is in the table");
+})();
+
 group("Articles: Social Security Calculator");
 (function () {
   // Sam, born 1964 (FRA 67), $2,400 at full retirement age, living to 90.

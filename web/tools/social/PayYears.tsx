@@ -1,13 +1,15 @@
 "use client";
 
 /* Pay, year by year, for the Social Security estimate: a bar for every
-   year of the career, the best 35 (the ones the benefit counts) in sky and
-   the rest dimmed, with the wage base drawn where it's in range. A click
-   picks a year and puts the cursor in its figure below; the arrows step
-   through the years. Before this year a figure is that year's alone (an
-   earnings record); after it, a figure carries forward and the raises go
-   on from it (a promotion). This year is the pay in the sentence above.
-   Changes are listed under the chart, each removable. */
+   year of the career at what it counts as in today's wages, the best 35
+   (the ones the benefit counts) in sky and the rest dimmed, with the wage
+   base drawn where it's in range. A click picks a year and puts the cursor
+   in its figure below; the arrows step through the years. Before this year
+   the figure is what was earned that year, as paid (as a Social Security
+   statement lists it), and stands alone; the tool indexes it to today's
+   wages. After it, a figure is in today's dollars and carries forward, the
+   raises going on from it (a promotion). This year is the pay in the
+   sentence above. Changes are listed under the chart, each removable. */
 
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "lucide-react";
@@ -21,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ssRules, type Person, type PersonInputs, type Who } from "./model";
 
-const TIP_PAY = "Every year of your career in today's dollars: past pay counts at what it would be worth at today's wages, which is how Social Security indexes it. Click a bar to change that year. Before today, a change is that year only, to match your earnings record at ssa.gov/myaccount. After today, a change carries forward: later years rise from it, so you can add a promotion or a cut.";
+const TIP_PAY = "Every year of your career. Click a bar to change that year. For past years, type what you actually earned that year, as your Social Security statement at ssa.gov/myaccount lists it; Social Security raises past pay by how much average wages have grown since, and the bars show it that way. For future years, type pay in today's dollars: a change carries forward, so later years rise from it, for a promotion or a cut.";
 
 function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
   const ref = useRef<T>(null);
@@ -75,13 +77,15 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
     setDraft({ age, who, text });
     if (s.now) setP("pay")(text);
     else setEdits((e) => ({ ...e, [String(age)]: text }));
+    // Past years are typed as earned; future years in today's dollars.
   };
   const edits = Object.keys(inputs.edits).filter((k) => inputs.edits[k] !== "").map(Number).sort((a, b) => a - b);
   const gAhead = parseNum(inputs.gAhead);
+  const counts = Math.abs(s.pay - s.earned) >= 1 ? ` Counts as ${money(s.pay)} in today's wages.` : "";
   const ctx = s.now ? "Today's pay, the same as in the sentence above." : s.past
-    ? (s.edited ? "Your figure, for this year only." : "Estimated. Type your real pay for this year only.")
-    : s.edited ? `Later years follow this, rising ${gAhead}% per year.` : "Type a promotion or a cut; later years follow it.";
-  const shown = draft && draft.age === age && draft.who === who ? draft.text : groupDigits(Math.round(s.pay), true);
+    ? (s.edited ? `Earned in ${s.year}, as paid.${counts}` : `Estimated. Type what you earned in ${s.year}, as paid.${counts}`)
+    : s.edited ? `In today's dollars. Later years follow this, rising ${gAhead}% per year.` : "In today's dollars. Type a promotion or a cut; later years follow it.";
+  const shown = draft && draft.age === age && draft.who === who ? draft.text : groupDigits(Math.round(s.earned), true);
 
   return (
     <div className="mt-3 rounded-xl border border-border bg-background" id="ssPay">
@@ -137,13 +141,14 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           {L.map((y, k) => (
             <rect key={y.age} x={pl + k * bw} y={pt - 4} width={bw} height={Y(0) - pt + 4} rx={3}
               className="cursor-pointer fill-transparent hover:fill-foreground/7" onClick={() => pick(y.age, true)}>
-              <title>{`Age ${y.age}, ${y.year}: ${money(y.pay)}${y.counted ? "" : ", not counted"}`}</title>
+              <title>{`Age ${y.age}, ${y.year}: ${y.past && Math.abs(y.pay - y.earned) >= 1 ? `earned ${money(y.earned)}, counts as ${money(y.pay)}` : money(y.pay)}${y.counted ? "" : ", not counted"}`}</title>
             </rect>
           ))}
         </svg>
       </div>
 
       <div className="flex flex-wrap gap-x-3.5 gap-y-1 px-3.5 pt-0.5 pb-2.5 text-label text-muted-foreground">
+        <span className="text-foreground">Bars in today&apos;s wages</span>
         <span><i className="mr-1.25 inline-block size-2.25 rounded-xs bg-series-sky align-baseline" />Counted, best 35 years</span>
         <span><i className="mr-1.25 inline-block size-2.25 rounded-xs bg-muted-foreground/30 align-baseline" />Not counted</span>
         <span><i className="mr-1.25 inline-block size-1.5 rounded-full bg-foreground align-middle" />Your change</span>
@@ -156,7 +161,7 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           <span className="min-w-24 text-center text-note font-semibold" aria-live="polite" id="ssPayYear">Age {s.age}, {s.year}</span>
           <Button variant="outline" size="icon-sm" aria-label="Year after" disabled={i >= L.length - 1} onClick={() => pick(L[i + 1].age)}><ChevronRightIcon /></Button>
           <Affixed prefix="$" suffix="/yr" className="w-37.5">
-            <MoneyInput ref={valRef} id="ssPayVal" nonNeg aria-label={`Pay at age ${s.age}`} value={shown} onValueChange={setPay} onBlur={() => setDraft(null)} />
+            <MoneyInput ref={valRef} id="ssPayVal" nonNeg aria-label={s.past ? `Pay earned at age ${s.age}, in ${s.year}` : `Pay at age ${s.age}, in today's dollars`} value={shown} onValueChange={setPay} onBlur={() => setDraft(null)} />
           </Affixed>
           <span className="text-note text-muted-foreground" id="ssPayCtx">{ctx}</span>
           {s.edited ? <Button variant="quiet" size="inline" onClick={() => setEdits((e) => { const n = { ...e }; delete n[String(age)]; return n; })}>Undo</Button> : null}
@@ -172,7 +177,7 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
           <span className="mr-0.5 text-muted-foreground">Your changes</span>
           {edits.map((a) => (
             <span key={a} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted py-0.5 pr-1 pl-2.5">
-              <Button variant="link" size="inline" onClick={() => pick(a, true)}>Age {a}: {money(parseNum(inputs.edits[String(a)]))}</Button>
+              <Button variant="link" size="inline" onClick={() => pick(a, true)}>Age {a}: {money(parseNum(inputs.edits[String(a)]))}{a < person.ageNow ? " earned" : ""}</Button>
               <Button variant="ghost" size="icon-xs" aria-label={`Remove the change at age ${a}`} onClick={() => setEdits((e) => { const n = { ...e }; delete n[String(a)]; return n; })}><XIcon /></Button>
             </span>
           ))}

@@ -34,14 +34,15 @@
       "area": "Taxes",
       "name": "Social Security wage base, benefit bend points and earnings-test limits",
       "what": "The Social Security tax wage cap (also the cap on earnings the benefit estimate counts), the two bend points in the benefit formula, and the retirement earnings test's two exempt amounts (under full retirement age, and the year it's reached), which the claiming tool applies.",
-      "where": ["web/lib/engine/data/<year>.js: fica (fica.ssCap is the wage base, also the benefit estimate's earnings cap), ss.bend1, ss.bend2, ss.earn.under, ss.earn.fraYear"],
+      "where": ["web/lib/engine/data/<year>.js: fica (fica.ssCap is the wage base, also the benefit estimate's earnings cap), ss.bend1, ss.bend2, ss.earn.under, ss.earn.fraYear",
+        "web/lib/engine/data/tables.js: SS_AWI, the national average wage index by year (add the newest year each October; ssa.gov/oact/cola/AWI.html). The calculator indexes past pay with the index two years before the data year"],
       "source": "SSA's annual COLA and wage-base fact sheet, released in October",
       "cadence": "Yearly. Switch with the federal tax figures on January 1",
       "last_updated": "2026-09-29",
       "data_for": "2026",
       "next_due": "2027-01-01",
       "priority": "high",
-      "notes": "The wage base is one figure, fica.ssCap; the Social Security estimator reads it too. The earnings-test amounts are on the same SSA fact sheet; the Social Security Calculator and its About section quote the under-FRA one. 2027 figures gathered 2026-10-20 from SSA (oact/cola cbb.html, piaformula.html, rtea.html; released 2026-10-14): wage base $192,300; bend points $1,340 and $8,077; earnings test $25,560 under FRA and $67,920 in the year FRA is reached. Owner: add them as data/2027.js on 2027-01-01 with the federal tax figures, not before (adding the year makes the calculator treat 2027 as the current year)."
+      "notes": "The wage base is one figure, fica.ssCap; the Social Security estimator reads it too. The earnings-test amounts are on the same SSA fact sheet; the Social Security Calculator and its About section quote the under-FRA one. 2027 figures gathered 2026-10-20 from SSA (oact/cola cbb.html, piaformula.html, rtea.html; released 2026-10-14): wage base $192,300; bend points $1,340 and $8,077; earnings test $25,560 under FRA and $67,920 in the year FRA is reached. 2025 average wage index (72,800.33) already added to SS_AWI. Owner: add them as data/2027.js on 2027-01-01 with the federal tax figures, not before (adding the year makes the calculator treat 2027 as the current year)."
     },
     {
       "id": "state-tax",

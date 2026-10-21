@@ -5,7 +5,7 @@
    lifespan, and for a couple every pair of claiming ages
    (lib/engine/math.js, the claiming section). */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { NEWEST_YEAR, ssBreakEven, ssClaimFactor, ssFRA, ssHousehold, ssPiaFromEarnings, ssTaxable, yearData } from "@/lib/engine/typed";
+import { NEWEST_YEAR, SS_AWI, ssBreakEven, ssClaimFactor, ssFRA, ssHousehold, ssPiaFromEarnings, ssTaxable, yearData } from "@/lib/engine/typed";
 import type { SsHousehold, SsHouseholdInput } from "@/lib/engine/types";
 import { groupDigits, parseNum } from "@/lib/format";
 
@@ -40,7 +40,11 @@ const clampAge = (v: string, lo: number, hi: number, dflt: number) => {
 };
 
 export interface CareerYear {
-  age: number; year: number; pay: number;
+  age: number; year: number;
+  /** What the year counts as, in today's wages (past pay indexed). */
+  pay: number;
+  /** What was earned that year, as paid: the same as `pay` from this year on. */
+  earned: number;
   /** Set by hand. */
   edited: boolean;
   /** Before this year, or this year. */
@@ -49,12 +53,24 @@ export interface CareerYear {
   counted: boolean;
 }
 
-/** Pay at every age of a career, in today's dollars. Before this year,
-    each year is today's pay walked back at the past raise, and a year set
-    by hand is that year alone (an earnings record). This year is today's
-    pay. After it, each year is the year before plus the raise ahead, so a
-    year set by hand (a promotion, a cut) carries forward and the raises
-    continue from it. */
+/** How much a year's earnings grow when Social Security indexes them to
+    wage levels: the average wage index two years before the data year
+    (the year the bend points were set from) over that year's. Years after
+    the index year count as paid, as SSA counts them. */
+export function wageIndex(year: number): number {
+  const base = NEWEST_YEAR - 2, years = Object.keys(SS_AWI).map(Number);
+  const first = Math.min(...years);
+  if (year >= base || !SS_AWI[base]) return 1;
+  return SS_AWI[base] / SS_AWI[Math.max(first, year)];
+}
+
+/** Pay at every age of a career. Before this year, each year is today's
+    pay walked back at the past raise (in today's wages), and a year set by
+    hand is what was earned that year, as paid, indexed to today's wages;
+    it stands alone, like a line of an earnings record. This year is
+    today's pay. After it, each year is the year before plus the raise
+    ahead, in today's dollars, so a year set by hand (a promotion, a cut)
+    carries forward and the raises continue from it. */
 export function careerYears(p: PersonInputs, ageNow: number): CareerYear[] {
   const start = clampAge(p.start, 14, 70, 22), stop = Math.max(start + 1, clampAge(p.stop, 15, 80, 67));
   const payNow = Math.max(0, parseNum(p.pay)), gPast = parseNum(p.gPast) / 100, gAhead = parseNum(p.gAhead) / 100;
@@ -62,13 +78,17 @@ export function careerYears(p: PersonInputs, ageNow: number): CareerYear[] {
   let prev: number | null = null;
   for (let age = start; age < stop; age++) {
     const d = age - ageNow, e = p.edits[String(age)], hand = e != null && e !== "";
-    let pay: number;
-    if (d < 0) pay = hand ? parseNum(e) : payNow / Math.pow(1 + gPast, -d);
+    let pay: number, earned: number | null = null;
+    if (d < 0) {
+      const f = wageIndex(NEWEST_YEAR + d);
+      if (hand) { earned = Math.max(0, parseNum(e)); pay = earned * f; }
+      else { pay = payNow / Math.pow(1 + gPast, -d); earned = pay / f; }
+    }
     else if (d === 0) pay = payNow;
     else pay = hand ? parseNum(e) : (prev ?? payNow * Math.pow(1 + gAhead, d - 1)) * (1 + gAhead);
     pay = Math.max(0, pay);
     prev = pay;
-    out.push({ age, year: NEWEST_YEAR + d, pay, edited: hand && d !== 0, past: d < 0, now: d === 0, counted: false });
+    out.push({ age, year: NEWEST_YEAR + d, pay, earned: earned ?? pay, edited: hand && d !== 0, past: d < 0, now: d === 0, counted: false });
   }
   // The best 35 years count, each capped at the wage base.
   const cap = yearData().fica.ssCap;

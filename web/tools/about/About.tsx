@@ -933,12 +933,16 @@ export function About({ states }: { states: StateOption[] }) {
               <dd>The monthly figure at full retirement age on a statement from ssa.gov is
               the right input for anyone near claiming: it reflects the actual earnings
               record. The estimate builds a whole career instead, from the age work started
-              to the age it stops. Years before today are today&apos;s pay walked back at the
-              raise set for the past, and any of them can be typed in to match the earnings
-              record; a year typed in is that year alone. Years after today rise from the
+              to the age it stops. Years before today are estimated by walking today&apos;s pay back at
+              the raise set for the past, and any of them can be typed in as it was actually
+              earned, the figure a Social Security statement lists for that year; a year typed
+              in is that year alone, and the tool indexes it the way Social Security does:
+              times the national average wage index two years before the benefit year, over
+              that year&apos;s (so $65,000 earned in 2020 counts as about $81,600 in 2026). Years
+              after the index year count as paid. Years after today rise from the
               year before at the raise set for the future, so a year typed in (a promotion,
               a cut) carries forward, and the raises go on from it. Raises are above
-              national wage growth, and every figure is in today&apos;s dollars: Social Security
+              national wage growth, and the chart shows every year in today&apos;s wages: Social Security
               indexes past pay to wage growth, so pay that only kept pace counts as level,
               and the bend points and wage base move with wages too. Each year is capped at
               the wage base, the best 35 are averaged (zeros fill a shorter career) and the
