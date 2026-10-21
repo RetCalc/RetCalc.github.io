@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ToolCard } from "@/components/tools/ToolPicker";
+import { ToolCard } from "@/components/tools/ToolCard";
 import { buttonVariants } from "@/components/ui/button";
 import { TOOLS, type ToolSub } from "@/lib/tools";
 
