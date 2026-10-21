@@ -22,6 +22,7 @@ import { STANDALONE_SCRIPT, THEME_SCRIPT } from "@/lib/theme-script";
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { IBM_Plex_Sans } from "next/font/google";
 
 /* The site's one typeface, served from this site (next/font downloads it at
@@ -108,6 +109,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Script src="https://static.cloudflareinsights.com/beacon.min.js" strategy="afterInteractive"
                 data-cf-beacon='{"token": "43d7ad6321b545f2bb8d2e02569490ee"}' />
             ) : null}
+            {/* Vercel Web Analytics, alongside Cloudflare's: also cookieless, and
+                its counts reach the weekly health check through the Vercel
+                connector. Production only, like Cloudflare's. */}
+            {LIVE ? <Analytics /> : null}
           </AccountProvider>
           </HouseholdProvider>
           </ToolRegistryProvider>

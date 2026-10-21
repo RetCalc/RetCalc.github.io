@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = metadataFor("privacy");
 
-const UPDATED = "October 12, 2026";
+const UPDATED = "October 21, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -48,6 +48,8 @@ export default function PrivacyPage() {
             <li><b>Resend</b> sends the sign-in code to your email address.</li>
             <li><b>Vercel</b> and <b>Cloudflare</b> host and deliver the site. Like any website, they handle basic request details such as your IP address to serve pages.</li>
             <li><b>Cloudflare Web Analytics</b> counts visits without cookies and without identifying you.</li>
+            <li><b>Vercel Web Analytics</b> also counts visits and which pages are viewed, without cookies and without storing your IP address.</li>
+            <li><b>Sentry</b> receives a report when a page fails with an error: what broke, the page&apos;s address without the part after <code>#</code>, and your browser and device type. It never receives the numbers you enter, your account, or your IP address.</li>
           </ul>
           <p>We never sell your data, share it with advertisers, or use it for ads. There are no ads on RetCalc.</p>
         </CardContent>
