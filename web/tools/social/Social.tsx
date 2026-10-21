@@ -265,7 +265,7 @@ export function Social() {
         <Card className="min-w-0" hidden={!ready}>
           <CardHeader>
             <CardTitle>What you&apos;d get at each age</CardTitle>
-            <CardDescription>The check each month, and all the checks added up through age {p.you.through}{married ? ", for the household, when one of you claims at that age and the other as set" : ""}.</CardDescription>
+            <CardDescription>The check each month, and the total benefit through age {p.you.through}{married ? ", for the household, when one of you claims at that age and the other as set" : ""}.</CardDescription>
             <CardAction><CsvButton table={tableRef} label="What you'd get at each age" /></CardAction>
           </CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
@@ -275,9 +275,9 @@ export function Social() {
                 <tr>
                   <th>Claim at</th><th>{married ? "Your check" : "Each month"}</th>
                   {married ? <th>Spouse&apos;s check</th> : null}
-                  <th>{married ? "In all, if you claim then" : "In all, through " + p.you.through}</th>
-                  {married ? <th>In all, if your spouse claims then</th> : null}
-                  <th>Less than the best</th>
+                  <th>{married ? "Total benefit, if you claim then" : "Total benefit through " + p.you.through}</th>
+                  {married ? <th>Total benefit, if your spouse claims then</th> : null}
+                  <th>Compared to {best1}</th>
                 </tr>
               </thead>
               <tbody>
