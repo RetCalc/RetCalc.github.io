@@ -105,7 +105,7 @@ export function Social() {
         ) : null}
       </Sentence>
 
-      <Stage S={S} s={s} narrow={narrow} claim={(a) => claimBoth(a)} openPay={() => { setPayWho("you"); setPayOpen(true); requestAnimationFrame(() => document.getElementById("ssPay")?.scrollIntoView({ behavior: "smooth", block: "center" })); }} />
+      <Stage S={S} narrow={narrow} claim={(a) => claimBoth(a)} />
       <Facts S={S} />
       {S.pairs ? <Pairs S={S} narrow={narrow} use={claimBoth} /> : null}
 
@@ -228,7 +228,7 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
 }
 
 /* ---------- the staircase, the reading and how the check is figured ---------- */
-function Stage({ S, s, narrow, claim, openPay }: { S: SocialFigures; s: SocialInputs; narrow: boolean; claim: (a: number) => void; openPay: () => void }) {
+function Stage({ S, narrow, claim }: { S: SocialFigures; narrow: boolean; claim: (a: number) => void }) {
   const married = S.married, c = S.you.claim, fra = Math.round(S.you.fra);
   const max = Math.max(...S.rows.map((r) => r.monthly)) || 1;
   const r62 = S.rows[0], r70 = S.rows[S.rows.length - 1], ch = S.chosen;
@@ -318,7 +318,6 @@ function Stage({ S, s, narrow, claim, openPay }: { S: SocialFigures; s: SocialIn
           <>
             <Link label="Average pay, best 35 years" tip={`Your pay each year in today's wages, capped at ${money(cap)}, the best 35 years averaged per month. ${S.you.years} years of pay count${S.you.years < 35 ? `, so ${35 - S.you.years} zeros are averaged in` : ""}.`}>
               {money(S.you.aime)}<span className="text-label font-normal text-muted-foreground">/mo</span>
-              {s.you.src === "pay" ? <Button variant="link" size="inline" className="ml-1.5 max-sm:ml-0 max-sm:basis-full max-sm:justify-start" onClick={openPay}>See the years</Button> : null}
             </Link>
             <Op>→</Op>
             <Link label={`Full benefit at ${fraLabel(S.you.fra)}`} tip={`90% of the first ${money(bend1)} of that average, 32% of it up to ${money(bend2)}, and 15% above. The formula favors lower earners on purpose.`}>{money(S.you.pia)}</Link>
