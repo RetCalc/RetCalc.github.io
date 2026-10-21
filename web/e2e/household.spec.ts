@@ -29,13 +29,15 @@ test("a saved household fills the tools that take it", async ({ page }) => {
   await expect(page.locator("#txGross2")).toHaveValue("60,000");
   await expect(page.locator("#txState")).toHaveValue("CA");
 
-  // Take-home pay under the Income Tax tool's rules, in whole dollars.
+  // The Budget's pay lives on its Paycheck tab: the household's gross pay.
   await page.goto(NEW + "/budget");
-  await expect(page.locator("#bgIncomeIn")).toHaveValue(/^\d{1,3}(,\d{3})+$/);
+  await page.locator('#segBgView [data-bgview="paycheck"]').click();
+  await expect(page.locator("#pcGross")).toHaveValue("150,000");
 
   // Edits after the fill stay put when the tool is opened again.
-  await page.locator("#bgIncomeIn").fill("1000");
+  await page.locator("#pcGross").fill("1000");
   await page.locator("#btnToolBack").click();
   await page.locator("a.toolcard[data-pick=budget]:visible").click();
-  await expect(page.locator("#bgIncomeIn")).toHaveValue("1,000");
+  await page.locator('#segBgView [data-bgview="paycheck"]').click();
+  await expect(page.locator("#pcGross")).toHaveValue("1,000");
 });

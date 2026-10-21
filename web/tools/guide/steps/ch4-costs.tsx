@@ -124,7 +124,7 @@ export function SocialCard() {
       <Numbers moreLabel="A pension, or other steady income?" moreOpen={pos(v.pension)} more={<>
         <div className="gd-fields">
           <MoneyF k="pension" label="Pension, annuity or part-time pay" per="/mo" ph="optional" hint="In today's dollars. Leave blank if none." />
-          <NumF k="pensionAge" label="Starting at" affix="age" hint="Blank means when you retire." />
+          <NumF k="pensionAge" label="Starting at" affix="yrs old" hint="Blank means when you retire." />
           <SelF k="pensionCola" label="Does it rise with inflation?" opts={[["no", "No, it's a fixed amount"], ["yes", "Yes, it has cost-of-living raises"]]} full />
         </div>
       </>}>

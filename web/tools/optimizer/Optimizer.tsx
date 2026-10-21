@@ -212,13 +212,13 @@ export function Optimizer() {
                 </SelectField>
               </div>
               <div className="two bottomalign max-sm:grid-cols-2" hidden={!v.now}>
-                <NumberField id="opAge" label="Your age" unit="age" max={90} value={s.age} onValueChange={set("age")} />
-                <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="age" max={95} value={s.spAge} onValueChange={set("spAge")} />
+                <NumberField id="opAge" label="Your age" unit="yrs old" max={90} value={s.age} onValueChange={set("age")} />
+                <NumberField id="opSpAge" hidden={!v.married} label="Spouse's age" unit="yrs old" max={95} value={s.spAge} onValueChange={set("spAge")} />
               </div>
               <div className={"two bottomalign max-sm:grid-cols-2" + (v.now || !v.married ? " one" : "")} id="opRetRow">
                 <NumberField id="opRetire" label={<span id="opRetireLbl"><Tipped text={v.now ? "Retire at" : "Your age at retirement"} k="opretire" /></span>}
-                  unit="age" max={90} value={s.retire} onValueChange={set("retire")} />
-                <NumberField id="opSpRet" hidden={v.now || !v.married} label="Spouse's age then" unit="age" max={95} value={s.spRet} onValueChange={set("spRet")} />
+                  unit="yrs old" max={90} value={s.retire} onValueChange={set("retire")} />
+                <NumberField id="opSpRet" hidden={v.now || !v.married} label="Spouse's age then" unit="yrs old" max={95} value={s.spRet} onValueChange={set("spRet")} />
               </div>
 
               <div className="mt-1 mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border pt-4">
@@ -275,7 +275,7 @@ export function Optimizer() {
               </SelectField>
               <div className="two bottomalign max-sm:grid-cols-2">
                 <MoneyField id="opPension" label={<>Pension <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="/yr" value={s.pension} onValueChange={set("pension")} />
-                <NumberField id="opPenAge" label="Starting at" unit="age" max={90} placeholder="retiring" value={s.penAge} onValueChange={set("penAge")} />
+                <NumberField id="opPenAge" label="Starting at" unit="yrs old" max={90} placeholder="retiring" value={s.penAge} onValueChange={set("penAge")} />
               </div>
               <SelectField id="opPenCola" label="Pension raises" value={s.penCola} onChange={set("penCola")}>
                 <option value="0">Fixed amount</option>

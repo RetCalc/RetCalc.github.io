@@ -139,9 +139,9 @@ export function Basic() {
           <Card>
             <CardContent>
               <div className="grid grid-cols-2 items-end gap-x-3">
-                <NumberField id="qAge" label="How old are you?" unit="age" value={s.age} onValueChange={setAge("age")}
+                <NumberField id="qAge" label="How old are you?" unit="yrs old" value={s.age} onValueChange={setAge("age")}
                   aria-invalid={badAge || undefined} aria-describedby={badAge ? "qWarnText" : undefined} />
-                <NumberField id="qRetire" label="When do you plan to retire?" unit="age" value={s.retire} onValueChange={setAge("retire")}
+                <NumberField id="qRetire" label="When do you plan to retire?" unit="yrs old" value={s.retire} onValueChange={setAge("retire")}
                   aria-invalid={badRetire || undefined} aria-describedby={badRetire ? "qWarnText" : undefined} />
               </div>
               <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" id="qWarn" hidden={ok}>

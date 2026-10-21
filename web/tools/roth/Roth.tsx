@@ -168,8 +168,8 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
           <Card>
             <CardContent>
               <div className={two}>
-                <NumberField id="rcAge" label="Your age" unit="age" max={95} value={s.age} onValueChange={set("age")} />
-                <NumberField id="rcEndAge" label="Plan through" unit="age" max={100} value={s.endAge} onValueChange={set("endAge")}
+                <NumberField id="rcAge" label="Your age" unit="yrs old" max={95} value={s.age} onValueChange={set("age")} />
+                <NumberField id="rcEndAge" label="Plan through" unit="yrs old" max={100} value={s.endAge} onValueChange={set("endAge")}
                   aria-invalid={badRange || undefined} aria-describedby={badRange ? "rcEndWarnText" : undefined} />
               </div>
               <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" id="rcEndWarn" hidden={!badRange}>
@@ -180,7 +180,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 <option value="m">Married filing jointly</option>
                 <option value="s">Single</option>
               </SelectField>
-              <NumberField id="rcSpouseAge" wrapId="rcSpouseWrap" hidden={!married} label="Spouse's age" unit="age" max={105} value={s.spouseAge} onValueChange={set("spouseAge")} />
+              <NumberField id="rcSpouseAge" wrapId="rcSpouseWrap" hidden={!married} label="Spouse's age" unit="yrs old" max={105} value={s.spouseAge} onValueChange={set("spouseAge")} />
               <SelectField id="rcState" label="State" value={s.state} onChange={set("state")}>
                 {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
               </SelectField>
@@ -220,15 +220,15 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
               <MoneyField id="rcSpend" label={<Tipped text="Annual spending" k="rcspend" />} value={s.spend} onValueChange={set("spend")} />
               <div className={two}>
                 <MoneyField id="rcSS" label="Your Social Security" unit="/yr" value={s.ss} onValueChange={set("ss")} />
-                <NumberField id="rcSSAge" label="Claim at" unit="age" max={70} value={s.ssAge} onValueChange={set("ssAge")} />
+                <NumberField id="rcSSAge" label="Claim at" unit="yrs old" max={70} value={s.ssAge} onValueChange={set("ssAge")} />
               </div>
               <div className={two} id="rcSpouseSSWrap" hidden={!married}>
                 <MoneyField id="rcSpSS" label="Spouse's benefit" unit="/yr" value={s.spSS} onValueChange={set("spSS")} />
-                <NumberField id="rcSpSSAge" label="Claim at" unit="age" max={70} value={s.spSSAge} onValueChange={set("spSSAge")} />
+                <NumberField id="rcSpSSAge" label="Claim at" unit="yrs old" max={70} value={s.spSSAge} onValueChange={set("spSSAge")} />
               </div>
               <div className={two}>
                 <MoneyField id="rcOther" label={<Tipped text="Other income" k="rcother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
-                <NumberField id="rcOtherStart" label="Starting at" unit="age" max={100} value={s.otherStart} onValueChange={set("otherStart")} />
+                <NumberField id="rcOtherStart" label="Starting at" unit="yrs old" max={100} value={s.otherStart} onValueChange={set("otherStart")} />
               </div>
               <NumberField id="rcDeath" wrapId="rcDeathWrap" hidden={!married} label={<Tipped text="Survivor transition" k="rcwidow" />} unit="yrs from now" max={45} value={s.death} onValueChange={set("death")} />
 
@@ -326,8 +326,8 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
               <MoneyField id="rcFixed" wrapId="rcFixedWrap" hidden={strat !== "fix"} label="Convert each year" value={s.fixed} onValueChange={set("fixed")} />
               <NumberField id="rcPct" wrapId="rcPctWrap" hidden={strat !== "pct"} label="Convert each year" unit="% of the balance" max={100} value={s.pct} onValueChange={set("pct")} />
               <div className={two} id="rcWindowWrap" hidden={strat === "none"}>
-                <NumberField id="rcStartAge" label="Convert from" unit="age" max={100} value={s.startAge} onValueChange={set("startAge")} />
-                <NumberField id="rcStopAge" label="Through" unit="age" max={100} value={s.stopAge} onValueChange={set("stopAge")} />
+                <NumberField id="rcStartAge" label="Convert from" unit="yrs old" max={100} value={s.startAge} onValueChange={set("startAge")} />
+                <NumberField id="rcStopAge" label="Through" unit="yrs old" max={100} value={s.stopAge} onValueChange={set("stopAge")} />
               </div>
               <SelectField id="rcPayFrom" wrapId="rcPayWrap" hidden={strat === "none"} label={<Tipped text="Conversion tax paid from" k="rcpayfrom" />} value={s.payFrom} onChange={set("payFrom")}>
                 <option value="taxable">Taxable account</option>

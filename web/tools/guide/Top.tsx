@@ -127,7 +127,7 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
       <div className="gd-prog-wrap" ref={wrap}>
         <div className="gd-prog" id="gdProg">{client ? segs.map((x) => (
           <button key={x.c} type="button" className={"gd-seg" + (st.chapter === x.ci + 1 ? " on" : "")} data-go={first(x)}
-            aria-label={x.c + ": " + x.d + " of " + x.list.length + " done"} onClick={() => go(first(x))}>
+            aria-label={x.c + (x.list.length ? ": " + x.d + " of " + x.list.length + " done" : ": nothing to answer on this route")} onClick={() => go(first(x))}>
             <i><b style={{ "--f": x.fill.toFixed(4) } as React.CSSProperties}></b></i><span>{x.c}</span></button>
         )) : null}</div>
         <div className={"gd-track" + (client && !F && !hit ? " nocked" : "") + (client && hit ? " hit" : "")} id="gdTrack" ref={track}

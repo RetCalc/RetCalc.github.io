@@ -190,3 +190,8 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
   .hm [data-rv],.hm-tile,.hm-node i,.hm-node span,.hm-chart .fade,[data-draw="go"] .hm-chart .draw,
   [data-draw="go"] .hm-chart :is(.tpk-grow-y,.tpk-show){transition:none}
 }
+
+/* Printed, nothing waits to scroll into view. */
+@media print{
+  .hm [data-rv]{opacity:1;transform:none;filter:none}
+}

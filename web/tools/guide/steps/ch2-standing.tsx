@@ -240,7 +240,7 @@ export function GoalsCard() {
         <div className="gd-choices two"><Choice k="college" val="yes" title="Yes, or I'd like to" /><Choice k="college" val="no" title="No, or it doesn't apply" /></div>
         {v.college === "yes" ? (
           <>
-            <div className="gd-fields"><NumF k="kidAge" label="Youngest child's age" affix="age" hint="Not born yet? Enter 0." />
+            <div className="gd-fields"><NumF k="kidAge" label="Youngest child's age" affix="yrs old" hint="Not born yet? Enter 0." />
               <MoneyF k="collegeMo" label="Monthly for college" per="/mo" hint="College Savings works it out." /></div>
             <Task id="college" head="Find the number with College Savings" />
           </>

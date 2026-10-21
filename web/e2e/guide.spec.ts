@@ -533,7 +533,7 @@ test("the Tools page remembers Charts or Compact, from the first paint", async (
   await expect(page.locator(".tp-charts")).toBeVisible();
   await page.locator('.tp-switch button[data-view="compact"]').click();
   await expect(page.locator(".tp-compact")).toBeVisible();
-  await expect(page.locator(".tp-compact a.toolcard")).toHaveCount(13);
+  await expect(page.locator(".tp-compact a.toolcard")).toHaveCount(14);
   // Out to a tool and back, and a fresh load: still compact.
   await page.locator('.tp-compact a.toolcard[data-pick="mortgage"]').click();
   await page.waitForURL("**/mortgage");

@@ -26,7 +26,7 @@ export function RetiredCard() {
       <Numbers moreLabel="Household, account types, Social Security and pensions" moreOpen={m || pos(v.ssOwn) || pos(v.rothNow) || pos(v.brokNow) || pos(v.pension)} more={<>
         <div className="gd-fields">
           <SelF k="status" label="Household" opts={[["s", "Just me"], ["m", "Me and a spouse"]]} redraw full />
-          {m ? <NumF k="spouseAge" label="Spouse's age" affix="age" /> : null}
+          {m ? <NumF k="spouseAge" label="Spouse's age" affix="yrs old" /> : null}
           <MoneyF k="rothNow" label="Of your savings, in Roth accounts" ph="0" />
           <MoneyF k="brokNow" label="In taxable brokerage accounts" ph="0" />
           <MoneyF k="ssOwn" label="Social Security you get now" per="/mo" ph="not yet" hint="Leave blank if you haven't claimed." />
@@ -36,7 +36,7 @@ export function RetiredCard() {
         </div>
       </>}>
         <div className="gd-fields">
-          <NumF k="age" label="Your age" affix="age" />
+          <NumF k="age" label="Your age" affix="yrs old" />
           <MoneyF k="saved" label="Your savings, in all" hint="Every retirement account and investment you'll live on." />
           <MoneyF k="retSpend" label="What you spend a year" per="/yr" full hint="Include income tax: the simulator doesn't work it out." />
         </div>

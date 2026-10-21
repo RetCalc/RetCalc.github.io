@@ -106,15 +106,15 @@ function HouseholdForm({ states, onDone, autoFocus }: { states: StateOption[]; o
           <option value="s">Just me</option>
           <option value="m">Me and a spouse</option>
         </SelectField>
-        <NumberField inputRef={firstField} id="hhAge" label="Your age" unit="age" value={form.age} onValueChange={set("age")} />
-        <NumberField id="hhSpouseAge" className="hh-sp" label="Spouse's age" unit="age" value={form.spouseAge} onValueChange={set("spouseAge")} />
-        <NumberField id="hhRetire" label="Retire at" unit="age" value={form.retire} onValueChange={set("retire")} />
+        <NumberField inputRef={firstField} id="hhAge" label="Your age" unit="yrs old" value={form.age} onValueChange={set("age")} />
+        <NumberField id="hhSpouseAge" className="hh-sp" label="Spouse's age" unit="yrs old" value={form.spouseAge} onValueChange={set("spouseAge")} />
+        <NumberField id="hhRetire" label="Retire at" unit="yrs old" value={form.retire} onValueChange={set("retire")} />
         <SelectField id="hhState" label="State" value={form.state} onChange={set("state")}>
           <option value="">Not set</option>
           {states.map((s) => <option key={s.code} value={s.code}>{s.name}</option>)}
         </SelectField>
         <MoneyField id="hhSaved" label="Retirement savings" value={form.saved} onValueChange={set("saved")} />
-        <MoneyField id="hhMonthly" label="You save each month" value={form.monthly} onValueChange={set("monthly")} />
+        <MoneyField id="hhMonthly" label="You save each month" unit="/mo" value={form.monthly} onValueChange={set("monthly")} />
         <MoneyField id="hhIncome" label="Your gross income" unit="/yr" value={form.income} onValueChange={set("income")} />
         <MoneyField id="hhIncome2" className="hh-sp" label="Spouse's gross income" unit="/yr" value={form.income2} onValueChange={set("income2")} />
         <MoneyField id="hhSpend" label="Spending in retirement" unit="/yr" value={form.spend} onValueChange={set("spend")} />

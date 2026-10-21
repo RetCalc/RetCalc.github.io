@@ -82,15 +82,15 @@ function EventRow({ ev }: { ev: ChangeEvent }) {
       <div className="gd-ev-h"><b>{title}</b>
         <Button variant="quiet" size="inline" data-ev-drop={ev.id} aria-label={"Remove " + title.toLowerCase()} onClick={drop}><XIcon aria-hidden="true" />Remove</Button></div>
       <div className="gd-fields">
-        {ev.kind === "raise" ? <><EvField ev={ev} k="at" label="From age" affix="age" /><EvField ev={ev} k="extra" label="Saving more" money affix="/mo" /></> : null}
-        {ev.kind === "payoff" ? <><EvField ev={ev} k="at" label="Paid off at" affix="age" /><EvField ev={ev} k="freed" label="Payment freed for saving" money affix="/mo" /></> : null}
-        {ev.kind === "parttime" || ev.kind === "pause" ? <><EvField ev={ev} k="from" label="From age" affix="age" /><EvField ev={ev} k="to" label="Until age" affix="age" />
+        {ev.kind === "raise" ? <><EvField ev={ev} k="at" label="From age" affix="yrs old" /><EvField ev={ev} k="extra" label="Saving more" money affix="/mo" /></> : null}
+        {ev.kind === "payoff" ? <><EvField ev={ev} k="at" label="Paid off at" affix="yrs old" /><EvField ev={ev} k="freed" label="Payment freed for saving" money affix="/mo" /></> : null}
+        {ev.kind === "parttime" || ev.kind === "pause" ? <><EvField ev={ev} k="from" label="From age" affix="yrs old" /><EvField ev={ev} k="to" label="Until age" affix="yrs old" />
           <EvField ev={ev} k="saving" label="Saving then" money affix="/mo" /></> : null}
         {ev.kind === "custom" ? <>
           {!(ev.id.startsWith("edit-") || ev.id.startsWith("stg-")) ? <div className="field full"><Label className="mb-1.5" htmlFor={"gdev-" + ev.id + "-label"}><span>What it is</span></Label>
             <Input id={"gdev-" + ev.id + "-label"} maxLength={40} defaultValue={ev.label}
               onChange={(e) => { const label = e.target.value.replace(/[^A-Za-z0-9 .,%'\-]/g, "").slice(0, 40); G.set("events", (G.a.events || []).map((x) => (x.id === ev.id ? { ...x, label } as ChangeEvent : x))); }} /></div> : null}
-          <EvField ev={ev} k="from" label="From age" affix="age" /><EvField ev={ev} k="to" label="Until age" affix="age" />
+          <EvField ev={ev} k="from" label="From age" affix="yrs old" /><EvField ev={ev} k="to" label="Until age" affix="yrs old" />
           <div className="field"><Label className="mb-1.5" htmlFor={"gdev-" + ev.id + "-dir"}><span>Saving</span></Label>
             <NativeSelect id={"gdev-" + ev.id + "-dir"} value={ev.delta < 0 ? "less" : "more"}
               onChange={(e) => G.set("events", (G.a.events || []).map((x) => (x.id === ev.id && x.kind === "custom" ? { ...x, delta: Math.abs(x.delta) * (e.target.value === "less" ? -1 : 1) } : x)), true)}>

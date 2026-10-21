@@ -173,7 +173,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
             <CardContent>
               {/* One column on phones: "Married filing jointly" needs the full row. */}
               <div className="two bottomalign max-sm:grid-cols-1">
-                <NumberField id="brAge" label={<Tipped text="Retire at" k="brage" />} unit="age" max={59} value={s.age} onValueChange={set("age")} />
+                <NumberField id="brAge" label={<Tipped text="Retire at" k="brage" />} unit="yrs old" max={59} value={s.age} onValueChange={set("age")} />
                 <SelectField id="brStatus" label="Filing status" value={s.status} onChange={setStatus}>
                   <option value="m">Married filing jointly</option>
                   <option value="s">Single</option>
@@ -208,7 +208,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               <GroupHead>Income</GroupHead>
               <div className={two}>
                 <MoneyField id="brWork" label={<>Part-time work <Badge variant="outline" className="ml-1.25">optional</Badge></>} unit="/yr" value={s.work} onValueChange={set("work")} />
-                <NumberField id="brWorkUntil" label="Until" unit="age" max={80} value={s.workUntil} onValueChange={set("workUntil")} />
+                <NumberField id="brWorkUntil" label="Until" unit="yrs old" max={80} value={s.workUntil} onValueChange={set("workUntil")} />
               </div>
 
               <GroupHead>Health insurance</GroupHead>

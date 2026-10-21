@@ -120,18 +120,20 @@ export function Report({ fontClass }: { fontClass: string }) {
           <h1 id="pageH1">Your retirement report</h1>
           <p>{M ? M.pages.length + " pages, from your Guide answers. Everything here was worked out in your browser." : "Your plan, from your Guide answers, ready to print or save as a PDF."}</p>
         </div>
-        <div className="rp-bar-r">
+        {/* No report yet: nothing to name or print, and the way forward is
+            the Guide (below). */}
+        {M === null ? null : <div className="rp-bar-r">
           <div className="rp-name"><Label htmlFor="rp-you">Your first name</Label>
             <Input id="rp-you" value={names?.you ?? ""} placeholder="Optional" autoComplete="given-name" maxLength={NAME_MAX} onChange={(e) => setName("you", e.target.value)} /></div>
           {married ? <div className="rp-name"><Label htmlFor="rp-spouse">Spouse&apos;s first name</Label>
             <Input id="rp-spouse" value={names?.spouse ?? ""} placeholder="Optional" maxLength={NAME_MAX} onChange={(e) => setName("spouse", e.target.value)} /></div> : null}
           <Button type="button" onClick={() => window.print()} disabled={!M}>Print or save as PDF</Button>
-        </div>
+        </div>}
       </div>
       <div className="rp-stage" ref={wrap}>
         {M === undefined ? <p className="rp-wait" role="status">Building your report…</p>
           : M === null ? <div className="rp-wait"><p>Answer more of the Guide to build your report: it needs your age, savings, retirement age and spending in retirement.</p>
-            <Link href="/guide" className={buttonVariants({ variant: "secondary" })}>Open the Guide</Link></div>
+            <Link href="/guide" className={buttonVariants()}>Open the Guide</Link></div>
             : <div className="rp-fit" style={{ "--rp-zoom": scale, "--rp-h": tall } as React.CSSProperties}>
               <div className="rp-pages" ref={pagesRef}><ReportPages M={M} /></div></div>}
       </div>

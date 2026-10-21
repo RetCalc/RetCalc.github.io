@@ -260,7 +260,7 @@ export function Inputs({ v, fromNote, periods, open }: {
           </div>
           <GroupHead>Your retirement</GroupHead>
           <div className="two bottomalign max-sm:grid-cols-2">
-            <NumberField id="ddRetireAge" className="ddadv" label={<>Age at retirement <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="retireage" /></span></>} unit="age" max={120}
+            <NumberField id="ddRetireAge" className="ddadv" label={<>Age at retirement <span className="tipglue"><Badge variant="outline" className="ml-1.25">optional</Badge><TipDot k="retireage" /></span></>} unit="yrs old" max={120}
               value={str("retireAge")} onValueChange={(val) => setState((c) => {
                 const next: DrawdownState = { ...c, retireAge: val };
                 const a = parseNum(val);

@@ -203,8 +203,8 @@ export function Fire() {
 
               <GroupHead>You</GroupHead>
               <div className={coast ? two : undefined}>
-                <NumberField id="fiCurAge" label="Current age" unit="age" max={70} negative value={s.curAge} onValueChange={set("curAge")} />
-                <NumberField id="fiRetireAge" wrapId="fiRetireAgeWrap" hidden={!coast} label="Planned retirement age" unit="age" max={100} negative value={s.retireAge} onValueChange={set("retireAge")} />
+                <NumberField id="fiCurAge" label="Current age" unit="yrs old" max={70} negative value={s.curAge} onValueChange={set("curAge")} />
+                <NumberField id="fiRetireAge" wrapId="fiRetireAgeWrap" hidden={!coast} label="Planned retirement age" unit="yrs old" max={100} negative value={s.retireAge} onValueChange={set("retireAge")} />
               </div>
 
               <GroupHead>Saving</GroupHead>

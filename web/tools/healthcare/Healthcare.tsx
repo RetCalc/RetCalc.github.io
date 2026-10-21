@@ -237,7 +237,7 @@ export function Healthcare() {
           <Card>
             <CardContent>
               <div className={two}>
-                <NumberField id="hcRetireAge" label="Retirement age" unit="age" max={75} value={s.retireAge} onValueChange={set("retireAge")} />
+                <NumberField id="hcRetireAge" label="Retirement age" unit="yrs old" max={75} value={s.retireAge} onValueChange={set("retireAge")} />
                 <SelectField id="hcState" label="State" value={s.state} onChange={set("state")}>
                   {HC_STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
                 </SelectField>
@@ -251,7 +251,7 @@ export function Healthcare() {
                   {[1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={String(n)}>{n} {n === 1 ? "person" : "people"}</option>)}
                 </SelectField>
               </div>
-              <NumberField id="hcSpouseAge" wrapId="hcSpouseAgeWrap" hidden={!joint} label={<Tipped text="Spouse's age then" k="hcspouseage" />} unit="age" max={90} value={s.spouseAge} onValueChange={set("spouseAge")} />
+              <NumberField id="hcSpouseAge" wrapId="hcSpouseAgeWrap" hidden={!joint} label={<Tipped text="Spouse's age then" k="hcspouseage" />} unit="yrs old" max={90} value={s.spouseAge} onValueChange={set("spouseAge")} />
 
               <GroupHead>Income</GroupHead>
               <Field id="hcIncome" label={<Tipped text="Retirement MAGI" k="hcincome" />}>
