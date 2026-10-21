@@ -12,6 +12,7 @@ import { StrategyLinks, StrategyLedeLinks } from "./StrategyLinks";
 import { ScenarioBar } from "./ScenarioBar";
 import { ToolBar } from "./ToolBar";
 import { ToolHeader } from "./ToolHeader";
+import { HouseholdNudge } from "@/components/household/HouseholdNudge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /** The calculator's three modes, named over their tool. */
@@ -36,6 +37,7 @@ export function PageShell({ slug, children }: { slug: Slug; children: React.Reac
         full={strategy} more={strategy ? <StrategyLedeLinks hasArticle={!!article} /> : null}
         controls={hasToolControls(slug) ? <ScenarioBar /> : null} /> : null}
       {!sub && hasToolControls(slug) ? <ToolBar {...(CALC_HEAD[slug] ?? {})} /> : null}
+      {hasToolControls(slug) ? <HouseholdNudge /> : null}
       {children}
       {strategy ? <StrategyLinks current={slug} /> : null}
       {article ? <Article html={article} /> : null}
