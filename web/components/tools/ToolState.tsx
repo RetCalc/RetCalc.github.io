@@ -13,6 +13,7 @@
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
+import { useToast } from "@/components/shell/Toast";
 
 export type ToolInputs = Record<string, string | string[] | unknown>;
 
@@ -95,6 +96,10 @@ export function decodeHash(text: string): unknown {
     return null;
   }
 }
+/** What a page says when its share link can't be read (cut short when it
+    was copied, or edited). */
+export const BROKEN_LINK = "This share link is incomplete or damaged, so its numbers couldn't be opened. Ask for the link again.";
+
 export function encodeShare(id: string, data: ToolInputs): string {
   return "#s=" + encodeHash({ t: id, d: data });
 }
@@ -270,15 +275,17 @@ export function useToolState<S extends ToolInputs>(def: ToolDef<S>, opening?: (s
     else remember(def.id, state);
   }, [def.id, state, scope]);
 
-  // A share link for this tool opens with its inputs.
+  // A share link for this tool opens with its inputs; one that doesn't
+  // read says so rather than quietly showing other numbers.
+  const toast = useToast();
   useEffect(() => {
-    if (scope) return;
+    if (scope || !window.location.hash.startsWith("#s=")) return;
     const shared = decodeShare(window.location.hash);
     if (shared?.t === def.id) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- the link is only readable in the browser
       setState(withDefaults(def.defaults, shared.d));
-    }
-  }, [def, scope]);
+    } else if (!shared) toast(BROKEN_LINK, "warn");
+  }, [def, scope, toast]);
 
   // The header's controls see this tool, and its inputs as they change
   // (in a scope, the page's own register instead).
