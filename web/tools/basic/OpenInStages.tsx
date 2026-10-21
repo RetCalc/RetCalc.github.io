@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 export function OpenInStages({ basic }: { basic: BasicInputs }) {
   const store = useToolStore(), go = useToolNav(), toast = useToast();
   return (
-    <Button variant="secondary" id="btnToStagesQ"
+    <Button id="btnToStagesQ"
       onClick={() => {
         const p = basicInput(basic);
         const infl = BASIC_INFL as number;
