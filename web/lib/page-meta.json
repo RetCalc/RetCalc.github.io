@@ -47,8 +47,8 @@
 "desc": "What RetCalc keeps and where: nothing without an account, and only your household, saved scenarios and Guide answers if you choose to sign in. Never sold."
 },
 "drawdown": {
-"h1": "Retirement Withdrawal Calculator",
-"title": "Retirement Withdrawal Calculator: Will My Money Last?",
+"h1": "Drawdown Simulator",
+"title": "Drawdown Simulator: Will My Money Last?",
 "desc": "Test the 4% rule, guardrails and other strategies against every retirement since 1926, with Social Security and pensions. See how often each lasts."
 },
 "4-percent-rule": {

@@ -33,7 +33,7 @@ export const CARDS: Partial<Record<Slug, Card>> = {
   tools: { title: "Free Financial Planning Tools", art: "tools",
     text: "Calculators for retirement, taxes, Roth conversions, healthcare, mortgages, budgets and debt." },
 
-  drawdown: { title: "Retirement Withdrawal Calculator", art: "fan",
+  drawdown: { title: "Drawdown Simulator", art: "fan",
     text: "See whether your savings will last, tested against every market since 1926." },
   "4-percent-rule": { title: "4% Rule Calculator", art: "fan",
     text: "Test the 4% rule " + SINCE },
