@@ -21,7 +21,7 @@ import { Legend, McLegend } from "@/components/charts/Legend";
 import { MultiChart } from "@/components/charts/MultiChart";
 import { FanTipRows } from "@/components/charts/TipRows";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
-import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
+import { MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { Tipped, TipDot } from "@/components/shell/Tooltips";
 import { useShareKit } from "@/components/shell/share";
 import { useToolState } from "@/components/tools/ToolState";
@@ -35,7 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
-import { ageRows, breakEvens, careerPia, CLAIM_AGES, fraLabel, household, investEarly, SOCIAL_DEF, socialInput, taxedShare, winsByLifespan, type SocialInputs } from "./model";
+import { ageRows, breakEvens, CAREER_DEFAULT, careerPia, CLAIM_AGES, fraLabel, household, investEarly, SOCIAL_DEF, socialInput, taxedShare, winsByLifespan, type SocialInputs } from "./model";
 import { CareerDialog } from "./CareerDialog";
 
 const two = "two bottomalign max-sm:grid-cols-2";
@@ -56,17 +56,18 @@ function Band({ id, children }: { id?: string; children: React.ReactNode }) {
 }
 
 /** One person's inputs: who they are, their benefit and their choices. */
-function PersonFields({ k, s, set, label }: { k: "1" | "2"; s: SocialInputs; set: <K extends keyof SocialInputs>(k: K) => (v: SocialInputs[K]) => void; label: string }) {
+function PersonFields({ k, s, set, label }: { k: "1" | "2"; s: SocialInputs; set: <K extends keyof SocialInputs>(k: K) => (v: SocialInputs[K]) => void; label: string | null }) {
   const p = socialInput(s)[k === "1" ? "you" : "spouse"]!;
   const est = s[`src${k}`] === "estimate";
   const who = k === "1" ? "Your" : "Spouse's";
   const [mapping, setMapping] = useState(false);
-  const car = s[`career${k}`], years = p.career ?? [];
+  // Inputs kept from before the career model have no career yet.
+  const car = s[`career${k}`] ?? CAREER_DEFAULT, years = p.career ?? [];
   const counted = years.length ? careerPia(years).years : 0;
   const edits = Object.values(car.edits).filter((v) => v !== "").length;
   return (
     <>
-      <GroupHead>{label}</GroupHead>
+      {label ? <GroupHead>{label}</GroupHead> : null}
       <div className={two}>
         <NumberField id={`ssBirth${k}`} label={<Tipped text="Year of birth" k="ssbirth" />} max={2100} value={s[`birth${k}`]} onValueChange={set(`birth${k}`)} aria-label={`${who} year of birth`} />
         <div className="field">
@@ -165,17 +166,36 @@ export function Social() {
     } : "Enter a benefit to make a card",
   });
 
+  const row = (age: number) => rows.find((r) => r.age === age)!;
+  const r62 = row(62), r70 = row(70);
+  const you = married ? "your" : "your";
+  /* The verdict, in a sentence or two: what the age chosen gets, and what
+     the ends of the range would do instead. */
+  const verdict = !ready ? null : (
+    <>
+      Claiming at <b>{p.you.claim}</b> gives {you} check of <b>{money(H.you.monthly)}</b> a month.
+      {p.you.claim < 70 ? <> Waiting until 70 would make it <b>{money(r70.you)}</b>, and pay <b>{money(r70.lifetime - chosen.lifetime)}</b> more in all by {p.you.through}.</> : null}
+      {p.you.claim > 62 ? <> Claiming at 62 would make it <b>{money(r62.you)}</b>, and pay <b>{money(chosen.lifetime - r62.lifetime)}</b> less.</> : null}
+      {best1 === p.you.claim ? <> For a life to {p.you.through}, {p.you.claim} is the age that pays the most.</> : null}
+    </>
+  );
+
   const hero: ReadingFigure = {
-    label: married ? "Household benefit a month, both claimed" : "Your benefit a month, claiming at " + p.you.claim,
+    label: married ? "Your two checks each month, once both of you have claimed" : "Your check each month, claiming at " + p.you.claim,
     id: "ssMonthly", value: ready ? money(monthly) : DASH,
-    note: ready ? (married ? money(monthlyYou) + " yours at " + p.you.claim + ", " + money(monthlySpouse) + " your spouse's at " + p.spouse!.claim + ", in today's dollars" : "In today's dollars, rising with inflation") : "",
+    note: ready ? (married ? money(monthlyYou) + " yours at " + p.you.claim + " and " + money(monthlySpouse) + " your spouse's at " + p.spouse!.claim + ", in today's dollars" : "In today's dollars; it rises with inflation") : "",
   };
   const figures: ReadingFigure[] = [
-    { label: "All benefits through age " + p.you.through + (married ? " and " + p.spouse!.through : ""), id: "ssLifetime", value: ready ? money(H.total) : DASH,
-      note: ready ? (married ? "Both of you, survivor years included" : "In today's dollars") : "" },
-    { label: <span className="tipglue">Best age for you<TipDot k="ssbest" /></span>, id: "ssBest", value: ready ? String(best1) : DASH,
-      note: ready ? (better > 1 ? "+" + money(better) + " over claiming at " + p.you.claim : "The age you chose") : "" },
+    { label: married ? "All your checks through " + p.you.through + " and " + p.spouse!.through : "All your checks through age " + p.you.through, id: "ssLifetime", value: ready ? money(H.total) : DASH,
+      note: ready ? (married ? "Both of you, survivor years included" : "Added up, in today's dollars") : "" },
+    { label: <span className="tipglue">Age that pays the most<TipDot k="ssbest" /></span>, id: "ssBest", value: ready ? String(best1) : DASH,
+      note: ready ? (better > 1 ? money(better) + " more in all than claiming at " + p.you.claim : "The age you chose") : "" },
   ];
+
+  // The lifespan strip's scale: 70 to 100, a tick every five years.
+  const span = 31, tick = (a: number) => `${(((a - 70) / span) * 100).toFixed(2)}%`;
+  // The invest-early story's figures.
+  const potAtLate = I.bands[Math.min(I.bands.length - 1, p.late - p.early)]?.p50 ?? 0;
 
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
@@ -186,16 +206,13 @@ export function Social() {
           <Card>
             <CardContent>
               <div className="field mb-3.5">
-                <Segmented id="segSsStatus" attr="data-status" options={[["s", "Just me"], ["m", "Married"]] as const} value={s.status} onChange={set("status")} />
+                <Segmented id="segSsStatus" attr="data-status" options={[["s", "Single"], ["m", "Married"]] as const} value={s.status} onChange={set("status")} />
               </div>
-              <PersonFields k="1" s={s} set={set} label="You" />
-              {married ? <PersonFields k="2" s={s} set={set} label="Your spouse" /> : null}
+              <PersonFields k="1" s={s} set={set} label={married ? "Your information" : null} />
+              {married ? <PersonFields k="2" s={s} set={set} label="Your spouse's information" /> : null}
 
-              <GroupHead>Taxes and investing</GroupHead>
-              <MoneyField id="ssOther" label={<Tipped text="Other income per year, in retirement" k="ssother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
-              <Field id="ssMix" label={<Tipped text="Stock share, if you invest the checks" k="ssmix" />}>
-                <NumberField id="ssMix" label="" unit="%" step={5} max={100} value={s.mix} onValueChange={set("mix")} />
-              </Field>
+              <GroupHead>Taxes in retirement</GroupHead>
+              <MoneyField id="ssOther" label={<Tipped text="Other income per year, besides Social Security" k="ssother" />} unit="/yr" value={s.other} onValueChange={set("other")} />
             </CardContent>
           </Card>
         </aside>
@@ -204,7 +221,8 @@ export function Social() {
       <div className="stack min-w-0 lg:col-span-2" id="tab-social">
         <Card size="flush" className="min-w-0" id="ssReading">
           <HeroReading tone={ready ? "answer" : "text"} sized={ready} hero={hero} figures={figures} />
-          {!ready ? <Band id="ssEmpty">Enter the monthly benefit from your Social Security statement, or an income to estimate one.</Band> : null}
+          {!ready ? <Band id="ssEmpty">Enter the monthly benefit from your Social Security statement, or your pay to estimate one.</Band> : null}
+          {verdict ? <Band id="ssVerdict">{verdict}</Band> : null}
           {ready && married && H.survivorAt !== null ? (
             <Band id="ssSurvivor">
               {H.survivorAt === p.you.through
@@ -215,41 +233,41 @@ export function Social() {
           <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5" hidden={!ready}>
             <div className="grid2">
               <div>
-                <KV k={<span className="tipglue">Taxed as income<TipDot k="sstaxed" /></span>} id="ssTaxed" v={ready ? pctStr(taxed, 0) + " of it" : DASH} />
                 <KV k="Your full retirement age" id="ssKVFra" v={fraLabel(p.you.fra)} />
-                {married ? <KV k="Spouse's full retirement age" id="ssKVFra2" v={fraLabel(p.spouse!.fra)} /> : null}
+                {married ? <KV k="Your spouse's full retirement age" id="ssKVFra2" v={fraLabel(p.spouse!.fra)} /> : null}
+                <KV k={<span className="tipglue">Share of it taxed as income<TipDot k="sstaxed" /></span>} id="ssTaxed" v={ready ? pctStr(taxed, 0) : DASH} />
               </div>
               <div>
-                <KV k={"Your benefit at " + p.you.claim + ", a month"} id="ssKVYou" v={money(H.you.monthly)} />
-                {married && H.top1 > 0 ? <KV k="Spousal top-up, a month" id="ssKVTop1" v={money(H.top1)} /> : null}
-                {married ? <KV k={"Spouse's benefit at " + p.spouse!.claim + ", a month"} id="ssKVSp" v={money(H.spouse!.monthly)} /> : null}
-                {married && H.top2 > 0 ? <KV k="Spouse's top-up, a month" id="ssKVTop2" v={money(H.top2)} /> : null}
+                {married ? <KV k={"Your check at " + p.you.claim} id="ssKVYou" v={money(H.you.monthly) + "/mo"} /> : null}
+                {married && H.top1 > 0 ? <KV k="Your spousal top-up" id="ssKVTop1" v={money(H.top1) + "/mo"} /> : null}
+                {married ? <KV k={"Your spouse's check at " + p.spouse!.claim} id="ssKVSp" v={money(H.spouse!.monthly) + "/mo"} /> : null}
+                {married && H.top2 > 0 ? <KV k="Your spouse's top-up" id="ssKVTop2" v={money(H.top2) + "/mo"} /> : null}
                 {H.you.withheld > 0 ? <KV k={"Withheld per year until " + fraLabel(p.you.fra)} id="ssKVHeld" cls="neg" v={money(H.you.withheld)} /> : null}
-                {H.you.withheld > 0 ? <KV k="Your benefit from full retirement age" id="ssKVLater" v={money(H.you.laterMonthly)} /> : null}
+                {H.you.withheld > 0 ? <KV k="Your check from full retirement age" id="ssKVLater" v={money(H.you.laterMonthly) + "/mo"} /> : null}
               </div>
             </div>
             {H.you.withheld > 0 ? (
-              <p className="hint m-0 mt-2 max-w-copy">Earning {money(p.you.earn)} per year before full retirement age, Social Security holds back $1 of every $2 over the limit. Those months are credited back at full retirement age, so the benefit rises then.</p>
+              <p className="hint m-0 mt-2 max-w-copy">Earning {money(p.you.earn)} per year before full retirement age, Social Security holds back $1 of every $2 over the limit. Those months are credited back at full retirement age, so the check rises then.</p>
             ) : null}
           </div>
         </Card>
 
         <Card className="min-w-0" hidden={!ready}>
           <CardHeader>
-            <CardTitle>Every claiming age</CardTitle>
-            <CardDescription>Each person&apos;s own check at each age, and what the household collects in all{married ? " when one of you claims then and the other as set" : ""}.</CardDescription>
-            <CardAction><CsvButton table={tableRef} label="Every claiming age" /></CardAction>
+            <CardTitle>What you&apos;d get at each age</CardTitle>
+            <CardDescription>The check each month, and all the checks added up through age {p.you.through}{married ? ", for the household, when one of you claims at that age and the other as set" : ""}.</CardDescription>
+            <CardAction><CsvButton table={tableRef} label="What you'd get at each age" /></CardAction>
           </CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
           <div className="scroll max-h-none">
             <table id="ssTable" ref={tableRef}>
               <thead>
                 <tr>
-                  <th>Claim at</th><th>{married ? "Your check" : "A month"}</th>
+                  <th>Claim at</th><th>{married ? "Your check" : "Each month"}</th>
                   {married ? <th>Spouse&apos;s check</th> : null}
-                  <th>{married ? "In all, you claim then" : "In all, through " + p.you.through}</th>
-                  {married ? <th>In all, spouse claims then</th> : null}
-                  <th>vs. the best</th>
+                  <th>{married ? "In all, if you claim then" : "In all, through " + p.you.through}</th>
+                  {married ? <th>In all, if your spouse claims then</th> : null}
+                  <th>Less than the best</th>
                 </tr>
               </thead>
               <tbody>
@@ -257,9 +275,10 @@ export function Social() {
                   const d = r.lifetime - bestRow.lifetime;
                   return (
                     <tr key={r.age} className={cn(r.age === p.you.claim && "font-semibold")}>
-                      <td>{r.age}{r.age === fraYou ? <span className="ml-1.5 text-muted-foreground font-normal">full</span> : null}
-                        {r.age === best1 ? <Badge variant="positive" className="ml-1.5 align-middle">Best for you</Badge> : null}
-                        {married && r.age === best2 ? <Badge variant="highlight" className="ml-1.5 align-middle">Best for spouse</Badge> : null}</td>
+                      <td>{r.age}{r.age === fraYou ? <span className="ml-1.5 text-muted-foreground font-normal">full retirement age</span> : null}
+                        {r.age === p.you.claim ? <span className="ml-1.5 text-muted-foreground font-normal">your choice</span> : null}
+                        {r.age === best1 ? <Badge variant="positive" className="ml-1.5 align-middle">Pays the most</Badge> : null}
+                        {married && r.age === best2 ? <Badge variant="highlight" className="ml-1.5 align-middle">Most for your spouse</Badge> : null}</td>
                       <td>{money(r.you)}</td>
                       {married ? <td>{money(r.spouse)}</td> : null}
                       <td>{money(r.lifetime)}</td>
@@ -275,8 +294,46 @@ export function Social() {
 
         <Card className="min-w-0" hidden={!ready}>
           <CardHeader>
-            <CardTitle>Benefits added up</CardTitle>
-            <CardDescription>Everything collected so far at each age, for the main choices. Where two lines cross is the break-even age.</CardDescription>
+            <CardTitle>Which age pays the most, for how long you live</CardTitle>
+            <CardDescription>Nobody knows their lifespan, so here is the claiming age that collects the most for every age you might live to{married ? ", with your spouse as set" : ""}.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-label text-muted-foreground">If you live to...</div>
+            <div className="relative mt-1 mb-6">
+              <div className="flex h-11 w-full gap-px overflow-hidden rounded-md" role="img" aria-label={"Best claiming age by lifespan: " + wins.map((w) => "claim at " + w.claim + " if you live to " + w.from + " to " + w.to).join(", ")}>
+                {wins.map((w) => (
+                  <div key={w.from} className="relative flex min-w-0 flex-(--span) items-center justify-center bg-muted text-label font-medium text-foreground tabular-nums"
+                    style={{ "--span": w.to - w.from + 1, "--tint": (12 + Math.round(((w.claim - 62) / 8) * 58)) / 100 } as React.CSSProperties}>
+                    <span className="absolute inset-0 bg-series-sky opacity-(--tint)" aria-hidden="true" />
+                    <span className="relative overflow-hidden px-0.5 whitespace-nowrap">{w.to - w.from >= 3 ? "claim at " + w.claim : w.claim}</span>
+                  </div>
+                ))}
+              </div>
+              {[70, 75, 80, 85, 90, 95, 100].map((a) => (
+                <span key={a} className="absolute top-full left-(--x) mt-1 -translate-x-1/2 text-label text-muted-foreground tabular-nums first:translate-x-0 last:-translate-x-full"
+                  style={{ "--x": a === 100 ? "100%" : tick(a) } as React.CSSProperties}>{a}</span>
+              ))}
+            </div>
+            <div className="grid2">
+              <div>
+                {wins.slice(0, Math.ceil(wins.length / 2)).map((w) => (
+                  <KV key={w.from} k={w.from === w.to ? "Live to " + w.from : w.from === 70 ? "Live to " + w.to + " or less" : w.to === 100 ? "Live to " + w.from + " or more" : "Live to " + w.from + " to " + w.to} v={"claim at " + w.claim} />
+                ))}
+              </div>
+              <div>
+                {wins.slice(Math.ceil(wins.length / 2)).map((w) => (
+                  <KV key={w.from} k={w.from === w.to ? "Live to " + w.from : w.to === 100 ? "Live to " + w.from + " or more" : "Live to " + w.from + " to " + w.to} v={"claim at " + w.claim} />
+                ))}
+              </div>
+            </div>
+            <p className="hint m-0 mt-2 max-w-copy">A 65-year-old today lives to about 84 on average, and in a couple one of the two usually passes 90.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="min-w-0" hidden={!ready}>
+          <CardHeader>
+            <CardTitle>When waiting starts to pay off</CardTitle>
+            <CardDescription>Everything collected so far at each age. A later claim starts behind and catches up: where its line crosses an earlier one is the break-even age.</CardDescription>
           </CardHeader>
           <MultiChart id="SsCum" series={series} maxX={maxX} ariaLabel="Cumulative Social Security benefits by claiming age" xFmt={(x) => x + x0}
             head={(y) => <b>Age {y + x0}</b>} />
@@ -285,12 +342,12 @@ export function Social() {
             <div className="grid2">
               <div>
                 {bes.slice(0, 2).map((b) => (
-                  <KV key={b.a + "-" + b.b} k={"Waiting from " + age1(b.a) + " to " + age1(b.b) + " pays off from"} v={b.at ? "age " + age1(b.at) : "never"} />
+                  <KV key={b.a + "-" + b.b} k={"Claim at " + age1(b.b) + " instead of " + age1(b.a) + ": ahead from"} v={b.at ? "age " + age1(b.at) : "never"} />
                 ))}
               </div>
               <div>
                 {bes.slice(2).map((b) => (
-                  <KV key={b.a + "-" + b.b} k={"Waiting from " + age1(b.a) + " to " + age1(b.b) + " pays off from"} v={b.at ? "age " + age1(b.at) : "never"} />
+                  <KV key={b.a + "-" + b.b} k={"Claim at " + age1(b.b) + " instead of " + age1(b.a) + ": ahead from"} v={b.at ? "age " + age1(b.at) : "never"} />
                 ))}
               </div>
             </div>
@@ -300,59 +357,41 @@ export function Social() {
 
         <Card className="min-w-0" hidden={!ready}>
           <CardHeader>
-            <CardTitle>Which age pays the most, by how long you live</CardTitle>
-            <CardDescription>For each age you might live to, the claiming age that collects the most in all{married ? ", with your spouse as set" : ""}.</CardDescription>
+            <CardTitle>What if you claimed early and invested the checks?</CardTitle>
+            <CardDescription>The usual case for claiming early: take the smaller check, invest every one of them, and let the market make up the difference. This tests it against every year since 1926.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex h-10 w-full gap-px overflow-hidden rounded-md" role="img" aria-label={"Best claiming age by lifespan: " + wins.map((w) => w.claim + " from " + w.from + " to " + w.to).join(", ")}>
-              {wins.map((w) => (
-                <div key={w.from} className="relative flex min-w-0 flex-(--span) items-center justify-center bg-muted text-label font-medium text-foreground tabular-nums"
-                  style={{ "--span": w.to - w.from + 1, "--tint": (12 + Math.round(((w.claim - 62) / 8) * 58)) / 100 } as React.CSSProperties}>
-                  <span className="absolute inset-0 bg-series-sky opacity-(--tint)" aria-hidden="true" />
-                  <span className="relative truncate px-0.5">{w.claim}</span>
-                </div>
-              ))}
+          <CardContent className="pb-0">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-body">
+              <span>Claim at</span>
+              <SelectField id="ssEarly" label="" className="m-0" value={s.early} onChange={set("early")} aria-label="Claim early at">
+                {CLAIM_AGES.filter((a) => a < 70).map((a) => <option key={a} value={String(a)}>{a}</option>)}
+              </SelectField>
+              <span>and invest every check, instead of waiting until</span>
+              <SelectField id="ssLate" label="" className="m-0" value={s.late} onChange={set("late")} aria-label="Instead of waiting until">
+                {CLAIM_AGES.filter((a) => a > p.early).map((a) => <option key={a} value={String(a)}>{a}</option>)}
+              </SelectField>
+              <span>, with</span>
+              <NumberField id="ssMix" label="" className="m-0 w-24" unit="%" step={5} max={100} value={s.mix} onValueChange={set("mix")} aria-label="Stock share" />
+              <span>in stocks<TipDot k="ssmix" /></span>
             </div>
-            <div className="mt-1.5 flex justify-between text-label text-muted-foreground tabular-nums"><span>Live to 70</span><span>80</span><span>90</span><span>100</span></div>
-            <p className="hint m-0 mt-1 max-w-copy">
-              {wins.length > 1
-                ? <>Claiming at {wins[0].claim} collects the most if you live to {wins[0].to} or less{wins.length > 2 ? ", and " + wins[wins.length - 1].claim + " from " + wins[wins.length - 1].from + " on" : "; " + wins[1].claim + " from " + wins[1].from + " on"}. A 65-year-old today lives to about 84 on average, and one of a couple is likely to pass 90.</>
-                : <>Claiming at {wins[0].claim} collects the most at every lifespan from 70 to 100.</>}
+            <p className="m-0 mt-3 max-w-copy text-note text-muted-foreground">
+              From {p.early} to {p.late} the {money(I.benEarly / 12)} check goes into the pot every month. From {p.late} on, the pot pays out the {money((I.benLate - I.benEarly) / 12)} a month the bigger check would have been. The question is whether the pot lasts to {p.you.through}.
             </p>
           </CardContent>
-        </Card>
-
-        <Card className="min-w-0" hidden={!ready}>
-          <CardHeader>
-            <CardTitle>Claim early and invest the checks</CardTitle>
-            <CardDescription>Take it at {p.early}, invest every check, then from {p.late} draw the difference between the two checks. Does the pot last to {p.you.through}, in every market since 1926?</CardDescription>
-            <CardAction>
-              <span className="flex items-center gap-2">
-                <SelectField id="ssEarly" label="" value={s.early} onChange={set("early")} aria-label="Claim early at">
-                  {CLAIM_AGES.filter((a) => a < 70).map((a) => <option key={a} value={String(a)}>{a}</option>)}
-                </SelectField>
-                <span className="text-label text-muted-foreground">vs.</span>
-                <SelectField id="ssLate" label="" value={s.late} onChange={set("late")} aria-label="Instead of waiting until">
-                  {CLAIM_AGES.filter((a) => a > p.early).map((a) => <option key={a} value={String(a)}>{a}</option>)}
-                </SelectField>
-              </span>
-            </CardAction>
-          </CardHeader>
           {I.windows > 0 ? (
             <>
-              <HeroReading tone={I.won / I.windows >= 0.5 ? "answer" : "loss"} className="pt-2"
-                hero={{ label: "Retirements since 1926 where claiming at " + p.early + " came out ahead", id: "ssInvWon", value: pctStr(I.won / I.windows, 0),
-                  note: fmtNum(I.won) + " of " + fmtNum(I.windows) + " starting years, " + money(I.benEarly / 12) + " a month from " + p.early + " against " + money(I.benLate / 12) + " from " + p.late + ", " + pctStr(p.mix, 0) + " stocks" }}
+              <HeroReading tone="text" under className="pt-4"
+                hero={{ label: "Years since 1926 where claiming at " + p.early + " came out ahead", id: "ssInvWon", value: pctStr(I.won / I.windows, 0),
+                  note: "In " + fmtNum(I.won) + " of " + fmtNum(I.windows) + " starting years the pot lasted to " + p.you.through + "; in " + fmtNum(I.ranOut) + " it ran out" + (I.firstOut ? ", as early as " + I.firstOut : "") }}
                 figures={[
-                  { label: "Left at " + p.you.through + ", median", id: "ssInvMed", value: money(I.median), note: "In today's dollars, after drawing the gap" },
-                  { label: "Worst start", id: "ssInvWorst", value: money(I.worst), tone: I.worst < 0 ? "loss" : undefined,
-                    note: I.firstOut ? "Ran out at " + I.firstOut + " at the earliest" : "Never ran out" },
+                  { label: "Typical pot at " + p.late, id: "ssInvPot", value: money(potAtLate), note: "Checks saved and invested" },
+                  { label: "Typical pot left at " + p.you.through, id: "ssInvMed", value: money(I.median), note: "After paying out the gap" },
                 ]} />
               <BandChart id="SsInv" mode="mc" xOffset={p.early} pts={I.bands.map((b) => ({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }))} maxX={I.years}
                 ariaLabel="What the invested early checks are worth at each age, across every start year since 1926"
                 tip={(b) => <><b>Age {b.year + p.early}</b><FanTipRows b={b} /></>} />
               <McLegend id="legendSsInv" noDet />
-              <p className="hint m-0 max-w-copy px-4.5 pb-4">The pot grows from {p.early} to {p.late} on the checks alone, then pays out {money((I.benLate - I.benEarly) / 12)} a month to match the later claim. Real returns, that window&apos;s own inflation, the mix rebalanced yearly. Nothing here counts the survivor benefit or taxes on the checks.</p>
+              <p className="hint m-0 max-w-copy px-4.5 pb-4">The pot in today&apos;s dollars at each age, in half of history (the line) and in the best and worst years. Real returns, each start year&apos;s own inflation, the mix rebalanced yearly. Waiting is a guaranteed 8% a year above inflation, so the market has to beat that. Taxes and the survivor benefit are left out.</p>
             </>
           ) : <Band>History is too short to run this comparison through age {p.you.through}.</Band>}
         </Card>
@@ -380,4 +419,3 @@ export function Social() {
     </div>
   );
 }
-

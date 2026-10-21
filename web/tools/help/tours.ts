@@ -412,7 +412,7 @@ const social: Tour<SocialInputs> = { name: "Social Security Claiming", title: "W
   start: ({ s }) => ({ claim1: n(s.claim1), through1: n(s.through1) }),
   pages: [
     { title: "Your benefit", focus: "#asideSocial", tasks: ({ s }) => [
-      { h: "<b>Just me</b> or <b>Married</b>. A couple's choices interact: the lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
+      { h: "<b>Single</b> or <b>Married</b>. A couple's choices interact: the lower earner can get a top-up to half the other's benefit, and the survivor keeps the larger check." },
       { h: "<b>Year of birth</b> sets your <b>full retirement age</b>: 66 for 1943 to 1954, rising two months a year to 67 for 1960 and later." },
       { h: "<b>From my statement</b> takes the monthly figure at full retirement age from ssa.gov/myaccount, the most accurate starting point if you're near claiming. <b>Estimate it</b> builds one from your pay today and a whole career around it.", ok: tried(s.src1 === "estimate") },
       { h: "<b>Map out your pay, year by year</b> opens the career: when you started, when you'll stop, raises above wage growth so far and ahead, and every year's pay to change by hand. Decades out, this is where the estimate is won or lost." },
@@ -424,9 +424,9 @@ const social: Tour<SocialInputs> = { name: "Social Security Claiming", title: "W
       { h: "Everything is in today's dollars. Benefits get a cost-of-living raise each year, so the figures keep their buying power." },
     ] },
     { title: "Reading it", focus: "#ssReading", tasks: () => [
-      { h: "<b>Every claiming age</b> lists each check and what it adds up to through the age planned, with the best marked. <b>Benefits added up</b> shows where waiting overtakes claiming early: the break-even age." },
-      { h: "<b>Which age pays the most, by how long you live</b> is the honest answer: nobody knows their lifespan, so see which choice wins over the range you'd plan for. A 65-year-old today lives to about 84 on average." },
-      { h: "<b>Claim early and invest the checks</b> tests the common argument for claiming at 62 against every market since 1926. Waiting is a guaranteed, inflation-protected 8% a year; the market has to beat that after inflation." },
+      { h: "<b>What you'd get at each age</b> lists each check and what it adds up to through the age planned, with the one that pays the most marked. <b>When waiting starts to pay off</b> shows where a later claim overtakes an earlier one: the break-even age." },
+      { h: "<b>Which age pays the most, for how long you live</b> is the honest answer: nobody knows their lifespan, so see which choice wins over the range you'd plan for. A 65-year-old today lives to about 84 on average." },
+      { h: "<b>What if you claimed early and invested the checks?</b> tests the common argument for claiming at 62 against every market since 1926. Waiting is a guaranteed, inflation-protected 8% a year; the market has to beat that after inflation." },
       { h: "For the full picture with taxes, withdrawals and Roth conversions together, the <a href='/optimizer'>Plan Optimizer</a> tries every claiming age inside the rest of your plan." },
     ] },
   ],
