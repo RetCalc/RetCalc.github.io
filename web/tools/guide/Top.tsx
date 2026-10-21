@@ -118,7 +118,9 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
     <div ref={bar} className="panel gd-top" data-wait={client ? undefined : ""}>
       <div className="gd-top-row">
         <div className="gd-title">Retirement Readiness Guide</div>
-        {client ? <div className="gd-pace"><Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /></div> : null}
+        {/* The welcome card asks the same question with a sentence for each
+            choice, so the bar's switch waits for the steps. */}
+        {client && st.type !== "welcome" ? <div className="gd-top-pace"><Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /></div> : null}
         <div className="gd-mini" id="gdMini">{client && s != null ? <>Score <b className="text-(color:--ink)" style={{ "--ink": color } as React.CSSProperties}>{s}</b></> : null}</div>
         <div className="gd-count" id="gdCount">{client ? count : ""}</div>
       </div>

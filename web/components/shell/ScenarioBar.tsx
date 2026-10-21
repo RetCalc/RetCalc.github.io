@@ -110,7 +110,8 @@ export function ScenarioBar() {
             ))}
           </>
         ) : (
-          <option value="">{tool ? `No saved ${tool.def.noun}s` : "No saved scenarios"}</option>
+          // Short enough for a phone; the list's label names what it holds.
+          <option value="">Nothing saved yet</option>
         )}
       </NativeSelect>
       <button className="btn" id="btnScenario" type="button" aria-label="Save or delete a scenario" title="Save or delete"

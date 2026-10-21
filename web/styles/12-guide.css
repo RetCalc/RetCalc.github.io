@@ -289,7 +289,7 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
      the progress and Route; the pace switch comes back at the top of the
      page. */
   .gd-top.stuck{padding-top:8px;padding-bottom:8px}
-  .gd-top.stuck .gd-pace{display:none}
+  .gd-top.stuck .gd-top-pace{display:none}
   .gd-top.stuck .gd-top-row{row-gap:0}
   .gd-top.stuck .gd-prog-wrap{margin-top:4px}
   .gd-top.stuck .gd-strip{margin-top:6px;padding-top:6px}

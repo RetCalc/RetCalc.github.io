@@ -140,7 +140,8 @@ test("the Quick check, typed from the start: the number on card 6, done in 12 ca
 test("the Quick check and the Full walkthrough walk their own cards", async ({ page }) => {
   test.setTimeout(120_000);
   await seeded(page, stateWith("quick"));
-  await expect(page.locator('.gd-top [data-pace="quick"].on')).toHaveCount(1);
+  // The welcome card holds the choice; the bar's switch joins from step 1.
+  await expect(page.locator('#gdCard [data-pace="quick"][aria-checked="true"]')).toHaveCount(1);
   const quick = await walkThrough(page);
   expect(quick.length).toBe(QUICK_CARDS);
   expect(quick[0]).toMatch(new RegExp(`^Step 1 of ${QUICK_CARDS} · about \\d+ minutes? left$`));

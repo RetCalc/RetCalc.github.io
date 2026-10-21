@@ -25,7 +25,7 @@ test("damaged saved scenarios and household don't break the page", async ({ page
     localStorage.setItem("retcalc.household.v1", '{"age":"forty","retire":null,"saved":"lots","state":7}');
   });
   await page.goto(NEW + "/advanced");
-  await expect(page.locator("#scenarioPick")).toContainText("No saved");
+  await expect(page.locator("#scenarioPick")).toContainText("Nothing saved yet");
   await expect(page.getByText("Something went wrong")).toHaveCount(0);
   await noBadText(page);
 });
