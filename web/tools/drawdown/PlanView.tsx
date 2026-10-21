@@ -370,6 +370,18 @@ function SeqPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) {
 }
 
 /* ---- the balance through retirement ---- */
+
+/* What the charts and stats derive from a historical test, worked out once
+   per test: the panels draw again on every keystroke and hover, while a
+   test changes only once the typing settles. */
+const derived = new WeakMap<DdHist, Map<string, unknown>>();
+function once<T>(H: DdHist, key: string, make: () => T): T {
+  let m = derived.get(H);
+  if (!m) derived.set(H, (m = new Map()));
+  if (!m.has(key)) m.set(key, make());
+  return m.get(key) as T;
+}
+
 function medLine(H: DdHist, field: "realEnd" | "realSpend", from0: boolean, initial: number) {
   const out = from0 ? [{ year: 0, value: initial }] : [], n = H.runs[0] ? H.runs[0].rows.length : 0;
   for (let y = 0; y < n; y++) {
@@ -385,7 +397,7 @@ function baseOverlay(B: { o: DdOpts; H: DdHist } | null, field: "realEnd" | "rea
     if (!r) return null;
     return baseLine([...(from0 ? [{ year: 0, value: B.o.initial }] : []), ...r.rows.map((w) => ({ year: w.year, value: w[field] }))]);
   }
-  return baseLine(medLine(B.H, field, from0, B.o.initial));
+  return baseLine(once(B.H, ["med", field, from0, B.o.initial].join(), () => medLine(B.H, field, from0, B.o.initial)));
 }
 /** Percentiles at each year across runs, and each run as a faint line. */
 function fanOf(runs: DdHistRun[], years: number, first: number | null, val: (r: DdHistRun, y: number) => number) {
@@ -407,7 +419,7 @@ function BalancePanel({ v, R, ps, show, showLabel }: { v: DDView; R: PlanResult 
     const H = R.H, B = R.B;
     if (ps.view === "all") {
       title = H.monthly ? "Every historical starting month" : "Every historical starting year";
-      const f = fanOf(H.runs, o.years, o.initial, (r, y) => (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0));
+      const f = once(H, ["fan", o.years, o.initial].join(), () => fanOf(H.runs, o.years, o.initial, (r, y) => (r.rows[y - 1] ? r.rows[y - 1].realEnd : 0)));
       const ov = baseOverlay(B, "realEnd", true, null);
       chart = <BandChart id="DD" pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced ariaLabel="Portfolio balance through retirement"
         traces={v.tracesOn ? f.traces : undefined} overlay={ov ?? undefined}
@@ -510,7 +522,7 @@ function spendAll(H: DdHist) {
   };
 }
 function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
-  const f = H?.runs.length ? spendAll(H) : null;
+  const f = H?.runs.length ? once(H, "spend", () => spendAll(H)) : null;
   return (
     <div>
       <div>
@@ -529,7 +541,7 @@ function SpendStatsAll({ H, o }: { H: DdHist | null; o: DdOpts }) {
   );
 }
 function spendAllNote(H: DdHist, o: DdOpts): string {
-  const f = spendAll(H), n = H.runs.length;
+  const f = once(H, "spend", () => spendAll(H)), n = H.runs.length;
   return Math.round(f.high - f.low) < 1
     ? "Across all " + n + " historical starting years, spending held at " + money(f.low) + " a year in today's dollars, " + money(f.totalMin) + " over a full " + o.years + "-year retirement."
     : "Across all " + n + " historical starting years. A single year's spending ranged from " + money(f.low) + " to " + money(f.high) +
@@ -548,7 +560,7 @@ function IncomePanel({ v, R, view, show, showLabel }: { v: DDView; R: PlanResult
   };
   if (R?.kind === "hist") {
     if (view === "all") {
-      const f = fanOf(R.H.runs, o.years, null, (r, y) => (r.rows[y - 1] ? realOf(r.rows[y - 1]) : 0));
+      const H = R.H, f = once(H, ["spendfan", o.years].join(), () => fanOf(H.runs, o.years, null, (r, y) => (r.rows[y - 1] ? realOf(r.rows[y - 1]) : 0)));
       const ov = baseOverlay(R.B, "realSpend", false, null);
       chart = <BandChart id="DDI" pts={f.pts} maxX={o.years} mode="mc" xOffset={xOff} enhanced overlay={ov ?? undefined} ariaLabel="Withdrawal amount over time"
         traces={v.tracesOn ? f.traces : undefined}

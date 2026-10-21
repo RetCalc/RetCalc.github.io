@@ -25,8 +25,13 @@ export type ChartSize = ReturnType<typeof useChartSize>;
 /** A value scale over `vals` (always including 0), as the charts draw it. */
 export function valueScale(size: ChartSize, vals: number[]) {
   const AX = niceAxis(Math.min(0, Math.min(...vals)), Math.max(...vals));
-  const span = AX.max - AX.min || 1;
-  return { AX, Y: (v: number) => size.T + size.ph - ((v - AX.min) / span) * size.ph };
+  return { AX, Y: yScale(size.T, size.ph, AX.min, AX.max) };
+}
+
+/** Value to drawing units, `min` at the plot's foot and `max` at its top. */
+export function yScale(T: number, ph: number, min: number, max: number) {
+  const span = max - min || 1;
+  return (v: number) => T + ph - ((v - min) / span) * ph;
 }
 
 /** An SVG path through the points, to a tenth of a unit: finer than any

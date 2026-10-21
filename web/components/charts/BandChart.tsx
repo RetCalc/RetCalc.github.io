@@ -8,8 +8,8 @@
    drawn by React instead of by hand; colors come from the theme's CSS
    variables, so it follows a theme switch. */
 
-import { useId } from "react";
-import { ChartFrame, HoverMarks, MONO, pathD, XAxis, YAxis, useChartSize, valueScale } from "./ChartFrame";
+import { memo, useId } from "react";
+import { ChartFrame, HoverMarks, MONO, pathD, XAxis, YAxis, useChartSize, valueScale, yScale } from "./ChartFrame";
 import { SERIES } from "@/lib/hues";
 
 export interface BandPoint {
@@ -126,21 +126,9 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
               </>
             ) : <XAxis size={size} count={maxX} X={X} label={(y) => y + xOffset} />}
 
-            {/* Every starting year as its own faint line, under the shading: thin
-                and in the muted guide tone, a texture behind the bands rather
-                than a series competing with them. */}
+            {/* Every starting year as its own faint line, under the shading. */}
             {traces?.lines.length ? (
-              <g clipPath={`url(#${g("trc")})`} fill="none" stroke={SERIES.guide} strokeLinejoin="round" className="traces"
-                strokeOpacity={traces.lines.length > 400 ? .07 : traces.lines.length > 60 ? .14 : .2} strokeWidth={.6 * sw}>
-                {traces.lines.map((ln, k) => {
-                  const at: [number, number][] = [];
-                  for (let i = 0; i < traces.xs.length && i < ln.length; i++) {
-                    const val = ln[i];
-                    if (val != null && isFinite(val)) at.push([X(traces.xs[i]), Y(val)]);
-                  }
-                  return at.length ? <path key={k} d={pathD(at)} /> : null;
-                })}
-              </g>
+              <Traces traces={traces} clip={`url(#${g("trc")})`} L={L} pw={pw} maxX={maxX} T={T} ph={ph} min={AX.min} max={AX.max} sw={sw} />
             ) : null}
 
             {mode === "mc" ? (
@@ -215,3 +203,32 @@ export function BandChart<P extends BandPoint>(props: Props<P>) {
     </ChartFrame>
   );
 }
+
+type TraceProps = { traces: NonNullable<Props<BandPoint>["traces"]>; clip: string; L: number; pw: number; maxX: number; T: number; ph: number; min: number; max: number; sw: number };
+
+const same = (a: readonly unknown[], b: readonly unknown[]) => a === b || (a.length === b.length && a.every((x, i) => x === b[i]));
+
+/* Every starting year as its own faint line, under the shading: thin and
+   in the muted guide tone, a texture behind the bands rather than a series
+   competing with them. Often hundreds of lines, so they're drawn again only
+   when the runs or the scales change, not on every hover or keystroke. */
+const Traces = memo(function Traces({ traces, clip, L, pw, maxX, T, ph, min, max, sw }: TraceProps) {
+  const X = (y: number) => L + (y / (maxX || 1)) * pw, Y = yScale(T, ph, min, max);
+  return (
+    <g clipPath={clip} fill="none" stroke={SERIES.guide} strokeLinejoin="round" className="traces"
+      strokeOpacity={traces.lines.length > 400 ? .07 : traces.lines.length > 60 ? .14 : .2} strokeWidth={.6 * sw}>
+      {traces.lines.map((ln, k) => {
+        const at: [number, number][] = [];
+        for (let i = 0; i < traces.xs.length && i < ln.length; i++) {
+          const val = ln[i];
+          if (val != null && isFinite(val)) at.push([X(traces.xs[i]), Y(val)]);
+        }
+        return at.length ? <path key={k} d={pathD(at)} /> : null;
+      })}
+    </g>
+  );
+}, (a, b) => {
+  const { traces: ta, ...ga } = a, { traces: tb, ...gb } = b;
+  return (Object.keys(ga) as (keyof typeof ga)[]).every((k) => ga[k] === gb[k]) && same(ta.xs, tb.xs)
+    && (ta.lines === tb.lines || (ta.lines.length === tb.lines.length && ta.lines.every((ln, i) => same(ln, tb.lines[i]))));
+});
