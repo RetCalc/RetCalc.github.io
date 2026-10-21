@@ -193,6 +193,8 @@ export function Fire() {
           side={{ label: coast ? "Portfolio at coast" : "Portfolio at FIRE", value: figures[0].value }} />
 
         <aside id="asideFire" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               <div className="field mb-3.5">
@@ -352,7 +354,7 @@ export function Fire() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll">
+              <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
                 <table id="fiTable" ref={tableRef}>
                   <thead><tr><th>Age</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
                   <tbody id="fiTableBody">

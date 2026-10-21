@@ -39,7 +39,7 @@ export function AccountTable({ id, B, years }: { id: "acResults" | "saResults"; 
     <>
       <CardHeader><CardTitle>By account type</CardTitle><CardDescription>at retirement, in today&apos;s dollars</CardDescription>
         <CardAction><CsvButton table={table} label="By account type" /></CardAction></CardHeader>
-      <div className="scroll max-h-none">
+      <div className="scroll max-h-none" tabIndex={0} role="region" aria-label="By account type">
         <table id={id} ref={table}>
           <thead><tr><th>Account</th><th>Balance</th><th>Share</th><th>First-year withdrawal</th><th>Tax</th><th>After tax</th></tr></thead>
           <tbody>

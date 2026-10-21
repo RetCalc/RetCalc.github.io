@@ -68,7 +68,7 @@ function Section({ id, children }: { id: SectionKey; children: React.ReactNode }
     link to a section opens it as the page jumps there. */
 function Index() {
   const { set } = useContext(OpenCtx);
-  const link = "block rounded-sm py-0.5 text-note text-muted-foreground no-underline hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring";
+  const link = "block min-h-6 rounded-sm py-0.5 text-note text-muted-foreground no-underline hover:text-foreground focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-ring";
   return (
     <nav className="about-index" aria-label="On this page">
       <a className={link} href="#about-what">What this is</a>

@@ -190,8 +190,8 @@ export function Inputs({ v, fromNote, periods, open }: {
           <div key={i} className={it.on === false ? "itemrow off" : "itemrow"}>
             <Checkbox data-itemtoggle={i} checked={it.on !== false}
               onCheckedChange={(on) => editList<DdItem>(k, (l) => l.map((x, j) => (j === i ? { ...x, on } : x)))} />
-            <span className="itemtxt" data-itemedit={i} onClick={() => open({ kind: "item", list: k, index: i })}>{it.name}<small>{describeItem(it, age)}</small></span>
-            <Button variant="ghost" size="icon-sm" data-itemdel={i} aria-label="Delete" onClick={() => {
+            <button type="button" className="itemtxt" data-itemedit={i} onClick={() => open({ kind: "item", list: k, index: i })}>{it.name}<small>{describeItem(it, age)}</small></button>
+            <Button variant="ghost" size="icon-sm" data-itemdel={i} aria-label={"Delete " + (it.name || "item")} onClick={() => {
               editList<DdItem>(k, (l) => l.filter((_, j) => j !== i));
               toast("Removed " + (it.name || "Item"));
             }}>&times;</Button>

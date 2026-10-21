@@ -120,7 +120,7 @@ export function Social() {
             <CardTitle>Every age, side by side</CardTitle>
             <CardAction><CsvButton table={agesRef} label="Every age, side by side" /></CardAction>
           </CardHeader>
-          <div className="scroll max-h-none">
+          <div className="scroll max-h-none" tabIndex={0} role="region" aria-label="Every age, side by side">
             <table id="ssAges" ref={agesRef}>
               <thead><tr><th>Claim at</th><th>Per month</th><th>% of full benefit</th><th>{married ? "Total, both lifetimes" : "Total by " + S.you.through}</th><th>Compared to {S.best.age}</th></tr></thead>
               <tbody>
@@ -152,7 +152,7 @@ export function Social() {
             <CardTitle>Year by year</CardTitle>
             <CardAction><CsvButton table={yearsRef} label="Year by year" /></CardAction>
           </CardHeader>
-          <div className="scroll max-h-101 lg:max-h-none lg:min-h-0 lg:flex-1">
+          <div className="scroll max-h-101 lg:max-h-none lg:min-h-0 lg:flex-1" tabIndex={0} role="region" aria-label="Year by year">
             <table id="ssYears" ref={yearsRef}>
               <thead><tr><th>Your age</th><th>Your benefit</th>{married ? <><th>Spouse&apos;s age</th><th>Spouse&apos;s benefit</th></> : null}<th>Added up</th></tr></thead>
               <tbody>
@@ -215,7 +215,7 @@ function Sentence({ s, S, setP, setOther, setSrc, payOpen, setPayOpen, anyPay, t
         ) : null}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3">
           <Button variant="outline" size="sm" id="ssSpouseBtn" onClick={toggleSpouse}>{married ? <MinusIcon /> : <PlusIcon />}{married ? "Remove my spouse" : "Add my spouse"}</Button>
-          {anyPay ? <Button variant="outline" size="sm" id="ssPayBtn" aria-pressed={payOpen} aria-controls="ssPay" onClick={() => setPayOpen(!payOpen)}><ChartColumnIcon />Edit pay year by year</Button> : null}
+          {anyPay ? <Button variant="outline" size="sm" id="ssPayBtn" aria-pressed={payOpen} aria-controls={payOpen ? "ssPay" : undefined} onClick={() => setPayOpen(!payOpen)}><ChartColumnIcon />Edit pay year by year</Button> : null}
           <Button variant="link" size="inline" onClick={() => setSrc("you", y.src === "pay" ? "statement" : "pay")}>
             {y.src === "pay" ? "I have my Social Security statement" : "Estimate from my pay instead"}</Button>
           {married ? <Button variant="link" size="inline" onClick={() => setSrc("spouse", sp.src === "pay" ? "statement" : "pay")}>
@@ -438,9 +438,11 @@ function Lifespan({ S, setThrough }: { S: SocialFigures; setThrough: (v: string)
         <div className="relative">
           <div className="mt-6 flex h-10 gap-0.5 overflow-hidden rounded-lg" role="img" aria-label={"Best claiming age by lifespan: " + S.wins.map((w) => `live to ${w.from} to ${w.to}, claim at ${w.claim}`).join("; ")}>
             {S.wins.map((w) => (
+              // The shade deepens with the claiming age but stops at half
+              // strength, where the label still reads at 4.5:1 in dark mode.
               <div key={w.from} className="relative grid min-w-0 grow-(--n) basis-0 place-items-center overflow-hidden text-xs font-semibold whitespace-nowrap"
                 style={{ "--n": w.to - w.from + 1 } as React.CSSProperties}>
-                <span className="absolute inset-0 bg-series-sky opacity-(--t)" style={{ "--t": (0.1 + ((w.claim - 62) / 8) * 0.55).toFixed(2) } as React.CSSProperties} aria-hidden="true" />
+                <span className="absolute inset-0 bg-series-sky opacity-(--t)" style={{ "--t": (0.1 + ((w.claim - 62) / 8) * 0.4).toFixed(2) } as React.CSSProperties} aria-hidden="true" />
                 <span className="relative">{w.to - w.from >= 3 ? "Claim at " + w.claim : w.claim}</span>
               </div>
             ))}

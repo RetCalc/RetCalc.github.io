@@ -24,7 +24,7 @@ export function BracketsCard({ bands, id, fold }: { bands: Band[]; id: string; f
   const table = (
     <>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
-      <div className="scroll">
+      <div className="scroll" tabIndex={0} role="region" aria-label="Tax brackets">
         <table id={id} className="txbrackets" ref={ref}>
           <thead><tr><th>Rate</th><th>Income range</th><th>Taxed in this band</th><th>Tax</th></tr></thead>
           <tbody>

@@ -295,7 +295,7 @@ export function Stages() {
 
               <GroupHead>Your savings</GroupHead>
               <div className="glidewrap acwrap mt-0">
-                <CheckToggle id="saToggle" on={split} onToggle={toggleAccounts} controls="saFields">Split by account type<TipDot k="staccttypes" /></CheckToggle>
+                <CheckToggle id="saToggle" on={split} onToggle={toggleAccounts} controls="saFields" tip={<TipDot k="staccttypes" />}>Split by account type</CheckToggle>
                 <div className="acfields" id="saFields" hidden={!split}>
                   <AcHead>Starting balances</AcHead>
                   <div className="two max-sm:grid-cols-2">
@@ -465,7 +465,7 @@ export function Stages() {
         <Card hidden={!n}>
           <CardHeader><CardTitle>Stage by stage</CardTitle><CardAction><CsvButton table={stageTable} label="Stage by stage" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Stage by stage">
             <table id="stageTable" ref={stageTable}>
               <thead><tr><th>Stage</th><th>Years</th><th>Return</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th></tr></thead>
               <tbody>
@@ -485,7 +485,7 @@ export function Stages() {
           </CardHeader>
           <CollapsibleContent keepMounted>
             <div className="swipehint">Swipe the table sideways to see every column.</div>
-            <div className="scroll">
+            <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
               <table id="xYearTable" ref={yearTable}>
                 <thead><tr><th>Year</th><th>Stage</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
                 <tbody>

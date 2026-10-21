@@ -350,7 +350,7 @@ function YearRows({ rows, id }: { rows: PlRow[]; id?: string }) {
 }
 /* The guide's: folded under a line of text. */
 function YearTable({ rows }: { rows: PlRow[] }) {
-  return <details className="op-table"><summary>Show every year</summary><div className="scroll"><YearRows rows={rows} /></div></details>;
+  return <details className="op-table"><summary>Show every year</summary><div className="scroll" tabIndex={0} role="region" aria-label="Every year"><YearRows rows={rows} /></div></details>;
 }
 
 /* ---- the whole result ---- */
@@ -463,7 +463,7 @@ export function OptimizerResult({ host, res, fresh, stale }: { host: Host; res: 
         </CardHeader>
         <CollapsibleContent keepMounted>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll op-table"><YearRows rows={rb} id="opYearTable" /></div>
+          <div className="scroll op-table" tabIndex={0} role="region" aria-label="Year by year"><YearRows rows={rb} id="opYearTable" /></div>
         </CollapsibleContent>
       </Collapsible>)}
       {alts ? dimmed(alts) : null}

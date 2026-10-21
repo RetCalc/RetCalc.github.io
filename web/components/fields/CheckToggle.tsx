@@ -6,20 +6,28 @@ import { Toggle, ToggleCheck } from "@/components/ui/toggle";
    account type", "Glide path". shadcn's Toggle; it keeps the old markup's
    hooks (.glidebtn-check for the box; the stage card layout finds it by data-slot)
    and says it opens its fields (aria-expanded) rather than that it's
-   pressed. A click on its "?" explains it without flipping it. */
+   pressed. Its "?" (`tip`) is a separate control beside it. */
 
-export function CheckToggle({ id, on, onToggle, controls, children }: {
-  id?: string; on: boolean; onToggle: () => void; controls?: string; children: React.ReactNode;
+export function CheckToggle({ id, on, onToggle, controls, tip, children }: {
+  id?: string; on: boolean; onToggle: () => void; controls?: string; tip?: React.ReactNode; children: React.ReactNode;
 }) {
-  return (
-    <Toggle variant="check" pressed={on} id={id} aria-pressed={undefined} aria-expanded={on} aria-controls={controls}
-      onClick={(e) => {
-        if ((e.target as HTMLElement).closest?.(".tipdot")) return;
-        onToggle();
-      }}>
+  const toggle = (
+    <Toggle pressed={on} id={id} aria-pressed={undefined} aria-expanded={on} aria-controls={controls}
+      variant={tip ? "checkInline" : "check"} onClick={onToggle}>
       <ToggleCheck />
       <span className="glidebtn-txt">{children}</span>
     </Toggle>
+  );
+  if (!tip) return toggle;
+  // With a "?", the box is drawn by a wrapper and the "?" sits beside the
+  // button rather than inside it, so each is its own control for keyboards
+  // and screen readers. A click on the box's empty space still flips it.
+  return (
+    <div data-checkrow="" className={"flex w-full cursor-pointer items-center gap-1.5 rounded-(--r-well) border px-2.5 py-2.25 transition-colors hover:border-input " + (on ? "border-input bg-muted" : "border-border bg-muted")}
+      onClick={(e) => { if (e.target === e.currentTarget) onToggle(); }}>
+      {toggle}
+      {tip}
+    </div>
   );
 }
 

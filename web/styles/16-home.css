@@ -63,6 +63,14 @@ a.hm-tile:hover .hm-go svg{transform:translateX(3px)}
   border-color:color-mix(in srgb,var(--ds-brand-steel) 26%,var(--ds-rule))}
 .hm-c-amber{color:var(--ds-amber)} .hm-c-jade{color:var(--ds-brand-jade)} .hm-c-steel{color:var(--ds-brand-steel)}
 .hm-c-lav{color:var(--ds-series-lavender)} .hm-c-sky{color:var(--ds-series-sky)} .hm-c-teal{color:var(--ds-series-teal)}
+/* As 13px text on a white tile, the light theme's chart and brand colors
+   fall short of 4.5:1 (jade and steel about 3.5, teal 4.0, sky 4.2); a
+   shade darker keeps the hue and passes. */
+:root[data-theme="light"] .hm-c-jade{color:color-mix(in srgb,var(--ds-brand-jade) 85%,#000)}
+:root[data-theme="light"] .hm-c-steel{color:color-mix(in srgb,var(--ds-brand-steel) 85%,#000)}
+:root[data-theme="light"] .hm-c-lav{color:color-mix(in srgb,var(--ds-series-lavender) 85%,#000)}
+:root[data-theme="light"] .hm-c-sky{color:color-mix(in srgb,var(--ds-series-sky) 85%,#000)}
+:root[data-theme="light"] .hm-c-teal{color:color-mix(in srgb,var(--ds-series-teal) 85%,#000)}
 
 .hm-readout{margin-top:6px}
 .hm-readout .k{font-size:15px;color:var(--ds-muted);font-weight:500}

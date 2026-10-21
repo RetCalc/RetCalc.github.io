@@ -210,14 +210,16 @@ tr.br-off .br-name{color:var(--dim)}
 #ddShowTable th.sortcol.sort-desc::after{content:"\2193";margin-left:4px;opacity:.7}
 .ddheatwrap{padding:0 18px 6px;max-height:none}
 .ddheat{border-collapse:separate;border-spacing:3px;min-width:560px}
-.ddheat td{text-align:center;font-size:12px;padding:7px 4px;border:0;border-radius:6px;cursor:pointer;color:var(--text)}
+.ddheat td{text-align:center;font-size:12px;padding:0;border:0;border-radius:6px;color:var(--text)}
+.ddheat td > button{display:block;width:100%;padding:7px 4px;border:0;border-radius:inherit;background:transparent;font:inherit;color:inherit;cursor:pointer}
+.ddheat td > button:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .ddheat td:hover{outline:2px solid var(--ds-focus);outline-offset:-2px}
 .ddheat th{text-align:center;border:0;position:static;background:none;padding:5px 4px;white-space:nowrap}
 .ddheat thead th:first-child{text-align:left}
 .ddheat tbody th{text-align:right;font-family:var(--mono);font-weight:500;color:var(--dim)}
 .ddheat thead th.ddh-cur,.ddheat tr.ddh-cur th{color:var(--text);font-weight:700}
 .ddheat td.ddh-me{outline:2px solid var(--ds-focus);outline-offset:-2px;font-weight:700}
-.ddheat td.ddh-na{cursor:default;color:var(--dimmer)}
+.ddheat td.ddh-na{color:var(--dimmer)}
 [data-empty] .chartwrap,[data-empty] .legend{display:none}
 @media (max-width:900px){
   .ddstats{grid-template-columns:repeat(3,minmax(0,1fr))}

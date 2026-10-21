@@ -251,6 +251,8 @@ export function Tax() {
         <PinnedReading tone={tone} main={{ label: head.netLabel, value: head.net }} side={{ label: "Per month", value: head.month }} />
 
         <aside id="asideTax" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               <div className="mb-4" hidden={!!scope}>
@@ -470,7 +472,7 @@ export function Tax() {
             </div>
           </CardContent>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Where each dollar came from">
             <table id="txBucketTable" ref={bucketRef}>
               <thead><tr><th>Source</th><th>Withdrawn</th><th>Taxable</th><th>Federal</th><th>State</th><th>Total tax</th><th><Tipped text="Effective rate" k="effrate" /></th></tr></thead>
               <tbody>
@@ -493,7 +495,7 @@ export function Tax() {
           <CardHeader><CardTitle>Tax breakdown</CardTitle><CardAction><CsvButton table={tableRef} label="Tax breakdown" /></CardAction></CardHeader>
           {/* On a phone the repeated Share column steps out and the rest fit,
               so there's nothing to swipe. */}
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Tax breakdown">
             <table id="txTable" ref={tableRef}>
               <thead><tr><th>Item</th><th>Amount</th><th><Tipped text="Effective rate" k="effrate" /></th><th>Share of income</th></tr></thead>
               <tbody>{rows}</tbody>

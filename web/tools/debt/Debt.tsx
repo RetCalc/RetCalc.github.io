@@ -313,7 +313,7 @@ export function Debt() {
           <CardContent>
             <div id="dtVerdict">{verdict ? <p className="m-0 mb-3.5 max-w-copy text-body text-foreground">{verdict}</p> : null}</div>
           </CardContent>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Avalanche vs. snowball">
             <table id="dtCompare" ref={compareRef}>
               <thead><tr><th>Approach</th><th>Debt-free</th><th>How long</th><th>Total interest</th><th>First debt gone</th></tr></thead>
               <tbody>{cmpRows}</tbody>
@@ -329,7 +329,7 @@ export function Debt() {
         <Card className="min-w-0" hidden={!plan}>
           <CardHeader><CardTitle>Payoff order</CardTitle><CardAction><CsvButton table={orderRef} label="Payoff order" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Payoff order">
             <table id="dtOrder" ref={orderRef}>
               <thead><tr><th>#</th><th className="text-left">Debt</th><th>Balance</th><th>Rate</th><th>Minimum</th><th>Interest paid</th><th>Cleared</th></tr></thead>
               <tbody>{orderRows}</tbody>
@@ -345,7 +345,7 @@ export function Debt() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll">
+              <div className="scroll" tabIndex={0} role="region" aria-label="The schedule">
                 <table id="dtSched" ref={schedRef}>
                   <thead><tr><th>Month</th><th>Date</th><th>Balance</th><th>Interest to date</th><th>Debts cleared</th></tr></thead>
                   <tbody>{schedRows}</tbody>

@@ -89,6 +89,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ToolRegistryProvider>
           <HouseholdProvider>
           <AccountProvider>
+            {/* First stop for the Tab key: past the top bar to the page itself. */}
+            <a href="#main" className="skiplink">Skip to content</a>
             <NavBar states={STATE_OPTIONS} />
             <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
             <Main>{children}</Main>

@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils"
 
    - check: "Glide path", "Split by account type": a checkbox-style button
      that opens a group of fields (put a ToggleCheck first).
+   - checkInline: the same, without its box, for when the box is drawn by a
+     wrapper that also holds the switch's "?" (CheckToggle with a tip).
    - sign: the ± in front of a rate; on (loss) when the rate is negative.
    - legend: a chart legend entry that shows or hides a layer; struck
      through and faded when off. */
@@ -22,6 +24,8 @@ const toggleVariants = cva(
       variant: {
         check:
           "flex w-full items-center gap-2.5 rounded-(--r-well) border border-border bg-muted px-2.5 py-2.25 text-left text-[12.5px] text-muted-foreground transition-colors hover:border-input focus-visible:outline-offset-2 data-pressed:border-input",
+        checkInline:
+          "flex flex-none items-center gap-2.5 rounded-sm text-left text-[12.5px] text-muted-foreground focus-visible:outline-offset-2",
         sign:
           "signflip bg-transparent px-2 text-sm leading-none text-muted-foreground transition-colors pointer-coarse:px-3.25 hover:text-foreground focus-visible:-outline-offset-2 data-pressed:text-loss",
         legend:

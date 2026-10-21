@@ -167,6 +167,8 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
         <PinnedReading tone={F.tone} main={{ label: "Best way to 59½", value: F.best }} side={{ label: "Holds up in", value: F.hold }} />
 
         <aside id="asideBR" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               {/* One column on phones: "Married filing jointly" needs the full row. */}
@@ -242,7 +244,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               <CardAction><CsvButton table={compareRef} label="Ways to 59½" /></CardAction>
             </CardHeader>
             <div className="swipehint">Swipe the table sideways to see every column.</div>
-            <div className="scroll max-h-none">
+            <div className="scroll max-h-none" tabIndex={0} role="region" aria-label="Ways to 59½">
               <table id="brCompare" ref={compareRef}>
                 <thead><tr><th>Plan</th><th>Holds to 59½</th><th>Tax</th><th>Penalties</th><th>Health premiums</th><th>At 59½</th></tr></thead>
                 <tbody>{R && sel ? <CompareRows R={R} sel={sel} onPick={setSelKey} /> : null}</tbody>
@@ -323,7 +325,7 @@ export function Bridge({ variant }: { variant?: "72t" } = {}) {
               </CardHeader>
               <CollapsibleContent keepMounted>
                 <div className="swipehint">Swipe the table sideways to see every column.</div>
-                <div className="scroll">
+                <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
                   <table id="brTable" ref={tableRef}>
                     <thead><tr><th>Age</th><th>Spending</th><th>Health</th><th>Tax</th><th>Penalty</th><th>Brokerage</th><th>Roth</th><th>72(t)</th><th>55 / 457(b)</th><th>Penalized</th><th>Work</th><th>Converted</th><th>MAGI</th><th>Balance</th></tr></thead>
                     <tbody>{R ? <YearRows rows={rows} ctx={R.ctx} /> : null}</tbody>
@@ -492,7 +494,7 @@ function AtTable({ ctx, S, path }: { ctx: BrCtx; S: Scenarios; path: PathKey }) 
   ].filter(Boolean).join(" ");
   return (
     <>
-      <div className="scroll max-h-none">
+      <div className="scroll max-h-none" tabIndex={0} role="region" aria-label="What you’ll have at 59½">
         <table id="brAtTable">
           <thead><tr><th>Account</th>{keys.map((k) => (
             <th key={k} className={on(k)}>{S[k]!.head}{S[k]!.year ? <span className="br-yr">{S[k]!.pct + ", " + S[k]!.year}</span> : null}</th>
@@ -613,7 +615,7 @@ function Ladder({ rows, ctx, tableRef }: { rows: BrRow[]; ctx: BrCtx; tableRef: 
   return (
     <Card id="brLadderPanel" hidden={!conv.length}>
       <CardHeader><CardTitle>The conversion ladder</CardTitle><CardDescription>each rung waits five years</CardDescription><CardAction><CsvButton table={tableRef} label="The conversion ladder" /></CardAction></CardHeader>
-      <div className="scroll">
+      <div className="scroll" tabIndex={0} role="region" aria-label="The conversion ladder">
         <table id="brLadder" ref={tableRef}>
           <thead><tr><th>Converted at</th><th>Amount</th><th>Tax that year</th><th>Penalty-free from</th></tr></thead>
           <tbody>

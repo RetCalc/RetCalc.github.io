@@ -67,7 +67,7 @@ function NoDial({ name, axis, setAxis }: { name: string; axis: "stock" | "years"
       <Card id="ddHeatPanel" data-ddtabs="safe">
         <HeatTitle axis={axis} setAxis={setAxis} />
         <CardContent id="ddHeatIntro"><div className="ddintro">The grid needs a strategy with a setting to turn.</div></CardContent>
-        <div className="scroll ddheatwrap"><table id="ddHeat" className="ddheat"></table></div>
+        <div className="scroll ddheatwrap" tabIndex={0} role="region" aria-label="Success grid"><table id="ddHeat" className="ddheat"></table></div>
         <div className="hint ddpad" id="ddHeatNote"></div>
       </Card>
       <Card id="ddValPanel" data-ddtabs="safe">
@@ -226,16 +226,23 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
               <th>{dialText(id, rv, o).replace(/ start$/, "")}</th>
               {h.grid[i].map((s, j) => {
                 const me = cur && curCol != null && near(h.cols[j], curCol) ? "ddh-me" : undefined;
-                if (s == null) return <td key={j} className={["ddh-na", me].filter(Boolean).join(" ")} data-hr={i} data-hc={j} onClick={() => use(rv, h.cols[j])}>—</td>;
+                // Each cell is a button, so the grid works from the keyboard
+                // too; its name says what choosing it would set.
+                const pick = (shown: string, children: React.ReactNode = shown) => (
+                  <button type="button" aria-label={"Use " + dialText(id, rv, o).replace(/ start$/, "") + " with " + h.cols[j] + (h.axis === "years" ? " years" : "% stocks") + ": " + shown}
+                    onClick={() => use(rv, h.cols[j])}>{children}</button>
+                );
+                if (s == null) return <td key={j} className={["ddh-na", me].filter(Boolean).join(" ")} data-hr={i} data-hc={j}>{pick("no result", "—")}</td>;
                 if (s < 0) {
-                  return <td key={j} className={["ddh-na ddh-under", me].filter(Boolean).join(" ")} data-hr={i} data-hc={j} title="Year one starts under your comfort line" onClick={() => use(rv, h.cols[j])}>under</td>;
+                  return <td key={j} className={["ddh-na ddh-under", me].filter(Boolean).join(" ")} data-hr={i} data-hc={j} title="Year one starts under your comfort line">{pick("starts under your comfort line", "under")}</td>;
                 }
                 // Gain tint and a check where the cell meets the target; loss
                 // tint and a cross where it falls more than 10 points short.
                 const met = s >= T.conf - 1e-9, far = s < T.conf - 0.1;
                 const Mark = met ? CheckIcon : far ? XIcon : null;
-                return <td key={j} data-hr={i} data-hc={j} className={cn(me, met ? "bg-gain/15" : far ? "bg-destructive/15" : "bg-muted")}
-                  onClick={() => use(rv, h.cols[j])}>{Mark ? <Mark className="mr-0.5 inline size-3 align-baseline" aria-hidden="true" /> : null}{s >= 1 ? "100" : (s * 100).toFixed(0)}</td>;
+                const pct = s >= 1 ? "100" : (s * 100).toFixed(0);
+                return <td key={j} data-hr={i} data-hc={j} className={cn(me, met ? "bg-gain/15" : far ? "bg-destructive/15" : "bg-muted")}>
+                  {pick(pct + "% of starts" + (met ? ", meets the target" : far ? ", well short" : ""), <>{Mark ? <Mark className="mr-0.5 inline size-3 align-baseline" aria-hidden="true" /> : null}{pct}</>)}</td>;
               })}
             </tr>
           );
@@ -251,7 +258,7 @@ function HeatPanel({ v, Hm, running, axis, setAxis }: { v: DDView; Hm: { res: Dd
     <Card id="ddHeatPanel" data-ddtabs="safe">
       <HeatTitle axis={axis} setAxis={setAxis} />
       <CardContent id="ddHeatIntro"><Html className="ddintro" html={intro} /></CardContent>
-      <div className="scroll ddheatwrap"><table id="ddHeat" className="ddheat">{table}</table></div>
+      <div className="scroll ddheatwrap" tabIndex={0} role="region" aria-label="Success grid"><table id="ddHeat" className="ddheat">{table}</table></div>
       {table ? (
         <div className="legend">
           <span><i className="border border-border bg-gain/15"></i><CheckIcon className="mr-1 inline size-3" aria-hidden="true" />Meets the target</span>

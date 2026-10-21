@@ -249,7 +249,7 @@ export function Advanced() {
             <CardContent>
               <GroupHead first>Your savings</GroupHead>
               <div className="glidewrap acwrap mt-0" id="acWrap">
-                <CheckToggle id="acToggle" on={acOn} onToggle={toggleAccounts} controls="acFields">Split by account type<TipDot k="accttypes" /></CheckToggle>
+                <CheckToggle id="acToggle" on={acOn} onToggle={toggleAccounts} controls="acFields" tip={<TipDot k="accttypes" />}>Split by account type</CheckToggle>
                 <div className="acfields" id="acFields" hidden={!acOn}>
                   <AcHead note="pre-tax">Traditional 401(k) / IRA</AcHead>
                   <div className="two max-sm:grid-cols-2">{acMoney("tradBal", "Balance")}{acMoney("tradC", "You add", true)}</div>
@@ -301,7 +301,7 @@ export function Advanced() {
                 <Affixed suffix="%"><SignFlip value={s.nominal} onFlip={set("nominal")} /><NumberInput id="nominal" value={s.nominal} onValueChange={set("nominal")} /></Affixed>
               </Field>
               <div className="glidewrap -mt-1" id="glideWrap">
-                <CheckToggle id="glideToggle" on={s.glideOn} onToggle={toggleGlide}>Glide path<TipDot k="glide" /></CheckToggle>
+                <CheckToggle id="glideToggle" on={s.glideOn} onToggle={toggleGlide} tip={<TipDot k="glide" />}>Glide path</CheckToggle>
                 <div className="glidefields" id="glideFields" hidden={!s.glideOn}>
                   <div className="two max-sm:grid-cols-2">
                     <NumberField id="glideEnd" label="End at" unit="%" negative value={s.glideEnd} onValueChange={set("glideEnd")} />
@@ -449,7 +449,7 @@ export function Advanced() {
           </CardHeader>
           <CollapsibleContent keepMounted>
             <div className="swipehint">Swipe the table sideways to see every column.</div>
-            <div className="scroll">
+            <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
               <table id="yearTable" ref={tableRef}>
                 <thead><tr><th>Year</th><th>Start balance</th><th>Contributions</th><th>Growth</th><th>End balance</th><th>Inflation adj.</th></tr></thead>
                 <tbody>

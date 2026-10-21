@@ -190,6 +190,8 @@ export function Optimizer() {
           side={{ label: "The usual way", value: pin.was }} /> : null}
 
         <aside id="asideOP" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               <div className="field mb-4">

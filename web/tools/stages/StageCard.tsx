@@ -138,7 +138,7 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   ) : null;
   const glideBlock = last ? (
     <div className="mb-3.5 max-w-md">
-      <CheckToggle on={st.glideOn} onToggle={toggleGlide}>Glide path<TipDot k="glide" /></CheckToggle>
+      <CheckToggle on={st.glideOn} onToggle={toggleGlide} tip={<TipDot k="glide" />}>Glide path</CheckToggle>
       <div className="glidefields" hidden={!st.glideOn}>
         <div className="two max-sm:grid-cols-2">
           {field("glideEnd", "End at", <Affixed suffix="%">

@@ -232,6 +232,8 @@ export function Healthcare() {
         <PinnedReading tone={heroReady ? "answer" : "text"} main={{ label: hero.label, value: hero.value }} side={{ label: side.label, value: side.value }} />
 
         <aside id="asideHC" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               <div className={two}>

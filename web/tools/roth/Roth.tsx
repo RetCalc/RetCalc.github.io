@@ -163,6 +163,8 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
         )}
 
         <aside id="asideRC" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               <div className={two}>
@@ -400,7 +402,7 @@ export function Roth({ variant }: { variant?: "rmd" } = {}) {
                 ) : null}
               </div>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll lg:max-h-none">
+              <div className="scroll lg:max-h-none" tabIndex={0} role="region" aria-label="Year by year">
                 <table id="rcTable" ref={tableRef}>
                   <thead><tr><th>Age</th>{cols.map(([h]) => <th key={h}>{h}</th>)}<th>Ordinary income</th><th>MAGI</th><th>Tax</th><th>IRMAA</th><th>Marginal</th><th>Traditional</th><th>Roth</th></tr></thead>
                   <tbody>

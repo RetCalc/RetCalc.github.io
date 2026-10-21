@@ -97,7 +97,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
 
   /* Once the rail is pinned under the masthead it gets a deeper shadow, and
      the strip above it (the phone's notch area) fills in. */
-  const navbar = useRef<HTMLDivElement>(null);
+  const navbar = useRef<HTMLElement>(null);
   const [stuck, setStuck] = useState(false);
   useEffect(() => {
     let queued = false;
@@ -222,7 +222,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
     <>
       <div className={`sbcover${stuck ? " stuck" : ""}`} id="sbCover" aria-hidden="true" />
       <div className="calcscrim" id="calcScrim" hidden={menu !== "open"} onClick={() => closeMenu()} />
-      <div ref={navbar} className={`navbar oneline${stuck ? " stuck" : ""}${open ? " menu-open" : ""}`}>
+      <header ref={navbar} className={`navbar oneline${stuck ? " stuck" : ""}${open ? " menu-open" : ""}`}>
         <BrandLink tagline={false} />
         <nav role="tablist" aria-label="Sections" className={sliding ? "sliding" : undefined}>
           {TABS.map((t, i) => {
@@ -242,8 +242,9 @@ export function NavBar({ states }: { states: StateOption[] }) {
                 id={isCalc ? "tabbtn-calc" : `tabbtn-${t.tab}`}
                 className={mt ? "calcbtn" : undefined}
                 data-tab={t.tab}
-                // A tool page sits under Tools but isn't the picker panel.
-                aria-controls={isCalc ? `tab-${shownMode}` : selected && t.tab === "tools" && slug !== "tools" ? undefined : t.controls}
+                // A tool page sits under Tools but isn't the picker panel, and
+                // Privacy sits under About but isn't the About panel.
+                aria-controls={isCalc ? `tab-${shownMode}` : selected && ((t.tab === "tools" && slug !== "tools") || (t.tab === "about" && slug !== "about")) ? undefined : t.controls}
                 aria-selected={selected}
                 tabIndex={selected || (tab === null && i === 0) ? undefined : -1}
                 aria-haspopup={mt ? "menu" : undefined}
@@ -347,7 +348,7 @@ export function NavBar({ states }: { states: StateOption[] }) {
             </button>
           ))}
         </div>
-      </div>
+      </header>
     </>
   );
 }

@@ -92,6 +92,8 @@ export function RentBuy() {
         <PinnedReading tone={ready ? "answer" : "text"} main={{ label: "Better after " + fmtNum(inp.horizon) + " years", value: winner }} side={{ label: "Ahead by", value: margin || DASH }} />
 
         <aside id="asideRB" className="static max-h-none overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               {num("rbHorizon", "Time horizon", "horizon", "yrs", 1, 40)}
@@ -218,7 +220,7 @@ export function RentBuy() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll">
+              <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
                 <table id="rbTable" ref={tableRef}>
                   <thead><tr><th>Year</th><th>Buyer net worth</th><th>Renter net worth</th><th>Difference</th><th>Home value</th><th>Mortgage balance</th></tr></thead>
                   <tbody>

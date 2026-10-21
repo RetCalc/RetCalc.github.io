@@ -100,7 +100,7 @@ export function CompareView({ v, T, active }: { v: DDView; T: DdTarget; active: 
           }} />
         <Html className="legend" id="legendDDS" html={res ? swatch(SERIES.plan, "Your strategy") + swatch(SERIES.gain, "Meets the target") + swatch(SERIES.loss, "Can't meet it: shown at its closest") : ""} />
         <div className="swipehint">Swipe the table sideways to see every column.</div>
-        <div className="scroll">
+        <div className="scroll" tabIndex={0} role="region" aria-label="Strategy showdown">
           <table id="ddShowTable" ref={table}>
             <thead><tr>
               {th("name", "Strategy")}<th>Setting found</th>{th("first", "Year one")}{th("life", "Typical lifetime spending")}

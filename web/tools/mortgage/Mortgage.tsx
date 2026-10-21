@@ -176,6 +176,8 @@ export function Mortgage() {
         <PinnedReading tone={bad ? "text" : "answer"} main={{ label: "Monthly payment", value: money(R.total) }} side={{ label: "Principal & interest", value: money(R.pi) }} />
 
         <aside id="asideMort" className="static max-h-none overflow-visible">
+          {/* Screen readers' outline: the input groups below are h3s under this. */}
+          <h2 className="sr-only">Your inputs</h2>
           <Card>
             <CardContent>
               <GroupHead first>The home</GroupHead>
@@ -363,7 +365,7 @@ export function Mortgage() {
             </CardHeader>
             <CollapsibleContent keepMounted>
               <div className="swipehint">Swipe the table sideways to see every column.</div>
-              <div className="scroll">
+              <div className="scroll" tabIndex={0} role="region" aria-label="Amortization by year">
                 <table id="moTable" ref={table}>
                   <thead><tr><th>Year</th><th>Interest</th><th>Principal</th><th>Total paid</th><th>Balance</th></tr></thead>
                   <tbody>

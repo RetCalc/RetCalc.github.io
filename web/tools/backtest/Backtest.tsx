@@ -219,7 +219,7 @@ export function Backtest() {
               <CsvButton table={rollTable} label="Rolling returns" />
             </CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Rolling returns">
             <table id="btRollTable" ref={rollTable}>
               <thead><tr><th>Window</th><th>Periods</th><th>Worst</th><th>Median</th><th>Best</th><th>Positive</th></tr></thead>
               <tbody>
@@ -273,7 +273,7 @@ export function Backtest() {
         <Card className="min-w-0">
           <CardHeader><CardTitle>Year by year</CardTitle><CardAction><CsvButton table={yearTable} label="Year by year" /></CardAction></CardHeader>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
             <table id="btTable" ref={yearTable}>
               <thead><tr>
                 {yearCols.map(([k, label, hide]) => (

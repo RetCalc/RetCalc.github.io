@@ -128,7 +128,7 @@ export function DDCompare() {
       <Card id="ddCmpOutPanel" className="col-span-full min-w-0" hidden={!enough}>
         <CardHeader><CardTitle>Results</CardTitle><CardAction><CsvButton table={table} label="Results" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
-        <div className="scroll">
+        <div className="scroll" tabIndex={0} role="region" aria-label="Results">
           <table id="ddCmpOutTable" ref={table}>
             <thead>{live.length ? <tr><th>Result</th>{live.map((x) => <th key={x.i}>{swatch(x.i)}{CMP_LETTERS[x.i] + " · " + x.name}</th>)}</tr> : null}</thead>
             <tbody>{live.length ? rows.map(([k, f]) => <tr key={k}><td className="whitespace-normal text-muted-foreground">{k}</td>{live.map((x) => <td key={x.i}>{f(x)}</td>)}</tr>) : null}</tbody>

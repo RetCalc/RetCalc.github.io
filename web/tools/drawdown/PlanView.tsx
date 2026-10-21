@@ -247,7 +247,7 @@ function YearsPanel({ v, H, ps }: { v: DDView; H: DdHist | null; ps: PlanSel }) 
     <Card id="ddYearsPanel" data-ddtabs="plan" hidden={v.mode === "mc"}>
       <CardHeader><CardTitle id="ddYearsTitle">{H?.monthly ? "How each starting month fared" : "How each starting year fared"}</CardTitle><CardAction><CsvButton rows={csv} label="How each starting year fared" /></CardAction></CardHeader>
       <div className="swipehint">Swipe the table sideways to see every column.</div>
-      <div className="scroll">
+      <div className="scroll" tabIndex={0} role="region" aria-label="How each starting year fared">
         <table id="ddStartTable" ref={table}>
           <thead><tr>
             {SORT_COLS.map(([k, label, title]) => (

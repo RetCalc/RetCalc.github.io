@@ -235,7 +235,7 @@ export function Basic() {
         </CardHeader>
         <CollapsibleContent keepMounted>
           <div className="swipehint">Swipe the table sideways to see every column.</div>
-          <div className="scroll">
+          <div className="scroll" tabIndex={0} role="region" aria-label="Year by year">
             <table id="qYearTable" ref={tableRef}>
               <thead><tr><th>Age</th><th>Year</th><th>Start</th><th>You added</th><th>Growth</th><th>Balance</th></tr></thead>
               <tbody>

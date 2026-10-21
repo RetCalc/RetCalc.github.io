@@ -168,7 +168,7 @@ function CompareSaved() {
           </Alert>
         ) : null}
         <div className="swipehint">Swipe the table sideways to see every column.</div>
-        <div className="scroll">
+        <div className="scroll" tabIndex={0} role="region" aria-label="Results">
           <table id="cmpOutTable" ref={outRef}>
             <thead>{live.length ? (
               <tr><th>Result</th>{live.map((x) => [
@@ -196,7 +196,7 @@ function CompareSaved() {
       <Card id="cmpInPanel" className="col-span-full min-w-0" hidden={!enough}>
         <CardHeader><CardTitle>Inputs</CardTitle><CardDescription>Inputs that differ are marked with a dot and set in bold.</CardDescription><CardAction><CsvButton table={inRef} label="Inputs" /></CardAction></CardHeader>
         <div className="swipehint">Swipe the table sideways to see every column.</div>
-        <div className="scroll">
+        <div className="scroll" tabIndex={0} role="region" aria-label="Inputs">
           <table id="cmpInTable" ref={inRef}>
             <thead>{live.length ? <tr><th>Input</th>{live.map((x) => <th key={x.i}>{swatch(x.i)}{head(x)}</th>)}</tr> : null}</thead>
             <tbody>
