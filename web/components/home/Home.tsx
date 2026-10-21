@@ -155,6 +155,7 @@ export function Home({ data }: { data: HomeData }) {
           <div className="hm-tile hm-s4" data-rv="" style={{ "--d": 2 } as React.CSSProperties}>
             <h3 className="hm-name">More tools</h3>
             <nav className="hm-links" aria-label="More tools">
+              <Link href="/social-security">Social Security Calculator<ArrowRightIcon aria-hidden="true" /></Link>
               <Link href="/debt">Debt Payoff<ArrowRightIcon aria-hidden="true" /></Link>
               <Link href="/college">College Savings<ArrowRightIcon aria-hidden="true" /></Link>
               <Link href="/backtest">Portfolio Backtest<ArrowRightIcon aria-hidden="true" /></Link>
