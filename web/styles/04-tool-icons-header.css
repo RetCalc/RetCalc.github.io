@@ -111,6 +111,13 @@
   @keyframes fi-rise{from{transform:scaleY(.3) translateY(10px);opacity:0}to{transform:scaleY(1) translateY(0);opacity:1}}
   @keyframes fi-burn{0%,100%{transform:rotate(0deg) scaleX(1) scaleY(1)}20%{transform:rotate(-2deg) scaleX(.96) scaleY(1.04)}50%{transform:rotate(1.5deg) scaleX(1.04) scaleY(.97)}75%{transform:rotate(-1.5deg) scaleX(.97) scaleY(1.05)}}
   @keyframes fi-flicker{0%,100%{transform:scaleY(1) scaleX(1);opacity:1}30%{transform:scaleY(1.14) scaleX(.88);opacity:.82}60%{transform:scaleY(.9) scaleX(1.1);opacity:.95}}
+  /* Social Security Claiming: the three checks rise from the baseline in
+     turn, 62, then 67, then 70, the tallest settling with a small overshoot. */
+  @keyframes ss-rise{0%{transform:scaleY(.12)}70%{transform:scaleY(1.08)}100%{transform:scaleY(1)}}
+  .ss-bar{transform-box:fill-box;transform-origin:50% 100%}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .ss-bar1{animation:ss-rise .4s cubic-bezier(.3,.7,.3,1)}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .ss-bar2{animation:ss-rise .4s cubic-bezier(.3,.7,.3,1) .1s both}
+  .toolcard:is(:hover,:focus-visible,.is-beat) .ss-bar3{animation:ss-rise .45s cubic-bezier(.3,.7,.3,1) .2s both}
   .fi-flame,.fi-core{transform-box:fill-box;transform-origin:50% 100%}
   .toolcard:is(:hover,:focus-visible,.is-beat) .fi-flame{animation:fi-rise .25s ease-out both,fi-burn 1.2s ease-in-out .25s 2}
   .toolcard:is(:hover,:focus-visible,.is-beat) .fi-core{animation:fi-flicker .65s ease-in-out .1s 3}

@@ -207,7 +207,7 @@ export function Social() {
   return (
     <div className="col-span-full grid grid-cols-1 items-start gap-5 max-sm:gap-3.5 lg:grid-cols-3">
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
-        <PinnedReading main={{ label: "A month, claiming at " + p.you.claim, value: hero.value }} side={{ label: "Best age", value: figures[1].value }} />
+        <PinnedReading main={{ label: "Per month, claiming at " + p.you.claim, value: hero.value }} side={{ label: "Best age", value: figures[1].value }} />
 
         <aside id="asideSocial" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>

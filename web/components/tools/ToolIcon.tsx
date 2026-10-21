@@ -13,11 +13,10 @@ const ICONS: Record<ToolSub, React.ReactNode> = {
   ),
   social: (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="5" y="23" width="8" height="11" rx="2" stroke="currentColor" strokeWidth="2" />
-    <rect x="16" y="16" width="8" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
-    <rect x="27" y="7" width="8" height="27" rx="2" stroke="currentColor" strokeWidth="2" />
-    <path d="M9 18 L20 11 L31 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M26.5 3 L31 3 L31 7.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 34 h32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <rect className="ss-bar ss-bar1" x="7" y="23" width="7" height="11" rx="1.5" stroke="currentColor" strokeWidth="2" />
+    <rect className="ss-bar ss-bar2" x="16.5" y="15" width="7" height="19" rx="1.5" stroke="currentColor" strokeWidth="2" />
+    <rect className="ss-bar ss-bar3" x="26" y="6" width="7" height="28" rx="1.5" stroke="currentColor" strokeWidth="2" />
     </svg>
   ),
   bridge: (
