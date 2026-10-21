@@ -325,6 +325,8 @@ The system is flat. Depth comes from three tonal steps (Ground, Surface, Raised)
 
 Gently rounded, consistent by role. Controls (buttons, inputs, selects, segmented switches) use 10px. Cards inside a panel, menus, tooltips and toasts use 14px. Panels use 16px. Badges and pills are fully round. An element nested flush inside another takes the outer radius less the border so the curves run parallel. Borders are always 1px: Rule on panels, cards and dividers, Rule Strong on controls that need a visible boundary. There are no double borders, colored side stripes, or accent edges.
 
+Two marks look like accent edges but aren't, and are allowed: the inline select's 2px underline (a blank in a sentence, as on the Social Security Calculator, in the input's own border color with no radius), and a timeline segment's colored left edge (the Guide summary's "What the children cost" and the Optimizer's timeline), which marks where that stretch of years starts on a chart.
+
 ## Components
 
 Firm and tactile: controls read as keys you press, with clear fills, real hit areas and a small physical response, but without bevels or glow.
