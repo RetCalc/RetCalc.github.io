@@ -104,6 +104,11 @@ html:has(#tab-guide:not([hidden])){scroll-padding-top:calc(var(--sb-clear) + var
    screen's height for it, so the footer isn't drawn just below and then
    pushed away when the step appears. */
 .gd-card:empty{min-height:100svh}
+/* The progress bar's controls also wait for the answers: hold their height
+   too (as drawn on a desktop, a phone, and a phone with a mouse). */
+.gd-top[data-wait]{min-height:114px}
+@media (max-width:640px){.gd-top[data-wait]{min-height:139px}}
+@media (max-width:640px) and (pointer:coarse){.gd-top[data-wait]{min-height:155px}}
 .gd-card:focus{outline:none}
 .gd-q,.panel > h2.gd-q{display:block;padding:0;border:0;color:var(--text);
   font-size:23px;line-height:1.25;font-weight:600;letter-spacing:-.022em;margin:0 0 10px}

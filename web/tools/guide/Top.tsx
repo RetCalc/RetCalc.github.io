@@ -82,7 +82,7 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
   }, [pos, hit, client]);
   const first = (x: (typeof segs)[number]) => (x.list[0] ? x.list[0].id : "welcome");
   return (
-    <div className="panel gd-top">
+    <div className="panel gd-top" data-wait={client ? undefined : ""}>
       <div className="gd-top-row">
         <div className="gd-title">Retirement Readiness Guide</div>
         {client ? <Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /> : null}
