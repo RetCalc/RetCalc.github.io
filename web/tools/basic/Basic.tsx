@@ -32,7 +32,7 @@ import { BASIC_BAND, projectBasic } from "@/lib/engine/typed";
 import { DASH, dollarsField, fmtNum, fmtYears, money, pctStr } from "@/lib/format";
 import { PERIOD_ADV, PeriodOptions } from "@/lib/periods";
 import { basicShare } from "./share";
-import { BASIC_DEF, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
+import { BASIC_DEF, BASIC_INPUTS, RISK_OPTIONS, basicInput, type BasicInputs } from "./model";
 import { OpenInAdvanced } from "./OpenInAdvanced";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -122,6 +122,9 @@ export function Basic() {
   const badRetire = !ok && !!p.retire && !!p.age, badAge = !ok && !badRetire;
 
   const fv = R ? money(R.fv) : DASH, perMonth = R ? money((R.fv * 0.04) / 12) : DASH;
+  // The numbers it opens with are someone else's: say so until one changes.
+  const example = (Object.keys(BASIC_INPUTS) as (keyof BasicInputs)[]).every((k) => s[k] === BASIC_INPUTS[k]);
+  const fvLabel = example ? "Example: value at retirement" : "Value at retirement";
   // What the balance is made of, as shares of one bar.
   const parts = R && R.fv > 0 ? [p.initial, R.contribTotal, R.growth].map((v) => Math.max(0, v) / R.fv) : null;
 
@@ -130,7 +133,7 @@ export function Basic() {
       <div className="min-w-0 lg:col-span-1 lg:self-stretch">
         {/* Phones and narrow screens: the answer leads, and stays under the
             tab rail while the questions are on screen. */}
-        <PinnedReading main={{ label: "Value at retirement", value: fv }} side={{ label: "Income, per month", value: perMonth }} />
+        <PinnedReading main={{ label: fvLabel, value: fv }} side={{ label: "Income, per month", value: perMonth }} />
 
         <aside id="asideSimple">
           <Card>
@@ -168,10 +171,12 @@ export function Basic() {
 
       <Card size="flush" className="min-w-0 lg:col-span-2" id="homeReading">
         <HeroReading sized={!!R}
-          hero={{ label: "Value at retirement", id: "qFV", value: fv, noteId: "qFVnote", note: R ? "At age " + fmtNum(p.retire) + ", in today's dollars" : "" }}
+          hero={{ label: fvLabel, id: "qFV", value: fv, noteId: "qFVnote", note: !R ? "" : example
+            ? "Someone aged " + fmtNum(p.age) + " with " + money(p.initial) + " saved: enter your own numbers to see yours"
+            : "At age " + fmtNum(p.retire) + ", in today's dollars" }}
           figures={[
             { label: "Income, per month", id: "qMonth", value: perMonth, note: "The same, spread monthly" },
-            { label: "Income, per year", id: "qYear", value: R ? money(R.fv * 0.04) : DASH, note: "Taking 4% a year" },
+            { label: "Income, per year", id: "qYear", value: R ? money(R.fv * 0.04) : DASH, note: "Taking 4% per year" },
           ]} />
 
         <div className="border-t border-border px-4.5 pt-3.5 pb-4 max-sm:px-3.5">

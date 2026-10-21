@@ -32,7 +32,7 @@ import { sendToDrawdown } from "@/tools/drawdown/fields";
 import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "./share";
-import { ADVANCED_DEF, advancedCompute, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs } from "./model";
+import { ADVANCED_DEF, ADVANCED_DEFAULTS, advancedCompute, advancedPlan, glideNote, glideYearsFor, solvePlan, type AdvancedInputs } from "./model";
 import { toStages } from "./toStages";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
@@ -229,6 +229,9 @@ export function Advanced() {
   const target = parseNum(typed.target);
   const income = typed.solveFor === "After-Tax Withdrawal";
   const onTrack = C.state !== "never";
+  // The target as it comes, before anyone has set one: no verdict on a
+  // goal you didn't choose.
+  const exampleTarget = s.target === ADVANCED_DEFAULTS.target && s.solveFor === ADVANCED_DEFAULTS.solveFor;
   const VerdictIcon = onTrack ? CircleCheckIcon : CircleXIcon;
   // An after-tax income target can't be met by a portfolio that pays
   // nothing after tax: no contribution or timeline reaches it.
@@ -371,8 +374,9 @@ export function Advanced() {
           {target > 0 ? (
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-note">
               <span className="text-muted-foreground">Your target</span>
-              <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " a year, after tax" : " portfolio, in today's dollars")}</span>
-              <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{C.state === "already" ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>
+              <span className="font-medium whitespace-nowrap tabular-nums">{money(target) + (income ? " per year, after tax" : " portfolio, in today's dollars")}</span>
+              {exampleTarget ? <span className="text-muted-foreground">an example: set your own under Your goal to see if you&apos;re on track</span>
+                : <Badge variant={onTrack ? "positive" : "destructive"}><VerdictIcon aria-hidden="true" />{C.state === "already" ? "Already there" : onTrack ? "On track" : "Not on track"}</Badge>}
             </div>
           ) : null}
         </ProjectionReading>
@@ -407,7 +411,8 @@ export function Advanced() {
                     : C.state === "reachable" ? "Stop contributing then and growth alone still reaches " + money(S.portToday) + " by year " + fmtNum(p.years) + "."
                       : "This plan doesn't reach the target by year " + fmtNum(p.years) + ", so there's nothing to coast on yet."}</span></span>
                 <span className={cn("v inline-flex items-center gap-1.5 self-center font-semibold", onTrack && "pos")} id="sCoast">
-                  <VerdictIcon className="size-4" aria-hidden="true" />{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</span>
+                  {exampleTarget && C.state === "never" ? <span className="font-normal text-muted-foreground">Set your target first</span>
+                    : <><VerdictIcon className="size-4" aria-hidden="true" />{C.state === "already" ? "Already there" : C.state === "reachable" ? fmtYears(C.years) : "Not on track"}</>}</span>
               </div>
               <div id="sCoastAction" className="empty:hidden max-sm:mb-1">{C.state === "reachable"
                 && !scope ? <Button variant="outline" className="w-full sm:w-auto" id="btnCoast" onClick={() => handToStages(true)}>Model this as a staged plan</Button> : null}</div>

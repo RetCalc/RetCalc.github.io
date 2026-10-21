@@ -32,7 +32,7 @@ import { BUDGET_DEF, PRESET_GROUPS, budgetCompute, budgetGroups, isPlannedRow, i
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Paycheck } from "./Paycheck";
 
 
@@ -145,6 +145,7 @@ export function Budget() {
         <Card>
           <CardHeader>
             <CardTitle>Your budget</CardTitle>
+            {empty ? <CardDescription>Type what each line costs you, per month or per year; leave the ones you don&apos;t have at 0.</CardDescription> : null}
             <CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction>
           </CardHeader>
           <CardContent>
