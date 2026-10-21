@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { ssClaimFactor } from "@/lib/engine/typed";
 import { ageRows, breakEvens, CAREER_DEFAULT, careerPia, CLAIM_AGES, fraLabel, household, investEarly, SOCIAL_DEF, socialInput, taxedShare, winsByLifespan, type SocialInputs } from "./model";
 import { CareerDialog } from "./CareerDialog";
 
@@ -65,44 +66,49 @@ function PersonFields({ k, s, set, label }: { k: "1" | "2"; s: SocialInputs; set
   const car = s[`career${k}`] ?? CAREER_DEFAULT, years = p.career ?? [];
   const counted = years.length ? careerPia(years).years : 0;
   const edits = Object.values(car.edits).filter((v) => v !== "").length;
+  const early = p.claim < p.fra;
   return (
     <>
       {label ? <GroupHead>{label}</GroupHead> : null}
       <div className={two}>
         <NumberField id={`ssBirth${k}`} label={<Tipped text="Year of birth" k="ssbirth" />} max={2100} value={s[`birth${k}`]} onValueChange={set(`birth${k}`)} aria-label={`${who} year of birth`} />
-        <div className="field">
-          <span className="mb-1.5 block text-sm font-medium text-foreground"><Tipped text="Full retirement age" k="ssfra" /></span>
-          <div className="flex h-9 items-center text-body tabular-nums" id={`ssFra${k}`}>{fraLabel(p.fra)}</div>
-        </div>
+        <SelectField id={`ssClaim${k}`} label="Claim at" value={s[`claim${k}`]} onChange={set(`claim${k}`)} aria-label={`${who} claiming age`}>
+          {CLAIM_AGES.map((a) => <option key={a} value={String(a)}>{a}{Math.abs(a - p.fra) < 0.01 ? " (full)" : ""}</option>)}
+        </SelectField>
       </div>
-      <div className="field mb-3.5">
+      <p className="hint -mt-1.5 mb-3.5 flex items-start gap-1.5" id={`ssFra${k}`}>
+        <InfoIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+        <span>Full retirement age <b className="text-foreground">{fraLabel(p.fra)}</b>, from the birth year.{" "}
+          {early ? <>Claiming at {p.claim} is <b className="text-foreground">{pctStr(1 - ssClaimFactor(p.claim, p.fra), 0)} less</b> than the full check.</>
+            : p.claim > p.fra ? <>Claiming at {p.claim} is <b className="text-foreground">{pctStr(ssClaimFactor(p.claim, p.fra) - 1, 0)} more</b> than the full check.</>
+            : <>That is the full check.</>}
+          <TipDot k="ssfra" /></span>
+      </p>
+      <div className="field mb-3">
         <Segmented id={`segSsSrc${k}`} size="compact" attr="data-src" options={[["statement", "From my statement"], ["estimate", "Estimate it"]] as const}
           value={s[`src${k}`]} onChange={set(`src${k}`)} />
       </div>
       {est ? (
         <>
           <MoneyField id={`ssInc${k}`} label={<Tipped text="Pay today, per year" k="sspay" />} unit="/yr" value={s[`inc${k}`]} onValueChange={set(`inc${k}`)} aria-label={`${who} pay today, per year`} />
-          <div className="derived -mt-1 mb-3.5">
+          <div className="derived -mt-1 mb-2.5">
             <div><span>Career</span><span className="num">{car.start} to {car.stop}{edits ? ", " + fmtNum(edits) + " by hand" : ""}</span></div>
             <div><span>Raises above wage growth</span><span className="num">{car.growPast}% so far, {car.growAhead}% ahead</span></div>
-            <div><span>At full retirement age</span><span className="num" id={`ssEst${k}`}>{money(p.pia)}/mo{counted < 35 ? ", " + fmtNum(counted) + " of 35 years" : ""}</span></div>
+            <div><span>Check at full retirement age</span><span className="num" id={`ssEst${k}`}>{money(p.pia)}/mo{counted < 35 ? ", " + fmtNum(counted) + " of 35 years" : ""}</span></div>
           </div>
-          <Button variant="outline" size="sm" className="-mt-1 mb-3.5" onClick={() => setMapping(true)}>Map out {k === "1" ? "your" : "their"} pay, year by year</Button>
+          <Button variant="outline" size="sm" className="mb-3.5 w-full" onClick={() => setMapping(true)}>Map out {k === "1" ? "your" : "their"} pay, year by year</Button>
           {mapping ? <CareerDialog who={k === "1" ? "Your" : "Your spouse's"} career={car} ageNow={p.ageNow} incomeNow={parseNum(s[`inc${k}`])} fra={p.fra}
             apply={set(`career${k}`)} onClose={() => setMapping(false)} /> : null}
         </>
       ) : (
-        <MoneyField id={`ssPia${k}`} label={<Tipped text="Monthly benefit at full retirement age" k="sspia" />} unit="/mo" value={s[`pia${k}`]} onValueChange={set(`pia${k}`)} aria-label={`${who} monthly benefit at full retirement age`} />
+        <MoneyField id={`ssPia${k}`} label={<Tipped text="Check at full retirement age, from the statement" k="sspia" />} unit="/mo" value={s[`pia${k}`]} onValueChange={set(`pia${k}`)} aria-label={`${who} monthly benefit at full retirement age`} />
       )}
       <div className={two}>
-        <SelectField id={`ssClaim${k}`} label="Claim at" value={s[`claim${k}`]} onChange={set(`claim${k}`)} aria-label={`${who} claiming age`}>
-          {CLAIM_AGES.map((a) => <option key={a} value={String(a)}>{a}{Math.abs(a - p.fra) < 0.01 ? " (full)" : ""}</option>)}
-        </SelectField>
         <NumberField id={`ssThrough${k}`} label={<Tipped text="Plan through age" k="ssthrough" />} unit="age" max={110} value={s[`through${k}`]} onValueChange={set(`through${k}`)} aria-label={`${who} age planned through`} />
+        {early ? (
+          <MoneyField id={`ssEarn${k}`} label={<Tipped text={"Pay per year, if working at " + p.claim} k="ssearn" />} unit="/yr" value={s[`earn${k}`]} onValueChange={set(`earn${k}`)} aria-label={`${who} pay per year while claiming before full retirement age`} />
+        ) : null}
       </div>
-      {p.claim < p.fra ? (
-        <MoneyField id={`ssEarn${k}`} label={<Tipped text={"Still working at " + p.claim + "? Pay per year, until full retirement age"} k="ssearn" />} unit="/yr" value={s[`earn${k}`]} onValueChange={set(`earn${k}`)} aria-label={`${who} pay per year while claiming before full retirement age`} />
-      ) : null}
     </>
   );
 }
@@ -358,40 +364,36 @@ export function Social() {
         <Card className="min-w-0" hidden={!ready}>
           <CardHeader>
             <CardTitle>What if you claimed early and invested the checks?</CardTitle>
-            <CardDescription>The usual case for claiming early: take the smaller check, invest every one of them, and let the market make up the difference. This tests it against every year since 1926.</CardDescription>
+            <CardDescription>Take the {money(I.benEarly / 12)} check at {p.early} and invest every one. From {p.late}, draw the {money((I.benLate - I.benEarly) / 12)} a month the bigger check would have paid. Does the pot last to {p.you.through}, in every market since 1926?</CardDescription>
           </CardHeader>
-          <CardContent className="pb-0">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-body">
-              <span>Claim at</span>
-              <SelectField id="ssEarly" label="" className="m-0" value={s.early} onChange={set("early")} aria-label="Claim early at">
-                {CLAIM_AGES.filter((a) => a < 70).map((a) => <option key={a} value={String(a)}>{a}</option>)}
-              </SelectField>
-              <span>and invest every check, instead of waiting until</span>
-              <SelectField id="ssLate" label="" className="m-0" value={s.late} onChange={set("late")} aria-label="Instead of waiting until">
-                {CLAIM_AGES.filter((a) => a > p.early).map((a) => <option key={a} value={String(a)}>{a}</option>)}
-              </SelectField>
-              <span>, with</span>
-              <NumberField id="ssMix" label="" className="m-0 w-24" unit="%" step={5} max={100} value={s.mix} onValueChange={set("mix")} aria-label="Stock share" />
-              <span>in stocks<TipDot k="ssmix" /></span>
-            </div>
-            <p className="m-0 mt-3 max-w-copy text-note text-muted-foreground">
-              From {p.early} to {p.late} the {money(I.benEarly / 12)} check goes into the pot every month. From {p.late} on, the pot pays out the {money((I.benLate - I.benEarly) / 12)} a month the bigger check would have been. The question is whether the pot lasts to {p.you.through}.
-            </p>
-          </CardContent>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 border-y border-border px-5.5 py-3 text-note max-sm:px-4">
+            <span>Claim at</span>
+            <SelectField id="ssEarly" label="" className="m-0" value={s.early} onChange={set("early")} aria-label="Claim early at">
+              {CLAIM_AGES.filter((a) => a < 70).map((a) => <option key={a} value={String(a)}>{a}</option>)}
+            </SelectField>
+            <span>instead of</span>
+            <SelectField id="ssLate" label="" className="m-0" value={s.late} onChange={set("late")} aria-label="Instead of waiting until">
+              {CLAIM_AGES.filter((a) => a > p.early).map((a) => <option key={a} value={String(a)}>{a}</option>)}
+            </SelectField>
+            <span>, invested with</span>
+            <NumberField id="ssMix" label="" className="m-0 w-24" unit="%" step={5} max={100} value={s.mix} onValueChange={set("mix")} aria-label="Stock share" />
+            <span className="tipglue">in stocks<TipDot k="ssmix" /></span>
+          </div>
           {I.windows > 0 ? (
             <>
-              <HeroReading tone="text" under className="pt-4"
-                hero={{ label: "Years since 1926 where claiming at " + p.early + " came out ahead", id: "ssInvWon", value: pctStr(I.won / I.windows, 0),
-                  note: "In " + fmtNum(I.won) + " of " + fmtNum(I.windows) + " starting years the pot lasted to " + p.you.through + "; in " + fmtNum(I.ranOut) + " it ran out" + (I.firstOut ? ", as early as " + I.firstOut : "") }}
+              <HeroReading tone="text" row
+                hero={{ label: "Start years since 1926 where claiming at " + p.early + " came out ahead", id: "ssInvWon", value: pctStr(I.won / I.windows, 0),
+                  note: fmtNum(I.won) + " of " + fmtNum(I.windows) + "; the pot ran out in the rest" + (I.firstOut ? ", as early as " + I.firstOut : "") }}
                 figures={[
-                  { label: "Typical pot at " + p.late, id: "ssInvPot", value: money(potAtLate), note: "Checks saved and invested" },
-                  { label: "Typical pot left at " + p.you.through, id: "ssInvMed", value: money(I.median), note: "After paying out the gap" },
+                  { label: "Pot at " + p.late + ", typical", id: "ssInvPot", value: money(potAtLate), note: "The checks, saved and invested" },
+                  { label: "Left at " + p.you.through + ", typical", id: "ssInvMed", value: money(I.median), note: "After paying out the gap" },
                 ]} />
               <BandChart id="SsInv" mode="mc" xOffset={p.early} pts={I.bands.map((b) => ({ year: b.year, base: b.p50, hi: b.p90, lo: b.p10, p25: b.p25, p75: b.p75 }))} maxX={I.years}
+                stageMarks={[{ year: p.late - p.early, label: "Drawing from " + p.late }]}
                 ariaLabel="What the invested early checks are worth at each age, across every start year since 1926"
                 tip={(b) => <><b>Age {b.year + p.early}</b><FanTipRows b={b} /></>} />
-              <McLegend id="legendSsInv" noDet />
-              <p className="hint m-0 max-w-copy px-4.5 pb-4">The pot in today&apos;s dollars at each age, in half of history (the line) and in the best and worst years. Real returns, each start year&apos;s own inflation, the mix rebalanced yearly. Waiting is a guaranteed 8% a year above inflation, so the market has to beat that. Taxes and the survivor benefit are left out.</p>
+              <McLegend id="legendSsInv" noDet extra={"Drawing from " + p.late} />
+              <p className="hint m-0 max-w-copy px-4.5 pb-4">The pot at each age in today&apos;s dollars: half of history inside the inner band, most of it inside the outer. Real returns with each start year&apos;s own inflation, the mix rebalanced yearly, taxes and the survivor benefit left out. Waiting is a sure 8% a year above inflation, and the market has to beat that.</p>
             </>
           ) : <Band>History is too short to run this comparison through age {p.you.through}.</Band>}
         </Card>
