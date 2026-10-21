@@ -134,7 +134,7 @@ function sameKind(v: unknown, d: unknown): boolean {
     drops keys the tool no longer has, so an older copy still loads. A value
     of the wrong kind (from a damaged link or saved copy) keeps the
     default. */
-function withDefaults<S extends ToolInputs>(def: ToolDef<S>, data: ToolInputs): S {
+export function withDefaults<S extends ToolInputs>(def: ToolDef<S>, data: ToolInputs): S {
   const { defaults } = def;
   const out = { ...defaults };
   if (!data || typeof data !== "object") return out;

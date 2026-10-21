@@ -2,8 +2,8 @@
    by the Budget's "+ Retirement contribution" (lib/retirement-contribs.ts).
    From src/js/app/20-basic.js. */
 import type { ToolDef } from "@/components/tools/ToolState";
-import { BASIC_DEFAULTS, RISK_LEVELS } from "@/lib/engine/typed";
-import { groupDigits, parseNum } from "@/lib/format";
+import { BASIC_DEFAULTS, PER_YEAR, RISK_LEVELS } from "@/lib/engine/typed";
+import { groupDigits, oneOf, parseNum } from "@/lib/format";
 
 export const BASIC_INPUTS = {
   age: String(BASIC_DEFAULTS.age), retire: String(BASIC_DEFAULTS.retire),
@@ -12,7 +12,10 @@ export const BASIC_INPUTS = {
 };
 export type BasicInputs = typeof BASIC_INPUTS;
 
-export const BASIC_DEF: ToolDef<BasicInputs> = { id: "basic", label: "Basic", noun: "retirement scenario", defaults: BASIC_INPUTS };
+export const BASIC_DEF: ToolDef<BasicInputs> = {
+  id: "basic", label: "Basic", noun: "retirement scenario", defaults: BASIC_INPUTS,
+  clean: (s) => ({ ...s, period: oneOf(s.period, Object.keys(PER_YEAR), BASIC_INPUTS.period) }),
+};
 
 export const RISK_OPTIONS = (RISK_LEVELS as { label: string; sub: string; real: number }[])
   .map((r) => ({ value: String(r.real), label: r.label + " · " + r.sub }));
