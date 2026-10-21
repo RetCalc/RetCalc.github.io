@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-19T22:26:01.241Z",
+  "recorded": "2026-10-21T22:33:43.124Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -868,7 +868,7 @@
       "fields": {
         "after": "7fd80fdada1579d6",
         "ctx": "ad4ae16aa21e1356",
-        "run": "dff669f46b876318",
+        "run": "77b0fcb81d534d34",
         "sc": "2bd43f1b630490eb"
       }
     },
@@ -885,7 +885,7 @@
       "fields": {
         "after": "04c0536e556b525f",
         "ctx": "0d360cf702dbc163",
-        "run": "ff13c6ac9651b695",
+        "run": "809bac5c94d953c8",
         "sc": "87f423c4d8f1382f"
       }
     },
