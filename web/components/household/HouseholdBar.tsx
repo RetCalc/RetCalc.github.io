@@ -69,6 +69,11 @@ function HouseholdForm({ states, onDone, autoFocus }: { states: StateOption[]; o
 
   const onSave = () => {
     const h = fromForm(form);
+    // The tools take ages in this range; outside it they'd quietly differ.
+    if ([h.age, h.spouseAge, h.retire].some((a) => a != null && (a < 16 || a > 100))) {
+      toast("Ages need to be between 16 and 100", "warn");
+      return;
+    }
     if (h.age != null && h.retire != null && h.retire <= h.age) {
       toast("Retire-at age needs to be after your current age first", "warn");
       return;
