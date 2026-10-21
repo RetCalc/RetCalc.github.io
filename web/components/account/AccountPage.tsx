@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { DownloadIcon, Trash2Icon } from "lucide-react";
 import { useAccount } from "./AccountProvider";
-import { pullAll, type AccountItem } from "@/lib/sync/account";
+import { pullAll, settle, type AccountItem } from "@/lib/sync/account";
 import { usePopup } from "@/components/shell/Popup";
 import { useToast } from "@/components/shell/Toast";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,7 @@ export function AccountPage({ states }: { states: StateOption[] }) {
     ]);
     if (c !== 0) return;
     setBusy(true);
-    const { error } = await client.functions.invoke("delete-account", { method: "POST" });
+    const { error } = await settle(client.functions.invoke("delete-account", { method: "POST" }));
     setBusy(false);
     if (error) { toast("Couldn't delete the account. Try again in a minute.", "warn"); return; }
     toast("Your account is deleted");

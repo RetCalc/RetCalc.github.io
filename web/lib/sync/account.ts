@@ -3,7 +3,7 @@
    what each person can reach). Configured by two public env vars; without
    them there is no account service and the site works exactly as before.
    ACCOUNTS_PLAN.md, supabase/migrations. */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, isAuthSessionMissingError, type SupabaseClient, type User } from "@supabase/supabase-js";
 
 const URL_ = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -26,6 +26,33 @@ export function accountClient(): SupabaseClient | null {
   return client;
 }
 
+/** Who's signed in, checked with the account service; null when nobody
+    is. Throws when the service can't be reached (offline, or down), so a
+    sync never mistakes "couldn't ask" for "signed out". */
+export async function signedInUser(c: SupabaseClient): Promise<User | null> {
+  const { data, error } = await c.auth.getUser();
+  if (data.user) return data.user;
+  if (error && !isAuthSessionMissingError(error) && !(error.status && error.status >= 400 && error.status < 500)) throw error;
+  return null;
+}
+
+/** An account-service call's answer, or an error in its place when the
+    request fails outright or takes longer than `ms`: on a slow or dropped
+    connection a sign-in step says so instead of waiting for ever. */
+export async function settle<T extends { error: unknown }>(call: Promise<T>, ms = 20_000): Promise<T | { data: null; error: { message: string; status: number } }> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<{ data: null; error: { message: string; status: number } }>((res) => {
+    timer = setTimeout(() => res({ data: null, error: { message: "timeout", status: 0 } }), ms);
+  });
+  try {
+    return await Promise.race([call, late]);
+  } catch (e) {
+    return { data: null, error: { message: e instanceof Error ? e.message : String(e), status: 0 } };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /** A row of public.user_data as the browser sees it. */
 export interface AccountItem { key: string; version: number; value: unknown; at: number }
 
@@ -37,17 +64,19 @@ export async function pullAll(c: SupabaseClient): Promise<AccountItem[]> {
 }
 
 /** Saves one item to the account (user_id comes from the session, via the
-    column's default and the insert policy). */
-export async function push(c: SupabaseClient, key: string, version: number, value: unknown): Promise<void> {
+    column's default and the insert policy). False when nobody is signed in,
+    so nothing was saved; throws when the account can't be reached. */
+export async function push(c: SupabaseClient, key: string, version: number, value: unknown): Promise<boolean> {
   if (value == null) {
     // Clearing one storage version (say, an old Guide format) removes only
     // that version's row, never a newer one under the same key.
     const { error } = await c.from("user_data").delete().eq("key", key).eq("version", version);
     if (error) throw error;
-    return;
+    return true;
   }
-  const { data: u } = await c.auth.getUser();
-  if (!u.user) return;
-  const { error } = await c.from("user_data").upsert({ user_id: u.user.id, key, version, value }, { onConflict: "user_id,key" });
+  const user = await signedInUser(c);
+  if (!user) return false;
+  const { error } = await c.from("user_data").upsert({ user_id: user.id, key, version, value }, { onConflict: "user_id,key" });
   if (error) throw error;
+  return true;
 }

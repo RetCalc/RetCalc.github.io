@@ -14,6 +14,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAccount } from "./AccountProvider";
 import { useTheme } from "@/lib/theme";
+import { settle } from "@/lib/sync/account";
 import { Button } from "@/components/ui/button";
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
@@ -72,7 +73,7 @@ export function GoogleButton({ fallbackIcon, onError }: { fallbackIcon: React.Re
           use_fedcm_for_prompt: true,
           callback: async (r: { credential?: string }) => {
             if (!r.credential) return;
-            const { error } = await client.auth.signInWithIdToken({ provider: "google", token: r.credential, nonce: raw });
+            const { error } = await settle(client.auth.signInWithIdToken({ provider: "google", token: r.credential, nonce: raw }));
             if (error) latestError.current("Google sign-in didn't go through. Try again, or use your email.");
             else setStep({ at: "closed" });
           },
