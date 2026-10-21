@@ -41,6 +41,37 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
      motion nothing is scripted: the arrow jumps and the bullseye changes
      colour in the same frame. */
   const wrap = useRef<HTMLDivElement>(null), track = useRef<HTMLDivElement>(null), arrow = useRef<HTMLSpanElement>(null), prev = useRef<number | null>(null);
+  /* --gd-stick: this bar's height plus the gap under it, for the side column
+     and for scrolling a new step's question clear of the bar
+     (styles/12-guide.css, Guide.tsx). Kept current as the bar wraps. */
+  const bar = useRef<HTMLDivElement>(null), mark = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const el = bar.current, root = document.documentElement;
+    if (!el) return;
+    const set = () => root.style.setProperty("--gd-stick", Math.ceil(el.offsetHeight + 10) + "px");
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    // "stuck" once the page has scrolled past the bar's own place: the
+    // shadow that blanks what's above it, and on a phone a shorter bar
+    // (styles/12-guide.css). Read from a marker left where the bar starts
+    // (a stuck bar's own position moves with it); the bar's change of
+    // height doesn't move the marker, so it never flickers.
+    let raf = 0;
+    const stick = () => {
+      raf = 0;
+      const at = mark.current?.getBoundingClientRect().top;
+      if (at == null) return;
+      el.classList.toggle("stuck", at < (parseFloat(getComputedStyle(el).top) || 0) - 1);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(stick); };
+    stick();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      ro.disconnect(); root.style.removeProperty("--gd-stick");
+      window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
   // Transitions switch on only after the saved progress has been drawn.
   useLayoutEffect(() => {
     if (!client) return;
@@ -82,10 +113,12 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
   }, [pos, hit, client]);
   const first = (x: (typeof segs)[number]) => (x.list[0] ? x.list[0].id : "welcome");
   return (
-    <div className="panel gd-top" data-wait={client ? undefined : ""}>
+    <>
+    <span ref={mark} className="gd-top-mark" aria-hidden="true" />
+    <div ref={bar} className="panel gd-top" data-wait={client ? undefined : ""}>
       <div className="gd-top-row">
         <div className="gd-title">Retirement Readiness Guide</div>
-        {client ? <Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /> : null}
+        {client ? <div className="gd-pace"><Segmented attr="data-pace" options={[["quick", "Quick check"], ["full", "Full walkthrough"]] as const} value={g.pace} onChange={(p) => act("pace:" + p)} /></div> : null}
         <div className="gd-mini" id="gdMini">{client && s != null ? <>Score <b className="text-(color:--ink)" style={{ "--ink": color } as React.CSSProperties}>{s}</b></> : null}</div>
         <div className="gd-count" id="gdCount">{client ? count : ""}</div>
       </div>
@@ -108,6 +141,7 @@ export function Top({ g, st, facts, score: s, color, count, step, steps, client,
       </div>
       {children}
     </div>
+    </>
   );
 }
 

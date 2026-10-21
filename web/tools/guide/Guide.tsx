@@ -333,7 +333,7 @@ export function Guide() {
   // The count and the card follow the answers as the card was drawn; the
   // score and the route follow every keystroke.
   const st = current(g, facts), L = numbered(v, g.pace, facts), idx = L.findIndex((s) => s.id === st.id);
-  const rt = rating(railPlan.score?.score ?? null), View = VIEWS[st.id];
+  const rt = rating(railPlan.score?.score ?? null, !!railPlan.score && !railPlan.score.P.outlook), View = VIEWS[st.id];
   const left = minutesLeft({ ...g, a: v }, facts), about = "about " + left + (left === 1 ? " minute" : " minutes") + " left";
   const count = returning || st.type === "welcome" ? "" : idx >= 0 ? "Step " + (idx + 1) + " of " + L.length + " · " + about : "A deeper card · " + about;
   return (

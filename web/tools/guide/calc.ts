@@ -375,8 +375,12 @@ export function score(a: Answers, S?: Sim | null) {
   const sc = have.length >= 2 ? Math.round((have.reduce((s, f) => s + f.w * P[f.id]!.p, 0) / w) * 100) : null;
   return { score: sc, P, n: have.length };
 }
-export function rating(s: number | null) {
+/** The score's word and color. `partial`: the retirement outlook isn't
+    scored yet, so the number rests on the smaller areas alone and says
+    neither on track nor off it. */
+export function rating(s: number | null, partial = false) {
   if (s == null) return { label: "Not scored yet", color: "var(--dimmer)" };
+  if (partial) return { label: "Partial score", color: "var(--ds-text)" };
   if (s >= 85) return { label: "On track", color: "var(--ds-gain)" };
   if (s >= 70) return { label: "Nearly there", color: "var(--ds-gain)" };
   if (s >= 50) return { label: "Getting there", color: "var(--ds-text)" };

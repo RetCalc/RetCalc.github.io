@@ -16,6 +16,7 @@ import { usePlanJob } from "../usePlan";
 import { rounded } from "../words";
 import { Learn, Means, Numbers } from "../zones";
 import { Button } from "@/components/ui/button";
+import { CircleAlertIcon } from "lucide-react";
 
 const yrs = (n: number) => fmtNum(n) + (n === 1 ? " year" : " years");
 
@@ -48,11 +49,31 @@ export function RetSpendCard() {
           return <Button key={lab} variant="outline" size="sm" data-fill="retSpend" data-v={r} onClick={() => fill(G, "retSpend", r)}>{lab}: <b className="font-semibold tabular-nums">{money(r) + "/yr"}</b></Button>;
         })}</div> : null}
         <div className="gd-fields"><MoneyF k="retSpend" label="Yearly spending in retirement" per="/yr" full hint="In today's dollars, after tax." /></div>
+        <LowSpendCheck />
       </Numbers>
       <NeedMeans />
     </>
   );
 }
+/** A retirement budget far below today's spending is allowed, but it's
+    often a monthly figure typed into the yearly field: say so, and offer
+    the yearly amount when twelve times it looks like today's spending. */
+function LowSpendCheck() {
+  const G = useGuideView(), { a, v } = G;
+  if (!pos(a.retSpend) || !pos(v.spend)) return null;
+  const today = v.spend * 12, share = a.retSpend! / today;
+  if (share >= 0.4) return null;
+  const yearly = Math.round(a.retSpend! * 12 / 100) * 100, monthly = yearly >= today * 0.4 && yearly <= today * 1.5;
+  return (
+    <div className="mt-0 mb-2 flex items-start gap-2 text-note"><CircleAlertIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <div role="status">That&apos;s only <b>{pctStr(share, 0)}</b> of what you spend today ({money(today)} per year).
+        {monthly ? <> If {money(a.retSpend!)} is what you&apos;ll spend each month, that&apos;s {money(yearly)} per year.
+          {" "}<Button variant="outline" size="sm" className="mt-1.5" onClick={() => fill(G, "retSpend", yearly)}>Use {money(yearly)} per year</Button></>
+          : " Check that it's the yearly amount, after tax."}</div>
+    </div>
+  );
+}
+
 function NeedMeans() {
   const { a } = useGuideView();
   const own = pos(a.retSpend), guess = spendGuess(a);
@@ -68,7 +89,7 @@ function NeedMeans() {
           <ul className="gd-read">
             {N != null ? <li>To last in {S.I.target >= 1 ? "every" : Math.round(S.I.target * 100) + "% of"} historical retirements, spending <b>{money(S.spend)}</b> a year,
               {" "}the plan needs about <b>{rounded(N)}</b> at {fmtNum(S.retire)}{was.res != null && was.res !== N
-                ? <>: entering it {N < was.res ? "cut" : "raised"} that from {rounded(was.res)}, with the placeholder&apos;s {money(guess)}</> : null}.</li> : null}
+                ? <>: entering it {N < was.res ? "cut" : "raised"} that from {rounded(was.res)}, with the starting estimate of {money(guess)} per year</> : null}.</li> : null}
             {pos(a.spend) ? <li>That&apos;s <b>{pctStr(S.spend / (a.spend * 12), 0)}</b> of what you spend today.</li> : null}
             <li>Income tax comes on top, worked out by the plan: about <b>{money(S.taxYr)}</b> in a typical year
               {S.hcYr > 0 ? <>, and about <b>{money(S.hcYr)}</b> a year for health insurance for the {yrs(S.hcYears)} before Medicare</> : null}.</li>
@@ -136,7 +157,7 @@ function SocialMeans() {
         <li><b>{money(ss.total / 12)} a month</b> from {ss.claim}{both && ss.claim2 !== ss.claim ? " (" + ss.claim2 + " for your spouse)" : ""}, <b>{money(ss.total)}</b> a year
           {both ? " for the two of you" : ""}{ss.spousal ? ", with the spousal top-up" : ""}. <SourceBadge kind={est ? "estimated" : "entered"} /></li>
         {needYr != null ? <li>That&apos;s <b>{pctStr(Math.min(9.99, (ss.total + pen) / needYr), 0)}</b> of the <b>{money(needYr)}</b> a year your plan needs including tax
-          {pen ? ", counting your pension" : ""}.{early ? " Savings carry the " + yrs(early) + " before it starts." : ""}{guessing(a) ? " Spending is still the placeholder." : ""}</li> : null}
+          {pen ? ", counting your pension" : ""}.{early ? " Savings carry the " + yrs(early) + " before it starts." : ""}{guessing(a) ? " Spending is still the starting estimate." : ""}</li> : null}
         {pos(a.pension) ? <li>Your pension: <b>{money(a.pension * 12)}</b> a year from {ok(from) ? fmtNum(from) : "retirement"}{a.pensionCola === "yes" ? ", rising with inflation." : ", a fixed amount, so it buys a little less each year."}</li> : null}
         {ss.tactics ? <li>These are the Plan Optimizer&apos;s claiming ages, which your plan now uses.</li> : null}
         {!ss.own && ss.career < 35 ? <li>It averages your best 35 years, so retiring after {ss.career} years of work counts the rest as zeros.</li> : null}

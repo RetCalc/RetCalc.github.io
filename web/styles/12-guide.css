@@ -9,6 +9,8 @@
    included, so questions never show through between the two. --gd-stick (its height plus that
    gap, set from script) keeps the side column and focus scrolling clear.
    --rail-h is the rail's measured height, which can differ from --navh. */
+/* Where the bar starts, for telling when it has stuck (Top.tsx). */
+.gd-top-mark{position:absolute;width:1px;height:1px;visibility:hidden;pointer-events:none}
 .gd-top{padding:18px 22px 16px;position:sticky;top:calc(var(--sb-clear) + var(--rail-h,var(--navh)) + 10px);z-index:25}
 .gd-top.stuck{box-shadow:0 calc(-12px - var(--sb-clear) - var(--rail-h,var(--navh))) 0 var(--bg),0 14px 30px -22px rgba(0,0,0,.9)}
 [data-theme="light"] .gd-top.stuck{box-shadow:0 calc(-12px - var(--sb-clear) - var(--rail-h,var(--navh))) 0 var(--bg),0 14px 30px -24px rgba(22,32,55,.45)}
@@ -234,7 +236,7 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-fac .top span{color:var(--dim)}
 .gd-fac .top em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--dimmer)}
 .gd-fac .bar{height:5px;border-radius:3px;background:var(--line-soft);margin-top:7px;overflow:hidden}
-.gd-fac .bar i{display:block;height:100%;border-radius:3px;transition:width .4s ease}
+.gd-fac .bar i{display:block;width:100%;height:100%;border-radius:3px;transform:scaleX(var(--f,0));transform-origin:left;transition:transform .4s ease}
 .gd-fac .sub{font-size:11.5px;color:var(--dimmer);margin-top:5px;line-height:1.4}
 .gd-fac.na .top span{color:var(--dimmer)}
 .gd-fac.na .bar{display:none}
@@ -260,7 +262,7 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
 .gd-map-st.deep{color:var(--dimmer)}
 .gd-map-st.deep i{border-style:dashed;border-color:var(--ds-rule-strong)}
 .gd-map-st.na i{border-style:dashed}
-.gd-map-st .tag{margin-left:auto;font-size:10.5px;color:var(--dimmer);font-weight:400}
+.gd-map-st .tag{margin-left:auto;font-size:11.5px;color:var(--dimmer);font-weight:400}
 .gd-map-foot{padding:10px 8px 2px;border-top:1px solid var(--line-soft);margin-top:4px}
 /* Under a finger: route rows and the chapter bars take 44px; the bars'
    hit area grows over the card without moving anything. */
@@ -283,6 +285,14 @@ html[data-theme="light"] .gd-steps li.ok::before{background-image:url("data:imag
   .gd-card{padding:20px 18px 18px}
   .gd-q,.panel > h2.gd-q{font-size:20px}
   .gd-lead{font-size:14px}
+  /* Parked under the rail on a phone, the bar keeps only where you are,
+     the progress and Route; the pace switch comes back at the top of the
+     page. */
+  .gd-top.stuck{padding-top:8px;padding-bottom:8px}
+  .gd-top.stuck .gd-pace{display:none}
+  .gd-top.stuck .gd-top-row{row-gap:0}
+  .gd-top.stuck .gd-prog-wrap{margin-top:4px}
+  .gd-top.stuck .gd-strip{margin-top:6px;padding-top:6px}
   .gd-fields{grid-template-columns:minmax(0,1fr)}
   .gd-choices.two,.gd-choices.three{grid-template-columns:minmax(0,1fr)}
 }

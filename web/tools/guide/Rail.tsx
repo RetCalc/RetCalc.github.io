@@ -88,10 +88,10 @@ export function ScoreCard({ g, plan, go, ring }: { g: GuideState; plan: RailPlan
   const R = plan.score;
   if (g.a.retired) return <p className="gd-num-empty">No score for a retirement under way: it measures the saving years.</p>;
   if (!R) return <p className="gd-num-empty">Working it out…</p>;
-  const rt = rating(R.score), have = FACTORS.filter((f) => R.P[f.id]).map((f) => f.id);
+  const partial = !R.P.outlook, rt = rating(R.score, partial), have = FACTORS.filter((f) => R.P[f.id]).map((f) => f.id);
   return (
     <>
-      <div className="gd-score-top" hidden={!ring}><Ring score={R.score} /><div className="gd-score-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
+      <div className="gd-score-top" hidden={!ring}><Ring score={R.score} partial={partial} /><div className="gd-score-t"><div className="r text-(color:--ink)" style={{ "--ink": rt.color } as React.CSSProperties}>{rt.label}</div>
         <div className="n">{R.score == null ? (R.n ? "Your score appears once two areas are answered." : "Your score appears as you answer.") : R.n < FACTORS.length ? "From " + R.n + " of " + FACTORS.length + " areas so far" : "All five areas answered"}</div>
         {R.score != null ? <div className="n gd-conf">{confidenceLine(confidence(g.a, g.src, have))}</div> : null}</div></div>
       <div className="gd-facs">{FACTORS.map((f) => {
@@ -99,7 +99,7 @@ export function ScoreCard({ g, plan, go, ring }: { g: GuideState; plan: RailPlan
         return (
           <button key={f.id} type="button" className={"gd-fac" + (p ? "" : " na") + (p?.bad ? " bad" : "")} data-go={to} onClick={() => go(to)}>
             <div className="top"><span>{f.name}</span><em>{p ? Math.round(p.p * f.w) + " / " + f.w : "—"}</em></div>
-            <div className="bar"><i className="w-(--w) bg-(--swatch)" style={{ "--w": (p ? p.p * 100 : 0).toFixed(0) + "%", "--swatch": p ? barColor(p.p) : "transparent" } as React.CSSProperties}></i></div>
+            <div className="bar"><i className="bg-(--swatch)" style={{ "--f": (p ? Math.max(0, Math.min(1, p.p)) : 0).toFixed(3), "--swatch": p ? barColor(p.p) : "transparent" } as React.CSSProperties}></i></div>
             <div className="sub">{p ? p.txt : "Not answered yet"}</div>
             <div className="rule">{RULES[f.id]}</div>
             {h ? <div className="head">Up to {h.pts} more: {h.line}.</div> : null}</button>
