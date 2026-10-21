@@ -103,8 +103,11 @@ export function PayYears({ who, setWho, both, inputs, person, setP, setEdits }: 
       </div>
 
       <div ref={boxRef} className="touch-pan-y px-3.5 pt-1.5">
-        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="block w-full select-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-          tabIndex={0} aria-label="Pay by year. Left and right arrows pick a year; Enter edits it." id="ssPayChart"
+        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="block w-full select-none outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+          tabIndex={0}
+          // A click picks a year without focusing the chart (no ring around
+          // it while the button is held); the keyboard still reaches it by Tab.
+          onMouseDown={(e) => e.preventDefault()} aria-label="Pay by year. Left and right arrows pick a year; Enter edits it." id="ssPayChart"
           onKeyDown={(e) => {
             if (e.key === "ArrowLeft" || e.key === "ArrowRight") { e.preventDefault(); pick(L[Math.max(0, Math.min(L.length - 1, i + (e.key === "ArrowRight" ? 1 : -1)))].age); }
             if (e.key === "Enter") { e.preventDefault(); pick(age, true); }
