@@ -6,6 +6,7 @@ import { SignInDialog } from "@/components/account/SignInDialog";
 import { STATE_OPTIONS } from "@/lib/states";
 import { Footer } from "@/components/shell/Footer";
 import { Main } from "@/components/shell/Main";
+import { ToolRail } from "@/components/shell/ToolRail";
 import { NavBar } from "@/components/shell/NavBar";
 import { PageEffects } from "@/components/shell/PageEffects";
 import { SheetHost } from "@/components/shell/Sheet";
@@ -18,6 +19,7 @@ import { GuideCoach } from "@/tools/guide/Coach";
 import { ToolHelp } from "@/tools/help/ToolHelp";
 import { SITE } from "@/lib/site";
 import { STANDALONE_SCRIPT, THEME_SCRIPT } from "@/lib/theme-script";
+import { TOOL_RAIL_SCRIPT } from "@/lib/tool-rail-script";
 
 import "./globals.css";
 import { PaneMotion } from "@/components/shell/PaneMotion";
@@ -82,6 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: STANDALONE_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: TOOL_RAIL_SCRIPT }} />
       </head>
       <body>
         <ToastProvider>
@@ -93,7 +96,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <a href="#main" className="skiplink">Skip to content</a>
             <NavBar states={STATE_OPTIONS} />
             <div id="srLive" className="srlive" aria-live="polite" aria-atomic="true"></div>
-            <Main>{children}</Main>
+            <div className="shell">
+              <ToolRail />
+              <Main>{children}</Main>
+            </div>
             <PaneMotion />
             <Footer />
             <Tooltips />
