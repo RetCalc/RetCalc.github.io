@@ -9,6 +9,8 @@ import type { Plan, SeriesGlobals, Stage } from "@/lib/engine/types";
 import { groupDigits, oneOf, parseNum } from "@/lib/format";
 import type { Household } from "@/lib/household";
 import { PERIODS, pctField } from "@/tools/advanced/model";
+import type { PlanKids } from "@/tools/plan/model";
+import type { Monthly } from "@/tools/plan/kids";
 
 /** One stage card, as typed. `sTrad`, `sRoth` and `sHsa` split its
     contribution across accounts (the brokerage takes the rest);
@@ -51,6 +53,9 @@ export const STAGES_DEFAULTS = {
   saOn: false, ...STAGE_ACCOUNT_FIELDS,
   stages: DEFAULT_STAGES,
   solveFor: "After-Tax Withdrawal", target: groupDigits(100000, true), histMix: "80", histMixEnd: "40",
+  /** "Planning for kids?": the children the stages were last built around,
+      and the amounts typed in "How will you cover this?" (tools/stages/kids.ts). */
+  kids: null as PlanKids | null, kidCover: {} as Record<string, Partial<Monthly>>,
 };
 export type StagesInputs = typeof STAGES_DEFAULTS;
 

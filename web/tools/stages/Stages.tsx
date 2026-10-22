@@ -29,7 +29,11 @@ import { TAX_DEFAULTS } from "@/tools/tax/model";
 import { StageCard, type StageEdit } from "./StageCard";
 import { useShareKit } from "@/components/shell/share";
 import { projectionShare } from "@/tools/advanced/share";
-import { STAGES_DEF, stagesCompute, readStage, stageSplit, stagesPlan, type StageInputs, type StagesInputs } from "./model";
+import { STAGES_DEF, stagesCompute, readStage, stageSplit, stagesLookEdited, stagesPlan, type StageInputs, type StagesInputs } from "./model";
+import { KID_BASE, readCover, readKids, stagesFromKidsYears, stagesKidSegs, stagesMonthly, stagesYears } from "./kids";
+import { CoverStagesDialog, KidsDialog, kidsLine } from "@/tools/plan/KidsDialog";
+import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
+import type { Monthly } from "@/tools/plan/kids";
 import { useBusy } from "@/lib/busy";
 import { Button } from "@/components/ui/button";
 import { InputGroupInput } from "@/components/ui/input-group";
@@ -100,6 +104,29 @@ export function Stages() {
 
   const setStages = (f: (list: StageInputs[]) => StageInputs[]) => setState((c) => ({ ...c, stages: f(c.stages) }));
   const editStage: StageEdit = (i, f) => setStages((list) => list.map((st, j) => (j === i ? f(st) : st)));
+
+  /* ---- planning for kids: the walkthrough's children, in years from now ---- */
+  const kids = readKids(s.kids), kidCover = readCover(s.kidCover), planYears = stagesYears(s.stages);
+  const [kidStep, setKidStep] = useState<{ at: "kids" } | { at: "cover"; k: PlanKids } | null>(null);
+  const buildKids = (k: PlanKids, cover: Record<string, Partial<Monthly>>) => {
+    setKidStep(null);
+    // Stages typed by hand, not built from children before: say they go.
+    if (stagesLookEdited(s.stages) && !kids && !confirm("Replace your stages with ones built around your children? Your first stage's saving, return and pay schedule carry over, over the same " + fmtNum(planYears) + " years.")) return;
+    const { stages, short } = stagesFromKidsYears(s, k, cover);
+    setState((c) => ({ ...c, stages, kids: k, kidCover: cover }));
+    toast("Built " + stages.length + (stages.length === 1 ? " stage" : " stages") + " around your children" +
+      (short === 1 ? ". In one of them the children cost more than you save, so that stage saves nothing" : short ? ". In " + short + " of them the children cost more than you save, so those stages save nothing" : ""));
+  };
+  const savedKids = (k: PlanKids) => {
+    if (!k.now.length && !k.planned) {
+      setKidStep(null);
+      if (kids) { setState((c) => ({ ...c, kids: null, kidCover: {} })); toast("Children taken out; your stages stay as they are"); }
+      return;
+    }
+    const costly = stagesKidSegs(s, k).some((x) => x.change > 0);
+    if (split && costly) setKidStep({ at: "cover", k });
+    else buildKids(k, {});
+  };
 
   const typed = useDeferredValue(s);
   useBusy(typed !== s);
@@ -374,6 +401,19 @@ export function Stages() {
                 <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span id="payWarnTextS" role="alert">{payWarn}</span>
               </div>
+
+              <GroupHead>Planning for kids?</GroupHead>
+              <p className="hint mt-0 mb-2.5" id="kidsLineS">{kids ? kidsLine(kids) + " The stages are built around them; change a stage to plan other changes too."
+                : "Add the children you have or plan, and the stages are rebuilt around what they cost: less saving in the childcare years, more again once they're grown."}</p>
+              <Button variant="outline" className="w-full" id="btnKidsS" disabled={!(planYears > 0)} onClick={() => setKidStep({ at: "kids" })}>{kids ? "Edit children" : "Add children"}</Button>
+              {kidStep?.at === "kids" ? (
+                <KidsDialog kids={kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + planYears} base={KID_BASE} cover={split} close={() => setKidStep(null)} save={savedKids} />
+              ) : null}
+              {kidStep?.at === "cover" ? (() => {
+                const { today, ppy } = stagesMonthly(s);
+                return <CoverStagesDialog segs={stagesKidSegs(s, kidStep.k).filter((x) => x.change !== 0)} today={today} ppy={ppy} initial={kidCover} base={KID_BASE}
+                  close={() => setKidStep(null)} save={(cover) => buildKids(kidStep.k, cover)} />;
+              })() : null}
             </CardContent>
           </Card>
         </aside>

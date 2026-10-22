@@ -23,11 +23,15 @@ import { advancedPlan } from "@/tools/advanced/model";
 import { CARE_AREAS, CHILD_COST, CHILD_SOURCE, MAX_KIDS, type CareArea } from "@/tools/guide/schedule";
 import { CountedBoxes } from "@/components/fields/CountedBoxes";
 import { freedOf, planAges, seedStages, toolOf } from "./flow";
-import { ageSpan, coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type KidStage, type Monthly } from "./kids";
+import { ageSpan, coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type Freed, type KidStage, type Monthly } from "./kids";
 import { COVER_ORDER, NO_KIDS, setPlan, type CoverLine, type PlanKids, type PlanState } from "./model";
 
 const ACCT: Record<CoverLine, string> = { brok: "Brokerage", roth: "Roth", trad: "Traditional", hsa: "HSA" };
 const ages = (from: number, to: number) => (to - from <= 1 && Number.isInteger(from) && Number.isInteger(to) ? "Age " : "Ages ") + ageSpan(from, to);
+/** A stage's span: your ages, or (in the Stages calculator, which has no
+    age) years from now, counted from `base`. */
+export const spanText = (from: number, to: number, base?: number) => base == null ? ages(from, to)
+  : (to - from <= 1 && Number.isInteger(from) && Number.isInteger(to) ? "Year " : "Years ") + ageSpan(from - base, to - base);
 /** To the half year: 2.5 years stays 2.5. */
 const half = (v: number) => Math.round(v * 2) / 2;
 const cents = (v: number) => groupDigits(String(Math.round(v * 100) / 100), true);
@@ -39,7 +43,7 @@ function span(plan: PlanState) {
 }
 
 /** What the children come to, in a line: "Two planned, the first in 2 years; childcare before school." */
-function kidsLine(k: PlanKids): string {
+export function kidsLine(k: PlanKids): string {
   const parts: string[] = [];
   if (k.now.length) parts.push((k.now.length === 1 ? "One child" : k.now.length + " children") + " now (age" + (k.now.length > 1 ? "s " : " ") + k.now.join(", ") + ")");
   if (k.planned > 0) parts.push((k.planned === 1 ? "one" : String(k.planned)) + " planned, the first in " + k.firstIn + (k.firstIn === 1 ? " year" : " years"));
@@ -99,7 +103,13 @@ export function KidsCard({ plan }: { plan: PlanState }) {
 }
 
 /* ---- the children ---- */
-function KidsDialog({ kids, age, retire, close, save }: { kids: PlanKids; age: number; retire: number; close: () => void; save: (k: PlanKids) => void }) {
+/** `base`: count the stages in years from now (from this age) rather than
+    by your age, for the Stages calculator. */
+export function KidsDialog({ kids, age, retire, base, cover = true, close, save }: {
+  kids: PlanKids; age: number; retire: number; base?: number;
+  /** Whether "How will you cover this?" comes next (Stages without the account split builds straight away). */
+  cover?: boolean; close: () => void; save: (k: PlanKids) => void;
+}) {
   const [now, setNow] = useState(kids.now.map(String));
   const [planned, setPlanned] = useState(String(kids.planned));
   const [firstIn, setFirstIn] = useState(String(kids.firstIn));
@@ -190,11 +200,11 @@ function KidsDialog({ kids, age, retire, close, save }: { kids: PlanKids; age: n
       </div>
       {list.length ? (
         <div className="mt-4 border-t border-border pt-3">
-          <div className="mb-1.5 text-label text-muted-foreground">The stages this makes, to age {retire}</div>
+          <div className="mb-1.5 text-label text-muted-foreground">{base == null ? "The stages this makes, to age " + retire : "The stages this makes, over " + (retire - base) + " years"}</div>
           <ul className="m-0 list-none p-0 text-note">
             {segs.map((s) => (
               <li key={stageKey(s)} className="flex items-baseline justify-between gap-3 border-b border-border py-1.5 last:border-b-0">
-                <span><b className="font-medium">{s.label}</b> <span className="text-muted-foreground">{ages(s.from, s.to)}</span></span>
+                <span><b className="font-medium">{s.label}</b> <span className="text-muted-foreground">{spanText(s.from, s.to, base)}</span></span>
                 <span className="tabular-nums">{s.cost > 0 ? money(s.cost) + " per month" : "No child costs"}</span>
               </li>
             ))}
@@ -204,7 +214,7 @@ function KidsDialog({ kids, age, retire, close, save }: { kids: PlanKids; age: n
       <small className="mt-3 block text-label text-muted-foreground">Costs: {CHILD_SOURCE}. College isn&apos;t included.</small>
       <div className="formactions mt-4">
         <Button variant="outline" className="flex-1" onClick={() => save({ ...NO_KIDS })}>No children</Button>
-        <Button className="flex-1" onClick={() => save(form)}>{list.some((c) => c.planned) || form.now.length ? "Next: how you'll cover it" : "Use these"}</Button>
+        <Button className="flex-1" onClick={() => save(form)}>{!(list.some((c) => c.planned) || form.now.length) ? "Use these" : cover ? "Next: how you'll cover it" : "Build the stages"}</Button>
       </div>
     </Modal>
   );
@@ -253,12 +263,25 @@ function CoverTable({ plan, segs }: { plan: PlanState; segs: KidStage[] }) {
 function CoverDialog({ plan, age, retire, close, save }: {
   plan: PlanState; age: number; retire: number; close: () => void; save: (c: PlanState["cover"]) => void;
 }) {
-  const segs = kidStages(plan.kids, age, retire).filter((s) => s.change !== 0);
+  const { profile } = useHousehold();
+  const adv = toolOf(plan, "advanced"), P = advancedPlan(adv, profile), period = P.p.period;
+  return <CoverStagesDialog segs={kidStages(plan.kids, age, retire).filter((s) => s.change !== 0)} today={monthlyByAccount(P, period)}
+    ppy={PER_YEAR[period] ?? 12} F={freedOf(plan)} initial={plan.cover} close={close} save={save} />;
+}
+
+/** "How will you cover this?" for any saving: `today` by account, paid
+    `ppy` times a year; `F` what a cut frees (the walkthrough knows the
+    paycheck; Stages takes cuts one for one). `base`: spans in years from
+    now, as KidsDialog. */
+export function CoverStagesDialog({ segs, today, ppy, F, initial, base, close, save }: {
+  segs: KidStage[]; today: Monthly; ppy: number; F?: Freed; initial: Record<string, Partial<Monthly>>; base?: number;
+  close: () => void; save: (c: Record<string, Partial<Monthly>>) => void;
+}) {
   // What's typed, per stage and account, as text; the rest follow the order.
   const [typed, setTyped] = useState<Record<string, Partial<Record<CoverLine, string>>>>(() =>
-    Object.fromEntries(Object.entries(plan.cover).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cents(x as number)]))])));
+    Object.fromEntries(Object.entries(initial).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cents(x as number)]))])));
   const nums = Object.fromEntries(Object.entries(typed).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, parseNum(x as string)]))])) as Record<string, Partial<Monthly>>;
-  const C = useCover(plan, nums);
+  const C = { today, ppy, per: (m: number) => (m * 12) / ppy, cover: (s: KidStage) => coverStage(s.change, today, nums[stageKey(s)], F) };
   const perCheck = C.ppy === 12 ? "per month" : C.ppy === 26 ? "per paycheck (every two weeks)" : C.ppy === 52 ? "per paycheck (weekly)" : "per paycheck";
   return (
     <Modal size="table" onClose={close}>
@@ -267,7 +290,7 @@ function CoverDialog({ plan, age, retire, close, save }: {
         {COVER_ORDER.filter((k) => C.today[k] > 0).map((k) => (k === "brok" || k === "trad" ? ACCT[k].toLowerCase() : ACCT[k]) + " " + money(C.today[k])).join(", ") || "nothing yet"}.
         {" "}Each stage&apos;s children come out of the brokerage first, so the tax-advantaged accounts stay full, then Roth, then traditional
         (where the 401(k) match is), then the HSA. Type over any amount to take it from somewhere else; what saving can&apos;t cover comes out of spending.
-        {" "}Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there frees less than its size: each one is cut far enough to cover the cost after that tax.</div>
+        {F ? " Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there frees less than its size: each one is cut far enough to cover the cost after that tax." : null}</div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-170 text-note tabular-nums">
           <thead><tr className="text-label text-muted-foreground">
@@ -280,9 +303,9 @@ function CoverDialog({ plan, age, retire, close, save }: {
               const key = stageKey(s), c = C.cover(s);
               return (
                 <tr key={key} className="border-t border-border align-top">
-                  <td className="min-w-40 py-2 pr-2"><b className="font-medium">{s.label}</b><span className="block text-label text-muted-foreground">{ages(s.from, s.to)}</span></td>
+                  <td className="min-w-40 py-2 pr-2"><b className="font-medium">{s.label}</b><span className="block text-label text-muted-foreground">{spanText(s.from, s.to, base)}</span></td>
                   <td className="py-2 text-right">{(s.change < 0 ? "−" : "+") + money(Math.abs(s.change))} per month
-                    <span className="block text-label text-muted-foreground">{(s.change < 0 ? "−" : "+") + money(Math.abs(C.per(s.change)), 2)} {perCheck === "per month" ? "" : "/check"}</span></td>
+                    {perCheck === "per month" ? null : <span className="block text-label text-muted-foreground">{(s.change < 0 ? "−" : "+") + money(Math.abs(C.per(s.change)), 2)} /check</span>}</td>
                   {COVER_ORDER.map((k) => s.change > 0 ? (
                     <td key={k} className="py-1.5 pl-2">
                       <Affixed prefix="−$" className="w-30"><MoneyInput nonNeg aria-label={ACCT[k] + " taken, " + s.label + ", per month"}
@@ -300,7 +323,7 @@ function CoverDialog({ plan, age, retire, close, save }: {
         </table>
       </div>
       {segs.some((s) => C.cover(s).matchLost > 0.5) ? <p className="hint mt-3 text-loss">⚠ A cut shown in red under Traditional goes below what earns the full employer match, so the match shrinks too. Taking more from another account keeps it.</p> : null}
-      <p className="hint mt-3">Amounts are per month, in today&apos;s dollars. The paycheck figure is the same cost {perCheck === "per month" ? "" : "on your pay schedule"}. A stage costing less than today adds the difference to the brokerage.</p>
+      <p className="hint mt-3">Amounts are per month, in today&apos;s dollars. {perCheck === "per month" ? "" : "The paycheck figure is the same cost on your pay schedule. "}A stage costing less than today adds the difference to the brokerage.</p>
       <div className="formactions mt-4">
         <Button variant="outline" className="flex-1" onClick={() => setTyped({})}>Brokerage first</Button>
         <Button className="flex-1" onClick={() => save(nums)}>Build the stages</Button>
