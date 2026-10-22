@@ -264,11 +264,11 @@ test("Changes ahead: two children planned turn into a schedule, and the number m
   await expect(page.locator("#gdCard .gd-means")).toContainText("Your saving schedule appears once");
   await page.fill("#gdf-kidsPlanned", "2"); await page.fill("#gdf-firstIn", "3"); // then one every 3 years, the default
   const rows = page.locator("[data-stage-row]");
-  await expect(rows).toHaveCount(7);
+  await expect(rows).toHaveCount(9); // childcare, school and the teen years, as in Paycheck to Retirement
   await expect(rows.first()).toContainText("Before children");
-  await expect(page.locator('[data-stage-row="35"] input')).toHaveValue("7,500");
+  await expect(page.locator('[data-stage-row="35"] input')).toHaveValue("7,700");
   await expect(page.locator("[data-changes]")).toContainText("against $8.69M saving today's $10,000 every month", { timeout: 30_000 });
-  await expect(page.locator("[data-changes]")).toContainText("you're on course for $6.88M at 60");
+  await expect(page.locator("[data-changes]")).toContainText("you're on course for $7M at 60");
   await expect(page.locator("#gdCard .gd-means")).toContainText("Your second starts college at 56, 4 years before you retire");
   // a hand edit becomes your own, kept as a change
   await page.fill('[data-stage-row="35"] input', "8000");
@@ -289,15 +289,17 @@ test("the Full walkthrough hands off to Stages with the guide's stages, and its 
   test.setTimeout(120_000);
   await seeded(page, { ...stateWith("full", "number"), a: { ...PRIYA, kidsPlanned: 2, firstIn: 3, spacing: 3 } });
   const fv = (await page.locator("#gdOutFv").textContent())!;
-  expect(fv).toBe("$6,884,235");
+  expect(fv).toBe("$6,998,824");
   await page.locator('#gdCard [data-trip="stages"]').click();
   await expect(page.locator("#gdCoach")).toBeVisible();
-  await expect(page.locator('[data-name="0"]')).toHaveText("Before children");
   await expect(page.locator("#xFVreal")).toHaveText(fv);
-  // a changed stage comes back as your own edit, with an undo
-  await page.fill('[data-f="contrib"][data-i="1"]', "8,000");
+  // nine stages are edited in the pop-up; a changed stage comes back as your own edit, with an undo
+  await page.locator("#btnEditStages").click();
+  await expect(page.locator("#stageList [data-name='0']")).toHaveText("Before children");
+  await page.fill('#stageList [data-f="contrib"][data-i="1"]', "8,000");
+  await page.keyboard.press("Escape");
   await page.locator("#gdCoachBack").click();
-  await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("From Stages: ages 35 to 38, +$500/mo");
+  await expect(page.locator("#gdCard .gd-callout.ok")).toContainText("From Stages: ages 35 to 38, +$300/mo");
   await expect(page.locator('#gdCard [data-gd="undo"]')).toBeVisible();
   // and Advanced, beside it, goes there and back
   await page.locator('#gdCard [data-trip="advanced"]').click();
