@@ -106,18 +106,27 @@ main.solo .seo{grid-column:1 / -1}
    the right), from 126px up to 236px; long names wrap at the narrow end.
    The content's left edge becomes the larger of L and 8px + W + 12px, and
    the sidebar ends 12px before it. On a wide screen that is L itself: the
-   sidebar opens in the margin and nothing moves. The footer lines up with
-   the content the same way, so the sidebar never covers it. Below 1470px
+   sidebar opens in the margin and nothing moves. It ends where the tool's
+   area ends, and the footer lines up with the content the same way. Below 1470px
    there is no room, so it isn't offered. The hide button (open) and the
    show button (closed) both sit with their right edge 12px left of the
    content, so on a wide screen they are in the same place. */
 .toolrail{display:none}
 @media (min-width:1470px){
   html{--rail-w:clamp(126px,calc(100% - 1324px),236px)}
-  .toolrail{display:block;position:fixed;top:var(--pin-top);z-index:5}
+  /* The sidebar spans the tool's area, top to bottom, beside it; its button
+     and its list stick under the header within that area, so at the foot
+     of the page they stop where the tool ends instead of running over the
+     footer. */
+  .shell:has(> .toolrail){position:relative}
+  /* (bottom: main's 44px bottom padding, so it ends level with the last card) */
+  .toolrail{display:block;position:absolute;top:0;bottom:44px;z-index:5}
+  .toolrail > *{position:sticky;top:var(--pin-top)}
   html:not([data-tool-rail=hidden]) .toolrail{width:var(--rail-w);
-    left:calc(max((100% - 1330px) / 2 + var(--gl),var(--rail-w) + 20px) - 12px - var(--rail-w));
-    max-height:calc(100vh - var(--pin-top));overflow-y:auto;padding:22px 0 32px;
+    left:calc(max((100% - 1330px) / 2 + var(--gl),var(--rail-w) + 20px) - 12px - var(--rail-w))}
+  /* No taller than the screen below the header, nor than the tool's area
+     (a short page, like an empty Compare): past that the list scrolls. */
+  html:not([data-tool-rail=hidden]) .toolrail-body{max-height:min(calc(100vh - var(--pin-top)),100%);overflow-y:auto;padding:22px 0 16px;
     scrollbar-width:thin;scrollbar-color:var(--line) transparent}
   html:not([data-tool-rail=hidden]):has(.toolrail) :is(.shell > main,.sitefoot-in){
     margin-left:max((100% - 1330px) / 2,var(--rail-w) + 20px - var(--gl));margin-right:0}
@@ -125,8 +134,8 @@ main.solo .seo{grid-column:1 / -1}
      tool header's "All tools" steps aside while it shows. !important
      because the button's look is Tailwind utilities, a layer above. */
   html:not([data-tool-rail=hidden]) .shell:has(> .toolrail) #btnToolBack{display:none !important}
-  html[data-tool-rail=hidden] .toolrail{top:calc(var(--pin-top) + 22px);
-    left:max(8px,calc((100% - 1330px) / 2 + var(--gl) - 48px))}
+  html[data-tool-rail=hidden] .toolrail{left:max(8px,calc((100% - 1330px) / 2 + var(--gl) - 48px))}
+  html[data-tool-rail=hidden] .toolrail > .toolrail-show{top:calc(var(--pin-top) + 22px);margin-top:22px}
 }
 .toolrail-show{display:none}
 html[data-tool-rail=hidden] .toolrail-show{display:inline-flex}
