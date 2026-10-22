@@ -11,6 +11,12 @@
      styles/03-navigation.css). Only on a switch, never on an update.
    - Every figure recomputes as you type; the screen-reader live region
      reports the headline figures once they settle, not each keystroke.
+   - A tool's inputs column (<aside>, sticky beside the results) ends 16px
+     above the bottom of the screen wherever it starts, so its last field is
+     always reachable by scrolling the column itself. The stylesheet sizes it
+     for when it's pinned under the header; above that, at the top of the
+     page under the tool's own header, it would run off the bottom of the
+     screen. Kept up to date as the page scrolls or resizes.
    - iOS zooms toward a focused field even when its font is 16px. Pinning
      maximum-scale while a field has focus stops that; the viewport goes back
      on blur so pinch-zoom still works everywhere else (the old site's
@@ -95,8 +101,45 @@ function noFocusZoom() {
   };
 }
 
+/* The inputs columns' height: from where each starts on screen to 16px above
+   the screen's bottom, never more than the stylesheet's pinned height (when
+   the page has scrolled past the column's end, its top rises above the pin)
+   and never under 240px. Only sticky columns: on a phone they run with the
+   page and keep the stylesheet's own height. */
+function fitAsides() {
+  let queued = false;
+  const fit = () => {
+    queued = false;
+    for (const a of document.querySelectorAll<HTMLElement>("main aside")) {
+      const cs = getComputedStyle(a);
+      let h = "";
+      if (cs.position === "sticky") {
+        const pin = parseFloat(cs.top) || 0, top = a.getBoundingClientRect().top;
+        h = Math.round(Math.max(240, innerHeight - Math.max(top, pin) - 16)) + "px";
+      }
+      if (a.style.maxHeight !== h) a.style.maxHeight = h;
+    }
+  };
+  const queue = () => {
+    if (!queued) { queued = true; requestAnimationFrame(fit); }
+  };
+  addEventListener("scroll", queue, { passive: true });
+  addEventListener("resize", queue);
+  // A page change, or anything above the column changing height (a header
+  // that wraps, a notice that opens), moves where the column starts.
+  const ro = new ResizeObserver(queue);
+  ro.observe(document.body);
+  queue();
+  return () => {
+    removeEventListener("scroll", queue);
+    removeEventListener("resize", queue);
+    ro.disconnect();
+  };
+}
+
 export function PageEffects() {
   useEffect(noFocusZoom, []);
+  useEffect(fitAsides, []);
   useEffect(() => {
     const main = document.getElementById("main");
     if (!main) return;
