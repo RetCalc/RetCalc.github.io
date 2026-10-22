@@ -1,0 +1,11 @@
+# Installed by `npm run setup`
+tooling/node_modules/
+tooling/.venv/
+# Made by the builds; the finished files at this folder's top are kept
+build/package.html
+build/onepager.html
+build/outline.json
+deck/img/
+.preview/
+# PowerPoint's lock file while the deck is open
+~$*

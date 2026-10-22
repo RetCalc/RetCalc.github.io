@@ -1,6 +1,8 @@
 # RetCalc
 
 The site (retcalc.app) is the Next.js app in `web/`; see `web/README.md`.
+The marketing package, one-pager and deck, and everything that builds them,
+are in `marketing/`; see `marketing/README.md`.
 
 ## Keeping figures current
 

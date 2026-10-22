@@ -1,0 +1,268 @@
+<!--PAGE-->
+<div style="margin-top:14px">
+  <div class="eyebrow" style="color:var(--gray)">The stack</div>
+  <h1 class="title" style="font-size:38px">A static site that does its thinking in the browser.</h1>
+  <p class="lede">Pages are prerendered and served from a CDN. Every number on them is worked out on the visitor's own machine, by a calculation engine that runs off the main thread. Accounts, when someone wants one, only hold their saved inputs.</p>
+</div>
+<svg viewBox="0 0 708 300" width="100%" style="display:block;margin-top:14px">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#818995"/></marker></defs>
+  <!-- browser -->
+  <rect x="190" y="40" width="330" height="220" rx="16" fill="#17191c"/>
+  <text x="210" y="68" font-size="12" font-weight="700" fill="#fff">The visitor's browser</text>
+  <text x="210" y="83" font-size="8.5" fill="#9aa4b2">where every calculation happens</text>
+  <rect x="210" y="98" width="140" height="66" rx="10" fill="#1c222b" stroke="#2a313c"/>
+  <text x="222" y="118" font-size="10" font-weight="700" fill="#e8ebf0">Pages</text>
+  <text x="222" y="133" font-size="8.5" fill="#9aa4b2">Next.js 16 · React 19</text>
+  <text x="222" y="146" font-size="8.5" fill="#9aa4b2">Tailwind v4 · shadcn/ui</text>
+  <rect x="362" y="98" width="140" height="66" rx="10" fill="#1c222b" stroke="#e3a93b"/>
+  <text x="374" y="118" font-size="10" font-weight="700" fill="#e3a93b">Calculation engine</text>
+  <text x="374" y="133" font-size="8.5" fill="#9aa4b2">in a Web Worker</text>
+  <text x="374" y="146" font-size="8.5" fill="#9aa4b2">100 years of data, 2026 tax</text>
+  <path d="M350,131 L360,131" stroke="#818995" stroke-width="1.4" marker-end="url(#ar)"/>
+  <rect x="210" y="176" width="292" height="66" rx="10" fill="#1c222b" stroke="#2a313c"/>
+  <text x="222" y="196" font-size="10" font-weight="700" fill="#e8ebf0">Local storage</text>
+  <text x="222" y="211" font-size="8.5" fill="#9aa4b2">household, saved scenarios and Guide answers, saved first, here</text>
+  <text x="222" y="224" font-size="8.5" fill="#9aa4b2">share links carry inputs after the #, which never reaches a server</text>
+  <!-- left: vercel + cloudflare -->
+  <rect x="0" y="60" width="150" height="70" rx="12" fill="#fff" stroke="#e3e0d8"/>
+  <text x="14" y="82" font-size="10.5" font-weight="700" fill="#17191c">Vercel</text>
+  <text x="14" y="97" font-size="8.5" fill="#5b636e">prerendered pages and</text>
+  <text x="14" y="109" font-size="8.5" fill="#5b636e">link-preview cards, from main</text>
+  <path d="M152,95 L188,105" stroke="#818995" stroke-width="1.4" marker-end="url(#ar)"/>
+  <rect x="0" y="160" width="150" height="70" rx="12" fill="#fff" stroke="#e3e0d8"/>
+  <text x="14" y="182" font-size="10.5" font-weight="700" fill="#17191c">Cloudflare</text>
+  <text x="14" y="197" font-size="8.5" fill="#5b636e">DNS for retcalc.app, and</text>
+  <text x="14" y="209" font-size="8.5" fill="#5b636e">cookieless page counts</text>
+  <path d="M152,190 L188,180" stroke="#818995" stroke-width="1.4" stroke-dasharray="3 3"/>
+  <!-- right: supabase, sentry, resend -->
+  <rect x="558" y="30" width="150" height="80" rx="12" fill="#fff" stroke="#1f8f7e"/>
+  <text x="572" y="52" font-size="10.5" font-weight="700" fill="#17191c">Supabase</text>
+  <text x="572" y="67" font-size="8.5" fill="#5b636e">optional accounts: sign-in</text>
+  <text x="572" y="79" font-size="8.5" fill="#5b636e">and sync, each user's rows</text>
+  <text x="572" y="91" font-size="8.5" fill="#5b636e">locked to that user</text>
+  <path d="M522,110 L556,80" stroke="#1f8f7e" stroke-width="1.4" marker-end="url(#ar)" marker-start="url(#ar)"/>
+  <rect x="558" y="130" width="150" height="60" rx="12" fill="#fff" stroke="#e3e0d8"/>
+  <text x="572" y="152" font-size="10.5" font-weight="700" fill="#17191c">Resend</text>
+  <text x="572" y="167" font-size="8.5" fill="#5b636e">the 6-digit sign-in codes,</text>
+  <text x="572" y="179" font-size="8.5" fill="#5b636e">from the site's own domain</text>
+  <path d="M556,160 L524,150" stroke="#818995" stroke-width="1.4" stroke-dasharray="3 3"/>
+  <rect x="558" y="210" width="150" height="60" rx="12" fill="#fff" stroke="#e3e0d8"/>
+  <text x="572" y="232" font-size="10.5" font-weight="700" fill="#17191c">Sentry</text>
+  <text x="572" y="247" font-size="8.5" fill="#5b636e">errors only, no inputs,</text>
+  <text x="572" y="259" font-size="8.5" fill="#5b636e">through the site's own route</text>
+  <path d="M522,230 L556,238" stroke="#818995" stroke-width="1.4" marker-end="url(#ar)"/>
+  <text x="354" y="290" font-size="8.5" fill="#5b636e" text-anchor="middle">Solid lines carry data. Dashed lines are supporting services. There are no API routes: the only thing the site's own server receives is error reports, with every input stripped out.</text>
+</svg>
+<div class="row" style="margin-top:18px;gap:22px">
+  <div class="col">
+    <table class="t">
+      <tr><th style="width:96px">Layer</th><th>What it uses</th></tr>
+      <tr><td>Framework</td><td>Next.js 16 (App Router), React 19, TypeScript 5</td></tr>
+      <tr><td>Look</td><td>Tailwind CSS v4 and shadcn/ui on Base UI primitives, Lucide icons; IBM Plex Sans, served by the site itself</td></tr>
+      <tr><td>Engine</td><td>Plain JavaScript, type-checked through JSDoc, behind typed TypeScript bridges</td></tr>
+      <tr><td>Checks</td><td>ESLint with zero warnings allowed, <span class="mono">tsc</span>, @shadcn/lint, a calculation suite, unit and end-to-end tests</td></tr>
+      <tr><td>Design</td><td>A written design system: Graphite (dark, the default) and Paper (light) themes, one amber accent, gain and loss colors, five chart hues</td></tr>
+    </table>
+  </div>
+  <div style="width:250px;flex:none">
+    <div class="label">By the numbers</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule)"><div style="padding:10px 0 10px 0px;"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">39</div><div class="muted" style="font-size:9.5px;margin-top:5px">page routes</div></div><div style="padding:10px 0 10px 14px;border-left:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">~55,600</div><div class="muted" style="font-size:9.5px;margin-top:5px">lines of app code</div></div><div style="padding:10px 0 10px 0px;border-top:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">~7,400</div><div class="muted" style="font-size:9.5px;margin-top:5px">lines in the engine and its data</div></div><div style="padding:10px 0 10px 14px;border-left:1px solid var(--rule);border-top:1px solid var(--rule);"><div style="font-size:26px;font-weight:700;letter-spacing:-0.03em;line-height:1">29</div><div class="muted" style="font-size:9.5px;margin-top:5px">explanatory articles</div></div></div>
+    <p class="muted" style="font-size:9.5px;margin-top:6px">The design rules are enforced, not just written: the linter rejects raw colors, one-off sizes and inline styles, and a new look has to be a component variant.</p>
+  </div>
+</div>
+<div class="label" style="margin-top:16px">The palette, from the design system</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+  <div style="display:flex;border-radius:10px;overflow:hidden;height:62px">
+    <div style="flex:1;background:#0e1116;color:#e8ebf0;padding:8px;font-size:8.5px">Graphite<br><span class="mono" style="color:#9aa4b2">#0e1116</span></div>
+    <div style="flex:1;background:#151a21;color:#e8ebf0;padding:8px;font-size:8.5px">Surface<br><span class="mono" style="color:#9aa4b2">#151a21</span></div>
+    <div style="flex:1;background:#1c222b;color:#e8ebf0;padding:8px;font-size:8.5px">Raised<br><span class="mono" style="color:#9aa4b2">#1c222b</span></div>
+    <div style="flex:1;background:#e3a93b;color:#0e1116;padding:8px;font-size:8.5px;font-weight:600">Amber<br><span class="mono">#e3a93b</span></div>
+  </div>
+  <div style="display:flex;border-radius:10px;overflow:hidden;height:62px;border:1px solid #e3e0d8">
+    <div style="flex:1;background:#faf9f6;padding:8px;font-size:8.5px">Paper<br><span class="mono muted">#faf9f6</span></div>
+    <div style="flex:1;background:#f3f1ec;padding:8px;font-size:8.5px">Raised<br><span class="mono muted">#f3f1ec</span></div>
+    <div style="flex:1;background:#17191c;color:#fff;padding:8px;font-size:8.5px">Ink<br><span class="mono" style="color:#9aa4b2">#17191c</span></div>
+    <div style="flex:1;background:#9a6200;color:#fff;padding:8px;font-size:8.5px;font-weight:600">Amber<br><span class="mono">#9a6200</span></div>
+  </div>
+</div>
+<div style="display:flex;gap:6px;margin-top:8px;align-items:center;font-size:8.5px" class="muted">
+  <span>Chart series</span>
+  <span style="width:40px;height:10px;border-radius:3px;background:#2f7fc4"></span><span style="width:40px;height:10px;border-radius:3px;background:#1f8f7e"></span><span style="width:40px;height:10px;border-radius:3px;background:#c2467a"></span><span style="width:40px;height:10px;border-radius:3px;background:#7541b8"></span><span style="width:40px;height:10px;border-radius:3px;background:#808a99"></span>
+  <span style="margin-left:12px">Gain and loss</span><span style="width:40px;height:10px;border-radius:3px;background:#17704a"></span><span style="width:40px;height:10px;border-radius:3px;background:#b02f29"></span>
+  <span style="margin-left:auto">Typeface: <b style="color:var(--text)">IBM Plex Sans</b></span>
+</div>
+
+<!--PAGE-->
+<div style="margin-top:14px">
+  <div class="eyebrow" style="color:var(--gray)">The calculation engine</div>
+  <h1 class="title" style="font-size:38px">About 5,700 lines of finance, and a test for every claim.</h1>
+  <p class="lede">One engine serves every page: projections, Monte Carlo, federal and state income tax, FICA, Social Security, RMDs, Roth conversions, ACA subsidies, Medicare and IRMAA, mortgages, debt, rent against buy, college, FIRE, the 72(t) bridge and historical withdrawal backtests.</p>
+</div>
+<div class="row" style="margin-top:16px;gap:22px">
+  <div class="col">
+    <div class="label">The engine, by file (lines)</div>
+    <svg viewBox="0 0 340 150" width="100%" style="display:block">
+      <g font-size="9.5">
+        <text x="0" y="14" fill="#17191c" font-weight="600">math.js</text><rect x="82" y="5" width="216" height="12" rx="3" fill="#9a6200"/><text x="304" y="15" fill="#5b636e">2,389</text>
+        <text x="0" y="38" fill="#17191c" font-weight="600">drawdown.js</text><rect x="82" y="29" width="130" height="12" rx="3" fill="#2f7fc4"/><text x="218" y="39" fill="#5b636e">1,435</text>
+        <text x="0" y="62" fill="#17191c" font-weight="600">data files</text><rect x="82" y="53" width="100" height="12" rx="3" fill="#808a99"/><text x="188" y="63" fill="#5b636e">~1,100</text>
+        <text x="0" y="86" fill="#17191c" font-weight="600">plan.js</text><rect x="82" y="77" width="75" height="12" rx="3" fill="#c2467a"/><text x="163" y="87" fill="#5b636e">833</text>
+        <text x="0" y="110" fill="#17191c" font-weight="600">bridge.js</text><rect x="82" y="101" width="43" height="12" rx="3" fill="#1f8f7e"/><text x="131" y="111" fill="#5b636e">471</text>
+        <text x="0" y="134" fill="#17191c" font-weight="600">calculators.js</text><rect x="82" y="125" width="37" height="12" rx="3" fill="#7541b8"/><text x="125" y="135" fill="#5b636e">408</text>
+      </g>
+    </svg>
+    <div class="label" style="margin-top:14px">Three ways to ask "what if markets don't cooperate?"</div>
+    <table class="t">
+      <tr><td style="width:96px">Historical replay</td><td>Every starting month (or January) since 1926, run forward through what actually happened. The Drawdown Simulator's 30-year test has 835 of them.</td></tr>
+      <tr><td>Monte Carlo, calculators</td><td>5,000 lognormal runs per redraw, set so the average matches the rate entered: with zero volatility it draws the plain projection exactly.</td></tr>
+      <tr><td>Monte Carlo, drawdown</td><td>A block bootstrap of real history from 1927. Whole runs of consecutive years are drawn together, so the 1930s and 1970s keep their streaks.</td></tr>
+    </table>
+  </div>
+  <div style="width:256px;flex:none">
+    <div class="card raised">
+      <div class="h3">Same seed, same chart</div>
+      <p style="font-size:10px">Every simulation shares one seeded random number generator (mulberry32), so a chart doesn't jump when an unrelated input changes. A <b>Re-roll</b> button moves the seed for all of them at once.</p>
+      <div class="h3" style="margin-top:10px">Off the main thread</div>
+      <p style="font-size:10px;margin:0">A build step bundles the engine, its data and the Guide's planning jobs into one Web Worker, so a 300,000-retirement Optimizer run doesn't freeze the page.</p>
+    </div>
+  </div>
+</div>
+<div class="label" style="margin-top:18px">How a change gets to the live site</div>
+<svg viewBox="0 0 708 128" width="100%" style="display:block">
+  <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#818995"/></marker></defs>
+  <g font-size="8.5">
+    <rect x="0" y="10" width="120" height="104" rx="12" fill="#fff" stroke="#e3e0d8"/><text x="12" y="32" font-size="10.5" font-weight="700">A change</text><text x="12" y="48" fill="#5b636e">to the engine, a tool's</text><text x="12" y="60" fill="#5b636e">defaults, an article,</text><text x="12" y="72" fill="#5b636e">page text or the tests</text>
+    <path d="M122,62 L146,62" stroke="#818995" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <rect x="148" y="10" width="170" height="104" rx="12" fill="#17191c"/><text x="160" y="32" font-size="10.5" font-weight="700" fill="#e3a93b">Pre-commit gate</text><text x="160" y="48" fill="#e8ebf0">~618 checks in 55 groups</text><text x="160" y="61" fill="#9aa4b2">209 of them hold the worked</text><text x="160" y="73" fill="#9aa4b2">examples in all 29 articles to</text><text x="160" y="85" fill="#9aa4b2">what the calculator produces</text><text x="160" y="103" fill="#e8ebf0">A failure blocks the commit.</text>
+    <path d="M320,62 L344,62" stroke="#818995" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <rect x="346" y="10" width="200" height="104" rx="12" fill="#fff" stroke="#e3e0d8"/><text x="358" y="32" font-size="10.5" font-weight="700">On every push</text><text x="358" y="48" fill="#5b636e">the calculation suite again, plus</text><text x="358" y="60" fill="#5b636e">numbers baselines: each tool's headline</text><text x="358" y="72" fill="#5b636e">figures and seven Guide sample households</text><text x="358" y="88" fill="#5b636e">lint · typecheck · production build</text><text x="358" y="100" fill="#5b636e">unit tests · 17 end-to-end browser specs</text>
+    <path d="M548,62 L572,62" stroke="#818995" stroke-width="1.4" marker-end="url(#ar2)"/>
+    <rect x="574" y="10" width="134" height="104" rx="12" fill="#fff" stroke="#1f8f7e"/><text x="586" y="32" font-size="10.5" font-weight="700">Live</text><text x="586" y="48" fill="#5b636e">main deploys to</text><text x="586" y="60" fill="#5b636e">Vercel; previews</text><text x="586" y="72" fill="#5b636e">deploy for every</text><text x="586" y="84" fill="#5b636e">branch first</text>
+  </g>
+</svg>
+<div style="margin-top:16px"><div class="stats">
+  <div class="stat"><div class="n amber">~618</div><div class="l">checks in the calculation suite, in 55 groups</div></div>
+  <div class="stat"><div class="n">209</div><div class="l">of them tie the 29 articles' worked examples to the engine</div></div>
+  <div class="stat"><div class="n">7</div><div class="l">sample households whose Guide results are pinned</div></div>
+  <div class="stat"><div class="n">17</div><div class="l">end-to-end browser specs</div></div>
+  <div class="stat"><div class="n">1,200</div><div class="l">months of market history every engine walks</div></div>
+</div></div>
+
+<!--PAGE-->
+<div style="margin-top:14px">
+  <div class="eyebrow" style="color:var(--gray)">Hosting and delivery</div>
+  <h1 class="title" style="font-size:38px">Fast because there is almost nothing to serve.</h1>
+  <p class="lede">RetCalc runs on Vercel and deploys from the main branch. Pages are prerendered when the site is built, the homepage's and tool list's own figures included, so a visit is a handful of static files and a JavaScript engine that does the rest.</p>
+</div>
+<div class="row" style="margin-top:16px;gap:22px">
+  <div class="col">
+    <table class="t">
+      <tr><th style="width:110px">Piece</th><th>How it is done</th></tr>
+      <tr><td>Hosting</td><td>Vercel. Production builds from main; every branch gets its own preview. Before 5 October 2026 the site was a hand-built static site; it now lives on in a private archive for comparison.</td></tr>
+      <tr><td>Rendering</td><td>Prerendered pages and articles. There are no API routes: all calculation happens in the browser, and the one thing the site's own server receives is error reports, stripped of inputs, which it passes on to Sentry.</td></tr>
+      <tr><td>Domain</td><td><a href="https://retcalc.app">retcalc.app</a>, with DNS on Cloudflare; www redirects to the bare domain.</td></tr>
+      <tr><td>Analytics</td><td>Cloudflare and Vercel Web Analytics: cookieless page counts, production only. No ads and no ad trackers.</td></tr>
+      <tr><td>Email</td><td>Sign-in codes go out through Resend from the site's own domain. Mail to <a href="mailto:contact@retcalc.app">contact@retcalc.app</a> is forwarded separately.</td></tr>
+      <tr><td>Installable</td><td>A web app manifest and icons, so it can be added to a phone's home screen, with a bottom tab bar there.</td></tr>
+    </table>
+  </div>
+  <div style="width:250px;flex:none">
+    <div class="card raised">
+      <div class="h3">Error reports that can't leak a plan</div>
+      <ul class="ticks sm" style="margin-top:6px">
+        <li>Errors only: tracing, replay and debug code are compiled out</li>
+        <li>Production only</li>
+        <li>Addresses cut to the path, so the query and the # that holds a tool's inputs never leave the page</li>
+        <li>No console breadcrumbs, user details or local variables</li>
+        <li>Sent through the site's own route, so ad blockers don't drop them</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="label" style="margin-top:18px">Link previews, drawn for every page</div>
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+  <img src="../../web/public/og/drawdown.jpg" style="width:100%;border-radius:8px;display:block">
+  <img src="../../web/public/og/stages.jpg" style="width:100%;border-radius:8px;display:block">
+  <img src="../../web/public/og/incometax.jpg" style="width:100%;border-radius:8px;display:block">
+  <img src="../../web/public/og/budget.jpg" style="width:100%;border-radius:8px;display:block">
+</div>
+<p class="muted" style="font-size:9.5px;margin-top:8px">Each page has its own 1200×630 card: a title, a line of text and one of about 21 illustration types. A development-only page draws them and a headless browser saves them as static images, so sharing a link to any tool shows that tool.</p>
+<!--PAGE-->
+<div style="margin-top:14px">
+  <div class="eyebrow" style="color:var(--gray)">Accounts and privacy</div>
+  <h1 class="title" style="font-size:38px">Local first. An account is only a way to sync.</h1>
+  <p class="lede">Everything works without signing in. A signed-in visitor gets the same site, with their household, saved scenarios and Guide kept in step across devices. Saving never waits on the network, and a sync never throws anything away.</p>
+</div>
+<svg viewBox="0 0 708 170" width="100%" style="display:block;margin-top:14px">
+  <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#818995"/></marker></defs>
+  <g font-size="8.5">
+    <rect x="0" y="40" width="130" height="80" rx="12" fill="#fff" stroke="#e3e0d8"/><text x="14" y="64" font-size="10.5" font-weight="700">A change</text><text x="14" y="80" fill="#5b636e">a new household figure,</text><text x="14" y="92" fill="#5b636e">a saved scenario, a</text><text x="14" y="104" fill="#5b636e">Guide answer</text>
+    <path d="M132,80 L170,80" stroke="#818995" stroke-width="1.4" marker-end="url(#ar3)"/>
+    <rect x="172" y="30" width="170" height="100" rx="12" fill="#17191c"/><text x="186" y="54" font-size="10.5" font-weight="700" fill="#e3a93b">This browser, first</text><text x="186" y="70" fill="#e8ebf0">written at once, under</text><text x="186" y="82" fill="#e8ebf0">versioned keys</text><text x="186" y="100" fill="#9aa4b2">works offline; in a private</text><text x="186" y="112" fill="#9aa4b2">window it simply isn't kept</text>
+    <path d="M344,64 L452,64" stroke="#1f8f7e" stroke-width="1.4" marker-end="url(#ar3)"/><text x="398" y="56" text-anchor="middle" fill="#1f8f7e" font-weight="600">pushed shortly after</text>
+    <path d="M452,98 L344,98" stroke="#1f8f7e" stroke-width="1.4" marker-end="url(#ar3)"/><text x="398" y="114" text-anchor="middle" fill="#1f8f7e" font-weight="600">two-way merge on sign-in</text><text x="398" y="126" text-anchor="middle" fill="#1f8f7e" font-weight="600">and when the tab returns</text>
+    <rect x="454" y="30" width="150" height="100" rx="12" fill="#fff" stroke="#1f8f7e"/><text x="468" y="54" font-size="10.5" font-weight="700">The account</text><text x="468" y="70" fill="#5b636e">Supabase, US-hosted</text><text x="468" y="82" fill="#5b636e">row-level security: each</text><text x="468" y="94" fill="#5b636e">person reaches only their</text><text x="468" y="106" fill="#5b636e">own rows</text>
+    <path d="M606,80 L626,80" stroke="#818995" stroke-width="1.4" stroke-dasharray="3 3"/>
+    <rect x="628" y="50" width="80" height="60" rx="12" fill="#fff" stroke="#e3e0d8"/><text x="640" y="72" font-size="9.5" font-weight="700">Backups</text><text x="640" y="86" fill="#5b636e">weekly,</text><text x="640" y="98" fill="#5b636e">encrypted</text>
+    <text x="354" y="160" text-anchor="middle" fill="#5b636e">If both sides changed a scenario with the same name, both are kept. If two different Guides meet, one becomes a saved plan. The merge is pure functions, unit-tested.</text>
+  </g>
+</svg>
+<div class="row" style="margin-top:14px;gap:18px">
+  <div class="col card">
+    <div class="label" style="color:var(--gain)">What an account stores</div>
+    <ul class="ticks sm"><li>Email, and a first name if given</li><li>The household: ages, retirement age, state, savings, monthly saving, income, spending</li><li>Saved scenarios, by tool</li><li>Guide answers and plan, and the Paycheck plan</li><li>When each was last changed</li></ul>
+  </div>
+  <div class="col card">
+    <div class="label" style="color:var(--loss)">What it never stores</div>
+    <ul class="ticks sm"><li>Numbers typed into a tool but not saved (they stay in the tab, and survive a reload)</li><li>Browsing activity</li><li>Anything for advertisers: there are none, and no data is sold or shared</li><li>Share-link inputs, which ride after the # and never reach a server</li></ul>
+  </div>
+  <div class="col card">
+    <div class="label">Signing in, and out for good</div>
+    <ul class="ticks sm"><li>A 6-digit code by email, or Continue with Google (whose script loads only when the sign-in box opens)</li><li>Download everything, any time</li><li>Delete the account: every session is signed out first, then the account and its synced data are deleted. It can't be undone</li></ul>
+  </div>
+</div>
+<div class="row" style="margin-top:16px;gap:22px;align-items:center"><div style="width:250px;flex:none"><img src="../shots/crops/signin_dialog.png" style="width:100%;border-radius:14px;border:1px solid rgba(23,25,28,.14)"></div><div class="col"><div class="h3" style="font-size:17px">Signing in, as it looks on the site.</div><p class="muted" style="font-size:11px">No password to remember: a code by email, or Google. The dialog says up front that an account is optional and that data is never sold or shared.</p><p class="muted" style="font-size:11px">The privacy page names every service that touches data (Supabase, Google, Resend, Vercel, Cloudflare and Sentry) and what each one sees. A dedicated test script checks the row-level security rules.</p></div></div>
+<!--PAGE-->
+<div style="margin-top:14px">
+  <div class="eyebrow" style="color:var(--gray)">Where the numbers come from</div>
+  <h1 class="title" style="font-size:36px">22 figures, each with a source and a due date.</h1>
+  <p class="lede" style="max-width:680px">Tax rules, Medicare and ACA prices, market history and sensible defaults all go stale. Each one is tracked in a list with its source, how often it changes, when it was last updated and when it is next due. Anything coming due is flagged at the start of every working session.</p>
+</div>
+<div class="row" style="margin-top:12px;gap:20px">
+  <div class="col">
+    <table class="t">
+      <tr><th style="width:118px">Figure</th><th>Source</th><th style="width:72px">How often</th></tr>
+      <tr class="grp"><td colspan="3">Taxes</td></tr>
+      <tr><td>Federal brackets, deductions</td><td>IRS Revenue Procedure (2025-32 for 2026)</td><td>Yearly</td></tr>
+      <tr><td>Contribution limits</td><td>IRS notices, incl. HSA limits</td><td>Yearly</td></tr>
+      <tr><td>Social Security figures</td><td>SSA's October fact sheet</td><td>Yearly</td></tr>
+      <tr><td>State income tax, 50 + DC</td><td>Tax Foundation's January survey, state revenue departments</td><td>Yearly</td></tr>
+      <tr><td>State retirement rules</td><td>State revenue departments, checked against Tax Foundation and AARP</td><td>Yearly</td></tr>
+      <tr><td>RMD tables</td><td>IRS Publication 590-B</td><td>Yearly check</td></tr>
+      <tr class="grp"><td colspan="3">Healthcare</td></tr>
+      <tr><td>Medicare Part B, IRMAA</td><td>CMS fact sheet</td><td>Yearly</td></tr>
+      <tr><td>Part D, Medigap</td><td>CMS; KFF and insurer surveys</td><td>Yearly</td></tr>
+      <tr><td>ACA premiums, subsidies</td><td>KFF benchmark premiums, HHS poverty guidelines, IRS percentages</td><td>Yearly</td></tr>
+      <tr class="grp"><td colspan="3">Markets</td></tr>
+      <tr><td>Stocks, bonds, inflation</td><td>Robert Shiller's data (Yale) via multpl; BLS CPI-U</td><td>Yearly</td></tr>
+      <tr><td>T-bills, small-cap value</td><td>Kenneth French Data Library (Dartmouth)</td><td>Yearly</td></tr>
+      <tr><td>Today's CAPE</td><td>multpl.com, Shiller PE</td><td>Monthly</td></tr>
+      <tr class="grp"><td colspan="3">Housing and other defaults</td></tr>
+      <tr><td>Mortgage rate</td><td>Freddie Mac weekly survey</td><td>Quarterly</td></tr>
+      <tr><td>Home price and rent</td><td>NAR and Census, Zillow, Tax Foundation</td><td>Yearly</td></tr>
+      <tr><td>College and child costs</td><td>College Board; USDA, CPI-adjusted; Dept. of Labor childcare data</td><td>Yearly</td></tr>
+      <tr><td>72(t) rate, debt rates</td><td>IRS federal rates; Federal Reserve G.19</td><td>Quarterly, yearly</td></tr>
+    </table>
+  </div>
+  <div style="width:236px;flex:none">
+    <div class="label">The year in upkeep</div>
+    __CALENDAR__
+    <div class="label" style="margin-top:12px">The rules for every update</div>
+    <ul class="ticks sm">
+      <li>Figures are never invented. Each is cited in a comment beside it.</li>
+      <li>A new tax year is added beside the old one, never over it. Income Tax lets you pick the year.</li>
+      <li>After an update the whole check suite runs, and every expected move is reviewed before baselines are re-recorded.</li>
+      <li>Articles are re-reviewed every 90 days and show the month.</li>
+    </ul>
+  </div>
+</div>
