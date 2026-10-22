@@ -1,6 +1,6 @@
 "use client";
 
-/* Whether the tools' sidebar is shown or hidden: shown until it's hidden,
+/* Whether the tools' sidebar is shown or hidden: hidden until it's opened,
    then remembered in this browser (lib/storage.ts), like the theme and the
    tool list's view. Not synced to an account: it's a per-device choice.
 
@@ -13,7 +13,7 @@ import { readStored, writeStored } from "./storage";
 import { TOOL_RAIL_ATTR as ATTR, TOOL_RAIL_KEY as KEY, TOOL_RAIL_VERSION as VERSION } from "./tool-rail-script";
 
 export function readRailHidden(): boolean {
-  return readStored<string>(KEY, VERSION) === "hidden";
+  return readStored<string>(KEY, VERSION) !== "shown";
 }
 
 function apply(hidden: boolean): void {
@@ -37,8 +37,9 @@ function subscribe(l: () => void) {
   return () => { listeners.delete(l); removeEventListener("storage", onStorage); };
 }
 
-/** Hidden or not. Shown while the page is built and hydrating (the page
-    itself is already folded, from the inlined script). */
+/** Hidden or not. Hidden while the page is built and hydrating, as it
+    starts (the page itself already shows the remembered state, from the
+    inlined script). */
 export function useRailHidden(): boolean {
-  return useSyncExternalStore(subscribe, readRailHidden, () => false);
+  return useSyncExternalStore(subscribe, readRailHidden, () => true);
 }
