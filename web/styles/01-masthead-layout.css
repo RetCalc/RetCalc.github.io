@@ -93,36 +93,48 @@ main.solo .seo{grid-column:1 / -1}
 
 
 /* ---------- the tools' sidebar (components/shell/ToolRail.tsx) ----------
-   On the page's Ground beside a tool, from 1400px: the groups of the tool
-   list, a 34px pitch, the page in view on a Raised pill. Hidden
-   (html[data-tool-rail=hidden], set before first paint), it folds to the
-   one button that brings it back, and the tool takes the room. */
+   On the page's Ground beside a tool: the groups of the tool list, the page
+   in view on a Raised pill. It starts hidden (html[data-tool-rail=hidden],
+   set before first paint) and then the page is exactly as without it, with
+   the open button in the left margin.
+
+   Open, it never narrows the tool. The tool's content is 1278px at most
+   (main's 1330px less its 26px gutters), so the sidebar takes only the room
+   left beside that: the window less 8px at the left, main's 12px inner
+   left gutter, 1278px and the 26px right gutter. That is 146px at 1470px
+   wide, growing to 236px at about 1560px; long names wrap at the narrow
+   end. Below 1470px there is no room for it, so it isn't offered. */
 .toolrail{display:none}
-@media (min-width:1400px){
-  .shell:has(> .toolrail){display:grid;grid-template-columns:236px minmax(0,1fr);gap:8px;
-    max-width:1640px;margin:0 auto;padding-left:var(--gl)}
-  .shell:has(> .toolrail) > main{width:100%;padding-left:16px}
-  .toolrail{display:block;position:sticky;top:var(--pin-top);align-self:start;
-    max-height:calc(100vh - var(--pin-top));overflow-y:auto;padding:22px 4px 32px 0;
+@media (min-width:1470px){
+  .toolrail{display:block}
+  html:not([data-tool-rail=hidden]) .shell:has(> .toolrail){display:grid;
+    grid-template-columns:clamp(126px,calc(100% - 1316px),236px) minmax(0,1fr);
+    max-width:1680px;margin:0 auto;padding-left:8px}
+  html:not([data-tool-rail=hidden]) .shell:has(> .toolrail) > main{width:100%;padding-left:12px}
+  html:not([data-tool-rail=hidden]) .toolrail{position:sticky;top:var(--pin-top);align-self:start;
+    max-height:calc(100vh - var(--pin-top));overflow-y:auto;padding:22px 0 32px;
     scrollbar-width:thin;scrollbar-color:var(--line) transparent}
   /* The tool list is one click away in the sidebar (its title), so the
      tool header's "All tools" steps aside while it shows. !important
      because the button's look is Tailwind utilities, a layer above. */
   html:not([data-tool-rail=hidden]) .shell:has(> .toolrail) #btnToolBack{display:none !important}
-  html[data-tool-rail=hidden] .shell:has(> .toolrail){grid-template-columns:36px minmax(0,1fr)}
+  /* Hidden: only the open button, pinned in the left margin, out of the
+     page's way. */
+  html[data-tool-rail=hidden] .toolrail{position:fixed;left:8px;top:calc(var(--pin-top) + 22px);z-index:5}
 }
 .toolrail-show{display:none}
 html[data-tool-rail=hidden] .toolrail-show{display:inline-flex}
 html[data-tool-rail=hidden] .toolrail-body{display:none}
-.toolrail-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 0 0 10px;margin:0 0 14px}
+.toolrail-top{display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 0 0 6px;margin:0 0 14px}
 .toolrail-title{font-size:14px;font-weight:600;color:var(--ds-text);text-decoration:none;border-radius:4px}
 .toolrail-title:hover{text-decoration:underline;text-underline-offset:3px}
 .toolrail-title:focus-visible{outline:2px solid var(--ds-focus);outline-offset:2px}
-.toolrail-g + .toolrail-g{margin-top:22px}
-.toolrail-h{font-size:13px;color:var(--ds-muted);padding:0 10px;margin:0 0 6px}
+.toolrail-g + .toolrail-g{margin-top:20px}
+.toolrail-h{font-size:12.5px;color:var(--ds-muted);padding:0 6px;margin:0 0 4px}
 .toolrail ul{list-style:none;margin:0;padding:0}
-.toolrail-link{display:flex;align-items:center;height:32px;margin-bottom:2px;padding:0 10px;border-radius:var(--r-well);
-  font-size:14px;color:var(--ds-text);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* A name too long for the narrow sidebar wraps to a second line. */
+.toolrail-link{display:flex;align-items:center;min-height:32px;margin-bottom:2px;padding:5px 6px;border-radius:var(--r-well);
+  font-size:13.5px;line-height:1.25;color:var(--ds-text);text-decoration:none;text-wrap:pretty}
 .toolrail-link:hover{background:color-mix(in srgb,var(--ds-raised) 60%,transparent)}
 .toolrail-link.on{background:var(--ds-raised);font-weight:600}
 .toolrail-link:focus-visible{outline:2px solid var(--ds-focus);outline-offset:-2px}

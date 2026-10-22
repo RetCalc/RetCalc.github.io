@@ -2,8 +2,9 @@
 
 /* The tools' sidebar: every calculator, tool and walkthrough by name,
    grouped as the tool list groups them, beside the pages that hold a tool,
-   from 1400px wide. Narrower screens reach the same pages through the tab
-   rail and the tool list. The page in view is marked; a strategy page, /72t
+   from 1470px wide, sized to the room beside the tool so it never narrows
+   it (styles/01-masthead-layout.css). Narrower screens reach the same pages
+   through the tab rail and the tool list. The page in view is marked; a strategy page, /72t
    and /rmd mark the tool they open.
 
    It can be hidden: the button at its top folds it to a single button that
