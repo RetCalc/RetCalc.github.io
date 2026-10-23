@@ -9,7 +9,7 @@ import { shortMoney } from "./format";
 import type { Point } from "./model";
 
 /** The width of the element, kept current as the window changes. */
-function useWidth(fallback: number) {
+export function useWidth(fallback: number) {
   const ref = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(fallback);
   useLayoutEffect(() => {
@@ -27,12 +27,18 @@ function niceStep(max: number) {
   return [1, 2, 2.5, 5, 10].map((k) => k * s).find((k) => max / k <= 5) ?? s * 10;
 }
 
+/** What the hover readout says for a year on the chart. */
+export interface Readout { title: string; rows: [string, string][] }
+
 /** Net worth: the entries as a solid line, the plan dotted, and in
-    retirement the band 8 in 10 historical markets fell within. */
-export function NetWorthChart({ hist, proj, marks, until, height = 270 }: {
-  hist: { t: number; v: number }[]; proj: Point[]; marks: { t: number; label: string }[]; until?: number; height?: number;
+    retirement the band 8 in 10 historical markets fell within. Pointing
+    at it (or tapping) shows that year's figures. */
+export function NetWorthChart({ hist, proj, marks, until, height = 270, describe }: {
+  hist: { t: number; v: number; date?: string }[]; proj: Point[]; marks: { t: number; label: string }[]; until?: number; height?: number;
+  describe?: (p: { t: number; v: number; lo: number; hi: number; entry?: string }) => Readout;
 }) {
   const [ref, W] = useWidth(900);
+  const [at, setAt] = useState<number | null>(null);
   const H = height, L = 56, R = 16, T = 18, B = 26;
   const pts = proj.filter((p) => p.t <= (until ?? Infinity));
   if (!pts.length) return <div ref={ref} />;
@@ -50,9 +56,23 @@ export function NetWorthChart({ hist, proj, marks, until, height = 270 }: {
   const band = banded.length > 1
     ? line(banded.map((p) => ({ t: p.t, v: p.hi }))) + " " + banded.slice().reverse().map((p) => "L" + X(p.t).toFixed(1) + " " + Y(p.lo).toFixed(1)).join(" ") + " Z"
     : null;
+  // The point under the pointer: an entry when one is close, else the plan.
+  const pick = (t: number) => {
+    const h = hist.reduce<(typeof hist)[number] | null>((b, p) => (Math.abs(p.t - t) < Math.abs((b?.t ?? Infinity) - t) ? p : b), null);
+    if (h && Math.abs(X(h.t) - X(t)) < 10) return { t: h.t, v: h.v, lo: h.v, hi: h.v, entry: h.date };
+    return pts.reduce((b, p) => (Math.abs(p.t - t) < Math.abs(b.t - t) ? p : b), pts[0]);
+  };
+  const hot = at != null ? pick(at) : null;
+  const read = hot && describe ? describe(hot) : null;
+  const move = (e: React.PointerEvent<SVGSVGElement>) => {
+    const r = e.currentTarget.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * W;
+    setAt(x < L || x > W - R ? null : x0 + ((x - L) / (W - L - R)) * (x1 - x0));
+  };
+  const left = hot ? X(hot.t) > W * 0.6 : false;
   return (
-    <div ref={ref}>
-      <svg className="dsh-chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Net worth: your entries and the plan ahead">
+    <div ref={ref} className="dsh-chartwrap">
+      <svg className="dsh-chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Net worth: your entries and the plan ahead"
+        onPointerMove={describe ? move : undefined} onPointerDown={describe ? move : undefined} onPointerLeave={() => setAt(null)}>
         {grid.map((v) => (
           <g key={v}><line className="dsh-gl" x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>
         ))}
@@ -64,7 +84,14 @@ export function NetWorthChart({ hist, proj, marks, until, height = 270 }: {
         <path className="dsh-proj" d={line(pts)} />
         {hist.length > 1 ? <path className="dsh-hist" d={line(hist)} /> : null}
         {hist.map((p) => <circle key={p.t} className="dsh-pt" cx={X(p.t)} cy={Y(p.v)} r={hist.length > 1 ? 3.5 : 5} />)}
+        {hot ? <g><line className="dsh-cursor" x1={X(hot.t)} x2={X(hot.t)} y1={T} y2={H - B} /><circle className="dsh-cdot" cx={X(hot.t)} cy={Y(hot.v)} r={5} /></g> : null}
       </svg>
+      {read && hot ? (
+        <div className={left ? "dsh-tipbox dsh-tip-l" : "dsh-tipbox dsh-tip-r"}>
+          <b>{read.title}</b>
+          {read.rows.map(([k, v]) => <div key={k} className="dsh-tiprow"><span>{k}</span><span>{v}</span></div>)}
+        </div>
+      ) : null}
     </div>
   );
 }

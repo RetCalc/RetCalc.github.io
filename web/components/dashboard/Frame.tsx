@@ -14,7 +14,7 @@ import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/components/account/AccountProvider";
 import { setThemeChoice } from "@/lib/theme";
-import { readDashboard, unstarted, useDashboard } from "./store";
+import { OUTSIDE_US, hasAccounts, readDashboard, unstarted, useDashboard } from "./store";
 
 import { SECTION_NAMES, type Section } from "./sections";
 
@@ -93,7 +93,12 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
   const fresh = unstarted(data);
   // Checked against what's stored, not the first render's empty copy.
   useEffect(() => { if (unstarted(readDashboard())) router.replace("/dashboard/setup"); }, [fresh, router]);
-  const dots: Partial<Record<Section, boolean>> = { accounts: true, retirement: true, next: true };
+  // A dot on a section with something still to fill in.
+  const abroad = data.profile.state === OUTSIDE_US;
+  const dots: Partial<Record<Section, boolean>> = {
+    accounts: !hasAccounts(data.entries), retirement: (!data.profile.ss.checked && !abroad) || !data.profile.strategy,
+    profile: !data.done || data.skipped.length > 0,
+  };
   const initial = (account?.firstName ?? data.profile.p1.name ?? account?.email ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
     <div className="dsh-app">

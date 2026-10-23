@@ -16,5 +16,5 @@ export async function generateMetadata({ params }: PageProps<"/dashboard/[sectio
 
 export default async function Page({ params }: PageProps<"/dashboard/[section]">) {
   const { section } = await params;
-  return <SectionPage id={section as Section} />;
+  return <SectionPage id={section as Exclude<Section, "overview">} />;
 }

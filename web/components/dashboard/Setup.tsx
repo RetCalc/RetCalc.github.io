@@ -7,57 +7,24 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, type ReactNode } from "react";
-import { HouseIcon, InfoIcon, Building2Icon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
+import { HouseIcon, Building2Icon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
-import { groupDigits, parseNum } from "@/lib/format";
 import { NetWorthChart } from "./charts";
-import { MONTHS, money, money10, shortMoney } from "./format";
-import { ageOf, answers, couple, nowYear, payYear, people, results } from "./model";
-import { PER_LABEL, entryFrom, useDashboard, withEntry, type DashData, type Per, type Person, type Profile } from "./store";
+import { Note } from "./ui";
+import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, txt, type PKey } from "./fields";
+import { money, money10, shortMoney } from "./format";
+import { ageOf, couple, nowYear, payYear, people, results } from "./model";
+import { OUTSIDE_US, entryFrom, hasAccounts, useDashboard, withEntry, type DashData, type Person, type Profile } from "./store";
 
-type PKey = "p1" | "p2";
-const THIS_YEAR = new Date().getFullYear();
-
-/* Fields hold text as typed; the profile holds numbers. */
-const txt = (n: number | null) => (n == null ? "" : groupDigits(n, true));
-const num = (s: string) => (s.trim() === "" ? null : parseNum(s));
-
-function years(from: number, to: number) {
-  const out: number[] = [];
-  for (let y = to; y >= from; y--) out.push(y);
-  return out;
-}
 
 interface Ctx { pr: Profile; set: (f: (p: Profile) => Profile) => void; setP: (k: PKey, f: Partial<Person>) => void }
 interface Step { id: string; label: string; title: (pr: Profile) => string; help: string; hidden?: (pr: Profile) => boolean; body: (c: Ctx) => ReactNode }
 
 const nameOf = (pr: Profile, k: PKey) => pr[k].name.trim() || (k === "p1" ? "You" : "Your partner");
 const keys = (pr: Profile): PKey[] => (couple(pr) ? ["p1", "p2"] : ["p1"]);
-
-function Choice({ on, icon, title, sub, onClick }: { on: boolean; icon: ReactNode; title: string; sub: string; onClick: () => void }) {
-  return <button type="button" className="dsh-choice" aria-pressed={on} onClick={onClick}>{icon}<b>{title}</b><span>{sub}</span></button>;
-}
-function Note({ children }: { children: ReactNode }) {
-  return <div className="dsh-note"><InfoIcon aria-hidden="true" /><span>{children}</span></div>;
-}
-function BirthFields({ id, label, bm, by, from, to, optional, onChange }: { id: string; label: string; bm: number | null; by: number | null; from: number; to: number; optional?: boolean; onChange: (v: { bm?: number | null; by?: number | null }) => void }) {
-  return (
-    <>
-      <SelectField id={id + "M"} label={label + " month"} value={String(bm ?? "")} onChange={(v) => onChange({ bm: v ? Number(v) : null })}>
-        <option value="">{optional ? "Month (optional)" : "Month"}</option>
-        {MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}
-      </SelectField>
-      <SelectField id={id + "Y"} label={label + " year"} value={String(by ?? "")} onChange={(v) => onChange({ by: v ? Number(v) : null })}>
-        <option value="">{optional ? "Year (optional)" : "Year"}</option>
-        {years(from, to).map((y) => <option key={y} value={y}>{y}</option>)}
-      </SelectField>
-    </>
-  );
-}
 
 const STEPS: Step[] = [
   {
@@ -125,39 +92,22 @@ const STEPS: Step[] = [
     ),
   },
   {
-    id: "pay", label: "Pay", title: () => "What do you earn?", help: "Before taxes, the way it shows on your offer letter or pay stub.",
-    body: ({ pr, setP }) => {
-      // Each person's share of the household's take-home, by their pay.
-      const A = answers(pr), gross = (A.income ?? 0) + (A.income2 ?? 0);
-      const th = (k: PKey) => (A.takehome && gross > 0 ? (A.takehome * ((k === "p1" ? A.income : A.income2) ?? 0)) / gross : null);
+    id: "pay", label: "Pay", title: () => "What do you earn?",
+    help: "Before taxes, the way it shows on your offer letter or pay stub, and where you live, for the taxes on it.",
+    body: ({ pr, set, setP }) => {
+      const abroad = pr.state === OUTSIDE_US;
       return (
-      <>
-        {keys(pr).map((k) => {
-          const p = pr[k], y = payYear(p);
-          return (
+        <>
+          <div className="dsh-row"><StateField id="dshState" value={pr.state} onChange={(v) => set((p) => ({ ...p, state: v }))} /><div /></div>
+          {keys(pr).map((k) => (
             <div className="dsh-person" key={k}>
               <h3>{nameOf(pr, k)}</h3>
-              <div className="dsh-row">
-                <MoneyField id={"dshPay" + k} label="Pay" value={txt(p.pay)} onValueChange={(v) => setP(k, { pay: num(v) })} />
-                <SelectField id={"dshPer" + k} label="How often" value={p.per} onChange={(v) => setP(k, { per: v as Per })}>
-                  {Object.entries(PER_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </SelectField>
-              </div>
-              <div className="dsh-inline">
-                <Segmented aria-label="Before or after taxes">
-                  <SegmentedItem pressed={p.taxed === "before"} onPressedChange={() => setP(k, { taxed: "before" })}>Before taxes</SegmentedItem>
-                  <SegmentedItem pressed={p.taxed === "after"} onPressedChange={() => setP(k, { taxed: "after" })}>After taxes</SegmentedItem>
-                </Segmented>
-                <span className="dsh-cap">
-                  {y == null ? null : p.taxed === "after" ? <>Take-home. We&apos;ll work out the pay before taxes.</>
-                    : <>{p.per === "year" ? null : <><b>{money(y)}</b> per year, </>}{th(k) ? <>{p.per === "year" ? "About" : "about"} <b>{money10(th(k)!)}</b> take-home per month</> : null}</>}
-                </span>
-              </div>
+              <PayFields pr={pr} k={k} setP={setP} />
             </div>
-          );
-        })}
-        <Note>Not sure of your take-home pay? <b>We estimate it</b> from this, with the taxes on it.</Note>
-      </>
+          ))}
+          {abroad ? <Note>Outside the US, we don&apos;t work out taxes or Social Security. Enter your pay after taxes; figures for retirement are <b>before taxes</b>.</Note>
+            : <Note>Not sure of your take-home pay? <b>We estimate it</b> from this, with the taxes on it.</Note>}
+        </>
       );
     },
   },
@@ -225,7 +175,9 @@ function Summary({ pr, done }: { pr: Profile; done: (id: string) => boolean }) {
     ["Household", pr.who ? named + kids : null],
     ["Ages today", ppl.every((p) => p.by) ? ppl.map((p) => ageOf(p)).join(" and ") : null],
     ["Retiring", done("retire") && ppl.some((p) => p.retire) ? ppl.map((p, i) => `${p.name.trim() || (i ? "Partner" : "You")} at ${p.retire ?? "—"}`).join(", ") : null],
-    ["Pay before taxes", done("pay") ? money(ppl.reduce((s, p) => s + (payYear(p) ?? 0) / (p.taxed === "after" ? 0.76 : 1), 0)) + " per year" : null],
+    pr.state === OUTSIDE_US
+      ? ["Pay after taxes", done("pay") ? money(ppl.reduce((s, p) => s + (payYear(p) ?? 0), 0)) + " per year" : null]
+      : ["Pay before taxes", done("pay") ? money(ppl.reduce((s, p) => s + (payYear(p) ?? 0) / (p.taxed === "after" ? 0.76 : 1), 0)) + " per year" : null],
     ["Saved", done("saved") && pr.saved != null ? money(pr.saved) : null],
     ["Spending", done("spend") && pr.spend != null ? money(pr.spend) + " per month" : null],
     ["Home equity", done("home") && pr.home ? (pr.home === "own" ? money((pr.value ?? 0) - (pr.owed ?? 0)) : "Renting") : null],
@@ -272,7 +224,8 @@ export function Setup() {
   const done = (id: string) => { const i = list.findIndex((s) => s.id === id); return i >= 0 && i < at && !data.skipped.includes(id); };
   // Leaving setup records today's entry of what's saved and owed.
   const finish = () => {
-    save((d) => { const e = entryFrom(d.profile); return { ...d, done: true, entries: e ? withEntry(d.entries, e) : d.entries }; });
+    // Once accounts are in, they're the record; setup's one number isn't.
+    save((d) => { const e = hasAccounts(d.entries) ? null : entryFrom(d.profile); return { ...d, done: true, entries: e ? withEntry(d.entries, e) : d.entries }; });
     router.push("/dashboard");
   };
 
