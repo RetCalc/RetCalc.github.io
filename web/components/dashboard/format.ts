@@ -1,0 +1,30 @@
+/* Figures as the Dashboard shows them. */
+
+import { money } from "@/lib/format";
+
+export { money };
+
+/** $1.9M, $450K, $800: for chart axes and secondary figures. */
+export function shortMoney(n: number): string {
+  const a = Math.abs(n), sign = n < 0 ? "-" : "";
+  if (a >= 1e6) return sign + "$" + (a / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, ".0") + "M";
+  if (a >= 1e3) return sign + "$" + Math.round(a / 1e3) + "K";
+  return sign + "$" + Math.round(a);
+}
+
+/** To the nearest $10, for monthly figures that come from a projection. */
+export const money10 = (n: number) => money(Math.round(n / 10) * 10);
+
+export const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** "September 21, 2026" from YYYY-MM-DD. */
+export function longDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+/** Whole days from YYYY-MM-DD to today. */
+export function daysSince(iso: string): number {
+  const [y, m, d] = iso.split("-").map(Number);
+  const then = new Date(y, m - 1, d), now = new Date();
+  return Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() - then.getTime()) / 864e5);
+}

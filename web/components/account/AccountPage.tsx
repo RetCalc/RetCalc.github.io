@@ -23,6 +23,7 @@ import type { StateOption } from "@/lib/states";
 function label(key: string): string {
   if (key === "household") return "Your household";
   if (key === "guide") return "Your Retirement Readiness Guide";
+  if (key === "dashboard") return "Your dashboard";
   if (key.startsWith("scenarios-")) return "Saved scenarios: " + key.slice("scenarios-".length);
   return key;
 }

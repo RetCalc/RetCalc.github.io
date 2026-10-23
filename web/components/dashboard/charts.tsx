@@ -1,0 +1,144 @@
+"use client";
+
+/* The Dashboard's drawings: net worth over the years, the life timeline and
+   the readiness score's split bar. The two charts are drawn at the width
+   they're given, so their text stays the size of the page's. */
+
+import { useLayoutEffect, useRef, useState } from "react";
+import { shortMoney } from "./format";
+import type { Point } from "./model";
+
+/** The width of the element, kept current as the window changes. */
+function useWidth(fallback: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(fallback);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setW(Math.max(280, Math.round(el.clientWidth))));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w] as const;
+}
+
+function niceStep(max: number) {
+  const s = Math.pow(10, Math.floor(Math.log10(Math.max(1, max) / 4)));
+  return [1, 2, 2.5, 5, 10].map((k) => k * s).find((k) => max / k <= 5) ?? s * 10;
+}
+
+/** Net worth: the entries as a solid line, the plan dotted, and in
+    retirement the band 8 in 10 historical markets fell within. */
+export function NetWorthChart({ hist, proj, marks, until, height = 270 }: {
+  hist: { t: number; v: number }[]; proj: Point[]; marks: { t: number; label: string }[]; until?: number; height?: number;
+}) {
+  const [ref, W] = useWidth(900);
+  const H = height, L = 56, R = 16, T = 18, B = 26;
+  const pts = proj.filter((p) => p.t <= (until ?? Infinity));
+  if (!pts.length) return <div ref={ref} />;
+  const x0 = hist.length ? Math.min(hist[0].t, pts[0].t) : pts[0].t, x1 = Math.max(pts[pts.length - 1].t, x0 + 1);
+  const ymax = Math.max(...pts.map((p) => p.hi), ...hist.map((h) => h.v)) * 1.05;
+  const step = niceStep(ymax), top = Math.ceil(ymax / step) * step || step;
+  const X = (t: number) => L + ((t - x0) / (x1 - x0)) * (W - L - R), Y = (v: number) => T + (1 - Math.max(0, v) / top) * (H - T - B);
+  const span = x1 - x0, every = span > 40 ? 10 : span > 18 ? 5 : span > 6 ? 2 : 1;
+  const grid: number[] = [];
+  for (let v = 0; v <= top + 1; v += step) grid.push(v);
+  const years: number[] = [];
+  for (let y = Math.ceil(x0 / every) * every; y <= x1; y += every) years.push(y);
+  const line = (arr: { t: number; v: number }[]) => arr.map((p, k) => (k ? "L" : "M") + X(p.t).toFixed(1) + " " + Y(p.v).toFixed(1)).join(" ");
+  const banded = pts.filter((p) => p.hi > p.lo);
+  const band = banded.length > 1
+    ? line(banded.map((p) => ({ t: p.t, v: p.hi }))) + " " + banded.slice().reverse().map((p) => "L" + X(p.t).toFixed(1) + " " + Y(p.lo).toFixed(1)).join(" ") + " Z"
+    : null;
+  return (
+    <div ref={ref}>
+      <svg className="dsh-chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Net worth: your entries and the plan ahead">
+        {grid.map((v) => (
+          <g key={v}><line className="dsh-gl" x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} /><text x={L - 8} y={Y(v) + 4} textAnchor="end">{shortMoney(v)}</text></g>
+        ))}
+        {years.map((y) => <text key={y} x={X(y)} y={H - 6} textAnchor="middle">{y}</text>)}
+        {band ? <path className="dsh-band" d={band} /> : null}
+        {marks.filter((m) => m.t >= x0 && m.t <= x1).map((m, i) => (
+          <g key={m.label}><line className="dsh-mk" x1={X(m.t)} x2={X(m.t)} y1={T + 14 + i * 16} y2={H - B} /><text className="dsh-ml" x={X(m.t) + 5} y={T + 24 + i * 16}>{m.label}</text></g>
+        ))}
+        <path className="dsh-proj" d={line(pts)} />
+        {hist.length > 1 ? <path className="dsh-hist" d={line(hist)} /> : null}
+        {hist.map((p) => <circle key={p.t} className="dsh-pt" cx={X(p.t)} cy={Y(p.v)} r={hist.length > 1 ? 3.5 : 5} />)}
+      </svg>
+    </div>
+  );
+}
+
+export interface Lane {
+  name: string;
+  spans: { from: number; to: number; kind: "dsh-work" | "dsh-ret" | "dsh-k1" | "dsh-k2" | "dsh-k3"; label?: string }[];
+  events: { at: number; label: string }[];
+  /** Words above the lane at a year, in Text: "Retires 2052, age 62". */
+  note?: { at: number; label: string };
+  /** Words just after today's line: "Age 36". */
+  lead?: string;
+}
+
+/** Your timeline: who's working or retired, children's college years, and
+    the dates along the way, with today as the amber line. */
+export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number; to: number; now: number }) {
+  const [ref, fit] = useWidth(1100);
+  // Never narrower than its labels need; a phone scrolls it sideways.
+  const W = Math.max(640, fit);
+  const L = 110, R = 20, G = 58, H = 40 + lanes.length * G + 14;
+  const X = (y: number) => L + ((y - from) / (to - from)) * (W - L - R);
+  const every = W < 700 ? 10 : 5, ticks: number[] = [];
+  for (let y = Math.ceil((from + 1) / every) * every; y <= to; y += every) ticks.push(y);
+  return (
+    <div ref={ref} className="dsh-tl">
+      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img" aria-label="Your timeline">
+        {ticks.map((y) => <text key={y} x={X(y)} y={18} textAnchor="middle">{y}</text>)}
+        <line className="dsh-now" x1={X(now)} x2={X(now)} y1={26} y2={H - 8} />
+        {lanes.map((ln, i) => {
+          const y = 56 + i * G;
+          return (
+            <g key={ln.name + i}>
+              <text className="dsh-lbl" x={0} y={y + 4}>{ln.name}</text>
+              <line className="dsh-lane" x1={L} x2={W - R} y1={y} y2={y} />
+              {ln.spans.map((s) => (
+                <g key={s.kind + s.from}>
+                  <line className={"dsh-span " + s.kind} x1={X(Math.max(from, s.from)) + 3} x2={X(Math.min(to, s.to)) - 3} y1={y} y2={y} />
+                  {s.label ? <text x={Math.max(X(s.from), X(now) + 6) + 2} y={y - 11}>{s.label}</text> : null}
+                </g>
+              ))}
+              {ln.events.map((e, j) => (
+                <g key={e.label}>
+                  <circle className="dsh-ev" cx={X(e.at)} cy={y} r={5} />
+                  <text x={X(e.at) + (j ? 4 : -4)} y={y + 21} textAnchor={j ? "start" : "end"}>{e.label}</text>
+                </g>
+              ))}
+              {ln.lead ? <text x={X(now) + 8} y={y - 11}>{ln.lead}</text> : null}
+              {ln.note ? <text className="dsh-strong" x={X(ln.note.at)} y={y - 11}>{ln.note.label}</text> : null}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+/** The readiness score's five areas side by side, each as wide as its
+    weight, filled as far as it scores; an area not scored yet is hatched. */
+export function SplitBar({ areas }: { areas: { w: number; p: number | null; name: string }[] }) {
+  const total = areas.reduce((s, a) => s + a.w, 0), gap = 0.8;
+  const widths = areas.map((a) => (a.w / total) * (100 + gap) - gap);
+  const starts = widths.map((_, i) => widths.slice(0, i).reduce((s, w) => s + w + gap, 0));
+  return (
+    <svg className="dsh-splitbar" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label={areas.map((a) => a.name + (a.p == null ? ": not scored yet" : `: ${Math.round(a.p * a.w)} of ${a.w}`)).join(", ")}>
+      {areas.map((a, i) => {
+        const w = widths[i], at = starts[i];
+        return (
+          <g key={a.name}>
+            <rect className={a.p == null ? "dsh-sb-na" : "dsh-sb-track"} x={at} y={0} width={w} height={10} rx={1.2} />
+            {a.p == null ? null : <rect className={a.p >= 0.8 ? "dsh-sb-full" : "dsh-sb-part"} x={at} y={0} width={w * a.p} height={10} rx={1.2} />}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}

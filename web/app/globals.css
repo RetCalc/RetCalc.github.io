@@ -7,6 +7,10 @@
 @layer theme, base, legacy, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+/* The Dashboard's own frame and tiles, all under .dsh. Outside the layers,
+   so setup's larger fields can step up from the components' own sizes;
+   nothing in it reaches a page without .dsh. */
+@import "../styles/19-dashboard.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -31,6 +35,7 @@
 @import "../styles/16-home.css" layer(legacy);
 @import "../styles/17-report.css" layer(legacy);
 @import "../styles/18-tool-picker.css" layer(legacy);
+
 
 /* The site's theme script sets data-theme="dark" or "light" on <html>. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

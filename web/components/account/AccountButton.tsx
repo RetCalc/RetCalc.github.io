@@ -10,7 +10,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CircleUserRoundIcon, HomeIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
+import { CircleUserRoundIcon, HomeIcon, LayoutGridIcon, LogOutIcon, MoonIcon, SunIcon, UserRoundIcon } from "lucide-react";
 import { useHousehold } from "@/components/household/HouseholdProvider";
 import { useAccount } from "./AccountProvider";
 import { usePopup } from "@/components/shell/Popup";
@@ -86,6 +86,7 @@ export function AccountButton() {
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
+          <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard</DropdownMenuItem>
           <DropdownMenuItem render={<Link href="/account" />} onClick={() => router.prefetch("/account")}><UserRoundIcon />Account</DropdownMenuItem>
           {themeItem}
           <DropdownMenuItem onClick={async () => {
