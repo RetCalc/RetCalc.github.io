@@ -10,6 +10,7 @@ import type { Answers } from "@/tools/guide/store";
 import { parseNum } from "@/lib/format";
 import { budgetFor, budgetMonth, drawdownFor, drawdownSuccess, flow, savingAt } from "./flows";
 import { collegeNeedOf } from "./college";
+import { yearlySaving } from "./cover";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
@@ -119,6 +120,8 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     Object.assign(a, { childcare: pr.childcare, careArea: pr.careArea, college: pr.college.help === "none" ? "no" : "yes",
       childEarly: n(C.early), childSchool: n(C.school), childTeen: n(C.teen), childLater: n(C.later) == null ? null : n(C.later)! / 100 });
   }
+  // College, a month in each year from now, as well as an event for its words.
+  const college: number[] = [];
   if (pr.college.help !== "none" && a.age != null) {
     // Saved ahead in the budget: that share of college is paid from it, not
     // from saving in the college years.
@@ -127,9 +130,17 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     collegeStarts(pr).forEach((years, i) => {
       if (years < 0 || monthly < 1) return;
       events.push({ id: "college" + i, kind: "custom", from: a.age! + years, to: a.age! + years + 4, delta: -monthly, label: "College" });
+      for (let k = years; k < years + 4; k++) college[k] = (college[k] ?? 0) + monthly;
     });
   }
   if (events.length) a.events = events;
+  // Saving year by year, account by account: the children's costs and
+  // college come out of the accounts "How will you cover it?" names, then
+  // in the dashboard's order, so the plan's account mix, match and taxes
+  // follow those choices.
+  if (F?.hasPay && a.age != null && a.retire != null && a.retire > a.age) {
+    Object.assign(a, { yearly: yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }).rows, yearlyBase: F.invested + F.match });
+  }
   // Each of you's own claiming age (the plan's optimizer path, which takes two).
   if (!abroad && (pr.ss.claim != null || (two && pr.ss.claim2 != null))) {
     const dflt = (p: Person) => Math.min(70, Math.max(67, p.retire ?? 67));

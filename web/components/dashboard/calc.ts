@@ -10,6 +10,8 @@ import { STAGES_DEF, stageFields, stagesCompute, type StageInputs, type StagesIn
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
 import { COLLEGE_DEFAULTS } from "@/tools/college/model";
 import { flow, growthLines, taxState } from "./flows";
+import { shiftCover } from "./cover";
+import { KID_BASE } from "@/tools/stages/kids";
 import { ageOf, collegeStarts, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { sum, type Entry, type Profile } from "./store";
 
@@ -70,7 +72,7 @@ export function planKidsOf(pr: Profile): PlanKids | null {
 
 /** A year of the plan's saving: what goes in each month that year, yours
     and your employers', in today's dollars, and what's going on. */
-interface PlanYear { monthly: number; label: string }
+interface PlanYear { monthly: number; label: string; split?: { t: number; r: number; b: number } }
 
 /** A stage's name without the yearly growth in it ("after the raise" once
     for every year saving has grown): the stage's growth rate says that. */
@@ -85,9 +87,9 @@ function planYears(R: Results): PlanYear[] {
   const S = R.S;
   if (!S) return [];
   const age = Math.round(S.I.age), end = Math.round(S.retire);
-  const sched = S.sched?.length ? S.sched : [{ from: age, to: end, monthly: S.monthly, label: "Saving" }];
+  const sched: { from: number; to: number; monthly: number; label: string; split?: PlanYear["split"] }[] = S.sched?.length ? S.sched : [{ from: age, to: end, monthly: S.monthly, label: "Saving" }];
   const out: PlanYear[] = [];
-  for (const s of sched) for (let t = Math.round(s.from); t < Math.round(s.to); t++) out.push({ monthly: s.monthly, label: plainLabel(s.label) });
+  for (const s of sched) for (let t = Math.round(s.from); t < Math.round(s.to); t++) out.push({ monthly: s.monthly, label: plainLabel(s.label), ...(s.split ? { split: s.split } : {}) });
   return out;
 }
 
@@ -120,20 +122,33 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   const matched = own * (own > 0 ? (A.tradC + A.rothC) / own : 0);
   const matchPct = F.match > 0 && matched > 0 ? (F.match / matched) * 100 : 0, mf = 1 + (matched > 0 ? F.match / own : 0);
   const infl = pr.assume.inflation, nom = (real: number) => (1 + real) * (1 + infl) - 1;
-  const split = own > 0 ? { sTrad: A.tradC / own, sRoth: A.rothC / own, ...(A.hsaC > 0 ? { sHsa: A.hsaC / own } : {}) } : {};
-  const stage = (years: number, monthly: number, growth: number, name?: string, adj = false): StageInputs => ({
-    ...stageFields({ years, contrib: Math.round(monthly / mf), period: "Monthly", growth: nom(growth), nominal: A.nominal, vol: 0.15, adj, ...split }),
-    ...(name ? { name } : {}),
-  });
+  const todaySplit = own > 0 ? { sTrad: A.tradC / own, sRoth: A.rothC / own, ...(A.hsaC > 0 ? { sHsa: A.hsaC / own } : {}) } : {};
+  // A stage's own saving and its split from the plan's saving by account,
+  // so that with the match added it puts the same into each: the match goes
+  // to traditional at p of every dollar of yours there and in Roth.
+  const p = matchPct / 100, hsaOfR = A.rothC + A.hsaC > 0 ? A.hsaC / (A.rothC + A.hsaC) : 0;
+  const mineOf = (y: Pick<PlanYear, "monthly" | "split">) => {
+    if (!y.split) return { mine: y.monthly / mf, split: todaySplit };
+    const r1 = y.split.r * (1 - hsaOfR), hsa = y.split.r - r1, t = Math.max(0, (y.split.t - p * r1) / (1 + p)), mine = t + y.split.r + y.split.b;
+    return { mine, split: mine > 0 ? { sTrad: t / mine, sRoth: r1 / mine, ...(hsa > 0 ? { sHsa: hsa / mine } : {}) } : todaySplit };
+  };
+  const stage = (years: number, y: Pick<PlanYear, "monthly" | "split">, growth: number, name?: string, adj = false): StageInputs => {
+    const m = mineOf(y);
+    return {
+      ...stageFields({ years, contrib: Math.round(m.mine), period: "Monthly", growth: nom(growth), nominal: A.nominal, vol: 0.15, adj, ...m.split }),
+      ...(name ? { name } : {}),
+    };
+  };
   const base: StagesInputs = {
     ...withDefaults(STAGES_DEF, {}),
     initial: g(A.tradBal + A.rothBal + A.brokBal + A.hsaBal), inflation: pc(infl),
     ...(A.target > 0 ? { solveFor: "After-Tax Withdrawal", target: g(A.target) } : {}),
     saOn: true, saTradBal: g(A.tradBal), saRothBal: g(A.rothBal), saBrokBal: g(A.brokBal), saBrokBasis: g(A.brokBal * 0.6), saHsaBal: g(A.hsaBal),
     saSalary: g(F.gross * 12), saMatchPct: matchPct > 0 ? String(+matchPct.toFixed(4)) : "0", saMatchCap: "100", saStatus: A.status, saState: A.state,
-    stages: [stage(A.years, own + F.match, 0)],
+    stages: [stage(A.years, { monthly: own + F.match }, 0)],
   };
-  const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids, kidCover: {} } : s);
+  // The children, and how their costs are covered, counted from year 0 as the Calculator counts.
+  const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids, kidCover: shiftCover(pr.kidCover ?? {}, KID_BASE - (ageOf(pr.p1) ?? KID_BASE)) } : s);
   const years = planYears(R);
   if (!years.length) return withKids(base);
   const groups = planGroups(years);
@@ -142,10 +157,10 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   const exact = (gi: number) => groups[gi].label;
   const yearly = groups.flatMap((gr) => years.slice(gr.from, gr.to).map((y) => ({ y, name: gr.label })));
   const value = (stages: StageInputs[]) => stagesCompute({ ...base, stages }, null).R.fvReal;
-  const asYears = (from: number) => yearly.slice(from).map((x, i) => stage(1, x.y.monthly, 0, x.name, from + i > 0));
+  const asYears = (from: number) => yearly.slice(from).map((x, i) => stage(1, x.y, 0, x.name, from + i > 0));
   const out: StageInputs[] = [];
   groups.forEach((gr, gi) => {
-    const first = years[gr.from].monthly, n = gr.to - gr.from, level = years.slice(gr.from, gr.to).every((y) => Math.abs(y.monthly - first) < 0.5);
+    const first = years[gr.from], n = gr.to - gr.from, level = years.slice(gr.from, gr.to).every((y) => Math.abs(y.monthly - first.monthly) < 0.5);
     if (level || n < 2) { out.push(stage(n, first, 0, exact(gi), gi > 0)); return; }
     const want = value([...out, ...asYears(gr.from)]);
     let lo = -0.5, hi = 0.5;

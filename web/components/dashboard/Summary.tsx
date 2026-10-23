@@ -15,12 +15,12 @@ import { SERIES } from "@/lib/hues";
 import { budgetGroups } from "@/tools/budget/model";
 import { PLAN_DEFAULTS, type PlanState } from "@/tools/plan/model";
 import { planSummary, type PlanSummary } from "@/tools/plan/results";
-import { schedule } from "@/tools/guide/schedule";
 import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } from "@/tools/plan/Summary";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
 import { Frame } from "./Frame";
 import { advancedFor, planKidsOf, stagesFor } from "./calc";
+import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
 import { money, money10 } from "./format";
 import { ageOf, answers, holdings, nowYear, results, spendMonth } from "./model";
@@ -61,18 +61,19 @@ function PlanHero() {
 }
 
 /** What the children cost the plan, from the plan: the saving their costs
-    take (beyond what they cost today, which the budget already pays) and
-    what the budget has to cover when they cost more than is saved, and the
-    plan's savings at retirement without them. */
+    take (beyond what they cost today, which the budget already pays) from
+    the accounts "How will you cover it?" says, what the budget has to cover
+    when they cost more than is saved, and the plan's savings at retirement
+    without them. */
 function withPlanChildren(S: PlanSummary, pr: Profile, entries: Entry[]): PlanSummary {
   if (!S.children) return S;
-  const a = answers(pr, entries), R = results(pr, entries);
-  if (!R.S || a.age == null || a.retire == null) return S;
-  // Only the children: no college, no saving that grows.
-  const sched = schedule({ ...a, events: [] }, { monthly: R.S.monthly });
-  const yrs = (x: { from: number; to: number }) => (x.to - x.from) * 12;
-  const fromSaving = sched.reduce((t, x) => t + Math.max(0, R.S!.monthly - x.monthly) * yrs(x), 0);
-  const fromSpending = sched.reduce((t, x) => t + (x.short ?? 0) * yrs(x), 0);
+  const a = answers(pr, entries), F = flow(pr);
+  if (!F.hasPay || a.age == null || a.retire == null) return S;
+  // Only the children (no college), each year against that year's saving
+  // without them, taken from the accounts the profile says.
+  const Y = yearlySaving(pr, F, a);
+  const fromSaving = Y.rows.reduce((t, r, k) => t + Math.max(0, Y.base[k] - (r.t + r.r + r.b)) * 12, 0);
+  const fromSpending = Y.rows.reduce((t, r) => t + r.short * 12, 0);
   const none = { ...pr, kids: 0, planned: { ...pr.planned, count: 0 } };
   const without = results(none, entries).S?.fv ?? S.children.without;
   return { ...S, children: { ...S.children, fromSaving, fromSpending, without } };

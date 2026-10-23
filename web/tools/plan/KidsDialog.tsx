@@ -23,7 +23,7 @@ import { advancedPlan } from "@/tools/advanced/model";
 import { CARE_AREAS, CHILD_COST, CHILD_SOURCE, MAX_KIDS, type CareArea } from "@/tools/guide/schedule";
 import { CountedBoxes } from "@/components/fields/CountedBoxes";
 import { freedOf, planAges, seedStages, toolOf } from "./flow";
-import { ageSpan, coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type Freed, type KidStage, type Monthly } from "./kids";
+import { ageSpan, coverStage, kidDefaults, kidList, kidStages, monthlyByAccount, stageKey, type Cover, type Freed, type KidStage, type Monthly } from "./kids";
 import { COVER_ORDER, NO_KIDS, setPlan, type CoverLine, type PlanKids, type PlanState } from "./model";
 
 const ACCT: Record<CoverLine, string> = { brok: "Brokerage", roth: "Roth", trad: "Traditional", hsa: "HSA" };
@@ -290,24 +290,27 @@ function CoverDialog({ plan, age, retire, close, save }: {
     `ppy` times a year; `F` what a cut frees (the walkthrough knows the
     paycheck; Stages takes cuts one for one). `base`: spans in years from
     now, as KidsDialog. */
-export function CoverStagesDialog({ segs, today, ppy, F, initial, base, close, save }: {
+export function CoverStagesDialog({ segs, today, ppy, F, initial, base, close, save, coverFn, order, saveLabel }: {
   segs: KidStage[]; today: Monthly; ppy: number; F?: Freed; initial: Record<string, Partial<Monthly>>; base?: number;
   close: () => void; save: (c: Record<string, Partial<Monthly>>) => void;
+  /** The Dashboard's: its own order for what isn't typed, said in `order`,
+      and its own words on the save button. */
+  coverFn?: (change: number, typed?: Partial<Monthly>) => Cover; order?: string; saveLabel?: string;
 }) {
   // What's typed, per stage and account, as text; the rest follow the order.
   const [typed, setTyped] = useState<Record<string, Partial<Record<CoverLine, string>>>>(() =>
     Object.fromEntries(Object.entries(initial).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, cents(x as number)]))])));
   const nums = Object.fromEntries(Object.entries(typed).map(([key, v]) => [key, Object.fromEntries(Object.entries(v).map(([k, x]) => [k, parseNum(x as string)]))])) as Record<string, Partial<Monthly>>;
-  const C = { today, ppy, per: (m: number) => (m * 12) / ppy, cover: (s: KidStage) => coverStage(s.change, today, nums[stageKey(s)], F) };
+  const C = { today, ppy, per: (m: number) => (m * 12) / ppy, cover: (s: KidStage) => (coverFn ? coverFn(s.change, nums[stageKey(s)]) : coverStage(s.change, today, nums[stageKey(s)], F)) };
   const perCheck = C.ppy === 12 ? "per month" : C.ppy === 26 ? "per paycheck (every two weeks)" : C.ppy === 52 ? "per paycheck (weekly)" : "per paycheck";
   return (
     <Modal size="table" onClose={close}>
       <h3>How will you cover this?</h3>
       <div className="formhint">Today you save <b>{money(C.today.brok + C.today.roth + C.today.trad + C.today.hsa)}</b> per month:{" "}
         {COVER_ORDER.filter((k) => C.today[k] > 0).map((k) => (k === "brok" || k === "trad" ? ACCT[k].toLowerCase() : ACCT[k]) + " " + money(C.today[k])).join(", ") || "nothing yet"}.
-        {" "}Each stage&apos;s children come out of the brokerage first, so the tax-advantaged accounts stay full, then Roth, then traditional
-        (where the 401(k) match is), then the HSA. Type over any amount to take it from somewhere else; what saving can&apos;t cover comes out of spending.
-        {F ? " Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there frees less than its size: each one is cut far enough to cover the cost after that tax." : null}</div>
+        {" "}{order ? <>Each stage&apos;s children come out of {order}.</> : <>Each stage&apos;s children come out of the brokerage first, so the tax-advantaged accounts stay full, then Roth, then traditional
+        (where the 401(k) match is), then the HSA.</>} Type over any amount to take it from somewhere else; what saving can&apos;t cover comes out of spending.
+        {F || coverFn ? " Money kept out of a traditional account or the HSA is taxed as pay again, so a cut there frees less than its size: each one is cut far enough to cover the cost after that tax." : null}</div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-170 text-note tabular-nums">
           <thead><tr className="text-label text-muted-foreground">
@@ -342,8 +345,8 @@ export function CoverStagesDialog({ segs, today, ppy, F, initial, base, close, s
       {segs.some((s) => C.cover(s).matchLost > 0.5) ? <p className="hint mt-3 text-loss">⚠ A cut shown in red under Traditional goes below what earns the full employer match, so the match shrinks too. Taking more from another account keeps it.</p> : null}
       <p className="hint mt-3">Amounts are per month, in today&apos;s dollars. {perCheck === "per month" ? "" : "The paycheck figure is the same cost on your pay schedule. "}A stage costing less than today adds the difference to the brokerage.</p>
       <div className="formactions mt-4">
-        <Button variant="outline" className="flex-1" onClick={() => setTyped({})}>Brokerage first</Button>
-        <Button className="flex-1" onClick={() => save(nums)}>Build the stages</Button>
+        <Button variant="outline" className="flex-1" onClick={() => setTyped({})}>{order ? "The usual order" : "Brokerage first"}</Button>
+        <Button className="flex-1" onClick={() => save(nums)}>{saveLabel ?? "Build the stages"}</Button>
       </div>
     </Modal>
   );

@@ -54,7 +54,16 @@ export interface Answers {
   /** What a second or later child costs, as a share of the first (the
       Dashboard lets it be set); unset, the usual 80%. */
   childLater?: number | null;
+  /** The Dashboard's saving year by year from today's age, already worked
+      out account by account (children's costs taken from the accounts the
+      household chose), with `yearlyBase` the saving it starts from. The
+      schedule uses these in place of its own; nothing else sets them. */
+  yearly?: YearSaving[] | null; yearlyBase?: number | null;
 }
+/** One year's saving a month, in today's dollars: traditional (with the
+    employer's match), Roth and HSA, and brokerage; and what the costs that
+    year leave for spending to cover when saving can't. */
+export interface YearSaving { t: number; r: number; b: number; short: number }
 export type AnswerKey = keyof Answers;
 
 /* ---------- v2 (retcalc.guide.v2), doc 3 "The stored object" ----------

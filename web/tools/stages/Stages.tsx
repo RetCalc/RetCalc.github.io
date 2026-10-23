@@ -115,6 +115,8 @@ export function Stages() {
     if (stagesLookEdited(s.stages) && !kids && !confirm("Replace your stages with ones built around your children? Your first stage's saving, return and pay schedule carry over, over the same " + fmtNum(planYears) + " years.")) return;
     const { stages, short } = stagesFromKidsYears(s, k, cover);
     setState((c) => ({ ...c, stages, kids: k, kidCover: cover }));
+    // The Dashboard builds its stages again from its plan, with these.
+    if (dash) { toast("Saved to your profile: your plan and these stages now use them"); return; }
     toast("Built " + stages.length + (stages.length === 1 ? " stage" : " stages") + " around your children" +
       (short === 1 ? ". In one of them the children cost more than you save, so that stage saves nothing" : short ? ". In " + short + " of them the children cost more than you save, so those stages save nothing" : ""));
   };
@@ -125,9 +127,7 @@ export function Stages() {
       return;
     }
     const costly = stagesKidSegs(s, k).some((x) => x.change > 0);
-    // The Dashboard's plan takes the children's costs from every account in
-    // proportion, so its Calculator does too.
-    if (split && costly && !dash) setKidStep({ at: "cover", k });
+    if (split && costly) setKidStep({ at: "cover", k });
     else buildKids(k, {});
   };
 
@@ -424,8 +424,10 @@ export function Stages() {
                   {...(dash ? { costsOnly: scope?.slots?.kidsSummary, withLater: true } : {})} />
               ) : null}
               {kidStep?.at === "cover" ? (() => {
-                const { today, ppy } = stagesMonthly(s);
-                return <CoverStagesDialog segs={stagesKidSegs(s, kidStep.k).filter((x) => x.change !== 0)} today={today} ppy={ppy} initial={kidCover} base={KID_BASE}
+                const { today, ppy } = stagesMonthly(s), C = scope?.cover;
+                // The Dashboard covers costs its own way, from today's saving.
+                return <CoverStagesDialog segs={stagesKidSegs(s, kidStep.k).filter((x) => x.change !== 0)} today={C ? C.today : today} ppy={C ? 12 : ppy} initial={kidCover} base={KID_BASE}
+                  {...(C ? { coverFn: C.fn, order: C.order } : {})}
                   close={() => setKidStep(null)} save={(cover) => buildKids(kidStep.k, cover)} />;
               })() : null}
             </CardContent>

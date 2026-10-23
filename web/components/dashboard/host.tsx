@@ -94,9 +94,9 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
 /** Runs tools in the Dashboard's scope. `seed` gives each tool's first
     inputs; `keep`, when given, takes its edits into the profile; links
     between tools stay inside the Dashboard. */
-export function Hosted({ seed, keep, household, slots, children }: {
+export function Hosted({ seed, keep, household, slots, cover, children }: {
   seed: (id: string) => ToolInputs | undefined; keep?: (id: string, data: ToolInputs) => void;
-  household: SavedHousehold | null; slots?: ToolScope["slots"]; children: ReactNode;
+  household: SavedHousehold | null; slots?: ToolScope["slots"]; cover?: ToolScope["cover"]; children: ReactNode;
 }) {
   const router = useRouter();
   const latest = useRef({ seed, keep });
@@ -105,7 +105,7 @@ export function Hosted({ seed, keep, household, slots, children }: {
   const [scope] = useState<ToolScope>(() => {
     const mem = new Map<string, ToolInputs>();
     return {
-      name: "dashboard", household, slots,
+      name: "dashboard", household, slots, cover,
       read: (id) => mem.get(id) ?? latest.current.seed(id),
       write: (id, data) => { mem.set(id, data); latest.current.keep?.(id, data); },
       go: (path) => { const t = toolFromPath(path); if (t) router.push(toolHref(t)); return true; },

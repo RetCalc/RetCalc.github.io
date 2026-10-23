@@ -10,6 +10,7 @@
    Inputs are kept as the text in each field ("450,000", "6.71"), so what's
    saved, shared and restored is exactly what was on screen. */
 
+import type { Cover, Monthly } from "@/tools/plan/kids";
 import type { SavedHousehold } from "@/lib/household";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
@@ -215,6 +216,10 @@ export interface ToolScope {
   /** What the scope's own page adds inside a tool, by place: "afterSliders"
       is the Paycheck tab, after where the rest goes. */
   slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode };
+  /** How the scope covers children's costs from saving, when it has its
+      own order (the Dashboard's): today's saving by account, what a stage
+      takes, and the order in words, for "How will you cover this?". */
+  cover?: { today: Monthly; fn: (change: number, typed?: Partial<Monthly>) => Cover; order: string };
 }
 const ScopeContext = createContext<ToolScope | null>(null);
 export const ToolScopeProvider = ScopeContext;

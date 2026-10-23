@@ -88,6 +88,9 @@ export interface Stage {
   floored?: boolean;
   /** How far short, a month, when floored: what the budget has to cover. */
   short?: number;
+  /** The saving by account, a month, when it isn't today's split (the
+      Dashboard's answers say where the children's costs come from). */
+  split?: { t: number; r: number; b: number };
 }
 export interface SchedOpts {
   /** A different retirement age (Adjust your plan). */
@@ -99,7 +102,7 @@ export interface SchedOpts {
 }
 
 /** Whether the answers describe saving that changes. */
-export const hasChanges = (a: Answers) => children(a).length > 0 || (a.events || []).some((e) => e.kind !== "child");
+export const hasChanges = (a: Answers) => children(a).length > 0 || (a.events || []).some((e) => e.kind !== "child") || !!a.yearly?.length;
 
 const NUM = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"];
 const ageWord = (n: number) => (n === 1 ? "one child" : (NUM[n] ?? n) + " children");
@@ -160,18 +163,38 @@ export function schedule(a: Answers, o: SchedOpts): Stage[] {
     const floored = v < 0;
     years.push({ t, v: Math.max(0, Math.round(v)), label: labelAt(a, kids, t, ev), src, floored, short: floored ? Math.ceil(-v) : 0 });
   }
+  // The Dashboard's own years replace the saving worked out above; a lever
+  // (save more, retire later, stop early) moves the brokerage by the
+  // difference, and years past its last keep its last.
+  const Y = a.yearly;
+  const split: ({ t: number; r: number; b: number } | undefined)[] = years.map(() => undefined);
+  if (Y?.length) {
+    const delta = o.monthly - (a.yearlyBase ?? o.monthly);
+    years.forEach((y, i) => {
+      const row = Y[Math.min(i, Y.length - 1)];
+      if (o.stop != null && y.t >= o.stop) { split[i] = { t: 0, r: 0, b: 0 }; y.v = 0; y.short = 0; y.floored = false; return; }
+      const s = { t: row.t, r: row.r, b: Math.max(0, row.b + delta) };
+      split[i] = s;
+      y.v = Math.round(s.t + s.r + s.b);
+      y.short = Math.ceil(row.short);
+      y.floored = y.short > 0;
+      y.src = "entered";
+    });
+  }
+  const sameSplit = (p?: { t: number; r: number; b: number }, q?: { t: number; r: number; b: number }) =>
+    (!p && !q) || (!!p && !!q && Math.abs(p.t - q.t) < 0.5 && Math.abs(p.r - q.r) < 0.5 && Math.abs(p.b - q.b) < 0.5);
   const out: Stage[] = [];
-  for (const y of years) {
+  years.forEach((y, i) => {
     const last = out[out.length - 1];
     // A stage keeps one shortfall, so years short by different amounts stay apart.
-    if (last && last.monthly === y.v && last.label === y.label && (last.short ?? 0) === y.short) { last.to = y.t + 1; if (y.src === "estimated") last.src = "estimated"; }
-    else out.push({ from: y.t, to: y.t + 1, monthly: y.v, label: y.label, src: y.src, ...(y.floored ? { floored: true, short: y.short } : {}) });
-  }
+    if (last && last.monthly === y.v && last.label === y.label && (last.short ?? 0) === y.short && sameSplit(last.split, split[i])) { last.to = y.t + 1; if (y.src === "estimated") last.src = "estimated"; }
+    else out.push({ from: y.t, to: y.t + 1, monthly: y.v, label: y.label, src: y.src, ...(y.floored ? { floored: true, short: y.short } : {}), ...(split[i] ? { split: split[i] } : {}) });
+  });
   // Neighbours with the same saving merge even when their words differ.
   const merged: Stage[] = [];
   for (const s of out) {
     const last = merged[merged.length - 1];
-    if (last && last.monthly === s.monthly && (last.short ?? 0) === (s.short ?? 0)) { last.to = s.to; if (s.src === "estimated") last.src = "estimated"; }
+    if (last && last.monthly === s.monthly && (last.short ?? 0) === (s.short ?? 0) && sameSplit(last.split, s.split)) { last.to = s.to; if (s.src === "estimated") last.src = "estimated"; }
     else merged.push({ ...s });
   }
   return merged;
@@ -227,22 +250,25 @@ export function scheduleValue(age: number, retire: number, real: number, initial
     today's shares, with the Roth and brokerage basis run stage by stage
     and the balance year by year built the same way. A one-stage schedule
     gives plAtRetire's plan exactly. */
-export function atRetireScheduled(I: PlToday, stages: Pick<Stage, "from" | "to" | "monthly">[]): PlPlan {
+export function atRetireScheduled(I: PlToday, stages: Pick<Stage, "from" | "to" | "monthly" | "split">[]): PlPlan {
   const base = plAtRetire({ ...I, saveTrad: 0, saveRoth: 0, saveBrok: 0 }) as PlPlan & { path: number[]; grow: unknown };
   const mo = I.saveTrad + I.saveRoth + I.saveBrok, share = mo > 0 ? { t: I.saveTrad / mo, r: I.saveRoth / mo, b: I.saveBrok / mo } : { t: 1, r: 0, b: 0 };
   const age = I.age, retire = Math.max(age, I.retire), yrs = retire - age, infl = I.infl == null ? 0.03 : I.infl;
-  let sum = 0, path = base.path.slice(), inR = 0, inB = 0;
+  let path = base.path.slice(), inR = 0, inB = 0;
+  const by = { t: 0, r: 0, b: 0 };
   for (const s of stages) {
     const hi = dollarMonth(age, retire, I.real, s.to - age), lo = dollarMonth(age, retire, I.real, s.from - age), v = s.monthly * (hi.fv - lo.fv);
-    sum += v;
+    // Each account's part of the stage: its own split when it has one.
+    const sh = s.split && s.monthly > 0 ? { t: s.split.t / s.monthly, r: s.split.r / s.monthly, b: s.split.b / s.monthly } : share;
+    by.t += v * sh.t; by.r += v * sh.r; by.b += v * sh.b;
     path = path.map((p, i) => p + s.monthly * ((hi.path[i] ?? hi.fv) - (lo.path[i] ?? lo.fv)));
     // Dollars in, which inflation erodes by retirement (plAtRetire's inYrs).
-    for (let k = Math.round(s.from - age); k < Math.round(s.to - age); k++) { const w = (s.monthly * 12) / Math.pow(1 + infl, yrs - k - 0.5); inR += w * share.r; inB += w * share.b; }
+    for (let k = Math.round(s.from - age); k < Math.round(s.to - age); k++) { const w = (s.monthly * 12) / Math.pow(1 + infl, yrs - k - 0.5); inR += w * sh.r; inB += w * sh.b; }
   }
   const P = { ...base } as PlPlan & { path: number[] };
-  P.trad = base.trad + sum * share.t;
-  P.roth = base.roth + sum * share.r;
-  P.brok = base.brok + sum * share.b;
+  P.trad = base.trad + by.t;
+  P.roth = base.roth + by.r;
+  P.brok = base.brok + by.b;
   // Today's bases, eroded by inflation to retirement, as plAtRetire has them.
   const dfl = Math.pow(1 + infl, yrs);
   const bb0 = I.brokBasis == null ? I.brok || 0 : I.brokBasis, rb0 = I.rothBasis == null ? (I.roth || 0) * 0.5 : I.rothBasis;

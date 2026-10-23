@@ -261,7 +261,7 @@ export function sim(a: Answers, over?: Over, base = false): Sim | null {
   // Saving that changes over time (Changes ahead) builds the plan from its
   // schedule; without it, as today.
   const sched = !over?.flat && hasChanges(a) ? schedule(a, { retire: I.retire, monthly: I.monthly, stop: I.stopAge }) : null;
-  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "") + (sched ? "|" + JSON.stringify(sched.map((s) => [s.from, s.to, s.monthly])) : "");
+  const key = JSON.stringify(I) + "|" + (Tq ? plKey(Tq) : "") + (sched ? "|" + JSON.stringify(sched.map((s) => [s.from, s.to, s.monthly, s.split])) : "");
   return cached(key, () => {
     const P = sched ? atRetireScheduled(I, sched) : plAtRetire(I), C = plPrep(P);
     let T = plBaseTactics(C);

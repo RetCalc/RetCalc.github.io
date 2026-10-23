@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { parseNum } from "@/lib/format";
 import { CHILD_COST, earlyCost } from "@/tools/guide/schedule";
-import { ChildCostsDialog } from "./children";
+import { ChildCostsDialog, CoverDialog, coverSegs } from "./children";
 import { BabyIcon, Building2Icon, HouseIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,7 +63,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
 function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
   const put = (v: Partial<P["planned"]>) => set((p) => ({ ...p, planned: { ...p.planned, ...v } }));
   const any = pr.kids > 0 || pr.planned.count > 0;
-  const [costs, setCosts] = useState(false);
+  const [costs, setCosts] = useState(false), [cover, setCover] = useState(false);
   const C = pr.childCosts, n = (v: string) => (v.trim() === "" ? null : parseNum(v));
   const early = n(C.early) ?? earlyCost(pr.childcare, pr.careArea), school = n(C.school) ?? CHILD_COST.school, teen = n(C.teen) ?? CHILD_COST.teen;
   return (
@@ -102,9 +102,13 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
             </div>
             <div className="dsh-readonly">
               <p className="dsh-cap dsh-flush">Each child costs about <b>{money(early)}</b> per month to age 5, <b>{money(school)}</b> to 12 and <b>{money(teen)}</b> to 18{pr.kids + pr.planned.count > 1 ? <>, and each later one <b>{pr.childCosts.later || "80"}%</b> of that</> : null}, in today&apos;s dollars.{pr.college.help !== "none" ? " College comes out of saving for four years from 18, unless you save ahead for it in Spending." : ""}</p>
-              <Button variant="outline" size="sm" onClick={() => setCosts(true)}>Edit child costs</Button>
+              <div className="dsh-inline">
+                <Button variant="outline" size="sm" onClick={() => setCosts(true)}>Edit child costs</Button>
+                {coverSegs(pr).length ? <Button variant="outline" size="sm" onClick={() => setCover(true)}>How you cover it</Button> : null}
+              </div>
             </div>
             {costs ? <ChildCostsDialog close={() => setCosts(false)} /> : null}
+            {cover ? <CoverDialog close={() => setCover(false)} /> : null}
           </>
         ) : null}
       </div>
