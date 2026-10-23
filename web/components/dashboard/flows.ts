@@ -213,3 +213,34 @@ export function fromDrawdown(pr: Profile, d: DrawdownState): Profile {
 export function drawdownSuccess(d: DrawdownState): number {
   return ddQuick(drawdownSetup(d).o).successRate;
 }
+
+/* ---------- Saving that grows ---------- */
+
+export const GROW_LINES = ["match", "hsa", "rothIra", "k401max", "brok"] as const;
+export type GrowLine = (typeof GROW_LINES)[number];
+export const GROW_NAMES: Record<GrowLine, string> = {
+  match: "401(k) up to the match", hsa: "HSA", rothIra: "IRA", k401max: "401(k) beyond the match", brok: "Taxable brokerage",
+};
+
+/** Each saving line: what goes in a month, its limit a month (limits keep
+    pace with inflation, so in today's dollars they hold still), its growth
+    beyond inflation, and the years until it reaches the limit. */
+export function growthLines(pr: Profile, F: Flow = flow(pr)) {
+  const { pi } = F, m = pi.p / 12, a = pi.amounts;
+  return GROW_LINES.map((id) => {
+    const amount = a[id] * m, cap = pcCap(pi, id, a) * m, g = pr.growth[id] ?? 0;
+    const capped = isFinite(cap) && amount > 0 && amount >= cap - 0.5;
+    const years = !capped && g > 0 && amount > 0 && isFinite(cap) ? Math.ceil(Math.log(cap / amount) / Math.log(1 + g)) : null;
+    return { id, name: GROW_NAMES[id], amount, cap, growth: capped ? 0 : g, capped, years };
+  });
+}
+
+/** Saving a month k years from now (yours and the match), each line grown
+    and held at its limit. */
+export function savingAt(pr: Profile, k: number, F: Flow = flow(pr)): number {
+  const L = growthLines(pr, F);
+  const own = L.reduce((s, l) => s + Math.min(l.amount * Math.pow(1 + l.growth, k), isFinite(l.cap) ? Math.max(l.cap, l.amount) : Infinity), 0);
+  const m0 = L.find((l) => l.id === "match")!;
+  const matchNow = m0.amount > 0 ? Math.min(m0.amount * Math.pow(1 + m0.growth, k), Math.max(m0.cap, m0.amount)) / m0.amount : 1;
+  return own + F.match * matchNow;
+}

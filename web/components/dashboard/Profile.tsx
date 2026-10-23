@@ -6,12 +6,13 @@
    is read from Accounts and changed there. */
 
 import Link from "next/link";
-import { Building2Icon, HouseIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
+import { BabyIcon, Building2Icon, HouseIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
 import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
+import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, type PKey } from "./fields";
 import { money, money10 } from "./format";
 import { flow } from "./flows";
@@ -49,6 +50,53 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
         Until you retire, savings grow at a steady <b>{pct(real)}</b> per year after inflation ({pct(A.growth)} growth less {pct(A.inflation)} inflation). Once retired, the plan runs through <b>every market since 1926</b>, {A.stocks}% in stocks, instead of a steady rate. Every figure is in today&apos;s dollars.
       </Note></div>
       <div className="dsh-foot"><Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, assume: DEFAULT_ASSUMPTIONS }))}>Back to the usual: balanced, 3% inflation, 60% in stocks</Button></div>
+    </Tile>
+  );
+}
+
+/** Children planned, childcare and college: their costs come out of what
+    you save in the years they run, as the Guide and Stages count them. */
+function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
+  const put = (v: Partial<P["planned"]>) => set((p) => ({ ...p, planned: { ...p.planned, ...v } }));
+  const any = pr.kids > 0 || pr.planned.count > 0;
+  return (
+    <Tile icon={BabyIcon} title="Children ahead" right={<span className="dsh-cap">Their costs come out of what you save</span>}>
+      <div className="dsh-fields dsh-fields-sm">
+        <div className="dsh-row3">
+          <SelectField id="dshPPlanned" label="Children planned" value={String(pr.planned.count)} onChange={(v) => put({ count: Number(v) })}>
+            {[0, 1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
+          </SelectField>
+          {pr.planned.count > 0 ? <NumberField id="dshPFirstIn" label="The first in" unit="years" max={20} value={String(pr.planned.firstIn)} onValueChange={(v) => put({ firstIn: Math.max(0, Math.min(20, num(v) ?? 0)) })} /> : <div />}
+          {pr.planned.count > 1 ? <NumberField id="dshPSpacing" label="Years apart" unit="years" max={10} value={String(pr.planned.spacing)} onValueChange={(v) => put({ spacing: Math.max(1, Math.min(10, num(v) ?? 1)) })} /> : <div />}
+        </div>
+        {any ? (
+          <>
+            <div className="dsh-row3">
+              <SelectField id="dshPCare" label="Paid childcare before school" value={pr.childcare ? "yes" : "no"} onChange={(v) => set((p) => ({ ...p, childcare: v === "yes" }))}>
+                <option value="yes">Yes</option><option value="no">No</option>
+              </SelectField>
+              {pr.childcare ? (
+                <SelectField id="dshPArea" label="Where you live" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
+                  <option value="city">A big city</option><option value="suburb">A suburb</option><option value="rural">A small town</option>
+                </SelectField>
+              ) : <div />}
+              <div />
+            </div>
+            <div className="dsh-row3">
+              <SelectField id="dshPCollege" label="Helping with college" value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { ...p.college, help: v as P["college"]["help"] } }))}>
+                <option value="none">No</option><option value="part">Some of it (about half)</option><option value="all">All of it</option>
+              </SelectField>
+              {pr.college.help !== "none" ? (
+                <SelectField id="dshPSchool" label="The kind of school" value={String(pr.college.cost)} onChange={(v) => set((p) => ({ ...p, college: { ...p.college, cost: Number(v) } }))}>
+                  <option value="27000">Public, in state ($27,000 per year)</option><option value="59000">Private ($59,000 per year)</option><option value="82000">Elite ($82,000 per year)</option>
+                </SelectField>
+              ) : <div />}
+              <div className="dsh-self-end">{pr.college.help !== "none" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>Plan it in College Savings</Button> : null}</div>
+            </div>
+            <p className="dsh-cap">Children cost about {pr.childcare ? (pr.careArea === "city" ? "$2,800" : pr.careArea === "rural" ? "$2,000" : "$2,300") : "$1,300"} per month to age 5, $1,400 to 12 and $1,500 to 18 (a second child about 80% of that), in today&apos;s dollars.{pr.college.help !== "none" ? " College comes out of saving for four years from 18." : ""}</p>
+          </>
+        ) : null}
+      </div>
     </Tile>
   );
 }
@@ -106,7 +154,7 @@ export function Profile() {
             <div className="dsh-fields dsh-fields-sm">
               <div className="dsh-readonly">
                 <div><div className="dsh-label">Saved so far</div><div className="dsh-fig dsh-md">{money(H.trad + H.roth + H.brok)}</div></div>
-                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>{accounts ? "Change in Accounts" : "Split into accounts"}</Button>
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>{accounts ? "Change in Net worth" : "Split into accounts"}</Button>
               </div>
               <div className="dsh-readonly">
                 <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money10(F.invested + F.match)}<small>per month</small></div></div>
@@ -137,7 +185,7 @@ export function Profile() {
                 <Choice on={pr.home === "rent"} icon={<Building2Icon aria-hidden="true" />} title="Rent" sub="A house or an apartment" onClick={() => set((p) => ({ ...p, home: "rent" }))} />
               </div>
               {pr.home === "own" ? (accounts || data.entries.length
-                ? <div className="dsh-readonly"><div><div className="dsh-label">Worth, less the mortgage</div><div className="dsh-fig dsh-md">{money(H.equity)}</div></div><Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>Change in Accounts</Button></div>
+                ? <div className="dsh-readonly"><div><div className="dsh-label">Worth, less the mortgage</div><div className="dsh-fig dsh-md">{money(H.equity)}</div></div><Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>Change in Net worth</Button></div>
                 : <div className="dsh-row"><MoneyField id="dshPValue" label="What it's worth" value={txt(pr.value)} onValueChange={(v) => set((p) => ({ ...p, value: num(v) }))} /><MoneyField id="dshPOwed" label="Left on the mortgage" value={txt(pr.owed)} onValueChange={(v) => set((p) => ({ ...p, owed: num(v) }))} /></div>)
                 : pr.home === "rent" ? <div className="dsh-row"><MoneyField id="dshPRent" label="Rent" unit="per month" value={txt(pr.rent)} onValueChange={(v) => set((p) => ({ ...p, rent: num(v) }))} /><div /></div> : null}
             </div>
@@ -145,6 +193,7 @@ export function Profile() {
         </div>
       </div>
 
+      <div className="dsh-r4"><Children pr={pr} set={set} /></div>
       <div className="dsh-r4"><Assumptions pr={pr} set={set} /></div>
       {pr.state === OUTSIDE_US ? <div className="dsh-r4"><Note>Outside the US we don&apos;t work out taxes or Social Security: your plan&apos;s figures for retirement are <b>before taxes</b>.</Note></div> : null}
     </Frame>

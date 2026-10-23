@@ -7,7 +7,7 @@
 
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
-import { budgetFor, budgetMonth, drawdownFor, drawdownSuccess, flow } from "./flows";
+import { budgetFor, budgetMonth, drawdownFor, drawdownSuccess, flow, savingAt } from "./flows";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
@@ -65,6 +65,14 @@ export function holdings(entries: Entry[], pr: Profile) {
   };
 }
 
+/** Each child's years until college (18), the ones you have and the ones
+    planned; negative once it's begun. */
+export function collegeStarts(pr: Profile): number[] {
+  const now = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => 18 - (ageOf(k) ?? 0));
+  const planned = Array.from({ length: pr.planned.count }, (_, i) => 18 + pr.planned.firstIn + i * pr.planned.spacing);
+  return [...now, ...planned];
+}
+
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const two = couple(pr), abroad = outsideUS(pr), H = holdings(entries, pr);
@@ -89,13 +97,30 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   };
   // Where each month's saving goes, by how it's taxed.
   if (F?.hasPay && F.invested > 0) Object.assign(a, { splitTrad: (F.trad / F.invested) * 100, splitRoth: (F.roth / F.invested) * 100, splitBrok: (F.brok / F.invested) * 100 });
-  // Saving that rises each year: a raise to it each birthday until retirement.
-  const c = a.contrib ?? 0, g = pr.raise;
-  if (g > 0 && c > 0 && a.age != null && a.retire != null) {
-    a.events = Array.from({ length: Math.max(0, Math.min(45, a.retire - a.age - 1)) }, (_, k) => ({
-      id: "raise" + k, kind: "raise" as const, at: a.age! + k + 1, extra: c * (Math.pow(1 + g, k + 1) - Math.pow(1 + g, k)),
-    }));
+  // Changes ahead: saving that grows (each line to its limit), children
+  // (the Guide's own costs by age, above what's spent on them today) and
+  // college, each taking from what's saved in the years it runs.
+  const events: NonNullable<Answers["events"]> = [];
+  if (F?.hasPay && a.age != null && a.retire != null) {
+    let before = savingAt(pr, 0, F);
+    for (let k = 1; k < Math.min(45, a.retire - a.age); k++) {
+      const now = savingAt(pr, k, F);
+      if (now - before > 0.5) events.push({ id: "grow" + k, kind: "raise", at: a.age + k, extra: now - before });
+      before = now;
+    }
   }
+  const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => ageOf(k)!).filter((x) => x >= 0 && x < 30);
+  if (kids.length) a.kidsNow = kids;
+  if (pr.planned.count > 0) Object.assign(a, { kidsPlanned: pr.planned.count, firstIn: pr.planned.firstIn, spacing: pr.planned.spacing });
+  if (kids.length || pr.planned.count > 0) Object.assign(a, { childcare: pr.childcare, careArea: pr.careArea, college: pr.college.help === "none" ? "no" : "yes" });
+  if (pr.college.help !== "none" && a.age != null) {
+    const share = pr.college.help === "all" ? 1 : 0.5, monthly = (pr.college.cost * share) / 12;
+    collegeStarts(pr).forEach((years, i) => {
+      if (years < 0) return;
+      events.push({ id: "college" + i, kind: "custom", from: a.age! + years, to: a.age! + years + 4, delta: -monthly, label: "College" });
+    });
+  }
+  if (events.length) a.events = events;
   if (abroad) Object.assign(a, { splitTrad: 0, splitRoth: 100, splitBrok: 0, ssOwn: 1e-6, ssOwn2: two ? 1e-6 : null, hcIncl: "yes" });
   if (H.cash != null) a.cash = H.cash;
   if (H.accounts) Object.assign(a, H.debts > 0 ? { debtHas: "yes", debtTotal: H.debts, debtHi: H.debtsHigh } : { debtHas: "no" });

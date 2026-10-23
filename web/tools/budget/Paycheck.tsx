@@ -59,7 +59,7 @@ export function Paycheck({ s, set, setState }: {
   set: <K extends keyof BudgetInputs>(k: K) => (v: BudgetInputs[K]) => void;
   setState: SetState;
 }) {
-  const store = useToolStore(), go = useToolNav();
+  const store = useToolStore(), go = useToolNav(), scope = useToolScope();
   const taxState = store.read("tax", TAX_DEFAULTS).state;
   const pi = paycheckInput(s, taxState);
   const r = paycheckRun(pi);
@@ -219,6 +219,7 @@ export function Paycheck({ s, set, setState }: {
         </Card>
 
         <Sliders s={s} set={set} setState={setState} pi={pi} r={r} base={base} empty={empty} />
+        {scope?.slots?.afterSliders}
 
         <Itemized s={s} pi={pi} r={r} empty={empty} short={short}
           openTax={() => {

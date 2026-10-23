@@ -74,8 +74,18 @@ export interface Profile {
   /** The tools behind the tabs, as their own inputs: budget (pay, the
       budget and the saving sliders), tax, social (pay history), drawdown. */
   tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };
-  /** How much saving rises each year, beyond inflation (0.02 is 2%). */
+  /** How much saving rose each year (one rate for everything); replaced by
+      `growth`, read only to carry an older profile over. */
   raise: number;
+  /** How each saving line grows each year beyond inflation (0.02 is 2%),
+      by the Paycheck tab's lines; each stops at its limit. */
+  growth: Partial<Record<"match" | "hsa" | "rothIra" | "k401max" | "brok", number>>;
+  /** Children planned: how many, years until the first, and years apart. */
+  planned: { count: number; firstIn: number; spacing: number };
+  /** Paid childcare before school, and where (it sets the cost). */
+  childcare: boolean; careArea: "city" | "suburb" | "rural";
+  /** Helping with college: how much, and the kind of school (its yearly cost). */
+  college: { help: "none" | "part" | "all"; cost: number };
 }
 
 export type AssetKind = "workplace" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
@@ -106,7 +116,9 @@ export const EMPTY_PROFILE: Profile = {
   home: null, value: null, owed: null, rent: null, mortRate: null, mortPay: null,
   assume: DEFAULT_ASSUMPTIONS,
   ss: { checked: false, own1: null, own2: null, claim: null }, strategy: null,
-  tools: {}, raise: 0,
+  tools: {}, raise: 0, growth: {},
+  planned: { count: 0, firstIn: 2, spacing: 3 }, childcare: true, careArea: "suburb",
+  college: { help: "none", cost: 27000 },
 };
 export const EMPTY: DashData = { profile: EMPTY_PROFILE, entries: [], step: 0, skipped: [], done: false };
 
@@ -134,6 +146,10 @@ function load(): DashData {
   p.assume = { ...DEFAULT_ASSUMPTIONS, ...v.profile?.assume };
   p.ss = { ...EMPTY_PROFILE.ss, ...v.profile?.ss };
   p.tools = { ...v.profile?.tools };
+  p.planned = { ...EMPTY_PROFILE.planned, ...v.profile?.planned };
+  p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
+  // One rate for all saving, from before each line had its own.
+  if (!v.profile?.growth && v.profile?.raise) p.growth = { match: p.raise, hsa: p.raise, rothIra: p.raise, k401max: p.raise, brok: p.raise };
   return { ...EMPTY, ...v, profile: p, entries: (v.entries ?? []).map(upgrade) };
 }
 function get(): DashData {

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BanknoteIcon, CalculatorIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
+  BanknoteIcon, CalculatorIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
   SunMoonIcon, SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
@@ -29,8 +29,10 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon; phone?: bo
   { id: "spending", name: SECTION_NAMES.spending, icon: ReceiptIcon, phone: true },
   { id: "savings", name: SECTION_NAMES.savings, icon: PiggyBankIcon },
   { id: "retirement", name: SECTION_NAMES.retirement, icon: SunsetIcon, phone: true },
-  { id: "tools", name: SECTION_NAMES.tools, icon: CalculatorIcon },
+  { id: "calculator", name: SECTION_NAMES.calculator, icon: CalculatorIcon },
+  { id: "tools", name: SECTION_NAMES.tools, icon: WrenchIcon },
   { id: "next", name: SECTION_NAMES.next, icon: ListChecksIcon, phone: true },
+  { id: "learn", name: SECTION_NAMES.learn, icon: GraduationCapIcon },
 ];
 export const hrefFor = (s: Section) => (s === "overview" ? "/dashboard" : "/dashboard/" + s);
 

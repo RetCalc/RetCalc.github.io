@@ -45,6 +45,19 @@ const STEPS: Step[] = [
             <span className="dsh-cap">Used for college and family costs. You can add them later.</span>
           </div>
         </Field>
+        <Field id="dshPlanned" label="Planning on more children?">
+          <div className="dsh-inline">
+            <span className="dsh-stepper">
+              <button type="button" aria-label="Fewer planned children" onClick={() => set((p) => ({ ...p, planned: { ...p.planned, count: Math.max(0, p.planned.count - 1) } }))}>−</button>
+              <output id="dshPlanned" aria-live="polite">{pr.planned.count}</output>
+              <button type="button" aria-label="More planned children" onClick={() => set((p) => ({ ...p, planned: { ...p.planned, count: Math.min(6, p.planned.count + 1) } }))}>+</button>
+            </span>
+            {pr.planned.count > 0 ? (
+              <span className="dsh-inline"><span className="dsh-cap">The first in about</span>
+                <span className="dsh-narrow"><NumberField id="dshFirstIn" label="Years until the first" max={20} value={String(pr.planned.firstIn)} onValueChange={(v) => set((p) => ({ ...p, planned: { ...p.planned, firstIn: Math.max(0, Math.min(20, num(v) ?? 0)) } }))} unit="years" /></span></span>
+            ) : <span className="dsh-cap">Their costs come out of what you save, in the years they arrive.</span>}
+          </div>
+        </Field>
       </>
     ),
   },

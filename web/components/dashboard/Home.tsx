@@ -28,13 +28,13 @@ export function Home() {
           </div></div>
           <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("rentbuy", "/dashboard/home")} />}>Renting or buying: compare them in the Rent vs. Buy Calculator</Button></div>
         </Tile>
-        <div className="dsh-r4"><Note>Bought a place? Switch to owning in <b>Profile</b>, then add the home and mortgage in <b>Accounts</b>.</Note></div>
+        <div className="dsh-r4"><Note>Bought a place? Switch to owning in <b>Profile</b>, then add the home and mortgage in <b>Net worth</b>.</Note></div>
       </Frame>
     );
   }
   return (
     <Frame current="home" title="Home" sub={pr.home === "own" ? "Owned" : "Not given yet"}>
-      <Tile icon={HouseIcon} title="Your home" right={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>Change in Accounts</Button>}>
+      <Tile icon={HouseIcon} title="Your home" right={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>Change in Net worth</Button>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Equity</div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Worth</div><div className="dsh-fig dsh-md">{money(M.value)}</div></div>
@@ -56,7 +56,7 @@ export function Home() {
             <p className="dsh-cap dsh-mt">{M.tooSmall ? "That payment doesn't cover the interest, so the balance would never fall. Check the payment and rate." : M.payoff == null ? "Add the rate and the monthly payment (without taxes and insurance) to see when it's paid off. It shows on Your timeline." : "At this payment. Paying extra brings it sooner: try it in the Mortgage Calculator, below."}</p>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("mortgage", "/dashboard/home")} />}>Open the Mortgage Calculator</Button></div>
           </>
-        ) : <p className="dsh-cap dsh-mt">No mortgage in your latest entry. If you have one, add it in Accounts.</p>}
+        ) : <p className="dsh-cap dsh-mt">No mortgage in your latest entry. If you have one, add it in Net worth.</p>}
       </Tile></div>
     </Frame>
   );

@@ -13,6 +13,9 @@ import { ArrowDownToLineIcon, BookOpenIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { DD_UI } from "@/tools/drawdown/text";
+import { DrawdownDialogs } from "@/tools/drawdown/Dialogs";
+import type { DDView } from "@/tools/drawdown/Drawdown";
+import { drawdownSetup } from "@/tools/drawdown/model";
 import type { DrawdownState } from "@/tools/drawdown/model";
 import { Frame } from "./Frame";
 import { drawdownFor, fromDrawdown } from "./flows";
@@ -33,6 +36,14 @@ export function Retirement() {
   const choose = (id: string) => { set((p) => ({ ...p, strategy: id })); setRev((r) => r + 1); };
   const Drawdown = TOOL_VIEWS.drawdown;
   const plan = drawdownPlan(R.S, R.ss1, R.ss2, R.claim1);
+  // The simulator's own comparison, on your numbers: "Use this strategy"
+  // there chooses it here.
+  const [guide, setGuide] = useState(false);
+  const view = useMemo(() => {
+    if (!plan) return null;
+    const st = drawdownFor(pr, plan);
+    return { s: st, set: (k: string) => (v: unknown) => { if (k === "strategy") { set((p) => ({ ...p, strategy: String(v) })); setRev((r) => r + 1); setGuide(false); } }, ...drawdownSetup(st) } as unknown as DDView;
+  }, [pr, plan, set]);
 
   return (
     <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : "Needs your ages and retirement age"}>
@@ -47,7 +58,8 @@ export function Retirement() {
         {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} /><div className="dsh-hint dsh-self-end">The same age as on Income: change it in either place.</div><div /></div></div> : null}
       </Tile>
 
-      <div className="dsh-r4"><Tile icon={BookOpenIcon} title="The withdrawal strategies" right={<span className="dsh-cap">How each decides what you spend each year</span>}>
+      <div className="dsh-r4"><Tile icon={BookOpenIcon} title="The withdrawal strategies" right={plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}>
+        <p className="dsh-cap dsh-mt6">How each decides what you spend each year. Pick one to use it across your plan.</p>
         <div className="dsh-strats">
           {Object.entries(DD_UI).map(([id, u]) => {
             const on = pr.strategy === id;
@@ -76,6 +88,7 @@ export function Retirement() {
           </Tile>
         ) : <Note>The simulator opens once your profile has your ages, savings, retirement age and spending.</Note>}
       </div>
+      {guide && view ? <DrawdownDialogs v={view} dialog={{ kind: "guide" }} close={() => setGuide(false)} /> : null}
     </Frame>
   );
 }

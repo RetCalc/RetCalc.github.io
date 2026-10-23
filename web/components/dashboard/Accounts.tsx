@@ -180,7 +180,7 @@ export function Accounts() {
     : <Button onClick={startEdit}><PencilIcon aria-hidden="true" />Edit</Button>;
 
   return (
-    <Frame current="accounts" title="Accounts" sub={last ? (draft ? "Editing; saving adds a new entry" : "As of " + longDate(last.date)) : "Nothing entered yet"} actions={actions}>
+    <Frame current="accounts" title="Net worth" sub={last ? (draft ? "Editing; saving adds a new entry" : "As of " + longDate(last.date)) : "Nothing entered yet"} actions={actions}>
       <Tile icon={ChartBarIcon} title="What you have and owe" right={
         <Segmented aria-label="Today or over time">
           <SegmentedItem pressed={view === "today"} onPressedChange={() => setView("today")}>Today</SegmentedItem>

@@ -74,7 +74,7 @@ export function Income() {
     const rate = i ? b.pcMatchRate2 : b.pcMatchRate, upTo = i ? b.pcMatchUpTo2 : b.pcMatchUpTo;
     return (
       <div className="dsh-row3" key={i}>
-        <div className="dsh-label dsh-self-end">{nameOf(pr, i)}&apos;s employer</div>
+        <div className="dsh-who dsh-self-end">{nameOf(pr, i)}&apos;s employer</div>
         <NumberField id={"dshMr" + i} label="Matches" unit="%" step={5} max={200} value={rate} onValueChange={(v) => putB(i ? { pcMatchRate2: v } : { pcMatchRate: v })} />
         <NumberField id={"dshMu" + i} label="On the first" unit="% of pay" step={1} max={100} value={upTo} onValueChange={(v) => putB(i ? { pcMatchUpTo2: v } : { pcMatchUpTo: v })} />
       </div>

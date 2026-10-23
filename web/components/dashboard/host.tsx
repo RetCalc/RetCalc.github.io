@@ -18,6 +18,7 @@ import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { RENTBUY_DEFAULTS } from "@/tools/rentbuy/model";
 import { groupDigits } from "@/lib/format";
 import { budgetFor, drawdownFor, socialFor, taxFor, taxState } from "./flows";
+import { advancedFor, collegeFor, stagesFor } from "./calc";
 import { ageOf, contribMonth, couple, grossYear, holdings, results, spendMonth } from "./model";
 import type { Entry, Profile } from "./store";
 
@@ -82,6 +83,9 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
         downPct: String(Math.round(((H.home - H.mortgage) / H.home) * 1000) / 10),
         ...(pr.mortRate != null ? { rate: String(Math.round(pr.mortRate * 10000) / 100) } : {}),
       } : undefined;
+      case "college": return collegeFor(pr);
+      case "advanced": return advancedFor(pr, entries);
+      case "stages": return stagesFor(pr, entries);
       default: return undefined;
     }
   };
@@ -90,9 +94,9 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
 /** Runs tools in the Dashboard's scope. `seed` gives each tool's first
     inputs; `keep`, when given, takes its edits into the profile; links
     between tools stay inside the Dashboard. */
-export function Hosted({ seed, keep, household, children }: {
+export function Hosted({ seed, keep, household, slots, children }: {
   seed: (id: string) => ToolInputs | undefined; keep?: (id: string, data: ToolInputs) => void;
-  household: SavedHousehold | null; children: ReactNode;
+  household: SavedHousehold | null; slots?: ToolScope["slots"]; children: ReactNode;
 }) {
   const router = useRouter();
   const latest = useRef({ seed, keep });
@@ -101,7 +105,7 @@ export function Hosted({ seed, keep, household, children }: {
   const [scope] = useState<ToolScope>(() => {
     const mem = new Map<string, ToolInputs>();
     return {
-      name: "dashboard", household,
+      name: "dashboard", household, slots,
       read: (id) => mem.get(id) ?? latest.current.seed(id),
       write: (id, data) => { mem.set(id, data); latest.current.keep?.(id, data); },
       go: (path) => { const t = toolFromPath(path); if (t) router.push(toolHref(t)); return true; },

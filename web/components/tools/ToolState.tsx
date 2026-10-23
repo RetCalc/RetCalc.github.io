@@ -11,7 +11,7 @@
    saved, shared and restored is exactly what was on screen. */
 
 import type { SavedHousehold } from "@/lib/household";
-import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
 import { useToast } from "@/components/shell/Toast";
@@ -212,6 +212,9 @@ export interface ToolScope {
       null for none. Left out, they take the saved one, as on their pages.
       Taken in once each time a tool opens, and never recorded. */
   household?: SavedHousehold | null;
+  /** What the scope's own page adds inside a tool, by place: "afterSliders"
+      is the Paycheck tab, after where the rest goes. */
+  slots?: { afterSliders?: ReactNode };
 }
 const ScopeContext = createContext<ToolScope | null>(null);
 export const ToolScopeProvider = ScopeContext;

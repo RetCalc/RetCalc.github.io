@@ -54,7 +54,7 @@ function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
     <Tile icon={ShieldCheckIcon} title="Chance of success" right={<TipDot k="" text="How often this plan lasted through every past market since 1926, starting in each year." />}>
       <div className="dsh-fig dsh-mt">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div>
       <div className="dsh-cap dsh-mt6">{R.success != null ? "of historical retirements lasted to age 95" : "Needs your age, savings, retirement age and spending"}</div>
-      <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With ${R.strategy.name.toLowerCase()} withdrawals, your chosen strategy` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
+      <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With your chosen strategy: ${R.strategy.name}` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
     </Tile>
   );
 }
@@ -76,11 +76,17 @@ function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number; to: n
       events, note: ret ? { at: ret, label: `Retires ${ret}, age ${p.retire}` } : undefined,
     });
   });
+  // Each child, the ones you have and the ones planned: daycare to 5 when
+  // there's paid childcare, and college from 18 when you're helping.
   const kinds = ["dsh-k1", "dsh-k2", "dsh-k3"] as const;
-  pr.kidList.slice(0, pr.kids).forEach((k, i) => {
-    if (!k.by) return;
-    lanes.push({ name: k.name.trim() || `Child ${i + 1}`, spans: [{ from: k.by + 18, to: k.by + 22, kind: kinds[i % 3], label: `College ${k.by + 18} to ${k.by + 22}` }], events: [] });
-  });
+  const child = (name: string, born: number, i: number, planned: boolean) => {
+    const spans: Lane["spans"] = [];
+    if (pr.childcare && born + 5 > from) spans.push({ from: born, to: born + 5, kind: kinds[i % 3], label: "Daycare" });
+    if (pr.college.help !== "none") spans.push({ from: born + 18, to: born + 22, kind: kinds[i % 3], label: `College ${born + 18} to ${born + 22}` });
+    lanes.push({ name, spans, events: planned ? [{ at: born, label: "Born about " + born }] : [] });
+  };
+  pr.kidList.slice(0, pr.kids).forEach((k, i) => { if (k.by) child(k.name.trim() || `Child ${i + 1}`, k.by, i, false); });
+  for (let i = 0; i < pr.planned.count; i++) child(pr.planned.count > 1 ? `Planned child ${i + 1}` : "Planned child", from + pr.planned.firstIn + i * pr.planned.spacing, pr.kids + i, true);
   const M = mortgage(pr, d.entries);
   if (M.payoff != null) lanes.push({ name: "Home", spans: [{ from, to: M.payoff, kind: "dsh-k3", label: "Mortgage" }], events: [{ at: M.payoff, label: "Paid off " + Math.floor(M.payoff) }] });
   return { lanes, from, to: Math.min(to, from + 70) };
