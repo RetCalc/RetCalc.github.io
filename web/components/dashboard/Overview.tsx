@@ -212,7 +212,7 @@ export function Overview() {
         {R.strategy ? (
           <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy">
             <div className="dsh-fig dsh-md dsh-mt">{R.strategy.name}</div>
-            <div className="dsh-cap dsh-mt6">Starts at <b>{money10(R.strategy.first)}</b> per month{tax}; lasted in {Math.round(R.strategy.success * 100)}% of past markets</div>
+            <div className="dsh-cap dsh-mt6">Spending starts at <b>{money10(R.strategy.first)}</b> per month with taxes{tax}; lasted in {Math.round(R.strategy.success * 100)}% of past markets</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Compare strategies →</Button></div>
           </Tile>
         ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement" />}

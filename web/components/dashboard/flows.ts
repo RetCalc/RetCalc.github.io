@@ -198,8 +198,11 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   const couple = pr.who === "couple" && plan.ss2 > 0;
   return ddWrite(cur, {
     initial: Math.round(plan.fv), years: plan.years, stock: pr.assume.stocks, retireAge: String(plan.retire),
-    // The plan's spending, with a year's tax on it, as the starting rate.
-    ...(pr.tools.drawdown ? {} : { rate: Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 1000) / 10 }),
+    // The starting rate: the plan's spending in its first year, with a
+    // year's tax and premiums on it; Social Security pays part of it once
+    // claimed, savings the rest. Always from the plan, so the two can't
+    // drift apart; each strategy's own settings are kept.
+    rate: Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100,
     ...(pr.strategy ? { strategy: pr.strategy } : {}),
     ssMode: plan.ss1 > 0 ? "manual" : "none", ssWho: couple ? "couple" : "single",
     ssAmount: Math.round(plan.ss1 * 12), ssAmount2: Math.round(plan.ss2 * 12), ssDelay: plan.claim,

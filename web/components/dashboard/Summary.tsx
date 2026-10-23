@@ -8,26 +8,56 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { ArrowDownToLineIcon, CalendarDaysIcon, ChartBarIcon, ListChecksIcon, ReceiptIcon } from "lucide-react";
+import { CalendarDaysIcon, ChartBarIcon, ListChecksIcon, ReceiptIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ShareBar } from "@/components/charts/Legend";
 import { SERIES } from "@/lib/hues";
 import { budgetGroups } from "@/tools/budget/model";
 import { PLAN_DEFAULTS, type PlanState } from "@/tools/plan/model";
 import { planSummary } from "@/tools/plan/results";
-import { Accounts as PlanAccounts, ChildrenCost, Climb, Hero, PayCard, StageLine } from "@/tools/plan/Summary";
+import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } from "@/tools/plan/Summary";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
 import { Frame } from "./Frame";
 import { advancedFor, planKidsOf, stagesFor } from "./calc";
 import { budgetFor, flow } from "./flows";
 import { money, money10 } from "./format";
-import { ageOf, holdings, nowYear, results } from "./model";
+import { ageOf, holdings, nowYear, results, spendMonth } from "./model";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
 import { entryFrom, netWorth, sum, useDashboard } from "./store";
 import { Note, Tile } from "./ui";
+
+/** The answer, from the plan itself: what you'll have at retirement, what
+    your withdrawal strategy and Social Security pay the first year against
+    what you plan to spend, and how often it lasted across history. */
+function PlanHero() {
+  const { data } = useDashboard();
+  const pr = data.profile;
+  const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
+  // The first year's spending (taxes and premiums included), as the strategy
+  // sets it; Social Security pays part of it once claimed, savings the rest.
+  const first = R.strategy ? R.strategy.first : R.S ? (R.S.spend + R.S.taxYr) / 12 : null;
+  const ssYear = R.claim1 != null && pr.p1.by ? pr.p1.by + R.claim1 : null;
+  const ss = R.abroad ? 0 : R.ss ?? 0;
+  const goal = pr.retSpend ?? spendMonth(pr) ?? 0;
+  const tax = R.abroad ? ", before taxes" : "";
+  return (
+    <Tile icon={SunsetIcon} title="Your plan">
+      <div className="dsh-stats">
+        <div className="dsh-stat"><div className="dsh-label">Savings at retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
+        <div className="dsh-stat"><div className="dsh-label">First year&apos;s spending, with taxes{tax}</div><div className="dsh-fig">{first != null ? money10(first) : "—"}<small>per month</small></div></div>
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security{ssYear ? ", from " + ssYear : ""}</div><div className="dsh-fig">{money10(ss)}<small>per month</small></div></div> : null}
+        <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig">{money(goal)}<small>per month</small></div></div>
+        <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
+      </div>
+      <p className="dsh-cap dsh-mt">
+        {R.success != null ? <>Your plan lasted to 95 in <b>{Math.round(R.success * 100)}%</b> of past markets since 1926, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of what you spend once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : "Fills in once your profile has your ages, savings, retirement age and spending."}
+      </p>
+    </Tile>
+  );
+}
 
 export function Summary() {
   const { data } = useDashboard();
@@ -58,7 +88,7 @@ export function Summary() {
     <Frame current="summary" title="Plan summary" sub="Everything we know, on one page">
       {S ? (
         <div className="dsh-psum">
-          <Hero S={S} stages={!!S.stages} />
+          <PlanHero />
           <PayCard S={S} />
         </div>
       ) : <Note>The summary fills in once your profile has your age, retirement age and pay.</Note>}
@@ -93,17 +123,7 @@ export function Summary() {
         </div>
       ) : null}
 
-      <div className="dsh-grid dsh-two dsh-r4">
-        <Tile icon={ArrowDownToLineIcon} title="In retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Retirement</Button>}>
-          <div className="dsh-stats">
-            <div className="dsh-stat"><div className="dsh-label">Savings at retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-            <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
-          </div>
-          <p className="dsh-cap dsh-mt">
-            {R.strategy ? <>Drawing down with <b>{R.strategy.name}</b>, starting at <b>{money10(R.strategy.first)}</b> per month from savings.</> : <>Spending a fixed amount that rises with prices. Choose a strategy on Retirement.</>}
-            {R.ss != null && !R.abroad ? <> Social Security adds <b>{money10(R.ss)}</b> per month.</> : null}
-          </p>
-        </Tile>
+      <div className="dsh-r4">
         <Readiness R={R} pr={pr} entries={data.entries} />
       </div>
 

@@ -51,7 +51,7 @@ export function Retirement() {
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? shortMoney(R.atRetire) : "—"}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">First year, from savings{tax}</div><div className="dsh-fig">{R.strategy ? money10(R.strategy.first) : R.savingsIncome != null ? money10(R.savingsIncome) : "—"}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">First year&apos;s spending, with taxes{tax}</div><div className="dsh-fig">{R.strategy ? money10(R.strategy.first) : R.S ? money10((R.S.spend + R.S.taxYr) / 12) : "—"}<small>per month</small></div></div>
           {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security</div><div className="dsh-fig">{R.ss != null ? money10(R.ss) : "—"}<small>per month</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig">{money(pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div></div>
         </div>
