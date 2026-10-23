@@ -10,6 +10,7 @@
    Inputs are kept as the text in each field ("450,000", "6.71"), so what's
    saved, shared and restored is exactly what was on screen. */
 
+import type { SavedHousehold } from "@/lib/household";
 import { createContext, use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { readSession, readStored, writeSession, writeStored } from "@/lib/storage";
@@ -207,6 +208,10 @@ export interface ToolScope {
   write: (id: string, data: ToolInputs) => void;
   /** A tool moving to a page ("/stages"): true when the scope took it. */
   go: (path: string) => boolean;
+  /** The household this scope's tools take in, in place of the saved one:
+      null for none. Left out, they take the saved one, as on their pages.
+      Taken in once each time a tool opens, and never recorded. */
+  household?: SavedHousehold | null;
 }
 const ScopeContext = createContext<ToolScope | null>(null);
 export const ToolScopeProvider = ScopeContext;

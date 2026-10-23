@@ -6,7 +6,7 @@ import { SECTION_IDS, SECTION_NAMES, type Section } from "@/components/dashboard
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return SECTION_IDS.filter((s) => s !== "overview").map((section) => ({ section }));
+  return SECTION_IDS.filter((s) => s !== "overview" && s !== "tools").map((section) => ({ section }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/dashboard/[section]">): Promise<Metadata> {
@@ -16,5 +16,5 @@ export async function generateMetadata({ params }: PageProps<"/dashboard/[sectio
 
 export default async function Page({ params }: PageProps<"/dashboard/[section]">) {
   const { section } = await params;
-  return <SectionPage id={section as Exclude<Section, "overview">} />;
+  return <SectionPage id={section as Exclude<Section, "overview" | "tools">} />;
 }

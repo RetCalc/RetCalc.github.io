@@ -1,29 +1,56 @@
 "use client";
 
-/* Tools: every RetCalc tool, grouped as the tool list groups them, for a
-   closer look at one part of the plan. */
+/* Tools: the site's own tool list (charts or compact), and each tool
+   opened inside the Dashboard: the rail stays, Back returns to the page it
+   was opened from, and everything the profile knows is filled in. What's
+   changed in a tool stays in that tool. */
 
 import Link from "next/link";
-import { CalculatorIcon } from "lucide-react";
-import { TOOL_GROUPS } from "@/lib/tools";
-import { Frame } from "./Frame";
-import { Tile } from "./ui";
+import { useMemo, useSyncExternalStore } from "react";
+import { ChevronLeftIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ToolsBrowser } from "@/components/tools/ToolsBrowser";
+import type { PickerData } from "@/components/tools/picker-data";
+import { TOOLS, type ToolSub } from "@/lib/tools";
+import { Frame, SECTIONS, SignedIn } from "./Frame";
+import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
+import { useDashboard } from "./store";
 
-export function Tools() {
+export function ToolsListPage({ data }: { data: PickerData }) {
   return (
-    <Frame current="tools" title="Tools" sub="A closer look at any one part of your plan">
-      {TOOL_GROUPS.map((g, i) => (
-        <div className={i ? "dsh-r4" : undefined} key={g.title}>
-          <Tile icon={CalculatorIcon} title={g.title} right={<span className="dsh-cap">{g.sub}</span>}>
-            <div className="dsh-toolgrid">
-              {g.cards.map((c) => (
-                <Link key={c.sub} href={"/" + c.path} className="dsh-tool"><b>{c.name}</b><span>{c.q}</span></Link>
-              ))}
-            </div>
-          </Tile>
-        </div>
-      ))}
-      <p className="dsh-cap dsh-r4">Each tool opens with its own inputs. Your dashboard&apos;s numbers stay here.</p>
+    <SignedIn>
+      <Frame current="tools" title="Tools" sub="Each one opens here, with what you've told us filled in">
+        <ToolsBrowser data={data} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} />
+      </Frame>
+    </SignedIn>
+  );
+}
+
+/* The page a tool was opened from, from its address: a dashboard page only. */
+const fromNow = () => {
+  const f = new URLSearchParams(window.location.search).get("from");
+  return f && f.startsWith("/dashboard") ? f : "/dashboard/tools";
+};
+const noop = () => () => {};
+
+function Tool({ sub }: { sub: ToolSub }) {
+  const { data } = useDashboard();
+  const back = useSyncExternalStore(noop, fromNow, () => "/dashboard/tools");
+  const backName = back === "/dashboard" ? "Overview" : SECTIONS.find((s) => back === "/dashboard/" + s.id)?.name ?? "Tools";
+  // The profile as the tool opens; later changes to the profile don't reach
+  // a tool already open, and the tool's own changes never reach the profile.
+  const seed = useMemo(() => seedFor(data.profile, data.entries), [data.profile, data.entries]);
+  const household = useMemo(() => householdOf(data.profile, data.entries), [data.profile, data.entries]);
+  const View = TOOL_VIEWS[sub];
+  return (
+    <Frame current="tools" title={TOOLS[sub].name}
+      sub="Filled in from your dashboard. Changes here stay in this tool."
+      actions={<Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>}>
+      <Hosted key={sub} seed={seed} household={household}><View /></Hosted>
     </Frame>
   );
+}
+
+export function ToolPage({ sub }: { sub: ToolSub }) {
+  return <SignedIn><Tool sub={sub} /></SignedIn>;
 }

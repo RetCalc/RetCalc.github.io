@@ -16,7 +16,7 @@
    the first paint (styles/18-tool-picker.css), so a visit never flashes the
    other one first. */
 
-import { useLayoutEffect } from "react";
+import { createContext, use, useLayoutEffect } from "react";
 import { TOOLS, TOOL_GROUPS, type ToolSub } from "@/lib/tools";
 import { applyToolsView, setToolsView, useToolsView, type ToolsView } from "@/lib/tools-view";
 import type { PickerData } from "./picker-data";
@@ -58,6 +58,10 @@ const CHART_LAYOUT: Record<string, [ToolSub, "lead" | "third" | "half" | "quarte
   "Everyday money": [["tax", "half"], ["budget", "half"], ["mortgage", "half"], ["debt", "half"]],
 };
 
+/* Where each card goes: the tool's own page, unless the list is shown
+   somewhere that opens the tools in place (the Dashboard). */
+const HrefFor = createContext<(sub: ToolSub) => string>((sub) => `/${TOOLS[sub].path}`);
+
 function Name({ sub }: { sub: ToolSub }) {
   const c = TOOLS[sub];
   return <div className="toolcard-name">{c.name}{c.badge ? <Badge variant="highlight" className="ml-1.75 align-middle">{c.badge}</Badge> : null}</div>;
@@ -74,7 +78,7 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
   );
   if (size === "lead") {
     return (
-      <ToolCardLink href={`/${c.path}`} sub={sub} i={c.i} className="tp-card tp-lead" charted>
+      <ToolCardLink href={use(HrefFor)(sub)} sub={sub} i={c.i} className="tp-card tp-lead" charted>
         {top}
         <div className="tp-lead-body">
           <div>
@@ -91,7 +95,7 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
     );
   }
   return (
-    <ToolCardLink href={`/${c.path}`} sub={sub} i={c.i} className={"tp-card tp-" + size} charted>
+    <ToolCardLink href={use(HrefFor)(sub)} sub={sub} i={c.i} className={"tp-card tp-" + size} charted>
       {top}
       <div className="toolcard-desc">{c.q}</div>
       <div className="tp-chart" data-bars={bars}>{chart}</div>
@@ -102,7 +106,7 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
 function CompactTile({ sub, glide }: { sub: ToolSub; glide: boolean }) {
   const c = TOOLS[sub];
   return (
-    <ToolCardLink href={`/${c.path}`} sub={sub} i={c.i} className="tp-tile">
+    <ToolCardLink href={use(HrefFor)(sub)} sub={sub} i={c.i} className="tp-tile">
       <ToolIconTile sub={sub} className="toolcard-icon" glide={glide} />
       <div className="tp-tile-text">
         <Name sub={sub} />
@@ -119,11 +123,11 @@ const VIEWS: [ToolsView, string, React.ReactNode][] = [
   ["compact", "Compact", <svg key="t" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="1.5" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /></svg>],
 ];
 
-export function ToolsBrowser({ data }: { data: PickerData }) {
+export function ToolsBrowser({ data, hrefFor }: { data: PickerData; hrefFor?: (sub: ToolSub) => string }) {
   const view = useToolsView();
   // Arriving by a link inside the site, the inlined script hasn't run.
   useLayoutEffect(() => applyToolsView(), []);
-  return (
+  const list = (
     <div className="toolcards">
       {/* The page's h1 ("Financial Planning Calculators") is read by search
           engines and screen readers (PageShell); this is its visible face,
@@ -163,4 +167,5 @@ export function ToolsBrowser({ data }: { data: PickerData }) {
       </div>
     </div>
   );
+  return hrefFor ? <HrefFor value={hrefFor}>{list}</HrefFor> : list;
 }

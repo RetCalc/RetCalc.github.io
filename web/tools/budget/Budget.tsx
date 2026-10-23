@@ -28,7 +28,7 @@ import { focusLast } from "@/lib/dom";
 import { dollarsField, groupDigits, money, parseNum } from "@/lib/format";
 import { SERIES } from "@/lib/hues";
 import { COLLEGE_DEFAULTS, collegeInput, collegeMonthly } from "@/tools/college/model";
-import { BUDGET_DEF, PRESET_GROUPS, budgetCompute, budgetGroups, isPlannedRow, isLockedRow, isSavingsRow, newLineName, openBudget, rowSlot, type BudgetRow } from "./model";
+import { BUDGET_DEF, PRESET_GROUPS, budgetCompute, emergencyYear, budgetGroups, isPlannedRow, isLockedRow, isSavingsRow, newLineName, openBudget, rowSlot, type BudgetRow } from "./model";
 import { useShareKit } from "@/components/shell/share";
 import { budgetShare } from "./share";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,9 @@ export function Budget() {
   // In a walkthrough, the Budget and its Paycheck tab are separate steps:
   // no tabs, and the paycheck is the walkthrough's next step.
   const scope = useToolScope(), go = useToolNav();
+  // Inside the Dashboard, a second column: the budget cut back for living on
+  // the emergency fund.
+  const dash = scope?.name === "dashboard", emerg = dash && s.efEmerg;
   const toPaycheck = () => (scope ? go("/budget#paycheck") : set("view")("paycheck"));
   const setRow = (i: number, patch: Partial<BudgetRow>) =>
     setState((c) => ({ ...c, rows: c.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
@@ -149,7 +152,8 @@ export function Budget() {
             <CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction>
           </CardHeader>
           <CardContent>
-            <div id="bgList" ref={listRef}>
+            <div id="bgList" ref={listRef} data-emerg={emerg ? "" : undefined}>
+              {emerg ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
                   <div className="bggroup-h">
@@ -200,6 +204,7 @@ export function Budget() {
                         </span>
                       )}
                       <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="amount" data-i={i} value={r.amount} onValueChange={(v) => setRow(i, { amount: v })} aria-label={r.desc + " amount"} /></Affixed>
+                      {emerg ? <Affixed prefix="$" className="w-35 flex-none @max-md:w-auto @max-md:flex-1"><MoneyInput nonNeg data-f="emerg" data-i={i} value={r.emerg ?? r.amount} onValueChange={(v) => setRow(i, { emerg: v })} aria-label={r.desc + " in an emergency"} /></Affixed> : null}
                       <Segmented size="compact" attr="data-fv" options={[[12, "/mo"], [1, "/yr"]] as const} value={r.freq} onChange={(f) => setRow(i, { freq: f })} />
                       {isLockedRow(r, i) ? <span className="delspace"></span> : (
                         <Button variant="ghost" size="icon-sm" title="Remove this line" aria-label={"Remove " + (r.desc || "this line")} onClick={() => removeLine(i)}><XIcon aria-hidden="true" /></Button>
@@ -266,6 +271,22 @@ export function Budget() {
                 <span className="block text-label text-muted-foreground" id="efLabel">{ef}-month emergency fund</span>
                 <span className="block text-3xl leading-tight font-medium tabular-nums sm:text-display" id="efTarget">{money(efTarget)}</span>
               </div>
+              {dash ? (
+                <div className="mt-3.5 grid gap-2.5">
+                  <p className="hint m-0">About 6 months suits most people; up to 12 if your income varies.</p>
+                  {emerg ? (
+                    <>
+                      <Segmented id="efBasis" attr="data-efb" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={s.efBasis} onChange={set("efBasis")} />
+                      <p className="hint m-0">{s.efBasis === "emergency" ? "Sized on the emergency budget: " + money(emergencyYear(s) / 12) + " per month." : "Sized on your normal budget. Switch to size it on the emergency one."}</p>
+                      <Button variant="link" size="inline-xs" onClick={() => setState((c) => ({ ...c, efEmerg: false, efBasis: "normal" }))}>Remove the emergency budget</Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" size="sm" onClick={() => setState((c) => ({ ...c, efEmerg: true, efBasis: "emergency", rows: c.rows.map((r) => ({ ...r, emerg: r.emerg ?? r.amount })) }))}>
+                      <PlusIcon data-icon="inline-start" aria-hidden="true" />Build an emergency budget
+                    </Button>
+                  )}
+                </div>
+              ) : null}
             </div>
 
             {/* The next step: the paycheck that covers this budget (a

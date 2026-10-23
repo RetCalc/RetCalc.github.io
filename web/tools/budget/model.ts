@@ -30,7 +30,10 @@ export const BUDGET_PRESETS = [
 /** One line. `slot` is a preset line's own name, kept through a rename (a
     blank rename falls back to it). A line added to a group, or under
     Custom, is `custom` and has none. */
-export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean; slot?: string }
+export interface BudgetRow { group: string; desc: string; amount: string; freq: number; custom: boolean; slot?: string;
+  /** What the line would be cut to while living on the emergency fund (the
+      Dashboard's emergency budget); unset, the same as `amount`. */
+  emerg?: string }
 
 export const PRESET_DESCS = BUDGET_PRESETS.flatMap((g) => g.items.map((it) => it.desc));
 export const PRESET_GROUPS = BUDGET_PRESETS.map((g) => g.group);
@@ -114,6 +117,10 @@ export const BUDGET_DEFAULTS = {
   view: "budget" as "budget" | "paycheck",
   rows: BUDGET_PRESETS.flatMap((g) => g.items.map((it): BudgetRow => ({ group: g.group, desc: it.desc, amount: "0", freq: it.freq, custom: false, slot: it.desc }))),
   efMonths: "6",
+  /** The Dashboard's emergency budget: shown, and whether the emergency
+      fund is sized on it rather than the budget itself. */
+  efEmerg: false,
+  efBasis: "normal" as "normal" | "emergency",
   ...PAYCHECK_DEFAULTS,
 };
 export type BudgetInputs = typeof BUDGET_DEFAULTS;
@@ -172,7 +179,13 @@ export function budgetTotals(b: BudgetInputs) {
 export function budgetCompute(b: BudgetInputs) {
   const { spentYr, savedYr, totalYr } = budgetTotals(b);
   const ef = Math.max(1, Math.round(parseNum(b.efMonths)) || 6);
-  return { spentYr, savedYr, totalYr, ef, efTarget: (spentYr / 12) * ef };
+  const efSpentYr = b.efEmerg && b.efBasis === "emergency" ? emergencyYear(b) : spentYr;
+  return { spentYr, savedYr, totalYr, ef, efTarget: (efSpentYr / 12) * ef };
+}
+
+/** A year of the emergency budget: each line as it would be cut, or as it is. */
+export function emergencyYear(b: BudgetInputs): number {
+  return b.rows.filter((r) => !isPlannedRow(r) && !isSavingsRow(r)).reduce((a, r) => a + parseNum(r.emerg ?? r.amount) * r.freq, 0);
 }
 
 /** Spending by group, a year each, largest first. */

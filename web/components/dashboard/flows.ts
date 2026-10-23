@@ -1,0 +1,215 @@
+/* Where the Dashboard's numbers meet the tools. Income, Taxes, Spending and
+   Savings are the Budget tool's Paycheck (pay, health premiums, the match,
+   the saving sliders, the budget's lines) and the Income Tax tool, kept in
+   the profile; Retirement is the Drawdown Simulator; Social Security's pay
+   history is the Social Security Calculator's. Each tool's inputs are built
+   from the profile as it opens, and what's shared goes back to the profile
+   when it changes, so every tab reads one set of numbers. */
+
+import { withDefaults, type ToolInputs } from "@/components/tools/ToolState";
+import { dollarsField, groupDigits, parseNum } from "@/lib/format";
+import { BUDGET_DEF, budgetCompute, budgetTotals, openBudget, type BudgetInputs, type BudgetRow } from "@/tools/budget/model";
+import { PC_ZERO, paycheckInput, paycheckRun, pcCap, type PcInput, type PcRun } from "@/tools/budget/paycheck-math";
+import { taxFromPaycheck } from "@/tools/budget/to-calculator";
+import { TAX_DEF, runTax, taxInput, type TaxInputs } from "@/tools/tax/model";
+import { SOCIAL_DEF, social, type SocialInputs } from "@/tools/social/model";
+import { DRAWDOWN_DEF, ddWrite, drawdownSetup, type DrawdownState } from "@/tools/drawdown/model";
+import { ddQuick } from "@/lib/engine/drawdown";
+import { OUTSIDE_US, PER_YEAR, type Per, type Person, type Profile } from "./store";
+
+/** The budget line setup's one spending number lives on, until the budget
+    is filled in line by line. */
+export const ALL_TOGETHER = "Everything else";
+
+const FREQ: Record<Per, string> = { week: "52", "2weeks": "26", twice: "24", month: "12", year: "26" };
+const PER_OF: Record<string, Per> = { "52": "week", "26": "2weeks", "24": "twice", "12": "month" };
+/** Pay before taxes over a year, as the paycheck reads it. */
+const grossOf = (p: Person) => (p.pay == null ? null : (p.pay * PER_YEAR[p.per]) / (p.taxed === "after" ? 0.76 : 1));
+/** Where taxes are figured: the state, or a stand-in outside the US. */
+export const taxState = (pr: Profile) => (!pr.state || pr.state === OUTSIDE_US ? "IL" : pr.state);
+
+/* ---------- Budget and Paycheck ---------- */
+
+/** The budget as the profile has it: the stored lines and sliders, with the
+    pay, filing status and state laid over from the profile. */
+export function budgetFor(pr: Profile): BudgetInputs {
+  const stored = pr.tools.budget ? openBudget(withDefaults(BUDGET_DEF, pr.tools.budget)) : seedBudget(pr);
+  return overlay(stored, pr);
+}
+
+function overlay(b: BudgetInputs, pr: Profile): BudgetInputs {
+  const two = pr.who === "couple" && (pr.p2.pay ?? 0) > 0;
+  const g1 = grossOf(pr.p1), g2 = two ? grossOf(pr.p2) : null;
+  return {
+    ...b,
+    ...(g1 != null ? { pcGross: dollarsField(g1), pcFreq: FREQ[pr.p1.per] } : {}),
+    ...(g2 != null ? { pcGross2: dollarsField(g2), pcFreq2: FREQ[pr.p2.per] } : {}),
+    pcStatus: pr.who !== "couple" ? "s" : two ? "m2" : "m",
+    pcState: taxState(pr),
+  };
+}
+
+/** A first budget from setup's answers: the one spending number as a line,
+    and what setup said goes to savings in the 401(k) lines. */
+function seedBudget(pr: Profile): BudgetInputs {
+  let b = openBudget({ ...BUDGET_DEF.defaults });
+  // What's known goes on its own line: the rent, or the mortgage payment.
+  const housing = pr.home === "rent" ? pr.rent : pr.home === "own" ? pr.mortPay : null;
+  if (housing) b = { ...b, rows: b.rows.map((r) => (r.slot === "Rent / Mortgage" ? { ...r, amount: groupDigits(housing, true) } : r)) };
+  // Setup's one number is the rest of it.
+  const rest = (pr.spend ?? 0) - (housing ?? 0);
+  if (pr.spend) b = { ...b, rows: [...b.rows, { group: "Custom", desc: ALL_TOGETHER, amount: groupDigits(Math.max(0, rest), true), freq: 12, custom: true }] };
+  b = overlay(b, pr);
+  const monthly = pr.contrib == null ? 0 : (pr.contrib * PER_YEAR[pr.cper]) / 12;
+  if (monthly > 0) {
+    const pi = paycheckInput(b, taxState(pr));
+    const per = (monthly * 12) / pi.p, cap = pcCap(pi, "match", PC_ZERO);
+    const match = Math.min(per, cap), rest = Math.max(0, per - match);
+    const cents = (v: number) => String(Math.round(v * 100) / 100);
+    b = { ...b, pcMatch: cents(match), pcK401max: cents(rest) };
+  }
+  return b;
+}
+
+/** What the profile keeps when the budget changes: the budget itself, and
+    the pay, status and state it holds, back into the profile's own. */
+export function fromBudget(pr: Profile, b: BudgetInputs): Profile {
+  const g1 = parseNum(b.pcGross), g2 = parseNum(b.pcGross2), two = b.pcStatus === "m2";
+  const back = (p: Person, g: number, f: string): Person => {
+    // The pay's own "how often" stays, unless the paychecks were changed there.
+    const per = f !== FREQ[p.per] ? PER_OF[f] ?? p.per : p.per;
+    // Unchanged in the tool: the pay stays as it was entered (after taxes, say).
+    if (per === p.per && Math.abs(g - (grossOf(p) ?? 0)) < 1) return p;
+    return g > 0 ? { ...p, per, taxed: "before", pay: Math.round(((g / PER_YEAR[per]) * 100)) / 100 } : p;
+  };
+  const spend = budgetTotals(b).spentYr / 12;
+  return {
+    ...pr,
+    tools: { ...pr.tools, budget: b as unknown as ToolInputs },
+    who: b.pcStatus === "s" ? "single" : "couple",
+    p1: back(pr.p1, g1, b.pcFreq),
+    p2: two ? back(pr.p2, g2, b.pcFreq2) : pr.p2,
+    state: pr.state === OUTSIDE_US ? pr.state : b.pcState || pr.state,
+    spend: spend > 0 ? Math.round(spend) : pr.spend,
+  };
+}
+
+/** The budget's spending a month (every line; yearly ones spread out). */
+export const budgetMonth = (b: BudgetInputs) => budgetTotals(b).spentYr / 12;
+/** The lines filled in besides the one-number line. */
+export const detailed = (b: BudgetInputs) => b.rows.some((r) => r.desc !== ALL_TOGETHER && parseNum(r.amount) > 0);
+
+/** Sets the budget's total to `monthly` by moving the one-number line. */
+export function setAllTogether(b: BudgetInputs, monthly: number): BudgetInputs {
+  const others = b.rows.filter((r) => r.desc !== ALL_TOGETHER).reduce((s, r) => s + (parseNum(r.amount) * r.freq) / 12, 0);
+  const amount = groupDigits(Math.max(0, Math.round(monthly - others)), true);
+  const i = b.rows.findIndex((r) => r.desc === ALL_TOGETHER);
+  const row: BudgetRow = { group: "Custom", desc: ALL_TOGETHER, amount, freq: 12, custom: true };
+  return { ...b, rows: i >= 0 ? b.rows.map((r, j) => (j === i ? { ...r, amount, freq: 12 } : r)) : [...b.rows, row] };
+}
+
+export interface Flow {
+  b: BudgetInputs; pi: PcInput; r: PcRun;
+  /** A month, both of you together. */
+  gross: number; taxes: number; health: number; afterTax: number; spend: number;
+  /** Saved and invested (not the emergency fund line), the match, and what's unassigned. */
+  invested: number; match: number; ef: number; left: number;
+  /** The invested month split by tax treatment, for the plan. */
+  trad: number; roth: number; brok: number;
+  /** Whether each person's saving reaches the full match. */
+  fullMatch: boolean | null;
+  /** The emergency fund's target, by the budget chosen for it. */
+  efMonths: number; efTarget: number;
+  /** Income Tax's reading of the year, with the deductions set there. */
+  tax: ReturnType<typeof runTax> | null;
+  hasPay: boolean;
+}
+
+/** The paycheck, taxes and budget as one month. */
+export function flow(pr: Profile): Flow {
+  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr)), r = paycheckRun(pi), a = pi.amounts;
+  const m = pi.p / 12, hasPay = pi.gross + pi.gross2 > 0;
+  const tx = hasPay ? taxFor(pr, b, pi, r) : null;
+  const T = tx ? runTax(taxInput(tx)) : null;
+  // Taxes: Income Tax's year (its deductions included), else the paycheck's.
+  const taxesYr = T ? T.federal + T.state + T.fica : r.taxes * pi.p;
+  const gross = (pi.gross + pi.gross2) / 12, health = r.health * m;
+  const roth = pi.roth;
+  const trad = ((roth.match ? 0 : a.match) + (roth.k401max ? 0 : a.k401max) + (roth.rothIra ? 0 : a.rothIra)) * m;
+  const rothAmt = ((roth.match ? a.match : 0) + (roth.k401max ? a.k401max : 0) + (roth.rothIra ? a.rothIra : 0) + a.hsa) * m;
+  const cap = pcCap(pi, "match", { ...a, match: 0 });
+  const C = budgetCompute(b);
+  return {
+    b, pi, r, gross, taxes: taxesYr / 12, health, afterTax: gross - taxesYr / 12 - health, spend: C.spentYr / 12,
+    invested: trad + rothAmt + a.brok * m, match: r.match * m, ef: a.ef * m, left: r.left * m,
+    trad, roth: rothAmt, brok: a.brok * m,
+    fullMatch: pi.match.some((x) => x.rate > 0) ? a.match >= cap - 0.5 : null,
+    efMonths: C.ef, efTarget: C.efTarget,
+    tax: T, hasPay,
+  };
+}
+
+/* ---------- Taxes ---------- */
+
+/** Income Tax as the profile has it: its own choices (deductions, year),
+    with the pay and the pre-tax money through work from the paycheck. */
+export function taxFor(pr: Profile, b = budgetFor(pr), pi = paycheckInput(b, taxState(pr)), r = paycheckRun(pi)): TaxInputs {
+  const stored = withDefaults(TAX_DEF, pr.tools.tax ?? {});
+  return taxFromPaycheck({ ...stored, dedType: stored.dedType, item: stored.item }, pi, r);
+}
+
+/** What the profile keeps when Income Tax changes: its own choices. */
+export function fromTax(pr: Profile, t: TaxInputs): Profile {
+  return { ...pr, tools: { ...pr.tools, tax: t as unknown as ToolInputs } };
+}
+
+/* ---------- Social Security's pay history ---------- */
+
+/** The Social Security Calculator's inputs for the household: birth years,
+    today's pay, the claiming age, and any pay history already edited. */
+export function socialFor(pr: Profile): SocialInputs {
+  const s = withDefaults(SOCIAL_DEF, pr.tools.social ?? {});
+  const who = (p: Person, cur: SocialInputs["you"], claim: number | null) => ({
+    ...cur, src: "pay" as const,
+    ...(p.by ? { birth: String(p.by) } : {}),
+    ...(p.retire ? { stop: String(p.retire) } : {}),
+    ...(grossOf(p) != null ? { pay: dollarsField(grossOf(p)!) } : {}),
+    ...(claim ? { claim: String(claim) } : {}),
+  });
+  return { ...s, status: pr.who === "couple" ? "m" : "s", you: who(pr.p1, s.you, pr.ss.claim), spouse: who(pr.p2, s.spouse, pr.ss.claim) };
+}
+
+/** Each person's benefit at full retirement age, a month, from the pay history. */
+export function socialBenefits(s: SocialInputs): { you: number; spouse: number | null } {
+  const S = social(s) as unknown as { you: { pia: number }; spouse?: { pia: number } | null };
+  return { you: S.you.pia, spouse: s.status === "m" && S.spouse ? S.spouse.pia : null };
+}
+
+/* ---------- Drawdown ---------- */
+
+/** The Drawdown Simulator on the plan: what's saved at retirement, the
+    years to 95, the stock mix, Social Security and the strategy come from
+    the profile; the strategy's own settings are the ones saved there. */
+export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; retire: number } | null): DrawdownState {
+  const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
+  if (!plan) return cur;
+  const couple = pr.who === "couple" && plan.ss2 > 0;
+  return ddWrite(cur, {
+    initial: Math.round(plan.fv), years: plan.years, stock: pr.assume.stocks, retireAge: String(plan.retire),
+    // The plan's spending, with a year's tax on it, as the starting rate.
+    ...(pr.tools.drawdown ? {} : { rate: Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 1000) / 10 }),
+    ...(pr.strategy ? { strategy: pr.strategy } : {}),
+    ssMode: plan.ss1 > 0 ? "manual" : "none", ssWho: couple ? "couple" : "single",
+    ssAmount: Math.round(plan.ss1 * 12), ssAmount2: Math.round(plan.ss2 * 12), ssDelay: plan.claim,
+  });
+}
+
+/** What the profile keeps when the Drawdown changes: its settings, and the strategy. */
+export function fromDrawdown(pr: Profile, d: DrawdownState): Profile {
+  return { ...pr, strategy: String(d.strategy), tools: { ...pr.tools, drawdown: d as unknown as ToolInputs } };
+}
+
+/** The chosen strategy's chance across history, with its saved settings. */
+export function drawdownSuccess(d: DrawdownState): number {
+  return ddQuick(drawdownSetup(d).o).successRate;
+}

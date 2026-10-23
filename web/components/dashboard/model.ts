@@ -5,8 +5,11 @@
    Social Security, take-home pay and the withdrawal strategies. Nothing
    here is a separate model. */
 
-import { FACTORS, STRATS, retPath, score, sim, strats, taxEst, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
+import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
+import { budgetFor, budgetMonth, drawdownFor, drawdownSuccess, flow } from "./flows";
+import { drawdownSetup } from "@/tools/drawdown/model";
+import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
 
 /** Take-home is about this share of pay before taxes, when only one is known. */
@@ -39,9 +42,8 @@ export const people = (pr: Profile): Person[] => (couple(pr) ? [pr.p1, pr.p2] : 
 export const nameOf = (pr: Profile, i: 0 | 1) => (i ? pr.p2 : pr.p1).name.trim() || (i ? "Your partner" : "You");
 export const contribMonth = (pr: Profile) => (pr.contrib == null ? null : (pr.contrib * PER_YEAR[pr.cper]) / 12);
 export const otherMonth = (pr: Profile) => pr.other.reduce((s, o) => s + (o.amount ?? 0), 0);
-export const budgetMonth = (pr: Profile) => pr.budget.reduce((s, b) => s + (b.amount ?? 0), 0);
-/** Spending per month: the budget's total when it's in use, else setup's number. */
-export const spendMonth = (pr: Profile) => (pr.useBudget && pr.budget.length ? budgetMonth(pr) : pr.spend);
+/** Spending per month: the budget's total (setup's one number is a line of it). */
+export const spendMonth = (pr: Profile): number | null => { const t = budgetMonth(budgetFor(pr)); return t > 0 ? t : pr.spend; };
 /** Growth after inflation, per year. */
 export const realGrowth = (pr: Profile) => (1 + pr.assume.growth) / (1 + pr.assume.inflation) - 1;
 
@@ -66,7 +68,8 @@ export function holdings(entries: Entry[], pr: Profile) {
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const two = couple(pr), abroad = outsideUS(pr), H = holdings(entries, pr);
-  const spend = spendMonth(pr);
+  const F = abroad ? null : flow(pr);
+  const spend = F && F.spend > 0 ? F.spend : pr.spend;
   const saved = H.trad + H.roth + H.brok;
   const a: Answers = {
     status: two ? "m" : "s",
@@ -78,20 +81,28 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     income: grossYear(pr.p1), income2: two ? grossYear(pr.p2) : null,
     saved: pr.saved == null && !entries.length ? null : saved,
     rothNow: abroad ? saved : H.roth, brokNow: abroad ? 0 : H.brok,
-    contrib: contribMonth(pr), employer: pr.employer ?? 0, match: pr.match ?? "none",
+    contrib: F?.hasPay ? F.invested : contribMonth(pr), employer: F?.hasPay ? F.match : 0,
+    match: F?.fullMatch == null ? "none" : F.fullMatch ? "full" : "partial",
     spend, retSpend: (pr.retSpend ?? spend) == null ? null : (pr.retSpend ?? spend)! * 12,
     home: pr.home, risk: realGrowth(pr), retMix: pr.assume.stocks,
     ssClaim: pr.ss.claim, ssOwn: pr.ss.own1, ssOwn2: two ? pr.ss.own2 : null,
   };
+  // Where each month's saving goes, by how it's taxed.
+  if (F?.hasPay && F.invested > 0) Object.assign(a, { splitTrad: (F.trad / F.invested) * 100, splitRoth: (F.roth / F.invested) * 100, splitBrok: (F.brok / F.invested) * 100 });
+  // Saving that rises each year: a raise to it each birthday until retirement.
+  const c = a.contrib ?? 0, g = pr.raise;
+  if (g > 0 && c > 0 && a.age != null && a.retire != null) {
+    a.events = Array.from({ length: Math.max(0, Math.min(45, a.retire - a.age - 1)) }, (_, k) => ({
+      id: "raise" + k, kind: "raise" as const, at: a.age! + k + 1, extra: c * (Math.pow(1 + g, k + 1) - Math.pow(1 + g, k)),
+    }));
+  }
   if (abroad) Object.assign(a, { splitTrad: 0, splitRoth: 100, splitBrok: 0, ssOwn: 1e-6, ssOwn2: two ? 1e-6 : null, hcIncl: "yes" });
   if (H.cash != null) a.cash = H.cash;
   if (H.accounts) Object.assign(a, H.debts > 0 ? { debtHas: "yes", debtTotal: H.debts, debtHi: H.debtsHigh } : { debtHas: "no" });
   // Take-home: as entered for whoever gave it, worked out for whoever
   // didn't (not outside the US), plus other income.
-  const after = people(pr).filter((p) => abroad || p.taxed === "after").reduce((s, p) => s + (payYear(p) ?? 0), 0) / 12;
-  const anyBefore = !abroad && people(pr).some((p) => p.taxed === "before" && p.pay != null);
-  const before = anyBefore ? taxEst({ ...a, income: pr.p1.taxed === "before" ? a.income : 0, income2: two && pr.p2.taxed === "before" ? a.income2 : 0 }) : 0;
-  const th = after + before + otherMonth(pr);
+  const after = abroad ? people(pr).reduce((s, p) => s + (payYear(p) ?? 0), 0) / 12 : 0;
+  const th = (F?.hasPay ? F.afterTax : after) + otherMonth(pr);
   if (th > 0) a.takehome = th;
   return a;
 }
@@ -117,14 +128,30 @@ export interface Results {
   equity: number;
   /** Months of spending in cash, once accounts are in. */
   cushion: number | null;
-  /** The chosen withdrawal strategy across history. */
-  strategy: StratResult | null;
+  /** The chosen withdrawal strategy, on the Drawdown Simulator with its
+      saved settings: its name, chance across history, and first year's
+      spending per month. */
+  strategy: { id: string; name: string; success: number; first: number } | null;
   abroad: boolean;
 }
 
+/** The plan's numbers the Drawdown Simulator starts from. */
+export function drawdownPlan(S: Sim | null, ss1: number | null, ss2: number | null, claim: number | null) {
+  return S ? { fv: S.fv, spendYr: S.spend, taxYr: S.taxYr, years: S.years, ss1: ss1 ?? 0, ss2: ss2 ?? 0, claim: claim ?? 67, retire: S.retire } : null;
+}
+
 export function results(pr: Profile, entries: Entry[]): Results {
-  const a = answers(pr, entries), S = sim(a);
-  const sc = score(a, S), H = holdings(entries, pr), abroad = outsideUS(pr);
+  const a = answers(pr, entries), S0 = sim(a), abroad = outsideUS(pr);
+  // A strategy chosen on the Retirement tab is the plan's: its chance across
+  // history stands in for spending a fixed amount, in the score too.
+  let chosen: Results["strategy"] = null;
+  if (S0 && pr.strategy) {
+    const ss1 = abroad ? 0 : S0.ss.a1 / 12, ss2 = abroad || !couple(pr) ? 0 : S0.ss.a2 / 12;
+    const d = drawdownFor(pr, drawdownPlan(S0, ss1, ss2, S0.ss.claim)), set = drawdownSetup(d);
+    chosen = { id: pr.strategy, name: DD_STRAT_NAMES[pr.strategy] ?? pr.strategy, success: drawdownSuccess(d), first: set.firstW / 12 };
+  }
+  const S = S0 && chosen ? { ...S0, success: chosen.success } : S0;
+  const sc = score(a, S), H = holdings(entries, pr);
   const equity = H.equity + H.other + (H.cash ?? 0) - H.debts;
   const path: Point[] = [];
   let retireYear: number | null = null;
@@ -135,7 +162,7 @@ export function results(pr: Profile, entries: Entry[]): Results {
     retPath(S).forEach((b, y) => path.push({ t: now + toRet + y + 1, v: b.p50 + equity, lo: b.p10 + equity, hi: b.p90 + equity }));
   }
   const spend = spendMonth(pr);
-  const chosen = S && pr.strategy ? strats(a, S).find((r) => r.st.id === pr.strategy) ?? null : null;
+  const F = abroad ? null : flow(pr), efMonth = F && F.efTarget > 0 ? F.efTarget / F.efMonths : spend ?? 0;
   return {
     S, success: S ? S.success : null, score: sc.score, parts: sc.P,
     partial: FACTORS.some((f) => !sc.P[f.id]),
@@ -144,7 +171,8 @@ export function results(pr: Profile, entries: Entry[]): Results {
     claim1: S ? S.ss.claim : null, claim2: S && couple(pr) ? S.ss.claim2 : null,
     takehome: a.takehome ?? null,
     atRetire: S ? S.fv : null, retireYear, path, equity,
-    cushion: H.cash != null && spend ? H.cash / spend : null,
+    // Months of the spending the emergency fund is sized on (the budget, or the emergency budget).
+    cushion: H.cash != null && efMonth > 0 ? H.cash / efMonth : null,
     strategy: chosen, abroad,
   };
 }

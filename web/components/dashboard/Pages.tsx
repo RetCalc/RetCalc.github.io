@@ -11,12 +11,13 @@ import { Home } from "./Home";
 import { Income } from "./Income";
 import { Spending } from "./Spending";
 import { Retirement } from "./Retirement";
-import { Tools } from "./ToolsPage";
 import { NextSteps } from "./NextStepsPage";
+import { Taxes } from "./Taxes";
+import { Savings } from "./Savings";
 
-const PAGES: Record<Exclude<Section, "overview">, () => React.JSX.Element> = {
-  profile: Profile, accounts: Accounts, home: Home, income: Income, spending: Spending,
-  retirement: Retirement, tools: Tools, next: NextSteps,
+const PAGES: Record<Exclude<Section, "overview" | "tools">, () => React.JSX.Element> = {
+  profile: Profile, accounts: Accounts, home: Home, income: Income, taxes: Taxes, spending: Spending, savings: Savings,
+  retirement: Retirement, next: NextSteps,
 };
 
 export function OverviewPage() {
@@ -27,7 +28,7 @@ export function SetupPage() {
   return <SignedIn><Setup /></SignedIn>;
 }
 
-export function SectionPage({ id }: { id: Exclude<Section, "overview"> }) {
+export function SectionPage({ id }: { id: Exclude<Section, "overview" | "tools"> }) {
   const Page = PAGES[id];
   return <SignedIn><Page /></SignedIn>;
 }

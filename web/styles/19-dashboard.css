@@ -354,3 +354,31 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-tipbox.dsh-tip-l { left: 64px; }
 .dsh-tipbox.dsh-tip-r { right: 20px; }
 .dsh-grow { flex: 1; }
+.dsh-payhist { display: grid; gap: 12px; }
+.dsh-dlg-h { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; }
+
+/* The strategies, to learn and choose */
+.dsh-strats { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; margin-top: 12px; }
+.dsh-strat { display: grid; grid-template-rows: auto 1fr auto; gap: 6px; justify-items: start; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-rule); background: var(--ds-ground); }
+.dsh-strat[data-on] { border-color: var(--ds-text); box-shadow: inset 0 0 0 1px var(--ds-text); }
+.dsh-strat b { font-size: 14px; font-weight: 600; }
+.dsh-strat span { font-size: 12.5px; color: var(--ds-muted); line-height: 1.45; }
+
+/* ---------- A tool inside the dashboard ---------- */
+.dsh-embed { min-width: 0; }
+.dsh-embed aside { top: 16px; }
+/* Spending: the Budget's reading leads, across the top, its lines below. */
+.dsh-embed #tab-budget { display: flex; flex-direction: column-reverse; gap: 16px; }
+.dsh-embed #tab-budget > div { width: 100%; }
+.dsh-embed #asideBudget { position: static; max-height: none; overflow: visible; }
+.dsh-embed #asideBudget > [data-slot="card"] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+.dsh-embed #asideBudget > [data-slot="card"] > * { border-top: 0; border-left: 1px solid var(--ds-rule); }
+.dsh-embed #asideBudget > [data-slot="card"] > *:first-child { border-left: 0; }
+@media (max-width: 900px) { .dsh-embed #asideBudget > [data-slot="card"] { grid-template-columns: minmax(0, 1fr); } .dsh-embed #asideBudget > [data-slot="card"] > * { border-left: 0; border-top: 1px solid var(--ds-rule); } }
+/* The emergency budget's second column, and its heading */
+.dsh-embed .bgcols { display: flex; justify-content: flex-end; gap: 8px; padding: 0 120px 6px 0; font-size: 11.5px; color: var(--ds-muted); }
+.dsh-embed .bgcols span { width: 140px; }
+/* With the emergency column, one line per row, under the two headings. */
+.dsh-embed #bgList[data-emerg] .bggroup { display: block; }
+/* The simulator's copy from the site's calculators: the dashboard fills it itself. */
+.dsh-embed #ddCopy { display: none; }

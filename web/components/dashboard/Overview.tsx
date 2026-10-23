@@ -20,6 +20,7 @@ import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./ch
 import { daysSince, longDate, money, money10, shortMoney } from "./format";
 import { FACTORS, ageOf, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
+import { flow } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { Empty, Tile } from "./ui";
 
@@ -53,7 +54,7 @@ function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
     <Tile icon={ShieldCheckIcon} title="Chance of success" right={<TipDot k="" text="How often this plan lasted through every past market since 1926, starting in each year." />}>
       <div className="dsh-fig dsh-mt">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div>
       <div className="dsh-cap dsh-mt6">{R.success != null ? "of historical retirements lasted to age 95" : "Needs your age, savings, retirement age and spending"}</div>
-      <div className="dsh-foot"><span className="dsh-cap">{accounts ? (R.strategy ? `${Math.round(R.strategy.success * 100)}% with ${R.strategy.st.name.split(" (")[0].toLowerCase()} withdrawals` : "Spending a fixed amount that rises with prices") : "Add your accounts for a sharper number"}</span></div>
+      <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With ${R.strategy.name.toLowerCase()} withdrawals, your chosen strategy` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
     </Tile>
   );
 }
@@ -92,7 +93,7 @@ export function Overview() {
   const pr = data.profile;
   const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
   const [range, setRange] = useState<Range>("all");
-  const accounts = hasAccounts(data.entries), H = holdings(data.entries, pr);
+  const accounts = hasAccounts(data.entries), H = holdings(data.entries, pr), EF = flow(pr);
   const hist = history(data.entries);
   const last = data.entries[data.entries.length - 1];
   const nw = last ? netWorth(last) : H.total;
@@ -123,7 +124,7 @@ export function Overview() {
     [LandmarkIcon, "Debts", accounts, "/dashboard/accounts"],
     [HouseIcon, "Home", pr.home === "rent" ? pr.rent != null : pr.home === "own" && mortgage(pr, data.entries).payoff != null, "/dashboard/home"],
     [SunsetIcon, "Retirement plans", !!p1.retire && (!p2 || !!p2.retire), "/dashboard/profile"],
-    [IdCardIcon, "Social Security", pr.ss.checked || R.abroad, "/dashboard/retirement"],
+    [IdCardIcon, "Social Security", pr.ss.checked || R.abroad, "/dashboard/income"],
     [ArrowDownToLineIcon, "Withdrawal strategy", !!pr.strategy, "/dashboard/retirement"],
   ];
   const filled = sections.filter((s) => s[2]).length;
@@ -185,21 +186,21 @@ export function Overview() {
           <Tile icon={IdCardIcon} title="Social Security">
             <div className="dsh-fig dsh-mt">{money10(R.ss)}<small>per month</small></div>
             <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money10(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money10(R.ss2)})` : ""}</div>
-            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>When to claim →</Button></div>
+            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income" />}>When to claim →</Button></div>
           </Tile>
-        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="We've guessed from today's pay. Add your statement's figure for your real benefit and the best age to claim." action="Check your benefit" href="/dashboard/retirement" />}
+        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="We've guessed from today's pay. Add your statement's figure for your real benefit and the best age to claim." action="Check your benefit" href="/dashboard/income" />}
         {R.strategy ? (
           <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy">
-            <div className="dsh-fig dsh-md dsh-mt">{R.strategy.st.name.split(" (")[0]}</div>
-            <div className="dsh-cap dsh-mt6">Typically <b>{money10(R.strategy.typical / 12)}</b> per month{tax}; lasted in {Math.round(R.strategy.success * 100)}% of past markets</div>
+            <div className="dsh-fig dsh-md dsh-mt">{R.strategy.name}</div>
+            <div className="dsh-cap dsh-mt6">Starts at <b>{money10(R.strategy.first)}</b> per month{tax}; lasted in {Math.round(R.strategy.success * 100)}% of past markets</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Compare strategies →</Button></div>
           </Tile>
         ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement" />}
         {R.cushion != null ? (
           <Tile icon={ShieldCheckIcon} title="Emergency fund">
             <div className="dsh-fig dsh-mt">{R.cushion.toFixed(1).replace(/\.0$/, "")}<small>months</small></div>
-            <div className="dsh-cap dsh-mt6">{money(H.cash ?? 0)} set aside{R.cushion < 6 ? `; ${money((6 - R.cushion) * (spendMonth(pr) ?? 0))} more reaches six months` : ", six months or more"}</div>
-            <div className="dsh-foot"><div className="dsh-segs dsh-grow" aria-hidden="true">{[1, 2, 3, 4, 5, 6].map((i) => <i key={i} className={i <= R.cushion! ? "dsh-on" : undefined} />)}</div></div>
+            <div className="dsh-cap dsh-mt6">{money(H.cash ?? 0)} set aside{(H.cash ?? 0) < EF.efTarget ? `; ${money(EF.efTarget - (H.cash ?? 0))} more reaches your ${EF.efMonths}-month goal` : `, your ${EF.efMonths}-month goal or more`}</div>
+            <div className="dsh-foot"><div className="dsh-segs dsh-grow" aria-hidden="true">{Array.from({ length: EF.efMonths }, (_, k) => k + 1).map((i) => <i key={i} className={i <= R.cushion! ? "dsh-on" : undefined} />)}</div></div>
           </Tile>
         ) : <Empty icon={ShieldCheckIcon} title="Emergency fund" ghost="— months" text="Add a savings or checking account to see how many months of spending you have set aside." action="Add cash accounts" href="/dashboard/accounts" />}
       </div>

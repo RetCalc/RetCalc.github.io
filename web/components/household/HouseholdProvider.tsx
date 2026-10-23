@@ -57,18 +57,29 @@ const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
     current inputs also tells whether they still match the household, which
     the tool bar shows, with a way to fill them in again. */
 export function useHouseholdFill<S>(own: string, state: S, setState: (f: (c: S) => S) => void, fill: (h: SavedHousehold, c: S) => S): void {
-  const { profile, setLink } = useHousehold();
+  const ctx = useHousehold(), setLink = ctx.setLink;
   // In a tool scope (a walkthrough), its copy takes the household in on its
   // own, and the tool bar's household status is the page's, not this tool's.
   const scope = useToolScope();
+  // A scope can bring its own household (the Dashboard's), or none at all.
+  const own_ = !!scope && scope.household !== undefined;
+  const profile = own_ ? scope!.household ?? null : ctx.profile;
   const tool = scope ? scope.name + ":" + own : own;
   const latest = useRef(fill);
+  const took = useRef(false);
   useEffect(() => {
     latest.current = fill;
   });
   const savedAt = profile?.savedAt;
   useEffect(() => {
     if (!profile || savedAt == null) return;
+    // The scope's own household: taken in once as the tool opens, not recorded.
+    if (own_) {
+      if (took.current) return;
+      took.current = true;
+      setState((c) => latest.current(profile, c));
+      return;
+    }
     const got = readStored<unknown>(APPLIED.key, APPLIED.version);
     const applied = got && typeof got === "object" && !Array.isArray(got) ? (got as Record<string, number>) : {};
     if ((applied[tool] ?? 0) >= savedAt) return;

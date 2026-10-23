@@ -13,7 +13,8 @@ import { Field, MoneyField, NumberField, SelectField } from "@/components/fields
 import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, type PKey } from "./fields";
-import { money } from "./format";
+import { money, money10 } from "./format";
+import { flow } from "./flows";
 import { couple, holdings, nameOf, realGrowth, spendMonth } from "./model";
 import { DEFAULT_ASSUMPTIONS, OUTSIDE_US, hasAccounts, useDashboard, type Person, type Profile as P } from "./store";
 import { Note, Tile } from "./ui";
@@ -54,7 +55,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
 
 export function Profile() {
   const { data, setProfile: set } = useDashboard();
-  const pr = data.profile, two = couple(pr), H = holdings(data.entries, pr);
+  const pr = data.profile, two = couple(pr), H = holdings(data.entries, pr), F = flow(pr);
   const setP = (k: PKey, v: Partial<Person>) => set((p) => ({ ...p, [k]: { ...p[k], ...v } }));
   const keys: PKey[] = two ? ["p1", "p2"] : ["p1"];
   const accounts = hasAccounts(data.entries);
@@ -107,11 +108,9 @@ export function Profile() {
                 <div><div className="dsh-label">Saved so far</div><div className="dsh-fig dsh-md">{money(H.trad + H.roth + H.brok)}</div></div>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>{accounts ? "Change in Accounts" : "Split into accounts"}</Button>
               </div>
-              <div className="dsh-row">
-                <MoneyField id="dshPContrib" label="Adding to it" value={txt(pr.contrib)} onValueChange={(v) => set((p) => ({ ...p, contrib: num(v) }))} />
-                <SelectField id="dshPCper" label="How often" value={pr.cper} onChange={(v) => set((p) => ({ ...p, cper: v as P["cper"] }))}>
-                  <option value="month">per month</option><option value="2weeks">every two weeks</option><option value="year">per year</option>
-                </SelectField>
+              <div className="dsh-readonly">
+                <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money10(F.invested + F.match)}<small>per month</small></div></div>
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/savings" />}>Change in Savings</Button>
               </div>
             </div>
           </Tile>
@@ -125,11 +124,10 @@ export function Profile() {
           </div>
         </Tile>
         <div className="dsh-side">
-          <Tile icon={ReceiptIcon} title="Spending" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/spending" />}>Build a budget</Button>}>
+          <Tile icon={ReceiptIcon} title="Spending">
             <div className="dsh-fields dsh-fields-sm">
-              {pr.useBudget && pr.budget.length
-                ? <div className="dsh-readonly"><div><div className="dsh-label">From your budget</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small>per month</small></div></div></div>
-                : <div className="dsh-row"><MoneyField id="dshPSpend" label="Spending" unit="per month" value={txt(pr.spend)} onValueChange={(v) => set((p) => ({ ...p, spend: num(v) }))} /><div /></div>}
+              <div className="dsh-readonly"><div><div className="dsh-label">Spending, all together</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small>per month</small></div></div>
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/spending" />}>Change in Spending</Button></div>
             </div>
           </Tile>
           <Tile icon={pr.home === "rent" ? Building2Icon : HouseIcon} title="Home" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/home" />}>Mortgage details</Button>}>

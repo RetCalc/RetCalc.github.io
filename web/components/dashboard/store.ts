@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { readStored, writeStored } from "@/lib/storage";
 import { SYNCED_EVENT } from "@/lib/sync/engine";
+import type { ToolInputs } from "@/components/tools/ToolState";
 
 export type Per = "week" | "2weeks" | "twice" | "month" | "year";
 export const PER_LABEL: Record<Per, string> = { week: "per week", "2weeks": "every two weeks", twice: "twice a month", month: "per month", year: "per year" };
@@ -68,8 +69,13 @@ export interface Profile {
       retirement age per month from a statement (null: estimated), and the
       age to claim (null: 67, or retirement if later). */
   ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null };
-  /** The withdrawal strategy chosen, by the Guide's ids; null: none yet. */
+  /** The withdrawal strategy chosen (the Drawdown Simulator's ids); null: none yet. */
   strategy: string | null;
+  /** The tools behind the tabs, as their own inputs: budget (pay, the
+      budget and the saving sliders), tax, social (pay history), drawdown. */
+  tools: { budget?: ToolInputs; tax?: ToolInputs; social?: ToolInputs; drawdown?: ToolInputs };
+  /** How much saving rises each year, beyond inflation (0.02 is 2%). */
+  raise: number;
 }
 
 export type AssetKind = "workplace" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
@@ -100,6 +106,7 @@ export const EMPTY_PROFILE: Profile = {
   home: null, value: null, owed: null, rent: null, mortRate: null, mortPay: null,
   assume: DEFAULT_ASSUMPTIONS,
   ss: { checked: false, own1: null, own2: null, claim: null }, strategy: null,
+  tools: {}, raise: 0,
 };
 export const EMPTY: DashData = { profile: EMPTY_PROFILE, entries: [], step: 0, skipped: [], done: false };
 
@@ -126,6 +133,7 @@ function load(): DashData {
   const p = { ...EMPTY_PROFILE, ...v.profile };
   p.assume = { ...DEFAULT_ASSUMPTIONS, ...v.profile?.assume };
   p.ss = { ...EMPTY_PROFILE.ss, ...v.profile?.ss };
+  p.tools = { ...v.profile?.tools };
   return { ...EMPTY, ...v, profile: p, entries: (v.entries ?? []).map(upgrade) };
 }
 function get(): DashData {

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BanknoteIcon, CalculatorIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
+  BanknoteIcon, CalculatorIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
   SunMoonIcon, SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
@@ -25,7 +25,9 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon; phone?: bo
   { id: "accounts", name: SECTION_NAMES.accounts, icon: WalletIcon, phone: true },
   { id: "home", name: SECTION_NAMES.home, icon: HouseIcon },
   { id: "income", name: SECTION_NAMES.income, icon: BanknoteIcon },
+  { id: "taxes", name: SECTION_NAMES.taxes, icon: LandmarkIcon },
   { id: "spending", name: SECTION_NAMES.spending, icon: ReceiptIcon, phone: true },
+  { id: "savings", name: SECTION_NAMES.savings, icon: PiggyBankIcon },
   { id: "retirement", name: SECTION_NAMES.retirement, icon: SunsetIcon, phone: true },
   { id: "tools", name: SECTION_NAMES.tools, icon: CalculatorIcon },
   { id: "next", name: SECTION_NAMES.next, icon: ListChecksIcon, phone: true },
