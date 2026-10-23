@@ -12,7 +12,7 @@
    On a phone a compact reading leads and stays pinned under the tab rail
    while the lines are in view. */
 
-import { addTransitionType, startTransition, useRef, ViewTransition } from "react";
+import { addTransitionType, startTransition, useRef, useState, ViewTransition } from "react";
 import { PencilIcon, PlusIcon, XIcon } from "lucide-react";
 import { useHouseholdFill } from "@/components/household/HouseholdProvider";
 import { Affixed } from "@/components/fields/Field";
@@ -50,6 +50,8 @@ export function Budget() {
   // Inside the Dashboard, a second column: the budget cut back for living on
   // the emergency fund.
   const dash = scope?.name === "dashboard", emerg = dash && s.efEmerg;
+  // A phone has room for one amount a line: which budget it shows.
+  const [emView, setEmView] = useState<"normal" | "emergency">("normal");
   const toPaycheck = () => (scope ? go("/budget#paycheck") : set("view")("paycheck"));
   const setRow = (i: number, patch: Partial<BudgetRow>) =>
     setState((c) => ({ ...c, rows: c.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) }));
@@ -152,8 +154,9 @@ export function Budget() {
             <CardAction><CsvButton id="bgCsv" label="budget" title="Download your budget as a CSV" rows={csvRows} filename="retcalc-budget.csv" /></CardAction>
           </CardHeader>
           <CardContent>
-            <div id="bgList" ref={listRef} data-emerg={emerg ? "" : undefined}>
+            <div id="bgList" ref={listRef} data-emerg={emerg ? "" : undefined} data-emview={emerg ? emView : undefined}>
               {emerg ? <div className="bgcols" aria-hidden="true"><span>Normal</span><span>In an emergency</span></div> : null}
+              {emerg ? <div className="bgview"><Segmented attr="data-emview" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={emView} onChange={setEmView} /></div> : null}
               {groups.map((g) => (
                 <div className="bggroup" key={g.name}>
                   <div className="bggroup-h">
