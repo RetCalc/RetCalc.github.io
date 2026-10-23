@@ -83,6 +83,7 @@ export function Stages() {
   const store = useToolStore(), go = useToolNav();
   // In a walkthrough, its Summary leads on to Drawdown, not this step.
   const scope = useToolScope();
+  const dash = scope?.name === "dashboard";
   const toast = useToast();
   const seed = useMcSeed();
   const [mode, setMode] = useState<ChartMode>("band");
@@ -284,6 +285,14 @@ export function Stages() {
         <aside id="asideSeries" className="max-lg:static max-lg:max-h-none max-lg:overflow-visible">
           <Card>
             <CardContent>
+              {/* The Dashboard's children come from its profile: their costs
+                  are changed here, the children themselves there. */}
+              {dash && kids ? (
+                <div className="mb-3.5 grid gap-2 border-b border-border pb-3.5">
+                  <p className="hint m-0">Adjusted for your children&apos;s costs over the years. {kidsLine(kids)}</p>
+                  <Button variant="outline" className="w-full" disabled={!(planYears > 0)} onClick={() => setKidStep({ at: "kids" })}>Edit child costs</Button>
+                </div>
+              ) : null}
               <GroupHead first>Your stages</GroupHead>
               {n ? <StageBar nums={nums} names={names} spans={spans} onPick={(i) => setEditing(i)} /> : null}
               {n ? (
@@ -402,12 +411,15 @@ export function Stages() {
                 <span id="payWarnTextS" role="alert">{payWarn}</span>
               </div>
 
+              {dash ? null : <>
               <GroupHead>Planning for kids?</GroupHead>
               <p className="hint mt-0 mb-2.5" id="kidsLineS">{kids ? kidsLine(kids) + " The stages are built around them; change a stage to plan other changes too."
                 : "Add the children you have or plan, and the stages are rebuilt around what they cost: less saving in the childcare years, more again once they're grown."}</p>
               <Button variant="outline" className="w-full" id="btnKidsS" disabled={!(planYears > 0)} onClick={() => setKidStep({ at: "kids" })}>{kids ? "Edit children" : "Add children"}</Button>
+              </>}
               {kidStep?.at === "kids" ? (
-                <KidsDialog kids={kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + planYears} base={KID_BASE} cover={split} close={() => setKidStep(null)} save={savedKids} />
+                <KidsDialog kids={kids ?? NO_KIDS} age={KID_BASE} retire={KID_BASE + planYears} base={KID_BASE} cover={split} close={() => setKidStep(null)} save={savedKids}
+                  {...(dash ? { costsOnly: scope?.slots?.kidsSummary, withLater: true } : {})} />
               ) : null}
               {kidStep?.at === "cover" ? (() => {
                 const { today, ppy } = stagesMonthly(s);

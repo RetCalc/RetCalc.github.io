@@ -15,12 +15,14 @@ import { NextSteps } from "./NextStepsPage";
 import { Taxes } from "./Taxes";
 import { Savings } from "./Savings";
 import { Learn } from "./Learn";
+import { About } from "./About";
+import { Summary } from "./Summary";
 import { Calculator } from "./Calculator";
 
 const PAGES: Record<Exclude<Section, "overview" | "tools">, () => React.JSX.Element> = {
   profile: Profile, accounts: Accounts, home: Home, income: Income, taxes: Taxes, spending: Spending, savings: Savings,
   retirement: Retirement, next: NextSteps, learn: Learn,
-  calculator: Calculator,
+  calculator: Calculator, summary: Summary, about: About,
 };
 
 export function OverviewPage() {

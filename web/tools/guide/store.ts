@@ -51,6 +51,9 @@ export interface Answers {
       childcare would be (big city, suburb, rural); and each planned child's
       gap after the one before, when they aren't evenly spaced. */
   childTeen?: number | null; careArea?: "city" | "suburb" | "rural" | null; kidGaps?: number[] | null;
+  /** What a second or later child costs, as a share of the first (the
+      Dashboard lets it be set); unset, the usual 80%. */
+  childLater?: number | null;
 }
 export type AnswerKey = keyof Answers;
 

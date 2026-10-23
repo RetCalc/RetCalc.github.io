@@ -214,7 +214,7 @@ export interface ToolScope {
   household?: SavedHousehold | null;
   /** What the scope's own page adds inside a tool, by place: "afterSliders"
       is the Paycheck tab, after where the rest goes. */
-  slots?: { afterSliders?: ReactNode };
+  slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode };
 }
 const ScopeContext = createContext<ToolScope | null>(null);
 export const ToolScopeProvider = ScopeContext;

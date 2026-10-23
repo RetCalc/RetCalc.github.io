@@ -123,6 +123,8 @@ export interface Flow {
   /** Income Tax's reading of the year, with the deductions set there. */
   tax: ReturnType<typeof runTax> | null;
   hasPay: boolean;
+  /** Set aside for college each month in the budget (its College savings line). */
+  college: number;
 }
 
 /** The paycheck, taxes and budget as one month. */
@@ -145,7 +147,7 @@ export function flow(pr: Profile): Flow {
     trad, roth: rothAmt, brok: a.brok * m,
     fullMatch: pi.match.some((x) => x.rate > 0) ? a.match >= cap - 0.5 : null,
     efMonths: C.ef, efTarget: C.efTarget,
-    tax: T, hasPay,
+    tax: T, hasPay, college: C.savedYr / 12,
   };
 }
 
@@ -243,4 +245,15 @@ export function savingAt(pr: Profile, k: number, F: Flow = flow(pr)): number {
   const m0 = L.find((l) => l.id === "match")!;
   const matchNow = m0.amount > 0 ? Math.min(m0.amount * Math.pow(1 + m0.growth, k), Math.max(m0.cap, m0.amount)) / m0.amount : 1;
   return own + F.match * matchNow;
+}
+
+/* ---------- College ---------- */
+
+/** The budget line saving for college, as the Budget tool names it. */
+export const COLLEGE_LINE = "College savings";
+
+/** Adds (or sets) the budget's College savings line, a month. */
+export function withCollegeLine(b: BudgetInputs, monthly: number): BudgetInputs {
+  const amount = groupDigits(Math.round(monthly), true), i = b.rows.findIndex((r) => r.desc === COLLEGE_LINE);
+  return { ...b, rows: i >= 0 ? b.rows.map((r, j) => (j === i ? { ...r, amount, freq: 12 } : r)) : [...b.rows, { group: "Custom", desc: COLLEGE_LINE, amount, freq: 12, custom: true }] };
 }

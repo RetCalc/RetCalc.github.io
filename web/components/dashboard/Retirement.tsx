@@ -55,7 +55,7 @@ export function Retirement() {
           {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security</div><div className="dsh-fig">{R.ss != null ? money10(R.ss) : "—"}<small>per month</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig">{money(pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div></div>
         </div>
-        {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} /><div className="dsh-hint dsh-self-end">The same age as on Income: change it in either place.</div><div /></div></div> : null}
+        {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
       </Tile>
 
       <div className="dsh-r4"><Tile icon={BookOpenIcon} title="The withdrawal strategies" right={plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}>

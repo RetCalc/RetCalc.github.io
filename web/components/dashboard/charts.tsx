@@ -79,7 +79,11 @@ export function NetWorthChart({ hist, proj, marks, until, height = 270, describe
         {years.map((y) => <text key={y} x={X(y)} y={H - 6} textAnchor="middle">{y}</text>)}
         {band ? <path className="dsh-band" d={band} /> : null}
         {marks.filter((m) => m.t >= x0 && m.t <= x1).map((m, i) => (
-          <g key={m.label}><line className="dsh-mk" x1={X(m.t)} x2={X(m.t)} y1={T + 14 + i * 16} y2={H - B} /><text className="dsh-ml" x={X(m.t) + 5} y={T + 24 + i * 16}>{m.label}</text></g>
+          <g key={m.label}><line className="dsh-mk" x1={X(m.t)} x2={X(m.t)} y1={T + 14 + i * 16} y2={H - B} />
+            {/* Left of its line when it would run past the chart's edge. */}
+            {X(m.t) + 5 + m.label.length * 6.6 > W - R
+              ? <text className="dsh-ml" x={X(m.t) - 5} y={T + 24 + i * 16} textAnchor="end">{m.label}</text>
+              : <text className="dsh-ml" x={X(m.t) + 5} y={T + 24 + i * 16}>{m.label}</text>}</g>
         ))}
         <path className="dsh-proj" d={line(pts)} />
         {hist.length > 1 ? <path className="dsh-hist" d={line(hist)} /> : null}
@@ -136,7 +140,10 @@ export function Timeline({ lanes, from, to, now }: { lanes: Lane[]; from: number
               {ln.events.map((e, j) => (
                 <g key={e.label}>
                   <circle className="dsh-ev" cx={X(e.at)} cy={y} r={5} />
-                  <text x={X(e.at) + (j ? 4 : -4)} y={y + 21} textAnchor={j ? "start" : "end"}>{e.label}</text>
+                  {/* The first event's words go left of its dot, unless that runs into the names. */}
+                  {j || X(e.at) - 4 - e.label.length * 6.4 < L
+                    ? <text x={X(e.at) + 4} y={y + 21} textAnchor="start">{e.label}</text>
+                    : <text x={X(e.at) - 4} y={y + 21} textAnchor="end">{e.label}</text>}
                 </g>
               ))}
               {ln.lead ? <text x={X(now) + 8} y={y - 11}>{ln.lead}</text> : null}

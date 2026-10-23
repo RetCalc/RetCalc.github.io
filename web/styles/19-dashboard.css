@@ -393,3 +393,33 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 @media (max-width: 640px) { .dsh-growrow { grid-template-columns: minmax(0, 1fr); } }
 .dsh-narrow { width: 150px; }
 .dsh-narrow .field > [data-slot="label"] { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+/* Net worth: the lists' columns, and the edit buttons under them */
+.dsh-ltbl td:first-child { white-space: normal; }
+.dsh-ltbl td:first-child .dsh-sw { margin-right: 8px; }
+.dsh-ltbl td:nth-child(2) { text-align: left; }
+.dsh-ltbl th:nth-child(2) { text-align: left; }
+.dsh-ltbl tfoot td { font-weight: 600; border-top: 1px solid var(--ds-rule-strong); border-bottom: 0; padding-top: 10px; }
+.dsh-ehead { font-size: 11.5px; font-weight: 500; color: var(--ds-muted); }
+.dsh-editbar { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+.dsh-wrapbtns { flex-wrap: wrap; }
+@media (max-width: 1180px) { .dsh-ehead { display: none; } }
+/* About: the site's About page (#tab-about, 08-about-budget.css) inside
+   the frame. The site's header isn't here, so the sticky index and the
+   places a link lands sit near the top instead of below it. */
+.dsh-about { --navh: 0px; }
+html:has(.dsh-about) { scroll-padding-top: 16px; }
+/* A suggestion with its one action, on the page it acts on */
+.dsh-tip { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: space-between; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--ds-rule-strong); background: var(--ds-ground); font-size: 13.5px; }
+.dsh-tip > span { flex: 1 1 320px; }
+/* Readiness: each area opens to its why and how */
+.dsh-areas .dsh-area { display: block; }
+.dsh-arow { display: flex; align-items: center; gap: 8px; width: 100%; padding: 3px 0; border: 0; background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; text-align: left; }
+.dsh-arow .dsh-v { margin-left: auto; }
+.dsh-arow svg { width: 14px; height: 14px; color: var(--ds-muted); transition: transform .15s; flex: none; }
+.dsh-arow[aria-expanded="true"] svg { transform: rotate(180deg); }
+.dsh-arow:hover .dsh-n { color: var(--ds-text); }
+.dsh-why { margin: 4px 0 8px; padding: 10px 12px; border-radius: 10px; background: var(--ds-ground); border: 1px solid var(--ds-rule); font-size: 13px; display: grid; gap: 8px; justify-items: start; }
+.dsh-why p { margin: 0; color: var(--ds-muted); }
+.dsh-why ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+/* Plan summary: Paycheck to Retirement's cards, one under another */
+.dsh-psum { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }

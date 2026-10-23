@@ -7,21 +7,23 @@ import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BanknoteIcon, CalculatorIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
-  SunMoonIcon, SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
+  BanknoteIcon, CalculatorIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
+   SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
 import { useAccount } from "@/components/account/AccountProvider";
-import { setThemeChoice } from "@/lib/theme";
+import { AccountButton } from "@/components/account/AccountButton";
+import { setThemeChoice, useTheme } from "@/lib/theme";
 import { OUTSIDE_US, hasAccounts, readDashboard, unstarted, useDashboard } from "./store";
 
 import { SECTION_NAMES, type Section } from "./sections";
 
 export type { Section };
 export const SECTIONS: { id: Section; name: string; icon: LucideIcon; phone?: boolean }[] = [
-  { id: "overview", name: SECTION_NAMES.overview, icon: LayoutGridIcon, phone: true },
   { id: "profile", name: SECTION_NAMES.profile, icon: UserRoundIcon },
+  { id: "overview", name: SECTION_NAMES.overview, icon: LayoutGridIcon, phone: true },
+  { id: "summary", name: SECTION_NAMES.summary, icon: ClipboardListIcon },
   { id: "accounts", name: SECTION_NAMES.accounts, icon: WalletIcon, phone: true },
   { id: "home", name: SECTION_NAMES.home, icon: HouseIcon },
   { id: "income", name: SECTION_NAMES.income, icon: BanknoteIcon },
@@ -33,6 +35,7 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon; phone?: bo
   { id: "tools", name: SECTION_NAMES.tools, icon: WrenchIcon },
   { id: "next", name: SECTION_NAMES.next, icon: ListChecksIcon, phone: true },
   { id: "learn", name: SECTION_NAMES.learn, icon: GraduationCapIcon },
+  { id: "about", name: SECTION_NAMES.about, icon: InfoIcon },
 ];
 export const hrefFor = (s: Section) => (s === "overview" ? "/dashboard" : "/dashboard/" + s);
 
@@ -41,6 +44,7 @@ function toggleTheme() {
 }
 
 function Rail({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
+  const theme = useTheme();
   return (
     <nav className="dsh-rail" aria-label="Dashboard">
       <div className="dsh-rail-in">
@@ -54,7 +58,9 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
         ))}
         <div className="dsh-rail-gap" />
         <div className="dsh-rail-hr" />
-        <button type="button" className="dsh-ri dsh-desk" onClick={toggleTheme}><SunMoonIcon aria-hidden="true" /><span>Light and dark</span></button>
+        <button type="button" className="dsh-ri dsh-desk" onClick={toggleTheme} aria-label={theme === "light" ? "Light mode: switch to dark" : "Dark mode: switch to light"}>
+          {theme === "light" ? <SunIcon aria-hidden="true" /> : <MoonIcon aria-hidden="true" />}<span>{theme === "light" ? "Light mode" : "Dark mode"}</span>
+        </button>
         <Link href="/" className="dsh-ri dsh-desk"><ChevronLeftIcon aria-hidden="true" /><span>Back to RetCalc</span></Link>
       </div>
     </nav>
@@ -91,7 +97,6 @@ export function SignedIn({ children }: { children: ReactNode }) {
 /** A dashboard page: the rail, the title bar and the page. Sends someone
     who hasn't started setup there first. */
 export function Frame({ current, title, sub, actions, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; children: ReactNode }) {
-  const { account } = useAccount();
   const { data } = useDashboard();
   const router = useRouter();
   const fresh = unstarted(data);
@@ -103,7 +108,6 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
     accounts: !hasAccounts(data.entries), retirement: (!data.profile.ss.checked && !abroad) || !data.profile.strategy,
     profile: !data.done || data.skipped.length > 0,
   };
-  const initial = (account?.firstName ?? data.profile.p1.name ?? account?.email ?? "?").trim().charAt(0).toUpperCase() || "?";
   return (
     <div className="dsh-app">
       <Rail current={current} dots={dots} />
@@ -111,7 +115,7 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
         <header className="dsh-top">
           <h1>{title}</h1>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
-          <div className="dsh-r">{actions}<Link href="/account" className="dsh-avatar" aria-label="Your account">{initial}</Link></div>
+          <div className="dsh-r">{actions}<AccountButton inDashboard /></div>
         </header>
         <div className="dsh-page">{fresh ? null : children}</div>
       </div>

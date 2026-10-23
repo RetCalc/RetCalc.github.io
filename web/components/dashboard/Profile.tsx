@@ -6,6 +6,10 @@
    is read from Accounts and changed there. */
 
 import Link from "next/link";
+import { useState } from "react";
+import { parseNum } from "@/lib/format";
+import { CHILD_COST, earlyCost } from "@/tools/guide/schedule";
+import { ChildCostsDialog } from "./children";
 import { BabyIcon, Building2Icon, HouseIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,8 +20,8 @@ import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, type PKey } from "./fields";
 import { money, money10 } from "./format";
 import { flow } from "./flows";
-import { couple, holdings, nameOf, realGrowth, spendMonth } from "./model";
-import { DEFAULT_ASSUMPTIONS, OUTSIDE_US, hasAccounts, useDashboard, type Person, type Profile as P } from "./store";
+import { couple, holdings, mortgage, nameOf, realGrowth, spendMonth } from "./model";
+import { DEFAULT_ASSUMPTIONS, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
 import { Note, Tile } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -59,6 +63,9 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
 function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
   const put = (v: Partial<P["planned"]>) => set((p) => ({ ...p, planned: { ...p.planned, ...v } }));
   const any = pr.kids > 0 || pr.planned.count > 0;
+  const [costs, setCosts] = useState(false);
+  const C = pr.childCosts, n = (v: string) => (v.trim() === "" ? null : parseNum(v));
+  const early = n(C.early) ?? earlyCost(pr.childcare, pr.careArea), school = n(C.school) ?? CHILD_COST.school, teen = n(C.teen) ?? CHILD_COST.teen;
   return (
     <Tile icon={BabyIcon} title="Children ahead" right={<span className="dsh-cap">Their costs come out of what you save</span>}>
       <div className="dsh-fields dsh-fields-sm">
@@ -93,7 +100,11 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
               ) : <div />}
               <div className="dsh-self-end">{pr.college.help !== "none" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("college", "/dashboard/profile")} />}>Plan it in College Savings</Button> : null}</div>
             </div>
-            <p className="dsh-cap">Children cost about {pr.childcare ? (pr.careArea === "city" ? "$2,800" : pr.careArea === "rural" ? "$2,000" : "$2,300") : "$1,300"} per month to age 5, $1,400 to 12 and $1,500 to 18 (a second child about 80% of that), in today&apos;s dollars.{pr.college.help !== "none" ? " College comes out of saving for four years from 18." : ""}</p>
+            <div className="dsh-readonly">
+              <p className="dsh-cap dsh-flush">Each child costs about <b>{money(early)}</b> per month to age 5, <b>{money(school)}</b> to 12 and <b>{money(teen)}</b> to 18{pr.kids + pr.planned.count > 1 ? <>, and each later one <b>{pr.childCosts.later || "80"}%</b> of that</> : null}, in today&apos;s dollars.{pr.college.help !== "none" ? " College comes out of saving for four years from 18, unless you save ahead for it in Spending." : ""}</p>
+              <Button variant="outline" size="sm" onClick={() => setCosts(true)}>Edit child costs</Button>
+            </div>
+            {costs ? <ChildCostsDialog close={() => setCosts(false)} /> : null}
           </>
         ) : null}
       </div>
@@ -102,7 +113,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
 }
 
 export function Profile() {
-  const { data, setProfile: set } = useDashboard();
+  const { data, setProfile: set, update } = useDashboard();
   const pr = data.profile, two = couple(pr), H = holdings(data.entries, pr), F = flow(pr);
   const setP = (k: PKey, v: Partial<Person>) => set((p) => ({ ...p, [k]: { ...p[k], ...v } }));
   const keys: PKey[] = two ? ["p1", "p2"] : ["p1"];
@@ -184,10 +195,13 @@ export function Profile() {
                 <Choice on={pr.home === "own"} icon={<HouseIcon aria-hidden="true" />} title="Own" sub="With or without a mortgage" onClick={() => set((p) => ({ ...p, home: "own" }))} />
                 <Choice on={pr.home === "rent"} icon={<Building2Icon aria-hidden="true" />} title="Rent" sub="A house or an apartment" onClick={() => set((p) => ({ ...p, home: "rent" }))} />
               </div>
-              {pr.home === "own" ? (accounts || data.entries.length
-                ? <div className="dsh-readonly"><div><div className="dsh-label">Worth, less the mortgage</div><div className="dsh-fig dsh-md">{money(H.equity)}</div></div><Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>Change in Net worth</Button></div>
-                : <div className="dsh-row"><MoneyField id="dshPValue" label="What it's worth" value={txt(pr.value)} onValueChange={(v) => set((p) => ({ ...p, value: num(v) }))} /><MoneyField id="dshPOwed" label="Left on the mortgage" value={txt(pr.owed)} onValueChange={(v) => set((p) => ({ ...p, owed: num(v) }))} /></div>)
-                : pr.home === "rent" ? <div className="dsh-row"><MoneyField id="dshPRent" label="Rent" unit="per month" value={txt(pr.rent)} onValueChange={(v) => set((p) => ({ ...p, rent: num(v) }))} /><div /></div> : null}
+              {pr.home === "own" ? (
+                <div className="dsh-row3">
+                  <MoneyField id="dshPValue" label="What it's worth" value={txt(H.home || null)} onValueChange={(v) => update((d) => ({ ...d, entries: withHome(d, { value: num(v) }) }))} />
+                  <MoneyField id="dshPOwed" label="Left on the mortgage" value={txt(H.mortgage || null)} onValueChange={(v) => update((d) => ({ ...d, entries: withHome(d, { owed: num(v) }) }))} />
+                  <NumberField id="dshPMRate" label="Its interest rate" unit="%" step={0.125} max={20} value={pctTxt(mortgage(pr, data.entries).rate)} onValueChange={(v) => { const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />
+                </div>
+              ) : pr.home === "rent" ? <div className="dsh-row"><MoneyField id="dshPRent" label="Rent" unit="per month" value={txt(pr.rent)} onValueChange={(v) => set((p) => ({ ...p, rent: num(v) }))} /><div /></div> : null}
             </div>
           </Tile>
         </div>

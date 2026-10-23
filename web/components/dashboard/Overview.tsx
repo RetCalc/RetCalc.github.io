@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   ArrowDownToLineIcon, BanknoteIcon, CalendarDaysIcon, CheckIcon, GaugeIcon, HouseIcon, IdCardIcon, ListChecksIcon,
-  MapPinIcon, ReceiptIcon, ShieldCheckIcon, SunsetIcon, UserRoundIcon, WalletIcon, LandmarkIcon, type LucideIcon,
+  ChevronDownIcon, MapPinIcon, ReceiptIcon, ShieldCheckIcon, SunsetIcon, UserRoundIcon, WalletIcon, LandmarkIcon, type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
@@ -20,18 +20,22 @@ import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./ch
 import { daysSince, longDate, money, money10, shortMoney } from "./format";
 import { FACTORS, ageOf, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
+import { explain } from "./readiness";
+import type { FactorId } from "@/tools/guide/calc";
 import { flow } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { Empty, Tile } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
-function Readiness({ R }: { R: Results }) {
+export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entries: DashData["entries"] }) {
   const areas = FACTORS.map((f) => ({ name: f.name, w: f.w, p: R.parts[f.id]?.p ?? null }));
   const word = R.score == null ? "Not scored yet" : R.partial ? "Partial score" : R.score >= 85 ? "On track" : R.score >= 70 ? "Nearly there" : R.score >= 50 ? "Getting there" : "Needs work";
-  const href: Record<string, string> = { outlook: "/dashboard/profile", rate: "/dashboard/income", cushion: "/dashboard/accounts", debt: "/dashboard/accounts", flow: "/dashboard/spending" };
+  // One area open at a time: why it scored what it did, and what would raise it.
+  const [open, setOpen] = useState<FactorId | null>(null);
+  const why = useMemo(() => (open ? explain(open, pr, entries, R) : null), [open, pr, entries, R]);
   return (
-    <Tile icon={GaugeIcon} title="Readiness score" right={<TipDot k="" text="Five areas, weighted: how your plan holds up, how much you save, your emergency fund, debt and monthly cash flow." />}>
+    <Tile icon={GaugeIcon} title="Readiness score" right={<TipDot k="" text="Five areas, weighted: how your plan holds up, how much you save, your emergency fund, debt and monthly cash flow. Open any one to see why it scored what it did." />}>
       <div className="dsh-inline dsh-mt">
         <span className="dsh-fig">{R.score ?? "—"}<small>of 100</small></span>
         <span className={!R.partial && (R.score ?? 0) >= 70 ? "dsh-badge dsh-gain" : "dsh-badge"}>{word}</span>
@@ -39,9 +43,19 @@ function Readiness({ R }: { R: Results }) {
       <SplitBar areas={areas} />
       <div className="dsh-areas">
         {FACTORS.map((f, i) => (
-          <div key={f.id}>
-            <span className="dsh-n">{f.name}</span>
-            {areas[i].p == null ? <Button variant="link" size="inline" className="dsh-add" nativeButton={false} render={<Link href={href[f.id]} />}>Add</Button> : <span className="dsh-v">{Math.round(areas[i].p! * f.w)} of {f.w}</span>}
+          <div key={f.id} className="dsh-area">
+            <button type="button" className="dsh-arow" aria-expanded={open === f.id} onClick={() => setOpen(open === f.id ? null : f.id)}>
+              <span className="dsh-n">{f.name}</span>
+              <span className="dsh-v">{areas[i].p == null ? "Not scored yet" : `${Math.round(areas[i].p! * f.w)} of ${f.w}`}</span>
+              <ChevronDownIcon aria-hidden="true" />
+            </button>
+            {open === f.id && why ? (
+              <div className="dsh-why">
+                <p>{why.why}</p>
+                {why.how.length ? <ul>{why.how.map((h) => <li key={h}>{h}</li>)}</ul> : null}
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href={why.href} />}>{why.action}</Button>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
@@ -59,7 +73,7 @@ function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
   );
 }
 
-function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number; to: number } {
+export function timeline(d: DashData, R: Results): { lanes: Lane[]; from: number; to: number } {
   const pr = d.profile, now = nowYear(), from = Math.floor(now);
   const lanes: Lane[] = [];
   let to = from + 30;
@@ -177,7 +191,7 @@ export function Overview() {
             In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 with <b>{pr.assume.stocks}%</b> in stocks. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile" />}>Set in Profile</Button>
           </div>
         </Tile>
-        <div className="dsh-side"><Readiness R={R} /><Chance R={R} accounts={accounts} /></div>
+        <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} /></div>
       </div>
 
       <div className="dsh-grid dsh-r2">

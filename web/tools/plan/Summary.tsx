@@ -60,7 +60,7 @@ export function Summary({ plan, goTo }: { plan: PlanState; goTo: (s: StepId) => 
 }
 
 /* ---- the answer ---- */
-function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
+export function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
   const A = S.atRetire, perYr = S.p, savedYr = (S.inflow.trad + S.inflow.roth + S.inflow.brok + S.inflow.hsa) * perYr;
   const want = S.goal.v > 0 ? S.goal.v : null;
   const meets = want != null ? A.afterTax >= want - 0.5 : null;
@@ -81,7 +81,7 @@ function Hero({ S, stages }: { S: PlanSummary; stages: boolean }) {
 
 /* ---- where every dollar of pay goes ---- */
 type Part = { label: string; v: number; c: string };
-function PayCard({ S }: { S: PlanSummary }) {
+export function PayCard({ S }: { S: PlanSummary }) {
   const [unit, setUnit] = useState<"year" | "month" | "check">("year");
 
   const y = S.pay, mult = unit === "year" ? S.p : unit === "month" ? S.p / 12 : 1;
@@ -144,7 +144,7 @@ function PayCard({ S }: { S: PlanSummary }) {
 }
 
 /* ---- each account ---- */
-function Accounts({ S }: { S: PlanSummary }) {
+export function Accounts({ S }: { S: PlanSummary }) {
   const per = S.per === "check" ? "per paycheck" : "per month";
   const shown = ACCTS.filter((a) => S.inflow[a] > 0.004 || (S.atRetire.byAcct?.[a] ?? 0) > 1);
   return (
@@ -185,7 +185,7 @@ function tightTicks(max: number): number[] {
   return out;
 }
 
-function Climb({ S }: { S: PlanSummary }) {
+export function Climb({ S }: { S: PlanSummary }) {
   // Drawn for the full width of the card, and taller than the tools' charts.
   const base = useChartSize();
   const size = base.narrow ? base : { ...base, W: 1240, H: 460, L: 74, fs: 12.5, pw: 1240 - 74 - base.Rp, ph: 460 - base.T - base.B };
@@ -322,7 +322,7 @@ function MadeOf({ S, future }: { S: PlanSummary; future: boolean }) {
 
 /* ---- what the children cost: each child along the years, then together ---- */
 const CARE = SERIES.rose, SCHOOL = SERIES.lavender;
-function ChildrenCost({ S }: { S: PlanSummary }) {
+export function ChildrenCost({ S }: { S: PlanSummary }) {
   const K = S.children!, a0 = S.age, a1 = S.retire, span = Math.max(1, a1 - a0);
   const at = (age: number) => ((age - a0) / span) * 100 + "%";
   const ticks = Array.from({ length: Math.floor(span / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
@@ -386,7 +386,7 @@ function ChildrenCost({ S }: { S: PlanSummary }) {
 }
 
 /* ---- the stages, side by side along the years ---- */
-function StageLine({ S }: { S: PlanSummary }) {
+export function StageLine({ S }: { S: PlanSummary }) {
   const st = S.stages!, total = st.reduce((t, s) => t + (s.to - s.from), 0) || 1;
   return (
     <Card className="col-span-full">

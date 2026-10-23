@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { useAccount } from "@/components/account/AccountProvider";
 import type { HomeData } from "./data";
 import {
   BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, GrowthChart, HealthChart, MortgageChart, RothChart, ScoreRing, TaxChart,
@@ -41,6 +42,7 @@ export function Home({ data }: { data: HomeData }) {
           <div className="hm-btns">
             <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
             <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
+            <DashboardButton />
           </div>
         </div>
       </section>
@@ -174,11 +176,21 @@ export function Home({ data }: { data: HomeData }) {
           <div className="hm-btns">
             <Link href="/calculator" className={buttonVariants({ size: "xl" })}>Open the Calculator<ArrowRightIcon data-icon="inline-end" aria-hidden="true" /></Link>
             <Link href="/guide" className={buttonVariants({ variant: "outline", size: "xl" })}>Start the guide</Link>
+            <DashboardButton />
           </div>
         </div>
       </section>
     </div>
   );
+}
+
+/** Beside the calculator and the guide, for someone signed in: their
+    dashboard. Signed out (or before the account has loaded) it's nothing,
+    so the page is exactly as it was. */
+function DashboardButton() {
+  const { ready, account } = useAccount();
+  if (!ready || !account) return null;
+  return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My dashboard</Link>;
 }
 
 const ROWS = ["", "hm-r1", "hm-r2", "hm-r3", "hm-r4", "hm-r5", "hm-r6", "hm-r7", "hm-r8", "hm-r9", "hm-r10"] as const;

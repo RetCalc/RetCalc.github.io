@@ -7,7 +7,9 @@
 
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
+import { parseNum } from "@/lib/format";
 import { budgetFor, budgetMonth, drawdownFor, drawdownSuccess, flow, savingAt } from "./flows";
+import { collegeNeedOf } from "./college";
 import { drawdownSetup } from "@/tools/drawdown/model";
 import { DD_STRAT_NAMES } from "@/tools/drawdown/text";
 import { OUTSIDE_US, PER_YEAR, hasAccounts, netWorth, sum, type Entry, type Person, type Profile } from "./store";
@@ -112,15 +114,27 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => ageOf(k)!).filter((x) => x >= 0 && x < 30);
   if (kids.length) a.kidsNow = kids;
   if (pr.planned.count > 0) Object.assign(a, { kidsPlanned: pr.planned.count, firstIn: pr.planned.firstIn, spacing: pr.planned.spacing });
-  if (kids.length || pr.planned.count > 0) Object.assign(a, { childcare: pr.childcare, careArea: pr.careArea, college: pr.college.help === "none" ? "no" : "yes" });
+  if (kids.length || pr.planned.count > 0) {
+    const C = pr.childCosts, n = (v: string) => (v.trim() === "" ? null : parseNum(v));
+    Object.assign(a, { childcare: pr.childcare, careArea: pr.careArea, college: pr.college.help === "none" ? "no" : "yes",
+      childEarly: n(C.early), childSchool: n(C.school), childTeen: n(C.teen), childLater: n(C.later) == null ? null : n(C.later)! / 100 });
+  }
   if (pr.college.help !== "none" && a.age != null) {
-    const share = pr.college.help === "all" ? 1 : 0.5, monthly = (pr.college.cost * share) / 12;
+    // Saved ahead in the budget: that share of college is paid from it, not
+    // from saving in the college years.
+    const need = collegeNeedOf(pr), ahead = need > 0 && F ? Math.min(1, F.college / need) : 0;
+    const share = pr.college.help === "all" ? 1 : 0.5, monthly = ((pr.college.cost * share) / 12) * (1 - ahead);
     collegeStarts(pr).forEach((years, i) => {
-      if (years < 0) return;
+      if (years < 0 || monthly < 1) return;
       events.push({ id: "college" + i, kind: "custom", from: a.age! + years, to: a.age! + years + 4, delta: -monthly, label: "College" });
     });
   }
   if (events.length) a.events = events;
+  // Each of you's own claiming age (the plan's optimizer path, which takes two).
+  if (!abroad && (pr.ss.claim != null || (two && pr.ss.claim2 != null))) {
+    const dflt = (p: Person) => Math.min(70, Math.max(67, p.retire ?? 67));
+    Object.assign(a, { optC1: pr.ss.claim ?? dflt(pr.p1), optC2: two ? pr.ss.claim2 ?? dflt(pr.p2) : pr.ss.claim ?? dflt(pr.p1), optF: 0, optU: 0, optIm: 0, optAc: 0 });
+  }
   if (abroad) Object.assign(a, { splitTrad: 0, splitRoth: 100, splitBrok: 0, ssOwn: 1e-6, ssOwn2: two ? 1e-6 : null, hcIncl: "yes" });
   if (H.cash != null) a.cash = H.cash;
   if (H.accounts) Object.assign(a, H.debts > 0 ? { debtHas: "yes", debtTotal: H.debts, debtHi: H.debtsHigh } : { debtHas: "no" });

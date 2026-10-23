@@ -68,7 +68,7 @@ export interface Profile {
   /** Social Security: checked by the person, each benefit at full
       retirement age per month from a statement (null: estimated), and the
       age to claim (null: 67, or retirement if later). */
-  ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null };
+  ss: { checked: boolean; own1: number | null; own2: number | null; claim: number | null; claim2: number | null };
   /** The withdrawal strategy chosen (the Drawdown Simulator's ids); null: none yet. */
   strategy: string | null;
   /** The tools behind the tabs, as their own inputs: budget (pay, the
@@ -86,6 +86,13 @@ export interface Profile {
   childcare: boolean; careArea: "city" | "suburb" | "rural";
   /** Helping with college: how much, and the kind of school (its yearly cost). */
   college: { help: "none" | "part" | "all"; cost: number };
+  /** Children's costs per month when they aren't the typical ones ("" for
+      typical): birth to 5, 6 to 12, 13 to 18; and a later child's share of
+      the first's, in percent. */
+  childCosts: { early: string; school: string; teen: string; later: string };
+  /** In the Calculator, which accounts give up saving for each stage's
+      children's costs ("How will you cover it?"), by stage. */
+  kidCover: Record<string, Record<string, number>>;
 }
 
 export type AssetKind = "workplace" | "ira" | "roth" | "brokerage" | "hsa" | "cash" | "home" | "other";
@@ -115,10 +122,11 @@ export const EMPTY_PROFILE: Profile = {
   spend: null, budget: [], useBudget: false, retSpend: null,
   home: null, value: null, owed: null, rent: null, mortRate: null, mortPay: null,
   assume: DEFAULT_ASSUMPTIONS,
-  ss: { checked: false, own1: null, own2: null, claim: null }, strategy: null,
+  ss: { checked: false, own1: null, own2: null, claim: null, claim2: null }, strategy: null,
   tools: {}, raise: 0, growth: {},
   planned: { count: 0, firstIn: 2, spacing: 3 }, childcare: true, careArea: "suburb",
   college: { help: "none", cost: 27000 },
+  childCosts: { early: "", school: "", teen: "", later: "80" }, kidCover: {},
 };
 export const EMPTY: DashData = { profile: EMPTY_PROFILE, entries: [], step: 0, skipped: [], done: false };
 
@@ -148,6 +156,7 @@ function load(): DashData {
   p.tools = { ...v.profile?.tools };
   p.planned = { ...EMPTY_PROFILE.planned, ...v.profile?.planned };
   p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
+  p.childCosts = { ...EMPTY_PROFILE.childCosts, ...v.profile?.childCosts };
   // One rate for all saving, from before each line had its own.
   if (!v.profile?.growth && v.profile?.raise) p.growth = { match: p.raise, hsa: p.raise, rothIra: p.raise, k401max: p.raise, brok: p.raise };
   return { ...EMPTY, ...v, profile: p, entries: (v.entries ?? []).map(upgrade) };
@@ -181,6 +190,22 @@ export function entryFrom(p: Profile, date = today()): Entry | null {
 export function withEntry(entries: Entry[], e: Entry): Entry[] {
   return [...entries.filter((x) => x.date !== e.date), e].sort((a, b) => a.date.localeCompare(b.date));
 }
+/** Today's entry with the home and mortgage set: a copy of the latest
+    entry (or setup's), saved as today's, replacing one already saved today. */
+export function withHome(d: DashData, v: { value?: number | null; owed?: number | null; rate?: number | null }): Entry[] {
+  const last = d.entries[d.entries.length - 1] ?? entryFrom(d.profile);
+  let items = (last?.items ?? []).map((i) => ({ ...i }));
+  const put = (side: Item["side"], kind: AssetKind | DebtKind, name: string, patch: Partial<Item>) => {
+    const i = items.findIndex((x) => x.side === side && x.kind === kind);
+    if (i >= 0) items[i] = { ...items[i], ...patch };
+    else items = [...items, { id: newId(), side, kind, name, value: 0, ...(side === "debt" ? { rate: null } : {}), ...patch }];
+  };
+  if (v.value !== undefined) put("asset", "home", "Home", { value: v.value ?? 0 });
+  if (v.owed !== undefined) put("debt", "mortgage", "Mortgage", { value: v.owed ?? 0 });
+  if (v.rate !== undefined) put("debt", "mortgage", "Mortgage", { rate: v.rate });
+  return withEntry(d.entries, { date: today(), items: items.filter((i) => i.value > 0 || i.kind === "home"), from: last?.from ?? "setup" });
+}
+
 export const sum = (items: Item[], side: Item["side"], kinds?: string[]) =>
   items.filter((i) => i.side === side && (!kinds || kinds.includes(i.kind))).reduce((s, i) => s + (i.value || 0), 0);
 export const netWorth = (e: Entry) => sum(e.items, "asset") - sum(e.items, "debt");

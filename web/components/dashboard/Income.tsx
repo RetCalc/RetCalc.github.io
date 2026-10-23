@@ -23,11 +23,12 @@ import { couple, nameOf, otherMonth, outsideUS, results, yearAt } from "./model"
 import { newId, useDashboard, type Person, type Profile } from "./store";
 import { Note, Tile } from "./ui";
 
-/** When to claim: one age for the household, the same one Retirement shows. */
-export function ClaimField({ pr, set }: { pr: Profile; set: (f: (p: Profile) => Profile) => void }) {
+/** When each of you claims: the same ages Retirement shows, changed in either place. */
+export function ClaimField({ pr, set, i = 0 }: { pr: Profile; set: (f: (p: Profile) => Profile) => void; i?: 0 | 1 }) {
+  const v = i ? pr.ss.claim2 : pr.ss.claim;
   return (
-    <SelectField id="dshClaim" label="When to claim" value={String(pr.ss.claim ?? "")} onChange={(v) => set((p) => ({ ...p, ss: { ...p.ss, claim: v ? Number(v) : null } }))}>
-      <option value="">At 67, or when you retire if later</option>
+    <SelectField id={"dshClaim" + i} label={`${nameOf(pr, i)} claims`} value={String(v ?? "")} onChange={(x) => set((p) => ({ ...p, ss: { ...p.ss, ...(i ? { claim2: x ? Number(x) : null } : { claim: x ? Number(x) : null }) } }))}>
+      <option value="">At 67, or at retirement if later</option>
       {[62, 63, 64, 65, 66, 67, 68, 69, 70].map((a) => <option key={a} value={a}>At {a}{a === 70 ? " (the most per month)" : a === 62 ? " (the earliest)" : ""}</option>)}
     </SelectField>
   );
@@ -131,13 +132,12 @@ export function Income() {
                 <div className="dsh-perrow" key={i}>
                   <MoneyField id={"dshISs" + i} label={`${nameOf(pr, i)}: benefit at full retirement age`} unit="per month" placeholder="Estimated"
                     value={txt(i ? pr.ss.own2 : pr.ss.own1)} onValueChange={(v) => set((p) => ({ ...p, ss: { ...p.ss, ...(i ? { own2: num(v) } : { own1: num(v) }), checked: true } }))} />
+                  <ClaimField pr={pr} set={set} i={i} />
                   <div><div className="dsh-label">Claimed at {(i ? R.claim2 : R.claim1) ?? "—"}{(i ? pr.p2 : pr.p1).by ? `, in ${yearAt(i ? pr.p2 : pr.p1, (i ? R.claim2 : R.claim1) ?? 67)}` : ""}</div>
                     <div className="dsh-fig dsh-md">{(i ? R.ss2 : R.ss1) != null ? money10((i ? R.ss2 : R.ss1)!) : "—"}<small>per month</small></div></div>
-                  <div />
                 </div>
               ))}
               <div className="dsh-perrow">
-                <ClaimField pr={pr} set={set} />
                 <div className="dsh-self-end"><Button variant="outline" onClick={() => setHist(true)}>Estimate from my pay history</Button></div>
                 <div className="dsh-self-end">{pr.ss.checked ? <Button variant="link" size="inline" onClick={() => set((p) => ({ ...p, ss: { ...p.ss, own1: null, own2: null, checked: false } }))}>Back to the estimate</Button> : null}</div>
               </div>

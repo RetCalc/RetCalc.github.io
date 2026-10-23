@@ -39,6 +39,9 @@ export interface PlanKids {
       would be; and each planned child's gap after the one before, when they
       aren't evenly spaced (null: every `spacing` years). */
   teen?: string;
+  /** A later child's share of the first's cost, in percent (the Dashboard
+      sets it); unset, the usual 80. */
+  later?: string;
   area?: "city" | "suburb" | "rural";
   gaps?: number[] | null;
 }

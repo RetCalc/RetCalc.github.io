@@ -42,7 +42,9 @@ export const earlyCost = (childcare: boolean, area: CareArea = "suburb") => CHIL
 export const careAreaOf = (v: unknown): CareArea => (v === "city" || v === "rural" ? v : "suburb");
 export const CHILD_SOURCE = "the USDA's last study of what children cost (2015, brought to today's prices) and the Department of Labor's county childcare prices";
 
-export interface Child { born: number; childcare: boolean; area: CareArea; early: number; school: number; teen: number; n: number; planned: boolean; id: string }
+export interface Child { born: number; childcare: boolean; area: CareArea; early: number; school: number; teen: number; n: number; planned: boolean; id: string;
+  /** A later child's share of the cost, when it isn't the usual one. */
+  later?: number }
 /** Every child: those you have (their ages today), those planned (the first
     in about N years, then every `spacing` years), and any added one by one.
     Ages are yours; `n` is the birth order, for the second-child step-down. */
@@ -50,7 +52,8 @@ export function children(a: Answers): Child[] {
   if (!ok(a.age)) return [];
   const care = a.childcare !== false, area = careAreaOf(a.careArea);
   const early = pos(a.childEarly) ? a.childEarly : 0, school = pos(a.childSchool) ? a.childSchool : 0, teen = pos(a.childTeen) ? a.childTeen : 0;
-  const base = { childcare: care, area, early, school, teen };
+  const later = ok(a.childLater) && a.childLater >= 0 && a.childLater <= 2 ? a.childLater : undefined;
+  const base = { childcare: care, area, early, school, teen, ...(later != null ? { later } : {}) };
   const out: Omit<Child, "n">[] = [];
   (a.kidsNow || []).slice(0, MAX_KIDS).forEach((k, i) => { if (ok(k) && k >= 0 && k < 30) out.push({ id: "now" + i, born: a.age! - k, ...base, planned: false }); });
   // Planned: the first in about N years, then every `spacing` years, or
@@ -71,7 +74,7 @@ export function childCost(c: Child, t: number): number {
   const k = t - c.born;
   if (k < 0 || k >= 19) return 0;
   const band = k < 6 ? c.early || earlyCost(c.childcare, c.area) : k < 13 ? c.school || CHILD_COST.school : c.teen || CHILD_COST.teen;
-  return band * (c.n > 0 ? CHILD_COST.later : 1);
+  return band * (c.n > 0 ? c.later ?? CHILD_COST.later : 1);
 }
 
 /* ---------- the schedule ---------- */

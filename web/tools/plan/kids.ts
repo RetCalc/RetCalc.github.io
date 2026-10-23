@@ -21,6 +21,7 @@ function asAnswers(k: PlanKids, age: number): Answers {
   return {
     age, kidsNow: k.now.slice(0, MAX_KIDS), kidsPlanned: k.planned, firstIn: k.firstIn, spacing: k.spacing, childcare: k.childcare,
     childEarly: pos(early) ? early : null, childSchool: pos(school) ? school : null, childTeen: pos(teen) ? teen : null,
+    ...(k.later != null && k.later.trim() !== "" ? { childLater: parseNum(k.later) / 100 } : {}),
     careArea: k.area ?? "suburb", kidGaps: k.gaps ?? null, events: [],
   } as unknown as Answers;
 }

@@ -64,7 +64,9 @@ export function advancedFor(pr: Profile, entries: Entry[]): AdvancedInputs {
 export function planKidsOf(pr: Profile): PlanKids | null {
   const now = pr.kidList.slice(0, pr.kids).filter((k) => k.by).map((k) => ageOf(k)!).filter((a) => a >= 0 && a < 30);
   if (!now.length && !pr.planned.count) return null;
-  return { ...NO_KIDS, now, planned: pr.planned.count, firstIn: pr.planned.firstIn, spacing: pr.planned.spacing, childcare: pr.childcare, area: pr.careArea };
+  const C = pr.childCosts;
+  return { ...NO_KIDS, now, planned: pr.planned.count, firstIn: pr.planned.firstIn, spacing: pr.planned.spacing, childcare: pr.childcare, area: pr.careArea,
+    early: C.early, school: C.school, teen: C.teen, later: C.later };
 }
 
 /** Stages from the profile: one stage to retirement, then, with children,
@@ -83,7 +85,7 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
     })],
   };
   const kids = planKidsOf(pr);
-  return kids ? { ...base, stages: stagesFromKidsYears(base, kids, {}).stages, kids, kidCover: {} } : base;
+  return kids ? { ...base, stages: stagesFromKidsYears(base, kids, pr.kidCover ?? {}).stages, kids, kidCover: pr.kidCover ?? {} } : base;
 }
 
 /** College Savings with each child's years to go and the school chosen. */
@@ -93,3 +95,4 @@ export function collegeFor(pr: Profile) {
   const cost = pr.college.cost, preset = ["27000", "59000", "82000"].includes(String(cost)) ? String(cost) : "0";
   return { ...COLLEGE_DEFAULTS, kids: starts.map((y) => ({ preset, cost: g(cost), years: String(Math.min(25, y)), collegeYrs: "4" })) };
 }
+

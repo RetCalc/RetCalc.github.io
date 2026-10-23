@@ -105,10 +105,17 @@ export function KidsCard({ plan }: { plan: PlanState }) {
 /* ---- the children ---- */
 /** `base`: count the stages in years from now (from this age) rather than
     by your age, for the Stages calculator. */
-export function KidsDialog({ kids, age, retire, base, cover = true, close, save }: {
+export function KidsDialog({ kids, age, retire, base, cover = true, close, save, costsOnly, withLater, saveLabel }: {
   kids: PlanKids; age: number; retire: number; base?: number;
   /** Whether "How will you cover this?" comes next (Stages without the account split builds straight away). */
   cover?: boolean; close: () => void; save: (k: PlanKids) => void;
+  /** The Dashboard's way in: the children are set elsewhere, so this
+      sentence says who they are and only their costs are changed here. */
+  costsOnly?: React.ReactNode;
+  /** The Dashboard's: a later child's share of the first's cost can be set. */
+  withLater?: boolean;
+  /** The save button's words, in place of the usual next step. */
+  saveLabel?: string;
 }) {
   const [now, setNow] = useState(kids.now.map(String));
   const [planned, setPlanned] = useState(String(kids.planned));
@@ -121,12 +128,14 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save 
   const [early, setEarly] = useState(kids.early);
   const [school, setSchool] = useState(kids.school);
   const [teen, setTeen] = useState(kids.teen ?? "");
+  const [later, setLater] = useState(kids.later ?? "80");
   const nowAges = now.map((x) => Math.round(parseNum(x))).filter((n, i) => now[i].trim() !== "" && n >= 0 && n < 30);
   const room = Math.max(0, MAX_KIDS - now.length);
   const nPlanned = Math.min(room, Math.max(0, Math.round(parseNum(planned))));
   const even = Math.max(0.5, half(parseNum(spacing))) || 3;
   const form: PlanKids = {
     now: nowAges, planned: nPlanned, firstIn: Math.max(0, half(parseNum(firstIn))), spacing: even, childcare, area, early, school, teen,
+    ...(withLater ? { later } : {}),
     gaps: gaps && nPlanned > 1 ? Array.from({ length: nPlanned - 1 }, (_, i) => Math.max(0, half(parseNum(gaps[i] ?? String(even))))) : null,
   };
   const d = kidDefaults(form), segs = kidStages(form, age, retire), list = kidList(form, age);
@@ -137,6 +146,7 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save 
       <div className="formhint">The biggest change to saving for most people: childcare before school, then the school years, then saving can rise again.
         The costs below are typical ones, in today&apos;s dollars; change any of them to your own. Up to {MAX_KIDS} children in all.</div>
       <div className="grid grid-cols-2 gap-x-3 gap-y-3 max-sm:grid-cols-1">
+        {costsOnly ? <div className="col-span-full text-note">{costsOnly}</div> : <>
         <CountedBoxes id="kdNow" countLabel="Children you have now" countAffix="children" max={MAX_KIDS} values={now} onChange={setNow}
           boxLabel={(i) => "Child " + (i + 1) + "'s age"} boxAffix="yrs" boxMax={29} half />
         <div>
@@ -171,6 +181,7 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save 
               <Button variant="quiet" size="inline-xs" onClick={() => setGaps(null)}>Same spacing for all</Button></small>
           </div>
         ) : null}
+        </>}
         <div className="col-span-full">
           <div className="mb-1.5 text-sm">Paid childcare before school?</div>
           <Segmented attr="data-kdcare" options={[["yes", "Yes"], ["no", "No"]] as const} value={childcare ? "yes" : "no"} onChange={(v) => setChildcare(v === "yes")} />
@@ -195,7 +206,13 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save 
             <Label className="mb-1.5" htmlFor="kdTeen"><span>13 to 18</span></Label>
             <Affixed prefix="$" suffix="/mo"><MoneyInput id="kdTeen" nonNeg placeholder={groupDigits(d.teen)} value={teen} onValueChange={setTeen} /></Affixed>
           </div>
-          <small className="col-span-full mt-1 block text-label text-muted-foreground">What one child costs per month at each age. A second or later child costs 20% less than these, since they share a room, clothes and gear.</small>
+          {withLater ? (
+            <div className="col-span-full mt-3 max-w-60">
+              <Label className="mb-1.5" htmlFor="kdLater"><span>Each later child costs</span></Label>
+              <Affixed suffix="% of the first"><NumberInput id="kdLater" nonNeg max={150} value={later} onValueChange={setLater} /></Affixed>
+            </div>
+          ) : null}
+          <small className="col-span-full mt-1 block text-label text-muted-foreground">What one child costs per month at each age. {withLater ? "A later child usually costs less, since they share a room, clothes and gear: about 80% is typical." : "A second or later child costs 20% less than these, since they share a room, clothes and gear."}</small>
         </div>
       </div>
       {list.length ? (
@@ -213,8 +230,8 @@ export function KidsDialog({ kids, age, retire, base, cover = true, close, save 
       ) : null}
       <small className="mt-3 block text-label text-muted-foreground">Costs: {CHILD_SOURCE}. College isn&apos;t included.</small>
       <div className="formactions mt-4">
-        <Button variant="outline" className="flex-1" onClick={() => save({ ...NO_KIDS })}>No children</Button>
-        <Button className="flex-1" onClick={() => save(form)}>{!(list.some((c) => c.planned) || form.now.length) ? "Use these" : cover ? "Next: how you'll cover it" : "Build the stages"}</Button>
+        {costsOnly ? null : <Button variant="outline" className="flex-1" onClick={() => save({ ...NO_KIDS })}>No children</Button>}
+        <Button className="flex-1" onClick={() => save(form)}>{saveLabel ? saveLabel : !(list.some((c) => c.planned) || form.now.length) ? "Use these" : cover ? "Next: how you'll cover it" : "Build the stages"}</Button>
       </div>
     </Modal>
   );

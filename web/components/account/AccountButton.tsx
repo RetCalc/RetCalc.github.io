@@ -33,7 +33,9 @@ function usePhone(): boolean {
   return phone;
 }
 
-export function AccountButton() {
+/** The header's account button. `inDashboard`: shown on the Dashboard's
+    own bar, where its Dashboard item and the household aren't offered. */
+export function AccountButton({ inDashboard = false }: { inDashboard?: boolean }) {
   const { configured, ready, account, sync, setStep, signOut } = useAccount();
   const showPopup = usePopup();
   const router = useRouter();
@@ -44,7 +46,7 @@ export function AccountButton() {
 
   const themeItem = !phone ? null : (
     <>
-      <DropdownMenuItem onClick={() => setPanelOpen(true)}><HomeIcon />Your household</DropdownMenuItem>
+      {inDashboard ? null : <DropdownMenuItem onClick={() => setPanelOpen(true)}><HomeIcon />Your household</DropdownMenuItem>}
       <DropdownMenuItem onClick={() => setThemeChoice(theme === "dark" ? "light" : "dark")}>
         {theme === "dark" ? <SunIcon /> : <MoonIcon />}{theme === "dark" ? "Light theme" : "Dark theme"}
       </DropdownMenuItem>
@@ -86,7 +88,7 @@ export function AccountButton() {
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard</DropdownMenuItem>
+          {inDashboard ? null : <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard</DropdownMenuItem>}
           <DropdownMenuItem render={<Link href="/account" />} onClick={() => router.prefetch("/account")}><UserRoundIcon />Account</DropdownMenuItem>
           {themeItem}
           <DropdownMenuItem onClick={async () => {

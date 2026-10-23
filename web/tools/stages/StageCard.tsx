@@ -15,7 +15,8 @@ import { ConvertIcon, ConverterDialog, GrowthRatesDialog } from "@/components/to
 import { StageHead } from "@/components/tools/StageHead";
 import { groupDigits, parseNum, pctStr } from "@/lib/format";
 import { PeriodOptions } from "@/lib/periods";
-import { withHsaRate } from "@/lib/accounts";
+import { withHsaRate, type GrowthRates } from "@/lib/accounts";
+import { useToolScope } from "@/components/tools/ToolState";
 import { glideNote, pctField } from "@/tools/advanced/model";
 import { stageGlideYears, stageGrowthBlend, stageSplit, type StageInputs, type StageNum } from "./model";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,12 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   const aria = "Stage " + (i + 1);
   const up = (f: (st: StageInputs) => StageInputs) => edit(i, f);
   const setF = (k: keyof StageInputs) => (v: string) => up((c) => ({ ...c, [k]: v }));
+  /* Inside the Dashboard, contribution growth reads and is typed after
+     inflation, as its Savings tab has it; stored as usual, before it. */
+  const dash = useToolScope()?.name === "dashboard";
+  const real = (g: number) => (1 + g) / (1 + inflation) - 1, nominal = (r: number) => (1 + r) * (1 + inflation) - 1;
+  const pc2 = (v: number) => String(+(v * 100).toFixed(2));
+  const R4 = (g: GrowthRates, f: (x: number) => number): GrowthRates => ({ t: f(g.t), r: f(g.r), b: f(g.b), ...(g.h != null ? { h: f(g.h) } : {}) });
 
   /* The split amounts are the stage's total and its split. */
   const sp = stageSplit(st);
@@ -74,9 +81,10 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
   const contribIn = <Affixed prefix="$"><MoneyInput data-f="contrib" data-i={i} nonNeg value={st.contrib} aria-label={aria + " contribution"} onValueChange={setF("contrib")} /></Affixed>;
   const freq = field("freq", "How often", <NativeSelect data-f="period" data-i={i} aria-label={aria + " frequency"} value={st.period} onChange={(e) => setF("period")(e.target.value)}><PeriodOptions /></NativeSelect>,
     <Button variant="link" size="inline-xs" className="mt-1.75 justify-self-start" data-conv={i} onClick={() => setDialog("conv")}>{ConvertIcon}Convert</Button>);
-  const growth = field("growth", <Tipped text="Contribution growth" k="contribgrowth" />, <Affixed suffix="%/yr">
+  const growth = field("growth", <Tipped text={dash ? "Contribution growth, after inflation" : "Contribution growth"} k="contribgrowth" />, <Affixed suffix="%/yr">
     <NumberInput data-f="growth" data-i={i} step={0.5} aria-label={aria + " contribution growth"}
-      value={blended ? (blend != null ? String(+(blend * 100).toFixed(2)) : "") : st.growth} onValueChange={setF("growth")}
+      value={blended ? (blend != null ? pc2(dash ? real(blend) : blend) : "") : dash ? pc2(real(parseNum(st.growth) / 100)) : st.growth}
+      onValueChange={dash ? (v) => setF("growth")(pc2(nominal(parseNum(v) / 100))) : setF("growth")}
       readOnly={blended} title={blended ? "Blended from your per-account rates. Click to edit." : undefined}
       onClick={() => blended && setDialog("growth")} />
     </Affixed>,
@@ -107,11 +115,12 @@ export function StageCard({ i, st, num, blend, last, split, mc, span, adjNote, f
           })} />
       ) : null}
       {dialog === "growth" && split ? (
-        <GrowthRatesDialog title={label + " contribution growth"} onClose={() => setDialog(null)}
-          init={withHsaRate(st.gRates || { t: num.growth, r: num.growth, b: num.growth })}
-          blend={(rates) => stageGrowthBlend(num, fees, rates)}
+        <GrowthRatesDialog title={label + (dash ? " contribution growth, after inflation" : " contribution growth")} onClose={() => setDialog(null)}
+          init={dash ? R4(withHsaRate(st.gRates || { t: num.growth, r: num.growth, b: num.growth }), real) : withHsaRate(st.gRates || { t: num.growth, r: num.growth, b: num.growth })}
+          blend={(rates) => (dash ? real(stageGrowthBlend(num, fees, R4(rates, nominal))) : stageGrowthBlend(num, fees, rates))}
           note={matchOn ? "Your employer match rises at the blended rate." : ""}
-          apply={(rates) => {
+          apply={(typed) => {
+            const rates = dash && typed ? R4(typed, nominal) : typed;
             up((c) => {
               if (rates) return { ...c, gRates: rates };
               const { gRates: _g, ...rest } = c;
