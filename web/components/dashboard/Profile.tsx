@@ -10,7 +10,9 @@ import { useState } from "react";
 import { parseNum } from "@/lib/format";
 import { CHILD_COST, earlyCost } from "@/tools/guide/schedule";
 import { ChildCostsDialog, CoverDialog, coverSegs } from "./children";
-import { BabyIcon, Building2Icon, HouseIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
+import { BabyIcon, Building2Icon, HouseIcon, RotateCcwIcon, SlidersHorizontalIcon, SunsetIcon, UserRoundIcon, UsersRoundIcon, BanknoteIcon, ReceiptIcon, WalletIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -21,7 +23,7 @@ import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt
 import { money, money10 } from "./format";
 import { flow } from "./flows";
 import { couple, holdings, mortgage, nameOf, realGrowth, spendMonth } from "./model";
-import { DEFAULT_ASSUMPTIONS, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
+import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
 import { Note, Tile } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -213,7 +215,48 @@ export function Profile() {
 
       <div className="dsh-r4"><Children pr={pr} set={set} /></div>
       <div className="dsh-r4"><Assumptions pr={pr} set={set} /></div>
+      <div className="dsh-r4"><StartOver /></div>
       {pr.state === OUTSIDE_US ? <div className="dsh-r4"><Note>Outside the US we don&apos;t work out taxes or Social Security: your plan&apos;s figures for retirement are <b>before taxes</b>.</Note></div> : null}
     </Frame>
+  );
+}
+
+/** Reset the dashboard: everything on it cleared, back to an empty setup.
+    Asked twice, since it can't be undone. */
+function StartOver() {
+  const { update } = useDashboard();
+  const router = useRouter();
+  const [ask, setAsk] = useState<0 | 1 | 2>(0);
+  const reset = () => { update(() => EMPTY); setAsk(0); router.replace("/dashboard/setup"); };
+  return (
+    <Tile id="reset" icon={RotateCcwIcon} title="Reset your dashboard">
+      <div className="dsh-inline dsh-mt">
+        <p className="dsh-cap dsh-flush">Clears your profile, your net worth entries and every choice on your dashboard, and takes you back to setup with nothing filled in. The rest of RetCalc isn&apos;t affected.</p>
+        <Button variant="destructive" onClick={() => setAsk(1)}>Reset dashboard</Button>
+      </div>
+      <Dialog open={ask > 0} onOpenChange={(o) => { if (!o) setAsk(0); }}>
+        <DialogContent aria-labelledby="dshResetTitle">
+          {ask === 1 ? (
+            <>
+              <h2 id="dshResetTitle" className="dsh-dlg-h">Reset your dashboard?</h2>
+              <p className="dsh-cap">Your profile, your net worth history and everything you&apos;ve set on each tab will be cleared, here and in your account.</p>
+              <div className="dsh-navbtns dsh-wrapbtns">
+                <Button variant="destructive" onClick={() => setAsk(2)}>Yes, reset it</Button>
+                <Button variant="outline" onClick={() => setAsk(0)}>Cancel</Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 id="dshResetTitle" className="dsh-dlg-h">Are you sure?</h2>
+              <p className="dsh-cap">This can&apos;t be undone. You&apos;ll start again from setup.</p>
+              <div className="dsh-navbtns dsh-wrapbtns">
+                <Button variant="destructive" onClick={reset}>Reset everything</Button>
+                <Button variant="outline" onClick={() => setAsk(0)}>Keep my dashboard</Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Tile>
   );
 }
