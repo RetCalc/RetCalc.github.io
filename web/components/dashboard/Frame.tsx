@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAccount } from "@/components/account/AccountProvider";
 import { AccountButton } from "@/components/account/AccountButton";
 import { setThemeChoice, useTheme } from "@/lib/theme";
@@ -116,6 +117,8 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
       <div className="dsh-main">
         <header className="dsh-top">
           <h1>{title}</h1>
+          {/* New, with kinks still to work out. */}
+          <Badge variant="highlight">Beta</Badge>
           {sub ? <span className="dsh-sub">{sub}</span> : null}
           <div className="dsh-r">{actions}<AccountButton inDashboard /></div>
         </header>

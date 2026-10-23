@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAccount } from "@/components/account/AccountProvider";
 import type { HomeData } from "./data";
 import {
@@ -190,7 +191,7 @@ export function Home({ data }: { data: HomeData }) {
 function DashboardButton() {
   const { ready, account } = useAccount();
   if (!ready || !account) return null;
-  return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My dashboard</Link>;
+  return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My dashboard<Badge variant="highlight">Beta</Badge></Link>;
 }
 
 const ROWS = ["", "hm-r1", "hm-r2", "hm-r3", "hm-r4", "hm-r5", "hm-r6", "hm-r7", "hm-r8", "hm-r9", "hm-r10"] as const;

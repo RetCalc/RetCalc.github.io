@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, type ReactNode } from "react";
 import { HouseIcon, Building2Icon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, MoneyField, NumberField, SelectField } from "@/components/fields/Field";
@@ -284,6 +285,7 @@ export function Setup() {
       <header className="dsh-setup-top">
         <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark />RetCalc</Link>
         <span className="dsh-cap">Set up your dashboard</span>
+        <Badge variant="highlight">Beta</Badge>
         <div className="dsh-r"><Button variant="link" onClick={finish}>Save and finish later</Button></div>
       </header>
       <div className="dsh-prog" aria-hidden="true">

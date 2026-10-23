@@ -161,7 +161,7 @@ export function Overview() {
       <div className="dsh-r"><span className="dsh-cap">Profile {filled} of {sections.length}</span><div className="dsh-segs" aria-hidden="true">{sections.map((s, i) => <i key={s[1]} className={i < filled ? "dsh-on" : undefined} />)}</div></div></>;
 
   return (
-    <Frame current="overview" title="Overview" sub={names + (last ? " · updated " + longDate(last.date) : "")}>
+    <Frame current="overview" title="Dashboard" sub={names + (last ? " · updated " + longDate(last.date) : "")}>
       <div className="dsh-hello">{hello}</div>
       <div className="dsh-grid dsh-r1">
         <Tile icon={WalletIcon} title="Net worth" right={

@@ -16,6 +16,7 @@ import { useAccount } from "./AccountProvider";
 import { usePopup } from "@/components/shell/Popup";
 import { setThemeChoice, useTheme } from "@/lib/theme";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -88,7 +89,7 @@ export function AccountButton({ inDashboard = false }: { inDashboard?: boolean }
             </DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          {inDashboard ? null : <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard</DropdownMenuItem>}
+          {inDashboard ? null : <DropdownMenuItem render={<Link href="/dashboard" />}><LayoutGridIcon />Dashboard<Badge variant="highlight" className="ml-auto">Beta</Badge></DropdownMenuItem>}
           <DropdownMenuItem render={<Link href="/account" />} onClick={() => router.prefetch("/account")}><UserRoundIcon />Account</DropdownMenuItem>
           {themeItem}
           <DropdownMenuItem onClick={async () => {
