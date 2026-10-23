@@ -125,7 +125,9 @@ export function Stages() {
       return;
     }
     const costly = stagesKidSegs(s, k).some((x) => x.change > 0);
-    if (split && costly) setKidStep({ at: "cover", k });
+    // The Dashboard's plan takes the children's costs from every account in
+    // proportion, so its Calculator does too.
+    if (split && costly && !dash) setKidStep({ at: "cover", k });
     else buildKids(k, {});
   };
 

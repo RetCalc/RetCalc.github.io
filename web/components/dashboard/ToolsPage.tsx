@@ -15,6 +15,13 @@ import { TOOLS, type ToolSub } from "@/lib/tools";
 import { Frame, SECTIONS, SignedIn } from "./Frame";
 import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
 import { useDashboard } from "./store";
+import { Note } from "./ui";
+
+/** The tab that holds a tool's figures for the plan itself. */
+const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string }>> = {
+  budget: { id: "spending", name: "Spending" }, drawdown: { id: "retirement", name: "Retirement" },
+  tax: { id: "taxes", name: "Taxes" }, social: { id: "income", name: "Income" },
+};
 
 export function ToolsListPage({ data }: { data: PickerData }) {
   return (
@@ -41,12 +48,17 @@ function Tool({ sub }: { sub: ToolSub }) {
   // a tool already open, and the tool's own changes never reach the profile.
   const seed = useMemo(() => seedFor(data.profile, data.entries), [data.profile, data.entries]);
   const household = useMemo(() => householdOf(data.profile, data.entries), [data.profile, data.entries]);
-  const View = TOOL_VIEWS[sub];
+  const View = TOOL_VIEWS[sub], tab = PLAN_TAB[sub];
   return (
     <Frame current="tools" title={TOOLS[sub].name}
       sub="Filled in from your dashboard. Changes here stay in this tool."
       actions={<Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>}>
-      <Hosted key={sub} seed={seed} household={household}><View /></Hosted>
+      {tab ? (
+        <div>
+          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Link href={"/dashboard/" + tab.id} className="underline underline-offset-4">{tab.name}</Link>.</Note>
+        </div>
+      ) : null}
+      <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household}><View /></Hosted></div>
     </Frame>
   );
 }

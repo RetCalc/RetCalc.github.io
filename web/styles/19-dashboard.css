@@ -367,21 +367,20 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 /* ---------- A tool inside the dashboard ---------- */
 .dsh-embed { min-width: 0; }
 .dsh-embed aside { top: 16px; }
-/* Spending: the Budget's reading leads, across the top, its lines below. */
-.dsh-embed #tab-budget { display: flex; flex-direction: column-reverse; gap: 16px; }
-.dsh-embed #tab-budget > div { width: 100%; }
-.dsh-embed #asideBudget { position: static; max-height: none; overflow: visible; }
-.dsh-embed #asideBudget > [data-slot="card"] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
-.dsh-embed #asideBudget > [data-slot="card"] > * { border-top: 0; border-left: 1px solid var(--ds-rule); }
-.dsh-embed #asideBudget > [data-slot="card"] > *:first-child { border-left: 0; }
-@media (max-width: 900px) { .dsh-embed #asideBudget > [data-slot="card"] { grid-template-columns: minmax(0, 1fr); } .dsh-embed #asideBudget > [data-slot="card"] > * { border-left: 0; border-top: 1px solid var(--ds-rule); } }
+/* Spending: the Budget's lines one to a row in a narrower list, its
+   reading beside them and staying in view. */
+@media (min-width: 1024px) {
+  .dsh-embed #tab-budget { grid-template-columns: minmax(0, 640px) minmax(320px, 1fr); }
+  .dsh-embed #tab-budget > div { grid-column: auto; }
+}
+.dsh-embed #bgList .bggroup { display: block; }
 /* The emergency budget's second column, and its heading */
 .dsh-embed .bgcols { display: flex; justify-content: flex-end; gap: 8px; padding: 0 120px 6px 0; font-size: 11.5px; color: var(--ds-muted); }
 .dsh-embed .bgcols span { width: 140px; }
-/* With the emergency column, one line per row, under the two headings. */
-.dsh-embed #bgList[data-emerg] .bggroup { display: block; }
 /* The simulator's copy from the site's calculators: the dashboard fills it itself. */
 .dsh-embed #ddCopy { display: none; }
+/* Nor its "New here?" note: the Retirement tab says what it's for. */
+.dsh-embed #ddIntro { display: none; }
 /* A person's name heading a row of their fields, as on the Pay cards. */
 .dsh-who { font-size: 14px; font-weight: 600; padding-bottom: 9px; }
 .dsh-growlist { display: grid; gap: 10px; margin: 12px 0; }
@@ -423,3 +422,8 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 .dsh-why ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
 /* Plan summary: Paycheck to Retirement's cards, one under another */
 .dsh-psum { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
+
+/* Where a link lands: a soft ring that fades, so it's plain where it went. */
+@keyframes dsh-landed { 0%, 35% { box-shadow: 0 0 0 3px var(--ds-amber), 0 0 24px 4px color-mix(in oklab, var(--ds-amber) 35%, transparent); } 100% { box-shadow: 0 0 0 3px transparent, 0 0 24px 4px transparent; } }
+.dsh [data-landed] { animation: dsh-landed 1.6s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .dsh [data-landed] { animation-duration: 1.6s; animation-timing-function: steps(1, end); } }

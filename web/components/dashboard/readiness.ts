@@ -34,7 +34,7 @@ export function explain(id: FactorId, pr: Profile, entries: Entry[], R: Results)
         why: R.success == null ? "Needs your ages, savings, retirement age and spending."
           : `${pct(R.success)} of historical retirements lasted to 95${R.strategy ? ` with ${R.strategy.name}` : ", spending a fixed amount"}. Full marks take about 95%; the plan aims for ${pct(goal)}.`,
         how: how.length ? how : R.success != null && R.success >= goal ? ["You're at the plan's target already."] : [],
-        href: "/dashboard/retirement", action: "Open Retirement",
+        href: "/dashboard/retirement#strategies", action: "Open Retirement",
       };
     }
     case "rate": return {
@@ -43,27 +43,27 @@ export function explain(id: FactorId, pr: Profile, entries: Entry[], R: Results)
         ...(F.fullMatch === false ? ["Raise the first 401(k) line to get the whole employer match"] : []),
         ...(F.left > 50 ? [`Put the ${money10(F.left)} per month not yet assigned to work`] : []),
       ],
-      href: "/dashboard/savings", action: "Open Savings",
+      href: "/dashboard/savings#rest", action: "Open Savings",
     };
     case "cushion": {
       const target$ = F.efTarget, cash = H.cash ?? 0;
       return {
         why: part ? `${part.txt} set aside in cash; your goal is ${F.efMonths} months, ${money(target$)}.` : "Needs your checking and savings, on Net worth.",
         how: part && cash < target$ ? [`Set aside ${money(target$ - cash)} more`, F.ef > 0 ? `At ${money10(F.ef)} per month to it, about ${Math.ceil((target$ - cash) / F.ef)} months` : "Add an emergency fund line on Savings"] : [],
-        href: part ? "/dashboard/savings" : "/dashboard/accounts", action: part ? "Open Savings" : "Open Net worth",
+        href: part ? "/dashboard/savings#rest" : "/dashboard/accounts#assets", action: part ? "Open Savings" : "Open Net worth",
       };
     }
     case "debt": return {
       why: part ? `${part.txt}. Debt at 8% or more costs more than most saving earns.` : "Needs your debts, on Net worth (none is an answer too).",
       how: part && H.debtsHigh > 0 ? [`Pay down the ${money(H.debtsHigh)} at 8% or more first`] : [],
-      href: "/dashboard/accounts", action: "Open Net worth",
+      href: "/dashboard/accounts#debts", action: "Open Net worth",
     };
     case "flow": {
       const s = spendMonth(pr) ?? 0, left = (R.takehome ?? 0) - s;
       return {
         why: part ? `${money10(Math.abs(left))} per month ${left >= 0 ? "is left" : "short"} of what comes in after taxes, after spending ${money(s)} per month.` : "Needs your pay and your spending.",
         how: part && part.p < 1 ? ["Keep about a fifth of what comes in unspent: trim the biggest lines of the budget"] : [],
-        href: "/dashboard/spending", action: "Open Spending",
+        href: "/dashboard/spending#budget", action: "Open Spending",
       };
     }
   }

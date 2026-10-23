@@ -7,7 +7,7 @@
    thing that fills it. */
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ArrowDownToLineIcon, BanknoteIcon, CalendarDaysIcon, CheckIcon, GaugeIcon, HouseIcon, IdCardIcon, ListChecksIcon,
   ChevronDownIcon, MapPinIcon, ReceiptIcon, ShieldCheckIcon, SunsetIcon, UserRoundIcon, WalletIcon, LandmarkIcon, type LucideIcon,
@@ -24,6 +24,7 @@ import { explain } from "./readiness";
 import type { FactorId } from "@/tools/guide/calc";
 import { flow } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
+import { useLandedOn } from "./land";
 import { Empty, Tile } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
@@ -33,9 +34,11 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
   const word = R.score == null ? "Not scored yet" : R.partial ? "Partial score" : R.score >= 85 ? "On track" : R.score >= 70 ? "Nearly there" : R.score >= 50 ? "Getting there" : "Needs work";
   // One area open at a time: why it scored what it did, and what would raise it.
   const [open, setOpen] = useState<FactorId | null>(null);
+  // A link to one area ("/dashboard#readiness-outlook") opens it.
+  useLandedOn("readiness-*", useCallback((id: string) => setOpen(id.slice("readiness-".length) as FactorId), []));
   const why = useMemo(() => (open ? explain(open, pr, entries, R) : null), [open, pr, entries, R]);
   return (
-    <Tile icon={GaugeIcon} title="Readiness score" right={<TipDot k="" text="Five areas, weighted: how your plan holds up, how much you save, your emergency fund, debt and monthly cash flow. Open any one to see why it scored what it did." />}>
+    <Tile id="readiness" icon={GaugeIcon} title="Readiness score" right={<TipDot k="" text="Five areas, weighted: how your plan holds up, how much you save, your emergency fund, debt and monthly cash flow. Open any one to see why it scored what it did." />}>
       <div className="dsh-inline dsh-mt">
         <span className="dsh-fig">{R.score ?? "—"}<small>of 100</small></span>
         <span className={!R.partial && (R.score ?? 0) >= 70 ? "dsh-badge dsh-gain" : "dsh-badge"}>{word}</span>
@@ -43,7 +46,7 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
       <SplitBar areas={areas} />
       <div className="dsh-areas">
         {FACTORS.map((f, i) => (
-          <div key={f.id} className="dsh-area">
+          <div key={f.id} className="dsh-area" id={"readiness-" + f.id}>
             <button type="button" className="dsh-arow" aria-expanded={open === f.id} onClick={() => setOpen(open === f.id ? null : f.id)}>
               <span className="dsh-n">{f.name}</span>
               <span className="dsh-v">{areas[i].p == null ? "Not scored yet" : `${Math.round(areas[i].p! * f.w)} of ${f.w}`}</span>
@@ -153,7 +156,7 @@ export function Overview() {
   const kept = accounts || data.entries.length > 1;
 
   const hello = kept && last
-    ? <><span>Your last entry was <b>{longDate(last.date)}</b>, {daysSince(last.date)} {daysSince(last.date) === 1 ? "day" : "days"} ago.</span><div className="dsh-r"><Button nativeButton={false} render={<Link href="/dashboard/accounts" />}>Update balances</Button></div></>
+    ? <><span>Your last entry was <b>{longDate(last.date)}</b>, {daysSince(last.date)} {daysSince(last.date) === 1 ? "day" : "days"} ago.</span><div className="dsh-r"><Button nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>Update balances</Button></div></>
     : <><span><b>Welcome{p1.name.trim() ? ", " + p1.name.trim() : ""}.</b> <span className="dsh-muted">This is your starting point. Fill in the dashed tiles to sharpen it.</span></span>
       <div className="dsh-r"><span className="dsh-cap">Profile {filled} of {sections.length}</span><div className="dsh-segs" aria-hidden="true">{sections.map((s, i) => <i key={s[1]} className={i < filled ? "dsh-on" : undefined} />)}</div></div></>;
 
@@ -188,7 +191,7 @@ export function Overview() {
               : <p className="dsh-cap">Your projection appears once your profile has your age, savings, retirement age and spending.</p>}
           </div>
           <div className="dsh-assume dsh-cap">
-            In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 with <b>{pr.assume.stocks}%</b> in stocks. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile" />}>Set in Profile</Button>
+            In today&apos;s dollars{tax}. Assumes <b>{pct(realGrowth(pr))}</b> growth per year after inflation{R.retireYear ? ` until ${R.retireYear}` : ""}, then every market since 1926 with <b>{pr.assume.stocks}%</b> in stocks. <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#assumptions" />}>Set in Profile</Button>
           </div>
         </Tile>
         <div className="dsh-side"><Readiness R={R} pr={pr} entries={data.entries} /><Chance R={R} accounts={accounts} /></div>
@@ -203,26 +206,26 @@ export function Overview() {
         {R.abroad ? (
           <Tile icon={IdCardIcon} title="Social Security"><div className="dsh-fig dsh-md dsh-mt">Not counted</div><div className="dsh-cap dsh-mt6">Outside the US, your plan leaves it out.</div></Tile>
         ) : pr.ss.checked && R.ss != null ? (
-          <Tile icon={IdCardIcon} title="Social Security">
+          <Tile id="social-security" icon={IdCardIcon} title="Social Security">
             <div className="dsh-fig dsh-mt">{money10(R.ss)}<small>per month</small></div>
             <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money10(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money10(R.ss2)})` : ""}</div>
-            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income" />}>When to claim →</Button></div>
+            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#social-security" />}>When to claim →</Button></div>
           </Tile>
-        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="We've guessed from today's pay. Add your statement's figure for your real benefit and the best age to claim." action="Check your benefit" href="/dashboard/income" />}
+        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="We've guessed from today's pay. Add your statement's figure for your real benefit and the best age to claim." action="Check your benefit" href="/dashboard/income#social-security" />}
         {R.strategy ? (
           <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy">
             <div className="dsh-fig dsh-md dsh-mt">{R.strategy.name}</div>
             <div className="dsh-cap dsh-mt6">Spending starts at <b>{money10(R.strategy.first)}</b> per month with taxes{tax}; lasted in {Math.round(R.strategy.success * 100)}% of past markets</div>
-            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement" />}>Compare strategies →</Button></div>
+            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement#compare" />}>Compare strategies →</Button></div>
           </Tile>
-        ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement" />}
+        ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement#strategies" />}
         {R.cushion != null ? (
           <Tile icon={ShieldCheckIcon} title="Emergency fund">
             <div className="dsh-fig dsh-mt">{R.cushion.toFixed(1).replace(/\.0$/, "")}<small>months</small></div>
             <div className="dsh-cap dsh-mt6">{money(H.cash ?? 0)} set aside{(H.cash ?? 0) < EF.efTarget ? `; ${money(EF.efTarget - (H.cash ?? 0))} more reaches your ${EF.efMonths}-month goal` : `, your ${EF.efMonths}-month goal or more`}</div>
             <div className="dsh-foot"><div className="dsh-segs dsh-grow" aria-hidden="true">{Array.from({ length: EF.efMonths }, (_, k) => k + 1).map((i) => <i key={i} className={i <= R.cushion! ? "dsh-on" : undefined} />)}</div></div>
           </Tile>
-        ) : <Empty icon={ShieldCheckIcon} title="Emergency fund" ghost="— months" text="Add a savings or checking account to see how many months of spending you have set aside." action="Add cash accounts" href="/dashboard/accounts" />}
+        ) : <Empty icon={ShieldCheckIcon} title="Emergency fund" ghost="— months" text="Add a savings or checking account to see how many months of spending you have set aside." action="Add cash accounts" href="/dashboard/accounts#assets" />}
       </div>
 
       <div className="dsh-grid dsh-r3">

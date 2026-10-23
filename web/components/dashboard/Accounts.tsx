@@ -239,10 +239,10 @@ export function Accounts() {
       ) : null}
 
       <div className="dsh-grid dsh-two">
-        <Tile icon={WalletIcon} title="Assets" right={<span className="dsh-cap">{money(have)}</span>}>
+        <Tile id="assets" icon={WalletIcon} title="Assets" right={<span className="dsh-cap">{money(have)}</span>}>
           {draft ? <EditList items={draft.items} side="asset" onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="asset" />}
         </Tile>
-        <Tile icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(owe)}</span>}>
+        <Tile id="debts" icon={LandmarkIcon} title="Debts" right={<span className="dsh-cap">{money(owe)}</span>}>
           {draft ? <EditList items={draft.items} side="debt" onChange={(it) => setDraft({ ...draft, items: it })} /> : <List items={items} side="debt" />}
         </Tile>
       </div>
@@ -260,7 +260,7 @@ export function Accounts() {
       </Dialog>
 
       {data.entries.length ? (
-        <Tile icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<span className="dsh-cap">{data.entries.length} so far</span>}>
+        <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<span className="dsh-cap">{data.entries.length} so far</span>}>
           <table className="dsh-tbl">
             <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th></tr></thead>
             <tbody>

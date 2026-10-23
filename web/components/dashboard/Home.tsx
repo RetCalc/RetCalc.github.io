@@ -34,14 +34,14 @@ export function Home() {
   }
   return (
     <Frame current="home" title="Home" sub={pr.home === "own" ? "Owned" : "Not given yet"}>
-      <Tile icon={HouseIcon} title="Your home" right={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>Change in Net worth</Button>}>
+      <Tile icon={HouseIcon} title="Your home" right={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>Change in Net worth</Button>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Equity</div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Worth</div><div className="dsh-fig dsh-md">{money(M.value)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Left on the mortgage</div><div className="dsh-fig dsh-md">{money(M.owed)}</div></div>
         </div>
       </Tile>
-      <div className="dsh-r4"><Tile icon={LandmarkIcon} title="Mortgage">
+      <div className="dsh-r4"><Tile id="mortgage" icon={LandmarkIcon} title="Mortgage">
         {M.owed > 0 ? (
           <>
             <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3">

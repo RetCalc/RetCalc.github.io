@@ -92,7 +92,7 @@ export function Income() {
         </div>
       </Tile>
       <div className="dsh-grid dsh-two">
-        <Tile icon={BanknoteIcon} title="Pay">
+        <Tile id="pay" icon={BanknoteIcon} title="Pay">
           <div className="dsh-fields dsh-fields-sm">
             <div className="dsh-row"><StateField id="dshIState" value={pr.state} onChange={(v) => set((p) => ({ ...p, state: v }))} /><div /></div>
             {keys.map((k) => <div className="dsh-person" key={k}><h3>{nameOf(pr, k === "p1" ? 0 : 1)}</h3><PayFields pr={pr} k={k} setP={setP} /></div>)}
@@ -100,14 +100,14 @@ export function Income() {
         </Tile>
         <div className="dsh-side">
           {!abroad ? (
-            <Tile icon={Building2Icon} title="Employer 401(k) match">
+            <Tile id="match" icon={Building2Icon} title="Employer 401(k) match">
               <div className="dsh-fields dsh-fields-sm">{[matchRow(0), ...(twoIncomes ? [matchRow(1)] : [])]}</div>
               <p className="dsh-cap dsh-mt">
                 {F.fullMatch == null ? "Set the match to 0% if there isn't one." : F.fullMatch ? "You're saving enough to get all of it." : "You're not saving enough to get all of it: see Savings."}
               </p>
             </Tile>
           ) : null}
-          <Tile icon={WalletIcon} title="Other income" right={<span className="dsh-cap">{otherMonth(pr) ? money(otherMonth(pr)) + " per month" : null}</span>}>
+          <Tile id="other-income" icon={WalletIcon} title="Other income" right={<span className="dsh-cap">{otherMonth(pr) ? money(otherMonth(pr)) + " per month" : null}</span>}>
             <p className="dsh-cap dsh-mt6">Side work, rent from a property, anything else that comes in now. After taxes.</p>
             <div className="dsh-elist">
               {pr.other.map((o) => (
@@ -125,7 +125,7 @@ export function Income() {
 
       <div className="dsh-r4">
         {abroad ? <Note>Outside the US, Social Security isn&apos;t counted.</Note> : (
-          <Tile icon={IdCardIcon} title="Social Security" right={<span className={pr.ss.checked ? "dsh-badge dsh-gain" : "dsh-badge"}>{pr.ss.checked ? (pr.tools.social ? "From your pay history" : "Checked") : "Estimated"}</span>}>
+          <Tile id="social-security" icon={IdCardIcon} title="Social Security" right={<span className={pr.ss.checked ? "dsh-badge dsh-gain" : "dsh-badge"}>{pr.ss.checked ? (pr.tools.social ? "From your pay history" : "Checked") : "Estimated"}</span>}>
             <p className="dsh-cap dsh-mt6">We estimate each benefit from today&apos;s pay. Type the figure from your statement at ssa.gov, or work it out from your pay history.</p>
             <div className="dsh-fields dsh-fields-sm">
               {(two ? [0, 1] as const : [0] as const).map((i) => (

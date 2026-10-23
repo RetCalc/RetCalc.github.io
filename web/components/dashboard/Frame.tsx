@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useAccount } from "@/components/account/AccountProvider";
 import { AccountButton } from "@/components/account/AccountButton";
 import { setThemeChoice, useTheme } from "@/lib/theme";
+import { useLanding } from "./land";
 import { OUTSIDE_US, hasAccounts, readDashboard, unstarted, useDashboard } from "./store";
 
 import { SECTION_NAMES, type Section } from "./sections";
@@ -100,6 +101,7 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
   const { data } = useDashboard();
   const router = useRouter();
   const fresh = unstarted(data);
+  useLanding();
   // Checked against what's stored, not the first render's empty copy.
   useEffect(() => { if (unstarted(readDashboard())) router.replace("/dashboard/setup"); }, [fresh, router]);
   // A dot on a section with something still to fill in.

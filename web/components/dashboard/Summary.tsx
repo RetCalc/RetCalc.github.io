@@ -14,7 +14,8 @@ import { ShareBar } from "@/components/charts/Legend";
 import { SERIES } from "@/lib/hues";
 import { budgetGroups } from "@/tools/budget/model";
 import { PLAN_DEFAULTS, type PlanState } from "@/tools/plan/model";
-import { planSummary } from "@/tools/plan/results";
+import { planSummary, type PlanSummary } from "@/tools/plan/results";
+import { schedule } from "@/tools/guide/schedule";
 import { Accounts as PlanAccounts, ChildrenCost, Climb, PayCard, StageLine } from "@/tools/plan/Summary";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { Legend, TodayBars } from "./Accounts";
@@ -22,11 +23,11 @@ import { Frame } from "./Frame";
 import { advancedFor, planKidsOf, stagesFor } from "./calc";
 import { budgetFor, flow } from "./flows";
 import { money, money10 } from "./format";
-import { ageOf, holdings, nowYear, results, spendMonth } from "./model";
+import { ageOf, answers, holdings, nowYear, results, spendMonth } from "./model";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
-import { entryFrom, netWorth, sum, useDashboard } from "./store";
+import { entryFrom, netWorth, sum, useDashboard, type Entry, type Profile } from "./store";
 import { Note, Tile } from "./ui";
 
 /** The answer, from the plan itself: what you'll have at retirement, what
@@ -59,6 +60,24 @@ function PlanHero() {
   );
 }
 
+/** What the children cost the plan, from the plan: the saving their costs
+    take (beyond what they cost today, which the budget already pays) and
+    what the budget has to cover when they cost more than is saved, and the
+    plan's savings at retirement without them. */
+function withPlanChildren(S: PlanSummary, pr: Profile, entries: Entry[]): PlanSummary {
+  if (!S.children) return S;
+  const a = answers(pr, entries), R = results(pr, entries);
+  if (!R.S || a.age == null || a.retire == null) return S;
+  // Only the children: no college, no saving that grows.
+  const sched = schedule({ ...a, events: [] }, { monthly: R.S.monthly });
+  const yrs = (x: { from: number; to: number }) => (x.to - x.from) * 12;
+  const fromSaving = sched.reduce((t, x) => t + Math.max(0, R.S!.monthly - x.monthly) * yrs(x), 0);
+  const fromSpending = sched.reduce((t, x) => t + (x.short ?? 0) * yrs(x), 0);
+  const none = { ...pr, kids: 0, planned: { ...pr.planned, count: 0 } };
+  const without = results(none, entries).S?.fv ?? S.children.without;
+  return { ...S, children: { ...S.children, fromSaving, fromSpending, without } };
+}
+
 export function Summary() {
   const { data } = useDashboard();
   const pr = data.profile;
@@ -75,7 +94,8 @@ export function Summary() {
       tools: { budget: { ...budgetFor(pr), view: "paycheck" } as unknown as ToolInputs, advanced: advancedFor(pr, data.entries) as unknown as ToolInputs, stages: stagesFor(pr, data.entries) as unknown as ToolInputs },
       stagesOn: true, kids: planKidsOf(pr), cover: (pr.kidCover ?? {}) as PlanState["cover"],
     };
-    return planSummary(plan, null);
+    const out = planSummary(plan, null);
+    return out ? withPlanChildren(out, pr, data.entries) : null;
   }, [pr, data.entries, F.b.pcFreq]);
   const last = data.entries[data.entries.length - 1] ?? entryFrom(pr);
   const items = last?.items ?? [];

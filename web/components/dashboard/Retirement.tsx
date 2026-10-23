@@ -8,7 +8,7 @@
    laid out first, each in a line, to learn them before choosing. */
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ArrowDownToLineIcon, BookOpenIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ToolInputs } from "@/components/tools/ToolState";
@@ -24,6 +24,7 @@ import { Hosted, TOOL_VIEWS } from "./host";
 import { ClaimField } from "./Income";
 import { drawdownPlan, results, spendMonth } from "./model";
 import { useDashboard } from "./store";
+import { useLandedOn } from "./land";
 import { Note, Tile } from "./ui";
 
 export function Retirement() {
@@ -39,6 +40,8 @@ export function Retirement() {
   // The simulator's own comparison, on your numbers: "Use this strategy"
   // there chooses it here.
   const [guide, setGuide] = useState(false);
+  // "Compare strategies" lands on the strategies with the comparison open.
+  useLandedOn("compare", useCallback(() => { window.setTimeout(() => setGuide(true), 600); }, []));
   const view = useMemo(() => {
     if (!plan) return null;
     const st = drawdownFor(pr, plan);
@@ -47,7 +50,7 @@ export function Retirement() {
 
   return (
     <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : "Needs your ages and retirement age"}>
-      <Tile icon={SunsetIcon} title="At retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile" />}>Ages, spending and assumptions</Button>}>
+      <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#plan-retirement" />}>Ages, spending and assumptions</Button>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? shortMoney(R.atRetire) : "—"}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
@@ -58,7 +61,7 @@ export function Retirement() {
         {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
       </Tile>
 
-      <div className="dsh-r4"><Tile icon={BookOpenIcon} title="The withdrawal strategies" right={plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}>
+      <div className="dsh-r4" id="compare"><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies" right={plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}>
         <p className="dsh-cap dsh-mt6">How each decides what you spend each year. Pick one to use it across your plan.</p>
         <div className="dsh-strats">
           {Object.entries(DD_UI).map(([id, u]) => {
@@ -77,7 +80,7 @@ export function Retirement() {
 
       <div className="dsh-r4">
         {plan ? (
-          <Tile icon={ArrowDownToLineIcon} title="Your drawdown" right={<span className="dsh-cap">On your savings at retirement, through every market since 1926</span>}>
+          <Tile id="drawdown" icon={ArrowDownToLineIcon} title="Your drawdown" right={<span className="dsh-cap">On your savings at retirement, through every market since 1926</span>}>
             <div className="dsh-mt">
               <Hosted key={rev} household={null}
                 seed={(id) => (id === "drawdown" ? (drawdownFor(pr, plan) as unknown as ToolInputs) : undefined)}

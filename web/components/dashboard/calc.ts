@@ -6,12 +6,11 @@
 import { withDefaults } from "@/components/tools/ToolState";
 import { groupDigits } from "@/lib/format";
 import { ADVANCED_DEF, type AdvancedInputs } from "@/tools/advanced/model";
-import { STAGES_DEF, stageFields, type StagesInputs } from "@/tools/stages/model";
-import { stagesFromKidsYears } from "@/tools/stages/kids";
+import { STAGES_DEF, stageFields, stagesCompute, type StageInputs, type StagesInputs } from "@/tools/stages/model";
 import { NO_KIDS, type PlanKids } from "@/tools/plan/model";
 import { COLLEGE_DEFAULTS } from "@/tools/college/model";
 import { flow, growthLines, taxState } from "./flows";
-import { ageOf, collegeStarts, couple, holdings, realGrowth, spendMonth } from "./model";
+import { ageOf, collegeStarts, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
 import { sum, type Entry, type Profile } from "./store";
 
 const g = (n: number) => groupDigits(Math.round(n), true);
@@ -69,23 +68,94 @@ export function planKidsOf(pr: Profile): PlanKids | null {
     early: C.early, school: C.school, teen: C.teen, later: C.later };
 }
 
-/** Stages from the profile: one stage to retirement, then, with children,
-    the stages their costs make. */
+/** A year of the plan's saving: what goes in each month that year, yours
+    and your employers', in today's dollars, and what's going on. */
+interface PlanYear { monthly: number; label: string }
+
+/** A stage's name without the yearly growth in it ("after the raise" once
+    for every year saving has grown): the stage's growth rate says that. */
+function plainLabel(label: string): string {
+  const s = label.split(", ").filter((x) => !/^after the raise$/i.test(x)).join(", ");
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : "Saving";
+}
+
+/** The plan's saving year by year, from its schedule (children, college,
+    saving that grows to its limits), or today's saving to retirement. */
+function planYears(R: Results): PlanYear[] {
+  const S = R.S;
+  if (!S) return [];
+  const age = Math.round(S.I.age), end = Math.round(S.retire);
+  const sched = S.sched?.length ? S.sched : [{ from: age, to: end, monthly: S.monthly, label: "Saving" }];
+  const out: PlanYear[] = [];
+  for (const s of sched) for (let t = Math.round(s.from); t < Math.round(s.to); t++) out.push({ monthly: s.monthly, label: plainLabel(s.label) });
+  return out;
+}
+
+/** The plan's years as stages: a new stage wherever what's going on
+    changes, or saving turns from rising to level or back; within one,
+    saving grows at the rate that puts the same amount in by retirement. */
+function planGroups(years: PlanYear[]) {
+  const trend = (i: number) => (i === 0 ? 0 : Math.sign(Math.round(years[i].monthly - years[i - 1].monthly)));
+  const groups: { from: number; to: number; label: string }[] = [];
+  years.forEach((y, i) => {
+    const last = groups[groups.length - 1];
+    // A rise into the year counts with the year before it, so a stage that
+    // grows starts at its first rise.
+    const same = last && last.label === y.label && (i - last.from < 2 || trend(i) === trend(i - 1)) && trend(i) >= 0;
+    if (same) last.to = i + 1;
+    else groups.push({ from: i, to: i + 1, label: y.label });
+  });
+  return groups;
+}
+
+/** Stages from the plan itself: every change in saving the plan makes
+    (children, college years, saving that grows to its limits, both
+    employers' match), so the Calculator reaches what the plan has at
+    retirement. */
 export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   const A = shared(pr, entries), own = A.tradC + A.rothC + A.brokC + A.hsaC;
+  const R = results(pr, entries), F = A.F;
+  // Both employers' match as one rate on what you put in before taxes and to
+  // Roth: the share of every dollar of yours your employers add.
+  const matched = own * (own > 0 ? (A.tradC + A.rothC) / own : 0);
+  const matchPct = F.match > 0 && matched > 0 ? (F.match / matched) * 100 : 0, mf = 1 + (matched > 0 ? F.match / own : 0);
+  const infl = pr.assume.inflation, nom = (real: number) => (1 + real) * (1 + infl) - 1;
+  const split = own > 0 ? { sTrad: A.tradC / own, sRoth: A.rothC / own, ...(A.hsaC > 0 ? { sHsa: A.hsaC / own } : {}) } : {};
+  const stage = (years: number, monthly: number, growth: number, name?: string, adj = false): StageInputs => ({
+    ...stageFields({ years, contrib: Math.round(monthly / mf), period: "Monthly", growth: nom(growth), nominal: A.nominal, vol: 0.15, adj, ...split }),
+    ...(name ? { name } : {}),
+  });
   const base: StagesInputs = {
     ...withDefaults(STAGES_DEF, {}),
-    initial: g(A.tradBal + A.rothBal + A.brokBal + A.hsaBal), inflation: pc(pr.assume.inflation),
+    initial: g(A.tradBal + A.rothBal + A.brokBal + A.hsaBal), inflation: pc(infl),
     ...(A.target > 0 ? { solveFor: "After-Tax Withdrawal", target: g(A.target) } : {}),
     saOn: true, saTradBal: g(A.tradBal), saRothBal: g(A.rothBal), saBrokBal: g(A.brokBal), saBrokBasis: g(A.brokBal * 0.6), saHsaBal: g(A.hsaBal),
-    saSalary: g(A.salary), saMatchPct: A.matchPct, saMatchCap: A.matchCap, saStatus: A.status, saState: A.state,
-    stages: [stageFields({
-      years: A.years, contrib: Math.round(own), period: "Monthly", growth: (A.rates.t + A.rates.r + A.rates.b) / 3, nominal: A.nominal, vol: 0.15,
-      ...(own > 0 ? { sTrad: A.tradC / own, sRoth: A.rothC / own, sHsa: A.hsaC / own } : {}),
-    })],
+    saSalary: g(F.gross * 12), saMatchPct: matchPct > 0 ? String(+matchPct.toFixed(4)) : "0", saMatchCap: "100", saStatus: A.status, saState: A.state,
+    stages: [stage(A.years, own + F.match, 0)],
   };
-  const kids = planKidsOf(pr);
-  return kids ? { ...base, stages: stagesFromKidsYears(base, kids, pr.kidCover ?? {}).stages, kids, kidCover: pr.kidCover ?? {} } : base;
+  const kids = planKidsOf(pr), withKids = (s: StagesInputs) => (kids ? { ...s, kids, kidCover: {} } : s);
+  const years = planYears(R);
+  if (!years.length) return withKids(base);
+  const groups = planGroups(years);
+  // Each stage as the plan has it year by year, then as one stage growing
+  // at a steady rate, found so the two come to the same at retirement.
+  const exact = (gi: number) => groups[gi].label;
+  const yearly = groups.flatMap((gr) => years.slice(gr.from, gr.to).map((y) => ({ y, name: gr.label })));
+  const value = (stages: StageInputs[]) => stagesCompute({ ...base, stages }, null).R.fvReal;
+  const asYears = (from: number) => yearly.slice(from).map((x, i) => stage(1, x.y.monthly, 0, x.name, from + i > 0));
+  const out: StageInputs[] = [];
+  groups.forEach((gr, gi) => {
+    const first = years[gr.from].monthly, n = gr.to - gr.from, level = years.slice(gr.from, gr.to).every((y) => Math.abs(y.monthly - first) < 0.5);
+    if (level || n < 2) { out.push(stage(n, first, 0, exact(gi), gi > 0)); return; }
+    const want = value([...out, ...asYears(gr.from)]);
+    let lo = -0.5, hi = 0.5;
+    for (let k = 0; k < 40; k++) {
+      const mid = (lo + hi) / 2;
+      if (value([...out, stage(n, first, mid, exact(gi), gi > 0), ...asYears(gr.to)]) < want) lo = mid; else hi = mid;
+    }
+    out.push(stage(n, first, (lo + hi) / 2, exact(gi), gi > 0));
+  });
+  return withKids({ ...base, stages: out });
 }
 
 /** College Savings with each child's years to go and the school chosen. */

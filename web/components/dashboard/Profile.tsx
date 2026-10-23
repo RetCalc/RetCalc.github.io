@@ -32,7 +32,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
   const put = (v: Partial<P["assume"]>) => set((p) => ({ ...p, assume: { ...p.assume, ...v } }));
   const preset = RISKS.find((r) => Math.abs(r.real - real) < 0.0005);
   return (
-    <Tile icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your dashboard</span>}>
+    <Tile id="assumptions" icon={SlidersHorizontalIcon} title="Assumptions" right={<span className="dsh-cap">Used by every figure on your dashboard</span>}>
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label">Savings grow, after inflation</div><div className="dsh-fig">{pct(real)}<small>per year</small></div></div>
       </div>
@@ -67,7 +67,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
   const C = pr.childCosts, n = (v: string) => (v.trim() === "" ? null : parseNum(v));
   const early = n(C.early) ?? earlyCost(pr.childcare, pr.careArea), school = n(C.school) ?? CHILD_COST.school, teen = n(C.teen) ?? CHILD_COST.teen;
   return (
-    <Tile icon={BabyIcon} title="Children ahead" right={<span className="dsh-cap">Their costs come out of what you save</span>}>
+    <Tile id="children" icon={BabyIcon} title="Children ahead" right={<span className="dsh-cap">Their costs come out of what you save</span>}>
       <div className="dsh-fields dsh-fields-sm">
         <div className="dsh-row3">
           <SelectField id="dshPPlanned" label="Children planned" value={String(pr.planned.count)} onChange={(v) => put({ count: Number(v) })}>
@@ -121,7 +121,7 @@ export function Profile() {
   return (
     <Frame current="profile" title="Profile" sub="Everything your plan is built on. Changes save as you go.">
       <div className="dsh-grid dsh-two dsh-flush">
-        <Tile icon={two ? UsersRoundIcon : UserRoundIcon} title="Household">
+        <Tile id="household" icon={two ? UsersRoundIcon : UserRoundIcon} title="Household">
           <div className="dsh-fields dsh-fields-sm">
             <div className="dsh-choices">
               <Choice on={pr.who === "single"} icon={<UserRoundIcon aria-hidden="true" />} title="Just me" sub="One income, one retirement" onClick={() => set((p) => ({ ...p, who: "single" }))} />
@@ -152,7 +152,7 @@ export function Profile() {
         </Tile>
 
         <div className="dsh-side">
-          <Tile icon={SunsetIcon} title="Retirement">
+          <Tile id="plan-retirement" icon={SunsetIcon} title="Retirement">
             <div className="dsh-fields dsh-fields-sm"><div className="dsh-row">
               {keys.map((k) => <NumberField key={k} id={"dshPRet" + k} label={`${nameOf(pr, k === "p1" ? 0 : 1)} retires at age`} max={85} value={txt(pr[k].retire)} onValueChange={(v) => setP(k, { retire: num(v) })} />)}
             </div>
@@ -161,15 +161,15 @@ export function Profile() {
               <div className="dsh-hint dsh-self-end">{pr.retSpend == null ? "Blank: the same as today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
             </div></div>
           </Tile>
-          <Tile icon={WalletIcon} title="Saving">
+          <Tile id="saving" icon={WalletIcon} title="Saving">
             <div className="dsh-fields dsh-fields-sm">
               <div className="dsh-readonly">
                 <div><div className="dsh-label">Saved so far</div><div className="dsh-fig dsh-md">{money(H.trad + H.roth + H.brok)}</div></div>
-                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts" />}>{accounts ? "Change in Net worth" : "Split into accounts"}</Button>
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>{accounts ? "Change in Net worth" : "Split into accounts"}</Button>
               </div>
               <div className="dsh-readonly">
                 <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money10(F.invested + F.match)}<small>per month</small></div></div>
-                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/savings" />}>Change in Savings</Button>
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/savings#rest" />}>Change in Savings</Button>
               </div>
             </div>
           </Tile>
@@ -177,19 +177,19 @@ export function Profile() {
       </div>
 
       <div className="dsh-grid dsh-two">
-        <Tile icon={BanknoteIcon} title="Pay" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income" />}>More in Income</Button>}>
+        <Tile id="pay" icon={BanknoteIcon} title="Pay" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#pay" />}>More in Income</Button>}>
           <div className="dsh-fields dsh-fields-sm">
             {keys.map((k) => <div className="dsh-person" key={k}><h3>{nameOf(pr, k === "p1" ? 0 : 1)}</h3><PayFields pr={pr} k={k} setP={setP} /></div>)}
           </div>
         </Tile>
         <div className="dsh-side">
-          <Tile icon={ReceiptIcon} title="Spending">
+          <Tile id="spending" icon={ReceiptIcon} title="Spending">
             <div className="dsh-fields dsh-fields-sm">
               <div className="dsh-readonly"><div><div className="dsh-label">Spending, all together</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small>per month</small></div></div>
-                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/spending" />}>Change in Spending</Button></div>
+                <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/spending#budget" />}>Change in Spending</Button></div>
             </div>
           </Tile>
-          <Tile icon={pr.home === "rent" ? Building2Icon : HouseIcon} title="Home" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/home" />}>Mortgage details</Button>}>
+          <Tile id="home" icon={pr.home === "rent" ? Building2Icon : HouseIcon} title="Home" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/home#mortgage" />}>Mortgage details</Button>}>
             <div className="dsh-fields dsh-fields-sm">
               <div className="dsh-choices">
                 <Choice on={pr.home === "own"} icon={<HouseIcon aria-hidden="true" />} title="Own" sub="With or without a mortgage" onClick={() => set((p) => ({ ...p, home: "own" }))} />

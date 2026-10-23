@@ -8,9 +8,10 @@ import type { ReactNode } from "react";
 import { InfoIcon, PlusIcon, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function Tile({ icon: Icon, title, right, className, children }: { icon: LucideIcon; title: string; right?: ReactNode; className?: string; children: ReactNode }) {
+/** A tile; `id` lets a link land on it ("/dashboard/profile#assumptions"). */
+export function Tile({ icon: Icon, title, right, className, id, children }: { icon: LucideIcon; title: string; right?: ReactNode; className?: string; id?: string; children: ReactNode }) {
   return (
-    <section className={className ? "dsh-tile " + className : "dsh-tile"}>
+    <section id={id} className={className ? "dsh-tile " + className : "dsh-tile"}>
       <div className="dsh-tile-h"><span className="dsh-ti"><Icon aria-hidden="true" /></span><h2>{title}</h2>{right ? <div className="dsh-r">{right}</div> : null}</div>
       {children}
     </section>

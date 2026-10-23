@@ -276,9 +276,9 @@ export function Budget() {
                   <p className="hint m-0">About 6 months suits most people; up to 12 if your income varies.</p>
                   {emerg ? (
                     <>
-                      <Segmented id="efBasis" attr="data-efb" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={s.efBasis} onChange={set("efBasis")} />
+                      <div className="flex"><Segmented id="efBasis" attr="data-efb" options={[["normal", "Normal budget"], ["emergency", "Emergency budget"]] as const} value={s.efBasis} onChange={set("efBasis")} /></div>
                       <p className="hint m-0">{s.efBasis === "emergency" ? "Sized on the emergency budget: " + money(emergencyYear(s) / 12) + " per month." : "Sized on your normal budget. Switch to size it on the emergency one."}</p>
-                      <Button variant="link" size="inline-xs" onClick={() => setState((c) => ({ ...c, efEmerg: false, efBasis: "normal" }))}>Remove the emergency budget</Button>
+                      <div className="flex"><Button variant="link" size="inline-xs" onClick={() => setState((c) => ({ ...c, efEmerg: false, efBasis: "normal" }))}>Remove the emergency budget</Button></div>
                     </>
                   ) : (
                     <Button variant="outline" size="sm" onClick={() => setState((c) => ({ ...c, efEmerg: true, efBasis: "emergency", rows: c.rows.map((r) => ({ ...r, emerg: r.emerg ?? r.amount })) }))}>

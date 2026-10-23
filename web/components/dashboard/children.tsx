@@ -28,7 +28,7 @@ export function ChildCostsDialog({ close }: { close: () => void }) {
   const age = ageOf(pr.p1) ?? 40, retire = Math.max(age + 1, pr.p1.retire ?? age + 25);
   return (
     <KidsDialog kids={kids} age={age} retire={retire} cover={false} close={close} withLater saveLabel="Save"
-      costsOnly={<>{childrenSentence(pr)} <Link href="/dashboard/profile" onClick={close} className="underline underline-offset-4">Change them in Profile</Link></>}
+      costsOnly={<>{childrenSentence(pr)} <Link href="/dashboard/profile#children" onClick={close} className="underline underline-offset-4">Change them in Profile</Link></>}
       save={(k) => {
         setProfile((p) => ({ ...p, childcare: k.childcare, careArea: k.area ?? p.careArea, childCosts: { early: k.early, school: k.school, teen: k.teen ?? "", later: k.later ?? p.childCosts.later } }));
         close();

@@ -33,7 +33,7 @@ function Growth() {
   const [open, setOpen] = useState(false);
   const summary = L.filter((l) => l.amount > 0).map((l) => `${l.name} ${l.capped ? "at its limit" : pct(l.growth) + "%"}`).join(" · ");
   return (
-    <Card className="min-w-0">
+    <Card id="growth" className="min-w-0">
       <CardHeader>
         <CardTitle>How your saving grows</CardTitle>
         <CardDescription>Each year, beyond inflation. {summary || "Nothing saved yet."}</CardDescription>
