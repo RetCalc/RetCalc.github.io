@@ -44,7 +44,7 @@ export function Home() {
       <div className="dsh-r4"><Tile id="mortgage" icon={LandmarkIcon} title="Mortgage">
         {M.owed > 0 ? (
           <>
-            <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3">
+            <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3 dsh-pair">
               <NumberField id="dshHRate" label="Interest rate" unit="%" step={0.125} max={20} value={pctTxt(M.rate)} onValueChange={(v) => set((p) => ({ ...p, mortRate: v.trim() === "" ? null : (num(v) ?? 0) / 100 }))} />
               <MoneyField id="dshHPay" label="Payment, principal and interest" unit="per month" value={txt(pr.mortPay)} onValueChange={(v) => set((p) => ({ ...p, mortPay: num(v) }))} />
               <div />

@@ -261,7 +261,7 @@ export function Accounts() {
 
       {data.entries.length ? (
         <Tile id="entries" icon={CalendarDaysIcon} title="Your entries" className="dsh-r4" right={<span className="dsh-cap">{data.entries.length} so far</span>}>
-          <table className="dsh-tbl">
+          <div className="dsh-scrollx"><table className="dsh-tbl">
             <thead><tr><th>Date</th><th>Assets</th><th>Debts</th><th>Net worth</th><th>Change</th></tr></thead>
             <tbody>
               {data.entries.slice().reverse().map((e, i, arr) => {
@@ -272,7 +272,7 @@ export function Accounts() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </Tile>
       ) : null}
     </Frame>

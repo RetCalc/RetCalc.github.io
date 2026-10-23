@@ -67,7 +67,7 @@ export function PayFields({ pr, k, setP }: { pr: Profile; k: PKey; setP: (k: PKe
   const p = pr[k], y = payYear(p), abroad = pr.state === OUTSIDE_US, th = takeHomeOf(pr, k);
   return (
     <>
-      <div className="dsh-row">
+      <div className="dsh-row dsh-pair">
         <MoneyField id={"dshPay" + k} label={abroad ? "Pay after taxes" : "Pay"} value={txt(p.pay)} onValueChange={(v) => setP(k, { pay: num(v) })} />
         <SelectField id={"dshPer" + k} label="How often" value={p.per} onChange={(v) => setP(k, { per: v as Per })}>
           {Object.entries(PER_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}

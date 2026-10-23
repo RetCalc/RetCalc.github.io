@@ -11,6 +11,13 @@ import { collegeNeedOf } from "./college";
 import { toolHref } from "./host";
 import { room } from "./readiness";
 
+/** A stage's words without the yearly growth in them ("after the raise"
+    once for each year saving has grown). */
+const words = (label: string) => {
+  const w = label.split(", ").filter((x) => !/^after the raise$/i.test(x)).join(", ");
+  return w ? w.charAt(0).toUpperCase() + w.slice(1) : "Saving";
+};
+
 export interface Step { id: string; title: string; why: string; action: string; href: string; done: boolean; gain: number }
 
 export function allSteps(d: DashData, R: Results): Step[] {
@@ -42,7 +49,7 @@ export function allSteps(d: DashData, R: Results): Step[] {
   const drop = R.S?.sched?.find((s, i, all) => i > 0 && s.monthly < all[0].monthly - 50);
   if (drop && R.S) {
     const year = Math.round(nowYear() + (drop.from - (R.S.I.age ?? 0)));
-    add({ id: "kids-drop", title: `Saving drops to ${money10(drop.monthly)} per month in ${year}`, why: `${drop.label}: see how each stage saves`, action: "Open Calculator", href: "/dashboard/calculator", done: false, gain: 3 });
+    add({ id: "kids-drop", title: `Saving drops to ${money10(drop.monthly)} per month in ${year}`, why: `${words(drop.label)}: see how each stage saves`, action: "Open Calculator", href: "/dashboard/calculator", done: false, gain: 3 });
   }
   const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by && k.by + 18 > nowYear());
   if (kids.length && pr.college.help !== "none") add({ id: "college-tool", title: "Plan college in detail", why: `${kids[0].name.trim() || "Your first child"} starts in ${kids[0].by! + 18}`, action: "Plan it", href: toolHref("college", "/dashboard/next"), done: false, gain: 2 });

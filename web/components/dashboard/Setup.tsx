@@ -68,7 +68,7 @@ const STEPS: Step[] = [
     body: ({ pr, setP }) => keys(pr).map((k) => (
       <div className="dsh-person" key={k}>
         <h3>{k === "p1" ? "You" : "Your partner"}</h3>
-        <div className="dsh-row3">
+        <div className="dsh-row3 dsh-pair">
           <Field id={"dshName" + k} label="First name"><Input id={"dshName" + k} value={pr[k].name} autoComplete={k === "p1" ? "given-name" : "off"} onChange={(e) => setP(k, { name: e.target.value })} /></Field>
           <BirthFields id={"dshBirth" + k} label="Birth" bm={pr[k].bm} by={pr[k].by} from={THIS_YEAR - 90} to={THIS_YEAR - 16} onChange={(v) => setP(k, v)} />
         </div>
@@ -82,7 +82,7 @@ const STEPS: Step[] = [
       const k = pr.kidList[i] ?? { name: "", bm: null, by: null };
       const put = (v: Partial<typeof k>) => set((p) => { const list = [...p.kidList]; while (list.length <= i) list.push({ name: "", bm: null, by: null }); list[i] = { ...list[i], ...v }; return { ...p, kidList: list }; });
       return (
-        <div className="dsh-row3" key={i}>
+        <div className="dsh-row3 dsh-pair" key={i}>
           <Field id={"dshKid" + i} label={`Child ${i + 1}`}><Input id={"dshKid" + i} value={k.name} placeholder="Name (optional)" onChange={(e) => put({ name: e.target.value })} /></Field>
           <BirthFields id={"dshKidBirth" + i} label="Birth" bm={k.bm} by={k.by} from={THIS_YEAR - 30} to={THIS_YEAR} optional onChange={put} />
         </div>
@@ -283,7 +283,7 @@ export function Setup() {
   return (
     <div className="dsh-setup">
       <header className="dsh-setup-top">
-        <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark />RetCalc</Link>
+        <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark /><span>RetCalc</span></Link>
         <span className="dsh-cap">Set up your dashboard</span>
         <Badge variant="highlight">Beta</Badge>
         <div className="dsh-r"><Button variant="link" onClick={finish}>Save and finish later</Button></div>

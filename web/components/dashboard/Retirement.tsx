@@ -40,6 +40,7 @@ export function Retirement() {
   // The simulator's own comparison, on your numbers: "Use this strategy"
   // there chooses it here.
   const [guide, setGuide] = useState(false);
+  const [allStrats, setAllStrats] = useState(false);
   // "Compare strategies" lands on the strategies with the comparison open.
   useLandedOn("compare", useCallback(() => { window.setTimeout(() => setGuide(true), 600); }, []));
   const view = useMemo(() => {
@@ -63,7 +64,7 @@ export function Retirement() {
 
       <div className="dsh-r4" id="compare"><Tile id="strategies" icon={BookOpenIcon} title="The withdrawal strategies" right={plan ? <Button variant="link" size="inline" onClick={() => setGuide(true)}>How the withdrawal strategies compare</Button> : null}>
         <p className="dsh-cap dsh-mt6">How each decides what you spend each year. Pick one to use it across your plan.</p>
-        <div className="dsh-strats">
+        <div className="dsh-strats" data-all={allStrats ? "" : undefined}>
           {Object.entries(DD_UI).map(([id, u]) => {
             const on = pr.strategy === id;
             return (
@@ -74,6 +75,10 @@ export function Retirement() {
               </div>
             );
           })}
+        </div>
+        {/* A phone shows yours (or the first three) until asked for all of them. */}
+        <div className="dsh-more">
+          <Button variant="outline" onClick={() => setAllStrats((v) => !v)} aria-expanded={allStrats}>{allStrats ? "Show fewer" : "Show all " + Object.keys(DD_UI).length + " strategies"}</Button>
         </div>
         <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo; in the simulator below. Its settings (the starting rate, guardrails, floors and ceilings) are saved as you change them.</p>
       </Tile></div>

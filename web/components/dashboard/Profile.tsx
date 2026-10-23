@@ -47,7 +47,7 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
           </button>
         ))}
       </div>
-      <div className="dsh-row3 dsh-mt dsh-fields-sm">
+      <div className="dsh-row3 dsh-pair dsh-mt dsh-fields-sm">
         <NumberField id="dshGrowth" label="Growth per year, before inflation" unit="%" step={0.25} max={20} value={pctTxt(A.growth)} onValueChange={(v) => put({ growth: (num(v) ?? 0) / 100 })} />
         <NumberField id="dshInfl" label="Inflation per year" unit="%" step={0.25} max={15} value={pctTxt(A.inflation)} onValueChange={(v) => put({ inflation: (num(v) ?? 0) / 100 })} />
         <NumberField id="dshStocks" label="In stocks once retired" unit="%" step={5} max={100} value={String(A.stocks)} onValueChange={(v) => put({ stocks: Math.max(0, Math.min(100, num(v) ?? 0)) })} />
@@ -71,7 +71,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
   return (
     <Tile id="children" icon={BabyIcon} title="Children ahead" right={<span className="dsh-cap">Their costs come out of what you save</span>}>
       <div className="dsh-fields dsh-fields-sm">
-        <div className="dsh-row3">
+        <div className="dsh-row3 dsh-pair">
           <SelectField id="dshPPlanned" label="Children planned" value={String(pr.planned.count)} onChange={(v) => put({ count: Number(v) })}>
             {[0, 1, 2, 3, 4, 5, 6].map((n) => <option key={n} value={n}>{n}</option>)}
           </SelectField>
@@ -134,7 +134,7 @@ export function Profile() {
               <Choice on={pr.who === "couple"} icon={<UsersRoundIcon aria-hidden="true" />} title="Me and a partner" sub="Married or sharing finances" onClick={() => set((p) => ({ ...p, who: "couple" }))} />
             </div>
             {keys.map((k) => (
-              <div className="dsh-row3" key={k}>
+              <div className="dsh-row3 dsh-pair" key={k}>
                 <Field id={"dshPName" + k} label={k === "p1" ? "Your first name" : "Partner's first name"}><Input id={"dshPName" + k} value={pr[k].name} onChange={(e) => setP(k, { name: e.target.value })} /></Field>
                 <BirthFields id={"dshPBirth" + k} label="Birth" bm={pr[k].bm} by={pr[k].by} from={THIS_YEAR - 90} to={THIS_YEAR - 16} onChange={(v) => setP(k, v)} />
               </div>
@@ -148,7 +148,7 @@ export function Profile() {
               const k = pr.kidList[i] ?? { name: "", bm: null, by: null };
               const put = (v: Partial<typeof k>) => set((p) => { const list = [...p.kidList]; while (list.length <= i) list.push({ name: "", bm: null, by: null }); list[i] = { ...list[i], ...v }; return { ...p, kidList: list }; });
               return (
-                <div className="dsh-row3" key={i}>
+                <div className="dsh-row3 dsh-pair" key={i}>
                   <Field id={"dshPKid" + i} label={`Child ${i + 1}`}><Input id={"dshPKid" + i} value={k.name} placeholder="Name (optional)" onChange={(e) => put({ name: e.target.value })} /></Field>
                   <BirthFields id={"dshPKidBirth" + i} label="Birth" bm={k.bm} by={k.by} from={THIS_YEAR - 30} to={THIS_YEAR} optional onChange={put} />
                 </div>
@@ -159,7 +159,7 @@ export function Profile() {
 
         <div className="dsh-side">
           <Tile id="plan-retirement" icon={SunsetIcon} title="Retirement">
-            <div className="dsh-fields dsh-fields-sm"><div className="dsh-row">
+            <div className="dsh-fields dsh-fields-sm"><div className="dsh-row dsh-pair">
               {keys.map((k) => <NumberField key={k} id={"dshPRet" + k} label={`${nameOf(pr, k === "p1" ? 0 : 1)} retires at age`} max={85} value={txt(pr[k].retire)} onValueChange={(v) => setP(k, { retire: num(v) })} />)}
             </div>
             <div className="dsh-row">
@@ -202,7 +202,7 @@ export function Profile() {
                 <Choice on={pr.home === "rent"} icon={<Building2Icon aria-hidden="true" />} title="Rent" sub="A house or an apartment" onClick={() => set((p) => ({ ...p, home: "rent" }))} />
               </div>
               {pr.home === "own" ? (
-                <div className="dsh-row3">
+                <div className="dsh-row3 dsh-pair">
                   <MoneyField id="dshPValue" label="What it's worth" value={txt(H.home || null)} onValueChange={(v) => update((d) => ({ ...d, entries: withHome(d, { value: num(v) }) }))} />
                   <MoneyField id="dshPOwed" label="Left on the mortgage" value={txt(H.mortgage || null)} onValueChange={(v) => update((d) => ({ ...d, entries: withHome(d, { owed: num(v) }) }))} />
                   <NumberField id="dshPMRate" label="Its interest rate" unit="%" step={0.125} max={20} value={pctTxt(mortgage(pr, data.entries).rate)} onValueChange={(v) => { const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />

@@ -45,20 +45,28 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-avatar { color: var(--ds-text); text-decoration: none; width: 34px; height: 34px; border-radius: 50%; background: var(--ds-raised); border: 1px solid var(--ds-rule); display: grid; place-items: center; font-size: 13.5px; font-weight: 600; }
 .dsh-page { padding: 24px 28px 96px; }
 
-/* Phones: the rail becomes a bottom bar of five. */
-@media (max-width: 760px) {
-  .dsh-app { grid-template-columns: minmax(0, 1fr); }
-  .dsh-rail { position: fixed; top: auto; bottom: 0; left: 0; right: 0; height: 62px; }
-  .dsh-rail-in, .dsh-rail:hover .dsh-rail-in { position: static; width: 100%; height: 62px; flex-direction: row; padding: 6px 8px; border-right: 0; border-top: 1px solid var(--ds-rule); box-shadow: none; justify-content: space-around; }
-  .dsh-rail .dsh-brand, .dsh-rail-gap, .dsh-rail-hr, .dsh-ri.dsh-desk { display: none; }
-  .dsh-ri { flex-direction: column; gap: 3px; height: 50px; width: auto; flex: 1; padding: 0; justify-content: center; font-size: 10.5px; }
-  .dsh-ri span { opacity: 1; }
-  .dsh-ri[aria-current]::before { left: 30%; right: 30%; top: -6px; bottom: auto; width: auto; height: 3px; border-radius: 0 0 3px 3px; }
-  .dsh-ri .dsh-dot { left: calc(50% + 6px); top: 4px; }
-  .dsh-top { padding: 0 16px; }
-  .dsh-top .dsh-sub { display: none; }
-  .dsh-page { padding: 16px 16px 100px; }
-}
+/* ---------- Phones and touch screens ----------
+   No rail (hover means nothing to a finger, and a phone held sideways puts
+   its notch over it): a title bar that stays at the top, with a menu
+   button that opens every tab, and the page kept clear of the notch, the
+   island and the home bar. A mouse never sees any of this. */
+.dsh-burger { display: none; }
+.dsh-more { display: none; }
+.dsh-scrollx { overflow-x: auto; }
+/* The menu: every tab as a tap target, two across (three with room). */
+.dsh-menu-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.dsh-menu-h > :last-child { margin-left: auto; }
+.dsh-menu, .dsh-menu-foot { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dsh-menu-foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ds-rule); }
+@media (min-width: 560px) { .dsh-menu, .dsh-menu-foot { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.dsh-mi { position: relative; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 12px; border: 1px solid var(--ds-rule); background: var(--ds-surface); color: var(--ds-text); font: inherit; font-size: 15px; text-align: left; text-decoration: none; cursor: pointer; width: 100%; }
+.dsh-mi svg { width: 20px; height: 20px; flex: none; color: var(--ds-muted); }
+.dsh-mi span { min-width: 0; line-height: 1.25; padding: 6px 0; }
+.dsh-mi:active { background: var(--ds-raised); }
+.dsh-mi:focus-visible { outline: 2px solid var(--ds-focus); outline-offset: 2px; }
+.dsh-mi[aria-current] { border-color: var(--ds-amber); box-shadow: inset 0 0 0 1px var(--ds-amber); font-weight: 600; }
+.dsh-mi[aria-current] svg { color: var(--ds-amber); }
+.dsh-mi .dsh-dot { margin-left: auto; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ds-series-sky); }
 
 /* ---------- Tiles ---------- */
 .dsh-grid { display: grid; gap: 16px; }
@@ -427,3 +435,51 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 @keyframes dsh-landed { 0%, 35% { box-shadow: 0 0 0 3px var(--ds-amber), 0 0 24px 4px color-mix(in oklab, var(--ds-amber) 35%, transparent); } 100% { box-shadow: 0 0 0 3px transparent, 0 0 24px 4px transparent; } }
 .dsh [data-landed] { animation: dsh-landed 1.6s ease-out both; }
 @media (prefers-reduced-motion: reduce) { .dsh [data-landed] { animation-duration: 1.6s; animation-timing-function: steps(1, end); } }
+
+/* Phones and touch screens (see the frame's note near the top). */
+@media (max-width: 760px), (hover: none) and (pointer: coarse) {
+  .dsh-app { grid-template-columns: minmax(0, 1fr); }
+  .dsh-rail { display: none; }
+  .dsh-burger { display: block; flex: none; }
+  .dsh-top { position: sticky; top: 0; z-index: 40; height: auto; min-height: 56px; gap: 10px; background: var(--ds-ground);
+    padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left)); }
+  .dsh-top h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 17px; }
+  .dsh-top .dsh-sub { display: none; }
+  .dsh-page { padding: 16px max(16px, env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  /* A tool's pinned answer sits under the title bar, not behind it. */
+  .dsh { --pin-top: calc(64px + env(safe-area-inset-top)); }
+  /* Setup's own bar, clear of the notch too. */
+  .dsh-setup-top { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .dsh-sbody { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+  /* The timeline keeps its size and scrolls sideways, so its words stay readable. */
+  .dsh-tl svg { width: auto; }
+}
+/* A phone on its side has little height: the title bar scrolls away
+   (scrolling back up brings the menu), and pinned answers sit at the top. */
+@media (max-height: 500px) and (hover: none) and (pointer: coarse) {
+  .dsh-top { position: static; }
+  .dsh { --pin-top: 8px; }
+}
+/* Narrow screens: figures two to a row, steps with their button under
+   them, short fields side by side, and nothing wider than the screen. */
+@media (max-width: 640px) {
+  .dsh-stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 18px; align-items: start; }
+  .dsh-stats > .dsh-stat:first-child:has(.dsh-key) { grid-column: 1 / -1; }
+  .dsh-stats .dsh-fig { font-size: 27px; }
+  .dsh-stats .dsh-fig.dsh-key { font-size: 34px; }
+  .dsh-stats .dsh-fig.dsh-md { font-size: 23px; }
+  .dsh-fig small { font-size: 13px; }
+  .dsh-step { grid-template-columns: 30px minmax(0, 1fr); align-items: start; }
+  .dsh-step > :last-child { grid-column: 2; justify-self: start; }
+  .dsh-row.dsh-pair, .dsh-row3.dsh-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .dsh-row3.dsh-pair > :first-child { grid-column: 1 / -1; }
+  .dsh [data-slot="button"].h-auto { white-space: normal; text-align: left; flex-shrink: 1; max-width: 100%; }
+  .dsh-foot { display: block; }
+  .dsh-psum [data-slot="card-header"] { grid-template-columns: minmax(0, 1fr); }
+  .dsh-psum [data-slot="card-action"] { grid-column: 1; grid-row: auto; justify-self: start; }
+  .dsh-more { display: block; margin-top: 10px; }
+  .dsh-strats:not([data-all]):has([data-on]) > .dsh-strat:not([data-on]),
+  .dsh-strats:not([data-all]):not(:has([data-on])) > .dsh-strat:nth-child(n + 4) { display: none; }
+  .dsh-setup-top { gap: 10px; }
+  .dsh-setup-top .dsh-brand span, .dsh-setup-top > .dsh-cap { display: none; }
+}
