@@ -31,7 +31,7 @@ export function NextSteps() {
         <div className="dsh-r4"><Tile icon={CheckIcon} title="Done">
           <ol className="dsh-steps">
             {done.map((s) => (
-              <li key={s.id} className="dsh-step dsh-done"><span className="dsh-num"><CheckIcon aria-hidden="true" /></span><div><b>{s.title}</b><span>{s.why}</span></div><Button variant="ghost" size="sm" nativeButton={false} render={<Link href={s.href} />}>Open</Button></li>
+              <li key={s.id} className="dsh-step dsh-done"><span className="dsh-num"><CheckIcon aria-hidden="true" /></span><div><b>{s.title}</b><span>{s.why}</span></div><Button variant="link" size="inline" nativeButton={false} render={<Link href={s.href} />}>Open</Button></li>
             ))}
           </ol>
         </Tile></div>

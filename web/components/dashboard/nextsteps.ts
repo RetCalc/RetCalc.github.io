@@ -48,8 +48,9 @@ export function allSteps(d: DashData, R: Results): Step[] {
   if (need > 0) add({ id: "college", title: F.college > 0 ? `Raise college saving to ${money10(need)} per month` : `Save ${money10(need)} per month for college`, why: "You plan to help with college, and saving ahead keeps it out of your saving later", action: "Add to budget", href: "/dashboard/spending#month", done: F.college >= need - 25, gain: 8 });
   const drop = R.S?.sched?.find((s, i, all) => i > 0 && s.monthly < all[0].monthly - 50);
   if (drop && R.S) {
-    const year = Math.round(nowYear() + (drop.from - (R.S.I.age ?? 0)));
-    add({ id: "kids-drop", title: `Saving drops to ${money10(drop.monthly)} per month in ${year}`, why: `${words(drop.label)}: see how each stage saves`, action: "Open Calculator", href: "/dashboard/calculator", done: false, gain: 3 });
+    // The calendar year you reach that age, as the Calculator and timeline count it.
+    const year = pr.p1.by ? pr.p1.by + drop.from : Math.round(nowYear() + (drop.from - (R.S.I.age ?? 0)));
+    add({ id: "kids-drop", title: `Saving drops to ${money10(drop.monthly)} per month in ${year}, with the match`, why: `${words(drop.label)}: see how each stage saves`, action: "Open Calculator", href: "/dashboard/calculator", done: false, gain: 3 });
   }
   const kids = pr.kidList.slice(0, pr.kids).filter((k) => k.by && k.by + 18 > nowYear());
   if (kids.length && pr.college.help !== "none") add({ id: "college-tool", title: "Plan college in detail", why: `${kids[0].name.trim() || "Your first child"} starts in ${kids[0].by! + 18}`, action: "Plan it", href: toolHref("college", "/dashboard/next"), done: false, gain: 2 });

@@ -81,7 +81,10 @@ export interface Profile {
       by the Paycheck tab's lines; each stops at its limit. */
   growth: Partial<Record<"match" | "hsa" | "rothIra" | "k401max" | "brok", number>>;
   /** Children planned: how many, years until the first, and years apart. */
-  planned: { count: number; firstIn: number; spacing: number };
+  /** Children planned: how many, years until the first and between them.
+      `bornAge` is your age at the first one's birth, kept so "the first in"
+      counts down as the years pass instead of always being the same. */
+  planned: { count: number; firstIn: number; spacing: number; bornAge?: number };
   /** Paid childcare before school, and where (it sets the cost). */
   childcare: boolean; careArea: "city" | "suburb" | "rural";
   /** Helping with college: how much, and the kind of school (its yearly cost). */
@@ -143,6 +146,12 @@ function upgrade(e: Entry | OldEntry): Entry {
   return { date: e.date, items, from: "setup" };
 }
 
+/** Age today in whole years (as model.ts's ageOf, which can't be imported here). */
+function ageNow(p: Pick<Person, "bm" | "by">, d = new Date()): number | null {
+  if (!p.by) return null;
+  return Math.floor(((d.getFullYear() - p.by) * 12 + d.getMonth() + 1 - (p.bm || 1)) / 12);
+}
+
 /* One copy for every component on the page, kept in step with storage and
    with whatever the account sync brings in. */
 let current: DashData | null = null;
@@ -157,6 +166,9 @@ function load(): DashData {
   p.planned = { ...EMPTY_PROFILE.planned, ...v.profile?.planned };
   p.college = { ...EMPTY_PROFILE.college, ...v.profile?.college };
   p.childCosts = { ...EMPTY_PROFILE.childCosts, ...v.profile?.childCosts };
+  // Years until the first planned child, from the age you'll be then.
+  const age = ageNow(p.p1);
+  if (p.planned.bornAge != null && age != null) p.planned = { ...p.planned, firstIn: Math.max(0, Math.round((p.planned.bornAge - age) * 2) / 2) };
   // One rate for all saving, from before each line had its own.
   if (!v.profile?.growth && v.profile?.raise) p.growth = { match: p.raise, hsa: p.raise, rothIra: p.raise, k401max: p.raise, brok: p.raise };
   return { ...EMPTY, ...v, profile: p, entries: (v.entries ?? []).map(upgrade) };
@@ -170,6 +182,9 @@ function subscribe(l: () => void) {
   return () => listeners.delete(l);
 }
 function save(next: DashData) {
+  // The age at the first planned child's birth follows "the first in".
+  const p = next.profile, age = ageNow(p.p1);
+  if (p.planned.count > 0 && age != null && p.planned.bornAge !== age + p.planned.firstIn) next = { ...next, profile: { ...p, planned: { ...p.planned, bornAge: age + p.planned.firstIn } } };
   current = next;
   writeStored(KEY, VERSION, next);
   listeners.forEach((l) => l());

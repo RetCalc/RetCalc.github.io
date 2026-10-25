@@ -19,7 +19,7 @@ import { drawdownSetup } from "@/tools/drawdown/model";
 import type { DrawdownState } from "@/tools/drawdown/model";
 import { Frame } from "./Frame";
 import { drawdownFor, fromDrawdown } from "./flows";
-import { money, money10, shortMoney } from "./format";
+import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { ClaimField } from "./Income";
 import { drawdownPlan, results, spendMonth } from "./model";
@@ -36,6 +36,8 @@ export function Retirement() {
   const [rev, setRev] = useState(0);
   const choose = (id: string) => { set((p) => ({ ...p, strategy: id })); setRev((r) => r + 1); };
   const Drawdown = TOOL_VIEWS.drawdown;
+  // The strategy the simulator opens on: picking it there is a choice, opening on it isn't.
+  const opened = String(drawdownFor(pr, null).strategy);
   const plan = drawdownPlan(R.S, R.ss1, R.ss2, R.claim1);
   // The simulator's own comparison, on your numbers: "Use this strategy"
   // there chooses it here.
@@ -50,14 +52,14 @@ export function Retirement() {
   }, [pr, plan, set]);
 
   return (
-    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : "Needs your ages and retirement age"}>
+    <Frame current="retirement" title="Retirement" sub={R.retireYear ? `Starting ${R.retireYear}` : R.gap ?? "Needs your ages and retirement age"}>
       <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#plan-retirement" />}>Ages, spending and assumptions</Button>}>
         <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? shortMoney(R.atRetire) : "—"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">First year&apos;s spending, with taxes{tax}</div><div className="dsh-fig">{R.strategy ? money10(R.strategy.first) : R.S ? money10((R.S.spend + R.S.taxYr) / 12) : "—"}<small>per month</small></div></div>
-          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security</div><div className="dsh-fig">{R.ss != null ? money10(R.ss) : "—"}<small>per month</small></div></div> : null}
-          <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig">{money(pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
+          <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
+          <div className="dsh-stat"><div className="dsh-label">You plan to spend{tax}</div><div className="dsh-fig dsh-md">{money(pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div></div>
+          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Taxes, on top</div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div><div className="dsh-cap dsh-mt6">The plan&apos;s average year</div></div> : null}
+          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security{R.ssYear ? ", from " + R.ssYear : ""}</div><div className="dsh-fig dsh-md">{R.ss != null ? money(R.ss) : "—"}<small>per month</small></div><div className="dsh-cap dsh-mt6">Pays part of both</div></div> : null}
         </div>
         {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
       </Tile>
@@ -80,16 +82,17 @@ export function Retirement() {
         <div className="dsh-more">
           <Button variant="outline" onClick={() => setAllStrats((v) => !v)} aria-expanded={allStrats}>{allStrats ? "Show fewer" : "Show all " + Object.keys(DD_UI).length + " strategies"}</Button>
         </div>
-        <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo; in the simulator below. Its settings (the starting rate, guardrails, floors and ceilings) are saved as you change them.</p>
+        <p className="dsh-cap dsh-mt">For each one&apos;s pros and cons side by side, open &ldquo;How the withdrawal strategies compare&rdquo; in the simulator below. Its settings (guardrails, floors and ceilings, a spending path) are saved as you change them; the starting rate always comes from your plan&apos;s spending.</p>
       </Tile></div>
 
       <div className="dsh-r4">
         {plan ? (
           <Tile id="drawdown" icon={ArrowDownToLineIcon} title="Your drawdown" right={<span className="dsh-cap">On your savings at retirement, through every market since 1926</span>}>
             <div className="dsh-mt">
-              <Hosted key={rev} household={null}
+              {/* Opened again when the plan under it changes (the claiming ages above, say). */}
+              <Hosted key={rev + "|" + JSON.stringify(plan)} household={null}
                 seed={(id) => (id === "drawdown" ? (drawdownFor(pr, plan) as unknown as ToolInputs) : undefined)}
-                keep={(id, d) => { if (id === "drawdown") set((p) => fromDrawdown(p, d as unknown as DrawdownState)); }}>
+                keep={(id, d) => { if (id === "drawdown") set((p) => fromDrawdown(p, d as unknown as DrawdownState, opened)); }}>
                 <Drawdown />
               </Hosted>
             </div>

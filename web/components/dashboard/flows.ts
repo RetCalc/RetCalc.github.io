@@ -86,10 +86,11 @@ export function fromBudget(pr: Profile, b: BudgetInputs): Profile {
   return {
     ...pr,
     tools: { ...pr.tools, budget: b as unknown as ToolInputs },
-    who: b.pcStatus === "s" ? "single" : "couple",
+    // The tool's stand-ins (single, the tax state) aren't answers.
+    who: pr.who == null && b.pcStatus === "s" ? null : b.pcStatus === "s" ? "single" : "couple",
     p1: back(pr.p1, g1, b.pcFreq),
     p2: two ? back(pr.p2, g2, b.pcFreq2) : pr.p2,
-    state: pr.state === OUTSIDE_US ? pr.state : b.pcState || pr.state,
+    state: pr.state === OUTSIDE_US || (pr.state == null && b.pcState === taxState(pr)) ? pr.state : b.pcState || pr.state,
     spend: spend > 0 ? Math.round(spend) : pr.spend,
   };
 }
@@ -110,8 +111,9 @@ export function setAllTogether(b: BudgetInputs, monthly: number): BudgetInputs {
 
 export interface Flow {
   b: BudgetInputs; pi: PcInput; r: PcRun;
-  /** A month, both of you together. */
-  gross: number; taxes: number; health: number; afterTax: number; spend: number;
+  /** A month, both of you together. `spend` is the budget's total;
+      `spendPaid` leaves out premiums already taken out of pay. */
+  gross: number; taxes: number; health: number; afterTax: number; spend: number; spendPaid: number;
   /** Saved and invested (not the emergency fund line), the match, and what's unassigned. */
   invested: number; match: number; ef: number; left: number;
   /** The invested month split by tax treatment, for the plan. */
@@ -133,17 +135,21 @@ export function flow(pr: Profile): Flow {
   const m = pi.p / 12, hasPay = pi.gross + pi.gross2 > 0;
   const tx = hasPay ? taxFor(pr, b, pi, r) : null;
   const T = tx ? runTax(taxInput(tx)) : null;
-  // Taxes: Income Tax's year (its deductions included), else the paycheck's.
-  const taxesYr = T ? T.federal + T.state + T.fica : r.taxes * pi.p;
+  // Taxes: Income Tax's year (its deductions included), else the paycheck's;
+  // none outside the US, where pay is entered after them.
+  const abroad = pr.state === OUTSIDE_US;
+  const taxesYr = abroad ? 0 : T ? T.federal + T.state + T.fica : r.taxes * pi.p;
   const gross = (pi.gross + pi.gross2) / 12, health = r.health * m;
+  const net = abroad ? [pr.p1, ...(pr.who === "couple" ? [pr.p2] : [])].reduce((s, p) => s + (p.pay ?? 0) * PER_YEAR[p.per], 0) / 12 : gross - taxesYr / 12 - health;
   const roth = pi.roth;
   const trad = ((roth.match ? 0 : a.match) + (roth.k401max ? 0 : a.k401max) + (roth.rothIra ? 0 : a.rothIra)) * m;
   const rothAmt = ((roth.match ? a.match : 0) + (roth.k401max ? a.k401max : 0) + (roth.rothIra ? a.rothIra : 0) + a.hsa) * m;
   const cap = pcCap(pi, "match", { ...a, match: 0 });
-  const C = budgetCompute(b);
+  const C = budgetCompute(b), spendPaid = pi.spendYear / 12, invested = trad + rothAmt + a.brok * m;
   return {
-    b, pi, r, gross, taxes: taxesYr / 12, health, afterTax: gross - taxesYr / 12 - health, spend: C.spentYr / 12,
-    invested: trad + rothAmt + a.brok * m, match: r.match * m, ef: a.ef * m, left: r.left * m,
+    b, pi, r, gross, taxes: taxesYr / 12, health, afterTax: net, spend: C.spentYr / 12, spendPaid,
+    // What's left: pay after taxes (as Taxes figures them), less saving and spending.
+    invested, match: r.match * m, ef: a.ef * m, left: hasPay ? net - invested - a.ef * m - spendPaid : r.left * m,
     trad, roth: rothAmt, brok: a.brok * m,
     fullMatch: pi.match.some((x) => x.rate > 0) ? a.match >= cap - 0.5 : null,
     efMonths: C.ef, efTarget: C.efTarget,
@@ -178,7 +184,7 @@ export function socialFor(pr: Profile): SocialInputs {
     ...(grossOf(p) != null ? { pay: dollarsField(grossOf(p)!) } : {}),
     ...(claim ? { claim: String(claim) } : {}),
   });
-  return { ...s, status: pr.who === "couple" ? "m" : "s", you: who(pr.p1, s.you, pr.ss.claim), spouse: who(pr.p2, s.spouse, pr.ss.claim) };
+  return { ...s, status: pr.who === "couple" ? "m" : "s", you: who(pr.p1, s.you, pr.ss.claim), spouse: who(pr.p2, s.spouse, pr.ss.claim2 ?? null) };
 }
 
 /** Each person's benefit at full retirement age, a month, from the pay history. */
@@ -196,22 +202,25 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
   const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
   if (!plan) return cur;
   const couple = pr.who === "couple" && plan.ss2 > 0;
-  return ddWrite(cur, {
+  // A partial fill, so each strategy's own saved settings (guardrails,
+  // floors and ceilings, a spending path) are kept as they are.
+  const next = ddWrite(cur, {
     initial: Math.round(plan.fv), years: plan.years, stock: pr.assume.stocks, retireAge: String(plan.retire),
-    // The starting rate: the plan's spending in its first year, with a
-    // year's tax and premiums on it; Social Security pays part of it once
-    // claimed, savings the rest. Always from the plan, so the two can't
-    // drift apart; each strategy's own settings are kept.
-    rate: Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100,
-    ...(pr.strategy ? { strategy: pr.strategy } : {}),
     ssMode: plan.ss1 > 0 ? "manual" : "none", ssWho: couple ? "couple" : "single",
     ssAmount: Math.round(plan.ss1 * 12), ssAmount2: Math.round(plan.ss2 * 12), ssDelay: plan.claim,
   });
+  // The starting rate: the plan's spending in its first year, with a year's
+  // tax on it; Social Security pays part of it once claimed, savings the
+  // rest. Always from the plan, so the two can't drift apart.
+  const rate = Math.round(((plan.spendYr + plan.taxYr) / Math.max(1, plan.fv)) * 10000) / 100;
+  return { ...next, rate: String(rate), ...(pr.strategy ? { strategy: pr.strategy } : {}) } as DrawdownState;
 }
 
-/** What the profile keeps when the Drawdown changes: its settings, and the strategy. */
-export function fromDrawdown(pr: Profile, d: DrawdownState): Profile {
-  return { ...pr, strategy: String(d.strategy), tools: { ...pr.tools, drawdown: d as unknown as ToolInputs } };
+/** What the profile keeps when the Drawdown changes: its settings, and the
+    strategy once one is picked there (opening it on its default isn't a choice). */
+export function fromDrawdown(pr: Profile, d: DrawdownState, opened?: string): Profile {
+  const strategy = pr.strategy == null && String(d.strategy) === opened ? null : String(d.strategy);
+  return { ...pr, strategy, tools: { ...pr.tools, drawdown: d as unknown as ToolInputs } };
 }
 
 /** The chosen strategy's chance across history, with its saved settings. */

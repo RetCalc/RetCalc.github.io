@@ -8,7 +8,8 @@
 import { FACTORS, STRATS, retPath, score, sim, strats, type FactorId, type Part, type Sim, type StratResult } from "@/tools/guide/calc";
 import type { Answers } from "@/tools/guide/store";
 import { parseNum } from "@/lib/format";
-import { budgetFor, budgetMonth, drawdownFor, drawdownSuccess, flow, savingAt } from "./flows";
+import { budgetFor, drawdownFor, drawdownSuccess, flow, savingAt, taxState } from "./flows";
+import { paycheckInput } from "@/tools/budget/paycheck-math";
 import { collegeNeedOf } from "./college";
 import { yearlySaving } from "./cover";
 import { drawdownSetup } from "@/tools/drawdown/model";
@@ -45,8 +46,9 @@ export const people = (pr: Profile): Person[] => (couple(pr) ? [pr.p1, pr.p2] : 
 export const nameOf = (pr: Profile, i: 0 | 1) => (i ? pr.p2 : pr.p1).name.trim() || (i ? "Your partner" : "You");
 export const contribMonth = (pr: Profile) => (pr.contrib == null ? null : (pr.contrib * PER_YEAR[pr.cper]) / 12);
 export const otherMonth = (pr: Profile) => pr.other.reduce((s, o) => s + (o.amount ?? 0), 0);
-/** Spending per month: the budget's total (setup's one number is a line of it). */
-export const spendMonth = (pr: Profile): number | null => { const t = budgetMonth(budgetFor(pr)); return t > 0 ? t : pr.spend; };
+/** Spending per month: the budget's lines (setup's one number is one of
+    them), less premiums the paycheck already takes out of pay. */
+export const spendMonth = (pr: Profile): number | null => { const t = paycheckInput(budgetFor(pr), taxState(pr)).spendYear / 12; return t > 0 ? t : pr.spend; };
 /** Growth after inflation, per year. */
 export const realGrowth = (pr: Profile) => (1 + pr.assume.growth) / (1 + pr.assume.inflation) - 1;
 
@@ -79,8 +81,8 @@ export function collegeStarts(pr: Profile): number[] {
 /** The profile and latest entry as the Guide's answers. */
 export function answers(pr: Profile, entries: Entry[] = []): Answers {
   const two = couple(pr), abroad = outsideUS(pr), H = holdings(entries, pr);
-  const F = abroad ? null : flow(pr);
-  const spend = F && F.spend > 0 ? F.spend : pr.spend;
+  const F = flow(pr);
+  const spend = F.spendPaid > 0 ? F.spendPaid : pr.spend;
   const saved = H.trad + H.roth + H.brok;
   const a: Answers = {
     status: two ? "m" : "s",
@@ -92,8 +94,8 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
     income: grossYear(pr.p1), income2: two ? grossYear(pr.p2) : null,
     saved: pr.saved == null && !entries.length ? null : saved,
     rothNow: abroad ? saved : H.roth, brokNow: abroad ? 0 : H.brok,
-    contrib: F?.hasPay ? F.invested : contribMonth(pr), employer: F?.hasPay ? F.match : 0,
-    match: F?.fullMatch == null ? "none" : F.fullMatch ? "full" : "partial",
+    contrib: F.hasPay ? F.invested : contribMonth(pr), employer: F.hasPay ? F.match : 0,
+    match: F.fullMatch == null ? "none" : F.fullMatch ? "full" : "partial",
     spend, retSpend: (pr.retSpend ?? spend) == null ? null : (pr.retSpend ?? spend)! * 12,
     home: pr.home, risk: realGrowth(pr), retMix: pr.assume.stocks,
     ssClaim: pr.ss.claim, ssOwn: pr.ss.own1, ssOwn2: two ? pr.ss.own2 : null,
@@ -125,12 +127,14 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   if (pr.college.help !== "none" && a.age != null) {
     // Saved ahead in the budget: that share of college is paid from it, not
     // from saving in the college years.
-    const need = collegeNeedOf(pr), ahead = need > 0 && F ? Math.min(1, F.college / need) : 0;
+    const need = collegeNeedOf(pr), ahead = need > 0 ? Math.min(1, F.college / need) : 0;
     const share = pr.college.help === "all" ? 1 : 0.5, monthly = ((pr.college.cost * share) / 12) * (1 - ahead);
     collegeStarts(pr).forEach((years, i) => {
-      if (years < 0 || monthly < 1) return;
-      events.push({ id: "college" + i, kind: "custom", from: a.age! + years, to: a.age! + years + 4, delta: -monthly, label: "College" });
-      for (let k = years; k < years + 4; k++) college[k] = (college[k] ?? 0) + monthly;
+      // A child already in college has its years still to go.
+      if (years <= -4 || monthly < 1) return;
+      const from = Math.max(0, years);
+      events.push({ id: "college" + i, kind: "custom", from: a.age! + from, to: a.age! + years + 4, delta: -monthly, label: "College" });
+      for (let k = from; k < years + 4; k++) college[k] = (college[k] ?? 0) + monthly;
     });
   }
   if (events.length) a.events = events;
@@ -138,11 +142,14 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   // college come out of the accounts "How will you cover it?" names, then
   // in the dashboard's order, so the plan's account mix, match and taxes
   // follow those choices.
-  if (F?.hasPay && a.age != null && a.retire != null && a.retire > a.age) {
-    Object.assign(a, { yearly: yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }).rows, yearlyBase: F.invested + F.match });
+  if (F.hasPay && a.age != null && a.retire != null && a.retire > a.age) {
+    const rows = yearlySaving(pr, F, a, { college: Array.from({ length: a.retire - a.age }, (_, k) => college[k] ?? 0) }).rows;
+    // Outside the US every account is counted as tax-free, as below.
+    Object.assign(a, { yearly: abroad ? rows.map((y) => ({ t: 0, r: y.t + y.r + y.b, b: 0, short: y.short })) : rows, yearlyBase: F.invested + F.match });
   }
-  // Each of you's own claiming age (the plan's optimizer path, which takes two).
-  if (!abroad && (pr.ss.claim != null || (two && pr.ss.claim2 != null))) {
+  // Each of you's own claiming age (the plan's optimizer path, which takes
+  // two), each defaulting to 67 or retirement if later, as the fields say.
+  if (!abroad) {
     const dflt = (p: Person) => Math.min(70, Math.max(67, p.retire ?? 67));
     Object.assign(a, { optC1: pr.ss.claim ?? dflt(pr.p1), optC2: two ? pr.ss.claim2 ?? dflt(pr.p2) : pr.ss.claim ?? dflt(pr.p1), optF: 0, optU: 0, optIm: 0, optAc: 0 });
   }
@@ -152,7 +159,7 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   // Take-home: as entered for whoever gave it, worked out for whoever
   // didn't (not outside the US), plus other income.
   const after = abroad ? people(pr).reduce((s, p) => s + (payYear(p) ?? 0), 0) / 12 : 0;
-  const th = (F?.hasPay ? F.afterTax : after) + otherMonth(pr);
+  const th = (F.hasPay ? F.afterTax : after) + otherMonth(pr);
   if (th > 0) a.takehome = th;
   return a;
 }
@@ -170,6 +177,10 @@ export interface Results {
   savingsIncome: number | null; ss: number | null; takehome: number | null;
   /** Each person's Social Security per month once claimed, and the ages. */
   ss1: number | null; ss2: number | null; claim1: number | null; claim2: number | null;
+  /** The year the first of you claims Social Security. */
+  ssYear: number | null;
+  /** Why the plan can't run yet, in words, when it can't. */
+  gap: string | null;
   /** Savings at retirement, and the year it begins. */
   atRetire: number | null; retireYear: number | null;
   /** Net worth over the years: savings steady to retirement, then the middle
@@ -183,6 +194,17 @@ export interface Results {
       spending per month. */
   strategy: { id: string; name: string; success: number; first: number } | null;
   abroad: boolean;
+}
+
+/** What the plan still needs before it can run, in a sentence, or null. */
+export function planGap(pr: Profile): string | null {
+  const age = ageOf(pr.p1);
+  if (age == null) return "Needs your birth month and year, in Profile.";
+  if (pr.p1.retire == null) return "Needs the age you plan to retire, in Profile.";
+  if (pr.p1.retire <= age) return `Your retirement age (${pr.p1.retire}) isn't after your age today (${age}). Change it in Profile.`;
+  if (pr.p1.pay == null) return "Needs your pay, on Income.";
+  if (pr.saved == null && spendMonth(pr) == null) return "Needs what you've saved and what you spend.";
+  return null;
 }
 
 /** The plan's numbers the Drawdown Simulator starts from. */
@@ -212,13 +234,16 @@ export function results(pr: Profile, entries: Entry[]): Results {
     retPath(S).forEach((b, y) => path.push({ t: now + toRet + y + 1, v: b.p50 + equity, lo: b.p10 + equity, hi: b.p90 + equity }));
   }
   const spend = spendMonth(pr);
-  const F = abroad ? null : flow(pr), efMonth = F && F.efTarget > 0 ? F.efTarget / F.efMonths : spend ?? 0;
+  const F = flow(pr), efMonth = F.efTarget > 0 ? F.efTarget / F.efMonths : spend ?? 0;
+  // The first year Social Security starts, for either of you.
+  const claimYears = S && !abroad ? [pr.p1.by && S.ss.a1 > 0 ? pr.p1.by + S.ss.claim : null, couple(pr) && pr.p2.by && S.ss.a2 > 0 ? pr.p2.by + S.ss.claim2 : null].filter((y): y is number => y != null) : [];
   return {
     S, success: S ? S.success : null, score: sc.score, parts: sc.P,
     partial: FACTORS.some((f) => !sc.P[f.id]),
     savingsIncome: S ? S.portIncome / 12 : null, ss: S && !abroad ? S.ss.total / 12 : null,
     ss1: S && !abroad ? S.ss.a1 / 12 : null, ss2: S && !abroad && couple(pr) ? S.ss.a2 / 12 : null,
     claim1: S ? S.ss.claim : null, claim2: S && couple(pr) ? S.ss.claim2 : null,
+    ssYear: claimYears.length ? Math.min(...claimYears) : null, gap: planGap(pr),
     takehome: a.takehome ?? null,
     atRetire: S ? S.fv : null, retireYear, path, equity,
     // Months of the spending the emergency fund is sized on (the budget, or the emergency budget).

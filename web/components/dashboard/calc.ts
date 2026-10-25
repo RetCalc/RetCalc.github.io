@@ -13,7 +13,7 @@ import { flow, growthLines, taxState } from "./flows";
 import { shiftCover } from "./cover";
 import { KID_BASE } from "@/tools/stages/kids";
 import { ageOf, collegeStarts, couple, holdings, realGrowth, results, spendMonth, type Results } from "./model";
-import { sum, type Entry, type Profile } from "./store";
+import { OUTSIDE_US, sum, type Entry, type Profile } from "./store";
 
 const g = (n: number) => groupDigits(Math.round(n), true);
 const pc = (v: number) => String(+(v * 100).toFixed(4));
@@ -119,7 +119,10 @@ export function stagesFor(pr: Profile, entries: Entry[]): StagesInputs {
   const R = results(pr, entries), F = A.F;
   // Both employers' match as one rate on what you put in before taxes and to
   // Roth: the share of every dollar of yours your employers add.
-  const matched = own * (own > 0 ? (A.tradC + A.rothC) / own : 0);
+  // Outside the US the plan counts every account as tax-free, the match in
+  // with the rest, so the stages carry it inside each contribution.
+  const abroad = pr.state === OUTSIDE_US;
+  const matched = abroad ? 0 : own * (own > 0 ? (A.tradC + A.rothC) / own : 0);
   const matchPct = F.match > 0 && matched > 0 ? (F.match / matched) * 100 : 0, mf = 1 + (matched > 0 ? F.match / own : 0);
   const infl = pr.assume.inflation, nom = (real: number) => (1 + real) * (1 + infl) - 1;
   const todaySplit = own > 0 ? { sTrad: A.tradC / own, sRoth: A.rothC / own, ...(A.hsaC > 0 ? { sHsa: A.hsaC / own } : {}) } : {};

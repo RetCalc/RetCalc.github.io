@@ -17,7 +17,7 @@ import { TOOLS, type ToolSub } from "@/lib/tools";
 import { MORTGAGE_DEFAULTS } from "@/tools/mortgage/model";
 import { RENTBUY_DEFAULTS } from "@/tools/rentbuy/model";
 import { groupDigits } from "@/lib/format";
-import { budgetFor, drawdownFor, socialFor, taxFor, taxState } from "./flows";
+import { budgetFor, drawdownFor, flow, socialFor, taxFor, taxState } from "./flows";
 import { advancedFor, collegeFor, stagesFor } from "./calc";
 import { ageOf, contribMonth, couple, grossYear, holdings, results, spendMonth } from "./model";
 import type { Entry, Profile } from "./store";
@@ -49,12 +49,15 @@ export function toolFromPath(path: string): ToolSub | null {
 /** A tool opened from a dashboard page, which its Back returns to. */
 export const toolHref = (sub: ToolSub, from?: string) => `/dashboard/tools/${sub}${from ? "?from=" + encodeURIComponent(from) : ""}`;
 
+/** What goes into savings each month, with the match: the paycheck's, or setup's. */
+const flowMonthly = (pr: Profile) => { const F = flow(pr); return F.hasPay ? F.invested + F.match : contribMonth(pr); };
+
 /** The household every tool knows how to take in, from the profile. */
 export function householdOf(pr: Profile, entries: Entry[]): SavedHousehold {
   const H = holdings(entries, pr), two = couple(pr);
   return {
     status: two ? "m" : "s", age: ageOf(pr.p1), spouseAge: two ? ageOf(pr.p2) : null, retire: pr.p1.retire,
-    state: taxState(pr), saved: H.trad + H.roth + H.brok, monthly: contribMonth(pr),
+    state: taxState(pr), saved: H.trad + H.roth + H.brok, monthly: flowMonthly(pr),
     income: grossYear(pr.p1), income2: two ? grossYear(pr.p2) : null, spend: spendMonth(pr),
     savedAt: 1,
   };

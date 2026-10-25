@@ -43,7 +43,7 @@ const noop = () => () => {};
 function Tool({ sub }: { sub: ToolSub }) {
   const { data } = useDashboard();
   const back = useSyncExternalStore(noop, fromNow, () => "/dashboard/tools");
-  const backName = back === "/dashboard" ? "Overview" : SECTIONS.find((s) => back === "/dashboard/" + s.id)?.name ?? "Tools";
+  const backName = back === "/dashboard" ? "Dashboard" : SECTIONS.find((s) => back === "/dashboard/" + s.id)?.name ?? "Tools";
   // The profile as the tool opens; later changes to the profile don't reach
   // a tool already open, and the tool's own changes never reach the profile.
   const seed = useMemo(() => seedFor(data.profile, data.entries), [data.profile, data.entries]);
@@ -51,11 +51,11 @@ function Tool({ sub }: { sub: ToolSub }) {
   const View = TOOL_VIEWS[sub], tab = PLAN_TAB[sub];
   return (
     <Frame current="tools" title={TOOLS[sub].name}
-      sub="Filled in from your dashboard. Changes here stay in this tool."
+      sub={tab ? undefined : "Filled in from your dashboard. Changes here stay in this tool."}
       actions={<Button variant="outline" nativeButton={false} render={<Link href={back} />}><ChevronLeftIcon aria-hidden="true" />Back to {backName}</Button>}>
       {tab ? (
         <div>
-          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Link href={"/dashboard/" + tab.id} className="underline underline-offset-4">{tab.name}</Link>.</Note>
+          <Note>Filled in from your plan, to try things on: changes here don&apos;t change it. To change your plan, use <Button variant="link" size="inline" nativeButton={false} render={<Link href={"/dashboard/" + tab.id} />}>{tab.name}</Button>.</Note>
         </div>
       ) : null}
       <div className={tab ? "dsh-r4" : undefined}><Hosted key={sub} seed={seed} household={household}><View /></Hosted></div>

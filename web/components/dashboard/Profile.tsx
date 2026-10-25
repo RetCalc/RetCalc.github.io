@@ -20,7 +20,7 @@ import { RISKS } from "@/lib/engine/typed";
 import { Frame } from "./Frame";
 import { toolHref } from "./host";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, pctTxt, txt, type PKey } from "./fields";
-import { money, money10 } from "./format";
+import { money } from "./format";
 import { flow } from "./flows";
 import { couple, holdings, mortgage, nameOf, realGrowth, spendMonth } from "./model";
 import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
@@ -85,7 +85,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
                 <option value="yes">Yes</option><option value="no">No</option>
               </SelectField>
               {pr.childcare ? (
-                <SelectField id="dshPArea" label="Where you live" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
+                <SelectField id="dshPArea" label="Where you'd use childcare" value={pr.careArea} onChange={(v) => set((p) => ({ ...p, careArea: v as P["careArea"] }))}>
                   <option value="city">A big city</option><option value="suburb">A suburb</option><option value="rural">A small town</option>
                 </SelectField>
               ) : <div />}
@@ -164,7 +164,7 @@ export function Profile() {
             </div>
             <div className="dsh-row">
               <MoneyField id="dshPRetSpend" label="Spending once retired" unit="per month" value={txt(pr.retSpend)} placeholder={txt(spendMonth(pr))} onValueChange={(v) => set((p) => ({ ...p, retSpend: num(v) }))} />
-              <div className="dsh-hint dsh-self-end">{pr.retSpend == null ? "Blank: the same as today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
+              <div className="dsh-hint dsh-self-end">{pr.retSpend == null ? "Leave blank to use what you spend today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
             </div></div>
           </Tile>
           <Tile id="saving" icon={WalletIcon} title="Saving">
@@ -174,7 +174,7 @@ export function Profile() {
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>{accounts ? "Change in Net worth" : "Split into accounts"}</Button>
               </div>
               <div className="dsh-readonly">
-                <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money10(F.invested + F.match)}<small>per month</small></div></div>
+                <div><div className="dsh-label">Adding to it, with your employer&apos;s match</div><div className="dsh-fig dsh-md">{money(F.invested + F.match)}<small>per month</small></div></div>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/savings#rest" />}>Change in Savings</Button>
               </div>
             </div>
@@ -191,11 +191,11 @@ export function Profile() {
         <div className="dsh-side">
           <Tile id="spending" icon={ReceiptIcon} title="Spending">
             <div className="dsh-fields dsh-fields-sm">
-              <div className="dsh-readonly"><div><div className="dsh-label">Spending, all together</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small>per month</small></div></div>
+              <div className="dsh-readonly"><div><div className="dsh-label">Your budget</div><div className="dsh-fig dsh-md">{money(spendMonth(pr) ?? 0)}<small>per month</small></div></div>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/spending#budget" />}>Change in Spending</Button></div>
             </div>
           </Tile>
-          <Tile id="home" icon={pr.home === "rent" ? Building2Icon : HouseIcon} title="Home" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/home#mortgage" />}>Mortgage details</Button>}>
+          <Tile id="home" icon={pr.home === "rent" ? Building2Icon : HouseIcon} title="Home" right={pr.home === "own" ? <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/home#mortgage" />}>Mortgage details</Button> : null}>
             <div className="dsh-fields dsh-fields-sm">
               <div className="dsh-choices">
                 <Choice on={pr.home === "own"} icon={<HouseIcon aria-hidden="true" />} title="Own" sub="With or without a mortgage" onClick={() => set((p) => ({ ...p, home: "own" }))} />
@@ -230,7 +230,7 @@ function StartOver() {
   const reset = () => { update(() => EMPTY); setAsk(0); router.replace("/dashboard/setup"); };
   return (
     <Tile id="reset" icon={RotateCcwIcon} title="Reset your dashboard">
-      <div className="dsh-inline dsh-mt">
+      <div className="dsh-inline dsh-mt dsh-reset">
         <p className="dsh-cap dsh-flush">Clears your profile, your net worth entries and every choice on your dashboard, and takes you back to setup with nothing filled in. The rest of RetCalc isn&apos;t affected.</p>
         <Button variant="destructive" onClick={() => setAsk(1)}>Reset dashboard</Button>
       </div>
@@ -241,8 +241,8 @@ function StartOver() {
               <h2 id="dshResetTitle" className="dsh-dlg-h">Reset your dashboard?</h2>
               <p className="dsh-cap">Your profile, your net worth history and everything you&apos;ve set on each tab will be cleared, here and in your account.</p>
               <div className="dsh-navbtns dsh-wrapbtns">
-                <Button variant="destructive" onClick={() => setAsk(2)}>Yes, reset it</Button>
                 <Button variant="outline" onClick={() => setAsk(0)}>Cancel</Button>
+                <Button variant="destructive" onClick={() => setAsk(2)}>Yes, reset it</Button>
               </div>
             </>
           ) : (
@@ -250,8 +250,8 @@ function StartOver() {
               <h2 id="dshResetTitle" className="dsh-dlg-h">Are you sure?</h2>
               <p className="dsh-cap">This can&apos;t be undone. You&apos;ll start again from setup.</p>
               <div className="dsh-navbtns dsh-wrapbtns">
-                <Button variant="destructive" onClick={reset}>Reset everything</Button>
                 <Button variant="outline" onClick={() => setAsk(0)}>Keep my dashboard</Button>
+                <Button variant="destructive" onClick={reset}>Reset everything</Button>
               </div>
             </>
           )}

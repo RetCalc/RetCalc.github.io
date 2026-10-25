@@ -16,7 +16,7 @@ import { Field, MoneyField, NumberField, SelectField } from "@/components/fields
 import { NetWorthChart } from "./charts";
 import { Note } from "./ui";
 import { BirthFields, Choice, PayFields, StateField, THIS_YEAR, num, txt, type PKey } from "./fields";
-import { money, money10, shortMoney } from "./format";
+import { money, shortMoney } from "./format";
 import { ageOf, couple, nowYear, payYear, people, results } from "./model";
 import { OUTSIDE_US, entryFrom, hasAccounts, useDashboard, withEntry, type DashData, type Person, type Profile } from "./store";
 
@@ -242,6 +242,12 @@ export function Setup() {
     save((d) => { const e = hasAccounts(d.entries) ? null : entryFrom(d.profile); return { ...d, done: true, entries: e ? withEntry(d.entries, e) : d.entries }; });
     router.push("/dashboard");
   };
+  // Leaving partway: the steps not reached yet count as skipped, so the
+  // dashboard still asks for them.
+  const later = () => {
+    save((d) => ({ ...d, skipped: [...new Set([...d.skipped, ...list.slice(at).map((s) => s.id)])] }));
+    finish();
+  };
 
   let body: ReactNode;
   if (last) {
@@ -257,7 +263,7 @@ export function Setup() {
           <div className="dsh-tile"><div className="dsh-label">At retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-mt6">{R.atRetire != null ? shortMoney(R.atRetire + R.equity) : "—"}</div></div>
           <div className="dsh-tile"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-mt6">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
         </div>
-        {R.savingsIncome != null ? <p className="dsh-cap dsh-mt">About <b>{money10(R.savingsIncome)}</b> per month from savings in retirement, in today&apos;s dollars.</p> : null}
+        {R.S ? <p className="dsh-cap dsh-mt">Your plan pays about <b>{money(R.S.spend / 12)}</b> per month to spend in retirement, with taxes on top, in today&apos;s dollars.</p> : null}
         <div className="dsh-navbtns">
           <Button variant="outline" size="lg" onClick={() => goTo(at - 1)}>Back</Button>
           <Button size="lg" onClick={finish}>Open my dashboard</Button>
@@ -286,7 +292,7 @@ export function Setup() {
         <Link href="/" className="dsh-brand" aria-label="RetCalc home"><Brandmark /><span>RetCalc</span></Link>
         <span className="dsh-cap">Set up your dashboard</span>
         <Badge variant="highlight">Beta</Badge>
-        <div className="dsh-r"><Button variant="link" onClick={finish}>Save and finish later</Button></div>
+        <div className="dsh-r"><Button variant="link" onClick={later}>Save and finish later</Button></div>
       </header>
       <div className="dsh-prog" aria-hidden="true">
         {list.map((s, i) => <i key={s.id} className={i < at ? "dsh-on" : i === at ? "dsh-cur" : undefined} title={s.label} />)}

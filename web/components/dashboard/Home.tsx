@@ -12,29 +12,29 @@ import { toolHref } from "./host";
 import { num, pctTxt, txt } from "./fields";
 import { MONTHS, money } from "./format";
 import { mortgage } from "./model";
-import { useDashboard } from "./store";
+import { useDashboard, withHome } from "./store";
 import { Note, Tile } from "./ui";
 
 export function Home() {
-  const { data, setProfile: set } = useDashboard();
+  const { data, setProfile: set, update } = useDashboard();
   const pr = data.profile, M = mortgage(pr, data.entries);
   const paidOff = M.payoff != null ? `${MONTHS[Math.floor((M.payoff % 1) * 12)]} ${Math.floor(M.payoff)}` : null;
   if (pr.home === "rent") {
     return (
       <Frame current="home" title="Home" sub="Renting">
-        <Tile icon={Building2Icon} title="Rent">
+        <Tile icon={Building2Icon} title="Your home">
           <div className="dsh-fields dsh-fields-sm"><div className="dsh-row">
             <MoneyField id="dshHRent" label="Rent" unit="per month" value={txt(pr.rent)} onValueChange={(v) => set((p) => ({ ...p, rent: num(v) }))} /><div />
           </div></div>
           <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("rentbuy", "/dashboard/home")} />}>Renting or buying: compare them in the Rent vs. Buy Calculator</Button></div>
         </Tile>
-        <div className="dsh-r4"><Note>Bought a place? Switch to owning in <b>Profile</b>, then add the home and mortgage in <b>Net worth</b>.</Note></div>
+        <div className="dsh-r4"><Note>Bought a place? Switch to owning in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#home" />}>Profile</Button>, then add the home and mortgage in <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>Net worth</Button>.</Note></div>
       </Frame>
     );
   }
   return (
     <Frame current="home" title="Home" sub={pr.home === "own" ? "Owned" : "Not given yet"}>
-      <Tile icon={HouseIcon} title="Your home" right={<Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>Change in Net worth</Button>}>
+      <Tile icon={HouseIcon} title="Your home" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>Change in Net worth</Button>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Equity</div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Worth</div><div className="dsh-fig dsh-md">{money(M.value)}</div></div>
@@ -45,7 +45,7 @@ export function Home() {
         {M.owed > 0 ? (
           <>
             <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3 dsh-pair">
-              <NumberField id="dshHRate" label="Interest rate" unit="%" step={0.125} max={20} value={pctTxt(M.rate)} onValueChange={(v) => set((p) => ({ ...p, mortRate: v.trim() === "" ? null : (num(v) ?? 0) / 100 }))} />
+              <NumberField id="dshHRate" label="Interest rate" unit="%" step={0.125} max={20} value={pctTxt(M.rate)} onValueChange={(v) => { const r = v.trim() === "" ? null : (num(v) ?? 0) / 100; set((p) => ({ ...p, mortRate: r })); update((d) => ({ ...d, entries: withHome(d, { rate: r }) })); }} />
               <MoneyField id="dshHPay" label="Payment, principal and interest" unit="per month" value={txt(pr.mortPay)} onValueChange={(v) => set((p) => ({ ...p, mortPay: num(v) }))} />
               <div />
             </div></div>

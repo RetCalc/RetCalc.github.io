@@ -22,7 +22,7 @@ import { Frame } from "./Frame";
 import { advancedFor, planKidsOf, stagesFor } from "./calc";
 import { yearlySaving } from "./cover";
 import { budgetFor, flow } from "./flows";
-import { money, money10 } from "./format";
+import { money } from "./format";
 import { ageOf, answers, holdings, nowYear, results, spendMonth } from "./model";
 import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
@@ -37,10 +37,6 @@ function PlanHero() {
   const { data } = useDashboard();
   const pr = data.profile;
   const R = useMemo(() => results(pr, data.entries), [pr, data.entries]);
-  // The first year's spending (taxes and premiums included), as the strategy
-  // sets it; Social Security pays part of it once claimed, savings the rest.
-  const first = R.strategy ? R.strategy.first : R.S ? (R.S.spend + R.S.taxYr) / 12 : null;
-  const ssYear = R.claim1 != null && pr.p1.by ? pr.p1.by + R.claim1 : null;
   const ss = R.abroad ? 0 : R.ss ?? 0;
   const goal = pr.retSpend ?? spendMonth(pr) ?? 0;
   const tax = R.abroad ? ", before taxes" : "";
@@ -48,13 +44,13 @@ function PlanHero() {
     <Tile icon={SunsetIcon} title="Your plan">
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label">Savings at retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-        <div className="dsh-stat"><div className="dsh-label">First year&apos;s spending, with taxes{tax}</div><div className="dsh-fig">{first != null ? money10(first) : "—"}<small>per month</small></div></div>
-        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security{ssYear ? ", from " + ssYear : ""}</div><div className="dsh-fig">{money10(ss)}<small>per month</small></div></div> : null}
-        <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig">{money(goal)}<small>per month</small></div></div>
-        <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
+        <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig dsh-md">{money(goal)}<small>per month</small></div></div>
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Taxes, on top</div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security{R.ssYear ? ", from " + R.ssYear : ""}</div><div className="dsh-fig dsh-md">{money(ss)}<small>per month</small></div></div> : null}
+        <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
       </div>
       <p className="dsh-cap dsh-mt">
-        {R.success != null ? <>Your plan lasted to 95 in <b>{Math.round(R.success * 100)}%</b> of past markets since 1926, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of what you spend once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : "Fills in once your profile has your ages, savings, retirement age and spending."}
+        {R.success != null ? <>Your plan lasted to 95 in <b>{Math.round(R.success * 100)}%</b> of past markets since 1926, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Taxes are the plan&apos;s average year, so they include the required withdrawals that start in your 70s. Social Security pays part of your spending and taxes once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
       </p>
     </Tile>
   );
@@ -69,9 +65,11 @@ function withPlanChildren(S: PlanSummary, pr: Profile, entries: Entry[]): PlanSu
   if (!S.children) return S;
   const a = answers(pr, entries), F = flow(pr);
   if (!F.hasPay || a.age == null || a.retire == null) return S;
-  // Only the children (no college), each year against that year's saving
-  // without them, taken from the accounts the profile says.
-  const Y = yearlySaving(pr, F, a);
+  // The children and their college, each year against that year's saving
+  // without them, taken from the accounts the profile says; so all three
+  // figures (saving given up, spending cut, the balance) count the same.
+  const college = Array.from({ length: a.retire - a.age }, (_, k) => (a.events ?? []).reduce((t, e) => t + (e.kind === "custom" && e.label === "College" && a.age! + k >= e.from && (e.to == null || a.age! + k < e.to) ? -e.delta : 0), 0));
+  const Y = yearlySaving(pr, F, a, { college });
   const fromSaving = Y.rows.reduce((t, r, k) => t + Math.max(0, Y.base[k] - (r.t + r.r + r.b)) * 12, 0);
   const fromSpending = Y.rows.reduce((t, r) => t + r.short * 12, 0);
   const none = { ...pr, kids: 0, planned: { ...pr.planned, count: 0 } };
@@ -121,8 +119,8 @@ export function Summary() {
               : <p className="dsh-cap">Spending is one number for now. Add detail on Spending.</p>}
           </div>
           <div className="dsh-foot dsh-cap">
-            Emergency fund goal: <b>{F.efMonths} months, {money(F.efTarget)}</b>{H.cash != null ? <>; you have {money(H.cash)}</> : null}.
-            {F.college > 0 ? <> Saving {money10(F.college)} per month for college.</> : null}
+            <span>Emergency fund goal: <b>{F.efMonths} months, {money(F.efTarget)}</b>{H.cash != null ? <>; you have {money(H.cash)}</> : null}.
+            {F.college > 0 ? <> Saving {money(F.college)} per month for college.</> : null}</span>
           </div>
         </Tile>
         <Tile icon={ChartBarIcon} title="Net worth today" right={<span className="dsh-cap">{last ? money(netWorth(last)) : "—"}</span>}>
@@ -139,7 +137,7 @@ export function Summary() {
         <div className="dsh-psum dsh-r4">
           <PlanAccounts S={S} />
           <Climb S={S} />
-          {S.children ? <ChildrenCost S={S} /> : null}
+          {S.children ? <ChildrenCost S={S} withoutWords="without children or their college" /> : null}
           {S.stages ? <StageLine S={S} /> : null}
         </div>
       ) : null}
@@ -150,7 +148,7 @@ export function Summary() {
 
       {tl.lanes.length ? (
         <div className="dsh-r4">
-          <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the amber line</span>}>
+          <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the dashed line</span>}>
             <div className="dsh-mt"><Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} /></div>
           </Tile>
         </div>

@@ -57,7 +57,7 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
         {SECTIONS.map(({ id, name, icon: Icon }) => (
           <Link key={id} href={hrefFor(id)} className="dsh-ri" aria-current={id === current ? "page" : undefined} title={name}>
             <Icon aria-hidden="true" />
-            {dots[id] ? <i className="dsh-dot" aria-hidden="true" /> : null}
+            {dots[id] ? <><i className="dsh-dot" aria-hidden="true" /><span className="sr-only">, something to fill in</span></> : null}
             <span>{name}</span>
           </Link>
         ))}
@@ -151,6 +151,7 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
   };
   return (
     <div className="dsh-app">
+      <a className="dsh-skip" href="#dsh-page">Skip to the page</a>
       <Rail current={current} dots={dots} />
       <div className="dsh-main">
         <header className="dsh-top">
@@ -161,7 +162,7 @@ export function Frame({ current, title, sub, actions, children }: { current: Sec
           {sub ? <span className="dsh-sub">{sub}</span> : null}
           <div className="dsh-r">{actions}<AccountButton inDashboard /></div>
         </header>
-        <div className="dsh-page">{fresh ? null : children}</div>
+        <div className="dsh-page" id="dsh-page" tabIndex={-1}>{fresh ? null : children}</div>
       </div>
     </div>
   );

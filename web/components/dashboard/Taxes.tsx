@@ -11,7 +11,7 @@ import type { ToolInputs } from "@/components/tools/ToolState";
 import type { TaxInputs } from "@/tools/tax/model";
 import { Frame } from "./Frame";
 import { budgetFor, flow, fromTax, taxFor } from "./flows";
-import { money, money10 } from "./format";
+import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { outsideUS } from "./model";
 import { useDashboard } from "./store";
@@ -31,10 +31,10 @@ export function Taxes() {
     <Frame current="taxes" title="Taxes" sub={T ? `${money(T.federal + T.state + T.fica)} per year` : "Add your pay in Income"}>
       <Tile icon={LandmarkIcon} title="This year">
         <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">After taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money10(F.afterTax) : "—"}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">Federal income tax</div><div className="dsh-fig dsh-md">{T ? money(T.federal) : "—"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">State</div><div className="dsh-fig dsh-md">{T ? money(T.state) : "—"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">Social Security and Medicare</div><div className="dsh-fig dsh-md">{T ? money(T.fica) : "—"}</div></div>
+          <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money(F.afterTax) : "—"}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">Federal income tax</div><div className="dsh-fig dsh-md">{T ? money(T.federal) : "—"}<small>per year</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">State income tax</div><div className="dsh-fig dsh-md">{T ? money(T.state) : "—"}<small>per year</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">Social Security and Medicare</div><div className="dsh-fig dsh-md">{T ? money(T.fica) : "—"}<small>per year</small></div></div>
           {T && yr > 0 ? <div className="dsh-stat"><div className="dsh-label">Of your pay</div><div className="dsh-fig dsh-md">{Math.round(((T.federal + T.state + T.fica) / yr) * 1000) / 10}%</div></div> : null}
         </div>
         <p className="dsh-cap dsh-mt">Pay comes from Income, and what goes to your 401(k), HSA and health premiums from Savings: change those there. Deductions are yours to set below. Health premiums come out of pay too, so after taxes is also after them.</p>

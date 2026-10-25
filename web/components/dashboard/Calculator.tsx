@@ -10,6 +10,7 @@
    calculator. */
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
 import type { ToolInputs } from "@/components/tools/ToolState";
@@ -46,9 +47,9 @@ export function Calculator() {
     const st = stagesFor(pr, data.entries) as unknown as ToolInputs;
     return (id: string): ToolInputs | undefined => (id === "stages" ? st : id === "tax" ? (taxFor(pr) as unknown as ToolInputs) : id === "budget" ? (budgetFor(pr) as unknown as ToolInputs) : undefined);
   }, [pr, data.entries]);
-  const summary = <>{childrenSentence(pr)} <Link href="/dashboard/profile#children" className="underline underline-offset-4">Change them in Profile</Link></>;
+  const summary = <>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" />}>Change them in Profile</Button></>;
   return (
-    <Frame current="calculator" title="Calculator" sub="Filled in from your dashboard. Changes here stay in the calculator.">
+    <Frame current="calculator" title="Calculator" sub="Filled in from your plan. Child costs changed here update your plan; everything else stays here.">
       {/* New child costs build the stages again, from the plan. */}
       <Hosted key={costsKey(pr)} household={null} cover={coverScope(flow(pr))} seed={seed} slots={{ kidsSummary: summary }}
         keep={(id, d) => { if (id === "stages" && (d as unknown as StagesInputs).kids) setProfile((p) => fromStages(p, d as unknown as StagesInputs)); }}>

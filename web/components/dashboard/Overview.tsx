@@ -17,7 +17,7 @@ import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { TipDot } from "@/components/shell/Tooltips";
 import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
-import { daysSince, longDate, money, money10, shortMoney } from "./format";
+import { daysSince, longDate, money, shortMoney } from "./format";
 import { FACTORS, ageOf, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
@@ -70,7 +70,7 @@ function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
   return (
     <Tile icon={ShieldCheckIcon} title="Chance of success" right={<TipDot k="" text="How often this plan lasted through every past market since 1926, starting in each year." />}>
       <div className="dsh-fig dsh-mt">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div>
-      <div className="dsh-cap dsh-mt6">{R.success != null ? "of historical retirements lasted to age 95" : "Needs your age, savings, retirement age and spending"}</div>
+      <div className="dsh-cap dsh-mt6">{R.success != null ? "of historical retirements lasted to age 95" : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
       <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With your chosen strategy: ${R.strategy.name}` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
     </Tile>
   );
@@ -123,7 +123,8 @@ export function Overview() {
   const prev = data.entries[data.entries.length - 2];
   const yearAgo = data.entries.find((e) => daysSince(e.date) <= 380);
   const end = R.path[R.path.length - 1];
-  const retAt = R.path.find((p) => R.retireYear != null && p.t >= R.retireYear);
+  // At retirement: the plan's savings then, with the home and other assets, as every tab has it.
+  const retAt = R.atRetire != null ? { v: R.atRetire + R.equity } : null;
   const p1 = pr.p1, p2 = couple(pr) ? pr.p2 : null;
   const r1 = p1.by && p1.retire ? yearAt(p1, p1.retire) : null, r2 = p2?.by && p2.retire ? yearAt(p2, p2.retire) : null;
   const marks = r1 && r1 === r2 ? [{ t: r1, label: "You both retire" }]
@@ -176,10 +177,11 @@ export function Overview() {
         }>
           <div className="dsh-nwfigs">
             <div>
+              <div className="dsh-label">Today</div>
               <div className="dsh-fig dsh-key">{money(nw)}</div>
               <div className="dsh-cap dsh-mt6">
                 {prev && last ? <><span className={netWorth(last) >= netWorth(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{netWorth(last) >= netWorth(prev) ? "↑" : "↓"} {money(Math.abs(netWorth(last) - netWorth(prev)))}</span> since your last entry
-                  {yearAgo && yearAgo !== prev ? <>, <span className={netWorth(last) >= netWorth(yearAgo) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{money(Math.abs(netWorth(last) - netWorth(yearAgo)))}</span> {netWorth(last) >= netWorth(yearAgo) ? "up" : "down"} in a year</> : null}</>
+                  {yearAgo && yearAgo !== prev ? <>, <span className={netWorth(last) >= netWorth(yearAgo) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{money(Math.abs(netWorth(last) - netWorth(yearAgo)))}</span> {netWorth(last) >= netWorth(yearAgo) ? "up" : "down"} over the past year</> : null}</>
                   : accounts ? "What you have, less what you owe" : pr.home === "own" ? "Savings plus home equity, today" : "Savings, today"}
               </div>
             </div>
@@ -199,23 +201,23 @@ export function Overview() {
 
       <div className="dsh-grid dsh-r2">
         <Tile icon={BanknoteIcon} title="Retirement income">
-          <div className="dsh-fig dsh-mt">{R.savingsIncome != null ? money10(R.savingsIncome + (pr.ss.checked && R.ss ? R.ss : 0)) : "—"}<small>per month</small></div>
-          <div className="dsh-cap dsh-mt6">from savings{pr.ss.checked && R.ss ? <>, plus <b>{money10(R.ss)}</b> Social Security</> : null}, in today&apos;s dollars{tax}</div>
-          <div className="dsh-foot"><span className="dsh-cap">{spendMonth(pr) != null ? <>You plan to spend <b>{money(pr.retSpend ?? spendMonth(pr)!)}</b> per month</> : "Add your spending to compare"}</span></div>
+          <div className="dsh-fig dsh-mt">{R.S ? money((R.S.spend + R.S.taxYr) / 12) : "—"}<small>per month</small></div>
+          <div className="dsh-cap dsh-mt6">{R.S ? <>To spend <b>{money(R.S.spend / 12)}</b>{!R.abroad ? <> and pay about <b>{money(R.S.taxYr / 12)}</b> in taxes</> : null}, in today&apos;s dollars{tax}</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}</div>
+          {R.S ? <div className="dsh-foot"><span className="dsh-cap">{R.ss ? <>Social Security pays <b>{money(R.ss)}</b> of it from {R.ssYear}; savings pay the rest.</> : "Savings pay all of it."}</span></div> : null}
         </Tile>
         {R.abroad ? (
-          <Tile icon={IdCardIcon} title="Social Security"><div className="dsh-fig dsh-md dsh-mt">Not counted</div><div className="dsh-cap dsh-mt6">Outside the US, your plan leaves it out.</div></Tile>
-        ) : pr.ss.checked && R.ss != null ? (
-          <Tile id="social-security" icon={IdCardIcon} title="Social Security">
-            <div className="dsh-fig dsh-mt">{money10(R.ss)}<small>per month</small></div>
-            <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money10(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money10(R.ss2)})` : ""}</div>
-            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#social-security" />}>When to claim →</Button></div>
+          <Tile icon={IdCardIcon} title="Social Security"><div className="dsh-fig dsh-mt">Not counted</div><div className="dsh-cap dsh-mt6">Outside the US, your plan leaves it out.</div></Tile>
+        ) : R.ss != null ? (
+          <Tile id="social-security" icon={IdCardIcon} title="Social Security" right={pr.ss.checked ? null : <span className="dsh-badge">Estimated</span>}>
+            <div className="dsh-fig dsh-mt">{money(R.ss)}<small>per month</small></div>
+            <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money(R.ss2)})` : ""}{pr.ss.checked ? "" : ". Estimated from today's pay"}</div>
+            <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#social-security" />}>{pr.ss.checked ? "When to claim →" : "Check your benefit →"}</Button></div>
           </Tile>
-        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="We've guessed from today's pay. Add your statement's figure for your real benefit and the best age to claim." action="Check your benefit" href="/dashboard/income#social-security" />}
+        ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="Add your pay, and we'll estimate your benefit; or type the figure from your statement." action="Check your benefit" href="/dashboard/income#social-security" />}
         {R.strategy ? (
           <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy">
-            <div className="dsh-fig dsh-md dsh-mt">{R.strategy.name}</div>
-            <div className="dsh-cap dsh-mt6">Spending starts at <b>{money10(R.strategy.first)}</b> per month with taxes{tax}; lasted in {Math.round(R.strategy.success * 100)}% of past markets</div>
+            <div className="dsh-fig dsh-name dsh-mt">{R.strategy.name}</div>
+            <div className="dsh-cap dsh-mt6">Lasted in <b>{Math.round(R.strategy.success * 100)}%</b> of past markets, spending what you plan to with taxes on top</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement#compare" />}>Compare strategies →</Button></div>
           </Tile>
         ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement#strategies" />}
@@ -241,7 +243,7 @@ export function Overview() {
           <div className="dsh-secs">
             {sections.map(([Icon, name, ok, href]) => (
               <div key={name}><Icon aria-hidden="true" /><span>{name}</span>
-                {ok ? <span className="dsh-ok" aria-label="Done"><CheckIcon aria-hidden="true" /></span> : <Button variant="link" size="inline" className="dsh-go" nativeButton={false} render={<Link href={href} />}>Fill in</Button>}
+                {ok ? <span className="dsh-ok"><CheckIcon aria-hidden="true" /><span className="sr-only">Done</span></span> : <Button variant="link" size="inline" className="dsh-go" nativeButton={false} render={<Link href={href} />}>Fill in</Button>}
               </div>
             ))}
           </div>
@@ -251,7 +253,7 @@ export function Overview() {
 
       {tl.lanes.length ? (
         <div className="dsh-r4">
-          <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the amber line</span>}>
+          <Tile icon={CalendarDaysIcon} title="Your timeline" right={<span className="dsh-cap">Today is the dashed line</span>}>
             <div className="dsh-mt"><Timeline lanes={tl.lanes} from={tl.from} to={tl.to} now={nowYear()} /></div>
           </Tile>
         </div>

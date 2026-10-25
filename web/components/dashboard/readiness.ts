@@ -31,7 +31,7 @@ export function explain(id: FactorId, pr: Profile, entries: Entry[], R: Results)
       const g = guardrailsChance(pr, R);
       if (g != null && R.success != null && g > R.success + 0.02) how.push(`Use a strategy that adapts, like guardrails: ${pct(g)} lasted`);
       return {
-        why: R.success == null ? "Needs your ages, savings, retirement age and spending."
+        why: R.success == null ? R.gap ?? "Needs your ages, savings, retirement age and spending."
           : `${pct(R.success)} of historical retirements lasted to 95${R.strategy ? ` with ${R.strategy.name}` : ", spending a fixed amount"}. Full marks take about 95%; the plan aims for ${pct(goal)}.`,
         how: how.length ? how : R.success != null && R.success >= goal ? ["You're at the plan's target already."] : [],
         href: "/dashboard/retirement#strategies", action: "Open Retirement",
@@ -48,7 +48,7 @@ export function explain(id: FactorId, pr: Profile, entries: Entry[], R: Results)
     case "cushion": {
       const target$ = F.efTarget, cash = H.cash ?? 0;
       return {
-        why: part ? `${part.txt} set aside in cash; your goal is ${F.efMonths} months, ${money(target$)}.` : "Needs your checking and savings, on Net worth.",
+        why: part ? `${part.txt} of spending set aside in cash; the score gives full marks at 6 months. Your own goal, set on Spending, is ${F.efMonths} months, ${money(target$)}.` : "Needs your checking and savings, on Net worth.",
         how: part && cash < target$ ? [`Set aside ${money(target$ - cash)} more`, F.ef > 0 ? `At ${money10(F.ef)} per month to it, about ${Math.ceil((target$ - cash) / F.ef)} months` : "Add an emergency fund line on Savings"] : [],
         href: part ? "/dashboard/savings#rest" : "/dashboard/accounts#assets", action: part ? "Open Savings" : "Open Net worth",
       };

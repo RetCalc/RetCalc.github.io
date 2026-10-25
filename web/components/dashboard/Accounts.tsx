@@ -186,7 +186,7 @@ export function Accounts() {
   const prev = data.entries[data.entries.length - 2];
   const actions = draft
     ? <><Button variant="outline" onClick={() => setDraft(null)}>Cancel</Button><Button onClick={saveEntry}>Save as new entry</Button></>
-    : <Button onClick={startEdit}><PencilIcon aria-hidden="true" />Edit</Button>;
+    : <Button onClick={startEdit}><PencilIcon aria-hidden="true" />Update balances</Button>;
 
   /* Leaving with changes not saved: asked first, inside the site; the
      browser asks on a reload or a closed tab. */

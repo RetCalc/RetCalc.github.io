@@ -17,7 +17,7 @@ import type { BudgetInputs } from "@/tools/budget/model";
 import { Frame } from "./Frame";
 import { num } from "./fields";
 import { budgetFor, flow, fromBudget, growthLines, taxFor } from "./flows";
-import { money10 } from "./format";
+import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { outsideUS } from "./model";
 import { useDashboard } from "./store";
@@ -46,7 +46,7 @@ function Growth() {
           <div className="dsh-growlist">
             {L.map((l) => (
               <div className="dsh-growrow" key={l.id}>
-                <div><b>{l.name}</b><span>{money10(l.amount)} per month{isFinite(l.cap) ? `, limit ${money10(l.cap)}` : ", no limit"}</span></div>
+                <div><b>{l.name}</b><span>{money(l.amount)} per month{isFinite(l.cap) ? `, limit ${money(l.cap)}` : ", no limit"}</span></div>
                 <NumberField id={"dshGrow" + l.id} label="Grows each year" unit="%" step={0.5} max={30} disabled={l.capped}
                   value={l.capped ? "0" : pct(pr.growth[l.id] ?? 0)} onValueChange={(v) => setProfile((p) => ({ ...p, growth: { ...p.growth, [l.id]: (num(v) ?? 0) / 100 } }))} />
                 <span className={l.capped ? "dsh-badge" : "dsh-cap"}>{l.capped ? "At the limit" : !(l.amount > 0) ? "Nothing goes here yet: set it above" : l.years != null ? `Reaches the limit in ${year + l.years}` : l.growth > 0 ? "No limit" : ""}</span>
@@ -66,14 +66,14 @@ export function Savings() {
   const Budget = TOOL_VIEWS.budget;
   const rate = F.gross > 0 ? (F.invested + F.match) / F.gross : null;
   return (
-    <Frame current="savings" title="Savings" sub={F.hasPay ? `${money10(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
+    <Frame current="savings" title="Savings" sub={F.hasPay ? `${money(F.invested + F.match)} per month into savings, with your employer's match` : "Where your paycheck goes"}>
       <Tile icon={PiggyBankIcon} title="Each month">
         <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money10(F.invested)}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money10(F.match)}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">To the emergency fund</div><div className="dsh-fig dsh-md">{money10(F.ef)}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">{F.left >= 0 ? "Not assigned" : "Short"}</div><div className="dsh-fig dsh-md">{money10(Math.abs(F.left))}<small>per month</small></div></div>
-          {rate != null ? <div className="dsh-stat"><div className="dsh-label">Savings rate</div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
+          <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">To the emergency fund</div><div className="dsh-fig dsh-md">{money(F.ef)}<small>per month</small></div></div>
+          <div className="dsh-stat"><div className="dsh-label">{F.left >= 0 ? "Not assigned" : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(F.left))}<small>per month</small></div></div>
+          {rate != null ? <div className="dsh-stat"><div className="dsh-label">Savings rate, with the match</div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
         </div>
         <div className="dsh-cap dsh-mt">
           {F.fullMatch == null ? "No employer match set. Add it in Income if you have one." : F.fullMatch ? "You're getting the full employer match." : <b>You&apos;re not getting the full employer match: raise the first 401(k) line to reach it.</b>}

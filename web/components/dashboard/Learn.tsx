@@ -12,7 +12,7 @@ export function Learn() {
       <div className="dsh-center">
         <div className="dsh-card">
           <GraduationCapIcon aria-hidden="true" />
-          <h1>Learning, coming soon</h1>
+          <h2>Learning, coming soon</h2>
           <p>Short, plain explanations of the ideas behind your plan will live here.</p>
         </div>
       </div>

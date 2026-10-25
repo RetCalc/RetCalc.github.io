@@ -322,7 +322,8 @@ function MadeOf({ S, future }: { S: PlanSummary; future: boolean }) {
 
 /* ---- what the children cost: each child along the years, then together ---- */
 const CARE = SERIES.rose, SCHOOL = SERIES.lavender;
-export function ChildrenCost({ S }: { S: PlanSummary }) {
+/** `withoutWords`: what the balance without them assumes (the Dashboard's plan differs). */
+export function ChildrenCost({ S, withoutWords = "saving today's amounts all the way" }: { S: PlanSummary; withoutWords?: string }) {
   const K = S.children!, a0 = S.age, a1 = S.retire, span = Math.max(1, a1 - a0);
   const at = (age: number) => ((age - a0) / span) * 100 + "%";
   const ticks = Array.from({ length: Math.floor(span / 5) + 1 }, (_, i) => a0 + i * 5).filter((t) => t < a1 - 1).concat(a1);
@@ -351,7 +352,7 @@ export function ChildrenCost({ S }: { S: PlanSummary }) {
             <div className="text-label text-muted-foreground">{K.fromSpending > 0.5 ? "and " + money(K.fromSpending) + " cut from spending, when saving ran out" : "Saving covered all of it"}</div></div>
           <div><div className="text-label text-muted-foreground">Less in your balance at {a1}</div>
             <div className="text-3xl font-medium tabular-nums">{money(Math.max(0, gone))}</div>
-            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} saving today&apos;s amounts all the way</div></div>
+            <div className="text-label text-muted-foreground">{money(S.atRetire.total)} with them, {money(K.without)} {withoutWords}</div></div>
         </div>
         {/* Along the years: each child, then all of them together. */}
         <div className="mt-5 space-y-2">

@@ -9,6 +9,7 @@
    use them. */
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { CoverStagesDialog, KidsDialog } from "@/tools/plan/KidsDialog";
 import { kidStages } from "@/tools/plan/kids";
@@ -56,7 +57,7 @@ export function ChildCostsDialog({ close }: { close: () => void }) {
   if (next) return <CoverDialog kids={next} close={close} />;
   return (
     <KidsDialog kids={kids} age={age} retire={retire} cover={false} close={close} withLater saveLabel="Save"
-      costsOnly={<>{childrenSentence(pr)} <Link href="/dashboard/profile#children" onClick={close} className="underline underline-offset-4">Change them in Profile</Link></>}
+      costsOnly={<>{childrenSentence(pr)} <Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#children" onClick={close} />}>Change them in Profile</Button></>}
       save={(k) => {
         setProfile((p) => ({ ...p, childcare: k.childcare, careArea: k.area ?? p.careArea, childCosts: { early: k.early, school: k.school, teen: k.teen ?? "", later: k.later ?? p.childCosts.later } }));
         if (coverSegs(pr, k).length) setNext(k); else close();
