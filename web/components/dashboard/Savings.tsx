@@ -21,7 +21,7 @@ import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { outsideUS } from "./model";
 import { useDashboard } from "./store";
-import { Note, Tile } from "./ui";
+import { Note, Tile, Tip, TipLabel } from "./ui";
 
 const pct = (v: number) => String(Math.round(v * 1000) / 10);
 
@@ -35,7 +35,7 @@ function Growth() {
   return (
     <Card id="growth" className="min-w-0">
       <CardHeader>
-        <CardTitle>How your saving grows</CardTitle>
+        <CardTitle>How your saving grows <Tip id="growLines" title="How your saving grows" /></CardTitle>
         <CardDescription>Each year, beyond inflation. {summary || "Nothing saved yet."}</CardDescription>
         <CardAction><Button variant="outline" size="sm" onClick={() => setOpen(true)}>Set by account</Button></CardAction>
       </CardHeader>
@@ -72,8 +72,8 @@ export function Savings() {
           <div className="dsh-stat"><div className="dsh-label">You save and invest</div><div className="dsh-fig dsh-key">{money(F.invested)}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">Employer match</div><div className="dsh-fig dsh-md">{money(F.match)}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">To the emergency fund</div><div className="dsh-fig dsh-md">{money(F.ef)}<small>per month</small></div></div>
-          <div className="dsh-stat"><div className="dsh-label">{F.left >= 0 ? "Not assigned" : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(F.left))}<small>per month</small></div></div>
-          {rate != null ? <div className="dsh-stat"><div className="dsh-label">Savings rate, with the match</div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
+          <div className="dsh-stat"><div className="dsh-label">{F.left >= 0 ? <TipLabel text="Not assigned" id="notAssigned" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(F.left))}<small>per month</small></div></div>
+          {rate != null ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Savings rate, with the match" id="savingsRate" /></div><div className="dsh-fig dsh-md">{Math.round(rate * 1000) / 10}%</div></div> : null}
         </div>
         <div className="dsh-cap dsh-mt">
           {F.fullMatch == null ? "No employer match set. Add it in Income if you have one." : F.fullMatch ? "You're getting the full employer match." : <b>You&apos;re not getting the full employer match: raise the first 401(k) line to reach it.</b>}

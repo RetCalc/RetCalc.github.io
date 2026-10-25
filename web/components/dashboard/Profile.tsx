@@ -24,7 +24,7 @@ import { money } from "./format";
 import { flow } from "./flows";
 import { couple, holdings, mortgage, nameOf, realGrowth, spendMonth } from "./model";
 import { DEFAULT_ASSUMPTIONS, EMPTY, OUTSIDE_US, hasAccounts, useDashboard, withHome, type Person, type Profile as P } from "./store";
-import { Note, Tile } from "./ui";
+import { Note, Tile, Tip, TipLabel } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
@@ -48,9 +48,9 @@ export function Assumptions({ pr, set }: { pr: P; set: (f: (p: P) => P) => void 
         ))}
       </div>
       <div className="dsh-row3 dsh-pair dsh-mt dsh-fields-sm">
-        <NumberField id="dshGrowth" label="Growth per year, before inflation" unit="%" step={0.25} max={20} value={pctTxt(A.growth)} onValueChange={(v) => put({ growth: (num(v) ?? 0) / 100 })} />
-        <NumberField id="dshInfl" label="Inflation per year" unit="%" step={0.25} max={15} value={pctTxt(A.inflation)} onValueChange={(v) => put({ inflation: (num(v) ?? 0) / 100 })} />
-        <NumberField id="dshStocks" label="In stocks once retired" unit="%" step={5} max={100} value={String(A.stocks)} onValueChange={(v) => put({ stocks: Math.max(0, Math.min(100, num(v) ?? 0)) })} />
+        <NumberField id="dshGrowth" label={<TipLabel text="Growth per year, before inflation" id="growth" />} unit="%" step={0.25} max={20} value={pctTxt(A.growth)} onValueChange={(v) => put({ growth: (num(v) ?? 0) / 100 })} />
+        <NumberField id="dshInfl" label={<TipLabel text="Inflation per year" id="inflation" />} unit="%" step={0.25} max={15} value={pctTxt(A.inflation)} onValueChange={(v) => put({ inflation: (num(v) ?? 0) / 100 })} />
+        <NumberField id="dshStocks" label={<TipLabel text="In stocks once retired" id="stocks" />} unit="%" step={5} max={100} value={String(A.stocks)} onValueChange={(v) => put({ stocks: Math.max(0, Math.min(100, num(v) ?? 0)) })} />
       </div>
       <div className="dsh-mt"><Note>
         Until you retire, savings grow at a steady <b>{pct(real)}</b> per year after inflation ({pct(A.growth)} growth less {pct(A.inflation)} inflation). Once retired, the plan runs through <b>every market since 1926</b>, {A.stocks}% in stocks, instead of a steady rate. Every figure is in today&apos;s dollars.
@@ -81,7 +81,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
         {any ? (
           <>
             <div className="dsh-row3">
-              <SelectField id="dshPCare" label="Paid childcare before school" value={pr.childcare ? "yes" : "no"} onChange={(v) => set((p) => ({ ...p, childcare: v === "yes" }))}>
+              <SelectField id="dshPCare" label={<TipLabel text="Paid childcare before school" id="childcare" />} value={pr.childcare ? "yes" : "no"} onChange={(v) => set((p) => ({ ...p, childcare: v === "yes" }))}>
                 <option value="yes">Yes</option><option value="no">No</option>
               </SelectField>
               {pr.childcare ? (
@@ -92,7 +92,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
               <div />
             </div>
             <div className="dsh-row3">
-              <SelectField id="dshPCollege" label="Helping with college" value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { ...p.college, help: v as P["college"]["help"] } }))}>
+              <SelectField id="dshPCollege" label={<TipLabel text="Helping with college" id="college" />} value={pr.college.help} onChange={(v) => set((p) => ({ ...p, college: { ...p.college, help: v as P["college"]["help"] } }))}>
                 <option value="none">No</option><option value="part">Some of it (about half)</option><option value="all">All of it</option>
               </SelectField>
               {pr.college.help !== "none" ? (
@@ -107,6 +107,7 @@ function Children({ pr, set }: { pr: P; set: (f: (p: P) => P) => void }) {
               <div className="dsh-inline">
                 <Button variant="outline" size="sm" onClick={() => setCosts(true)}>Edit child costs</Button>
                 {coverSegs(pr).length ? <Button variant="outline" size="sm" onClick={() => setCover(true)}>How you cover it</Button> : null}
+                {coverSegs(pr).length ? <Tip id="cover" title="How you cover it" /> : null}
               </div>
             </div>
             {costs ? <ChildCostsDialog close={() => setCosts(false)} /> : null}
@@ -163,14 +164,14 @@ export function Profile() {
               {keys.map((k) => <NumberField key={k} id={"dshPRet" + k} label={`${nameOf(pr, k === "p1" ? 0 : 1)} retires at age`} max={85} value={txt(pr[k].retire)} onValueChange={(v) => setP(k, { retire: num(v) })} />)}
             </div>
             <div className="dsh-row">
-              <MoneyField id="dshPRetSpend" label="Spending once retired" unit="per month" value={txt(pr.retSpend)} placeholder={txt(spendMonth(pr))} onValueChange={(v) => set((p) => ({ ...p, retSpend: num(v) }))} />
+              <MoneyField id="dshPRetSpend" label={<TipLabel text="Spending once retired" id="retSpend" />} unit="per month" value={txt(pr.retSpend)} placeholder={txt(spendMonth(pr))} onValueChange={(v) => set((p) => ({ ...p, retSpend: num(v) }))} />
               <div className="dsh-hint dsh-self-end">{pr.retSpend == null ? "Leave blank to use what you spend today." : "Today's spending is " + money(spendMonth(pr) ?? 0) + " per month."}</div>
             </div></div>
           </Tile>
           <Tile id="saving" icon={WalletIcon} title="Saving">
             <div className="dsh-fields dsh-fields-sm">
               <div className="dsh-readonly">
-                <div><div className="dsh-label">Saved so far</div><div className="dsh-fig dsh-md">{money(H.trad + H.roth + H.brok)}</div></div>
+                <div><div className="dsh-label">Saved so far <Tip id="saved" title="Saved so far" /></div><div className="dsh-fig dsh-md">{money(H.trad + H.roth + H.brok)}</div></div>
                 <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>{accounts ? "Change in Net worth" : "Split into accounts"}</Button>
               </div>
               <div className="dsh-readonly">

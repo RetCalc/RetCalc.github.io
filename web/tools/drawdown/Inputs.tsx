@@ -332,7 +332,7 @@ export function Inputs({ v, fromNote, periods, open }: {
             <div className="ddgk-final">
               <label className="ddgk-check"><Checkbox id="ddGkFinal" checked={!!s.gkFinal} onCheckedChange={set("gkFinal")} /><span>No cuts in the final</span></label>
               <Affixed suffix="yrs" className="w-21 flex-none"><NumberInput id="ddGkFinalYrs" nonNeg max={60} disabled={!s.gkFinal} aria-label="Final years without cuts" value={str("gkFinalYrs")} onValueChange={set("gkFinalYrs")} /></Affixed>
-              <TipDot k="gkfinal" />
+              <TipDot k="gkfinal" title="No cuts in the final years" />
             </div>
             <div className="ddgk-h">Lower guardrail: raise spending</div>
             <div className="two">

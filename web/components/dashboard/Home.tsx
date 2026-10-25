@@ -13,7 +13,7 @@ import { num, pctTxt, txt } from "./fields";
 import { MONTHS, money } from "./format";
 import { mortgage } from "./model";
 import { useDashboard, withHome } from "./store";
-import { Note, Tile } from "./ui";
+import { Note, Tile, TipLabel } from "./ui";
 
 export function Home() {
   const { data, setProfile: set, update } = useDashboard();
@@ -36,7 +36,7 @@ export function Home() {
     <Frame current="home" title="Home" sub={pr.home === "own" ? "Owned" : "Not given yet"}>
       <Tile icon={HouseIcon} title="Your home" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/accounts#assets" />}>Change in Net worth</Button>}>
         <div className="dsh-stats">
-          <div className="dsh-stat"><div className="dsh-label">Equity</div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>
+          <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Equity" id="equity" /></div><div className="dsh-fig dsh-key">{money(M.value - M.owed)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Worth</div><div className="dsh-fig dsh-md">{money(M.value)}</div></div>
           <div className="dsh-stat"><div className="dsh-label">Left on the mortgage</div><div className="dsh-fig dsh-md">{money(M.owed)}</div></div>
         </div>
@@ -51,7 +51,7 @@ export function Home() {
             </div></div>
             <div className="dsh-stats dsh-mt">
               <div className="dsh-stat"><div className="dsh-label">Paid off</div><div className="dsh-fig dsh-md">{paidOff ?? "—"}</div></div>
-              <div className="dsh-stat"><div className="dsh-label">Interest still to pay</div><div className="dsh-fig dsh-md">{M.interest != null ? money(M.interest) : "—"}</div></div>
+              <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Interest still to pay" id="interestLeft" /></div><div className="dsh-fig dsh-md">{M.interest != null ? money(M.interest) : "—"}</div></div>
             </div>
             <p className="dsh-cap dsh-mt">{M.tooSmall ? "That payment doesn't cover the interest, so the balance would never fall. Check the payment and rate." : M.payoff == null ? "Add the rate and the monthly payment (without taxes and insurance) to see when it's paid off. It shows on Your timeline." : "At this payment. Paying extra brings it sooner: try it in the Mortgage Calculator, below."}</p>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href={toolHref("mortgage", "/dashboard/home")} />}>Open the Mortgage Calculator</Button></div>

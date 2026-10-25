@@ -28,7 +28,7 @@ import { nextSteps } from "./nextsteps";
 import { Readiness, timeline } from "./Overview";
 import { Timeline } from "./charts";
 import { entryFrom, netWorth, sum, useDashboard, type Entry, type Profile } from "./store";
-import { Note, Tile } from "./ui";
+import { Note, Tile, TipLabel } from "./ui";
 
 /** The answer, from the plan itself: what you'll have at retirement, what
     your withdrawal strategy and Social Security pay the first year against
@@ -44,13 +44,13 @@ function PlanHero() {
     <Tile icon={SunsetIcon} title="Your plan">
       <div className="dsh-stats">
         <div className="dsh-stat"><div className="dsh-label">Savings at retirement{R.retireYear ? ", " + R.retireYear : ""}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-        <div className="dsh-stat"><div className="dsh-label">You plan to spend</div><div className="dsh-fig dsh-md">{money(goal)}<small>per month</small></div></div>
-        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Taxes, on top</div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
-        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security{R.ssYear ? ", from " + R.ssYear : ""}</div><div className="dsh-fig dsh-md">{money(ss)}<small>per month</small></div></div> : null}
-        <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
+        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="You plan to spend" id="retSpend" /></div><div className="dsh-fig dsh-md">{money(goal)}<small>per month</small></div></div>
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
+        {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{money(ss)}<small>per month</small></div></div> : null}
+        <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div></div>
       </div>
       <p className="dsh-cap dsh-mt">
-        {R.success != null ? <>Your plan lasted to 95 in <b>{Math.round(R.success * 100)}%</b> of past markets since 1926, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Taxes are the plan&apos;s average year, so they include the required withdrawals that start in your 70s. Social Security pays part of your spending and taxes once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
+        {R.success != null ? <>Your plan lasted to 95 in <b>{Math.round(R.success * 100)}%</b> of past markets since 1926, {R.strategy ? <>drawing down with <b>{R.strategy.name}</b></> : "spending a fixed amount that rises with prices"}. Social Security pays part of your spending and taxes once it starts; savings pay the rest. In today&apos;s dollars{tax}.</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}
       </p>
     </Tile>
   );

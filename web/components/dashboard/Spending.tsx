@@ -18,7 +18,7 @@ import { money } from "./format";
 import { Hosted, TOOL_VIEWS } from "./host";
 import { otherMonth } from "./model";
 import { useDashboard } from "./store";
-import { Note, Tile } from "./ui";
+import { Note, Tile, TipLabel } from "./ui";
 
 export function Spending() {
   const { data, setProfile } = useDashboard();
@@ -39,7 +39,7 @@ export function Spending() {
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Spending</div><div className="dsh-fig dsh-key">{money(F.spend)}<small>per month</small></div>{premiums > 0.5 ? <div className="dsh-cap dsh-mt6">{money(premiums)} of it is premiums, taken out of pay</div> : null}</div>
           {coming != null ? <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-md">{money(coming)}<small>per month</small></div></div> : null}
-          {left != null ? <div className="dsh-stat"><div className="dsh-label">{left >= 0 ? "Left after spending" : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(left))}<small>per month</small></div></div> : null}
+          {left != null ? <div className="dsh-stat"><div className="dsh-label">{left >= 0 ? <TipLabel text="Left after spending" id="leftAfter" /> : "Short"}</div><div className="dsh-fig dsh-md">{money(Math.abs(left))}<small>per month</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label">Emergency fund, {F.efMonths} months</div><div className="dsh-fig dsh-md">{money(F.efTarget)}</div></div>
         </div>
         {need > 0 && short > 25 ? (

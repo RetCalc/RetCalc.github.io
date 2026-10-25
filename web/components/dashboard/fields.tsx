@@ -11,6 +11,7 @@ import { groupDigits, parseNum } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { MONTHS, money, money10 } from "./format";
 import { answers, payYear } from "./model";
+import { Tip } from "./ui";
 import { OUTSIDE_US, PER_LABEL, type Per, type Person, type Profile } from "./store";
 
 export type PKey = "p1" | "p2";
@@ -79,6 +80,7 @@ export function PayFields({ pr, k, setP }: { pr: Profile; k: PKey; setP: (k: PKe
             <SegmentedItem pressed={p.taxed === "before"} onPressedChange={() => setP(k, { taxed: "before" })}>Before taxes</SegmentedItem>
             <SegmentedItem pressed={p.taxed === "after"} onPressedChange={() => setP(k, { taxed: "after" })}>After taxes</SegmentedItem>
           </Segmented>
+          <Tip id="payTaxed" title="Before or after taxes" />
           <span className="dsh-cap">
             {y == null ? null : p.taxed === "after" ? <>Take-home. We&apos;ll work out the pay before taxes.</>
               : <>{p.per === "year" ? null : <><b>{money(y)}</b> per year, </>}{th ? <>{p.per === "year" ? "About" : "about"} <b>{money10(th)}</b> take-home per month</> : null}</>}

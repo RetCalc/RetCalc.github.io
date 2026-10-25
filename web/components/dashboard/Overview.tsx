@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
-import { TipDot } from "@/components/shell/Tooltips";
 import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, longDate, money, shortMoney } from "./format";
@@ -25,7 +24,7 @@ import { target, type FactorId } from "@/tools/guide/calc";
 import { flow } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
-import { Empty, Tile } from "./ui";
+import { Empty, Tile, Tip } from "./ui";
 
 const pct = (v: number) => (Math.round(v * 1000) / 10).toFixed(1).replace(/\.0$/, "") + "%";
 
@@ -38,7 +37,7 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
   useLandedOn("readiness-*", useCallback((id: string) => setOpen(id.slice("readiness-".length) as FactorId), []));
   const why = useMemo(() => (open ? explain(open, pr, entries, R) : null), [open, pr, entries, R]);
   return (
-    <Tile id="readiness" icon={GaugeIcon} title="Readiness score" right={<TipDot k="" text="Five areas, weighted: how your plan holds up, how much you save, your emergency fund, debt and monthly cash flow. Open any one to see why it scored what it did." />}>
+    <Tile id="readiness" icon={GaugeIcon} title="Readiness score" tip="readiness">
       <div className="dsh-inline dsh-mt">
         <span className="dsh-fig">{R.score ?? "—"}<small>of 100</small></span>
         <span className={!R.partial && (R.score ?? 0) >= 70 ? "dsh-badge dsh-gain" : "dsh-badge"}>{word}</span>
@@ -85,7 +84,7 @@ function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entri
 
 function Chance({ R, accounts }: { R: Results; accounts: boolean }) {
   return (
-    <Tile icon={ShieldCheckIcon} title="Chance of success" right={<TipDot k="" text="How often this plan lasted through every past market since 1926, starting in each year." />}>
+    <Tile icon={ShieldCheckIcon} title="Chance of success" tip="chance">
       <div className="dsh-fig dsh-mt">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div>
       <div className="dsh-cap dsh-mt6">{R.success != null ? "of historical retirements lasted to age 95" : R.gap ?? "Needs your age, savings, retirement age and spending"}</div>
       <div className="dsh-foot"><span className="dsh-cap">{R.strategy ? `With your chosen strategy: ${R.strategy.name}` : accounts ? "Spending a fixed amount that rises with prices" : "Add your accounts for a sharper number"}</span></div>
@@ -185,7 +184,7 @@ export function Overview() {
       <div className="dsh-grid dsh-r1">
         <Tile icon={WalletIcon} title="Net worth" right={
           <div className="dsh-nwhead">
-            <span className="dsh-legend"><span><i />Your entries</span><span><i className="dsh-d" />Projected</span><span><i className="dsh-b" />8 in 10 markets</span></span>
+            <span className="dsh-legend"><span><i />Your entries</span><span><i className="dsh-d" />Projected</span><span><i className="dsh-b" />8 in 10 markets <Tip id="band" title="8 in 10 markets" /></span></span>
             <Segmented aria-label="How far to show">
               {([["recent", "Recent"], ["retire", "To retirement"], ["all", "Whole plan"]] as const).map(([k, l]) => (
                 <SegmentedItem key={k} pressed={range === k} onPressedChange={() => setRange(k)}>{l}</SegmentedItem>
@@ -195,7 +194,7 @@ export function Overview() {
         }>
           <div className="dsh-nwfigs">
             <div>
-              <div className="dsh-label">Today</div>
+              <div className="dsh-label">Today <Tip id="netWorth" title="Net worth today" /></div>
               <div className="dsh-fig dsh-key">{money(nw)}</div>
               <div className="dsh-cap dsh-mt6">
                 {prev && last ? <><span className={netWorth(last) >= netWorth(prev) ? "dsh-chg dsh-up" : "dsh-chg dsh-dn"}>{netWorth(last) >= netWorth(prev) ? "↑" : "↓"} {money(Math.abs(netWorth(last) - netWorth(prev)))}</span> since your last entry
@@ -203,7 +202,7 @@ export function Overview() {
                   : accounts ? "What you have, less what you owe" : pr.home === "own" ? "Savings plus home equity, today" : "Savings, today"}
               </div>
             </div>
-            {retAt ? <div className="dsh-sec"><div className="dsh-label">At retirement, {R.retireYear}</div><div className="dsh-fig">{shortMoney(retAt.v)}</div></div> : null}
+            {retAt ? <div className="dsh-sec"><div className="dsh-label">At retirement, {R.retireYear} <Tip id="atRetire" title="Net worth at retirement" /></div><div className="dsh-fig">{shortMoney(retAt.v)}</div></div> : null}
             {end && p1.by ? <div className="dsh-sec"><div className="dsh-label">At 95, {yearAt(p1, 95)}</div><div className="dsh-fig">{shortMoney(end.v)}</div></div> : null}
           </div>
           <div className="dsh-mt">
@@ -218,7 +217,7 @@ export function Overview() {
       </div>
 
       <div className="dsh-grid dsh-r2">
-        <Tile icon={BanknoteIcon} title="Retirement income">
+        <Tile icon={BanknoteIcon} title="Retirement income" tip="retIncome">
           <div className="dsh-fig dsh-mt">{R.S ? money((R.S.spend + R.S.taxYr) / 12) : "—"}<small>per month</small></div>
           <div className="dsh-cap dsh-mt6">{R.S ? <>To spend <b>{money(R.S.spend / 12)}</b>{!R.abroad ? <> and pay about <b>{money(R.S.taxYr / 12)}</b> in taxes</> : null}, in today&apos;s dollars{tax}</> : R.gap ?? "Fills in once your profile has your ages, savings, retirement age and spending."}</div>
           {R.S ? <div className="dsh-foot"><span className="dsh-cap">{R.ss ? <>Social Security pays <b>{money(R.ss)}</b> of it from {R.ssYear}; savings pay the rest.</> : "Savings pay all of it."}</span></div> : null}
@@ -226,21 +225,21 @@ export function Overview() {
         {R.abroad ? (
           <Tile icon={IdCardIcon} title="Social Security"><div className="dsh-fig dsh-mt">Not counted</div><div className="dsh-cap dsh-mt6">Outside the US, your plan leaves it out.</div></Tile>
         ) : R.ss != null ? (
-          <Tile id="social-security" icon={IdCardIcon} title="Social Security" right={pr.ss.checked ? null : <span className="dsh-badge">Estimated</span>}>
+          <Tile id="social-security" icon={IdCardIcon} title="Social Security" tip={pr.ss.checked ? "ssTotal" : "ssEstimate"} right={pr.ss.checked ? null : <span className="dsh-badge">Estimated</span>}>
             <div className="dsh-fig dsh-mt">{money(R.ss)}<small>per month</small></div>
             <div className="dsh-cap dsh-mt6">{nameOf(pr, 0)} at {R.claim1} ({money(R.ss1 ?? 0)}){p2 && R.ss2 != null ? `, ${nameOf(pr, 1)} at ${R.claim2} (${money(R.ss2)})` : ""}{pr.ss.checked ? "" : ". Estimated from today's pay"}</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/income#social-security" />}>{pr.ss.checked ? "When to claim →" : "Check your benefit →"}</Button></div>
           </Tile>
         ) : <Empty icon={IdCardIcon} title="Social Security" ghost="$—" text="Add your pay, and we'll estimate your benefit; or type the figure from your statement." action="Check your benefit" href="/dashboard/income#social-security" />}
         {R.strategy ? (
-          <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy">
+          <Tile icon={ArrowDownToLineIcon} title="Withdrawal strategy" tip="strategy">
             <div className="dsh-fig dsh-name dsh-mt">{R.strategy.name}</div>
             <div className="dsh-cap dsh-mt6">Lasted in <b>{Math.round(R.strategy.success * 100)}%</b> of past markets, spending what you plan to with taxes on top</div>
             <div className="dsh-foot"><Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/retirement#compare" />}>Compare strategies →</Button></div>
           </Tile>
         ) : <Empty icon={ArrowDownToLineIcon} title="Withdrawal strategy" ghost="—" text="Pick how you'll draw money in retirement. We'll test it against every past market." action="Choose a strategy" href="/dashboard/retirement#strategies" />}
         {R.cushion != null ? (
-          <Tile icon={ShieldCheckIcon} title="Emergency fund">
+          <Tile icon={ShieldCheckIcon} title="Emergency fund" tip="cushion">
             <div className="dsh-fig dsh-mt">{R.cushion.toFixed(1).replace(/\.0$/, "")}<small>months</small></div>
             <div className="dsh-cap dsh-mt6">{money(H.cash ?? 0)} set aside{(H.cash ?? 0) < EF.efTarget ? `; ${money(EF.efTarget - (H.cash ?? 0))} more reaches your ${EF.efMonths}-month goal` : `, your ${EF.efMonths}-month goal or more`}</div>
             <div className="dsh-foot"><div className="dsh-segs dsh-grow" aria-hidden="true">{Array.from({ length: EF.efMonths }, (_, k) => k + 1).map((i) => <i key={i} className={i <= R.cushion! ? "dsh-on" : undefined} />)}</div></div>

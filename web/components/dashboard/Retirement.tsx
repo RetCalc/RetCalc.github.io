@@ -26,7 +26,7 @@ import { ClaimField } from "./Income";
 import { drawdownPlan, results, spendMonth } from "./model";
 import { useDashboard } from "./store";
 import { useLandedOn } from "./land";
-import { Note, Tile } from "./ui";
+import { Note, Tile, TipLabel } from "./ui";
 
 export function Retirement() {
   const { data, setProfile: set } = useDashboard();
@@ -57,10 +57,10 @@ export function Retirement() {
       <Tile id="at-retirement" icon={SunsetIcon} title="At retirement" right={<Button variant="link" size="inline" nativeButton={false} render={<Link href="/dashboard/profile#plan-retirement" />}>Ages, spending and assumptions</Button>}>
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Savings, {R.retireYear ?? "—"}</div><div className="dsh-fig dsh-key">{R.atRetire != null ? money(Math.round(R.atRetire / 1000) * 1000) : "—"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">Chance of success</div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
-          <div className="dsh-stat"><div className="dsh-label">You plan to spend{tax}</div><div className="dsh-fig dsh-md">{money(pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div></div>
-          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Taxes, on top</div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div><div className="dsh-cap dsh-mt6">The plan&apos;s average year</div></div> : null}
-          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label">Social Security{R.ssYear ? ", from " + R.ssYear : ""}</div><div className="dsh-fig dsh-md">{R.ss != null ? money(R.ss) : "—"}<small>per month</small></div><div className="dsh-cap dsh-mt6">Pays part of both</div></div> : null}
+          <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Chance of success" id="chance" /></div><div className="dsh-fig dsh-md">{R.success != null ? Math.round(R.success * 100) + "%" : "—"}</div><div className="dsh-cap dsh-mt6">{R.strategy ? R.strategy.name : "Spending a fixed amount"}</div></div>
+          <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"You plan to spend" + tax} id="retSpend" /></div><div className="dsh-fig dsh-md">{money(pr.retSpend ?? spendMonth(pr) ?? 0)}<small>per month</small></div></div>
+          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Taxes, on top" id="taxes" /></div><div className="dsh-fig dsh-md">{R.S ? money(R.S.taxYr / 12) : "—"}<small>per month</small></div></div> : null}
+          {!R.abroad ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text={"Social Security" + (R.ssYear ? ", from " + R.ssYear : "")} id="ssTotal" /></div><div className="dsh-fig dsh-md">{R.ss != null ? money(R.ss) : "—"}<small>per month</small></div></div> : null}
         </div>
         {!R.abroad ? <div className="dsh-fields dsh-fields-sm"><div className="dsh-row3"><ClaimField pr={pr} set={set} />{pr.who === "couple" ? <ClaimField pr={pr} set={set} i={1} /> : <div />}<div className="dsh-hint dsh-self-end">The same ages as on Income: change them in either place.</div></div></div> : null}
       </Tile>

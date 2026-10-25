@@ -21,7 +21,7 @@ import { useWidth } from "./charts";
 import { Frame } from "./Frame";
 import { longDate, money, shortMoney } from "./format";
 import { ASSET_GROUPS, ASSET_KINDS, DEBT_GROUPS, DEBT_KINDS, groupOf, kindName, type Group } from "./kinds";
-import { Tile } from "./ui";
+import { Tile, TipLabel } from "./ui";
 import { entryFrom, netWorth, newId, sum, today, useDashboard, withEntry, type Entry, type Item } from "./store";
 
 const byGroup = (items: Item[], side: Item["side"]) => {
@@ -125,7 +125,7 @@ function List({ items, side }: { items: Item[]; side: Item["side"] }) {
   const sorted = rows.slice().sort((a, b) => kinds.findIndex((k) => k.kind === a.kind) - kinds.findIndex((k) => k.kind === b.kind));
   return (
     <table className="dsh-tbl dsh-ltbl">
-      <thead><tr><th>Name</th><th>Type</th><th>{debt ? "Amount owed" : "Amount"}</th>{debt ? <th>Interest rate</th> : null}</tr></thead>
+      <thead><tr><th>Name</th><th>{debt ? "Type" : <TipLabel text="Type" id="assetType" />}</th><th>{debt ? "Amount owed" : "Amount"}</th>{debt ? <th><TipLabel text="Interest rate" id="debtRate" /></th> : null}</tr></thead>
       <tbody>
         {sorted.length ? sorted.map((i) => (
           <tr key={i.id}>
