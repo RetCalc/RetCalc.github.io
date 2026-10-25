@@ -18,10 +18,10 @@ import { TipDot } from "@/components/shell/Tooltips";
 import { Frame } from "./Frame";
 import { NetWorthChart, SplitBar, Timeline, type Lane, type Readout } from "./charts";
 import { daysSince, longDate, money, shortMoney } from "./format";
-import { FACTORS, ageOf, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
+import { FACTORS, ageOf, answers, couple, history, holdings, mortgage, nameOf, nowYear, people, realGrowth, results, spendMonth, yearAt, type Results } from "./model";
 import { nextSteps } from "./nextsteps";
 import { explain } from "./readiness";
-import type { FactorId } from "@/tools/guide/calc";
+import { target, type FactorId } from "@/tools/guide/calc";
 import { flow } from "./flows";
 import { hasAccounts, netWorth, useDashboard, type DashData } from "./store";
 import { useLandedOn } from "./land";
@@ -63,6 +63,23 @@ export function Readiness({ R, pr, entries }: { R: Results; pr: DashData["profil
         ))}
       </div>
     </Tile>
+  );
+}
+
+/** The plan's answer in one sentence: on track (lasting in at least the
+    share of past markets the plan aims for), or not yet, with the first
+    change that would get there. */
+function Answer({ R, pr, entries }: { R: Results; pr: DashData["profile"]; entries: DashData["entries"] }) {
+  const goal = useMemo(() => target(answers(pr, entries)), [pr, entries]);
+  const how = useMemo(() => (R.success != null && R.success < goal ? explain("outlook", pr, entries, R).how[0] ?? null : null), [R, goal, pr, entries]);
+  if (R.success == null || R.atRetire == null) return null;
+  const pct = Math.round(R.success * 100), lasted = pct >= 100 ? "every past market since 1926" : `${pct}% of past markets since 1926`;
+  const at = `${money(Math.round(R.atRetire / 1000) * 1000)} at ${pr.p1.retire}`;
+  return (
+    <p className="dsh-answer">
+      {R.success >= goal ? <><b>You&apos;re on track:</b> {at}, and your plan lasted in {lasted}.</>
+        : <><b>Not there yet:</b> your plan lasted in {lasted}; it aims for {Math.round(goal * 100)}%.{how ? <> One way there: {how.charAt(0).toLowerCase() + how.slice(1)}.</> : null}</>}
+    </p>
   );
 }
 
@@ -163,6 +180,7 @@ export function Overview() {
 
   return (
     <Frame current="overview" title="Dashboard" sub={names + (last ? " · updated " + longDate(last.date) : "")}>
+      <Answer R={R} pr={pr} entries={data.entries} />
       <div className="dsh-hello">{hello}</div>
       <div className="dsh-grid dsh-r1">
         <Tile icon={WalletIcon} title="Net worth" right={

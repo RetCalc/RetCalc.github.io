@@ -14,7 +14,11 @@ import type { PickerData } from "@/components/tools/picker-data";
 import { TOOLS, type ToolSub } from "@/lib/tools";
 import { Frame, SECTIONS, SignedIn } from "./Frame";
 import { Hosted, TOOL_VIEWS, householdOf, seedFor, toolHref } from "./host";
-import { useDashboard } from "./store";
+import { useDashboard, type Entry, type Profile } from "./store";
+import { collegeNeedOf } from "./college";
+import { flow } from "./flows";
+import { money } from "./format";
+import { holdings, mortgage, results } from "./model";
 import { Note } from "./ui";
 
 /** The tab that holds a tool's figures for the plan itself. */
@@ -23,14 +27,42 @@ const PLAN_TAB: Partial<Record<ToolSub, { id: string; name: string }>> = {
   tax: { id: "taxes", name: "Taxes" }, social: { id: "income", name: "Income" },
 };
 
-export function ToolsListPage({ data }: { data: PickerData }) {
+/** A line of your own figures for each tool's card. */
+function yoursFor(pr: Profile, entries: Entry[]): Partial<Record<ToolSub, string>> {
+  const R = results(pr, entries), F = flow(pr), H = holdings(entries, pr), M = mortgage(pr, entries), retire = pr.p1.retire;
+  const y: Partial<Record<ToolSub, string>> = {};
+  if (R.success != null) y.drawdown = `Your plan: lasted in ${Math.round(R.success * 100)}% of past markets`;
+  if (R.atRetire != null) y.optimizer = `Your savings at retirement: ${money(Math.round(R.atRetire / 1000) * 1000)}`;
+  if (R.ss != null && !R.abroad) y.social = `Your estimate: ${money(R.ss)} per month${R.ssYear ? " from " + R.ssYear : ""}`;
+  if (retire != null) {
+    y.bridge = retire < 60 ? `You retire at ${retire}, before 59½` : `You retire at ${retire}, after 59½`;
+    y.healthcare = retire < 65 ? `You retire at ${retire}: ${65 - retire} ${65 - retire === 1 ? "year" : "years"} before Medicare` : `You retire at ${retire}, with Medicare`;
+  }
+  if (R.S) y.roth = `Traditional at retirement: ${money(Math.round(R.S.P.trad / 1000) * 1000)}`;
+  if (F.hasPay) y.fire = `You save ${money(F.invested + F.match)} per month, with the match`;
+  y.backtest = `Your mix once retired: ${pr.assume.stocks}% in stocks`;
+  const need = collegeNeedOf(pr);
+  if (need > 0) y.college = `Your plan for college: about ${money(need)} per month`;
+  y.rentbuy = pr.home === "rent" && pr.rent ? `You rent at ${money(pr.rent)} per month` : pr.home === "own" ? `You own: ${money(H.equity)} in equity` : undefined;
+  if (F.tax) y.tax = `Your taxes: ${money(F.tax.federal + F.tax.state + F.tax.fica)} per year`;
+  if (F.spend > 0) y.budget = `Your budget: ${money(F.spend)} per month`;
+  if (pr.home === "own") y.mortgage = M.owed > 0 ? (M.payoff != null ? `Paid off in ${Math.floor(M.payoff)}, at today's payment` : `${money(M.owed)} left on the mortgage`) : "No mortgage";
+  y.debt = H.debts > 0 ? `Your debts besides the mortgage: ${money(H.debts)}` : H.accounts ? "No other debts entered" : undefined;
+  return y;
+}
+
+function ToolsList({ data }: { data: PickerData }) {
+  const { data: d } = useDashboard();
+  const yours = useMemo(() => yoursFor(d.profile, d.entries), [d.profile, d.entries]);
   return (
-    <SignedIn>
-      <Frame current="tools" title="Tools" sub="Each one opens here, with what you've told us filled in">
-        <ToolsBrowser data={data} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} />
-      </Frame>
-    </SignedIn>
+    <Frame current="tools" title="Tools" sub="Each one opens here, with what you've told us filled in">
+      <ToolsBrowser data={data} hrefFor={(sub) => toolHref(sub, "/dashboard/tools")} yours={yours} />
+    </Frame>
   );
+}
+
+export function ToolsListPage({ data }: { data: PickerData }) {
+  return <SignedIn><ToolsList data={data} /></SignedIn>;
 }
 
 /* The page a tool was opened from, from its address: a dashboard page only. */

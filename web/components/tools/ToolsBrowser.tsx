@@ -61,6 +61,13 @@ const CHART_LAYOUT: Record<string, [ToolSub, "lead" | "third" | "half" | "quarte
 /* Where each card goes: the tool's own page, unless the list is shown
    somewhere that opens the tools in place (the Dashboard). */
 const HrefFor = createContext<(sub: ToolSub) => string>((sub) => `/${TOOLS[sub].path}`);
+/* A line of the visitor's own figures under each card, where the list knows
+   them (the Dashboard); none on the site's own list. */
+const Yours = createContext<Partial<Record<ToolSub, string>>>({});
+function YoursLine({ sub }: { sub: ToolSub }) {
+  const line = use(Yours)[sub];
+  return line ? <div className="tp-yours">{line}</div> : null;
+}
 
 function Name({ sub }: { sub: ToolSub }) {
   const c = TOOLS[sub];
@@ -84,6 +91,7 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
           <div>
             <h3 className="tp-lead-q">{c.q}</h3>
             <p className="toolcard-desc">It retires you in every month since 1926, through the Depression, the 1970s and 2008, with 15 withdrawal strategies to compare.</p>
+            <YoursLine sub={sub} />
             <div className="tp-lead-read">
               <div className="tp-lead-v">{Math.round(data.lasted * 100)}%</div>
               <div className="toolcard-desc">of retirements since 1926 lasted 30 years at 4% per year</div>
@@ -98,6 +106,7 @@ function ChartCard({ sub, size, data, glide }: { sub: ToolSub; size: "lead" | "t
     <ToolCardLink href={use(HrefFor)(sub)} sub={sub} i={c.i} className={"tp-card tp-" + size} charted>
       {top}
       <div className="toolcard-desc">{c.q}</div>
+      <YoursLine sub={sub} />
       <div className="tp-chart" data-bars={bars}>{chart}</div>
     </ToolCardLink>
   );
@@ -111,6 +120,7 @@ function CompactTile({ sub, glide }: { sub: ToolSub; glide: boolean }) {
       <div className="tp-tile-text">
         <Name sub={sub} />
         <div className="toolcard-desc">{c.q}</div>
+        <YoursLine sub={sub} />
       </div>
       <div className="toolcard-arrow">&#8250;</div>
     </ToolCardLink>
@@ -123,7 +133,7 @@ const VIEWS: [ToolsView, string, React.ReactNode][] = [
   ["compact", "Compact", <svg key="t" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="2" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="1.5" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /><rect x="9" y="9" width="5.5" height="5" rx="1.2" stroke="currentColor" strokeWidth="1.4" /></svg>],
 ];
 
-export function ToolsBrowser({ data, hrefFor }: { data: PickerData; hrefFor?: (sub: ToolSub) => string }) {
+export function ToolsBrowser({ data, hrefFor, yours }: { data: PickerData; hrefFor?: (sub: ToolSub) => string; yours?: Partial<Record<ToolSub, string>> }) {
   const view = useToolsView();
   // Arriving by a link inside the site, the inlined script hasn't run.
   useLayoutEffect(() => applyToolsView(), []);
@@ -167,5 +177,6 @@ export function ToolsBrowser({ data, hrefFor }: { data: PickerData; hrefFor?: (s
       </div>
     </div>
   );
-  return hrefFor ? <HrefFor value={hrefFor}>{list}</HrefFor> : list;
+  const withYours = yours ? <Yours value={yours}>{list}</Yours> : list;
+  return hrefFor ? <HrefFor value={hrefFor}>{withYours}</HrefFor> : withYours;
 }

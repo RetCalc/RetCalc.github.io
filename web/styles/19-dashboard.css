@@ -153,6 +153,12 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-secs .dsh-go { margin-left: auto; }
 
 /* The overview's rows */
+/* Your own figure on a tool's card (the Tools tab). */
+.dsh .tp-yours { margin-top: 6px; font-size: 12.5px; font-weight: 600; color: var(--ds-text); }
+
+/* The Dashboard's answer, first thing on the page. */
+.dsh-answer { margin: 0 0 12px; font-size: 18px; line-height: 1.45; letter-spacing: -.01em; }
+.dsh-answer b { font-weight: 600; }
 .dsh-hello { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 16px; border: 1px solid var(--ds-rule); border-radius: 14px; background: var(--ds-surface); font-size: 14px; }
 .dsh-hello .dsh-segs { width: 180px; }
 .dsh-hello .dsh-r { margin-left: auto; display: flex; gap: 10px; align-items: center; }
@@ -397,6 +403,26 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-embed .bgcols { display: flex; justify-content: flex-end; gap: 8px; padding: 0 120px 6px 0; font-size: 11.5px; color: var(--ds-muted); }
 .dsh-embed .bgcols span { width: 140px; }
 .dsh-embed .bgview { display: none; }
+/* One look for every card on the dashboard: the tools' own cards (and
+   Plan summary's) take the tiles' corners, surface and 14px titles. */
+.dsh [data-slot="card"] { border-radius: 16px; border-color: var(--ds-rule); background: var(--ds-surface); }
+.dsh [data-slot="card-title"] { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+/* One headline per page: the tab's own figures lead, in amber; a tool's
+   repeat of them is left out (the budget's total, the paycheck's saving)
+   or set in plain text. */
+.dsh-embed [data-readout] .text-primary { color: var(--ds-text); }
+.dsh-embed #asideBudget [data-readout] { display: none; }
+.dsh-embed #asideBudget [data-readout] + * { border-top: 0; }
+.dsh-embed #tab-paycheck [data-readout] > [data-pair]:first-child { display: none; }
+.dsh-embed #tab-paycheck [data-readout] > [data-pair]:first-child + * { border-left: 0; padding-left: 0; margin-top: 0; border-top: 0; padding-top: 0; }
+.dsh-embed #tab-paycheck .text-primary { color: var(--ds-text); }
+/* Tools: the tab's title is the page's own; the lead card's sample figure
+   gives way to yours. */
+.dsh .tp-head .toolhead-name { display: none; }
+.dsh .tp-head { justify-content: flex-end; }
+.dsh .tp-yours + .tp-lead-read { display: none; }
+.dsh .tp-lead .tp-yours { margin-top: 18px; font-size: 15px; }
+
 /* The simulator's copy from the site's calculators: the dashboard fills it itself. */
 .dsh-embed #ddCopy { display: none; }
 /* Nor its "New here?" note: the Retirement tab says what it's for. */
@@ -447,6 +473,16 @@ html:has(.dsh-about) { scroll-padding-top: 16px; }
 @keyframes dsh-landed { 0%, 35% { box-shadow: 0 0 0 3px var(--ds-amber), 0 0 24px 4px color-mix(in oklab, var(--ds-amber) 35%, transparent); } 100% { box-shadow: 0 0 0 3px transparent, 0 0 24px 4px transparent; } }
 .dsh [data-landed] { animation: dsh-landed 1.6s ease-out both; }
 @media (prefers-reduced-motion: reduce) { .dsh [data-landed] { animation-duration: 1.6s; animation-timing-function: steps(1, end); } }
+
+/* Very wide screens with a mouse: the rail keeps its labels showing, in
+   room that's spare there, and the page stays the width it has at 1440px
+   (1440 less the 68px rail), so nothing on it resizes. */
+@media (min-width: 1700px) and (hover: hover) {
+  .dsh-app { grid-template-columns: 236px minmax(0, 1fr); }
+  .dsh-rail-in, .dsh-rail:hover .dsh-rail-in, .dsh-rail:focus-within .dsh-rail-in { width: 236px; box-shadow: none; }
+  .dsh-rail .dsh-brand span, .dsh-ri span { opacity: 1; }
+  .dsh-page { max-width: 1372px; }
+}
 
 /* Phones and touch screens (see the frame's note near the top). */
 @media (max-width: 760px), (hover: none) and (pointer: coarse) {

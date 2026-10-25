@@ -952,9 +952,14 @@ export function ddOptsFromState(d){
   var ss = {annual: 0, delay: 0, annual2: 0, delay2: 0, annual3: 0, delay3: 0, total: 0};
   var couple = d.ssWho === "couple";
   if (d.ssMode === "manual") {
-    var amt = v("ssAmount", 0) + (couple ? v("ssAmount2", 0) : 0), raw = v("ssDelay", 0);
-    ss.annual = amt; ss.total = amt;
-    ss.delay = retireAge != null ? Math.max(0, Math.round(raw - retireAge)) : Math.max(0, Math.round(raw));
+    var a1 = v("ssAmount", 0), a2 = couple ? v("ssAmount2", 0) : 0, raw = v("ssDelay", 0), raw2 = v("ssDelay2", null);
+    var delayOf = function (r) { return retireAge != null ? Math.max(0, Math.round(r - retireAge)) : Math.max(0, Math.round(r)); };
+    if (couple && a2 > 0 && raw2 != null) {
+      // Each of a couple's benefits from its own start.
+      ss.annual = a1; ss.delay = delayOf(raw); ss.annual2 = a2; ss.delay2 = delayOf(raw2); ss.total = a1 + a2;
+    } else {
+      ss.annual = a1 + a2; ss.total = a1 + a2; ss.delay = delayOf(raw);
+    }
   } else if (d.ssMode === "est") {
     ss = ssDrawdownStreams(v("ssIncome", 0), v("ssClaim", 67), v("ssIncome2", 0), v("ssClaim2", 67),
       couple, retireAge, v("ssDelay", 0));

@@ -24,7 +24,7 @@ export const ALL_TOGETHER = "Everything else";
 const FREQ: Record<Per, string> = { week: "52", "2weeks": "26", twice: "24", month: "12", year: "26" };
 const PER_OF: Record<string, Per> = { "52": "week", "26": "2weeks", "24": "twice", "12": "month" };
 /** Pay before taxes over a year, as the paycheck reads it. */
-const grossOf = (p: Person) => (p.pay == null ? null : (p.pay * PER_YEAR[p.per]) / (p.taxed === "after" ? 0.76 : 1));
+const grossOf = (p: Person, abroad = false) => (p.pay == null ? null : (p.pay * PER_YEAR[p.per]) / (p.taxed === "after" && !abroad ? 0.76 : 1));
 /** Where taxes are figured: the state, or a stand-in outside the US. */
 export const taxState = (pr: Profile) => (!pr.state || pr.state === OUTSIDE_US ? "IL" : pr.state);
 
@@ -39,9 +39,11 @@ export function budgetFor(pr: Profile): BudgetInputs {
 
 function overlay(b: BudgetInputs, pr: Profile): BudgetInputs {
   const two = pr.who === "couple" && (pr.p2.pay ?? 0) > 0;
-  const g1 = grossOf(pr.p1), g2 = two ? grossOf(pr.p2) : null;
+  // Outside the US pay is entered after taxes and the paycheck takes none.
+  const abroad = pr.state === OUTSIDE_US;
+  const g1 = grossOf(pr.p1, abroad), g2 = two ? grossOf(pr.p2, abroad) : null;
   return {
-    ...b,
+    ...b, pcNoTax: abroad,
     ...(g1 != null ? { pcGross: dollarsField(g1), pcFreq: FREQ[pr.p1.per] } : {}),
     ...(g2 != null ? { pcGross2: dollarsField(g2), pcFreq2: FREQ[pr.p2.per] } : {}),
     pcStatus: pr.who !== "couple" ? "s" : two ? "m2" : "m",
@@ -79,7 +81,7 @@ export function fromBudget(pr: Profile, b: BudgetInputs): Profile {
     // The pay's own "how often" stays, unless the paychecks were changed there.
     const per = f !== FREQ[p.per] ? PER_OF[f] ?? p.per : p.per;
     // Unchanged in the tool: the pay stays as it was entered (after taxes, say).
-    if (per === p.per && Math.abs(g - (grossOf(p) ?? 0)) < 1) return p;
+    if (per === p.per && Math.abs(g - (grossOf(p, pr.state === OUTSIDE_US) ?? 0)) < 1) return p;
     return g > 0 ? { ...p, per, taxed: "before", pay: Math.round(((g / PER_YEAR[per]) * 100)) / 100 } : p;
   };
   const spend = budgetTotals(b).spentYr / 12;
@@ -198,7 +200,7 @@ export function socialBenefits(s: SocialInputs): { you: number; spouse: number |
 /** The Drawdown Simulator on the plan: what's saved at retirement, the
     years to 95, the stock mix, Social Security and the strategy come from
     the profile; the strategy's own settings are the ones saved there. */
-export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; retire: number } | null): DrawdownState {
+export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; taxYr: number; years: number; ss1: number; ss2: number; claim: number; claim2?: number | null; retire: number } | null): DrawdownState {
   const cur = withDefaults(DRAWDOWN_DEF, pr.tools.drawdown ?? {});
   if (!plan) return cur;
   const couple = pr.who === "couple" && plan.ss2 > 0;
@@ -209,6 +211,8 @@ export function drawdownFor(pr: Profile, plan: { fv: number; spendYr: number; ta
     ssMode: plan.ss1 > 0 ? "manual" : "none", ssWho: couple ? "couple" : "single",
     ssAmount: Math.round(plan.ss1 * 12), ssAmount2: Math.round(plan.ss2 * 12), ssDelay: plan.claim,
   });
+  // Each of you from your own start year.
+  if (couple && plan.claim2 != null) next.ssDelay2 = String(Math.round(plan.claim2));
   // The starting rate: the plan's spending in its first year, with a year's
   // tax on it; Social Security pays part of it once claimed, savings the
   // rest. Always from the plan, so the two can't drift apart.

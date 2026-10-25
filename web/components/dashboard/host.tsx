@@ -19,7 +19,7 @@ import { RENTBUY_DEFAULTS } from "@/tools/rentbuy/model";
 import { groupDigits } from "@/lib/format";
 import { budgetFor, drawdownFor, flow, socialFor, taxFor, taxState } from "./flows";
 import { advancedFor, collegeFor, stagesFor } from "./calc";
-import { ageOf, contribMonth, couple, grossYear, holdings, results, spendMonth } from "./model";
+import { ageOf, contribMonth, couple, drawdownPlan, grossYear, holdings, results, spendMonth } from "./model";
 import type { Entry, Profile } from "./store";
 
 const pick = <T,>(load: () => Promise<T>) => dynamic(load as () => Promise<React.ComponentType>, { ssr: false });
@@ -73,7 +73,7 @@ export function seedFor(pr: Profile, entries: Entry[]): (id: string) => ToolInpu
       case "social": return socialFor(pr);
       case "drawdown": {
         const R = results(pr, entries), S = R.S;
-        const plan = S && R.retireYear ? { fv: S.fv, spendYr: S.spend, taxYr: S.taxYr, years: S.years, ss1: R.ss1 ?? 0, ss2: R.ss2 ?? 0, claim: R.claim1 ?? 67, retire: S.retire } : null;
+        const plan = S && R.retireYear ? drawdownPlan(S, R.ss1, R.ss2, R.claim1) : null;
         return drawdownFor(pr, plan);
       }
       case "rentbuy": return {

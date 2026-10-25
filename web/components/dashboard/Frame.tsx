@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BanknoteIcon, CalculatorIcon, MenuIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
+  BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
    SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
 } from "lucide-react";
 import { Brandmark } from "@/components/shell/Brandmark";
@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { useAccount } from "@/components/account/AccountProvider";
 import { AccountButton } from "@/components/account/AccountButton";
-import { setThemeChoice, useTheme } from "@/lib/theme";
+import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
 import { useLanding } from "./land";
 import { OUTSIDE_US, hasAccounts, readDashboard, unstarted, useDashboard } from "./store";
 
@@ -44,12 +44,20 @@ export const SECTIONS: { id: Section; name: string; icon: LucideIcon }[] = [
 ];
 export const hrefFor = (s: Section) => (s === "overview" ? "/dashboard" : "/dashboard/" + s);
 
-function toggleTheme() {
-  setThemeChoice(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+/* The theme switch steps through light, dark and the device's own setting,
+   as the site's switch offers. */
+const NEXT_THEME: Record<ThemeChoice, ThemeChoice> = { light: "dark", dark: "system", system: "light" };
+const THEME_WORDS: Record<ThemeChoice, string> = { light: "Light mode", dark: "Dark mode", system: "Match my device" };
+function ThemeButton({ className }: { className: string }) {
+  const choice = useThemeChoice(), Icon = choice === "light" ? SunIcon : choice === "dark" ? MoonIcon : MonitorIcon;
+  return (
+    <button type="button" className={className} onClick={() => setThemeChoice(NEXT_THEME[choice])} aria-label={`${THEME_WORDS[choice]}: switch to ${THEME_WORDS[NEXT_THEME[choice]].toLowerCase()}`}>
+      <Icon aria-hidden="true" /><span>{THEME_WORDS[choice]}</span>
+    </button>
+  );
 }
 
 function Rail({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
-  const theme = useTheme();
   return (
     <nav className="dsh-rail" aria-label="Dashboard">
       <div className="dsh-rail-in">
@@ -63,9 +71,7 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
         ))}
         <div className="dsh-rail-gap" />
         <div className="dsh-rail-hr" />
-        <button type="button" className="dsh-ri" onClick={toggleTheme} aria-label={theme === "light" ? "Light mode: switch to dark" : "Dark mode: switch to light"}>
-          {theme === "light" ? <SunIcon aria-hidden="true" /> : <MoonIcon aria-hidden="true" />}<span>{theme === "light" ? "Light mode" : "Dark mode"}</span>
-        </button>
+        <ThemeButton className="dsh-ri" />
         <Link href="/" className="dsh-ri"><ChevronLeftIcon aria-hidden="true" /><span>Back to RetCalc</span></Link>
       </div>
     </nav>
@@ -76,7 +82,6 @@ function Rail({ current, dots }: { current: Section; dots: Partial<Record<Sectio
     bar, with the theme switch and the way back to the site. */
 function MobileMenu({ current, dots }: { current: Section; dots: Partial<Record<Section, boolean>> }) {
   const [open, setOpen] = useState(false);
-  const theme = useTheme();
   return (
     <div className="dsh-burger">
       <Button variant="outline" size="icon" aria-label="Open the dashboard menu" aria-expanded={open} onClick={() => setOpen(true)}><MenuIcon aria-hidden="true" /></Button>
@@ -96,9 +101,7 @@ function MobileMenu({ current, dots }: { current: Section; dots: Partial<Record<
             ))}
           </nav>
           <div className="dsh-menu-foot">
-            <button type="button" className="dsh-mi" onClick={toggleTheme}>
-              {theme === "light" ? <SunIcon aria-hidden="true" /> : <MoonIcon aria-hidden="true" />}<span>{theme === "light" ? "Light mode" : "Dark mode"}</span>
-            </button>
+            <ThemeButton className="dsh-mi" />
             <Link href="/" className="dsh-mi"><ChevronLeftIcon aria-hidden="true" /><span>Back to RetCalc</span></Link>
           </div>
         </DialogContent>

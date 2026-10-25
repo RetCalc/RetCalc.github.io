@@ -65,6 +65,9 @@ export function rowRole(b: BudgetInputs, r: BudgetRow): "count" | "save" | "work
 export type HsaCov = "self" | "family" | "self2";
 
 export interface PcInput {
+  /** No US income or payroll tax: pay entered after taxes, outside the US
+      (the Dashboard's; the site's own tab never sets it). */
+  noTax?: boolean;
   /** Each person's gross pay, a year (the spouse's 0 unless two incomes). */
   gross: number;
   gross2: number;
@@ -132,7 +135,7 @@ export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
     match: [{ rate: n(b.pcMatchRate), upTo: n(b.pcMatchUpTo) }, { rate: n(b.pcMatchRate2), upTo: n(b.pcMatchUpTo2) }],
     hsa: b.pcHsaFamily ? "family" : two && b.pcHsaBoth ? "self2" : "self",
     efCap: n(b.pcEfCap), efOn, roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth, rothIra: b.pcIraRoth !== false },
-    spendYear, order: pcOrder(b.pcOrder).filter((s) => s !== "ef" || efOn), amounts,
+    spendYear, order: pcOrder(b.pcOrder).filter((s) => s !== "ef" || efOn), amounts, noTax: !!b.pcNoTax,
   };
 }
 
@@ -256,13 +259,14 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const roth401s = [0, 1].map((i) => (pi.roth.match ? sp.match[i] : 0) + (pi.roth.k401max ? sp.k401max[i] : 0)) as [number, number];
   const hsas = sp.hsa, healths = pi.health;
   const iras = [0, 1].map((i) => (pi.roth.rothIra ? 0 : sp.rothIra[i]));
-  const R = computeTax({
+  const R0 = computeTax({
     status: pi.status, gross: pi.gross, gross2: pi.gross2, pre: 0, dedType: "std", item: 0, state: pi.state,
     // In a 401(k) at work, traditional or Roth, is what phases out the IRA deduction.
     ded: [0, 1].map((i) => ({ k401: k401s[i] * p, ira: iras[i] * p, hsa: hsas[i] * p, health: healths[i] * p, other: 0,
       covered: sp.match[i] + sp.k401max[i] > 0 })),
   }) as { federal: number; state: number; fica: number; ss1: number; ss2: number; addl: number; stateName: string; bands: PcBand[]; fedTaxable: number;
     preTax: { addBack: number; ficaOff: number[]; magi: number; people: { iraDed: number }[] } | null };
+  const R = pi.noTax ? { ...R0, federal: 0, state: 0, fica: 0, ss1: 0, ss2: 0, addl: 0, bands: [], fedTaxable: 0 } : R0;
   const gross1 = pi.gross / p, gross2 = pi.gross2 / p, check = gross1 + gross2;
   const sum = (x: number[]) => x[0] + x[1];
   const k401 = sum(k401s), roth401 = sum(roth401s), hsa = sum(hsas), health = sum(healths);
@@ -278,7 +282,7 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const taxable = [0, 1].map((i) => Math.max(0, grosses[i] - (k401s[i] + hsas[i] + healths[i]) * p - (R.preTax?.people[i].iraDed ?? 0)));
   const tShare = (i: number) => (taxable[0] + taxable[1] > 0 ? taxable[i] / (taxable[0] + taxable[1]) : i === 0 ? 1 : 0);
   const ficaWage = [0, 1].map((i) => Math.max(0, grosses[i] - (R.preTax?.ficaOff[i] ?? 0)));
-  const medRate = yearData().fica.medRate;
+  const medRate = pi.noTax ? 0 : yearData().fica.medRate;
   const fShare = (i: number) => (ficaWage[0] + ficaWage[1] > 0 ? ficaWage[i] / (ficaWage[0] + ficaWage[1]) : 0);
   const people = [0, 1].map((i): PcPerson => {
     const g = grosses[i] / p, f = R.federal * tShare(i) / p, st = R.state * tShare(i) / p;

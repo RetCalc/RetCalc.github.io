@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { CardHeading } from "./card-heading"
 
 /* "flush" drops the card's own vertical padding and gaps, for a card that
    opens with a full-bleed panel (the headline figures) instead of a header. */
@@ -34,10 +35,11 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-// Every card title on the site heads a section of its page, so it's an h2.
+// Every card title heads a section of its page: an h2, or an h3 inside a
+// section that sets it (card-heading.tsx).
 function CardTitle({ className, ...props }: React.ComponentProps<"h2">) {
   return (
-    <h2
+    <CardHeading
       data-slot="card-title"
       className={cn(
         "m-0 flex flex-wrap items-center gap-x-2 text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",

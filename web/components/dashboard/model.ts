@@ -209,7 +209,12 @@ export function planGap(pr: Profile): string | null {
 
 /** The plan's numbers the Drawdown Simulator starts from. */
 export function drawdownPlan(S: Sim | null, ss1: number | null, ss2: number | null, claim: number | null) {
-  return S ? { fv: S.fv, spendYr: S.spend, taxYr: S.taxYr, years: S.years, ss1: ss1 ?? 0, ss2: ss2 ?? 0, claim: claim ?? 67, retire: S.retire } : null;
+  if (!S) return null;
+  // The partner's claiming age, counted in the first person's years (the
+  // simulator's ages are the first person's): their own start year.
+  const P = S.P as unknown as { age1?: number; age2?: number | null };
+  const claim2 = ss2 && P.age1 != null && P.age2 != null ? S.ss.claim2 + (P.age1 - P.age2) : null;
+  return { fv: S.fv, spendYr: S.spend, taxYr: S.taxYr, years: S.years, ss1: ss1 ?? 0, ss2: ss2 ?? 0, claim: claim ?? 67, claim2, retire: S.retire };
 }
 
 export function results(pr: Profile, entries: Entry[]): Results {

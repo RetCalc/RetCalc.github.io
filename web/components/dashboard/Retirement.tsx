@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowDownToLineIcon, BookOpenIcon, SunsetIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CardHeadingLevel } from "@/components/ui/card-heading";
 import type { ToolInputs } from "@/components/tools/ToolState";
 import { DD_UI } from "@/tools/drawdown/text";
 import { DrawdownDialogs } from "@/tools/drawdown/Dialogs";
@@ -93,7 +94,8 @@ export function Retirement() {
               <Hosted key={rev + "|" + JSON.stringify(plan)} household={null}
                 seed={(id) => (id === "drawdown" ? (drawdownFor(pr, plan) as unknown as ToolInputs) : undefined)}
                 keep={(id, d) => { if (id === "drawdown") set((p) => fromDrawdown(p, d as unknown as DrawdownState, opened)); }}>
-                <Drawdown />
+                {/* Inside this tile, the simulator's own card titles sit one level down. */}
+                <CardHeadingLevel value={3}><Drawdown /></CardHeadingLevel>
               </Hosted>
             </div>
           </Tile>

@@ -97,6 +97,8 @@ const PAYCHECK_DEFAULTS = {
   /** With two incomes and no family coverage: self-only for each of you
       (two self-only limits), not just one of you. */
   pcHsaBoth: false,
+  /** No US taxes on the paycheck (the Dashboard, outside the US). */
+  pcNoTax: false,
   /** The lines' order, comma separated. */
   pcOrder: "match,ef,hsa,rothIra,k401max,brok",
   /** The plan the sliders were last set from ("" once one is moved by hand). */

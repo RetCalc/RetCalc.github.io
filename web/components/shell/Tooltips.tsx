@@ -21,7 +21,7 @@ async function textFor(key: string | null, own?: string | null): Promise<string>
 /** A "?" for glossary entry `k`, or with `text` of its own (a figure
     worked out on the page). */
 export function TipDot({ k, title, text }: { k: string; title?: string; text?: string }) {
-  return <span className="tipdot" data-tip={k} data-tip-title={title} data-tip-text={text} role="button" tabIndex={0} aria-label="What is this?">?</span>;
+  return <span className="tipdot" data-tip={k} data-tip-title={title} data-tip-text={text} role="button" tabIndex={0} aria-label={title ? "About " + title : "What is this?"}><span aria-hidden="true">?</span></span>;
 }
 
 /** Label text ending in a "?". The last word and the dot are kept together,
@@ -77,6 +77,25 @@ export function Tooltips() {
   useEffect(() => {
     if (sheet) closeBtn.current?.focus({ preventScroll: true });
   }, [sheet]);
+
+  // Each dot is named for what it explains ("About Readiness score"), so a
+  // screen reader doesn't read out a row of identical "What is this?"
+  // buttons. Named as dots appear, from the label or heading they sit in.
+  useEffect(() => {
+    let raf = 0;
+    const name = () => {
+      raf = 0;
+      document.querySelectorAll<HTMLElement>(".tipdot:not([data-named])").forEach((d) => {
+        const t = titleOf(d);
+        if (t) d.setAttribute("aria-label", "About " + t);
+        d.setAttribute("data-named", "");
+      });
+    };
+    name();
+    const mo = new MutationObserver(() => { if (!raf) raf = requestAnimationFrame(name); });
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { mo.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, []);
 
   useEffect(() => {
     const dotOf = (e: Event) => (e.target as Element).closest?.(".tipdot") as HTMLElement | null;
