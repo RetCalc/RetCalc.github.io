@@ -152,7 +152,7 @@ export function Landing({ signedIn }: { signedIn: boolean }) {
       </Feature>
       <Feature kicker="Retirement" title="Test your retirement plan against past markets." sub="Choose from 15 withdrawal strategies and see how often your plan lasted in every market since 1926."
         points={["What you'll have, what you'll spend and the taxes on it", "Social Security for each of you, from the age you claim", "A short explanation of each strategy"]}>
-        <Shot name="retirement" w={2000} h={1260} sizes="(max-width: 900px) 100vw, 760px" alt="Retirement: savings at retirement, chance of success, spending, taxes, Social Security and the withdrawal strategies" />
+        <Shot name="retire-tile" w={1512} h={562} sizes="(max-width: 900px) 100vw, 760px" alt="At retirement: savings, chance of success, planned spending, taxes and Social Security, and when each of you claims" />
       </Feature>
       <Feature flip kicker="Next steps" title="Know what to work on next." sub="A short list of changes, ranked by how much each one improves your plan, with a link to make each one.">
         <Shot name="next" w={1734} h={778} sizes="(max-width: 900px) 100vw, 760px" alt="What to do next: four changes, ranked" />
