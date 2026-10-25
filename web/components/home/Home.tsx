@@ -191,7 +191,7 @@ export function Home({ data }: { data: HomeData }) {
 function DashboardButton() {
   const { ready, account } = useAccount();
   if (!ready || !account) return null;
-  return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My dashboard<Badge variant="highlight">Beta</Badge></Link>;
+  return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My Dashboard<Badge variant="highlight">Beta</Badge></Link>;
 }
 
 const ROWS = ["", "hm-r1", "hm-r2", "hm-r3", "hm-r4", "hm-r5", "hm-r6", "hm-r7", "hm-r8", "hm-r9", "hm-r10"] as const;
