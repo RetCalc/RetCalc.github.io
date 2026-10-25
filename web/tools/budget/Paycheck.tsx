@@ -60,6 +60,9 @@ export function Paycheck({ s, set, setState }: {
   setState: SetState;
 }) {
   const store = useToolStore(), go = useToolNav(), scope = useToolScope();
+  // The Dashboard keeps pay, filing status, state and the match itself, and
+  // says them here in place of the fields.
+  const facts = scope?.slots?.payFacts;
   const taxState = store.read("tax", TAX_DEFAULTS).state;
   const pi = paycheckInput(s, taxState);
   const r = paycheckRun(pi);
@@ -96,43 +99,47 @@ export function Paycheck({ s, set, setState }: {
           <Card>
             <CardHeader><CardTitle>{two ? "Your paychecks" : "Your paycheck"}</CardTitle></CardHeader>
             <CardContent>
-              {/* Filing status first: it decides whether there's one pay to
-                  ask for or two. Switching to two incomes starts the HSA on
-                  one each: two earners usually each have their own plan. */}
-              <SelectField id="pcStatus" label="Filing status" value={s.pcStatus}
-                onChange={(v) => setState((c) => ({ ...c, pcStatus: v, ...(v === "m2" && c.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}) }))}>
-                <option value="s">Single</option>
-                <option value="m">Married, one income</option>
-                <option value="m2">Married, two incomes</option>
-              </SelectField>
-              {two ? (
+              {facts ?? (
                 <>
-                  <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                    <MoneyField id="pcGross" label="Your gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
-                    <MoneyField id="pcGross2" label="Spouse's gross pay, per year" value={s.pcGross2} onValueChange={set("pcGross2")} />
-                  </div>
-                  {/* Each person's own schedule: it sets their check in the itemized paycheck. */}
-                  <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                    <SelectField id="pcFreq" label="You're paid" value={s.pcFreq} onChange={set("pcFreq")}>
-                      {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </SelectField>
-                    <SelectField id="pcFreq2" label="Your spouse is paid" value={s.pcFreq2} onChange={set("pcFreq2")}>
-                      {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </SelectField>
-                  </div>
-                  <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up; the itemized paycheck shows each of your checks. Taxed together as a joint return.</div>
-                </>
-              ) : (
-                <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                  <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
-                  <SelectField id="pcFreq" label="Paid" value={s.pcFreq} onChange={set("pcFreq")}>
-                    {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  {/* Filing status first: it decides whether there's one pay to
+                      ask for or two. Switching to two incomes starts the HSA on
+                      one each: two earners usually each have their own plan. */}
+                  <SelectField id="pcStatus" label="Filing status" value={s.pcStatus}
+                    onChange={(v) => setState((c) => ({ ...c, pcStatus: v, ...(v === "m2" && c.pcStatus !== "m2" ? { pcHsaFamily: false, pcHsaBoth: true } : {}) }))}>
+                    <option value="s">Single</option>
+                    <option value="m">Married, one income</option>
+                    <option value="m2">Married, two incomes</option>
                   </SelectField>
-                </div>
+                  {two ? (
+                    <>
+                      <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                        <MoneyField id="pcGross" label="Your gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
+                        <MoneyField id="pcGross2" label="Spouse's gross pay, per year" value={s.pcGross2} onValueChange={set("pcGross2")} />
+                      </div>
+                      {/* Each person's own schedule: it sets their check in the itemized paycheck. */}
+                      <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                        <SelectField id="pcFreq" label="You're paid" value={s.pcFreq} onChange={set("pcFreq")}>
+                          {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        </SelectField>
+                        <SelectField id="pcFreq2" label="Your spouse is paid" value={s.pcFreq2} onChange={set("pcFreq2")}>
+                          {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                        </SelectField>
+                      </div>
+                      <div className="hint -mt-1.5 mb-3.5">Planned by the month, since two paychecks rarely line up; the itemized paycheck shows each of your checks. Taxed together as a joint return.</div>
+                    </>
+                  ) : (
+                    <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                      <MoneyField id="pcGross" label="Gross pay, per year" value={s.pcGross} onValueChange={set("pcGross")} />
+                      <SelectField id="pcFreq" label="Paid" value={s.pcFreq} onChange={set("pcFreq")}>
+                        {FREQS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      </SelectField>
+                    </div>
+                  )}
+                  <SelectField id="pcState" label="State" value={pi.state} onChange={set("pcState")}>
+                    {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
+                  </SelectField>
+                </>
               )}
-              <SelectField id="pcState" label="State" value={pi.state} onChange={set("pcState")}>
-                {STATE_OPTIONS.map((o) => <option key={o.code} value={o.code}>{o.name}</option>)}
-              </SelectField>
 
               <GroupHead>Through work</GroupHead>
               {/* The mock's one field: the Budget's Health insurance row per check
@@ -156,16 +163,20 @@ export function Paycheck({ s, set, setState }: {
                   ) : <div className="hint">Health, dental and vision.</div>}
                 </Field>
               ) : null}
-              <div className="grid grid-cols-2 items-end gap-x-2.5">
-                <NumberField id="pcMatchRate" label={two ? "Your 401(k) match" : "Employer 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
-                <NumberField id="pcMatchUpTo" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo} onValueChange={set("pcMatchUpTo")} />
-              </div>
-              {two ? (
-                <div className="grid grid-cols-2 items-end gap-x-2.5">
-                  <NumberField id="pcMatchRate2" label="Spouse's 401(k) match" unit="%" step={5} max={200} value={s.pcMatchRate2} onValueChange={set("pcMatchRate2")} />
-                  <NumberField id="pcMatchUpTo2" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo2} onValueChange={set("pcMatchUpTo2")} />
-                </div>
-              ) : null}
+              {facts ? null : (
+                <>
+                  <div className="grid grid-cols-2 items-end gap-x-2.5">
+                    <NumberField id="pcMatchRate" label={two ? "Your 401(k) match" : "Employer 401(k) match"} unit="%" step={5} max={200} value={s.pcMatchRate} onValueChange={set("pcMatchRate")} />
+                    <NumberField id="pcMatchUpTo" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo} onValueChange={set("pcMatchUpTo")} />
+                  </div>
+                  {two ? (
+                    <div className="grid grid-cols-2 items-end gap-x-2.5">
+                      <NumberField id="pcMatchRate2" label="Spouse's 401(k) match" unit="%" step={5} max={200} value={s.pcMatchRate2} onValueChange={set("pcMatchRate2")} />
+                      <NumberField id="pcMatchUpTo2" label="On the first" unit="% of pay" step={1} max={100} value={s.pcMatchUpTo2} onValueChange={set("pcMatchUpTo2")} />
+                    </div>
+                  ) : null}
+                </>
+              )}
               {/* With two incomes the HSA's limit depends on whose coverage: one
                   self-only plan, one each, or family (one shared limit). */}
               <SelectField id="pcHsaCov" label="HSA coverage" value={pi.hsa}

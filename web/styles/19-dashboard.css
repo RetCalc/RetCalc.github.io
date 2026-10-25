@@ -241,6 +241,9 @@ body:has(.dsh) main { max-width: none; padding: 0; margin: 0; display: block; }
 .dsh-facts dt { color: var(--ds-muted); }
 .dsh-facts dd { margin: 0 0 0 auto; text-align: right; }
 .dsh-facts .dsh-todo dd { color: var(--ds-muted); }
+.dsh-payfacts { margin-bottom: 18px; }
+.dsh-payfacts .dsh-facts { margin-top: 0; }
+.dsh-payfacts .dsh-facts div:first-child { border-top: 0; padding-top: 0; }
 .dsh-mini { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ds-rule); }
 .dsh-ready { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 26px; }
 @media (max-width: 1060px) { .dsh-sbody { grid-template-columns: minmax(0, 640px); } .dsh-sum { display: none; } }

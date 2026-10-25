@@ -214,8 +214,10 @@ export interface ToolScope {
       Taken in once each time a tool opens, and never recorded. */
   household?: SavedHousehold | null;
   /** What the scope's own page adds inside a tool, by place: "afterSliders"
-      is the Paycheck tab, after where the rest goes. */
-  slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode };
+      is the Paycheck tab, after where the rest goes; "payFacts" takes the
+      place of the Paycheck's pay, filing status, state and match fields,
+      when the scope keeps those itself. */
+  slots?: { afterSliders?: ReactNode; kidsSummary?: ReactNode; payFacts?: ReactNode };
   /** How the scope covers children's costs from saving, when it has its
       own order (the Dashboard's): today's saving by account, what a stage
       takes, and the order in words, for "How will you cover this?". */
