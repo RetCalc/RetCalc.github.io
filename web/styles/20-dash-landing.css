@@ -1,0 +1,124 @@
+/* ---------- the Dashboard's front page (components/dashboard/Landing.tsx) ----------
+   Shown at /dashboard to anyone signed out, and to someone signed in who
+   hasn't started setup. The homepage's display type and the design tokens;
+   real screenshots in the site's light and dark themes, only one of each
+   pair showing. */
+
+.dl{grid-column:1 / -1;min-width:0}
+:where(.dl) :where(h1,h2,h3,p){margin:0}
+.dl a{color:inherit}
+
+.dl-lt{display:none}
+[data-theme="light"] .dl-lt{display:block}
+[data-theme="light"] .dl-dk{display:none}
+:where(.dl) img{display:block;width:100%;height:auto}
+
+/* hero */
+.dl-hero{padding:clamp(28px,6vw,72px) 0 0;text-align:center}
+.dl-eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:500;color:var(--ds-muted)}
+.dl-display{margin:18px auto 0;max-width:16ch;font-size:clamp(40px,6.6vw,84px);line-height:1;letter-spacing:-.04em;
+  font-weight:600;color:var(--ds-text);text-wrap:balance}
+.dl-display em{font-style:normal;color:var(--ds-amber)}
+.dl-lede{margin:24px auto 0;max-width:40em;font-size:clamp(17px,1.6vw,19px);line-height:1.55;color:var(--ds-muted);text-wrap:pretty}
+.dl-lede b{color:var(--ds-text);font-weight:500}
+.dl-ctas{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:30px}
+.dl-started{display:flex;gap:12px;align-items:flex-start;max-width:560px;margin:24px auto 0;padding:14px 18px;
+  border:1px solid var(--ds-rule);border-radius:14px;background:var(--ds-surface);font-size:15px;line-height:1.5;color:var(--ds-muted);text-align:left}
+.dl-started svg{flex:none;width:20px;height:20px;margin-top:2px;color:var(--ds-amber)}
+.dl-started b{color:var(--ds-text);font-weight:500}
+.dl-fine{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin-top:20px;font-size:14px;color:var(--ds-muted)}
+.dl-fine span{display:inline-flex;align-items:center;gap:7px}
+.dl-fine svg{width:16px;height:16px;color:var(--ds-brand-jade)}
+
+.dl-stage{position:relative;margin-top:56px}
+.dl-stage::before{content:"";position:absolute;inset:120px 0 -20px;border-radius:32px;z-index:0;filter:blur(24px);
+  background:radial-gradient(60% 60% at 50% 40%,color-mix(in srgb,var(--ds-brand-gold) 22%,transparent),transparent 70%)}
+.dl-window{position:relative;z-index:1;overflow:hidden;border:1px solid var(--ds-rule);border-radius:16px;
+  background:var(--ds-surface);box-shadow:var(--ds-float)}
+.dl-chrome{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-bottom:1px solid var(--ds-rule);background:var(--ds-raised)}
+.dl-chrome i{width:10px;height:10px;border-radius:50%;background:var(--ds-rule-strong)}
+.dl-chrome span{margin:0 auto;padding:3px 14px;border:1px solid var(--ds-rule);border-radius:7px;background:var(--ds-surface);
+  font-size:12.5px;color:var(--ds-muted)}
+.dl-phone{display:none}
+
+/* sections */
+.dl-sec{margin-top:clamp(80px,9vw,120px)}
+.dl-center{text-align:center}
+.dl-kicker{font-size:14px;font-weight:600;color:var(--ds-amber)}
+.dl-h2{margin-top:10px;font-size:clamp(30px,4vw,50px);line-height:1.05;letter-spacing:-.035em;font-weight:600;
+  color:var(--ds-text);text-wrap:balance}
+.dl-h2-sm{font-size:clamp(28px,3.2vw,40px)}
+.dl-sub{margin-top:16px;max-width:40em;font-size:17px;line-height:1.55;color:var(--ds-muted);text-wrap:pretty}
+.dl-center .dl-sub{margin-inline:auto}
+
+.dl-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:44px;text-align:center}
+.dl-step{display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--ds-rule);border-radius:18px;background:var(--ds-surface)}
+.dl-step-t{padding:22px 22px 20px}
+.dl-n{display:inline-grid;place-items:center;width:30px;height:30px;border:1.5px solid var(--ds-rule-strong);border-radius:50%;
+  font-weight:600;font-size:14px;color:var(--ds-text)}
+.dl-step h3{margin-top:14px;margin-bottom:6px;font-size:19px;letter-spacing:-.01em;color:var(--ds-text)}
+.dl-step p{font-size:15px;line-height:1.55;color:var(--ds-muted)}
+.dl-pic{display:flex;justify-content:center;height:230px;margin-top:auto;padding:22px 22px 0;overflow:hidden;
+  border-top:1px solid var(--ds-rule);background:color-mix(in srgb,var(--ds-brand-gold) 9%,var(--ds-ground))}
+.dl-sum{width:100%;max-width:340px;align-self:flex-start;overflow:hidden;border-radius:12px 12px 0 0;box-shadow:var(--ds-float)}
+.dl-snip{width:100%;align-self:flex-start;padding:16px 18px;border:1px solid var(--ds-rule);border-bottom:0;border-radius:12px 12px 0 0;
+  background:var(--ds-surface);box-shadow:var(--ds-float);text-align:left;font-size:13.5px;line-height:1.45;color:var(--ds-text)}
+.dl-snip p{color:var(--ds-text)}
+.dl-snrow{display:flex;gap:28px;margin-top:14px;padding-top:12px;border-top:1px solid var(--ds-rule)}
+.dl-snrow small{display:block;font-size:12px;color:var(--ds-muted)}
+.dl-snrow strong{font-size:30px;font-weight:600;letter-spacing:-.02em}
+.dl-snrow span{color:var(--ds-muted)}
+.dl-entry{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dl-fakebtn{flex:none;padding:6px 10px;border-radius:8px;background:var(--ds-amber);color:var(--ds-on-amber);font-size:12.5px;font-weight:500}
+.dl-entries{list-style:none;margin:12px 0 0;padding:0}
+.dl-entries li{display:flex;gap:10px;padding:7px 0;border-top:1px solid var(--ds-rule)}
+.dl-entries span{color:var(--ds-muted)}
+.dl-entries b{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+.dl-entries em{width:64px;text-align:right;font-style:normal;color:var(--ds-gain);font-variant-numeric:tabular-nums}
+
+.dl-feature{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,5vw,64px);align-items:center}
+.dl-flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.dl-flip .dl-copy{order:2}
+.dl-points{list-style:none;display:grid;gap:12px;margin:22px 0 0;padding:0;font-size:15.5px;color:var(--ds-text)}
+.dl-points li{display:flex;gap:10px}
+.dl-points svg{flex:none;width:18px;height:18px;margin-top:3px;color:var(--ds-brand-jade)}
+.dl-shot{overflow:hidden;border:1px solid var(--ds-rule);border-radius:16px;background:var(--ds-surface);box-shadow:var(--ds-float)}
+.dl-wide{margin-top:40px}
+
+.dl-pages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:44px;overflow:hidden;text-align:left;
+  border:1px solid var(--ds-rule);border-radius:18px;background:var(--ds-rule)}
+.dl-page{padding:22px;background:var(--ds-surface)}
+.dl-page svg{width:22px;height:22px;color:var(--ds-muted)}
+.dl-page h3{margin-top:12px;margin-bottom:4px;font-size:16.5px;color:var(--ds-text)}
+.dl-page p{font-size:14.5px;line-height:1.5;color:var(--ds-muted)}
+
+.dl-trust{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px}
+.dl-trust h3{margin-top:12px;margin-bottom:6px;font-size:19px;color:var(--ds-text)}
+.dl-trust p{font-size:15.5px;line-height:1.55;color:var(--ds-muted)}
+.dl-trust a{text-decoration:underline;text-underline-offset:3px}
+.dl-ic{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--ds-raised)}
+.dl-ic svg{width:22px;height:22px}
+.dl-ic-gold svg{color:var(--ds-brand-gold)}
+.dl-ic-jade svg{color:var(--ds-brand-jade)}
+.dl-ic-steel svg{color:var(--ds-brand-steel)}
+
+.dl-final{margin:clamp(80px,9vw,120px) 0 24px;padding:clamp(44px,6vw,72px) 24px;text-align:center;
+  border:1px solid var(--ds-rule);border-radius:28px;background:color-mix(in srgb,var(--ds-brand-gold) 9%,var(--ds-ground))}
+.dl-final .dl-h2{margin-top:0}
+.dl-final .dl-sub{margin-inline:auto}
+
+@media (max-width:1000px){.dl-pages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:900px){
+  .dl-steps,.dl-trust{grid-template-columns:1fr}
+  .dl-feature,.dl-flip{grid-template-columns:1fr}
+  .dl-flip .dl-copy{order:0}
+}
+@media (max-width:640px){
+  .dl-ctas > *{width:100%}
+  .dl-stage .dl-window{display:none}
+  .dl-stage::before{display:none}
+  .dl-phone{display:block;position:relative;width:78%;height:560px;margin:0 auto;overflow:hidden;
+    border:8px solid var(--ds-text);border-bottom:0;border-radius:36px 36px 0 0;background:var(--ds-ground);box-shadow:var(--ds-float)}
+  .dl-pic{height:auto;padding-bottom:0}
+  .dl-pages{grid-template-columns:1fr}
+}

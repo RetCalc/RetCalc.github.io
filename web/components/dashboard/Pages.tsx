@@ -1,6 +1,6 @@
 "use client";
 
-/* The Dashboard's pages, each signed in only. */
+/* The Dashboard's pages, each signed in only (the front page otherwise). */
 
 import { SignedIn, type Section } from "./Frame";
 import { Overview } from "./Overview";
@@ -30,7 +30,7 @@ export function OverviewPage() {
 }
 
 export function SetupPage() {
-  return <SignedIn><Setup /></SignedIn>;
+  return <SignedIn setup><Setup /></SignedIn>;
 }
 
 export function SectionPage({ id }: { id: Exclude<Section, "overview" | "tools"> }) {

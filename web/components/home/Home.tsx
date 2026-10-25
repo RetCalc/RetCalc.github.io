@@ -19,7 +19,6 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRightIcon, CheckIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAccount } from "@/components/account/AccountProvider";
 import type { HomeData } from "./data";
 import {
   BridgeChart, BudgetChart, CloudChart, FanChart, FireChart, GrowthChart, HealthChart, MortgageChart, RothChart, ScoreRing, TaxChart,
@@ -185,12 +184,9 @@ export function Home({ data }: { data: HomeData }) {
   );
 }
 
-/** Beside the calculator and the guide, for someone signed in: their
-    dashboard. Signed out (or before the account has loaded) it's nothing,
-    so the page is exactly as it was. */
+/** Beside the calculator and the guide, for everyone: signed out (or not
+    set up yet), /dashboard is its front page, which explains it. */
 function DashboardButton() {
-  const { ready, account } = useAccount();
-  if (!ready || !account) return null;
   return <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "xl" })}>My Dashboard<Badge variant="highlight">Beta</Badge></Link>;
 }
 

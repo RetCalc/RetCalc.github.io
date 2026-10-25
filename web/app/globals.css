@@ -35,6 +35,7 @@
 @import "../styles/16-home.css" layer(legacy);
 @import "../styles/17-report.css" layer(legacy);
 @import "../styles/18-tool-picker.css" layer(legacy);
+@import "../styles/20-dash-landing.css" layer(legacy);
 
 
 /* The site's theme script sets data-theme="dark" or "light" on <html>. */

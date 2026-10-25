@@ -6,8 +6,7 @@
    every tab at once. */
 
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import {
   BanknoteIcon, CalculatorIcon, MenuIcon, MonitorIcon, XIcon, ClipboardListIcon, InfoIcon, MoonIcon, SunIcon, GraduationCapIcon, WrenchIcon, LandmarkIcon, PiggyBankIcon, ChevronLeftIcon, HouseIcon, LayoutGridIcon, ListChecksIcon, ReceiptIcon,
    SunsetIcon, UserRoundIcon, WalletIcon, type LucideIcon,
@@ -20,7 +19,8 @@ import { useAccount } from "@/components/account/AccountProvider";
 import { AccountButton } from "@/components/account/AccountButton";
 import { setThemeChoice, useThemeChoice, type ThemeChoice } from "@/lib/theme";
 import { useLanding } from "./land";
-import { OUTSIDE_US, hasAccounts, readDashboard, unstarted, useDashboard } from "./store";
+import { Landing } from "./Landing";
+import { OUTSIDE_US, hasAccounts, unstarted, useDashboard } from "./store";
 
 import { SECTION_NAMES, type Section } from "./sections";
 
@@ -110,42 +110,24 @@ function MobileMenu({ current, dots }: { current: Section; dots: Partial<Record<
   );
 }
 
-/** Shown in place of the dashboard until someone is signed in. */
-function SignedOut() {
-  const { configured, setStep } = useAccount();
-  return (
-    <div className="dsh-center">
-      <div className="dsh-card">
-        <Brandmark />
-        <h1>Your dashboard</h1>
-        {configured ? (
-          <>
-            <p>Sign in to keep your whole financial picture in one place and come back to it whenever you update your numbers.</p>
-            <Button onClick={() => setStep({ at: "start" })}>Sign in</Button>
-          </>
-        ) : <p>Accounts aren&apos;t set up on this copy of the site.</p>}
-        <Button variant="link" nativeButton={false} render={<Link href="/" />}>Back to RetCalc</Button>
-      </div>
-    </div>
-  );
-}
-
-/** Renders `children` for a signed-in person; otherwise the sign-in card. */
-export function SignedIn({ children }: { children: ReactNode }) {
+/** Renders `children` for a signed-in person who has started setup;
+    otherwise the Dashboard's front page, with an account as the way in when
+    signed out and setup when signed in. Setup itself passes `setup`. */
+export function SignedIn({ children, setup }: { children: ReactNode; setup?: boolean }) {
   const { ready, account } = useAccount();
+  const { data } = useDashboard();
   if (!ready) return <div className="dsh" />;
-  return <div className="dsh">{account ? children : <SignedOut />}</div>;
+  if (!account) return <Landing signedIn={false} />;
+  if (!setup && unstarted(data)) return <Landing signedIn />;
+  return <div className="dsh">{children}</div>;
 }
 
-/** A dashboard page: the rail, the title bar and the page. Sends someone
-    who hasn't started setup there first. */
+/** A dashboard page: the rail, the title bar and the page. Someone who
+    hasn't started setup sees the front page instead (SignedIn). */
 export function Frame({ current, title, sub, actions, children }: { current: Section; title: string; sub?: ReactNode; actions?: ReactNode; children: ReactNode }) {
   const { data } = useDashboard();
-  const router = useRouter();
   const fresh = unstarted(data);
   useLanding();
-  // Checked against what's stored, not the first render's empty copy.
-  useEffect(() => { if (unstarted(readDashboard())) router.replace("/dashboard/setup"); }, [fresh, router]);
   // A dot on a section with something still to fill in.
   const abroad = data.profile.state === OUTSIDE_US;
   const dots: Partial<Record<Section, boolean>> = {
