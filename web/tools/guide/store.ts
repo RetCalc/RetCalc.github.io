@@ -21,6 +21,11 @@ export interface Answers {
   bgKnow?: string | null; spend?: number | null; bgSave?: number | null; bgMort?: number | null; bgHousing?: number | null; spendSrc?: string | null;
   bgRows?: unknown[] | null;
   cash?: number | null;
+  /** What the emergency fund is measured in months of, when it isn't the
+      monthly spending (the Dashboard's emergency budget), and whether that's
+      the emergency budget. Left out, it's \`spend\`. */
+  cashSpend?: number | null;
+  cashEmergency?: boolean;
   debtHas?: string | null; debtSrc?: string | null; debtTotal?: number | null; debtHi?: number | null; debtMin?: number | null;
   debtN?: number | null; debtTop?: number | null; debtExtra?: number | null; debtMonths?: number | null; debtRows?: unknown[] | null;
   home?: string | null; mortPaid?: string | null; housePay?: number | null; mortPI?: number | null; moState?: Record<string, unknown> | null;

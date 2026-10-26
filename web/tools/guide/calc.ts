@@ -346,9 +346,11 @@ export function parts(a: Answers, S: Sim | null = sim(a)): Partial<Record<Factor
     P.rate = { p, r, txt: coastNow(a) && enough ? "Coasting: what you have is enough" : pctStr(r, 1) + " of gross income" +
       (a.match === "partial" ? ", missing some match" : enough && r < 0.15 ? ", enough for your plan" : "") };
   }
-  if (ok(a.cash) && pos(a.spend)) {
-    const m = a.cash / a.spend;
-    P.cushion = { p: interp(m, [[0, 0], [1, 0.3], [3, 0.75], [6, 1]]), m, txt: months(m) + (m === 1 ? " month" : " months") + " of spending" };
+  // Months of spending, or of the emergency budget when that's what the fund is for.
+  const cushionBase = pos(a.cashSpend) ? a.cashSpend : a.spend;
+  if (ok(a.cash) && pos(cushionBase)) {
+    const m = a.cash / cushionBase!;
+    P.cushion = { p: interp(m, [[0, 0], [1, 0.3], [3, 0.75], [6, 1]]), m, txt: months(m) + (m === 1 ? " month" : " months") + (a.cashEmergency ? " of your emergency budget" : " of spending") };
   } else if (ok(a.cash) && ok(a.spend)) P.cushion = { p: 0, txt: "Needs your monthly spending", bad: "spending" };
   if (a.debtHas === "no") P.debt = { p: 1, txt: "Nothing owed besides any mortgage" };
   else if (a.debtHas === "yes" && ok(a.debtTotal) && inc > 0) {

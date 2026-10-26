@@ -163,6 +163,9 @@ export function answers(pr: Profile, entries: Entry[] = []): Answers {
   }
   if (abroad) Object.assign(a, { splitTrad: 0, splitRoth: 100, splitBrok: 0, ssOwn: 1e-6, ssOwn2: two ? 1e-6 : null, hcIncl: "yes" });
   if (H.cash != null) a.cash = H.cash;
+  // The emergency fund in months of the budget it's set for on Spending:
+  // the emergency budget when that's chosen, as the Dashboard's tile counts it.
+  if (F.efTarget > 0 && F.efMonths > 0) Object.assign(a, { cashSpend: F.efTarget / F.efMonths, cashEmergency: F.b.efEmerg && F.b.efBasis === "emergency" });
   if (H.accounts) Object.assign(a, H.debts > 0 ? { debtHas: "yes", debtTotal: H.debts, debtHi: H.debtsHigh } : { debtHas: "no" });
   // Take-home: as entered for whoever gave it, worked out for whoever
   // didn't (not outside the US), plus other income.

@@ -17,6 +17,11 @@ import { children, collegeWindows, shortfall } from "./schedule";
 import { headroom } from "./score";
 import type { Answers, Sources } from "./store";
 
+/** A month of what the emergency fund is measured against: the emergency
+    budget when that's set (the Dashboard), else monthly spending. */
+const efBase = (a: Answers) => (a.cashSpend != null && a.cashSpend > 0 ? a.cashSpend : a.spend!);
+const efWords = (a: Answers) => (a.cashEmergency ? "your emergency budget" : "spending");
+
 export type When = "This month" | "This year" | "When you're ready";
 export interface Move {
   /** Stable, for the ticks that persist. */
@@ -63,7 +68,7 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     out.push({ id: "overspend", area: "flow", when: "This month", t: "Spend " + money(a.spend! - a.takehome!) + " per month less",
       d: "You're spending more than your take-home. Go through your budget line by line and trim the biggest items until it's back in the black.", trip: "budget", btn: "Open Budget" });
   if (P.cushion && !P.cushion.bad && P.cushion.m! < 1)
-    out.push({ id: "starter", area: "cushion", when: "This month", t: "Put " + money(a.spend!) + " aside: one month of spending",
+    out.push({ id: "starter", area: "cushion", when: "This month", t: "Put " + money(efBase(a)) + " aside: one month of " + efWords(a),
       d: "A starter emergency fund, in a savings account, before anything else, so a surprise bill doesn't land on a credit card." });
   if (a.match === "partial")
     out.push({ id: "match", area: "rate", when: "This month", t: "Get all of your employer's match",
@@ -76,8 +81,8 @@ export function moves(a: Answers, F: PlanFacts): Move[] {
     out.push({ id: "match-unsure", area: "rate", when: "This month", t: "Find out whether your employer matches",
       d: "Check your benefits site or ask HR. If there's a match, contribute at least enough to get all of it." });
   if (P.cushion && !P.cushion.bad && P.cushion.m! >= 1 && P.cushion.m! < 3)
-    out.push({ id: "cushion", area: "cushion", when: "This year", t: "Grow your emergency fund to " + money(a.spend! * 3),
-      d: "You have " + months(P.cushion.m!) + " months of spending; three is " + money(a.spend! * 3) + " and six is " + money(a.spend! * 6) + ". Automate a transfer each payday until you're there." });
+    out.push({ id: "cushion", area: "cushion", when: "This year", t: "Grow your emergency fund to " + money(efBase(a) * 3),
+      d: "You have " + months(P.cushion.m!) + " months of " + efWords(a) + "; three is " + money(efBase(a) * 3) + " and six is " + money(efBase(a) * 6) + ". Automate a transfer each payday until you're there." });
   const goal = target(a), ahead = !!S && S.success >= goal - 1e-9;
   if (P.rate && P.rate.r! < 0.15 && inc > 0 && !ahead)
     out.push({ id: "rate", area: "rate", when: "This year", t: "Save " + money(Math.max(0, (inc * 0.15) / 12 - saveMo(a))) + " per month more, toward 15%",
