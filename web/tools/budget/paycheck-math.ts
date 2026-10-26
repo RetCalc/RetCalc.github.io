@@ -27,6 +27,7 @@
 import { computeTax, yearData } from "@/lib/engine/typed";
 import { parseNum } from "@/lib/format";
 import { HEALTH_SLOT, annualize, isPlannedRow, slotRow, type BudgetInputs, type BudgetRow } from "./model";
+import { localFor } from "@/tools/tax/local";
 
 /** The lines, in their default order. */
 export const PC_STEPS = ["match", "hsa", "ef", "rothIra", "k401max", "brok"] as const;
@@ -120,6 +121,13 @@ export function pcOrder(raw: string): PcStep[] {
 
 /** The tab's inputs as numbers. `taxState` is the Income Tax tool's state,
     used while the tab has none of its own. */
+/** Income Tax's local tax, when there's one in the paycheck's state. */
+function localOf(state: string, tax?: { localRate?: string; localBase?: string }): { local?: PcInput["local"] } {
+  if (!tax) return {};
+  const L = localFor(state, tax.localRate, tax.localBase);
+  return L.localRate > 0 ? { local: { rate: L.localRate, base: L.localBase } } : {};
+}
+
 export function paycheckInput(b: BudgetInputs, taxState: string, tax?: { localRate?: string; localBase?: string }): PcInput {
   const two = b.pcStatus === "m2";
   const sched = (v: string) => ([52, 26, 24, 12].includes(+v) ? +v : 26);
@@ -139,7 +147,7 @@ export function paycheckInput(b: BudgetInputs, taxState: string, tax?: { localRa
     hsa: b.pcHsaFamily ? "family" : two && b.pcHsaBoth ? "self2" : "self",
     efCap: n(b.pcEfCap), efOn, roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth, rothIra: b.pcIraRoth !== false },
     spendYear, order: pcOrder(b.pcOrder).filter((s) => s !== "ef" || efOn), amounts, noTax: !!b.pcNoTax,
-    ...(tax && parseNum(tax.localRate ?? "0") > 0 ? { local: { rate: parseNum(tax.localRate!) / 100, base: tax.localBase === "state" ? "state" as const : "wages" as const } } : {}),
+    ...localOf(b.pcState || taxState, tax),
   };
 }
 

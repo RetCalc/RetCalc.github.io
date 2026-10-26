@@ -23,6 +23,7 @@ import { STATE_OPTIONS } from "@/lib/states";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { PRE_ROWS, TAX_DEF, itemized, runTax, taxInput, taxYears } from "./model";
 import { PreTaxDialog } from "./PreTaxDialog";
+import { LOCAL_TAX } from "./local";
 import { LTCG_COLORS, stackChartSvg } from "./stackChart";
 import { BracketsCard, StateRulesCard, type Band } from "./TaxTables";
 import { useShareKit } from "@/components/shell/share";
@@ -83,7 +84,7 @@ export function Tax() {
   const inp = taxInput(s, true);
   const R = runTax(inp);
   // A local tax shows only once it has a rate (and comes to something).
-  const localOn = parseNum(s.localRate ?? "0") > 0, hasLocal = R.local > 0.005;
+  const localInfo = LOCAL_TAX[s.state], localOn = !!localInfo && parseNum(s.localRate ?? "0") > 0, hasLocal = R.local > 0.005;
   // The tax year. The picker only shows once there's more than one; a new
   // year's state figures can lag (the year before's, until the states publish).
   const years = taxYears(), year = inp.year, stateYear = yearData(year).states.year;
@@ -357,19 +358,24 @@ export function Tax() {
               </div>
 
               {/* A city's, county's or school district's income tax: optional,
-                  and only counted once a rate is given. */}
-              <GroupHead>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></GroupHead>
-              <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
-                <NumberField id="txLocal" label="Rate" unit="%" step={0.1} max={20} value={s.localRate ?? "0"} onValueChange={set("localRate")} />
-                <SelectField id="txLocalBase" hidden={!localOn} label="Taxed on" value={s.localBase ?? "wages"} onChange={(v) => set("localBase")(v as typeof s.localBase)}>
-                  <option value="wages">Wages{ret ? " (none in retirement)" : ""}</option>
-                  <option value="state">Your state taxable income</option>
-                </SelectField>
-              </div>
-              <div className="hint -mt-1 mb-3.5" id="txLocalNote">
-                Only if you pay one: most places in the US have none. Cities, counties and school districts set their own rates and rules (where you work can count as well as where you live), so this is an estimate. Most tax wages: Ohio and Pennsylvania localities, Detroit, Kansas City, St. Louis. Maryland counties and New York City tax your state taxable income instead.
-                {" "}Your pay stub shows any local tax taken out, or look up your rate: <a href="https://thefinder.tax.ohio.gov" target="_blank" rel="noopener noreferrer">Ohio&apos;s The Finder</a>, <a href="https://dced.pa.gov/local-government/local-income-tax-information/psd-codes-and-eit-rates/" target="_blank" rel="noopener noreferrer">Pennsylvania&apos;s local rates</a>, <a href="https://www.marylandcomptroller.gov" target="_blank" rel="noopener noreferrer">Maryland&apos;s Comptroller</a>, or your city or county tax office.
-              </div>
+                  only in a state that has them (local.ts), and only counted
+                  once a rate is given. */}
+              {localInfo ? (
+                <>
+                  <GroupHead>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></GroupHead>
+                  <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                    <NumberField id="txLocal" label="Rate" unit="%" step={0.1} max={20} value={s.localRate ?? "0"} onValueChange={set("localRate")} />
+                    <SelectField id="txLocalBase" hidden={!localOn} label="Taxed on" value={s.localBase || localInfo.base} onChange={(v) => set("localBase")(v as typeof s.localBase)}>
+                      <option value="wages">Wages{ret ? " (none in retirement)" : ""}</option>
+                      <option value="state">Your state taxable income</option>
+                    </SelectField>
+                  </div>
+                  <div className="hint -mt-1 mb-3.5" id="txLocalNote">
+                    {localInfo.note} Rates and rules vary by place, so this is an estimate. Your pay stub shows any local tax taken out{localInfo.links.length ? ", or look up your rate: " : "; your city or county tax office has the rate."}
+                    {localInfo.links.map(([label, url], i) => <span key={url}>{i ? ", " : ""}<a href={url} target="_blank" rel="noopener noreferrer">{label}</a></span>)}{localInfo.links.length ? ", or your city or county tax office." : null}
+                  </div>
+                </>
+              ) : null}
               <Field id="txItem" wrapId="txItemWrap" hidden={s.dedType !== "item"} label="Itemized total">
                 <Affixed prefix="$"><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></Affixed>
                 <div className="hint">Mortgage interest, charity, and state/local taxes up to the cap.</div>

@@ -4,6 +4,7 @@
 import type { ToolDef } from "@/components/tools/ToolState";
 import { NEWEST_YEAR, computeRetireTax, computeTax, dataYears } from "@/lib/engine/typed";
 import { groupDigits, oneOf, parseNum } from "@/lib/format";
+import { localFor } from "./local";
 
 const g = (v: number) => groupDigits(v, true);
 export const TAX_DEFAULTS = {
@@ -26,9 +27,11 @@ export const TAX_DEFAULTS = {
   /** The tax year: the newest there are figures for, unless picked. Saved
       and shared with the rest, so a scenario keeps its year's rules. */
   year: String(NEWEST_YEAR),
-  /** A local (city or county) income tax, optional: its rate in percent, and
-      whether it's on wages or on the state's taxable income. */
-  localRate: "0", localBase: "wages" as "wages" | "state",
+  /** A local (city, county or school district) income tax, optional and
+      only in a state that has them (local.ts): its rate in percent, and
+      whether it's on wages or the state's taxable income ("" for the
+      state's usual). */
+  localRate: "0", localBase: "" as "" | "wages" | "state",
 };
 export type TaxInputs = typeof TAX_DEFAULTS;
 
@@ -95,7 +98,7 @@ export function taxInput(t: TaxInputs, ownYear = false) {
     status: status as "s" | "m", state: t.state,
     pre: itemized(t) ? preTotal(t) : n(t.pre), ded: itemized(t) ? preBuckets(t) : undefined, dedType: t.dedType as "std" | "item", item: n(t.item),
     year: ownYear ? taxYearOf(t) : taxYears()[0],
-    localRate: parseNum(t.localRate ?? "0") / 100, localBase: (t.localBase ?? "wages") as "wages" | "state",
+    ...localFor(t.state, t.localRate, t.localBase),
   };
 }
 

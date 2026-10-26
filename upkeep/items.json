@@ -73,6 +73,20 @@
       "notes": "Several entries quote dollar amounts in their notes (Maryland's pension exclusion, Minnesota's AGI limits); those change yearly too."
     },
     {
+      "id": "local-tax",
+      "area": "Taxes",
+      "name": "Local income tax states and notes",
+      "what": "Which states have local income taxes (and so show Income Tax's optional local field), each one's usual base (wages or state taxable income), its one-line note (Maryland's county range, New York City's range) and its lookup links.",
+      "where": ["web/tools/tax/local.ts: LOCAL_TAX"],
+      "source": "Tax Foundation's state and local income tax data; each state's revenue department (Maryland Comptroller county rates, New York tax department for NYC); check each lookup link still opens",
+      "cadence": "Yearly, with the state tax update",
+      "last_updated": "2026-10-26",
+      "data_for": "Tax year 2026",
+      "next_due": "2027-03-15",
+      "priority": "low",
+      "notes": "Rates are the person's own (nothing is computed from a built-in rate), so only the list of states, the notes' ranges and the links go stale. Left out on purpose: California and New Jersey (employer-paid local payroll taxes), Arkansas (allowed, none levied), Kansas (small local taxes on investment income)."
+    },
+    {
       "id": "medicare-b-irmaa",
       "area": "Healthcare",
       "name": "Medicare Part B premium and IRMAA tiers",
