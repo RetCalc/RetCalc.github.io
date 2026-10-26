@@ -133,14 +133,15 @@ export interface Flow {
 
 /** The paycheck, taxes and budget as one month. */
 export function flow(pr: Profile): Flow {
-  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr)), r = paycheckRun(pi), a = pi.amounts;
+  // The paycheck takes Income Tax's own local tax, as the Taxes tab does.
+  const b = budgetFor(pr), pi = paycheckInput(b, taxState(pr), withDefaults(TAX_DEF, pr.tools.tax ?? {})), r = paycheckRun(pi), a = pi.amounts;
   const m = pi.p / 12, hasPay = pi.gross + pi.gross2 > 0;
   const tx = hasPay ? taxFor(pr, b, pi, r) : null;
   const T = tx ? runTax(taxInput(tx)) : null;
   // Taxes: Income Tax's year (its deductions included), else the paycheck's;
   // none outside the US, where pay is entered after them.
   const abroad = pr.state === OUTSIDE_US;
-  const taxesYr = abroad ? 0 : T ? T.federal + T.state + T.fica : r.taxes * pi.p;
+  const taxesYr = abroad ? 0 : T ? T.total : r.taxes * pi.p;
   const gross = (pi.gross + pi.gross2) / 12, health = r.health * m;
   const net = abroad ? [pr.p1, ...(pr.who === "couple" ? [pr.p2] : [])].reduce((s, p) => s + (p.pay ?? 0) * PER_YEAR[p.per], 0) / 12 : gross - taxesYr / 12 - health;
   const roth = pi.roth;

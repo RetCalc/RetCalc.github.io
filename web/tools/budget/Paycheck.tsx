@@ -63,8 +63,8 @@ export function Paycheck({ s, set, setState }: {
   // The Dashboard keeps pay, filing status, state and the match itself, and
   // says them here in place of the fields.
   const facts = scope?.slots?.payFacts;
-  const taxState = store.read("tax", TAX_DEFAULTS).state;
-  const pi = paycheckInput(s, taxState);
+  const tax = store.read("tax", TAX_DEFAULTS), taxState = tax.state;
+  const pi = paycheckInput(s, taxState, tax);
   const r = paycheckRun(pi);
   const base = paycheckRun(pi, PC_ZERO);
   // Married, two incomes: the household by the month; otherwise one paycheck.
@@ -508,6 +508,7 @@ function Itemized({ s, pi, r, empty, short, openTax }: {
   sec("Taxes");
   ln("item", "Federal income tax", -r.fed, undefined, each("fed"));
   ln("item", (r.stateName || "State") + " income tax", -r.state, r.stateAddBack > 0 ? "keeps " + money(r.stateAddBack) + "/yr of pre-tax in its base" : undefined, each("state"));
+  if (r.local > 0) ln("item", "Local income tax", -r.local, "from Income Tax", each("local"));
   ln("item", "Social Security", -r.ss, undefined, each("ss"));
   ln("item", "Medicare", -r.med, undefined, each("med"));
   if (r.roth401) {

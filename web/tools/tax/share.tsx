@@ -10,6 +10,9 @@ import { yearData } from "@/lib/engine/typed";
 import { money, pctStr } from "@/lib/format";
 import { PRE_ROWS, runTax, taxInput, type TaxInputs } from "./model";
 
+/** The local tax's line, only when there is one. */
+const local = (R: { local?: number }): [string, string][] => ((R.local ?? 0) > 0.005 ? [["Local tax", money(R.local!)]] : []);
+
 export function taxShare(s: TaxInputs): ShareKit {
   const inp = taxInput(s, true), ret = inp.mode === "retire";
   // A new year can run on the year before's state figures until the states publish.
@@ -44,8 +47,8 @@ export function taxShare(s: TaxInputs): ShareKit {
       const out: SheetRows = ret
         ? [["Federal, ordinary income", money(R.fedOrdinary)], ["Federal, long-term gains", money(R.ltcg) + (R.gainTaxable > 0 ? " (" + pctStr(R.ltcgRate, 1) + ")" : "")],
           ...(R.niit > 0 ? [["Net investment income tax", money(R.niit)] as [string, string]] : []),
-          ["State tax", money(R.state)], ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Marginal rate", pctStr(R.marginal, 1)]]
-        : [["Federal tax", money(R.federal)], ["State tax", money(R.state)],
+          ["State tax", money(R.state)], ...local(R), ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Marginal rate", pctStr(R.marginal, 1)]]
+        : [["Federal tax", money(R.federal)], ["State tax", money(R.state)], ...local(R),
           ...(inp.status === "m" ? [["Your Social Security", money(R.ss1)], ["Spouse's Social Security", money(R.ss2)]] as SheetRows : [["Social Security", money(R.ss)]] as SheetRows),
           ["Medicare" + (R.addl > 0 ? " (+ surtax)" : ""), money(R.med + R.addl)], ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Marginal rate", pctStr(R.marginal, 0)]];
       const pay: SheetRows = ret
@@ -80,8 +83,8 @@ export function taxShare(s: TaxInputs): ShareKit {
         sub: money(R.gross) + (ret ? " withdrawn · " : " gross · ") + (R.stateName || "no state tax") + " · tax year " + inp.year,
         rows: ret
           ? [["Federal, ordinary income", money(R.fedOrdinary)], ["Federal, long-term gains", money(R.ltcg)], ["Net investment income tax", money(R.niit)],
-            ["State tax", money(R.state)], ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Per month", money(R.net / 12)]]
-          : [["Federal tax", money(R.federal)], ["State tax", money(R.state)], ["Social Security + Medicare", money(R.fica)], ["Total tax", money(R.total)],
+            ["State tax", money(R.state)], ...local(R), ["Total tax", money(R.total)], ["Effective rate", pctStr(R.effTotal, 1)], ["Per month", money(R.net / 12)]]
+          : [["Federal tax", money(R.federal)], ["State tax", money(R.state)], ...local(R), ["Social Security + Medicare", money(R.fica)], ["Total tax", money(R.total)],
             ["Effective rate", pctStr(R.effTotal, 1)], ["Per month", money(R.net / 12)], ["Per biweekly check", money(R.net / 26)]],
         chart: { sel: "#txPie", w: 400, h: 400 } };
     },

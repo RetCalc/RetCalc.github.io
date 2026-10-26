@@ -81,7 +81,7 @@ export function fromOldTaxes(p: PlanState): PlanState {
 export function paycheckOf(p: PlanState): { pi: PcInput; r: PcRun } | null {
   const b = toolOf(p, "budget");
   if (!(parseNum(b.pcGross) > 0)) return null;
-  const pi = paycheckInput(b, toolOf(p, "tax").state);
+  const tx = toolOf(p, "tax"), pi = paycheckInput(b, tx.state, tx);
   return { pi, r: paycheckRun(pi) };
 }
 

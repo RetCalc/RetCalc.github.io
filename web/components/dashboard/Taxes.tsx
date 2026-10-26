@@ -28,14 +28,15 @@ export function Taxes() {
   );
   const yr = F.gross * 12;
   return (
-    <Frame current="taxes" title="Taxes" sub={T ? `${money(T.federal + T.state + T.fica)} per year` : "Add your pay in Income"}>
+    <Frame current="taxes" title="Taxes" sub={T ? `${money(T.total)} per year` : "Add your pay in Income"}>
       <Tile id="this-year" icon={LandmarkIcon} title="This year">
         <div className="dsh-stats">
           <div className="dsh-stat"><div className="dsh-label">Pay after taxes</div><div className="dsh-fig dsh-key">{F.hasPay ? money(F.afterTax) : "—"}<small>per month</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">Federal income tax</div><div className="dsh-fig dsh-md">{T ? money(T.federal) : "—"}<small>per year</small></div></div>
           <div className="dsh-stat"><div className="dsh-label">State income tax</div><div className="dsh-fig dsh-md">{T ? money(T.state) : "—"}<small>per year</small></div></div>
+          {T && T.local > 0 ? <div className="dsh-stat"><div className="dsh-label">Local income tax</div><div className="dsh-fig dsh-md">{money(T.local)}<small>per year</small></div></div> : null}
           <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Social Security and Medicare" id="fica" /></div><div className="dsh-fig dsh-md">{T ? money(T.fica) : "—"}<small>per year</small></div></div>
-          {T && yr > 0 ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Of your pay" k="effrate" /></div><div className="dsh-fig dsh-md">{Math.round(((T.federal + T.state + T.fica) / yr) * 1000) / 10}%</div></div> : null}
+          {T && yr > 0 ? <div className="dsh-stat"><div className="dsh-label"><TipLabel text="Of your pay" k="effrate" /></div><div className="dsh-fig dsh-md">{Math.round((T.total / yr) * 1000) / 10}%</div></div> : null}
         </div>
         <p className="dsh-cap dsh-mt">Pay comes from Income, and what goes to your 401(k), HSA and health premiums from Savings: change those there. Deductions are yours to set below. Health premiums come out of pay too, so after taxes is also after them.</p>
       </Tile>

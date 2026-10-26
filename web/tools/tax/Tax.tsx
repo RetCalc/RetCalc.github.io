@@ -18,7 +18,7 @@ import { Segmented } from "@/components/common/Readout";
 import { HeroReading, PinnedReading } from "@/components/common/Reading";
 import { CsvButton } from "@/components/common/CsvButton";
 import { NIIT, bracketRoom, yearData } from "@/lib/engine/typed";
-import { DASH, groupDigits, money, pctStr } from "@/lib/format";
+import { DASH, groupDigits, money, parseNum, pctStr } from "@/lib/format";
 import { STATE_OPTIONS } from "@/lib/states";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { PRE_ROWS, TAX_DEF, itemized, runTax, taxInput, taxYears } from "./model";
@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { InputGroupButton } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
-const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal };
+const TAX_COLORS = { fed: SERIES.rose, state: SERIES.lavender, fica: SERIES.sky, net: SERIES.teal, local: SERIES.plan };
 const BKT_COLORS: string[] = [SERIES.rose, SERIES.teal, SERIES.sky, SERIES.lavender, SERIES.gray, hatched(SERIES.gray)]; // trad, roth, brok, ss, pension, other
 
 type Part = DonutPart;
@@ -82,6 +82,8 @@ export function Tax() {
   const split = !ret && joint;
   const inp = taxInput(s, true);
   const R = runTax(inp);
+  // A local tax shows only once it has a rate (and comes to something).
+  const localOn = parseNum(s.localRate ?? "0") > 0, hasLocal = R.local > 0.005;
   // The tax year. The picker only shows once there's more than one; a new
   // year's state figures can lag (the year before's, until the states publish).
   const years = taxYears(), year = inp.year, stateYear = yearData(year).states.year;
@@ -117,7 +119,12 @@ export function Tax() {
   // An IRA the income test doesn't let off in full: said under the table.
   const iraKept = prePeople.reduce((a, p) => a + (p.ira || 0) - (p.iraDed || 0), 0);
   const stateLabel = "State income tax" + (R.stateNone ? " (none)" : "");
-  const stateRow = <TxRow k={"State income tax" + (R.stateName ? " · " + R.stateName : "")} v={R.state} eff={R.effState} c={TAX_COLORS.state} />;
+  const stateRow = <>
+    <TxRow k={"State income tax" + (R.stateName ? " · " + R.stateName : "")} v={R.state} eff={R.effState} c={TAX_COLORS.state} />
+    {hasLocal ? <TxRow k="Local income tax" v={R.local} eff={R.effLocal} c={TAX_COLORS.local} /> : null}
+  </>;
+  const localBar = hasLocal ? [{ label: "Local income tax", v: R.local, share: R.effLocal, c: TAX_COLORS.local }] : [];
+  const localPart = hasLocal ? [{ v: R.local, c: TAX_COLORS.local, label: "Local tax" }] : [];
 
   if (!ret) {
     // Net pay is gross minus taxes; take-home also takes out pre-tax savings,
@@ -140,12 +147,12 @@ export function Tax() {
     bars = [
       { label: "Take-home pay", v: R.net, share: R.effNet, c: TAX_COLORS.net },
       { label: "Federal income tax", v: R.federal, share: R.effFed, c: TAX_COLORS.fed },
-      { label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state },
+      { label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state }, ...localBar,
       { label: "FICA (Social Security + Medicare)", v: R.fica, share: R.effFica, c: TAX_COLORS.fica },
     ];
     if (R.pre > 0) bars.push({ label: "Pre-tax deductions", v: R.pre, share: share(R.pre), c: hatched(SERIES.gray) });
     parts = [{ v: R.net, c: TAX_COLORS.net, label: "Take-home pay" }, { v: R.federal, c: TAX_COLORS.fed, label: "Federal tax" },
-      { v: R.state, c: TAX_COLORS.state, label: "State tax" }, { v: R.fica, c: TAX_COLORS.fica, label: "FICA" }];
+      { v: R.state, c: TAX_COLORS.state, label: "State tax" }, ...localPart, { v: R.fica, c: TAX_COLORS.fica, label: "FICA" }];
     if (R.pre > 0) parts.push({ v: R.pre, c: hatched(SERIES.gray), label: "Pre-tax deductions" });
     // The Social Security wage cap applies per earner, so a joint return
     // shows a line for each rather than one shared cap.
@@ -183,11 +190,11 @@ export function Tax() {
       { label: "Federal long-term capital gain tax", v: R.ltcg, share: share(R.ltcg), c: LTCG_COLORS[1] },
     ];
     if (R.niit > 0) bars.push({ label: "Net investment income tax (3.8%)", v: R.niit, share: share(R.niit), c: SERIES.gray });
-    bars.push({ label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state });
+    bars.push({ label: stateLabel, v: R.state, share: R.effState, c: TAX_COLORS.state }, ...localBar);
     if (R.pre > 0) bars.push({ label: "Pre-tax deductions", v: R.pre, share: share(R.pre), c: hatched(SERIES.gray) });
     parts = [{ v: R.net, c: TAX_COLORS.net, label: "Income after tax" }, { v: R.fedOrdinary, c: TAX_COLORS.fed, label: "Federal ordinary tax" },
       { v: R.ltcg, c: LTCG_COLORS[1], label: "Capital gain tax" }, { v: R.niit, c: SERIES.gray, label: "Net investment tax" },
-      { v: R.state, c: TAX_COLORS.state, label: "State tax" }];
+      { v: R.state, c: TAX_COLORS.state, label: "State tax" }, ...localPart];
     if (R.pre > 0) parts.push({ v: R.pre, c: hatched(SERIES.gray), label: "Pre-tax deductions" });
     rows = (
       <>
@@ -347,6 +354,21 @@ export function Tax() {
               <div className="-mt-1 mb-3.5 flex items-start gap-2 text-note text-destructive" hidden={!preOver}>
                 <CircleAlertIcon className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span id="txPreWarn" role="alert">{preOver ? "Pre-tax deductions are more than your gross " + (ret ? "retirement income" : "income") + " (" + money(R.gross) + ")." : ""}</span>
+              </div>
+
+              {/* A city's, county's or school district's income tax: optional,
+                  and only counted once a rate is given. */}
+              <GroupHead>Local income tax <Badge variant="outline" className="ml-1.25">optional</Badge></GroupHead>
+              <div className="grid grid-cols-2 items-end gap-x-2.5 max-sm:grid-cols-1">
+                <NumberField id="txLocal" label="Rate" unit="%" step={0.1} max={20} value={s.localRate ?? "0"} onValueChange={set("localRate")} />
+                <SelectField id="txLocalBase" hidden={!localOn} label="Taxed on" value={s.localBase ?? "wages"} onChange={(v) => set("localBase")(v as typeof s.localBase)}>
+                  <option value="wages">Wages{ret ? " (none in retirement)" : ""}</option>
+                  <option value="state">Your state taxable income</option>
+                </SelectField>
+              </div>
+              <div className="hint -mt-1 mb-3.5" id="txLocalNote">
+                Only if you pay one: most places in the US have none. Cities, counties and school districts set their own rates and rules (where you work can count as well as where you live), so this is an estimate. Most tax wages: Ohio and Pennsylvania localities, Detroit, Kansas City, St. Louis. Maryland counties and New York City tax your state taxable income instead.
+                {" "}Your pay stub shows any local tax taken out, or look up your rate: <a href="https://thefinder.tax.ohio.gov" target="_blank" rel="noopener noreferrer">Ohio&apos;s The Finder</a>, <a href="https://dced.pa.gov/local-government/local-income-tax-information/psd-codes-and-eit-rates/" target="_blank" rel="noopener noreferrer">Pennsylvania&apos;s local rates</a>, <a href="https://www.marylandcomptroller.gov" target="_blank" rel="noopener noreferrer">Maryland&apos;s Comptroller</a>, or your city or county tax office.
               </div>
               <Field id="txItem" wrapId="txItemWrap" hidden={s.dedType !== "item"} label="Itemized total">
                 <Affixed prefix="$"><MoneyInput id="txItem" nonNeg value={s.item} onValueChange={set("item")} /></Affixed>

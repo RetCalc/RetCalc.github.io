@@ -79,6 +79,9 @@ export interface PcInput {
   pays: [number, number];
   status: "s" | "m";
   state: string;
+  /** A local income tax, from Income Tax's own setting: its rate (0-1), on
+      wages or on the state's taxable income. None when it's 0. */
+  local?: { rate: number; base: "wages" | "state" };
   /** Health premiums through work, per period: through your job, and your
       spouse's (typed per check on each one's own schedule). */
   health: [number, number];
@@ -117,7 +120,7 @@ export function pcOrder(raw: string): PcStep[] {
 
 /** The tab's inputs as numbers. `taxState` is the Income Tax tool's state,
     used while the tab has none of its own. */
-export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
+export function paycheckInput(b: BudgetInputs, taxState: string, tax?: { localRate?: string; localBase?: string }): PcInput {
   const two = b.pcStatus === "m2";
   const sched = (v: string) => ([52, 26, 24, 12].includes(+v) ? +v : 26);
   const pays: [number, number] = [sched(b.pcFreq), sched(b.pcFreq2)];
@@ -136,6 +139,7 @@ export function paycheckInput(b: BudgetInputs, taxState: string): PcInput {
     hsa: b.pcHsaFamily ? "family" : two && b.pcHsaBoth ? "self2" : "self",
     efCap: n(b.pcEfCap), efOn, roth: { match: !!b.pcMatchRoth, k401max: !!b.pcK401maxRoth, rothIra: b.pcIraRoth !== false },
     spendYear, order: pcOrder(b.pcOrder).filter((s) => s !== "ef" || efOn), amounts, noTax: !!b.pcNoTax,
+    ...(tax && parseNum(tax.localRate ?? "0") > 0 ? { local: { rate: parseNum(tax.localRate!) / 100, base: tax.localBase === "state" ? "state" as const : "wages" as const } } : {}),
   };
 }
 
@@ -210,7 +214,7 @@ export function pcCap(pi: PcInput, s: PcStep, a: PcAmounts): number {
     fund's is only where Fill stops). */
 export const pcHasLimit = (s: PcStep) => s !== "ef" && s !== "brok";
 
-export interface PcPerson { gross: number; k401: number; roth401: number; hsa: number; health: number; fed: number; state: number; fica: number; deposit: number;
+export interface PcPerson { gross: number; k401: number; roth401: number; hsa: number; health: number; fed: number; state: number; local: number; fica: number; deposit: number;
   /** Their FICA in its two parts: Social Security, and Medicare (with their share of the extra 0.9%). */
   ss: number; med: number }
 
@@ -225,6 +229,8 @@ export interface PcRun {
   k401s: [number, number]; roth401s: [number, number]; hsas: [number, number]; healths: [number, number];
   k401: number; roth401: number; hsa: number; health: number;
   fed: number; state: number; fica: number; taxes: number;
+  /** Local income tax, per period (0 without one). */
+  local: number;
   /** FICA in its parts, per period: Social Security, Medicare (the extra
       0.9% on high pay included). */
   ss: number; med: number;
@@ -261,17 +267,18 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const iras = [0, 1].map((i) => (pi.roth.rothIra ? 0 : sp.rothIra[i]));
   const R0 = computeTax({
     status: pi.status, gross: pi.gross, gross2: pi.gross2, pre: 0, dedType: "std", item: 0, state: pi.state,
+    localRate: pi.local?.rate ?? 0, localBase: pi.local?.base ?? "wages",
     // In a 401(k) at work, traditional or Roth, is what phases out the IRA deduction.
     ded: [0, 1].map((i) => ({ k401: k401s[i] * p, ira: iras[i] * p, hsa: hsas[i] * p, health: healths[i] * p, other: 0,
       covered: sp.match[i] + sp.k401max[i] > 0 })),
-  }) as { federal: number; state: number; fica: number; ss1: number; ss2: number; addl: number; stateName: string; bands: PcBand[]; fedTaxable: number;
+  }) as unknown as { federal: number; state: number; local: number; fica: number; ss1: number; ss2: number; addl: number; stateName: string; bands: PcBand[]; fedTaxable: number;
     preTax: { addBack: number; ficaOff: number[]; magi: number; people: { iraDed: number }[] } | null };
-  const R = pi.noTax ? { ...R0, federal: 0, state: 0, fica: 0, ss1: 0, ss2: 0, addl: 0, bands: [], fedTaxable: 0 } : R0;
+  const R = pi.noTax ? { ...R0, federal: 0, state: 0, local: 0, fica: 0, ss1: 0, ss2: 0, addl: 0, bands: [], fedTaxable: 0 } : R0;
   const gross1 = pi.gross / p, gross2 = pi.gross2 / p, check = gross1 + gross2;
   const sum = (x: number[]) => x[0] + x[1];
   const k401 = sum(k401s), roth401 = sum(roth401s), hsa = sum(hsas), health = sum(healths);
-  const fed = R.federal / p, state = R.state / p, fica = R.fica / p;
-  const deposit = check - k401 - hsa - health - fed - state - fica - roth401;
+  const fed = R.federal / p, state = R.state / p, fica = R.fica / p, local = (R.local || 0) / p;
+  const deposit = check - k401 - hsa - health - fed - state - local - fica - roth401;
   const spend = pi.spendYear / p, toAssign = deposit - spend;
   const left = toAssign - a.ef - a.rothIra - a.brok;
   const deferred = [k401s[0] + roth401s[0], k401s[1] + roth401s[1]];
@@ -287,11 +294,13 @@ export function paycheckRun(pi: PcInput, a: PcAmounts = pi.amounts): PcRun {
   const people = [0, 1].map((i): PcPerson => {
     const g = grosses[i] / p, f = R.federal * tShare(i) / p, st = R.state * tShare(i) / p;
     const ss = (i ? R.ss2 : R.ss1) / p, med = (ficaWage[i] * medRate + R.addl * fShare(i)) / p, fc = ss + med;
-    return { gross: g, k401: k401s[i], roth401: roth401s[i], hsa: hsas[i], health: healths[i], fed: f, state: st, fica: fc, ss, med,
-      deposit: g - k401s[i] - roth401s[i] - hsas[i] - healths[i] - f - st - fc };
+    // A local wage tax is on each one's own wages; one on state income shares as the state's does.
+    const lc = (R.local || 0) * (pi.local?.base === "state" ? tShare(i) : fShare(i)) / p;
+    return { gross: g, k401: k401s[i], roth401: roth401s[i], hsa: hsas[i], health: healths[i], fed: f, state: st, local: lc, fica: fc, ss, med,
+      deposit: g - k401s[i] - roth401s[i] - hsas[i] - healths[i] - f - st - lc - fc };
   });
   return {
-    check, gross1, gross2, k401s, roth401s, hsas, healths, k401, roth401, hsa, health, fed, state, fica, taxes: fed + state + fica,
+    check, gross1, gross2, k401s, roth401s, hsas, healths, k401, roth401, hsa, health, fed, state, local, fica, taxes: fed + state + local + fica,
     ss: (R.ss1 + R.ss2) / p, med: fica - (R.ss1 + R.ss2) / p, bands: R.bands, fedTaxable: R.fedTaxable,
     deposit, spend, toAssign, ef: a.ef, rothIra: a.rothIra, brok: a.brok, left,
     iraTrad: iras[0] + iras[1], iraDed: ((R.preTax?.people[0].iraDed ?? 0) + (R.preTax?.people[1].iraDed ?? 0)) / p,

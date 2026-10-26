@@ -987,6 +987,15 @@ export function preTaxSplit(ded, wages, st, state, Y){
  * @param {number} [inp.year] - tax year (data/); the newest when left off
  * @returns {Object} federal/state/FICA breakdown, net income, and effective/marginal rates
  */
+/* A local income tax the person gives: inp.localRate (0-1) on wages, or
+   on the state's taxable income when inp.localBase is "state". None when
+   not given, so every other caller's figures are unchanged. */
+function localTax(inp, wages, stateTaxable){
+  const r = Math.max(0, Math.min(0.2, inp.localRate || 0));
+  if (!r) return 0;
+  return r * Math.max(0, inp.localBase === "state" ? stateTaxable : wages);
+}
+
 export function computeTax(inp){
   const st = inp.status, idx = st === "m" ? 1 : 0;
   const Y = yearData(inp.year), FICA = Y.fica;
@@ -1043,7 +1052,11 @@ export function computeTax(inp){
   const addl = Math.max(0, wage1 + wage2 - FICA.addlThreshold[st]) * FICA.addlRate;
   const fica = ss + med + addl;
 
-  const total = federal + state + fica;
+  // Local income tax, when given: a city's or county's rate on wages (the
+  // Medicare wages, as Ohio and Pennsylvania localities tax them) or on the
+  // state's taxable income (Maryland counties, New York City).
+  const local = localTax(inp, wage1 + wage2, stateTaxable);
+  const total = federal + state + fica + local;
   // Take-home: what's left once the taxes and everything set aside before
   // the paycheck (deductible or not) are out.
   const setAside = P ? Math.min(P.paid, gross) : pre;
@@ -1051,8 +1064,8 @@ export function computeTax(inp){
   const rate = v => gross > 0 ? v / gross : 0;
   return {gross, earner1, earner2, pre: setAside, preFed: pre, afterPre, fedDed, fedTaxable, federal, state, stateTaxable,
           preTax: P,
-          fica, ss, ss1, ss2, med, addl, total, net, takeHome: net,
-          effFed:rate(federal), effState:rate(state), effFica:rate(fica),
+          fica, ss, ss1, ss2, med, addl, local, total, net, takeHome: net,
+          effFed:rate(federal), effState:rate(state), effFica:rate(fica), effLocal:rate(local),
           effTotal:rate(total), effNet:rate(net),
           marginal: marginalRate(fedTaxable, Y.fed[st]),
           bands: fedCalc.bands, stateName: S.n || "", stateNone: !!S.none};
@@ -1197,7 +1210,10 @@ export function computeRetireTax(inp){
   const state = ST.tax, stateTaxable = ST.taxable, stateBase = ST.base;
   const stateTaxesSS = ST.ssTaxed;
 
-  const total = federal + state;
+  // Local income tax: only one on the state's taxable income reaches
+  // retirement income; a wage tax has no wages to tax.
+  const local = localTax(inp, 0, stateTaxable);
+  const total = federal + state + local;
   const net = gross - total - pre;
   const rate = v => gross > 0 ? v / gross : 0;
 
@@ -1246,8 +1262,8 @@ export function computeRetireTax(inp){
 
   return {
     gross, pre, afterPre:agi, fedDed, fedTaxable:taxableIncome, federal, state,
-    stateTaxable, fica:0, ss:0, med:0, addl:0, total, net, takeHome:net,
-    effFed:rate(federal), effState:rate(state), effFica:0,
+    stateTaxable, fica:0, ss:0, med:0, addl:0, local, total, net, takeHome:net,
+    effFed:rate(federal), effState:rate(state), effFica:0, effLocal:rate(local),
     effTotal:rate(total), effNet:rate(net),
     marginal:effMarginal,
     nominalMarginal:marginalRate(ordTaxable, FED),

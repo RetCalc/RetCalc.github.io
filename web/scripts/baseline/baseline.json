@@ -1,5 +1,5 @@
 {
-  "recorded": "2026-10-21T22:33:43.124Z",
+  "recorded": "2026-10-26T16:38:13.469Z",
   "scenarios": [
     {
       "id": "Basic: worked example: 30 to 65, $10,000 saved, $500/month, balanced 4.5%",
@@ -213,6 +213,7 @@
         "earner2": "5feceb66ffc86f38",
         "effFed": "c072091b7db9b0ff",
         "effFica": "c81a61a42cca9309",
+        "effLocal": "5feceb66ffc86f38",
         "effNet": "60199e125aeabf8c",
         "effState": "6d92c63c47b5609f",
         "effTotal": "680b3bed58fcc0a0",
@@ -221,6 +222,7 @@
         "federal": "71ecfa2482791c0c",
         "fica": "1c4fba56f321870c",
         "gross": "3bb78535cc9555ff",
+        "local": "5feceb66ffc86f38",
         "marginal": "dc08a4e8bbdd4019",
         "med": "b0193ceb57d22ae3",
         "net": "4b8281ce62fc8ff1",
@@ -258,6 +260,7 @@
         "earner2": "976115fd624e1498",
         "effFed": "8af1f9c63b19c754",
         "effFica": "f2d72cff53652f92",
+        "effLocal": "5feceb66ffc86f38",
         "effNet": "428516f4c4f09c65",
         "effState": "1f3384cac6091fb4",
         "effTotal": "918a6815fe024269",
@@ -266,6 +269,7 @@
         "federal": "422fb7cd779a4308",
         "fica": "2684252577329742",
         "gross": "36dd775e507e2de1",
+        "local": "5feceb66ffc86f38",
         "marginal": "6382e07f9de0c852",
         "med": "5aaa2bd0029944c5",
         "net": "b62de841e2da753f",
@@ -303,6 +307,7 @@
         "earner2": "3bb78535cc9555ff",
         "effFed": "6e23335adbde2fdb",
         "effFica": "f47055272ae9937f",
+        "effLocal": "5feceb66ffc86f38",
         "effNet": "aa4db30e51bd1a02",
         "effState": "87cf534d7414251a",
         "effTotal": "ff261203707ec309",
@@ -311,6 +316,7 @@
         "federal": "faeeba4ba4d9eea7",
         "fica": "6feff0f5ca4a56a1",
         "gross": "f5b32f00fe05eee9",
+        "local": "5feceb66ffc86f38",
         "marginal": "dc08a4e8bbdd4019",
         "med": "3db57ca01c40619b",
         "net": "24056cd28aa2f1c1",
@@ -351,6 +357,7 @@
         "buckets": "3e7e7327d9bffb7d",
         "effFed": "cc87515b2d49df49",
         "effFica": "5feceb66ffc86f38",
+        "effLocal": "5feceb66ffc86f38",
         "effNet": "e196b618db3f845b",
         "effState": "b06140712647fe47",
         "effTotal": "7c997eab39282a16",
@@ -362,6 +369,7 @@
         "gain": "ad5f9478d603fe97",
         "gainTaxable": "ad5f9478d603fe97",
         "gross": "3bb78535cc9555ff",
+        "local": "5feceb66ffc86f38",
         "ltcg": "5feceb66ffc86f38",
         "ltcgBands": "1e07ac891df0445b",
         "ltcgCut": "52576aa61aba2a0c",
@@ -700,8 +708,8 @@
         "filledTaxes": 3433.3118
       },
       "fields": {
-        "afterFill": "63703295c4dcb095",
-        "asSet": "562e7b68606456c4",
+        "afterFill": "fedcd5c10ad35b40",
+        "asSet": "f0f2b7aacca32086",
         "filled": "d191cb4f5d3d8eb9"
       }
     },
@@ -715,8 +723,8 @@
         "filledTaxes": 587.1897
       },
       "fields": {
-        "afterFill": "f0836e2a2987ca21",
-        "asSet": "5c4d48737b66d88c",
+        "afterFill": "fa8e5181bc80f46d",
+        "asSet": "4209997a4d6e43c9",
         "filled": "5a86a53fedb97664"
       }
     },

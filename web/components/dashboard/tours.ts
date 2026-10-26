@@ -75,7 +75,7 @@ const taxes: Tour<DashData> = { name: "Taxes", title: "How your taxes are figure
       { h: "Your <b>marginal rate</b> is the rate on your next dollar. It's the one that matters for decisions: a $1,000 traditional 401(k) contribution at 22% saves $220 of tax." },
     ] },
   ],
-  chip: ({ s }) => { const F = flow(s.profile); return F.tax ? "Taxes<br><b>" + money(F.tax.federal + F.tax.state + F.tax.fica) + "/yr</b>" : ""; } };
+  chip: ({ s }) => { const F = flow(s.profile); return F.tax ? "Taxes<br><b>" + money(F.tax.total) + "/yr</b>" : ""; } };
 
 const spending: Tour<DashData> = { name: "Spending", title: "Build a budget that works", read: plan,
   pages: [

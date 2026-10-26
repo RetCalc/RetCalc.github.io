@@ -26,6 +26,9 @@ export const TAX_DEFAULTS = {
   /** The tax year: the newest there are figures for, unless picked. Saved
       and shared with the rest, so a scenario keeps its year's rules. */
   year: String(NEWEST_YEAR),
+  /** A local (city or county) income tax, optional: its rate in percent, and
+      whether it's on wages or on the state's taxable income. */
+  localRate: "0", localBase: "wages" as "wages" | "state",
 };
 export type TaxInputs = typeof TAX_DEFAULTS;
 
@@ -92,6 +95,7 @@ export function taxInput(t: TaxInputs, ownYear = false) {
     status: status as "s" | "m", state: t.state,
     pre: itemized(t) ? preTotal(t) : n(t.pre), ded: itemized(t) ? preBuckets(t) : undefined, dedType: t.dedType as "std" | "item", item: n(t.item),
     year: ownYear ? taxYearOf(t) : taxYears()[0],
+    localRate: parseNum(t.localRate ?? "0") / 100, localBase: (t.localBase ?? "wages") as "wages" | "state",
   };
 }
 

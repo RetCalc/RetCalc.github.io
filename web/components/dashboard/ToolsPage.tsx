@@ -46,7 +46,7 @@ function yoursFor(pr: Profile, entries: Entry[]): Partial<Record<ToolSub, string
   const need = collegeNeedOf(pr);
   if (need > 0) y.college = `Your plan for college: about ${money(need)} per month`;
   y.rentbuy = pr.home === "rent" && pr.rent ? `You rent at ${money(pr.rent)} per month` : pr.home === "own" ? `You own: ${money(H.equity)} in equity` : undefined;
-  if (F.tax) y.tax = `Your taxes: ${money(F.tax.federal + F.tax.state + F.tax.fica)} per year`;
+  if (F.tax) y.tax = `Your taxes: ${money(F.tax.total)} per year`;
   if (F.spend > 0) y.budget = `Your budget: ${money(F.spend)} per month`;
   if (pr.home === "own") y.mortgage = M.owed > 0 ? (M.payoff != null ? `Paid off in ${Math.floor(M.payoff)}, at today's payment` : `${money(M.owed)} left on the mortgage`) : "No mortgage";
   y.debt = H.debts > 0 ? `Your debts besides the mortgage: ${money(H.debts)}` : H.accounts ? "No other debts entered" : undefined;
